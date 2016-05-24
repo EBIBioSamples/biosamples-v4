@@ -7,13 +7,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 
-public class SampleSerializer extends JsonSerializer<Sample> {
+public class MongoSampleSerializer extends JsonSerializer<MongoSample> {
 
 	@Override
-	public void serialize(Sample sample, JsonGenerator gen, SerializerProvider serializers)
+	public void serialize(MongoSample sample, JsonGenerator gen, SerializerProvider serializers)
 			throws IOException, JsonProcessingException {
 		gen.writeStartObject();
+		gen.writeStringField("id", sample.getId());
 		gen.writeStringField("accession", sample.getAccession());
+		gen.writeStringField("previousAccession", sample.getPreviousAccession());
 		gen.writeStringField("name", sample.getName());
 		gen.writeArrayFieldStart("attributes");
 		for (String key : sample.getAttributeTypes()) {

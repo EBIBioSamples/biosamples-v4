@@ -16,13 +16,22 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 
-public class SampleDeserializer extends JsonDeserializer<Sample> {
+public class MongoSampleDeserializer extends JsonDeserializer<MongoSample> {
 
 	@Override
-	public Sample deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+	public MongoSample deserialize(JsonParser jp, DeserializationContext ctxt)
+			throws IOException, JsonProcessingException {
 		JsonNode node = jp.getCodec().readTree(jp);
 
-		String accession = node.get("accession").asText();
+		String id = node.get("id").asText();
+		String accession = null;
+		if (node.has("accession")){
+			accession = node.get("accession").asText();
+		}
+		String previousAccession = null;
+		if (node.has("previousAccession")){
+			previousAccession = node.get("previousAccession").asText();
+		}
 		String name = node.get("name").asText();
 
 		Map<String, Set<String>> keyValues = new HashMap<>();
@@ -68,7 +77,7 @@ public class SampleDeserializer extends JsonDeserializer<Sample> {
 			}
 		}
 
-		return SimpleSample.createFrom(name, accession, keyValues, ontologyTerms, units);
+		return MongoSample.createFrom(id, name, accession, previousAccession, keyValues, ontologyTerms, units);
 	}
 
 }
