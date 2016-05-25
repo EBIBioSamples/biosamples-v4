@@ -21,15 +21,15 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 @JsonDeserialize(using = SampleDeserializer.class)
 public class SimpleSample implements Sample {
 
-	private String accession;
-	private String name;
-	private LocalDate releaseDate;
-	private LocalDate updateDate;
-	private Map<String, Set<String>> keyValues;
-	private Map<String, Map<String, String>> ontologyTerms;
-	private Map<String, Map<String, String>> units;
+	protected String accession;
+	protected String name;
+	protected LocalDate releaseDate;
+	protected LocalDate updateDate;
+	protected Map<String, Set<String>> keyValues;
+	protected Map<String, Map<String, String>> ontologyTerms;
+	protected Map<String, Map<String, String>> units;
 
-	private SimpleSample() {
+	protected SimpleSample() {
 	}
 
 	@Override

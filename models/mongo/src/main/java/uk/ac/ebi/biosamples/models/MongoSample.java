@@ -15,76 +15,15 @@ import uk.ac.ebi.biosamples.models.Sample;
 
 @JsonSerialize(using = MongoSampleSerializer.class)
 @JsonDeserialize(using = MongoSampleDeserializer.class)
-public class MongoSample implements Sample {
+public class MongoSample extends SimpleSample {
 
 	@Id
 	private String id;
 
 	private String previousAccession;
-
-	// TODO date
-
-	private String accession;
-	private String name;
-	private LocalDate releaseDate;
-	private LocalDate updateDate;
-	private Map<String, Set<String>> keyValues;
-	private Map<String, Map<String, String>> ontologyTerms;
-	private Map<String, Map<String, String>> units;
-
+	
 	private MongoSample() {
 		super();
-	}
-
-	@Override
-	public String getAccession() {
-		return accession;
-	}
-
-	@Override
-	public String getName() {
-		return name;
-	}
-
-	public LocalDate getReleaseDate() {
-		return releaseDate;
-	}
-
-	@Override
-	public LocalDate getUpdateDate() {
-		return updateDate;
-	}
-
-	@Override
-	public Set<String> getAttributeTypes() {
-		return keyValues.keySet();
-	}
-
-	@Override
-	public Set<String> getAttributeValues(String type) {
-		return keyValues.get(type);
-	}
-
-	@Override
-	public String getAttributeUnit(String type, String value) {
-		if (!units.containsKey(type)) {
-			return null;
-		}
-		if (!units.get(type).containsKey(value)) {
-			return null;
-		}
-		return units.get(type).get(value);
-	}
-
-	@Override
-	public String getAttributeOntologyTerm(String type, String value) {
-		if (!ontologyTerms.containsKey(type)) {
-			return null;
-		}
-		if (!ontologyTerms.get(type).containsKey(value)) {
-			return null;
-		}
-		return ontologyTerms.get(type).get(value);
 	}
 
 	@Override
@@ -127,7 +66,7 @@ public class MongoSample implements Sample {
 		}
 	}
 
-	public static MongoSample createFrom(Sample source) {
+	public static MongoSample createFrom(Sample source) {		
 		MongoSample sample = new MongoSample();
 		sample.accession = source.getAccession();
 		sample.name = source.getName();
