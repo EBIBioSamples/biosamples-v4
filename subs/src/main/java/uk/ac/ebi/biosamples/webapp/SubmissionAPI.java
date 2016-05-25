@@ -45,6 +45,8 @@ public class SubmissionAPI {
 			throw new AlreadySubmittedException();
 		}
 
+		//TODO set the update date to todays date?
+		
 		// create the new record
 		MongoSample newSample = MongoSample.createFrom(sample);
 
@@ -70,6 +72,8 @@ public class SubmissionAPI {
 		if (oldSample == null) {
 			throw new NotSubmittedException();
 		}
+		
+		//TODO set the update date to todays date?
 
 		// flag the old record as archived
 		oldSample.doArchive();
