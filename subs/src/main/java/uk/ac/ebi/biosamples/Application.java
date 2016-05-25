@@ -11,16 +11,6 @@ import org.springframework.messaging.converter.MessageConverter;
 @SpringBootApplication
 public class Application {
 
-	@Bean
-	public Queue queue() {
-		return new Queue(Messaging.queueToBeLoaded, true);
-	}
-	
-	@Bean
-	public MessageConverter messageConverter() {
-		return new MappingJackson2MessageConverter();
-	}
-
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);
 	}

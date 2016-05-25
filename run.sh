@@ -53,17 +53,20 @@ echo "1s"; sleep 1
 
 
 #POST to subs
-curl -X POST -H "Content-Type: application/json" --data '@models/src/test/resources/TEST1.json' "http://localhost:8080/samples"
+curl -X POST -H "Content-Type: application/json" --data '@models/core/src/test/resources/TEST1.json' "http://localhost:8080/samples"
 echo
 
 #PUT to subs
-curl -X PUT -H "Content-Type: application/json" --data '@models/src/test/resources/TEST1.json' "http://localhost:8080/samples"
+curl -X PUT -H "Content-Type: application/json" --data '@models/core/src/test/resources/TEST1.json' "http://localhost:8080/samples"
 echo
 
 #while true; do THING; done;
 
 #wait for user to interact with the system before carrying on
 read -p "press return to continue"
+
+#http://localhost:15672/#/queues/%2F/biosamples.tobeloaded
+#http://localhost:28017
 
 #Stop java procs
 kill $PID_SUBS $PID_LOADER

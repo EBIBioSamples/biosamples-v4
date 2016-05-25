@@ -22,6 +22,7 @@
 
 	<modules>
 		<module>models</module>
+		<module>messaging</module>
 		<module>subs</module>
 		<module>loader</module>
 		<module>solr</module>

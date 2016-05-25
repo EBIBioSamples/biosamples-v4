@@ -18,23 +18,9 @@
 		</dependency>
 		<dependency>
 			<groupId>bsd2017</groupId>			
-			<artifactId>models-jpa</artifactId>
+			<artifactId>messaging</artifactId>
 			<version>${bsd2017.version}</version>
 		</dependency>
-		
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-solr</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-amqp</artifactId>
-        </dependency>
-		
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-        </dependency>
 	</dependencies>
 
 
