@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import uk.ac.ebi.biosamples.models.Messaging;
+import uk.ac.ebi.biosamples.Messaging;
 import uk.ac.ebi.biosamples.models.MongoSample;
 import uk.ac.ebi.biosamples.models.Sample;
 import uk.ac.ebi.biosamples.models.SimpleSample;
@@ -23,14 +23,14 @@ public class SubmissionAPI {
 
 	@Autowired
 	private MongoSampleRepository mongoSampleRepo;
-	
-	//@Autowired
+
+	// @Autowired
 	private RabbitMessagingTemplate rabbitTemplate;
-	
+
 	@Autowired
 	public SubmissionAPI(RabbitMessagingTemplate rabbitTemplate, MessageConverter messageConverter) {
-        this.rabbitTemplate = rabbitTemplate;
-        this.rabbitTemplate.setMessageConverter(messageConverter);		
+		this.rabbitTemplate = rabbitTemplate;
+		this.rabbitTemplate.setMessageConverter(messageConverter);
 	}
 
 	@RequestMapping(value = "/samples", method = RequestMethod.POST)

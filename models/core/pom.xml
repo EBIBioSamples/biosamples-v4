@@ -2,31 +2,30 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>subs</artifactId>
-	<packaging>war</packaging>
+	<artifactId>models-core</artifactId>
+	<packaging>jar</packaging>
 
 	<parent>
 		<groupId>bsd2017</groupId>
 		<artifactId>bsd2017</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
+		<relativePath>../../</relativePath>
 	</parent>
 
 	<dependencies>
 		<dependency>
-			<groupId>bsd2017</groupId>			
-			<artifactId>models-mongo</artifactId>
-			<version>${bsd2017.version}</version>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-core</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-rest</artifactId>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-annotations</artifactId>
 		</dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-amqp</artifactId>
-        </dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+		</dependency>
 	</dependencies>
-
 
 	<build>
 		<plugins>
@@ -38,10 +37,6 @@
 				<configuration>
 					<compilerArgument>-parameters</compilerArgument>
 				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
 		</plugins>
 	</build>

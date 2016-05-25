@@ -3,7 +3,8 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>models</artifactId>
-	<packaging>jar</packaging>
+
+	<packaging>pom</packaging>
 
 	<parent>
 		<groupId>bsd2017</groupId>
@@ -11,32 +12,10 @@
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 
-	<dependencies>
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-annotations</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
-		</dependency>
-	</dependencies>
-
-	<build>
-		<plugins>
-			<!-- Need to pass this argument to the compiler so that custom repository 
-				searches work -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<compilerArgument>-parameters</compilerArgument>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
+	<modules>
+		<module>core</module>
+		<module>jpa</module>
+		<module>mongo</module>
+		<module>solr</module>
+	</modules>
 </project>

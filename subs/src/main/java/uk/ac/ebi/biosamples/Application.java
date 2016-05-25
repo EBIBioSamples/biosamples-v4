@@ -10,8 +10,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.converter.MessageConverter;
 
-import uk.ac.ebi.biosamples.models.Messaging;
-
 @SpringBootApplication
 public class Application {
 
@@ -19,7 +17,7 @@ public class Application {
 	public Queue queue() {
 		return new Queue(Messaging.queueToBeLoaded, true);
 	}
-
+/*
 	@Bean
 	public TopicExchange exchange() {
 		return new TopicExchange(Messaging.exchangeBioSamples);
@@ -29,7 +27,7 @@ public class Application {
 	public Binding binding(Queue queue, TopicExchange exchange) {
 		return BindingBuilder.bind(queue).to(exchange).with(Messaging.queueToBeLoaded);
 	}
-
+*/
 	@Bean
 	public MessageConverter messageConverter() {
 		return new MappingJackson2MessageConverter();
