@@ -7,26 +7,39 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
-@Table(uniqueConstraints = @UniqueConstraint(columnNames = { "TYPE", "VALUE", "UNIT", "ONTOLOGYTERM" }) )
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = { "TYPE", "VALUE", "UNIT", "ONTOLOGYTERM" }) ) 
+//cant create unique key on blobs in MySQL
 @Entity
-public class JPAattribute {
+public class JPAAttribute {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name = "ID", unique = true, nullable = false)
 	private long id;
 
 	@Column(name = "TYPE", unique = false, nullable = false)
 	private String type;
 	@Column(name = "VALUE", unique = false, nullable = false)
+	@Lob
 	private String value;
 	@Column(name = "UNIT", unique = false, nullable = true)
 	private String unit;
 	@Column(name = "ONTOLOGYTERM", unique = false, nullable = true)
 	private String ontologyTerm;
 
+
+	public long getId() {
+		return id;
+	}
+
+	public void setId(long id) {
+		this.id = id;
+	}
+	
 	public String getType() {
 		return type;
 	}
@@ -67,7 +80,7 @@ public class JPAattribute {
 			return true;
 		if (!(other instanceof SimpleSample))
 			return false;
-		JPAattribute that = (JPAattribute) other;
+		JPAAttribute that = (JPAAttribute) other;
 		if (Objects.equals(this.type, that.value) && Objects.equals(this.unit, that.unit)
 				&& Objects.equals(this.ontologyTerm, that.ontologyTerm)) {
 			return true;

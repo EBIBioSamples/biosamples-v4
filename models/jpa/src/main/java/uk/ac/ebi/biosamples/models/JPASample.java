@@ -12,6 +12,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinTable;
+import javax.persistence.JoinColumn;  
 import javax.persistence.ManyToMany;
 
 @Entity
@@ -19,19 +21,20 @@ public class JPASample implements Sample {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name = "ID", unique = true, nullable = false)
 	private long id;
 
 	@Column(name = "ACCESSION", unique = true, nullable = false)
 	private String accession;
 	@Column(name = "NAME", unique = false, nullable = false)
 	private String name;
-	@Column(name = "RELEASE", unique = false, nullable = false)
+	@Column(name = "RELEASEDATE", unique = false, nullable = false)
 	private LocalDate releaseDate;
-	@Column(name = "UPDATE", unique = false, nullable = false)
+	@Column(name = "UPDATEDATE", unique = false, nullable = false)
 	private LocalDate updateDate;
 
-	@ManyToMany(cascade = CascadeType.PERSIST)
-	private Set<JPAattribute> attributes;
+	@ManyToMany  
+	private Set<JPAAttribute> attributes;
 
 	private JPASample() {
 		super();
@@ -43,6 +46,10 @@ public class JPASample implements Sample {
 
 	public void setId(long id) {
 		this.id = id;
+	}
+
+	public Set<JPAAttribute> getAttributes() {
+		return attributes;
 	}
 
 	@Override
@@ -80,7 +87,7 @@ public class JPASample implements Sample {
 
 	@Override
 	public String getAttributeUnit(String type, String value) {
-		Optional<JPAattribute> attr = attributes.stream().filter(a -> a.getType().equals(type))
+		Optional<JPAAttribute> attr = attributes.stream().filter(a -> a.getType().equals(type))
 				.filter(a -> a.getValue().equals(value)).findFirst();
 		if (attr.isPresent()) {
 			return attr.get().getUnit();
@@ -91,7 +98,7 @@ public class JPASample implements Sample {
 
 	@Override
 	public String getAttributeOntologyTerm(String type, String value) {
-		Optional<JPAattribute> attr = attributes.stream().filter(a -> a.getType().equals(type))
+		Optional<JPAAttribute> attr = attributes.stream().filter(a -> a.getType().equals(type))
 				.filter(a -> a.getValue().equals(value)).findFirst();
 		if (attr.isPresent()) {
 			return attr.get().getOntologyTerm();
@@ -126,22 +133,43 @@ public class JPASample implements Sample {
 		JPASample sample = new JPASample();
 		sample.accession = source.getAccession();
 		sample.name = source.getName();
+		//limit name length to 255 characters so it fits in db
+		if (sample.name.length() > 255) {
+			sample.name = sample.name.substring(0, 252)+"...";
+		}
 		sample.updateDate = source.getUpdateDate();
 		sample.releaseDate = source.getReleaseDate();
 
 		sample.attributes = new HashSet<>();
 		for (String type : source.getAttributeTypes()) {
 			for (String value : source.getAttributeValues(type)) {
-				JPAattribute attrib = new JPAattribute();
+				
+				String unit = source.getAttributeUnit(type, value);
+				String ontologyTerm = source.getAttributeOntologyTerm(type, value);
+				
+				//limit type length to 255 characters so it fits in db
+				if (type.length() > 255) {
+					type = type.substring(0, 252)+"...";
+				}
+				//limit unit length to 255 characters so it fits in db
+				if (unit != null && unit.length() > 255) {
+					unit = unit.substring(0, 252)+"...";
+				}
+				//limit ontologyTerm length to 255 characters so it fits in db
+				if (ontologyTerm != null && ontologyTerm.length() > 255) {
+					ontologyTerm = ontologyTerm.substring(0, 252)+"...";
+				}
+				
+				JPAAttribute attrib = new JPAAttribute();
 				attrib.setType(type);
 				attrib.setValue(value);
 
-				if (source.getAttributeUnit(type, value) != null) {
-					attrib.setUnit(source.getAttributeUnit(type, value));
+				if (unit != null) {
+					attrib.setUnit(unit);
 				}
 
-				if (source.getAttributeOntologyTerm(type, value) != null) {
-					attrib.setOntologyTerm(source.getAttributeOntologyTerm(type, value));
+				if (ontologyTerm != null) {
+					attrib.setOntologyTerm(ontologyTerm);
 				}
 				sample.attributes.add(attrib);
 			}
