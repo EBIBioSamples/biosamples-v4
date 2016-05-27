@@ -106,7 +106,7 @@ public class Runner implements ApplicationRunner {
 						recieveForLoading(sample);
 					} catch (Exception e) {
 						//problem processing it, put it back on the queue?
-						rabbitTemplate.convertAndSend(Messaging.queueToBeLoaded, SimpleSample.class);
+						rabbitTemplate.convertAndSend(Messaging.queueToBeLoaded, sample);
 					}
 				} else {
 					busy.set(false);

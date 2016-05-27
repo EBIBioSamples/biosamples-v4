@@ -44,26 +44,26 @@ public class MessageConfig {
     //bind for loading exchange
     
 	@Bean
-	public Binding bindingLoading(Queue queue, TopicExchange exchange) {
+	public Binding bindingLoading() {
 		return BindingBuilder.bind(getQueueToBeLoaded()).to(getExchangeForLoading());
 	}
 	@Bean
-	public Binding bindingLoadingSolr(Queue queue, TopicExchange exchange) {
+	public Binding bindingLoadingSolr() {
 		return BindingBuilder.bind(getQueueToBeIndexedSolr()).to(getExchangeForLoading());
 	}
 	@Bean
-	public Binding bindingLoadingNeo4J(Queue queue, TopicExchange exchange) {
+	public Binding bindingLoadingNeo4J() {
 		return BindingBuilder.bind(getQueueToBeIndexedNeo4J()).to(getExchangeForLoading());
 	}
 
 	//bind for indexing exchange
 	
 	@Bean
-	public Binding bindingIndexingSolr(Queue queue, TopicExchange exchange) {
+	public Binding bindingIndexingSolr() {
 		return BindingBuilder.bind(getQueueToBeIndexedSolr()).to(getExchangeForIndexing());
 	}
 	@Bean
-	public Binding bindingIndexingNeo4J(Queue queue, TopicExchange exchange) {
+	public Binding bindingIndexingNeo4J() {
 		return BindingBuilder.bind(getQueueToBeIndexedNeo4J()).to(getExchangeForIndexing());
 	}
 	

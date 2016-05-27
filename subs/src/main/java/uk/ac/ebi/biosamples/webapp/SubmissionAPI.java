@@ -31,6 +31,7 @@ public class SubmissionAPI {
 	public SubmissionAPI(RabbitMessagingTemplate rabbitTemplate, MessageConverter messageConverter) {
 		this.rabbitTemplate = rabbitTemplate;
 		this.rabbitTemplate.setMessageConverter(messageConverter);
+		//this.rabbitTemplate.setDefaultDestination(Messaging.exchangeForLoading);
 	}
 
 	@RequestMapping(value = "/samples", method = RequestMethod.POST)
@@ -57,7 +58,7 @@ public class SubmissionAPI {
 		response.setStatus(HttpServletResponse.SC_CREATED);
 
 		// put in loading message queue
-		rabbitTemplate.convertAndSend(Messaging.queueToBeLoaded, SimpleSample.createFrom(newSample));
+		rabbitTemplate.convertAndSend(Messaging.exchangeForLoading, "", SimpleSample.createFrom(newSample));
 
 		return newSample;
 	}
@@ -73,6 +74,8 @@ public class SubmissionAPI {
 			throw new NotSubmittedException();
 		}
 		
+		//TODO compare the sample to the old version, only accept a real change
+		
 		//TODO set the update date to todays date?
 
 		// flag the old record as archived
@@ -86,7 +89,7 @@ public class SubmissionAPI {
 		oldSample = mongoSampleRepo.save(oldSample);
 
 		// put in loading message queue
-		rabbitTemplate.convertAndSend(Messaging.queueToBeLoaded, SimpleSample.createFrom(newSample));
+		rabbitTemplate.convertAndSend(Messaging.exchangeForLoading, "", SimpleSample.createFrom(newSample));
 
 		return newSample;
 	}
