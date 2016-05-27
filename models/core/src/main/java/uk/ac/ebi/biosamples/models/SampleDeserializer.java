@@ -33,7 +33,9 @@ public class SampleDeserializer extends JsonDeserializer<Sample> {
 		Map<String, Set<String>> keyValues = new HashMap<>();
 		Map<String, Map<String, String>> ontologyTerms = new HashMap<>();
 		Map<String, Map<String, String>> units = new HashMap<>();
-
+		
+		Map<String, Set<String>> relationships  = new HashMap<>();
+		
 		Iterator<JsonNode> attributes = node.get("attributes").elements();
 		while (attributes.hasNext()) {
 			JsonNode attribute = attributes.next();
@@ -73,7 +75,21 @@ public class SampleDeserializer extends JsonDeserializer<Sample> {
 			}
 		}
 
-		return SimpleSample.createFrom(name, accession, updateDate, releaseDate, keyValues, ontologyTerms, units);
+		Iterator<JsonNode> relationshipNodes = node.get("relationships").elements();
+		while (relationshipNodes.hasNext()) {
+			JsonNode relationship = relationshipNodes.next();
+
+			String type = relationship.get("type").asText();
+			String target = relationship.get("target").asText();
+
+
+			if (!relationships.containsKey(type)) {
+				relationships.put(type, new HashSet<>());
+			}
+			relationships.get(type).add(target);
+		}
+
+		return SimpleSample.createFrom(name, accession, updateDate, releaseDate, keyValues, ontologyTerms, units, relationships);
 	}
 
 }

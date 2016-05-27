@@ -23,7 +23,7 @@ public class MongoSampleSerializer extends JsonSerializer<MongoSample> {
 		gen.writeStringField("release", sample.getReleaseDate().format(DateTimeFormatter.ISO_LOCAL_DATE));
 		
 		gen.writeArrayFieldStart("attributes");
-		for (String key : sample.getAttributeTypes()) {
+		for (String key : sample.getAttributeKeys()) {
 			for (String value : sample.getAttributeValues(key)) {
 				gen.writeStartObject();
 				gen.writeStringField("key", key);

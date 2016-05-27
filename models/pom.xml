@@ -17,5 +17,6 @@
 		<module>jpa</module>
 		<module>mongo</module>
 		<module>solr</module>
+		<module>neo4j</module>
 	</modules>
 </project>

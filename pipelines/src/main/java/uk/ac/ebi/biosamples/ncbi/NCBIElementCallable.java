@@ -42,19 +42,31 @@ public class NCBIElementCallable implements Callable<Void> {
 	// TODO ontology terms? taxonomy?
 	// TODO units?
 
+	private Map<String, Set<String>> relationships = new HashMap<>();
+
 	public NCBIElementCallable(Element sampleElem) {
 		this.sampleElem = sampleElem;
 	}
 
-	private void addAttribute(String type, String value) {
-		type = type.trim();
+	private void addAttribute(String key, String value) {
+		key = key.trim();
 		value = value.trim();
 		// TODO handle odd characters
-		if (!keyValues.containsKey(type)) {
-			keyValues.put(type, new HashSet<>());
+		if (!keyValues.containsKey(key)) {
+			keyValues.put(key, new HashSet<>());
 		}
-		keyValues.get(type).add(value);
+		keyValues.get(key).add(value);
 	}
+
+	private void addRelationship(String type, String value) {
+		type = type.trim();
+		value = value.trim();
+		if (!relationships.containsKey(type)) {
+			relationships.put(type, new HashSet<>());
+		}
+		relationships.get(type).add(value);
+	}
+
 
 	@Override
 	public Void call() throws Exception {
@@ -113,12 +125,18 @@ public class NCBIElementCallable implements Callable<Void> {
 		// handle attributes
 		for (Element attrElem : xmlUtils.getChildrenByName(xmlUtils.getChildByName(sampleElem, "Attributes"),
 				"Attribute")) {
-			String type = attrElem.attributeValue("display_name");
-			if (type == null || type.length() == 0) {
-				type = attrElem.attributeValue("attribute_name");
+			String key = attrElem.attributeValue("display_name");
+			if (key == null || key.length() == 0) {
+				key = attrElem.attributeValue("attribute_name");
 			}
 			String value = attrElem.getTextTrim();
-			addAttribute(type, value);
+			if (value.matches("SAM[END]A?[0-9]+")) {
+				//value is a sample accession, assume its a relationship
+				addRelationship(key, value);
+			} else {
+				//its an attribute
+				addAttribute(key, value);
+			}
 		}
 
 		// handle model and packages
@@ -138,7 +156,7 @@ public class NCBIElementCallable implements Callable<Void> {
 			latestDate = releaseDate;
 		}
 		
-		SimpleSample sample = SimpleSample.createFrom(name, accession, updateDate, releaseDate, keyValues, new HashMap<>(), new HashMap<>());
+		SimpleSample sample = SimpleSample.createFrom(name, accession, updateDate, releaseDate, keyValues, new HashMap<>(), new HashMap<>(),relationships);
 		
 		log.info("POSTing "+accession);
 		

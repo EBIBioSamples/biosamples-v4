@@ -76,7 +76,7 @@ public class MongoSample extends SimpleSample {
 		sample.units = new HashMap<>();
 		sample.ontologyTerms = new HashMap<>();
 
-		for (String type : source.getAttributeTypes()) {
+		for (String type : source.getAttributeKeys()) {
 			sample.keyValues.put(type, new HashSet<>());
 			for (String value : source.getAttributeValues(type)) {
 				sample.keyValues.get(type).add(value);

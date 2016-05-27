@@ -28,6 +28,7 @@ public class SimpleSample implements Sample {
 	protected Map<String, Set<String>> keyValues;
 	protected Map<String, Map<String, String>> ontologyTerms;
 	protected Map<String, Map<String, String>> units;
+	protected Map<String, Set<String>> relationships;
 
 	protected SimpleSample() {
 	}
@@ -52,7 +53,7 @@ public class SimpleSample implements Sample {
 	}
 
 	@Override
-	public Set<String> getAttributeTypes() {
+	public Set<String> getAttributeKeys() {
 		return keyValues.keySet();
 	}
 
@@ -84,6 +85,16 @@ public class SimpleSample implements Sample {
 	}
 
 	@Override
+	public Set<String> getRelationshipTypes() {
+		return relationships.keySet();
+	}
+
+	@Override
+	public Set<String> getRelationshipTargets(String type) {
+		return relationships.get(type);
+	}
+
+	@Override
 	public boolean equals(Object other) {
 		if (other == null)
 			return false;
@@ -96,7 +107,8 @@ public class SimpleSample implements Sample {
 				&& Objects.equals(this.updateDate, that.updateDate)
 				&& Objects.equals(this.releaseDate, that.releaseDate)
 				&& Objects.equals(this.keyValues, that.keyValues) && Objects.equals(this.units, that.units)
-				&& Objects.equals(this.ontologyTerms, that.ontologyTerms)) {
+				&& Objects.equals(this.ontologyTerms, that.ontologyTerms)
+				&& Objects.equals(this.relationships, that.relationships)) {
 			return true;
 		} else {
 			return false;
@@ -105,7 +117,7 @@ public class SimpleSample implements Sample {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(name, accession, updateDate, releaseDate, keyValues, units, ontologyTerms);
+		return Objects.hash(name, accession, updateDate, releaseDate, keyValues, units, ontologyTerms, relationships);
 	}
 
 	public static SimpleSample createFrom(Sample source) {
@@ -118,7 +130,7 @@ public class SimpleSample implements Sample {
 		sample.units = new HashMap<>();
 		sample.ontologyTerms = new HashMap<>();
 
-		for (String type : source.getAttributeTypes()) {
+		for (String type : source.getAttributeKeys()) {
 			sample.keyValues.put(type, new HashSet<>());
 			for (String value : source.getAttributeValues(type)) {
 				sample.keyValues.get(type).add(value);
@@ -143,7 +155,7 @@ public class SimpleSample implements Sample {
 	}
 
 	public static SimpleSample createFrom(String name, String accession, LocalDate updateDate, LocalDate releaseDate, Map<String, Set<String>> keyValues,
-			Map<String, Map<String, String>> ontologyTerms, Map<String, Map<String, String>> units) {
+			Map<String, Map<String, String>> ontologyTerms, Map<String, Map<String, String>> units, Map<String, Set<String>> relationships) {
 		SimpleSample simpleSample = new SimpleSample();
 		simpleSample.accession = accession;
 		simpleSample.name = name;
@@ -152,6 +164,7 @@ public class SimpleSample implements Sample {
 		simpleSample.keyValues = keyValues;
 		simpleSample.ontologyTerms = ontologyTerms;
 		simpleSample.units = units;
+		simpleSample.relationships = relationships;
 		return simpleSample;
 	}
 }

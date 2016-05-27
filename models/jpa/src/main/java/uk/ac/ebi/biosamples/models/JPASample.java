@@ -36,6 +36,9 @@ public class JPASample implements Sample {
 	@ManyToMany  
 	private Set<JPAAttribute> attributes;
 
+	@ManyToMany  
+	private Set<JPARelationship> relationships;
+
 	private JPASample() {
 		super();
 	}
@@ -72,22 +75,22 @@ public class JPASample implements Sample {
 	}
 
 	@Override
-	public Set<String> getAttributeTypes() {
+	public Set<String> getAttributeKeys() {
 		Set<String> toReturn = new HashSet<String>();
-		attributes.stream().forEach(a -> toReturn.add(a.getType()));
+		attributes.stream().forEach(a -> toReturn.add(a.getKey()));
 		return toReturn;
 	}
 
 	@Override
-	public Set<String> getAttributeValues(String type) {
+	public Set<String> getAttributeValues(String key) {
 		Set<String> toReturn = new HashSet<String>();
-		attributes.stream().filter(a -> a.getType().equals(type)).forEach(a -> toReturn.add(a.getValue()));
+		attributes.stream().filter(a -> a.getKey().equals(key)).forEach(a -> toReturn.add(a.getValue()));
 		return toReturn;
 	}
 
 	@Override
-	public String getAttributeUnit(String type, String value) {
-		Optional<JPAAttribute> attr = attributes.stream().filter(a -> a.getType().equals(type))
+	public String getAttributeUnit(String key, String value) {
+		Optional<JPAAttribute> attr = attributes.stream().filter(a -> a.getKey().equals(key))
 				.filter(a -> a.getValue().equals(value)).findFirst();
 		if (attr.isPresent()) {
 			return attr.get().getUnit();
@@ -97,14 +100,28 @@ public class JPASample implements Sample {
 	}
 
 	@Override
-	public String getAttributeOntologyTerm(String type, String value) {
-		Optional<JPAAttribute> attr = attributes.stream().filter(a -> a.getType().equals(type))
+	public String getAttributeOntologyTerm(String key, String value) {
+		Optional<JPAAttribute> attr = attributes.stream().filter(a -> a.getKey().equals(key))
 				.filter(a -> a.getValue().equals(value)).findFirst();
 		if (attr.isPresent()) {
 			return attr.get().getOntologyTerm();
 		} else {
 			return null;
 		}
+	}
+
+	@Override
+	public Set<String> getRelationshipTypes() {
+		Set<String> toReturn = new HashSet<String>();
+		relationships.stream().forEach(r -> toReturn.add(r.getType()));
+		return toReturn;
+	}
+
+	@Override
+	public Set<String> getRelationshipTargets(String type) {
+		Set<String> toReturn = new HashSet<String>();
+		relationships.stream().filter(r -> r.getType().equals(type)).forEach(r -> toReturn.add(r.getTarget()));
+		return toReturn;
 	}
 
 	@Override
@@ -117,7 +134,8 @@ public class JPASample implements Sample {
 			return false;
 		JPASample that = (JPASample) other;
 		if (Objects.equals(this.name, that.name) && Objects.equals(this.accession, that.accession)
-				&& Objects.equals(this.attributes, that.attributes)) {
+				&& Objects.equals(this.attributes, that.attributes)
+				&& Objects.equals(this.relationships, that.relationships)) {
 			return true;
 		} else {
 			return false;
@@ -126,7 +144,7 @@ public class JPASample implements Sample {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(name, accession, attributes);
+		return Objects.hash(name, accession, attributes, relationships);
 	}
 
 	public static JPASample createFrom(Sample source) {
@@ -141,7 +159,7 @@ public class JPASample implements Sample {
 		sample.releaseDate = source.getReleaseDate();
 
 		sample.attributes = new HashSet<>();
-		for (String type : source.getAttributeTypes()) {
+		for (String type : source.getAttributeKeys()) {
 			for (String value : source.getAttributeValues(type)) {
 				
 				String unit = source.getAttributeUnit(type, value);
@@ -161,7 +179,7 @@ public class JPASample implements Sample {
 				}
 				
 				JPAAttribute attrib = new JPAAttribute();
-				attrib.setType(type);
+				attrib.setKey(type);
 				attrib.setValue(value);
 
 				if (unit != null) {

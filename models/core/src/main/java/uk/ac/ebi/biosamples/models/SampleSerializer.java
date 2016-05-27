@@ -21,7 +21,7 @@ public class SampleSerializer extends JsonSerializer<Sample> {
 		gen.writeStringField("release", sample.getReleaseDate().format(DateTimeFormatter.ISO_LOCAL_DATE));
 		
 		gen.writeArrayFieldStart("attributes");
-		for (String key : sample.getAttributeTypes()) {
+		for (String key : sample.getAttributeKeys()) {
 			for (String value : sample.getAttributeValues(key)) {
 				gen.writeStartObject();
 				gen.writeStringField("key", key);
@@ -36,6 +36,18 @@ public class SampleSerializer extends JsonSerializer<Sample> {
 			}
 		}
 		gen.writeEndArray();
+
+		gen.writeArrayFieldStart("relationships");
+		for (String type : sample.getRelationshipTypes()) {
+			for (String target : sample.getRelationshipTargets(type)) {
+				gen.writeStartObject();
+				gen.writeStringField("type", type);
+				gen.writeStringField("target", target);
+				gen.writeEndObject();				
+			}
+		}
+		gen.writeEndArray();
+		
 		gen.writeEndObject();
 
 	}

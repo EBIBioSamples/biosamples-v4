@@ -17,11 +17,9 @@ import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import uk.ac.ebi.biosamples.models.JPAAttribute;
-import uk.ac.ebi.biosamples.models.JPASample;
+import uk.ac.ebi.biosamples.models.NeoSample;
 import uk.ac.ebi.biosamples.models.SimpleSample;
-import uk.ac.ebi.biosamples.repos.JPAAttributeRepository;
-import uk.ac.ebi.biosamples.repos.JPASampleRepository;
+import uk.ac.ebi.biosamples.repos.NeoSampleRepository;
 
 @Component
 public class Runner implements ApplicationRunner {
@@ -31,10 +29,8 @@ public class Runner implements ApplicationRunner {
 	private RabbitMessagingTemplate rabbitTemplate;
 
 	@Autowired
-	private JPASampleRepository jpaSampleRepository;
+	private NeoSampleRepository neoSampleRepository;
 
-	@Autowired
-	private JPAAttributeRepository jpaAttributeRepository;
 
 	public Runner(RabbitMessagingTemplate rabbitTemplate, MessageConverter messageConverter) {
 		this.rabbitTemplate = rabbitTemplate;
@@ -43,49 +39,13 @@ public class Runner implements ApplicationRunner {
 
 	@Transactional
 	public void recieveForLoading(SimpleSample sample) throws Exception {
-		log.info("Recieved " + sample.getAccession());
-		// convert it to the right object type
-		JPASample jpaSample = JPASample.createFrom(sample);
-
-		JPASample oldSample = jpaSampleRepository.findByAccession(jpaSample.getAccession());
-		if (oldSample != null) {
-			jpaSample.setId(oldSample.getId());
-			log.info("Updating sample " + sample.getAccession() + " (" + oldSample.getId() + ")");
-		} else {
-			// save the new one
-			log.info("Saving sample " + sample.getAccession());
+		NeoSample neoSample = neoSampleRepository.findByAccession(sample.getAccession());
+		if (neoSample == null) {
+			//make a new one
+			neoSample = new NeoSample(sample.getAccession());
 		}
-
-		// for each attribute, get lowest existing ids (if any)
-		for (JPAAttribute attribute : jpaSample.getAttributes()) {
-			
-			String type = attribute.getKey();
-			String value = attribute.getValue();
-			String unit = attribute.getUnit();
-			String ontologyTerm = attribute.getOntologyTerm();
-			
-			Long oldAttributeId = null;
-			
-			//TODO check old sample if present
-			
-			Iterable<JPAAttribute> oldAttributes = jpaAttributeRepository.findByTypeAndValueAndUnitAndOntologyTerm(type, value, unit, ontologyTerm);
-			
-			for(JPAAttribute oldAttribute : oldAttributes) {
-				if (oldAttributeId == null || oldAttribute.getId() < oldAttributeId) {
-					oldAttributeId = oldAttribute.getId();
-				}
-			}
-			
-			if (oldAttributeId != null) {
-				log.info("Got old attribute ("+oldAttributeId+") for "+type+" "+value+" "+unit+" "+ontologyTerm);
-				attribute.setId(oldAttributeId);
-			}
-			jpaAttributeRepository.save(attribute);
-		}
-
-		//TODO relationships
 		
-		jpaSample = jpaSampleRepository.save(jpaSample);
+		neoSample = neoSampleRepository.save(neoSample);
 	}
 
 	private class RunRabbit implements Runnable {

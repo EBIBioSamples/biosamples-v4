@@ -11,7 +11,7 @@ import javax.persistence.Lob;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
-@Table(uniqueConstraints = @UniqueConstraint(columnNames = { "TYPE", "VALUE", "UNIT", "ONTOLOGYTERM" }) ) 
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = { "KEY", "VALUE", "UNIT", "ONTOLOGYTERM" }) ) 
 //cant create unique key on blobs in MySQL
 @Entity
 public class JPAAttribute {
@@ -21,8 +21,8 @@ public class JPAAttribute {
 	@Column(name = "ID", unique = true, nullable = false)
 	private long id;
 
-	@Column(name = "TYPE", unique = false, nullable = false)
-	private String type;
+	@Column(name = "KEY", unique = false, nullable = false)
+	private String key;
 	@Column(name = "VALUE", unique = false, nullable = false)
 	@Lob
 	private String value;
@@ -40,12 +40,12 @@ public class JPAAttribute {
 		this.id = id;
 	}
 	
-	public String getType() {
-		return type;
+	public String getKey() {
+		return key;
 	}
 
-	public void setType(String type) {
-		this.type = type;
+	public void setKey(String key) {
+		this.key = key;
 	}
 
 	public String getValue() {
@@ -81,7 +81,7 @@ public class JPAAttribute {
 		if (!(other instanceof SimpleSample))
 			return false;
 		JPAAttribute that = (JPAAttribute) other;
-		if (Objects.equals(this.type, that.value) && Objects.equals(this.unit, that.unit)
+		if (Objects.equals(this.key, that.value) && Objects.equals(this.unit, that.unit)
 				&& Objects.equals(this.ontologyTerm, that.ontologyTerm)) {
 			return true;
 		} else {
@@ -91,7 +91,7 @@ public class JPAAttribute {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(type, value, unit, ontologyTerm);
+		return Objects.hash(key, value, unit, ontologyTerm);
 	}
 
 }

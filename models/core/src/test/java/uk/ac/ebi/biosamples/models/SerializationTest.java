@@ -37,6 +37,8 @@ public class SerializationTest {
 		Map<String, Map<String, String>> ontologyTerms = new HashMap<>();
 		Map<String, Map<String, String>> units = new HashMap<>();
 
+		Map<String, Set<String>> relationships  = new HashMap<>();
+
 		keyValues.put("organism", new HashSet<>());
 		keyValues.get("organism").add("Homo sapiens");
 		ontologyTerms.put("organism", new HashMap<>());
@@ -50,8 +52,11 @@ public class SerializationTest {
 		keyValues.put("organism part", new HashSet<>());
 		keyValues.get("organism part").add("lung");
 		keyValues.get("organism part").add("heart");
+		
+		relationships.put("derived from", new HashSet<>());
+		relationships.get("derived from").add("TEST2");
 
-		return SimpleSample.createFrom(name, accession, update, release, keyValues, ontologyTerms, units);
+		return SimpleSample.createFrom(name, accession, update, release, keyValues, ontologyTerms, units, relationships);
 	}
 
 	@Test
