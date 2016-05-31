@@ -23,10 +23,8 @@
 	<modules>
 		<module>models</module>
 		<module>messaging</module>
-		<module>subs</module>
-		<module>loader</module>
-		<module>solr</module>
-		<module>neo4j</module>
+		<module>agents</module>
+		<module>webapps</module>
 		<module>pipelines</module>
 	</modules>
 

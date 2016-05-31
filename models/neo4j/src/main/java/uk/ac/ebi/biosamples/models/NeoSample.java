@@ -9,7 +9,7 @@ import java.util.Set;
 import org.neo4j.ogm.annotation.GraphId;
 import org.neo4j.ogm.annotation.Relationship;
 
-@NodeEntity(label="Sample")
+@NodeEntity(label = "Sample")
 public class NeoSample {
 
 	@GraphId
@@ -17,30 +17,17 @@ public class NeoSample {
 
 	@Property
 	private String accession;
-
-	@Relationship(type = "SAME_AS", direction = Relationship.UNDIRECTED)
-	private Set<NeoSample> sameAs;
-
-	@Relationship(type = "DERIVED_TO", direction = Relationship.INCOMING)
-	private Set<NeoSample> derivedTo;
-
-	@Relationship(type = "CHILD_OF", direction = Relationship.OUTGOING)
-	private Set<NeoSample> childOf;
-
-	@Relationship(type = "DERIVED_TO", direction = Relationship.OUTGOING)
-	private Set<NeoSample> derivedFrom;
 	
-	//TODO make this handle any generic relationship type
+	@Relationship(type = "RELATED_TO")
+	private Set<NeoRelationship> relationships;
+
+	// TODO make this handle any generic relationship type
 
 	private NeoSample() {
 	}
-	
+
 	public NeoSample(String accession) {
 		this.accession = accession;
-		this.sameAs = new HashSet<>();
-		this.derivedTo = new HashSet<>();
-		this.childOf = new HashSet<>();
-		this.derivedFrom = new HashSet<>();
 	}
 
 	public Long getId() {
@@ -59,36 +46,13 @@ public class NeoSample {
 		this.accession = accession;
 	}
 
-	public Set<NeoSample> getSameAs() {
-		return sameAs;
+	public Set<NeoRelationship> getRelationships() {
+		return relationships;
 	}
 
-	public void setSameAs(Set<NeoSample> sameAs) {
-		this.sameAs = sameAs;
+	public void setRelationships(Set<NeoRelationship> relationships) {
+		this.relationships = relationships;
 	}
-
-	public Set<NeoSample> getDerivedTo() {
-		return derivedTo;
-	}
-
-	public void setDerivedTo(Set<NeoSample> derivedTo) {
-		this.derivedTo = derivedTo;
-	}
-
-	public Set<NeoSample> getChildren() {
-		return childOf;
-	}
-
-	public void setChildren(Set<NeoSample> children) {
-		this.childOf = children;
-	}
-
-	public Set<NeoSample> getDerivedFrom() {
-		return derivedFrom;
-	}
-
-	public void setDerivedFrom(Set<NeoSample> derivedFrom) {
-		this.derivedFrom = derivedFrom;
-	};
+	
 
 }

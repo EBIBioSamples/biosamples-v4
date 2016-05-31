@@ -1,0 +1,50 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>agents-neo4j</artifactId>
+	<packaging>jar</packaging>
+
+	<parent>
+		<groupId>bsd2017</groupId>
+		<artifactId>bsd2017</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+		<relativePath>../../</relativePath>
+	</parent>
+
+	<dependencies>
+		<dependency>
+			<groupId>bsd2017</groupId>
+			<artifactId>models-neo4j</artifactId>
+			<version>${bsd2017.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>bsd2017</groupId>
+			<artifactId>models-core</artifactId>
+			<version>${bsd2017.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>bsd2017</groupId>
+			<artifactId>messaging</artifactId>
+			<version>${bsd2017.version}</version>
+		</dependency>
+
+
+		<!-- Add the embedded driver to the project -->
+		<!-- <dependency> -->
+		<!-- <groupId>org.neo4j</groupId> -->
+		<!-- <artifactId>neo4j-ogm-embedded-driver</artifactId> -->
+		<!-- <version>${neo4j-ogm.version}</version> -->
+		<!-- </dependency> -->
+	</dependencies>
+
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+</project>

@@ -17,8 +17,10 @@ import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import uk.ac.ebi.biosamples.models.NeoRelationship;
 import uk.ac.ebi.biosamples.models.NeoSample;
 import uk.ac.ebi.biosamples.models.SimpleSample;
+import uk.ac.ebi.biosamples.repos.NeoRelationshipRepository;
 import uk.ac.ebi.biosamples.repos.NeoSampleRepository;
 
 @Component
@@ -30,6 +32,8 @@ public class Runner implements ApplicationRunner {
 
 	@Autowired
 	private NeoSampleRepository neoSampleRepository;
+	@Autowired
+	private NeoRelationshipRepository neoRelRepository;
 
 
 	public Runner(RabbitMessagingTemplate rabbitTemplate, MessageConverter messageConverter) {
@@ -43,6 +47,22 @@ public class Runner implements ApplicationRunner {
 		if (neoSample == null) {
 			//make a new one
 			neoSample = new NeoSample(sample.getAccession());
+			neoSample = neoSampleRepository.save(neoSample);
+		}
+		
+		for (String relType : sample.getRelationshipTypes()) {
+			for (String targetAcc : sample.getRelationshipTargets(relType)) {
+				//convert the target accession into a target object
+				NeoSample targetSample = neoSampleRepository.findByAccession(targetAcc);
+				//if it doesn't exist, create it
+				if (targetSample == null) {
+					targetSample = new NeoSample(targetAcc);
+					targetSample = neoSampleRepository.save(targetSample);
+				}
+				NeoRelationship rel = NeoRelationship.create(neoSample, targetSample, relType);
+				rel = neoRelRepository.save(rel);
+				neoSample.getRelationships().add(rel);
+			}
 		}
 		
 		neoSample = neoSampleRepository.save(neoSample);
@@ -61,14 +81,14 @@ public class Runner implements ApplicationRunner {
 		public void run() {
 			SimpleSample sample;
 			while (!toDie.get()) {
-				sample = rabbitTemplate.receiveAndConvert(Messaging.queueToBeLoaded, SimpleSample.class);
+				sample = rabbitTemplate.receiveAndConvert(Messaging.queueToBeIndexedNeo4J, SimpleSample.class);
 				if (sample != null) {
 					busy.set(true);
 					try {
 						recieveForLoading(sample);
 					} catch (Exception e) {
 						//problem processing it, put it back on the queue?
-						rabbitTemplate.convertAndSend(Messaging.queueToBeLoaded, sample);
+						rabbitTemplate.convertAndSend(Messaging.queueToBeIndexedNeo4J, sample);
 					}
 				} else {
 					busy.set(false);
