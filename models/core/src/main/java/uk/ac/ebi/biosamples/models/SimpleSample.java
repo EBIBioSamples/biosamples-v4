@@ -25,10 +25,10 @@ public class SimpleSample implements Sample {
 	protected String name;
 	protected LocalDate releaseDate;
 	protected LocalDate updateDate;
-	protected Map<String, Set<String>> keyValues;
-	protected Map<String, Map<String, String>> ontologyTerms;
-	protected Map<String, Map<String, String>> units;
-	protected Map<String, Set<String>> relationships;
+	protected Map<String, Set<String>> keyValues = new HashMap<>();
+	protected Map<String, Map<String, String>> ontologyTerms = new HashMap<>();
+	protected Map<String, Map<String, String>> units = new HashMap<>();
+	protected Map<String, Set<String>> relationships = new HashMap<>();
 
 	protected SimpleSample() {
 	}

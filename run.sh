@@ -49,24 +49,6 @@ echo "1s"; sleep 1
 echo Starting Submission WebApp...
 nice java -jar $PATH_HOME/webapps/submission/target/webapps-submission-0.0.1-SNAPSHOT.war 2>&1 > $PATH_HOME/webapps/submission/webapps-submission-0.0.1-SNAPSHOT.log & PID_SUBS=$!
 
-echo "5s"; sleep 1
-echo "4s"; sleep 1
-echo "3s"; sleep 1
-echo "2s"; sleep 1
-echo "1s"; sleep 1
-
-echo Starting JPA agent...
-nice java -jar $PATH_HOME/agents/agents-jpa/target/agents-jpa-0.0.1-SNAPSHOT.jar --always --threads=8 2>&1 > $PATH_HOME/agents/agents-jpa/target/agents-jpa-0.0.1-SNAPSHOT.log & PID_LOADER=$!
-
-echo "5s"; sleep 1
-echo "4s"; sleep 1
-echo "3s"; sleep 1
-echo "2s"; sleep 1
-echo "1s"; sleep 1
-
-echo Starting Neo4J agent...
-nice java -jar $PATH_HOME/agents/agents-neo4j/target/agents-neo4j-0.0.1-SNAPSHOT.jar --always --threads=8 2>&1 > $PATH_HOME/agents/agents-neo4j/target/agents-neo4j-0.0.1-SNAPSHOT.log & PID_INDEXNEO=$!
-
 #wait for it all to settle down
 echo "5s"; sleep 1
 echo "4s"; sleep 1
@@ -82,6 +64,30 @@ echo
 #PUT to subs
 curl -X PUT -H "Content-Type: application/json" --data '@models/core/src/test/resources/TEST1.json' "http://localhost:8080/samples"
 echo
+
+#POST to subs
+curl -X POST -H "Content-Type: application/json" --data '@models/core/src/test/resources/TEST2.json' "http://localhost:8080/samples"
+echo
+
+#wait for it all to settle down
+echo "5s"; sleep 1
+echo "4s"; sleep 1
+echo "3s"; sleep 1
+echo "2s"; sleep 1
+echo "1s"; sleep 1
+
+echo Starting JPA agent...
+nice java -jar $PATH_HOME/agents/jpa/target/agents-jpa-0.0.1-SNAPSHOT.jar 2>&1 > $PATH_HOME/agents/jpa/target/agents-jpa-0.0.1-SNAPSHOT.log & PID_LOADER=$!
+
+echo "5s"; sleep 1
+echo "4s"; sleep 1
+echo "3s"; sleep 1
+echo "2s"; sleep 1
+echo "1s"; sleep 1
+
+echo Starting Neo4J agent...
+nice java -jar $PATH_HOME/agents/neo4j/target/agents-neo4j-0.0.1-SNAPSHOT.jar 2>&1 > $PATH_HOME/agents/neo4j/target/agents-neo4j-0.0.1-SNAPSHOT.log & PID_INDEXNEO=$!
+
 
 #import NCBI pipeline
 #echo Starting NCBI
