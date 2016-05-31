@@ -15,23 +15,24 @@ public class MessageHandlerNeo4J {
 
 	@Autowired
 	private NeoSampleRepository neoSampleRepository;
+
 	@Autowired
 	private NeoRelationshipRepository neoRelRepository;
 
-	@RabbitListener(queues=Messaging.queueToBeIndexedNeo4J)
+	@RabbitListener(queues = Messaging.queueToBeIndexedNeo4J)
 	public void handle(SimpleSample sample) {
 		NeoSample neoSample = neoSampleRepository.findByAccession(sample.getAccession());
 		if (neoSample == null) {
-			//make a new one
+			// make a new one
 			neoSample = new NeoSample(sample.getAccession());
 			neoSample = neoSampleRepository.save(neoSample);
 		}
-		
+
 		for (String relType : sample.getRelationshipTypes()) {
 			for (String targetAcc : sample.getRelationshipTargets(relType)) {
-				//convert the target accession into a target object
+				// convert the target accession into a target object
 				NeoSample targetSample = neoSampleRepository.findByAccession(targetAcc);
-				//if it doesn't exist, create it
+				// if it doesn't exist, create it
 				if (targetSample == null) {
 					targetSample = new NeoSample(targetAcc);
 					targetSample = neoSampleRepository.save(targetSample);
@@ -41,8 +42,7 @@ public class MessageHandlerNeo4J {
 				neoSample.getRelationships().add(rel);
 			}
 		}
-		
+
 		neoSample = neoSampleRepository.save(neoSample);
-		
 	}
 }
