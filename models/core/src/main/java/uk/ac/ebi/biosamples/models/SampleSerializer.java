@@ -16,38 +16,42 @@ public class SampleSerializer extends JsonSerializer<Sample> {
 		gen.writeStartObject();
 		gen.writeStringField("accession", sample.getAccession());
 		gen.writeStringField("name", sample.getName());
-		
+
 		gen.writeStringField("update", sample.getUpdateDate().format(DateTimeFormatter.ISO_LOCAL_DATE));
 		gen.writeStringField("release", sample.getReleaseDate().format(DateTimeFormatter.ISO_LOCAL_DATE));
-		
-		gen.writeArrayFieldStart("attributes");
-		for (String key : sample.getAttributeKeys()) {
-			for (String value : sample.getAttributeValues(key)) {
-				gen.writeStartObject();
-				gen.writeStringField("key", key);
-				gen.writeStringField("value", value);
-				if (sample.getAttributeUnit(key, value) != null) {
-					gen.writeStringField("unit", sample.getAttributeUnit(key, value));
-				}
-				if (sample.getAttributeOntologyTerm(key, value) != null) {
-					gen.writeStringField("ontologyTerm", sample.getAttributeOntologyTerm(key, value).toString());
-				}
-				gen.writeEndObject();
-			}
-		}
-		gen.writeEndArray();
 
-		gen.writeArrayFieldStart("relationships");
-		for (String type : sample.getRelationshipTypes()) {
-			for (String target : sample.getRelationshipTargets(type)) {
-				gen.writeStartObject();
-				gen.writeStringField("type", type);
-				gen.writeStringField("target", target);
-				gen.writeEndObject();				
+		if (sample.getAttributeKeys() != null && sample.getAttributeKeys().size() > 0) {
+			gen.writeArrayFieldStart("attributes");
+			for (String key : sample.getAttributeKeys()) {
+				for (String value : sample.getAttributeValues(key)) {
+					gen.writeStartObject();
+					gen.writeStringField("key", key);
+					gen.writeStringField("value", value);
+					if (sample.getAttributeUnit(key, value) != null) {
+						gen.writeStringField("unit", sample.getAttributeUnit(key, value));
+					}
+					if (sample.getAttributeOntologyTerm(key, value) != null) {
+						gen.writeStringField("ontologyTerm", sample.getAttributeOntologyTerm(key, value).toString());
+					}
+					gen.writeEndObject();
+				}
 			}
+			gen.writeEndArray();
 		}
-		gen.writeEndArray();
-		
+
+		if (sample.getRelationshipTypes() != null && sample.getRelationshipTypes().size() > 0) {
+			gen.writeArrayFieldStart("relationships");
+			for (String type : sample.getRelationshipTypes()) {
+				for (String target : sample.getRelationshipTargets(type)) {
+					gen.writeStartObject();
+					gen.writeStringField("type", type);
+					gen.writeStringField("target", target);
+					gen.writeEndObject();
+				}
+			}
+			gen.writeEndArray();
+		}
+
 		gen.writeEndObject();
 
 	}
