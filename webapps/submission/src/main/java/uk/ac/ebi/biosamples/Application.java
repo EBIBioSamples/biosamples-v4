@@ -26,6 +26,12 @@ public class Application {
 		return mappingMongoConverter;
 	}
 	
+	//converter for web JSON messages
+    @Bean
+    public MessageConverter messageConverter() {
+        return new MappingJackson2MessageConverter();
+    }
+    
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);
 	}
