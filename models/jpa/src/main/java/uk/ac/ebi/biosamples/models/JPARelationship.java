@@ -8,7 +8,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
-@Table(uniqueConstraints = @UniqueConstraint(columnNames = { "TYPE", "VALUE"}) ) 
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = { "TYPE", "TARGET"}) ) 
 @Entity
 public class JPARelationship {
 

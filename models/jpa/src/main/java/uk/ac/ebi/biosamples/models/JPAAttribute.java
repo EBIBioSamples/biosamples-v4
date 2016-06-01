@@ -11,7 +11,7 @@ import javax.persistence.Lob;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
-@Table(uniqueConstraints = @UniqueConstraint(columnNames = { "KEY", "VALUE", "UNIT", "ONTOLOGYTERM" }) ) 
+//@Table(uniqueConstraints = @UniqueConstraint(columnNames = { "KEY", "VALUE", "UNIT", "ONTOLOGYTERM" }) ) 
 //cant create unique key on blobs in MySQL
 @Entity
 public class JPAAttribute {
