@@ -6,5 +6,5 @@ import uk.ac.ebi.biosamples.models.JPAAttribute;
 
 public interface JPAAttributeRepository extends CrudRepository<JPAAttribute, Long> {
 
-	Iterable<JPAAttribute> findByTypeAndValueAndUnitAndOntologyTerm(String type, String value, String unit, String ontologyTerm);
+	Iterable<JPAAttribute> findByKeyAndValueAndUnitAndOntologyTerm(String key, String value, String unit, String ontologyTerm);
 }

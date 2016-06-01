@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import uk.ac.ebi.biosamples.models.JPAAttribute;
 import uk.ac.ebi.biosamples.models.JPASample;
@@ -25,6 +26,7 @@ public class MessageHandlerJPA {
 	private JPAAttributeRepository jpaAttributeRepository;
 
 	@RabbitListener(queues = Messaging.queueToBeLoaded)
+	@Transactional
 	public void handle(SimpleSample sample) {
 		log.info("Recieved " + sample.getAccession());
 		// convert it to the right object type
@@ -51,7 +53,7 @@ public class MessageHandlerJPA {
 
 			// TODO check old sample if present
 
-			Iterable<JPAAttribute> oldAttributes = jpaAttributeRepository.findByTypeAndValueAndUnitAndOntologyTerm(type,
+			Iterable<JPAAttribute> oldAttributes = jpaAttributeRepository.findByKeyAndValueAndUnitAndOntologyTerm(type,
 					value, unit, ontologyTerm);
 
 			for (JPAAttribute oldAttribute : oldAttributes) {

@@ -3,6 +3,7 @@ package uk.ac.ebi.biosamples;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import uk.ac.ebi.biosamples.models.NeoRelationship;
 import uk.ac.ebi.biosamples.models.NeoSample;
@@ -20,6 +21,7 @@ public class MessageHandlerNeo4J {
 	private NeoRelationshipRepository neoRelRepository;
 
 	@RabbitListener(queues = Messaging.queueToBeIndexedNeo4J)
+	@Transactional
 	public void handle(SimpleSample sample) {
 		NeoSample neoSample = neoSampleRepository.findByAccession(sample.getAccession());
 		if (neoSample == null) {

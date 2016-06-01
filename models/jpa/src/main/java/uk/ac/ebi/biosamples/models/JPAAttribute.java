@@ -11,6 +11,8 @@ import javax.persistence.Lob;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import org.hibernate.annotations.Type;
+
 //@Table(uniqueConstraints = @UniqueConstraint(columnNames = { "KEY", "VALUE", "UNIT", "ONTOLOGYTERM" }) ) 
 //cant create unique key on blobs in MySQL
 @Entity
@@ -25,6 +27,7 @@ public class JPAAttribute {
 	private String key;
 	@Column(name = "VALUE", unique = false, nullable = false)
 	@Lob
+	@Type(type = "org.hibernate.type.TextType") //special handling for postgres
 	private String value;
 	@Column(name = "UNIT", unique = false, nullable = true)
 	private String unit;
