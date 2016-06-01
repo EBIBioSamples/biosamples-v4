@@ -23,7 +23,7 @@ $PATH_MONGO/bin/mongod --fork --dbpath $PATH_MONGO_DATA --logpath $PATH_MONGO_LO
 $PATH_RABBITMQ/sbin/rabbitmq-server -detached
 
 #wipe any neo4j data
-rm -rf $PATH_NEO4J/data
+rm -rf $PATH_NEO4J/data/databases/graph.db
 
 #start neo4j
 $PATH_NEO4J/bin/neo4j start
@@ -47,6 +47,7 @@ echo "2s"; sleep 1
 echo "1s"; sleep 1
 
 echo Starting Submission WebApp...
+echo $PATH_HOME/webapps/submission/webapps-submission-0.0.1-SNAPSHOT.log
 nice java -jar $PATH_HOME/webapps/submission/target/webapps-submission-0.0.1-SNAPSHOT.war 2>&1 > $PATH_HOME/webapps/submission/webapps-submission-0.0.1-SNAPSHOT.log & PID_SUBS=$!
 
 #wait for it all to settle down
