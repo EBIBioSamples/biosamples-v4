@@ -8,12 +8,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.junit4.*;
 
-import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.util.HashMap;

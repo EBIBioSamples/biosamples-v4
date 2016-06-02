@@ -13,7 +13,7 @@ import javax.persistence.UniqueConstraint;
 
 import org.hibernate.annotations.Type;
 
-//@Table(uniqueConstraints = @UniqueConstraint(columnNames = { "KEY", "VALUE", "UNIT", "ONTOLOGYTERM" }) ) 
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = { "KEY", "VALUE", "UNIT", "ONTOLOGYTERM" }) ) 
 //cant create unique key on blobs in MySQL
 @Entity
 public class JPAAttribute {

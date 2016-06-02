@@ -3,7 +3,6 @@ package uk.ac.ebi.biosamples.models;
 import org.neo4j.ogm.annotation.NodeEntity;
 import org.neo4j.ogm.annotation.Property;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import org.neo4j.ogm.annotation.GraphId;

@@ -1,6 +1,5 @@
 package uk.ac.ebi.biosamples.ncbi;
 
-import java.net.URI;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -9,8 +8,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.HttpPost;
 import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

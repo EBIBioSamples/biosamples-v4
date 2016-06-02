@@ -3,8 +3,6 @@ package uk.ac.ebi.biosamples.ncbi;
 import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.ExecutorService;
@@ -15,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
@@ -25,6 +24,9 @@ import uk.ac.ebi.biosamples.utils.XMLFragmenter;
 public class NCBI implements ApplicationRunner {
 	
 	private Logger log = LoggerFactory.getLogger(getClass());
+	
+	@Value("${biosamples.pipelines.ncbi.threadcount:1}")
+	private int threadCount;
 	
 	@Autowired
 	private NCBIFTP ncbiftp;
@@ -55,13 +57,9 @@ public class NCBI implements ApplicationRunner {
 		}
 
 		
-		int noThreads = 1;		
-		if (args.containsOption("threads")) {
-			noThreads = Integer.parseInt(args.getOptionValues("threads").iterator().next());
-		}
 		
 		//TODO read this from arguments
-		ExecutorService executorService = Executors.newFixedThreadPool(noThreads);
+		ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
 		try {
 			Queue<Future<Void>> futures = new LinkedList<>();
 			

@@ -1,7 +1,6 @@
 package uk.ac.ebi.biosamples.models;
 
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -43,6 +42,7 @@ public class SimpleSample implements Sample {
 		return name;
 	}
 
+	@Override
 	public LocalDate getReleaseDate() {
 		return releaseDate;
 	}
