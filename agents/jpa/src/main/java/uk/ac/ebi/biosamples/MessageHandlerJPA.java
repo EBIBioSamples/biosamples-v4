@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import uk.ac.ebi.biosamples.models.JPAAttribute;
@@ -13,8 +13,7 @@ import uk.ac.ebi.biosamples.models.SimpleSample;
 import uk.ac.ebi.biosamples.repos.JPAAttributeRepository;
 import uk.ac.ebi.biosamples.repos.JPASampleRepository;
 
-
-@Component
+@Service
 public class MessageHandlerJPA {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
@@ -46,6 +45,12 @@ public class MessageHandlerJPA {
 
 			String type = attribute.getKey();
 			String value = attribute.getValue();
+			//trim value to maximum size
+			if (value.length() >= 255) {
+				log.warn("attribute to long for sample "+sample.getAccession());
+				value = value.substring(0, 255)+"...";
+				attribute.setValue(value);
+			}
 			String unit = attribute.getUnit();
 			String ontologyTerm = attribute.getOntologyTerm();
 
@@ -63,7 +68,7 @@ public class MessageHandlerJPA {
 			}
 
 			if (oldAttributeId != null) {
-				log.info("Got old attribute (" + oldAttributeId + ") for " + type + " " + value + " " + unit + " "
+				log.trace("Got old attribute (" + oldAttributeId + ") for " + type + " " + value + " " + unit + " "
 						+ ontologyTerm);
 				attribute.setId(oldAttributeId);
 			}

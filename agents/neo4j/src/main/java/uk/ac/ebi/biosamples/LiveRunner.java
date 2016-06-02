@@ -17,6 +17,7 @@ public class LiveRunner implements ApplicationRunner {
 
 	@Override
 	public void run(ApplicationArguments args) throws Exception {
+		
 		// as long as there are messages to read, keep this thread alive
 		// that will also keep the async message client alive too?
 		Integer messageCount = null;
@@ -24,6 +25,7 @@ public class LiveRunner implements ApplicationRunner {
 			Thread.sleep(1000*60);
 			messageCount = messageUtils.getQueueCount(Messaging.queueToBeIndexedNeo4J);
 		}
+		
 	}
 
 }

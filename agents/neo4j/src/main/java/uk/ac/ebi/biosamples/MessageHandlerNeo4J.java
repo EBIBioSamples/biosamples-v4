@@ -3,6 +3,7 @@ package uk.ac.ebi.biosamples;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import uk.ac.ebi.biosamples.models.NeoRelationship;
@@ -11,7 +12,7 @@ import uk.ac.ebi.biosamples.models.SimpleSample;
 import uk.ac.ebi.biosamples.repos.NeoRelationshipRepository;
 import uk.ac.ebi.biosamples.repos.NeoSampleRepository;
 
-@Component
+@Service
 public class MessageHandlerNeo4J {
 
 	@Autowired
