@@ -8,6 +8,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -15,15 +16,97 @@ import uk.ac.ebi.biosamples.models.Sample;
 
 @JsonSerialize(using = MongoSampleSerializer.class)
 @JsonDeserialize(using = MongoSampleDeserializer.class)
-public class MongoSample extends SimpleSample {
+public class MongoSample implements Sample {
 
 	@Id
 	private String id;
-
+	
+	@Indexed
 	private String previousAccession;
+
+	@Indexed
+	protected String accession;
+	protected String name;
+	@Indexed
+	protected LocalDate releaseDate;
+	@Indexed
+	protected LocalDate updateDate;
+	protected Map<String, Set<String>> keyValues = new HashMap<>();
+	protected Map<String, Map<String, String>> ontologyTerms = new HashMap<>();
+	protected Map<String, Map<String, String>> units = new HashMap<>();
+	protected Map<String, Set<String>> relationships = new HashMap<>();
 	
 	private MongoSample() {
 		super();
+	}
+	@Override
+	public String getAccession() {
+		return accession;
+	}
+
+	@Override
+	public String getName() {
+		return name;
+	}
+
+	@Override
+	public LocalDate getReleaseDate() {
+		return releaseDate;
+	}
+
+	@Override
+	public LocalDate getUpdateDate() {
+		return updateDate;
+	}
+
+	@Override
+	public Set<String> getAttributeKeys() {
+		return keyValues.keySet();
+	}
+
+	@Override
+	public Set<String> getAttributeValues(String type) {
+		return keyValues.get(type);
+	}
+
+	@Override
+	public String getAttributeUnit(String type, String value) {
+		if (!units.containsKey(type)) {
+			return null;
+		}
+		if (!units.get(type).containsKey(value)) {
+			return null;
+		}
+		return units.get(type).get(value);
+	}
+
+	@Override
+	public String getAttributeOntologyTerm(String type, String value) {
+		if (!ontologyTerms.containsKey(type)) {
+			return null;
+		}
+		if (!ontologyTerms.get(type).containsKey(value)) {
+			return null;
+		}
+		return ontologyTerms.get(type).get(value);
+	}
+
+	@Override
+	public Set<String> getRelationshipTypes() {
+		return relationships.keySet();
+	}
+
+	@Override
+	public Set<String> getRelationshipTargets(String type) {
+		return relationships.get(type);
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public String getPreviousAccession() {
+		return previousAccession;
 	}
 
 	@Override
@@ -48,14 +131,6 @@ public class MongoSample extends SimpleSample {
 	@Override
 	public int hashCode() {
 		return Objects.hash(name, accession, previousAccession, keyValues, units, ontologyTerms);
-	}
-
-	public String getId() {
-		return id;
-	}
-
-	public String getPreviousAccession() {
-		return previousAccession;
 	}
 
 	public void doArchive() {
