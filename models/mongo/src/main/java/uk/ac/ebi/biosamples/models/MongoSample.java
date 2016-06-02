@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -16,21 +17,24 @@ import uk.ac.ebi.biosamples.models.Sample;
 
 @JsonSerialize(using = MongoSampleSerializer.class)
 @JsonDeserialize(using = MongoSampleDeserializer.class)
+@Document
 public class MongoSample implements Sample {
 
 	@Id
 	private String id;
-	
+
+	@Indexed
+	protected String accession;	
 	@Indexed
 	private String previousAccession;
 
-	@Indexed
-	protected String accession;
 	protected String name;
+	
 	@Indexed
 	protected LocalDate releaseDate;
 	@Indexed
 	protected LocalDate updateDate;
+	
 	protected Map<String, Set<String>> keyValues = new HashMap<>();
 	protected Map<String, Map<String, String>> ontologyTerms = new HashMap<>();
 	protected Map<String, Map<String, String>> units = new HashMap<>();
