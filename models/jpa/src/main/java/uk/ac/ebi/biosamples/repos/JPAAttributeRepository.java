@@ -1,10 +1,12 @@
 package uk.ac.ebi.biosamples.repos;
 
-import org.springframework.data.repository.CrudRepository;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
 import uk.ac.ebi.biosamples.models.JPAAttribute;
 
-public interface JPAAttributeRepository extends CrudRepository<JPAAttribute, Long> {
+public interface JPAAttributeRepository extends PagingAndSortingRepository<JPAAttribute, Long> {
 
-	Iterable<JPAAttribute> findByKeyAndValueAndUnitAndOntologyTerm(String key, String value, String unit, String ontologyTerm);
+	Page<JPAAttribute> findByKeyAndValueAndUnitAndOntologyTerm(String key, String value, String unit, String ontologyTerm);
 }
