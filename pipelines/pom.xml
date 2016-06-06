@@ -18,8 +18,8 @@
 			<version>${bsd2017.version}</version>
 		</dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-web</artifactId>
+            <groupId>org.springframework.hateoas</groupId>
+            <artifactId>spring-hateoas</artifactId>
         </dependency>
 
 		<!-- used to connect to FTP -->

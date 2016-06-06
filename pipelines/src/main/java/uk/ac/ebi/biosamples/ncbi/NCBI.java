@@ -56,30 +56,39 @@ public class NCBI implements ApplicationRunner {
 			toDate = LocalDate.parse(args.getOptionValues("until").iterator().next(), DateTimeFormatter.ISO_LOCAL_DATE);
 		}
 
+		callback.setFromDate(fromDate);
+		callback.setToDate(toDate);
 		
 		
 		//TODO read this from arguments
-		ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
-		try {
-			Queue<Future<Void>> futures = new LinkedList<>();
-			
-			callback.setFromDate(fromDate);
-			callback.setToDate(toDate);
-			callback.setExecutorService(executorService);
-			callback.setFutures(futures);
-			
+		ExecutorService executorService = null;
+		if (threadCount > 0) {
+			executorService = Executors.newFixedThreadPool(threadCount);
+			try {
+				Queue<Future<Void>> futures = new LinkedList<>();
+				
+				callback.setExecutorService(executorService);
+				callback.setFutures(futures);
+				
+				//this does the actual processing
+				try (InputStream is = ncbiftp.streamFromLocalCopy()) {
+					xmlFragmenter.handleStream(is, "UTF-8", callback);
+				}
+				
+				log.info("waiting for futures");
+				
+				//wait for anything to finish
+				callback.checkQueue(0);
+			} finally {
+				executorService.shutdown();
+				executorService.awaitTermination(1, TimeUnit.MINUTES);
+			}
+		} else {
+			//do all on master thread
 			//this does the actual processing
 			try (InputStream is = ncbiftp.streamFromLocalCopy()) {
 				xmlFragmenter.handleStream(is, "UTF-8", callback);
 			}
-			
-			log.info("waiting for futures");
-			
-			//wait for anything to finish
-			callback.checkQueue(0);
-		} finally {
-			executorService.shutdown();
-			executorService.awaitTermination(1, TimeUnit.MINUTES);
 		}
 		 
 		log.info("Processed NCBI pipeline");

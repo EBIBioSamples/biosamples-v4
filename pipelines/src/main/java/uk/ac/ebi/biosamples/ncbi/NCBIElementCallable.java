@@ -1,5 +1,7 @@
 package uk.ac.ebi.biosamples.ncbi;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -12,7 +14,15 @@ import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.RequestEntity;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
 import uk.ac.ebi.biosamples.models.SimpleSample;
@@ -34,6 +44,17 @@ public class NCBIElementCallable implements Callable<Void> {
 	
 	@Autowired
 	private RestTemplate restTemplate;
+	
+
+	private static URI uri; 
+	static {
+		try {
+			uri = new URI("http://localhost:8080/samples");
+		} catch (URISyntaxException e) {
+			//should never happen
+			throw new RuntimeException(e);
+		}
+	}
 
 	private Map<String, Set<String>> keyValues = new HashMap<>();
 	// TODO ontology terms? taxonomy?
@@ -64,6 +85,56 @@ public class NCBIElementCallable implements Callable<Void> {
 		relationships.get(type).add(value);
 	}
 
+	private void submit(SimpleSample sample) {
+		// send it to the subs API
+		log.info("GETing "+sample.getAccession());
+
+		//work out if its a put or a post
+		//do a get for that
+		boolean exists = false;
+		try {			
+			//wrap the response in a hateoas resource to capture links
+			//have to use a parameterizedTypeReference subclass instance to pass the generic information about
+			ResponseEntity<Resource<SimpleSample>> getResponse = restTemplate.exchange("http://localhost:8080/repository/mongoSamples/search/findByAccession?accession="+sample.getAccession(),
+					HttpMethod.GET,
+					null,
+					new ParameterizedTypeReference<Resource<SimpleSample>>(){});
+			exists = true;
+		} catch (HttpStatusCodeException e) {
+			if (e.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
+				//got a 404, we can handle that by posting instead of putting
+				exists = false;
+			} else {
+				//something else, re-throw it because we can't recover
+				log.error("Unable to GET "+sample.getAccession());
+				log.error(e.getResponseBodyAsString());
+				throw e;
+			}
+		}
+		
+		if (exists) {
+			log.info("PUTing "+sample.getAccession());
+			//was there, so we need to PUT an update
+			RequestEntity<SimpleSample> putRequest = RequestEntity.put(uri).body(sample);
+			log.error(putRequest.toString());
+			ResponseEntity<SimpleSample> putResponse = restTemplate.exchange(putRequest, SimpleSample.class);
+			if (!putResponse.getStatusCode().is2xxSuccessful()) {
+				log.error(putResponse.toString());
+				throw new RuntimeException("Problem PUTing "+sample.getAccession());
+			}
+		} else {
+			log.info("POSTing "+sample.getAccession());
+			//not there, so need to POST it
+			RequestEntity<SimpleSample> postRequest = RequestEntity.post(uri).body(sample);
+			log.error(postRequest.toString());
+			ResponseEntity<SimpleSample> postResponse = restTemplate.exchange(postRequest, SimpleSample.class);
+			if (!postResponse.getStatusCode().is2xxSuccessful()) {
+				throw new RuntimeException("Problem POSTing "+sample.getAccession());
+			}
+		}
+		
+        //restTemplate.postForLocation("http://localhost:8080/samples", sample);
+	}
 
 	@Override
 	public Void call() throws Exception {
@@ -101,7 +172,7 @@ public class NCBIElementCallable implements Callable<Void> {
 
 		Element descriptionCommment = xmlUtils.getChildByName(description, "Comment");
 		if (descriptionCommment != null) {
-			Element descriptionParagraph = xmlUtils.getChildByName(description, "Paragraph");
+			Element descriptionParagraph = xmlUtils.getChildByName(descriptionCommment, "Paragraph");
 			if (descriptionParagraph != null) {
 				String secondaryDescription = descriptionParagraph.getTextTrim();
 				if (!name.equals(secondaryDescription)) {
@@ -155,14 +226,8 @@ public class NCBIElementCallable implements Callable<Void> {
 		
 		SimpleSample sample = SimpleSample.createFrom(name, accession, updateDate, releaseDate, keyValues, new HashMap<>(), new HashMap<>(),relationships);
 		
-		log.info("POSTing "+accession);
-		
-		// TODO handle links
-
-		// send it to the subs API
-		// TODO maybe this should be a queue?
-        restTemplate.postForLocation("http://localhost:8080/samples", sample);
-		
+		//now pass it along to the actual submission process
+		submit(sample);
 
 		log.trace("Element callable finished");
 		
