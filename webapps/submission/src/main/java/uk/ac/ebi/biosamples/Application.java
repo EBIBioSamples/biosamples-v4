@@ -1,8 +1,8 @@
 package uk.ac.ebi.biosamples;
 
-import org.springframework.amqp.core.Queue;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.web.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.mongodb.MongoDbFactory;
 import org.springframework.data.mongodb.core.convert.DbRefResolver;
@@ -14,7 +14,7 @@ import org.springframework.messaging.converter.MessageConverter;
 
 
 @SpringBootApplication
-public class Application {
+public class Application extends SpringBootServletInitializer {
 
 	//to handle dots in attribute types
 	@Bean

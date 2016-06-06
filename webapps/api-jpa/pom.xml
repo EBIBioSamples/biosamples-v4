@@ -2,7 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>webapps-submission</artifactId>
+	<artifactId>webapps-api-jpa</artifactId>
 	
 	<packaging>war</packaging>
 
@@ -16,12 +16,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>bsd2017</groupId>			
-			<artifactId>models-mongo</artifactId>
-			<version>${bsd2017.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>bsd2017</groupId>			
-			<artifactId>messaging</artifactId>
+			<artifactId>models-jpa</artifactId>
 			<version>${bsd2017.version}</version>
 		</dependency>
 		<dependency>

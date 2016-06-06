@@ -14,5 +14,7 @@
 
 	<modules>
 		<module>submission</module>
+		<module>api-jpa</module>
+		<module>api-neo4j</module>
 	</modules>
 </project>
