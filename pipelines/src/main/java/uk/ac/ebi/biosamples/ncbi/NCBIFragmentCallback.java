@@ -89,8 +89,6 @@ public class NCBIFragmentCallback implements ElementCallback {
 			if (futures != null) {
 				futures.add(future);
 			}
-			//limit the number of possible futures
-			checkQueue(1000);
 		}
 	}
 
@@ -131,25 +129,5 @@ public class NCBIFragmentCallback implements ElementCallback {
 		return true;
 	}
 	
-	public void checkQueue(int maxSize) throws InterruptedException, ExecutionException {
-		//remove finished jobs from queue
-		
-		int count = 0;
-		Iterator<Future<Void>> it = futures.iterator();
-		while (it.hasNext()) {
-			Future<Void> future = it.next();
-			if (future.isDone()){
-				future.get();
-				it.remove();
-			} else {
-				count += 1;
-				if (count > maxSize) {
-					//wait for it to finish
-					future.get();
-					it.remove();
-				}
-			}
-		}
-	}
 
 }

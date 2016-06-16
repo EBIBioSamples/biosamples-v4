@@ -18,6 +18,7 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
+import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.XMLFragmenter;
 
 @Component
@@ -63,7 +64,8 @@ public class NCBI implements ApplicationRunner {
 		//TODO read this from arguments
 		ExecutorService executorService = null;
 		if (threadCount > 0) {
-			executorService = Executors.newFixedThreadPool(threadCount);
+			//executorService = Executors.newFixedThreadPool(threadCount);
+			executorService = AdaptiveThreadPoolExecutor.create();
 			try {
 				Queue<Future<Void>> futures = new LinkedList<>();
 				
@@ -78,7 +80,9 @@ public class NCBI implements ApplicationRunner {
 				log.info("waiting for futures");
 				
 				//wait for anything to finish
-				callback.checkQueue(0);
+				for (Future<Void> future : futures) {
+					future.get();
+				}
 			} finally {
 				executorService.shutdown();
 				executorService.awaitTermination(1, TimeUnit.MINUTES);
