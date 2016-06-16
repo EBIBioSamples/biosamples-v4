@@ -113,6 +113,7 @@ read -p "press return to continue"
 #http://localhost:15672/#/queues/%2F/biosamples.tobeloaded
 #http://localhost:28017
 
+set +e
 echo \*\*\* Stopping Submission WebApp...
 kill $PID_SUBS
 
