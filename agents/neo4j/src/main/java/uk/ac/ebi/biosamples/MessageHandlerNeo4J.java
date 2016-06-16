@@ -22,8 +22,17 @@ public class MessageHandlerNeo4J {
 	private NeoRelationshipRepository neoRelRepository;
 
 	@RabbitListener(queues = Messaging.queueToBeIndexedNeo4J)
-	@Transactional
 	public void handle(SimpleSample sample) {
+		//see if this sample has any relationships at all
+		if (sample.getRelationshipTypes() == null || sample.getRelationshipTypes().size() == 0) {
+			return;
+		} else {
+			persist(sample);
+		}
+	}
+
+	@Transactional
+	private void persist(SimpleSample sample) {
 		NeoSample neoSample = neoSampleRepository.findByAccession(sample.getAccession());
 		if (neoSample == null) {
 			// make a new one
@@ -47,5 +56,6 @@ public class MessageHandlerNeo4J {
 		}
 
 		neoSample = neoSampleRepository.save(neoSample);
+		
 	}
 }
