@@ -47,7 +47,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class XMLUtils {
-    private Logger log = LoggerFactory.getLogger("XMLUtils");
+    private Logger log = LoggerFactory.getLogger(this.getClass());
     
     private TransformerFactory tf = TransformerFactory.newInstance();
     

@@ -106,8 +106,7 @@ public class NCBIElementCallable implements Callable<Void> {
 				exists = false;
 			} else {
 				//something else, re-throw it because we can't recover
-				log.error("Unable to GET "+sample.getAccession());
-				log.error(e.getResponseBodyAsString());
+				log.error("Unable to GET "+sample.getAccession()+" : "+e.getResponseBodyAsString());
 				throw e;
 			}
 		}
@@ -119,7 +118,7 @@ public class NCBIElementCallable implements Callable<Void> {
 			log.error(putRequest.toString());
 			ResponseEntity<SimpleSample> putResponse = restTemplate.exchange(putRequest, SimpleSample.class);
 			if (!putResponse.getStatusCode().is2xxSuccessful()) {
-				log.error(putResponse.toString());
+				log.error("Unable to PUT "+sample.getAccession()+" : "+putResponse.toString());
 				throw new RuntimeException("Problem PUTing "+sample.getAccession());
 			}
 		} else {
@@ -129,6 +128,7 @@ public class NCBIElementCallable implements Callable<Void> {
 			log.error(postRequest.toString());
 			ResponseEntity<SimpleSample> postResponse = restTemplate.exchange(postRequest, SimpleSample.class);
 			if (!postResponse.getStatusCode().is2xxSuccessful()) {
+				log.error("Unable to POST "+sample.getAccession()+" : "+postResponse.toString());
 				throw new RuntimeException("Problem POSTing "+sample.getAccession());
 			}
 		}
