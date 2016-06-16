@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>webapps-submission</artifactId>
-	
+
 	<packaging>war</packaging>
 
 	<parent>
@@ -15,18 +15,22 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>bsd2017</groupId>			
+			<groupId>bsd2017</groupId>
 			<artifactId>models-mongo</artifactId>
 			<version>${bsd2017.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>bsd2017</groupId>			
+			<groupId>bsd2017</groupId>
 			<artifactId>messaging</artifactId>
 			<version>${bsd2017.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-rest</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-actuator</artifactId>
 		</dependency>
 
 		<!-- mark tomcat as provided so we can deploy to tomcat -->
