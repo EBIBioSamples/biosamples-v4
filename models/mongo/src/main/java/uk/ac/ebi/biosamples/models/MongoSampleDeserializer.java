@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,8 +37,8 @@ public class MongoSampleDeserializer extends JsonDeserializer<MongoSample> {
 		}
 		String name = node.get("name").asText();
 		
-		LocalDate updateDate = LocalDate.parse(node.get("update").asText(), DateTimeFormatter.ISO_LOCAL_DATE);
-		LocalDate releaseDate = LocalDate.parse(node.get("release").asText(), DateTimeFormatter.ISO_LOCAL_DATE);
+		LocalDateTime updateDate = LocalDateTime.parse(node.get("update").asText(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+		LocalDateTime releaseDate = LocalDateTime.parse(node.get("release").asText(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 
 		Map<String, Set<String>> keyValues = new HashMap<>();
 		Map<String, Map<String, String>> ontologyTerms = new HashMap<>();

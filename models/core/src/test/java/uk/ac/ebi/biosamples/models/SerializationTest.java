@@ -14,6 +14,8 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.net.URISyntaxException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -28,8 +30,8 @@ public class SerializationTest {
 	private SimpleSample getSimpleSample() throws URISyntaxException {
 		String name = "Test Sample";
 		String accession = "TEST1";
-		LocalDate update = LocalDate.of(2016, 5, 5);
-		LocalDate release = LocalDate.of(2016, 4, 1);
+		LocalDateTime update = LocalDateTime.of(LocalDate.of(2016, 5, 5), LocalTime.of(11, 36, 57));
+		LocalDateTime release = LocalDateTime.of(LocalDate.of(2016, 4, 1), LocalTime.of(11, 36, 57));
 
 		Map<String, Set<String>> keyValues = new HashMap<>();
 		Map<String, Map<String, String>> ontologyTerms = new HashMap<>();

@@ -59,8 +59,9 @@ $PATH_RABBITMQ/sbin/rabbitmqctl purge_queue biosamples.tobeloaded
 $PATH_RABBITMQ/sbin/rabbitmqctl purge_queue biosamples.tobeindexed.solr
 $PATH_RABBITMQ/sbin/rabbitmqctl purge_queue biosamples.tobeindexed.neo4j
 
+#startup submission webapp
 echo \*\*\* Starting Submission WebApp...
-nice java -jar $PATH_HOME/webapps/submission/target/webapps-submission-0.0.1-SNAPSHOT.war 2>&1 > $PATH_HOME/submission.log & PID_SUBS=$!
+nice java -jar $PATH_HOME/webapps/submission/target/webapps-submission-0.0.1-SNAPSHOT.war --server.port=8081 2>&1 > $PATH_HOME/submission.log & PID_SUBS=$!
 
 
 #check if its running
@@ -73,19 +74,16 @@ echo "4s"; sleep 1
 echo "3s"; sleep 1
 echo "2s"; sleep 1
 echo "1s"; sleep 1
-curl localhost:8080/repository
+curl localhost:8081/repository
 
 
 #POST to subs
-curl -X POST -H "Content-Type: application/json" --data '@models/core/src/test/resources/TEST1.json' "http://localhost:8080/samples"
+curl -X POST -H "Content-Type: application/json" --data '@models/core/src/test/resources/TEST1.json' "http://localhost:8081/samples"
 echo
 
-#PUT to subs
-curl -X PUT -H "Content-Type: application/json" --data '@models/core/src/test/resources/TEST1.json' "http://localhost:8080/samples"
-echo
 
 #POST to subs
-curl -X POST -H "Content-Type: application/json" --data '@models/core/src/test/resources/TEST2.json' "http://localhost:8080/samples"
+curl -X POST -H "Content-Type: application/json" --data '@models/core/src/test/resources/TEST2.json' "http://localhost:8081/samples"
 echo
 
 #wait for it all to settle down
@@ -96,14 +94,14 @@ echo "2s"; sleep 1
 echo "1s"; sleep 1
 
 echo \*\*\* Starting NCBI pipeline...
-nice java -jar $PATH_HOME/pipelines/target/pipelines-0.0.1-SNAPSHOT.jar --ncbi --biosamples.pipelines.ncbi.threadcount=8 2>&1 > $PATH_HOME/pipelines-ncbi.log & PID_NCBI=$! 
+#nice java -jar $PATH_HOME/pipelines/target/pipelines-0.0.1-SNAPSHOT.jar --ncbi --biosamples.pipelines.ncbi.threadcount=8 2>&1 > $PATH_HOME/pipelines-ncbi.log & PID_NCBI=$! 
 
 
 echo \*\*\* Starting JPA agent...
-nice java -jar $PATH_HOME/agents/jpa/target/agents-jpa-0.0.1-SNAPSHOT.jar --spring.rabbitmq.listener.max-concurrency=8  2>&1 > $PATH_HOME/agents-jpa.log & PID_LOADER=$!
+#nice java -jar $PATH_HOME/agents/jpa/target/agents-jpa-0.0.1-SNAPSHOT.jar --spring.rabbitmq.listener.max-concurrency=8  2>&1 > $PATH_HOME/agents-jpa.log & PID_LOADER=$!
 
 echo \*\*\* Starting Neo4J agent...
-nice java -jar $PATH_HOME/agents/neo4j/target/agents-neo4j-0.0.1-SNAPSHOT.jar --spring.rabbitmq.listener.max-concurrency=8  2>&1 > $PATH_HOME/agents-neo4j.log & PID_INDEXNEO=$!
+#nice java -jar $PATH_HOME/agents/neo4j/target/agents-neo4j-0.0.1-SNAPSHOT.jar --spring.rabbitmq.listener.max-concurrency=8  2>&1 > $PATH_HOME/agents-neo4j.log & PID_INDEXNEO=$!
 
 #while true; do THING; done;
 

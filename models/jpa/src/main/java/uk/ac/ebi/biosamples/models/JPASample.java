@@ -1,6 +1,7 @@
 package uk.ac.ebi.biosamples.models;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Optional;
@@ -26,9 +27,9 @@ public class JPASample implements Sample {
 	@Column(name = "NAME", unique = false, nullable = false)
 	private String name;
 	@Column(name = "RELEASEDATE", unique = false, nullable = false)
-	private LocalDate releaseDate;
+	private LocalDateTime releaseDate;
 	@Column(name = "UPDATEDATE", unique = false, nullable = false)
-	private LocalDate updateDate;
+	private LocalDateTime updateDate;
 
 	@ManyToMany  
 	private Set<JPAAttribute> attributes;
@@ -62,12 +63,12 @@ public class JPASample implements Sample {
 		return name;
 	}
 
-	public LocalDate getReleaseDate() {
+	public LocalDateTime getRelease() {
 		return releaseDate;
 	}
 
 	@Override
-	public LocalDate getUpdateDate() {
+	public LocalDateTime getUpdate() {
 		return updateDate;
 	}
 
@@ -152,8 +153,8 @@ public class JPASample implements Sample {
 		if (sample.name.length() > 255) {
 			sample.name = sample.name.substring(0, 252)+"...";
 		}
-		sample.updateDate = source.getUpdateDate();
-		sample.releaseDate = source.getReleaseDate();
+		sample.updateDate = source.getUpdate();
+		sample.releaseDate = source.getRelease();
 
 		sample.attributes = new HashSet<>();
 		for (String type : source.getAttributeKeys()) {

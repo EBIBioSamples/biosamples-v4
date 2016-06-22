@@ -3,6 +3,7 @@ package uk.ac.ebi.biosamples.ncbi;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -49,7 +50,7 @@ public class NCBIElementCallable implements Callable<Void> {
 	private static URI uri; 
 	static {
 		try {
-			uri = new URI("http://localhost:8080/samples");
+			uri = new URI("http://localhost:8081/samples");
 		} catch (URISyntaxException e) {
 			//should never happen
 			throw new RuntimeException(e);
@@ -214,12 +215,12 @@ public class NCBIElementCallable implements Callable<Void> {
 		addAttribute("package", xmlUtils.getChildByName(sampleElem, "Package").getTextTrim());
 
 		//handle dates
-		LocalDate updateDate = null;
-		updateDate = LocalDate.parse(sampleElem.attributeValue("last_update"), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-		LocalDate releaseDate = null;
-		releaseDate = LocalDate.parse(sampleElem.attributeValue("publication_date"), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+		LocalDateTime updateDate = null;
+		updateDate = LocalDateTime.parse(sampleElem.attributeValue("last_update"), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+		LocalDateTime releaseDate = null;
+		releaseDate = LocalDateTime.parse(sampleElem.attributeValue("publication_date"), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 		
-		LocalDate latestDate = updateDate;
+		LocalDateTime latestDate = updateDate;
 		if (releaseDate.isAfter(latestDate)) {
 			latestDate = releaseDate;
 		}

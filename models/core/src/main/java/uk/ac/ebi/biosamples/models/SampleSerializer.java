@@ -17,8 +17,8 @@ public class SampleSerializer extends JsonSerializer<Sample> {
 		gen.writeStringField("accession", sample.getAccession());
 		gen.writeStringField("name", sample.getName());
 
-		gen.writeStringField("update", sample.getUpdateDate().format(DateTimeFormatter.ISO_LOCAL_DATE));
-		gen.writeStringField("release", sample.getReleaseDate().format(DateTimeFormatter.ISO_LOCAL_DATE));
+		gen.writeStringField("update", sample.getUpdate().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+		gen.writeStringField("release", sample.getRelease().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
 
 		if (sample.getAttributeKeys() != null && sample.getAttributeKeys().size() > 0) {
 			gen.writeArrayFieldStart("attributes");

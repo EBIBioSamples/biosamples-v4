@@ -17,10 +17,9 @@ public class MongoSampleSerializer extends JsonSerializer<MongoSample> {
 		gen.writeStringField("id", sample.getId());
 		gen.writeStringField("name", sample.getName());
 		gen.writeStringField("accession", sample.getAccession());
-		gen.writeStringField("previousAccession", sample.getPreviousAccession());
 		
-		gen.writeStringField("update", sample.getUpdateDate().format(DateTimeFormatter.ISO_LOCAL_DATE));
-		gen.writeStringField("release", sample.getReleaseDate().format(DateTimeFormatter.ISO_LOCAL_DATE));
+		gen.writeStringField("update", sample.getUpdate().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+		gen.writeStringField("release", sample.getRelease().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
 		
 		gen.writeArrayFieldStart("attributes");
 		for (String key : sample.getAttributeKeys()) {

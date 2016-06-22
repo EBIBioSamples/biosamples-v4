@@ -1,6 +1,7 @@
 package uk.ac.ebi.biosamples.models;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -22,8 +23,8 @@ public class SimpleSample implements Sample {
 
 	protected String accession;
 	protected String name;
-	protected LocalDate releaseDate;
-	protected LocalDate updateDate;
+	protected LocalDateTime releaseDate;
+	protected LocalDateTime updateDate;
 	protected Map<String, Set<String>> keyValues = new HashMap<>();
 	protected Map<String, Map<String, String>> ontologyTerms = new HashMap<>();
 	protected Map<String, Map<String, String>> units = new HashMap<>();
@@ -43,12 +44,12 @@ public class SimpleSample implements Sample {
 	}
 
 	@Override
-	public LocalDate getReleaseDate() {
+	public LocalDateTime getRelease() {
 		return releaseDate;
 	}
 
 	@Override
-	public LocalDate getUpdateDate() {
+	public LocalDateTime getUpdate() {
 		return updateDate;
 	}
 
@@ -124,8 +125,8 @@ public class SimpleSample implements Sample {
 		SimpleSample sample = new SimpleSample();
 		sample.accession = source.getAccession();
 		sample.name = source.getName();
-		sample.updateDate = source.getUpdateDate();
-		sample.releaseDate = source.getReleaseDate();
+		sample.updateDate = source.getUpdate();
+		sample.releaseDate = source.getRelease();
 		sample.keyValues = new HashMap<>();
 		sample.units = new HashMap<>();
 		sample.ontologyTerms = new HashMap<>();
@@ -154,7 +155,7 @@ public class SimpleSample implements Sample {
 		return sample;
 	}
 
-	public static SimpleSample createFrom(String name, String accession, LocalDate updateDate, LocalDate releaseDate, Map<String, Set<String>> keyValues,
+	public static SimpleSample createFrom(String name, String accession, LocalDateTime updateDate, LocalDateTime releaseDate, Map<String, Set<String>> keyValues,
 			Map<String, Map<String, String>> ontologyTerms, Map<String, Map<String, String>> units, Map<String, Set<String>> relationships) {
 		SimpleSample simpleSample = new SimpleSample();
 		simpleSample.accession = accession;

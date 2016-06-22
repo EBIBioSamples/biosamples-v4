@@ -1,6 +1,8 @@
 package uk.ac.ebi.biosamples.models;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Set;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -13,8 +15,8 @@ public interface Sample {
 	public String getAccession();
 	public String getName();
 
-	public LocalDate getReleaseDate();
-	public LocalDate getUpdateDate();
+	public LocalDateTime getRelease();
+	public LocalDateTime getUpdate();
 
 	public Set<String> getAttributeKeys();
 	public Set<String> getAttributeValues(String key);

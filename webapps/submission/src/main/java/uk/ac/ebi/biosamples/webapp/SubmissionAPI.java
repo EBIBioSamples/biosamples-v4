@@ -6,6 +6,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -40,19 +43,20 @@ public class SubmissionAPI {
 	}
 
 	@RequestMapping(value = "/samples", method = RequestMethod.POST)
-	public Sample newSample(@RequestBody Sample sample, HttpServletResponse response) throws AlreadySubmittedException {
+	public Sample newSample(@RequestBody Sample sample, HttpServletResponse response) throws AlreadySubmittedException, BadAccessionException {
 
 		log.info("Recieved POST for "+sample.getAccession());
 		
-		// get anything that already exists from the repository
-		MongoSample oldSample = mongoSampleRepo.findByAccession(sample.getAccession());
-
-		// if something does exist, throw an exception because this is POST not
-		// PUT
-		if (oldSample != null) {
+		if (sample.getAccession() == null || sample.getAccession().trim().length()==0) {
+			throw new BadAccessionException();
+		}
+		
+		//check if this has an accession
+		//if this accession already exists
+		Page<MongoSample> page = mongoSampleRepo.findByAccession(sample.getAccession(), new PageRequest(1,10, new Sort(Sort.Direction.DESC, "updateDate")));
+		if (page.getTotalElements() > 0) {
 			throw new AlreadySubmittedException();
 		}
-
 		
 		//TODO set the update date to todays date?
 		
@@ -71,49 +75,15 @@ public class SubmissionAPI {
 		return newSample;
 	}
 
-	@RequestMapping(value = "/samples", method = RequestMethod.PUT)
-	public Sample updateSample(@RequestBody Sample sample, HttpServletResponse response) throws NotSubmittedException {
-
-		log.info("Recieved PUT for "+sample.getAccession());
-		
-		
-		// get previous version from repository
-		MongoSample oldSample = mongoSampleRepo.findByAccession(sample.getAccession());
-		// if something does not exist, throw an exception because this is PUT
-		// not POST
-		if (oldSample == null) {
-			throw new NotSubmittedException();
-		}
-
-		//TODO compare the sample to the old version, only accept a real change
-		
-		//TODO set the update date to todays date?
-
-		// flag the old record as archived
-		oldSample.doArchive();
-
-		// create the new record
-		MongoSample newSample = MongoSample.createFrom(sample);
-
-		// persist the new and old sample
-		oldSample = mongoSampleRepo.save(oldSample);
-		newSample = mongoSampleRepo.save(newSample);
-
-		// put in loading message queue
-		rabbitTemplate.convertAndSend(Messaging.exchangeForLoading, "", SimpleSample.createFrom(newSample));
-
-		return newSample;
-	}
-
 	@ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Updates must have an accession")
 	public class NotSubmittedException extends Exception {
-		private static final long serialVersionUID = 868777054850746361L;
+	}
 
+	@ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Missing or invalid accession")
+	public class BadAccessionException extends Exception {
 	}
 
 	@ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "New samples cannot have an accession")
 	public class AlreadySubmittedException extends Exception {
-		private static final long serialVersionUID = 502181687021078545L;
-
 	}
 }
