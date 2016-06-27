@@ -28,20 +28,21 @@ public class MongoSample implements Sample {
 	protected String accession;
 
 	protected String name;
-	
+
 	@Indexed
 	protected LocalDateTime release;
 	@Indexed
 	protected LocalDateTime update;
-	
+
 	protected Map<String, Set<String>> keyValues = new HashMap<>();
 	protected Map<String, Map<String, String>> ontologyTerms = new HashMap<>();
 	protected Map<String, Map<String, String>> units = new HashMap<>();
 	protected Map<String, Set<String>> relationships = new HashMap<>();
-	
+
 	private MongoSample() {
 		super();
 	}
+
 	@Override
 	public String getAccession() {
 		return accession;
@@ -107,7 +108,11 @@ public class MongoSample implements Sample {
 	public String getId() {
 		return id;
 	}
-	
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
 	@Override
 	public boolean equals(Object other) {
 		if (other == null)
@@ -131,7 +136,7 @@ public class MongoSample implements Sample {
 		return Objects.hash(name, accession, keyValues, units, ontologyTerms);
 	}
 
-	public static MongoSample createFrom(Sample source) {		
+	public static MongoSample createFrom(Sample source) {
 		MongoSample sample = new MongoSample();
 		sample.accession = source.getAccession();
 		sample.name = source.getName();
@@ -165,19 +170,21 @@ public class MongoSample implements Sample {
 		return sample;
 	}
 
-	public static MongoSample createFrom(String id, String name, String accession, String previousAccession,
-			LocalDateTime updateDate, LocalDateTime releaseDate, Map<String, Set<String>> keyValues,
-			Map<String, Map<String, String>> ontologyTerms, Map<String, Map<String, String>> units) {
-		MongoSample simpleSample = new MongoSample();
-		simpleSample.id = id;
-		simpleSample.name = name;
-		simpleSample.accession = accession;
-		simpleSample.update = updateDate;
-		simpleSample.release = releaseDate;
-		simpleSample.keyValues = keyValues;
-		simpleSample.ontologyTerms = ontologyTerms;
-		simpleSample.units = units;
-		return simpleSample;
+	public static MongoSample createFrom(String id, String name, String accession, LocalDateTime updateDate,
+			LocalDateTime releaseDate, Map<String, Set<String>> keyValues,
+			Map<String, Map<String, String>> ontologyTerms, Map<String, Map<String, String>> units,
+			Map<String, Set<String>> relationships) {
+		MongoSample sample = new MongoSample();
+		sample.id = id;
+		sample.name = name;
+		sample.accession = accession;
+		sample.update = updateDate;
+		sample.release = releaseDate;
+		sample.keyValues = keyValues;
+		sample.ontologyTerms = ontologyTerms;
+		sample.units = units;
+		sample.relationships = relationships;
+		return sample;
 	}
 
 }

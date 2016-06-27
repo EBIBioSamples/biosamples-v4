@@ -17,26 +17,42 @@ public class MongoSampleSerializer extends JsonSerializer<MongoSample> {
 		gen.writeStringField("id", sample.getId());
 		gen.writeStringField("name", sample.getName());
 		gen.writeStringField("accession", sample.getAccession());
-		
+
 		gen.writeStringField("update", sample.getUpdate().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
 		gen.writeStringField("release", sample.getRelease().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
-		
-		gen.writeArrayFieldStart("attributes");
-		for (String key : sample.getAttributeKeys()) {
-			for (String value : sample.getAttributeValues(key)) {
-				gen.writeStartObject();
-				gen.writeStringField("key", key);
-				gen.writeStringField("value", value);
-				if (sample.getAttributeUnit(key, value) != null) {
-					gen.writeStringField("unit", sample.getAttributeUnit(key, value));
+
+		if (sample.getAttributeKeys() != null && sample.getAttributeKeys().size() > 0) {
+			gen.writeArrayFieldStart("attributes");
+			for (String key : sample.getAttributeKeys()) {
+				for (String value : sample.getAttributeValues(key)) {
+					gen.writeStartObject();
+					gen.writeStringField("key", key);
+					gen.writeStringField("value", value);
+					if (sample.getAttributeUnit(key, value) != null) {
+						gen.writeStringField("unit", sample.getAttributeUnit(key, value));
+					}
+					if (sample.getAttributeOntologyTerm(key, value) != null) {
+						gen.writeStringField("ontologyTerm", sample.getAttributeOntologyTerm(key, value).toString());
+					}
+					gen.writeEndObject();
 				}
-				if (sample.getAttributeOntologyTerm(key, value) != null) {
-					gen.writeStringField("ontologyTerm", sample.getAttributeOntologyTerm(key, value).toString());
-				}
-				gen.writeEndObject();
 			}
+			gen.writeEndArray();
 		}
-		gen.writeEndArray();
+
+		if (sample.getRelationshipTypes() != null && sample.getRelationshipTypes().size() > 0) {
+			gen.writeArrayFieldStart("relationships");
+			for (String type : sample.getRelationshipTypes()) {
+				for (String target : sample.getRelationshipTargets(type)) {
+					gen.writeStartObject();
+					gen.writeStringField("type", type);
+					gen.writeStringField("target", target);
+					gen.writeEndObject();
+				}
+			}
+			gen.writeEndArray();
+		}
+		
 		gen.writeEndObject();
 
 	}
