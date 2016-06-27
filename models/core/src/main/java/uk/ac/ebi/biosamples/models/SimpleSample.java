@@ -157,15 +157,15 @@ public class SimpleSample implements Sample {
 
 	public static SimpleSample createFrom(String name, String accession, LocalDateTime updateDate, LocalDateTime releaseDate, Map<String, Set<String>> keyValues,
 			Map<String, Map<String, String>> ontologyTerms, Map<String, Map<String, String>> units, Map<String, Set<String>> relationships) {
-		SimpleSample simpleSample = new SimpleSample();
-		simpleSample.accession = accession;
-		simpleSample.name = name;
-		simpleSample.updateDate = updateDate;
-		simpleSample.releaseDate = releaseDate;
-		simpleSample.keyValues = keyValues;
-		simpleSample.ontologyTerms = ontologyTerms;
-		simpleSample.units = units;
-		simpleSample.relationships = relationships;
-		return simpleSample;
+		SimpleSample sample = new SimpleSample();
+		sample.accession = accession;
+		sample.name = name;
+		sample.updateDate = updateDate;
+		sample.releaseDate = releaseDate;
+		sample.keyValues = keyValues;
+		sample.ontologyTerms = ontologyTerms;
+		sample.units = units;
+		sample.relationships = relationships;
+		return sample;
 	}
 }
