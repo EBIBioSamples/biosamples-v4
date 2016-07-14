@@ -3,6 +3,8 @@ package uk.ac.ebi.biosamples.repos;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.rest.core.annotation.HandleAfterCreate;
 import org.springframework.data.rest.core.annotation.HandleAfterDelete;
 import org.springframework.data.rest.core.annotation.HandleAfterLinkSave;
@@ -23,15 +25,18 @@ public class MongoSampleRepositoryEventHandler {
 	private Logger log = LoggerFactory.getLogger(getClass());
 	
 	@Autowired
-	//private MongoSampleCreateReadRepository repo;
 	private MongoSampleRepository repo;
 	
 	@HandleBeforeCreate
-	public void onBeforeCreateEvent(MongoSample sample) {
+	public void onBeforeCreateEvent(MongoSample sample) throws AlreadySubmittedException {
 		log.info("HandleBeforeCreate triggered");
 		//check if this is a new accession
 		String acc = sample.getAccession();
-		//repo.findByAccession(acc);
+		Page<MongoSample> page = repo.findByAccession(acc, new PageRequest(1,10));
+		if (page.getTotalElements() > 0) {
+			//there was at least one existing one
+			throw new AlreadySubmittedException();
+		}
 	}
 	
 	@HandleBeforeSave

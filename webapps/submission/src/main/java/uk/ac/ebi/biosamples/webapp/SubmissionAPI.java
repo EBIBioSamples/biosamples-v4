@@ -9,18 +9,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
 import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import uk.ac.ebi.biosamples.Messaging;
 import uk.ac.ebi.biosamples.models.MongoSample;
 import uk.ac.ebi.biosamples.models.Sample;
 import uk.ac.ebi.biosamples.models.SimpleSample;
+import uk.ac.ebi.biosamples.repos.AlreadySubmittedException;
+import uk.ac.ebi.biosamples.repos.BadAccessionException;
 import uk.ac.ebi.biosamples.repos.MongoSampleRepository;
 
 @RestController
@@ -73,17 +73,5 @@ public class SubmissionAPI {
 		rabbitTemplate.convertAndSend(Messaging.exchangeForLoading, "", SimpleSample.createFrom(newSample));
 
 		return newSample;
-	}
-
-	@ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Updates must have an accession")
-	public class NotSubmittedException extends Exception {
-	}
-
-	@ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Missing or invalid accession")
-	public class BadAccessionException extends Exception {
-	}
-
-	@ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "New samples cannot have an accession")
-	public class AlreadySubmittedException extends Exception {
 	}
 }
