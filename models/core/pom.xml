@@ -6,9 +6,9 @@
 	<packaging>jar</packaging>
 
 	<parent>
-		<groupId>bsd2017</groupId>
-		<artifactId>bsd2017</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
+		<groupId>uk.ac.ebi.biosamples</groupId>
+		<artifactId>biosamples</artifactId>
+		<version>4.0.0-SNAPSHOT</version>
 		<relativePath>../../</relativePath>
 	</parent>
 
@@ -24,6 +24,13 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
+		</dependency>
+
+		<!-- issue in Spring-boot 1.4.0.RELEASE only -->
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 

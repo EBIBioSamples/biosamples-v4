@@ -6,25 +6,25 @@
 	<packaging>jar</packaging>
 
 	<parent>
-		<groupId>bsd2017</groupId>
-		<artifactId>bsd2017</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
+		<groupId>uk.ac.ebi.biosamples</groupId>
+		<artifactId>biosamples</artifactId>
+		<version>4.0.0-SNAPSHOT</version>
 		<relativePath>../../</relativePath>
 	</parent>
 
 	<dependencies>
 		<dependency>
-			<groupId>bsd2017</groupId>
+			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>models-neo4j</artifactId>
 			<version>${bsd2017.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>bsd2017</groupId>
+			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>models-core</artifactId>
 			<version>${bsd2017.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>bsd2017</groupId>
+			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>messaging</artifactId>
 			<version>${bsd2017.version}</version>
 		</dependency>

@@ -2,22 +2,21 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>bsd2017</groupId>
-	<artifactId>bsd2017</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<groupId>uk.ac.ebi.biosamples</groupId>
+	<artifactId>biosamples</artifactId>
+	<version>4.0.0-SNAPSHOT</version>
 
 	<packaging>pom</packaging>
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<!-- <version>1.3.5.RELEASE</version> -->
-		<version>1.4.0.M3</version>
+		<version>1.4.0.RELEASE</version>
 	</parent>
 
 	<properties>
 		<java.version>1.8</java.version>
-		<bsd2017.version>0.0.1-SNAPSHOT</bsd2017.version>
+		<bsd2017.version>4.0.0-SNAPSHOT</bsd2017.version>
 	</properties>
 
 	<modules>
