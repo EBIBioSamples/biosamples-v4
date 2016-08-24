@@ -1,8 +1,14 @@
 package uk.ac.ebi.biosamples.models;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.boot.SpringBootConfiguration;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.gson.GsonAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.json.JsonTest;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.json.JacksonTester;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,6 +32,12 @@ import java.util.Set;
 public class SerializationTest {
 
 	private JacksonTester<SimpleSample> json;
+	
+    @Before
+    public void setup() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        JacksonTester.initFields(this, objectMapper);
+    }
 
 	private SimpleSample getSimpleSample() throws URISyntaxException {
 		String name = "Test Sample";
@@ -82,13 +94,9 @@ public class SerializationTest {
 		assertThat(this.json.readObject("/TEST1.json")).isEqualTo(getSimpleSample());
 	}
 	
-	@Configuration
+	@SpringBootConfiguration
 	public static class TestConfig {
-		@Bean
-		public ObjectMapper getObjectMapper() {
-			ObjectMapper om = new ObjectMapper();
-			return om;
-		}
+		
 	}
 
 }

@@ -14,7 +14,7 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>bsd2017</groupId>
+			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>models-core</artifactId>
 			<version>${bsd2017.version}</version>
 		</dependency>

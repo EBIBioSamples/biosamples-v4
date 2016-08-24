@@ -1,5 +1,6 @@
 package uk.ac.ebi.biosamples.models;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -30,6 +31,12 @@ public class MongoSerializationTest {
 	private Logger log = LoggerFactory.getLogger(getClass());
 
 	private JacksonTester<MongoSample> json;
+	
+    @Before
+    public void setup() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        JacksonTester.initFields(this, objectMapper);
+    }
 
 	private MongoSample getMongoSample() throws URISyntaxException {
 		String name = "Test Sample";
@@ -89,11 +96,7 @@ public class MongoSerializationTest {
 	
 	@Configuration
 	public static class TestConfig {
-		@Bean
-		public ObjectMapper getObjectMapper() {
-			ObjectMapper om = new ObjectMapper();
-			return om;
-		}
+		
 	}
 
 }
