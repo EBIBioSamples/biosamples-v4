@@ -22,6 +22,7 @@ public class NeoSample {
 
 	// TODO make this handle any generic relationship type
 
+	@SuppressWarnings("unused")
 	private NeoSample() {
 	}
 
