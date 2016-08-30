@@ -1,16 +1,11 @@
 #!/bin/bash
 set -e
 
-PATH_MONGO=/home/faulcon/Desktop/mongodb/mongodb-linux-x86_64-ubuntu1404-3.2.6
-PATH_MONGO_DATA=/home/faulcon/Desktop/mongodb/data
-PATH_MONGO_LOG=/home/faulcon/Desktop/mongodb/mongo.log
-PATH_RABBITMQ=/home/faulcon/Desktop/rabbitmq/rabbitmq_server-3.6.2
-PATH_NEO4J=/home/faulcon/Desktop/neo4j/neo4j-community-3.0.1
-
-PATH_HOME=/home/faulcon/work/prototype/bsd2017
+#read environmental config from here...
+source "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"/run_env.sh
 
 #make sure everything is up to date and built
-cd /home/faulcon/work/prototype/bsd2017
+cd $PATH_HOME
 mvn clean package
 
 #shutdown mongo if running
