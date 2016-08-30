@@ -2,7 +2,6 @@ package uk.ac.ebi.biosamples.ncbi;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Iterator;
 import java.util.Queue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
