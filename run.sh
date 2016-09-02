@@ -56,7 +56,7 @@ $PATH_RABBITMQ/sbin/rabbitmqctl purge_queue biosamples.tobeindexed.neo4j
 
 #startup submission webapp
 echo \*\*\* Starting Submission WebApp...
-nice java -jar $PATH_HOME/webapps/submission/target/webapps-submission-0.0.1-SNAPSHOT.war --server.port=8081 2>&1 > $PATH_HOME/submission.log & PID_SUBS=$!
+nice java -jar $PATH_HOME/webapps/submission/target/webapps-submission-4.0.0-SNAPSHOT.war --server.port=8081 2>&1 > $PATH_HOME/submission.log & PID_SUBS=$!
 
 
 #check if its running
@@ -93,15 +93,15 @@ echo \*\*\* Starting NCBI pipeline...
 
 
 echo \*\*\* Starting JPA agent...
-#nice java -jar $PATH_HOME/agents/jpa/target/agents-jpa-0.0.1-SNAPSHOT.jar --spring.rabbitmq.listener.max-concurrency=8  2>&1 > $PATH_HOME/agents-jpa.log & PID_LOADER=$!
+nice java -jar $PATH_HOME/agents/jpa/target/agents-jpa-0.0.1-SNAPSHOT.jar --spring.rabbitmq.listener.max-concurrency=8  2>&1 > $PATH_HOME/agents-jpa.log & PID_LOADER=$!
 
 echo \*\*\* Starting Neo4J agent...
-#nice java -jar $PATH_HOME/agents/neo4j/target/agents-neo4j-0.0.1-SNAPSHOT.jar --spring.rabbitmq.listener.max-concurrency=8  2>&1 > $PATH_HOME/agents-neo4j.log & PID_INDEXNEO=$!
+nice java -jar $PATH_HOME/agents/neo4j/target/agents-neo4j-0.0.1-SNAPSHOT.jar --spring.rabbitmq.listener.max-concurrency=8  2>&1 > $PATH_HOME/agents-neo4j.log & PID_INDEXNEO=$!
 
 #while true; do THING; done;
 
 #wait for user to interact with the system before carrying on
-read -p "press return to continue"
+read -p "press return to shutdown services"
 
 #http://localhost:15672/#/queues/%2F/biosamples.tobeloaded
 #http://localhost:28017
