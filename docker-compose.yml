@@ -11,6 +11,7 @@ services:
             - biosamples
         command: ["java", "-jar", "agents-jpa-4.0.0-SNAPSHOT.jar", 
             "--spring.rabbitmq.host=rabbitmq", 
+            "--spring.rabbitmq.publisher-confirms=true", 
             "--spring.jpa.show-sql=true", 
             "--spring.jpa.hibernate.ddl-auto=none", 
             "--spring.datasource.url=jdbc:postgresql://postgres:5432/postgres", 
@@ -26,6 +27,7 @@ services:
             - biosamples
         command: ["java", "-jar", "agents-neo4j-4.0.0-SNAPSHOT.jar", 
             "--spring.rabbitmq.host=rabbitmq",
+            "--spring.rabbitmq.publisher-confirms=true",
             "--spring.data.neo4j.uri=http://neo4j:7474",
             "--spring.data.neo4j.username=neo4j"]
         
@@ -38,7 +40,8 @@ services:
         networks:
             - biosamples
         command: ["java", "-jar", "agents-solr-4.0.0-SNAPSHOT.jar", 
-            "--spring.rabbitmq.host=rabbitmq"]
+            "--spring.rabbitmq.host=rabbitmq",
+            "--spring.rabbitmq.publisher-confirms=true"]
 
 
     mongo:
