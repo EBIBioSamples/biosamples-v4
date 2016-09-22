@@ -1,0 +1,79 @@
+version: '2'
+
+services:
+    biosamples-agent-jpa:
+        build: .
+        image: biosamples:latest
+        links: 
+            - postgres
+            - rabbitmq
+        networks:
+            - biosamples
+        command: ["java", "-jar", "agents-jpa-4.0.0-SNAPSHOT.jar", 
+            "--spring.rabbitmq.host=rabbitmq", 
+            "--spring.jpa.show-sql=true", 
+            "--spring.jpa.hibernate.ddl-auto=none", 
+            "--spring.datasource.url=jdbc:postgresql://postgres:5432/postgres", 
+            "--spring.datasource.username=postgres"]
+
+    biosamples-agent-neo4j:
+        build: .
+        image: biosamples:latest
+        links: 
+            - neo4j
+            - rabbitmq
+        networks:
+            - biosamples
+        command: ["java", "-jar", "agents-neo4j-4.0.0-SNAPSHOT.jar", 
+            "--spring.rabbitmq.host=rabbitmq",
+            "--spring.data.neo4j.uri=http://neo4j:7474",
+            "--spring.data.neo4j.username=neo4j"]
+        
+    biosamples-agent-solr:
+        build: .
+        image: biosamples:latest
+        links: 
+            - solr
+            - rabbitmq
+        networks:
+            - biosamples
+        command: ["java", "-jar", "agents-solr-4.0.0-SNAPSHOT.jar", 
+            "--spring.rabbitmq.host=rabbitmq"]
+
+
+    mongo:
+        image: mongo:3.2
+        networks:
+            - biosamples
+        
+    rabbitmq:
+        image: rabbitmq:3.6-management
+        networks:
+            - biosamples
+        ports:
+            - "15672:15672"
+        
+    postgres:
+        image: postgres:9.5
+        networks:
+            - biosamples
+        
+    neo4j:
+        image: neo4j:3.0
+        networks:
+            - biosamples
+        environment:
+        #set environment variable to disable request to change password
+            - NEO4J_AUTH=none
+        ports:
+            - "7474:7474"
+        
+    solr:
+        image: solr:6.2
+        networks:
+            - biosamples
+        ports:
+            - "8983:8983"
+
+networks:
+    biosamples:
