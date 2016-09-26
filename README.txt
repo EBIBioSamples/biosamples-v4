@@ -56,9 +56,9 @@ See docker-compose.yml file for more information on service names and dependenci
 Developing
 ==========
 
-You will need:
- - Java 8 JDK (preferably Oracle)
- - Maven 3+
- - Git
- - Docker and docker-compose 
+Docker can be run from within a virtual machine e.g VirtualBox. This is useful if it causes any problems for your machine or if you have an OS that is not supported.
+
+You might want to mount the virtal machines directory with the host, so you can work in a standard IDE outside of the VM. VirtualBox supports this.
+
+If you ware using a virtual machine, you might also want to configure docker-compose to start by default. 
  
