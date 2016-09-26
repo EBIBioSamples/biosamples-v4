@@ -2,10 +2,17 @@ version: '2'
 
 services:
 
+    biosamples-pipelines:
+        build: .
+        image: biosamples:latest
+        networks:
+            - biosamples
+        #by default, this won't run any of the pipelines
+        #to run a pipeline, use docker-compose run 
+        command: ["java", "-jar", "pipelines-4.0.0-SNAPSHOT.jar"]
+
     biosamples-agents-jpa:
-        build: 
-          context: .
-          dockerfile: Dockerfile
+        build: .
         image: biosamples:latest
         networks:
             - biosamples
@@ -22,9 +29,7 @@ services:
         restart: always
 
     biosamples-agents-neo4j:
-        build: 
-          context: .
-          dockerfile: Dockerfile
+        build: .
         image: biosamples:latest
         networks:
             - biosamples
@@ -39,9 +44,7 @@ services:
         restart: always
         
     biosamples-agents-solr:
-        build: 
-          context: .
-          dockerfile: Dockerfile
+        build: .
         image: biosamples:latest
         networks:
             - biosamples
@@ -55,9 +58,7 @@ services:
         restart: always
         
     biosamples-webapps-api:
-        build: 
-          context: .
-          dockerfile: Dockerfile
+        build: .
         image: biosamples:latest
         networks:
             - biosamples
@@ -73,9 +74,7 @@ services:
         restart: always
         
     biosamples-webapps-api-internal:
-        build: 
-          context: .
-          dockerfile: Dockerfile
+        build: .
         image: biosamples:latest
         networks:
             - biosamples
@@ -98,9 +97,7 @@ services:
         restart: always
         
     biosamples-webapps-submission:
-        build: 
-          context: .
-          dockerfile: Dockerfile
+        build: .
         image: biosamples:latest
         networks:
             - biosamples
