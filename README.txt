@@ -58,7 +58,7 @@ Developing
 
 Docker can be run from within a virtual machine e.g VirtualBox. This is useful if it causes any problems for your machine or if you have an OS that is not supported.
 
-You might want to mount the virtal machines directory with the host, so you can work in a standard IDE outside of the VM. VirtualBox supports this.
+You might want to mount the virtual machines directory with the host, so you can work in a standard IDE outside of the VM. VirtualBox supports this.
 
 If you ware using a virtual machine, you might also want to configure docker-compose to start by default. 
  
