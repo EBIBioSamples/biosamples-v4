@@ -2,15 +2,10 @@ version: '2'
 
 services:
 
-    biosamples:
+    biosamples-agents-jpa:
         build: 
           context: .
           dockerfile: Dockerfile
-        image: biosamples:latest
-        #need to specify a command so that it can technically be run during docker-compose-up
-        command: echo "Hello World"
-
-    biosamples-agents-jpa:
         image: biosamples:latest
         networks:
             - biosamples
@@ -27,6 +22,9 @@ services:
         restart: always
 
     biosamples-agents-neo4j:
+        build: 
+          context: .
+          dockerfile: Dockerfile
         image: biosamples:latest
         networks:
             - biosamples
@@ -41,6 +39,9 @@ services:
         restart: always
         
     biosamples-agents-solr:
+        build: 
+          context: .
+          dockerfile: Dockerfile
         image: biosamples:latest
         networks:
             - biosamples
@@ -54,6 +55,9 @@ services:
         restart: always
         
     biosamples-webapps-api:
+        build: 
+          context: .
+          dockerfile: Dockerfile
         image: biosamples:latest
         networks:
             - biosamples
@@ -69,6 +73,9 @@ services:
         restart: always
         
     biosamples-webapps-api-internal:
+        build: 
+          context: .
+          dockerfile: Dockerfile
         image: biosamples:latest
         networks:
             - biosamples
@@ -91,6 +98,9 @@ services:
         restart: always
         
     biosamples-webapps-submission:
+        build: 
+          context: .
+          dockerfile: Dockerfile
         image: biosamples:latest
         networks:
             - biosamples
