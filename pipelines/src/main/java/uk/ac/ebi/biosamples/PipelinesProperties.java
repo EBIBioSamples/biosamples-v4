@@ -1,6 +1,7 @@
 package uk.ac.ebi.biosamples;
 
 import java.io.File;
+import java.net.URI;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -17,6 +18,12 @@ public class PipelinesProperties {
 	@Value("${biosamples.ncbi.remotepath:/biosample/biosample_set.xml.gz}")
 	private String ncbiRemotePath;
 	
+	@Value("${biosamples.ncbi.httpuri:http://ftp.ncbi.nlm.nih.gov/biosample/biosample_set.xml.gz}")
+	private URI ncbiHttpUri;
+	
+	@Value("${biosamples.submissionuri:http://localhost:8083/}")
+	private URI biosampleSubmissionURI;
+	
 	public String getNCBIFTPServer() {
 		return ncbiFTPserver;
 	}
@@ -27,6 +34,14 @@ public class PipelinesProperties {
 	
 	public String getNCBIRemotePath() {
 		return ncbiRemotePath;
+	}
+
+	public URI getBiosampleSubmissionURI() {
+		return biosampleSubmissionURI;
+	}
+
+	public URI getNcbiHttpUri() {
+		return ncbiHttpUri;
 	}
 
 }
