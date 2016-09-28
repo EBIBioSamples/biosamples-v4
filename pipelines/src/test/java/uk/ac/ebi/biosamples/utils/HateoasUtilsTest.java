@@ -10,10 +10,12 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.Resources;
 import org.springframework.hateoas.UriTemplate;
 import org.springframework.hateoas.hal.Jackson2HalModule;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.web.client.ExpectedCount;
@@ -76,10 +78,11 @@ public class HateoasUtilsTest {
 			.andExpect(MockRestRequestMatchers.method(HttpMethod.GET))
 			.andRespond(MockRestResponseCreators.withSuccess("{ \"_links\" : { \"test\" : { \"href\" : \"/api/this/is/a/test\" } } }", mediaHalJson));
 
+		//this response is overloaded to be compatible with both Resource and Resources
 		server.expect(ExpectedCount.once(), MockRestRequestMatchers.requestTo("/api/this/is/a/test"))
 			.andExpect(MockRestRequestMatchers.method(HttpMethod.GET))
-			.andRespond(MockRestResponseCreators.withSuccess("{ \"name\": \"floble\", \"_links\" : { \"self\" : { \"href\" : \"/api/this/is/a/test\" } } }", mediaHalJson));
-		
+			.andRespond(MockRestResponseCreators.withSuccess("{ \"name\" : \"floble\", \"_embedded\" :  { \"things\" : [ { \"name\" : \"floble\", \"_links\" : { \"self\" : { \"href\" : \"/api/this/is/a/test\" } } } ] }, \"_links\" : { \"self\" : { \"href\" : \"/api/this/is/a/test\" } } }", mediaHalJson));
+	
 		
 		hateoasUtils = new HateoasUtils(restTemplate);
 	}
@@ -105,6 +108,25 @@ public class HateoasUtilsTest {
 		Assert.assertNotNull(resource);
 		Assert.assertNotNull(resource.getContent());		
 		Assert.assertEquals("floble", resource.getContent().getName());
+		Assert.assertEquals("/api/this/is/a/test", resource.getLink("self").getHref());
+		
+		// Verify all expectations met
+		server.verify();
+	}
+
+	@Test
+	public void getHateoasResourcesTest() {
+		ResponseEntity<Resources<Resource<Thing>>> response = hateoasUtils.getHateoasResponse(
+				URI.create("/api"), new ParameterizedTypeReference<Resources<Resource<Thing>>>(){}, "this", "is", "a", "test");		
+		
+		Assert.assertNotNull(response);
+		Assert.assertNotNull(response.getBody());
+		Assert.assertNotNull(response.getBody().getContent());	
+		Assert.assertEquals("/api/this/is/a/test", response.getBody().getLink("self").getHref());
+		Assert.assertEquals(1, response.getBody().getContent().size());		
+		Resource<Thing> thing = response.getBody().getContent().iterator().next();
+		Assert.assertEquals("floble", thing.getContent().getName());
+		Assert.assertEquals("/api/this/is/a/test", thing.getLink("self").getHref());
 		
 		// Verify all expectations met
 		server.verify();

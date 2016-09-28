@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.UriTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -34,6 +35,7 @@ public class HateoasUtils {
 	public HateoasUtils(@Autowired RestOperations restTemplate) {
 		this.restTemplate = restTemplate;
 	}
+	
 	public <T> Resource<T> getHateoasResource(URI uri, ParameterizedTypeReference<Resource<T>> parameterizedTypeReferece, String... rels) {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.parseMediaType("application/hal+json"));
@@ -42,15 +44,15 @@ public class HateoasUtils {
 		return getHateoasResource(uri, parameterizedTypeReferece, httpEntity, rels);
 	}
 	
-	public <T> Resource<T> getHateoasResource(URI uri, ParameterizedTypeReference<Resource<T>> parameterizedTypeReferece, HttpEntity<T> requestEntity, String... rels) {
+	public <T> Resource<T> getHateoasResource(URI uri, ParameterizedTypeReference<Resource<T>> parameterizedTypeReferece, HttpEntity<?> requestEntity, String... rels) {
 		return getHateoasResponse(uri, parameterizedTypeReferece, requestEntity, rels).getBody();
 	}
 	
-	public <T> ResponseEntity<Resource<T>> getHateoasResponse(URI uri, ParameterizedTypeReference<Resource<T>> parameterizedTypeReferece, String... rels) {
+	public <T extends ResourceSupport> ResponseEntity<T> getHateoasResponse(URI uri, ParameterizedTypeReference<T> parameterizedTypeReferece, String... rels) {
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.parseMediaType("application/hal+json"));
-		HttpEntity<T> httpEntity = new HttpEntity<>(null, headers);	
+		HttpEntity<?> httpEntity = new HttpEntity<>(null, headers);	
 
 		return getHateoasResponse(uri, parameterizedTypeReferece, httpEntity, rels);
 	}
@@ -67,8 +69,8 @@ public class HateoasUtils {
 	 * @param rels Zero or more relations to follow
 	 * @return
 	 */
-	public <T> ResponseEntity<Resource<T>> getHateoasResponse(URI uri, ParameterizedTypeReference<Resource<T>> parameterizedTypeReferece, HttpEntity<T> requestEntity, String... rels) {
-		ResponseEntity<Resource<T>> response = null;
+	public <T extends ResourceSupport> ResponseEntity<T> getHateoasResponse(URI uri, ParameterizedTypeReference<T> parameterizedTypeReferece, HttpEntity<?> requestEntity, String... rels) {
+		ResponseEntity<T> response = null;
 		int i = 0;
 		do {
 			log.info("Getting URI "+uri);
@@ -78,7 +80,7 @@ public class HateoasUtils {
 					requestEntity,
 					parameterizedTypeReferece);
 			
-			Resource<?> body = response.getBody();
+			T body = response.getBody();
 			if (i < rels.length) {
 				//if there is another relation to follow, update the uri and follow it
 				Link link = body.getLink(rels[i]);
