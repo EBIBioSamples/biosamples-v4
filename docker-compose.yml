@@ -7,9 +7,12 @@ services:
         image: biosamples:latest
         networks:
             - biosamples
+        links:
+            - biosamples-webapps-submission
         #by default, this won't run any of the pipelines
         #to run a pipeline, use docker-compose run 
         command: ["java", "-jar", "pipelines-4.0.0-SNAPSHOT.jar"]
+        # command: ["java", "-jar", "pipelines-4.0.0-SNAPSHOT.jar", "--ncbi", "--biosamples.ncbi.localfile=./ncbi.xml.gz"]
 
     biosamples-agents-jpa:
         build: .
