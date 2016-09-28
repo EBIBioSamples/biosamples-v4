@@ -1,6 +1,7 @@
 package uk.ac.ebi.biosamples.utils;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -30,6 +31,12 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor {
 		completedJobs.incrementAndGet();
 	}
 
+	/**
+	 * By default creates a pool with a queue size of 1000 that 
+	 * will test to increase/decrease threads every 60 seconds
+	 * and does not guarantee to distribute jobs fairly amoung threads
+	 * @return
+	 */
 	public static AdaptiveThreadPoolExecutor create() {
 		return create(1000,60000,false);
 	}
@@ -72,7 +79,8 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor {
 
 		private final AdaptiveThreadPoolExecutor pool;
 		private final int pollInterval;
-		private final Map<Integer, Double> doneScores = new HashMap<>();
+		private final Map<Integer, Double> threadsScores = new HashMap<>();
+		private final Map<Integer, Long> threadsTime = new HashMap<>();
 		private final double margin = 1.1;
 
 		public PoolMonitor(AdaptiveThreadPoolExecutor pool, int pollInterval) {
@@ -103,25 +111,61 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor {
 				int currentThreads = pool.getMaximumPoolSize();
 				int doneJobs = pool.completedJobs.getAndSet(0);
 				
-				double score = (((double)doneJobs)/interval)*1000000000.0d;
+				//number of jobs per sec per thread
+				double score = (((double)doneJobs)*1000000000.0d)/(interval*currentThreads);
 				
-
+				log.info("Completed "+doneJobs+" in "+interval+"ns using "+currentThreads+" threads : score = "+score);
 				
-				log.info("Completed "+doneJobs+" in "+interval+"ns using "+currentThreads+" threads");
+								
+				//store the result of this score
+				threadsScores.put(currentThreads, score);
+				threadsTime.put(currentThreads, now);
 				
-				doneScores.put(currentThreads, score);
+				//remove any scores that are too old
+				Iterator<Integer> iterator = threadsTime.keySet().iterator();
+				while (iterator.hasNext()) {
+					int testThreads = iterator.next();
+					long testTime = threadsTime.get(testThreads);
+					//more than 10 pollings ago?
+					if (testTime + (pollInterval*1000000l*10) < now) {
+						//too old score, remove it
+						log.info("Remove out-of-date score for "+testThreads);
+						iterator.remove();
+						threadsTime.remove(testThreads);
+					}
+				}
 				
-				//see if we might do better increase or decreasing the threads				
-				if (!doneScores.containsKey(currentThreads+1) || doneScores.get(currentThreads+1) > margin*doneJobs) {
-					log.info("Adjusting to use "+(currentThreads+1)+" threads");
-					//increase the number of threads
-					pool.setMaximumPoolSize(currentThreads+1);
-					pool.setCorePoolSize(currentThreads+1);
-				} else  if (!doneScores.containsKey(currentThreads-1) || doneScores.get(currentThreads-1) > margin*doneJobs) {
-					//decrease the number of threads
-					pool.setMaximumPoolSize(currentThreads-1);
-					pool.setCorePoolSize(currentThreads-1);
-					log.info("Adjusting to use "+(currentThreads-1)+" threads");
+				//work out what the best number of threads is
+				double bestScore = margin*score;
+				int bestThreads = currentThreads;
+				for (int testThreads : threadsScores.keySet()) {
+					double testScore = threadsScores.get(testThreads); 
+					if (testScore > bestScore) {
+						bestScore = testScore;
+						bestThreads = testThreads;
+					}
+				}
+				log.info("Best scoring number of threads is "+bestThreads+" with "+bestScore);
+								
+				//if we are more than margin below the best, change to the best
+				if (margin*score < bestScore) {	
+					log.info("Adjusting to use "+(bestThreads)+" threads");
+					pool.setCorePoolSize(bestThreads);
+					pool.setMaximumPoolSize(bestThreads);
+				} else {
+					//experiment if we might do better increase or decreasing the threads	
+					if (!threadsScores.containsKey(currentThreads+1) || threadsScores.get(currentThreads+1) > margin*score) {
+						//increase the number of threads			
+						log.info("Adjusting to use "+(currentThreads+1)+" threads");
+						pool.setCorePoolSize(currentThreads+1);
+						pool.setMaximumPoolSize(currentThreads+1);
+					} else if (currentThreads > 1 && (!threadsScores.containsKey(currentThreads-1) || threadsScores.get(currentThreads-1) > margin*score)) {
+						//decrease the number of threads
+						//only decrease threads if there are at least 2 (so we don't drop to zero!)
+						log.info("Adjusting to use "+(currentThreads-1)+" threads");
+						pool.setCorePoolSize(currentThreads-1);
+						pool.setMaximumPoolSize(currentThreads-1);
+					}
 				}
 			}
 		}
