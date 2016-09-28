@@ -136,7 +136,7 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor {
 				}
 				
 				//work out what the best number of threads is
-				double bestScore = margin*score;
+				double bestScore = score;
 				int bestThreads = currentThreads;
 				for (int testThreads : threadsScores.keySet()) {
 					double testScore = threadsScores.get(testThreads); 
@@ -148,7 +148,7 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor {
 				log.info("Best scoring number of threads is "+bestThreads+" with "+bestScore);
 								
 				//if we are more than margin below the best, change to the best
-				if (margin*score < bestScore) {	
+				if (bestThreads != currentThreads && margin*score < bestScore) {	
 					log.info("Adjusting to use "+(bestThreads)+" threads");
 					pool.setCorePoolSize(bestThreads);
 					pool.setMaximumPoolSize(bestThreads);
