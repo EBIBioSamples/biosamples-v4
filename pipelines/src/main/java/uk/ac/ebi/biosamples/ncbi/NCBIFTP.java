@@ -122,18 +122,8 @@ public class NCBIFTP {
 				// the move the temporary location to the final one
 				localTemp = Files.createTempFile(Paths.get(localCopy.getParentFile().toURI()), "ncbi", "tmp").toFile();
 	
-				OutputStream fileoutputstream = null;
-				try {
-					fileoutputstream = new BufferedOutputStream(new FileOutputStream(localTemp));
+				try (OutputStream fileoutputstream = new BufferedOutputStream(new FileOutputStream(localTemp))) {
 					ftpClient.retrieveFile(remoteFileName, fileoutputstream);
-				} finally {
-					if (fileoutputstream != null) {
-						try {
-							fileoutputstream.close();
-						} catch (IOException e) {
-							// do nothing
-						}
-					}
 				}
 				log.info("Downloaded " + remoteFileName + " to " + localTemp);
 				Files.move(localTemp.toPath(), localCopy.toPath(), StandardCopyOption.ATOMIC_MOVE,

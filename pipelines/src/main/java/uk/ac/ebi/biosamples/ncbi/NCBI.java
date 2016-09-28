@@ -25,11 +25,11 @@ public class NCBI implements ApplicationRunner {
 	
 	private Logger log = LoggerFactory.getLogger(getClass());
 	
-	@Value("${biosamples.pipelines.ncbi.threadcount:1}")
+	@Value("${biosamples.pipelines.ncbi.threadcount:0}")
 	private int threadCount;
 	
 	@Autowired
-	private NCBIFTP ncbiftp;
+	private NCBIHTTP ncbiHttp;
 	
 	@Autowired
 	private XMLFragmenter xmlFragmenter;
@@ -58,39 +58,35 @@ public class NCBI implements ApplicationRunner {
 
 		callback.setFromDate(fromDate);
 		callback.setToDate(toDate);
+
+		//try (InputStream is = ncbiHttp.streamFromLocalCopy()) {
+		try (InputStream is = ncbiHttp.streamFromRemote()) {
 		
-		
-		//TODO read this from arguments
-		ExecutorService executorService = null;
-		if (threadCount > 0) {
-			//executorService = Executors.newFixedThreadPool(threadCount);
-			executorService = AdaptiveThreadPoolExecutor.create();
-			try {
-				Queue<Future<Void>> futures = new LinkedList<>();
-				
-				callback.setExecutorService(executorService);
-				callback.setFutures(futures);
-				
-				//this does the actual processing
-				try (InputStream is = ncbiftp.streamFromLocalCopy()) {
+			if (threadCount > 0) {
+				ExecutorService executorService = AdaptiveThreadPoolExecutor.create();
+				try {
+					Queue<Future<Void>> futures = new LinkedList<>();
+					
+					callback.setExecutorService(executorService);
+					callback.setFutures(futures);
+					
+					//this does the actual processing
 					xmlFragmenter.handleStream(is, "UTF-8", callback);
+					
+					log.info("waiting for futures");
+					
+					//wait for anything to finish
+					for (Future<Void> future : futures) {
+						future.get();
+					}
+				} finally {
+					executorService.shutdown();
+					executorService.awaitTermination(1, TimeUnit.MINUTES);
 				}
-				
-				log.info("waiting for futures");
-				
-				//wait for anything to finish
-				for (Future<Void> future : futures) {
-					future.get();
-				}
-			} finally {
-				executorService.shutdown();
-				executorService.awaitTermination(1, TimeUnit.MINUTES);
-			}
-		} else {
-			//do all on master thread
-			//this does the actual processing
-			try (InputStream is = ncbiftp.streamFromLocalCopy()) {
-				xmlFragmenter.handleStream(is, "UTF-8", callback);
+			} else {
+				//do all on master thread
+				//this does the actual processing
+					xmlFragmenter.handleStream(is, "UTF-8", callback);
 			}
 		}
 		 
