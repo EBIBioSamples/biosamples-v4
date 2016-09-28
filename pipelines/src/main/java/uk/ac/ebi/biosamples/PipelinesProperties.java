@@ -20,6 +20,9 @@ public class PipelinesProperties {
 	
 	@Value("${biosamples.ncbi.httpuri:http://ftp.ncbi.nlm.nih.gov/biosample/biosample_set.xml.gz}")
 	private URI ncbiHttpUri;
+
+	@Value("${biosamples.ncbi.threadcount:0}")
+	private int ncbiThreadCount;
 	
 	@Value("${biosamples.submissionuri:http://localhost:8083/}")
 	private URI biosampleSubmissionURI;
@@ -40,8 +43,12 @@ public class PipelinesProperties {
 		return biosampleSubmissionURI;
 	}
 
-	public URI getNcbiHttpUri() {
+	public URI getNCBIHttpUri() {
 		return ncbiHttpUri;
+	}
+
+	public int getNCBIThreadCount() {
+		return ncbiThreadCount;
 	}
 
 }

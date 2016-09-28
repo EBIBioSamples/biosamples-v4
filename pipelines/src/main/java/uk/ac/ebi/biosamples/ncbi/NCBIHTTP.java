@@ -57,7 +57,7 @@ public class NCBIHTTP {
 		
 		log.info("Starting streaming fom local copy of NCBI XML");
 
-		URI remoteFileName = pipelinesProperties.getNcbiHttpUri();
+		URI remoteFileName = pipelinesProperties.getNCBIHttpUri();
 		Path tempCopy = Files.createTempFile("biosamples_ncbi", ".tmp");
 		Path localCopy = pipelinesProperties.getNCBILocalFile().toPath();
 
@@ -78,7 +78,7 @@ public class NCBIHTTP {
 		
 		log.info("Starting streaming fom remote of NCBI XML");
 
-		URI remoteFileName = pipelinesProperties.getNcbiHttpUri();
+		URI remoteFileName = pipelinesProperties.getNCBIHttpUri();
 		
 		// now open a stream for the local version
 		return new GZIPInputStream(new BufferedInputStream(remoteFileName.toURL().openStream()));

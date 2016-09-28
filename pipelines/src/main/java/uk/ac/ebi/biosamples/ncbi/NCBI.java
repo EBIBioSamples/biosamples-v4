@@ -17,6 +17,7 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
+import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.XMLFragmenter;
 
@@ -25,8 +26,8 @@ public class NCBI implements ApplicationRunner {
 	
 	private Logger log = LoggerFactory.getLogger(getClass());
 	
-	@Value("${biosamples.pipelines.ncbi.threadcount:0}")
-	private int threadCount;
+	@Autowired
+	private PipelinesProperties pipelinesProperties;
 	
 	@Autowired
 	private NCBIHTTP ncbiHttp;
@@ -62,7 +63,7 @@ public class NCBI implements ApplicationRunner {
 		//try (InputStream is = ncbiHttp.streamFromLocalCopy()) {
 		try (InputStream is = ncbiHttp.streamFromRemote()) {
 		
-			if (threadCount > 0) {
+			if (pipelinesProperties.getNCBIThreadCount() > 0) {
 				ExecutorService executorService = AdaptiveThreadPoolExecutor.create();
 				try {
 					Queue<Future<Void>> futures = new LinkedList<>();
