@@ -6,7 +6,7 @@ Install docker-compose https://docs.docker.com/compose/
 
 `mvn package`
 
-`docker-compose up`
+`docker-compose up -d`
 
 public read API at http://localhost:8081/
 public submission API at http://localhost:8083/
@@ -21,7 +21,7 @@ Note: this will download around 1GB of docker containers
 
 
 #POST to subs
-curl -X POST -H "Content-Type: application/json" --data '@models/core/src/test/resources/TEST1.json' "http://localhost:8083/samples"
+curl -X POST -H "Content-Type: application/json" --data '@models/core/src/test/resources/TEST1.json' "http://localhost:8083/mongoSamples"
 
 #POST to subs
 curl -X POST -H "Content-Type: application/json" --data '@models/core/src/test/resources/TEST2.json' "http://localhost:8083/samples"
@@ -52,6 +52,10 @@ You can use `docker-compose up` to start all the services, or you can bring them
 See docker-compose.yml file for more information on service names and dependencies.
 
 
+By default, the pipelines will not be run. They can be manually triggered within a docker container with the following command:
+
+`docker-compose run biosamples-pipelines java -jar pipelines-4.0.0-SNAPSHOT.jar --ncbi`
+
 
 Developing
 ==========
@@ -61,4 +65,16 @@ Docker can be run from within a virtual machine e.g VirtualBox. This is useful i
 You might want to mount the virtual machines directory with the host, so you can work in a standard IDE outside of the VM. VirtualBox supports this.
 
 If you ware using a virtual machine, you might also want to configure docker-compose to start by default. 
+
+As you make changes to the code, you can recompile it via Maven with:
+
+`mvn clean package`
+
+And to get the new packages into the docker containers you will need to rebuild containers with:
+
+`docker-compose build`
+
+If needed, you can rebuild just a single container by specifying its name e.g.
+
+`docker-compose build biosamples-pipelines`
  
