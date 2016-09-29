@@ -1,5 +1,8 @@
 package uk.ac.ebi.biosamples.ncbi;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -8,6 +11,7 @@ import java.util.Queue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.zip.GZIPInputStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,10 +65,11 @@ public class NCBI implements ApplicationRunner {
 		callback.setToDate(toDate);
 
 		//try (InputStream is = ncbiHttp.streamFromLocalCopy()) {
-		try (InputStream is = ncbiHttp.streamFromRemote()) {
+		//try (InputStream is = ncbiHttp.streamFromRemote()) {
+		try (InputStream is = new GZIPInputStream(new BufferedInputStream(new FileInputStream(new File("biosample_set.xml.gz"))))) {
 		
 			if (pipelinesProperties.getNCBIThreadCount() > 0) {
-				ExecutorService executorService = AdaptiveThreadPoolExecutor.create();
+				ExecutorService executorService = AdaptiveThreadPoolExecutor.create(1000,15000, false);
 				try {
 					Queue<Future<Void>> futures = new LinkedList<>();
 					
