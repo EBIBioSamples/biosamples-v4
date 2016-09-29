@@ -42,37 +42,6 @@ public class NCBIHTTP {
 
 	private NCBIHTTP() {
 	}
-
-	/**
-	 * Always downloads the target to a local copy, and then returns 
-	 * an InputStream from that local copy for further processing.
-	 * 
-	 * Note: ensure that this stream is closed in a finally block to prevent
-	 * leakage.
-	 * @return
-	 * @throws IOException
-	 * @throws ParseException
-	 */
-	public InputStream streamFromLocalCopy() throws IOException, ParseException {
-		
-		log.info("Starting streaming fom local copy of NCBI XML");
-
-		URI remoteFileName = pipelinesProperties.getNCBIHttpUri();
-		Path tempCopy = Files.createTempFile("biosamples_ncbi", ".tmp");
-		Path localCopy = pipelinesProperties.getNCBILocalFile().toPath();
-
-		Files.copy(remoteFileName.toURL().openStream(), tempCopy, StandardCopyOption.REPLACE_EXISTING);
-
-		log.info("Downloaded to temporary location");
-		
-		Files.move(tempCopy, localCopy, StandardCopyOption.REPLACE_EXISTING);
-		
-
-		log.info("Moved to final location");
-		
-		// now open a stream for the local version
-		return new GZIPInputStream(new BufferedInputStream(new FileInputStream(localCopy.toFile())));
-	}
 	
 	public InputStream streamFromRemote() throws IOException, ParseException {
 		
