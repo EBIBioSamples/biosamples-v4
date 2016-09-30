@@ -30,8 +30,6 @@ public class MongoSampleDeserializer extends JsonDeserializer<MongoSample> {
 			throws IOException, JsonProcessingException {
 		JsonNode node = jp.getCodec().readTree(jp);
 
-		log.info(node.toString());
-
 		String id = null;
 		if (node.has("id")) {
 			id = node.get("id").asText();

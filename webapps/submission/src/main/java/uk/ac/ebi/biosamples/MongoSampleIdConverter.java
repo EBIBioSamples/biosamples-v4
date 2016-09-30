@@ -22,14 +22,14 @@ public class MongoSampleIdConverter implements BackendIdConverter {
 
 	@Override
 	public Serializable fromRequestId(String id, Class<?> entityType) {
-		log.info("fromRequestId "+id);
+		log.trace("fromRequestId "+id);
 		return id;
 	}
 	
 	@Override
 	public String toRequestId(Serializable id, Class<?> entityType) {
 
-		log.info("toRequestId "+id);
+		log.trace("toRequestId "+id);
 		
 		return id.toString();
 	}
