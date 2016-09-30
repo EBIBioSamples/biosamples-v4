@@ -1,0 +1,160 @@
+version: '2'
+
+services:
+
+    biosamples-pipelines:
+        build: .
+        image: biosamples:latest
+        networks:
+            - biosamples
+        links:
+            - biosamples-webapps-submission
+        #by default, this won't run any of the pipelines
+        #to run a pipeline, use docker-compose run 
+        command: ["java", "-jar", "pipelines-4.0.0-SNAPSHOT.jar"]
+        # command: ["java", "-jar", "pipelines-4.0.0-SNAPSHOT.jar", "--ncbi", "--biosamples.ncbi.localfile=./ncbi.xml.gz"]
+
+    biosamples-agents-jpa:
+        build: .
+        image: biosamples:latest
+        networks:
+            - biosamples
+        links: 
+            - postgres
+            - rabbitmq
+        command: ["java", "-jar", "agents-jpa-4.0.0-SNAPSHOT.jar", 
+            "--spring.rabbitmq.host=rabbitmq", 
+            "--spring.rabbitmq.publisher-confirms=true", 
+            "--spring.jpa.show-sql=true", 
+            "--spring.jpa.hibernate.ddl-auto=none", 
+            "--spring.datasource.url=jdbc:postgresql://postgres:5432/postgres", 
+            "--spring.datasource.username=postgres"]
+        restart: always
+
+    biosamples-agents-neo4j:
+        build: .
+        image: biosamples:latest
+        networks:
+            - biosamples
+        links: 
+            - neo4j
+            - rabbitmq
+        command: ["java", "-jar", "agents-neo4j-4.0.0-SNAPSHOT.jar", 
+            "--spring.rabbitmq.host=rabbitmq",
+            "--spring.rabbitmq.publisher-confirms=true",
+            "--spring.data.neo4j.uri=http://neo4j:7474",
+            "--spring.data.neo4j.username=neo4j"]
+        restart: always
+        
+    biosamples-agents-solr:
+        build: .
+        image: biosamples:latest
+        networks:
+            - biosamples
+        links: 
+            - solr
+            - rabbitmq
+        command: ["java", "-jar", "agents-solr-4.0.0-SNAPSHOT.jar", 
+            "--spring.rabbitmq.host=rabbitmq",
+            "--spring.rabbitmq.publisher-confirms=true",
+            "--spring.data.solr.host=http://solr:8983/solr"]
+        restart: always
+        
+    biosamples-webapps-api:
+        build: .
+        image: biosamples:latest
+        networks:
+            - biosamples
+        links: 
+            - solr
+            - neo4j
+        command: ["java", "-jar", "webapps-api-4.0.0-SNAPSHOT.war", 
+            "--spring.data.neo4j.uri=http://neo4j:7474",
+            "--spring.data.neo4j.username=neo4j",
+            "--spring.data.solr.host=http://solr:8983/solr"]
+        ports:
+            - "8081:8080"
+        restart: always
+        
+    biosamples-webapps-api-internal:
+        build: .
+        image: biosamples:latest
+        networks:
+            - biosamples
+        links: 
+            - solr
+            - neo4j
+            - mongo
+            - postgres
+        command: ["java", "-jar", "webapps-api-internal-4.0.0-SNAPSHOT.war", 
+            "--spring.data.neo4j.uri=http://neo4j:7474",
+            "--spring.data.neo4j.username=neo4j", 
+            "--spring.jpa.show-sql=true", 
+            "--spring.jpa.hibernate.ddl-auto=none", 
+            "--spring.datasource.url=jdbc:postgresql://postgres:5432/postgres", 
+            "--spring.datasource.username=postgres",
+            "--spring.data.solr.host=http://solr:8983/solr",
+            "--spring.data.mongodb.host=mongo"]
+        ports:
+            - "8082:8080"
+        restart: always
+        
+    biosamples-webapps-submission:
+        build: .
+        image: biosamples:latest
+        networks:
+            - biosamples
+        links: 
+            - rabbitmq
+            - mongo
+        command: ["java", "-jar", "webapps-submission-4.0.0-SNAPSHOT.war", 
+            "--spring.rabbitmq.host=rabbitmq",
+            "--spring.rabbitmq.publisher-confirms=true",
+            "--spring.data.mongodb.host=mongo"]
+        ports:
+            - "8083:8080"
+        restart: always
+
+
+    mongo:
+        image: mongo:3.2
+        networks:
+            - biosamples
+        restart: always
+                
+    rabbitmq:
+        image: rabbitmq:3.6-management
+        networks:
+            - biosamples
+        ports:
+            - "15672:15672"
+        restart: always
+        
+    postgres:
+        image: postgres:9.5
+        networks:
+            - biosamples
+        restart: always
+        
+    neo4j:
+        image: neo4j:3.0
+        networks:
+            - biosamples
+        environment:
+        #set environment variable to disable request to change password
+            - NEO4J_AUTH=none
+        ports:
+            - "7474:7474"
+        restart: always
+        
+    solr:
+        image: solr:6.2
+        networks:
+            - biosamples
+        ports:
+            - "8983:8983"
+        restart: always
+
+networks:
+    biosamples:
+

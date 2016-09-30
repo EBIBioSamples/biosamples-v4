@@ -54,42 +54,44 @@ public class MongoSampleDeserializer extends JsonDeserializer<MongoSample> {
 
 		Map<String, Set<String>> relationships = new HashMap<>();
 
-		Iterator<JsonNode> attributes = node.get("attributes").elements();
-		while (attributes.hasNext()) {
-			JsonNode attribute = attributes.next();
-
-			String key = attribute.get("key").asText();
-			String value = attribute.get("value").asText();
-			String ontologyTerm = null;
-			try {
-				if (attribute.has("ontologyTerm") && attribute.get("ontologyTerm").asText().length() > 0) {
-					ontologyTerm = new URI(attribute.get("ontologyTerm").asText()).toString();
+		if (node.has("attributes")) {
+			Iterator<JsonNode> attributes = node.get("attributes").elements();
+			while (attributes.hasNext()) {
+				JsonNode attribute = attributes.next();
+	
+				String key = attribute.get("key").asText();
+				String value = attribute.get("value").asText();
+				String ontologyTerm = null;
+				try {
+					if (attribute.has("ontologyTerm") && attribute.get("ontologyTerm").asText().length() > 0) {
+						ontologyTerm = new URI(attribute.get("ontologyTerm").asText()).toString();
+					}
+				} catch (URISyntaxException e) {
+					throw new JsonParseException(jp, "invalid URI", e);
 				}
-			} catch (URISyntaxException e) {
-				throw new JsonParseException(jp, "invalid URI", e);
-			}
-			String unit = null;
-			if (attribute.has("unit") && attribute.get("unit").asText().length() > 0) {
-				unit = attribute.get("unit").asText();
-			}
-
-			if (!keyValues.containsKey(key)) {
-				keyValues.put(key, new HashSet<>());
-			}
-			keyValues.get(key).add(value);
-
-			if (ontologyTerm != null) {
-				if (!ontologyTerms.containsKey(key)) {
-					ontologyTerms.put(key, new HashMap<>());
+				String unit = null;
+				if (attribute.has("unit") && attribute.get("unit").asText().length() > 0) {
+					unit = attribute.get("unit").asText();
 				}
-				ontologyTerms.get(key).put(value, ontologyTerm);
-			}
-
-			if (unit != null) {
-				if (!units.containsKey(key)) {
-					units.put(key, new HashMap<>());
+	
+				if (!keyValues.containsKey(key)) {
+					keyValues.put(key, new HashSet<>());
 				}
-				units.get(key).put(value, unit);
+				keyValues.get(key).add(value);
+	
+				if (ontologyTerm != null) {
+					if (!ontologyTerms.containsKey(key)) {
+						ontologyTerms.put(key, new HashMap<>());
+					}
+					ontologyTerms.get(key).put(value, ontologyTerm);
+				}
+	
+				if (unit != null) {
+					if (!units.containsKey(key)) {
+						units.put(key, new HashMap<>());
+					}
+					units.get(key).put(value, unit);
+				}
 			}
 		}
 

@@ -4,6 +4,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -16,15 +17,21 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.Resources;
+import org.springframework.hateoas.UriTemplate;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
 
+import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.models.SimpleSample;
+import uk.ac.ebi.biosamples.utils.HateoasUtils;
 import uk.ac.ebi.biosamples.utils.XMLUtils;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,18 +49,16 @@ public class NCBIElementCallable implements Callable<Void> {
 	private XMLUtils xmlUtils;
 	
 	@Autowired
-	private RestTemplate restTemplate;
+	private HateoasUtils hateoasUtils;
 	
-
-	private static URI uri; 
-	static {
-		try {
-			uri = new URI("http://localhost:8081/samples");
-		} catch (URISyntaxException e) {
-			//should never happen
-			throw new RuntimeException(e);
-		}
-	}
+	@Autowired
+	private PipelinesProperties pipelinesProperties;
+	
+	//use RestOperations as the interface implemented by RestTemplate
+	//easier to mock for testing
+	@Autowired
+	private RestOperations restTemplate;
+	
 
 	private Map<String, Set<String>> keyValues = new HashMap<>();
 	// TODO ontology terms? taxonomy?
@@ -86,36 +91,54 @@ public class NCBIElementCallable implements Callable<Void> {
 
 	private void submit(SimpleSample sample) {
 		// send it to the subs API
-		log.info("GETing "+sample.getAccession());
+		log.info("Checking for existing sample "+sample.getAccession());
 
 		//work out if its a put or a post
 		//do a get for that
-		boolean exists = false;
-		try {			
-			//wrap the response in a hateoas resource to capture links
-			//have to use a parameterizedTypeReference subclass instance to pass the generic information about
-			ResponseEntity<Resource<SimpleSample>> getResponse = restTemplate.exchange("http://localhost:8080/repository/mongoSamples/search/findByAccession?accession="+sample.getAccession(),
-					HttpMethod.GET,
-					null,
-					new ParameterizedTypeReference<Resource<SimpleSample>>(){});
-			exists = true;
-		} catch (HttpStatusCodeException e) {
-			if (e.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
-				//got a 404, we can handle that by posting instead of putting
-				exists = false;
+		URI existingUri = null;
+		try {
+			
+			log.info("Reading URI : "+pipelinesProperties.getBiosampleSubmissionURI());
+			
+			UriTemplate uriTemplate = hateoasUtils.getHateoasUriTemplate(pipelinesProperties.getBiosampleSubmissionURI(), 
+					"mongoSamples", "search", "findByAccession");
+			URI uri = uriTemplate.expand(sample.getAccession());
+			
+			log.info("URI for testing is "+uri);
+			
+			ResponseEntity<Resources<Resource<SimpleSample>>> response = hateoasUtils.getHateoasResponse(uri,
+					new ParameterizedTypeReference<Resources<Resource<SimpleSample>>>(){});
+			
+			if (response.getStatusCode() == HttpStatus.OK) {
+				//check the number of results 
+				Collection<Resource<SimpleSample>> resources = response.getBody().getContent();
+				if (resources.size() == 0) {
+					//this accession has never been seen before, need to POST
+					existingUri = null;
+				} else {
+					//there might be multiple results because we store each version separately
+					//this is okay, we can still just PUT to the URI of any of them
+					existingUri = URI.create(resources.iterator().next().getLink("self").getHref());
+				} 
 			} else {
-				//something else, re-throw it because we can't recover
-				log.error("Unable to GET "+sample.getAccession()+" : "+e.getResponseBodyAsString());
-				throw e;
+				throw new RuntimeException("Unable to GET "+sample.getAccession());
 			}
+		} catch (HttpStatusCodeException e) {
+			//re-throw it because we can't recover
+			log.error("Unable to GET "+sample.getAccession()+" : "+e.getResponseBodyAsString());
+			throw e;
 		}
 		
-		if (exists) {
+		if (existingUri != null) {
 			log.info("PUTing "+sample.getAccession());
 			//was there, so we need to PUT an update
-			RequestEntity<SimpleSample> putRequest = RequestEntity.put(uri).body(sample);
-			log.error(putRequest.toString());
-			ResponseEntity<SimpleSample> putResponse = restTemplate.exchange(putRequest, SimpleSample.class);
+			
+			HttpEntity<SimpleSample> requestEntity = new HttpEntity<>(sample);
+			ResponseEntity<Resource<SimpleSample>> putResponse = restTemplate.exchange(existingUri,
+					HttpMethod.PUT,
+					requestEntity,
+					new ParameterizedTypeReference<Resource<SimpleSample>>(){});
+			
 			if (!putResponse.getStatusCode().is2xxSuccessful()) {
 				log.error("Unable to PUT "+sample.getAccession()+" : "+putResponse.toString());
 				throw new RuntimeException("Problem PUTing "+sample.getAccession());
@@ -123,16 +146,23 @@ public class NCBIElementCallable implements Callable<Void> {
 		} else {
 			log.info("POSTing "+sample.getAccession());
 			//not there, so need to POST it
-			RequestEntity<SimpleSample> postRequest = RequestEntity.post(uri).body(sample);
-			log.error(postRequest.toString());
-			ResponseEntity<SimpleSample> postResponse = restTemplate.exchange(postRequest, SimpleSample.class);
+			//POST goes to a different URI
+			UriTemplate uriTemplate = hateoasUtils.getHateoasUriTemplate(pipelinesProperties.getBiosampleSubmissionURI(), 
+					"mongoSamples");
+			
+			URI urlTarget = uriTemplate.expand();
+			
+			HttpEntity<SimpleSample> requestEntity = new HttpEntity<>(sample);
+			ResponseEntity<Resource<SimpleSample>> postResponse = restTemplate.exchange(urlTarget,
+					HttpMethod.POST,
+					requestEntity,
+					new ParameterizedTypeReference<Resource<SimpleSample>>(){});
+			
 			if (!postResponse.getStatusCode().is2xxSuccessful()) {
 				log.error("Unable to POST "+sample.getAccession()+" : "+postResponse.toString());
 				throw new RuntimeException("Problem POSTing "+sample.getAccession());
 			}
 		}
-		
-        //restTemplate.postForLocation("http://localhost:8080/samples", sample);
 	}
 
 	@Override

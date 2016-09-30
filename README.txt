@@ -1,46 +1,80 @@
-Requirements
-============
+Quickstart
+==========
+
+Install Maven and JDK 8
+Install docker-compose https://docs.docker.com/compose/
+
+`mvn package`
+
+`docker-compose up -d`
+
+public read API at http://localhost:8081/
+public submission API at http://localhost:8083/
+internal read/write API at http://localhost:8082/
+
+internal RabbitMQ interface at http://localhost:15672/
+internal Neo4J interface at http://localhost:7474/
+internal Solr interface at http://localhost:8983/
 
 
-MongoDB
-https://www.mongodb.com/
-
-RabbitMQ
-https://www.rabbitmq.com
-enable management plugin 
-rabbitmq-plugins enable rabbitmq_management
-
-"guest" user can only connect via localhost
-By default, the guest user is prohibited from connecting to the broker remotely; it can 
-only connect over a loopback interface (i.e. localhost). This applies both to AMQP and 
-to any other protocols enabled via plugins. Any other users you create will not (by default) 
-be restricted in this way. This is configured via the loopback_users item in the configuration file.
-
-If you wish to allow the guest user to connect from a remote host, you should set 
-the loopback_users configuration item to []. A complete rabbitmq.config which does 
-this would look like:
-[{rabbit, [{loopback_users, []}]}]
+Note: this will download around 1GB of docker containers
 
 
-visit http://localhost:15672/
+#POST to subs
+curl -X POST -H "Content-Type: application/json" --data '@models/core/src/test/resources/TEST1.json' "http://localhost:8083/mongoSamples"
+
+#POST to subs
+curl -X POST -H "Content-Type: application/json" --data '@models/core/src/test/resources/TEST2.json' "http://localhost:8083/samples"
+
+#echo \*\*\* Starting NCBI pipeline...
+#nice java -jar $PATH_HOME/pipelines/target/pipelines-0.0.1-SNAPSHOT.jar --ncbi --biosamples.pipelines.ncbi.threadcount=8 2>&1 > $PATH_HOME/pipelines-ncbi.log & PID_NCBI=$! 
+
+Getting started
+===============
+
+To checkout and compile the code, you will need Git, Maven, and a JDK 8. On ubuntu-based Linux distributions (16.04 or higher) you can do this with:
+
+`sudo apt-get install maven git default-jdk`
+
+Then you can check out and compile the code with:
+
+`git clone https://github.com/EBIBioSamples/biosamples-v4 biosamples`
+`cd biosamples`
+`mvn package`
+
+Note: This will require a large download of Spring dependencies.
+
+At that point, you will have a local compiled version of all the biosamples tools.
+
+To start a copy running on the local machine (e.g. to test any changes you have made) you can use Docker and Docker-compose. https://docs.docker.com/compose/
+
+You can use `docker-compose up` to start all the services, or you can bring them up and down at will indivdually. 
+See docker-compose.yml file for more information on service names and dependencies.
 
 
-Running
-=======
+By default, the pipelines will not be run. They can be manually triggered within a docker container with the following command:
 
-Start mongoDB
-Start rabbitMQ
-#Start solr
-#Start web
-Start subs
-#Start loader
-#Start indexer
-POST to subs
-#poll web for sample
-PUT to subs
-#poll web for updated sample
-#Stop web
-#Stop solr
-Stop subs
-Stop rabbitMQ
-Stop mongoDB
+`docker-compose run biosamples-pipelines java -jar pipelines-4.0.0-SNAPSHOT.jar --ncbi`
+
+
+Developing
+==========
+
+Docker can be run from within a virtual machine e.g VirtualBox. This is useful if it causes any problems for your machine or if you have an OS that is not supported.
+
+You might want to mount the virtual machines directory with the host, so you can work in a standard IDE outside of the VM. VirtualBox supports this.
+
+If you ware using a virtual machine, you might also want to configure docker-compose to start by default. 
+
+As you make changes to the code, you can recompile it via Maven with:
+
+`mvn clean package`
+
+And to get the new packages into the docker containers you will need to rebuild containers with:
+
+`docker-compose build`
+
+If needed, you can rebuild just a single container by specifying its name e.g.
+
+`docker-compose build biosamples-pipelines`
+ 

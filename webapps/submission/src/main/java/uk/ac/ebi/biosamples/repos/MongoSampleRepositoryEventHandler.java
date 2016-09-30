@@ -36,7 +36,7 @@ public class MongoSampleRepositoryEventHandler {
 	
 	@HandleBeforeCreate
 	public void onBeforeCreateEvent(MongoSample sample) throws AlreadySubmittedException {
-		log.info("HandleBeforeCreate triggered");
+		log.info("@HandleBeforeCreate triggered");
 		//check if this is a new accession
 		String acc = sample.getAccession();
 		Page<MongoSample> page = repo.findByAccession(acc, new PageRequest(0,10));
