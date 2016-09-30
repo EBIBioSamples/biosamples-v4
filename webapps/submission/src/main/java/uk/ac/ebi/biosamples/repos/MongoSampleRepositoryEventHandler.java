@@ -2,6 +2,8 @@ package uk.ac.ebi.biosamples.repos;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.AmqpTemplate;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -15,7 +17,9 @@ import org.springframework.data.rest.core.annotation.HandleBeforeSave;
 import org.springframework.data.rest.core.annotation.RepositoryEventHandler;
 import org.springframework.stereotype.Service;
 
+import uk.ac.ebi.biosamples.Messaging;
 import uk.ac.ebi.biosamples.models.MongoSample;
+import uk.ac.ebi.biosamples.models.SimpleSample;
 
 
 @Service
@@ -27,12 +31,15 @@ public class MongoSampleRepositoryEventHandler {
 	@Autowired
 	private MongoSampleRepository repo;
 	
+	@Autowired
+	private AmqpTemplate amqpTemplate;
+	
 	@HandleBeforeCreate
 	public void onBeforeCreateEvent(MongoSample sample) throws AlreadySubmittedException {
 		log.info("HandleBeforeCreate triggered");
 		//check if this is a new accession
 		String acc = sample.getAccession();
-		Page<MongoSample> page = repo.findByAccession(acc, new PageRequest(1,10));
+		Page<MongoSample> page = repo.findByAccession(acc, new PageRequest(0,10));
 		if (page.getTotalElements() > 0) {
 			//there was at least one existing one
 			throw new AlreadySubmittedException();
@@ -44,5 +51,10 @@ public class MongoSampleRepositoryEventHandler {
 		log.info("@HandleBeforeSave triggered");
 		//turn this into a create by removing the id
 		sample.setId(null);
+	}
+	
+	@HandleAfterSave
+	public void OnAfterSaveEvent(MongoSample sample) {
+		amqpTemplate.convertAndSend(Messaging.exchangeForLoading, "", SimpleSample.createFrom(sample));
 	}
 }
