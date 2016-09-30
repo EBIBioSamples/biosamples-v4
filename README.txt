@@ -26,9 +26,6 @@ curl -X POST -H "Content-Type: application/json" --data '@models/core/src/test/r
 #POST to subs
 curl -X POST -H "Content-Type: application/json" --data '@models/core/src/test/resources/TEST2.json' "http://localhost:8083/samples"
 
-#echo \*\*\* Starting NCBI pipeline...
-#nice java -jar $PATH_HOME/pipelines/target/pipelines-0.0.1-SNAPSHOT.jar --ncbi --biosamples.pipelines.ncbi.threadcount=8 2>&1 > $PATH_HOME/pipelines-ncbi.log & PID_NCBI=$! 
-
 Getting started
 ===============
 
@@ -48,13 +45,22 @@ At that point, you will have a local compiled version of all the biosamples tool
 
 To start a copy running on the local machine (e.g. to test any changes you have made) you can use Docker and Docker-compose. https://docs.docker.com/compose/
 
-You can use `docker-compose up` to start all the services, or you can bring them up and down at will indivdually. 
+You can use `docker-compose up` to start all the services, or you can bring them up and down at will individually. 
 See docker-compose.yml file for more information on service names and dependencies.
 
 
-By default, the pipelines will not be run. They can be manually triggered within a docker container with the following command:
+By default, the pipelines will not be run. They can be manually triggered as follows:
 
-`docker-compose run biosamples-pipelines java -jar pipelines-4.0.0-SNAPSHOT.jar --ncbi`
+NCBI
+----
+
+Download the XML dump (~400Mb) to the current directory:
+
+`wget http://ftp.ncbi.nih.gov/biosample/biosample_set.xml.gz`
+
+Run the pipeline to send the data to the submission API via REST
+
+`java -jar pipelines/target/pipelines-4.0.0-SNAPSHOT.jar --ncbi`
 
 
 Developing
