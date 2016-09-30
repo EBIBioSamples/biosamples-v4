@@ -51,11 +51,7 @@ public class MessageHandlerJPA {
 			String value = attribute.getValue();
 			String unit = attribute.getUnit();
 			String ontologyTerm = attribute.getOntologyTerm();
-			
-			
-			log.info("type.length() = "+type.length());
-			log.info("value.length() = "+value.length());
-			
+						
 			Long oldAttributeId = null;
 
 			// TODO check old sample if present
