@@ -29,7 +29,7 @@ services:
             "--spring.jpa.hibernate.ddl-auto=none", 
             "--spring.datasource.url=jdbc:postgresql://postgres:5432/postgres", 
             "--spring.datasource.username=postgres"]
-        restart: always
+        restart: unless-stopped
 
     biosamples-agents-neo4j:
         build: .
@@ -44,7 +44,7 @@ services:
             "--spring.rabbitmq.publisher-confirms=true",
             "--spring.data.neo4j.uri=http://neo4j:7474",
             "--spring.data.neo4j.username=neo4j"]
-        restart: always
+        restart: unless-stopped
         
     biosamples-agents-solr:
         build: .
@@ -58,7 +58,7 @@ services:
             "--spring.rabbitmq.host=rabbitmq",
             "--spring.rabbitmq.publisher-confirms=true",
             "--spring.data.solr.host=http://solr:8983/solr"]
-        restart: always
+        restart: unless-stopped
         
     biosamples-webapps-api:
         build: .
