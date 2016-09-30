@@ -53,8 +53,9 @@ public class MongoSampleRepositoryEventHandler {
 		sample.setId(null);
 	}
 	
-	@HandleAfterSave
-	public void OnAfterSaveEvent(MongoSample sample) {
+	@HandleAfterCreate
+	public void onAfterCreateEvent(MongoSample sample) {
+		log.info("@HandleAfterCreate triggered");
 		amqpTemplate.convertAndSend(Messaging.exchangeForLoading, "", SimpleSample.createFrom(sample));
 	}
 }
