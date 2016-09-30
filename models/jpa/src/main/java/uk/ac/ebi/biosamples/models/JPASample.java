@@ -13,8 +13,13 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Entity
 public class JPASample implements Sample {
+
+	private static Logger log = LoggerFactory.getLogger(JPASample.class);
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
@@ -143,15 +148,24 @@ public class JPASample implements Sample {
 	public int hashCode() {
 		return Objects.hash(name, accession, attributes, relationships);
 	}
+	
+	private static String trimString(String str, int maxLength) {
+		if (str == null) return null;
+		if (str.length() >= maxLength-5) {
+			return str.substring(0,maxLength-3)+"...";
+		} else {
+			return str;
+		}
+	}
 
 	public static JPASample createFrom(Sample source) {
 		JPASample sample = new JPASample();
 		sample.accession = source.getAccession();
 		sample.name = source.getName();
+		
+		int maxLength = 254;
 		//limit name length to 255 characters so it fits in db
-		if (sample.name.length() > 255) {
-			sample.name = sample.name.substring(0, 252)+"...";
-		}
+		sample.name = trimString(sample.name, maxLength);
 		sample.updateDate = source.getUpdate();
 		sample.releaseDate = source.getRelease();
 
@@ -162,18 +176,10 @@ public class JPASample implements Sample {
 				String unit = source.getAttributeUnit(type, value);
 				String ontologyTerm = source.getAttributeOntologyTerm(type, value);
 				
-				//limit type length to 255 characters so it fits in db
-				if (type.length() > 255) {
-					type = type.substring(0, 252)+"...";
-				}
-				//limit unit length to 255 characters so it fits in db
-				if (unit != null && unit.length() > 255) {
-					unit = unit.substring(0, 252)+"...";
-				}
-				//limit ontologyTerm length to 255 characters so it fits in db
-				if (ontologyTerm != null && ontologyTerm.length() > 255) {
-					ontologyTerm = ontologyTerm.substring(0, 252)+"...";
-				}
+				type = trimString(type, maxLength);
+				value = trimString(value, maxLength);
+				unit = trimString(unit, maxLength);
+				ontologyTerm = trimString(ontologyTerm, maxLength);
 				
 				JPAAttribute attrib = new JPAAttribute();
 				attrib.setKey(type);

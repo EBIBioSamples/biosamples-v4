@@ -43,24 +43,23 @@ public class MessageHandlerJPA {
 		}
 
 		// for each attribute, get lowest existing ids (if any)
+		//this will already have been trimmed to size for the database so don't
+		//need to worry about that here
 		for (JPAAttribute attribute : jpaSample.getAttributes()) {
 
 			String type = attribute.getKey();
 			String value = attribute.getValue();
-			//trim value to maximum size
-			if (value.length() >= 255) {
-				log.warn("attribute to long for sample "+sample.getAccession());
-				value = value.substring(0, 255)+"...";
-				attribute.setValue(value);
-			}
 			String unit = attribute.getUnit();
 			String ontologyTerm = attribute.getOntologyTerm();
-
+			
+			
+			log.info("type.length() = "+type.length());
+			log.info("value.length() = "+value.length());
+			
 			Long oldAttributeId = null;
 
 			// TODO check old sample if present
 
-			Pageable pageable = new PageRequest(0,10);
 			Iterable<JPAAttribute> oldAttributes = jpaAttributeRepository.findByKeyAndValueAndUnitAndOntologyTerm(type,
 					value, unit, ontologyTerm);
 
