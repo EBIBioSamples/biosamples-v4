@@ -28,8 +28,9 @@ services:
             "--spring.jpa.show-sql=true", 
             "--spring.jpa.hibernate.ddl-auto=none", 
             "--spring.datasource.url=jdbc:postgresql://postgres:5432/postgres", 
-            "--spring.datasource.username=postgres"]
-        restart: unless-stopped
+            "--spring.datasource.username=postgres", 
+            "--spring.datasource.password=''"]
+        #restart: unless-stopped
 
     biosamples-agents-neo4j:
         build: .
@@ -82,19 +83,13 @@ services:
         networks:
             - biosamples
         links: 
-            - solr
-            - neo4j
-            - mongo
             - postgres
-        command: ["java", "-jar", "webapps-api-internal-4.0.0-SNAPSHOT.war", 
-            "--spring.data.neo4j.uri=http://neo4j:7474",
-            "--spring.data.neo4j.username=neo4j", 
+        command: ["java", "-jar", "webapps-api-internal-4.0.0-SNAPSHOT.war",
             "--spring.jpa.show-sql=true", 
-            "--spring.jpa.hibernate.ddl-auto=none", 
+            "--spring.jpa.hibernate.ddl-auto=create", 
             "--spring.datasource.url=jdbc:postgresql://postgres:5432/postgres", 
-            "--spring.datasource.username=postgres",
-            "--spring.data.solr.host=http://solr:8983/solr",
-            "--spring.data.mongodb.host=mongo"]
+            "--spring.datasource.username=postgres", 
+            "--spring.datasource.password=''"]
         ports:
             - "8082:8080"
         restart: always
@@ -134,6 +129,8 @@ services:
         image: postgres:9.5
         networks:
             - biosamples
+        ports:
+            - "5432:5432"
         restart: always
         
     neo4j:
