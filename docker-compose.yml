@@ -30,7 +30,7 @@ services:
             "--spring.datasource.url=jdbc:postgresql://postgres:5432/postgres", 
             "--spring.datasource.username=postgres", 
             "--spring.datasource.password=''"]
-        #restart: unless-stopped
+        restart: unless-stopped
 
     biosamples-agents-neo4j:
         build: .
