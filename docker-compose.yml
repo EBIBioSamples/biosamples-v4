@@ -5,8 +5,6 @@ services:
     biosamples-pipelines:
         build: .
         image: biosamples:latest
-        networks:
-            - biosamples
         links:
             - biosamples-webapps-submission
         #by default, this won't run any of the pipelines
@@ -14,29 +12,9 @@ services:
         command: ["java", "-jar", "pipelines-4.0.0-SNAPSHOT.jar"]
         # command: ["java", "-jar", "pipelines-4.0.0-SNAPSHOT.jar", "--ncbi", "--biosamples.ncbi.localfile=./ncbi.xml.gz"]
 
-    biosamples-agents-jpa:
-        build: .
-        image: biosamples:latest
-        networks:
-            - biosamples
-        links: 
-            - postgres
-            - rabbitmq
-        command: ["java", "-jar", "agents-jpa-4.0.0-SNAPSHOT.jar", 
-            "--spring.rabbitmq.host=rabbitmq", 
-            "--spring.rabbitmq.publisher-confirms=true", 
-            "--spring.jpa.show-sql=true", 
-            "--spring.jpa.hibernate.ddl-auto=none", 
-            "--spring.datasource.url=jdbc:postgresql://postgres:5432/postgres", 
-            "--spring.datasource.username=postgres", 
-            "--spring.datasource.password=''"]
-        restart: unless-stopped
-
     biosamples-agents-neo4j:
         build: .
         image: biosamples:latest
-        networks:
-            - biosamples
         links: 
             - neo4j
             - rabbitmq
@@ -50,8 +28,6 @@ services:
     biosamples-agents-solr:
         build: .
         image: biosamples:latest
-        networks:
-            - biosamples
         links: 
             - solr
             - rabbitmq
@@ -64,47 +40,28 @@ services:
     biosamples-webapps-api:
         build: .
         image: biosamples:latest
-        networks:
-            - biosamples
         links: 
             - solr
             - neo4j
+            - mongo
         command: ["java", "-jar", "webapps-api-4.0.0-SNAPSHOT.war", 
             "--spring.data.neo4j.uri=http://neo4j:7474",
             "--spring.data.neo4j.username=neo4j",
-            "--spring.data.solr.host=http://solr:8983/solr"]
+            "--spring.data.solr.host=http://solr:8983/solr",
+            "--spring.data.mongodb.host=mongo"]
         ports:
             - "8081:8080"
-        restart: always
-        
-    biosamples-webapps-api-internal:
-        build: .
-        image: biosamples:latest
-        networks:
-            - biosamples
-        links: 
-            - postgres
-        command: ["java", "-jar", "webapps-api-internal-4.0.0-SNAPSHOT.war",
-            "--spring.jpa.show-sql=true", 
-            "--spring.jpa.hibernate.ddl-auto=create", 
-            "--spring.datasource.url=jdbc:postgresql://postgres:5432/postgres", 
-            "--spring.datasource.username=postgres", 
-            "--spring.datasource.password=''"]
-        ports:
-            - "8082:8080"
         restart: always
         
     biosamples-webapps-submission:
         build: .
         image: biosamples:latest
-        networks:
-            - biosamples
         links: 
             - rabbitmq
             - mongo
         command: ["java", "-jar", "webapps-submission-4.0.0-SNAPSHOT.war", 
-            "--spring.rabbitmq.host=rabbitmq",
-            "--spring.rabbitmq.publisher-confirms=true",
+            "--spring.rabbitmq.host=rabbitmq", 
+            "--spring.rabbitmq.publisher-confirms=true", 
             "--spring.data.mongodb.host=mongo"]
         ports:
             - "8083:8080"
@@ -113,30 +70,20 @@ services:
 
     mongo:
         image: mongo:3.2
-        networks:
-            - biosamples
+        volumes:
+            - ./conf_mongo:/data/configdb
+        ports:
+            - "27017:27017"
         restart: always
                 
     rabbitmq:
         image: rabbitmq:3.6-management
-        networks:
-            - biosamples
         ports:
             - "15672:15672"
         restart: always
         
-    postgres:
-        image: postgres:9.5
-        networks:
-            - biosamples
-        ports:
-            - "5432:5432"
-        restart: always
-        
     neo4j:
         image: neo4j:3.0
-        networks:
-            - biosamples
         environment:
         #set environment variable to disable request to change password
             - NEO4J_AUTH=none
@@ -145,13 +92,21 @@ services:
         restart: always
         
     solr:
-        image: solr:6.2
-        networks:
-            - biosamples
+        image: solr:6.2-alpine
         ports:
             - "8983:8983"
+        volumes:
+            - ./models/solr/src/main/resources/cores/samples:/opt/solr/server/solr/samples
+        entrypoint: ["docker-entrypoint.sh", "solr-precreate", "samples"]
         restart: always
 
 networks:
-    biosamples:
+  #need to move default network to a different subnet to avoid conflict with local subnet
+  default:
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+
+volumes:
+    solrdata:
 

@@ -13,7 +13,6 @@
 	</parent>
 
 	<modules>
-		<module>jpa</module>
 		<module>solr</module>
 		<module>neo4j</module>
 	</modules>
