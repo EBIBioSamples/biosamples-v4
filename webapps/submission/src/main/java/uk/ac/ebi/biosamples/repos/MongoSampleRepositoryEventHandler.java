@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service;
 
 import uk.ac.ebi.biosamples.Messaging;
 import uk.ac.ebi.biosamples.models.MongoSample;
-import uk.ac.ebi.biosamples.models.SimpleSample;
+import uk.ac.ebi.biosamples.models.Sample;
 
 
 @Service
@@ -56,6 +56,6 @@ public class MongoSampleRepositoryEventHandler {
 	@HandleAfterCreate
 	public void onAfterCreateEvent(MongoSample sample) {
 		log.info("@HandleAfterCreate triggered");
-		amqpTemplate.convertAndSend(Messaging.exchangeForLoading, "", SimpleSample.createFrom(sample));
+		amqpTemplate.convertAndSend(Messaging.exchangeForLoading, "", Sample.createFrom(sample));
 	}
 }

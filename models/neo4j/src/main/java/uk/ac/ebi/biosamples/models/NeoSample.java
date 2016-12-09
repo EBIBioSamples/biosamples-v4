@@ -20,8 +20,6 @@ public class NeoSample {
 	@Relationship(type = "RELATED_TO")
 	private Set<NeoRelationship> relationships;
 
-	// TODO make this handle any generic relationship type
-
 	@SuppressWarnings("unused")
 	private NeoSample() {
 	}

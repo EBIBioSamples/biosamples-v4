@@ -30,7 +30,7 @@ import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
 
 import uk.ac.ebi.biosamples.PipelinesProperties;
-import uk.ac.ebi.biosamples.models.SimpleSample;
+import uk.ac.ebi.biosamples.models.Sample;
 import uk.ac.ebi.biosamples.utils.HateoasUtils;
 import uk.ac.ebi.biosamples.utils.XMLUtils;
 
@@ -89,7 +89,7 @@ public class NCBIElementCallable implements Callable<Void> {
 		relationships.get(type).add(value);
 	}
 
-	private void submit(SimpleSample sample) {
+	private void submit(Sample sample) {
 		// send it to the subs API
 		log.info("Checking for existing sample "+sample.getAccession());
 
@@ -106,12 +106,12 @@ public class NCBIElementCallable implements Callable<Void> {
 			
 			log.info("URI for testing is "+uri);
 			
-			ResponseEntity<Resources<Resource<SimpleSample>>> response = hateoasUtils.getHateoasResponse(uri,
-					new ParameterizedTypeReference<Resources<Resource<SimpleSample>>>(){});
+			ResponseEntity<Resources<Resource<Sample>>> response = hateoasUtils.getHateoasResponse(uri,
+					new ParameterizedTypeReference<Resources<Resource<Sample>>>(){});
 			
 			if (response.getStatusCode() == HttpStatus.OK) {
 				//check the number of results 
-				Collection<Resource<SimpleSample>> resources = response.getBody().getContent();
+				Collection<Resource<Sample>> resources = response.getBody().getContent();
 				if (resources.size() == 0) {
 					//this accession has never been seen before, need to POST
 					existingUri = null;
@@ -133,11 +133,11 @@ public class NCBIElementCallable implements Callable<Void> {
 			log.info("PUTing "+sample.getAccession());
 			//was there, so we need to PUT an update
 			
-			HttpEntity<SimpleSample> requestEntity = new HttpEntity<>(sample);
-			ResponseEntity<Resource<SimpleSample>> putResponse = restTemplate.exchange(existingUri,
+			HttpEntity<Sample> requestEntity = new HttpEntity<>(sample);
+			ResponseEntity<Resource<Sample>> putResponse = restTemplate.exchange(existingUri,
 					HttpMethod.PUT,
 					requestEntity,
-					new ParameterizedTypeReference<Resource<SimpleSample>>(){});
+					new ParameterizedTypeReference<Resource<Sample>>(){});
 			
 			if (!putResponse.getStatusCode().is2xxSuccessful()) {
 				log.error("Unable to PUT "+sample.getAccession()+" : "+putResponse.toString());
@@ -152,11 +152,11 @@ public class NCBIElementCallable implements Callable<Void> {
 			
 			URI urlTarget = uriTemplate.expand();
 			
-			HttpEntity<SimpleSample> requestEntity = new HttpEntity<>(sample);
-			ResponseEntity<Resource<SimpleSample>> postResponse = restTemplate.exchange(urlTarget,
+			HttpEntity<Sample> requestEntity = new HttpEntity<>(sample);
+			ResponseEntity<Resource<Sample>> postResponse = restTemplate.exchange(urlTarget,
 					HttpMethod.POST,
 					requestEntity,
-					new ParameterizedTypeReference<Resource<SimpleSample>>(){});
+					new ParameterizedTypeReference<Resource<Sample>>(){});
 			
 			if (!postResponse.getStatusCode().is2xxSuccessful()) {
 				log.error("Unable to POST "+sample.getAccession()+" : "+postResponse.toString());
@@ -253,7 +253,7 @@ public class NCBIElementCallable implements Callable<Void> {
 			latestDate = releaseDate;
 		}
 		
-		SimpleSample sample = SimpleSample.createFrom(name, accession, updateDate, releaseDate, keyValues, new HashMap<>(), new HashMap<>(),relationships);
+		Sample sample = Sample.createFrom(name, accession, updateDate, releaseDate, keyValues, new HashMap<>(), new HashMap<>(),relationships);
 		
 		//now pass it along to the actual submission process
 		submit(sample);

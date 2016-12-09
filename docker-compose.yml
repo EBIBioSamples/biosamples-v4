@@ -1,112 +1,114 @@
 version: '2'
-
 services:
-
-    biosamples-pipelines:
-        build: .
-        image: biosamples:latest
-        links:
-            - biosamples-webapps-submission
-        #by default, this won't run any of the pipelines
-        #to run a pipeline, use docker-compose run 
-        command: ["java", "-jar", "pipelines-4.0.0-SNAPSHOT.jar"]
-        # command: ["java", "-jar", "pipelines-4.0.0-SNAPSHOT.jar", "--ncbi", "--biosamples.ncbi.localfile=./ncbi.xml.gz"]
-
-    biosamples-agents-neo4j:
-        build: .
-        image: biosamples:latest
-        links: 
-            - neo4j
-            - rabbitmq
-        command: ["java", "-jar", "agents-neo4j-4.0.0-SNAPSHOT.jar", 
-            "--spring.rabbitmq.host=rabbitmq",
-            "--spring.rabbitmq.publisher-confirms=true",
-            "--spring.data.neo4j.uri=http://neo4j:7474",
-            "--spring.data.neo4j.username=neo4j"]
-        restart: unless-stopped
-        
-    biosamples-agents-solr:
-        build: .
-        image: biosamples:latest
-        links: 
-            - solr
-            - rabbitmq
-        command: ["java", "-jar", "agents-solr-4.0.0-SNAPSHOT.jar", 
-            "--spring.rabbitmq.host=rabbitmq",
-            "--spring.rabbitmq.publisher-confirms=true",
-            "--spring.data.solr.host=http://solr:8983/solr"]
-        restart: unless-stopped
-        
-    biosamples-webapps-api:
-        build: .
-        image: biosamples:latest
-        links: 
-            - solr
-            - neo4j
-            - mongo
-        command: ["java", "-jar", "webapps-api-4.0.0-SNAPSHOT.war", 
-            "--spring.data.neo4j.uri=http://neo4j:7474",
-            "--spring.data.neo4j.username=neo4j",
-            "--spring.data.solr.host=http://solr:8983/solr",
-            "--spring.data.mongodb.host=mongo"]
-        ports:
-            - "8081:8080"
-        restart: always
-        
-    biosamples-webapps-submission:
-        build: .
-        image: biosamples:latest
-        links: 
-            - rabbitmq
-            - mongo
-        command: ["java", "-jar", "webapps-submission-4.0.0-SNAPSHOT.war", 
-            "--spring.rabbitmq.host=rabbitmq", 
-            "--spring.rabbitmq.publisher-confirms=true", 
-            "--spring.data.mongodb.host=mongo"]
-        ports:
-            - "8083:8080"
-        restart: always
-
-
-    mongo:
-        image: mongo:3.2
-        volumes:
-            - ./conf_mongo:/data/configdb
-        ports:
-            - "27017:27017"
-        restart: always
-                
-    rabbitmq:
-        image: rabbitmq:3.6-management
-        ports:
-            - "15672:15672"
-        restart: always
-        
-    neo4j:
-        image: neo4j:3.0
-        environment:
-        #set environment variable to disable request to change password
-            - NEO4J_AUTH=none
-        ports:
-            - "7474:7474"
-        restart: always
-        
-    solr:
-        image: solr:6.2-alpine
-        ports:
-            - "8983:8983"
-        volumes:
-            - ./models/solr/src/main/resources/cores/samples:/opt/solr/server/solr/samples
-        entrypoint: ["docker-entrypoint.sh", "solr-precreate", "samples"]
-        restart: always
-
+  biosamples-pipelines:
+    build: .
+    image: biosamples:latest
+    links:
+    - biosamples-webapps-submission
+    command:
+    - java
+    - -jar
+    - pipelines-4.0.0-SNAPSHOT.jar
+  biosamples-agents-neo4j:
+    build: .
+    image: biosamples:latest
+    links:
+    - neo4j
+    - rabbitmq
+    command:
+    - java
+    - -jar
+    - agents-neo4j-4.0.0-SNAPSHOT.jar
+    - --spring.rabbitmq.host=rabbitmq
+    - --spring.rabbitmq.publisher-confirms=true
+    - --spring.data.neo4j.uri=http://neo4j:7474
+    - --spring.data.neo4j.username=neo4j
+    restart: unless-stopped
+  biosamples-agents-solr:
+    build: .
+    image: biosamples:latest
+    links:
+    - solr
+    - rabbitmq
+    command:
+    - java
+    - -jar
+    - agents-solr-4.0.0-SNAPSHOT.jar
+    - --spring.rabbitmq.host=rabbitmq
+    - --spring.rabbitmq.publisher-confirms=true
+    - --spring.data.solr.host=http://solr:8983/solr
+    restart: unless-stopped
+  biosamples-webapps-api:
+    build: .
+    image: biosamples:latest
+    links:
+    - solr
+    - neo4j
+    - mongo
+    command:
+    - java
+    - -jar
+    - webapps-api-4.0.0-SNAPSHOT.war
+    - --spring.data.neo4j.uri=http://neo4j:7474
+    - --spring.data.neo4j.username=neo4j
+    - --spring.data.solr.host=http://solr:8983/solr
+    - --spring.data.mongodb.host=mongo
+    ports:
+    - 8081:8080
+    restart: always
+  biosamples-webapps-submission:
+    build: .
+    image: biosamples:latest
+    links:
+    - rabbitmq
+    - mongo
+    command:
+    - java
+    - -jar
+    - webapps-submission-4.0.0-SNAPSHOT.war
+    - --spring.rabbitmq.host=rabbitmq
+    - --spring.rabbitmq.publisher-confirms=true
+    - --spring.data.mongodb.host=mongo
+    ports:
+    - 8083:8080
+    restart: always
+  mongo:
+    image: mongo:3.2
+    volumes:
+    - ./docker/mongo/conf:/data/configdb
+    - ./docker/mongo/data:/data/db
+    ports:
+    - 27017:27017
+    restart: always
+  rabbitmq:
+    image: rabbitmq:3.6-management
+    ports:
+    - 15672:15672
+    restart: always
+  neo4j:
+    image: neo4j:3.0
+    environment:
+    - NEO4J_AUTH=none
+    ports:
+    - 7474:7474
+    restart: always
+  #use a separate solr for each core, rather than one instance for all cores
+  #easier to configure that way
+  solr:
+    image: solr:6.3-alpine
+    ports:
+    - 8983:8983
+    volumes:
+    - solr_data_samples:/opt/solr/server/solr/samples
+    entrypoint:
+    - docker-entrypoint.sh
+    - solr-precreate
+    - samples
+    restart: always
 networks:
-  #need to move default network to a different subnet to avoid conflict with local subnet
   default:
     ipam:
       config:
-        - subnet: 172.28.0.0/16
-
+      - subnet: 172.28.0.0/16
 volumes:
-    solrdata:
-
+  solr_data_samples: null

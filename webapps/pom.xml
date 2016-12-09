@@ -13,7 +13,6 @@
 	</parent>
 
 	<modules>
-		<module>submission</module>
 		<module>api</module>
 	</modules>
 </project>

@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import uk.ac.ebi.biosamples.models.NeoRelationship;
 import uk.ac.ebi.biosamples.models.NeoSample;
-import uk.ac.ebi.biosamples.models.SimpleSample;
+import uk.ac.ebi.biosamples.models.Sample;
 import uk.ac.ebi.biosamples.repos.NeoRelationshipRepository;
 import uk.ac.ebi.biosamples.repos.NeoSampleRepository;
 
@@ -21,7 +21,7 @@ public class MessageHandlerNeo4J {
 	private NeoRelationshipRepository neoRelRepository;
 
 	@RabbitListener(queues = Messaging.queueToBeIndexedNeo4J)
-	public void handle(SimpleSample sample) {
+	public void handle(Sample sample) {
 		//see if this sample has any relationships at all
 		if (sample.getRelationshipTypes() == null || sample.getRelationshipTypes().size() == 0) {
 			return;
@@ -31,7 +31,7 @@ public class MessageHandlerNeo4J {
 	}
 
 	@Transactional
-	private void persist(SimpleSample sample) {
+	private void persist(Sample sample) {
 		NeoSample neoSample = neoSampleRepository.findByAccession(sample.getAccession());
 		if (neoSample == null) {
 			// make a new one
