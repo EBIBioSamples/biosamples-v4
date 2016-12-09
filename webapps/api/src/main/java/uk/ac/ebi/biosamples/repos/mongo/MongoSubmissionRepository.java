@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.repos;
+package uk.ac.ebi.biosamples.repos.mongo;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
 

@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.repos;
+package uk.ac.ebi.biosamples.repos.ro;
 
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
