@@ -16,6 +16,11 @@
 	<dependencies>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
+			<artifactId>models-mongo</artifactId>
+			<version>${bsd2017.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>models-neo4j</artifactId>
 			<version>${bsd2017.version}</version>
 		</dependency>

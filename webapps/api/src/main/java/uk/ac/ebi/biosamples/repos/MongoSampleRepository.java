@@ -8,7 +8,6 @@ import uk.ac.ebi.biosamples.models.MongoSample;
 
 public interface MongoSampleRepository extends MongoRepository<MongoSample, String> {
 
-	//public Iterable<MongoSample> findByAccession(String accession);
 	public Page<MongoSample> findByAccession(String accession, Pageable pageable);
 	
 }

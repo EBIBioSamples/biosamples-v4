@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import uk.ac.ebi.biosamples.models.NeoRelationship;
 import uk.ac.ebi.biosamples.models.NeoSample;
+import uk.ac.ebi.biosamples.models.Relationship;
 import uk.ac.ebi.biosamples.models.Sample;
 import uk.ac.ebi.biosamples.repos.NeoRelationshipRepository;
 import uk.ac.ebi.biosamples.repos.NeoSampleRepository;
@@ -23,7 +24,7 @@ public class MessageHandlerNeo4J {
 	@RabbitListener(queues = Messaging.queueToBeIndexedNeo4J)
 	public void handle(Sample sample) {
 		//see if this sample has any relationships at all
-		if (sample.getRelationshipTypes() == null || sample.getRelationshipTypes().size() == 0) {
+		if (sample.getRelationships() == null || sample.getRelationships().size() == 0) {
 			return;
 		} else {
 			persist(sample);
@@ -39,19 +40,19 @@ public class MessageHandlerNeo4J {
 			neoSample = neoSampleRepository.save(neoSample);
 		}
 
-		for (String relType : sample.getRelationshipTypes()) {
-			for (String targetAcc : sample.getRelationshipTargets(relType)) {
-				// convert the target accession into a target object
-				NeoSample targetSample = neoSampleRepository.findByAccession(targetAcc);
-				// if it doesn't exist, create it
-				if (targetSample == null) {
-					targetSample = new NeoSample(targetAcc);
-					targetSample = neoSampleRepository.save(targetSample);
-				}
-				NeoRelationship rel = NeoRelationship.create(neoSample, targetSample, relType);
-				rel = neoRelRepository.save(rel);
-				neoSample.getRelationships().add(rel);
+		for (Relationship rel : sample.getRelationships()){
+
+			// convert the target accession into a target object
+			NeoSample targetSample = neoSampleRepository.findByAccession(rel.getTarget());
+			
+			// if it doesn't exist, create it
+			if (targetSample == null) {
+				targetSample = new NeoSample(rel.getTarget());
+				targetSample = neoSampleRepository.save(targetSample);
 			}
+			NeoRelationship neorel = NeoRelationship.create(neoSample, targetSample, rel.getType());
+			neorel = neoRelRepository.save(neorel);
+			neoSample.getRelationships().add(neorel);
 		}
 
 		neoSample = neoSampleRepository.save(neoSample);

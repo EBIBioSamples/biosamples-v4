@@ -1,6 +1,7 @@
 package uk.ac.ebi.biosamples.models;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -53,6 +54,27 @@ public class Sample {
 	public SortedSet<Relationship> getRelationships() {
 		return relationships;
 	}
+
+	@Override
+    public boolean equals(Object o) {
+
+        if (o == this) return true;
+        if (!(o instanceof Sample)) {
+            return false;
+        }
+        Sample other = (Sample) o;
+        return Objects.equals(this.name, other.name) 
+        		&& Objects.equals(this.accession, other.accession)
+        		&& Objects.equals(this.release, other.release)
+        		&& Objects.equals(this.update, other.update)
+        		&& Objects.equals(this.attributes, other.attributes)
+        		&& Objects.equals(this.relationships, other.relationships);
+    }
+    
+    @Override
+    public int hashCode() {
+    	return Objects.hash(name, accession, release, update, attributes, relationships);
+    }
 	
 	static public Sample build(String name, String accession, LocalDateTime release, LocalDateTime update, Set<Attribute> attributes, Set<Relationship> relationships){
 		Sample sample = new Sample();

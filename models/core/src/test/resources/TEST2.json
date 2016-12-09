@@ -7,6 +7,6 @@
 		{
 			"key":"organism",
 		 	"value":"Homo sapiens",
-		 	"ontologyTerm":"http://purl.obolibrary.org/obo/NCBITaxon_9606"
+		 	"iri":"http://purl.obolibrary.org/obo/NCBITaxon_9606"
 		 }]	 
 }

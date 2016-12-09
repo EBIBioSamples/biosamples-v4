@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.Callable;
 
 import org.dom4j.Element;
@@ -30,6 +32,8 @@ import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
 
 import uk.ac.ebi.biosamples.PipelinesProperties;
+import uk.ac.ebi.biosamples.models.Attribute;
+import uk.ac.ebi.biosamples.models.Relationship;
 import uk.ac.ebi.biosamples.models.Sample;
 import uk.ac.ebi.biosamples.utils.HateoasUtils;
 import uk.ac.ebi.biosamples.utils.XMLUtils;
@@ -68,25 +72,6 @@ public class NCBIElementCallable implements Callable<Void> {
 
 	public NCBIElementCallable(Element sampleElem) {
 		this.sampleElem = sampleElem;
-	}
-
-	private void addAttribute(String key, String value) {
-		key = key.trim();
-		value = value.trim();
-		// TODO handle odd characters
-		if (!keyValues.containsKey(key)) {
-			keyValues.put(key, new HashSet<>());
-		}
-		keyValues.get(key).add(value);
-	}
-
-	private void addRelationship(String type, String value) {
-		type = type.trim();
-		value = value.trim();
-		if (!relationships.containsKey(type)) {
-			relationships.put(type, new HashSet<>());
-		}
-		relationships.get(type).add(value);
 	}
 
 	private void submit(Sample sample) {
@@ -191,11 +176,14 @@ public class NCBIElementCallable implements Callable<Void> {
 		if (name.trim().length() == 0) {
 			name = accession;
 		}
+		
+		SortedSet<Attribute> attrs = new TreeSet<>();
+		SortedSet<Relationship> rels = new TreeSet<>();
 
 		for (Element idElem : xmlUtils.getChildrenByName(xmlUtils.getChildByName(sampleElem, "Ids"), "Id")) {
 			String id = idElem.getTextTrim();
 			if (!accession.equals(id) && !name.equals(id)) {
-				addAttribute("synonym", id);
+				attrs.add(Attribute.build("synonym",  id,  null,  null));
 			}
 		}
 
@@ -205,7 +193,7 @@ public class NCBIElementCallable implements Callable<Void> {
 			if (descriptionParagraph != null) {
 				String secondaryDescription = descriptionParagraph.getTextTrim();
 				if (!name.equals(secondaryDescription)) {
-					addAttribute("description", secondaryDescription);
+					attrs.add(Attribute.build("description", secondaryDescription,  null,  null));
 				}
 			}
 		}
@@ -213,10 +201,10 @@ public class NCBIElementCallable implements Callable<Void> {
 		// handle the organism
 		Element organismElement = xmlUtils.getChildByName(description, "Organism");
 		if (organismElement.attributeValue("taxonomy_id") == null) {
-			addAttribute("organism", organismElement.attributeValue("taxonomy_name").trim());
+			attrs.add(Attribute.build("organism", organismElement.attributeValue("taxonomy_name").trim(),  null,  null));
 		} else {
 			// TODO taxonomy reference
-			addAttribute("organism", organismElement.attributeValue("taxonomy_name").trim());
+			attrs.add(Attribute.build("organism", organismElement.attributeValue("taxonomy_name").trim(),  null,  null));
 		}
 
 		// handle attributes
@@ -229,18 +217,18 @@ public class NCBIElementCallable implements Callable<Void> {
 			String value = attrElem.getTextTrim();
 			if (value.matches("SAM[END]A?[0-9]+")) {
 				//value is a sample accession, assume its a relationship
-				addRelationship(key, value);
+				rels.add(Relationship.build(key, value));
 			} else {
 				//its an attribute
-				addAttribute(key, value);
+				attrs.add(Attribute.build(key, value, null, null));
 			}
 		}
 
 		// handle model and packages
 		for (Element modelElem : xmlUtils.getChildrenByName(xmlUtils.getChildByName(sampleElem, "Models"), "Model")) {
-			addAttribute("model", modelElem.getTextTrim());
+			attrs.add(Attribute.build("model", modelElem.getTextTrim(), null, null));
 		}
-		addAttribute("package", xmlUtils.getChildByName(sampleElem, "Package").getTextTrim());
+		attrs.add(Attribute.build("package", xmlUtils.getChildByName(sampleElem, "Package").getTextTrim(), null, null));
 
 		//handle dates
 		LocalDateTime updateDate = null;
@@ -253,7 +241,8 @@ public class NCBIElementCallable implements Callable<Void> {
 			latestDate = releaseDate;
 		}
 		
-		Sample sample = Sample.createFrom(name, accession, updateDate, releaseDate, keyValues, new HashMap<>(), new HashMap<>(),relationships);
+		//Sample sample = Sample.createFrom(name, accession, updateDate, releaseDate, keyValues, new HashMap<>(), new HashMap<>(),relationships);
+		Sample sample = Sample.build(name, accession, releaseDate, updateDate, attrs, rels);
 		
 		//now pass it along to the actual submission process
 		submit(sample);
