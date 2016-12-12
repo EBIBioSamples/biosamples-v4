@@ -1,5 +1,6 @@
 version: '2'
 services:
+#docker-compose run biosamples-pipelines --service-ports
   biosamples-pipelines:
     build: .
     image: biosamples:latest
@@ -10,8 +11,31 @@ services:
     - -jar
     - pipelines-4.0.0-SNAPSHOT.jar
     - --debug
-    - --biosamples.submissionuri=http://localhost:8081
+    - --ncbi
     - --spring.aop.proxy-target-class=true
+    #from https://github.com/google/guava/blob/master/guava/src/com/google/common/cache/CacheBuilderSpec.java
+    - --spring.cache.guava.spec=maximumSize=500,expireAfterAccess=60s,recordStats=true
+  biosamples-webapps-api:
+    build: .
+    image: biosamples:latest
+    links:
+    - solr
+    - neo4j
+    - mongo
+    - rabbitmq
+    command:
+    - java
+    - -jar
+    - webapps-api-4.0.0-SNAPSHOT.war
+    - --spring.data.solr.host=http://solr:8983/solr
+    - --spring.data.neo4j.uri=bolt://neo4j:7687
+    - --spring.data.neo4j.username=neo4j
+    - --spring.data.mongodb.host=mongo
+    - --spring.rabbitmq.host=rabbitmq
+    - --spring.rabbitmq.publisher-confirms=true
+    - --spring.jackson.serialization-inclusion=non_null
+    ports:
+    - 8081:8080
   biosamples-agents-neo4j:
     build: .
     image: biosamples:latest
@@ -41,27 +65,6 @@ services:
     - --spring.rabbitmq.publisher-confirms=true
     - --spring.data.solr.host=http://solr:8983/solr
     restart: unless-stopped
-  biosamples-webapps-api:
-    build: .
-    image: biosamples:latest
-    links:
-    - solr
-    - neo4j
-    - mongo
-    - rabbitmq
-    command:
-    - java
-    - -jar
-    - webapps-api-4.0.0-SNAPSHOT.war
-    - --spring.data.solr.host=http://solr:8983/solr
-    - --spring.data.neo4j.uri=bolt://neo4j:7687
-    - --spring.data.neo4j.username=neo4j
-    - --spring.data.mongodb.host=mongo
-    - --spring.rabbitmq.host=rabbitmq
-    - --spring.rabbitmq.publisher-confirms=true
-    - --spring.jackson.serialization-inclusion=non_null
-    ports:
-    - 8081:8080
   mongo:
     image: mongo:3.2
     volumes:
