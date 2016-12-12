@@ -1,12 +1,10 @@
 package uk.ac.ebi.biosamples.ncbi;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -24,13 +22,10 @@ import org.springframework.hateoas.UriTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestOperations;
-import org.springframework.web.client.RestTemplate;
-
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.models.Attribute;
 import uk.ac.ebi.biosamples.models.Relationship;
@@ -76,20 +71,20 @@ public class NCBIElementCallable implements Callable<Void> {
 
 	private void submit(Sample sample) {
 		// send it to the subs API
-		log.info("Checking for existing sample "+sample.getAccession());
+		log.trace("Checking for existing sample "+sample.getAccession());
 
 		//work out if its a put or a post
 		//do a get for that
 		URI existingUri = null;
 		try {
 			
-			log.info("Reading URI : "+pipelinesProperties.getBiosampleSubmissionURI());
+			log.trace("Reading URI : "+pipelinesProperties.getBiosampleSubmissionURI());
 			
 			UriTemplate uriTemplate = hateoasUtils.getHateoasUriTemplate(pipelinesProperties.getBiosampleSubmissionURI(), 
 					"mongoSamples", "search", "findByAccession");
 			URI uri = uriTemplate.expand(sample.getAccession());
 			
-			log.info("URI for testing is "+uri);
+			log.trace("URI for testing is "+uri);
 			
 			ResponseEntity<Resources<Resource<Sample>>> response = hateoasUtils.getHateoasResponse(uri,
 					new ParameterizedTypeReference<Resources<Resource<Sample>>>(){});

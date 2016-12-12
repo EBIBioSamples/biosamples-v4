@@ -1,8 +1,12 @@
 package uk.ac.ebi.biosamples.models;
 
 import java.time.LocalDateTime;
+
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 public class MongoSubmission {
 
@@ -10,9 +14,12 @@ public class MongoSubmission {
 	@JsonIgnore
 	public String id;
 
-	public MongoSample sample;
-	
+	@JsonSerialize(using = CustomLocalDateTimeSerializer.class)
+	@JsonDeserialize(using = CustomLocalDateTimeDeserializer.class)
+	@LastModifiedDate
 	public LocalDateTime datetime;
+
+	public MongoSample sample;
 	
 	public MongoSubmission(){}
 	

@@ -21,9 +21,14 @@
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
-			<artifactId>models-neo4j</artifactId>
+			<artifactId>messaging</artifactId>
 			<version>${bsd2017.version}</version>
 		</dependency>
+<!-- 		<dependency> -->
+<!-- 			<groupId>uk.ac.ebi.biosamples</groupId> -->
+<!-- 			<artifactId>models-neo4j</artifactId> -->
+<!-- 			<version>${bsd2017.version}</version> -->
+<!-- 		</dependency> -->
 		
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -36,7 +41,7 @@
 		<dependency>
 			<groupId>org.springframework.data</groupId>
 			<artifactId>spring-data-rest-hal-browser</artifactId>
-		</dependency>
+		</dependency>	
 
 		<!-- mark tomcat as provided so we can deploy to tomcat -->
 		<dependency>
@@ -45,13 +50,6 @@
 			<scope>provided</scope>
 		</dependency>
 		
-		<!-- use the embedded driver for in-memory testing -->
-		<dependency>
-			<groupId>org.neo4j</groupId>
-			<artifactId>neo4j-ogm-embedded-driver</artifactId>
-			<version>${neo4j-ogm.version}</version>
-			<scope>test</scope>
-		</dependency>
 	</dependencies>
 	<properties>
 		<snippetsDirectory>${project.build.directory}/generated-snippets</snippetsDirectory>

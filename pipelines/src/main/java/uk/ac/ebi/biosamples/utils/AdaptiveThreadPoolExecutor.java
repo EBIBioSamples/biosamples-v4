@@ -73,6 +73,13 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor {
 		return threadPool;
 	}
 
+	/**
+	 * This is a separate thread that monitors a thread pool
+	 * and increases or decreases the number of threads within the pool
+	 * in order to try to maximize the throughput. 
+	 * @author faulcon
+	 *
+	 */
 	private static class PoolMonitor implements Runnable {
 		
 	    private Logger log = LoggerFactory.getLogger(this.getClass());
@@ -111,8 +118,8 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor {
 				int currentThreads = pool.getMaximumPoolSize();
 				int doneJobs = pool.completedJobs.getAndSet(0);
 				
-				//number of jobs per sec per thread
-				double score = (((double)doneJobs)*1000000000.0d)/(interval*currentThreads);
+				//number of jobs per sec 
+				double score = (((double)doneJobs)*1000000000.0d)/(interval);
 				
 				log.info("Completed "+doneJobs+" in "+interval+"ns using "+currentThreads+" threads : score = "+score);
 				

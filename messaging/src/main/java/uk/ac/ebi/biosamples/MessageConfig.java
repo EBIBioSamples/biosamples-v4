@@ -17,11 +17,6 @@ public class MessageConfig {
 	// declare queues
 
 	@Bean
-	public Queue getQueueToBeLoaded() {
-		return new Queue(Messaging.queueToBeLoaded, true);
-	}
-
-	@Bean
 	public Queue getQueueToBeIndexedSolr() {
 		return new Queue(Messaging.queueToBeIndexedSolr, true);
 	}
@@ -34,35 +29,11 @@ public class MessageConfig {
 	// declare exchanges
 
 	@Bean
-	public FanoutExchange getExchangeForLoading() {
-		return new FanoutExchange(Messaging.exchangeForLoading, true, false);
-	}
-
-	@Bean
 	public FanoutExchange getExchangeForIndexing() {
 		return new FanoutExchange(Messaging.exchangeForIndexing, true, false);
 	}
 
 	// bind queues to exchanges
-
-	// bind for loading exchange
-
-	@Bean
-	public Binding bindingLoading() {
-		return BindingBuilder.bind(getQueueToBeLoaded()).to(getExchangeForLoading());
-	}
-
-	@Bean
-	public Binding bindingLoadingSolr() {
-		return BindingBuilder.bind(getQueueToBeIndexedSolr()).to(getExchangeForLoading());
-	}
-
-	@Bean
-	public Binding bindingLoadingNeo4J() {
-		return BindingBuilder.bind(getQueueToBeIndexedNeo4J()).to(getExchangeForLoading());
-	}
-
-	// bind for indexing exchange
 
 	@Bean
 	public Binding bindingIndexingSolr() {
@@ -74,9 +45,9 @@ public class MessageConfig {
 		return BindingBuilder.bind(getQueueToBeIndexedNeo4J()).to(getExchangeForIndexing());
 	}
 
-	// add messaging in json
-	
+	//enable messaging in json	
 	//note that this class is not the same as the http MessageConverter class
+	
 	@Bean
 	public MessageConverter getJackson2MessageConverter() {
 		return new Jackson2JsonMessageConverter();

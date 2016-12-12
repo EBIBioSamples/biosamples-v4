@@ -7,13 +7,15 @@ import org.apache.http.HeaderElementIterator;
 import org.apache.http.HttpResponse;
 import org.apache.http.conn.ConnectionKeepAliveStrategy;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.cache.CacheConfig;
+import org.apache.http.impl.client.cache.CachingHttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicHeaderElementIterator;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.protocol.HttpContext;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.hateoas.hal.Jackson2HalModule;
@@ -23,10 +25,10 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
-
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+@EnableCaching(proxyTargetClass = true)
 @SpringBootApplication
 public class Application {
 	
@@ -64,7 +66,15 @@ public class Application {
             }
         };
     	
-    	CloseableHttpClient httpClient = HttpClients.custom()
+        //use a chacing http client to respect cache-content header
+        CacheConfig cacheConfig = CacheConfig.custom()
+                .setMaxCacheEntries(1000)
+                .setMaxObjectSize(8192)
+                .build();
+        
+    	CloseableHttpClient httpClient = 
+    			CachingHttpClients.custom()
+    	        .setCacheConfig(cacheConfig)
     			.setKeepAliveStrategy(keepAliveStrategy)
     			.setConnectionManager(conman).build();
     	

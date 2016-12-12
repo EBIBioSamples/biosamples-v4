@@ -4,11 +4,14 @@ services:
     build: .
     image: biosamples:latest
     links:
-    - biosamples-webapps-submission
+    - biosamples-webapps-api
     command:
     - java
     - -jar
     - pipelines-4.0.0-SNAPSHOT.jar
+    - --debug
+    - --biosamples.submissionuri=http://localhost:8081
+    - --spring.aop.proxy-target-class=true
   biosamples-agents-neo4j:
     build: .
     image: biosamples:latest
@@ -21,7 +24,7 @@ services:
     - agents-neo4j-4.0.0-SNAPSHOT.jar
     - --spring.rabbitmq.host=rabbitmq
     - --spring.rabbitmq.publisher-confirms=true
-    - --spring.data.neo4j.uri=http://neo4j:7474
+    - --spring.data.neo4j.uri=bolt://neo4j:7687
     - --spring.data.neo4j.username=neo4j
     restart: unless-stopped
   biosamples-agents-solr:
@@ -45,70 +48,54 @@ services:
     - solr
     - neo4j
     - mongo
+    - rabbitmq
     command:
     - java
     - -jar
     - webapps-api-4.0.0-SNAPSHOT.war
-    - --spring.data.neo4j.uri=http://neo4j:7474
-    - --spring.data.neo4j.username=neo4j
     - --spring.data.solr.host=http://solr:8983/solr
+    - --spring.data.neo4j.uri=bolt://neo4j:7687
+    - --spring.data.neo4j.username=neo4j
     - --spring.data.mongodb.host=mongo
-    ports:
-    - 8081:8080
-    restart: always
-  biosamples-webapps-submission:
-    build: .
-    image: biosamples:latest
-    links:
-    - rabbitmq
-    - mongo
-    command:
-    - java
-    - -jar
-    - webapps-submission-4.0.0-SNAPSHOT.war
     - --spring.rabbitmq.host=rabbitmq
     - --spring.rabbitmq.publisher-confirms=true
-    - --spring.data.mongodb.host=mongo
+    - --spring.jackson.serialization-inclusion=non_null
     ports:
-    - 8083:8080
-    restart: always
+    - 8081:8080
   mongo:
     image: mongo:3.2
     volumes:
     - ./docker/mongo/conf:/data/configdb
-    - ./docker/mongo/data:/data/db
+    - mongo_data:/data/db
     ports:
     - 27017:27017
-    restart: always
   rabbitmq:
     image: rabbitmq:3.6-management
     ports:
     - 15672:15672
-    restart: always
   neo4j:
     image: neo4j:3.0
     environment:
     - NEO4J_AUTH=none
     ports:
+    - 7687:7687
     - 7474:7474
-    restart: always
-  #use a separate solr for each core, rather than one instance for all cores
-  #easier to configure that way
   solr:
     image: solr:6.3-alpine
     ports:
     - 8983:8983
     volumes:
-    - solr_data_samples:/opt/solr/server/solr/samples
+    - solr_samples_data:/opt/solr/server/solr/samples
     entrypoint:
     - docker-entrypoint.sh
     - solr-precreate
     - samples
-    restart: always
 networks:
   default:
     ipam:
       config:
       - subnet: 172.28.0.0/16
 volumes:
-  solr_data_samples: null
+  #get image sizes with `du -h /var/lib/docker/volumes/*_data` as docker user (root)
+  solr_samples_data: null
+  mongo_data: null
