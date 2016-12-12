@@ -116,8 +116,8 @@ public class HateoasUtils {
 		response = restTemplate.exchange(uri, HttpMethod.GET, requestEntity,
 				new ParameterizedTypeReference<Resource<?>>(){});
 		
-		if (response.getStatusCode() != HttpStatus.OK) {
-			throw new RuntimeException("Non-200 reponse for "+uri+" ("+response.getStatusCode()+")");
+		if (!response.getStatusCode().is2xxSuccessful()) {
+			throw new RuntimeException("Non-2xx reponse for "+uri+" ("+response.getStatusCode()+")");
 		}
 		
 		Resource<?> body = response.getBody();

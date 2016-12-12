@@ -4,9 +4,6 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
@@ -57,13 +54,6 @@ public class NCBIElementCallable implements Callable<Void> {
 	//easier to mock for testing
 	@Autowired
 	private RestOperations restTemplate;
-	
-
-	private Map<String, Set<String>> keyValues = new HashMap<>();
-	// TODO ontology terms? taxonomy?
-	// TODO units?
-
-	private Map<String, Set<String>> relationships = new HashMap<>();
 
 	public NCBIElementCallable(Element sampleElem) {
 		this.sampleElem = sampleElem;
