@@ -118,8 +118,8 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor {
 				int currentThreads = pool.getMaximumPoolSize();
 				int doneJobs = pool.completedJobs.getAndSet(0);
 				
-				//number of jobs per sec 
-				double score = (((double)doneJobs)*1000000000.0d)/(interval);
+				//number of jobs per sec per thread
+				double score = (((double)doneJobs)*1000000000.0d)/(interval*currentThreads);
 				
 				log.info("Completed "+doneJobs+" in "+interval+"ns using "+currentThreads+" threads : score = "+score);
 				
