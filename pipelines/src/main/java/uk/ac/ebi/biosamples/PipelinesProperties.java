@@ -11,10 +11,10 @@ public class PipelinesProperties {
 	@Value("${biosamples.ncbi.httpuri:http://ftp.ncbi.nlm.nih.gov/biosample/biosample_set.xml.gz}")
 	private URI ncbiHttpUri;
 
-	@Value("${biosamples.ncbi.threadcount:0}")
+	@Value("${biosamples.ncbi.threadcount:1}")
 	private int ncbiThreadCount;
 	
-	@Value("${biosamples.submissionuri:http://localhost:8083/}")
+	@Value("${biosamples.submissionuri:http://localhost:8081/}")
 	private URI biosampleSubmissionURI;
 
 	public URI getBiosampleSubmissionURI() {
