@@ -66,7 +66,7 @@ public class Application {
             }
         };
     	
-        //use a chacing http client to respect cache-content header
+        //use a caching http client to respect cache-content header
         CacheConfig cacheConfig = CacheConfig.custom()
                 .setMaxCacheEntries(1000)
                 .setMaxObjectSize(8192)
