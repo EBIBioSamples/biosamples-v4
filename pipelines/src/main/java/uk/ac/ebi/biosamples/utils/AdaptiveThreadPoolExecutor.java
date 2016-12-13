@@ -42,9 +42,13 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor {
 	}
 
 	public static AdaptiveThreadPoolExecutor create(int maxQueueSize, int pollInterval, boolean fairness) {
+		return create(maxQueueSize, pollInterval, fairness, Runtime.getRuntime().availableProcessors());
+	}
+
+	public static AdaptiveThreadPoolExecutor create(int maxQueueSize, int pollInterval, boolean fairness, int initialPoolSize) {
 
 		//default to the number of processors
-		int corePoolSize =  Runtime.getRuntime().availableProcessors();
+		int corePoolSize = initialPoolSize;
 		int maximumPoolSize = corePoolSize;
 		
 		//keep alive is not relevant, since core == maximum
@@ -121,7 +125,7 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor {
 				//number of jobs per sec per thread
 				double score = (((double)doneJobs)*1000000000.0d)/(interval*currentThreads);
 				
-				log.info("Completed "+doneJobs+" in "+interval+"ns using "+currentThreads+" threads : score = "+score);
+				log.trace("Completed "+doneJobs+" in "+interval+"ns using "+currentThreads+" threads : score = "+score);
 				
 								
 				//store the result of this score
@@ -152,7 +156,7 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor {
 						bestThreads = testThreads;
 					}
 				}
-				log.info("Best scoring number of threads is "+bestThreads+" with "+bestScore);
+				log.trace("Best scoring number of threads is "+bestThreads+" with "+bestScore);
 								
 				//if we are more than margin below the best, change to the best
 				if (bestThreads != currentThreads && margin*score < bestScore) {	

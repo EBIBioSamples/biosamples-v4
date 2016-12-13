@@ -26,34 +26,32 @@ import uk.ac.ebi.biosamples.utils.XMLFragmenter;
 
 @Component
 public class NCBI implements ApplicationRunner {
-	
+
 	private Logger log = LoggerFactory.getLogger(getClass());
-	
+
 	@Autowired
 	private PipelinesProperties pipelinesProperties;
-	
-	@Autowired
-	private NCBIHTTP ncbiHttp;
-	
+
 	@Autowired
 	private XMLFragmenter xmlFragmenter;
-	
+
 	@Autowired
 	private NCBIFragmentCallback callback;
 
 	@Override
 	public void run(ApplicationArguments args) throws Exception {
-		//only do things if we are told to
+		// only do things if we are told to
 		if (!args.containsOption("ncbi")) {
 			log.info("skipping ncbi");
-			return;	
+			return;
 		}
-		
+
 		log.info("Processing NCBI pipeline...");
 
 		LocalDate fromDate = null;
 		if (args.getOptionNames().contains("from")) {
-			fromDate = LocalDate.parse(args.getOptionValues("from").iterator().next(), DateTimeFormatter.ISO_LOCAL_DATE);
+			fromDate = LocalDate.parse(args.getOptionValues("from").iterator().next(),
+					DateTimeFormatter.ISO_LOCAL_DATE);
 		}
 		LocalDate toDate = null;
 		if (args.getOptionNames().contains("until")) {
@@ -63,24 +61,22 @@ public class NCBI implements ApplicationRunner {
 		callback.setFromDate(fromDate);
 		callback.setToDate(toDate);
 
-		//try (InputStream is = ncbiHttp.streamFromLocalCopy()) {
-		//try (InputStream is = ncbiHttp.streamFromRemote()) {
 		try (InputStream is = new GZIPInputStream(new BufferedInputStream(new FileInputStream(new File("biosample_set.xml.gz"))))) {
-		
+
 			if (pipelinesProperties.getNCBIThreadCount() > 0) {
-				ExecutorService executorService = AdaptiveThreadPoolExecutor.create(1000,15000, false);
+				ExecutorService executorService = AdaptiveThreadPoolExecutor.create(1000, 15000, false, pipelinesProperties.getNCBIThreadCount());
 				try {
 					Queue<Future<Void>> futures = new LinkedList<>();
-					
+
 					callback.setExecutorService(executorService);
 					callback.setFutures(futures);
-					
-					//this does the actual processing
+
+					// this does the actual processing
 					xmlFragmenter.handleStream(is, "UTF-8", callback);
-					
+
 					log.info("waiting for futures");
-					
-					//wait for anything to finish
+
+					// wait for anything to finish
 					for (Future<Void> future : futures) {
 						future.get();
 					}
@@ -89,12 +85,12 @@ public class NCBI implements ApplicationRunner {
 					executorService.awaitTermination(1, TimeUnit.MINUTES);
 				}
 			} else {
-				//do all on master thread
-				//this does the actual processing
-					xmlFragmenter.handleStream(is, "UTF-8", callback);
+				// do all on master thread
+				// this does the actual processing
+				xmlFragmenter.handleStream(is, "UTF-8", callback);
 			}
 		}
-		 
+
 		log.info("Processed NCBI pipeline");
 	}
 
