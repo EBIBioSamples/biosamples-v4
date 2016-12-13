@@ -2,3 +2,5 @@
 application.properties
 ncbi.xml.gz
 /run_env.sh
+bin/
+target/
