@@ -1,4 +1,0 @@
-TODO
-====
-
-make REST interface to MongoDB read-only. have read-only repository, need to enforce using that one for rest interface
