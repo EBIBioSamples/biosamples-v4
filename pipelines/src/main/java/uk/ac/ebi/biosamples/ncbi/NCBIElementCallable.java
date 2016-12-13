@@ -67,36 +67,26 @@ public class NCBIElementCallable implements Callable<Void> {
 		//do a get for that
 		URI existingUri = null;
 		try {
-			
 			log.trace("Reading URI : "+pipelinesProperties.getBiosampleSubmissionURI());
+			ResponseEntity<Resource<Sample>> response = hateoasUtils.getHateoasResponse(pipelinesProperties.getBiosampleSubmissionURI(),
+					new ParameterizedTypeReference<Resource<Sample>>(){},
+					"mongoSamples", "search", "findOneByAccession");
 			
-			UriTemplate uriTemplate = hateoasUtils.getHateoasUriTemplate(pipelinesProperties.getBiosampleSubmissionURI(), 
-					"mongoSamples", "search", "findByAccession");
-			URI uri = uriTemplate.expand(sample.getAccession());
-			
-			log.trace("URI for testing is "+uri);
-			
-			ResponseEntity<Resources<Resource<Sample>>> response = hateoasUtils.getHateoasResponse(uri,
-					new ParameterizedTypeReference<Resources<Resource<Sample>>>(){});
-			
-			if (response.getStatusCode() == HttpStatus.OK) {
-				//check the number of results 
-				Collection<Resource<Sample>> resources = response.getBody().getContent();
-				if (resources.size() == 0) {
-					//this accession has never been seen before, need to POST
-					existingUri = null;
-				} else {
-					//there might be multiple results because we store each version separately
-					//this is okay, we can still just PUT to the URI of any of them
-					existingUri = URI.create(resources.iterator().next().getLink("self").getHref());
-				} 
+			if (response.getStatusCode().is2xxSuccessful()) {
+				//existing content, need to PUT an update
+				existingUri = response.getHeaders().getLocation();
 			} else {
 				throw new RuntimeException("Unable to GET "+sample.getAccession());
 			}
 		} catch (HttpStatusCodeException e) {
-			//re-throw it because we can't recover
-			log.error("Unable to GET "+sample.getAccession()+" : "+e.getResponseBodyAsString());
-			throw e;
+			if (e.getStatusCode().is4xxClientError()) {
+				//no existing content, need to POST a new sample
+				existingUri = null;
+			} else {			
+				//re-throw it because we can't recover
+				log.error("Unable to GET "+sample.getAccession()+" : "+e.getResponseBodyAsString());
+				throw e;
+			}
 		}
 		
 		if (existingUri != null) {
@@ -114,16 +104,16 @@ public class NCBIElementCallable implements Callable<Void> {
 				throw new RuntimeException("Problem PUTing "+sample.getAccession());
 			}
 		} else {
-			log.info("POSTing "+sample.getAccession());
 			//not there, so need to POST it
 			//POST goes to a different URI
 			UriTemplate uriTemplate = hateoasUtils.getHateoasUriTemplate(pipelinesProperties.getBiosampleSubmissionURI(), 
 					"mongoSamples");
+			URI uri = uriTemplate.expand();
 			
-			URI urlTarget = uriTemplate.expand();
+			log.info("POSTing "+sample.getAccession()+" to "+uri);
 			
 			HttpEntity<Sample> requestEntity = new HttpEntity<>(sample);
-			ResponseEntity<Resource<Sample>> postResponse = restTemplate.exchange(urlTarget,
+			ResponseEntity<Resource<Sample>> postResponse = restTemplate.exchange(uri,
 					HttpMethod.POST,
 					requestEntity,
 					new ParameterizedTypeReference<Resource<Sample>>(){});
