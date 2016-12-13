@@ -34,11 +34,12 @@ public class HateoasUtilsTest {
 	private MockRestServiceServer server;
 	
 	private HateoasUtils hateoasUtils;
+	
+	private MediaType mediaHalJson = MediaType.parseMediaType("application/hal+json");
 
 	@Before
 	public void setup() {
 				
-		MediaType mediaHalJson = MediaType.parseMediaType("application/hal+json");
 		List<MediaType> mediasHalJson = MediaType.parseMediaTypes("application/hal+json");
 		
 		RestTemplate restTemplate = new RestTemplate();	
@@ -77,12 +78,6 @@ public class HateoasUtilsTest {
 			.andExpect(MockRestRequestMatchers.method(HttpMethod.GET))
 			.andRespond(MockRestResponseCreators.withSuccess("{ \"_links\" : { \"test\" : { \"href\" : \"/api/this/is/a/test\" } } }", mediaHalJson));
 
-		//this response is overloaded to be compatible with both Resource and Resources
-		server.expect(ExpectedCount.once(), MockRestRequestMatchers.requestTo("/api/this/is/a/test"))
-			.andExpect(MockRestRequestMatchers.method(HttpMethod.GET))
-			.andRespond(MockRestResponseCreators.withSuccess("{ \"name\" : \"floble\", \"_embedded\" :  { \"things\" : [ { \"name\" : \"floble\", \"_links\" : { \"self\" : { \"href\" : \"/api/this/is/a/test\" } } } ] }, \"_links\" : { \"self\" : { \"href\" : \"/api/this/is/a/test\" } } }", mediaHalJson));
-	
-		
 		hateoasUtils = new HateoasUtils(restTemplate);
 	}
 
@@ -102,6 +97,13 @@ public class HateoasUtilsTest {
 	
 	@Test
 	public void getHateoasResourceTest() {
+
+		//need to add a new resources endpoiunt to the server for testing
+		server.expect(ExpectedCount.once(), MockRestRequestMatchers.requestTo("/api/this/is/a/test"))
+			.andExpect(MockRestRequestMatchers.method(HttpMethod.GET))
+			.andRespond(MockRestResponseCreators.withSuccess("{ \"name\" : \"floble\", \"_embedded\" :  { \"things\" : [ { \"name\" : \"floble\", \"_links\" : { \"self\" : { \"href\" : \"/api/this/is/a/test\" } } } ] }, \"_links\" : { \"self\" : { \"href\" : \"/api/this/is/a/test\" } } }", mediaHalJson));
+	
+		
 		Resource<Thing> resource = hateoasUtils.getHateoasResource(URI.create("/api"), new ParameterizedTypeReference<Resource<Thing>>(){}, "this", "is", "a", "test");		
 		
 		Assert.assertNotNull(resource);
@@ -115,6 +117,14 @@ public class HateoasUtilsTest {
 
 	@Test
 	public void getHateoasResourcesTest() {
+
+		//need to add a new resources endpoiunt to the server for testing
+		server.expect(ExpectedCount.once(), MockRestRequestMatchers.requestTo("/api/this/is/a/test"))
+			.andExpect(MockRestRequestMatchers.method(HttpMethod.GET))
+			.andRespond(MockRestResponseCreators.withSuccess("{ \"name\" : \"floble\", \"_embedded\" :  { \"things\" : [ { \"name\" : \"floble\", \"_links\" : { \"self\" : { \"href\" : \"/api/this/is/a/test\" } } } ] }, \"_links\" : { \"self\" : { \"href\" : \"/api/this/is/a/test\" } } }", mediaHalJson));
+	
+		
+		
 		ResponseEntity<Resources<Resource<Thing>>> response = hateoasUtils.getHateoasResponse(
 				URI.create("/api"), new ParameterizedTypeReference<Resources<Resource<Thing>>>(){}, "this", "is", "a", "test");		
 		

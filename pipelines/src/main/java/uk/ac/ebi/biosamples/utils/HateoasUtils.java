@@ -69,7 +69,6 @@ public class HateoasUtils {
 	 * @return
 	 */
 	//TODO use getHateoasUriTemplate
-	//TODO use caching
 	public <T extends ResourceSupport> ResponseEntity<T> getHateoasResponse(URI uri, ParameterizedTypeReference<T> parameterizedTypeReferece, HttpEntity<?> requestEntity, String... rels) {
 		ResponseEntity<T> response = null;
 		int i = 0;
@@ -131,8 +130,14 @@ public class HateoasUtils {
 			if (link == null) throw new IllegalArgumentException("Unable to follow relation "+rels[0]+" from "+uri);
 			uriTemplate = new UriTemplate(link.getHref());
 			uri = uriTemplate.expand();
-			//recurse to get the rest
-			return getHateoasUriTemplate(uri, requestEntity, Arrays.copyOfRange(rels, 1, rels.length));
+			String[] relsRemaining = Arrays.copyOfRange(rels, 1, rels.length);
+			//if there is only one, return that
+			if (relsRemaining.length == 0) {
+				return uriTemplate;
+			} else {
+				//recurse to get the rest
+				return getHateoasUriTemplate(uri, requestEntity, relsRemaining);
+			}
 		}
 	}
 	
