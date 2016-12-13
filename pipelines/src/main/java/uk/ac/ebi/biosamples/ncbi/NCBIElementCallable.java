@@ -68,17 +68,29 @@ public class NCBIElementCallable implements Callable<Void> {
 		URI existingUri = null;
 		try {
 			log.trace("Reading URI : "+pipelinesProperties.getBiosampleSubmissionURI());
-			ResponseEntity<Resource<Sample>> response = hateoasUtils.getHateoasResponse(pipelinesProperties.getBiosampleSubmissionURI(),
-					new ParameterizedTypeReference<Resource<Sample>>(){},
+			
+			UriTemplate uriTemplate = hateoasUtils.getHateoasUriTemplate(pipelinesProperties.getBiosampleSubmissionURI(),
 					"mongoSamples", "search", "findOneByAccession");
+			
+			//log.info("uriTemplate = "+uriTemplate.toString());
+			
+			URI uri = uriTemplate.expand(sample.getAccession());
+
+			//log.info("uri = "+uri.toString());
+			
+			ResponseEntity<Resource<Sample>> response = hateoasUtils.getHateoasResponse(uri,
+					new ParameterizedTypeReference<Resource<Sample>>(){});
+			
+			//log.info("response = "+response);
 			
 			if (response.getStatusCode().is2xxSuccessful()) {
 				//existing content, need to PUT an update
-				existingUri = response.getHeaders().getLocation();
+				existingUri = URI.create(response.getBody().getLink("self").getHref());
 			} else {
 				throw new RuntimeException("Unable to GET "+sample.getAccession());
 			}
 		} catch (HttpStatusCodeException e) {
+			//log.error("Unable to GET "+sample.getAccession()+" : "+e.getResponseBodyAsString());
 			if (e.getStatusCode().is4xxClientError()) {
 				//no existing content, need to POST a new sample
 				existingUri = null;

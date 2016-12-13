@@ -26,7 +26,7 @@ public class SampleBackendIdConverter implements BackendIdConverter {
 	@Override
 	public Serializable fromRequestId(String accession, Class<?> clazz) {
 		if (accession == null) {
-			log.warn("accession null");
+			//log.warn("accession null");
 			return null;
 		}
 		if (!MongoSample.class.isAssignableFrom(clazz)) {

@@ -37,9 +37,10 @@ Then you can check out and compile the code with:
 
 `git clone https://github.com/EBIBioSamples/biosamples-v4 biosamples`
 `cd biosamples`
-`mvn package`
+`mvn -T 2C package`
 
 Note: This will require a large download of Spring dependencies.
+Note: This uses up to two threads per core of your machine.
 
 At that point, you will have a local compiled version of all the biosamples tools.
 
@@ -83,4 +84,12 @@ And to get the new packages into the docker containers you will need to rebuild 
 If needed, you can rebuild just a single container by specifying its name e.g.
 
 `docker-compose build biosamples-pipelines`
+
+To start a service, using docker compose will also start and dependent services it requires e.g.
+
+`docker-compose up biosamples-webapp-api`
+
+will also start solr, neo4j, mongo, and rabbitmq
+
+
  

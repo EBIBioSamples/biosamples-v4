@@ -44,6 +44,7 @@ public class XMLFragmenter {
 		SAXParser saxParser = factory.newSAXParser();
 		
 		saxParser.parse(isource, handler);
+		
 	}
 
 	private class FragmentationHandler extends DefaultHandler {

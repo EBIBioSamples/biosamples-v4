@@ -30,27 +30,27 @@ public class MongoSampleRepositoryCustomEventHandler {
 	
 	@HandleBeforeCreate
 	public void onBeforeCreateEvent(MongoSample sample) {
-		log.info("@HandleBeforeCreate triggered");
+		log.trace("@HandleBeforeCreate triggered");
 		MongoSubmission sub = new MongoSubmission(sample);
 		subsRepo.save(sub);
 	}
 	
 	@HandleBeforeSave
 	public void onBeforeSaveEvent(MongoSample sample) {
-		log.info("@HandleBeforeSave triggered");
+		log.trace("@HandleBeforeSave triggered");
 		MongoSubmission sub = new MongoSubmission(sample);
 		subsRepo.save(sub);		
 	}
 	
 	@HandleAfterCreate
 	public void onAfterCreateEvent(MongoSample sample) {
-		log.info("@HandleAfterCreate triggered");
+		log.trace("@HandleAfterCreate triggered");
 		amqpTemplate.convertAndSend(Messaging.exchangeForIndexing, "", sample);
 	}
 	
 	@HandleAfterSave
 	public void onAfterSaveEvent(MongoSample sample) {
-		log.info("@HandleAfterSave triggered");
+		log.trace("@HandleAfterSave triggered");
 		amqpTemplate.convertAndSend(Messaging.exchangeForIndexing, "", sample);
 	}
 }

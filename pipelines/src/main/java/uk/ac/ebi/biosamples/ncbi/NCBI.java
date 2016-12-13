@@ -61,10 +61,10 @@ public class NCBI implements ApplicationRunner {
 		callback.setFromDate(fromDate);
 		callback.setToDate(toDate);
 
-		try (InputStream is = new GZIPInputStream(new BufferedInputStream(new FileInputStream(new File("biosample_set.xml.gz"))))) {
+		try (InputStream is = new GZIPInputStream(new BufferedInputStream(new FileInputStream(pipelinesProperties.getNCBIFile())))) {
 
 			if (pipelinesProperties.getNCBIThreadCount() > 0) {
-				ExecutorService executorService = AdaptiveThreadPoolExecutor.create(1000, 15000, false, pipelinesProperties.getNCBIThreadCount());
+				ExecutorService executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, pipelinesProperties.getNCBIThreadCount());
 				try {
 					Queue<Future<Void>> futures = new LinkedList<>();
 
@@ -81,6 +81,7 @@ public class NCBI implements ApplicationRunner {
 						future.get();
 					}
 				} finally {
+					log.info("shutting down");
 					executorService.shutdown();
 					executorService.awaitTermination(1, TimeUnit.MINUTES);
 				}
