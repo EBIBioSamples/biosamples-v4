@@ -12,6 +12,8 @@ import org.springframework.test.context.junit4.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import uk.ac.ebi.biosamples.mongo.model.MongoSample;
+
 import static org.assertj.core.api.Assertions.*;
 
 import java.net.URISyntaxException;
@@ -48,7 +50,7 @@ public class MongoSerializationTest {
 		attributes.add(Attribute.build("organism part", "heart", null, null));
 		
 		SortedSet<Relationship> relationships = new TreeSet<>();
-		relationships.add(Relationship.build("derived from", "TEST2"));
+		relationships.add(Relationship.build("derived from", "TEST2", "TEST1"));
 
 		return MongoSample.build(name, accession, release, update, attributes, relationships);
 	}

@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.models;
+package uk.ac.ebi.biosamples.neo.model;
 
 import org.neo4j.ogm.annotation.EndNode;
 import org.neo4j.ogm.annotation.GraphId;
@@ -30,8 +30,12 @@ public class NeoRelationship {
 		return specificType;
 	}
 
-	public void setSpecificType(String specificType) {
-		this.specificType = specificType;
+	public NeoSample getOwner() {
+		return owner;
+	}
+
+	public NeoSample getTarget() {
+		return target;
 	}
 
 	public static NeoRelationship create(NeoSample owner, NeoSample target, String specificType) {

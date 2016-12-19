@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.models;
+package uk.ac.ebi.biosamples.neo.model;
 
 import org.neo4j.ogm.annotation.NodeEntity;
 import org.neo4j.ogm.annotation.Property;
@@ -19,7 +19,10 @@ public class NeoSample {
 	private String accession;
 	
 	@Relationship(type = "RELATED_TO")
-	private Set<NeoRelationship> relationships = new HashSet<>();
+	private Set<NeoRelationship> relationships;
+	
+	@Relationship(type = "RELATED_TO", direction = Relationship.INCOMING)
+	private Set<NeoRelationship> relationshipsIncoming;
 
 	@SuppressWarnings("unused")
 	private NeoSample() {
@@ -33,25 +36,17 @@ public class NeoSample {
 		return id;
 	}
 
-	public void setId(Long id) {
-		this.id = id;
-	}
-
 	public String getAccession() {
 		return accession;
-	}
-
-	public void setAccession(String accession) {
-		this.accession = accession;
 	}
 
 	public Set<NeoRelationship> getRelationships() {
 		return relationships;
 	}
 
-	public void setRelationships(Set<NeoRelationship> relationships) {
-		this.relationships = relationships;
+
+	public Set<NeoRelationship> getRelationshipsIncoming() {
+		return relationshipsIncoming;
 	}
-	
 
 }

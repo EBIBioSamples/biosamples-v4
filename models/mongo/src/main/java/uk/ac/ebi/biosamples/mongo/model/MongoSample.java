@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.models;
+package uk.ac.ebi.biosamples.mongo.model;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -13,6 +13,11 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+import uk.ac.ebi.biosamples.models.Attribute;
+import uk.ac.ebi.biosamples.models.CustomLocalDateTimeDeserializer;
+import uk.ac.ebi.biosamples.models.CustomLocalDateTimeSerializer;
+import uk.ac.ebi.biosamples.models.Relationship;
 
 public class MongoSample {
 

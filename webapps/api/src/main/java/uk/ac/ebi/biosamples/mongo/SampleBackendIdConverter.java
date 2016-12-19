@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.repos.mongo;
+package uk.ac.ebi.biosamples.mongo;
 
 import java.io.Serializable;
 
@@ -8,7 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.spi.BackendIdConverter;
 import org.springframework.stereotype.Component;
 
-import uk.ac.ebi.biosamples.models.MongoSample;
+import uk.ac.ebi.biosamples.mongo.model.MongoSample;
+import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 
 @Component
 public class SampleBackendIdConverter implements BackendIdConverter {

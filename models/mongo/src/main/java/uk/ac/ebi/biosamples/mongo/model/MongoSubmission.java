@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.models;
+package uk.ac.ebi.biosamples.mongo.model;
 
 import java.time.LocalDateTime;
 
@@ -7,6 +7,9 @@ import org.springframework.data.annotation.LastModifiedDate;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+import uk.ac.ebi.biosamples.models.CustomLocalDateTimeDeserializer;
+import uk.ac.ebi.biosamples.models.CustomLocalDateTimeSerializer;
 
 public class MongoSubmission {
 

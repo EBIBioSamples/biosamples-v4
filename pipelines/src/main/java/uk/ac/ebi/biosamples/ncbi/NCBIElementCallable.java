@@ -206,7 +206,7 @@ public class NCBIElementCallable implements Callable<Void> {
 			if (value.matches("SAM[END]A?[0-9]+")) {
 				//if its a self-relationship, then dont add it
 				if (!value.equals(accession)) {
-					rels.add(Relationship.build(key, value));
+					rels.add(Relationship.build(key, value, accession));
 				}
 			} else {
 				//its an attribute

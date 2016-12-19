@@ -18,4 +18,8 @@ public class Application extends SpringBootServletInitializer {
 	    return new MappedInterceptor(new String[]{"/**"}, new CacheControlInterceptor());
 	}
 	
+	@Bean
+	public SampleResourceProcessor getSampleResourceProcessor() {
+		return new SampleResourceProcessor();
+	}
 }

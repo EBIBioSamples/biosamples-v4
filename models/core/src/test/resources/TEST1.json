@@ -24,6 +24,7 @@
 		 }],
 	"relationships":[
 		{
+			"source":"TEST1",
 			"type":"derived from",
 			"target":"TEST2"
 		}]

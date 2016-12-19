@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.repos.mongo;
+package uk.ac.ebi.biosamples.mongo;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,8 +12,9 @@ import org.springframework.data.rest.core.annotation.RepositoryEventHandler;
 import org.springframework.stereotype.Service;
 
 import uk.ac.ebi.biosamples.Messaging;
-import uk.ac.ebi.biosamples.models.MongoSample;
-import uk.ac.ebi.biosamples.models.MongoSubmission;
+import uk.ac.ebi.biosamples.mongo.model.MongoSample;
+import uk.ac.ebi.biosamples.mongo.model.MongoSubmission;
+import uk.ac.ebi.biosamples.mongo.repo.MongoSubmissionRepository;
 
 
 @Service
