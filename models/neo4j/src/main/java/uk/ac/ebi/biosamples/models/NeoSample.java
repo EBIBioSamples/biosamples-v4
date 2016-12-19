@@ -3,6 +3,7 @@ package uk.ac.ebi.biosamples.models;
 import org.neo4j.ogm.annotation.NodeEntity;
 import org.neo4j.ogm.annotation.Property;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import org.neo4j.ogm.annotation.GraphId;
@@ -18,7 +19,7 @@ public class NeoSample {
 	private String accession;
 	
 	@Relationship(type = "RELATED_TO")
-	private Set<NeoRelationship> relationships;
+	private Set<NeoRelationship> relationships = new HashSet<>();
 
 	@SuppressWarnings("unused")
 	private NeoSample() {
