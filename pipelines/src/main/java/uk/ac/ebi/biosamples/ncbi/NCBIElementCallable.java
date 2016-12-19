@@ -70,7 +70,7 @@ public class NCBIElementCallable implements Callable<Void> {
 			log.trace("Reading URI : "+pipelinesProperties.getBiosampleSubmissionURI());
 			
 			UriTemplate uriTemplate = hateoasUtils.getHateoasUriTemplate(pipelinesProperties.getBiosampleSubmissionURI(),
-					"mongoSamples", "search", "findOneByAccession");
+					"samples", "search", "findOneByAccession");
 			
 			//log.info("uriTemplate = "+uriTemplate.toString());
 			
@@ -119,7 +119,7 @@ public class NCBIElementCallable implements Callable<Void> {
 			//not there, so need to POST it
 			//POST goes to a different URI
 			UriTemplate uriTemplate = hateoasUtils.getHateoasUriTemplate(pipelinesProperties.getBiosampleSubmissionURI(), 
-					"mongoSamples");
+					"samples");
 			URI uri = uriTemplate.expand();
 			
 			log.info("POSTing "+sample.getAccession()+" to "+uri);
@@ -202,9 +202,12 @@ public class NCBIElementCallable implements Callable<Void> {
 				key = attrElem.attributeValue("attribute_name");
 			}
 			String value = attrElem.getTextTrim();
+			//value is a sample accession, assume its a relationship
 			if (value.matches("SAM[END]A?[0-9]+")) {
-				//value is a sample accession, assume its a relationship
-				rels.add(Relationship.build(key, value));
+				//if its a self-relationship, then dont add it
+				if (!value.equals(accession)) {
+					rels.add(Relationship.build(key, value));
+				}
 			} else {
 				//its an attribute
 				attrs.add(Attribute.build(key, value, null, null));
