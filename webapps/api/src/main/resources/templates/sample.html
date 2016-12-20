@@ -1,0 +1,18 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.w3.org/1999/xhtml"
+      layout:decorator="__parent_base">
+<head>
+  <!-- A few keywords that relate to the content of THIS PAGE (not the whole project) -->
+  <meta name="keywords" content="biosamples, europe, EBI" />
+  <!-- Describe what this page is about -->
+  <meta name="description" content="EMBL-EBI" />
+  
+  <meta name="ebi:last-review" content="2016-12-20" /> <!-- The last time the content was reviewed -->
+  <meta name="ebi:expiry" content="2017-12-20" /> <!-- When this content is no longer relevant -->
+  
+</head>
+<body>
+	<p th:text="'Hello, ' + ${sample.accession} + '!'">Hello TEST!</p>
+</body>
+</html>

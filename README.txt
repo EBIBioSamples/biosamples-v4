@@ -44,10 +44,11 @@ Note: This uses up to two threads per core of your machine.
 
 At that point, you will have a local compiled version of all the biosamples tools.
 
-To start a copy running on the local machine (e.g. to test any changes you have made) you can use Docker and Docker-compose. https://docs.docker.com/compose/
+To start a copy running on the local machine (e.g. to test any changes you have made) you can 
+use Docker and Docker-compose. https://docs.docker.com/compose/
 
-You can use `docker-compose up` to start all the services, or you can bring them up and down at will individually. 
-See docker-compose.yml file for more information on service names and dependencies.
+You can use `docker-compose up` to start all the services, or you can bring them up and down at 
+will individually. See docker-compose.yml file for more information on service names and dependencies.
 
 
 By default, the pipelines will not be run. They can be manually triggered as follows:
@@ -67,11 +68,14 @@ Run the pipeline to send the data to the submission API via REST
 Developing
 ==========
 
-Docker can be run from within a virtual machine e.g VirtualBox. This is useful if it causes any problems for your machine or if you have an OS that is not supported.
+Docker can be run from within a virtual machine e.g VirtualBox. This is useful if it causes any 
+problems for your machine or if you have an OS that is not supported.
 
-You might want to mount the virtual machines directory with the host, so you can work in a standard IDE outside of the VM. VirtualBox supports this.
+You might want to mount the virtual machines directory with the host, so you can work in a standard 
+IDE outside of the VM. VirtualBox supports this.
 
-If you ware using a virtual machine, you might also want to configure docker-compose to start by default. 
+If you ware using a virtual machine, you might also want to configure docker-compose to start by 
+default. 
 
 As you make changes to the code, you can recompile it via Maven with:
 
@@ -91,5 +95,17 @@ To start a service, using docker compose will also start and dependent services 
 
 will also start solr, neo4j, mongo, and rabbitmq
 
+If you want to connect debugging tools to the java applications running inside docker containers, 
+see instructions at http://www.jamasoftware.com/blog/monitoring-java-applications/
 
+Beware, Docker tar's and copies all the files on the filesystem from the location of docker-compose 
+down. If you have data files there (e.g. downloads from ncbi, docker volumes) then that process can
+take so long as to make using Docker impractical.
  
+ 
+Known problems
+==============
+
+This relies on spring-data-rest for exposing the repositories as REST endpoints. However, that
+can only serve JSON and cannot serve XML. Currently, some type negotiation backend is implemented
+but this is not exposed in anyway.
