@@ -2,8 +2,6 @@ package uk.ac.ebi.biosamples.models;
 
 import java.time.LocalDateTime;
 import java.util.Set;
-import java.util.TreeSet;
-
 import org.apache.solr.client.solrj.beans.Field;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.solr.core.mapping.SolrDocument;

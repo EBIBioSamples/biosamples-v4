@@ -1,7 +1,6 @@
 package uk.ac.ebi.biosamples.ncbi;
 
 import java.io.BufferedInputStream;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.time.LocalDate;
