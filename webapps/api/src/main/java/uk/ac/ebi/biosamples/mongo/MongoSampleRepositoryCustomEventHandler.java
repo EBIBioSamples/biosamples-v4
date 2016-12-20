@@ -34,13 +34,15 @@ public class MongoSampleRepositoryCustomEventHandler {
 		log.trace("@HandleBeforeCreate triggered");
 		MongoSubmission sub = new MongoSubmission(sample);
 		subsRepo.save(sub);
+		//TODO validate that relationships have this sample as the source
 	}
 	
 	@HandleBeforeSave
 	public void onBeforeSaveEvent(MongoSample sample) {
 		log.trace("@HandleBeforeSave triggered");
 		MongoSubmission sub = new MongoSubmission(sample);
-		subsRepo.save(sub);		
+		subsRepo.save(sub);	
+		//TODO validate that relationships have this sample as the source	
 	}
 	
 	@HandleAfterCreate

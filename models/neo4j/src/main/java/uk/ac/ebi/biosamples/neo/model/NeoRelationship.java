@@ -11,13 +11,14 @@ public class NeoRelationship {
 
 	@GraphId
 	private Long id;
-
-	@Property
-	private String specificType;
+	
 	@StartNode
 	private NeoSample owner;
 	@EndNode
 	private NeoSample target;
+
+	@Property
+	private String specificType;
 
 	private NeoRelationship() {
 	};

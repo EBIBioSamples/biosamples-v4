@@ -3,7 +3,6 @@ package uk.ac.ebi.biosamples.neo.model;
 import org.neo4j.ogm.annotation.NodeEntity;
 import org.neo4j.ogm.annotation.Property;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import org.neo4j.ogm.annotation.GraphId;
@@ -18,11 +17,11 @@ public class NeoSample {
 	@Property
 	private String accession;
 	
-	@Relationship(type = "RELATED_TO")
+	@Relationship(type = "RELATED_TO", direction = Relationship.UNDIRECTED)
 	private Set<NeoRelationship> relationships;
 	
-	@Relationship(type = "RELATED_TO", direction = Relationship.INCOMING)
-	private Set<NeoRelationship> relationshipsIncoming;
+//	@Relationship(type = "RELATED_TO", direction = Relationship.INCOMING)
+//	private Set<NeoRelationship> relationshipsIncoming;
 
 	@SuppressWarnings("unused")
 	private NeoSample() {
@@ -44,9 +43,8 @@ public class NeoSample {
 		return relationships;
 	}
 
-
-	public Set<NeoRelationship> getRelationshipsIncoming() {
-		return relationshipsIncoming;
-	}
+//	public Set<NeoRelationship> getRelationshipsIncoming() {
+//		return relationshipsIncoming;
+//	}
 
 }

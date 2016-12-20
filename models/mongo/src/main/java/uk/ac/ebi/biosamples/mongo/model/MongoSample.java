@@ -37,8 +37,8 @@ public class MongoSample {
 	@LastModifiedDate
 	protected LocalDateTime update;
 
-	protected SortedSet<Attribute> attributes;
-	protected SortedSet<Relationship> relationships;
+	protected SortedSet<Attribute> attributes = new TreeSet<>();
+	protected SortedSet<Relationship> relationships = new TreeSet<>();
 
 	private MongoSample() {
 		

@@ -33,7 +33,7 @@ public class MessageHandlerNeo4J {
 
 	@Transactional
 	private void persist(Sample sample) {
-		NeoSample neoSample = neoSampleRepository.findByAccession(sample.getAccession());
+		NeoSample neoSample = neoSampleRepository.findOneByAccession(sample.getAccession());
 		if (neoSample == null) {
 			// make a new one
 			neoSample = new NeoSample(sample.getAccession());
@@ -43,7 +43,7 @@ public class MessageHandlerNeo4J {
 		for (Relationship rel : sample.getRelationships()){
 
 			// convert the target accession into a target object
-			NeoSample targetSample = neoSampleRepository.findByAccession(rel.getTarget());
+			NeoSample targetSample = neoSampleRepository.findOneByAccession(rel.getTarget());
 			
 			// if it doesn't exist, create it
 			if (targetSample == null) {

@@ -21,10 +21,19 @@ public class SampleResourceProcessor implements ResourceProcessor<Resource<Mongo
 	
 	@Override
 	public Resource<MongoSample> process(Resource<MongoSample> resource) {
-		log.info("ResourceProcessor handling "+resource.getContent().accession);
-		NeoSample neoSample = neoSampleRepository.findByAccession(resource.getContent().accession);
+		log.debug("ResourceProcessor handling "+resource.getContent().accession);
 		
-		if (neoSample != null && neoSample.getRelationships() != null && neoSample.getRelationships().size() > 0) {
+		NeoSample neoSample = neoSampleRepository.findOneByAccession(resource.getContent().accession);
+		
+		log.trace("neoSample = "+neoSample);
+		if (neoSample != null) {
+			log.trace("neoSample.getRelationships() = "+neoSample.getRelationships());
+		}
+		
+		if (neoSample != null 
+				&& neoSample.getRelationships() != null 
+				&& neoSample.getRelationships().size() > 0) {
+			
 			for(NeoRelationship neoRelationship : neoSample.getRelationships()) {
 				String target = neoRelationship.getTarget().getAccession();
 				String source = neoRelationship.getOwner().getAccession();
@@ -32,8 +41,11 @@ public class SampleResourceProcessor implements ResourceProcessor<Resource<Mongo
 				Relationship rel = Relationship.build(relType, target, source);
 				
 				resource.getContent().getRelationships().add(rel);
+				
+				log.trace("Adding relationship from "+source+" to "+target);
 			}
 		}
+		
 		return resource;
 	}
 

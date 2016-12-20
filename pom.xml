@@ -26,6 +26,7 @@
 		<module>agents</module>
 		<module>webapps</module>
 		<module>pipelines</module>
+		<module>integration</module>
 	</modules>
 
 	<dependencies>

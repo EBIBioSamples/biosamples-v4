@@ -19,7 +19,7 @@ public class Application extends SpringBootServletInitializer {
 	}
 	
 	@Bean
-	public SampleResourceProcessor getSampleResourceProcessor() {
+	public SampleResourceProcessor getMongoSampleResourceProcessor() {
 		return new SampleResourceProcessor();
 	}
 }
