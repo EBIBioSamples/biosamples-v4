@@ -3,6 +3,7 @@
       xmlns:layout="http://www.w3.org/1999/xhtml"
       layout:decorator="__parent_base">
 <head>
+  <title th:text="${sample.accession}+' &lt; BioSamples &lt; EMBL-EBI'">BioSamples &lt; EMBL-EBI</title>
   <!-- A few keywords that relate to the content of THIS PAGE (not the whole project) -->
   <meta name="keywords" content="biosamples, europe, EBI" />
   <!-- Describe what this page is about -->
@@ -13,6 +14,25 @@
   
 </head>
 <body>
-	<p th:text="'Hello, ' + ${sample.accession} + '!'">Hello TEST!</p>
+	<div layout:fragment="content">
+        <div id="main-content-area" class="row">
+          <div class="columns">
+            <section>
+              <h2 th:text="${sample.accession}">TEST</h2>
+              <table>
+	              <tr th:each="attribute : ${sample.attributes}">
+		              <th th:text="${attribute.key}">Attribute Key</th>
+		              
+		              
+		              <th th:if="${attribute.iri}"><a th:href="${attribute.getIriOls()}" th:text="${attribute.value}">attribute value</a></th>
+		              <th th:unless="${attribute.iri}" th:text="${attribute.value}">attribute value</th>
+		              
+	              </tr>
+              </table>
+              
+            </section>
+          </div>
+        </div>	
+	</div>
 </body>
 </html>

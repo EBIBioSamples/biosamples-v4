@@ -4,12 +4,14 @@
 	xmlns:layout="http://www.w3.org/1999/xhtml">
 	
 <head>
-	<title
-		th:text="${#bools.isTrue(overrideTitle) ? '' : BioSamples &lt; EMBL-EBI'}">BioSamples &lt; EMBL-EBI</title>
 	<th:block th:include="fragments/head :: head"></th:block>
 </head>
 
-
 <body>
+	<th:block th:include="fragments/header :: header"></th:block>
+	
+	<div layout:fragment="content"></div>
+
+	<th:block th:include="fragments/footer :: footer"></th:block>	
 </body>
 </html>

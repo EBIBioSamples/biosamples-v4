@@ -1,6 +1,10 @@
 package uk.ac.ebi.biosamples.models;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class Attribute implements Comparable<Attribute> {
 
@@ -23,6 +27,17 @@ public class Attribute implements Comparable<Attribute> {
 
 	public String getIri() {
 		return iri;
+	}
+	
+	@JsonIgnore
+	public String getIriOls() {
+		try {
+			return "http://www.ebi.ac.uk/ols/terms?iri="+URLEncoder.encode(iri, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			//should never get here
+			throw new RuntimeException(e);
+		}		
+			
 	}
 
 	public String getUnit() {
