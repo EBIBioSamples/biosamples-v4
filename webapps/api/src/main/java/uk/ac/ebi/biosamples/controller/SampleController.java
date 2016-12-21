@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 
 @Controller
@@ -21,9 +22,8 @@ public class SampleController {
 	
 	@RequestMapping(value = "samples/{accession}", produces = MediaType.TEXT_HTML_VALUE, method = RequestMethod.GET)
     public String greeting(Model model, @PathVariable String accession, HttpServletRequest request) {
-        
-		model.addAttribute("sample", mongoSampleRepository.findOneByAccession(accession));
-		
+        MongoSample sample = mongoSampleRepository.findOneByAccession(accession);
+		model.addAttribute("sample", sample);		
         return "sample";
     }
 }

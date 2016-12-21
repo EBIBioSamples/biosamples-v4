@@ -19,16 +19,20 @@
           <div class="columns">
             <section>
               <h2 th:text="${sample.accession}">TEST</h2>
+              
+              <th:span th:if="${sample.attributes}" th:remove="tag">              
+              <h4>Attributes:</h4>
               <table>
 	              <tr th:each="attribute : ${sample.attributes}">
 		              <th th:text="${attribute.key}">Attribute Key</th>
 		              
-		              
-		              <th th:if="${attribute.iri}"><a th:href="${attribute.getIriOls()}" th:text="${attribute.value}">attribute value</a></th>
-		              <th th:unless="${attribute.iri}" th:text="${attribute.value}">attribute value</th>
-		              
+		              <td th:if="${not #strings.isEmpty(attribute.iri) and #strings.isEmpty(attribute.unit)}"><a th:href="${attribute.getIriOls()}" th:text="${attribute.value}">attribute value</a></td>
+		              <td th:if="${#strings.isEmpty(attribute.iri) and #strings.isEmpty(attribute.unit)}" th:text="${attribute.value}">attribute value</td>
+		              <td th:if="${not #strings.isEmpty(attribute.iri) and not #strings.isEmpty(attribute.unit)}"><th:span th:text="${attribute.value}" th:remove="tag"></th:span> (<a th:href="${attribute.getIriOls()}" th:text="${attribute.unit}">unit</a>)</td>
+		              <td th:if="${#strings.isEmpty(attribute.iri) and not #strings.isEmpty(attribute.unit)}" th:text="${attribute.value}+' ('+${attribute.unit}+')'">attribute value (unit)</td>		              
 	              </tr>
               </table>
+              </th:span>
               
             </section>
           </div>

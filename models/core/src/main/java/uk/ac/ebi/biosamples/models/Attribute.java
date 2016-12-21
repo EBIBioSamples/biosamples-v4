@@ -29,8 +29,15 @@ public class Attribute implements Comparable<Attribute> {
 		return iri;
 	}
 	
+	/**
+	 * This returns a string representation of the URL to lookup the associated ontology term iri in
+	 * EBI OLS. 
+	 * @return
+	 */
 	@JsonIgnore
 	public String getIriOls() {
+		if (iri == null) return null;
+		
 		try {
 			return "http://www.ebi.ac.uk/ols/terms?iri="+URLEncoder.encode(iri, "UTF-8");
 		} catch (UnsupportedEncodingException e) {
