@@ -1,10 +1,9 @@
-package uk.ac.ebi.biosamples;
+package uk.ac.ebi.biosamples.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.ResourceProcessor;
+import org.springframework.stereotype.Service;
 
 import uk.ac.ebi.biosamples.models.Relationship;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
@@ -12,18 +11,18 @@ import uk.ac.ebi.biosamples.neo.model.NeoRelationship;
 import uk.ac.ebi.biosamples.neo.model.NeoSample;
 import uk.ac.ebi.biosamples.neo.repo.NeoSampleRepository;
 
-public class SampleResourceProcessor implements ResourceProcessor<Resource<MongoSample>> {
+@Service
+public class InverseRelationshipService {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 	
 	@Autowired
 	public NeoSampleRepository neoSampleRepository;
 	
-	@Override
-	public Resource<MongoSample> process(Resource<MongoSample> resource) {
-		log.debug("ResourceProcessor handling "+resource.getContent().accession);
-		
-		NeoSample neoSample = neoSampleRepository.findOneByAccession(resource.getContent().accession);
+	
+	public void addInverseRelationships(MongoSample sample) {
+
+		NeoSample neoSample = neoSampleRepository.findOneByAccession(sample.accession);
 		
 		log.trace("neoSample = "+neoSample);
 		if (neoSample != null) {
@@ -40,13 +39,10 @@ public class SampleResourceProcessor implements ResourceProcessor<Resource<Mongo
 				String relType = neoRelationship.getSpecificType();
 				Relationship rel = Relationship.build(relType, target, source);
 				
-				resource.getContent().getRelationships().add(rel);
+				sample.getRelationships().add(rel);
 				
 				log.trace("Adding relationship from "+source+" to "+target);
 			}
 		}
-		
-		return resource;
 	}
-
 }

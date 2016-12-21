@@ -29,6 +29,7 @@ public class MongoSample {
 	public String accession;
 
 	protected String name; 
+	
 	@JsonSerialize(using = CustomLocalDateTimeSerializer.class)
 	@JsonDeserialize(using = CustomLocalDateTimeDeserializer.class)
 	protected LocalDateTime release; 

@@ -19,17 +19,48 @@
           <div class="columns">
             <section>
               <h2 th:text="${sample.accession}">TEST</h2>
+              <h3 th:text="${sample.name}">name</h3>
+              <table>
+              	<tr>
+              		<th>Release</th>
+              		<td th:text="${#temporals.format(sample.release, 'yyyy / MM / dd HH:mm:ss')}"></td>
+              	</tr>
+              	<tr>
+              		<th>Update</th>
+              		<td th:text="${#temporals.format(sample.update, 'yyyy / MM / dd HH:mm:ss')}"></td>
+              	</tr>
+              </table>
               
-              <th:span th:if="${sample.attributes}" th:remove="tag">              
+              <th:span th:if="${sample.attributes != null and #arrays.length(sample.attributes) > 0}" th:remove="tag">              
               <h4>Attributes:</h4>
               <table>
+              	  <tr>
+			          <th>Type</th>
+			          <th>Value</th>
+		          </tr>
 	              <tr th:each="attribute : ${sample.attributes}">
-		              <th th:text="${attribute.key}">Attribute Key</th>
+		              <td th:text="${attribute.key}">Attribute Key</td>
 		              
-		              <td th:if="${not #strings.isEmpty(attribute.iri) and #strings.isEmpty(attribute.unit)}"><a th:href="${attribute.getIriOls()}" th:text="${attribute.value}">attribute value</a></td>
+		              <td th:if="${not #strings.isEmpty(attribute.iri) and #strings.isEmpty(attribute.unit)}"><a th:href="${attribute.getIriOls()}" th:text="${attribute.value}" target="_blank">attribute value<i class="icon icon-generic" data-icon="x"></i></a></td>
 		              <td th:if="${#strings.isEmpty(attribute.iri) and #strings.isEmpty(attribute.unit)}" th:text="${attribute.value}">attribute value</td>
-		              <td th:if="${not #strings.isEmpty(attribute.iri) and not #strings.isEmpty(attribute.unit)}"><th:span th:text="${attribute.value}" th:remove="tag"></th:span> (<a th:href="${attribute.getIriOls()}" th:text="${attribute.unit}">unit</a>)</td>
+		              <td th:if="${not #strings.isEmpty(attribute.iri) and not #strings.isEmpty(attribute.unit)}"><th:span th:text="${attribute.value}" th:remove="tag"></th:span> (<a th:href="${attribute.getIriOls()}" th:text="${attribute.unit}" target="_blank">unit<i class="icon icon-generic" data-icon="x"></i></a>)</td>
 		              <td th:if="${#strings.isEmpty(attribute.iri) and not #strings.isEmpty(attribute.unit)}" th:text="${attribute.value}+' ('+${attribute.unit}+')'">attribute value (unit)</td>		              
+	              </tr>
+              </table>
+              </th:span>
+              
+              <th:span th:if="${sample.relationships != null and #arrays.length(sample.relationships) > 0}" th:remove="tag">              
+              <h4>Relationships:</h4>
+              <table>
+              	  <tr>
+			          <th>Source</th>
+			          <th>Type</th>
+			          <th>Target</th>
+		          </tr>
+	              <tr th:each="relationship : ${sample.relationships}">
+						<td><a th:href="${relationship.source}" th:text="${relationship.source}">source</a></td>
+						<td th:text="${relationship.type}">type</td>
+						<td><a th:href="${relationship.target}" th:text="${relationship.target}">target</a></td>
 	              </tr>
               </table>
               </th:span>

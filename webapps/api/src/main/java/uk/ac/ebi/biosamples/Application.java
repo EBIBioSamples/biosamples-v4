@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.web.servlet.handler.MappedInterceptor;
 
+import uk.ac.ebi.biosamples.mongo.SampleResourceProcessor;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.xml.XmlSampleHttpMessageConverter;
 
