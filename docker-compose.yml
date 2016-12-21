@@ -34,6 +34,7 @@ services:
     - --spring.rabbitmq.host=rabbitmq
     - --spring.rabbitmq.publisher-confirms=true
     - --spring.jackson.serialization-inclusion=non_null
+    - --spring.data.rest.base-path=/api
     ports:
     - 8081:8080
   biosamples-agents-neo4j:
