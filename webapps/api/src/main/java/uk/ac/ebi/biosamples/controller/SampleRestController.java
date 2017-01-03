@@ -1,5 +1,12 @@
 package uk.ac.ebi.biosamples.controller;
 
+import java.time.format.DateTimeFormatter;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -8,6 +15,8 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.ExposesResourceFor;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.PagedResources;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -52,6 +61,8 @@ public class SampleRestController {
 	@Autowired
 	private InverseRelationshipService inverseRelationshipService;
 	
+	private Logger log = LoggerFactory.getLogger(getClass());
+	
 	@RequestMapping(method = RequestMethod.GET, value = "", produces = MediaTypes.HAL_JSON_VALUE)
 	public ResponseEntity<PagedResources<SampleResource>> readAll(
             Pageable pageable,
@@ -77,8 +88,20 @@ public class SampleRestController {
 		//convert it into the format to return
 		Sample sample = mongoSampleToSampleConverter.convert(mongoSample);
 		SampleResource sampleResource = sampleResourceAssembler.toResource(sample);
+
+		//create some http headers to popualte for return
+		HttpHeaders headers = new HttpHeaders();
+
+		//add a last modified header
+		//TODO add cors header?
+		String lastModified = sampleResource.getUpdate().format(DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss"))+" GMT";
+		log.info("LastModified = "+lastModified);
+		headers.set(HttpHeaders.LAST_MODIFIED, lastModified);
+		 		
+		//create the response object with the appropriate status
+		ResponseEntity<SampleResource> response = new ResponseEntity<SampleResource>(sampleResource, headers, HttpStatus.OK);
 		
-		return ResponseEntity.ok(sampleResource);
+		return response;
 	}
 
 	@RequestMapping(method = RequestMethod.PUT, value = "{accession}")

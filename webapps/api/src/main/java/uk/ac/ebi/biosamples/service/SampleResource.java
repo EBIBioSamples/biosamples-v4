@@ -3,6 +3,7 @@ package uk.ac.ebi.biosamples.service;
 import java.time.LocalDateTime;
 import java.util.SortedSet;
 
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.hateoas.ResourceSupport;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -40,6 +41,7 @@ public class SampleResource extends ResourceSupport {
 
 	@JsonSerialize(using = CustomLocalDateTimeSerializer.class)
 	@JsonDeserialize(using = CustomLocalDateTimeDeserializer.class)
+	@LastModifiedDate
 	public LocalDateTime getUpdate() {
 		return sample.getUpdate();
 	}
