@@ -167,13 +167,13 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor {
 					//experiment if we might do better increase or decreasing the threads	
 					if (!threadsScores.containsKey(currentThreads+1) || threadsScores.get(currentThreads+1) > margin*score) {
 						//increase the number of threads			
-						log.info("Adjusting to use "+(currentThreads+1)+" threads");
+						log.info("Adjusting to try "+(currentThreads+1)+" threads");
 						pool.setCorePoolSize(currentThreads+1);
 						pool.setMaximumPoolSize(currentThreads+1);
 					} else if (currentThreads > 1 && (!threadsScores.containsKey(currentThreads-1) || threadsScores.get(currentThreads-1) > margin*score)) {
 						//decrease the number of threads
 						//only decrease threads if there are at least 2 (so we don't drop to zero!)
-						log.info("Adjusting to use "+(currentThreads-1)+" threads");
+						log.info("Adjusting to try "+(currentThreads-1)+" threads");
 						pool.setCorePoolSize(currentThreads-1);
 						pool.setMaximumPoolSize(currentThreads-1);
 					}
