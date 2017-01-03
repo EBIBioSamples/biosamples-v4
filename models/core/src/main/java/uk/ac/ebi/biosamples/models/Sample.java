@@ -23,7 +23,7 @@ public class Sample {
 	protected SortedSet<Attribute> attributes;
 	protected SortedSet<Relationship> relationships;
 
-	private Sample() {
+	protected Sample() {
 		
 	}
 

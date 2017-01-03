@@ -9,6 +9,7 @@ import java.util.TreeSet;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.hateoas.ResourceSupport;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -20,12 +21,8 @@ import uk.ac.ebi.biosamples.models.CustomLocalDateTimeSerializer;
 import uk.ac.ebi.biosamples.models.Relationship;
 
 public class MongoSample {
-
-	@Id
-	@JsonIgnore
-	public String id;
 	
-	@Indexed(unique=true)
+	@Id
 	public String accession;
 
 	protected String name; 

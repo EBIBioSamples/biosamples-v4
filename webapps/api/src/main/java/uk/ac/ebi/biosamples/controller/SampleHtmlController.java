@@ -15,7 +15,8 @@ import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.service.InverseRelationshipService;
 
 @Controller
-public class SampleController {
+@RequestMapping(value = "/samples", produces = MediaType.TEXT_HTML_VALUE)
+public class SampleHtmlController {
 
 	
 	@Autowired
@@ -24,9 +25,9 @@ public class SampleController {
 	@Autowired
 	public InverseRelationshipService inverseRelationshipService;
 	
-	@RequestMapping(value = "samples/{accession}", produces = MediaType.TEXT_HTML_VALUE, method = RequestMethod.GET)
+	@RequestMapping(value = "{accession}", method = RequestMethod.GET)
     public String greeting(Model model, @PathVariable String accession, HttpServletRequest request) {
-        MongoSample sample = mongoSampleRepository.findOneByAccession(accession);
+        MongoSample sample = mongoSampleRepository.findOne(accession);
 
 		inverseRelationshipService.addInverseRelationships(sample);
         

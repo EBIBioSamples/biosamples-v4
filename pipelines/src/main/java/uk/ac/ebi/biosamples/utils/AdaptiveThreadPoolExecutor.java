@@ -137,12 +137,12 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor {
 				while (iterator.hasNext()) {
 					int testThreads = iterator.next();
 					long testTime = threadsTime.get(testThreads);
-					//more than 10 pollings ago?
-					if (testTime + (pollInterval*1000000l*10) < now) {
+					//more than 25 pollings ago?
+					if (testTime + (pollInterval*1000000l*25) < now) {
 						//too old score, remove it
-						log.info("Remove out-of-date score for "+testThreads);
+						log.info("Remove out-of-date score for "+testThreads+" of "+threadsScores.get(testThreads));
 						iterator.remove();
-						threadsTime.remove(testThreads);
+						threadsScores.remove(testThreads);
 					}
 				}
 				

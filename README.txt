@@ -20,11 +20,8 @@ internal Solr interface at http://localhost:8983/
 Note: this will download around 1GB of docker containers
 
 
-#POST to subs
-curl -X POST -H "Content-Type: application/json" --data '@models/core/src/test/resources/TEST1.json' "http://localhost:8083/mongoSamples"
-
-#POST to subs
-curl -X POST -H "Content-Type: application/json" --data '@models/core/src/test/resources/TEST2.json' "http://localhost:8083/samples"
+curl -X PUT -H "Content-Type: application/json" --data @models/core/src/test/resources/TEST1.json "http://localhost:8081/samples/TEST1"
+curl -X GET -H "Content-Type: application/json" "http://localhost:8081/samples/TEST1"
 
 Getting started
 ===============
@@ -79,7 +76,7 @@ default.
 
 As you make changes to the code, you can recompile it via Maven with:
 
-`mvn clean package`
+`mvn -T 2C package`
 
 And to get the new packages into the docker containers you will need to rebuild containers with:
 
@@ -109,3 +106,7 @@ Known problems
 This relies on spring-data-rest for exposing the repositories as REST endpoints. However, that
 can only serve JSON and cannot serve XML. Currently, some type negotiation backend is implemented
 but this is not exposed in anyway.
+
+When repeatedly sending JSON because it is a list of things with optional components, the optional 
+parts can become mixed if the list ordering changes. Maybe this can be remedied by using map of 
+attribute types instead?

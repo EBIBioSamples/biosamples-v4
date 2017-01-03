@@ -7,6 +7,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
 
+import org.apache.http.client.utils.URIBuilder;
 import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +21,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestOperations;
+import org.springframework.web.util.UriComponentsBuilder;
+
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.models.Attribute;
 import uk.ac.ebi.biosamples.models.Relationship;
@@ -57,80 +60,23 @@ public class NCBIElementCallable implements Callable<Void> {
 	}
 
 	private void submit(Sample sample) {
-		// send it to the subs API
-		log.trace("Checking for existing sample "+sample.getAccession());
-
-		//work out if its a put or a post
-		//do a get for that
-		URI existingUri = null;
-		try {
-			log.trace("Reading URI : "+pipelinesProperties.getBiosampleSubmissionURI());
-			
-			UriTemplate uriTemplate = hateoasUtils.getHateoasUriTemplate(pipelinesProperties.getBiosampleSubmissionURI(),
-					"samples", "search", "findOneByAccession");
-			
-			//log.info("uriTemplate = "+uriTemplate.toString());
-			
-			URI uri = uriTemplate.expand(sample.getAccession());
-
-			//log.info("uri = "+uri.toString());
-			
-			ResponseEntity<Resource<Sample>> response = hateoasUtils.getHateoasResponse(uri,
-					new ParameterizedTypeReference<Resource<Sample>>(){});
-			
-			//log.info("response = "+response);
-			
-			if (response.getStatusCode().is2xxSuccessful()) {
-				//existing content, need to PUT an update
-				existingUri = URI.create(response.getBody().getLink("self").getHref());
-			} else {
-				throw new RuntimeException("Unable to GET "+sample.getAccession());
-			}
-		} catch (HttpStatusCodeException e) {
-			//log.error("Unable to GET "+sample.getAccession()+" : "+e.getResponseBodyAsString());
-			if (e.getStatusCode().is4xxClientError()) {
-				//no existing content, need to POST a new sample
-				existingUri = null;
-			} else {			
-				//re-throw it because we can't recover
-				log.error("Unable to GET "+sample.getAccession()+" : "+e.getResponseBodyAsString());
-				throw e;
-			}
-		}
+		//all NCBI samples have an existing accession
+		//so its always a PUT to that accession
 		
-		if (existingUri != null) {
-			log.info("PUTing "+sample.getAccession());
-			//was there, so we need to PUT an update
-			
-			HttpEntity<Sample> requestEntity = new HttpEntity<>(sample);
-			ResponseEntity<Resource<Sample>> putResponse = restTemplate.exchange(existingUri,
-					HttpMethod.PUT,
-					requestEntity,
-					new ParameterizedTypeReference<Resource<Sample>>(){});
-			
-			if (!putResponse.getStatusCode().is2xxSuccessful()) {
-				log.error("Unable to PUT "+sample.getAccession()+" : "+putResponse.toString());
-				throw new RuntimeException("Problem PUTing "+sample.getAccession());
-			}
-		} else {
-			//not there, so need to POST it
-			//POST goes to a different URI
-			UriTemplate uriTemplate = hateoasUtils.getHateoasUriTemplate(pipelinesProperties.getBiosampleSubmissionURI(), 
-					"samples");
-			URI uri = uriTemplate.expand();
-			
-			log.info("POSTing "+sample.getAccession()+" to "+uri);
-			
-			HttpEntity<Sample> requestEntity = new HttpEntity<>(sample);
-			ResponseEntity<Resource<Sample>> postResponse = restTemplate.exchange(uri,
-					HttpMethod.POST,
-					requestEntity,
-					new ParameterizedTypeReference<Resource<Sample>>(){});
-			
-			if (!postResponse.getStatusCode().is2xxSuccessful()) {
-				log.error("Unable to POST "+sample.getAccession()+" : "+postResponse.toString());
-				throw new RuntimeException("Problem POSTing "+sample.getAccession());
-			}
+		URI putUri = UriComponentsBuilder.fromUri(pipelinesProperties.getBiosampleSubmissionURI()).path("samples").build().toUri();
+		
+		log.info("PUTing "+sample.getAccession());
+		//was there, so we need to PUT an update
+		
+		HttpEntity<Sample> requestEntity = new HttpEntity<>(sample);
+		ResponseEntity<Resource<Sample>> putResponse = restTemplate.exchange(putUri,
+				HttpMethod.PUT,
+				requestEntity,
+				new ParameterizedTypeReference<Resource<Sample>>(){});
+		
+		if (!putResponse.getStatusCode().is2xxSuccessful()) {
+			log.error("Unable to PUT "+sample.getAccession()+" : "+putResponse.toString());
+			throw new RuntimeException("Problem PUTing "+sample.getAccession());
 		}
 	}
 
