@@ -45,17 +45,24 @@ public class SolrSample {
 	//@JsonSerialize(using = CustomLocalDateTimeSolrSerializer.class)
 	protected String update;
 
-	@Indexed(name="*_attr_value_ss")
+	@Indexed(name="*_av_ss")
 	@Dynamic
 	protected Map<String, List<String>> attributeValues;
 
-	@Indexed(name="*_attr_iri_ss", copyTo={"ontologyiri_ss"})
+	@Indexed(name="*_ai_ss", copyTo={"ontologyiri_ss"})
 	@Dynamic
 	protected Map<String, List<String>> attributeIris;
 
-	@Indexed(name="*_attr_unit_ss")
+	@Indexed(name="*_au_ss")
 	@Dynamic
 	protected Map<String, List<String>> attributeUnits;
+	
+	/**
+	 * This field shouldn't be populated directly, instead Solr will copy 
+	 * all the ontology terms from the attributes into it.
+	 */
+	@Indexed(name="ontologyiri_ss")
+	protected List<String> ontologyIris;
 	
 	public SolrSample(){}
 	

@@ -2,7 +2,7 @@ package uk.ac.ebi.biosamples.models;
 
 import java.util.Objects;
 
-public class Relationship implements Comparable<Relationship>{
+public class Relationship implements Comparable<Relationship> {
 
 	private String type;
 	private String target;

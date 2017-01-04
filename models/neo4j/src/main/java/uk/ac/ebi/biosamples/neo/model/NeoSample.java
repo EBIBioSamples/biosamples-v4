@@ -3,6 +3,7 @@ package uk.ac.ebi.biosamples.neo.model;
 import org.neo4j.ogm.annotation.NodeEntity;
 import org.neo4j.ogm.annotation.Property;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -43,7 +44,7 @@ public class NeoSample {
 
 	public void addRelationships(NeoRelationship relationship) {
 		if (relationships == null) {
-			relationships = new TreeSet<>();
+			relationships = new HashSet<>();
 		}
 		relationships.add(relationship);
 	}
