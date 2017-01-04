@@ -89,10 +89,20 @@ public class MongoSample {
 		sample.name = name;
 		sample.release = release;
 		sample.update = update;
-		sample.attributes = new TreeSet<>();
-		sample.attributes.addAll(attributes);
-		sample.relationships = new TreeSet<>();
-		sample.relationships.addAll(relationships);
+		
+		if (attributes == null) {
+			sample.attributes = null;
+		} else {
+			sample.attributes = new TreeSet<>();
+			sample.attributes.addAll(attributes);
+		}
+
+		if (relationships == null) {
+			sample.relationships = null;
+		} else {
+			sample.relationships = new TreeSet<>();
+			sample.relationships.addAll(relationships);
+		}
 		return sample;
 	}
 

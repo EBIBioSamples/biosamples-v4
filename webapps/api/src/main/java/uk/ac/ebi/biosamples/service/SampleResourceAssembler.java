@@ -5,6 +5,7 @@ import org.springframework.hateoas.mvc.ResourceAssemblerSupport;
 import org.springframework.stereotype.Service;
 
 import uk.ac.ebi.biosamples.controller.SampleRestController;
+import uk.ac.ebi.biosamples.model.SampleResource;
 import uk.ac.ebi.biosamples.models.Sample;
 
 @Service

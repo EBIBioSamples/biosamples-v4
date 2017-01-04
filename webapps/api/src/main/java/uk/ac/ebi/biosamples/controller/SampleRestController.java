@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import uk.ac.ebi.biosamples.Messaging;
+import uk.ac.ebi.biosamples.model.SampleResource;
 import uk.ac.ebi.biosamples.models.Sample;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.model.MongoSubmission;
@@ -34,11 +35,10 @@ import uk.ac.ebi.biosamples.mongo.repo.MongoSubmissionRepository;
 import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
 import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
 import uk.ac.ebi.biosamples.service.InverseRelationshipService;
-import uk.ac.ebi.biosamples.service.SampleResource;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 
 @RestController
-@RequestMapping(value = "/samples", produces = {MediaType.APPLICATION_XML_VALUE,MediaTypes.HAL_JSON_VALUE})
+@RequestMapping(value = "/samples")
 @ExposesResourceFor(Sample.class)
 public class SampleRestController {
 
@@ -89,7 +89,7 @@ public class SampleRestController {
 		Sample sample = mongoSampleToSampleConverter.convert(mongoSample);
 		SampleResource sampleResource = sampleResourceAssembler.toResource(sample);
 
-		//create some http headers to popualte for return
+		//create some http headers to populate for return
 		HttpHeaders headers = new HttpHeaders();
 
 		//add a last modified header
@@ -104,7 +104,7 @@ public class SampleRestController {
 		return response;
 	}
 
-	@RequestMapping(method = RequestMethod.PUT, value = "{accession}")
+	@RequestMapping(method = RequestMethod.PUT, value = "{accession}", consumes = MediaType.APPLICATION_JSON_VALUE)
 	public void update(@PathVariable String accession, @RequestBody Sample sample) {
 		if (!sample.getAccession().equals(accession)) {
 			//if the accession in the body is different to the accession in the url, throw an error

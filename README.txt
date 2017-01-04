@@ -20,7 +20,8 @@ internal Solr interface at http://localhost:8983/
 Note: this will download around 1GB of docker containers
 
 
-curl -X PUT -H "Content-Type: application/json" --data @models/core/src/test/resources/TEST1.json "http://localhost:8081/samples/TEST1"
+curl -X PUT -H "Content-Type: application/json" --data @models/core/src/test/resources/TEST1.json "http://localhost:8081/samples/TEST1" \
+  && curl -X PUT -H "Content-Type: application/json" --data @models/core/src/test/resources/TEST2.json "http://localhost:8081/samples/TEST2"
 curl -X GET -H "Content-Type: application/json" "http://localhost:8081/samples/TEST1"
 
 Getting started

@@ -4,8 +4,8 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.models.Sample;
-import uk.ac.ebi.biosamples.models.SolrSample;
-import uk.ac.ebi.biosamples.repo.SolrSampleRepository;
+import uk.ac.ebi.biosamples.solr.model.SolrSample;
+import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
 
 @Service
 public class MessageHandlerSolr {
@@ -15,7 +15,7 @@ public class MessageHandlerSolr {
 
 	@RabbitListener(queues = Messaging.queueToBeIndexedSolr)
 	public void handle(Sample sample) {
-		SolrSample solrSample = SolrSample.build(sample.getName(), sample.getAccession(), sample.getRelease(), sample.getUpdate(), null, null);		
+		SolrSample solrSample = SolrSample.build(sample.getName(), sample.getAccession(), sample.getRelease(), sample.getUpdate(), sample.getAttributes(), sample.getRelationships());		
 		solrSampleRepository.save(solrSample);		
 	}
 }

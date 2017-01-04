@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.service;
+package uk.ac.ebi.biosamples.model;
 
 import java.time.LocalDateTime;
 import java.util.SortedSet;

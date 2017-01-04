@@ -4,6 +4,7 @@ import org.neo4j.ogm.annotation.NodeEntity;
 import org.neo4j.ogm.annotation.Property;
 
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.neo4j.ogm.annotation.GraphId;
 import org.neo4j.ogm.annotation.Relationship;
@@ -19,9 +20,6 @@ public class NeoSample {
 	
 	@Relationship(type = "RELATED_TO", direction = Relationship.UNDIRECTED)
 	private Set<NeoRelationship> relationships;
-	
-//	@Relationship(type = "RELATED_TO", direction = Relationship.INCOMING)
-//	private Set<NeoRelationship> relationshipsIncoming;
 
 	@SuppressWarnings("unused")
 	private NeoSample() {
@@ -43,8 +41,11 @@ public class NeoSample {
 		return relationships;
 	}
 
-//	public Set<NeoRelationship> getRelationshipsIncoming() {
-//		return relationshipsIncoming;
-//	}
-
+	public void addRelationships(NeoRelationship relationship) {
+		if (relationships == null) {
+			relationships = new TreeSet<>();
+		}
+		relationships.add(relationship);
+	}
 }
+

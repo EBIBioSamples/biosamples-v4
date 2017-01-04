@@ -50,9 +50,10 @@ public class MessageHandlerNeo4J {
 				targetSample = new NeoSample(rel.getTarget());
 				targetSample = neoSampleRepository.save(targetSample);
 			}
+			//persist the relationship
 			NeoRelationship neoRel = NeoRelationship.create(neoSample, targetSample, rel.getType());
 			neoRel = neoRelRepository.save(neoRel);
-			neoSample.getRelationships().add(neoRel);
+			neoSample.addRelationships(neoRel);
 		}
 
 		neoSample = neoSampleRepository.save(neoSample);

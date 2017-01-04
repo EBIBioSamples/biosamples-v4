@@ -14,7 +14,10 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestOperations;
@@ -60,16 +63,23 @@ public class NCBIElementCallable implements Callable<Void> {
 		//all NCBI samples have an existing accession
 		//so its always a PUT to that accession
 		
-		URI putUri = UriComponentsBuilder.fromUri(pipelinesProperties.getBiosampleSubmissionURI()).path("samples").build().toUri();
+		URI putUri = UriComponentsBuilder.fromUri(pipelinesProperties.getBiosampleSubmissionURI())
+				.path("samples/")
+				.path(sample.getAccession())
+				.build().toUri();
 		
-		log.info("PUTing "+sample.getAccession());
-		//was there, so we need to PUT an update
+		log.info("PUTing "+putUri);
 		
-		HttpEntity<Sample> requestEntity = new HttpEntity<>(sample);
-		ResponseEntity<Resource<Sample>> putResponse = restTemplate.exchange(putUri,
-				HttpMethod.PUT,
-				requestEntity,
-				new ParameterizedTypeReference<Resource<Sample>>(){});
+		HttpHeaders headers = new HttpHeaders();
+		headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+		RequestEntity<Sample> requestEntity = new RequestEntity<>(sample, headers, HttpMethod.PUT, putUri);
+		ResponseEntity<Sample> putResponse = restTemplate.exchange(requestEntity, Sample.class);
+		
+//		HttpEntity<Sample> requestEntity = new HttpEntity<>(sample);		
+//		ResponseEntity<Sample> putResponse = restTemplate.exchange(putUri,
+//				HttpMethod.PUT,
+//				requestEntity,
+//				new ParameterizedTypeReference<Sample>(){});
 		
 		if (!putResponse.getStatusCode().is2xxSuccessful()) {
 			log.error("Unable to PUT "+sample.getAccession()+" : "+putResponse.toString());
