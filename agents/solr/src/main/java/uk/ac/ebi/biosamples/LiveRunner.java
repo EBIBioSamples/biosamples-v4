@@ -23,7 +23,7 @@ public class LiveRunner implements ApplicationRunner {
 		while (messageCount == null || messageCount > 0) {
 			Thread.sleep(1000*60);
 			messageCount = messageUtils.getQueueCount(Messaging.queueToBeIndexedSolr);
-			log.trace("Messages remaining in "+Messaging.queueToBeIndexedSolr+" "+messageCount);
+			log.info("Messages remaining in "+Messaging.queueToBeIndexedSolr+" "+messageCount);
 		}
 	}
 

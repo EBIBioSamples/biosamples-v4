@@ -75,8 +75,11 @@ services:
     - 27017:27017
   rabbitmq:
     image: rabbitmq:3.6-management
+    hostname: biosamples-rabbitmq
     ports:
     - 15672:15672
+    volumes:
+    - rabbitmq_data:/var/lib/rabbitmq/mnesia/rabbit@biosamples-rabbitmq
   neo4j:
     image: neo4j:3.0
     environment:
@@ -89,7 +92,10 @@ services:
     ports:
     - 8983:8983
     volumes:
+    - ./docker/solr/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
     - solr_samples_data:/opt/solr/server/solr/samples
+    environment:
+    - VERBOSE=yes
     entrypoint:
     - docker-entrypoint.sh
     - solr-precreate
@@ -103,3 +109,4 @@ volumes:
   #get image sizes with `du -h /var/lib/docker/volumes/*_data` as docker user (root)
   solr_samples_data: null
   mongo_data: null
+  rabbitmq_data: null
