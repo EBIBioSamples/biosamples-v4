@@ -112,12 +112,15 @@ To delete all docker images use:
 NOTE: this will remove everything not just things for this project
  
  
-Known problems
-==============
+Problems with spring-data-rest
+==============================
 
-This relies on spring-data-rest for exposing the repositories as REST endpoints. However, that
-can only serve JSON and cannot serve XML. Currently, some type negotiation backend is implemented
-but this is not exposed in anyway.
+This was originally using spring-data-rest to expose rest API for the repositories. But there are a number of 
+problems with this (see below) and that was scrapped in favor of implementing custom HATEOAS compliant
+endpoints.
+
+Content type negotiation is not possible as it can't overlap with the URLs for the Thymeleaf controllers and
+it can't serve XML even with the appropriate converters supplied.
 
 When repeatedly sending JSON because it is a list of things with optional components, the optional 
 parts can become mixed if the list ordering changes. Maybe this can be remedied by using map of 

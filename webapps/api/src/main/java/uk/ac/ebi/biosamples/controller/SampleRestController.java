@@ -29,7 +29,9 @@ import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 
 @RestController
-@RequestMapping(value = "/samples")
+@RequestMapping(value = "/samples", 
+	produces={MediaTypes.HAL_JSON_VALUE,MediaType.APPLICATION_XML_VALUE}, 
+	consumes = MediaType.APPLICATION_JSON_VALUE)
 @ExposesResourceFor(Sample.class)
 public class SampleRestController {
 	

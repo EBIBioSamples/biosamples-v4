@@ -24,8 +24,11 @@ import uk.ac.ebi.biosamples.models.Relationship;
 @SolrDocument(solrCoreName = "samples")
 public class SolrSample {
 
+	/**
+	 * Use the accession as the primary document identifier
+	 */
 	@Id
-	@Indexed(name="accession_s", required=true)
+	@Indexed(name="id", required=true)
 	protected String accession;
 	@Indexed(name="name_s", required=true)
 	protected String name; 
