@@ -10,7 +10,7 @@ services:
     - java
     - -jar
     - pipelines-4.0.0-SNAPSHOT.jar
-    - --debug
+#    - --debug
     - --ncbi
     - --spring.aop.proxy-target-class=true
     #from https://github.com/google/guava/blob/master/guava/src/com/google/common/cache/CacheBuilderSpec.java
@@ -27,6 +27,7 @@ services:
     - java
     - -jar
     - webapps-api-4.0.0-SNAPSHOT.war
+#    - --debug
     - --spring.data.solr.host=http://solr:8983/solr
     - --spring.data.neo4j.uri=bolt://neo4j:7687
     - --spring.data.neo4j.username=neo4j
@@ -47,6 +48,7 @@ services:
     - java
     - -jar
     - agents-neo4j-4.0.0-SNAPSHOT.jar
+#    - --debug
     - --spring.rabbitmq.host=rabbitmq
     - --spring.rabbitmq.publisher-confirms=true
     - --spring.data.neo4j.uri=bolt://neo4j:7687
@@ -62,6 +64,7 @@ services:
     - java
     - -jar
     - agents-solr-4.0.0-SNAPSHOT.jar
+#    - --debug
     - --spring.rabbitmq.host=rabbitmq
     - --spring.rabbitmq.publisher-confirms=true
     - --spring.data.solr.host=http://solr:8983/solr
@@ -93,9 +96,10 @@ services:
     - 8983:8983
     volumes:
     - ./docker/solr/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
-    - solr_samples_data:/opt/solr/server/solr/samples
+    - solr_samples_data:/opt/solr/server/solr/mycores
     environment:
     - VERBOSE=yes
+    - SOLR_HEAP=4g
     entrypoint:
     - docker-entrypoint.sh
     - solr-precreate

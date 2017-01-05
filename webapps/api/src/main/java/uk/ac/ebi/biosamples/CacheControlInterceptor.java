@@ -18,6 +18,7 @@ import org.springframework.web.servlet.ModelAndView;
  *
  */
 public class CacheControlInterceptor implements HandlerInterceptor {
+	@SuppressWarnings("unused")
 	private Logger log = LoggerFactory.getLogger(getClass());
 
 	@Override

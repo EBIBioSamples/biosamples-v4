@@ -19,14 +19,15 @@ public class MessageHandlerSolr {
 	private SolrSampleRepository solrSampleRepository;
 
 	@RabbitListener(queues = Messaging.queueToBeIndexedSolr)
-	@Transactional
 	public void handle(Sample sample) {
 		
 		log.info("Handling "+sample.getAccession());
 		
 		SolrSample solrSample = SolrSample.build(sample.getName(), sample.getAccession(), 
 				sample.getRelease(), sample.getUpdate(), 
-				sample.getAttributes(), sample.getRelationships());		
-		solrSampleRepository.save(solrSample);		
+				sample.getAttributes(), sample.getRelationships());	
+		
+		//allow solr to wait up to 1 seconds before saving
+		solrSampleRepository.saveWithin(solrSample, 1000);		
 	}
 }

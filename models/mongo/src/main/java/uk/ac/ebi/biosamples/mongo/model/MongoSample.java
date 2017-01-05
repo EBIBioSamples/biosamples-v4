@@ -31,8 +31,8 @@ public class MongoSample {
 	@LastModifiedDate
 	protected LocalDateTime update;
 
-	protected SortedSet<Attribute> attributes = new TreeSet<>();
-	protected SortedSet<Relationship> relationships = new TreeSet<>();
+	protected SortedSet<Attribute> attributes;
+	protected SortedSet<Relationship> relationships;
 
 	private MongoSample() {
 		
@@ -90,14 +90,14 @@ public class MongoSample {
 		sample.release = release;
 		sample.update = update;
 		
-		if (attributes == null) {
+		if (attributes == null || attributes.size() == 0) {
 			sample.attributes = null;
 		} else {
 			sample.attributes = new TreeSet<>();
 			sample.attributes.addAll(attributes);
 		}
 
-		if (relationships == null) {
+		if (relationships == null || relationships.size() == 0) {
 			sample.relationships = null;
 		} else {
 			sample.relationships = new TreeSet<>();

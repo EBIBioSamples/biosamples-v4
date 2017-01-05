@@ -18,7 +18,7 @@ public class SampleResourceAssembler extends ResourceAssemblerSupport<Sample, Sa
 	@Override
 	public SampleResource toResource(Sample sample) {
 		SampleResource resource = new SampleResource(sample);
-		resource.add(ControllerLinkBuilder.linkTo(ControllerLinkBuilder.methodOn(SampleRestController.class).read(sample.getAccession())).withSelfRel());
+		resource.add(ControllerLinkBuilder.linkTo(ControllerLinkBuilder.methodOn(SampleRestController.class).readResource(sample.getAccession())).withSelfRel());
 		return resource;
 	}
 
