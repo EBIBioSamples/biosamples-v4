@@ -53,7 +53,7 @@ services:
     - --spring.rabbitmq.publisher-confirms=true
     - --spring.data.neo4j.uri=bolt://neo4j:7687
     - --spring.data.neo4j.username=neo4j
-    restart: unless-stopped
+#    restart: unless-stopped
   biosamples-agents-solr:
     build: .
     image: biosamples:latest
@@ -67,8 +67,11 @@ services:
 #    - --debug
     - --spring.rabbitmq.host=rabbitmq
     - --spring.rabbitmq.publisher-confirms=true
+    #- --spring.rabbitmq.listener.concurrency=
+    #- --spring.rabbitmq.listener.max-concurrency=1000
+    - --spring.rabbitmq.listener.prefetch=1000
     - --spring.data.solr.host=http://solr:8983/solr
-    restart: unless-stopped
+#    restart: unless-stopped
   mongo:
     image: mongo:3.2
     volumes:
@@ -99,7 +102,7 @@ services:
     - solr_samples_data:/opt/solr/server/solr/mycores
     environment:
     - VERBOSE=yes
-    - SOLR_HEAP=4g
+    - SOLR_HEAP=16g
     entrypoint:
     - docker-entrypoint.sh
     - solr-precreate

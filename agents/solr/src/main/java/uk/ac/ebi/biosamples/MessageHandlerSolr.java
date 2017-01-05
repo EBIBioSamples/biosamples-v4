@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import uk.ac.ebi.biosamples.messages.threaded.MessageBuffer;
+import uk.ac.ebi.biosamples.messages.threaded.MessageSampleStatus;
 import uk.ac.ebi.biosamples.models.Sample;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
 import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
@@ -15,8 +17,11 @@ import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
 public class MessageHandlerSolr {
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 
+	//@Autowired
+	//private SolrSampleRepository solrSampleRepository;
+	
 	@Autowired
-	private SolrSampleRepository solrSampleRepository;
+	private MessageBuffer messageBuffer;
 
 	@RabbitListener(queues = Messaging.queueToBeIndexedSolr)
 	public void handle(Sample sample) {
@@ -28,6 +33,24 @@ public class MessageHandlerSolr {
 				sample.getAttributes(), sample.getRelationships());	
 		
 		//allow solr to wait up to 1 seconds before saving
-		solrSampleRepository.saveWithin(solrSample, 1000);		
+		//solrSampleRepository.saveWithin(solrSample, 1000);
+		
+		
+		MessageSampleStatus messageSampleStatus;
+		try {
+			messageSampleStatus = messageBuffer.recieve(solrSample);
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		}
+		
+		while (!messageSampleStatus.storedInSolr.get()) {			
+			//wait a little bit
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				throw new RuntimeException(e);
+			}
+		}
+		
 	}
 }

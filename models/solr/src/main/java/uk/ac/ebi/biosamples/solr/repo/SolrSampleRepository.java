@@ -8,7 +8,7 @@ import org.springframework.data.solr.repository.SolrCrudRepository;
 
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
 
-public interface SolrSampleRepository extends SolrCrudRepository<SolrSample, String>, SolrSampleRepositoryCustom {
+public interface SolrSampleRepository extends SolrCrudRepository<SolrSample, String> {
 
 	@Query(value = "?0")
 	FacetPage<SolrSample> findByText(String text, Pageable page);
