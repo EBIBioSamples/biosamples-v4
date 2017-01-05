@@ -102,9 +102,13 @@ take so long as to make using Docker impractical.
  
 As docker-compose creates new volumes each time, you may fill the disk docker is working on. 
 To delete all docker volumes use:
+
 `docker volume ls -q | xargs -r docker volume rm` 
+
 To delete all docker images use:
+
 `docker images -q | xargs -r docker rmi`
+
 NOTE: this will remove everything not just things for this project
  
  
