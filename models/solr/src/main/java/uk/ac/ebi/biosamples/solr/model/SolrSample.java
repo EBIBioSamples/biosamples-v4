@@ -69,34 +69,68 @@ public class SolrSample {
 	
 	public SolrSample(){}
 	
-	static public SolrSample build(String name, String accession, LocalDateTime release, LocalDateTime update, 
-			Set<Attribute> attributes, Set<Relationship> relationships){
+	
+	public String getAccession() {
+		return accession;
+	}
+
+
+	public String getName() {
+		return name;
+	}
+
+
+	public String getRelease() {
+		return release;
+	}
+
+
+	public String getUpdate() {
+		return update;
+	}
+
+
+	public Map<String, List<String>> getAttributeValues() {
+		return attributeValues;
+	}
+
+
+	public Map<String, List<String>> getAttributeIris() {
+		return attributeIris;
+	}
+
+
+	public Map<String, List<String>> getAttributeUnits() {
+		return attributeUnits;
+	}
+
+
+	public List<String> getOntologyIris() {
+		return ontologyIris;
+	}
+
+
+	/**
+	 * Avoid using this directly, use the SolrSampleToSampleConverter or SampleToSolrSampleConverter instead
+	 * 
+	 * @param name
+	 * @param accession
+	 * @param release
+	 * @param update
+	 * @param attributes
+	 * @param relationships
+	 * @return
+	 */
+	static public SolrSample build(String name, String accession, String release, String update, 
+			Map<String, List<String>> attributeValues, Map<String, List<String>> attributeIris, Map<String, List<String>> attributeUnits) {
 		SolrSample sample = new SolrSample();
 		sample.accession = accession;
 		sample.name = name;
-		sample.release =  DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss'Z'").format(release);
-		sample.update = DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss'Z'").format(update);
-		if (attributes != null) {
-			sample.attributeValues = new HashMap<>();
-			sample.attributeIris = new HashMap<>();
-			sample.attributeUnits = new HashMap<>();
-			for (Attribute attr : attributes) {
-				if (!sample.attributeValues.containsKey(attr.getKey())) {
-					sample.attributeValues.put(attr.getKey(), new ArrayList<>());
-				}
-				sample.attributeValues.get(attr.getKey()).add(attr.getValue());
-
-				if (!sample.attributeIris.containsKey(attr.getKey())) {
-					sample.attributeIris.put(attr.getKey(), new ArrayList<>());
-				}
-				sample.attributeIris.get(attr.getKey()).add(attr.getIri());
-
-				if (!sample.attributeUnits.containsKey(attr.getKey())) {
-					sample.attributeUnits.put(attr.getKey(), new ArrayList<>());
-				}
-				sample.attributeUnits.get(attr.getKey()).add(attr.getUnit());
-			}
-		}
+		sample.release =  release;
+		sample.update = update;
+		sample.attributeValues = attributeValues;
+		sample.attributeIris = attributeIris;
+		sample.attributeUnits = attributeUnits;
 		return sample;
 	}
 }

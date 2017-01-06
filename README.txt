@@ -125,3 +125,8 @@ it can't serve XML even with the appropriate converters supplied.
 When repeatedly sending JSON because it is a list of things with optional components, the optional 
 parts can become mixed if the list ordering changes. Maybe this can be remedied by using map of 
 attribute types instead?
+
+Known issues
+============
+
+Solr has a limit on the field size (technically the term vector). Therefore the attribute values over 255 characters are not indexed in solr. 

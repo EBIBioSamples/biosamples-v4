@@ -12,25 +12,27 @@ import uk.ac.ebi.biosamples.messages.threaded.MessageSampleStatus;
 import uk.ac.ebi.biosamples.models.Sample;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
 import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
+import uk.ac.ebi.biosamples.solr.service.SampleToSolrSampleConverter;
 
 @Service
 public class MessageHandlerSolr {
 	private Logger log = LoggerFactory.getLogger(this.getClass());
-
-	//@Autowired
-	//private SolrSampleRepository solrSampleRepository;
 	
 	@Autowired
 	private MessageBuffer messageBuffer;
+	
+	@Autowired
+	private SampleToSolrSampleConverter sampleToSolrSampleConverter;
 
 	@RabbitListener(queues = Messaging.queueToBeIndexedSolr)
 	public void handle(Sample sample) {
 		
 		log.info("Handling "+sample.getAccession());
 		
-		SolrSample solrSample = SolrSample.build(sample.getName(), sample.getAccession(), 
-				sample.getRelease(), sample.getUpdate(), 
-				sample.getAttributes(), sample.getRelationships());	
+		SolrSample solrSample = sampleToSolrSampleConverter.convert(sample);
+		
+		//TODO validate value length is 255 chars or fewer
+		
 		
 		//allow solr to wait up to 1 seconds before saving
 		//solrSampleRepository.saveWithin(solrSample, 1000);

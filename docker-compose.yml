@@ -70,7 +70,6 @@ services:
     #need to have a high number of threads so they can each wait while they are batched into solr
     - --spring.rabbitmq.listener.concurrency=250
     - --spring.rabbitmq.listener.max-concurrency=250
-    - --spring.rabbitmq.listener.prefetch=100
     - --spring.data.solr.host=http://solr:8983/solr
 #    restart: unless-stopped
   mongo:
