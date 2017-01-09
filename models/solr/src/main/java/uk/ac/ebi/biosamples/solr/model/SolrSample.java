@@ -38,14 +38,12 @@ public class SolrSample {
 	 * Use a TrieDate type for better range query performance
 	 */
 	@Indexed(name="release_dt", required=true, type="date")
-	//@JsonSerialize(using = CustomLocalDateTimeSolrSerializer.class)
 	protected String release;
 	/**
 	 * Store the update date as a string so that it can be used easily by solr
 	 * Use a TrieDate type for better range query performance
 	 */
 	@Indexed(name="update_dt", required=true, type="date")
-	//@JsonSerialize(using = CustomLocalDateTimeSolrSerializer.class)
 	protected String update;
 
 	@Indexed(name="*_av_ss")

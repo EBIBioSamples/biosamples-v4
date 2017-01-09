@@ -12,6 +12,9 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.ExposesResourceFor;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.ResourceSupport;
+import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -21,6 +24,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import uk.ac.ebi.biosamples.model.SampleResource;
@@ -52,10 +56,37 @@ public class SampleRestController {
             Pageable pageable,
             PagedResourcesAssembler<Sample> assembler) {
 		
-		Page<Sample> pageSample = sampleService.fetch(pageable);
+		Page<Sample> pageSample = sampleService.fetchFindAll(pageable);
 		PagedResources<SampleResource> pagedResources = assembler.toResource(pageSample, sampleResourceAssembler);
+		pagedResources.add(ControllerLinkBuilder.linkTo(ControllerLinkBuilder.methodOn(SampleRestController.class).search()).withRel("search"));
 		return ResponseEntity.ok(pagedResources);
 	}
+	
+	@CrossOrigin
+	@RequestMapping(method = RequestMethod.GET, value = "search", produces = MediaTypes.HAL_JSON_VALUE)
+	public ResponseEntity<ResourceSupport> search() {
+		ResourceSupport resource = new ResourceSupport();
+		resource.add(ControllerLinkBuilder.linkTo(ControllerLinkBuilder.methodOn(SampleRestController.class).search()).withSelfRel());
+		
+		
+		//TODO this should be a templated href
+		//resource.add(ControllerLinkBuilder.linkTo(ControllerLinkBuilder.methodOn(SampleRestController.class).findByText()).withRel("findByText"));
+		return ResponseEntity.ok(resource);
+	}
+	
+	@CrossOrigin
+	@RequestMapping(method = RequestMethod.GET, value = "search/findByText", produces = MediaTypes.HAL_JSON_VALUE)
+	public ResponseEntity<PagedResources<SampleResource>> findByText(
+			@RequestParam("text") String text,
+            Pageable pageable,
+            PagedResourcesAssembler<Sample> assembler) {
+
+		Page<Sample> pageSample = sampleService.fetchFindByText(text, pageable);
+		PagedResources<SampleResource> pagedResources = assembler.toResource(pageSample, sampleResourceAssembler);
+		pagedResources.add(ControllerLinkBuilder.linkTo(ControllerLinkBuilder.methodOn(SampleRestController.class).search()).withRel("search"));
+		return ResponseEntity.ok(pagedResources);
+	}
+
 
 	@CrossOrigin
 	@RequestMapping(method = RequestMethod.GET, value = "{accession}", produces = MediaType.APPLICATION_XML_VALUE)

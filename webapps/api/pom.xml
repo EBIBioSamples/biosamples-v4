@@ -29,6 +29,11 @@
 			<artifactId>models-neo4j</artifactId>
 			<version>${bsd2017.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>uk.ac.ebi.biosamples</groupId>
+			<artifactId>models-solr</artifactId>
+			<version>${bsd2017.version}</version>
+		</dependency>
 		<!-- Add bolt driver for performance -->
 		<dependency>
 			<groupId>org.neo4j</groupId>

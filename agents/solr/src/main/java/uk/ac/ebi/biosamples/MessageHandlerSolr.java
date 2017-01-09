@@ -27,17 +27,10 @@ public class MessageHandlerSolr {
 	@RabbitListener(queues = Messaging.queueToBeIndexedSolr)
 	public void handle(Sample sample) {
 		
-		log.info("Handling "+sample.getAccession());
+		log.trace("Handling "+sample.getAccession());
 		
 		SolrSample solrSample = sampleToSolrSampleConverter.convert(sample);
-		
-		//TODO validate value length is 255 chars or fewer
-		
-		
-		//allow solr to wait up to 1 seconds before saving
-		//solrSampleRepository.saveWithin(solrSample, 1000);
-		
-		
+				
 		MessageSampleStatus messageSampleStatus;
 		try {
 			messageSampleStatus = messageBuffer.recieve(solrSample);

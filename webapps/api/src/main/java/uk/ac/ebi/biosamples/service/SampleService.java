@@ -14,6 +14,8 @@ import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSubmissionRepository;
 import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
 import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
+import uk.ac.ebi.biosamples.solr.model.SolrSample;
+import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
 
 
 /**
@@ -29,6 +31,9 @@ public class SampleService {
 	private MongoSampleRepository mongoSampleRepository;
 	@Autowired
 	private MongoSubmissionRepository mongoSubmissionRepository;
+
+	@Autowired
+	private SolrSampleRepository solrSampleRepository;
 	
 	@Autowired
 	private InverseRelationshipService inverseRelationshipService;
@@ -40,7 +45,7 @@ public class SampleService {
 	private MongoSampleToSampleConverter mongoSampleToSampleConverter;
 	@Autowired
 	private SampleToMongoSampleConverter sampleToMongoSampleConverter;
-	
+		
 	public Sample fetch(String accession) {
 		//return the raw sample from the repository
 		MongoSample mongoSample = mongoSampleRepository.findOne(accession);		
@@ -57,9 +62,23 @@ public class SampleService {
 		return sample;
 	}
 	
-	public Page<Sample> fetch(Pageable pageable) {
+	public Page<Sample> fetchFindAll(Pageable pageable) {
+		//return the raw sample from the repository
 		Page<MongoSample> pageMongoSample = mongoSampleRepository.findAll(pageable);
+		//add any additional inverse relationships
+		for (MongoSample mongoSample : pageMongoSample) {
+			inverseRelationshipService.addInverseRelationships(mongoSample);
+		}
+		//convert it into the format to return
 		Page<Sample> pageSample = pageMongoSample.map(mongoSampleToSampleConverter);
+		return pageSample;
+	}
+	
+	public Page<Sample> fetchFindByText(String text, Pageable pageable) {
+		//return the raw sample from the repository
+		Page<SolrSample> pageSolrSample = solrSampleRepository.findByText(text, pageable);
+		//fetch the version from Mongo and add inverse relationships
+		Page<Sample> pageSample = pageSolrSample.map(s -> fetch(s.getAccession()));		
 		return pageSample;
 	}
 	
