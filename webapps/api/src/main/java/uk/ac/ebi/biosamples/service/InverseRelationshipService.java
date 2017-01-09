@@ -47,7 +47,7 @@ public class InverseRelationshipService {
 				String relType = neoRelationship.getSpecificType();
 				Relationship rel = Relationship.build(relType, target, source);
 				
-				sample.getRelationships().add(rel);
+				sample.addRelationship(rel);
 				
 				log.trace("Adding relationship from "+source+" to "+target);
 			}

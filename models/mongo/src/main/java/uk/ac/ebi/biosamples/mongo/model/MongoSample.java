@@ -57,9 +57,23 @@ public class MongoSample {
 	public SortedSet<Attribute> getAttributes() {
 		return attributes;
 	}
+	
+	public void addAttribute(Attribute attribute) {
+		if (attributes == null) {
+			attributes = new TreeSet<>();
+		}
+		attributes.add(attribute);
+	}
 
 	public SortedSet<Relationship> getRelationships() {
 		return relationships;
+	}
+	
+	public void addRelationship(Relationship relationship) {
+		if (relationships == null) {
+			relationships = new TreeSet<>();
+		}
+		relationships.add(relationship);
 	}
 
 	@Override
