@@ -1,73 +1,93 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.w3.org/1999/xhtml"
-      layout:decorator="__parent_base">
+	xmlns:layout="http://www.w3.org/1999/xhtml"
+	layout:decorator="__parent_base">
 <head>
-  <title th:text="${sample.accession}+' &lt; BioSamples &lt; EMBL-EBI'">BioSamples &lt; EMBL-EBI</title>
-  <!-- A few keywords that relate to the content of THIS PAGE (not the whole project) -->
-  <meta name="keywords" content="biosamples, europe, EBI" />
-  <!-- Describe what this page is about -->
-  <meta name="description" content="EMBL-EBI" />
-  
-  <meta name="ebi:last-review" content="2016-12-20" /> <!-- The last time the content was reviewed -->
-  <meta name="ebi:expiry" content="2017-12-20" /> <!-- When this content is no longer relevant -->
-  
+<title th:text="${sample.accession}+' &lt; BioSamples &lt; EMBL-EBI'">BioSamples
+	&lt; EMBL-EBI</title>
+<!-- A few keywords that relate to the content of THIS PAGE (not the whole project) -->
+<meta name="keywords" content="biosamples, europe, EBI" />
+<!-- Describe what this page is about -->
+<meta name="description" content="EMBL-EBI" />
+
+<meta name="ebi:last-review" content="2016-12-20" />
+<!-- The last time the content was reviewed -->
+<meta name="ebi:expiry" content="2017-12-20" />
+<!-- When this content is no longer relevant -->
+
 </head>
 <body>
 	<div layout:fragment="content">
-        <div id="main-content-area" class="row">
-          <div class="columns">
-            <section>
-              <h2 th:text="${sample.accession}">TEST</h2>
-              <h3 th:text="${sample.name}">name</h3>
-              <table>
-              	<tr>
-              		<th>Release</th>
-              		<td th:text="${#temporals.format(sample.release, 'yyyy / MM / dd HH:mm:ss')}"></td>
-              	</tr>
-              	<tr>
-              		<th>Update</th>
-              		<td th:text="${#temporals.format(sample.update, 'yyyy / MM / dd HH:mm:ss')}"></td>
-              	</tr>
-              </table>
-              
-              <th:span th:if="${sample.attributes != null and #arrays.length(sample.attributes) > 0}" th:remove="tag">              
-              <h3>Attributes</h3>
-              <table>
-              	  <tr>
-			          <th>Type</th>
-			          <th>Value</th>
-		          </tr>
-	              <tr th:each="attribute : ${sample.attributes}">
-		              <td th:text="${attribute.key}">Attribute Key</td>
-		              
-		              <td th:if="${not #strings.isEmpty(attribute.iri) and #strings.isEmpty(attribute.unit)}"><a th:href="${attribute.getIriOls()}" th:text="${attribute.value}" target="_blank">attribute value<i class="icon icon-generic" data-icon="x"></i></a></td>
-		              <td th:if="${#strings.isEmpty(attribute.iri) and #strings.isEmpty(attribute.unit)}" th:text="${attribute.value}">attribute value</td>
-		              <td th:if="${not #strings.isEmpty(attribute.iri) and not #strings.isEmpty(attribute.unit)}"><th:span th:text="${attribute.value}" th:remove="tag"></th:span> (<a th:href="${attribute.getIriOls()}" th:text="${attribute.unit}" target="_blank">unit<i class="icon icon-generic" data-icon="x"></i></a>)</td>
-		              <td th:if="${#strings.isEmpty(attribute.iri) and not #strings.isEmpty(attribute.unit)}" th:text="${attribute.value}+' ('+${attribute.unit}+')'">attribute value (unit)</td>		              
-	              </tr>
-              </table>
-              </th:span>
-              
-              <th:span th:if="${sample.relationships != null and #arrays.length(sample.relationships) > 0}" th:remove="tag">              
-              <h3>Relationships</h3>
-              <table>
-              	  <tr>
-			          <th>Source</th>
-			          <th>Type</th>
-			          <th>Target</th>
-		          </tr>
-	              <tr th:each="relationship : ${sample.relationships}">
-						<td><a th:href="${relationship.source}" th:text="${relationship.source}">source</a></td>
+		<div id="main-content-area" class="row">
+			<h2 th:text="${sample.accession}">TEST</h2>
+			<h3 th:text="${sample.name}">name</h3>
+			<table>
+				<tr>
+					<th>Release</th>
+					<td
+						th:text="${#temporals.format(sample.release, 'yyyy / MM / dd HH:mm:ss')}"></td>
+				</tr>
+				<tr>
+					<th>Update</th>
+					<td
+						th:text="${#temporals.format(sample.update, 'yyyy / MM / dd HH:mm:ss')}"></td>
+				</tr>
+			</table>
+
+			<th:section
+				th:if="${sample.attributes != null and #arrays.length(sample.attributes) > 0}"
+				th:remove="tag">
+				<h3>Attributes</h3>
+				<table class="hover">
+					<tr>
+						<th>Type</th>
+						<th>Value</th>
+					</tr>
+					<tr th:each="attribute : ${sample.attributes}">
+						<td th:text="${attribute.key}">Attribute Key</td>
+
+						<td
+							th:if="${not #strings.isEmpty(attribute.iri) and #strings.isEmpty(attribute.unit)}"><a
+							th:href="${attribute.getIriOls()}" th:text="${attribute.value}"
+							target="_blank">attribute value<i class="icon icon-generic"
+								data-icon="x"></i></a></td>
+						<td
+							th:if="${#strings.isEmpty(attribute.iri) and #strings.isEmpty(attribute.unit)}"
+							th:text="${attribute.value}">attribute value</td>
+						<td
+							th:if="${not #strings.isEmpty(attribute.iri) and not #strings.isEmpty(attribute.unit)}"><th:span
+								th:text="${attribute.value}" th:remove="tag"></th:span> (<a
+							th:href="${attribute.getIriOls()}" th:text="${attribute.unit}"
+							target="_blank">unit<i class="icon icon-generic"
+								data-icon="x"></i></a>)</td>
+						<td
+							th:if="${#strings.isEmpty(attribute.iri) and not #strings.isEmpty(attribute.unit)}"
+							th:text="${attribute.value}+' ('+${attribute.unit}+')'">attribute
+							value (unit)</td>
+					</tr>
+				</table>
+			</th:section>
+
+			<th:section
+				th:if="${sample.relationships != null and #arrays.length(sample.relationships) > 0}"
+				th:remove="tag">
+				<h3>Relationships</h3>
+				<table>
+					<tr>
+						<th>Source</th>
+						<th>Type</th>
+						<th>Target</th>
+					</tr>
+					<tr th:each="relationship : ${sample.relationships}">
+						<td><a th:href="${relationship.source}"
+							th:text="${relationship.source}">source</a></td>
 						<td th:text="${relationship.type}">type</td>
-						<td><a th:href="${relationship.target}" th:text="${relationship.target}">target</a></td>
-	              </tr>
-              </table>
-              </th:span>
-              
-            </section>
-          </div>
-        </div>	
+						<td><a th:href="${relationship.target}"
+							th:text="${relationship.target}">target</a></td>
+					</tr>
+				</table>
+			</th:section>
+		</div>
 	</div>
 </body>
 </html>

@@ -1,0 +1,103 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.w3.org/1999/xhtml"
+	layout:decorator="__parent_base">
+<head>
+<title>BioSamples &lt; EMBL-EBI</title>
+<!-- A few keywords that relate to the content of THIS PAGE (not the whole project) -->
+<meta name="keywords" content="biosamples, europe, EBI" />
+<!-- Describe what this page is about -->
+<meta name="description" content="EMBL-EBI" />
+
+<meta name="ebi:last-review" content="2016-12-20" />
+<!-- The last time the content was reviewed -->
+<meta name="ebi:expiry" content="2017-12-20" />
+<!-- When this content is no longer relevant -->
+
+</head>
+<body>
+	<div layout:fragment="content">
+		<div id="main-content-area" class="row">
+			<div class="row">
+				<p class="intro justify">
+					BioSamples stores and supplies descriptions and metadata about
+					biological samples used in research and development by academia and
+					industry. Samples are either 'reference' samples (e.g. from <a
+						href="http://www.internationalgenome.org">1000 Genomes</a>, <a
+						href="http://www.hipsci.org">HipSci</a>, <a
+						href="http://www.faang.org">FAANG</a>) or have been used in an
+					assay database such as the <a href="http://www.ebi.ac.uk/ena">European
+						Nucleotide Archive (ENA)</a> or <a
+						href="http://www.ebi.ac.uk/arrayexpress">ArrayExpress</a>.
+				</p>
+			</div>
+
+			<div class="row">
+				<div class="small-5 columns">
+					<h3 class="icon icon-generic" data-icon="L">Info</h3>
+					<ul>
+						<li><a href="help/index.html">Help pages</a> about how to
+							search BioSamples, how to submit data, and FAQ.</li>
+						<li><a href="help/api.html">Programmatic access</a> to query
+							and download data using web services.</li>
+						<li>Contact us by emailing <a
+							href="mailto:biosamples@ebi.ac.uk">biosamples@ebi.ac.uk</a></li>
+					</ul>
+				</div>
+				<div class="small-7 columns">
+					<h3 class="icon icon-generic" data-icon="g">Data Content</h3>
+					<div class="row">
+						<div class="small-4 columns"  style="display: flex; align-items: center;">
+							<img src="images/logo_ebisc.png" alt="EBiSC logo"
+								title="EBiSC" />
+						</div>
+						<div class="small-4 columns">
+							<img src="images/logo_faang.png" alt="FAANG logo"
+								title="FAANG" />
+						</div>
+						<div class="small-4 columns">
+							<img src="images/logo_hipsci.png" alt="HipSci logo"
+								title="HipSci" />
+						</div>
+					</div>
+					<div class="row">
+						<div class="small-4 columns">
+							<a class="icon icon-generic" data-icon="L" href="//www.ebisc.org" target="_blank">www.ebisc.org</a>
+						</div>
+						<div class="small-4 columns">
+							<a class="icon icon-generic" data-icon="L" href="http://www.faang.org" target="_blank">www.faang.org</a>
+						</div>
+						<div class="small-4 columns">
+							<a class="icon icon-generic" data-icon="L" href="http://www.hipsci.org" target="_blank">www.hipsci.org</a>
+						</div>
+					</div>
+					<div class="row">
+						<div class="small-4 columns">
+							<a href="search?text=EBiSC">search for EBiSC samples</a>
+						</div>
+						<div class="small-4 columns">
+							<a href="search?text=FAANG">search for FAANG samples</a>
+						</div>
+						<div class="small-4 columns">
+							<a href="search?text=HipSci">search for HipSci samples</a>
+						</div>
+					</div>
+					<div class="row">
+						<div class="small-4 columns">EBiSC has been designed to
+							address the increasing demand for quality-controlled,
+							disease-relevant, research-grade iPSC lines, data and cell
+							services.</div>
+						<div class="small-4 columns">Functional Annotation of Animal
+							Genomes. A coordinated international action to accelerate genome
+							to phenome research.</div>
+						<div class="small-4 columns">HipSci brings together diverse
+							constituents in genomics, proteomics, cell biology and clinical
+							genetics to create a UK national iPS cell resource and use it to
+							carry out cellular genetic studies.</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

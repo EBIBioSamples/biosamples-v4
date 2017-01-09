@@ -8,6 +8,12 @@ import uk.ac.ebi.biosamples.controller.SampleRestController;
 import uk.ac.ebi.biosamples.model.SampleResource;
 import uk.ac.ebi.biosamples.models.Sample;
 
+/**
+ * This class is used by Spring to add HAL _links for {@Link Sample} objects. 
+ * 
+ * @author faulcon
+ *
+ */
 @Service
 public class SampleResourceAssembler extends ResourceAssemblerSupport<Sample, SampleResource> {
 

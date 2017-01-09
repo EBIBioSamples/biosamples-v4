@@ -11,14 +11,22 @@ import uk.ac.ebi.biosamples.neo.model.NeoRelationship;
 import uk.ac.ebi.biosamples.neo.model.NeoSample;
 import uk.ac.ebi.biosamples.neo.repo.NeoSampleRepository;
 
+/**
+ * Service layer buisness logic for adding inverse relationships to samples. Queries the Neo4J repository.
+ * 
+ * @author faulcon
+ *
+ */
 @Service
 public class InverseRelationshipService {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 	
-	@Autowired
 	public NeoSampleRepository neoSampleRepository;
 	
+	public InverseRelationshipService(@Autowired NeoSampleRepository neoSampleRepository) {
+		this.neoSampleRepository = neoSampleRepository;
+	}
 	
 	public void addInverseRelationships(MongoSample sample) {
 

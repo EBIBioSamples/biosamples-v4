@@ -32,20 +32,33 @@ import uk.ac.ebi.biosamples.models.Sample;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 
+
+
+/**
+ * Primary controller for REST operations both in JSON and XML and both read and write.
+ * 
+ * See {@link SampleHtmlController} for the HTML equivalent controller.
+ * 
+ * @author faulcon
+ *
+ */
 @RestController
 @RequestMapping(value = "/samples", 
-	produces={MediaTypes.HAL_JSON_VALUE,MediaType.APPLICATION_XML_VALUE}, 
-	consumes = MediaType.APPLICATION_JSON_VALUE)
+	produces={MediaTypes.HAL_JSON_VALUE,MediaType.APPLICATION_XML_VALUE})
 @ExposesResourceFor(Sample.class)
 public class SampleRestController {
 	
-	@Autowired
 	private SampleService sampleService;
 	
-	@Autowired
 	private SampleResourceAssembler sampleResourceAssembler;
 	
 	private DateTimeFormatter lastModifiedFormatter = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss 'GMT'");
+	
+	public SampleRestController(@Autowired SampleService sampleService, @Autowired SampleResourceAssembler sampleResourceAssembler) {
+		this.sampleService = sampleService;
+		this.sampleResourceAssembler = sampleResourceAssembler;
+		
+	}
 	
 	@SuppressWarnings("unused")
 	private Logger log = LoggerFactory.getLogger(getClass());

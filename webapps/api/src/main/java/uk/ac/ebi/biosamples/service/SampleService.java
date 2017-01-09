@@ -19,7 +19,8 @@ import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
 
 
 /**
- * Service layer business logic layer for centralising repository access and conversions between different controllers
+ * Service layer business logic for centralising repository access and conversions between different controllers.
+ * Use this instead of linking to repositories directly.
  * 
  * @author faulcon
  *
