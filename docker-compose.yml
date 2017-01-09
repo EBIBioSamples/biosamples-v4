@@ -93,6 +93,8 @@ services:
     ports:
     - 7687:7687
     - 7474:7474
+    volumes:
+    - neo4j_data:/data
   solr:
     image: solr:6.3-alpine
     ports:
@@ -116,4 +118,5 @@ volumes:
   #get image sizes with `du -h /var/lib/docker/volumes/*_data` as docker user (root)
   solr_samples_data: null
   mongo_data: null
+  neo4j_data: null
   rabbitmq_data: null
