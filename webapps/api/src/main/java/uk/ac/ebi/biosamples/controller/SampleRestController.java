@@ -44,7 +44,7 @@ import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
  */
 @RestController
 @RequestMapping(value = "/samples", 
-	produces={MediaTypes.HAL_JSON_VALUE,MediaType.APPLICATION_XML_VALUE})
+	produces={MediaType.APPLICATION_JSON_VALUE,MediaTypes.HAL_JSON_VALUE,MediaType.APPLICATION_XML_VALUE})
 @ExposesResourceFor(Sample.class)
 public class SampleRestController {
 	
@@ -64,7 +64,7 @@ public class SampleRestController {
 	private Logger log = LoggerFactory.getLogger(getClass());
 	
 	@CrossOrigin
-	@RequestMapping(method = RequestMethod.GET, value = "", produces = MediaTypes.HAL_JSON_VALUE)
+	@RequestMapping(method = RequestMethod.GET, value = "", produces = {MediaType.APPLICATION_JSON_VALUE,MediaTypes.HAL_JSON_VALUE})
 	public ResponseEntity<PagedResources<SampleResource>> readAll(
             Pageable pageable,
             PagedResourcesAssembler<Sample> assembler) {
@@ -76,7 +76,7 @@ public class SampleRestController {
 	}
 	
 	@CrossOrigin
-	@RequestMapping(method = RequestMethod.GET, value = "search", produces = MediaTypes.HAL_JSON_VALUE)
+	@RequestMapping(method = RequestMethod.GET, value = "search", produces = {MediaType.APPLICATION_JSON_VALUE,MediaTypes.HAL_JSON_VALUE})
 	public ResponseEntity<ResourceSupport> search() {
 		ResourceSupport resource = new ResourceSupport();
 		resource.add(ControllerLinkBuilder.linkTo(ControllerLinkBuilder.methodOn(SampleRestController.class).search()).withSelfRel());
@@ -88,7 +88,7 @@ public class SampleRestController {
 	}
 	
 	@CrossOrigin
-	@RequestMapping(method = RequestMethod.GET, value = "search/findByText", produces = MediaTypes.HAL_JSON_VALUE)
+	@RequestMapping(method = RequestMethod.GET, value = "search/findByText", produces = {MediaType.APPLICATION_JSON_VALUE,MediaTypes.HAL_JSON_VALUE})
 	public ResponseEntity<PagedResources<SampleResource>> findByText(
 			@RequestParam("text") String text,
             Pageable pageable,
@@ -121,7 +121,7 @@ public class SampleRestController {
 	}
 
 	@CrossOrigin
-	@RequestMapping(method = RequestMethod.GET, value = "{accession}", produces = MediaTypes.HAL_JSON_VALUE)
+	@RequestMapping(method = RequestMethod.GET, value = "{accession}", produces = {MediaType.APPLICATION_JSON_VALUE,MediaTypes.HAL_JSON_VALUE})
 	public ResponseEntity<SampleResource> readResource(@PathVariable String accession) {
 		
 		//convert it into the format to return
