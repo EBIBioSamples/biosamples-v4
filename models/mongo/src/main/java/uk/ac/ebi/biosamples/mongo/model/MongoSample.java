@@ -104,18 +104,16 @@ public class MongoSample {
 		sample.release = release;
 		sample.update = update;
 		
-		if (attributes == null || attributes.size() == 0) {
-			sample.attributes = null;
-		} else {
-			sample.attributes = new TreeSet<>();
-			sample.attributes.addAll(attributes);
+		if (attributes != null && attributes.size() > 0) {
+			for (Attribute attribute : attributes) {
+				sample.addAttribute(attribute);
+			}
 		}
 
-		if (relationships == null || relationships.size() == 0) {
-			sample.relationships = null;
-		} else {
-			sample.relationships = new TreeSet<>();
-			sample.relationships.addAll(relationships);
+		if (relationships != null && relationships.size() > 0) {
+			for (Relationship relationship : relationships) {
+				sample.addRelationship(relationship);
+			}
 		}
 		return sample;
 	}
