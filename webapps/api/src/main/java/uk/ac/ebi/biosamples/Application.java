@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.web.servlet.handler.MappedInterceptor;
 
-import uk.ac.ebi.biosamples.mongo.model.MongoSample;
+import uk.ac.ebi.biosamples.models.Sample;
 import uk.ac.ebi.biosamples.xml.XmlSampleHttpMessageConverter;
 
 @SpringBootApplication
@@ -24,7 +24,7 @@ public class Application extends SpringBootServletInitializer {
 	}
 	
 	@Bean
-	public HttpMessageConverter<MongoSample> getXmlSampleHttpMessageConverter() {
+	public HttpMessageConverter<Sample> getXmlSampleHttpMessageConverter() {
 		return new XmlSampleHttpMessageConverter();
 	}
 	

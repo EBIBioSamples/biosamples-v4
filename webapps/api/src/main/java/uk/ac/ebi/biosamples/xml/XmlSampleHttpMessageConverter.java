@@ -24,13 +24,13 @@ import org.springframework.stereotype.Service;
 
 import uk.ac.ebi.biosamples.models.Attribute;
 import uk.ac.ebi.biosamples.models.Relationship;
-import uk.ac.ebi.biosamples.mongo.model.MongoSample;
+import uk.ac.ebi.biosamples.models.Sample;
 import uk.ac.ebi.biosamples.xml.samplegroupexport.BioSampleType;
 import uk.ac.ebi.biosamples.xml.samplegroupexport.PropertyType;
 import uk.ac.ebi.biosamples.xml.samplegroupexport.QualifiedValueType;
 
 @Service
-public class XmlSampleHttpMessageConverter implements HttpMessageConverter<MongoSample> {
+public class XmlSampleHttpMessageConverter implements HttpMessageConverter<Sample> {
 
 	private JAXBContext jaxbContext;
 	private Unmarshaller jaxbUnmarshaller;
@@ -50,12 +50,12 @@ public class XmlSampleHttpMessageConverter implements HttpMessageConverter<Mongo
 
 	@Override
 	public boolean canRead(Class<?> clazz, MediaType mediaType) {
-		return MongoSample.class.isAssignableFrom(clazz);
+		return Sample.class.isAssignableFrom(clazz);
 	}
 
 	@Override
 	public boolean canWrite(Class<?> clazz, MediaType mediaType) {
-		return MongoSample.class.isAssignableFrom(clazz);
+		return Sample.class.isAssignableFrom(clazz);
 	}
 
 	@Override
@@ -64,7 +64,7 @@ public class XmlSampleHttpMessageConverter implements HttpMessageConverter<Mongo
 	}
 
 	@Override
-	public MongoSample read(Class<? extends MongoSample> clazz, HttpInputMessage inputMessage)
+	public Sample read(Class<? extends Sample> clazz, HttpInputMessage inputMessage)
 			throws IOException, HttpMessageNotReadableException {
 		// use JAXB to turn into a collection of java objects
 		BioSampleType biosample;
@@ -115,11 +115,11 @@ public class XmlSampleHttpMessageConverter implements HttpMessageConverter<Mongo
 			throw new HttpMessageNotReadableException("'Sample Name' must not be null");
 		}
 
-		return MongoSample.build(name, accession, releaseDateTime, updateDateTime, attributes, relationships);
+		return Sample.build(name, accession, releaseDateTime, updateDateTime, attributes, relationships);
 	}
 
 	@Override
-	public void write(MongoSample sample, MediaType contentType, HttpOutputMessage outputMessage)
+	public void write(Sample sample, MediaType contentType, HttpOutputMessage outputMessage)
 			throws IOException, HttpMessageNotWritableException {
 
 		BioSampleType biosample = new BioSampleType();
