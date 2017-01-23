@@ -17,16 +17,16 @@
 			<artifactId>models-core</artifactId>
 			<version>${bsd2017.version}</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.springframework.hateoas</groupId>
 			<artifactId>spring-hateoas</artifactId>
 		</dependency>
-		
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-jdbc</artifactId>
-        </dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-jdbc</artifactId>
+		</dependency>
 
 		<!-- used to connect to FTP -->
 		<dependency>
@@ -53,8 +53,25 @@
 			<version>${httpclient.version}</version>
 		</dependency>
 
+		<!-- oracle driver for accessioning -->
+		<!-- this is not in public repos due to Oracle license -->
+		<dependency>
+			<groupId>com.oracle</groupId>
+			<artifactId>ojdbc6</artifactId>
+			<version>11.2.0.2.0</version>
+		</dependency>
 	</dependencies>
 
+	<repositories>
+		<repository>
+			<id>coconut.ebi.ac.uk-snapshots</id>
+			<name>Coconut Snapshot Repository</name>
+			<url>http://coconut.ebi.ac.uk:8081/artifactory/local-repo/</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
 
 	<build>
 		<plugins>

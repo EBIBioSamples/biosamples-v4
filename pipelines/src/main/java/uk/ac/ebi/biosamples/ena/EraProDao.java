@@ -4,10 +4,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
@@ -16,16 +20,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ERAproDAO {
+public class EraProDao {
 
 	@Autowired
-	@Qualifier("eraProJdbcTemplate")
+	@Qualifier("eraJdbcTemplate")
     protected JdbcTemplate jdbcTemplate;
     
     private Logger log = LoggerFactory.getLogger(getClass());
@@ -38,7 +43,7 @@ public class ERAproDAO {
      * @param maxDate
      * @return
      */
-	public Set<String> getSamples(Date minDate, Date maxDate) {
+	public Set<String> getSamples(LocalDate minDate, LocalDate maxDate) {
         /*
 select * from cv_status;
 1       draft   The entry is draft.
@@ -52,11 +57,14 @@ select * from cv_status;
          */
 		//once it has been public, it can only be suppressed and killed and can't go back to public again
 		
-		String query = "SELECT UNIQUE(SAMPLE_ID) FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND EGA_ID IS NULL AND BIOSAMPLE_AUTHORITY= 'N' "
+		String query = "SELECT BIOSAMPLE_ID FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND EGA_ID IS NULL AND BIOSAMPLE_AUTHORITY= 'N' "
 				+ "AND STATUS_ID = 4 AND ((LAST_UPDATED BETWEEN ? AND ?) OR (FIRST_PUBLIC BETWEEN ? AND ?))";
 		
 		Set<String> samples = new TreeSet<>();
-		samples.addAll( jdbcTemplate.queryForList(query, String.class, minDate, maxDate, minDate, maxDate));		
+		Date minDateOld = java.sql.Date.valueOf(minDate);
+		Date maxDateOld = java.sql.Date.valueOf(maxDate);
+		List<String> result = jdbcTemplate.queryForList(query, String.class, minDateOld, maxDateOld, minDateOld, maxDateOld);
+		samples.addAll(result);
 		return samples;
 	}
 

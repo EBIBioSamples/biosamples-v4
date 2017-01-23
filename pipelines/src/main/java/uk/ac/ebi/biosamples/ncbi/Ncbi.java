@@ -21,10 +21,10 @@ import org.springframework.stereotype.Component;
 
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
-import uk.ac.ebi.biosamples.utils.XMLFragmenter;
+import uk.ac.ebi.biosamples.utils.XmlFragmenter;
 
 @Component
-public class NCBI implements ApplicationRunner {
+public class Ncbi implements ApplicationRunner {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 
@@ -32,10 +32,10 @@ public class NCBI implements ApplicationRunner {
 	private PipelinesProperties pipelinesProperties;
 
 	@Autowired
-	private XMLFragmenter xmlFragmenter;
+	private XmlFragmenter xmlFragmenter;
 
 	@Autowired
-	private NCBIFragmentCallback callback;
+	private NcbiFragmentCallback callback;
 
 	@Override
 	public void run(ApplicationArguments args) throws Exception {

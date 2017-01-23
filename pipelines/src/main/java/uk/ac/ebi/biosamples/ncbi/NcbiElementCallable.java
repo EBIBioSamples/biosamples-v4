@@ -28,21 +28,22 @@ import uk.ac.ebi.biosamples.models.Attribute;
 import uk.ac.ebi.biosamples.models.Relationship;
 import uk.ac.ebi.biosamples.models.Sample;
 import uk.ac.ebi.biosamples.utils.HateoasUtils;
-import uk.ac.ebi.biosamples.utils.XMLUtils;
+import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
+import uk.ac.ebi.biosamples.utils.XmlUtils;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class NCBIElementCallable implements Callable<Void> {
+public class NcbiElementCallable implements Callable<Void> {
 	
 	private Logger log = LoggerFactory.getLogger(getClass());
 
 	private final Element sampleElem;
-
+	
 	@Autowired
-	private XMLUtils xmlUtils;
+	private XmlUtils xmlUtils;
 	
 	@Autowired
 	private HateoasUtils hateoasUtils;
@@ -55,7 +56,7 @@ public class NCBIElementCallable implements Callable<Void> {
 	@Autowired
 	private RestOperations restTemplate;
 
-	public NCBIElementCallable(Element sampleElem) {
+	public NcbiElementCallable(Element sampleElem) {
 		this.sampleElem = sampleElem;
 	}
 
@@ -95,13 +96,9 @@ public class NCBIElementCallable implements Callable<Void> {
 		log.trace("Element callable starting for "+accession);
 		
 		// TODO compare to last version of XML?
-
 		// convert it to our model
-
-		Element description = xmlUtils.getChildByName(sampleElem, "Description");
-
-
-		String name = xmlUtils.getChildByName(description, "Title").getTextTrim();
+		
+		String name = XmlPathBuilder.of(sampleElem).path("Description", "Title").text();
 		// if the name is double quotes, strip them
 		if (name.startsWith("\"")) {
 			name = name.substring(1, name.length()).trim();
@@ -117,36 +114,35 @@ public class NCBIElementCallable implements Callable<Void> {
 		SortedSet<Attribute> attrs = new TreeSet<>();
 		SortedSet<Relationship> rels = new TreeSet<>();
 
-		for (Element idElem : xmlUtils.getChildrenByName(xmlUtils.getChildByName(sampleElem, "Ids"), "Id")) {
+		for (Element idElem : XmlPathBuilder.of(sampleElem).path("Ids").elements("Id")) {
 			String id = idElem.getTextTrim();
 			if (!accession.equals(id) && !name.equals(id)) {
 				attrs.add(Attribute.build("synonym",  id,  null,  null));
 			}
 		}
 
-		Element descriptionCommment = xmlUtils.getChildByName(description, "Comment");
-		if (descriptionCommment != null) {
-			Element descriptionParagraph = xmlUtils.getChildByName(descriptionCommment, "Paragraph");
-			if (descriptionParagraph != null) {
-				String secondaryDescription = descriptionParagraph.getTextTrim();
-				if (!name.equals(secondaryDescription)) {
-					attrs.add(Attribute.build("description", secondaryDescription,  null,  null));
-				}
-			}
+		
+		if (XmlPathBuilder.of(sampleElem).path("Description", "Comment", "Paragraph").exists()) {
+			attrs.add(Attribute.build("description", XmlPathBuilder.of(sampleElem).path("Description", "Comment", "Paragraph").text(),  null,  null));
 		}
 
-		// handle the organism
-		Element organismElement = xmlUtils.getChildByName(description, "Organism");
-		if (organismElement.attributeValue("taxonomy_id") == null) {
-			attrs.add(Attribute.build("organism", organismElement.attributeValue("taxonomy_name").trim(),  null,  null));
-		} else {
-			// TODO taxonomy reference
-			attrs.add(Attribute.build("organism", organismElement.attributeValue("taxonomy_name").trim(),  null,  null));
+		// handle the organism		
+		String organismIri = null;
+		String organismValue = null;
+		if (XmlPathBuilder.of(sampleElem).path("Description", "Organism").attributeExists("taxonomy_id")) {
+			organismIri = "http://purl.obolibrary.org/obo/NCBITaxon_"+XmlPathBuilder.of(sampleElem).path("Description", "Organism").attribute("taxonomy_id");
 		}
+		if (XmlPathBuilder.of(sampleElem).path("Description", "Organism").attributeExists("taxonomy_name")) {
+			organismValue = XmlPathBuilder.of(sampleElem).path("Description", "Organism").attribute("taxonomy_name");
+		}
+		
+		if (organismValue != null) {
+			attrs.add(Attribute.build("organism", organismValue,  organismIri,  null));			
+		}
+		
 
 		// handle attributes
-		for (Element attrElem : xmlUtils.getChildrenByName(xmlUtils.getChildByName(sampleElem, "Attributes"),
-				"Attribute")) {
+		for (Element attrElem : XmlPathBuilder.of(sampleElem).path("Attributes").elements("Attribute")) {
 			String key = attrElem.attributeValue("display_name");
 			if (key == null || key.length() == 0) {
 				key = attrElem.attributeValue("attribute_name");
@@ -165,10 +161,10 @@ public class NCBIElementCallable implements Callable<Void> {
 		}
 
 		// handle model and packages
-		for (Element modelElem : xmlUtils.getChildrenByName(xmlUtils.getChildByName(sampleElem, "Models"), "Model")) {
+		for (Element modelElem : XmlPathBuilder.of(sampleElem).path("Models").elements("Model")) {
 			attrs.add(Attribute.build("model", modelElem.getTextTrim(), null, null));
 		}
-		attrs.add(Attribute.build("package", xmlUtils.getChildByName(sampleElem, "Package").getTextTrim(), null, null));
+		attrs.add(Attribute.build("package", XmlPathBuilder.of(sampleElem).path("Package").text(), null, null));
 
 		//handle dates
 		LocalDateTime updateDate = null;

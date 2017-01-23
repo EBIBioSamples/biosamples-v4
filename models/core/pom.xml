@@ -38,6 +38,17 @@
 			<artifactId>gson</artifactId>
 			<scope>test</scope>
 		</dependency>
+		
+		<!-- use Dom4J for XML conversions -->
+		<dependency>
+			<groupId>dom4j</groupId>
+			<artifactId>dom4j</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>xmlunit</groupId>
+			<artifactId>xmlunit</artifactId>
+			<version>1.4</version>
+		</dependency>
 	</dependencies>
 
 	<build>

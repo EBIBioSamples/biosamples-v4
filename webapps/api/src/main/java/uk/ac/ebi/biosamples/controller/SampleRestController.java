@@ -140,13 +140,15 @@ public class SampleRestController {
 		return response;
 	}
 
-	@RequestMapping(method = RequestMethod.PUT, value = "{accession}", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(method = RequestMethod.PUT, value = "{accession}", consumes = {MediaType.APPLICATION_JSON_VALUE,MediaType.APPLICATION_XML_VALUE})
 	public void update(@PathVariable String accession, @RequestBody Sample sample) {
 		if (!sample.getAccession().equals(accession)) {
 			//if the accession in the body is different to the accession in the url, throw an error
 			//TODO create proper exception with right http error code
 			throw new RuntimeException("Accessions must match ("+accession+" vs "+sample.getAccession()+")");
 		}
+		
+		log.info("Recieved PUT for "+accession);
 		
 		sampleService.store(sample);
 		

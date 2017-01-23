@@ -46,7 +46,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
-public class XMLUtils {
+public class XmlUtils {
     private Logger log = LoggerFactory.getLogger(this.getClass());
     
     private TransformerFactory tf = TransformerFactory.newInstance();
@@ -141,36 +141,6 @@ public class XMLUtils {
         
         return xml;
     }
-
-    public Element getChildByName(Element parent, String name) {
-        if (parent == null)
-            return null;
-
-        for (Iterator<Element> i = parent.elementIterator(); i.hasNext();) {
-            Element child = i.next();
-            if (child.getName().equals(name)) {
-                return child;
-            }
-        }
-
-        return null;
-    }
-
-    public Collection<Element> getChildrenByName(Element parent,
-            String name) {
-        Collection<Element> children = new ArrayList<Element>();
-
-        if (parent == null)
-            return children;
-
-        for (Iterator<Element> i = parent.elementIterator(); i.hasNext();) {
-            Element child = i.next();
-            if (child.getName().equals(name)) {
-                children.add(child);
-            }
-        }
-        return children;
-    }
     
     public String stripNonValidXMLCharacters(String in) {
         //from http://blog.mark-mclaren.info/2007/02/invalid-xml-characters-when-valid-utf8_5873.html
@@ -245,4 +215,5 @@ public class XMLUtils {
             }
         }
     }
+    
 }

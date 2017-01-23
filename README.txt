@@ -93,8 +93,21 @@ To start a service, using docker compose will also start and dependent services 
 
 will also start solr, neo4j, mongo, and rabbitmq
 
+To run an executable file in a docker container, and start its dependencies first use something like:
+
+`docker-compose run --service-ports biosamples-pipelines`
+
+If you want to add command line arguments note that these will entirely replace the executable in the 
+docker-compose.yml file. So you need to do something like:
+
+`docker-compose run --service-ports biosamples-pipelines java -jar pipelines-4.0.0-SNAPSHOT.jar --debug`
+
 If you want to connect debugging tools to the java applications running inside docker containers, 
 see instructions at http://www.jamasoftware.com/blog/monitoring-java-applications/
+
+Note that you can bring maven and docker together into a single commandline like:
+
+`mvn -T 2C package && docker-compose build && docker-compose run --service-ports biosamples-pipelines`
 
 Beware, Docker tar's and copies all the files on the filesystem from the location of docker-compose 
 down. If you have data files there (e.g. downloads from ncbi, docker volumes) then that process can

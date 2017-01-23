@@ -16,10 +16,10 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import org.xml.sax.Attributes;
 
-import uk.ac.ebi.biosamples.utils.XMLFragmenter.ElementCallback;
+import uk.ac.ebi.biosamples.utils.XmlFragmenter.ElementCallback;
 
 @Component
-public class NCBIFragmentCallback implements ElementCallback {
+public class NcbiFragmentCallback implements ElementCallback {
 	
 	private Logger log = LoggerFactory.getLogger(getClass());
 
@@ -31,7 +31,7 @@ public class NCBIFragmentCallback implements ElementCallback {
 	private ExecutorService executorService;
 	private Queue<Future<Void>> futures;
 	
-	private NCBIFragmentCallback(){};
+	private NcbiFragmentCallback(){};
 	
 	public LocalDate getFromDate() {
 		return fromDate;
@@ -75,7 +75,7 @@ public class NCBIFragmentCallback implements ElementCallback {
 		// their own dao object
 		// this is apparently bad Inversion Of Control but I can't see a
 		// better way to do it
-		Callable<Void> callable = context.getBean(NCBIElementCallable.class, element);
+		Callable<Void> callable = context.getBean(NcbiElementCallable.class, element);
 		
 		if (executorService == null) {
 			try {

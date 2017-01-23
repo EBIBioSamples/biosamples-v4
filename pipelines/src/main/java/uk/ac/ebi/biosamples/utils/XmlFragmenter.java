@@ -28,11 +28,11 @@ import org.xml.sax.helpers.DefaultHandler;
  *
  */
 @Service
-public class XMLFragmenter {
+public class XmlFragmenter {
 
 	private SAXParserFactory factory = SAXParserFactory.newInstance();
 	
-	private XMLFragmenter() {};
+	private XmlFragmenter() {};
 	
 	public void handleStream(InputStream inputStream, String encoding, ElementCallback callback)
 			throws ParserConfigurationException, SAXException, IOException {

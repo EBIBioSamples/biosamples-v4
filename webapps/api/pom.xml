@@ -26,21 +26,22 @@
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
-			<artifactId>models-neo4j</artifactId>
+			<artifactId>models-solr</artifactId>
 			<version>${bsd2017.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
-			<artifactId>models-solr</artifactId>
+			<artifactId>models-neo4j</artifactId>
 			<version>${bsd2017.version}</version>
 		</dependency>
-		<!-- Add bolt driver for performance -->
+		<!-- Add neo4j bolt driver for performance -->
 		<dependency>
 			<groupId>org.neo4j</groupId>
 			<artifactId>neo4j-ogm-bolt-driver</artifactId>
 			<version>${neo4j-ogm.version}</version>
 		</dependency>
 
+		<!-- use Thymleaf for HTML templating -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-thymeleaf</artifactId>
@@ -55,9 +56,13 @@
 			<artifactId>spring-boot-actuator</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.data</groupId>
-			<artifactId>spring-data-rest-hal-browser</artifactId>
+			<groupId>org.springframework.hateoas</groupId>
+			<artifactId>spring-hateoas</artifactId>
 		</dependency>
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.springframework.data</groupId> -->
+<!-- 			<artifactId>spring-data-rest-hal-browser</artifactId> -->
+<!-- 		</dependency> -->
 
 		<!-- mark tomcat as provided so we can deploy to tomcat -->
 		<dependency>
@@ -65,7 +70,6 @@
 			<artifactId>spring-boot-starter-tomcat</artifactId>
 			<scope>provided</scope>
 		</dependency>
-
 	</dependencies>
 	<properties>
 		<snippetsDirectory>${project.build.directory}/generated-snippets</snippetsDirectory>

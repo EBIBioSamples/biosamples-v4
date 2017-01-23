@@ -1,20 +1,27 @@
 version: '2'
 services:
-#docker-compose run biosamples-pipelines --service-ports
+#docker-compose run --service-ports biosamples-pipelines 
   biosamples-pipelines:
     build: .
     image: biosamples:latest
     links:
     - biosamples-webapps-api
+    volumes:
+    - /home/faulcon/Desktop/biosample_set_20161024.xml.gz:/biosample_set.xml.gz
     command:
     - java
     - -jar
     - pipelines-4.0.0-SNAPSHOT.jar
 #    - --debug
-    - --ncbi
-    - --spring.aop.proxy-target-class=true
+#    - --ncbi
+    environment:
+    - spring.aop.proxy-target-class=true
     #from https://github.com/google/guava/blob/master/guava/src/com/google/common/cache/CacheBuilderSpec.java
-    - --spring.cache.guava.spec=maximumSize=500,expireAfterAccess=60s,recordStats=true
+    - spring.cache.guava.spec=maximumSize=500,expireAfterAccess=60s,recordStats=true
+    - spring.datasource.erapro.url=jdbc:oracle:thin:@ora-vm-009.ebi.ac.uk:1541:ERAPRO
+    - spring.datasource.erapro.username=era_reader
+    - spring.datasource.erapro.password=reader
+    - spring.datasource.erapro.driver-class-name=oracle.jdbc.driver.OracleDriver
   biosamples-webapps-api:
     build: .
     image: biosamples:latest
@@ -28,14 +35,15 @@ services:
     - -jar
     - webapps-api-4.0.0-SNAPSHOT.war
 #    - --debug
-    - --spring.data.solr.host=http://solr:8983/solr
-    - --spring.data.neo4j.uri=bolt://neo4j:7687
-    - --spring.data.neo4j.username=neo4j
-    - --spring.data.mongodb.host=mongo
-    - --spring.rabbitmq.host=rabbitmq
-    - --spring.rabbitmq.publisher-confirms=true
-    - --spring.jackson.serialization-inclusion=non_null
-    - --spring.data.rest.base-path=/api
+    environment:
+    - spring.data.solr.host=http://solr:8983/solr
+    - spring.data.neo4j.uri=bolt://neo4j:7687
+    - spring.data.neo4j.username=neo4j
+    - spring.data.mongodb.host=mongo
+    - spring.rabbitmq.host=rabbitmq
+    - spring.rabbitmq.publisher-confirms=true
+    - spring.jackson.serialization-inclusion=non_null
+    - spring.data.rest.base-path=/api
     ports:
     - 8081:8080
   biosamples-agents-neo4j:
@@ -48,11 +56,11 @@ services:
     - java
     - -jar
     - agents-neo4j-4.0.0-SNAPSHOT.jar
-#    - --debug
-    - --spring.rabbitmq.host=rabbitmq
-    - --spring.rabbitmq.publisher-confirms=true
-    - --spring.data.neo4j.uri=bolt://neo4j:7687
-    - --spring.data.neo4j.username=neo4j
+    environment:
+    - spring.rabbitmq.host=rabbitmq
+    - spring.rabbitmq.publisher-confirms=true
+    - spring.data.neo4j.uri=bolt://neo4j:7687
+    - spring.data.neo4j.username=neo4j
 #    restart: unless-stopped
   biosamples-agents-solr:
     build: .
@@ -65,12 +73,13 @@ services:
     - -jar
     - agents-solr-4.0.0-SNAPSHOT.jar
 #    - --debug
-    - --spring.rabbitmq.host=rabbitmq
-    - --spring.rabbitmq.publisher-confirms=true
+    environment:
+    - spring.rabbitmq.host=rabbitmq
+    - spring.rabbitmq.publisher-confirms=true
     #need to have a high number of threads so they can each wait while they are batched into solr
-    - --spring.rabbitmq.listener.concurrency=250
-    - --spring.rabbitmq.listener.max-concurrency=250
-    - --spring.data.solr.host=http://solr:8983/solr
+    - spring.rabbitmq.listener.concurrency=250
+    - spring.rabbitmq.listener.max-concurrency=250
+    - spring.data.solr.host=http://solr:8983/solr
 #    restart: unless-stopped
   mongo:
     image: mongo:3.2
