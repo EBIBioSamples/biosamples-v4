@@ -161,10 +161,11 @@ public class NcbiElementCallable implements Callable<Void> {
 		}
 
 		// handle model and packages
-		for (Element modelElem : XmlPathBuilder.of(sampleElem).path("Models").elements("Model")) {
-			attrs.add(Attribute.build("model", modelElem.getTextTrim(), null, null));
-		}
-		attrs.add(Attribute.build("package", XmlPathBuilder.of(sampleElem).path("Package").text(), null, null));
+//disabled for the moment, do they really add anything? faulcon@2017/01/25
+//		for (Element modelElem : XmlPathBuilder.of(sampleElem).path("Models").elements("Model")) {
+//			attrs.add(Attribute.build("model", modelElem.getTextTrim(), null, null));
+//		}
+//		attrs.add(Attribute.build("package", XmlPathBuilder.of(sampleElem).path("Package").text(), null, null));
 
 		//handle dates
 		LocalDateTime updateDate = null;
