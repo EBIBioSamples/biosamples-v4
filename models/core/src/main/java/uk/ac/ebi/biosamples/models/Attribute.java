@@ -109,7 +109,10 @@ public class Attribute implements Comparable<Attribute> {
 		
 		return 0;
 	}
-	
+
+	static public Attribute build(String key, String value) {
+		return build(key, value, null, null);
+	}
 	static public Attribute build(String key, String value, String iri, String unit) {
 		Attribute attr = new Attribute();
 		attr.key = key;

@@ -13,6 +13,7 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
 import org.dom4j.Document;
+import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +29,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.models.Sample;
+import uk.ac.ebi.biosamples.utils.SubmissionService;
+import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
 @Component
 public class Ena implements ApplicationRunner {
@@ -36,14 +39,15 @@ public class Ena implements ApplicationRunner {
 
 	@Autowired
 	private EraProDao eraprodao;
-
+	
 	@Autowired
-	private PipelinesProperties pipelinesProperties;
+	private SubmissionService submissionService;
 	
 	@Autowired
 	private RestTemplate restTemplate;
-
 	
+	@Autowired
+	private EnaElementConverter enaElementConverter;
 	
 	@Override
 	public void run(ApplicationArguments args) throws Exception {
@@ -86,11 +90,17 @@ public class Ena implements ApplicationRunner {
 			}
 			
 			String xmlString = response.getBody();
-			System.out.println(xmlString);
+			//System.out.println(xmlString);
 			SAXReader reader = new SAXReader();
 			Document xml = reader.read(new StringReader(xmlString));
-
-			
+			Element root = xml.getRootElement();
+			//check that we got some content
+			if (XmlPathBuilder.of(root).path("SAMPLE").exists()) {
+				Sample sample = enaElementConverter.convert(root);
+				if (sample.getAccession() != null) {
+					submissionService.submit(sample);
+				}
+			}
 			log.info("HANDLED " + sampleAccession);
 		}
 	}

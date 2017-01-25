@@ -2,6 +2,7 @@ package uk.ac.ebi.biosamples.utils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,18 +33,23 @@ public class XmlPathBuilder {
 		Element target = root;
 		for (String pathPart : pathParts) {
 			target = target.element(pathPart);
+			if (target == null) {
+				throw new IllegalArgumentException("Path path "+pathPart+" does not exist");
+			}
 		}
 		return target;
 	}
 	
 	@SuppressWarnings("unchecked")
 	public List<Element> elements() {
-		Element target = root;
-		for (String pathPart : pathParts) {
-			target = target.element(pathPart);
-		}
-		//API pre-dates generics
-		return (List<Element>) target.elements();
+		
+		List<Element> elements = new ArrayList<>();
+        for (Iterator<Element> i = element().elementIterator(); i.hasNext();) {
+            Element child = i.next();
+            elements.add(child);
+        }
+		
+		return elements;
 	}
 	
 	public List<Element> elements(String name) {
@@ -51,50 +57,27 @@ public class XmlPathBuilder {
 	}
 	
 	public String text() {
-		Element target = root;
-		for (String pathPart : pathParts) {
-			target = target.element(pathPart);
-			if (target == null) {
-				throw new IllegalArgumentException("Path path "+pathPart+" does not exist");
-			}
-		}
-		return target.getTextTrim();
+		return element().getTextTrim();
 	}
 	
 	public boolean exists() {
-		Element target = root;
-		for (String pathPart : pathParts) {
-			target = target.element(pathPart);
-			if (target == null) {
-				return false;
-			}
+		try {
+			element();
+		} catch (IllegalArgumentException e) {
+			return false;
 		}
 		return true;
 	}
 	
 	public String attribute(String name) {
-		Element target = root;
-		for (String pathPart : pathParts) {
-			target = target.element(pathPart);
-			if (target == null) {
-				throw new IllegalArgumentException("Path path "+pathPart+" does not exist");
-			}
-		}
-		if (target.attribute(name) == null) {
+		if (element().attribute(name) == null) {
 			throw new IllegalArgumentException("Argument "+name+" does not exist at path "+String.join("/",pathParts));
 		}
-		return target.attributeValue(name);
+		return element().attributeValue(name);
 	}
 	
 	public boolean attributeExists(String name) {
-		Element target = root;
-		for (String pathPart : pathParts) {
-			target = target.element(pathPart);
-			if (target == null) {
-				return false;
-			}
-		}
-		if (target.attribute(name) == null) {
+		if (element().attribute(name) == null) {
 			return false;
 		}
 		return true;

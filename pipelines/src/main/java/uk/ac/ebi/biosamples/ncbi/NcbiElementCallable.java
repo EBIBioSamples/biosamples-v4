@@ -28,6 +28,8 @@ import uk.ac.ebi.biosamples.models.Attribute;
 import uk.ac.ebi.biosamples.models.Relationship;
 import uk.ac.ebi.biosamples.models.Sample;
 import uk.ac.ebi.biosamples.utils.HateoasUtils;
+import uk.ac.ebi.biosamples.utils.SubmissionService;
+import uk.ac.ebi.biosamples.utils.TaxonomyService;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 import uk.ac.ebi.biosamples.utils.XmlUtils;
 
@@ -43,49 +45,13 @@ public class NcbiElementCallable implements Callable<Void> {
 	private final Element sampleElem;
 	
 	@Autowired
-	private XmlUtils xmlUtils;
+	private TaxonomyService taxonomyService;
 	
 	@Autowired
-	private HateoasUtils hateoasUtils;
-	
-	@Autowired
-	private PipelinesProperties pipelinesProperties;
-	
-	//use RestOperations as the interface implemented by RestTemplate
-	//easier to mock for testing
-	@Autowired
-	private RestOperations restTemplate;
+	private SubmissionService submissionService;
 
 	public NcbiElementCallable(Element sampleElem) {
 		this.sampleElem = sampleElem;
-	}
-
-	private void submit(Sample sample) {
-		//all NCBI samples have an existing accession
-		//so its always a PUT to that accession
-		
-		URI putUri = UriComponentsBuilder.fromUri(pipelinesProperties.getBiosampleSubmissionURI())
-				.path("samples/")
-				.path(sample.getAccession())
-				.build().toUri();
-		
-		log.info("PUTing "+putUri);
-		
-		HttpHeaders headers = new HttpHeaders();
-		headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
-		RequestEntity<Sample> requestEntity = new RequestEntity<>(sample, headers, HttpMethod.PUT, putUri);
-		ResponseEntity<Sample> putResponse = restTemplate.exchange(requestEntity, Sample.class);
-		
-//		HttpEntity<Sample> requestEntity = new HttpEntity<>(sample);		
-//		ResponseEntity<Sample> putResponse = restTemplate.exchange(putUri,
-//				HttpMethod.PUT,
-//				requestEntity,
-//				new ParameterizedTypeReference<Sample>(){});
-		
-		if (!putResponse.getStatusCode().is2xxSuccessful()) {
-			log.error("Unable to PUT "+sample.getAccession()+" : "+putResponse.toString());
-			throw new RuntimeException("Problem PUTing "+sample.getAccession());
-		}
 	}
 
 	@Override
@@ -130,7 +96,8 @@ public class NcbiElementCallable implements Callable<Void> {
 		String organismIri = null;
 		String organismValue = null;
 		if (XmlPathBuilder.of(sampleElem).path("Description", "Organism").attributeExists("taxonomy_id")) {
-			organismIri = "http://purl.obolibrary.org/obo/NCBITaxon_"+XmlPathBuilder.of(sampleElem).path("Description", "Organism").attribute("taxonomy_id");
+			int taxonId = Integer.parseInt(XmlPathBuilder.of(sampleElem).path("Description", "Organism").attribute("taxonomy_id"));
+			organismIri = taxonomyService.getUriForTaxonId(taxonId).toString();
 		}
 		if (XmlPathBuilder.of(sampleElem).path("Description", "Organism").attributeExists("taxonomy_name")) {
 			organismValue = XmlPathBuilder.of(sampleElem).path("Description", "Organism").attribute("taxonomy_name");
@@ -182,7 +149,7 @@ public class NcbiElementCallable implements Callable<Void> {
 		Sample sample = Sample.build(name, accession, releaseDate, updateDate, attrs, rels);
 		
 		//now pass it along to the actual submission process
-		submit(sample);
+		submissionService.submit(sample);
 
 		log.trace("Element callable finished");
 		
