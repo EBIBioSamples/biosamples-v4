@@ -14,6 +14,9 @@ public class PipelinesProperties {
 
 	@Value("${biosamples.ncbi.threadcount:1}")
 	private int ncbiThreadCount;
+
+	@Value("${biosamples.ena.threadcount:1}")
+	private int enaThreadCount;
 	
 	@Value("${biosamples.submissionuri:http://localhost:8081}")
 	private URI biosampleSubmissionURI;
@@ -22,11 +25,15 @@ public class PipelinesProperties {
 		return biosampleSubmissionURI;
 	}
 
-	public File getNCBIFile() {
+	public File getNcbiFile() {
 		return ncbiFile;
 	}
 
-	public int getNCBIThreadCount() {
+	public int getNcbiThreadCount() {
+		return ncbiThreadCount;
+	}
+
+	public int getEnaThreadCount() {
 		return ncbiThreadCount;
 	}
 

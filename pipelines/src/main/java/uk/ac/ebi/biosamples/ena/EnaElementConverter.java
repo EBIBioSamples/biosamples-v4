@@ -1,6 +1,7 @@
 package uk.ac.ebi.biosamples.ena;
 
 import java.net.URI;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
@@ -37,6 +38,7 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 	private static final String SAMPLE_NAME = "SAMPLE_NAME";
 	private static final String ANONYMIZED_NAME = "ANONYMIZED_NAME";
 	private static final String INDIVIDUAL_NAME = "INDIVIDUAL_NAME";
+	private static final String SCIENTIFIC_NAME = "SCIENTIFIC_NAME";
 	private static final String TAXON_ID = "TAXON_ID";
 	private static final String SAMPLE_ATTRIBUTE = "SAMPLE_ATTRIBUTE";
 	private static final String SAMPLE_ATTRIBUTES = "SAMPLE_ATTRIBUTES";
@@ -49,8 +51,6 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 
 		String name = XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS, PRIMARY_ID).text();
 		String accession = null;
-		LocalDateTime release = null; // to be added later
-		LocalDateTime update = null; // to be added later
 
 		SortedSet<Attribute> attributes = new TreeSet<>();
 		SortedSet<Relationship> relationships = new TreeSet<>();
@@ -92,7 +92,11 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 		int organismTaxId = Integer.parseInt(XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, TAXON_ID).text());
 
 		URI organismUri = taxonomyService.getUriForTaxonId(organismTaxId);
-		// TODO lookup taxonid to get full name
+		String organismName = ""+organismTaxId;
+		if (XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, SCIENTIFIC_NAME).exists()) {
+			organismName = XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, SCIENTIFIC_NAME).text();
+		}
+		attributes.add(Attribute.build("Organism", organismName, organismUri.toString(), null));
 
 		if (XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_ATTRIBUTES).exists()) {
 			for (Element e : XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_ATTRIBUTES).elements(SAMPLE_ATTRIBUTE)) {
@@ -112,14 +116,6 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 
 				//log.info("Attribute "+tag+" : "+value+" : "+unit);
 				
-				// extract dates if appropriate
-				if (tag.equals("ENA-FIRST-PUBLIC")) {
-					release = LocalDateTime.parse(value+"T00:00:00.00", DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-				}
-				if (tag.equals("ENA-LAST-UPDATE")) {
-					update = LocalDateTime.parse(value+"T00:00:00.00", DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-				}
-
 				// skip artificial attributes
 				if (tag.startsWith("ENA-")) {
 					continue;
@@ -144,7 +140,9 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 			}
 		}
 
-		return Sample.build(name, accession, release, update, attributes, relationships);
+	    //TODO external reference
+		
+		return Sample.build(name, accession, null, null, attributes, relationships);
 	}
 
 }

@@ -60,11 +60,12 @@ public class Ncbi implements ApplicationRunner {
 		callback.setFromDate(fromDate);
 		callback.setToDate(toDate);
 
-		try (InputStream is = new GZIPInputStream(new BufferedInputStream(new FileInputStream(pipelinesProperties.getNCBIFile())))) {
+		try (InputStream is = new GZIPInputStream(new BufferedInputStream(new FileInputStream(pipelinesProperties.getNcbiFile())))) {
 
-			if (pipelinesProperties.getNCBIThreadCount() > 0) {
-				ExecutorService executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, pipelinesProperties.getNCBIThreadCount());
+			if (pipelinesProperties.getNcbiThreadCount() > 0) {
+				ExecutorService executorService = null;
 				try {
+					executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, pipelinesProperties.getNcbiThreadCount());
 					Queue<Future<Void>> futures = new LinkedList<>();
 
 					callback.setExecutorService(executorService);

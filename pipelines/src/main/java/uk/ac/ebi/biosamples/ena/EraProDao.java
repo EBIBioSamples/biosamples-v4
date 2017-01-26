@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
@@ -97,4 +98,18 @@ select * from cv_status;
 			throw new IllegalArgumentException("Unrecongized BIOSAMPLE_AUTHORITY "+result);
 		}	
 	}	
+	
+	public LocalDateTime getUpdateDateTime(String biosampleAccession) {
+		String sql = "SELECT to_char(LAST_UPDATED, 'YYYY-MM-DD') FROM SAMPLE WHERE BIOSAMPLE_ID = ?";
+		String dateString = jdbcTemplate.queryForObject(sql, String.class, biosampleAccession);
+		log.info("Release date is "+dateString);
+		return LocalDate.parse(dateString, DateTimeFormatter.ISO_LOCAL_DATE).atStartOfDay();
+	}
+	
+	public LocalDateTime getReleaseDateTime(String biosampleAccession) {
+		String sql = "SELECT to_char(FIRST_PUBLIC, 'YYYY-MM-DD') FROM SAMPLE WHERE BIOSAMPLE_ID = ?";
+		String dateString = jdbcTemplate.queryForObject(sql, String.class, biosampleAccession);
+		log.info("Release date is "+dateString);
+		return LocalDate.parse(dateString, DateTimeFormatter.ISO_LOCAL_DATE).atStartOfDay();
+	}
 }

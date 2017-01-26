@@ -5,7 +5,17 @@ import java.net.URI;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 import javax.annotation.PostConstruct;
 import javax.xml.bind.JAXBContext;
@@ -21,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.context.ApplicationContext;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestOperations;
@@ -29,6 +40,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.models.Sample;
+import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.SubmissionService;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
@@ -38,16 +50,13 @@ public class Ena implements ApplicationRunner {
 	private Logger log = LoggerFactory.getLogger(getClass());
 
 	@Autowired
+	private PipelinesProperties pipelinesProperties;
+
+	@Autowired
 	private EraProDao eraprodao;
-	
+
 	@Autowired
-	private SubmissionService submissionService;
-	
-	@Autowired
-	private RestTemplate restTemplate;
-	
-	@Autowired
-	private EnaElementConverter enaElementConverter;
+	private ApplicationContext context;
 	
 	@Override
 	public void run(ApplicationArguments args) throws Exception {
@@ -74,34 +83,36 @@ public class Ena implements ApplicationRunner {
 			toDate = LocalDate.parse("3000-01-01", DateTimeFormatter.ISO_LOCAL_DATE);
 		}
 		
-		for (String sampleAccession : eraprodao.getSamples(fromDate, toDate)) {
-			log.info("HANDLING " + sampleAccession);
-			
-			
-			//https://www.ebi.ac.uk/ena/data/view/SAMEA1317921&display=xml works
-			//https://www.ebi.ac.uk/ena/data/view/SAMEA1317921?display=xml is a more correct URL, but doesn't work
-			
-			URI uri = UriComponentsBuilder.newInstance().scheme("http").host("www.ebi.ac.uk").pathSegment("ena","data","view",sampleAccession+"&display=xml").build().toUri();
-			log.info("looking at "+uri);
-			ResponseEntity<String> response = restTemplate.getForEntity(uri, String.class);
-			if (!response.getStatusCode().is2xxSuccessful()) {
-				log.error("Non-2xx status code for "+sampleAccession);
-				continue;
+		Set<String> sampleAccessions = eraprodao.getSamples(fromDate, toDate);
+
+		try (AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, pipelinesProperties.getEnaThreadCount())) {
+			Map<String, Future<Void>> futures = new HashMap<>();
+			for (String sampleAccession : sampleAccessions) {
+				// have to create multiple beans via context so they all autowire etc
+				// this is apparently bad Inversion Of Control but I can't see a
+				// better way to do it
+				Callable<Void> callable = context.getBean(EnaCallable.class, sampleAccession);
+				futures.put(sampleAccession, executorService.submit(callable));
+				
+				checkFutures(futures, 0);
 			}
-			
-			String xmlString = response.getBody();
-			//System.out.println(xmlString);
-			SAXReader reader = new SAXReader();
-			Document xml = reader.read(new StringReader(xmlString));
-			Element root = xml.getRootElement();
-			//check that we got some content
-			if (XmlPathBuilder.of(root).path("SAMPLE").exists()) {
-				Sample sample = enaElementConverter.convert(root);
-				if (sample.getAccession() != null) {
-					submissionService.submit(sample);
+			log.info("waiting for futures");
+			// wait for anything to finish
+			checkFutures(futures, 0);
+		}
+	}
+	
+	private void checkFutures(Map<? extends Object, Future<Void>> futures, int maxSize) throws InterruptedException {
+		while (futures.size() > maxSize) {
+			for (Iterator<? extends Object> i = futures.keySet().iterator(); i.hasNext(); ) {
+				Object key = i.next();
+				try {
+					futures.get(key).get();
+				} catch (ExecutionException e) {
+					log.error("Error processing "+key, e);
 				}
+				i.remove();
 			}
-			log.info("HANDLED " + sampleAccession);
 		}
 	}
 	

@@ -40,10 +40,9 @@ services:
     - spring.data.neo4j.uri=bolt://neo4j:7687
     - spring.data.neo4j.username=neo4j
     - spring.data.mongodb.host=mongo
-    - spring.rabbitmq.host=rabbitmq
     - spring.rabbitmq.publisher-confirms=true
     - spring.jackson.serialization-inclusion=non_null
-    - spring.data.rest.base-path=/api
+    - spring.rabbitmq.host=rabbitmq
     ports:
     - 8081:8080
   biosamples-agents-neo4j:
@@ -57,11 +56,11 @@ services:
     - -jar
     - agents-neo4j-4.0.0-SNAPSHOT.jar
     environment:
-    - spring.rabbitmq.host=rabbitmq
     - spring.rabbitmq.publisher-confirms=true
     - spring.data.neo4j.uri=bolt://neo4j:7687
     - spring.data.neo4j.username=neo4j
 #    restart: unless-stopped
+    - spring.rabbitmq.host=rabbitmq
   biosamples-agents-solr:
     build: .
     image: biosamples:latest
@@ -74,12 +73,12 @@ services:
     - agents-solr-4.0.0-SNAPSHOT.jar
 #    - --debug
     environment:
-    - spring.rabbitmq.host=rabbitmq
     - spring.rabbitmq.publisher-confirms=true
     #need to have a high number of threads so they can each wait while they are batched into solr
     - spring.rabbitmq.listener.concurrency=250
     - spring.rabbitmq.listener.max-concurrency=250
     - spring.data.solr.host=http://solr:8983/solr
+    - spring.rabbitmq.host=rabbitmq
 #    restart: unless-stopped
   mongo:
     image: mongo:3.2

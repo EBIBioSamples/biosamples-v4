@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor {
+public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor implements AutoCloseable {
 	
     private Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -180,5 +180,15 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor {
 				}
 			}
 		}
+	}
+
+	/**
+	 * This is required to implement the AutoClosable interface. It will stop 
+	 * accepting new jobs and wait up to 24h before termination;
+	 */
+	@Override
+	public void close() throws Exception {
+		shutdown();
+		awaitTermination(1, TimeUnit.DAYS);
 	}
 }

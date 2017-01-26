@@ -73,11 +73,33 @@ public class Sample {
     }
 	
 	static public Sample build(String name, String accession, LocalDateTime release, LocalDateTime update, Set<Attribute> attributes, Set<Relationship> relationships){
+
 		Sample sample = new Sample();
 		sample.accession = accession;
 		sample.name = name;
-		sample.release = release;
-		sample.update = update;
+
+		//this ensures that all components are present, even if they default to zero
+		if (release != null) {
+			int year = release.getYear();
+			int month = release.getMonthValue();
+			int dayOfMonth = release.getDayOfMonth();
+			int hour = release.getHour();
+			int minute = release.getMinute();
+			int second = release.getSecond();
+			int nano = release.getNano();			
+			sample.release = LocalDateTime.of(year,month,dayOfMonth,hour,minute,second,nano);
+		}
+		if (update != null) {
+			int year = update.getYear();
+			int month = update.getMonthValue();
+			int dayOfMonth = update.getDayOfMonth();
+			int hour = update.getHour();
+			int minute = update.getMinute();
+			int second = update.getSecond();
+			int nano = update.getNano();			
+			sample.update = LocalDateTime.of(year,month,dayOfMonth,hour,minute,second,nano);
+		}
+		
 		
 		if (attributes == null || attributes.size() == 0) {
 			sample.attributes = null;

@@ -1,5 +1,6 @@
 package uk.ac.ebi.biosamples.solr.service;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -61,10 +62,26 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 			}
 		}
 		
-		String releaseSolr =  solrDateTimeFormatter.format(sample.getRelease());
-		String updateSolr = solrDateTimeFormatter.format(sample.getUpdate());
+		String releaseSolr = formatDate(sample.getRelease());
+		String updateSolr = formatDate(sample.getUpdate());		
+				
 		
 		return SolrSample.build(sample.getName(), sample.getAccession(), releaseSolr, updateSolr,
 				attributeValues, attributeIris, attributeUnits);
+	}
+	
+	private String formatDate(LocalDateTime d) {
+		//this ensures that all components are present, even if they default to zero
+		int year = d.getYear();
+		int month = d.getMonthValue();
+		int dayOfMonth = d.getDayOfMonth();
+		int hour = d.getHour();
+		int minute = d.getMinute();
+		int second = d.getSecond();
+		int nano = d.getNano();	
+		
+		d = LocalDateTime.of(year,month,dayOfMonth,hour,minute,second,nano);		
+		String solrDate =  solrDateTimeFormatter.format(d);
+		return solrDate;
 	}
 }
