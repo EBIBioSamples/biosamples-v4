@@ -94,7 +94,7 @@ public class Ena implements ApplicationRunner {
 				Callable<Void> callable = context.getBean(EnaCallable.class, sampleAccession);
 				futures.put(sampleAccession, executorService.submit(callable));
 				
-				checkFutures(futures, 0);
+				checkFutures(futures, 100);
 			}
 			log.info("waiting for futures");
 			// wait for anything to finish
