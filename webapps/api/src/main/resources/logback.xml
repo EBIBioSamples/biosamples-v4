@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+  	
+	<appender name="File" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<File>${catalina.base}/logs/${tomcat.hostname}/webapps-api.log</File>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<!-- daily rollover -->
+			<fileNamePattern>${catalina.base}/logs/${tomcat.hostname}/webapps-api.log.%d</fileNamePattern>
+			<maxHistory>30</maxHistory>
+		</rollingPolicy>
+		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+			<pattern>%d{dd MMM yyyy - HH:mm:ss.SSS} %-5level [%thread] %logger{36}: %msg%n</pattern>
+		</encoder>
+	</appender>
+	
+	<root level="INFO">
+		<appender-ref ref="File" />
+	</root>
+
+</configuration>
