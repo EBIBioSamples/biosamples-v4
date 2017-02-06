@@ -3,6 +3,8 @@ package uk.ac.ebi.biosamples.service;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import javax.annotation.PostConstruct;
+
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -14,6 +16,7 @@ import com.mongodb.ErrorCategory;
 import com.mongodb.MongoWriteException;
 
 import uk.ac.ebi.biosamples.Messaging;
+import uk.ac.ebi.biosamples.WebappProperties;
 import uk.ac.ebi.biosamples.models.Sample;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.model.MongoSubmission;
@@ -53,11 +56,18 @@ public class SampleService {
 	private MongoSampleToSampleConverter mongoSampleToSampleConverter;
 	@Autowired
 	private SampleToMongoSampleConverter sampleToMongoSampleConverter;
+	
+	@Autowired
+	private WebappProperties webappProperties;
 
-	// TODO make this a application property configurable;
-	private BlockingQueue<String> accessionCandidateQueue = new LinkedBlockingQueue<>(100);
-	private String accessionCandidatePrefix = "TSTE";
-	private long accessionCandidateCounter = 1000000;
+	private BlockingQueue<String> accessionCandidateQueue;;
+	private long accessionCandidateCounter;
+	
+	@PostConstruct
+	public void doSetup() {
+		accessionCandidateQueue = new LinkedBlockingQueue<>(webappProperties.getAcessionQueueSize());
+		accessionCandidateCounter = webappProperties.getAccessionMinimum();
+	}
 
 	public Sample fetch(String accession) {
 		// return the raw sample from the repository
@@ -150,7 +160,7 @@ public class SampleService {
 	@Scheduled(fixedDelay = 100)
 	public void prepareAccessions() {
 		while (accessionCandidateQueue.remainingCapacity() > 0) {
-			String accessionCandidate = accessionCandidatePrefix + accessionCandidateCounter;
+			String accessionCandidate = webappProperties.getAccessionPrefix() + accessionCandidateCounter;
 			// if the accession already exists, skip it
 			if (mongoSampleRepository.exists(accessionCandidate)) {
 				accessionCandidateCounter += 1;

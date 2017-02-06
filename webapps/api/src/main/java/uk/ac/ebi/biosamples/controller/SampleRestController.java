@@ -109,7 +109,7 @@ public class SampleRestController {
 		HttpHeaders headers = new HttpHeaders();
 
 		//add a last modified header based on the samples update date
-		addLastModifiedHeader(headers, sample.getUpdate());
+		headers.set(HttpHeaders.LAST_MODIFIED, lastModifiedFormatter.format(sample.getUpdate()));
 		 		
 		//create the response object with the appropriate status
 		ResponseEntity<Sample> response = new ResponseEntity<>(sample, headers, HttpStatus.OK);
@@ -123,13 +123,14 @@ public class SampleRestController {
 		
 		//convert it into the format to return
 		Sample sample = sampleService.fetch(accession);
+		
 		SampleResource sampleResource = sampleResourceAssembler.toResource(sample);
 
 		//create some http headers to populate for return
 		HttpHeaders headers = new HttpHeaders();
 
 		//add a last modified header based on the samples update date
-		addLastModifiedHeader(headers, sample.getUpdate());
+		headers.set(HttpHeaders.LAST_MODIFIED, lastModifiedFormatter.format(sample.getUpdate()));
 		 		
 		//create the response object with the appropriate status
 		ResponseEntity<SampleResource> response = new ResponseEntity<>(sampleResource, headers, HttpStatus.OK);
@@ -145,18 +146,27 @@ public class SampleRestController {
 			throw new RuntimeException("Accessions must match ("+accession+" vs "+sample.getAccession()+")");
 		}
 		
+		//TODO compare to existing version to check if changes
+		
 		log.info("Recieved PUT for "+accession);		
 		sampleService.store(sample);		
 	}
 
 	@RequestMapping(method = RequestMethod.POST, consumes = {MediaType.APPLICATION_JSON_VALUE,MediaType.APPLICATION_XML_VALUE})
-	public Sample submit(@RequestBody Sample sample) {
+	public ResponseEntity<SampleResource>  submit(@RequestBody Sample sample) {
 		log.info("Recieved POST");
 		sample = sampleService.store(sample);
-		return sample;
-	}
-	
-	private void addLastModifiedHeader(HttpHeaders headers, LocalDateTime lastModified) {
-		headers.set(HttpHeaders.LAST_MODIFIED, lastModifiedFormatter.format(lastModified));
+		SampleResource sampleResource = sampleResourceAssembler.toResource(sample);
+
+		//create some http headers to populate for return
+		HttpHeaders headers = new HttpHeaders();
+
+		//add a last modified header based on the samples update date
+		headers.set(HttpHeaders.LAST_MODIFIED, lastModifiedFormatter.format(sample.getUpdate()));
+		 		
+		//create the response object with the appropriate status
+		ResponseEntity<SampleResource> response = new ResponseEntity<>(sampleResource, headers, HttpStatus.OK);
+		
+		return response;
 	}
 }
