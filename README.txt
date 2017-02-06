@@ -125,6 +125,12 @@ To delete all docker images use:
 NOTE: this will remove everything not just things for this project
  
  
+MongoDB notes
+=============
+
+Cross-platform easy to use mongodb management tool http://www.mongoclient.com
+ 
+ 
 Problems with spring-data-rest
 ==============================
 

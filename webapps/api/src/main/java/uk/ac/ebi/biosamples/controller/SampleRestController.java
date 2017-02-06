@@ -80,10 +80,7 @@ public class SampleRestController {
 	public ResponseEntity<ResourceSupport> search() {
 		ResourceSupport resource = new ResourceSupport();
 		resource.add(ControllerLinkBuilder.linkTo(ControllerLinkBuilder.methodOn(SampleRestController.class).search()).withSelfRel());
-		
-		
-		//TODO this should be a templated href
-		//resource.add(ControllerLinkBuilder.linkTo(ControllerLinkBuilder.methodOn(SampleRestController.class).findByText()).withRel("findByText"));
+		resource.add(ControllerLinkBuilder.linkTo(ControllerLinkBuilder.methodOn(SampleRestController.class).findByText("text", null, null)).withRel("findByText"));
 		return ResponseEntity.ok(resource);
 	}
 	
@@ -148,10 +145,15 @@ public class SampleRestController {
 			throw new RuntimeException("Accessions must match ("+accession+" vs "+sample.getAccession()+")");
 		}
 		
-		log.info("Recieved PUT for "+accession);
-		
-		sampleService.store(sample);
-		
+		log.info("Recieved PUT for "+accession);		
+		sampleService.store(sample);		
+	}
+
+	@RequestMapping(method = RequestMethod.POST, consumes = {MediaType.APPLICATION_JSON_VALUE,MediaType.APPLICATION_XML_VALUE})
+	public Sample submit(@RequestBody Sample sample) {
+		log.info("Recieved POST");
+		sample = sampleService.store(sample);
+		return sample;
 	}
 	
 	private void addLastModifiedHeader(HttpHeaders headers, LocalDateTime lastModified) {

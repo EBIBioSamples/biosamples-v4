@@ -5,9 +5,13 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
@@ -20,6 +24,8 @@ public class MongoSample {
 	
 	@Id
 	public String accession;
+	public String accessionPrefix;
+	public int accessionNumber;
 
 	protected String name; 
 	
@@ -38,6 +44,15 @@ public class MongoSample {
 		
 	}
 
+	@JsonIgnore
+	public boolean hasAccession() {
+		if ( accession != null && accession.trim().length() != 0) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
 	public String getAccession() {
 		return accession;
 	}
@@ -99,7 +114,18 @@ public class MongoSample {
 	
 	static public MongoSample build(String name, String accession, LocalDateTime release, LocalDateTime update, Set<Attribute> attributes, Set<Relationship> relationships){
 		MongoSample sample = new MongoSample();
+		
 		sample.accession = accession;
+		if (accession != null) {
+			Pattern p = Pattern.compile("([A-Z]+)([0-9]+)");
+			Matcher m = p.matcher(accession);
+			if (!m.matches()) {
+				throw new IllegalArgumentException("Accession must match [A-Z]+[0-9]+ if provided");				
+			}
+			sample.accessionPrefix = m.group(1);
+			sample.accessionNumber = Integer.parseInt(m.group(2));
+		}	
+		
 		sample.name = name;
 		sample.release = release;
 		sample.update = update;
