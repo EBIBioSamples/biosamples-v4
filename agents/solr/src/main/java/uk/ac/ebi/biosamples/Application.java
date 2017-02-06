@@ -7,9 +7,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.data.solr.core.SolrOperations;
 import org.springframework.data.solr.core.SolrTemplate;
 import org.springframework.data.solr.repository.config.EnableSolrRepositories;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
-@EnableSolrRepositories(multicoreSupport = true)
 @SpringBootApplication
+@EnableSolrRepositories(multicoreSupport = true)
+@EnableAsync
+@EnableScheduling
 public class Application {	
 	
 	public static void main(String[] args) {
