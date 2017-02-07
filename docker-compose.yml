@@ -7,13 +7,11 @@ services:
     links:
     - biosamples-webapps-api
     volumes:
-    - /home/faulcon/Desktop/biosample_set_20161024.xml.gz:/biosample_set.xml.gz
+    - ./logs:/logs
     command:
     - java
     - -jar
     - pipelines-4.0.0-SNAPSHOT.jar
-#    - --debug
-#    - --ncbi
     environment:
     - spring.aop.proxy-target-class=true
     #from https://github.com/google/guava/blob/master/guava/src/com/google/common/cache/CacheBuilderSpec.java
@@ -34,7 +32,6 @@ services:
     - java
     - -jar
     - webapps-api-4.0.0-SNAPSHOT.war
-#    - --debug
     environment:
     - spring.data.solr.host=http://solr:8983/solr
     - spring.data.neo4j.uri=bolt://neo4j:7687
@@ -71,7 +68,6 @@ services:
     - java
     - -jar
     - agents-solr-4.0.0-SNAPSHOT.jar
-#    - --debug
     environment:
     - spring.rabbitmq.publisher-confirms=true
     #need to have a high number of threads so they can each wait while they are batched into solr
