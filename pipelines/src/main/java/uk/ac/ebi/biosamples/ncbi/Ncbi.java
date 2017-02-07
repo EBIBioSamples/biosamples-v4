@@ -51,10 +51,14 @@ public class Ncbi implements ApplicationRunner {
 		if (args.getOptionNames().contains("from")) {
 			fromDate = LocalDate.parse(args.getOptionValues("from").iterator().next(),
 					DateTimeFormatter.ISO_LOCAL_DATE);
+		} else {
+			fromDate = LocalDate.parse("1000-01-01", DateTimeFormatter.ISO_LOCAL_DATE);
 		}
 		LocalDate toDate = null;
 		if (args.getOptionNames().contains("until")) {
 			toDate = LocalDate.parse(args.getOptionValues("until").iterator().next(), DateTimeFormatter.ISO_LOCAL_DATE);
+		}else {
+			toDate = LocalDate.parse("3000-01-01", DateTimeFormatter.ISO_LOCAL_DATE);
 		}
 
 		callback.setFromDate(fromDate);
