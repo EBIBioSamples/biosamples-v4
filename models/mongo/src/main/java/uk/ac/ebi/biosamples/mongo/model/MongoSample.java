@@ -24,8 +24,6 @@ public class MongoSample {
 	
 	@Id
 	public String accession;
-	public String accessionPrefix;
-	public int accessionNumber;
 
 	protected String name; 
 	
@@ -111,21 +109,32 @@ public class MongoSample {
     public int hashCode() {
     	return Objects.hash(name, accession, release, update, attributes, relationships);
     }
+    
+
+    @Override
+    public String toString() {
+    	StringBuilder sb = new StringBuilder();
+    	sb.append("MongoSample(");
+    	sb.append(name);
+    	sb.append(",");
+    	sb.append(accession);
+    	sb.append(",");
+    	sb.append(release);
+    	sb.append(",");
+    	sb.append(update);
+    	sb.append(",");
+    	sb.append(attributes);
+    	sb.append(",");
+    	sb.append(relationships);
+    	sb.append(")");
+    	return sb.toString();
+    }
+    
 	
 	static public MongoSample build(String name, String accession, LocalDateTime release, LocalDateTime update, Set<Attribute> attributes, Set<Relationship> relationships){
 		MongoSample sample = new MongoSample();
 		
-		sample.accession = accession;
-		if (accession != null) {
-			Pattern p = Pattern.compile("([A-Z]+)([0-9]+)");
-			Matcher m = p.matcher(accession);
-			if (!m.matches()) {
-				throw new IllegalArgumentException("Accession must match [A-Z]+[0-9]+ if provided");				
-			}
-			sample.accessionPrefix = m.group(1);
-			sample.accessionNumber = Integer.parseInt(m.group(2));
-		}	
-		
+		sample.accession = accession;		
 		sample.name = name;
 		sample.release = release;
 		sample.update = update;

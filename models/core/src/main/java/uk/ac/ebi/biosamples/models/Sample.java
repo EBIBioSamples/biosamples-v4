@@ -71,6 +71,25 @@ public class Sample {
     public int hashCode() {
     	return Objects.hash(name, accession, release, update, attributes, relationships);
     }
+    
+    @Override
+    public String toString() {
+    	StringBuilder sb = new StringBuilder();
+    	sb.append("Sample(");
+    	sb.append(name);
+    	sb.append(",");
+    	sb.append(accession);
+    	sb.append(",");
+    	sb.append(release);
+    	sb.append(",");
+    	sb.append(update);
+    	sb.append(",");
+    	sb.append(attributes);
+    	sb.append(",");
+    	sb.append(relationships);
+    	sb.append(")");
+    	return sb.toString();
+    }
 	
 	static public Sample build(String name, String accession, LocalDateTime release, LocalDateTime update, Set<Attribute> attributes, Set<Relationship> relationships){
 

@@ -48,5 +48,16 @@ public class NeoSample {
 		}
 		relationships.add(relationship);
 	}
+
+    @Override
+    public String toString() {
+    	StringBuilder sb = new StringBuilder();
+    	sb.append("NeoSample(");
+    	sb.append(accession);
+    	sb.append(",");
+    	sb.append(relationships);
+    	sb.append(")");
+    	return sb.toString();
+    }
 }
 

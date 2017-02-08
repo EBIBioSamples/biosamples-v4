@@ -106,6 +106,28 @@ public class SolrSample {
 	public List<String> getOntologyIris() {
 		return ontologyIris;
 	}
+	
+
+    @Override
+    public String toString() {
+    	StringBuilder sb = new StringBuilder();
+    	sb.append("Sample(");
+    	sb.append(name);
+    	sb.append(",");
+    	sb.append(accession);
+    	sb.append(",");
+    	sb.append(release);
+    	sb.append(",");
+    	sb.append(update);
+    	sb.append(",");
+    	sb.append(attributeValues);
+    	sb.append(",");
+    	sb.append(attributeIris);
+    	sb.append(",");
+    	sb.append(attributeUnits);
+    	sb.append(")");
+    	return sb.toString();
+    }
 
 
 	/**
@@ -129,6 +151,7 @@ public class SolrSample {
 		sample.attributeValues = attributeValues;
 		sample.attributeIris = attributeIris;
 		sample.attributeUnits = attributeUnits;
+		//TODO handle relationships too
 		return sample;
 	}
 }

@@ -4,6 +4,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Objects;
 
+import org.assertj.core.internal.Strings;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class Attribute implements Comparable<Attribute> {
@@ -110,6 +112,21 @@ public class Attribute implements Comparable<Attribute> {
 		return 0;
 	}
 
+    @Override
+    public String toString() {
+    	StringBuilder sb = new StringBuilder();
+    	sb.append("Attribute(");
+    	sb.append(key);
+    	sb.append(",");
+    	sb.append(value);
+    	sb.append(",");
+    	sb.append(iri);
+    	sb.append(",");
+    	sb.append(unit);
+    	sb.append(")");
+    	return sb.toString();
+    }
+    
 	static public Attribute build(String key, String value) {
 		return build(key, value, null, null);
 	}
