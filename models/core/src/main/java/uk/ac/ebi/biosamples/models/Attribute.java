@@ -4,8 +4,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Objects;
 
-import org.assertj.core.internal.Strings;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class Attribute implements Comparable<Attribute> {
