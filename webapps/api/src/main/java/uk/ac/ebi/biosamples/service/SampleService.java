@@ -114,10 +114,13 @@ public class SampleService {
 	}
 
 	public Sample store(Sample sample) {
+
+		// TODO check if there is an existing copy and if there are any changes
+		
 		// save the submission in the repository
 		mongoSubmissionRepository.save(new MongoSubmission(sample));
 
-		// TODO validate that relationships have this sample as the source
+		// TODO validate that relationships have this sample as the source 
 
 		// convert it to the storage specific version
 		MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);
@@ -147,8 +150,8 @@ public class SampleService {
 			// TODO add a timeout here
 			try {
 				sample.accession = accessionCandidateQueue.take();
-			} catch (InterruptedException e1) {
-				throw new RuntimeException(e1);
+			} catch (InterruptedException e) {
+				throw new RuntimeException(e);
 			}
 
 			try {
