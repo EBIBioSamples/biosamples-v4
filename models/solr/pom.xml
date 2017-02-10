@@ -23,18 +23,4 @@
 			<artifactId>spring-boot-starter-data-solr</artifactId>
 		</dependency>
 	</dependencies>
-
-	<build>
-		<plugins>
-			<!-- Need to pass this argument to the compiler so that custom repository 
-				searches work -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<compilerArgument>-parameters</compilerArgument>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
 </project>

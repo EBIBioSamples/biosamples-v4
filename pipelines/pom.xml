@@ -62,6 +62,8 @@
 		</dependency>
 	</dependencies>
 
+	<!-- oracle driver for accessioning -->
+	<!-- this is not in public repos due to Oracle license -->
 	<repositories>
 		<repository>
 			<id>coconut.ebi.ac.uk-snapshots</id>
@@ -72,13 +74,4 @@
 			</snapshots>
 		</repository>
 	</repositories>
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
-		</plugins>
-	</build>
 </project>

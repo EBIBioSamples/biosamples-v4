@@ -74,23 +74,4 @@
 	<properties>
 		<snippetsDirectory>${project.build.directory}/generated-snippets</snippetsDirectory>
 	</properties>
-
-
-	<build>
-		<plugins>
-			<!-- Need to pass this argument to the compiler so that custom repository 
-				searches work -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<compilerArgument>-parameters</compilerArgument>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
-		</plugins>
-	</build>
 </project>
