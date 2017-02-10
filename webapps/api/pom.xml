@@ -12,6 +12,10 @@
 		<version>4.0.0-SNAPSHOT</version>
 		<relativePath>../../</relativePath>
 	</parent>
+	
+	<properties>
+		<snippetsDirectory>${project.build.directory}/generated-snippets</snippetsDirectory>
+	</properties>
 
 	<dependencies>
 		<dependency>
@@ -71,7 +75,14 @@
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
-	<properties>
-		<snippetsDirectory>${project.build.directory}/generated-snippets</snippetsDirectory>
-	</properties>
+	
+ 	<build>
+ 		<plugins>
+ 			<plugin>
+ 				<groupId>org.springframework.boot</groupId>
+ 				<artifactId>spring-boot-maven-plugin</artifactId>
+ 			</plugin>
+ 		</plugins>
+ 	</build>
+	
 </project>
