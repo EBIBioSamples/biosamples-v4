@@ -24,9 +24,9 @@ import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import uk.ac.ebi.biosamples.PipelinesProperties;
-import uk.ac.ebi.biosamples.models.Attribute;
-import uk.ac.ebi.biosamples.models.Relationship;
-import uk.ac.ebi.biosamples.models.Sample;
+import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.Relationship;
+import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.utils.HateoasUtils;
 import uk.ac.ebi.biosamples.utils.SubmissionService;
 import uk.ac.ebi.biosamples.utils.TaxonomyService;

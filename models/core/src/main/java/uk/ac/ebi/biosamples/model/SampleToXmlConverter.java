@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.models;
+package uk.ac.ebi.biosamples.model;
 
 import java.time.format.DateTimeFormatter;
 import java.util.SortedMap;

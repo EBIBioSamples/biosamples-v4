@@ -17,7 +17,7 @@ import com.mongodb.MongoWriteException;
 
 import uk.ac.ebi.biosamples.Messaging;
 import uk.ac.ebi.biosamples.WebappProperties;
-import uk.ac.ebi.biosamples.models.Sample;
+import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.model.MongoSubmission;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
@@ -106,13 +106,13 @@ public class SampleService {
 	}
 
 	public Sample store(Sample sample) {
+		// save the submission in the repository
+		mongoSubmissionRepository.save(new MongoSubmission(sample));
 
 		// TODO validate that relationships have this sample as the source
 
 		// convert it to the storage specific version
 		MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);
-		// save the submission in the repository
-		mongoSubmissionRepository.save(new MongoSubmission(mongoSample));
 		// save the sample in the repository
 		if (mongoSample.hasAccession()) {
 			//update the existing accession

@@ -15,10 +15,10 @@ import org.springframework.data.solr.core.mapping.SolrDocument;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-import uk.ac.ebi.biosamples.models.Attribute;
-import uk.ac.ebi.biosamples.models.CustomLocalDateTimeDeserializer;
-import uk.ac.ebi.biosamples.models.CustomLocalDateTimeSerializer;
-import uk.ac.ebi.biosamples.models.Relationship;
+import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.CustomLocalDateTimeDeserializer;
+import uk.ac.ebi.biosamples.model.CustomLocalDateTimeSerializer;
+import uk.ac.ebi.biosamples.model.Relationship;
 
 
 @SolrDocument(solrCoreName = "samples")

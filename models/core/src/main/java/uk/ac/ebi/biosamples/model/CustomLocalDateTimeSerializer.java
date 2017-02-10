@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.models;
+package uk.ac.ebi.biosamples.model;
 
 import java.io.IOException;
 import java.time.LocalDateTime;

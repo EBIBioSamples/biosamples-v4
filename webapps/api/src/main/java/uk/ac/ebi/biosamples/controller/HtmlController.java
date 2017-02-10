@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import uk.ac.ebi.biosamples.models.Sample;
+import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.SampleService;
 
 
@@ -24,11 +24,11 @@ import uk.ac.ebi.biosamples.service.SampleService;
  */
 @Controller
 @RequestMapping(value = "/", produces = MediaType.TEXT_HTML_VALUE)
-public class SampleHtmlController {
+public class HtmlController {
 
 	private SampleService sampleService;	
 	
-	public SampleHtmlController(@Autowired SampleService sampleService) {
+	public HtmlController(@Autowired SampleService sampleService) {
 		this.sampleService = sampleService;
 	}
 	

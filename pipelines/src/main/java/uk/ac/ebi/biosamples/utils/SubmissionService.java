@@ -15,7 +15,7 @@ import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import uk.ac.ebi.biosamples.PipelinesProperties;
-import uk.ac.ebi.biosamples.models.Sample;
+import uk.ac.ebi.biosamples.model.Sample;
 
 @Service
 public class SubmissionService {

@@ -27,8 +27,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SampleResource;
-import uk.ac.ebi.biosamples.models.Sample;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 
@@ -37,7 +37,7 @@ import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 /**
  * Primary controller for REST operations both in JSON and XML and both read and write.
  * 
- * See {@link SampleHtmlController} for the HTML equivalent controller.
+ * See {@link HtmlController} for the HTML equivalent controller.
  * 
  * @author faulcon
  *

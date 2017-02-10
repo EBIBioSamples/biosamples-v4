@@ -8,8 +8,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-import uk.ac.ebi.biosamples.models.CustomLocalDateTimeDeserializer;
-import uk.ac.ebi.biosamples.models.CustomLocalDateTimeSerializer;
+import uk.ac.ebi.biosamples.model.CustomLocalDateTimeDeserializer;
+import uk.ac.ebi.biosamples.model.CustomLocalDateTimeSerializer;
+import uk.ac.ebi.biosamples.model.Sample;
 
 public class MongoSubmission {
 
@@ -22,16 +23,16 @@ public class MongoSubmission {
 	@LastModifiedDate
 	public LocalDateTime datetime;
 
-	public MongoSample sample;
+	public Sample sample;
 	
 	public MongoSubmission(){}
 	
-	public MongoSubmission(MongoSample sample){
+	public MongoSubmission(Sample sample){
 		this.sample = sample;
 		this.datetime = LocalDateTime.now();
 	}
 
-	public MongoSubmission(MongoSample sample, LocalDateTime datetime){
+	public MongoSubmission(Sample sample, LocalDateTime datetime){
 		this.sample = sample;
 		this.datetime = datetime;
 	}

@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import uk.ac.ebi.biosamples.messages.threaded.MessageBuffer;
 import uk.ac.ebi.biosamples.messages.threaded.MessageSampleStatus;
-import uk.ac.ebi.biosamples.models.Sample;
+import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
 import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
 import uk.ac.ebi.biosamples.solr.service.SampleToSolrSampleConverter;

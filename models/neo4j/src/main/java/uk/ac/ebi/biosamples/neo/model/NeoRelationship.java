@@ -8,7 +8,7 @@ import org.neo4j.ogm.annotation.Property;
 import org.neo4j.ogm.annotation.RelationshipEntity;
 import org.neo4j.ogm.annotation.StartNode;
 
-import uk.ac.ebi.biosamples.models.Relationship;
+import uk.ac.ebi.biosamples.model.Relationship;
 
 @RelationshipEntity(type = "RELATED_TO")
 public class NeoRelationship  {

@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.models;
+package uk.ac.ebi.biosamples.model;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;

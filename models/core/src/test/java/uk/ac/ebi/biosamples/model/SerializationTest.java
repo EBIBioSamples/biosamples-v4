@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.models;
+package uk.ac.ebi.biosamples.model;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -10,6 +10,11 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.Relationship;
+import uk.ac.ebi.biosamples.model.Sample;
+
 import static org.assertj.core.api.Assertions.*;
 
 import java.net.URISyntaxException;
