@@ -1,27 +1,29 @@
-http://central.sonatype.org/pages/ossrh-guide.html
+Deployment
+==========
 
-The project has been set up to push artifacts to sonatype public staging repository
+The project has been set up to push artifacts to Sonatype public staging repository.
+See http://central.sonatype.org/pages/ossrh-guide.html for details.
 
-You will require a sonatype JIRA account 
-
+You will require a Sonatype JIRA account and can sign up at 
 https://issues.sonatype.org/secure/Signup!default.jspa
 
-You will need update your ~/.m2/settings.xml with you account details :
+Once you've registered, you will need update your ~/.m2/settings.xml with your
+account details :
 
 <settings>
   <servers>
     <server>
-      <id>ossrh</id>
-      <username>your-jira-id</username>
-      <password>your-jira-pwd</password>
+      <id>biosamples ossrh</id>
+      <username>YOUR-SONATYPE-JIRA-ID</username>
+      <password>YOUR-SONATYPE-JIRA-PASSWORD</password>
     </server>
   </servers>
 </settings>
 
 To publish all the artifacts execute the following :
 
-mvn clean deploy
+mvn deploy
 
-For more information on configuring maven for sonatype see :
+For more information on configuring Maven for Sonatype see :
 
 http://central.sonatype.org/pages/apache-maven.html
