@@ -39,7 +39,12 @@ public class HtmlController {
 	
 	@RequestMapping(value = "/samples/{accession}", method = RequestMethod.GET)
     public String greeting(Model model, @PathVariable String accession, HttpServletRequest request) {
-        Sample sample = sampleService.fetch(accession);        
+		Sample sample = null;
+		try {
+		    sample = sampleService.fetch(accession);
+		} catch (IllegalArgumentException e) {
+			//did not exist, throw 404
+		}   
 		model.addAttribute("sample", sample);		
         return "sample";
     }

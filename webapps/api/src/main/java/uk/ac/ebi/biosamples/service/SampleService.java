@@ -1,5 +1,7 @@
 package uk.ac.ebi.biosamples.service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -8,6 +10,7 @@ import javax.annotation.PostConstruct;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -47,7 +50,7 @@ public class SampleService {
 	private SolrSampleRepository solrSampleRepository;
 
 	@Autowired
-	private InverseRelationshipService inverseRelationshipService;
+	private InverseRelationshipConverter inverseRelationshipConverter;
 
 	@Autowired
 	private AmqpTemplate amqpTemplate;
@@ -69,38 +72,43 @@ public class SampleService {
 		accessionCandidateCounter = webappProperties.getAccessionMinimum();
 	}
 
-	public Sample fetch(String accession) {
+	/**
+	 * Throws an IllegalArgumentException of no sample with that accession exists
+	 * 
+	 * @param accession
+	 * @return
+	 * @throws IllegalArgumentException
+	 */
+	public Sample fetch(String accession) throws IllegalArgumentException {
 		// return the raw sample from the repository
 		MongoSample mongoSample = mongoSampleRepository.findOne(accession);
 		if (mongoSample == null) {
-			// TODO return a 404 error
-			throw new RuntimeException("Unable to find sample (" + accession + ")");
+			throw new IllegalArgumentException("Unable to find sample (" + accession + ")");
 		}
-
-		// add any additional inverse relationships
-		inverseRelationshipService.addInverseRelationships(mongoSample);
 
 		// convert it into the format to return
 		Sample sample = mongoSampleToSampleConverter.convert(mongoSample);
+		
+		// add any additional inverse relationships
+		sample = inverseRelationshipConverter.convert(sample);
+		
 		return sample;
 	}
 
 	public Page<Sample> fetchFindAll(Pageable pageable) {
 		// return the raw sample from the repository
 		Page<MongoSample> pageMongoSample = mongoSampleRepository.findAll(pageable);
-		// add any additional inverse relationships
-		for (MongoSample mongoSample : pageMongoSample) {
-			inverseRelationshipService.addInverseRelationships(mongoSample);
-		}
 		// convert it into the format to return
 		Page<Sample> pageSample = pageMongoSample.map(mongoSampleToSampleConverter);
+		// add any additional inverse relationships
+		pageSample = pageSample.map(inverseRelationshipConverter);
 		return pageSample;
 	}
 
 	public Page<Sample> fetchFindByText(String text, Pageable pageable) {
 		// return the raw sample from the repository
-		Page<SolrSample> pageSolrSample = solrSampleRepository.findByText(text, pageable);
-		// fetch the version from Mongo and add inverse relationships
+		Page<SolrSample> pageSolrSample = solrSampleRepository.findByTextAndPublic(text, pageable);
+		// for each result fetch the version from Mongo and add inverse relationships
 		Page<Sample> pageSample = pageSolrSample.map(s -> fetch(s.getAccession()));
 		return pageSample;
 	}
