@@ -1,8 +1,10 @@
 package uk.ac.ebi.biosamples.controller;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -38,13 +40,16 @@ public class HtmlController {
     }
 	
 	@RequestMapping(value = "/samples/{accession}", method = RequestMethod.GET)
-    public String samplesAccession(Model model, @PathVariable String accession, HttpServletRequest request) {
+    public String samplesAccession(Model model, @PathVariable String accession, HttpServletRequest request, HttpServletResponse response) {
 		Sample sample = null;
 		try {
 		    sample = sampleService.fetch(accession);
 		} catch (IllegalArgumentException e) {
 			//did not exist, throw 404
-		}   
+			model.addAttribute("errorTitle", "404 - page not found");
+			response.setStatus(HttpStatus.NOT_FOUND.value());
+			return "error";
+		}
 		model.addAttribute("sample", sample);		
         return "sample";
     }
