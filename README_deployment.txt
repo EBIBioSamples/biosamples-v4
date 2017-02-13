@@ -13,7 +13,7 @@ account details :
 <settings>
   <servers>
     <server>
-      <id>biosamples ossrh</id>
+      <id>ossrh</id>
       <username>YOUR-SONATYPE-JIRA-ID</username>
       <password>YOUR-SONATYPE-JIRA-PASSWORD</password>
     </server>
