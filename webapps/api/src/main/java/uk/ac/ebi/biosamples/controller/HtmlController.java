@@ -38,7 +38,7 @@ public class HtmlController {
     }
 	
 	@RequestMapping(value = "/samples/{accession}", method = RequestMethod.GET)
-    public String greeting(Model model, @PathVariable String accession, HttpServletRequest request) {
+    public String samplesAccession(Model model, @PathVariable String accession, HttpServletRequest request) {
 		Sample sample = null;
 		try {
 		    sample = sampleService.fetch(accession);
