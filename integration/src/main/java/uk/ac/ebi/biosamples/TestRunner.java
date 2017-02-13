@@ -46,13 +46,24 @@ public class TestRunner implements ApplicationRunner {
 		//get and check that nothing exists already
 		doGetAndFail(sample);
 		
-		//post a new submission
-		//get to check it worked
-		//put an update
+		//put a sample
+		doPut(sample);
+		
 		//get to check it worked
 		//delete it
 		//get to check it worked
 		
+	}
+	
+	public ResponseEntity<Sample> doPut(Sample sample) throws RestClientException {		
+		URI uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionURI())
+				.path("samples/")
+				.path(sample.getAccession())
+				.build().toUri();
+		
+		RequestEntity<Sample> request = RequestEntity.put(uri).contentType(MediaType.APPLICATION_JSON).body(sample);		
+		ResponseEntity<Sample> response = restTemplate.exchange(request, Sample.class);
+		return response;
 	}
 	
 	public void doGetAndFail(Sample sample) {
@@ -76,8 +87,6 @@ public class TestRunner implements ApplicationRunner {
 				.path(sample.getAccession())
 				.build().toUri();
 		
-		HttpHeaders headers = new HttpHeaders();
-		headers.set(HttpHeaders.ACCEPT, MediaTypes.HAL_JSON_VALUE);
 		RequestEntity<Void> request = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();		
 		ResponseEntity<Sample> response = restTemplate.exchange(request, Sample.class);
 		return response;
