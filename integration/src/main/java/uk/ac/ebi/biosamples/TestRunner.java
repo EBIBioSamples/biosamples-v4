@@ -31,67 +31,98 @@ import uk.ac.ebi.biosamples.model.Sample;
 @Component
 public class TestRunner implements ApplicationRunner {
 
-	
 	@Autowired
 	private IntegrationProperties integrationProperties;
-	
+
 	@Autowired
 	private RestOperations restTemplate;
-	
+
 	@Override
 	public void run(ApplicationArguments args) throws Exception {
-				
-		Sample sample = getSimpleSample();
-		
-		//get and check that nothing exists already
-		doGetAndFail(sample);
-		
-		//put a sample
-		doPut(sample);
-		
-		//get to check it worked
-		//delete it
-		//get to check it worked
-		
+
+		if (args.getOptionNames().contains("phase1")) {
+
+			Sample sample = getSimpleSample();
+
+			// get and check that nothing exists already
+			doGetAndFail(sample);
+
+			// put a sample
+			doPut(sample);
+
+			// get to check it worked
+			doGetAndSucess(sample);
+
+			// put a version that is private
+			sample = Sample.build(sample.getName(), sample.getAccession(),
+					LocalDateTime.of(LocalDate.of(2116, 4, 1), LocalTime.of(11, 36, 57, 0)), sample.getUpdate(),
+					sample.getAttributes(), sample.getRelationships());
+			doPut(sample);
+
+			// check the response code
+			doGetAndPrivate(sample);
+		}
+
 	}
-	
-	public ResponseEntity<Sample> doPut(Sample sample) throws RestClientException {		
-		URI uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionURI())
-				.path("samples/")
-				.path(sample.getAccession())
-				.build().toUri();
-		
-		RequestEntity<Sample> request = RequestEntity.put(uri).contentType(MediaType.APPLICATION_JSON).body(sample);		
+
+	public ResponseEntity<Sample> doPut(Sample sample) throws RestClientException {
+		URI uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionURI()).path("samples/")
+				.path(sample.getAccession()).build().toUri();
+
+		RequestEntity<Sample> request = RequestEntity.put(uri).contentType(MediaType.APPLICATION_JSON).body(sample);
 		ResponseEntity<Sample> response = restTemplate.exchange(request, Sample.class);
 		return response;
 	}
-	
+
+	public void doGetAndSucess(Sample sample) {
+		ResponseEntity<Sample> response = doGet(sample);
+		// check the status code is 200 success
+		if (!HttpStatus.OK.equals(response.getStatusCode())) {
+			throw new RuntimeException("Expected a 200 response");
+		}
+		if (!sample.equals(response.getBody())) {
+			throw new RuntimeException("Expected response to equal submission");
+		}
+	}
+
+	public void doGetAndPrivate(Sample sample) {
+		try {
+			doGet(sample);
+		} catch (HttpStatusCodeException e) {
+			if (HttpStatus.FORBIDDEN.equals(e.getStatusCode())) {
+				// we expect to get a 403 error
+				return;
+			} else {
+				// we got something else
+				throw e;
+			}
+		}
+		throw new RuntimeException("Expected a 404 response");
+	}
+
 	public void doGetAndFail(Sample sample) {
 		try {
 			doGet(sample);
 		} catch (HttpStatusCodeException e) {
 			if (HttpStatus.NOT_FOUND.equals(e.getStatusCode())) {
-				//we expect to get a 404 error
+				// we expect to get a 404 error
 				return;
 			} else {
-				//we got something else
+				// we got something else
 				throw e;
 			}
-		}		
+		}
 		throw new RuntimeException("Expected a 404 response");
 	}
-	
-	public ResponseEntity<Sample> doGet(Sample sample) throws RestClientException {		
-		URI uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionURI())
-				.path("samples/")
-				.path(sample.getAccession())
-				.build().toUri();
-		
-		RequestEntity<Void> request = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();		
+
+	public ResponseEntity<Sample> doGet(Sample sample) throws RestClientException {
+		URI uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionURI()).path("samples/")
+				.path(sample.getAccession()).build().toUri();
+
+		RequestEntity<Void> request = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
 		ResponseEntity<Sample> response = restTemplate.exchange(request, Sample.class);
 		return response;
 	}
-	
 
 	private Sample getSimpleSample() throws URISyntaxException {
 		String name = "Test Sample";
@@ -100,16 +131,16 @@ public class TestRunner implements ApplicationRunner {
 		LocalDateTime release = LocalDateTime.of(LocalDate.of(2016, 4, 1), LocalTime.of(11, 36, 57, 0));
 
 		SortedSet<Attribute> attributes = new TreeSet<>();
-		attributes.add(Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
+		attributes.add(
+				Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
 		attributes.add(Attribute.build("age", "3", null, "year"));
 		attributes.add(Attribute.build("organism part", "lung", null, null));
 		attributes.add(Attribute.build("organism part", "heart", null, null));
-		
+
 		SortedSet<Relationship> relationships = new TreeSet<>();
 		relationships.add(Relationship.build("derived from", "TEST2", "TEST1"));
 
 		return Sample.build(name, accession, release, update, attributes, relationships);
 	}
-
 
 }
