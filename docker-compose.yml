@@ -21,7 +21,6 @@ services:
     - spring.datasource.erapro.password=reader
     - spring.datasource.erapro.driver-class-name=oracle.jdbc.driver.OracleDriver
   biosamples-webapps-api:
-    build: .
     image: biosamples:latest
     links:
     - solr
@@ -43,7 +42,6 @@ services:
     ports:
     - 8081:8080
   biosamples-agents-neo4j:
-    build: .
     image: biosamples:latest
     links:
     - neo4j
@@ -59,7 +57,6 @@ services:
 #    restart: unless-stopped
     - spring.rabbitmq.host=rabbitmq
   biosamples-agents-solr:
-    build: .
     image: biosamples:latest
     links:
     - solr
