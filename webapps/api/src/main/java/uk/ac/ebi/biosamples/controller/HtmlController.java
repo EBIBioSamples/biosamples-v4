@@ -1,11 +1,14 @@
 package uk.ac.ebi.biosamples.controller;
 
+import java.time.LocalDateTime;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -46,10 +49,22 @@ public class HtmlController {
 		    sample = sampleService.fetch(accession);
 		} catch (IllegalArgumentException e) {
 			//did not exist, throw 404
-			model.addAttribute("errorTitle", "404 - page not found");
 			response.setStatus(HttpStatus.NOT_FOUND.value());
-			return "error";
+			return "error404";
 		}
+		
+		if (sample == null) {
+			//throw internal server error
+			throw new RuntimeException("Unable to retrieve "+accession);
+		}
+
+		// check if the release date is in the future and if so return it as private
+		if (sample != null && LocalDateTime.now().isBefore(sample.getRelease())) {
+			response.setStatus(HttpStatus.FORBIDDEN.value());
+			return "error403";
+		}
+		
+		
 		model.addAttribute("sample", sample);		
         return "sample";
     }
