@@ -117,7 +117,7 @@ public class SampleRestController {
 		}
 		
 		// check if the release date is in the future and if so return it as private
-		if (sample.getRelease().isAfter(LocalDateTime.now())) {
+		if (sample != null && LocalDateTime.now().isBefore(sample.getRelease())) {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		}
 		
