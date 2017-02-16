@@ -7,6 +7,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.web.servlet.handler.MappedInterceptor;
 
+import com.mongodb.MongoClientOptions;
+import com.mongodb.ReadPreference;
+
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.xml.XmlSampleHttpMessageConverter;
 
@@ -28,6 +31,12 @@ public class Application extends SpringBootServletInitializer {
 		return new XmlSampleHttpMessageConverter();
 	}
 	
-	//TODO cors
-	
+	@Bean
+	public MongoClientOptions getMongoClientOptions() {
+		//TODO make this an application.property config
+		return MongoClientOptions.builder()
+            .readPreference(ReadPreference.secondaryPreferred())
+            .build();
+	}
+		
 }
