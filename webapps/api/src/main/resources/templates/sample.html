@@ -25,12 +25,12 @@
 				<tr>
 					<th>Release</th>
 					<td
-						th:text="${#temporals.format(sample.release, 'yyyy / MM / dd HH:mm:ss')}"></td>
+						th:text="${#temporals.format(sample.release, 'yyyy / MM / dd HH:mm:ss')}">2001 / 02 / 02 12:00:00</td>
 				</tr>
 				<tr>
 					<th>Update</th>
 					<td
-						th:text="${#temporals.format(sample.update, 'yyyy / MM / dd HH:mm:ss')}"></td>
+						th:text="${#temporals.format(sample.update, 'yyyy / MM / dd HH:mm:ss')}">2001 / 02 / 02 12:00:00</td>
 				</tr>
 			</table>
 
@@ -86,8 +86,7 @@
 							th:text="${relationship.target}">target</a></td>
 					</tr>
 				</table>
-			</th:section>
-			<h3>Downloads</h3>            
+			</th:section>         
             <a th:href="@{${sample.accession}+'.xml'}" class="button"><i class="icon icon-fileformats" data-icon="x"></i> XML</a>
             <a th:href="@{${sample.accession}+'.json'}" class="button"><i class="icon icon-fileformats" data-icon="J"></i> JSON</a>
 		</div>
