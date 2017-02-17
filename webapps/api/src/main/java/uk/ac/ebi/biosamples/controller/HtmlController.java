@@ -62,8 +62,7 @@ public class HtmlController {
 		if (sample != null && LocalDateTime.now().isBefore(sample.getRelease())) {
 			response.setStatus(HttpStatus.FORBIDDEN.value());
 			return "error403";
-		}
-		
+		}		
 		
 		model.addAttribute("sample", sample);		
         return "sample";

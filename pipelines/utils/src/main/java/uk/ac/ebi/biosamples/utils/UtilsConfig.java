@@ -99,7 +99,6 @@ public class UtilsConfig {
 		converters.add(0,converter);
 		restTemplate.setMessageConverters(converters);
 		
-		
 		return restTemplate;
 	}
 }
