@@ -54,8 +54,8 @@ services:
     - spring.rabbitmq.publisher-confirms=true
     - spring.data.neo4j.uri=bolt://neo4j:7687
     - spring.data.neo4j.username=neo4j
-#    restart: unless-stopped
     - spring.rabbitmq.host=rabbitmq
+    - biosamples.agent.neo4j.stayalive=true
   biosamples-agents-solr:
     image: biosamples:latest
     links:
@@ -72,7 +72,7 @@ services:
     - spring.rabbitmq.listener.max-concurrency=250
     - spring.data.solr.host=http://solr:8983/solr
     - spring.rabbitmq.host=rabbitmq
-#    restart: unless-stopped
+    - biosamples.agent.solr.stayalive=true
   mongo:
     image: mongo:3.2
     volumes:
