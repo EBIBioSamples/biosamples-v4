@@ -4,14 +4,14 @@
 	xmlns:layout="http://www.w3.org/1999/xhtml">
 	
 <head>
-	<th:block th:include="fragments/head :: head"></th:block>
+	<th:block th:include="~{fragments/head :: head}"></th:block>
 </head>
 
 <body>
-	<th:block th:include="fragments/header :: header"></th:block>
+	<th:block th:include="~{fragments/header :: header}"></th:block>
 	
 	<div layout:fragment="content"></div>
 
-	<th:block th:include="fragments/footer :: footer"></th:block>	
+	<th:block th:include="~{fragments/footer :: footer}"></th:block>	
 </body>
 </html>
