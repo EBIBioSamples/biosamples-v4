@@ -40,29 +40,36 @@ public class TestRunner implements ApplicationRunner {
 	@Override
 	public void run(ApplicationArguments args) throws Exception {
 
-		if (args.getOptionNames().contains("phase1")) {
-
-			Sample sample = getSimpleSample();
+			Sample sampleTest1 = getSampleTest1();
 
 			// get and check that nothing exists already
-			doGetAndFail(sample);
+			doGetAndFail(sampleTest1);
 
 			// put a sample
-			doPut(sample);
+			doPut(sampleTest1);
 
 			// get to check it worked
-			doGetAndSucess(sample);
+			doGetAndSucess(sampleTest1);
 
 			// put a version that is private
-			sample = Sample.build(sample.getName(), sample.getAccession(),
-					LocalDateTime.of(LocalDate.of(2116, 4, 1), LocalTime.of(11, 36, 57, 0)), sample.getUpdate(),
-					sample.getAttributes(), sample.getRelationships());
-			doPut(sample);
+			sampleTest1 = Sample.build(sampleTest1.getName(), sampleTest1.getAccession(),
+					LocalDateTime.of(LocalDate.of(2116, 4, 1), LocalTime.of(11, 36, 57, 0)), sampleTest1.getUpdate(),
+					sampleTest1.getAttributes(), sampleTest1.getRelationships());
+			doPut(sampleTest1);
 
 			// check the response code
-			doGetAndPrivate(sample);
-		}
-
+			doGetAndPrivate(sampleTest1);
+			
+			//put the second sample in
+			Sample sampleTest2 = getSampleTest2();
+			doPut(sampleTest2);
+			
+			//check that it has the additional relationship added
+			// get to check it worked
+			Sample sampleTest2Get = doGetAndSucess(sampleTest2);
+			if (sampleTest2Get.getRelationships() == null || sampleTest2Get.getRelationships().size() == 0) {
+				throw new RuntimeException("No reverse relationship found");
+			}
 	}
 
 	public ResponseEntity<Sample> doPut(Sample sample) throws RestClientException {
@@ -74,7 +81,7 @@ public class TestRunner implements ApplicationRunner {
 		return response;
 	}
 
-	public void doGetAndSucess(Sample sample) {
+	public Sample doGetAndSucess(Sample sample) {
 		ResponseEntity<Sample> response = doGet(sample);
 		// check the status code is 200 success
 		if (!HttpStatus.OK.equals(response.getStatusCode())) {
@@ -83,6 +90,8 @@ public class TestRunner implements ApplicationRunner {
 		if (!sample.equals(response.getBody())) {
 			throw new RuntimeException("Expected response to equal submission");
 		}
+		
+		return response.getBody();
 	}
 
 	public void doGetAndPrivate(Sample sample) {
@@ -97,7 +106,7 @@ public class TestRunner implements ApplicationRunner {
 				throw e;
 			}
 		}
-		throw new RuntimeException("Expected a 404 response");
+		throw new RuntimeException("Expected a 403 response");
 	}
 
 	public void doGetAndFail(Sample sample) {
@@ -124,7 +133,7 @@ public class TestRunner implements ApplicationRunner {
 		return response;
 	}
 
-	private Sample getSimpleSample() throws URISyntaxException {
+	private Sample getSampleTest1() throws URISyntaxException {
 		String name = "Test Sample";
 		String accession = "TEST1";
 		LocalDateTime update = LocalDateTime.of(LocalDate.of(2016, 5, 5), LocalTime.of(11, 36, 57, 0));
@@ -132,13 +141,28 @@ public class TestRunner implements ApplicationRunner {
 
 		SortedSet<Attribute> attributes = new TreeSet<>();
 		attributes.add(
-				Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
+			Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
 		attributes.add(Attribute.build("age", "3", null, "year"));
 		attributes.add(Attribute.build("organism part", "lung", null, null));
 		attributes.add(Attribute.build("organism part", "heart", null, null));
 
 		SortedSet<Relationship> relationships = new TreeSet<>();
 		relationships.add(Relationship.build("derived from", "TEST2", "TEST1"));
+
+		return Sample.build(name, accession, release, update, attributes, relationships);
+	}
+
+	private Sample getSampleTest2() throws URISyntaxException {
+		String name = "Test Sample the second";
+		String accession = "TEST2";
+		LocalDateTime update = LocalDateTime.of(LocalDate.of(2016, 5, 5), LocalTime.of(11, 36, 57, 0));
+		LocalDateTime release = LocalDateTime.of(LocalDate.of(2016, 4, 1), LocalTime.of(11, 36, 57, 0));
+
+		SortedSet<Attribute> attributes = new TreeSet<>();
+		attributes.add(
+			Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
+
+		SortedSet<Relationship> relationships = new TreeSet<>();
 
 		return Sample.build(name, accession, release, update, attributes, relationships);
 	}
