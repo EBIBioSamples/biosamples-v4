@@ -1,26 +1,8 @@
 version: '2'
 services:
-  biosamples-pipelines:
-    build: .
-    image: biosamples:latest
-    links:
-    - biosamples-webapps-api
-    volumes:
-    - ./logs:/logs
-    command:
-    - java
-    - -jar
-    - pipelines-4.0.0-SNAPSHOT.jar
-    environment:
-    - spring.aop.proxy-target-class=true
-    #from https://github.com/google/guava/blob/master/guava/src/com/google/common/cache/CacheBuilderSpec.java
-    - spring.cache.guava.spec=maximumSize=500,expireAfterAccess=60s,recordStats=true
-    - spring.datasource.erapro.url=jdbc:oracle:thin:@ora-vm-009.ebi.ac.uk:1541:ERAPRO
-    - spring.datasource.erapro.username=era_reader
-    - spring.datasource.erapro.password=reader
-    - spring.datasource.erapro.driver-class-name=oracle.jdbc.driver.OracleDriver
     
   biosamples-webapps-api:
+    build: .
     image: biosamples:latest
     links:
     - solr
@@ -75,6 +57,55 @@ services:
     - spring.data.solr.host=http://solr:8983/solr
     - spring.rabbitmq.host=rabbitmq
     - biosamples.agent.solr.stayalive=true
+    
+    
+  biosamples-pipelines-ena:
+    image: biosamples:latest
+    links:
+    - biosamples-webapps-api
+    volumes:
+    - ./logs:/logs
+    command:
+    - java
+    - -jar
+    - pipelines-ena-4.0.0-SNAPSHOT.jar
+    environment:
+    - spring.datasource.erapro.url=jdbc:oracle:thin:@ora-vm-009.ebi.ac.uk:1541:ERAPRO
+    - spring.datasource.erapro.username=era_reader
+    - spring.datasource.erapro.password=reader
+    - spring.datasource.erapro.driver-class-name=oracle.jdbc.driver.OracleDriver
+    
+    
+  biosamples-pipelines-ncbi:
+    image: biosamples:latest
+    links:
+    - biosamples-webapps-api
+    volumes:
+    - ./logs:/logs
+    command:
+    - java
+    - -jar
+    - pipelines-ncbi-4.0.0-SNAPSHOT.jar
+    environment:
+    #from https://github.com/google/guava/blob/master/guava/src/com/google/common/cache/CacheBuilderSpec.java
+    - spring.cache.guava.spec=maximumSize=500,expireAfterAccess=60s,recordStats=true
+    
+    
+  biosamples-pipelines-accession:
+    image: biosamples:latest
+    links:
+    - biosamples-webapps-api
+    volumes:
+    - ./logs:/logs
+    command:
+    - java
+    - -jar
+    - pipelines-accession-4.0.0-SNAPSHOT.jar
+    environment:
+    - spring.datasource.accession.url=jdbc:oracle:thin:@ora-vm-063.ebi.ac.uk:1541:biosddev
+    - spring.datasource.accession.username=bsd_acc
+    - spring.datasource.accession.password=b5d4ccpr0
+    - spring.datasource.accession.driver-class-name=oracle.jdbc.driver.OracleDriver
     
   mongo:
     image: mongo:3.2
