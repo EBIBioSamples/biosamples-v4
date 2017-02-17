@@ -1,6 +1,5 @@
 version: '2'
 services:
-#docker-compose run --service-ports biosamples-pipelines 
   biosamples-pipelines:
     build: .
     image: biosamples:latest
@@ -20,6 +19,7 @@ services:
     - spring.datasource.erapro.username=era_reader
     - spring.datasource.erapro.password=reader
     - spring.datasource.erapro.driver-class-name=oracle.jdbc.driver.OracleDriver
+    
   biosamples-webapps-api:
     image: biosamples:latest
     links:
@@ -41,6 +41,7 @@ services:
     - spring.rabbitmq.host=rabbitmq
     ports:
     - 8081:8080
+    
   biosamples-agents-neo4j:
     image: biosamples:latest
     links:
@@ -56,6 +57,7 @@ services:
     - spring.data.neo4j.username=neo4j
     - spring.rabbitmq.host=rabbitmq
     - biosamples.agent.neo4j.stayalive=true
+    
   biosamples-agents-solr:
     image: biosamples:latest
     links:
@@ -73,12 +75,14 @@ services:
     - spring.data.solr.host=http://solr:8983/solr
     - spring.rabbitmq.host=rabbitmq
     - biosamples.agent.solr.stayalive=true
+    
   mongo:
     image: mongo:3.2
     volumes:
     - mongo_data:/data/db
     ports:
     - 27017:27017
+    
   rabbitmq:
     image: rabbitmq:3.6-management
     hostname: biosamples-rabbitmq
@@ -86,6 +90,7 @@ services:
     - 15672:15672
     volumes:
     - rabbitmq_data:/var/lib/rabbitmq/mnesia/rabbit@biosamples-rabbitmq
+    
   neo4j:
     image: neo4j:3.0
     environment:
@@ -95,6 +100,7 @@ services:
     - 7474:7474
     volumes:
     - neo4j_data:/data
+    
   solr:
     image: solr:6.3-alpine
     ports:
@@ -108,6 +114,7 @@ services:
     - docker-entrypoint.sh
     - solr-precreate
     - samples
+    
 networks:
   default:
     ipam:
