@@ -96,17 +96,15 @@ public class SampleService {
 	}
 
 	public Page<Sample> fetchFindAll(Pageable pageable) {
-		// return the raw sample from the repository
-		Page<MongoSample> pageMongoSample = mongoSampleRepository.findAll(pageable);
-		// convert it into the format to return
-		Page<Sample> pageSample = pageMongoSample.map(mongoSampleToSampleConverter);
-		// add any additional inverse relationships
-		pageSample = pageSample.map(inverseRelationshipConverter);
+		// return the samples from solr that match the query
+		Page<SolrSample> pageSolrSample = solrSampleRepository.findPublic(pageable);
+		// for each result fetch the version from Mongo and add inverse relationships
+		Page<Sample> pageSample = pageSolrSample.map(s -> fetch(s.getAccession()));
 		return pageSample;
 	}
 
 	public Page<Sample> fetchFindByText(String text, Pageable pageable) {
-		// return the raw sample from the repository
+		// return the samples from solr that match the query
 		Page<SolrSample> pageSolrSample = solrSampleRepository.findByTextAndPublic(text, pageable);
 		// for each result fetch the version from Mongo and add inverse relationships
 		Page<Sample> pageSample = pageSolrSample.map(s -> fetch(s.getAccession()));
