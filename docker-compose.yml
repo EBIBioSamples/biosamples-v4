@@ -76,7 +76,6 @@ services:
   mongo:
     image: mongo:3.2
     volumes:
-    - ./docker/mongo/conf:/data/configdb
     - mongo_data:/data/db
     ports:
     - 27017:27017
@@ -101,7 +100,6 @@ services:
     ports:
     - 8983:8983
     volumes:
-    - ./docker/solr/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
     - solr_samples_data:/opt/solr/server/solr/mycores
     environment:
     - VERBOSE=yes

@@ -1,0 +1,77 @@
+#!/bin/sh
+
+# This shell script takes a url and an optional timeout period (the default being 30 seconds) and tests to see if the URL is live
+# If there is no response immediately, this script retries every 5 seconds until a response is obtained or until the timeout period is reached.
+# For this reason, this script is ideal for testing that a tomcat instances started up as expected: send a "start" command,
+# then run this script which will wait whilst tomcat initializes.
+# This script will return zero if the URL exists, and print a message containing the http response,
+# or will return the curl exit code if the URL could not be accessed.
+#
+# Tony Burdett, Jan 2012
+
+printUsage() {
+ printf "Usage: %s: [-u URL] [-t timeout] args\n" $0;
+ exit 2;
+}
+
+# -u arg is required (URL to ping), -t is optional to change default timeout
+while getopts u:t: name
+do
+ case $name in
+  u) url="$OPTARG";;
+  t) timeout="$OPTARG";;
+  ?) printUsage $0;;
+ esac
+done
+
+# check which args are supplied
+if [ -z "$url" ];
+then
+ printf "Required URL argument -u not specified\n";
+ exit 2;
+fi
+
+if [ -z "$timeout" ];
+then
+ timeout=30;
+ printf "Timeout not supplied, set to default 30 s.\n";
+else
+ printf "Timeout set to $timeout s.\n";
+fi
+
+# retry every 5 seconds for some length of time, $timeout 
+retries=`expr $timeout / 5`;
+
+# issue a curl command, -L follows redirects, --silent --output swallows any output, writes out http response code only
+cmd="curl --max-time 120 --write-out %{http_code} --silent --output /dev/null -L $url"
+printf "Testing status of '$url'...";
+httpStatus="`$cmd`";
+response=$?;
+count=0;
+# retry while we get a curl exit code of 7 (couldn't connect) or a non-200 http status, for max number of retries
+while [ $response -eq 7 -o $httpStatus -ne 200 -a $count -lt $retries ]
+do
+ printf ".";
+ count=$((count+1));
+ sleep 5;
+ httpStatus="`$cmd`";
+ response=$?;
+done
+
+# check exit - if curl gave a response then we're done...
+if [ $response -eq 0 ] 
+then
+ printf "complete!\n";
+ printf "HTTP RESPONSE: $httpStatus\n";
+ # ... but only exit with 0 if http response was 200
+ if [ $httpStatus -ne 200 ]
+ then 
+   response=2;
+ fi
+else
+ printf "failed, exited with exit code $response\n";
+fi
+
+# exit with curl response code, except where we got bad http response (then 2)
+exit $response;
+
