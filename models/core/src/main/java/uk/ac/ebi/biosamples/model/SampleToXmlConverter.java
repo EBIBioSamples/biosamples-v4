@@ -11,10 +11,12 @@ import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.dom4j.Namespace;
 import org.dom4j.QName;
+import org.springframework.boot.context.properties.ConfigurationPropertiesBinding;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
 
 @Service
+@ConfigurationPropertiesBinding
 public class SampleToXmlConverter implements Converter<Sample, Document> {
 	
 	private DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ISO_DATE_TIME;
