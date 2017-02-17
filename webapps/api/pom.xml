@@ -53,6 +53,8 @@
 		<dependency>
 			<groupId>org.thymeleaf.extras</groupId>
 			<artifactId>thymeleaf-extras-java8time</artifactId>
+			<!-- Use a thymelaf3 compatible version -->
+			<version>3.0.0.RELEASE</version>
 		</dependency>
 
 		<dependency>
