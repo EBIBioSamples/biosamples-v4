@@ -60,11 +60,6 @@ public class Ena implements ApplicationRunner {
 	
 	@Override
 	public void run(ApplicationArguments args) throws Exception {
-		// only do things if we are told to
-		if (!args.containsOption("ena")) {
-			log.info("skipping ena");
-			return;
-		}
 
 		log.info("Processing ENA pipeline...");
 

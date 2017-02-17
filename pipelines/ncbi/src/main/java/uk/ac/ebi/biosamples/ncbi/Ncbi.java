@@ -39,12 +39,6 @@ public class Ncbi implements ApplicationRunner {
 
 	@Override
 	public void run(ApplicationArguments args) throws Exception {
-		// only do things if we are told to
-		if (!args.containsOption("ncbi")) {
-			log.info("skipping ncbi");
-			return;
-		}
-
 		log.info("Processing NCBI pipeline...");
 
 		LocalDate fromDate = null;
