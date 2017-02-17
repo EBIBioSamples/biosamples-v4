@@ -8,6 +8,8 @@ import java.time.LocalTime;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -30,6 +32,8 @@ import uk.ac.ebi.biosamples.model.Sample;
 
 @Component
 public class TestRunner implements ApplicationRunner {
+
+	private Logger log = LoggerFactory.getLogger(this.getClass());
 
 	@Autowired
 	private IntegrationProperties integrationProperties;
@@ -64,12 +68,15 @@ public class TestRunner implements ApplicationRunner {
 			Sample sampleTest2 = getSampleTest2();
 			doPut(sampleTest2);
 			
+			//wait for a moment to let the agent process it
+			Thread.sleep(1000);
+			
 			//check that it has the additional relationship added
 			// get to check it worked
-			Sample sampleTest2Get = doGetAndSucess(sampleTest2);
-			if (sampleTest2Get.getRelationships() == null || sampleTest2Get.getRelationships().size() == 0) {
-				throw new RuntimeException("No reverse relationship found");
-			}
+			sampleTest2 = Sample.build(sampleTest2.getName(), sampleTest2.getAccession(),
+					sampleTest2.getRelease(), sampleTest2.getUpdate(),
+					sampleTest2.getAttributes(), sampleTest1.getRelationships());
+			doGetAndSucess(sampleTest2);
 	}
 
 	public ResponseEntity<Sample> doPut(Sample sample) throws RestClientException {
@@ -88,6 +95,8 @@ public class TestRunner implements ApplicationRunner {
 			throw new RuntimeException("Expected a 200 response");
 		}
 		if (!sample.equals(response.getBody())) {
+			log.info("sample = "+sample);
+			log.info("response.getBody() = "+response.getBody());
 			throw new RuntimeException("Expected response to equal submission");
 		}
 		
