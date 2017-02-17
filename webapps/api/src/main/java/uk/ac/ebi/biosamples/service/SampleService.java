@@ -9,6 +9,7 @@ import javax.annotation.PostConstruct;
 
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -49,16 +50,15 @@ public class SampleService {
 	@Autowired
 	private SolrSampleRepository solrSampleRepository;
 
+	//this has the same in and out class, so can't be used via conversionservice
 	@Autowired
 	private InverseRelationshipConverter inverseRelationshipConverter;
 
 	@Autowired
 	private AmqpTemplate amqpTemplate;
-
+	
 	@Autowired
-	private MongoSampleToSampleConverter mongoSampleToSampleConverter;
-	@Autowired
-	private SampleToMongoSampleConverter sampleToMongoSampleConverter;
+	private ConversionService conversionService;
 	
 	@Autowired
 	private WebappProperties webappProperties;
@@ -87,7 +87,7 @@ public class SampleService {
 		}
 
 		// convert it into the format to return
-		Sample sample = mongoSampleToSampleConverter.convert(mongoSample);
+		Sample sample = conversionService.convert(mongoSample, Sample.class);
 		
 		// add any additional inverse relationships
 		sample = inverseRelationshipConverter.convert(sample);
@@ -121,7 +121,7 @@ public class SampleService {
 		// TODO validate that relationships have this sample as the source 
 
 		// convert it to the storage specific version
-		MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);
+		MongoSample mongoSample = conversionService.convert(sample, MongoSample.class);
 		// save the sample in the repository
 		if (mongoSample.hasAccession()) {
 			//update the existing accession
