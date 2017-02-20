@@ -41,7 +41,7 @@ public class SubmissionService {
 					.path(sample.getAccession())
 					.build().toUri();
 			
-			log.info("PUTing "+putUri);
+			log.trace("PUTing "+putUri);
 			
 			HttpHeaders headers = new HttpHeaders();
 			headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);

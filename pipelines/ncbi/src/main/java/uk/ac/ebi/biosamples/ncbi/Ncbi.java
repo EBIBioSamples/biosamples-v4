@@ -60,10 +60,10 @@ public class Ncbi implements ApplicationRunner {
 
 		try (InputStream is = new GZIPInputStream(new BufferedInputStream(new FileInputStream(pipelinesProperties.getNcbiFile())))) {
 
-			if (pipelinesProperties.getNcbiThreadCount() > 0) {
+			if (pipelinesProperties.getThreadCount() > 0) {
 				ExecutorService executorService = null;
 				try {
-					executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, pipelinesProperties.getNcbiThreadCount());
+					executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, pipelinesProperties.getThreadCount());
 					Queue<Future<Void>> futures = new LinkedList<>();
 
 					callback.setExecutorService(executorService);

@@ -42,6 +42,7 @@ import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.SubmissionService;
+import uk.ac.ebi.biosamples.utils.ThreadUtils;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
 @Component
@@ -80,7 +81,7 @@ public class Ena implements ApplicationRunner {
 		
 		Set<String> sampleAccessions = eraprodao.getSamples(fromDate, toDate);
 
-		try (AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, pipelinesProperties.getEnaThreadCount())) {
+		try (AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, pipelinesProperties.getThreadCount())) {
 			Map<String, Future<Void>> futures = new HashMap<>();
 			for (String sampleAccession : sampleAccessions) {
 				// have to create multiple beans via context so they all autowire etc
@@ -89,25 +90,11 @@ public class Ena implements ApplicationRunner {
 				Callable<Void> callable = context.getBean(EnaCallable.class, sampleAccession);
 				futures.put(sampleAccession, executorService.submit(callable));
 				
-				checkFutures(futures, 100);
+				ThreadUtils.checkFutures(futures, 100);
 			}
 			log.info("waiting for futures");
 			// wait for anything to finish
-			checkFutures(futures, 0);
-		}
-	}
-	
-	private void checkFutures(Map<? extends Object, Future<Void>> futures, int maxSize) throws InterruptedException {
-		while (futures.size() > maxSize) {
-			for (Iterator<? extends Object> i = futures.keySet().iterator(); i.hasNext(); ) {
-				Object key = i.next();
-				try {
-					futures.get(key).get();
-				} catch (ExecutionException e) {
-					log.error("Error processing "+key, e);
-				}
-				i.remove();
-			}
+			ThreadUtils.checkFutures(futures, 0);
 		}
 	}
 	
