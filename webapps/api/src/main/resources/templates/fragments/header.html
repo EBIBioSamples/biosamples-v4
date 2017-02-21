@@ -65,10 +65,11 @@
 					<div class="masthead row">
 	
 						<!-- local-title -->
-						<div class="columns medium-12" id="local-title">
-							
-							<h1><img src="../images/logo_biosamples.png" alt="BioSamples logo"/> <a href="../../" title="Back to BioSamples homepage">BioSamples</a></h1>
-	
+						<div class="columns medium-12" id="local-title">							
+							<h1>
+								<img th:src="@{/images/logo_biosamples.png}" alt="BioSamples logo" /> 
+								<a th:href="@{/}" title="to BioSamples homepage">BioSamples</a>
+							</h1>	
 						</div>
 						<!-- /local-title -->
 	
@@ -76,11 +77,11 @@
 						<nav>
 							<ul class="dropdown menu float-left"
 								data-description="navigational">
-								<li class=""><a href="/">Home</a></li>
-								<li class=""><a href="/">Search</a></li>
+								<li class=""><a th:href="@{/}">Home</a></li>
+								<li class=""><a th:href="@{/samples}">Search</a></li>
 								<li class=""><a href="/">Submit</a></li>
-								<li class=""><a href="/">Help</a></li>
-								<li class=""><a href="/">About</a></li>
+								<li class=""><a th:href="@{/help}">Help</a></li>
+								<li class=""><a th:href="@{/about}">About</a></li>
 							</ul>
 						</nav>
 						<!-- /local-nav -->
