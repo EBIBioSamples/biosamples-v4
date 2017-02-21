@@ -2,13 +2,13 @@
 set -e
 mvn -T 2C package
 
-docker-compose down
+docker-compose down -v --remove-orphans
 
-docker volume ls -q | xargs -r docker volume rm
+#docker volume ls -q | xargs -r docker volume rm
 #docker images -q | xargs -r docker rmi
 
 docker-compose build
-docker-compose up -d
+docker-compose up -d biosamples-webapps-api biosamples-agents-neo4j biosamples-agents-solr
 
 ./http-status-check -u http://localhost:8081/
 

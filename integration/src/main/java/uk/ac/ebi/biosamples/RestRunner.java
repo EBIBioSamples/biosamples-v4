@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -31,7 +32,7 @@ import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 
 @Component
-public class TestRunner implements ApplicationRunner {
+public class RestRunner implements ApplicationRunner {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -42,6 +43,7 @@ public class TestRunner implements ApplicationRunner {
 	private RestOperations restTemplate;
 
 	@Override
+	@Order(1)
 	public void run(ApplicationArguments args) throws Exception {
 
 			Sample sampleTest1 = getSampleTest1();
@@ -150,7 +152,7 @@ public class TestRunner implements ApplicationRunner {
 
 		SortedSet<Attribute> attributes = new TreeSet<>();
 		attributes.add(
-			Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
+			Attribute.build("organism", "Homo sapiens", new URI("http://purl.obolibrary.org/obo/NCBITaxon_9606"), null));
 		attributes.add(Attribute.build("age", "3", null, "year"));
 		attributes.add(Attribute.build("organism part", "lung", null, null));
 		attributes.add(Attribute.build("organism part", "heart", null, null));
@@ -169,7 +171,7 @@ public class TestRunner implements ApplicationRunner {
 
 		SortedSet<Attribute> attributes = new TreeSet<>();
 		attributes.add(
-			Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
+			Attribute.build("organism", "Homo sapiens", new URI("http://purl.obolibrary.org/obo/NCBITaxon_9606"), null));
 
 		SortedSet<Relationship> relationships = new TreeSet<>();
 

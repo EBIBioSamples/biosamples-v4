@@ -48,7 +48,7 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 				if (attr.getIri() == null) {
 					attributeIris.get(attr.getKey()).add("");
 				} else {
-					attributeIris.get(attr.getKey()).add(attr.getIri());
+					attributeIris.get(attr.getKey()).add(attr.getIri().toString());
 				}
 
 				if (!attributeUnits.containsKey(attr.getKey())) {

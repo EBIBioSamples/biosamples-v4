@@ -1,5 +1,6 @@
 package uk.ac.ebi.biosamples.service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -116,7 +117,7 @@ public class SampleService {
 		// TODO check if there is an existing copy and if there are any changes
 		
 		// save the submission in the repository
-		mongoSubmissionRepository.save(new MongoSubmission(sample));
+		mongoSubmissionRepository.save(new MongoSubmission(sample, LocalDateTime.now()));
 
 		// TODO validate that relationships have this sample as the source 
 
@@ -127,7 +128,10 @@ public class SampleService {
 			//update the existing accession
 			mongoSampleRepository.save(mongoSample);
 		} else {
-			//assign it an accession
+			//see if there is an existing accession for this user and name
+			
+			
+			//assign it a new accession
 			accessionAndInsert(mongoSample);
 			//update the sample object with the assigned accession
 			sample = Sample.build(sample.getName(), mongoSample.getAccession(), sample.getRelease(), sample.getUpdate(),
@@ -139,7 +143,7 @@ public class SampleService {
 		return sample;
 	}
 
-	private void accessionAndInsert(MongoSample sample) {
+	private MongoSample accessionAndInsert(MongoSample sample) {
 		// inspired by Optimistic Loops of
 		// https://docs.mongodb.com/v3.0/tutorial/create-an-auto-incrementing-field/
 		boolean success = false;
@@ -153,7 +157,7 @@ public class SampleService {
 			}
 
 			try {
-				mongoSampleRepository.insertNew(sample);
+				sample = mongoSampleRepository.insertNew(sample);
 				success = true;
 			} catch (MongoWriteException e) {
 				if (e.getError().getCategory() == ErrorCategory.DUPLICATE_KEY) {
@@ -164,6 +168,7 @@ public class SampleService {
 				}
 			}
 		}
+		return sample;
 	}
 
 	@Scheduled(fixedDelay = 100)

@@ -18,6 +18,7 @@ import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -46,7 +47,7 @@ public class MongoSerializationTest {
 		LocalDateTime release = LocalDateTime.of(LocalDate.of(2016, 4, 1), LocalTime.of(11, 36, 57));
 
 		SortedSet<Attribute> attributes = new TreeSet<>();
-		attributes.add(Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
+		attributes.add(Attribute.build("organism", "Homo sapiens", new URI("http://purl.obolibrary.org/obo/NCBITaxon_9606"), null));
 		attributes.add(Attribute.build("age", "3", null, "year"));
 		attributes.add(Attribute.build("organism part", "lung", null, null));
 		attributes.add(Attribute.build("organism part", "heart", null, null));

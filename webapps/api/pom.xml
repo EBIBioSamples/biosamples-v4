@@ -12,10 +12,19 @@
 		<version>4.0.0-SNAPSHOT</version>
 		<relativePath>../../</relativePath>
 	</parent>
-	
+
 	<properties>
 		<snippetsDirectory>${project.build.directory}/generated-snippets</snippetsDirectory>
 	</properties>
+
+	<repositories>
+		<!-- limpopo repository on sourceforge -->
+		<repository>
+			<id>limpopo-repo</id>
+			<name>Limpopo Mini-SF Repository</name>
+			<url>http://limpopo.sourceforge.net/maven/repo</url>
+		</repository>
+	</repositories>
 
 	<dependencies>
 		<dependency>
@@ -65,10 +74,6 @@
 			<groupId>org.springframework.hateoas</groupId>
 			<artifactId>spring-hateoas</artifactId>
 		</dependency>
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.springframework.data</groupId> -->
-<!-- 			<artifactId>spring-data-rest-hal-browser</artifactId> -->
-<!-- 		</dependency> -->
 
 		<!-- mark tomcat as provided so we can deploy to tomcat -->
 		<dependency>
@@ -76,15 +81,23 @@
 			<artifactId>spring-boot-starter-tomcat</artifactId>
 			<scope>provided</scope>
 		</dependency>
+
+
+		<dependency>
+			<groupId>uk.ac.ebi.arrayexpress2</groupId>
+			<artifactId>limpopo-sampletab</artifactId>
+			<version>1.1.9-SNAPSHOT</version>
+		</dependency>
+		
 	</dependencies>
-	
- 	<build>
- 		<plugins>
- 			<plugin>
- 				<groupId>org.springframework.boot</groupId>
- 				<artifactId>spring-boot-maven-plugin</artifactId>
- 			</plugin>
- 		</plugins>
- 	</build>
-	
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+
 </project>

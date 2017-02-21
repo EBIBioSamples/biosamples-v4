@@ -16,25 +16,34 @@ public class MongoSubmission {
 
 	@Id
 	@JsonIgnore
-	public String id;
+	private String id;
 
 	@JsonSerialize(using = CustomLocalDateTimeSerializer.class)
 	@JsonDeserialize(using = CustomLocalDateTimeDeserializer.class)
 	@LastModifiedDate
-	public LocalDateTime datetime;
-
-	public Sample sample;
+	private LocalDateTime datetime;
 	
-	public MongoSubmission(){}
-	
-	public MongoSubmission(Sample sample){
-		this.sample = sample;
-		this.datetime = LocalDateTime.now();
-	}
+	private String user;
 
+	private Sample sample;
+	
+	private MongoSubmission(){}
+	
 	public MongoSubmission(Sample sample, LocalDateTime datetime){
 		this.sample = sample;
 		this.datetime = datetime;
+	}
+
+	public LocalDateTime getDatetime() {
+		return datetime;
+	}
+
+	public String getUser() {
+		return user;
+	}
+
+	public Sample getSample() {
+		return sample;
 	}
 	
 }

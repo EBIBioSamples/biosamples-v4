@@ -182,8 +182,6 @@ public class SampleRestController {
 		headers.set(HttpHeaders.LAST_MODIFIED, lastModifiedFormatter.format(sample.getUpdate()));
 
 		// create the response object with the appropriate status
-		ResponseEntity<SampleResource> response = new ResponseEntity<>(sampleResource, headers, HttpStatus.OK);
-
-		return response;
+		return ResponseEntity.ok().lastModified(sample.getUpdate().toEpochSecond(ZoneOffset.UTC)).body(sampleResource);
 	}
 }

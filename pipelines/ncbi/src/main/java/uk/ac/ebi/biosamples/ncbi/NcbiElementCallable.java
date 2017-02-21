@@ -93,18 +93,18 @@ public class NcbiElementCallable implements Callable<Void> {
 		}
 
 		// handle the organism		
-		String organismIri = null;
+		URI organismIri = null;
 		String organismValue = null;
 		if (XmlPathBuilder.of(sampleElem).path("Description", "Organism").attributeExists("taxonomy_id")) {
 			int taxonId = Integer.parseInt(XmlPathBuilder.of(sampleElem).path("Description", "Organism").attribute("taxonomy_id"));
-			organismIri = taxonomyService.getUriForTaxonId(taxonId).toString();
+			organismIri = taxonomyService.getUriForTaxonId(taxonId);
 		}
 		if (XmlPathBuilder.of(sampleElem).path("Description", "Organism").attributeExists("taxonomy_name")) {
 			organismValue = XmlPathBuilder.of(sampleElem).path("Description", "Organism").attribute("taxonomy_name");
 		}
 		
 		if (organismValue != null) {
-			attrs.add(Attribute.build("organism", organismValue,  organismIri,  null));			
+			attrs.add(Attribute.build("organism", organismValue, organismIri,  null));			
 		}
 		
 

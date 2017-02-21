@@ -6,10 +6,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class WebappProperties {
 
-	@Value("${biosamples.accession.prefix:TSTE}")
+	@Value("${biosamples.accession.prefix:SAMEA}")
 	private String accessionPrefix;
 
-	@Value("${biosamples.accession.min:100}")
+	@Value("${biosamples.accession.min:100000}")
 	private long accessionMinimum;
 
 	@Value("${biosamples.accession.queuesize:100}")

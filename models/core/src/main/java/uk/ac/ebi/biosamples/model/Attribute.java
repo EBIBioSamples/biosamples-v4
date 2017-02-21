@@ -1,6 +1,7 @@
 package uk.ac.ebi.biosamples.model;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.net.URLEncoder;
 import java.util.Objects;
 
@@ -10,7 +11,7 @@ public class Attribute implements Comparable<Attribute> {
 
 	private String key;
 	private String value;
-	private String iri;
+	private URI iri;
 	private String unit;
 	
 	private Attribute(){
@@ -25,7 +26,7 @@ public class Attribute implements Comparable<Attribute> {
 		return value;
 	}
 
-	public String getIri() {
+	public URI getIri() {
 		return iri;
 	}
 	
@@ -39,7 +40,7 @@ public class Attribute implements Comparable<Attribute> {
 		if (iri == null) return null;
 		
 		try {
-			return "http://www.ebi.ac.uk/ols/terms?iri="+URLEncoder.encode(iri, "UTF-8");
+			return "http://www.ebi.ac.uk/ols/terms?iri="+URLEncoder.encode(iri.toString(), "UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			//should never get here
 			throw new RuntimeException(e);
@@ -128,7 +129,7 @@ public class Attribute implements Comparable<Attribute> {
 	static public Attribute build(String key, String value) {
 		return build(key, value, null, null);
 	}
-	static public Attribute build(String key, String value, String iri, String unit) {
+	static public Attribute build(String key, String value, URI iri, String unit) {
 		Attribute attr = new Attribute();
 		attr.key = key;
 		attr.value = value;
