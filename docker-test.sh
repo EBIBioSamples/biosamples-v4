@@ -8,7 +8,7 @@ docker-compose down -v --remove-orphans
 #docker images -q | xargs -r docker rmi
 
 docker-compose build
-docker-compose up -d biosamples-webapps-api biosamples-agents-neo4j biosamples-agents-solr
+docker-compose up -d biosamples-webapps-api
 
 ./http-status-check -u http://localhost:8081/
 

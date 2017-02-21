@@ -46,39 +46,38 @@ public class RestRunner implements ApplicationRunner {
 	@Order(1)
 	public void run(ApplicationArguments args) throws Exception {
 
-			Sample sampleTest1 = getSampleTest1();
+		log.info("Starting RestRunner");
+	
+		Sample sampleTest1 = getSampleTest1();
 
-			// get and check that nothing exists already
-			doGetAndFail(sampleTest1);
+		// get and check that nothing exists already
+		doGetAndFail(sampleTest1);
 
-			// put a sample
-			doPut(sampleTest1);
+		// put a sample
+		doPut(sampleTest1);
 
-			// get to check it worked
-			doGetAndSucess(sampleTest1);
+		// get to check it worked
+		doGetAndSucess(sampleTest1);
 
-			// put a version that is private
-			sampleTest1 = Sample.build(sampleTest1.getName(), sampleTest1.getAccession(),
-					LocalDateTime.of(LocalDate.of(2116, 4, 1), LocalTime.of(11, 36, 57, 0)), sampleTest1.getUpdate(),
-					sampleTest1.getAttributes(), sampleTest1.getRelationships());
-			doPut(sampleTest1);
+		// put a version that is private
+		sampleTest1 = Sample.build(sampleTest1.getName(), sampleTest1.getAccession(),
+				LocalDateTime.of(LocalDate.of(2116, 4, 1), LocalTime.of(11, 36, 57, 0)), sampleTest1.getUpdate(),
+				sampleTest1.getAttributes(), sampleTest1.getRelationships());
+		doPut(sampleTest1);
 
-			// check the response code
-			doGetAndPrivate(sampleTest1);
-			
-			//put the second sample in
-			Sample sampleTest2 = getSampleTest2();
-			doPut(sampleTest2);
-			
-			//wait for a moment to let the agent process it
-			Thread.sleep(1000);
-			
-			//check that it has the additional relationship added
-			// get to check it worked
-			sampleTest2 = Sample.build(sampleTest2.getName(), sampleTest2.getAccession(),
-					sampleTest2.getRelease(), sampleTest2.getUpdate(),
-					sampleTest2.getAttributes(), sampleTest1.getRelationships());
-			doGetAndSucess(sampleTest2);
+		// check the response code
+		doGetAndPrivate(sampleTest1);
+		
+		//put the second sample in
+		Sample sampleTest2 = getSampleTest2();
+		doPut(sampleTest2);
+		
+		//wait for a moment to let the agent process it
+		Thread.sleep(1000);
+		
+		//check that it has the additional relationship added
+		// get to check it worked
+		doGetAndSucess(sampleTest2);
 	}
 
 	public ResponseEntity<Sample> doPut(Sample sample) throws RestClientException {
