@@ -128,11 +128,11 @@ public class SampleService {
 			//update the existing accession
 			mongoSampleRepository.save(mongoSample);
 		} else {
-			//see if there is an existing accession for this user and name
+			//TODO see if there is an existing accession for this user and name
 			
 			
 			//assign it a new accession
-			accessionAndInsert(mongoSample);
+			mongoSample = accessionAndInsert(mongoSample);
 			//update the sample object with the assigned accession
 			sample = Sample.build(sample.getName(), mongoSample.getAccession(), sample.getRelease(), sample.getUpdate(),
 					sample.getAttributes(), sample.getRelationships());

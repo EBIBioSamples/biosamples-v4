@@ -29,20 +29,25 @@ public class SampleTabRunner implements ApplicationRunner {
 	private RestOperations restTemplate;
 
 	@Override
-	@Order(10)
+	@Order(2)
 	public void run(ApplicationArguments args) throws Exception {
 
 		URI uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionURI()).path("sampletab/").path("v4").build().toUri();
 
-		String sampleTabString = new Scanner(this.getClass().getResourceAsStream("/GSB-32_unaccession.txt"), "UTF-8").useDelimiter("\\A").next();
+		String sampleTabString = new Scanner(this.getClass().getResourceAsStream("/GSB-32.txt"), "UTF-8").useDelimiter("\\A").next();
 		log.info("PUTing to "+uri);
 		RequestEntity<String> request = RequestEntity.post(uri).contentType(MediaType.APPLICATION_JSON).body(sampleTabString);
 		ResponseEntity<String> response = restTemplate.exchange(request, String.class);
 		
+		//TODO check at the right URLs with GET to make sure all arrived
+		//TODO check UTF-8 characters
+		
 
-		sampleTabString = new Scanner(this.getClass().getResourceAsStream("/GSB-32.txt"), "UTF-8").useDelimiter("\\A").next();
+		sampleTabString = new Scanner(this.getClass().getResourceAsStream("/GSB-32_unaccession.txt"), "UTF-8").useDelimiter("\\A").next();
 		request = RequestEntity.post(uri).contentType(MediaType.APPLICATION_JSON).body(sampleTabString);
 		response = restTemplate.exchange(request, String.class);
+
+		//TODO check at the right URLs with GET to make sure all arrived
 	}
 
 }
