@@ -1,30 +1,22 @@
 package uk.ac.ebi.biosamples.ena;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -44,7 +36,7 @@ public class EraProDao {
      * @param maxDate
      * @return
      */
-	public Set<String> getSamples(LocalDate minDate, LocalDate maxDate) {
+	public SortedSet<String> getSamples(LocalDate minDate, LocalDate maxDate) {
         /*
 select * from cv_status;
 1       draft   The entry is draft.
@@ -61,16 +53,27 @@ select * from cv_status;
 		String query = "SELECT BIOSAMPLE_ID FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND EGA_ID IS NULL AND BIOSAMPLE_AUTHORITY= 'N' "
 				+ "AND STATUS_ID = 4 AND ((LAST_UPDATED BETWEEN ? AND ?) OR (FIRST_PUBLIC BETWEEN ? AND ?))";
 		
-		Set<String> samples = new TreeSet<>();
+		SortedSet<String> samples = new TreeSet<>();
 		Date minDateOld = java.sql.Date.valueOf(minDate);
 		Date maxDateOld = java.sql.Date.valueOf(maxDate);
 		List<String> result = jdbcTemplate.queryForList(query, String.class, minDateOld, maxDateOld, minDateOld, maxDateOld);
 		samples.addAll(result);
 		return samples;
 	}
+	
+
+	public void doSampleCallback(LocalDate minDate, LocalDate maxDate, RowCallbackHandler rch) {
+
+		String query = "SELECT BIOSAMPLE_ID FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND EGA_ID IS NULL AND BIOSAMPLE_AUTHORITY= 'N' "
+				+ "AND STATUS_ID = 4 AND ((LAST_UPDATED BETWEEN ? AND ?) OR (FIRST_PUBLIC BETWEEN ? AND ?))";
+		
+		Date minDateOld = java.sql.Date.valueOf(minDate);
+		Date maxDateOld = java.sql.Date.valueOf(maxDate);
+		jdbcTemplate.query(query, rch, minDateOld, maxDateOld, minDateOld, maxDateOld);
+	}
 
 	public List<String> getPrivateSamples() {
-        log.info("Getting private sample ids");
+        log.trace("Getting private sample ids");
         
 		String query = "SELECT UNIQUE(BIOSAMPLE_ID) FROM SAMPLE WHERE STATUS_ID > 4 AND BIOSAMPLE_ID LIKE 'SAME%' "
 				+ "AND EGA_ID IS NULL AND BIOSAMPLE_AUTHORITY= 'N' ORDER BY BIOSAMPLE_ID ASC";
@@ -102,14 +105,14 @@ select * from cv_status;
 	public LocalDateTime getUpdateDateTime(String biosampleAccession) {
 		String sql = "SELECT to_char(LAST_UPDATED, 'YYYY-MM-DD') FROM SAMPLE WHERE BIOSAMPLE_ID = ?";
 		String dateString = jdbcTemplate.queryForObject(sql, String.class, biosampleAccession);
-		log.info("Release date is "+dateString);
+		log.trace("Release date is "+dateString);
 		return LocalDate.parse(dateString, DateTimeFormatter.ISO_LOCAL_DATE).atStartOfDay();
 	}
 	
 	public LocalDateTime getReleaseDateTime(String biosampleAccession) {
 		String sql = "SELECT to_char(FIRST_PUBLIC, 'YYYY-MM-DD') FROM SAMPLE WHERE BIOSAMPLE_ID = ?";
 		String dateString = jdbcTemplate.queryForObject(sql, String.class, biosampleAccession);
-		log.info("Release date is "+dateString);
+		log.trace("Release date is "+dateString);
 		return LocalDate.parse(dateString, DateTimeFormatter.ISO_LOCAL_DATE).atStartOfDay();
 	}
 }
