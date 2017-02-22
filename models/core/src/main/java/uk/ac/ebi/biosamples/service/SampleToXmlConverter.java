@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.model;
+package uk.ac.ebi.biosamples.service;
 
 import java.time.format.DateTimeFormatter;
 import java.util.SortedMap;
@@ -14,6 +14,9 @@ import org.dom4j.QName;
 import org.springframework.boot.context.properties.ConfigurationPropertiesBinding;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
+
+import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.Sample;
 
 @Service
 @ConfigurationPropertiesBinding

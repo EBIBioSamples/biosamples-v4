@@ -17,7 +17,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.SampleToXmlConverter;
+import uk.ac.ebi.biosamples.service.SampleToXmlConverter;
 
 @RunWith(SpringRunner.class)
 @JsonTest

@@ -11,10 +11,10 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.CustomLocalDateTimeDeserializer;
-import uk.ac.ebi.biosamples.model.CustomLocalDateTimeSerializer;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.service.CustomLocalDateTimeDeserializer;
+import uk.ac.ebi.biosamples.service.CustomLocalDateTimeSerializer;
 
 public class SampleResource extends ResourceSupport {
 	

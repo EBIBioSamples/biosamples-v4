@@ -9,6 +9,9 @@ import java.util.TreeSet;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
+import uk.ac.ebi.biosamples.service.CustomLocalDateTimeDeserializer;
+import uk.ac.ebi.biosamples.service.CustomLocalDateTimeSerializer;
+
 public class Sample {
 	
 	protected String accession;

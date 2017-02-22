@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.model;
+package uk.ac.ebi.biosamples.service;
 
 import java.io.IOException;
 import java.time.ZonedDateTime;

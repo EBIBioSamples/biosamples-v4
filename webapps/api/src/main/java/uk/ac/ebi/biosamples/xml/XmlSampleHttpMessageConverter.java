@@ -16,7 +16,7 @@ import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.stereotype.Service;
 
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.SampleToXmlConverter;
+import uk.ac.ebi.biosamples.service.SampleToXmlConverter;
 
 @Service
 public class XmlSampleHttpMessageConverter implements HttpMessageConverter<Sample> {

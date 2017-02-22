@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.model;
+package uk.ac.ebi.biosamples;
 
 import org.springframework.context.annotation.Configuration;
 

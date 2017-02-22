@@ -8,9 +8,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-import uk.ac.ebi.biosamples.model.CustomLocalDateTimeDeserializer;
-import uk.ac.ebi.biosamples.model.CustomLocalDateTimeSerializer;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.service.CustomLocalDateTimeDeserializer;
+import uk.ac.ebi.biosamples.service.CustomLocalDateTimeSerializer;
 
 public class MongoSubmission {
 
