@@ -3,9 +3,7 @@
 	xmlns="http://www.w3.org/1999/xhtml"
 	xmlns:layout="http://www.w3.org/1999/xhtml">
 	
-<head>
-	<th:block th:include="~{fragments/head :: head}"></th:block>
-</head>
+<head th:replace="~{fragments/head :: head}" />
 
 <body>
 	<th:block th:include="~{fragments/header :: header}"></th:block>
