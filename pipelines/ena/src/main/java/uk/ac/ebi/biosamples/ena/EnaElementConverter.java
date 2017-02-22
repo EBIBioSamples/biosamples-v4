@@ -1,11 +1,6 @@
 package uk.ac.ebi.biosamples.ena;
 
 import java.net.URI;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.SortedSet;
@@ -42,6 +37,7 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 	private static final String TAXON_ID = "TAXON_ID";
 	private static final String SAMPLE_ATTRIBUTE = "SAMPLE_ATTRIBUTE";
 	private static final String SAMPLE_ATTRIBUTES = "SAMPLE_ATTRIBUTES";
+	private static final String DESCRIPTION = "DESCRIPTION";
 	
 	@Autowired
 	private TaxonomyService taxonomyService;
@@ -57,6 +53,7 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 
 		log.trace("Converting " + name);
 
+		//put various other fields in as synonyms
 		Set<String> synonyms = new HashSet<>();
 		synonyms.add(XmlPathBuilder.of(root).path(SAMPLE).attribute("alias"));
 		if (XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS, SUBMITTER_ID).exists()) {
@@ -78,25 +75,33 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 			}
 		}
 		if (XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, ANONYMIZED_NAME).exists()) {
-			synonyms.add(XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, ANONYMIZED_NAME).text());
+			//synonyms.add(XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, ANONYMIZED_NAME).text());
+			attributes.add(Attribute.build("anonymized name", XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, ANONYMIZED_NAME).text()));
 		}
 		if (XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, INDIVIDUAL_NAME).exists()) {
-			synonyms.add(XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, INDIVIDUAL_NAME).text());
+			//synonyms.add(XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, INDIVIDUAL_NAME).text());
+			attributes.add(Attribute.build("individual name", XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, INDIVIDUAL_NAME).text()));
 		}
 		for (String synonym : synonyms) {
 			if (!synonym.equals(name) && !synonym.equals(accession)) {
 				attributes.add(Attribute.build("synonym", synonym));
 			}
 		}
-
+		
+		//description
+		if (XmlPathBuilder.of(root).path(SAMPLE, DESCRIPTION).exists()) {
+			String description = XmlPathBuilder.of(root).path(SAMPLE, DESCRIPTION).text();
+			attributes.add(Attribute.build("description", description));			
+		}
+		
+        //Do the organism attribute
 		int organismTaxId = Integer.parseInt(XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, TAXON_ID).text());
-
 		URI organismUri = taxonomyService.getUriForTaxonId(organismTaxId);
 		String organismName = ""+organismTaxId;
 		if (XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, SCIENTIFIC_NAME).exists()) {
 			organismName = XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, SCIENTIFIC_NAME).text();
 		}
-		attributes.add(Attribute.build("Organism", organismName, organismUri, null));
+		attributes.add(Attribute.build("organism", organismName, organismUri, null));
 
 		if (XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_ATTRIBUTES).exists()) {
 			for (Element e : XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_ATTRIBUTES).elements(SAMPLE_ATTRIBUTE)) {
@@ -123,12 +128,14 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 				if (tag.startsWith("ArrayExpress-")) {
 					continue;
 				}
+				
+				//TODO handle relationships
 
 				if (value != null) {
 					attributes.add(Attribute.build(tag, value, null, unit));
 				} else {
 					// no value supplied
-					attributes.add(Attribute.build("other", tag, null, unit));
+					attributes.add(Attribute.build("unknown", tag, null, unit));
 				}
 			}
 		}
