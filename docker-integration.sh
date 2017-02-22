@@ -12,4 +12,11 @@ docker-compose up -d biosamples-webapps-api
 
 ./http-status-check -u http://localhost:8081/
 
-java -jar integration/target/integration-4.0.0-SNAPSHOT.jar
+java -jar integration/target/integration-4.0.0-SNAPSHOT.jar --phase1
+
+docker-compose up -d biosamples-agents-neo4j biosamples-agents-solr
+
+sleep 180
+
+java -jar integration/target/integration-4.0.0-SNAPSHOT.jar --phase2
+
