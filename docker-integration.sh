@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-mvn -T 2C package
+mvn -T 2C clean package
 
 docker-compose down -v --remove-orphans
 
@@ -16,6 +16,7 @@ java -jar integration/target/integration-4.0.0-SNAPSHOT.jar --phase1
 
 docker-compose up -d biosamples-agents-neo4j biosamples-agents-solr
 
+echo "sleeping for 180 seconds..."
 sleep 180
 
 java -jar integration/target/integration-4.0.0-SNAPSHOT.jar --phase2
