@@ -1,0 +1,27 @@
+{
+	"accession":"TEST1",
+	"name":"Test Sample",
+	"update":"2016-05-05T11:36:57",
+	"release":"2016-04-01T11:36:57",
+	"characteristics":{
+		"organism":{
+		 	"Homo sapiens":{
+		 		"iri":"http://purl.obolibrary.org/obo/NCBITaxon_9606"
+		 	}
+	 	},
+		"age":{	
+		 	"3": {
+		 		"unit":"year"
+		 	}
+		 },
+		"organism part":{
+			"heart":{},
+			"lung":{}
+		}
+	},
+	"relationships":[{
+		"source":"TEST1",
+		"type":"derived from",
+		"target":"TEST2"
+	}]
+}
