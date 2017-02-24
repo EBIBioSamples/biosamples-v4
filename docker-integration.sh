@@ -16,8 +16,8 @@ java -jar integration/target/integration-4.0.0-SNAPSHOT.jar --phase1
 
 docker-compose up -d biosamples-agents-neo4j biosamples-agents-solr
 
-echo "sleeping for 180 seconds..."
-sleep 180
+echo "sleeping for 30 seconds..."
+sleep 30
 
 java -jar integration/target/integration-4.0.0-SNAPSHOT.jar --phase2
 
