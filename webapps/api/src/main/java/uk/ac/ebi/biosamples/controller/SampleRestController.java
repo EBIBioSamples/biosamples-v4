@@ -1,5 +1,6 @@
 package uk.ac.ebi.biosamples.controller;
 
+import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -29,7 +30,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.SampleResource;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 
@@ -67,11 +67,11 @@ public class SampleRestController {
 	@CrossOrigin
 	@RequestMapping(method = RequestMethod.GET, value = "", produces = { MediaType.APPLICATION_JSON_VALUE,
 			MediaTypes.HAL_JSON_VALUE })
-	public ResponseEntity<PagedResources<SampleResource>> readAll(Pageable pageable,
+	public ResponseEntity<PagedResources<Resource<Sample>>> readAll(Pageable pageable,
 			PagedResourcesAssembler<Sample> assembler) {
 
 		Page<Sample> pageSample = sampleService.fetchFindAll(pageable);
-		PagedResources<SampleResource> pagedResources = assembler.toResource(pageSample, sampleResourceAssembler);
+		PagedResources<Resource<Sample>> pagedResources = assembler.toResource(pageSample, sampleResourceAssembler);
 		pagedResources.add(ControllerLinkBuilder
 				.linkTo(ControllerLinkBuilder.methodOn(SampleRestController.class).search()).withRel("search"));
 		return ResponseEntity.ok(pagedResources);
@@ -93,11 +93,11 @@ public class SampleRestController {
 	@CrossOrigin
 	@RequestMapping(method = RequestMethod.GET, value = "search/findByText", produces = {
 			MediaType.APPLICATION_JSON_VALUE, MediaTypes.HAL_JSON_VALUE })
-	public ResponseEntity<PagedResources<SampleResource>> findByText(@RequestParam("text") String text,
+	public ResponseEntity<PagedResources<Resource<Sample>>> findByText(@RequestParam("text") String text,
 			Pageable pageable, PagedResourcesAssembler<Sample> assembler) {
 
 		Page<Sample> pageSample = sampleService.fetchFindByText(text, pageable);
-		PagedResources<SampleResource> pagedResources = assembler.toResource(pageSample, sampleResourceAssembler);
+		PagedResources<Resource<Sample>> pagedResources = assembler.toResource(pageSample, sampleResourceAssembler);
 		pagedResources.add(ControllerLinkBuilder
 				.linkTo(ControllerLinkBuilder.methodOn(SampleRestController.class).search()).withRel("search"));
 		return ResponseEntity.ok(pagedResources);
@@ -130,7 +130,7 @@ public class SampleRestController {
 	@CrossOrigin
 	@RequestMapping(method = RequestMethod.GET, value = "{accession}", produces = { MediaType.APPLICATION_JSON_VALUE,
 			MediaTypes.HAL_JSON_VALUE })
-	public ResponseEntity<SampleResource> readResource(@PathVariable String accession) {
+	public ResponseEntity<Resource<Sample>> readResource(@PathVariable String accession) {
 		// convert it into the format to return
 		Sample sample = null;
 		try {
@@ -145,7 +145,7 @@ public class SampleRestController {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		}
 
-		SampleResource sampleResource = sampleResourceAssembler.toResource(sample);
+		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
 
 		// create the response object with the appropriate status
 		return ResponseEntity.ok().lastModified(sample.getUpdate().toEpochSecond(ZoneOffset.UTC))
@@ -154,7 +154,7 @@ public class SampleRestController {
 
 	@RequestMapping(method = RequestMethod.PUT, value = "{accession}", consumes = { MediaType.APPLICATION_JSON_VALUE,
 			MediaType.APPLICATION_XML_VALUE })
-	public void update(@PathVariable String accession, @RequestBody Sample sample) {
+	public ResponseEntity<Resource<Sample>> update(@PathVariable String accession, @RequestBody Sample sample) {
 		if (!sample.getAccession().equals(accession)) {
 			// if the accession in the body is different to the accession in the
 			// url, throw an error
@@ -166,22 +166,20 @@ public class SampleRestController {
 
 		log.info("Recieved PUT for " + accession);
 		sampleService.store(sample);
+		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
+		
+		// create the response object with the appropriate status
+		return ResponseEntity.accepted().body(sampleResource);
 	}
 
 	@RequestMapping(method = RequestMethod.POST, consumes = { MediaType.APPLICATION_JSON_VALUE,
 			MediaType.APPLICATION_XML_VALUE })
-	public ResponseEntity<SampleResource> submit(@RequestBody Sample sample) {
+	public ResponseEntity<Resource<Sample>> submit(@RequestBody Sample sample) {
 		log.info("Recieved POST");
 		sample = sampleService.store(sample);
-		SampleResource sampleResource = sampleResourceAssembler.toResource(sample);
-
-		// create some http headers to populate for return
-		HttpHeaders headers = new HttpHeaders();
-
-		// add a last modified header based on the samples update date
-		headers.set(HttpHeaders.LAST_MODIFIED, lastModifiedFormatter.format(sample.getUpdate()));
-
+		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
+		
 		// create the response object with the appropriate status
-		return ResponseEntity.ok().lastModified(sample.getUpdate().toEpochSecond(ZoneOffset.UTC)).body(sampleResource);
+		return ResponseEntity.created(URI.create(sampleResource.getLink("self").getHref())).body(sampleResource);
 	}
 }

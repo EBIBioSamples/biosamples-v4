@@ -13,8 +13,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.annotation.Order;
 import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -89,28 +91,33 @@ public class RestRunner implements ApplicationRunner {
 		}
 	}
 
-	public ResponseEntity<Sample> doPut(Sample sample) throws RestClientException {
+	public Resource<Sample> doPut(Sample sample) throws RestClientException {
 		URI uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionURI()).path("samples/")
 				.path(sample.getAccession()).build().toUri();
 
 		RequestEntity<Sample> request = RequestEntity.put(uri).contentType(MediaType.APPLICATION_JSON).body(sample);
-		ResponseEntity<Sample> response = restTemplate.exchange(request, Sample.class);
-		return response;
+		ResponseEntity<Resource<Sample>> response = restTemplate.exchange(request, new ParameterizedTypeReference<Resource<Sample>>(){});
+		if (!sample.equals(response.getBody().getContent())) {
+			log.info("sample = "+sample);
+			log.info("response.getBody() = "+response.getBody());
+			throw new RuntimeException("Expected response to equal submission");
+		}
+		return response.getBody();
 	}
 
 	public Sample doGetAndSucess(Sample sample) {
-		ResponseEntity<Sample> response = doGet(sample);
+		ResponseEntity<Resource<Sample>> response = doGet(sample);
 		// check the status code is 200 success
 		if (!HttpStatus.OK.equals(response.getStatusCode())) {
 			throw new RuntimeException("Expected a 200 response");
 		}
-		if (!sample.equals(response.getBody())) {
+		if (!sample.equals(response.getBody().getContent())) {
 			log.info("sample = "+sample);
 			log.info("response.getBody() = "+response.getBody());
 			throw new RuntimeException("Expected response to equal submission");
 		}
 		
-		return response.getBody();
+		return response.getBody().getContent();
 	}
 
 	public void doGetAndPrivate(Sample sample) {
@@ -143,12 +150,12 @@ public class RestRunner implements ApplicationRunner {
 		throw new RuntimeException("Expected a 404 response");
 	}
 
-	public ResponseEntity<Sample> doGet(Sample sample) throws RestClientException {
+	public ResponseEntity<Resource<Sample>> doGet(Sample sample) throws RestClientException {
 		URI uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionURI()).path("samples/")
 				.path(sample.getAccession()).build().toUri();
 
 		RequestEntity<Void> request = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
-		ResponseEntity<Sample> response = restTemplate.exchange(request, Sample.class);
+		ResponseEntity<Resource<Sample>> response = restTemplate.exchange(request, new ParameterizedTypeReference<Resource<Sample>>(){});
 		return response;
 	}
 

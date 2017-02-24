@@ -121,6 +121,7 @@ public class NcbiElementCallable implements Callable<Void> {
 				if (!value.equals(accession)) {
 					rels.add(Relationship.build(key, value, accession));
 				}
+				//TODO otherwise add it
 			} else {
 				//its an attribute
 				attrs.add(Attribute.build(key, value, null, null));

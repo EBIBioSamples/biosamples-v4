@@ -61,6 +61,19 @@ public class Relationship implements Comparable<Relationship> {
 		}
 		return 0;
 	}
+
+    @Override
+    public String toString() {
+    	StringBuilder sb = new StringBuilder();
+    	sb.append("Relationships(");
+    	sb.append(source);
+    	sb.append(",");
+    	sb.append(type);
+    	sb.append(",");
+    	sb.append(target);
+    	sb.append(")");
+    	return sb.toString();
+    }
     
     static public Relationship build(String type, String target, String source) {
     	Relationship rel = new Relationship();

@@ -1,12 +1,14 @@
 package uk.ac.ebi.biosamples.service;
 
+import org.springframework.beans.BeanUtils;
+import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.ResourceAssembler;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.hateoas.mvc.ResourceAssemblerSupport;
 import org.springframework.stereotype.Service;
 
 import uk.ac.ebi.biosamples.controller.SampleRestController;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.SampleResource;
 
 /**
  * This class is used by Spring to add HAL _links for {@Link Sample} objects. 
@@ -15,17 +17,17 @@ import uk.ac.ebi.biosamples.model.SampleResource;
  *
  */
 @Service
-public class SampleResourceAssembler extends ResourceAssemblerSupport<Sample, SampleResource> {
+public class SampleResourceAssembler implements ResourceAssembler<Sample, Resource<Sample>> {
 
 	public SampleResourceAssembler() {
-		super(SampleRestController.class, SampleResource.class);
 	}
 
 	@Override
-	public SampleResource toResource(Sample sample) {
-		SampleResource resource = new SampleResource(sample);
+	public  Resource<Sample> toResource(Sample sample) {		
+		Resource<Sample> resource = new Resource<>(sample);
+		
 		resource.add(ControllerLinkBuilder.linkTo(ControllerLinkBuilder.methodOn(SampleRestController.class).readResource(sample.getAccession())).withSelfRel());
 		return resource;
 	}
-
+	
 }
