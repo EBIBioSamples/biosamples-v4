@@ -49,13 +49,11 @@ public class Accession implements ApplicationRunner{
 	public void run(ApplicationArguments args) throws Exception {
 		log.info("Processing Accession pipeline...");
 		
-
 		try (AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, pipelinesProperties.getThreadCount())) {
-		
-
 			Map<String, Future<Void>> futures = new HashMap<>();
-			RowCallbackHandler rch = new AccessionCallbackHandler(executorService, futures);		
-			accessionDao.doAccessionCallback(rch);
+			accessionDao.doAssayAccessionCallback(new AccessionCallbackHandler(executorService, futures, "SAMEA"));
+			accessionDao.doReferenceAccessionCallback(new AccessionCallbackHandler(executorService, futures, "SAME"));
+			accessionDao.doGroupAccessionCallback(new AccessionCallbackHandler(executorService, futures, "SAMEG"));
 		}
 	}	
 	
@@ -63,10 +61,12 @@ public class Accession implements ApplicationRunner{
 		
 		private final ThreadPoolExecutor executor;
 		private final Map<String, Future<Void>> futures;
+		private final String prefix;
 		
-		public AccessionCallbackHandler(ThreadPoolExecutor executor, Map<String, Future<Void>> futures) {
+		public AccessionCallbackHandler(ThreadPoolExecutor executor, Map<String, Future<Void>> futures, String prefix) {
 			this.executor = executor;
 			this.futures = futures;
+			this.prefix = prefix;
 		}
 
 		@Override
@@ -77,7 +77,7 @@ public class Accession implements ApplicationRunner{
 			Date dateAssigned = rs.getDate("DATE_ASSIGNED");
 			boolean deleted = rs.getBoolean("IS_DELETED");
 
-			String accession = "SAMEA"+accessionNo;
+			String accession = prefix+accessionNo;
 			log.trace(""+accessionNo+" "+userAccession+" "+submissionAccession+" "+dateAssigned+" "+deleted);
 			
 			Callable<Void> callable = new AccessionCallable(accession, userAccession, submissionAccession, dateAssigned, deleted);			
@@ -124,7 +124,5 @@ public class Accession implements ApplicationRunner{
 			submissionService.submit(sample);
 			return null;
 		}
-		
 	}
-
 }

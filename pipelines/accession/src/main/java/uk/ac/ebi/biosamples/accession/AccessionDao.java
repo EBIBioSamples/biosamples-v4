@@ -17,8 +17,18 @@ public class AccessionDao {
 	@Qualifier("accessionJdbcTemplate")
     protected JdbcTemplate jdbcTemplate;
 
-	public void doAccessionCallback(RowCallbackHandler rch) {
+	public void doAssayAccessionCallback(RowCallbackHandler rch) {
 		String sql = "SELECT * FROM SAMPLE_ASSAY";
+		jdbcTemplate.query(sql, rch);
+	}
+
+	public void doReferenceAccessionCallback(RowCallbackHandler rch) {
+		String sql = "SELECT * FROM SAMPLE_REFERENCE";
+		jdbcTemplate.query(sql, rch);
+	}
+
+	public void doGroupAccessionCallback(RowCallbackHandler rch) {
+		String sql = "SELECT * FROM SAMPLE_GROUP";
 		jdbcTemplate.query(sql, rch);
 	}
 }
