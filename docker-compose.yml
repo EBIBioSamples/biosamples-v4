@@ -1,7 +1,7 @@
 version: '2'
 services:
     
-  biosamples-webapps-api:
+  biosamples-webapps-core:
     build: .
     image: biosamples:latest
     links:
@@ -12,7 +12,7 @@ services:
     command:
     - java
     - -jar
-    - webapps-api-4.0.0-SNAPSHOT.war
+    - webapps-core-4.0.0-SNAPSHOT.war
     environment:
     - spring.data.solr.host=http://solr:8983/solr
     - spring.data.neo4j.uri=bolt://neo4j:7687
@@ -23,6 +23,19 @@ services:
     - spring.rabbitmq.host=rabbitmq
     ports:
     - 8081:8080
+    
+  biosamples-webapps-sampletab:
+    image: biosamples:latest
+    links:
+    - biosamples-webapps-core
+    command:
+    - java
+    - -jar
+    - webapps-sampletab-4.0.0-SNAPSHOT.war
+    environment:
+    - biosamples.submissionuri=http://biosamples-webapps-core:8080
+    ports:
+    - 8082:8080
     
   biosamples-agents-neo4j:
     image: biosamples:latest
@@ -62,7 +75,7 @@ services:
   biosamples-pipelines-ena:
     image: biosamples:latest
     links:
-    - biosamples-webapps-api
+    - biosamples-webapps-core
     volumes:
     - ./logs:/logs
     command:
@@ -79,7 +92,7 @@ services:
   biosamples-pipelines-ncbi:
     image: biosamples:latest
     links:
-    - biosamples-webapps-api
+    - biosamples-webapps-core
     volumes:
     - ./logs:/logs
     command:
@@ -94,7 +107,7 @@ services:
   biosamples-pipelines-accession:
     image: biosamples:latest
     links:
-    - biosamples-webapps-api
+    - biosamples-webapps-core
     volumes:
     - ./logs:/logs
     command:

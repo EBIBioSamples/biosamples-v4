@@ -19,7 +19,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.utils.SubmissionService;
+import uk.ac.ebi.biosamples.service.SubmissionService;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
 @Component

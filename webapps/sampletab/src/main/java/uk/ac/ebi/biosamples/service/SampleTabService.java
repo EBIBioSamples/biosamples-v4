@@ -23,9 +23,12 @@ import uk.ac.ebi.biosamples.model.Sample;
 
 @Service
 public class SampleTabService {
+	
+	private SubmissionService submissionService;
 
-	@Autowired
-	private SampleService sampleService;
+	public SampleTabService(SubmissionService submissionService) {
+		this.submissionService = submissionService;
+	}
 	
 	public SampleData saveSampleTab(SampleData sampleData) {
 		for (SampleNode sampleNode : sampleData.scd.getNodes(SampleNode.class)) {
@@ -79,7 +82,7 @@ public class SampleTabService {
 			}
 			
 			Sample sample = Sample.build(name, accession, release, update, attributes, relationships);
-			sample = sampleService.store(sample);
+			sample = submissionService.submit(sample).getContent();
 			if (accession == null) {
 				sampleNode.setSampleAccession(sample.getAccession());
 			}

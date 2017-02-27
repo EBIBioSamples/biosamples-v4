@@ -92,7 +92,7 @@ public class RestRunner implements ApplicationRunner {
 	}
 
 	public Resource<Sample> doPut(Sample sample) throws RestClientException {
-		URI uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionURI()).path("samples/")
+		URI uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUri()).path("samples/")
 				.path(sample.getAccession()).build().toUri();
 
 		RequestEntity<Sample> request = RequestEntity.put(uri).contentType(MediaType.APPLICATION_JSON).body(sample);
@@ -151,7 +151,7 @@ public class RestRunner implements ApplicationRunner {
 	}
 
 	public ResponseEntity<Resource<Sample>> doGet(Sample sample) throws RestClientException {
-		URI uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionURI()).path("samples/")
+		URI uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUri()).path("samples/")
 				.path(sample.getAccession()).build().toUri();
 
 		RequestEntity<Void> request = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();

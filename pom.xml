@@ -32,6 +32,7 @@
 		<module>webapps</module>
 		<module>pipelines</module>
 		<module>integration</module>
+		<module>client</module>
 	</modules>
 
 	<dependencies>

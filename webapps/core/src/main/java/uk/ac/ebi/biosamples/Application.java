@@ -14,7 +14,6 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.xml.XmlSampleHttpMessageConverter;
 
 @SpringBootApplication
-//@EnableHypermediaSupport(type = { HypermediaType.HAL })
 public class Application extends SpringBootServletInitializer {
 
 	public static void main(String[] args) {

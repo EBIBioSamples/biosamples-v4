@@ -13,6 +13,7 @@
 	</parent>
 
 	<modules>
-		<module>api</module>
+		<module>sampletab</module>
+		<module>core</module>
 	</modules>
 </project>

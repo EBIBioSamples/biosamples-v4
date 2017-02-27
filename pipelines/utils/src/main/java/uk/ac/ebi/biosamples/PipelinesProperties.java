@@ -15,13 +15,6 @@ public class PipelinesProperties {
 	@Value("${biosamples.threadcount:1}")
 	private int threadCount;
 	
-	@Value("${biosamples.submissionuri:http://localhost:8081}")
-	private URI biosampleSubmissionURI;
-
-	public URI getBiosampleSubmissionURI() {
-		return biosampleSubmissionURI;
-	}
-
 	public File getNcbiFile() {
 		return ncbiFile;
 	}

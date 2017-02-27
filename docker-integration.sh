@@ -8,9 +8,9 @@ docker-compose down -v --remove-orphans
 #docker images -q | xargs -r docker rmi
 
 docker-compose build
-docker-compose up -d biosamples-webapps-api
+docker-compose up -d biosamples-webapps-core biosamples-webapps-sampletab
 
-./http-status-check -u http://localhost:8081/
+./http-status-check -u http://localhost:8081/ -t 60
 
 java -jar integration/target/integration-4.0.0-SNAPSHOT.jar --phase1
 
