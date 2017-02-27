@@ -1,0 +1,10 @@
+[MSI]
+Submission Identifier	GSB-1000
+Submission Version	1.2
+Submission Reference Layer	false
+Submission Release Date	2016/10/17
+Submission Update Date	2016/10/17
+
+[SCD]
+Sample Name	Sample Accession	Derived From	
+UOXFi001-B M001 vial 0047	SAMEA103886236	SAMEA4453900	

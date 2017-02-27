@@ -10,7 +10,8 @@ docker-compose down -v --remove-orphans
 docker-compose build
 docker-compose up -d biosamples-webapps-core biosamples-webapps-sampletab
 
-./http-status-check -u http://localhost:8081/ -t 60
+./http-status-check -u http://localhost:8081/actuator -t 60
+./http-status-check -u http://localhost:8082/actuator -t 60
 
 java -jar integration/target/integration-4.0.0-SNAPSHOT.jar --phase1
 
