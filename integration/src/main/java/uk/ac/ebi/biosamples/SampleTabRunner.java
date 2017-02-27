@@ -50,7 +50,22 @@ public class SampleTabRunner implements ApplicationRunner {
 	
 			//TODO check at the right URLs with GET to make sure all arrived
 		
+
+			sampleTabString = new Scanner(this.getClass().getResourceAsStream("/GSB-1004.txt"), "UTF-8").useDelimiter("\\A").next();
+			request = RequestEntity.post(uri).contentType(MediaType.APPLICATION_JSON).body(sampleTabString);
+			response = restTemplate.exchange(request, String.class);
+
+			//TODO check that SAMEA103886236 does not exist
+			
+			sampleTabString = new Scanner(this.getClass().getResourceAsStream("/GSB-1000.txt"), "UTF-8").useDelimiter("\\A").next();
+			request = RequestEntity.post(uri).contentType(MediaType.APPLICATION_JSON).body(sampleTabString);
+			response = restTemplate.exchange(request, String.class);
+
+			//TODO check that SAMEA103886236 does exist
+		} else if (args.getOptionNames().contains("phase2")) {
+			//TODO check that SAMEA103886236 is a "member of" SAMEG318804
 		}
+		
 	}
 
 }
