@@ -1,8 +1,10 @@
 package uk.ac.ebi.biosamples;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Scanner;
+import java.util.concurrent.Callable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,37 +39,66 @@ public class SampleTabRunner implements ApplicationRunner {
 		
 		if (args.getOptionNames().contains("phase1")) {			
 			
-			String sampleTabString = new Scanner(this.getClass().getResourceAsStream("/GSB-32.txt"), "UTF-8").useDelimiter("\\A").next();
-			log.info("PUTing to "+uri);
-			RequestEntity<String> request = RequestEntity.post(uri).contentType(MediaType.APPLICATION_JSON).body(sampleTabString);
-			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+			runCallableOnSampleTabResource("/GSB-32.txt", sampleTabString -> {				
+				log.info("PUTing to "+uri);
+				RequestEntity<String> request = RequestEntity.post(uri).contentType(MediaType.APPLICATION_JSON).body(sampleTabString);
+				ResponseEntity<String> response = restTemplate.exchange(request, String.class);				
+				//TODO check at the right URLs with GET to make sure all arrived
+				//TODO check UTF-8 characters
+				});	
 			
-			//TODO check at the right URLs with GET to make sure all arrived
-			//TODO check UTF-8 characters
+			runCallableOnSampleTabResource("/GSB-32_unaccession.txt", sampleTabString -> {				
+				log.info("PUTing to "+uri);
+				RequestEntity<String> request = RequestEntity.post(uri).contentType(MediaType.APPLICATION_JSON).body(sampleTabString);
+				ResponseEntity<String> response = restTemplate.exchange(request, String.class);	
+				//TODO check at the right URLs with GET to make sure all arrived
+				});
 			
-	
-			sampleTabString = new Scanner(this.getClass().getResourceAsStream("/GSB-32_unaccession.txt"), "UTF-8").useDelimiter("\\A").next();
-			request = RequestEntity.post(uri).contentType(MediaType.APPLICATION_JSON).body(sampleTabString);
-			response = restTemplate.exchange(request, String.class);
-	
-			//TODO check at the right URLs with GET to make sure all arrived
-		
-
-			sampleTabString = new Scanner(this.getClass().getResourceAsStream("/GSB-1004.txt"), "UTF-8").useDelimiter("\\A").next();
-			request = RequestEntity.post(uri).contentType(MediaType.APPLICATION_JSON).body(sampleTabString);
-			response = restTemplate.exchange(request, String.class);
-
-			//TODO check that SAMEA103886236 does not exist
+			runCallableOnSampleTabResource("/GSB-1004.txt", sampleTabString -> {				
+				log.info("PUTing to "+uri);
+				RequestEntity<String> request = RequestEntity.post(uri).contentType(MediaType.APPLICATION_JSON).body(sampleTabString);
+				ResponseEntity<String> response = restTemplate.exchange(request, String.class);	
+				//TODO check that SAMEA103886236 does not exist
+				});
 			
-			sampleTabString = new Scanner(this.getClass().getResourceAsStream("/GSB-1000.txt"), "UTF-8").useDelimiter("\\A").next();
-			request = RequestEntity.post(uri).contentType(MediaType.APPLICATION_JSON).body(sampleTabString);
-			response = restTemplate.exchange(request, String.class);
-
-			//TODO check that SAMEA103886236 does exist
+			runCallableOnSampleTabResource("/GSB-1000.txt", sampleTabString -> {				
+				log.info("PUTing to "+uri);
+				RequestEntity<String> request = RequestEntity.post(uri).contentType(MediaType.APPLICATION_JSON).body(sampleTabString);
+				ResponseEntity<String> response = restTemplate.exchange(request, String.class);	
+				//TODO check that SAMEA103886236 does exist
+				});
+					
 		} else if (args.getOptionNames().contains("phase2")) {
 			//TODO check that SAMEA103886236 is a "member of" SAMEG318804
 		}
 		
+	}
+	
+
+	private interface SampleTabCallback {
+		public void callback(String sampleTabString);
+	}
+	
+	private void runCallableOnSampleTabResource(String resource, SampleTabCallback callback) {
+		
+		InputStream inputStream = null;		
+		String sampleTabString = null;	
+		
+		try {
+			inputStream = this.getClass().getResourceAsStream("/GSB-32.txt");
+			sampleTabString = new Scanner(inputStream, "UTF-8").useDelimiter("\\A").next();
+		} finally {
+			if (inputStream != null) {
+				try {
+					inputStream.close();
+				} catch (IOException e) {
+					//do nothing
+				}
+			}
+		}
+		if (sampleTabString != null) {			
+			callback.callback(sampleTabString);
+		}
 	}
 
 }
