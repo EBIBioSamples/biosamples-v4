@@ -80,20 +80,16 @@ public class SampleTabRunner implements ApplicationRunner {
 	}
 	
 	private void runCallableOnSampleTabResource(String resource, SampleTabCallback callback) {
-		
-		InputStream inputStream = null;		
+
+		Scanner scanner = null;
 		String sampleTabString = null;	
 		
 		try {
-			inputStream = this.getClass().getResourceAsStream("/GSB-32.txt");
-			sampleTabString = new Scanner(inputStream, "UTF-8").useDelimiter("\\A").next();
+			scanner = new Scanner(this.getClass().getResourceAsStream(resource), "UTF-8");
+			sampleTabString = scanner.useDelimiter("\\A").next();
 		} finally {
-			if (inputStream != null) {
-				try {
-					inputStream.close();
-				} catch (IOException e) {
-					//do nothing
-				}
+			if (scanner != null) {
+				scanner.close();
 			}
 		}
 		if (sampleTabString != null) {			
