@@ -102,11 +102,11 @@ public class NcbiElementCallable implements Callable<Void> {
 			String value = attrElem.getTextTrim();
 			//value is a sample accession, assume its a relationship
 			if (value.matches("SAM[END]A?[0-9]+")) {
-				//if its a self-relationship, then dont add it
+				//if its a self-relationship, then don't add it
+				//otherwise add it
 				if (!value.equals(accession)) {
 					rels.add(Relationship.build(key, value, accession));
-				}
-				//TODO otherwise add it
+				}				
 			} else {
 				//its an attribute
 				attrs.add(Attribute.build(key, value, null, null));
