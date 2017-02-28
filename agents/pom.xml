@@ -15,5 +15,6 @@
 	<modules>
 		<module>solr</module>
 		<module>neo4j</module>
+		<module>curation</module>
 	</modules>
 </project>

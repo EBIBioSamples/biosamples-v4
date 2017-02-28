@@ -49,9 +49,9 @@ services:
     - agents-neo4j-4.0.0-SNAPSHOT.jar
     environment:
     - spring.rabbitmq.publisher-confirms=true
+    - spring.rabbitmq.host=rabbitmq
     - spring.data.neo4j.uri=bolt://neo4j:7687
     - spring.data.neo4j.username=neo4j
-    - spring.rabbitmq.host=rabbitmq
     - biosamples.agent.neo4j.stayalive=true
     
   biosamples-agents-solr:
@@ -72,6 +72,18 @@ services:
     - spring.rabbitmq.host=rabbitmq
     - biosamples.agent.solr.stayalive=true
     
+  biosamples-agents-curation:
+    image: biosamples:latest
+    links:
+    - rabbitmq
+    command:
+    - java
+    - -jar
+    - agents-curation-4.0.0-SNAPSHOT.jar
+    environment:
+    - spring.rabbitmq.publisher-confirms=true
+    - spring.rabbitmq.host=rabbitmq
+    - biosamples.agent.curation.stayalive=true
     
   biosamples-pipelines-ena:
     image: biosamples:latest

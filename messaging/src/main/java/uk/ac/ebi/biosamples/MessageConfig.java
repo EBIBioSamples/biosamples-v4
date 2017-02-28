@@ -26,6 +26,11 @@ public class MessageConfig {
 		return new Queue(Messaging.queueToBeIndexedNeo4J, true);
 	}
 
+	@Bean
+	public Queue getQueueToBeCurated() {
+		return new Queue(Messaging.queueToBeCurated, true);
+	}
+
 	// declare exchanges
 
 	@Bean
@@ -45,9 +50,13 @@ public class MessageConfig {
 		return BindingBuilder.bind(getQueueToBeIndexedNeo4J()).to(getExchangeForIndexing());
 	}
 
+	@Bean
+	public Binding bindingCuration() {
+		return BindingBuilder.bind(getQueueToBeCurated()).to(getExchangeForIndexing());
+	}
+
 	//enable messaging in json	
-	//note that this class is not the same as the http MessageConverter class
-	
+	//note that this class is not the same as the http MessageConverter class	
 	@Bean
 	public MessageConverter getJackson2MessageConverter() {
 		return new Jackson2JsonMessageConverter();
