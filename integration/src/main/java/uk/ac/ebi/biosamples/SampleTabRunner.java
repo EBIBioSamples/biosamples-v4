@@ -31,6 +31,8 @@ public class SampleTabRunner implements ApplicationRunner {
 	@Override
 	@Order(2)
 	public void run(ApplicationArguments args) throws Exception {
+		log.info("Starting SampleTabRunner"); 		
+		
 		URI uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUriSampleTab()).path("sampletab/").path("v4").build().toUri();
 		
 		if (args.getOptionNames().contains("phase1")) {			
