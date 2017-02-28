@@ -123,7 +123,9 @@ public class SampleRestController {
 		
 		
 		// create the response object with the appropriate status
-		return ResponseEntity.ok().lastModified(sample.getUpdate().toEpochSecond(ZoneOffset.UTC))
+		return ResponseEntity.ok()
+				.lastModified(sample.getUpdate().toEpochSecond(ZoneOffset.UTC))
+				.eTag(String.valueOf(sample.hashCode()))
 				.contentType(MediaType.APPLICATION_XML).body(sample);
 	}
 
@@ -148,7 +150,9 @@ public class SampleRestController {
 		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
 
 		// create the response object with the appropriate status
-		return ResponseEntity.ok().lastModified(sample.getUpdate().toEpochSecond(ZoneOffset.UTC))
+		return ResponseEntity.ok()
+				.lastModified(sample.getUpdate().toEpochSecond(ZoneOffset.UTC))
+				.eTag(String.valueOf(sample.hashCode()))
 				.contentType(MediaTypes.HAL_JSON).body(sampleResource);
 	}
 
