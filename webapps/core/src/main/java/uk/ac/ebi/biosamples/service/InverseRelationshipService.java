@@ -16,24 +16,23 @@ import uk.ac.ebi.biosamples.neo.model.NeoSample;
 import uk.ac.ebi.biosamples.neo.repo.NeoSampleRepository;
 
 /**
- * Converter for turning Sample objects in to Sample objects with inverse relationships from Noe4J added.
+ * Converter for turning Sample objects in to Sample objects with inverse relationships from Neo4J added.
  * 
  * @author faulcon
  *
  */
 @Service
-public class InverseRelationshipConverter implements Converter<Sample, Sample> {
+public class InverseRelationshipService  {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 	
 	public NeoSampleRepository neoSampleRepository;
 	
-	public InverseRelationshipConverter(@Autowired NeoSampleRepository neoSampleRepository) {
+	public InverseRelationshipService(@Autowired NeoSampleRepository neoSampleRepository) {
 		this.neoSampleRepository = neoSampleRepository;
 	}
 	
-	@Override
-	public Sample convert(Sample sample) {
+	public Sample insertInverses(Sample sample) {
 		NeoSample neoSample = neoSampleRepository.findOneByAccession(sample.getAccession());
 		
 		log.trace("neoSample = "+neoSample);

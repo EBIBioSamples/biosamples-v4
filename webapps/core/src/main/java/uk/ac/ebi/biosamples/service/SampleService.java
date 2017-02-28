@@ -45,10 +45,9 @@ public class SampleService {
 
 	@Autowired
 	private SolrSampleRepository solrSampleRepository;
-
-	//this has the same in and out class, so can't be used via conversionservice
+	
 	@Autowired
-	private InverseRelationshipConverter inverseRelationshipConverter;
+	private InverseRelationshipService inverseRelationshipService;
 
 	@Autowired
 	private AmqpTemplate amqpTemplate;
@@ -86,7 +85,9 @@ public class SampleService {
 		Sample sample = conversionService.convert(mongoSample, Sample.class);
 		
 		// add any additional inverse relationships
-		sample = inverseRelationshipConverter.convert(sample);
+		sample = inverseRelationshipService.insertInverses(sample);
+		
+		//TODO only have relationships to things that are present
 		
 		return sample;
 	}
@@ -108,7 +109,6 @@ public class SampleService {
 	}
 
 	public Sample store(Sample sample) {
-
 		// TODO check if there is an existing copy and if there are any changes
 		
 		// save the submission in the repository
@@ -124,8 +124,7 @@ public class SampleService {
 			mongoSampleRepository.save(mongoSample);
 		} else {
 			//TODO see if there is an existing accession for this user and name
-			
-			
+						
 			//assign it a new accession
 			mongoSample = accessionAndInsert(mongoSample);
 			//update the sample object with the assigned accession
