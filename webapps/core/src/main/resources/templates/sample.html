@@ -20,7 +20,10 @@
 	<div layout:fragment="content">
 		<div id="main-content-area" class="row">
 			<h2 th:text="${sample.accession}">TEST</h2>
-			<h3 th:text="${sample.name}">name</h3>
+			<h3 th:text="${sample.name}">name</h3>            
+			<a th:href="@{${sample.accession}+'.xml'}" class="button" title="XML"><h3 class="icon icon-fileformats white-color" data-icon="x"></h3></a>
+            <a th:href="@{${sample.accession}+'.json'}" class="button" title="JSON"><h3 class="icon icon-fileformats white-color" data-icon="J"></h3></a>
+			
 			<table>
 				<tr>
 					<th>Release</th>
@@ -33,6 +36,7 @@
 						th:text="${#temporals.format(sample.update, 'yyyy / MM / dd HH:mm:ss')}">2001 / 02 / 02 12:00:00</td>
 				</tr>
 			</table>
+			
 
 			<th:section
 				th:if="${sample.attributes != null and #arrays.length(sample.attributes) > 0}"
@@ -87,8 +91,6 @@
 					</tr>
 				</table>
 			</th:section>         
-            <a th:href="@{${sample.accession}+'.xml'}" class="button"><i class="icon icon-fileformats" data-icon="x"></i> XML</a>
-            <a th:href="@{${sample.accession}+'.json'}" class="button"><i class="icon icon-fileformats" data-icon="J"></i> JSON</a>
 		</div>
 	</div>
 </body>
