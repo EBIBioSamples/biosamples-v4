@@ -6,6 +6,8 @@ import java.time.ZoneOffset;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -32,6 +34,8 @@ import uk.ac.ebi.biosamples.service.SampleService;
 @RequestMapping(value = "/", produces = MediaType.TEXT_HTML_VALUE)
 public class HtmlController {
 
+	private Logger log = LoggerFactory.getLogger(getClass());
+	
 	private SampleService sampleService;	
 	
 	public HtmlController(@Autowired SampleService sampleService) {
@@ -50,6 +54,7 @@ public class HtmlController {
 		    sample = sampleService.fetch(accession);
 		} catch (IllegalArgumentException e) {
 			//did not exist, throw 404
+			log.info("Returning a 404 for "+request.getRequestURL());
 			response.setStatus(HttpStatus.NOT_FOUND.value());
 			return "error/404";
 		}
