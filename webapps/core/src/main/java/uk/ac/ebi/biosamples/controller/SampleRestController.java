@@ -17,7 +17,6 @@ import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -53,6 +52,8 @@ public class SampleRestController {
 	private SampleResourceAssembler sampleResourceAssembler;
 
 	private DateTimeFormatter lastModifiedFormatter = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss 'GMT'");
+	
+	private Logger log = LoggerFactory.getLogger(getClass());
 
 	public SampleRestController(@Autowired SampleService sampleService,
 			@Autowired SampleResourceAssembler sampleResourceAssembler) {
@@ -61,8 +62,6 @@ public class SampleRestController {
 
 	}
 
-	@SuppressWarnings("unused")
-	private Logger log = LoggerFactory.getLogger(getClass());
 
 	@CrossOrigin
 	@RequestMapping(method = RequestMethod.GET, value = "", produces = { MediaType.APPLICATION_JSON_VALUE,

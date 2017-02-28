@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.neo.model.NeoRelationship;
 import uk.ac.ebi.biosamples.neo.model.NeoSample;
 import uk.ac.ebi.biosamples.neo.repo.NeoSampleRepository;

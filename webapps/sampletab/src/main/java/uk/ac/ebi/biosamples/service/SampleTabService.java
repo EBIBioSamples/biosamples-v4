@@ -4,14 +4,12 @@ import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import uk.ac.ebi.arrayexpress2.magetab.datamodel.graph.Node;
@@ -105,7 +103,6 @@ public class SampleTabService {
 		for (SCDNodeAttribute attribute : scdNodeAttributes) {
 			String type = null;
 			String value = null;
-			URI iri = null;
 			String unit = null;
 			
 			if (attribute instanceof CommentAttribute) {

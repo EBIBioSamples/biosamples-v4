@@ -5,13 +5,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import uk.ac.ebi.biosamples.messages.threaded.MessageBuffer;
 import uk.ac.ebi.biosamples.messages.threaded.MessageSampleStatus;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
-import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
 import uk.ac.ebi.biosamples.solr.service.SampleToSolrSampleConverter;
 
 @Service

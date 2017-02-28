@@ -4,7 +4,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.springframework.util.Assert;
 
-import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
 
 public class MessageSampleStatus {

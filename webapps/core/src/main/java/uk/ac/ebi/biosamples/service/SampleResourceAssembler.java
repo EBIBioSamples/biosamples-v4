@@ -1,10 +1,8 @@
 package uk.ac.ebi.biosamples.service;
 
-import org.springframework.beans.BeanUtils;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceAssembler;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
-import org.springframework.hateoas.mvc.ResourceAssemblerSupport;
 import org.springframework.stereotype.Service;
 
 import uk.ac.ebi.biosamples.controller.SampleRestController;

@@ -12,10 +12,6 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-
 import javax.annotation.PostConstruct;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
@@ -37,7 +33,6 @@ import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
-import org.dom4j.Element;
 import org.dom4j.io.DocumentSource;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;

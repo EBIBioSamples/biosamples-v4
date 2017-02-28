@@ -5,8 +5,6 @@ import org.neo4j.ogm.annotation.Property;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.TreeSet;
-
 import org.neo4j.ogm.annotation.GraphId;
 import org.neo4j.ogm.annotation.Relationship;
 

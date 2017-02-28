@@ -11,28 +11,13 @@ import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.RequestEntity;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestOperations;
-import org.springframework.web.util.UriComponentsBuilder;
-
-import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.SubmissionService;
-import uk.ac.ebi.biosamples.utils.HateoasUtils;
 import uk.ac.ebi.biosamples.utils.TaxonomyService;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
-import uk.ac.ebi.biosamples.utils.XmlUtils;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 

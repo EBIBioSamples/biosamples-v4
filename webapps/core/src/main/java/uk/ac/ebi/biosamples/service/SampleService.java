@@ -1,8 +1,6 @@
 package uk.ac.ebi.biosamples.service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -12,7 +10,6 @@ import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -27,8 +24,6 @@ import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.model.MongoSubmission;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSubmissionRepository;
-import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
-import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
 import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
 

@@ -9,7 +9,6 @@ import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.autoconfigure.json.JsonTest;
 import org.springframework.boot.test.json.JacksonTester;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;

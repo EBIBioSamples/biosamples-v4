@@ -1,24 +1,11 @@
 package uk.ac.ebi.biosamples.solr.model;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.solr.core.mapping.Dynamic;
 import org.springframework.data.solr.core.mapping.Indexed;
 import org.springframework.data.solr.core.mapping.SolrDocument;
-
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Relationship;
-import uk.ac.ebi.biosamples.service.CustomLocalDateTimeDeserializer;
-import uk.ac.ebi.biosamples.service.CustomLocalDateTimeSerializer;
 
 
 @SolrDocument(solrCoreName = "samples")
