@@ -100,6 +100,7 @@ public class SampleToXmlConverter implements Converter<Sample, Document> {
 		}
 		
 		//TODO derivedFrom element
+		//TODO external references
 		return doc;
 	}
 

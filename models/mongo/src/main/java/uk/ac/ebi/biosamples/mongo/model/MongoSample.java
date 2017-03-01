@@ -1,5 +1,6 @@
 package uk.ac.ebi.biosamples.mongo.model;
 
+import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Set;
@@ -34,6 +35,7 @@ public class MongoSample {
 
 	protected SortedSet<Attribute> attributes;
 	protected SortedSet<Relationship> relationships;
+	protected SortedSet<URI> externalReferences;
 
 	private MongoSample() {
 		
@@ -67,23 +69,13 @@ public class MongoSample {
 	public SortedSet<Attribute> getAttributes() {
 		return attributes;
 	}
-	
-	public void addAttribute(Attribute attribute) {
-		if (attributes == null) {
-			attributes = new TreeSet<>();
-		}
-		attributes.add(attribute);
-	}
 
 	public SortedSet<Relationship> getRelationships() {
 		return relationships;
 	}
-	
-	public void addRelationship(Relationship relationship) {
-		if (relationships == null) {
-			relationships = new TreeSet<>();
-		}
-		relationships.add(relationship);
+
+	public SortedSet<URI> getExternalReferences() {
+		return externalReferences;
 	}
 
 	@Override
@@ -99,12 +91,13 @@ public class MongoSample {
         		&& Objects.equals(this.release, other.release)
         		&& Objects.equals(this.update, other.update)
         		&& Objects.equals(this.attributes, other.attributes)
-        		&& Objects.equals(this.relationships, other.relationships);
+        		&& Objects.equals(this.relationships, other.relationships)
+        		&& Objects.equals(this.externalReferences, other.externalReferences);
     }
     
     @Override
     public int hashCode() {
-    	return Objects.hash(name, accession, release, update, attributes, relationships);
+    	return Objects.hash(name, accession, release, update, attributes, relationships, externalReferences);
     }
     
 
@@ -123,12 +116,16 @@ public class MongoSample {
     	sb.append(attributes);
     	sb.append(",");
     	sb.append(relationships);
+    	sb.append(",");
+    	sb.append(externalReferences);
     	sb.append(")");
     	return sb.toString();
     }
     
 	
-	static public MongoSample build(String name, String accession, LocalDateTime release, LocalDateTime update, Set<Attribute> attributes, Set<Relationship> relationships){
+	static public MongoSample build(String name, String accession, LocalDateTime release, LocalDateTime update, 
+			Set<Attribute> attributes, Set<Relationship> relationships, SortedSet<URI> externalReferences) {
+		
 		MongoSample sample = new MongoSample();
 		
 		sample.accession = accession;		
@@ -136,17 +133,27 @@ public class MongoSample {
 		sample.release = release;
 		sample.update = update;
 		
-		if (attributes != null && attributes.size() > 0) {
-			for (Attribute attribute : attributes) {
-				sample.addAttribute(attribute);
-			}
+		if (attributes == null || attributes.size() == 0) {
+			sample.attributes = null;
+		} else {
+			sample.attributes = new TreeSet<>();
+			sample.attributes.addAll(attributes);
 		}
 
-		if (relationships != null && relationships.size() > 0) {
-			for (Relationship relationship : relationships) {
-				sample.addRelationship(relationship);
-			}
+		if (relationships == null || relationships.size() == 0) {
+			sample.relationships = null;
+		} else {
+			sample.relationships = new TreeSet<>();
+			sample.relationships.addAll(relationships);
 		}
+
+		if (externalReferences == null || externalReferences.size() == 0) {
+			sample.externalReferences = null;
+		} else {
+			sample.externalReferences = new TreeSet<>();
+			sample.externalReferences.addAll(externalReferences);
+		}	
+		
 		return sample;
 	}
 

@@ -5,7 +5,9 @@ import java.net.URI;
 import java.net.URLEncoder;
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Attribute implements Comparable<Attribute> {
 
@@ -129,7 +131,10 @@ public class Attribute implements Comparable<Attribute> {
 	static public Attribute build(String key, String value) {
 		return build(key, value, null, null);
 	}
-	static public Attribute build(String key, String value, URI iri, String unit) {
+	
+    @JsonCreator
+	static public Attribute build(@JsonProperty("key") String key, @JsonProperty("value") String value, 
+			@JsonProperty("iri") URI iri, @JsonProperty("unit") String unit) {
 		Attribute attr = new Attribute();
 		attr.key = key;
 		attr.value = value;

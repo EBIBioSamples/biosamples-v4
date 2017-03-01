@@ -129,7 +129,7 @@ public class SampleService {
 			mongoSample = accessionAndInsert(mongoSample);
 			//update the sample object with the assigned accession
 			sample = Sample.build(sample.getName(), mongoSample.getAccession(), sample.getRelease(), sample.getUpdate(),
-					sample.getAttributes(), sample.getRelationships());
+					sample.getAttributes(), sample.getRelationships(), sample.getExternalReferences());
 		}
 		// send a message for further processing
 		amqpTemplate.convertAndSend(Messaging.exchangeForIndexing, "", sample);

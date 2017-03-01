@@ -2,6 +2,9 @@ package uk.ac.ebi.biosamples.model;
 
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class Relationship implements Comparable<Relationship> {
 
 	private String type;
@@ -75,7 +78,10 @@ public class Relationship implements Comparable<Relationship> {
     	return sb.toString();
     }
     
-    static public Relationship build(String type, String target, String source) {
+    @JsonCreator
+    static public Relationship build(@JsonProperty("type") String type, 
+    		@JsonProperty("target") String target,
+    		@JsonProperty("source") String source) {
     	Relationship rel = new Relationship();
     	rel.type = type;
     	rel.target = target;

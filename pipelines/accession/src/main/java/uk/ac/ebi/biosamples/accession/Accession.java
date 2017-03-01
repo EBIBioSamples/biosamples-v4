@@ -118,9 +118,8 @@ public class Accession implements ApplicationRunner{
 			attributes.add(Attribute.build("user accession", userAccession));
 			attributes.add(Attribute.build("submission accession", submissionAccession));
 			attributes.add(Attribute.build("deleted", Boolean.toString(deleted)));
-			SortedSet<Relationship> relationships = new TreeSet<>();
 			
-			Sample sample = Sample.build(name, accession, release, update, attributes, relationships);
+			Sample sample = Sample.build(name, accession, release, update, attributes, null, null);
 			submissionService.submit(sample);
 			return null;
 		}

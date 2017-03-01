@@ -27,5 +27,6 @@
 			"source":"TEST1",
 			"type":"derived from",
 			"target":"TEST2"
-		}]
+		}],
+	"externalReferences":["http://www.google.com"]
 }

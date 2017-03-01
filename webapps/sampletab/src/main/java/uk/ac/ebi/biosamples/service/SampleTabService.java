@@ -45,6 +45,7 @@ public class SampleTabService {
 
 			SortedSet<Attribute> attributes = new TreeSet<>();
 			SortedSet<Relationship> relationships = new TreeSet<>();
+			//TODO external references
 			
 			//beware, works by side-effect
 			populateAttributes(accession, sampleNode.getAttributes(), attributes, relationships);
@@ -52,7 +53,7 @@ public class SampleTabService {
 			//only build a sample if there is at least one attribute or it has no "parent" node
 			//otherwise, it is just a group membership tracking dummy
 			if (attributes.size() > 0 || sampleNode.getParentNodes().size() == 0) {			
-				Sample sample = Sample.build(name, accession, release, update, attributes, relationships);
+				Sample sample = Sample.build(name, accession, release, update, attributes, relationships, null);
 				sample = submissionService.submit(sample).getContent();
 				if (accession == null) {
 					sampleNode.setSampleAccession(sample.getAccession());
@@ -67,6 +68,7 @@ public class SampleTabService {
 
 			SortedSet<Attribute> attributes = new TreeSet<>();
 			SortedSet<Relationship> relationships = new TreeSet<>();
+			//TODO external references
 			
 			//beware, works by side-effect
 			populateAttributes(accession, groupNode.getAttributes(), attributes, relationships);
@@ -82,7 +84,7 @@ public class SampleTabService {
 			}		
 			
 			//this must be the last bit to build and save the object
-			Sample sample = Sample.build(name, accession, release, update, attributes, relationships);
+			Sample sample = Sample.build(name, accession, release, update, attributes, relationships, null);
 			sample = submissionService.submit(sample).getContent();
 			if (accession == null) {
 				groupNode.setGroupAccession(sample.getAccession());

@@ -54,8 +54,11 @@ public class MongoSerializationTest {
 		
 		SortedSet<Relationship> relationships = new TreeSet<>();
 		relationships.add(Relationship.build("derived from", "TEST2", "TEST1"));
+		
+		SortedSet<URI> externalReferences = new TreeSet<>();
+		externalReferences.add(URI.create("http://www.google.com"));
 
-		return MongoSample.build(name, accession, release, update, attributes, relationships);
+		return MongoSample.build(name, accession, release, update, attributes, relationships, externalReferences);
 	}
 
 	@Test

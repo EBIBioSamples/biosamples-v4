@@ -65,7 +65,7 @@ public class RestRunner implements ApplicationRunner {
 			// put a version that is private
 			sampleTest1 = Sample.build(sampleTest1.getName(), sampleTest1.getAccession(),
 					LocalDateTime.of(LocalDate.of(2116, 4, 1), LocalTime.of(11, 36, 57, 0)), sampleTest1.getUpdate(),
-					sampleTest1.getAttributes(), sampleTest1.getRelationships());
+					sampleTest1.getAttributes(), sampleTest1.getRelationships(), sampleTest1.getExternalReferences());
 			doPut(sampleTest1);
 	
 			// check the response code
@@ -81,7 +81,7 @@ public class RestRunner implements ApplicationRunner {
 
 			sampleTest2 = Sample.build(sampleTest2.getName(), sampleTest2.getAccession(),
 					sampleTest2.getRelease(), sampleTest2.getUpdate(),
-					sampleTest2.getAttributes(), sampleTest1.getRelationships());
+					sampleTest2.getAttributes(), sampleTest1.getRelationships(), new TreeSet<>());
 			
 			//check that it has the additional relationship added
 			// get to check it worked
@@ -172,8 +172,11 @@ public class RestRunner implements ApplicationRunner {
 
 		SortedSet<Relationship> relationships = new TreeSet<>();
 		relationships.add(Relationship.build("derived from", "TEST2", "TEST1"));
+		
+		SortedSet<URI> externalReferences = new TreeSet<>();
+		externalReferences.add(URI.create("http://www.google.com"));
 
-		return Sample.build(name, accession, release, update, attributes, relationships);
+		return Sample.build(name, accession, release, update, attributes, relationships, externalReferences);
 	}
 
 	private Sample getSampleTest2() throws URISyntaxException {
@@ -186,9 +189,7 @@ public class RestRunner implements ApplicationRunner {
 		attributes.add(
 			Attribute.build("organism", "Homo sapiens", new URI("http://purl.obolibrary.org/obo/NCBITaxon_9606"), null));
 
-		SortedSet<Relationship> relationships = new TreeSet<>();
-
-		return Sample.build(name, accession, release, update, attributes, relationships);
+		return Sample.build(name, accession, release, update, attributes, new TreeSet<>(), new TreeSet<>());
 	}
 
 }

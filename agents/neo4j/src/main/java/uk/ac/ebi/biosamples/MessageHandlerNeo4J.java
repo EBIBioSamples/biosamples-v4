@@ -2,6 +2,7 @@ package uk.ac.ebi.biosamples;
 
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,15 +12,16 @@ import uk.ac.ebi.biosamples.neo.model.NeoRelationship;
 import uk.ac.ebi.biosamples.neo.model.NeoSample;
 import uk.ac.ebi.biosamples.neo.repo.NeoRelationshipRepository;
 import uk.ac.ebi.biosamples.neo.repo.NeoSampleRepository;
+import uk.ac.ebi.biosamples.neo.service.SampleToNeoSampleConverter;
 
 @Service
 public class MessageHandlerNeo4J {
 
 	@Autowired
 	private NeoSampleRepository neoSampleRepository;
-
+	
 	@Autowired
-	private NeoRelationshipRepository neoRelRepository;
+	private SampleToNeoSampleConverter sampleToNeoSampleConverter;
 
 	@RabbitListener(queues = Messaging.queueToBeIndexedNeo4J)
 	public void handle(Sample sample) {
@@ -33,30 +35,8 @@ public class MessageHandlerNeo4J {
 
 	@Transactional
 	private void persist(Sample sample) {
-		NeoSample neoSample = neoSampleRepository.findOneByAccession(sample.getAccession());
-		if (neoSample == null) {
-			// make a new one
-			neoSample = new NeoSample(sample.getAccession());
-			neoSample = neoSampleRepository.save(neoSample);
-		}
-
-		for (Relationship rel : sample.getRelationships()){
-
-			// convert the target accession into a target object
-			NeoSample targetSample = neoSampleRepository.findOneByAccession(rel.getTarget());
-			
-			// if it doesn't exist, create it
-			if (targetSample == null) {
-				targetSample = new NeoSample(rel.getTarget());
-				targetSample = neoSampleRepository.save(targetSample);
-			}
-			//persist the relationship
-			NeoRelationship neoRel = NeoRelationship.create(neoSample, targetSample, rel.getType());
-			neoRel = neoRelRepository.save(neoRel);
-			neoSample.addRelationships(neoRel);
-		}
-
-		neoSample = neoSampleRepository.save(neoSample);
 		
+		NeoSample neoSample = sampleToNeoSampleConverter.convert(sample);
+		neoSample = neoSampleRepository.save(neoSample);
 	}
 }

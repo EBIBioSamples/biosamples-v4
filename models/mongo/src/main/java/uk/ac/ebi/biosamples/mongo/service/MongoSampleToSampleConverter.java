@@ -14,6 +14,6 @@ public class MongoSampleToSampleConverter implements Converter<MongoSample, Samp
 	@Override
 	public Sample convert(MongoSample sample) {
 		return Sample.build(sample.getName(), sample.getAccession(), sample.getRelease(), sample.getUpdate(),
-				sample.getAttributes(), sample.getRelationships());
+				sample.getAttributes(), sample.getRelationships(), sample.getExternalReferences());
 	}
 }

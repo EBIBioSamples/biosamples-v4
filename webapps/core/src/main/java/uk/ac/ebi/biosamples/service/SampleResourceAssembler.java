@@ -9,7 +9,7 @@ import uk.ac.ebi.biosamples.controller.SampleRestController;
 import uk.ac.ebi.biosamples.model.Sample;
 
 /**
- * This class is used by Spring to add HAL _links for {@Link Sample} objects. 
+ * This class is used by Spring to add HAL _links for {@Link Sample} objects.
  * 
  * @author faulcon
  *
@@ -21,11 +21,13 @@ public class SampleResourceAssembler implements ResourceAssembler<Sample, Resour
 	}
 
 	@Override
-	public  Resource<Sample> toResource(Sample sample) {		
+	public Resource<Sample> toResource(Sample sample) {
 		Resource<Sample> resource = new Resource<>(sample);
-		
-		resource.add(ControllerLinkBuilder.linkTo(ControllerLinkBuilder.methodOn(SampleRestController.class).readResource(sample.getAccession())).withSelfRel());
+
+		resource.add(ControllerLinkBuilder
+				.linkTo(ControllerLinkBuilder.methodOn(SampleRestController.class).readResource(sample.getAccession()))
+				.withSelfRel());
 		return resource;
 	}
-	
+
 }

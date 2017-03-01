@@ -1,5 +1,6 @@
 package uk.ac.ebi.biosamples.model;
 
+import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Set;
@@ -30,7 +31,7 @@ public class Sample {
 
 	protected SortedSet<Attribute> attributes;
 	protected SortedSet<Relationship> relationships;
-	protected SortedSet<ExternalReference> externalReferences;
+	protected SortedSet<URI> externalReferences;
 
 	protected Sample() {
 		
@@ -60,7 +61,7 @@ public class Sample {
 		return relationships;
 	}
 
-	public SortedSet<ExternalReference> getExternalReferences() {
+	public SortedSet<URI> getExternalReferences() {
 		return externalReferences;
 	}
 
@@ -106,14 +107,9 @@ public class Sample {
     	sb.append(")");
     	return sb.toString();
     }
-	
-	static public Sample build(String name, String accession, LocalDateTime release, LocalDateTime update, 
-			Set<Attribute> attributes, Set<Relationship> relationships){
-		return build(name, accession, release, update, attributes, relationships, new TreeSet<>());
-	}
 		
 	static public Sample build(String name, String accession, LocalDateTime release, LocalDateTime update, 
-			Set<Attribute> attributes, Set<Relationship> relationships,  SortedSet<ExternalReference> externalReferences){
+			Set<Attribute> attributes, Set<Relationship> relationships, SortedSet<URI> externalReferences){
 		Sample sample = new Sample();
 		sample.accession = accession;
 		sample.name = name;

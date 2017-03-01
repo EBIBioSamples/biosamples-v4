@@ -60,7 +60,8 @@ public class InverseRelationshipService  {
 				log.trace("Adding relationship from "+source+" to "+target);
 			}
 			
-			return Sample.build(sample.getName(), sample.getAccession(), sample.getRelease(), sample.getUpdate(), sample.getAttributes(), relationships);
+			return Sample.build(sample.getName(), sample.getAccession(), sample.getRelease(), sample.getUpdate(), 
+					sample.getAttributes(), relationships, sample.getExternalReferences());
 		}
 	}
 }

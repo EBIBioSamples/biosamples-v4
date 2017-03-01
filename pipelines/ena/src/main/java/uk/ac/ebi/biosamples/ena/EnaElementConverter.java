@@ -15,7 +15,6 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
 
 import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.utils.TaxonomyService;
@@ -52,7 +51,7 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 
 		SortedSet<Attribute> attributes = new TreeSet<>();
 		SortedSet<Relationship> relationships = new TreeSet<>();
-		SortedSet<ExternalReference> externalReferences = new TreeSet<>();
+		SortedSet<URI> externalReferences = new TreeSet<>();
 
 		log.trace("Converting " + name);
 
@@ -151,7 +150,20 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 		}
 
 	    //external reference
-		externalReferences.add(ExternalReference.build("https://www.ebi.ac.uk/ena/data/view/"+name));
+		if (XmlPathBuilder.of(root).path(SAMPLE, "SAMPLE_LINK", "SAMPLE_LINK").exists()) {
+			for (Element e : XmlPathBuilder.of(root).path(SAMPLE, "SAMPLE_LINK", "SAMPLE_LINK").elements("XREF_LINK")) {
+				if (XmlPathBuilder.of(e).path("DB").exists() && XmlPathBuilder.of(e).path("ID").exists()) {
+					String db = XmlPathBuilder.of(e).path("DB").text();
+					String id = XmlPathBuilder.of(e).path("ID").text();
+					if ("ENA-EXPERIMENT".equals(db)) {
+						externalReferences.add(URI.create("https://www.ebi.ac.uk/ena/data/view/"+id));						
+					}
+					if ("ENA-ANALYSIS".equals(db)) {
+						externalReferences.add(URI.create("https://www.ebi.ac.uk/ena/data/view/"+id));						
+					}
+				}				
+			}
+		}
 		
 		return Sample.build(name, accession, null, null, attributes, relationships, externalReferences);
 	}

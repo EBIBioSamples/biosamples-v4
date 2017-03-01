@@ -132,7 +132,7 @@ public class NcbiElementCallable implements Callable<Void> {
 		}
 		
 		//Sample sample = Sample.createFrom(name, accession, updateDate, releaseDate, keyValues, new HashMap<>(), new HashMap<>(),relationships);
-		Sample sample = Sample.build(name, accession, releaseDate, updateDate, attrs, rels);
+		Sample sample = Sample.build(name, accession, releaseDate, updateDate, attrs, rels, null);
 		
 		//now pass it along to the actual submission process
 		submissionService.submit(sample);

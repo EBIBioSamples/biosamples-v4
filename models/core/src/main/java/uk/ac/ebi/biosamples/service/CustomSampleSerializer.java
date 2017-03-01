@@ -12,7 +12,6 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Sample;
 
 public class CustomSampleSerializer extends StdSerializer<Sample> {
@@ -71,11 +70,7 @@ public class CustomSampleSerializer extends StdSerializer<Sample> {
 		}
 
 		if (sample.getExternalReferences() != null && sample.getExternalReferences().size() > 0) {
-			gen.writeArrayFieldStart("externalReferences");
-			for (ExternalReference externalReference : sample.getExternalReferences()) {
-				gen.writeString(externalReference.getUrl().toExternalForm());
-			}
-			gen.writeEndArray();
+	        gen.writeObjectField("externalReferences", sample.getExternalReferences());
 		}
 
         gen.writeEndObject();

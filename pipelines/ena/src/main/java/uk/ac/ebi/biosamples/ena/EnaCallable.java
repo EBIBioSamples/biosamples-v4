@@ -75,7 +75,7 @@ public class EnaCallable implements Callable<Void> {
 			LocalDateTime release = eraProDao.getReleaseDateTime(sampleAccession);
 			LocalDateTime update = eraProDao.getUpdateDateTime(sampleAccession);
 			
-			sample = Sample.build(sample.getName(), sampleAccession, release, update, sample.getAttributes(), sample.getRelationships());
+			sample = Sample.build(sample.getName(), sampleAccession, release, update, sample.getAttributes(), sample.getRelationships(), sample.getExternalReferences());
 			submissionService.submit(sample);
 		} else {
 			log.warn("Unable to find SAMPLE element for "+sampleAccession);

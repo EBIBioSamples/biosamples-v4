@@ -139,6 +139,8 @@ public class SolrSample {
 		sample.attributeIris = attributeIris;
 		sample.attributeUnits = attributeUnits;
 		//TODO handle relationships too
+		//but how to do inverse?
+		//TODO handle external references
 		return sample;
 	}
 }
