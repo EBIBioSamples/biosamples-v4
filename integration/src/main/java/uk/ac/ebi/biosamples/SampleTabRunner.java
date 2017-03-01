@@ -31,7 +31,7 @@ public class SampleTabRunner implements ApplicationRunner {
 	private RestOperations restTemplate;
 
 	@Override
-	@Order(2)
+	@Order(3)
 	public void run(ApplicationArguments args) throws Exception {
 		log.info("Starting SampleTabRunner"); 		
 		
