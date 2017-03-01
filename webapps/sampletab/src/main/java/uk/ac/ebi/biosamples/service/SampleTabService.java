@@ -45,15 +45,15 @@ public class SampleTabService {
 
 			SortedSet<Attribute> attributes = new TreeSet<>();
 			SortedSet<Relationship> relationships = new TreeSet<>();
-			//TODO external references
+			SortedSet<URI> externalReferences = new TreeSet<>();
 			
 			//beware, works by side-effect
-			populateAttributes(accession, sampleNode.getAttributes(), attributes, relationships);
+			populateAttributes(accession, sampleNode.getAttributes(), attributes, relationships, externalReferences);
 			
 			//only build a sample if there is at least one attribute or it has no "parent" node
 			//otherwise, it is just a group membership tracking dummy
 			if (attributes.size() > 0 || sampleNode.getChildNodes().size() == 0) {			
-				Sample sample = Sample.build(name, accession, release, update, attributes, relationships, null);
+				Sample sample = Sample.build(name, accession, release, update, attributes, relationships, externalReferences);
 				sample = submissionService.submit(sample).getContent();
 				if (accession == null) {
 					sampleNode.setSampleAccession(sample.getAccession());
@@ -68,10 +68,10 @@ public class SampleTabService {
 
 			SortedSet<Attribute> attributes = new TreeSet<>();
 			SortedSet<Relationship> relationships = new TreeSet<>();
-			//TODO external references
+			SortedSet<URI> externalReferences = new TreeSet<>();
 			
 			//beware, works by side-effect
-			populateAttributes(accession, groupNode.getAttributes(), attributes, relationships);
+			populateAttributes(accession, groupNode.getAttributes(), attributes, relationships, externalReferences);
 				
 			//add relationships from the group node to any member samples
 			for (Node node : groupNode.getParentNodes()) {
@@ -84,7 +84,7 @@ public class SampleTabService {
 			}		
 			
 			//this must be the last bit to build and save the object
-			Sample sample = Sample.build(name, accession, release, update, attributes, relationships, null);
+			Sample sample = Sample.build(name, accession, release, update, attributes, relationships, externalReferences);
 			sample = submissionService.submit(sample).getContent();
 			if (accession == null) {
 				groupNode.setGroupAccession(sample.getAccession());
@@ -96,12 +96,13 @@ public class SampleTabService {
 	/**
 	 * Works by side effect!
 	 * 
-	 * Converts the List<SCDNodeAttribute> into the passed SortedSet<Attribute> and sortedSet<Relationship> objects.
+	 * Converts the List<SCDNodeAttribute> into the passed SortedSet objects.
 	 *   
 	 * 
 	 * @param scdNodeAttributes
 	 */
-	private void populateAttributes(String accession, List<SCDNodeAttribute> scdNodeAttributes, SortedSet<Attribute> attributes , SortedSet<Relationship> relationships) {		
+	private void populateAttributes(String accession, List<SCDNodeAttribute> scdNodeAttributes, 
+			SortedSet<Attribute> attributes , SortedSet<Relationship> relationships, SortedSet<URI> externalReferences) {		
 		for (SCDNodeAttribute attribute : scdNodeAttributes) {
 			String type = null;
 			String value = null;
@@ -117,7 +118,8 @@ public class SampleTabService {
 					unit = commentAttribute.unit.getAttributeValue().trim();
 				}					
 				String termSourceId = commentAttribute.getTermSourceID();					
-				attributes.add(makeAttribute(type, value, termSourceId, unit));					
+				attributes.add(makeAttribute(type, value, termSourceId, unit));		
+				
 			} else if (attribute instanceof CharacteristicAttribute) {
 				CharacteristicAttribute characteristicAttribute = (CharacteristicAttribute) attribute;					
 				type = characteristicAttribute.type;
@@ -128,9 +130,12 @@ public class SampleTabService {
 					unit = characteristicAttribute.unit.getAttributeValue().trim();
 				}					
 				String termSourceId = characteristicAttribute.getTermSourceID();					
-				attributes.add(makeAttribute(type, value, termSourceId, unit));		
+				attributes.add(makeAttribute(type, value, termSourceId, unit));	
+				
 			} else if (attribute instanceof DatabaseAttribute) {
-				//TODO this is a data link, store appropriately
+				DatabaseAttribute databaseAttribute = (DatabaseAttribute) attribute;
+				externalReferences.add(URI.create(databaseAttribute.databaseURI));
+				
 			} else if (attribute instanceof AbstractRelationshipAttribute) {
 				//this is a relationship, store appropriately
 				AbstractRelationshipAttribute abstractRelationshipAttribute = (AbstractRelationshipAttribute) attribute;
@@ -138,8 +143,7 @@ public class SampleTabService {
 				value = abstractRelationshipAttribute.getAttributeValue();
 				relationships.add(Relationship.build(type, value, accession));
 			}				
-		}
-		
+		}		
 	}
 	
 	private Attribute makeAttribute(String type, String value, String termSourceId, String unit) {
@@ -152,7 +156,7 @@ public class SampleTabService {
 				//do nothing
 			}
 			if (uri == null) {
-				//provided termSourceId wasnt a uri
+				//provided termSourceId wasn't a uri
 				//TODO query OLS to get the URI for a short form http://www.ebi.ac.uk/ols/api/terms?id=EFO_0000001
 			}
 		}		
