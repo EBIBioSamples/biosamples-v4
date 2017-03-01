@@ -21,11 +21,8 @@ public class NeoUrl {
 	@Convert(URIConverter.class)
 	private URI url;
 
-
-	private NeoUrl( URI url) {
-		this.url = url;
-	}
-
+	private NeoUrl() {}
+	
 	public Long getId() {
 		return id;
 	}	
@@ -44,7 +41,8 @@ public class NeoUrl {
     }
     
 	public static NeoUrl create(URI url) {
-		NeoUrl neoUrl = new NeoUrl(url);
+		NeoUrl neoUrl = new NeoUrl();
+		neoUrl.url = url;
 		return neoUrl;
 	}
 }
