@@ -52,7 +52,7 @@ public class SampleTabService {
 			
 			//only build a sample if there is at least one attribute or it has no "parent" node
 			//otherwise, it is just a group membership tracking dummy
-			if (attributes.size() > 0 || sampleNode.getParentNodes().size() == 0) {			
+			if (attributes.size() > 0 || sampleNode.getChildNodes().size() == 0) {			
 				Sample sample = Sample.build(name, accession, release, update, attributes, relationships, null);
 				sample = submissionService.submit(sample).getContent();
 				if (accession == null) {
