@@ -11,19 +11,19 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-<!-- 		<version>1.4.4.RELEASE</version> -->
+		<!-- <version>1.4.4.RELEASE</version> -->
 		<!-- This has problems with the converters -->
-<!-- 		<version>1.5.1.RELEASE</version> -->
-		<version>1.5.2.BUILD-SNAPSHOT</version>
+		<!-- <version>1.5.1.RELEASE</version> -->
+<!-- 		<version>1.5.2.BUILD-SNAPSHOT</version> -->
 		<!-- This uses Thymeleaf 3 -->
-<!-- 		<version>2.0.0.BUILD-SNAPSHOT</version> -->
+		<version>2.0.0.BUILD-SNAPSHOT</version>
 	</parent>
 
 	<properties>
 		<bsd2017.version>4.0.0-SNAPSHOT</bsd2017.version>
 		<java.version>1.8</java.version>
-		<thymeleaf.version>3.0.2.RELEASE</thymeleaf.version>
-		<thymeleaf-layout-dialect.version>2.1.1</thymeleaf-layout-dialect.version>
+<!-- 		<thymeleaf.version>3.0.2.RELEASE</thymeleaf.version> -->
+<!-- 		<thymeleaf-layout-dialect.version>2.1.1</thymeleaf-layout-dialect.version> -->
 	</properties>
 
 	<modules>
@@ -47,12 +47,23 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- <dependency> -->
-		<!-- <groupId>cglib</groupId> -->
-		<!-- <artifactId>cglib</artifactId> -->
-		<!-- <version>2.2.2</version> -->
-		<!-- </dependency> -->
+		<dependency>
+			<groupId>cglib</groupId>
+			<artifactId>cglib</artifactId>
+			<version>2.2.2</version>
+		</dependency>
 	</dependencies>
+
+	<dependencyManagement>
+		<dependencies>
+			<!-- override spring-data-neo4j version to use @Index -->
+			<dependency>
+				<groupId>org.springframework.data</groupId>
+				<artifactId>spring-data-neo4j</artifactId>
+				<version>4.2.0.RELEASE</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 
 	<repositories>		<!-- (you don't need this if you are using a .RELEASE version) -->
