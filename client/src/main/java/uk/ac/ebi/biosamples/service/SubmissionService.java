@@ -57,7 +57,7 @@ public class SubmissionService {
 					.path("samples")
 					.build().toUri();
 			
-			log.trace("PPOSTing "+uri);
+			log.trace("POSTing "+uri);
 			
 			RequestEntity<Sample> requestEntity = RequestEntity.post(uri).contentType(MediaType.APPLICATION_JSON).body(sample);
 			ResponseEntity<Resource<Sample>> responseEntity = restTemplate.exchange(requestEntity, new ParameterizedTypeReference<Resource<Sample>>(){});
