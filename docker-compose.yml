@@ -17,6 +17,7 @@ services:
     - spring.data.solr.host=http://solr:8983/solr
     - spring.data.neo4j.uri=bolt://neo4j:7687
     - spring.data.neo4j.username=neo4j
+    - spring.data.neo4j.indexes.auto=assert
     - spring.data.mongodb.host=mongo
     - spring.rabbitmq.publisher-confirms=true
     - spring.jackson.serialization-inclusion=non_null
@@ -52,6 +53,7 @@ services:
     - spring.rabbitmq.host=rabbitmq
     - spring.data.neo4j.uri=bolt://neo4j:7687
     - spring.data.neo4j.username=neo4j
+    - spring.data.neo4j.indexes.auto=assert
     - biosamples.agent.neo4j.stayalive=true
     
   biosamples-agents-solr:
@@ -99,8 +101,7 @@ services:
     - spring.datasource.erapro.url=jdbc:oracle:thin:@ora-vm-009.ebi.ac.uk:1541:ERAPRO
     - spring.datasource.erapro.username=era_reader
     - spring.datasource.erapro.password=reader
-    - spring.datasource.erapro.driver-class-name=oracle.jdbc.driver.OracleDriver
-    
+    - spring.datasource.erapro.driver-class-name=oracle.jdbc.driver.OracleDriver    
     
   biosamples-pipelines-ncbi:
     image: biosamples:latest
