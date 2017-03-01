@@ -6,12 +6,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
-public class PipelinesProperties {
+public class ClientProperties {
 	
 	@Value("${biosamples.submissionuri:http://localhost:8081}")
-	private URI biosampleSubmissionURI;
+	private URI biosampleSubmissionUri;
 
-	public URI getBiosampleSubmissionURI() {
-		return biosampleSubmissionURI;
+	public URI getBiosampleSubmissionUri() {
+		return biosampleSubmissionUri;
 	}
 }

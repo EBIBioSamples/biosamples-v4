@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import uk.ac.ebi.biosamples.PipelinesProperties;
+import uk.ac.ebi.biosamples.ClientProperties;
 import uk.ac.ebi.biosamples.model.Sample;
 
 @Service
@@ -23,7 +23,7 @@ public class SubmissionService {
 	private Logger log = LoggerFactory.getLogger(getClass());
 	
 	@Autowired
-	private PipelinesProperties pipelinesProperties;
+	private ClientProperties clientProperties;
 	
 	//use RestOperations as the interface implemented by RestTemplate
 	//easier to mock for testing
@@ -35,12 +35,12 @@ public class SubmissionService {
 		//if the sample has an accession, put to that
 		if (sample.getAccession() != null) {
 			//samples with an existing accession should be PUT			
-			URI uri = UriComponentsBuilder.fromUri(pipelinesProperties.getBiosampleSubmissionURI())
+			URI uri = UriComponentsBuilder.fromUri(clientProperties.getBiosampleSubmissionUri())
 					.path("samples/")
 					.path(sample.getAccession())
 					.build().toUri();
 			
-			log.trace("PUTing "+uri);
+			log.info("PUTing "+uri);
 			
 			RequestEntity<Sample> requestEntity = RequestEntity.put(uri).contentType(MediaType.APPLICATION_JSON).body(sample);
 			ResponseEntity<Resource<Sample>> responseEntity = restTemplate.exchange(requestEntity, new ParameterizedTypeReference<Resource<Sample>>(){});
@@ -53,11 +53,11 @@ public class SubmissionService {
 			
 		} else {
 			//samples without an existing accession should be POST			
-			URI uri = UriComponentsBuilder.fromUri(pipelinesProperties.getBiosampleSubmissionURI())
+			URI uri = UriComponentsBuilder.fromUri(clientProperties.getBiosampleSubmissionUri())
 					.path("samples")
 					.build().toUri();
 			
-			log.trace("POSTing "+uri);
+			log.info("POSTing "+uri);
 			
 			RequestEntity<Sample> requestEntity = RequestEntity.post(uri).contentType(MediaType.APPLICATION_JSON).body(sample);
 			ResponseEntity<Resource<Sample>> responseEntity = restTemplate.exchange(requestEntity, new ParameterizedTypeReference<Resource<Sample>>(){});

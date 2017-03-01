@@ -80,7 +80,7 @@ public class EnaCallable implements Callable<Void> {
 		} else {
 			log.warn("Unable to find SAMPLE element for "+sampleAccession);
 		}
-		log.trace("HANDLED " + sampleAccession);
+		log.info("HANDLED " + sampleAccession);
 		return null;
 	}
 

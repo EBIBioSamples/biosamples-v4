@@ -150,11 +150,11 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 		}
 
 	    //external reference
-		if (XmlPathBuilder.of(root).path(SAMPLE, "SAMPLE_LINK", "SAMPLE_LINK").exists()) {
-			for (Element e : XmlPathBuilder.of(root).path(SAMPLE, "SAMPLE_LINK", "SAMPLE_LINK").elements("XREF_LINK")) {
-				if (XmlPathBuilder.of(e).path("DB").exists() && XmlPathBuilder.of(e).path("ID").exists()) {
-					String db = XmlPathBuilder.of(e).path("DB").text();
-					String id = XmlPathBuilder.of(e).path("ID").text();
+		if (XmlPathBuilder.of(root).path(SAMPLE, "SAMPLE_LINKS", "SAMPLE_LINK").exists()) {
+			for (Element e : XmlPathBuilder.of(root).path(SAMPLE, "SAMPLE_LINKS").elements("SAMPLE_LINK")) {
+				if (XmlPathBuilder.of(e).path("XREF_LINK", "DB").exists() && XmlPathBuilder.of(e).path("XREF_LINK", "ID").exists()) {
+					String db = XmlPathBuilder.of(e).path("XREF_LINK", "DB").text();
+					String id = XmlPathBuilder.of(e).path("XREF_LINK", "ID").text();
 					if ("ENA-EXPERIMENT".equals(db)) {
 						externalReferences.add(URI.create("https://www.ebi.ac.uk/ena/data/view/"+id));						
 					}
