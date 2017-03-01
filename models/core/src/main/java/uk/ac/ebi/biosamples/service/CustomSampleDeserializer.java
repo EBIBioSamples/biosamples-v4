@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 
 import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 
@@ -85,8 +86,7 @@ public class CustomSampleDeserializer extends StdDeserializer<Sample> {
 	            }
 	        }
         }
-        
-        
+                
         SortedSet<Relationship> relationships = new TreeSet<>();
         if (jsonNode.has("relationships")) {
 	        Iterator<JsonNode> itRelationships = jsonNode.get("relationships").elements();
@@ -98,8 +98,18 @@ public class CustomSampleDeserializer extends StdDeserializer<Sample> {
 	        	relationships.add(Relationship.build(type, target, source));
 	        }        
         }
+        
+        SortedSet<ExternalReference> externalReferences = new TreeSet<>();
+        if (jsonNode.has("externalReferences")) {
+	        Iterator<JsonNode> itExternalReferences = jsonNode.get("externalReferences").elements();
+	        while (itExternalReferences.hasNext()) {
+	        	JsonNode externalReference = itExternalReferences.next();
+	        	String url = externalReference.asText();
+	        	externalReferences.add(ExternalReference.build(url));
+	        }        
+        }
                 
-        return Sample.build(name, accession, release, update, attributes, relationships);
+        return Sample.build(name, accession, release, update, attributes, relationships, externalReferences);
         
 	}
 }

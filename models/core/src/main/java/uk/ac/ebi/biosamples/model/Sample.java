@@ -30,6 +30,7 @@ public class Sample {
 
 	protected SortedSet<Attribute> attributes;
 	protected SortedSet<Relationship> relationships;
+	protected SortedSet<ExternalReference> externalReferences;
 
 	protected Sample() {
 		
@@ -59,6 +60,10 @@ public class Sample {
 		return relationships;
 	}
 
+	public SortedSet<ExternalReference> getExternalReferences() {
+		return externalReferences;
+	}
+
 	@Override
     public boolean equals(Object o) {
 
@@ -72,12 +77,13 @@ public class Sample {
         		&& Objects.equals(this.release, other.release)
         		&& Objects.equals(this.update, other.update)
         		&& Objects.equals(this.attributes, other.attributes)
-        		&& Objects.equals(this.relationships, other.relationships);
+        		&& Objects.equals(this.relationships, other.relationships)
+        		&& Objects.equals(this.externalReferences, other.externalReferences);
     }
     
     @Override
     public int hashCode() {
-    	return Objects.hash(name, accession, release, update, attributes, relationships);
+    	return Objects.hash(name, accession, release, update, attributes, relationships, externalReferences);
     }
     
     @Override
@@ -95,12 +101,19 @@ public class Sample {
     	sb.append(attributes);
     	sb.append(",");
     	sb.append(relationships);
+    	sb.append(",");
+    	sb.append(externalReferences);
     	sb.append(")");
     	return sb.toString();
     }
 	
-	static public Sample build(String name, String accession, LocalDateTime release, LocalDateTime update, Set<Attribute> attributes, Set<Relationship> relationships){
-
+	static public Sample build(String name, String accession, LocalDateTime release, LocalDateTime update, 
+			Set<Attribute> attributes, Set<Relationship> relationships){
+		return build(name, accession, release, update, attributes, relationships, new TreeSet<>());
+	}
+		
+	static public Sample build(String name, String accession, LocalDateTime release, LocalDateTime update, 
+			Set<Attribute> attributes, Set<Relationship> relationships,  SortedSet<ExternalReference> externalReferences){
 		Sample sample = new Sample();
 		sample.accession = accession;
 		sample.name = name;
@@ -141,6 +154,14 @@ public class Sample {
 			sample.relationships = new TreeSet<>();
 			sample.relationships.addAll(relationships);
 		}
+
+		if (externalReferences == null || externalReferences.size() == 0) {
+			sample.externalReferences = null;
+		} else {
+			sample.externalReferences = new TreeSet<>();
+			sample.externalReferences.addAll(externalReferences);
+		}	
+		
 		return sample;
 	}
 

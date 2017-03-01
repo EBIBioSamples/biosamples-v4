@@ -1,5 +1,6 @@
 package uk.ac.ebi.biosamples.ena;
 
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
@@ -14,6 +15,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
 
 import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.utils.TaxonomyService;
@@ -50,6 +52,7 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 
 		SortedSet<Attribute> attributes = new TreeSet<>();
 		SortedSet<Relationship> relationships = new TreeSet<>();
+		SortedSet<ExternalReference> externalReferences = new TreeSet<>();
 
 		log.trace("Converting " + name);
 
@@ -147,9 +150,10 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 			}
 		}
 
-	    //TODO external reference
+	    //external reference
+		externalReferences.add(ExternalReference.build("https://www.ebi.ac.uk/ena/data/view/"+name));
 		
-		return Sample.build(name, accession, null, null, attributes, relationships);
+		return Sample.build(name, accession, null, null, attributes, relationships, externalReferences);
 	}
 
 }

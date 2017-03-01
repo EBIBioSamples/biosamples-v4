@@ -62,7 +62,11 @@ public class SerializationTest {
 		SortedSet<Relationship> relationships = new TreeSet<>();
 		relationships.add(Relationship.build("derived from", "TEST2", "TEST1"));
 
-		return Sample.build(name, accession, release, update, attributes, relationships);
+		
+		SortedSet<ExternalReference> externalReferences = new TreeSet<>();
+		externalReferences.add(ExternalReference.build("http://www.google.com"));
+
+		return Sample.build(name, accession, release, update, attributes, relationships, externalReferences);
 	}
 
 	@Test
