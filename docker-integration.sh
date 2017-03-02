@@ -1,17 +1,21 @@
 #!/bin/bash
 set -e
+
+docker-compose down -v --remove-orphans &
+
 mvn -T 2C clean package
 
-docker-compose down -v --remove-orphans
+wait
 
-#docker volume ls -q | xargs -r docker volume rm
+docker volume ls -q | xargs -r docker volume rm
 #docker images -q | xargs -r docker rmi
 
 docker-compose build
 docker-compose up -d biosamples-webapps-core biosamples-webapps-sampletab
 
-./http-status-check -u http://localhost:8081/actuator -t 60
-./http-status-check -u http://localhost:8082/actuator -t 60
+#would like to check on /health but currently it is bugged so solr is always down
+./http-status-check -u http://localhost:8081/samples -t 30
+./http-status-check -u http://localhost:8082/actuator -t 30
 
 java -jar integration/target/integration-4.0.0-SNAPSHOT.jar --phase1
 
