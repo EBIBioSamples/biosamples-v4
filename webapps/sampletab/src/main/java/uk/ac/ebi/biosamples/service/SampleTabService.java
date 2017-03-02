@@ -16,6 +16,7 @@ import uk.ac.ebi.arrayexpress2.magetab.datamodel.graph.Node;
 import uk.ac.ebi.arrayexpress2.sampletab.datamodel.SampleData;
 import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.GroupNode;
 import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.SampleNode;
+import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.attribute.AbstractNamedAttribute;
 import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.attribute.AbstractRelationshipAttribute;
 import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.attribute.CharacteristicAttribute;
 import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.attribute.CommentAttribute;
@@ -131,11 +132,18 @@ public class SampleTabService {
 				}					
 				String termSourceId = characteristicAttribute.getTermSourceID();					
 				attributes.add(makeAttribute(type, value, termSourceId, unit));	
-				
+
+			} else if (attribute instanceof AbstractNamedAttribute) {
+				AbstractNamedAttribute abstractNamedAttribute = (AbstractNamedAttribute) attribute;		
+				type = abstractNamedAttribute.getAttributeType();
+				value = abstractNamedAttribute.getAttributeValue();	
+				String termSourceId = abstractNamedAttribute.getTermSourceID();					
+				attributes.add(makeAttribute(type, value, termSourceId, null));				
 			} else if (attribute instanceof DatabaseAttribute) {
 				DatabaseAttribute databaseAttribute = (DatabaseAttribute) attribute;
-				externalReferences.add(URI.create(databaseAttribute.databaseURI));
-				
+				if (databaseAttribute.databaseURI != null) {
+					externalReferences.add(URI.create(databaseAttribute.databaseURI));
+				}				
 			} else if (attribute instanceof AbstractRelationshipAttribute) {
 				//this is a relationship, store appropriately
 				AbstractRelationshipAttribute abstractRelationshipAttribute = (AbstractRelationshipAttribute) attribute;
