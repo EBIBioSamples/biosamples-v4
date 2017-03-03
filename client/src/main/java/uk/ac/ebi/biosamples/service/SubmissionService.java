@@ -53,7 +53,7 @@ public class SubmissionService {
 		} else {
 			//samples without an existing accession should be POST			
 			URI uri = UriComponentsBuilder.fromUri(clientProperties.getBiosampleSubmissionUri())
-					.path("samples")
+					.path("/samples")
 					.build().toUri();
 			
 			log.info("POSTing "+uri);
