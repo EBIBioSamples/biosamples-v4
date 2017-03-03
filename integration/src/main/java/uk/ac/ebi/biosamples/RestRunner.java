@@ -51,7 +51,7 @@ public class RestRunner implements ApplicationRunner {
 		Sample sampleTest1 = getSampleTest1();
 		Sample sampleTest2 = getSampleTest2();
 	
-		if (args.getOptionNames().contains("phase1")) {
+		if (args.containsOption("phase") && Integer.parseInt(args.getOptionValues("phase").get(0)) == 1) {
 	
 			// get and check that nothing exists already
 			doGetAndFail(sampleTest1);
@@ -76,7 +76,9 @@ public class RestRunner implements ApplicationRunner {
 			
 			// get to check it worked
 			doGetAndSucess(sampleTest2);
-		} else if (args.getOptionNames().contains("phase2")) {		
+			
+		} else if (args.containsOption("phase") && Integer.parseInt(args.getOptionValues("phase").get(0)) == 2) {
+			
 			//at this point, the agents should have run and updated things
 
 			sampleTest2 = Sample.build(sampleTest2.getName(), sampleTest2.getAccession(),
@@ -86,7 +88,16 @@ public class RestRunner implements ApplicationRunner {
 			//check that it has the additional relationship added
 			// get to check it worked
 			doGetAndSucess(sampleTest2);
+			
+			//now do another update to delete the relationship
+			//might as well make it public now too
+			sampleTest1 = Sample.build(sampleTest1.getName(), sampleTest1.getAccession(),
+					LocalDateTime.of(LocalDate.of(2016, 4, 1), LocalTime.of(11, 36, 57, 0)), sampleTest1.getUpdate(),
+					sampleTest1.getAttributes(), new TreeSet<>(), sampleTest1.getExternalReferences());
+			doPut(sampleTest1);
 		}
+		
+		//TODO check that deleting a relationships on an update actually deletes it from get too
 	}
 
 	public Resource<Sample> doPut(Sample sample) throws RestClientException {

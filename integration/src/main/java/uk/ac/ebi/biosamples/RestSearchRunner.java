@@ -50,9 +50,9 @@ public class RestSearchRunner implements ApplicationRunner {
 		log.info("Starting RestSearchRunner");
 		
 		Sample sampleTest1 = getSampleTest1();
-	
-		if (args.getOptionNames().contains("phase1")) {
-		} else if (args.getOptionNames().contains("phase2")) {
+
+		if (args.containsOption("phase") && Integer.parseInt(args.getOptionValues("phase").get(0)) == 1) {
+		} else if (args.containsOption("phase") && Integer.parseInt(args.getOptionValues("phase").get(0)) == 2) {
 
 			URI uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUri()).path("samples").build().toUri();
 

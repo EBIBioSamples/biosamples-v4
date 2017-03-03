@@ -36,8 +36,8 @@ public class SampleTabRunner implements ApplicationRunner {
 		log.info("Starting SampleTabRunner"); 		
 		
 		URI uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUriSampleTab()).path("sampletab/").path("v4").build().toUri();
-		
-		if (args.getOptionNames().contains("phase1")) {			
+
+		if (args.containsOption("phase") && Integer.parseInt(args.getOptionValues("phase").get(0)) == 1) {	
 			
 			runCallableOnSampleTabResource("/GSB-32.txt", sampleTabString -> {				
 				log.info("PUTing to "+uri);
@@ -67,8 +67,8 @@ public class SampleTabRunner implements ApplicationRunner {
 				ResponseEntity<String> response = restTemplate.exchange(request, String.class);	
 				//TODO check that SAMEA103886236 does exist
 				});
-					
-		} else if (args.getOptionNames().contains("phase2")) {
+
+		} else if (args.containsOption("phase") && Integer.parseInt(args.getOptionValues("phase").get(0)) == 2) {
 			//TODO check that SAMEA103886236 is a "member of" SAMEG318804
 		}
 		
