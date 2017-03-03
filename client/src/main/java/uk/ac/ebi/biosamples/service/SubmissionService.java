@@ -36,8 +36,7 @@ public class SubmissionService {
 		if (sample.getAccession() != null) {
 			//samples with an existing accession should be PUT			
 			URI uri = UriComponentsBuilder.fromUri(clientProperties.getBiosampleSubmissionUri())
-					.path("samples/")
-					.path(sample.getAccession())
+					.path("/samples/"+sample.getAccession())
 					.build().toUri();
 			
 			log.info("PUTing "+uri);
