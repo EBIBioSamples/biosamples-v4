@@ -29,13 +29,13 @@ public class Application extends SpringBootServletInitializer {
 	public HttpMessageConverter<Sample> getXmlSampleHttpMessageConverter() {
 		return new XmlSampleHttpMessageConverter();
 	}
-	
-	@Bean
-	public MongoClientOptions getMongoClientOptions() {
-		//TODO make this an application.property config
-		return MongoClientOptions.builder()
-            .readPreference(ReadPreference.secondaryPreferred())
-            .build();
-	}
+//	
+//	@Bean
+//	public MongoClientOptions getMongoClientOptions() {
+//		//TODO make this an application.property config
+//		return MongoClientOptions.builder()
+//            .readPreference(ReadPreference.secondaryPreferred())
+//            .build();
+//	}
 		
 }
