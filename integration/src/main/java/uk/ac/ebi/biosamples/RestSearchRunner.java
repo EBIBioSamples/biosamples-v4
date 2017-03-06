@@ -54,7 +54,7 @@ public class RestSearchRunner implements ApplicationRunner {
 		if (args.containsOption("phase") && Integer.parseInt(args.getOptionValues("phase").get(0)) == 1) {
 		} else if (args.containsOption("phase") && Integer.parseInt(args.getOptionValues("phase").get(0)) == 2) {
 
-			URI uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUri()).path("/samples").build().toUri();
+			URI uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUri()).pathSegment("samples").build().toUri();
 
 			RequestEntity<Void> request = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
 			ResponseEntity<Resources<Resource<Sample>>> response = restTemplate.exchange(request, new ParameterizedTypeReference<Resources<Resource<Sample>>>(){});

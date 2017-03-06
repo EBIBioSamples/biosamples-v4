@@ -101,9 +101,10 @@ public class RestRunner implements ApplicationRunner {
 	}
 
 	public Resource<Sample> doPut(Sample sample) throws RestClientException {
-		URI uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUri()).path("samples/")
-				.path(sample.getAccession()).build().toUri();
+		URI uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUri()).pathSegment("samples")
+				.pathSegment(sample.getAccession()).build().toUri();
 
+		log.info("PUTting to "+uri);
 		RequestEntity<Sample> request = RequestEntity.put(uri).contentType(MediaType.APPLICATION_JSON).body(sample);
 		ResponseEntity<Resource<Sample>> response = restTemplate.exchange(request, new ParameterizedTypeReference<Resource<Sample>>(){});
 		if (!sample.equals(response.getBody().getContent())) {
@@ -160,9 +161,10 @@ public class RestRunner implements ApplicationRunner {
 	}
 
 	public ResponseEntity<Resource<Sample>> doGet(Sample sample) throws RestClientException {
-		URI uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUri()).path("samples/")
-				.path(sample.getAccession()).build().toUri();
+		URI uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUri()).pathSegment("samples")
+				.pathSegment(sample.getAccession()).build().toUri();
 
+		log.info("GETting from "+uri);
 		RequestEntity<Void> request = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
 		ResponseEntity<Resource<Sample>> response = restTemplate.exchange(request, new ParameterizedTypeReference<Resource<Sample>>(){});
 		return response;
