@@ -40,7 +40,7 @@ public class MessageBuffer {
 		//set it to wait in the future
 		latestTime.compareAndSet(0, Instant.now().toEpochMilli()+MAX_WAIT);
 		
-		MessageSampleStatus status = new MessageSampleStatus(sample);
+		MessageSampleStatus status = MessageSampleStatus.build(sample);
 		
 		//this will block until space is available
 		messageSampleStatusQueue.put(status);
