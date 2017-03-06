@@ -3,7 +3,7 @@ set -e
 
 docker-compose down -v --remove-orphans &
 
-mvn -T 2C clean package
+mvn -T 2C -U clean package
 
 wait
 
