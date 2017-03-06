@@ -54,17 +54,6 @@
 		</dependency>
 	</dependencies>
 
-	<dependencyManagement>
-		<dependencies>
-			<!-- override spring-data-neo4j version to use @Index -->
-			<dependency>
-				<groupId>org.springframework.data</groupId>
-				<artifactId>spring-data-neo4j</artifactId>
-				<version>4.2.0.RELEASE</version>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
-
 
 	<repositories>		<!-- (you don't need this if you are using a .RELEASE version) -->
 		<repository>
