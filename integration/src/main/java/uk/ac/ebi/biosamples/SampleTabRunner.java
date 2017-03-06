@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
@@ -20,7 +21,7 @@ import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
 
 @Component
-public class SampleTabRunner implements ApplicationRunner {
+public class SampleTabRunner implements ApplicationRunner, Ordered {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -31,7 +32,6 @@ public class SampleTabRunner implements ApplicationRunner {
 	private RestOperations restTemplate;
 
 	@Override
-	@Order(3)
 	public void run(ApplicationArguments args) throws Exception {
 		log.info("Starting SampleTabRunner"); 		
 		
@@ -95,6 +95,11 @@ public class SampleTabRunner implements ApplicationRunner {
 		if (sampleTabString != null) {			
 			callback.callback(sampleTabString);
 		}
+	}
+
+	@Override
+	public int getOrder() {
+		return 3;
 	}
 
 }

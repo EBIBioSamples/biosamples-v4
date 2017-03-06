@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.core.Ordered;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.annotation.Order;
 import org.springframework.hateoas.MediaTypes;
@@ -33,7 +34,7 @@ import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 
 @Component
-public class RestSearchRunner implements ApplicationRunner {
+public class RestSearchRunner implements ApplicationRunner, Ordered {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -44,7 +45,6 @@ public class RestSearchRunner implements ApplicationRunner {
 	private RestOperations restTemplate;
 
 	@Override
-	@Order(2)
 	public void run(ApplicationArguments args) throws Exception {
 
 		log.info("Starting RestSearchRunner");
@@ -81,6 +81,11 @@ public class RestSearchRunner implements ApplicationRunner {
 		externalReferences.add(URI.create("http://www.google.com"));
 
 		return Sample.build(name, accession, release, update, attributes, relationships, externalReferences);
+	}
+
+	@Override
+	public int getOrder() {
+		return 2;
 	}
 
 }

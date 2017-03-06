@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.core.Ordered;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.annotation.Order;
 import org.springframework.hateoas.MediaTypes;
@@ -32,7 +33,7 @@ import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 
 @Component
-public class RestRunner implements ApplicationRunner {
+public class RestRunner implements ApplicationRunner, Ordered {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -43,7 +44,6 @@ public class RestRunner implements ApplicationRunner {
 	private RestOperations restTemplate;
 
 	@Override
-	@Order(1)
 	public void run(ApplicationArguments args) throws Exception {
 
 		log.info("Starting RestRunner");
@@ -203,6 +203,11 @@ public class RestRunner implements ApplicationRunner {
 			Attribute.build("organism", "Homo sapiens", new URI("http://purl.obolibrary.org/obo/NCBITaxon_9606"), null));
 
 		return Sample.build(name, accession, release, update, attributes, new TreeSet<>(), new TreeSet<>());
+	}
+
+	@Override
+	public int getOrder() {
+		return 1;
 	}
 
 }
