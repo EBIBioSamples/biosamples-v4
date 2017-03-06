@@ -17,11 +17,6 @@
 			<artifactId>client</artifactId>
 			<version>${bsd2017.version}</version>
 		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.hateoas</groupId>
-			<artifactId>spring-hateoas</artifactId>
-		</dependency>	
 	</dependencies>
 	
  	<build>
