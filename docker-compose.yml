@@ -23,6 +23,7 @@ services:
     - spring.jackson.serialization-inclusion=non_null
     - spring.rabbitmq.host=rabbitmq
     - spring.jackson.serialization.WRITE_NULL_MAP_VALUES=false
+    - server.servlet.path=/biosamples/beta
     - management.security.enabled=false
     ports:
     - 8081:8080
@@ -36,7 +37,8 @@ services:
     - -jar
     - webapps-sampletab-4.0.0-SNAPSHOT.war
     environment:
-    - biosamples.submissionuri=http://biosamples-webapps-core:8080
+    - biosamples.submissionuri=http://biosamples-webapps-core:8080/biosamples/beta
+    - server.servlet.path=/biosamples/beta
     - management.security.enabled=false
     ports:
     - 8082:8080
