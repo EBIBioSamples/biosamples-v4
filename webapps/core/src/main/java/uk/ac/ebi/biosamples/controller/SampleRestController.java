@@ -17,11 +17,15 @@ import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -63,8 +67,8 @@ public class SampleRestController {
 	}
 
 
-	@CrossOrigin
-	@RequestMapping(method = RequestMethod.GET, value = "", produces = { MediaType.APPLICATION_JSON_VALUE,
+    @CrossOrigin(methods = RequestMethod.GET)
+	@GetMapping(value = "", produces = { MediaType.APPLICATION_JSON_VALUE,
 			MediaTypes.HAL_JSON_VALUE })
 	public ResponseEntity<PagedResources<Resource<Sample>>> readAll(Pageable pageable,
 			PagedResourcesAssembler<Sample> assembler) {
@@ -73,11 +77,12 @@ public class SampleRestController {
 		PagedResources<Resource<Sample>> pagedResources = assembler.toResource(pageSample, sampleResourceAssembler);
 		pagedResources.add(ControllerLinkBuilder
 				.linkTo(ControllerLinkBuilder.methodOn(SampleRestController.class).search()).withRel("search"));
-		return ResponseEntity.ok(pagedResources);
+		return ResponseEntity.ok()
+				.body(pagedResources);
 	}
 
-	@CrossOrigin
-	@RequestMapping(method = RequestMethod.GET, value = "search", produces = { MediaType.APPLICATION_JSON_VALUE,
+    @CrossOrigin(methods = RequestMethod.GET)
+	@GetMapping(value = "search", produces = { MediaType.APPLICATION_JSON_VALUE,
 			MediaTypes.HAL_JSON_VALUE })
 	public ResponseEntity<ResourceSupport> search() {
 		ResourceSupport resource = new ResourceSupport();
@@ -86,11 +91,12 @@ public class SampleRestController {
 		resource.add(ControllerLinkBuilder
 				.linkTo(ControllerLinkBuilder.methodOn(SampleRestController.class).findByText("text", null, null))
 				.withRel("findByText"));
-		return ResponseEntity.ok(resource);
+		return ResponseEntity.ok()
+				.body(resource);
 	}
 
-	@CrossOrigin
-	@RequestMapping(method = RequestMethod.GET, value = "search/findByText", produces = {
+    @CrossOrigin(methods = RequestMethod.GET)
+	@GetMapping(value = "search/findByText", produces = {
 			MediaType.APPLICATION_JSON_VALUE, MediaTypes.HAL_JSON_VALUE })
 	public ResponseEntity<PagedResources<Resource<Sample>>> findByText(@RequestParam("text") String text,
 			Pageable pageable, PagedResourcesAssembler<Sample> assembler) {
@@ -99,11 +105,12 @@ public class SampleRestController {
 		PagedResources<Resource<Sample>> pagedResources = assembler.toResource(pageSample, sampleResourceAssembler);
 		pagedResources.add(ControllerLinkBuilder
 				.linkTo(ControllerLinkBuilder.methodOn(SampleRestController.class).search()).withRel("search"));
-		return ResponseEntity.ok(pagedResources);
+		return ResponseEntity.ok()
+				.body(pagedResources);
 	}
 
-	@CrossOrigin
-	@RequestMapping(method = RequestMethod.GET, value = "{accession}", produces = MediaType.APPLICATION_XML_VALUE)
+    @CrossOrigin(methods = RequestMethod.GET)
+	@GetMapping(value = "{accession}", produces = MediaType.APPLICATION_XML_VALUE)
 	public ResponseEntity<Sample> readXml(@PathVariable String accession) {
 
 		// convert it into the format to return
@@ -128,8 +135,8 @@ public class SampleRestController {
 				.contentType(MediaType.APPLICATION_XML).body(sample);
 	}
 
-	@CrossOrigin
-	@RequestMapping(method = RequestMethod.GET, value = "{accession}", produces = { MediaType.APPLICATION_JSON_VALUE,
+    @CrossOrigin(methods = RequestMethod.GET)
+	@GetMapping(value = "{accession}", produces = { MediaType.APPLICATION_JSON_VALUE,
 			MediaTypes.HAL_JSON_VALUE })
 	public ResponseEntity<Resource<Sample>> readResource(@PathVariable String accession) {
 		// convert it into the format to return
@@ -155,7 +162,7 @@ public class SampleRestController {
 				.contentType(MediaTypes.HAL_JSON).body(sampleResource);
 	}
 
-	@RequestMapping(method = RequestMethod.PUT, value = "{accession}", consumes = { MediaType.APPLICATION_JSON_VALUE,
+	@PutMapping(value = "{accession}", consumes = { MediaType.APPLICATION_JSON_VALUE,
 			MediaType.APPLICATION_XML_VALUE })
 	public ResponseEntity<Resource<Sample>> update(@PathVariable String accession, @RequestBody Sample sample) {
 		if (!sample.getAccession().equals(accession)) {
@@ -175,7 +182,7 @@ public class SampleRestController {
 		return ResponseEntity.accepted().body(sampleResource);
 	}
 
-	@RequestMapping(method = RequestMethod.POST, consumes = { MediaType.APPLICATION_JSON_VALUE,
+	@PostMapping(consumes = { MediaType.APPLICATION_JSON_VALUE,
 			MediaType.APPLICATION_XML_VALUE })
 	public ResponseEntity<Resource<Sample>> submit(@RequestBody Sample sample) {
 		log.info("Recieved POST");

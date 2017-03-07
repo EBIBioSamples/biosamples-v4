@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -41,13 +42,13 @@ public class HtmlController {
 	public HtmlController(@Autowired SampleService sampleService) {
 		this.sampleService = sampleService;
 	}
-	
-	@RequestMapping(value = "/", method = RequestMethod.GET)
+
+	@GetMapping(value = "/")
     public String index() {		
         return "index";
     }
-	
-	@RequestMapping(value = "/samples/{accession}", method = RequestMethod.GET)
+
+	@GetMapping(value = "/samples/{accession}")
     public String samplesAccession(Model model, @PathVariable String accession, HttpServletRequest request, HttpServletResponse response) {
 		Sample sample = null;
 		try {
