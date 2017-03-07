@@ -1,8 +1,11 @@
 package uk.ac.ebi.biosamples.service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
@@ -11,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.solr.core.query.result.FacetPage;
+import org.springframework.data.solr.core.query.result.SolrResultPage;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -92,19 +97,24 @@ public class SampleService {
 		return sample;
 	}
 
-	public Page<Sample> fetchFindAll(Pageable pageable) {
+	public SolrResultPage<Sample> fetchFindAll(Pageable pageable) {
 		// return the samples from solr that match the query
-		Page<SolrSample> pageSolrSample = solrSampleRepository.findPublic(pageable);
+		SolrResultPage<SolrSample> pageSolrSample = solrSampleRepository.findPublic(pageable);
 		// for each result fetch the version from Mongo and add inverse relationships
-		Page<Sample> pageSample = pageSolrSample.map(s -> fetch(s.getAccession()));
+		//Page<Sample> pageSample = pageSolrSample.map(s -> fetch(s.getAccession()));
+		SolrResultPage<Sample> pageSample = new SolrResultPage<>(pageSolrSample.getContent().stream().map(s -> fetch(s.getAccession())).collect(Collectors.toList()), 
+				pageable, pageSolrSample.getTotalElements(), pageSolrSample.getMaxScore());
 		return pageSample;
 	}
 
-	public Page<Sample> fetchFindByText(String text, Pageable pageable) {
+	public SolrResultPage<Sample> fetchFindByText(String text, Pageable pageable) {
 		// return the samples from solr that match the query
-		Page<SolrSample> pageSolrSample = solrSampleRepository.findByTextAndPublic(text, pageable);
+		SolrResultPage<SolrSample> pageSolrSample = solrSampleRepository.findByTextAndPublic(text, pageable);
 		// for each result fetch the version from Mongo and add inverse relationships
-		Page<Sample> pageSample = pageSolrSample.map(s -> fetch(s.getAccession()));
+		//FacetPage<Sample> pageSample = pageSolrSample.map(s -> fetch(s.getAccession()));
+		SolrResultPage<Sample> pageSample = new SolrResultPage<>(pageSolrSample.getContent().stream().map(s -> fetch(s.getAccession())).collect(Collectors.toList()), 
+				pageable, pageSolrSample.getTotalElements(), pageSolrSample.getMaxScore()); 
+		
 		return pageSample;
 	}
 

@@ -98,7 +98,7 @@ public class SampleRestController {
     @CrossOrigin(methods = RequestMethod.GET)
 	@GetMapping(value = "search/findByText", produces = {
 			MediaType.APPLICATION_JSON_VALUE, MediaTypes.HAL_JSON_VALUE })
-	public ResponseEntity<PagedResources<Resource<Sample>>> findByText(@RequestParam("text") String text,
+	public ResponseEntity<PagedResources<Resource<Sample>>> findByText(@RequestParam(name="text", defaultValue="*:*", required=false) String text,
 			Pageable pageable, PagedResourcesAssembler<Sample> assembler) {
 
 		Page<Sample> pageSample = sampleService.fetchFindByText(text, pageable);
