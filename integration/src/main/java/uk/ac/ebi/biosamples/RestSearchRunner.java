@@ -49,13 +49,14 @@ public class RestSearchRunner implements ApplicationRunner, Ordered {
 
 		log.info("Starting RestSearchRunner");
 		
-		Sample sampleTest1 = getSampleTest1();
+		//Sample sampleTest1 = getSampleTest1();
 
 		if (args.containsOption("phase") && Integer.parseInt(args.getOptionValues("phase").get(0)) == 1) {
 		} else if (args.containsOption("phase") && Integer.parseInt(args.getOptionValues("phase").get(0)) == 2) {
 
 			URI uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUri()).pathSegment("samples").build().toUri();
 
+			log.info("GETting from "+uri);
 			RequestEntity<Void> request = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
 			ResponseEntity<Resources<Resource<Sample>>> response = restTemplate.exchange(request, new ParameterizedTypeReference<Resources<Resource<Sample>>>(){});
 		}
