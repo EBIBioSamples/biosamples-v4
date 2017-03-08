@@ -12,6 +12,7 @@ import javax.annotation.PostConstruct;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.solr.core.query.result.FacetPage;
@@ -30,6 +31,7 @@ import uk.ac.ebi.biosamples.mongo.model.MongoSubmission;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSubmissionRepository;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
+import uk.ac.ebi.biosamples.solr.repo.ConverterFacetPage;
 import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
 
 /**
@@ -97,27 +99,38 @@ public class SampleService {
 		return sample;
 	}
 
-	public SolrResultPage<Sample> fetchFindAll(Pageable pageable) {
+	public FacetPage<Sample> fetchFindAll(Pageable pageable) {
+		return fetchFindByText("*:*", pageable);
+	}
+
+	public FacetPage<Sample> fetchFindByText(String text, Pageable pageable) {
 		// return the samples from solr that match the query
-		SolrResultPage<SolrSample> pageSolrSample = solrSampleRepository.findPublicWithFacets(pageable);
-		// for each result fetch the version from Mongo and add inverse relationships
-		SolrResultPage<Sample> pageSample = new SolrResultPage<>(pageSolrSample.getContent().stream().map(s -> fetch(s.getAccession())).collect(Collectors.toList()), 
-				pageable, pageSolrSample.getTotalElements(), pageSolrSample.getMaxScore());
-		//copy the facets over
-		pageSample.setFacetQueryResultPage(pageSolrSample.getFacetQueryResult().getContent());
+		FacetPage<SolrSample> pageSolrSample = solrSampleRepository.findByTextAndPublicWithFacets(text, pageable);
+		// for each result fetch the version from Mongo and add inverse relationships while maintaining facets
+		FacetPage<Sample> pageSample = new ConverterFacetPage<>(pageSolrSample, new SolrSampleToSampleConverter(this));
+		
 		return pageSample;
 	}
 
-	public SolrResultPage<Sample> fetchFindByText(String text, Pageable pageable) {
-		// return the samples from solr that match the query
-		SolrResultPage<SolrSample> pageSolrSample = solrSampleRepository.findByTextAndPublicWithFacets(text, pageable);
-		// for each result fetch the version from Mongo and add inverse relationships
-		SolrResultPage<Sample> pageSample = new SolrResultPage<>(pageSolrSample.getContent().stream().map(s -> fetch(s.getAccession())).collect(Collectors.toList()), 
-				pageable, pageSolrSample.getTotalElements(), pageSolrSample.getMaxScore());
-		//copy the facets over
-		pageSample.setFacetQueryResultPage(pageSolrSample.getFacetQueryResult().getContent());
+	/**
+	 * This is a converter class that given a solrSample, will use the accession to get the sample from mongo
+	 * and adds the relationships from neo
+	 * 
+	 * @author faulcon
+	 *
+	 */
+	private class SolrSampleToSampleConverter implements Converter<SolrSample, Sample> {
+
+		private final SampleService sampleService;
 		
-		return pageSample;
+		public SolrSampleToSampleConverter(SampleService sampleService) {
+			this.sampleService = sampleService;
+		}
+		
+		@Override
+		public Sample convert(SolrSample solrSample) {
+			return sampleService.fetch(solrSample.getAccession());
+		}
 	}
 
 	public Sample store(Sample sample) {

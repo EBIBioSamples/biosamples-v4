@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.solr.core.query.result.FacetPage;
 import org.springframework.data.solr.core.query.result.SolrResultPage;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -62,7 +63,7 @@ public class HtmlController {
 		model.addAttribute("searchTerm", searchTerm);
 		
 		Pageable pageable = new PageRequest(start/rows, rows);
-		SolrResultPage<Sample> pageSample = sampleService.fetchFindByText(searchTerm, pageable);
+		FacetPage<Sample> pageSample = sampleService.fetchFindByText(searchTerm, pageable);
 			
 		model.addAttribute("results", pageSample);		
 		model.addAttribute("start", start);
