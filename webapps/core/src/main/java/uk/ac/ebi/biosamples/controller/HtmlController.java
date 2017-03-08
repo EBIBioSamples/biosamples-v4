@@ -63,8 +63,10 @@ public class HtmlController {
 		
 		Pageable pageable = new PageRequest(start/rows, rows);
 		SolrResultPage<Sample> pageSample = sampleService.fetchFindByText(searchTerm, pageable);
-		
-		model.addAttribute("result", pageSample);
+			
+		model.addAttribute("results", pageSample);		
+		model.addAttribute("start", start);
+		model.addAttribute("rows", rows);
 		
 		return "samples";
 	}

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+</head>
+<body>
+	<section th:fragment="facets (facets)" >
+		<h5>Facets</h5>
+		<p th:text="'facets '+${facets}"></p>
+		<p th:text="'facets.getAllFacets() '+${facets.getAllFacets()}"></p>
+		<p th:text="'facets.getFacetFields()'+${facets.getFacetFields()}"></p>
+		<p th:each="facetfield : ${facets.getFacetFields()}" th:text="'facetfield'+${facetfield}"></p>
+		<div class="">
+			<ul class="menu vertical">
+				<li><a href="#">Facet One</a></li>
+				<li><a href="#">Facet Two</a>
+					<ul class="nested menu vertical">
+						<li><a href="#">Sub-facet Two A</a></li>
+						<li><a href="#">Sub-facet Two B</a></li>
+						<li><a href="#">Sub-facet Two C</a></li>
+						<li><a href="#">Sub-facet Two D</a></li>
+					</ul>
+				</li>
+				<li><a href="#">Facet Three</a></li>
+				<li><a href="#">Facet Four</a></li>
+			</ul>
+		</div>
+	</section>
+	<div th:fragment="result (sample)" class="services-background white-color card">
+		<div class="card-content">
+			<p class="lead" th:text="${sample.name}">Sample</p><a th:text="${sample.accession}" th:href="@{'/samples/'+${sample.accession}}">ACC1</a>
+			<div>
+				<div th:each="attribute : ${sample.attributes}" th:remove="tag" >
+					<span th:replace=":: shield (${attribute.key}, ${attribute.value})"></span>
+				</div>
+			</div>
+		</div>
+	</div>
+	<span th:fragment="shield (key, value)" class="shield shield--flat"><span class="shield__key" th:text="${key}">key</span><span class="shield__value" th:text="${value}">value</span></span>	
+</body>
+</html>

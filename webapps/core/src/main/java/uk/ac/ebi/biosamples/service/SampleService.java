@@ -99,21 +99,23 @@ public class SampleService {
 
 	public SolrResultPage<Sample> fetchFindAll(Pageable pageable) {
 		// return the samples from solr that match the query
-		SolrResultPage<SolrSample> pageSolrSample = solrSampleRepository.findPublic(pageable);
+		SolrResultPage<SolrSample> pageSolrSample = solrSampleRepository.findPublicWithFacets(pageable);
 		// for each result fetch the version from Mongo and add inverse relationships
-		//Page<Sample> pageSample = pageSolrSample.map(s -> fetch(s.getAccession()));
 		SolrResultPage<Sample> pageSample = new SolrResultPage<>(pageSolrSample.getContent().stream().map(s -> fetch(s.getAccession())).collect(Collectors.toList()), 
 				pageable, pageSolrSample.getTotalElements(), pageSolrSample.getMaxScore());
+		//copy the facets over
+		pageSample.setFacetQueryResultPage(pageSolrSample.getFacetQueryResult().getContent());
 		return pageSample;
 	}
 
 	public SolrResultPage<Sample> fetchFindByText(String text, Pageable pageable) {
 		// return the samples from solr that match the query
-		SolrResultPage<SolrSample> pageSolrSample = solrSampleRepository.findByTextAndPublic(text, pageable);
+		SolrResultPage<SolrSample> pageSolrSample = solrSampleRepository.findByTextAndPublicWithFacets(text, pageable);
 		// for each result fetch the version from Mongo and add inverse relationships
-		//FacetPage<Sample> pageSample = pageSolrSample.map(s -> fetch(s.getAccession()));
 		SolrResultPage<Sample> pageSample = new SolrResultPage<>(pageSolrSample.getContent().stream().map(s -> fetch(s.getAccession())).collect(Collectors.toList()), 
-				pageable, pageSolrSample.getTotalElements(), pageSolrSample.getMaxScore()); 
+				pageable, pageSolrSample.getTotalElements(), pageSolrSample.getMaxScore());
+		//copy the facets over
+		pageSample.setFacetQueryResultPage(pageSolrSample.getFacetQueryResult().getContent());
 		
 		return pageSample;
 	}
