@@ -107,7 +107,7 @@ public class SampleService {
 		// return the samples from solr that match the query
 		FacetPage<SolrSample> pageSolrSample = solrSampleRepository.findByTextAndPublicWithFacets(text, pageable);
 		// for each result fetch the version from Mongo and add inverse relationships while maintaining facets
-		FacetPage<Sample> pageSample = new ConverterFacetPage<>(pageSolrSample, new SolrSampleToSampleConverter(this));
+		FacetPage<Sample> pageSample = new ConverterFacetPage<>(pageSolrSample, new SolrSampleToSampleConverter());
 		
 		return pageSample;
 	}
@@ -120,16 +120,13 @@ public class SampleService {
 	 *
 	 */
 	private class SolrSampleToSampleConverter implements Converter<SolrSample, Sample> {
-
-		private final SampleService sampleService;
 		
-		public SolrSampleToSampleConverter(SampleService sampleService) {
-			this.sampleService = sampleService;
+		public SolrSampleToSampleConverter() {
 		}
 		
 		@Override
 		public Sample convert(SolrSample solrSample) {
-			return sampleService.fetch(solrSample.getAccession());
+			return fetch(solrSample.getAccession());
 		}
 	}
 
