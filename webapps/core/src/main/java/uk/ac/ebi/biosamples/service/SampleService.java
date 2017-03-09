@@ -31,7 +31,6 @@ import uk.ac.ebi.biosamples.mongo.model.MongoSubmission;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSubmissionRepository;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
-import uk.ac.ebi.biosamples.solr.repo.ConverterFacetPage;
 import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
 
 /**
@@ -99,35 +98,28 @@ public class SampleService {
 		return sample;
 	}
 
-	public FacetPage<Sample> fetchFindAll(Pageable pageable) {
+	public Page<Sample> fetchFindAll(Pageable pageable) {
 		return fetchFindByText("*:*", pageable);
 	}
 
-	public FacetPage<Sample> fetchFindByText(String text, Pageable pageable) {
+	public Page<Sample> fetchFindByText(String text, Pageable pageable) {
 		// return the samples from solr that match the query
-		FacetPage<SolrSample> pageSolrSample = solrSampleRepository.findByTextAndPublicWithFacets(text, pageable);
-		// for each result fetch the version from Mongo and add inverse relationships while maintaining facets
-		FacetPage<Sample> pageSample = new ConverterFacetPage<>(pageSolrSample, new SolrSampleToSampleConverter());
+		Page<SolrSample> pageSolrSample = solrSampleRepository.findByTextAndPublic(text, pageable);
+		// for each result fetch the version from Mongo and add inverse relationships
+		Page<Sample> pageSample = pageSolrSample.map(ss->fetch(ss.getAccession()));
 		
 		return pageSample;
 	}
 
-	/**
-	 * This is a converter class that given a solrSample, will use the accession to get the sample from mongo
-	 * and adds the relationships from neo
-	 * 
-	 * @author faulcon
-	 *
-	 */
-	private class SolrSampleToSampleConverter implements Converter<SolrSample, Sample> {
+	public FacetPage<?> fetchFindAllWithFacet(Pageable pageable) {
+		return fetchFindByTextWithFacet("*:*", pageable);
+	}
+
+	public FacetPage<?> fetchFindByTextWithFacet(String text, Pageable pageable) {
+		//TODO combine with fetchFindByText to allow page and facet in one function and one solr call
+		FacetPage<SolrSample> pageSolrSample = solrSampleRepository.findByTextAndPublicWithFacets(text, pageable);
 		
-		public SolrSampleToSampleConverter() {
-		}
-		
-		@Override
-		public Sample convert(SolrSample solrSample) {
-			return fetch(solrSample.getAccession());
-		}
+		return pageSolrSample;
 	}
 
 	public Sample store(Sample sample) {

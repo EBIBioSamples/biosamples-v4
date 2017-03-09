@@ -13,20 +13,26 @@ public interface SolrSampleRepository extends SolrCrudRepository<SolrSample, Str
 
 	@Query(value = "?0")
 	FacetPage<SolrSample> findByText(String text, Pageable page);
-
 	@Query(value = "?0")
 	@Facet(fields = { "organism_av_ss" }, limit = 10)
 	FacetPage<SolrSample> findByTextWithFacets(String text, Pageable page);
+	@Query(value = "?0")
+	@Facet(fields = { "attributetypes_ss" }, limit = 10)
+	FacetPage<SolrSample> findByTextWithFacetTypes(String text, Pageable page);
 
 	@Query(value = "?0 AND release_dt:[* TO NOW]")
 	FacetPage<SolrSample> findByTextAndPublic(String text, Pageable page);
 	@Query(value = "?0 AND release_dt:[* TO NOW]")
 	@Facet(fields = { "organism_av_ss" }, limit = 10)
 	FacetPage<SolrSample> findByTextAndPublicWithFacets(String text, Pageable page);
+	@Query(value = "?0 AND release_dt:[* TO NOW]")
+	@Facet(fields = { "attributetypes_ss" }, limit = 10)
+	FacetPage<SolrSample> findByTextAndPublicWithFacetTypes(String text, Pageable page);
 
 	@Query(value = "release_dt:[* TO NOW]")
-	FacetPage<SolrSample> findPublic(Pageable page);	
+	FacetPage<SolrSample> findPublic(Pageable page);
 	@Query(value = "release_dt:[* TO NOW]")
 	@Facet(fields = { "organism_av_ss" }, limit = 10)
 	FacetPage<SolrSample> findPublicWithFacets(Pageable page);
+	
 }

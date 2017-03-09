@@ -1,5 +1,7 @@
 package uk.ac.ebi.biosamples.solr.model;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.springframework.data.annotation.Id;
@@ -51,6 +53,13 @@ public class SolrSample {
 	 */
 	@Indexed(name="ontologyiri_ss")
 	protected List<String> ontologyIris;
+	
+	/**
+	 * This field is required to get a list of attribute to use for faceting.
+	 * Since faceting does not require it to be stored, it wont be to save space
+	 */
+	@Indexed(name="attributetypes_ss", stored=false)
+	protected List<String> attributeTypes;
 	
 	public SolrSample(){}
 	
@@ -141,6 +150,12 @@ public class SolrSample {
 		//TODO handle relationships too
 		//but how to do inverse?
 		//TODO handle external references
+		//TODO validate maps are sane
+		sample.attributeTypes = null;
+		if (attributeValues != null && attributeValues.keySet().size() > 0) {
+			sample.attributeTypes = new ArrayList<>(attributeValues.keySet());
+			Collections.sort(sample.attributeTypes);
+		}
 		return sample;
 	}
 }
