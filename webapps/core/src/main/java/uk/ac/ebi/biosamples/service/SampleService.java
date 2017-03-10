@@ -32,6 +32,7 @@ import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSubmissionRepository;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
 import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
+import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
 
 /**
  * Service layer business logic for centralising repository access and
@@ -48,12 +49,12 @@ public class SampleService {
 	private MongoSampleRepository mongoSampleRepository;
 	@Autowired
 	private MongoSubmissionRepository mongoSubmissionRepository;
-
-	@Autowired
-	private SolrSampleRepository solrSampleRepository;
 	
 	@Autowired
 	private InverseRelationshipService inverseRelationshipService;
+	
+	@Autowired
+	private SolrSampleService solrSampleService;
 
 	@Autowired
 	private AmqpTemplate amqpTemplate;
@@ -98,27 +99,23 @@ public class SampleService {
 		return sample;
 	}
 
-	public Page<Sample> fetchFindAll(Pageable pageable) {
-		return fetchFindByText("*:*", pageable);
+	public Page<Sample> fetchAll(Pageable pageable) {
+		return fetchByText("*:*", pageable);
 	}
 
-	public Page<Sample> fetchFindByText(String text, Pageable pageable) {
-		// return the samples from solr that match the query
-		Page<SolrSample> pageSolrSample = solrSampleRepository.findByTextAndPublic(text, pageable);
+	public Page<Sample> fetchByText(String text, Pageable pageable) {
+		Page<SolrSample> pageSolrSample = solrSampleService.fetchSolrSampleByText(text, pageable);
 		// for each result fetch the version from Mongo and add inverse relationships
 		Page<Sample> pageSample = pageSolrSample.map(ss->fetch(ss.getAccession()));
-		
 		return pageSample;
 	}
 
-	public FacetPage<?> fetchFindAllWithFacet(Pageable pageable) {
-		return fetchFindByTextWithFacet("*:*", pageable);
+	public FacetPage<?> facetAll(Pageable pageable) {
+		return facetByText("*:*", pageable);
 	}
 
-	public FacetPage<?> fetchFindByTextWithFacet(String text, Pageable pageable) {
-		//TODO combine with fetchFindByText to allow page and facet in one function and one solr call
-		FacetPage<SolrSample> pageSolrSample = solrSampleRepository.findByTextAndPublicWithFacets(text, pageable);
-		
+	public FacetPage<?> facetByText(String text, Pageable pageable) {
+		FacetPage<SolrSample> pageSolrSample = solrSampleService.fetchSolrSampleByText(text, pageable);		
 		return pageSolrSample;
 	}
 

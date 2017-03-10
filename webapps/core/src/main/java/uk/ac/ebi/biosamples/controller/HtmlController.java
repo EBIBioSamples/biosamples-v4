@@ -63,8 +63,8 @@ public class HtmlController {
 		model.addAttribute("searchTerm", searchTerm);
 		
 		Pageable pageable = new PageRequest(start/rows, rows);
-		Page<Sample> pageSample = sampleService.fetchFindByText(searchTerm, pageable);
-		FacetPage<?> facetPage = sampleService.fetchFindByTextWithFacet(searchTerm, pageable);
+		Page<Sample> pageSample = sampleService.fetchByText(searchTerm, pageable);
+		FacetPage<?> facetPage = sampleService.facetByText(searchTerm, pageable);
 			
 		model.addAttribute("page", pageSample);
 		model.addAttribute("facets", facetPage);	
