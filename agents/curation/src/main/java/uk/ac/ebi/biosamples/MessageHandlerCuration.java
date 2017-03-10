@@ -3,8 +3,9 @@ package uk.ac.ebi.biosamples;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import uk.ac.ebi.biosamples.client.service.SubmissionService;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.service.SubmissionService;
 
 @Service
 public class MessageHandlerCuration {

@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples;
+package uk.ac.ebi.biosamples.client;
 
 import java.net.URI;
 

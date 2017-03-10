@@ -12,10 +12,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+
+import uk.ac.ebi.biosamples.client.service.SubmissionService;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.service.SubmissionService;
 import uk.ac.ebi.biosamples.utils.TaxonomyService;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 import org.springframework.beans.factory.annotation.Autowired;

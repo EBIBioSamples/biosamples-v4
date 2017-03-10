@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.service;
+package uk.ac.ebi.biosamples.client.service;
 
 import java.net.URI;
 
@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
@@ -14,7 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import uk.ac.ebi.biosamples.ClientProperties;
+import uk.ac.ebi.biosamples.client.ClientProperties;
 import uk.ac.ebi.biosamples.model.Sample;
 
 @Service
@@ -28,21 +29,29 @@ public class SubmissionService {
 	//use RestOperations as the interface implemented by RestTemplate
 	//easier to mock for testing
 	@Autowired
-	private RestOperations restTemplate;
+	private RestOperations restOperations;
 
 
+	/**
+	 * This will send the sample to biosamples, either by POST if it has no accession or by PUT
+	 * if the sample already has an accession associated
+	 * 
+	 * @param sample
+	 * @return
+	 */
 	public Resource<Sample> submit(Sample sample) {
 		//if the sample has an accession, put to that
 		if (sample.getAccession() != null) {
 			//samples with an existing accession should be PUT			
 			URI uri = UriComponentsBuilder.fromUri(clientProperties.getBiosampleSubmissionUri())
-					.path("/samples/"+sample.getAccession())
+					.pathSegment("samples",sample.getAccession())
 					.build().toUri();
 			
 			log.info("PUTing "+uri);
 			
-			RequestEntity<Sample> requestEntity = RequestEntity.put(uri).contentType(MediaType.APPLICATION_JSON).body(sample);
-			ResponseEntity<Resource<Sample>> responseEntity = restTemplate.exchange(requestEntity, new ParameterizedTypeReference<Resource<Sample>>(){});
+			RequestEntity<Sample> requestEntity = RequestEntity.put(uri)
+					.contentType(MediaType.APPLICATION_JSON).accept(MediaTypes.HAL_JSON).body(sample);
+			ResponseEntity<Resource<Sample>> responseEntity = restOperations.exchange(requestEntity, new ParameterizedTypeReference<Resource<Sample>>(){});
 						
 			if (!responseEntity.getStatusCode().is2xxSuccessful()) {
 				log.error("Unable to PUT "+sample.getAccession()+" : "+responseEntity.toString());
@@ -53,13 +62,14 @@ public class SubmissionService {
 		} else {
 			//samples without an existing accession should be POST			
 			URI uri = UriComponentsBuilder.fromUri(clientProperties.getBiosampleSubmissionUri())
-					.path("/samples")
+					.pathSegment("samples")
 					.build().toUri();
 			
 			log.info("POSTing "+uri);
 			
-			RequestEntity<Sample> requestEntity = RequestEntity.post(uri).contentType(MediaType.APPLICATION_JSON).body(sample);
-			ResponseEntity<Resource<Sample>> responseEntity = restTemplate.exchange(requestEntity, new ParameterizedTypeReference<Resource<Sample>>(){});
+			RequestEntity<Sample> requestEntity = RequestEntity.post(uri)
+					.contentType(MediaType.APPLICATION_JSON).accept(MediaTypes.HAL_JSON).body(sample);
+			ResponseEntity<Resource<Sample>> responseEntity = restOperations.exchange(requestEntity, new ParameterizedTypeReference<Resource<Sample>>(){});
 						
 			if (!responseEntity.getStatusCode().is2xxSuccessful()) {
 				log.error("Unable to POST "+sample.getAccession()+" : "+responseEntity.toString());

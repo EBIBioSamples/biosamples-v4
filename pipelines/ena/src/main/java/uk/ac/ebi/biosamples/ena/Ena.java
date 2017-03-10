@@ -18,8 +18,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Component;
 
-import uk.ac.ebi.biosamples.ClientProperties;
 import uk.ac.ebi.biosamples.PipelinesProperties;
+import uk.ac.ebi.biosamples.client.ClientProperties;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 

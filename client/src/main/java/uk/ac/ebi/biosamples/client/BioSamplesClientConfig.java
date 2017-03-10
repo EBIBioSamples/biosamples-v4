@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples;
+package uk.ac.ebi.biosamples.client;
 
 import java.util.List;
 
@@ -13,6 +13,7 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicHeaderElementIterator;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.protocol.HttpContext;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.hateoas.hal.Jackson2HalModule;
@@ -32,6 +33,7 @@ public class BioSamplesClientConfig {
 	
 	//sets resttemplate to use connection pooling
 	@Bean
+	@ConditionalOnMissingBean(ClientHttpRequestFactory.class)
 	public ClientHttpRequestFactory getClientHttpRequestFactory() {
 
     	PoolingHttpClientConnectionManager conman = new PoolingHttpClientConnectionManager();
@@ -81,6 +83,7 @@ public class BioSamplesClientConfig {
 	 * @return
 	 */
 	@Bean
+	@ConditionalOnMissingBean(RestTemplate.class)
 	public RestTemplate getRestTemplate(ClientHttpRequestFactory clientHttpRequestFactory, ObjectMapper mapper) {
 		RestTemplate restTemplate = new RestTemplate();
 		restTemplate.setRequestFactory(clientHttpRequestFactory);
