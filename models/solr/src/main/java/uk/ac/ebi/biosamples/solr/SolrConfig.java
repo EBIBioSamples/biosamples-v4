@@ -35,7 +35,9 @@ public class SolrConfig {
 		}
 		
 		SolrTemplate solrTemplate = new SolrTemplate(solrClientFactory, solrConverter);
-		solrTemplate.afterPropertiesSet();		
+		//this needs to be called after construction to fully initialize
+		solrTemplate.afterPropertiesSet();	
+		
 		return solrTemplate;
 	}
 }
