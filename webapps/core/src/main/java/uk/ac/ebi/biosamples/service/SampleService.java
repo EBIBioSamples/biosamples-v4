@@ -9,6 +9,8 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
@@ -30,6 +32,7 @@ import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.model.MongoSubmission;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSubmissionRepository;
+import uk.ac.ebi.biosamples.solr.model.SampleFacets;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
 import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
 import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
@@ -67,6 +70,8 @@ public class SampleService {
 
 	private BlockingQueue<String> accessionCandidateQueue;;
 	private long accessionCandidateCounter;
+
+	private Logger log = LoggerFactory.getLogger(getClass());
 	
 	@PostConstruct
 	public void doSetup() {
@@ -99,24 +104,15 @@ public class SampleService {
 		return sample;
 	}
 
-	public Page<Sample> fetchAll(Pageable pageable) {
-		return fetchByText("*:*", pageable);
-	}
-
-	public Page<Sample> fetchByText(String text, Pageable pageable) {
+	public Page<Sample> getSamplesByText(String text, Pageable pageable) {
 		Page<SolrSample> pageSolrSample = solrSampleService.fetchSolrSampleByText(text, pageable);
 		// for each result fetch the version from Mongo and add inverse relationships
 		Page<Sample> pageSample = pageSolrSample.map(ss->fetch(ss.getAccession()));
 		return pageSample;
 	}
 
-	public FacetPage<?> facetAll(Pageable pageable) {
-		return facetByText("*:*", pageable);
-	}
-
-	public FacetPage<?> facetByText(String text, Pageable pageable) {
-		FacetPage<SolrSample> pageSolrSample = solrSampleService.fetchSolrSampleByText(text, pageable);		
-		return pageSolrSample;
+	public SampleFacets getFacetsByText(String text) {
+		return solrSampleService.getFacets(text);
 	}
 
 	public Sample store(Sample sample) {

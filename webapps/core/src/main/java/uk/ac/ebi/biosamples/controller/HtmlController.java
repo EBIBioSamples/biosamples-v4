@@ -2,6 +2,7 @@ package uk.ac.ebi.biosamples.controller;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.SampleService;
+import uk.ac.ebi.biosamples.solr.model.SampleFacets;
 
 /**
  * Primary controller for HTML operations.
@@ -63,11 +65,11 @@ public class HtmlController {
 		model.addAttribute("searchTerm", searchTerm);
 		
 		Pageable pageable = new PageRequest(start/rows, rows);
-		Page<Sample> pageSample = sampleService.fetchByText(searchTerm, pageable);
-		FacetPage<?> facetPage = sampleService.facetByText(searchTerm, pageable);
-			
+		Page<Sample> pageSample = sampleService.getSamplesByText(searchTerm, pageable);
+		SampleFacets sampleFacets = sampleService.getFacetsByText(searchTerm);
+		
 		model.addAttribute("page", pageSample);
-		model.addAttribute("facets", facetPage);	
+		model.addAttribute("facets", sampleFacets);	
 		model.addAttribute("start", start);
 		model.addAttribute("rows", rows);
 		

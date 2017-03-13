@@ -150,11 +150,15 @@ public class SolrSample {
 		//TODO handle relationships too
 		//but how to do inverse?
 		//TODO handle external references
-		//TODO validate maps are sane
+		//TODO validate maps
 		sample.attributeTypes = null;
 		if (attributeValues != null && attributeValues.keySet().size() > 0) {
-			sample.attributeTypes = new ArrayList<>(attributeValues.keySet());
-			Collections.sort(sample.attributeTypes);
+			List<String> attributeTypes = new ArrayList<>();
+			for (String attributeType : attributeValues.keySet()) {
+				attributeTypes.add(attributeType+"_av_ss");
+			}
+			Collections.sort(attributeTypes);
+			sample.attributeTypes = attributeTypes;
 		}
 		return sample;
 	}

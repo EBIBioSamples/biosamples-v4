@@ -73,7 +73,7 @@ public class SampleRestController {
 	public ResponseEntity<PagedResources<Resource<Sample>>> readAll(Pageable pageable,
 			PagedResourcesAssembler<Sample> assembler) {
 
-		Page<Sample> pageSample = sampleService.fetchAll(pageable);
+		Page<Sample> pageSample = sampleService.getSamplesByText("*:*",pageable);
 		PagedResources<Resource<Sample>> pagedResources = assembler.toResource(pageSample, sampleResourceAssembler);
 		pagedResources.add(ControllerLinkBuilder
 				.linkTo(ControllerLinkBuilder.methodOn(SampleRestController.class).search()).withRel("search"));
@@ -101,7 +101,7 @@ public class SampleRestController {
 	public ResponseEntity<PagedResources<Resource<Sample>>> findByText(@RequestParam(name="text", defaultValue="*:*", required=false) String text,
 			Pageable pageable, PagedResourcesAssembler<Sample> assembler) {
 
-		Page<Sample> pageSample = sampleService.fetchByText(text, pageable);
+		Page<Sample> pageSample = sampleService.getSamplesByText(text, pageable);
 		PagedResources<Resource<Sample>> pagedResources = assembler.toResource(pageSample, sampleResourceAssembler);
 		pagedResources.add(ControllerLinkBuilder
 				.linkTo(ControllerLinkBuilder.methodOn(SampleRestController.class).search()).withRel("search"));
