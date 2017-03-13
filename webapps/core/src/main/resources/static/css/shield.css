@@ -1,10 +1,8 @@
 .shield {
   color: white;
-  text-shadow: 0px 1px rgba(0, 0, 0, 0.2);
   display: inline-block;
   margin: 0 2px 0 0;
   padding: 0 2px;
-  font-family: sans-serif;
   font-size: 0.9em;
 }
 
@@ -14,11 +12,9 @@
 
 .shield .shield__key {
   background-color: #444;
-  /*border-radius: 5px 0 0 5px;*/
 }
 .shield .shield__value {
   background-color: #f27e3f;
-  /*border-radius: 0 5px 5px 0;*/
 }
 .shield .shield__close {
   background-color: #444;
@@ -26,11 +22,3 @@
   cursor: pointer;
   margin-left: 1px;
 }
-/*
-.shield--plastic .shield__value {
-  background-image: linear-gradient(transparent, rgba(0, 0, 0, 0.25));
-}
-.shield--flat-squared .shield__key, .shield--flat-squared .shield__value, .shield--flat-squared .shield__close {
-  border-radius: 0;
-}
-*/

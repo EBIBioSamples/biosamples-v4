@@ -1,0 +1,10 @@
+div.facet {
+  border: 5px solid #389198;
+}
+
+.facet-header {
+}
+
+.facet-value {
+	padding-left : 2em;
+}

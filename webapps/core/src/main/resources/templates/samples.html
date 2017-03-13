@@ -23,16 +23,11 @@
 			<div class="small-12 columns">
 				<h2>Search results</h2>
 			</div>
-			<div class="small-4 columns">
+			<div class="small-3 columns">
 				<section th:replace="fragments/samples :: facets (${facets})"></section>
 			</div>
-			<div class="small-8 columns">
-				<p th:text="'Showing '+(${start}+1)+' to '+(${start}+${page.getNumberOfElements()})+' of '+${page.getTotalElements()}+' results'">Showing 1 to 10 of 6268 results</p>
-				<section>
-					<div th:each="sample : ${page.getContent()}" th:remove="tag">
-						<div th:replace="fragments/samples :: result (${sample})"></div>
-					</div>
-				</section>
+			<div class="small-9 columns">
+				<section th:replace="fragments/samples :: samples (${page})"></section>
 			</div>
 		</div>
 	</div>

@@ -103,8 +103,11 @@ public class SolrSampleService {
 		
 		FacetQueryResult<?> facetTypes = solrSampleRepository.findByTextAndPublicWithFacetTypes(text, pageable);
 		for (FacetFieldEntry ffe : facetTypes.getFacetResultPage(facetTypes.getFacetFields().iterator().next()).getContent()) {
-			rawFacetTotals.put(ffe.getValue(), ffe.getValueCount());
-			log.info("Putting "+ffe.getValue()+" with count "+ffe.getValueCount());
+			//don't try to facet on things that are used little
+			if (ffe.getValueCount() > 0) {
+				rawFacetTotals.put(ffe.getValue(), ffe.getValueCount());
+				log.info("Putting "+ffe.getValue()+" with count "+ffe.getValueCount());
+			}
 		}
 		
 		//convert the temporary map to a more permanent sorted map
@@ -125,8 +128,10 @@ public class SolrSampleService {
 			
 			//for each value, put the number of them into this facets map
 			for (FacetFieldEntry ffe : facetPage.getFacetResultPage(field)) {
-				log.info("Adding "+ffe.getValue()+" with count "+ffe.getValueCount()+" in "+field.getName());
-				rawFieldMap.put(ffe.getValue(), ffe.getValueCount());
+				if (ffe.getValueCount() > 0) {
+					log.info("Adding "+ffe.getValue()+" with count "+ffe.getValueCount()+" in "+field.getName());
+					rawFieldMap.put(ffe.getValue(), ffe.getValueCount());
+				}
 			}
 
 			//convert the temporary map to a more permanent sorted map
@@ -134,7 +139,10 @@ public class SolrSampleService {
 			SortedMap<String, Long> fieldMap = new TreeMap<>(fieldComparator);
 			fieldMap.putAll(rawFieldMap);
 			//add this facets map into the overall map
-			facets.put(field.getName(), fieldMap);
+			//but only if its big enough to be useful
+			if (fieldMap.size() > 0) {
+				facets.put(field.getName(), fieldMap);
+			}
 		}
 		
 		return SampleFacets.build(facets, facetTotals);

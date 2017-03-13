@@ -1,7 +1,4 @@
-.card {
-	margin: 0.5rem 1.5rem 0.875rem;
-}
-
-.card-content {
-	padding: 0.5rem 1.5rem 0.875rem;
+a.card {
+	margin: 0.5rem 0.5rem 0.5rem;
+	padding: 0.5rem 0.5rem 0.5rem;
 }

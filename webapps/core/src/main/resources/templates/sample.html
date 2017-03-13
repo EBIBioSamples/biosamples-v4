@@ -94,7 +94,7 @@
 				</table>
 			</th:section>  
 
-			<th:section
+			<div>
 				th:if="${sample.externalReferences != null and #arrays.length(sample.externalReferences) > 0}"
 				th:remove="tag">
 				<h3>External Links</h3>
@@ -103,14 +103,16 @@
 					<h3 class="icon icon-generic white-color" data-icon="L"></h3>
 				</a>
 				</th:section>
-			</th:section>   
-			            
-			<a th:href="@{${sample.accession}+'.xml'}" class="button" title="XML">
-				<h3 class="icon icon-fileformats white-color" data-icon="x"></h3>
-			</a>
-            <a th:href="@{${sample.accession}+'.json'}" class="button" title="JSON">
-            	<h3 class="icon icon-fileformats white-color" data-icon="J"></h3>
-            </a>      
+			</div>   			        
+
+			<div>    
+				<a th:href="@{${sample.accession}+'.xml'}" class="button" title="XML">
+					<h3 class="icon icon-fileformats white-color" data-icon="x"></h3>
+				</a>
+	            <a th:href="@{${sample.accession}+'.json'}" class="button" title="JSON">
+	            	<h3 class="icon icon-fileformats white-color" data-icon="J"></h3>
+	            </a>   
+            </div>   
 		</div>
 	</div>
 	<th:block th:include="fragments/footer :: footer"></th:block>	
