@@ -66,7 +66,7 @@ public class HtmlController {
 		
 		Pageable pageable = new PageRequest(start/rows, rows);
 		Page<Sample> pageSample = sampleService.getSamplesByText(searchTerm, pageable);
-		SampleFacets sampleFacets = sampleService.getFacetsByText(searchTerm);
+		SampleFacets sampleFacets = sampleService.getFacetsByText(searchTerm, 10, 10);
 		
 		model.addAttribute("page", pageSample);
 		model.addAttribute("facets", sampleFacets);	

@@ -19,7 +19,7 @@ public class SolrSample {
 	@Id
 	@Indexed(name="id", required=true)
 	protected String accession;
-	@Indexed(name="name_s", required=true)
+	@Indexed(name="name_s", required=true, copyTo={"autocomplete_ss"})
 	protected String name; 
 
 	/**
@@ -35,7 +35,7 @@ public class SolrSample {
 	@Indexed(name="update_dt", required=true, type="date")
 	protected String update;
 
-	@Indexed(name="*_av_ss")
+	@Indexed(name="*_av_ss", copyTo="autocomplete")
 	@Dynamic
 	protected Map<String, List<String>> attributeValues;
 
@@ -56,10 +56,19 @@ public class SolrSample {
 	
 	/**
 	 * This field is required to get a list of attribute to use for faceting.
+	 * Since faceting does not require it to be stored, it wont be to save space.
+	 * 
+	 */
+	@Indexed(name="attributetypes_ss", stored=false, copyTo={"autocomplete_ss"})
+	protected List<String> attributeTypes;
+	
+
+	/**
+	 * This field is required to use with autocomplete faceting.
 	 * Since faceting does not require it to be stored, it wont be to save space
 	 */
-	@Indexed(name="attributetypes_ss", stored=false)
-	protected List<String> attributeTypes;
+	@Indexed(name="autocomplete_ss", stored=false)
+	protected List<String> autocompleteTerms;
 	
 	public SolrSample(){}
 	

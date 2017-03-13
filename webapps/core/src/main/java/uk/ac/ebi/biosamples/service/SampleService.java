@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.solr.core.query.result.FacetPage;
 import org.springframework.data.solr.core.query.result.SolrResultPage;
@@ -105,14 +106,16 @@ public class SampleService {
 	}
 
 	public Page<Sample> getSamplesByText(String text, Pageable pageable) {
-		Page<SolrSample> pageSolrSample = solrSampleService.fetchSolrSampleByText(text, pageable);
+		Page<SolrSample> pageSolrSample = solrSampleService.fetchSolrSampleByText(text, pageable, null);
 		// for each result fetch the version from Mongo and add inverse relationships
 		Page<Sample> pageSample = pageSolrSample.map(ss->fetch(ss.getAccession()));
 		return pageSample;
 	}
 
-	public SampleFacets getFacetsByText(String text) {
-		return solrSampleService.getFacets(text);
+	public SampleFacets getFacetsByText(String text, int noOfFacets, int noOfFacetValues) {
+		Pageable facetPageable = new PageRequest(0,noOfFacets);
+		Pageable facetValuePageable = new PageRequest(0,noOfFacetValues);
+		return solrSampleService.getFacets(text, facetPageable, facetValuePageable);
 	}
 
 	public Sample store(Sample sample) {

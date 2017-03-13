@@ -94,8 +94,7 @@
 				</table>
 			</th:section>  
 
-			<div>
-				th:if="${sample.externalReferences != null and #arrays.length(sample.externalReferences) > 0}"
+			<div th:if="${sample.externalReferences} != null and #arrays.length(sample.externalReferences) > 0}"
 				th:remove="tag">
 				<h3>External Links</h3>
 				<th:section th:each="externalReference : ${sample.externalReferences}" >

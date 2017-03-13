@@ -1,8 +1,10 @@
 package uk.ac.ebi.biosamples.solr.service;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -10,6 +12,7 @@ import java.util.TreeMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.solr.core.SolrOperations;
@@ -50,14 +53,14 @@ public class SolrSampleService {
 	 * @return
 	 */
 	//TODO add caching
-	public FacetPage<SolrSample> fetchSolrSampleByText(String text, Pageable pageable) {
+	public FacetPage<SolrSample> fetchSolrSampleByText(String text, Pageable pageable, Pageable facetPageable) {
 				
 		//do one query to get the facets to use for the second query
-		FacetPage<SolrSample> facetTypes = solrSampleRepository.findByTextAndPublicWithFacetTypes(text, pageable);
+		Page<FacetFieldEntry> facetFields = solrSampleRepository.getFacetFields(text, facetPageable);
 		
 		//add the previously retrieved attribute types as facets for the second query
 		FacetOptions facetOptions = new FacetOptions();
-		for (FacetFieldEntry ffe : facetTypes.getFacetResultPage(facetTypes.getFacetFields().iterator().next()).getContent()) {
+		for (FacetFieldEntry ffe : facetFields) {
 			facetOptions.addFacetOnField(ffe.getValue());
 		}
 		
@@ -91,22 +94,19 @@ public class SolrSampleService {
 	
 	
 	
-	public SampleFacets getFacets(String text) {	
-		
-		
-		log.info("GGETTTTINNGGG FFAACCEEETTTSSSSS");
-		
-		Pageable pageable = new PageRequest(0,10);
+	public SampleFacets getFacets(String text, Pageable facetPageable, Pageable facetValuePageable) {
 		
 		//create a map to hold to temporarily total samples in each facet type
 		Map<String, Long> rawFacetTotals = new HashMap<>();		
-		
-		FacetQueryResult<?> facetTypes = solrSampleRepository.findByTextAndPublicWithFacetTypes(text, pageable);
-		for (FacetFieldEntry ffe : facetTypes.getFacetResultPage(facetTypes.getFacetFields().iterator().next()).getContent()) {
+
+		Page<FacetFieldEntry> facetFields = solrSampleRepository.getFacetFields(text, facetPageable);
+		List<String> facetFieldList = new ArrayList<>();
+		for (FacetFieldEntry ffe : facetFields) {
 			//don't try to facet on things that are used little
 			if (ffe.getValueCount() > 0) {
 				rawFacetTotals.put(ffe.getValue(), ffe.getValueCount());
-				log.info("Putting "+ffe.getValue()+" with count "+ffe.getValueCount());
+				facetFieldList.add(ffe.getValue());
+				log.trace("Putting "+ffe.getValue()+" with count "+ffe.getValueCount());
 			}
 		}
 		
@@ -118,10 +118,10 @@ public class SolrSampleService {
 
 		//create a nested map to the facets themselves
 		SortedMap<String, SortedMap<String, Long>> facets = new TreeMap<>(facetTotalComparator);
-		FacetPage<?> facetPage = fetchSolrSampleByText(text, pageable);
+		FacetPage<?> facetPage = solrSampleRepository.getFacets(text, facetFieldList, facetValuePageable);
 		for (Field field : facetPage.getFacetFields()) {
 			
-			log.info("Checking field "+field.getName());
+			log.trace("Checking field "+field.getName());
 			
 			//create a map to hold the values and counts for this facet
 			Map<String, Long> rawFieldMap = new HashMap<>();	
@@ -129,7 +129,7 @@ public class SolrSampleService {
 			//for each value, put the number of them into this facets map
 			for (FacetFieldEntry ffe : facetPage.getFacetResultPage(field)) {
 				if (ffe.getValueCount() > 0) {
-					log.info("Adding "+ffe.getValue()+" with count "+ffe.getValueCount()+" in "+field.getName());
+					log.trace("Adding "+ffe.getValue()+" with count "+ffe.getValueCount()+" in "+field.getName());
 					rawFieldMap.put(ffe.getValue(), ffe.getValueCount());
 				}
 			}
