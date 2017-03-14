@@ -7,11 +7,11 @@
 	<section th:fragment="facets (facets)">
 		<div class="button-grid" th:with="urlBuilder=${T(org.springframework.web.servlet.support.ServletUriComponentsBuilder)}">
 			<div th:each="field : ${facets.getFields()}">
-				<a class="button columns medium-12 margin-top-large" th:href="${urlBuilder.fromCurrentRequest().replaceQueryParam('filter_'+field, '[* TO *]').toUriString()}"> 
+				<a class="button columns medium-12 margin-top-large" th:href="${urlBuilder.fromCurrentRequest().queryParam('filter', facets.fieldToAttributeType(field)).toUriString()}"> 
 					<span class="lead float-left" th:text="${facets.fieldToAttributeType(field)}"></span>
 					<span class="lead float-right" th:text="${facets.getFieldTotal(field)}"></span>
 				</a> 
-				<a class="button secondary columns medium-12" th:each="value : ${facets.getValues(field)}" th:href="${urlBuilder.fromCurrentRequest().replaceQueryParam('filter_'+field, value).toUriString()}"> 
+				<a class="button secondary columns medium-12" th:each="value : ${facets.getValues(field)}" th:href="${urlBuilder.fromCurrentRequest().queryParam('filter', facets.fieldToAttributeType(field)+':'+value).toUriString()}"> 
 					<span class="float-left" th:text="${value}"></span> 
 					<span class="float-right" th:text="${facets.getValueCount(field, value)}"></span>
 				</a>
@@ -19,11 +19,16 @@
 		</div>
 	</section>
 
-	<section th:fragment="samples (page)">
-		<p th:text="'Showing '+(${start}+1)+' to '+(${start}+${page.getNumberOfElements()})+' of '+${page.getTotalElements()}+' results'">
-			Showing	1 to 10 of 6268 results
-		</p>
-		<div class="button-grid" th:each="sample : ${page}" th:insert="fragments/samples :: result (${sample})"></div>
+	<section th:fragment="samples (page)" >
+		<div th:if="${page.getTotalElements() > 0}" >
+			<p th:text="'Showing '+(${start}+1)+' to '+(${start}+${page.getNumberOfElements()})+' of '+${page.getTotalElements()}+' results'">
+				Showing	1 to 10 of 6268 results
+			</p>
+			<div class="button-grid" th:each="sample : ${page}" th:insert="fragments/samples :: result (${sample})"></div>
+		</div>
+		<div th:if="${page.getTotalElements() == 0}" >
+			<p>No results found</p>
+		</div>
 	</section>
 
 	<a class="button columns medium-12 text-left" th:fragment="result (sample)" th:href="@{'/samples/'+${sample.accession}}"> 

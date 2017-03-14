@@ -73,26 +73,8 @@ public class SampleRestController {
 
 	}
 
-
     @CrossOrigin(methods = RequestMethod.GET)
 	@GetMapping(value = "", produces = { MediaType.APPLICATION_JSON_VALUE, MediaTypes.HAL_JSON_VALUE })
-	public ResponseEntity<PagedResources<Resource<Sample>>> readAll(Pageable pageable,
-			PagedResourcesAssembler<Sample> assembler) {
-
-		Page<Sample> pageSample = sampleService.getSamplesByText("*:*", null, pageable);
-		PagedResources<Resource<Sample>> pagedResources = assembler.toResource(pageSample, sampleResourceAssembler);
-		
-		//this is hacky, but no clear way to do this in spring-hateoas currently
-		String linkUri = (BasicLinkBuilder.linkToCurrentMapping().slash("samples").toUri().toString())+"{?text,filter*}";
-		pagedResources.add(new Link(linkUri, "search"));
-		//TODO first/last/next/prev
-		
-		return ResponseEntity.ok()
-				.body(pagedResources);
-	}
-
-    @CrossOrigin(methods = RequestMethod.GET)
-	@GetMapping(value = "search", produces = { MediaType.APPLICATION_JSON_VALUE, MediaTypes.HAL_JSON_VALUE })
 	public ResponseEntity<PagedResources<Resource<Sample>>> search(@RequestParam(name="text", defaultValue="*:*", required=false) String text,
 			@RequestParam(value="filter", required=false) String[] filters,
 			Pageable pageable, PagedResourcesAssembler<Sample> assembler) {

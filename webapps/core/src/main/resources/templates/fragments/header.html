@@ -65,13 +65,33 @@
 					<div class="masthead row">
 	
 						<!-- local-title -->
-						<div class="columns medium-12" id="local-title">							
+						<div class="columns medium-7" id="local-title">							
 							<h1>
 								<img th:src="@{/images/logo_biosamples.png}" alt="BioSamples logo" /> 
 								<a th:href="@{/}" title="to BioSamples homepage">BioSamples</a>
 							</h1>	
 						</div>
 						<!-- /local-title -->
+			            <!-- local-search -->
+						<div class="columns medium-5">
+				            <form id="local-search" name="local-search" th:action="@{samples}" method="get">
+				              <fieldset>
+				                <div class="input-group margin-bottom-none">
+				                  <input type="text" name="text" id="local-searchbox" placeholder="Search" class="input-group-field" th:value="${text}" />
+				                  <div class="input-group-button"><input type="submit" class="button icon icon-functional" value="1" ></div>
+				                </div>
+				                <small class="">
+				                  <!-- If your search is more complex than just a keyword search, you can link to an Advanced Search -->
+				                  <!-- <span class="adv"><a href="../search" id="adv-search" title="Advanced">Advanced</a></span> | -->
+				                  <!-- Include some example searchterms - keep them short and few. -->
+				                  <a th:href="@{/samples?text=leukaemia}">leukaemia</a>,
+				                  <a th:href="@{/samples?text=viridiplantae}">viridiplantae</a>,
+				                  <a th:href="@{/samples?text=sheep%20AND%20liver}">sheep AND liver</a> 
+				                </small>
+				              </fieldset>
+				            </form>
+			            </div>
+			            <!-- /local-search -->
 	
 						<!-- local-nav -->
 						<nav>

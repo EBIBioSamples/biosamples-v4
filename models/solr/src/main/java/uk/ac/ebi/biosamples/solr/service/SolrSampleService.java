@@ -49,6 +49,10 @@ public class SolrSampleService {
 	
 	//TODO add caching
 	public Page<SolrSample> fetchSolrSampleByText(String searchTerm, MultiValueMap<String,String> filters, Pageable pageable) {
+		//default to search all
+		if (searchTerm == null || searchTerm.trim().length() == 0) {
+			searchTerm = "*:*";
+		}
 		//build a query out of the users string and any facets
 		Query query = new SimpleQuery(searchTerm);
 				
@@ -66,32 +70,33 @@ public class SolrSampleService {
 			return query;
 		}		
 
+		boolean filter = false;
 		FilterQuery filterQuery = new SimpleFilterQuery();
 		for (String facetType : filters.keySet()) {
 			Criteria facetCriteria = null;
 			
 			//TODO facet name to/from facet field better
 			String facetField = facetType+"_av_ss";
-			
-			if ((filters.get(facetType) == null && filters.keySet().contains(facetType)) || filters.get(facetType).size() == 0 ) {
-				//we want to filter for all documents that have this attribute
-				facetCriteria = new Criteria(facetField).isNotNull();
-			} else {
-				//we have at least one specific value for this filter
-				for(String facatValue : filters.get(facetType)) {
-								
-					if (facetCriteria == null) {
-						facetCriteria = new Criteria(facetField).is(facatValue);
-					} else {
-						facetCriteria = facetCriteria.or(new Criteria(facetField).is(facatValue));
-					}
+			for(String facatValue : filters.get(facetType)) {
+				if (facatValue == null) {
+					//no specific value, check if its not null
+					facetCriteria = new Criteria(facetField).isNotNull();					
+				} else if (facetCriteria == null) {
+					facetCriteria = new Criteria(facetField).is(facatValue);
+				} else {
+					facetCriteria = facetCriteria.or(new Criteria(facetField).is(facatValue));
 				}
+
+				log.info("Filtering on "+facetField+" for value "+facatValue);
 			}
 			if (facetCriteria != null) {
 				filterQuery.addCriteria(facetCriteria);
+				filter = true;
 			}
 		}	
-		query.addFilterQuery(filterQuery);
+		if (filter) {
+			query.addFilterQuery(filterQuery);
+		}
 		return query;
 	}
 
@@ -111,6 +116,10 @@ public class SolrSampleService {
 	}
 		
 	public SampleFacets getFacets(String searchTerm, MultiValueMap<String,String> filters, Pageable facetPageable, Pageable facetValuePageable) {
+		//default to search all
+		if (searchTerm == null || searchTerm.trim().length() == 0) {
+			searchTerm = "*:*";
+		}
 		
 		//create a map to hold to temporarily total samples in each facet type
 		Map<String, Long> rawFacetTotals = new HashMap<>();		
@@ -130,7 +139,7 @@ public class SolrSampleService {
 			if (ffe.getValueCount() > 0) {
 				rawFacetTotals.put(ffe.getValue(), ffe.getValueCount());
 				facetFieldList.add(ffe.getValue());
-				log.trace("Putting "+ffe.getValue()+" with count "+ffe.getValueCount());
+				log.info("Putting "+ffe.getValue()+" with count "+ffe.getValueCount());
 			}
 		}
 		
@@ -139,13 +148,19 @@ public class SolrSampleService {
 		SortedMap<String, Long> facetTotals = new TreeMap<>(facetTotalComparator);
 		facetTotals.putAll(rawFacetTotals);
 		
+		SortedMap<String, SortedMap<String, Long>> facets = new TreeMap<>(facetTotalComparator);
+		
+		//if there are no facets avaliable (i.e. no samples)
+		//then cleanly exit here
+		if (facetTotals.isEmpty()) {
+			return SampleFacets.build(facets, facetTotals);
+		}
 
 		//create a nested map to the facets themselves
-		SortedMap<String, SortedMap<String, Long>> facets = new TreeMap<>(facetTotalComparator);
 		FacetPage<?> facetPage = solrSampleRepository.getFacets(query, facetFieldList, facetValuePageable);
 		for (Field field : facetPage.getFacetFields()) {
 			
-			log.trace("Checking field "+field.getName());
+			log.info("Checking field "+field.getName());
 			
 			//create a map to hold the values and counts for this facet
 			Map<String, Long> rawFieldMap = new HashMap<>();	
@@ -153,7 +168,7 @@ public class SolrSampleService {
 			//for each value, put the number of them into this facets map
 			for (FacetFieldEntry ffe : facetPage.getFacetResultPage(field)) {
 				if (ffe.getValueCount() > 0) {
-					log.trace("Adding "+ffe.getValue()+" with count "+ffe.getValueCount()+" in "+field.getName());
+					log.info("Adding "+ffe.getValue()+" with count "+ffe.getValueCount()+" in "+field.getName());
 					rawFieldMap.put(ffe.getValue(), ffe.getValueCount());
 				}
 			}

@@ -59,7 +59,7 @@ public class SolrSample {
 	 * Since faceting does not require it to be stored, it wont be to save space.
 	 * 
 	 */
-	@Indexed(name="attributetypes_ss", stored=false, copyTo={"autocomplete_ss"})
+	@Indexed(name="attributetypes_ss", copyTo={"autocomplete_ss"})
 	protected List<String> attributeTypes;
 	
 
@@ -67,7 +67,7 @@ public class SolrSample {
 	 * This field is required to use with autocomplete faceting.
 	 * Since faceting does not require it to be stored, it wont be to save space
 	 */
-	@Indexed(name="autocomplete_ss", stored=false)
+	@Indexed(name="autocomplete_ss")
 	protected List<String> autocompleteTerms;
 	
 	public SolrSample(){}

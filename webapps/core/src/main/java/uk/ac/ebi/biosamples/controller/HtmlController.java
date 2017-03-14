@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.SampleService;
@@ -53,7 +54,7 @@ public class HtmlController {
 	}
 
 	@GetMapping(value = "/samples")
-	public String samples(Model model, @RequestParam(name="searchTerm", defaultValue="*:*") String searchTerm,
+	public String samples(Model model, @RequestParam(name="text", required=false) String text,
 			@RequestParam(value = "start", defaultValue = "0") int start,
 			@RequestParam(value = "rows", defaultValue = "10") int rows,
 			@RequestParam(value="filter", required=false) String[] filters,
@@ -62,11 +63,11 @@ public class HtmlController {
 		MultiValueMap<String, String> filtersMap = sampleService.getFilters(filters);
 				
 		Pageable pageable = new PageRequest(start/rows, rows);
-		Page<Sample> pageSample = sampleService.getSamplesByText(searchTerm, filtersMap, pageable);
+		Page<Sample> pageSample = sampleService.getSamplesByText(text, filtersMap, pageable);
 		//default to getting 10 values from 10 facets
-		SampleFacets sampleFacets = sampleService.getFacets(searchTerm, filtersMap, 10, 10);
-				
-		model.addAttribute("searchTerm", searchTerm);	
+		SampleFacets sampleFacets = sampleService.getFacets(text, filtersMap, 10, 10);
+								
+		model.addAttribute("text", text);	
 		model.addAttribute("start", start);
 		model.addAttribute("rows", rows);
 		model.addAttribute("filters", filtersMap);
