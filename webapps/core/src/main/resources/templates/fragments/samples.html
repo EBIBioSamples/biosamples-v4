@@ -5,13 +5,13 @@
 </head>
 <body>
 	<section th:fragment="facets (facets)">
-		<div class="button-grid">
+		<div class="button-grid" th:with="urlBuilder=${T(org.springframework.web.servlet.support.ServletUriComponentsBuilder)}">
 			<div th:each="field : ${facets.getFields()}">
-				<a class="button columns medium-12 margin-top-large"> 
+				<a class="button columns medium-12 margin-top-large" th:href="${urlBuilder.fromCurrentRequest().replaceQueryParam('filter_'+field, '[* TO *]').toUriString()}"> 
 					<span class="lead float-left" th:text="${facets.fieldToAttributeType(field)}"></span>
 					<span class="lead float-right" th:text="${facets.getFieldTotal(field)}"></span>
 				</a> 
-				<a class="button secondary columns medium-12" th:each="value : ${facets.getValues(field)}" href="#"> 
+				<a class="button secondary columns medium-12" th:each="value : ${facets.getValues(field)}" th:href="${urlBuilder.fromCurrentRequest().replaceQueryParam('filter_'+field, value).toUriString()}"> 
 					<span class="float-left" th:text="${value}"></span> 
 					<span class="float-right" th:text="${facets.getValueCount(field, value)}"></span>
 				</a>

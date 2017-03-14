@@ -4,8 +4,12 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.solr.core.query.FacetQuery;
+import org.springframework.data.solr.core.query.Query;
 import org.springframework.data.solr.core.query.result.FacetFieldEntry;
 import org.springframework.data.solr.core.query.result.FacetPage;
+
+import uk.ac.ebi.biosamples.solr.model.SolrSample;
 
 public interface SolrSampleRepositoryCustom {
 	
@@ -18,7 +22,7 @@ public interface SolrSampleRepositoryCustom {
 	 * @param facetPageable
 	 * @return
 	 */
-	public Page<FacetFieldEntry> getFacetFields(String text, Pageable facetPageable);
+	public Page<FacetFieldEntry> getFacetFields(FacetQuery query, Pageable facetPageable);
 	
 
 	/**
@@ -30,5 +34,17 @@ public interface SolrSampleRepositoryCustom {
 	 * @param facetPageable
 	 * @return
 	 */
-	public FacetPage<?> getFacets(String text, List<String> facetFields, Pageable facetPageable);
+	public FacetPage<?> getFacets(FacetQuery query, List<String> facetFields, Pageable facetPageable);
+	
+	
+
+	/**
+	 * Use a query object to get a page of results. This allows for more complicated query
+	 * construction compared to a simple string e.g. filtering
+	 * 
+	 * @param text
+	 * @param page
+	 * @return
+	 */
+	Page<SolrSample> findByQuery(Query query, Pageable page);
 }

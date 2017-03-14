@@ -31,10 +31,10 @@ public class CacheControlInterceptor implements HandlerInterceptor {
 	public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler,
 			ModelAndView modelAndView) throws Exception {
 		//only cache get requests
-		if (request.getMethod().equals("GET")) {
+//		if (request.getMethod().equals("GET")) {
 			//allow response to be cached for one hour
-			response.addHeader(HttpHeaders.CACHE_CONTROL, "max-age=3600");
-		}
+//			response.addHeader(HttpHeaders.CACHE_CONTROL, "max-age=3600");
+//		}
 	}
 
 	@Override

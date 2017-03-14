@@ -9,7 +9,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.solr.core.SolrOperations;
 import org.springframework.data.solr.core.query.FacetOptions;
 import org.springframework.data.solr.core.query.FacetQuery;
+import org.springframework.data.solr.core.query.FilterQuery;
+import org.springframework.data.solr.core.query.Query;
 import org.springframework.data.solr.core.query.SimpleFacetQuery;
+import org.springframework.data.solr.core.query.SimpleFilterQuery;
 import org.springframework.data.solr.core.query.SimpleStringCriteria;
 import org.springframework.data.solr.core.query.result.FacetFieldEntry;
 import org.springframework.data.solr.core.query.result.FacetPage;
@@ -25,21 +28,21 @@ public class SolrSampleRepositoryImpl implements SolrSampleRepositoryCustom {
 
 	@Override
 	//TODO cacheing
-	public Page<FacetFieldEntry> getFacetFields(String query, Pageable facetPageable) {
+	public Page<FacetFieldEntry> getFacetFields(FacetQuery query, Pageable facetPageable) {
 		//configure the facet options to use the attribute types fields
 		//and to have the appropriate paging
 		FacetOptions facetOptions = new FacetOptions();
 		facetOptions.addFacetOnField("attributetypes_ss");
 		facetOptions.setPageable(facetPageable);
 
-		FacetQuery facetQuery = new SimpleFacetQuery(new SimpleStringCriteria(query), new PageRequest(0,1)).setFacetOptions(facetOptions);
+		query.setFacetOptions(facetOptions);
 		//execute the query against the solr server
-		FacetPage<SolrSample> page = solrOperations.queryForFacetPage(facetQuery, SolrSample.class);
+		FacetPage<SolrSample> page = solrOperations.queryForFacetPage(query, SolrSample.class);
 		return page.getFacetResultPage("attributetypes_ss");
 	}
 
 	@Override
-	public FacetPage<?> getFacets(String query, List<String> facetFields, Pageable facetPageable) {
+	public FacetPage<?> getFacets(FacetQuery query, List<String> facetFields, Pageable facetPageable) {
 		
 		if (facetFields == null || facetFields.size() == 0) {
 			throw new IllegalArgumentException("Must provide fields to facet on");
@@ -53,12 +56,17 @@ public class SolrSampleRepositoryImpl implements SolrSampleRepositoryCustom {
 		}
 		facetOptions.setPageable(facetPageable);
 	
-		
-		FacetQuery facetQuery = new SimpleFacetQuery(new SimpleStringCriteria(query), new PageRequest(0,1)).setFacetOptions(facetOptions);
+
+		query.setFacetOptions(facetOptions);
 		//execute the query against the solr server
-		FacetPage<SolrSample> page = solrOperations.queryForFacetPage(facetQuery, SolrSample.class);
+		FacetPage<SolrSample> page = solrOperations.queryForFacetPage(query, SolrSample.class);
 		return page;
 		
+	}
+
+	@Override
+	public Page<SolrSample> findByQuery(Query query, Pageable page) {		
+		return solrOperations.query(query, SolrSample.class);
 	}
 	
 	

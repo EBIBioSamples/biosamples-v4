@@ -2,7 +2,6 @@ package uk.ac.ebi.biosamples.controller;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -13,17 +12,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.solr.core.query.result.FacetPage;
-import org.springframework.data.solr.core.query.result.SolrResultPage;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import uk.ac.ebi.biosamples.model.Sample;
@@ -56,22 +53,25 @@ public class HtmlController {
 	}
 
 	@GetMapping(value = "/samples")
-	public String samples(Model model, @RequestParam(name="searchTerm", defaultValue="*:*", required=false) String searchTerm,
-			@RequestParam(value = "start", defaultValue = "0", required=false) int start,
-			@RequestParam(value = "rows", defaultValue = "10", required=false) int rows,
-			@RequestParam(value = "filters[]", defaultValue = "", required = false) String[] filters,
+	public String samples(Model model, @RequestParam(name="searchTerm", defaultValue="*:*") String searchTerm,
+			@RequestParam(value = "start", defaultValue = "0") int start,
+			@RequestParam(value = "rows", defaultValue = "10") int rows,
+			@RequestParam(value="filter", required=false) String[] filters,
 			HttpServletRequest request, HttpServletResponse response) {
-		
-		model.addAttribute("searchTerm", searchTerm);
-		
+
+		MultiValueMap<String, String> filtersMap = sampleService.getFilters(filters);
+				
 		Pageable pageable = new PageRequest(start/rows, rows);
-		Page<Sample> pageSample = sampleService.getSamplesByText(searchTerm, pageable);
-		SampleFacets sampleFacets = sampleService.getFacetsByText(searchTerm, 10, 10);
-		
-		model.addAttribute("page", pageSample);
-		model.addAttribute("facets", sampleFacets);	
+		Page<Sample> pageSample = sampleService.getSamplesByText(searchTerm, filtersMap, pageable);
+		//default to getting 10 values from 10 facets
+		SampleFacets sampleFacets = sampleService.getFacets(searchTerm, filtersMap, 10, 10);
+				
+		model.addAttribute("searchTerm", searchTerm);	
 		model.addAttribute("start", start);
 		model.addAttribute("rows", rows);
+		model.addAttribute("filters", filtersMap);
+		model.addAttribute("page", pageSample);
+		model.addAttribute("facets", sampleFacets);
 		
 		return "samples";
 	}

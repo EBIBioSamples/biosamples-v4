@@ -18,10 +18,13 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.solr.core.query.Query;
 import org.springframework.data.solr.core.query.result.FacetPage;
 import org.springframework.data.solr.core.query.result.SolrResultPage;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import com.mongodb.ErrorCategory;
 import com.mongodb.MongoWriteException;
@@ -104,18 +107,38 @@ public class SampleService {
 		
 		return sample;
 	}
-
-	public Page<Sample> getSamplesByText(String text, Pageable pageable) {
-		Page<SolrSample> pageSolrSample = solrSampleService.fetchSolrSampleByText(text, pageable, null);
+	
+	public Page<Sample> getSamplesByText(String text, MultiValueMap<String,String> filters, Pageable pageable) {
+		Page<SolrSample> pageSolrSample = solrSampleService.fetchSolrSampleByText(text, filters, pageable);
 		// for each result fetch the version from Mongo and add inverse relationships
 		Page<Sample> pageSample = pageSolrSample.map(ss->fetch(ss.getAccession()));
 		return pageSample;
 	}
-
-	public SampleFacets getFacetsByText(String text, int noOfFacets, int noOfFacetValues) {
+	
+	public SampleFacets getFacets(String text, MultiValueMap<String,String> filters, int noOfFacets, int noOfFacetValues) {
 		Pageable facetPageable = new PageRequest(0,noOfFacets);
 		Pageable facetValuePageable = new PageRequest(0,noOfFacetValues);
-		return solrSampleService.getFacets(text, facetPageable, facetValuePageable);
+		return solrSampleService.getFacets(text, filters, facetPageable, facetValuePageable);
+	}
+	
+	public MultiValueMap<String,String> getFilters(String[] filterStrings) {
+		if (filterStrings == null) return null;
+		if (filterStrings.length == 0) return null;
+		//strip the requestParams down to just the selected facet information
+		MultiValueMap<String,String> filters = new LinkedMultiValueMap<>();
+		for (String filterString : filterStrings) {
+			if (filterString.contains(":")) {
+				String key = filterString.substring(0, filterString.indexOf(":"));
+				String value = filterString.substring(filterString.indexOf(":")+1, filterString.length());
+				filters.add(key, value);
+				log.info("adding filter "+key+" = "+value);
+			} else {
+				String key=filterString;
+				filters.add(key, null);
+				log.info("adding filter "+key);
+			}
+		}
+		return filters;
 	}
 
 	public Sample store(Sample sample) {

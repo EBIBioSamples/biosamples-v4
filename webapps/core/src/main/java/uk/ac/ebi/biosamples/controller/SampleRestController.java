@@ -12,15 +12,22 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.ExposesResourceFor;
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceSupport;
+import org.springframework.hateoas.TemplateVariable;
+import org.springframework.hateoas.TemplateVariable.VariableType;
+import org.springframework.hateoas.TemplateVariables;
+import org.springframework.hateoas.UriTemplate;
+import org.springframework.hateoas.mvc.BasicLinkBuilder;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -68,43 +75,38 @@ public class SampleRestController {
 
 
     @CrossOrigin(methods = RequestMethod.GET)
-	@GetMapping(value = "", produces = { MediaType.APPLICATION_JSON_VALUE,
-			MediaTypes.HAL_JSON_VALUE })
+	@GetMapping(value = "", produces = { MediaType.APPLICATION_JSON_VALUE, MediaTypes.HAL_JSON_VALUE })
 	public ResponseEntity<PagedResources<Resource<Sample>>> readAll(Pageable pageable,
 			PagedResourcesAssembler<Sample> assembler) {
 
-		Page<Sample> pageSample = sampleService.getSamplesByText("*:*",pageable);
+		Page<Sample> pageSample = sampleService.getSamplesByText("*:*", null, pageable);
 		PagedResources<Resource<Sample>> pagedResources = assembler.toResource(pageSample, sampleResourceAssembler);
-		pagedResources.add(ControllerLinkBuilder
-				.linkTo(ControllerLinkBuilder.methodOn(SampleRestController.class).search()).withRel("search"));
+		
+		//this is hacky, but no clear way to do this in spring-hateoas currently
+		String linkUri = (BasicLinkBuilder.linkToCurrentMapping().slash("samples").toUri().toString())+"{?text,filter*}";
+		pagedResources.add(new Link(linkUri, "search"));
+		//TODO first/last/next/prev
+		
 		return ResponseEntity.ok()
 				.body(pagedResources);
 	}
 
     @CrossOrigin(methods = RequestMethod.GET)
-	@GetMapping(value = "search", produces = { MediaType.APPLICATION_JSON_VALUE,
-			MediaTypes.HAL_JSON_VALUE })
-	public ResponseEntity<ResourceSupport> search() {
-		ResourceSupport resource = new ResourceSupport();
-		resource.add(ControllerLinkBuilder.linkTo(ControllerLinkBuilder.methodOn(SampleRestController.class).search())
-				.withSelfRel());
-		resource.add(ControllerLinkBuilder
-				.linkTo(ControllerLinkBuilder.methodOn(SampleRestController.class).findByText("text", null, null))
-				.withRel("findByText"));
-		return ResponseEntity.ok()
-				.body(resource);
-	}
-
-    @CrossOrigin(methods = RequestMethod.GET)
-	@GetMapping(value = "search/findByText", produces = {
-			MediaType.APPLICATION_JSON_VALUE, MediaTypes.HAL_JSON_VALUE })
-	public ResponseEntity<PagedResources<Resource<Sample>>> findByText(@RequestParam(name="text", defaultValue="*:*", required=false) String text,
+	@GetMapping(value = "search", produces = { MediaType.APPLICATION_JSON_VALUE, MediaTypes.HAL_JSON_VALUE })
+	public ResponseEntity<PagedResources<Resource<Sample>>> search(@RequestParam(name="text", defaultValue="*:*", required=false) String text,
+			@RequestParam(value="filter", required=false) String[] filters,
 			Pageable pageable, PagedResourcesAssembler<Sample> assembler) {
 
-		Page<Sample> pageSample = sampleService.getSamplesByText(text, pageable);
+		MultiValueMap<String, String> filtersMap = sampleService.getFilters(filters);
+		Page<Sample> pageSample = sampleService.getSamplesByText(text, filtersMap, pageable);
 		PagedResources<Resource<Sample>> pagedResources = assembler.toResource(pageSample, sampleResourceAssembler);
-		pagedResources.add(ControllerLinkBuilder
-				.linkTo(ControllerLinkBuilder.methodOn(SampleRestController.class).search()).withRel("search"));
+		
+		//this is hacky, but no clear way to do this in spring-hateoas currently
+		pagedResources.removeLinks();
+		String linkUri = (BasicLinkBuilder.linkToCurrentMapping().slash("samples").toUri().toString())+"{?text,filter*}";
+		pagedResources.add(new Link(linkUri, "self"));
+		//TODO first/last/next/prev
+	
 		return ResponseEntity.ok()
 				.body(pagedResources);
 	}
@@ -136,9 +138,32 @@ public class SampleRestController {
 	}
 
     @CrossOrigin(methods = RequestMethod.GET)
-	@GetMapping(value = "{accession}", produces = { MediaType.APPLICATION_JSON_VALUE,
-			MediaTypes.HAL_JSON_VALUE })
-	public ResponseEntity<Resource<Sample>> readResource(@PathVariable String accession) {
+	@GetMapping(value = "{accession}", produces = { MediaType.APPLICATION_JSON_VALUE })
+	public ResponseEntity<Sample> readResource(@PathVariable String accession) {
+		// convert it into the format to return
+		Sample sample = null;
+		try {
+			sample = sampleService.fetch(accession);
+		} catch (IllegalArgumentException e) {
+			// did not exist, throw 404
+			return ResponseEntity.notFound().build();
+		}
+		
+		// check if the release date is in the future and if so return it as private
+		if (sample.getRelease().isAfter(LocalDateTime.now())) {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+		}
+
+		// create the response object with the appropriate status
+		return ResponseEntity.ok()
+				.lastModified(sample.getUpdate().toEpochSecond(ZoneOffset.UTC))
+				.eTag(String.valueOf(sample.hashCode()))
+				.contentType(MediaType.APPLICATION_JSON).body(sample);
+	}
+
+    @CrossOrigin(methods = RequestMethod.GET)
+	@GetMapping(value = "{accession}", produces = {	MediaTypes.HAL_JSON_VALUE })
+	public ResponseEntity<Resource<Sample>> readResourceHal(@PathVariable String accession) {
 		// convert it into the format to return
 		Sample sample = null;
 		try {

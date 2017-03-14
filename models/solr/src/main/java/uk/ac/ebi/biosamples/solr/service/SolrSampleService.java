@@ -16,15 +16,21 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.solr.core.SolrOperations;
+import org.springframework.data.solr.core.query.Criteria;
 import org.springframework.data.solr.core.query.FacetOptions;
 import org.springframework.data.solr.core.query.FacetQuery;
 import org.springframework.data.solr.core.query.Field;
+import org.springframework.data.solr.core.query.FilterQuery;
+import org.springframework.data.solr.core.query.Query;
 import org.springframework.data.solr.core.query.SimpleFacetQuery;
+import org.springframework.data.solr.core.query.SimpleFilterQuery;
+import org.springframework.data.solr.core.query.SimpleQuery;
 import org.springframework.data.solr.core.query.SimpleStringCriteria;
 import org.springframework.data.solr.core.query.result.FacetFieldEntry;
 import org.springframework.data.solr.core.query.result.FacetPage;
 import org.springframework.data.solr.core.query.result.FacetQueryResult;
 import org.springframework.stereotype.Service;
+import org.springframework.util.MultiValueMap;
 
 import uk.ac.ebi.biosamples.solr.model.SampleFacets;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
@@ -34,48 +40,60 @@ import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
 public class SolrSampleService {
 
 	private final SolrSampleRepository solrSampleRepository;	
-	
-	private final SolrOperations solrOperations;
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 	
-	public SolrSampleService(SolrSampleRepository solrSampleRepository, @Qualifier(value="solrOperationsSample") SolrOperations solrOperations) {
-		this.solrOperations = solrOperations;
+	public SolrSampleService(SolrSampleRepository solrSampleRepository) {
 		this.solrSampleRepository = solrSampleRepository;
 	}		
 	
-	/**
-	 * This will get both a page of results and the facets associated with that query. It will call solr multiple
-	 * times to do this correctly. In future, it will implement caching where possible to minimise those calls.
-	 * 
-	 * @param text
-	 * @param pageable
-	 * @return
-	 */
 	//TODO add caching
-	public FacetPage<SolrSample> fetchSolrSampleByText(String text, Pageable pageable, Pageable facetPageable) {
+	public Page<SolrSample> fetchSolrSampleByText(String searchTerm, MultiValueMap<String,String> filters, Pageable pageable) {
+		//build a query out of the users string and any facets
+		Query query = new SimpleQuery(searchTerm);
 				
-		//do one query to get the facets to use for the second query
-		Page<FacetFieldEntry> facetFields = solrSampleRepository.getFacetFields(text, facetPageable);
+		if (filters != null) {
+			query = addFilters(query, filters);
+		}		
 		
-		//add the previously retrieved attribute types as facets for the second query
-		FacetOptions facetOptions = new FacetOptions();
-		for (FacetFieldEntry ffe : facetFields) {
-			facetOptions.addFacetOnField(ffe.getValue());
-		}
-		
-		if (facetOptions.getFacetOnFields().size() == 0) {
-			// return the samples from solr that match the query
-			return solrSampleRepository.findByTextAndPublic(text, pageable);
-		} else {
-			//build the query using the existing text string, the page information, and the dynamic facets
-			FacetQuery query = new SimpleFacetQuery(new SimpleStringCriteria(text), pageable).setFacetOptions(facetOptions);
-			//execute the query against the solr server
-			FacetPage<SolrSample> page = solrOperations.queryForFacetPage(query, SolrSample.class);
-			
-			return page;
-		}
+		// return the samples from solr that match the query
+		return solrSampleRepository.findByQuery(query, pageable);
 	}	
+	
+	private <T extends Query> T addFilters(T query, MultiValueMap<String,String> filters) {
+		//if no filters or filters are null, quick exit
+		if (filters == null || filters.size() == 0) {
+			return query;
+		}		
+
+		FilterQuery filterQuery = new SimpleFilterQuery();
+		for (String facetType : filters.keySet()) {
+			Criteria facetCriteria = null;
+			
+			//TODO facet name to/from facet field better
+			String facetField = facetType+"_av_ss";
+			
+			if ((filters.get(facetType) == null && filters.keySet().contains(facetType)) || filters.get(facetType).size() == 0 ) {
+				//we want to filter for all documents that have this attribute
+				facetCriteria = new Criteria(facetField).isNotNull();
+			} else {
+				//we have at least one specific value for this filter
+				for(String facatValue : filters.get(facetType)) {
+								
+					if (facetCriteria == null) {
+						facetCriteria = new Criteria(facetField).is(facatValue);
+					} else {
+						facetCriteria = facetCriteria.or(new Criteria(facetField).is(facatValue));
+					}
+				}
+			}
+			if (facetCriteria != null) {
+				filterQuery.addCriteria(facetCriteria);
+			}
+		}	
+		query.addFilterQuery(filterQuery);
+		return query;
+	}
 
 	private static class MapComparableComparator<S, T extends Comparable<T>> implements Comparator<S> {
 		
@@ -91,15 +109,21 @@ public class SolrSampleService {
 			return mapComparable.get(a).compareTo(mapComparable.get(b));
 		}		
 	}
-	
-	
-	
-	public SampleFacets getFacets(String text, Pageable facetPageable, Pageable facetValuePageable) {
+		
+	public SampleFacets getFacets(String searchTerm, MultiValueMap<String,String> filters, Pageable facetPageable, Pageable facetValuePageable) {
 		
 		//create a map to hold to temporarily total samples in each facet type
 		Map<String, Long> rawFacetTotals = new HashMap<>();		
 
-		Page<FacetFieldEntry> facetFields = solrSampleRepository.getFacetFields(text, facetPageable);
+		//build a query out of the users string and any facets
+		FacetQuery query = new SimpleFacetQuery();
+		query.addCriteria(new Criteria().expression(searchTerm));
+				
+		if (filters != null && filters.size() > 0) {
+			query = addFilters(query, filters);
+		}		
+		Page<FacetFieldEntry> facetFields = solrSampleRepository.getFacetFields(query, facetPageable);
+		
 		List<String> facetFieldList = new ArrayList<>();
 		for (FacetFieldEntry ffe : facetFields) {
 			//don't try to facet on things that are used little
@@ -118,7 +142,7 @@ public class SolrSampleService {
 
 		//create a nested map to the facets themselves
 		SortedMap<String, SortedMap<String, Long>> facets = new TreeMap<>(facetTotalComparator);
-		FacetPage<?> facetPage = solrSampleRepository.getFacets(text, facetFieldList, facetValuePageable);
+		FacetPage<?> facetPage = solrSampleRepository.getFacets(query, facetFieldList, facetValuePageable);
 		for (Field field : facetPage.getFacetFields()) {
 			
 			log.trace("Checking field "+field.getName());
