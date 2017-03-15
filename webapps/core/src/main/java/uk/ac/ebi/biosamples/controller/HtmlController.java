@@ -1,7 +1,16 @@
 package uk.ac.ebi.biosamples.controller;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -23,9 +32,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.web.util.UriUtils;
 
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.SampleService;
+import uk.ac.ebi.biosamples.solr.model.SampleFacet;
+import uk.ac.ebi.biosamples.solr.model.SampleFacetValue;
 import uk.ac.ebi.biosamples.solr.model.SampleFacets;
 
 /**
@@ -61,20 +74,101 @@ public class HtmlController {
 			HttpServletRequest request, HttpServletResponse response) {
 
 		MultiValueMap<String, String> filtersMap = sampleService.getFilters(filters);
-				
+						
 		Pageable pageable = new PageRequest(start/rows, rows);
 		Page<Sample> pageSample = sampleService.getSamplesByText(text, filtersMap, pageable);
 		//default to getting 10 values from 10 facets
 		SampleFacets sampleFacets = sampleService.getFacets(text, filtersMap, 10, 10);
+		
+		//build URLs for the facets depending on if they are enabled or not
+
+		UriComponentsBuilder uriBuilder = ServletUriComponentsBuilder.fromRequest(request);
+		
+		Map<String, String> facetsUri = new HashMap<>();
+		
+		List<String> filtersList = new ArrayList<>();
+		if (filters != null) {
+			filtersList.addAll(Arrays.asList(filters));
+		}
+		Collections.sort(filtersList);
+		
+		URI uri;
+		for (SampleFacet sampleFacet : sampleFacets) {
+			//check if the filter all is on
+			if (filtersList.contains(sampleFacet.getLabel())) {
+				uri = getFilterUri(uriBuilder, filtersList, null, sampleFacet.getLabel());
+				facetsUri.put(sampleFacet.getLabel(), uri.toString());				
+			} else {
+				//filter is off, add uri to turn it on
+				uri = getFilterUri(uriBuilder, filtersList, sampleFacet.getLabel(), null);
+				facetsUri.put(sampleFacet.getLabel(), uri.toString());
+			}	
+			//check for each facet
+			for (SampleFacetValue sampleFacetValue : sampleFacet.getValues()) {
+				//check if the filter for this facet is on
+				String filter = sampleFacet.getLabel()+":"+sampleFacetValue.label;
+				if (filtersList.contains(filter)) {
+					uri = getFilterUri(uriBuilder, filtersList, null, filter);
+					facetsUri.put(filter, uri.toString());
+				} else {
+					//filter is off, add uri to turn it on
+					uri = getFilterUri(uriBuilder, filtersList, filter, null);
+					facetsUri.put(filter, uri.toString());	
+				}
+			}
+		}
 								
 		model.addAttribute("text", text);	
 		model.addAttribute("start", start);
 		model.addAttribute("rows", rows);
-		model.addAttribute("filters", filtersMap);
 		model.addAttribute("page", pageSample);
 		model.addAttribute("facets", sampleFacets);
+		model.addAttribute("facetsuri", facetsUri);
+		model.addAttribute("filters", filtersList);
+		
+		
+		//TODO handle case where filter is on but not displayed as a facet...
 		
 		return "samples";
+	}
+	
+	private URI getFilterUri(UriComponentsBuilder uriBuilder, List<String> filters, String filterAdd, String filterRemove) {
+		List<String> tempFiltersList = new ArrayList<>(filters);
+		if (filterAdd != null) {
+			tempFiltersList.add(filterAdd);
+			//TODO if turning on a facet-all filter, remove facet-value filters for that facet
+			//TODO if turning on a facet-value filter, remove facet-all filters for that facet
+			if (filterAdd.contains(":")) {
+				//remove facet-all filters when adding a specific facet
+				tempFiltersList.remove(filterAdd.split(":")[0]);
+			} else {
+				//remove facet-specific filters when adding a filter-all facet
+				Iterator<String> it =tempFiltersList.iterator();
+				while (it.hasNext()) {
+					if (it.next().startsWith(filterAdd+":")) {
+						it.remove();
+					}
+				}
+			}
+		}
+		if (filterRemove != null) {
+			tempFiltersList.remove(filterRemove);
+		}
+		Collections.sort(tempFiltersList);
+		String[] tempFiltersArray = new String[tempFiltersList.size()];
+		tempFiltersArray = tempFiltersList.toArray(tempFiltersArray);
+		/*
+		for (int i = 0; i < tempFiltersArray.length; i++) {
+			try {
+				tempFiltersArray[i] = UriUtils.encodeQueryParam(tempFiltersArray[i], "UTF-8");
+			} catch (UnsupportedEncodingException e) {
+				//since encoding is hard-coded above, should never happen
+				throw new RuntimeException(e);
+			}
+		}
+		*/
+		URI uri = uriBuilder.cloneBuilder().replaceQueryParam("filter", (Object[])tempFiltersArray).build().encode().toUri();
+		return uri;
 	}
 
 	@GetMapping(value = "/samples/{accession}")

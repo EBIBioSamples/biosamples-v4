@@ -1,7 +1,10 @@
 package uk.ac.ebi.biosamples.service;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collector;
@@ -124,16 +127,21 @@ public class SampleService {
 	public MultiValueMap<String,String> getFilters(String[] filterStrings) {
 		if (filterStrings == null) return null;
 		if (filterStrings.length == 0) return null;
+		//sort the array
+		Arrays.sort(filterStrings);
+		SortedSet<String> filterStringSet = new TreeSet<>(Arrays.asList(filterStrings));
 		//strip the requestParams down to just the selected facet information
 		MultiValueMap<String,String> filters = new LinkedMultiValueMap<>();
-		for (String filterString : filterStrings) {
+		for (String filterString : filterStringSet) {
 			if (filterString.contains(":")) {
 				String key = filterString.substring(0, filterString.indexOf(":"));
 				String value = filterString.substring(filterString.indexOf(":")+1, filterString.length());
+				//key = SolrSampleService.attributeTypeToField(key);
 				filters.add(key, value);
 				log.info("adding filter "+key+" = "+value);
 			} else {
 				String key=filterString;
+				//key = SolrSampleService.attributeTypeToField(key);
 				filters.add(key, null);
 				log.info("adding filter "+key);
 			}

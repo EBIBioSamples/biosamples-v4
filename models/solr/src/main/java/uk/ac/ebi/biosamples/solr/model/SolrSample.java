@@ -9,6 +9,8 @@ import org.springframework.data.solr.core.mapping.Dynamic;
 import org.springframework.data.solr.core.mapping.Indexed;
 import org.springframework.data.solr.core.mapping.SolrDocument;
 
+import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
+
 
 @SolrDocument(solrCoreName = "samples")
 public class SolrSample {
@@ -146,7 +148,7 @@ public class SolrSample {
 	 * @param relationships
 	 * @return
 	 */
-	static public SolrSample build(String name, String accession, String release, String update, 
+	public static SolrSample build(String name, String accession, String release, String update, 
 			Map<String, List<String>> attributeValues, Map<String, List<String>> attributeIris, Map<String, List<String>> attributeUnits) {
 		SolrSample sample = new SolrSample();
 		sample.accession = accession;
@@ -164,7 +166,8 @@ public class SolrSample {
 		if (attributeValues != null && attributeValues.keySet().size() > 0) {
 			List<String> attributeTypes = new ArrayList<>();
 			for (String attributeType : attributeValues.keySet()) {
-				attributeTypes.add(attributeType+"_av_ss");
+				String field = SolrSampleService.attributeTypeToField(attributeType);
+				attributeTypes.add(field);
 			}
 			Collections.sort(attributeTypes);
 			sample.attributeTypes = attributeTypes;

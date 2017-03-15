@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +18,7 @@ import uk.ac.ebi.biosamples.solr.model.SolrSample;
 @Service
 public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample> {
 
+	
 	private final DateTimeFormatter solrDateTimeFormatter = DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss'Z'");
 	
 	@Override
@@ -31,33 +33,39 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 			attributeUnits = new HashMap<>();
 			
 			for (Attribute attr : sample.getAttributes()) {
-				if (!attributeValues.containsKey(attr.getKey())) {
-					attributeValues.put(attr.getKey(), new ArrayList<>());
-				}
+				
+				String key = attr.getKey();
+				//key = SolrSampleService.attributeTypeToField(key);
+				
 				String value = attr.getValue();
 				//if its longer than 255 characters, don't add it to solr
 				//solr cant index long things well, and its probably not useful for search
 				if (value.length() > 255) {
 					continue;
 				}
-				attributeValues.get(attr.getKey()).add(value);
+				
+				if (!attributeValues.containsKey(key)) {
+					attributeValues.put(key, new ArrayList<>());
+				}
+				
+				attributeValues.get(key).add(value);
 
-				if (!attributeIris.containsKey(attr.getKey())) {
-					attributeIris.put(attr.getKey(), new ArrayList<>());
+				if (!attributeIris.containsKey(key)) {
+					attributeIris.put(key, new ArrayList<>());
 				}
 				if (attr.getIri() == null) {
-					attributeIris.get(attr.getKey()).add("");
+					attributeIris.get(key).add("");
 				} else {
-					attributeIris.get(attr.getKey()).add(attr.getIri().toString());
+					attributeIris.get(key).add(attr.getIri().toString());
 				}
 
-				if (!attributeUnits.containsKey(attr.getKey())) {
-					attributeUnits.put(attr.getKey(), new ArrayList<>());
+				if (!attributeUnits.containsKey(key)) {
+					attributeUnits.put(key, new ArrayList<>());
 				}
 				if (attr.getUnit() == null) {
-					attributeUnits.get(attr.getKey()).add("");
+					attributeUnits.get(key).add("");
 				} else {
-					attributeUnits.get(attr.getKey()).add(attr.getUnit());
+					attributeUnits.get(key).add(attr.getUnit());
 				}
 			}
 		}

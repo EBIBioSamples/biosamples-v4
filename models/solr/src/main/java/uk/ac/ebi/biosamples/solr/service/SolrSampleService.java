@@ -33,6 +33,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
 
 import uk.ac.ebi.biosamples.solr.model.SampleFacets;
+import uk.ac.ebi.biosamples.solr.model.SampleFacets.SampleFacetsBuilder;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
 import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
 
@@ -63,6 +64,48 @@ public class SolrSampleService {
 		// return the samples from solr that match the query
 		return solrSampleRepository.findByQuery(query, pageable);
 	}	
+		
+	public SampleFacets getFacets(String searchTerm, MultiValueMap<String,String> filters, Pageable facetPageable, Pageable facetValuePageable) {
+		//default to search all
+		if (searchTerm == null || searchTerm.trim().length() == 0) {
+			searchTerm = "*:*";
+		}
+		
+		SampleFacetsBuilder builder = new SampleFacetsBuilder();
+
+		//build a query out of the users string and any facets
+		FacetQuery query = new SimpleFacetQuery();
+		query.addCriteria(new Criteria().expression(searchTerm));
+		query = addFilters(query, filters);
+		Page<FacetFieldEntry> facetFields = solrSampleRepository.getFacetFields(query, facetPageable);
+
+		//using the query, get a list of facets and overall counts
+		List<String> facetFieldList = new ArrayList<>();
+		for (FacetFieldEntry ffe : facetFields) {
+			log.info("Putting "+ffe.getValue()+" with count "+ffe.getValueCount());
+			facetFieldList.add(ffe.getValue());				
+			builder.addFacet(ffe.getValue(), ffe.getValueCount());
+		}
+		
+		//if there are no facets avaliable (e.g. no samples)
+		//then cleanly exit here
+		if (facetFieldList.isEmpty()) {
+			return builder.build();
+		}
+
+		FacetPage<?> facetPage = solrSampleRepository.getFacets(query, facetFieldList, facetValuePageable);
+		for (Field field : facetPage.getFacetFields()) {
+
+			//for each value, put the number of them into this facets map
+			for (FacetFieldEntry ffe : facetPage.getFacetResultPage(field)) {
+				log.info("Adding "+field.getName()+" : "+ffe.getValue()+" with count "+ffe.getValueCount());					
+				builder.addFacetValue(field.getName(), ffe.getValue(), ffe.getValueCount());
+			}
+		}
+		
+		return builder.build();
+		
+	}
 	
 	private <T extends Query> T addFilters(T query, MultiValueMap<String,String> filters) {
 		//if no filters or filters are null, quick exit
@@ -75,8 +118,7 @@ public class SolrSampleService {
 		for (String facetType : filters.keySet()) {
 			Criteria facetCriteria = null;
 			
-			//TODO facet name to/from facet field better
-			String facetField = facetType+"_av_ss";
+			String facetField = attributeTypeToField(facetType);
 			for(String facatValue : filters.get(facetType)) {
 				if (facatValue == null) {
 					//no specific value, check if its not null
@@ -99,91 +141,18 @@ public class SolrSampleService {
 		}
 		return query;
 	}
-
-	private static class MapComparableComparator<S, T extends Comparable<T>> implements Comparator<S> {
-		
-		private final Map<S, T> mapComparable;
-		
-		public MapComparableComparator(Map<S, T> mapComparable) {
-			this.mapComparable = mapComparable;
-		}
-		
-		@Override
-		public int compare(S a, S b) {
-			
-			return mapComparable.get(a).compareTo(mapComparable.get(b));
-		}		
+	
+	
+	public static String attributeTypeToField(String type) {
+		type = type.replaceAll(" ", "_");
+		type = type+"_av_ss";
+		return type;
 	}
-		
-	public SampleFacets getFacets(String searchTerm, MultiValueMap<String,String> filters, Pageable facetPageable, Pageable facetValuePageable) {
-		//default to search all
-		if (searchTerm == null || searchTerm.trim().length() == 0) {
-			searchTerm = "*:*";
-		}
-		
-		//create a map to hold to temporarily total samples in each facet type
-		Map<String, Long> rawFacetTotals = new HashMap<>();		
-
-		//build a query out of the users string and any facets
-		FacetQuery query = new SimpleFacetQuery();
-		query.addCriteria(new Criteria().expression(searchTerm));
-				
-		if (filters != null && filters.size() > 0) {
-			query = addFilters(query, filters);
-		}		
-		Page<FacetFieldEntry> facetFields = solrSampleRepository.getFacetFields(query, facetPageable);
-		
-		List<String> facetFieldList = new ArrayList<>();
-		for (FacetFieldEntry ffe : facetFields) {
-			//don't try to facet on things that are used little
-			if (ffe.getValueCount() > 0) {
-				rawFacetTotals.put(ffe.getValue(), ffe.getValueCount());
-				facetFieldList.add(ffe.getValue());
-				log.info("Putting "+ffe.getValue()+" with count "+ffe.getValueCount());
-			}
-		}
-		
-		//convert the temporary map to a more permanent sorted map
-		MapComparableComparator<String, Long> facetTotalComparator = new MapComparableComparator<>(rawFacetTotals);
-		SortedMap<String, Long> facetTotals = new TreeMap<>(facetTotalComparator);
-		facetTotals.putAll(rawFacetTotals);
-		
-		SortedMap<String, SortedMap<String, Long>> facets = new TreeMap<>(facetTotalComparator);
-		
-		//if there are no facets avaliable (i.e. no samples)
-		//then cleanly exit here
-		if (facetTotals.isEmpty()) {
-			return SampleFacets.build(facets, facetTotals);
-		}
-
-		//create a nested map to the facets themselves
-		FacetPage<?> facetPage = solrSampleRepository.getFacets(query, facetFieldList, facetValuePageable);
-		for (Field field : facetPage.getFacetFields()) {
-			
-			log.info("Checking field "+field.getName());
-			
-			//create a map to hold the values and counts for this facet
-			Map<String, Long> rawFieldMap = new HashMap<>();	
-			
-			//for each value, put the number of them into this facets map
-			for (FacetFieldEntry ffe : facetPage.getFacetResultPage(field)) {
-				if (ffe.getValueCount() > 0) {
-					log.info("Adding "+ffe.getValue()+" with count "+ffe.getValueCount()+" in "+field.getName());
-					rawFieldMap.put(ffe.getValue(), ffe.getValueCount());
-				}
-			}
-
-			//convert the temporary map to a more permanent sorted map
-			MapComparableComparator<String, Long> fieldComparator = new MapComparableComparator<>(rawFieldMap);
-			SortedMap<String, Long> fieldMap = new TreeMap<>(fieldComparator);
-			fieldMap.putAll(rawFieldMap);
-			//add this facets map into the overall map
-			//but only if its big enough to be useful
-			if (fieldMap.size() > 0) {
-				facets.put(field.getName(), fieldMap);
-			}
-		}
-		
-		return SampleFacets.build(facets, facetTotals);
+	
+	public static String fieldToAttributeType(String field) {
+		//strip _av_ss
+		field = field.substring(0, field.length()-6);
+		field = field.replaceAll("_", " ");
+		return field;
 	}
 }

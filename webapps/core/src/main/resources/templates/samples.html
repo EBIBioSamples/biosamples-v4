@@ -24,7 +24,7 @@
 				<h2>Search results</h2>
 			</div>
 			<div class="small-3 columns">
-				<section th:replace="fragments/samples :: facets (${facets})"></section>
+				<section th:replace="fragments/samples :: facets (${facets}, ${facetsuri}, ${filters})"></section>
 			</div>
 			<div class="small-9 columns">
 				<section th:replace="fragments/samples :: samples (${page})" ></section>
