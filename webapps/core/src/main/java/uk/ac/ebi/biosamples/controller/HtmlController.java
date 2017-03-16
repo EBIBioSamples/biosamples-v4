@@ -68,11 +68,20 @@ public class HtmlController {
 
 	@GetMapping(value = "/samples")
 	public String samples(Model model, @RequestParam(name="text", required=false) String text,
-			@RequestParam(value = "start", defaultValue = "0") int start,
-			@RequestParam(value = "rows", defaultValue = "10") int rows,
-			@RequestParam(value="filter", required=false) String[] filters,
+			@RequestParam(name = "start", defaultValue = "0") int start,
+			@RequestParam(name = "rows", defaultValue = "10") int rows,
+			@RequestParam(name="filter", required=false) String[] filters,
 			HttpServletRequest request, HttpServletResponse response) {
 
+		//force a minimum of 1 result
+		if (rows < 1) {
+			rows = 1;
+		}
+		//cap it for our protection
+		if (rows > 1000) {
+			rows = 1000;
+		}
+		
 		MultiValueMap<String, String> filtersMap = sampleService.getFilters(filters);
 						
 		Pageable pageable = new PageRequest(start/rows, rows);
@@ -118,7 +127,7 @@ public class HtmlController {
 			}
 		}
 								
-		model.addAttribute("text", text);	
+		model.addAttribute("text", text);		
 		model.addAttribute("start", start);
 		model.addAttribute("rows", rows);
 		model.addAttribute("page", pageSample);

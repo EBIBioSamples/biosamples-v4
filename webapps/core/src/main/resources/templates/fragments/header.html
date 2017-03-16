@@ -77,7 +77,7 @@
 				            <form id="local-search" name="local-search" th:action="@{samples}" method="get">
 				              <fieldset>
 				                <div class="input-group margin-bottom-none">
-				                  <input type="text" name="text" id="local-searchbox" placeholder="Search" class="input-group-field" th:value="${text}" />
+				                  <input type="text" name="text" id="local-searchbox" placeholder="Search" class="input-group-field" th:value="${param.text}" />
 				                  <div class="input-group-button"><input type="submit" class="button icon icon-functional" value="1" ></div>
 				                </div>
 				                <small class="">
@@ -86,7 +86,7 @@
 				                  <!-- Include some example searchterms - keep them short and few. -->
 				                  <a th:href="@{/samples?text=leukaemia}">leukaemia</a>,
 				                  <a th:href="@{/samples?text=viridiplantae}">viridiplantae</a>,
-				                  <a th:href="@{/samples?text=sheep%20AND%20liver}">sheep AND liver</a> 
+				                  <a th:href="@{/samples?text=sheep+AND+liver}">sheep AND liver</a> 
 				                </small>
 				              </fieldset>
 				            </form>
