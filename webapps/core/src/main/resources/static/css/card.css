@@ -1,4 +1,4 @@
-a.card {
-	margin: 0.5rem 0.5rem 0.5rem;
-	padding: 0.5rem 0.5rem 0.5rem;
+.card {
+	background-color:#999;
+	color:#f8f8f8;
 }

@@ -1,13 +1,13 @@
 .shield {
   color: white;
   display: inline-block;
-  margin: 0.4rem 0.1em;
+  margin: 0.2rem 0.0em;
   font-size: 0.9em;
 }
 
 /* This means a span element within an element with class shield */
 .shield span {
-  padding: 0.2rem 0.5rem;
+  padding: 0.1rem 0.2rem;
 }
 
 .shield .shield__key {

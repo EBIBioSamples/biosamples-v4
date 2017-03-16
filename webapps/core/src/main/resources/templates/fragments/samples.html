@@ -37,17 +37,18 @@
 		</div>
 	</section>
 
-	<a class="button columns medium-12 text-left" th:fragment="result (sample)" th:href="@{'/samples/'+${sample.accession}}"> 
+	<div class="card columns medium-12 margin-bottom-small" th:fragment="result (sample)"> 
 		<span class="columns medium-12">
 			<span class="lead float-left text-left" th:text="${sample.name}">Sample</span> 
 			<span class="lead float-right text-right" th:text="${sample.accession}">ACC1</span>
 		</span> 
-		<span class="columns medium-12 margin-top-small text-left"> 
+		<span class="columns medium-12"> 
 			<span th:each="attribute : ${sample.attributes}" th:remove="tag"> 
 				<span th:replace=":: shield (${attribute.key}, ${attribute.value})"></span>
 			</span>
 		</span>
-	</a>
+		<a class="button readmore float-right" th:href="@{'/samples/'+${sample.accession}}"></a>
+	</div>
 
 	<span th:fragment="shield (key, value)" class="shield">
 		<span class="shield__key" th:text="${key}">key</span><span class="shield__value" th:text="${value}">value</span>
