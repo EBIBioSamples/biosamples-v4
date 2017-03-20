@@ -87,7 +87,7 @@ public class SolrSampleService {
 			builder.addFacet(ffe.getValue(), ffe.getValueCount());
 		}
 		
-		//if there are no facets avaliable (e.g. no samples)
+		//if there are no facets available (e.g. no samples)
 		//then cleanly exit here
 		if (facetFieldList.isEmpty()) {
 			return builder.build();

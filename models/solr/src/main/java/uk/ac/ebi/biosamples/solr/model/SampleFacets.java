@@ -12,55 +12,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
 
 public class SampleFacets implements Iterable<SampleFacet> {
-/*
-	//map of solr field (e.g. Organism_av_ss) to value (e.g. Homo sapiens) to count (e.g. 3232) 
-	private SortedMap<String, SortedMap<String, Long>> facets;
-	
-	private SortedMap<String, Long> facetTotals;
-	
-	private SampleFacets() {
-
-	}
-	
-	@ModelAttribute("fields")
-	public List<String> getFields() {
-		List<String> fields = new ArrayList<>(facets.keySet());
-		Collections.reverse(fields);
-		return Collections.unmodifiableList(fields);
-	}
-
-	@ModelAttribute("attributetypes")
-	public List<String> getAttributeTypes() {
-		List<String> attributeTypes = new ArrayList<>();
-		for (String fieldName : facets.keySet()) {
-			attributeTypes.add(fieldToAttributeType(fieldName));
-		}
-		Collections.reverse(attributeTypes);
-		return Collections.unmodifiableList(attributeTypes);
-	}
-	
-	public long getFieldTotal(String field) {
-		return facetTotals.get(field);
-	}
-	
-	public List<String> getValues(String field) {
-		List<String> values = new ArrayList<>(facets.get(field).keySet());
-		Collections.reverse(values);
-		return Collections.unmodifiableList(values);
-	}
-	
-	public long getValueCount(String field, String value) {
-		return facets.get(field).get(value);
-	}
-	
-		
-	public static SampleFacets build(SortedMap<String, SortedMap<String, Long>> facets, SortedMap<String, Long> facetTotals) {
-		SampleFacets sampleFacets = new SampleFacets();
-		sampleFacets.facets = facets;
-		sampleFacets.facetTotals = facetTotals;
-		return sampleFacets;
-	}	
-	*/
 	
 	private List<SampleFacet> facets;
 

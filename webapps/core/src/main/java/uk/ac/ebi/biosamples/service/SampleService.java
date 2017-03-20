@@ -121,6 +121,7 @@ public class SampleService {
 	public SampleFacets getFacets(String text, MultiValueMap<String,String> filters, int noOfFacets, int noOfFacetValues) {
 		Pageable facetPageable = new PageRequest(0,noOfFacets);
 		Pageable facetValuePageable = new PageRequest(0,noOfFacetValues);
+		//TODO if a facet is enabled as a filter, then that value will be the only filter displayed
 		return solrSampleService.getFacets(text, filters, facetPageable, facetValuePageable);
 	}
 	

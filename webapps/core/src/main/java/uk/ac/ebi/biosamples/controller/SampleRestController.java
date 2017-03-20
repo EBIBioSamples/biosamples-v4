@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.ExposesResourceFor;
@@ -61,8 +62,6 @@ public class SampleRestController {
 	private SampleService sampleService;
 
 	private SampleResourceAssembler sampleResourceAssembler;
-
-	private DateTimeFormatter lastModifiedFormatter = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss 'GMT'");
 	
 	private Logger log = LoggerFactory.getLogger(getClass());
 
@@ -75,19 +74,34 @@ public class SampleRestController {
 
     @CrossOrigin(methods = RequestMethod.GET)
 	@GetMapping(value = "", produces = { MediaType.APPLICATION_JSON_VALUE, MediaTypes.HAL_JSON_VALUE })
-	public ResponseEntity<PagedResources<Resource<Sample>>> search(@RequestParam(name="text", defaultValue="*:*", required=false) String text,
-			@RequestParam(value="filter", required=false) String[] filters,
-			Pageable pageable, PagedResourcesAssembler<Sample> assembler) {
+	public ResponseEntity<PagedResources<Resource<Sample>>> search(
+			@RequestParam(name="text", required=false) String text,
+			@RequestParam(name="filter", required=false) String[] filters,
+			@RequestParam(name="start", defaultValue="0") Integer start,
+			@RequestParam(name="rows", defaultValue="10") Integer rows,
+			PagedResourcesAssembler<Sample> assembler) {
+
+		//force a minimum of 1 result
+		if (rows < 1) {
+			rows = 1;
+		}
+		//cap it for our protection
+		if (rows > 1000) {
+			rows = 1000;
+		}
+		Pageable pageable = new PageRequest(start/rows, rows);
 
 		MultiValueMap<String, String> filtersMap = sampleService.getFilters(filters);
 		Page<Sample> pageSample = sampleService.getSamplesByText(text, filtersMap, pageable);
 		PagedResources<Resource<Sample>> pagedResources = assembler.toResource(pageSample, sampleResourceAssembler);
 		
 		//this is hacky, but no clear way to do this in spring-hateoas currently
-		pagedResources.removeLinks();
-		String linkUri = (BasicLinkBuilder.linkToCurrentMapping().slash("samples").toUri().toString())+"{?text,filter*}";
-		pagedResources.add(new Link(linkUri, "self"));
+		//pagedResources.removeLinks();
+		//String linkUri = (BasicLinkBuilder.linkToCurrentMapping().slash("samples").toUri().toString())+"{?text,start,rows,filter}";
+		//pagedResources.add(new Link(linkUri, "self"));
+		
 		//TODO first/last/next/prev
+		//pagedResources.add(ControllerLinkBuilder.linkTo(ControllerLinkBuilder.methodOn(SampleRestController.class).search(text, filters, start, rows, assembler)).withSelfRel());
 	
 		return ResponseEntity.ok()
 				.body(pagedResources);

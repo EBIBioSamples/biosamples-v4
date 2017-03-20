@@ -68,9 +68,9 @@ public class HtmlController {
 
 	@GetMapping(value = "/samples")
 	public String samples(Model model, @RequestParam(name="text", required=false) String text,
-			@RequestParam(name = "start", defaultValue = "0") int start,
-			@RequestParam(name = "rows", defaultValue = "10") int rows,
 			@RequestParam(name="filter", required=false) String[] filters,
+			@RequestParam(name="start", defaultValue="0") Integer start,
+			@RequestParam(name="rows", defaultValue="10") Integer rows,
 			HttpServletRequest request, HttpServletResponse response) {
 
 		//force a minimum of 1 result
@@ -90,17 +90,14 @@ public class HtmlController {
 		SampleFacets sampleFacets = sampleService.getFacets(text, filtersMap, 10, 10);
 		
 		//build URLs for the facets depending on if they are enabled or not
-
-		UriComponentsBuilder uriBuilder = ServletUriComponentsBuilder.fromRequest(request);
-		
-		Map<String, String> facetsUri = new HashMap<>();
-		
+		UriComponentsBuilder uriBuilder = ServletUriComponentsBuilder.fromRequest(request);		
+		Map<String, String> facetsUri = new HashMap<>();		
 		List<String> filtersList = new ArrayList<>();
 		if (filters != null) {
 			filtersList.addAll(Arrays.asList(filters));
 		}
 		Collections.sort(filtersList);
-		
+		//now actually build the URLs for each facet
 		URI uri;
 		for (SampleFacet sampleFacet : sampleFacets) {
 			//check if the filter all is on
@@ -117,6 +114,7 @@ public class HtmlController {
 				//check if the filter for this facet is on
 				String filter = sampleFacet.getLabel()+":"+sampleFacetValue.label;
 				if (filtersList.contains(filter)) {
+					//filter is on, add uri to turn it off
 					uri = getFilterUri(uriBuilder, filtersList, null, filter);
 					facetsUri.put(filter, uri.toString());
 				} else {
@@ -134,8 +132,7 @@ public class HtmlController {
 		model.addAttribute("facets", sampleFacets);
 		model.addAttribute("facetsuri", facetsUri);
 		model.addAttribute("filters", filtersList);
-		
-		
+				
 		//TODO handle case where filter is on but not displayed as a facet...
 		
 		return "samples";
@@ -145,8 +142,8 @@ public class HtmlController {
 		List<String> tempFiltersList = new ArrayList<>(filters);
 		if (filterAdd != null) {
 			tempFiltersList.add(filterAdd);
-			//TODO if turning on a facet-all filter, remove facet-value filters for that facet
-			//TODO if turning on a facet-value filter, remove facet-all filters for that facet
+			// if turning on a facet-all filter, remove facet-value filters for that facet
+			// if turning on a facet-value filter, remove facet-all filters for that facet
 			if (filterAdd.contains(":")) {
 				//remove facet-all filters when adding a specific facet
 				tempFiltersList.remove(filterAdd.split(":")[0]);
@@ -166,16 +163,6 @@ public class HtmlController {
 		Collections.sort(tempFiltersList);
 		String[] tempFiltersArray = new String[tempFiltersList.size()];
 		tempFiltersArray = tempFiltersList.toArray(tempFiltersArray);
-		/*
-		for (int i = 0; i < tempFiltersArray.length; i++) {
-			try {
-				tempFiltersArray[i] = UriUtils.encodeQueryParam(tempFiltersArray[i], "UTF-8");
-			} catch (UnsupportedEncodingException e) {
-				//since encoding is hard-coded above, should never happen
-				throw new RuntimeException(e);
-			}
-		}
-		*/
 		URI uri = uriBuilder.cloneBuilder().replaceQueryParam("filter", (Object[])tempFiltersArray).build().encode().toUri();
 		return uri;
 	}
