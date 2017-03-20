@@ -1,6 +1,5 @@
 package uk.ac.ebi.biosamples.ena;
 
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
@@ -42,6 +41,9 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 	
 	@Autowired
 	private TaxonomyService taxonomyService;
+	
+	@Autowired
+	private EnaService enaService;
 
 	@Override
 	public Sample convert(Element root) {
@@ -154,12 +156,14 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 			for (Element e : XmlPathBuilder.of(root).path(SAMPLE, "SAMPLE_LINKS").elements("SAMPLE_LINK")) {
 				if (XmlPathBuilder.of(e).path("XREF_LINK", "DB").exists() && XmlPathBuilder.of(e).path("XREF_LINK", "ID").exists()) {
 					String db = XmlPathBuilder.of(e).path("XREF_LINK", "DB").text();
-					String id = XmlPathBuilder.of(e).path("XREF_LINK", "ID").text();
-					if ("ENA-EXPERIMENT".equals(db)) {
-						externalReferences.add(URI.create("https://www.ebi.ac.uk/ena/data/view/"+id));						
-					}
-					if ("ENA-ANALYSIS".equals(db)) {
-						externalReferences.add(URI.create("https://www.ebi.ac.uk/ena/data/view/"+id));						
+					String idGrouped = XmlPathBuilder.of(e).path("XREF_LINK", "ID").text();
+					//sometimes ids might be comma separated or a range joined by a dash
+					for (String id : enaService.splitIdentifiers(idGrouped)) {
+						if ("ENA-EXPERIMENT".equals(db)) {
+							externalReferences.add(URI.create("https://www.ebi.ac.uk/ena/data/view/"+id));						
+						} else if ("ENA-ANALYSIS".equals(db)) {
+							externalReferences.add(URI.create("https://www.ebi.ac.uk/ena/data/view/"+id));						
+						}
 					}
 				}				
 			}
