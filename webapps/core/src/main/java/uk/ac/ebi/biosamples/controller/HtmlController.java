@@ -134,6 +134,9 @@ public class HtmlController {
 		model.addAttribute("filters", filtersList);
 				
 		//TODO handle case where filter is on but not displayed as a facet...
+		//TODO keep enabled facets in search box uri
+		//TODO add "clear all facets" button
+		//TODO title of webpage
 		
 		return "samples";
 	}

@@ -54,8 +54,6 @@ import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
  *
  */
 @RestController
-@RequestMapping(value = "/samples", produces = { MediaType.APPLICATION_JSON_VALUE, MediaTypes.HAL_JSON_VALUE,
-		MediaType.APPLICATION_XML_VALUE })
 @ExposesResourceFor(Sample.class)
 public class SampleRestController {
 
@@ -73,7 +71,7 @@ public class SampleRestController {
 	}
 
     @CrossOrigin(methods = RequestMethod.GET)
-	@GetMapping(value = "", produces = { MediaType.APPLICATION_JSON_VALUE, MediaTypes.HAL_JSON_VALUE })
+	@GetMapping(value = "/samples", produces = { MediaType.APPLICATION_JSON_VALUE, MediaTypes.HAL_JSON_VALUE })
 	public ResponseEntity<PagedResources<Resource<Sample>>> search(
 			@RequestParam(name="text", required=false) String text,
 			@RequestParam(name="filter", required=false) String[] filters,
@@ -108,7 +106,7 @@ public class SampleRestController {
 	}
 
     @CrossOrigin(methods = RequestMethod.GET)
-	@GetMapping(value = "{accession}", produces = MediaType.APPLICATION_XML_VALUE)
+	@GetMapping(value = "/samples/{accession}", produces = MediaType.APPLICATION_XML_VALUE)
 	public ResponseEntity<Sample> readXml(@PathVariable String accession) {
 
 		// convert it into the format to return
@@ -134,7 +132,7 @@ public class SampleRestController {
 	}
 
     @CrossOrigin(methods = RequestMethod.GET)
-	@GetMapping(value = "{accession}", produces = { MediaType.APPLICATION_JSON_VALUE })
+	@GetMapping(value = "/samples/{accession}", produces = { MediaType.APPLICATION_JSON_VALUE })
 	public ResponseEntity<Sample> readResource(@PathVariable String accession) {
 		// convert it into the format to return
 		Sample sample = null;
@@ -158,7 +156,7 @@ public class SampleRestController {
 	}
 
     @CrossOrigin(methods = RequestMethod.GET)
-	@GetMapping(value = "{accession}", produces = {	MediaTypes.HAL_JSON_VALUE })
+	@GetMapping(value = "/samples/{accession}", produces = {	MediaTypes.HAL_JSON_VALUE })
 	public ResponseEntity<Resource<Sample>> readResourceHal(@PathVariable String accession) {
 		// convert it into the format to return
 		Sample sample = null;
@@ -183,7 +181,7 @@ public class SampleRestController {
 				.contentType(MediaTypes.HAL_JSON).body(sampleResource);
 	}
 
-	@PutMapping(value = "{accession}", consumes = { MediaType.APPLICATION_JSON_VALUE,
+	@PutMapping(value = "/samples/{accession}", consumes = { MediaType.APPLICATION_JSON_VALUE,
 			MediaType.APPLICATION_XML_VALUE })
 	public ResponseEntity<Resource<Sample>> update(@PathVariable String accession, @RequestBody Sample sample) {
 		if (!sample.getAccession().equals(accession)) {
@@ -203,7 +201,7 @@ public class SampleRestController {
 		return ResponseEntity.accepted().body(sampleResource);
 	}
 
-	@PostMapping(consumes = { MediaType.APPLICATION_JSON_VALUE,
+	@PostMapping(value = "/samples", consumes = { MediaType.APPLICATION_JSON_VALUE,
 			MediaType.APPLICATION_XML_VALUE })
 	public ResponseEntity<Resource<Sample>> submit(@RequestBody Sample sample) {
 		log.info("Recieved POST");

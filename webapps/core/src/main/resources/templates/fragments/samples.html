@@ -50,7 +50,7 @@
 		<a class="button readmore float-right" th:href="@{'/samples/'+${sample.accession}}"></a>
 	</div>
 
-	<span th:fragment="shield (key, value)" class="shield">
+	<span th:fragment="shield (key, value)" th:if="${#strings.length(attribute.value) < 75 and #strings.length(attribute.value) < 50}" class="shield">
 		<span class="shield__key" th:text="${key}">key</span><span class="shield__value" th:text="${value}">value</span>
 	</span>
 </body>
