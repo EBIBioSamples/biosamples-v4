@@ -31,6 +31,7 @@ import com.mongodb.MongoClientOptions;
 import com.mongodb.ReadPreference;
 
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.solr.CustomSolrTemplate;
 import uk.ac.ebi.biosamples.xml.XmlSampleHttpMessageConverter;
 
 @SpringBootApplication
@@ -56,20 +57,9 @@ public class Application extends SpringBootServletInitializer {
     @Bean(name = "threadPoolTaskExecutor")
     public Executor threadPoolTaskExecutor() {
     	ThreadPoolTaskExecutor ex = new ThreadPoolTaskExecutor();
-    	ex.setMaxPoolSize(16);
-    	ex.setQueueCapacity(128);
+    	ex.setMaxPoolSize(128);
+    	ex.setQueueCapacity(2056);
     	return ex;
-    }
-
-    @Value("${spring.data.solr.host}")
-    String solrHost;
-
-    //workaround for 1.5.x problems with multicore solr
-    @Bean
-    @Primary
-    public SolrTemplate solrTemplate(){
-        CustomSolrTemplate template = new CustomSolrTemplate(new HttpSolrClient(solrHost));
-        return template;
     }
     
 }

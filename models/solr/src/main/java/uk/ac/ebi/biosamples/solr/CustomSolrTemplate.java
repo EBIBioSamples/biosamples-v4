@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples;
+package uk.ac.ebi.biosamples.solr;
 import org.apache.solr.client.solrj.SolrClient;
 import org.springframework.data.solr.core.*;
 import org.springframework.data.solr.core.convert.SolrConverter;
