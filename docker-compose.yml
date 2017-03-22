@@ -11,6 +11,13 @@ services:
     - rabbitmq
     command:
     - java
+    - -Dcom.sun.management.jmxremote.rmi.port=9090
+    - -Dcom.sun.management.jmxremote=true
+    - -Dcom.sun.management.jmxremote.port=9090 
+    - -Dcom.sun.management.jmxremote.ssl=false
+    - -Dcom.sun.management.jmxremote.authenticate=false
+    - -Dcom.sun.management.jmxremote.local.only=false
+    - -Djava.rmi.server.hostname=172.28.0.1
     - -jar
     - webapps-core-4.0.0-SNAPSHOT.war
     environment:
@@ -23,10 +30,12 @@ services:
     - spring.jackson.serialization-inclusion=non_null
     - spring.rabbitmq.host=rabbitmq
     - spring.jackson.serialization.WRITE_NULL_MAP_VALUES=false
-    - server.servlet.contextPath=/biosamples/beta
+    - server.servlet.context-path=/biosamples/beta #spring-boot 2.0.x
+    - server.context-path=/biosamples/beta #spring-boot 1.5.x
     - management.security.enabled=false
     ports:
     - 8081:8080
+    - 9090:9090
     
   biosamples-webapps-sampletab:
     image: biosamples:latest
@@ -38,7 +47,8 @@ services:
     - webapps-sampletab-4.0.0-SNAPSHOT.war
     environment:
     - biosamples.submissionuri=http://biosamples-webapps-core:8080/biosamples/beta
-    - server.servlet.contextPath=/biosamples/beta
+    - server.servlet.context-path=/biosamples/beta #spring-boot 2.0.x
+    - server.context-path=/biosamples/beta #spring-boot 1.5.x
     - management.security.enabled=false
     ports:
     - 8082:8080

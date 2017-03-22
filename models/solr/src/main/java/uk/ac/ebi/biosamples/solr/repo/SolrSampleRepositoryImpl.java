@@ -65,7 +65,7 @@ public class SolrSampleRepositoryImpl implements SolrSampleRepositoryCustom {
 	}
 
 	@Override
-	public Page<SolrSample> findByQuery(Query query, Pageable page) {		
+	public Page<SolrSample> findByQuery(Query query) {
 		return solrOperations.query(query, SolrSample.class);
 	}
 	

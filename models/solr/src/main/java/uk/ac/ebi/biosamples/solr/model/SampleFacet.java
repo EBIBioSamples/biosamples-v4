@@ -7,8 +7,8 @@ import java.util.List;
 
 public class SampleFacet implements Iterable<SampleFacetValue>, Comparable<SampleFacet> {
 	private final String label;
-	private List<SampleFacetValue> values;
 	private final long count;
+	private List<SampleFacetValue> values;
 	
 	public SampleFacet(String label, long count) {
 		this.label = label;

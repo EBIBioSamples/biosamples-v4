@@ -56,13 +56,14 @@ public class SolrSampleService {
 		}
 		//build a query out of the users string and any facets
 		Query query = new SimpleQuery(searchTerm);
+		query.setPageRequest(pageable);
 				
 		if (filters != null) {
 			query = addFilters(query, filters);
 		}		
 		
 		// return the samples from solr that match the query
-		return solrSampleRepository.findByQuery(query, pageable);
+		return solrSampleRepository.findByQuery(query);
 	}	
 		
 	public SampleFacets getFacets(String searchTerm, MultiValueMap<String,String> filters, Pageable facetPageable, Pageable facetValuePageable) {

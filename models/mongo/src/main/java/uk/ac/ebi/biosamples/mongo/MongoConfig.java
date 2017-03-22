@@ -3,7 +3,7 @@ package uk.ac.ebi.biosamples.mongo;
 import java.net.UnknownHostException;
 
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.boot.autoconfigure.mongo.MongoClientFactory;
+//import org.springframework.boot.autoconfigure.mongo.MongoClientFactory;
 import org.springframework.boot.autoconfigure.mongo.MongoProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -43,8 +43,7 @@ public interface SolrSampleRepositoryCustom {
 	 * construction compared to a simple string e.g. filtering
 	 * 
 	 * @param text
-	 * @param page
 	 * @return
 	 */
-	Page<SolrSample> findByQuery(Query query, Pageable page);
+	Page<SolrSample> findByQuery(Query query);
 }
