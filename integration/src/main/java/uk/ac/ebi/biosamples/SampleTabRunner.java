@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
@@ -21,7 +22,7 @@ import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
 
 @Component
-public class SampleTabRunner implements ApplicationRunner, Ordered {
+public class SampleTabRunner implements ApplicationRunner, ExitCodeGenerator, Ordered {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -30,6 +31,8 @@ public class SampleTabRunner implements ApplicationRunner, Ordered {
 
 	@Autowired
 	private RestOperations restTemplate;
+	
+	private int exitCode = 1;
 
 	@Override
 	public void run(ApplicationArguments args) throws Exception {
@@ -72,6 +75,9 @@ public class SampleTabRunner implements ApplicationRunner, Ordered {
 			//TODO check that SAMEA103886236 is a "member of" SAMEG318804
 		}
 		
+		//if we got here without throwing, then we finished sucessfully
+		exitCode = 0;
+		
 	}
 	
 
@@ -100,6 +106,11 @@ public class SampleTabRunner implements ApplicationRunner, Ordered {
 	@Override
 	public int getOrder() {
 		return 3;
+	}
+
+	@Override
+	public int getExitCode() {
+		return exitCode;
 	}
 
 }

@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.core.Ordered;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.annotation.Order;
@@ -33,7 +34,7 @@ import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 
 @Component
-public class RestRunner implements ApplicationRunner, Ordered {
+public class RestRunner implements ApplicationRunner, ExitCodeGenerator, Ordered {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -42,6 +43,8 @@ public class RestRunner implements ApplicationRunner, Ordered {
 
 	@Autowired
 	private RestOperations restTemplate;
+	
+	private int exitCode = 1;
 
 	@Override
 	public void run(ApplicationArguments args) throws Exception {
@@ -98,6 +101,9 @@ public class RestRunner implements ApplicationRunner, Ordered {
 		}
 		
 		//TODO check that deleting a relationships on an update actually deletes it from get too
+		
+		//if we got here without throwing, then we finished sucessfully
+		exitCode = 0;
 	}
 
 	public Resource<Sample> doPut(Sample sample) throws RestClientException {
@@ -208,6 +214,11 @@ public class RestRunner implements ApplicationRunner, Ordered {
 	@Override
 	public int getOrder() {
 		return 1;
+	}
+
+	@Override
+	public int getExitCode() {
+		return exitCode;
 	}
 
 }

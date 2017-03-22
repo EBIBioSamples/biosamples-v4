@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.core.Ordered;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.annotation.Order;
@@ -34,7 +35,7 @@ import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 
 @Component
-public class RestSearchRunner implements ApplicationRunner, Ordered {
+public class RestSearchRunner implements ApplicationRunner, ExitCodeGenerator, Ordered {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -43,6 +44,8 @@ public class RestSearchRunner implements ApplicationRunner, Ordered {
 
 	@Autowired
 	private RestOperations restTemplate;
+	
+	private int exitCode = 1;
 
 	@Override
 	public void run(ApplicationArguments args) throws Exception {
@@ -59,7 +62,12 @@ public class RestSearchRunner implements ApplicationRunner, Ordered {
 			log.info("GETting from "+uri);
 			RequestEntity<Void> request = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
 			ResponseEntity<Resources<Resource<Sample>>> response = restTemplate.exchange(request, new ParameterizedTypeReference<Resources<Resource<Sample>>>(){});
+			//check that there is at least one sample returned
+			//if there are zero, then probably nothing was indexed
 		}
+		
+		//if we got here without throwing, then we finished sucessfully
+		exitCode = 0;
 	}
 
 	private Sample getSampleTest1() throws URISyntaxException {
@@ -87,6 +95,11 @@ public class RestSearchRunner implements ApplicationRunner, Ordered {
 	@Override
 	public int getOrder() {
 		return 2;
+	}
+
+	@Override
+	public int getExitCode() {
+		return exitCode;
 	}
 
 }
