@@ -1,11 +1,14 @@
 package uk.ac.ebi.biosamples.service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -19,11 +22,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.solr.core.query.Query;
 import org.springframework.data.solr.core.query.result.FacetPage;
 import org.springframework.data.solr.core.query.result.SolrResultPage;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
@@ -111,10 +117,33 @@ public class SampleService {
 		return sample;
 	}
 	
+	@Async("threadPoolTaskExecutor")
+	public Future<Sample> fetchAsync(String accession) {
+		return new AsyncResult<>(fetch(accession));
+	}
+	
+	//does this asynchonously
 	public Page<Sample> getSamplesByText(String text, MultiValueMap<String,String> filters, Pageable pageable) {
 		Page<SolrSample> pageSolrSample = solrSampleService.fetchSolrSampleByText(text, filters, pageable);
 		// for each result fetch the version from Mongo and add inverse relationships
-		Page<Sample> pageSample = pageSolrSample.map(ss->fetch(ss.getAccession()));
+		//Page<Sample> pageSample = pageSolrSample.map(ss->fetch(ss.getAccession()));
+		
+		List<Future<Sample>> futures = new ArrayList<>();
+		for (SolrSample solrSample : pageSolrSample) {
+			futures.add(fetchAsync(solrSample.getAccession()));
+		}
+		List<Sample> samples = new ArrayList<>();
+		for (Future<Sample> future : futures) {
+			Sample sample = null;
+			try {
+				sample = future.get();
+			} catch (InterruptedException | ExecutionException e) {
+				//TODO handle better
+				throw new RuntimeException(e);
+			}
+			samples.add(sample);
+		}		
+		Page<Sample> pageSample = new PageImpl<>(samples,pageable, pageSolrSample.getTotalElements());
 		return pageSample;
 	}
 	
@@ -134,6 +163,7 @@ public class SampleService {
 		//strip the requestParams down to just the selected facet information
 		MultiValueMap<String,String> filters = new LinkedMultiValueMap<>();
 		for (String filterString : filterStringSet) {
+			log.info("looking at filter string '"+filterString+"'");
 			if (filterString.contains(":")) {
 				String key = filterString.substring(0, filterString.indexOf(":"));
 				String value = filterString.substring(filterString.indexOf(":")+1, filterString.length());
