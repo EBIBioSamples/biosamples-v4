@@ -61,6 +61,11 @@ public class SolrSampleService {
 		if (filters != null) {
 			query = addFilters(query, filters);
 		}		
+
+		//filter out non-public
+		FilterQuery filterQuery = new SimpleFilterQuery();
+		filterQuery.addCriteria(new Criteria("release_dt").lessThan("NOW"));
+		query.addFilterQuery(filterQuery);
 		
 		// return the samples from solr that match the query
 		return solrSampleRepository.findByQuery(query);
@@ -78,6 +83,12 @@ public class SolrSampleService {
 		FacetQuery query = new SimpleFacetQuery();
 		query.addCriteria(new Criteria().expression(searchTerm));
 		query = addFilters(query, filters);
+		
+		//filter out non-public
+		FilterQuery filterQuery = new SimpleFilterQuery();
+		filterQuery.addCriteria(new Criteria("release_dt").lessThan("NOW"));
+		query.addFilterQuery(filterQuery);
+		
 		Page<FacetFieldEntry> facetFields = solrSampleRepository.getFacetFields(query, facetPageable);
 
 		//using the query, get a list of facets and overall counts
@@ -120,7 +131,7 @@ public class SolrSampleService {
 			Criteria facetCriteria = null;
 			
 			String facetField = attributeTypeToField(facetType);
-			for(String facatValue : filters.get(facetType)) {
+			for (String facatValue : filters.get(facetType)) {
 				if (facatValue == null) {
 					//no specific value, check if its not null
 					facetCriteria = new Criteria(facetField).isNotNull();					
@@ -136,7 +147,8 @@ public class SolrSampleService {
 				filterQuery.addCriteria(facetCriteria);
 				filter = true;
 			}
-		}	
+		}
+		
 		if (filter) {
 			query.addFilterQuery(filterQuery);
 		}
