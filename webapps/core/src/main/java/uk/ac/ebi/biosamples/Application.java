@@ -52,7 +52,6 @@ public class Application extends SpringBootServletInitializer {
 	public HttpMessageConverter<Sample> getXmlSampleHttpMessageConverter() {
 		return new XmlSampleHttpMessageConverter();
 	}	
-
     
     @Bean(name = "threadPoolTaskExecutor")
     public Executor threadPoolTaskExecutor() {

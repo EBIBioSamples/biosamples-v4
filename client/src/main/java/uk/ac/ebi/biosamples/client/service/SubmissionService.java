@@ -1,10 +1,13 @@
 package uk.ac.ebi.biosamples.client.service;
 
 import java.net.URI;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.Resource;
@@ -18,19 +21,23 @@ import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.client.ClientProperties;
 import uk.ac.ebi.biosamples.model.Sample;
 
-@Service
 public class SubmissionService {
 	
 	private Logger log = LoggerFactory.getLogger(getClass());
 	
-	@Autowired
-	private ClientProperties clientProperties;
+	private final ClientProperties clientProperties;
 	
 	//use RestOperations as the interface implemented by RestTemplate
 	//easier to mock for testing
-	@Autowired
-	private RestOperations restOperations;
-
+	private final RestOperations restOperations;
+	
+	private final ExecutorService executor;
+	
+	public SubmissionService(ClientProperties clientProperties, RestOperations restOperations, ExecutorService executor) {
+		this.clientProperties = clientProperties;
+		this.restOperations = restOperations;
+		this.executor = executor;
+	}
 
 	/**
 	 * This will send the sample to biosamples, either by POST if it has no accession or by PUT
@@ -47,7 +54,7 @@ public class SubmissionService {
 					.pathSegment("samples",sample.getAccession())
 					.build().toUri();
 			
-			log.info("PUTing "+uri);
+			log.trace("PUTing "+uri);
 			
 			RequestEntity<Sample> requestEntity = RequestEntity.put(uri)
 					.contentType(MediaType.APPLICATION_JSON).accept(MediaTypes.HAL_JSON).body(sample);
@@ -65,7 +72,7 @@ public class SubmissionService {
 					.pathSegment("samples")
 					.build().toUri();
 			
-			log.info("POSTing "+uri);
+			log.trace("POSTing "+uri);
 			
 			RequestEntity<Sample> requestEntity = RequestEntity.post(uri)
 					.contentType(MediaType.APPLICATION_JSON).accept(MediaTypes.HAL_JSON).body(sample);

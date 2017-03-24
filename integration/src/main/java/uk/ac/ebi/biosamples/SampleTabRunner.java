@@ -77,6 +77,7 @@ public class SampleTabRunner implements ApplicationRunner, ExitCodeGenerator, Or
 		
 		//if we got here without throwing, then we finished sucessfully
 		exitCode = 0;
+		log.info("Finished SampleTabRunner");
 		
 	}
 	

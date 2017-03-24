@@ -25,7 +25,7 @@ public class SampleResourceAssembler implements ResourceAssembler<Sample, Resour
 		Resource<Sample> resource = new Resource<>(sample);
 
 		resource.add(ControllerLinkBuilder
-				.linkTo(ControllerLinkBuilder.methodOn(SampleRestController.class).readResource(sample.getAccession()))
+				.linkTo(ControllerLinkBuilder.methodOn(SampleRestController.class).readResourceHal(sample.getAccession()))
 				.withSelfRel());
 		return resource;
 	}

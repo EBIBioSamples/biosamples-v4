@@ -68,6 +68,7 @@ public class RestSearchRunner implements ApplicationRunner, ExitCodeGenerator, O
 		
 		//if we got here without throwing, then we finished sucessfully
 		exitCode = 0;
+		log.info("Finished RestSearchRunner");
 	}
 
 	private Sample getSampleTest1() throws URISyntaxException {

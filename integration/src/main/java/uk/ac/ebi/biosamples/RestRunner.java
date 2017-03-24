@@ -104,6 +104,8 @@ public class RestRunner implements ApplicationRunner, ExitCodeGenerator, Ordered
 		
 		//if we got here without throwing, then we finished sucessfully
 		exitCode = 0;
+		
+		log.info("Finished RestRunner");
 	}
 
 	public Resource<Sample> doPut(Sample sample) throws RestClientException {

@@ -4,10 +4,12 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.concurrent.Callable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -104,60 +106,21 @@ public class SampleRestController {
 		return ResponseEntity.ok()
 				.body(pagedResources);
 	}
+    
 
     @CrossOrigin(methods = RequestMethod.GET)
-	@GetMapping(value = "/samples/{accession}", produces = MediaType.APPLICATION_XML_VALUE)
-	public ResponseEntity<Sample> readXml(@PathVariable String accession) {
-
-		// convert it into the format to return
-		Sample sample = null;
-		try {
-			sample = sampleService.fetch(accession);
-		} catch (IllegalArgumentException e) {
-			// did not exist, throw 404
-			return ResponseEntity.notFound().build();
-		}
-		
-		// check if the release date is in the future and if so return it as private
-		if (sample != null && LocalDateTime.now().isBefore(sample.getRelease())) {
-			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-		}
-		
-		
-		// create the response object with the appropriate status
-		return ResponseEntity.ok()
-				.lastModified(sample.getUpdate().toEpochSecond(ZoneOffset.UTC))
-				.eTag(String.valueOf(sample.hashCode()))
-				.contentType(MediaType.APPLICATION_XML).body(sample);
-	}
-
-    @CrossOrigin(methods = RequestMethod.GET)
-	@GetMapping(value = "/samples/{accession}", produces = { MediaType.APPLICATION_JSON_VALUE })
+	@GetMapping(value = "/samples/{accession}", produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
 	public ResponseEntity<Sample> readResource(@PathVariable String accession) {
-		// convert it into the format to return
-		Sample sample = null;
-		try {
-			sample = sampleService.fetch(accession);
-		} catch (IllegalArgumentException e) {
-			// did not exist, throw 404
-			return ResponseEntity.notFound().build();
-		}
-		
-		// check if the release date is in the future and if so return it as private
-		if (sample.getRelease().isAfter(LocalDateTime.now())) {
-			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-		}
-
-		// create the response object with the appropriate status
-		return ResponseEntity.ok()
-				.lastModified(sample.getUpdate().toEpochSecond(ZoneOffset.UTC))
-				.eTag(String.valueOf(sample.hashCode()))
-				.contentType(MediaType.APPLICATION_JSON).body(sample);
+		ResponseEntity<Resource<Sample>> halResponse = readResourceHal(accession);
+		return ResponseEntity.status(halResponse.getStatusCode()).headers(halResponse.getHeaders()).body(halResponse.getBody().getContent());
 	}
 
+    
+    
     @CrossOrigin(methods = RequestMethod.GET)
-	@GetMapping(value = "/samples/{accession}", produces = {	MediaTypes.HAL_JSON_VALUE })
+	@GetMapping(value = "/samples/{accession}", produces = { MediaTypes.HAL_JSON_VALUE })
 	public ResponseEntity<Resource<Sample>> readResourceHal(@PathVariable String accession) {
+		log.info("starting call");
 		// convert it into the format to return
 		Sample sample = null;
 		try {
@@ -173,12 +136,24 @@ public class SampleRestController {
 		}
 
 		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
-
+		
+		//dummy sleep
+//		try {
+//			log.info("sleeping");
+//			Thread.sleep(1000);
+//			log.info("slept");
+//		} catch (InterruptedException e) {
+//			throw new RuntimeException(e);
+//		}
+		
 		// create the response object with the appropriate status
-		return ResponseEntity.ok()
+		ResponseEntity<Resource<Sample>> response =  ResponseEntity.ok()
 				.lastModified(sample.getUpdate().toEpochSecond(ZoneOffset.UTC))
 				.eTag(String.valueOf(sample.hashCode()))
 				.contentType(MediaTypes.HAL_JSON).body(sampleResource);
+
+		log.info("started call");
+		return response;
 	}
 
 	@PutMapping(value = "/samples/{accession}", consumes = { MediaType.APPLICATION_JSON_VALUE,
