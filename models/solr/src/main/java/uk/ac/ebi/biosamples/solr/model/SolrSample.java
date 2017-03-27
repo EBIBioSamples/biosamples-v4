@@ -41,7 +41,7 @@ public class SolrSample {
 	@Dynamic
 	protected Map<String, List<String>> attributeValues;
 
-	@Indexed(name="*_ai_ss", copyTo={"ontologyiri_ss"})
+	@Indexed(name="*_ai_ss", copyTo={"ontologyiri_ss",})
 	@Dynamic
 	protected Map<String, List<String>> attributeIris;
 
@@ -53,7 +53,7 @@ public class SolrSample {
 	 * This field shouldn't be populated directly, instead Solr will copy 
 	 * all the ontology terms from the attributes into it.
 	 */
-	@Indexed(name="ontologyiri_ss")
+	@Indexed(name="ontologyiri_ss", readonly=true)
 	protected List<String> ontologyIris;
 	
 	/**
@@ -61,7 +61,7 @@ public class SolrSample {
 	 * Since faceting does not require it to be stored, it wont be to save space.
 	 * 
 	 */
-	@Indexed(name="attributetypes_ss", copyTo={"autocomplete_ss"})
+	@Indexed(name="attributetypes_ss", copyTo={"autocomplete_ss",})
 	protected List<String> attributeTypes;
 	
 
@@ -69,7 +69,7 @@ public class SolrSample {
 	 * This field is required to use with autocomplete faceting.
 	 * Since faceting does not require it to be stored, it wont be to save space
 	 */
-	@Indexed(name="autocomplete_ss")
+	@Indexed(name="autocomplete_ss", readonly=true)
 	protected List<String> autocompleteTerms;
 	
 	public SolrSample(){}

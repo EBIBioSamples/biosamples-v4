@@ -22,6 +22,7 @@ import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.attribute.Characteri
 import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.attribute.CommentAttribute;
 import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.attribute.DatabaseAttribute;
 import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.attribute.SCDNodeAttribute;
+import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.client.service.SubmissionService;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Relationship;
@@ -32,10 +33,10 @@ public class SampleTabService {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 	
-	private SubmissionService submissionService;
+	private BioSamplesClient bioSamplesClient;
 
-	public SampleTabService(SubmissionService submissionService) {
-		this.submissionService = submissionService;
+	public SampleTabService(BioSamplesClient bioSamplesClient) {
+		this.bioSamplesClient = bioSamplesClient;
 	}
 	
 	public SampleData saveSampleTab(SampleData sampleData) {
@@ -56,7 +57,7 @@ public class SampleTabService {
 			//otherwise, it is just a group membership tracking dummy
 			if (attributes.size() > 0 || sampleNode.getChildNodes().size() == 0) {			
 				Sample sample = Sample.build(name, accession, release, update, attributes, relationships, externalReferences);
-				sample = submissionService.submit(sample).getContent();
+				sample = bioSamplesClient.persist(sample);
 				if (accession == null) {
 					sampleNode.setSampleAccession(sample.getAccession());
 				}
@@ -87,7 +88,7 @@ public class SampleTabService {
 			
 			//this must be the last bit to build and save the object
 			Sample sample = Sample.build(name, accession, release, update, attributes, relationships, externalReferences);
-			sample = submissionService.submit(sample).getContent();
+			sample = bioSamplesClient.persist(sample);
 			if (accession == null) {
 				groupNode.setGroupAccession(sample.getAccession());
 			}				
