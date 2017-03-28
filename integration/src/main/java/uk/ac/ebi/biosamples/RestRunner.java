@@ -98,6 +98,8 @@ public class RestRunner implements ApplicationRunner, ExitCodeGenerator, Ordered
 					LocalDateTime.of(LocalDate.of(2016, 4, 1), LocalTime.of(11, 36, 57, 0)), sampleTest1.getUpdate(),
 					sampleTest1.getAttributes(), new TreeSet<>(), sampleTest1.getExternalReferences());
 			doPut(sampleTest1);
+			
+			
 		}
 		
 		//TODO check that deleting a relationships on an update actually deletes it from get too

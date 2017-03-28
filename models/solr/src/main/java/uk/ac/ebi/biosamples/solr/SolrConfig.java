@@ -18,39 +18,5 @@ import uk.ac.ebi.biosamples.solr.model.SolrSample;
 @Configuration
 //do not use EnableSolrRepositories as it then disables spring boot config
 public class SolrConfig {
-
-	@Bean
-	public MulticoreSolrClientFactory MulticoreSolrClientFactory(SolrClient solrClient) {
-		return new MulticoreSolrClientFactory(solrClient);
-	}
 	
-	@Bean("solrOperationsSample")
-	public SolrOperations solrOperations(MulticoreSolrClientFactory multicoreSolrClientFactory, SolrConverter solrConverter) {
-		SolrClient solrClient = multicoreSolrClientFactory.getSolrClient(SolrSample.class);
-		
-		SolrClientFactory solrClientFactory;
-		
-		if (HttpSolrClient.class.isAssignableFrom(solrClient.getClass())) {
-			solrClientFactory = new HttpSolrClientFactory(solrClient);
-		} else {
-			throw new IllegalArgumentException("Non HttpSolrClient in use");
-		}
-		
-		SolrTemplate solrTemplate = new SolrTemplate(solrClientFactory, solrConverter);
-		//this needs to be called after construction to fully initialize
-		solrTemplate.afterPropertiesSet();	
-		
-		return solrTemplate;
-	}
-
-    @Value("${spring.data.solr.host:http://localhost:8983}")
-    String solrHost;
-
-    //workaround for 1.5.x problems with multicore solr
-    @Bean
-    @Primary
-    public SolrTemplate solrTemplate(){
-        CustomSolrTemplate template = new CustomSolrTemplate(new HttpSolrClient(solrHost));
-        return template;
-    }
 }

@@ -4,14 +4,14 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import uk.ac.ebi.biosamples.client.service.SubmissionService;
+import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
 
 @Service
 public class MessageHandlerCuration {
 	
 	@Autowired
-	public SubmissionService submissionService;
+	public BioSamplesClient BioSamplesClient;
 
 	@RabbitListener(queues = Messaging.queueToBeCurated)
 	public void handle(Sample sample) {		

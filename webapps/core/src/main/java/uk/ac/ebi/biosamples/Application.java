@@ -31,7 +31,6 @@ import com.mongodb.MongoClientOptions;
 import com.mongodb.ReadPreference;
 
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.solr.CustomSolrTemplate;
 import uk.ac.ebi.biosamples.xml.XmlSampleHttpMessageConverter;
 
 @SpringBootApplication

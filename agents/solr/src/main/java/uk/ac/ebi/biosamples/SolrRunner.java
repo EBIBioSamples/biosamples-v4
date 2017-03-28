@@ -5,10 +5,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.stereotype.Component;
 
+import uk.ac.ebi.biosamples.messages.threaded.MessageBuffer;
+
 @Component
-public class SolrRunner implements ApplicationRunner {
+public class SolrRunner implements ApplicationRunner, ExitCodeGenerator {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -17,6 +20,11 @@ public class SolrRunner implements ApplicationRunner {
 	
 	@Autowired
 	private AgentSolrProperties agentSolrProperties;
+	
+
+	//wire in the message buffer so we can retunr a non-zero exit code if there are any problems
+	@Autowired
+	private MessageBuffer messageBuffer;
 
 	@Override
 	public void run(ApplicationArguments args) throws Exception {
@@ -27,6 +35,17 @@ public class SolrRunner implements ApplicationRunner {
 			Thread.sleep(1000*60);
 			messageCount = messageUtils.getQueueCount(Messaging.queueToBeIndexedSolr);
 			log.info("Messages remaining in "+Messaging.queueToBeIndexedSolr+" "+messageCount);
+		}
+	}
+
+	@Override
+	public int getExitCode() {
+		//exit code depends on message buffer
+		boolean hadProblem = messageBuffer.hadProblem.get();
+		if (hadProblem) {
+			return 1;
+		} else {
+			return 0;
 		}
 	}
 
