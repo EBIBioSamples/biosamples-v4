@@ -1,21 +1,12 @@
 package uk.ac.ebi.biosamples.solr.service;
 
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.solr.core.SolrOperations;
 import org.springframework.data.solr.core.query.Criteria;
 import org.springframework.data.solr.core.query.FacetOptions;
 import org.springframework.data.solr.core.query.FacetQuery;
@@ -25,10 +16,8 @@ import org.springframework.data.solr.core.query.Query;
 import org.springframework.data.solr.core.query.SimpleFacetQuery;
 import org.springframework.data.solr.core.query.SimpleFilterQuery;
 import org.springframework.data.solr.core.query.SimpleQuery;
-import org.springframework.data.solr.core.query.SimpleStringCriteria;
 import org.springframework.data.solr.core.query.result.FacetFieldEntry;
 import org.springframework.data.solr.core.query.result.FacetPage;
-import org.springframework.data.solr.core.query.result.FacetQueryResult;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
 

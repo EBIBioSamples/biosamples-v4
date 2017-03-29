@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.ExitCodeGenerator;
-import org.springframework.core.Ordered;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;

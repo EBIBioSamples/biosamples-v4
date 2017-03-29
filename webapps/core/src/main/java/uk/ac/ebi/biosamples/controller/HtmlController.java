@@ -1,6 +1,5 @@
 package uk.ac.ebi.biosamples.controller;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -33,8 +32,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
-import org.springframework.web.util.UriUtils;
-
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SampleFacet;
 import uk.ac.ebi.biosamples.model.SampleFacetValue;

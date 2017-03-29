@@ -10,9 +10,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
-
 import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
@@ -20,14 +17,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.solr.core.query.Query;
-import org.springframework.data.solr.core.query.result.FacetPage;
-import org.springframework.data.solr.core.query.result.SolrResultPage;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -48,7 +41,6 @@ import uk.ac.ebi.biosamples.mongo.model.MongoSubmission;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSubmissionRepository;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
-import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
 import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
 
 /**

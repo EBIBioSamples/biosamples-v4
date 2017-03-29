@@ -16,7 +16,6 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.core.Ordered;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.core.annotation.Order;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
@@ -98,13 +97,12 @@ public class RestRunner implements ApplicationRunner, ExitCodeGenerator, Ordered
 					LocalDateTime.of(LocalDate.of(2016, 4, 1), LocalTime.of(11, 36, 57, 0)), sampleTest1.getUpdate(),
 					sampleTest1.getAttributes(), new TreeSet<>(), sampleTest1.getExternalReferences());
 			doPut(sampleTest1);
-			
-			
+						
 		}
 		
 		//TODO check that deleting a relationships on an update actually deletes it from get too
 		
-		//if we got here without throwing, then we finished sucessfully
+		//if we got here without throwing, then we finished successfully
 		exitCode = 0;
 		
 		log.info("Finished RestRunner");

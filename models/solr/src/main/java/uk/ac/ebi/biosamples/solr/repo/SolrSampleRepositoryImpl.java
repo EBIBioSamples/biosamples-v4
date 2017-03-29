@@ -3,23 +3,16 @@ package uk.ac.ebi.biosamples.solr.repo;
 import java.util.List;
 
 import org.apache.solr.client.solrj.SolrClient;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.solr.core.SolrOperations;
 import org.springframework.data.solr.core.SolrTemplate;
 import org.springframework.data.solr.core.convert.SolrConverter;
 import org.springframework.data.solr.core.query.FacetOptions;
 import org.springframework.data.solr.core.query.FacetQuery;
-import org.springframework.data.solr.core.query.FilterQuery;
 import org.springframework.data.solr.core.query.Query;
-import org.springframework.data.solr.core.query.SimpleFacetQuery;
-import org.springframework.data.solr.core.query.SimpleFilterQuery;
-import org.springframework.data.solr.core.query.SimpleStringCriteria;
 import org.springframework.data.solr.core.query.result.FacetFieldEntry;
 import org.springframework.data.solr.core.query.result.FacetPage;
-import org.springframework.data.solr.repository.support.SimpleSolrRepository;
 import org.springframework.stereotype.Component;
 
 import uk.ac.ebi.biosamples.solr.model.SolrSample;

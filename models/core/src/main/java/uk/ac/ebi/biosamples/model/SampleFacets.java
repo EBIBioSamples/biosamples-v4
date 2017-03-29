@@ -4,10 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.SortedMap;
-
-import org.springframework.web.bind.annotation.ModelAttribute;
 
 public class SampleFacets implements Iterable<SampleFacet> {
 	

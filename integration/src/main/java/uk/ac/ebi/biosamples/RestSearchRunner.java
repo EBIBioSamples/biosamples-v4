@@ -16,17 +16,12 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.core.Ordered;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.core.annotation.Order;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.Resources;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpStatusCodeException;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -64,6 +59,9 @@ public class RestSearchRunner implements ApplicationRunner, ExitCodeGenerator, O
 			ResponseEntity<Resources<Resource<Sample>>> response = restTemplate.exchange(request, new ParameterizedTypeReference<Resources<Resource<Sample>>>(){});
 			//check that there is at least one sample returned
 			//if there are zero, then probably nothing was indexed
+			if (response.getBody().getContent().size() <= 0) {
+				
+			}
 		}
 		
 		//if we got here without throwing, then we finished sucessfully

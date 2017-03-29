@@ -23,6 +23,7 @@ import uk.ac.ebi.biosamples.client.ClientProperties;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 
+@SuppressWarnings("unused")
 @Component
 public class Ena implements ApplicationRunner {
 

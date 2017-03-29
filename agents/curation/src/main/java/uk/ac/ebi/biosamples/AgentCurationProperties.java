@@ -8,7 +8,6 @@ public class AgentCurationProperties {
 
 	@Value("${biosamples.agent.curation.stayalive:false}")
 	private Boolean agentCurationStayalive;
-
 	
 	public boolean getAgentCurationStayalive() {
 		return agentCurationStayalive;
