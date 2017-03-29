@@ -36,7 +36,6 @@ public interface SolrSampleRepositoryCustom {
 	 */
 	public FacetPage<?> getFacets(FacetQuery query, List<String> facetFields, Pageable facetPageable);
 	
-	
 
 	/**
 	 * Use a query object to get a page of results. This allows for more complicated query
@@ -45,5 +44,15 @@ public interface SolrSampleRepositoryCustom {
 	 * @param text
 	 * @return
 	 */
-	Page<SolrSample> findByQuery(Query query);
+	public Page<SolrSample> findByQuery(Query query);
+
+	/**
+	 * Use a query object to get a page of results. This allows for more complicated query
+	 * construction compared to a simple string e.g. filtering
+	 * 
+	 * @param text
+	 * @return
+	 */
+	public FacetPage<SolrSample> findByFacetQuery(FacetQuery query);
+	
 }

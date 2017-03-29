@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.solr.model;
+package uk.ac.ebi.biosamples.model;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -8,8 +8,6 @@ import java.util.Map;
 import java.util.SortedMap;
 
 import org.springframework.web.bind.annotation.ModelAttribute;
-
-import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
 
 public class SampleFacets implements Iterable<SampleFacet> {
 	
@@ -29,8 +27,6 @@ public class SampleFacets implements Iterable<SampleFacet> {
 		private List<SampleFacet> facets = new ArrayList<>();
 		
 		public SampleFacetsBuilder addFacet(String facet, long count) {
-			//cleanup if needed
-			facet = SolrSampleService.fieldToAttributeType(facet);
 			
 			facets.add(new SampleFacet(facet, count));
 			
@@ -42,8 +38,6 @@ public class SampleFacets implements Iterable<SampleFacet> {
 		}
 
 		public SampleFacetsBuilder addFacetValue(String facet, String value, long count) {
-			//cleanup if needed		
-			facet = SolrSampleService.fieldToAttributeType(facet);
 			
 			for (int i = 0; i < facets.size(); i++) {
 				SampleFacet sampleFacet = facets.get(i);

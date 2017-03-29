@@ -98,6 +98,11 @@ public class SolrSampleRepositoryImpl implements SolrSampleRepositoryCustom  {
 	public Page<SolrSample> findByQuery(Query query) {
 		return solrOperations.query(query, SolrSample.class);
 	}
-	
+
+
+	@Override
+	public FacetPage<SolrSample> findByFacetQuery(FacetQuery query) {
+		return solrOperations.queryForFacetPage(query, SolrSample.class);
+	}
 	
 }

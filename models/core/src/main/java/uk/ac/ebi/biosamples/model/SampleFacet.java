@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.solr.model;
+package uk.ac.ebi.biosamples.model;
 
 import java.util.ArrayList;
 import java.util.Collections;

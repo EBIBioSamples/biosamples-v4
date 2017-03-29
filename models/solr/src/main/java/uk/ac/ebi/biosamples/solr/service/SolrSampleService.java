@@ -32,8 +32,9 @@ import org.springframework.data.solr.core.query.result.FacetQueryResult;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
 
-import uk.ac.ebi.biosamples.solr.model.SampleFacets;
-import uk.ac.ebi.biosamples.solr.model.SampleFacets.SampleFacetsBuilder;
+import uk.ac.ebi.biosamples.model.Autocomplete;
+import uk.ac.ebi.biosamples.model.SampleFacets;
+import uk.ac.ebi.biosamples.model.SampleFacets.SampleFacetsBuilder;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
 import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
 
@@ -96,7 +97,7 @@ public class SolrSampleService {
 		for (FacetFieldEntry ffe : facetFields) {
 			log.info("Putting "+ffe.getValue()+" with count "+ffe.getValueCount());
 			facetFieldList.add(ffe.getValue());				
-			builder.addFacet(ffe.getValue(), ffe.getValueCount());
+			builder.addFacet(SolrSampleService.fieldToAttributeType(ffe.getValue()), ffe.getValueCount());
 		}
 		
 		//if there are no facets available (e.g. no samples)
@@ -111,12 +112,46 @@ public class SolrSampleService {
 			//for each value, put the number of them into this facets map
 			for (FacetFieldEntry ffe : facetPage.getFacetResultPage(field)) {
 				log.info("Adding "+field.getName()+" : "+ffe.getValue()+" with count "+ffe.getValueCount());					
-				builder.addFacetValue(field.getName(), ffe.getValue(), ffe.getValueCount());
+				builder.addFacetValue(SolrSampleService.fieldToAttributeType(field.getName()), ffe.getValue(), ffe.getValueCount());
 			}
 		}
 		
 		return builder.build();
 		
+	}
+	
+	public Autocomplete getAutocomplete(String autocompletePrefix, MultiValueMap<String,String> filters, int maxSuggestions) {
+		//default to search all
+		String searchTerm = "*:*";
+		//build a query out of the users string and any facets
+		FacetQuery query = new SimpleFacetQuery();
+		query.addCriteria(new Criteria().expression(searchTerm));
+		query.setPageRequest(new PageRequest(0, 1));
+				
+		if (filters != null) {
+			query = addFilters(query, filters);
+		}		
+
+		//filter out non-public
+		FilterQuery filterQuery = new SimpleFilterQuery();
+		filterQuery.addCriteria(new Criteria("release_dt").lessThan("NOW"));
+		query.addFilterQuery(filterQuery);
+
+		FacetOptions facetOptions = new FacetOptions();
+		facetOptions.addFacetOnField("autocomplete_ss");
+		facetOptions.setPageable(new PageRequest(0, maxSuggestions));
+		facetOptions.setFacetPrefix(autocompletePrefix);
+		query.setFacetOptions(facetOptions);
+		
+		FacetPage<?> facetPage = solrSampleRepository.findByFacetQuery(query);
+		
+		Page<FacetFieldEntry> facetFiledEntryPage = facetPage.getFacetResultPage("autocomplete_ss");
+		
+		List<String> autocompleted = new ArrayList<>();
+		for (FacetFieldEntry facetFieldEntry : facetFiledEntryPage) {
+			autocompleted.add(facetFieldEntry.getValue());
+		}
+		return new Autocomplete(autocompletePrefix, autocompleted);		
 	}
 	
 	private <T extends Query> T addFilters(T query, MultiValueMap<String,String> filters) {

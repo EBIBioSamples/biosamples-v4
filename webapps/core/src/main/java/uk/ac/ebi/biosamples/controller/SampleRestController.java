@@ -4,6 +4,7 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 import org.slf4j.Logger;
@@ -42,6 +43,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import uk.ac.ebi.biosamples.model.Autocomplete;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
@@ -105,6 +107,17 @@ public class SampleRestController {
 	
 		return ResponseEntity.ok()
 				.body(pagedResources);
+	}
+    
+    @CrossOrigin(methods = RequestMethod.GET)
+	@GetMapping(value = "/samples/autocomplete", produces = { MediaType.APPLICATION_JSON_VALUE })
+	public ResponseEntity<Autocomplete> autocomplete(
+			@RequestParam(name="query", required=false) String text,
+			@RequestParam(name="filter", required=false) String[] filters,
+			@RequestParam(name="rows", defaultValue="10") Integer rows) {
+		MultiValueMap<String, String> filtersMap = sampleService.getFilters(filters);
+    	Autocomplete autocomplete = sampleService.getAutocomplete(text, filtersMap, rows);
+		return ResponseEntity.ok().body(autocomplete);
 	}
     
 

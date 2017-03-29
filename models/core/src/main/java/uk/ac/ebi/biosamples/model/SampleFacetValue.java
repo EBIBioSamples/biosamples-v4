@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.solr.model;
+package uk.ac.ebi.biosamples.model;
 
 public class SampleFacetValue implements Comparable<SampleFacetValue>{
 	public final String label;

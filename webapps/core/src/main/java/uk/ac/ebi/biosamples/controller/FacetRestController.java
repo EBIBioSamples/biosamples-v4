@@ -20,9 +20,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.SampleFacet;
+import uk.ac.ebi.biosamples.model.SampleFacets;
 import uk.ac.ebi.biosamples.service.SampleService;
-import uk.ac.ebi.biosamples.solr.model.SampleFacet;
-import uk.ac.ebi.biosamples.solr.model.SampleFacets;
 
 @RestController
 @RequestMapping(produces = { MediaType.APPLICATION_JSON_VALUE, MediaTypes.HAL_JSON_VALUE})

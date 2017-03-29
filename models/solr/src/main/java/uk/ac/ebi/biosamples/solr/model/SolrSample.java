@@ -53,7 +53,7 @@ public class SolrSample {
 	 * This field shouldn't be populated directly, instead Solr will copy 
 	 * all the ontology terms from the attributes into it.
 	 */
-	@Indexed(name="ontologyiri_ss", readonly=true)
+	@Indexed(name="ontologyiri_ss")
 	protected List<String> ontologyIris;
 	
 	/**
@@ -69,7 +69,7 @@ public class SolrSample {
 	 * This field is required to use with autocomplete faceting.
 	 * Since faceting does not require it to be stored, it wont be to save space
 	 */
-	@Indexed(name="autocomplete_ss", readonly=true)
+	@Indexed(name="autocomplete_ss")
 	protected List<String> autocompleteTerms;
 	
 	public SolrSample(){}
@@ -171,6 +171,15 @@ public class SolrSample {
 			}
 			Collections.sort(attributeTypes);
 			sample.attributeTypes = attributeTypes;
+		}
+		//copy into the other fields
+		//this should be done in a copyfield but that doesn't work for some reason?
+		sample.autocompleteTerms = new ArrayList<>();
+		if (attributeValues != null) {
+			sample.autocompleteTerms.addAll(attributeValues.keySet());
+			for (List<String> values : attributeValues.values()) {
+				sample.autocompleteTerms.addAll(values);
+			}
 		}
 		return sample;
 	}

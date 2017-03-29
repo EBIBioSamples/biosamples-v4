@@ -40,12 +40,13 @@ import com.mongodb.MongoWriteException;
 
 import uk.ac.ebi.biosamples.Messaging;
 import uk.ac.ebi.biosamples.WebappProperties;
+import uk.ac.ebi.biosamples.model.Autocomplete;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.SampleFacets;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.model.MongoSubmission;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSubmissionRepository;
-import uk.ac.ebi.biosamples.solr.model.SampleFacets;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
 import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
 import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
@@ -178,6 +179,10 @@ public class SampleService {
 			}
 		}
 		return filters;
+	}
+	
+	public Autocomplete getAutocomplete(String autocompletePrefix, MultiValueMap<String,String> filters, int noSuggestions) {
+		return solrSampleService.getAutocomplete(autocompletePrefix, filters, noSuggestions);
 	}
 
 	public Sample store(Sample sample) {

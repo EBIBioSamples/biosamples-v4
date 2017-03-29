@@ -36,10 +36,10 @@ import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.util.UriUtils;
 
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.SampleFacet;
+import uk.ac.ebi.biosamples.model.SampleFacetValue;
+import uk.ac.ebi.biosamples.model.SampleFacets;
 import uk.ac.ebi.biosamples.service.SampleService;
-import uk.ac.ebi.biosamples.solr.model.SampleFacet;
-import uk.ac.ebi.biosamples.solr.model.SampleFacetValue;
-import uk.ac.ebi.biosamples.solr.model.SampleFacets;
 
 /**
  * Primary controller for HTML operations.
