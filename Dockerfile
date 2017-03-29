@@ -6,5 +6,5 @@ MAINTAINER EBI BioSamples <biosamples@ebi.ac.uk>
 
 COPY webapps/*/target/*.war agents/*/target/*.jar pipelines/*/target/*.jar /
 
-ADD http://ftp.ncbi.nih.gov/biosample/biosample_set.xml.gz /biosample_set.xml.gz
+#ADD http://ftp.ncbi.nih.gov/biosample/biosample_set.xml.gz /biosample_set.xml.gz
 
