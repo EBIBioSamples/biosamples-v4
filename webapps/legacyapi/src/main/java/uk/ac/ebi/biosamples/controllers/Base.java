@@ -11,7 +11,7 @@ public class Base {
 
     @GetMapping(value = "/api", produces = APPLICATION_JSON_UTF8_VALUE)
     public @ResponseBody String root() {
-
+        return null;
     }
 
 }
