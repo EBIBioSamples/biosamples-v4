@@ -24,9 +24,9 @@ public class CurationRunner implements ApplicationRunner {
 		// that will also keep the async message client alive too?
 		Integer messageCount = null;
 		while (agentCurationProperties.getAgentCurationStayalive() || messageCount == null || messageCount > 0) {
-			Thread.sleep(1000*60);
+			Thread.sleep(1000);
 			messageCount = messageUtils.getQueueCount(Messaging.queueToBeIndexedNeo4J);
-			log.info("Messages remaining in "+Messaging.queueToBeIndexedNeo4J+" "+messageCount);
+			log.trace("Messages remaining in "+Messaging.queueToBeIndexedNeo4J+" "+messageCount);
 		}
 		
 	}

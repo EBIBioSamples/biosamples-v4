@@ -32,9 +32,9 @@ public class SolrRunner implements ApplicationRunner, ExitCodeGenerator {
 		// that will also keep the async message client alive too?
 		Integer messageCount = null;
 		while (agentSolrProperties.getAgentSolrStayalive() || messageCount == null || messageCount > 0) {
-			Thread.sleep(1000*60);
+			Thread.sleep(1000);
 			messageCount = messageUtils.getQueueCount(Messaging.queueToBeIndexedSolr);
-			log.info("Messages remaining in "+Messaging.queueToBeIndexedSolr+" "+messageCount);
+			log.trace("Messages remaining in "+Messaging.queueToBeIndexedSolr+" "+messageCount);
 		}
 	}
 
