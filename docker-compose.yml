@@ -172,6 +172,7 @@ services:
     - 7474:7474
     volumes:
     - neo4j_data:/data
+    - ./neo4j_logs:/logs
     
   solr:
     image: solr:6.3-alpine
@@ -191,7 +192,7 @@ networks:
   default:
     ipam:
       config:
-      - subnet: 172.28.0.0/16
+      - subnet: 172.29.0.0/16
 volumes:
   #get image sizes with `du -h /var/lib/docker/volumes/*_data` as docker user (root)
   solr_samples_data: null

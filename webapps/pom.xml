@@ -13,6 +13,7 @@
 	</parent>
 
 	<modules>
+		<module>legacy_api</module>
 		<module>sampletab</module>
 		<module>core</module>
 	</modules>
