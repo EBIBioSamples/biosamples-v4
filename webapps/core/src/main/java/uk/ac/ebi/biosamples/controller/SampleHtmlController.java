@@ -48,13 +48,13 @@ import uk.ac.ebi.biosamples.service.SampleService;
  */
 @Controller
 @RequestMapping(value = "/", produces = MediaType.TEXT_HTML_VALUE)
-public class HtmlController {
+public class SampleHtmlController {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 
 	private SampleService sampleService;
 
-	public HtmlController(@Autowired SampleService sampleService) {
+	public SampleHtmlController(@Autowired SampleService sampleService) {
 		this.sampleService = sampleService;
 	}
 
