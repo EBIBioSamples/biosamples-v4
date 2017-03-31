@@ -52,6 +52,17 @@ services:
     - management.security.enabled=false
     ports:
     - 8082:8080
+
+  biosamples-webapps-legacyapi:
+    image: biosamples:latest
+    links:
+    - biosamples-webapps-core
+    command:
+    - java
+    - -jar
+    - webapps-legacyapi-4.0.0-SNAPSHOT.war
+    ports:
+    - 8083:8080
     
   biosamples-agents-neo4j:
     image: biosamples:latest

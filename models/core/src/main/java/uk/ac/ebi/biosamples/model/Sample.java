@@ -1,19 +1,18 @@
 package uk.ac.ebi.biosamples.model;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import uk.ac.ebi.biosamples.service.CustomLocalDateTimeDeserializer;
+import uk.ac.ebi.biosamples.service.CustomLocalDateTimeSerializer;
+import uk.ac.ebi.biosamples.service.CustomSampleDeserializer;
+import uk.ac.ebi.biosamples.service.CustomSampleSerializer;
+
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
-import uk.ac.ebi.biosamples.service.CustomLocalDateTimeDeserializer;
-import uk.ac.ebi.biosamples.service.CustomLocalDateTimeSerializer;
-import uk.ac.ebi.biosamples.service.CustomSampleSerializer;
-import uk.ac.ebi.biosamples.service.CustomSampleDeserializer;
 
 
 @JsonSerialize(using=CustomSampleSerializer.class)
