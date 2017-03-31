@@ -157,11 +157,11 @@ public class SampleTabService {
 	}
 	
 	private Attribute makeAttribute(String type, String value, String termSourceId, String unit) {
-		URI uri = null;
+		String uri = null;
 		if (termSourceId != null && termSourceId.trim().length() > 0) {
 			//if we're given a full uri, use it
 			try {
-				uri = URI.create(termSourceId);
+				uri = termSourceId;
 			} catch (IllegalArgumentException e) {
 				//do nothing
 			}

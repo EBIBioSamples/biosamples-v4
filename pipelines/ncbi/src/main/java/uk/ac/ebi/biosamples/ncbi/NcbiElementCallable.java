@@ -80,7 +80,7 @@ public class NcbiElementCallable implements Callable<Void> {
 		}
 
 		// handle the organism		
-		URI organismIri = null;
+		String organismIri = null;
 		String organismValue = null;
 		if (XmlPathBuilder.of(sampleElem).path("Description", "Organism").attributeExists("taxonomy_id")) {
 			int taxonId = Integer.parseInt(XmlPathBuilder.of(sampleElem).path("Description", "Organism").attribute("taxonomy_id"));

@@ -101,7 +101,7 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 		
         //Do the organism attribute
 		int organismTaxId = Integer.parseInt(XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, TAXON_ID).text());
-		URI organismUri = taxonomyService.getUriForTaxonId(organismTaxId);
+		String organismUri = taxonomyService.getUriForTaxonId(organismTaxId);
 		String organismName = ""+organismTaxId;
 		if (XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, SCIENTIFIC_NAME).exists()) {
 			organismName = XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, SCIENTIFIC_NAME).text();

@@ -15,7 +15,7 @@ public class Attribute implements Comparable<Attribute> {
 
 	private String key;
 	private String value;
-	private URI iri;
+	private String iri;
 	private String unit;
 	
 	private Attribute(){
@@ -30,7 +30,7 @@ public class Attribute implements Comparable<Attribute> {
 		return value;
 	}
 
-	public URI getIri() {
+	public String getIri() {
 		return iri;
 	}
 	
@@ -137,7 +137,7 @@ public class Attribute implements Comparable<Attribute> {
 	
     @JsonCreator
 	static public Attribute build(@JsonProperty("key") String key, @JsonProperty("value") String value, 
-			@JsonProperty("iri") URI iri, @JsonProperty("unit") String unit) {
+			@JsonProperty("iri") String iri, @JsonProperty("unit") String unit) {
 		Attribute attr = new Attribute();
 		attr.key = key;
 		attr.value = value;
