@@ -12,6 +12,7 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicHeaderElementIterator;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.protocol.HttpContext;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -29,14 +30,12 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Configuration
-@EnableAsync
 public class BioSamplesClientConfig {
 
 	
 	//sets resttemplate to use connection pooling
 	@Bean
-	//@ConditionalOnMissingBean(ClientHttpRequestFactory.class)
-	@Primary
+	@ConditionalOnMissingBean
 	public ClientHttpRequestFactory getClientHttpRequestFactory() {
 
     	PoolingHttpClientConnectionManager conman = new PoolingHttpClientConnectionManager();
@@ -87,8 +86,7 @@ public class BioSamplesClientConfig {
 	 * @return
 	 */
 	@Bean
-	//@ConditionalOnMissingBean(RestOperations.class)
-	@Primary
+	@ConditionalOnMissingBean
 	public RestOperations getRestOperations(ClientHttpRequestFactory clientHttpRequestFactory, ObjectMapper mapper) {
 		RestTemplate restTemplate = new RestTemplate();
 		restTemplate.setRequestFactory(clientHttpRequestFactory);
