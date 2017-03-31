@@ -7,8 +7,10 @@ import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Attribute implements Comparable<Attribute> {
 
 	private String key;
@@ -39,6 +41,7 @@ public class Attribute implements Comparable<Attribute> {
 	 */
 	@JsonIgnore
 	public String getIriOls() {
+		//TODO move this to service layer
 		if (iri == null) return null;
 		
 		try {

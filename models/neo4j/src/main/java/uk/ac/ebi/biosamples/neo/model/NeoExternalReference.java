@@ -8,26 +8,23 @@ import org.neo4j.ogm.annotation.NodeEntity;
 import org.neo4j.ogm.annotation.Property;
 import org.neo4j.ogm.annotation.typeconversion.Convert;
 
-import uk.ac.ebi.biosamples.neo.service.URIConverter;
-
-@NodeEntity(label = "Url")
-public class NeoUrl {
+@NodeEntity(label = "ExternalReference")
+public class NeoExternalReference {
 
 	@GraphId
 	private Long id;
 
 	@Property
 	@Index(unique=true, primary=true)
-	@Convert(URIConverter.class)
-	private URI url;
+	private String url;
 
-	private NeoUrl() {}
+	private NeoExternalReference() {}
 	
 	public Long getId() {
 		return id;
 	}	
 	
-	public URI getUrl(){
+	public String getUrl(){
 		return url;
 	}
 
@@ -40,8 +37,8 @@ public class NeoUrl {
     	return sb.toString();
     }
     
-	public static NeoUrl create(URI url) {
-		NeoUrl neoUrl = new NeoUrl();
+	public static NeoExternalReference create(String url) {
+		NeoExternalReference neoUrl = new NeoExternalReference();
 		neoUrl.url = url;
 		return neoUrl;
 	}

@@ -6,11 +6,12 @@ import org.springframework.boot.context.properties.ConfigurationPropertiesBindin
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
 
+import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.neo.model.NeoRelationship;
 import uk.ac.ebi.biosamples.neo.model.NeoSample;
-import uk.ac.ebi.biosamples.neo.model.NeoUrl;
+import uk.ac.ebi.biosamples.neo.model.NeoExternalReference;
 
 @Service
 @ConfigurationPropertiesBinding
@@ -29,8 +30,8 @@ public class SampleToNeoSampleConverter
 		}
 		
 		if (sample.getExternalReferences() != null && sample.getExternalReferences().size() > 0) {
-			for (URI externalReference : sample.getExternalReferences()) {
-				neoSample.addExternalReference(NeoUrl.create(externalReference));
+			for (ExternalReference externalReference : sample.getExternalReferences()) {
+				neoSample.addExternalReference(NeoExternalReference.create(externalReference.getUrl()));
 			}
 		}
 		

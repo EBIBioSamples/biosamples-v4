@@ -25,7 +25,7 @@ public class NeoSample {
 	private Set<NeoRelationship> relationships;
 
     @Relationship(type = "EXTERNAL_REFERENCE")
-	private Set<NeoUrl> externalReferences;
+	private Set<NeoExternalReference> externalReferences;
 
 	@SuppressWarnings("unused")
 	private NeoSample() {
@@ -54,11 +54,11 @@ public class NeoSample {
 		relationships.add(relationship);
 	}
 
-	public Set<NeoUrl> getExternalReferences() {
+	public Set<NeoExternalReference> getExternalReferences() {
 		return externalReferences;
 	}
 
-	public void addExternalReference(NeoUrl reference) {
+	public void addExternalReference(NeoExternalReference reference) {
 		if (externalReferences == null) {
 			externalReferences = new HashSet<>();
 		}
@@ -78,7 +78,7 @@ public class NeoSample {
     	return sb.toString();
     }
 
-	public static NeoSample create(String accession, Set<NeoRelationship> relationships, Set<NeoUrl> externalReferences) {
+	public static NeoSample create(String accession, Set<NeoRelationship> relationships, Set<NeoExternalReference> externalReferences) {
 		NeoSample neoSample = new NeoSample(accession);
 
 		if (relationships == null || relationships.size() == 0) {

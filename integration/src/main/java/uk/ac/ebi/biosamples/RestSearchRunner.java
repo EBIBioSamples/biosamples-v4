@@ -26,6 +26,7 @@ import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 
@@ -85,8 +86,8 @@ public class RestSearchRunner implements ApplicationRunner, ExitCodeGenerator, O
 		SortedSet<Relationship> relationships = new TreeSet<>();
 		relationships.add(Relationship.build("derived from", "TEST2", "TEST1"));
 		
-		SortedSet<URI> externalReferences = new TreeSet<>();
-		externalReferences.add(URI.create("http://www.google.com"));
+		SortedSet<ExternalReference> externalReferences = new TreeSet<>();
+		externalReferences.add(ExternalReference.build("http://www.google.com"));
 
 		return Sample.build(name, accession, release, update, attributes, relationships, externalReferences);
 	}

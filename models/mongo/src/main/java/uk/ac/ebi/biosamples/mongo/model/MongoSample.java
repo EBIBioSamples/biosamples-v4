@@ -9,15 +9,20 @@ import java.util.TreeSet;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.service.CustomLocalDateTimeDeserializer;
 import uk.ac.ebi.biosamples.service.CustomLocalDateTimeSerializer;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class MongoSample {
 	
 	@Id
@@ -35,7 +40,7 @@ public class MongoSample {
 
 	protected SortedSet<Attribute> attributes;
 	protected SortedSet<Relationship> relationships;
-	protected SortedSet<URI> externalReferences;
+	protected SortedSet<ExternalReference> externalReferences;
 
 	private MongoSample() {
 		
@@ -74,7 +79,7 @@ public class MongoSample {
 		return relationships;
 	}
 
-	public SortedSet<URI> getExternalReferences() {
+	public SortedSet<ExternalReference> getExternalReferences() {
 		return externalReferences;
 	}
 
@@ -122,9 +127,15 @@ public class MongoSample {
     	return sb.toString();
     }
     
-	
-	static public MongoSample build(String name, String accession, LocalDateTime release, LocalDateTime update, 
-			Set<Attribute> attributes, Set<Relationship> relationships, SortedSet<URI> externalReferences) {
+
+    @JsonCreator
+    public static MongoSample build(@JsonProperty("name") String name, 
+    		@JsonProperty("accession") String accession, 
+    		@JsonProperty("release") LocalDateTime release, 
+    		@JsonProperty("update") LocalDateTime update, 
+    		@JsonProperty("attributes") Set<Attribute> attributes, 
+    		@JsonProperty("relationships") Set<Relationship> relationships, 
+    		@JsonProperty("externalReferences") SortedSet<ExternalReference> externalReferences) {
 		
 		MongoSample sample = new MongoSample();
 		

@@ -1,67 +1,82 @@
 package uk.ac.ebi.biosamples.model;
 
-import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import uk.ac.ebi.biosamples.service.CustomLocalDateTimeDeserializer;
 import uk.ac.ebi.biosamples.service.CustomLocalDateTimeSerializer;
-import uk.ac.ebi.biosamples.service.CustomSampleSerializer;
-import uk.ac.ebi.biosamples.service.CustomSampleDeserializer;
+import uk.ac.ebi.biosamples.service.CustomAttributeSerializer;
 
 
-@JsonSerialize(using=CustomSampleSerializer.class)
-@JsonDeserialize(using=CustomSampleDeserializer.class)
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties(value={"characteristics"}, allowGetters=true)
 public class Sample {
 	
 	protected String accession;
 	protected String name; 
-	@JsonSerialize(using = CustomLocalDateTimeSerializer.class)
-	@JsonDeserialize(using = CustomLocalDateTimeDeserializer.class)
+	
 	protected LocalDateTime release; 
-	@JsonSerialize(using = CustomLocalDateTimeSerializer.class)
-	@JsonDeserialize(using = CustomLocalDateTimeDeserializer.class)
 	protected LocalDateTime update;
 
 	protected SortedSet<Attribute> attributes;
 	protected SortedSet<Relationship> relationships;
-	protected SortedSet<URI> externalReferences;
+	protected SortedSet<ExternalReference> externalReferences;
 
 	protected Sample() {
 		
 	}
 
+	@JsonProperty("accession")
 	public String getAccession() {
 		return accession;
 	}
 
+	@JsonProperty("name")
 	public String getName() {
 		return name;
 	}
-
+	
+	@JsonProperty("release")
+	@JsonSerialize(using = CustomLocalDateTimeSerializer.class)
 	public LocalDateTime getRelease() {
 		return release;
 	}
 
+	@JsonProperty("update")
+	@JsonSerialize(using = CustomLocalDateTimeSerializer.class)
 	public LocalDateTime getUpdate() {
 		return update;
 	}
 
+	@JsonProperty("attributes")
 	public SortedSet<Attribute> getAttributes() {
 		return attributes;
 	}
 
+	@Deprecated
+    @JsonSerialize(using = CustomAttributeSerializer.class)
+	@JsonProperty("characteristics")
+	public SortedSet<Attribute> getCharacteristics() {
+		return attributes;
+	}
+
+	@JsonProperty("relationships")
 	public SortedSet<Relationship> getRelationships() {
 		return relationships;
 	}
 
-	public SortedSet<URI> getExternalReferences() {
+	@JsonProperty("externalReferences")
+	public SortedSet<ExternalReference> getExternalReferences() {
 		return externalReferences;
 	}
 
@@ -107,9 +122,18 @@ public class Sample {
     	sb.append(")");
     	return sb.toString();
     }
-		
-	static public Sample build(String name, String accession, LocalDateTime release, LocalDateTime update, 
-			Set<Attribute> attributes, Set<Relationship> relationships, SortedSet<URI> externalReferences){
+		    
+
+    //Used for deserializtion (JSON -> Java)
+    @JsonCreator
+	public static Sample build(@JsonProperty("name") String name, 
+			@JsonProperty("accession") String accession, 
+			@JsonProperty("release") @JsonDeserialize(using = CustomLocalDateTimeDeserializer.class) LocalDateTime release, 
+			@JsonProperty("update") @JsonDeserialize(using = CustomLocalDateTimeDeserializer.class) LocalDateTime update, 
+			@JsonProperty("attributes") Set<Attribute> attributes, 
+			@JsonProperty("relationships") Set<Relationship> relationships, 
+			@JsonProperty("externalReferences") Set<ExternalReference> externalReferences) {
+    	
 		Sample sample = new Sample();
 		sample.accession = accession;
 		sample.name = name;
@@ -134,8 +158,7 @@ public class Sample {
 			int second = update.getSecond();
 			int nano = update.getNano();			
 			sample.update = LocalDateTime.of(year,month,dayOfMonth,hour,minute,second,nano);
-		}
-		
+		}		
 		
 		if (attributes == null || attributes.size() == 0) {
 			sample.attributes = null;

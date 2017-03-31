@@ -24,6 +24,7 @@ import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.attribute.DatabaseAt
 import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.attribute.SCDNodeAttribute;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 
@@ -47,7 +48,7 @@ public class SampleTabService {
 
 			SortedSet<Attribute> attributes = new TreeSet<>();
 			SortedSet<Relationship> relationships = new TreeSet<>();
-			SortedSet<URI> externalReferences = new TreeSet<>();
+			SortedSet<ExternalReference> externalReferences = new TreeSet<>();
 			
 			//beware, works by side-effect
 			populateAttributes(accession, sampleNode.getAttributes(), attributes, relationships, externalReferences);
@@ -70,7 +71,7 @@ public class SampleTabService {
 
 			SortedSet<Attribute> attributes = new TreeSet<>();
 			SortedSet<Relationship> relationships = new TreeSet<>();
-			SortedSet<URI> externalReferences = new TreeSet<>();
+			SortedSet<ExternalReference> externalReferences = new TreeSet<>();
 			
 			//beware, works by side-effect
 			populateAttributes(accession, groupNode.getAttributes(), attributes, relationships, externalReferences);
@@ -104,7 +105,7 @@ public class SampleTabService {
 	 * @param scdNodeAttributes
 	 */
 	private void populateAttributes(String accession, List<SCDNodeAttribute> scdNodeAttributes, 
-			SortedSet<Attribute> attributes , SortedSet<Relationship> relationships, SortedSet<URI> externalReferences) {		
+			SortedSet<Attribute> attributes , SortedSet<Relationship> relationships, SortedSet<ExternalReference> externalReferences) {		
 		for (SCDNodeAttribute attribute : scdNodeAttributes) {
 			String type = null;
 			String value = null;
@@ -143,7 +144,7 @@ public class SampleTabService {
 			} else if (attribute instanceof DatabaseAttribute) {
 				DatabaseAttribute databaseAttribute = (DatabaseAttribute) attribute;
 				if (databaseAttribute.databaseURI != null) {
-					externalReferences.add(URI.create(databaseAttribute.databaseURI));
+					externalReferences.add(ExternalReference.build(databaseAttribute.databaseURI));
 				}				
 			} else if (attribute instanceof AbstractRelationshipAttribute) {
 				//this is a relationship, store appropriately

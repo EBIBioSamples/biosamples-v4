@@ -11,7 +11,7 @@ public class Relationship implements Comparable<Relationship> {
 	private String target;
 	private String source;
 	
-	public Relationship(){
+	private Relationship(){
 		
 	}
 
@@ -79,7 +79,7 @@ public class Relationship implements Comparable<Relationship> {
     }
     
     @JsonCreator
-    static public Relationship build(@JsonProperty("type") String type, 
+    public static Relationship build(@JsonProperty("type") String type, 
     		@JsonProperty("target") String target,
     		@JsonProperty("source") String source) {
     	Relationship rel = new Relationship();

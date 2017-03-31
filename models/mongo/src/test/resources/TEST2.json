@@ -1,12 +1,13 @@
 {
-	"accession":"TEST2",
-	"name":"Test Sample the second",
-	"update":"2016-05-05T11:36:57",
-	"release":"2016-04-01T11:36:57",
-	"attributes":[
+	"accession": "TEST2",
+	"name": "Test Sample the second",
+	"update": "2016-05-05T11:36:57",
+	"release": "2016-04-01T11:36:57",
+	"attributes": [
 		{
-			"key":"organism",
-		 	"value":"Homo sapiens",
-		 	"iri":"http://purl.obolibrary.org/obo/NCBITaxon_9606"
-		 }]	 
+			"key": "organism",
+			"value": "Homo sapiens",
+			"iri": "http://purl.obolibrary.org/obo/NCBITaxon_9606"
+		}
+	]
 }
