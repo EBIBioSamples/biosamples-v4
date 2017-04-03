@@ -49,7 +49,8 @@ public class Accession implements ApplicationRunner{
 	public void run(ApplicationArguments args) throws Exception {
 		log.info("Processing Accession pipeline...");
 		
-		try (AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, pipelinesProperties.getThreadCount())) {
+		try (AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, 
+				pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax())) {
 			Map<String, Future<Void>> futures = new HashMap<>();
 			accessionDao.doAssayAccessionCallback(new AccessionCallbackHandler(executorService, futures, "SAMEA"));
 			accessionDao.doReferenceAccessionCallback(new AccessionCallbackHandler(executorService, futures, "SAME"));
