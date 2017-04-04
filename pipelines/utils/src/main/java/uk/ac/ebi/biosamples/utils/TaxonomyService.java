@@ -1,7 +1,5 @@
 package uk.ac.ebi.biosamples.utils;
 
-import java.net.URI;
-
 import org.springframework.stereotype.Service;
 
 @Service
