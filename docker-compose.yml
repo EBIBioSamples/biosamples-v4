@@ -9,6 +9,7 @@ services:
     - neo4j
     - mongo
     - rabbitmq
+    - logstash
     volumes:
     - ./docker/logs:/logs
     command:
@@ -39,11 +40,16 @@ services:
     ports:
     - 8081:8080
     - 9090:9090
+    logging:
+      driver: gelf
+      options:
+        gelf-address: "udp://localhost:12201"
     
   biosamples-webapps-sampletab:
     image: biosamples:latest
     links:
     - biosamples-webapps-core
+    - logstash
     volumes:
     - ./docker/logs:/logs
     command:
@@ -58,6 +64,10 @@ services:
     - logging.file=/logs/webapps-sampletab.log
     ports:
     - 8082:8080
+    logging:
+      driver: gelf
+      options:
+        gelf-address: "udp://localhost:12201"
     
     
   biosamples-agents-neo4j:
@@ -65,6 +75,7 @@ services:
     links:
     - neo4j
     - rabbitmq
+    - logstash
     volumes:
     - ./docker/logs:/logs
     command:
@@ -74,19 +85,24 @@ services:
     environment:
     - spring.rabbitmq.publisher-confirms=true
     - spring.rabbitmq.host=rabbitmq
-    - spring.rabbitmq.listener.concurrency=1
-    - spring.rabbitmq.listener.max-concurrency=1
+    - spring.rabbitmq.listener.concurrency=250
+    - spring.rabbitmq.listener.max-concurrency=250
     - spring.data.neo4j.uri=bolt://neo4j:7687
     - spring.data.neo4j.username=neo4j
     - spring.data.neo4j.indexes.auto=assert
     - biosamples.agent.neo4j.stayalive=true
     - logging.file=/logs/agents-neo4j.log
+    logging:
+      driver: gelf
+      options:
+        gelf-address: "udp://localhost:12201"
     
   biosamples-agents-solr:
     image: biosamples:latest
     links:
     - solr
     - rabbitmq
+    - logstash
     volumes:
     - ./docker/logs:/logs
     command:
@@ -101,11 +117,16 @@ services:
     - spring.rabbitmq.host=rabbitmq
     - biosamples.agent.solr.stayalive=true
     - logging.file=/logs/agents-solr.log
+    logging:
+      driver: gelf
+      options:
+        gelf-address: "udp://localhost:12201"
     
   biosamples-agents-curation:
     image: biosamples:latest
     links:
     - rabbitmq
+    - logstash
     volumes:
     - ./docker/logs:/logs
     command:
@@ -117,12 +138,17 @@ services:
     - spring.rabbitmq.host=rabbitmq
     - biosamples.agent.curation.stayalive=true
     - logging.file=/logs/agents-curation.log
+    logging:
+      driver: gelf
+      options:
+        gelf-address: "udp://localhost:12201"
     
     
   biosamples-pipelines-ena:
     image: biosamples:latest
     links:
     - biosamples-webapps-core
+    - logstash
     volumes:
     - ./docker/logs:/logs
     command:
@@ -135,11 +161,16 @@ services:
     - spring.datasource.erapro.password=reader
     - spring.datasource.erapro.driver-class-name=oracle.jdbc.driver.OracleDriver
     - logging.file=/logs/pipelines-ena.log
+    logging:
+      driver: gelf
+      options:
+        gelf-address: "udp://localhost:12201"
     
   biosamples-pipelines-ncbi:
     image: biosamples:latest
     links:
     - biosamples-webapps-core
+    - logstash
     volumes:
     - ./docker/logs:/logs
     command:
@@ -149,11 +180,16 @@ services:
     environment:
     - spring.cache.guava.spec=maximumSize=500,expireAfterAccess=60s,recordStats=true
     - logging.file=/logs/pipelines-ena.log
+    logging:
+      driver: gelf
+      options:
+        gelf-address: "udp://localhost:12201"
     
   biosamples-pipelines-accession:
     image: biosamples:latest
     links:
     - biosamples-webapps-core
+    - logstash
     volumes:
     - ./docker/logs:/logs
     command:
@@ -166,6 +202,10 @@ services:
     - spring.datasource.accession.password=b5d4ccpr0
     - spring.datasource.accession.driver-class-name=oracle.jdbc.driver.OracleDriver
     - logging.file=/logs/pipelines-ena.log
+    logging:
+      driver: gelf
+      options:
+        gelf-address: "udp://localhost:12201"
     
   mongo:
     image: mongo:3.2
@@ -194,7 +234,7 @@ services:
     - 7474:7474
     volumes:
     - neo4j_data:/data
-    - ./docker/logs:/logs
+    - ./docker/logs/neo4j:/logs
     
   solr:
     image: solr:6.3-alpine
@@ -212,7 +252,6 @@ services:
     
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:5.3.0
-    #command: elasticsearch -Des.network.host=0.0.0.0
     ports:
     - 9200:9200
     environment:
@@ -220,13 +259,15 @@ services:
     - network.host=_eth0_
     
   logstash:
+    #build: docker/logstash/
     image: docker.elastic.co/logstash/logstash:5.3.0
-    #command: logstash -f /etc/logstash/conf.d/logstash.conf
     volumes:
     - ./docker/logstash/pipeline:/usr/share/logstash/pipeline
     - ./docker/logs:/logs
     ports:
     - 9600:9600
+    #need to explicitly say we'll be recieving udp packets here
+    - 12201:12201/udp
     links:
     - elasticsearch
     

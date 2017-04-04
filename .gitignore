@@ -7,4 +7,4 @@ ncbi.xml.gz
 bin/
 target/
 
-docker-migration.sh
+docker-env.sh
