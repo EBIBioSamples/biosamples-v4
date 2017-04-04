@@ -159,25 +159,19 @@ public class Sample {
 			int nano = update.getNano();			
 			sample.update = LocalDateTime.of(year,month,dayOfMonth,hour,minute,second,nano);
 		}		
-		
-		if (attributes == null || attributes.size() == 0) {
-			sample.attributes = null;
-		} else {
-			sample.attributes = new TreeSet<>();
+
+		sample.attributes = new TreeSet<>();
+		if (attributes != null) {
 			sample.attributes.addAll(attributes);
 		}
 
-		if (relationships == null || relationships.size() == 0) {
-			sample.relationships = null;
-		} else {
-			sample.relationships = new TreeSet<>();
+		sample.relationships = new TreeSet<>();
+		if (relationships != null) {
 			sample.relationships.addAll(relationships);
 		}
 
-		if (externalReferences == null || externalReferences.size() == 0) {
-			sample.externalReferences = null;
-		} else {
-			sample.externalReferences = new TreeSet<>();
+		sample.externalReferences = new TreeSet<>();
+		if (externalReferences != null) {
 			sample.externalReferences.addAll(externalReferences);
 		}	
 		

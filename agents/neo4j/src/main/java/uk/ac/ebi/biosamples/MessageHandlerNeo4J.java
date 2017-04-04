@@ -1,9 +1,11 @@
 package uk.ac.ebi.biosamples;
 
+import org.neo4j.driver.v1.exceptions.TransientException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.neo.model.NeoSample;
@@ -13,6 +15,8 @@ import uk.ac.ebi.biosamples.neo.service.SampleToNeoSampleConverter;
 @Service
 public class MessageHandlerNeo4J {
 
+	private Logger log = LoggerFactory.getLogger(getClass());
+
 	@Autowired
 	private NeoSampleRepository neoSampleRepository;
 	
@@ -21,18 +25,13 @@ public class MessageHandlerNeo4J {
 
 	@RabbitListener(queues = Messaging.queueToBeIndexedNeo4J)
 	public void handle(Sample sample) {
-		//see if this sample has any relationships at all
-		if (sample.getRelationships() == null || sample.getRelationships().size() == 0) {
-			return;
-		} else {
-			persist(sample);
-		}
-	}
-
-	@Transactional
-	private void persist(Sample sample) {
-		
 		NeoSample neoSample = sampleToNeoSampleConverter.convert(sample);
-		neoSample = neoSampleRepository.save(neoSample);
+		try {
+			neoSample = neoSampleRepository.save(neoSample);
+		} catch (TransientException e) {
+			//recurse for now
+			log.warn("Transient exception saving sample "+sample.getAccession());
+			handle(sample);
+		}
 	}
 }

@@ -1,6 +1,6 @@
 version: '2'
 services:
-    
+
   biosamples-webapps-core:
     build: .
     image: biosamples:latest
@@ -9,11 +9,13 @@ services:
     - neo4j
     - mongo
     - rabbitmq
+    volumes:
+    - ./docker/logs:/logs
     command:
     - java
     - -Dcom.sun.management.jmxremote.rmi.port=9090
     - -Dcom.sun.management.jmxremote=true
-    - -Dcom.sun.management.jmxremote.port=9090 
+    - -Dcom.sun.management.jmxremote.port=9090
     - -Dcom.sun.management.jmxremote.ssl=false
     - -Dcom.sun.management.jmxremote.authenticate=false
     - -Dcom.sun.management.jmxremote.local.only=false
@@ -30,9 +32,10 @@ services:
     - spring.jackson.serialization-inclusion=non_null
     - spring.rabbitmq.host=rabbitmq
     - spring.jackson.serialization.WRITE_NULL_MAP_VALUES=false
-    - server.servlet.context-path=/biosamples/beta #spring-boot 2.0.x
-    - server.context-path=/biosamples/beta #spring-boot 1.5.x
+    - server.servlet.context-path=/biosamples/beta
+    - server.context-path=/biosamples/beta
     - management.security.enabled=false
+    - logging.file=/logs/webapps-core.log
     ports:
     - 8081:8080
     - 9090:9090
@@ -41,23 +44,29 @@ services:
     image: biosamples:latest
     links:
     - biosamples-webapps-core
+    volumes:
+    - ./docker/logs:/logs
     command:
     - java
     - -jar
     - webapps-sampletab-4.0.0-SNAPSHOT.war
     environment:
     - biosamples.submissionuri=http://biosamples-webapps-core:8080/biosamples/beta
-    - server.servlet.context-path=/biosamples/beta #spring-boot 2.0.x
-    - server.context-path=/biosamples/beta #spring-boot 1.5.x
+    - server.servlet.context-path=/biosamples/beta
+    - server.context-path=/biosamples/beta
     - management.security.enabled=false
+    - logging.file=/logs/webapps-sampletab.log
     ports:
     - 8082:8080
+    
     
   biosamples-agents-neo4j:
     image: biosamples:latest
     links:
     - neo4j
     - rabbitmq
+    volumes:
+    - ./docker/logs:/logs
     command:
     - java
     - -jar
@@ -65,33 +74,40 @@ services:
     environment:
     - spring.rabbitmq.publisher-confirms=true
     - spring.rabbitmq.host=rabbitmq
+    - spring.rabbitmq.listener.concurrency=1
+    - spring.rabbitmq.listener.max-concurrency=1
     - spring.data.neo4j.uri=bolt://neo4j:7687
     - spring.data.neo4j.username=neo4j
     - spring.data.neo4j.indexes.auto=assert
     - biosamples.agent.neo4j.stayalive=true
+    - logging.file=/logs/agents-neo4j.log
     
   biosamples-agents-solr:
     image: biosamples:latest
     links:
     - solr
     - rabbitmq
+    volumes:
+    - ./docker/logs:/logs
     command:
     - java
     - -jar
     - agents-solr-4.0.0-SNAPSHOT.jar
     environment:
     - spring.rabbitmq.publisher-confirms=true
-    #need to have a high number of threads so they can each wait while they are batched into solr
     - spring.rabbitmq.listener.concurrency=250
     - spring.rabbitmq.listener.max-concurrency=250
     - spring.data.solr.host=http://solr:8983/solr
     - spring.rabbitmq.host=rabbitmq
     - biosamples.agent.solr.stayalive=true
+    - logging.file=/logs/agents-solr.log
     
   biosamples-agents-curation:
     image: biosamples:latest
     links:
     - rabbitmq
+    volumes:
+    - ./docker/logs:/logs
     command:
     - java
     - -jar
@@ -100,13 +116,15 @@ services:
     - spring.rabbitmq.publisher-confirms=true
     - spring.rabbitmq.host=rabbitmq
     - biosamples.agent.curation.stayalive=true
+    - logging.file=/logs/agents-curation.log
+    
     
   biosamples-pipelines-ena:
     image: biosamples:latest
     links:
     - biosamples-webapps-core
     volumes:
-    - ./logs:/logs
+    - ./docker/logs:/logs
     command:
     - java
     - -jar
@@ -115,29 +133,29 @@ services:
     - spring.datasource.erapro.url=jdbc:oracle:thin:@ora-vm-009.ebi.ac.uk:1541:ERAPRO
     - spring.datasource.erapro.username=era_reader
     - spring.datasource.erapro.password=reader
-    - spring.datasource.erapro.driver-class-name=oracle.jdbc.driver.OracleDriver    
+    - spring.datasource.erapro.driver-class-name=oracle.jdbc.driver.OracleDriver
+    - logging.file=/logs/pipelines-ena.log
     
   biosamples-pipelines-ncbi:
     image: biosamples:latest
     links:
     - biosamples-webapps-core
     volumes:
-    - ./logs:/logs
+    - ./docker/logs:/logs
     command:
     - java
     - -jar
     - pipelines-ncbi-4.0.0-SNAPSHOT.jar
     environment:
-    #from https://github.com/google/guava/blob/master/guava/src/com/google/common/cache/CacheBuilderSpec.java
     - spring.cache.guava.spec=maximumSize=500,expireAfterAccess=60s,recordStats=true
-    
+    - logging.file=/logs/pipelines-ena.log
     
   biosamples-pipelines-accession:
     image: biosamples:latest
     links:
     - biosamples-webapps-core
     volumes:
-    - ./logs:/logs
+    - ./docker/logs:/logs
     command:
     - java
     - -jar
@@ -147,6 +165,7 @@ services:
     - spring.datasource.accession.username=bsd_acc
     - spring.datasource.accession.password=b5d4ccpr0
     - spring.datasource.accession.driver-class-name=oracle.jdbc.driver.OracleDriver
+    - logging.file=/logs/pipelines-ena.log
     
   mongo:
     image: mongo:3.2
@@ -164,14 +183,18 @@ services:
     - rabbitmq_data:/var/lib/rabbitmq/mnesia/rabbit@biosamples-rabbitmq
     
   neo4j:
-    image: neo4j:3.0
+    #we can use enterprise under AGPLv3 because we are open source
+    image: neo4j:3.1-enterprise
     environment:
     - NEO4J_AUTH=none
+    - dbms.memory.pagecache.size=2G
+    - NEO4J_dbms_memory_heap_maxSize=1G
     ports:
     - 7687:7687
     - 7474:7474
     volumes:
     - neo4j_data:/data
+    - ./docker/logs:/logs
     
   solr:
     image: solr:6.3-alpine
@@ -187,13 +210,41 @@ services:
     - solr-precreate
     - samples
     
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:5.3.0
+    #command: elasticsearch -Des.network.host=0.0.0.0
+    ports:
+    - 9200:9200
+    environment:
+    - xpack.security.enabled=false
+    - network.host=_eth0_
+    
+  logstash:
+    image: docker.elastic.co/logstash/logstash:5.3.0
+    #command: logstash -f /etc/logstash/conf.d/logstash.conf
+    volumes:
+    - ./docker/logstash/pipeline:/usr/share/logstash/pipeline
+    - ./docker/logs:/logs
+    ports:
+    - 9600:9600
+    links:
+    - elasticsearch
+    
+  kibana:
+    image: docker.elastic.co/kibana/kibana:5.3.0
+    ports:
+    - 5601:5601
+    links:
+    - elasticsearch
+    environment:
+    - XPACK_SECURITY_ENABLED=false
+    
 networks:
   default:
     ipam:
       config:
       - subnet: 172.28.0.0/16
 volumes:
-  #get image sizes with `du -h /var/lib/docker/volumes/*_data` as docker user (root)
   solr_samples_data: null
   mongo_data: null
   neo4j_data: null

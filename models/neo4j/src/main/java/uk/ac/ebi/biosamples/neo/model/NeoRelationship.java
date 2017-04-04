@@ -59,7 +59,7 @@ public class NeoRelationship  {
     	return Objects.hash(specificType, target, owner);
     }	
 
-	public static NeoRelationship create(NeoSample owner, NeoSample target, String specificType) {
+	public static NeoRelationship build(NeoSample owner, NeoSample target, String specificType) {
 		NeoRelationship newRelationship = new NeoRelationship();
 		newRelationship.owner = owner;
 		newRelationship.target = target;

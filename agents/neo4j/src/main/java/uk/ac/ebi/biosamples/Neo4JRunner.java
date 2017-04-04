@@ -26,7 +26,7 @@ public class Neo4JRunner implements ApplicationRunner {
 		while (agentNeo4JProperties.getAgentNeo4JStayalive() || messageCount == null || messageCount > 0) {
 			Thread.sleep(1000);
 			messageCount = messageUtils.getQueueCount(Messaging.queueToBeIndexedNeo4J);
-			log.trace("Messages remaining in "+Messaging.queueToBeIndexedNeo4J+" "+messageCount);
+			log.info("Messages remaining in "+Messaging.queueToBeIndexedNeo4J+" "+messageCount);
 		}
 		
 	}

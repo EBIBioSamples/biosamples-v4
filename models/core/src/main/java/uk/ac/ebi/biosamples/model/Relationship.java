@@ -7,11 +7,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Relationship implements Comparable<Relationship> {
 
-	private String type;
-	private String target;
-	private String source;
+	private final String type;
+	private final String target;
+	private final String source;
 	
-	private Relationship(){
+	private Relationship(String type, String target, String source){
+		this.type = type;
+		this.target = target;
+		this.source = source;
 		
 	}
 
@@ -82,10 +85,10 @@ public class Relationship implements Comparable<Relationship> {
     public static Relationship build(@JsonProperty("type") String type, 
     		@JsonProperty("target") String target,
     		@JsonProperty("source") String source) {
-    	Relationship rel = new Relationship();
-    	rel.type = type;
-    	rel.target = target;
-    	rel.source = source;
+    	if (type == null || type.trim().length() == 0) throw new IllegalArgumentException("type cannot be empty");
+    	if (target == null || target.trim().length() == 0) throw new IllegalArgumentException("target cannot be empty");
+    	if (source == null || source.trim().length() == 0) throw new IllegalArgumentException("source cannot be empty");
+    	Relationship rel = new Relationship(type, target, source);
     	return rel;
     }
 }

@@ -44,7 +44,7 @@
 		</span> 
 		<span class="columns medium-12"> 
 			<span th:each="attribute : ${sample.attributes}" th:remove="tag"> 
-				<span th:replace=":: shield (${attribute.key}, ${attribute.value})"></span>
+				<span th:replace=":: shield (${attribute.type}, ${attribute.value})"></span>
 			</span>
 		</span>
 		<a class="button readmore float-right" th:href="@{'/samples/'+${sample.accession}}"></a>

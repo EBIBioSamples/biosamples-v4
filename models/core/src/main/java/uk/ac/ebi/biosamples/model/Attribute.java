@@ -13,7 +13,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Attribute implements Comparable<Attribute> {
 
-	private String key;
+	private String type;
 	private String value;
 	private String iri;
 	private String unit;
@@ -22,14 +22,17 @@ public class Attribute implements Comparable<Attribute> {
 		
 	}
 	
-    public String getKey() {
-		return key;
+	@JsonProperty("type") 
+    public String getType() {
+		return type;
 	}
 
+	@JsonProperty("value") 
 	public String getValue() {
 		return value;
 	}
 
+	@JsonProperty("iri") 
 	public String getIri() {
 		return iri;
 	}
@@ -52,7 +55,8 @@ public class Attribute implements Comparable<Attribute> {
 		}		
 			
 	}
-
+	
+	@JsonProperty("unit") 
 	public String getUnit() {
 		return unit;
 	}
@@ -65,7 +69,7 @@ public class Attribute implements Comparable<Attribute> {
             return false;
         }
         Attribute other = (Attribute) o;
-        return Objects.equals(this.key, other.key) 
+        return Objects.equals(this.type, other.type) 
         		&& Objects.equals(this.value, other.value)
         		&& Objects.equals(this.iri, other.iri)
         		&& Objects.equals(this.unit, other.unit);
@@ -73,7 +77,7 @@ public class Attribute implements Comparable<Attribute> {
     
     @Override
     public int hashCode() {
-    	return Objects.hash(key, value, iri, unit);
+    	return Objects.hash(type, value, iri, unit);
     }
 
 	@Override
@@ -82,8 +86,8 @@ public class Attribute implements Comparable<Attribute> {
 			return 1;
 		}
 		
-		if (!this.key.equals(other.key)) {
-			return this.key.compareTo(other.key);
+		if (!this.type.equals(other.type)) {
+			return this.type.compareTo(other.type);
 		}
 
 		if (!this.value.equals(other.value)) {
@@ -120,7 +124,7 @@ public class Attribute implements Comparable<Attribute> {
     public String toString() {
     	StringBuilder sb = new StringBuilder();
     	sb.append("Attribute(");
-    	sb.append(key);
+    	sb.append(type);
     	sb.append(",");
     	sb.append(value);
     	sb.append(",");
@@ -131,15 +135,15 @@ public class Attribute implements Comparable<Attribute> {
     	return sb.toString();
     }
     
-	static public Attribute build(String key, String value) {
-		return build(key, value, null, null);
+	static public Attribute build(String type, String value) {
+		return build(type, value, null, null);
 	}
 	
     @JsonCreator
-	static public Attribute build(@JsonProperty("key") String key, @JsonProperty("value") String value, 
+	static public Attribute build(@JsonProperty("type") String type, @JsonProperty("value") String value, 
 			@JsonProperty("iri") String iri, @JsonProperty("unit") String unit) {
 		Attribute attr = new Attribute();
-		attr.key = key;
+		attr.type = type;
 		attr.value = value;
 		attr.iri = iri;
 		attr.unit = unit;
