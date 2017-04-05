@@ -14,6 +14,8 @@ docker volume ls -q | grep rabbitmq_data | xargs -r docker volume rm
 #remove any images, in case of out-of-date or corrupt images
 #docker images -q | xargs -r docker rmi
 
+#rm docker/logs/*.log docker/logs/*.log.* docker/logs/neo4j/*.log
+
 #make sure we have up-to-date jar files in the docker image
 docker-compose build
 

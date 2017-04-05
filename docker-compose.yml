@@ -25,7 +25,8 @@ services:
     - webapps-core-4.0.0-SNAPSHOT.war
     environment:
     - spring.data.solr.host=http://solr:8983/solr
-    - spring.data.neo4j.uri=bolt://neo4j:7687
+    #- spring.data.neo4j.uri=bolt://neo4j:7687
+    - spring.data.neo4j.uri=http://neo4j:7474
     - spring.data.neo4j.username=neo4j
     - spring.data.neo4j.indexes.auto=assert
     - spring.data.mongodb.host=mongo
@@ -37,6 +38,9 @@ services:
     - server.context-path=/biosamples/beta
     - management.security.enabled=false
     - logging.file=/logs/webapps-core.log
+    - server.tomcat.accesslog.enabled=true
+    - server.tomcat.accesslog.directory=/logs
+    - server.tomcat.accesslog.prefix=webapps-core.access
     ports:
     - 8081:8080
     - 9090:9090
@@ -62,6 +66,9 @@ services:
     - server.context-path=/biosamples/beta
     - management.security.enabled=false
     - logging.file=/logs/webapps-sampletab.log
+    - server.tomcat.accesslog.enabled=true
+    - server.tomcat.accesslog.directory=/logs
+    - server.tomcat.accesslog.prefix=webapps-sampletab.access
     ports:
     - 8082:8080
     logging:
@@ -87,11 +94,15 @@ services:
     - spring.rabbitmq.host=rabbitmq
     - spring.rabbitmq.listener.concurrency=250
     - spring.rabbitmq.listener.max-concurrency=250
-    - spring.data.neo4j.uri=bolt://neo4j:7687
+    #- spring.data.neo4j.uri=bolt://neo4j:7687
+    - spring.data.neo4j.uri=http://neo4j:7474
     - spring.data.neo4j.username=neo4j
-    - spring.data.neo4j.indexes.auto=assert
+    - spring.data.neo4j.indexes.auto=validate
+    - indexes.auto=validate
     - biosamples.agent.neo4j.stayalive=true
     - logging.file=/logs/agents-neo4j.log
+    - logging.level=debug
+    - logging.level.org.springframework.data.neo4j=debug
     logging:
       driver: gelf
       options:

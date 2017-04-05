@@ -16,7 +16,7 @@ docker-compose up -d biosamples-agents-neo4j biosamples-agents-solr biosamples-a
 echo "Importing SampleTab submissions"
 export SUBS_HOME=/tmp/submissions
 #rsync -zarv --prune-empty-dirs --include="*/" --include="sampletab.pre.txt" --exclude="*" ebi-cli.ebi.ac.uk:/ebi/microarray/home/biosamples/production/data/GSB/ $SUBS_HOME
-ls $SUBS_HOME/*/sampletab.pre.txt | xargs -n 1 -I {} curl -X POST -H "Content-Type: application/text" --data-binary @{} http://localhost:8082/biosamples/beta/sampletab/v4
+ls $SUBS_HOME/*/sampletab.pre.txt | xargs -n 1 -P 8 -I {} curl -X POST -H "Content-Type: application/text" --data-binary @{} http://localhost:8082/biosamples/beta/sampletab/v4
 echo "Imported SampleTab submissions"
 
 #import from ena
