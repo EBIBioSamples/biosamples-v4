@@ -27,8 +27,7 @@ public class SolrRunner implements ApplicationRunner, ExitCodeGenerator {
 
 	//wire in the message buffer so we can return a non-zero exit code if there are any problems
 	@Autowired
-	@Qualifier("SolrSampleMessageBuffer")
-	private MessageBuffer<SolrSample> messageBuffer;
+	private SolrMessageBuffer messageBuffer;
 
 	@Override
 	public void run(ApplicationArguments args) throws Exception {

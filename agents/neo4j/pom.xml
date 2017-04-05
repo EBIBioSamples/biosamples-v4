@@ -34,12 +34,16 @@
 			<version>${bsd2017.version}</version>
 		</dependency>
 		
-		<!-- Add bolt driver for performance -->
 		<dependency>
 			<groupId>org.neo4j</groupId>
-			<artifactId>neo4j-ogm-bolt-driver</artifactId>
-			<version>${neo4j-ogm.version}</version>
+			<artifactId>neo4j-ogm-http-driver</artifactId>
 		</dependency>
+		<!-- Add bolt driver for performance -->
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.neo4j</groupId> -->
+<!-- 			<artifactId>neo4j-ogm-bolt-driver</artifactId> -->
+<!-- 			<version>${neo4j-ogm.version}</version> -->
+<!-- 		</dependency> -->
 		<!-- Add the embedded driver to the project -->
 		<!-- <dependency> -->
 		<!-- <groupId>org.neo4j</groupId> -->

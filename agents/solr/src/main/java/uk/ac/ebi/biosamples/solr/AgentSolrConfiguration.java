@@ -9,9 +9,10 @@ import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
 
 @Configuration
 public class AgentSolrConfiguration {
-	
+	/*
 	@Bean("SolrSampleMessageBuffer")
 	public MessageBuffer<SolrSample> getSampleMessageBuffer(SolrSampleRepository neoSampleRepository) {
 		return new MessageBuffer<>(neoSampleRepository);
 	}
+	*/
 }

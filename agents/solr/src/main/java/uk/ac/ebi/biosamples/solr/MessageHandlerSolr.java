@@ -19,15 +19,13 @@ public class MessageHandlerSolr {
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 	
 	@Autowired
-	@Qualifier("SolrSampleMessageBuffer")
-	private MessageBuffer<SolrSample> messageBuffer;
+	private SolrMessageBuffer messageBuffer;
 	
 	@Autowired
 	private SampleToSolrSampleConverter sampleToSolrSampleConverter;
 
 	@RabbitListener(queues = Messaging.queueToBeIndexedSolr)
 	public void handle(Sample sample) {
-		
 		log.trace("Handling "+sample.getAccession());
 		
 		SolrSample solrSample = sampleToSolrSampleConverter.convert(sample);
@@ -39,7 +37,8 @@ public class MessageHandlerSolr {
 			throw new RuntimeException(e);
 		}
 		
-		while (!messageSampleStatus.storedInRepository.get()) {			
+		while (!messageSampleStatus.storedInRepository.get()
+				&& !messageSampleStatus.hadProblem.isMarked()) {			
 			//wait a little bit
 			try {
 				Thread.sleep(100);
@@ -47,6 +46,12 @@ public class MessageHandlerSolr {
 				throw new RuntimeException(e);
 			}
 		}
+		
+		if (messageSampleStatus.hadProblem.isMarked()) {
+			throw messageSampleStatus.hadProblem.getReference();
+		}
+		
+		log.trace("Handed "+sample.getAccession());
 		
 	}
 }

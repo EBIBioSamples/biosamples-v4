@@ -27,8 +27,7 @@ public class Neo4JRunner implements ApplicationRunner, ExitCodeGenerator {
 
 	//wire in the message buffer so we can return a non-zero exit code if there are any problems
 	@Autowired
-	@Qualifier("NeoSampleMessageBuffer")
-	private MessageBuffer<NeoSample> messageBuffer;
+	private NeoMessageBuffer messageBuffer;
 
 	@Override
 	public void run(ApplicationArguments args) throws Exception {
