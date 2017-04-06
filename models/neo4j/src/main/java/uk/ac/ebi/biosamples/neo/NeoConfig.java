@@ -20,13 +20,18 @@ public class NeoConfig {
 	public NeoConfig() {
 	};
 	
+	
+	//see AutoIndexMode for values
+	@Value("${spring.data.neo4j.indexes.auto:assert}")
+	private String neo4jIndexes;
+	
 	@Bean
 	public org.neo4j.ogm.config.Configuration configuration(Neo4jProperties properties) {
 		
 		org.neo4j.ogm.config.Configuration config = properties.createConfiguration();
 		
 		//assert all the indexs we need
-		config.autoIndexConfiguration().setAutoIndex(AutoIndexMode.ASSERT.getName());
+		config.autoIndexConfiguration().setAutoIndex(neo4jIndexes);
 		
 		return config;
 	}
