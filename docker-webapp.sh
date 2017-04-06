@@ -20,14 +20,16 @@ docker volume ls -q | grep rabbitmq_data | xargs -r docker volume rm
 docker-compose build
 
 
-#start up the webapps (and dependencies)
-docker-compose up -d biosamples-webapps-core biosamples-webapps-sampletab
+docker-compose up -d logstash elasticsearch kibana
 
+#start up the webapps (and dependencies)
+docker-compose up -d solr neo4j
 echo "checking solr is up"
 ./http-status-check -u http://localhost:8983 -t 30
 echo "checking neo4j is up"
 ./http-status-check -u http://localhost:7474 -t 30
 
+docker-compose up -d biosamples-webapps-core biosamples-webapps-sampletab
 echo "checking webapps-core is up"
 #would like to check on /health but currently it is bugged so solr is always down
 ./http-status-check -u http://localhost:8081/biosamples/beta/actuator -t 30

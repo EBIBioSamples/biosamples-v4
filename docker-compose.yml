@@ -41,6 +41,14 @@ services:
     - server.tomcat.accesslog.enabled=true
     - server.tomcat.accesslog.directory=/logs
     - server.tomcat.accesslog.prefix=webapps-core.access
+    # Charset of HTTP requests and responses. Added to the "Content-Type" header if not set explicitly.
+    - spring.http.encoding.charset=UTF-8
+    # Enable http encoding support.
+    - spring.http.encoding.enabled=true
+    # Force the encoding to the configured charset on HTTP requests and responses.
+    - spring.http.encoding.force=true
+    
+    
     ports:
     - 8081:8080
     - 9090:9090
@@ -69,6 +77,12 @@ services:
     - server.tomcat.accesslog.enabled=true
     - server.tomcat.accesslog.directory=/logs
     - server.tomcat.accesslog.prefix=webapps-sampletab.access
+    # Charset of HTTP requests and responses. Added to the "Content-Type" header if not set explicitly.
+    - spring.http.encoding.charset=UTF-8
+    # Enable http encoding support.
+    - spring.http.encoding.enabled=true
+    # Force the encoding to the configured charset on HTTP requests and responses.
+    - spring.http.encoding.force=true
     ports:
     - 8082:8080
     logging:
@@ -238,8 +252,8 @@ services:
     image: neo4j:3.1-enterprise
     environment:
     - NEO4J_AUTH=none
-    - dbms.memory.pagecache.size=2G
-    - NEO4J_dbms_memory_heap_maxSize=1G
+    - NEO4J_dbms_memory_pagecache_size=4G
+    - NEO4J_dbms_memory_heap_maxSize=2G
     ports:
     - 7687:7687
     - 7474:7474
