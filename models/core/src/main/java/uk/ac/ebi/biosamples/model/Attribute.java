@@ -142,6 +142,12 @@ public class Attribute implements Comparable<Attribute> {
     @JsonCreator
 	static public Attribute build(@JsonProperty("type") String type, @JsonProperty("value") String value, 
 			@JsonProperty("iri") String iri, @JsonProperty("unit") String unit) {
+    	//cleanup inputs
+    	if (type != null) type = type.trim();
+    	if (value != null) value = value.trim();
+    	if (iri != null) iri = iri.trim();
+    	if (unit != null) unit = unit.trim();
+    	//create output
 		Attribute attr = new Attribute();
 		attr.type = type;
 		attr.value = value;
