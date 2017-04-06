@@ -50,7 +50,7 @@ public class SubmissionService {
 					.pathSegment("samples",sample.getAccession())
 					.build().toUri();
 			
-			log.trace("PUTing "+uri);
+			log.trace("PUTing to "+uri+" "+sample);
 			
 			RequestEntity<Sample> requestEntity = RequestEntity.put(uri)
 					.contentType(MediaType.APPLICATION_JSON).accept(MediaTypes.HAL_JSON).body(sample);
@@ -68,7 +68,7 @@ public class SubmissionService {
 					.pathSegment("samples")
 					.build().toUri();
 			
-			log.trace("POSTing "+uri);
+			log.trace("POSTing to "+uri+" "+sample);
 			
 			RequestEntity<Sample> requestEntity = RequestEntity.post(uri)
 					.contentType(MediaType.APPLICATION_JSON).accept(MediaTypes.HAL_JSON).body(sample);
