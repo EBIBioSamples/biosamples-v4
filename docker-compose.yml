@@ -92,8 +92,8 @@ services:
     environment:
     - spring.rabbitmq.publisher-confirms=true
     - spring.rabbitmq.host=rabbitmq
-    - spring.rabbitmq.listener.concurrency=250
-    - spring.rabbitmq.listener.max-concurrency=250
+    - spring.rabbitmq.listener.concurrency=25
+    - spring.rabbitmq.listener.max-concurrency=25
     #- spring.data.neo4j.uri=bolt://neo4j:7687
     - spring.data.neo4j.uri=http://neo4j:7474
     - spring.data.neo4j.username=neo4j
@@ -265,6 +265,8 @@ services:
     image: docker.elastic.co/elasticsearch/elasticsearch:5.3.0
     ports:
     - 9200:9200
+    volumes:
+    - elasticsearch_logs_data:/usr/share/elasticsearch/data
     environment:
     - xpack.security.enabled=false
     - network.host=_eth0_
@@ -301,3 +303,4 @@ volumes:
   mongo_data: null
   neo4j_data: null
   rabbitmq_data: null
+  elasticsearch_logs_data: null
