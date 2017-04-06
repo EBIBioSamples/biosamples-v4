@@ -16,6 +16,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.model.Attribute;
+
 @Component
 public class SampleTabRunner implements ApplicationRunner, ExitCodeGenerator, Ordered {
 
@@ -26,6 +29,9 @@ public class SampleTabRunner implements ApplicationRunner, ExitCodeGenerator, Or
 
 	@Autowired
 	private RestOperations restTemplate;
+	
+	@Autowired
+	private BioSamplesClient biosamplesClient;
 	
 	private int exitCode = 1;
 
@@ -39,29 +45,35 @@ public class SampleTabRunner implements ApplicationRunner, ExitCodeGenerator, Or
 			
 			runCallableOnSampleTabResource("/GSB-32.txt", sampleTabString -> {				
 				log.info("PUTing to "+uri);
-				RequestEntity<String> request = RequestEntity.post(uri).contentType(MediaType.APPLICATION_JSON).body(sampleTabString);
+				RequestEntity<String> request = RequestEntity.post(uri).contentType(MediaType.parseMediaType("text/plain;charset=UTF-8")).body(sampleTabString);
 				ResponseEntity<String> response = restTemplate.exchange(request, String.class);				
 				//TODO check at the right URLs with GET to make sure all arrived
 				//TODO check UTF-8 characters
+				if (!biosamplesClient.fetch("SAMEA2186845").getAttributes().contains(Attribute.build("description", "Test sample α"))) {
+					throw new RuntimeException("SAMEA2186845 does not have 'description':'Test sample α'");
+				}
+				if (!biosamplesClient.fetch("SAMEA2186844").getAttributes().contains(Attribute.build("description", "Test sample β"))) {
+					throw new RuntimeException("SAMEA2186844 does not have 'description':'Test sample β'");
+				}
 				});	
 			
 			runCallableOnSampleTabResource("/GSB-32_unaccession.txt", sampleTabString -> {				
 				log.info("PUTing to "+uri);
-				RequestEntity<String> request = RequestEntity.post(uri).contentType(MediaType.APPLICATION_JSON).body(sampleTabString);
+				RequestEntity<String> request = RequestEntity.post(uri).contentType(MediaType.TEXT_PLAIN).body(sampleTabString);
 				ResponseEntity<String> response = restTemplate.exchange(request, String.class);	
 				//TODO check at the right URLs with GET to make sure all arrived
 				});
 			
 			runCallableOnSampleTabResource("/GSB-1004.txt", sampleTabString -> {				
 				log.info("PUTing to "+uri);
-				RequestEntity<String> request = RequestEntity.post(uri).contentType(MediaType.APPLICATION_JSON).body(sampleTabString);
+				RequestEntity<String> request = RequestEntity.post(uri).contentType(MediaType.TEXT_PLAIN).body(sampleTabString);
 				ResponseEntity<String> response = restTemplate.exchange(request, String.class);	
 				//TODO check that SAMEA103886236 does not exist
 				});
 			
 			runCallableOnSampleTabResource("/GSB-1000.txt", sampleTabString -> {				
 				log.info("PUTing to "+uri);
-				RequestEntity<String> request = RequestEntity.post(uri).contentType(MediaType.APPLICATION_JSON).body(sampleTabString);
+				RequestEntity<String> request = RequestEntity.post(uri).contentType(MediaType.TEXT_PLAIN).body(sampleTabString);
 				ResponseEntity<String> response = restTemplate.exchange(request, String.class);	
 				//TODO check that SAMEA103886236 does exist
 				});
@@ -70,7 +82,7 @@ public class SampleTabRunner implements ApplicationRunner, ExitCodeGenerator, Or
 			//TODO check that SAMEA103886236 is a "member of" SAMEG318804
 		}
 		
-		//if we got here without throwing, then we finished sucessfully
+		//if we got here without throwing, then we finished successfully
 		exitCode = 0;
 		log.info("Finished SampleTabRunner");
 		
@@ -94,6 +106,9 @@ public class SampleTabRunner implements ApplicationRunner, ExitCodeGenerator, Or
 				scanner.close();
 			}
 		}
+		
+		log.trace("sending SampleTab submission \n"+sampleTabString);
+		
 		if (sampleTabString != null) {			
 			callback.callback(sampleTabString);
 		}
