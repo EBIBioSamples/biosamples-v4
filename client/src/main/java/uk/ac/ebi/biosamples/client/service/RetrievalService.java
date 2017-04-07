@@ -13,7 +13,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
+import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestOperations;
@@ -50,8 +52,26 @@ public class RetrievalService {
 	public Future<Resource<Sample>> fetch(String accession) {
 		return executor.submit(new FetchCallable(accession));
 	}
-	
-	private class FetchCallable implements Callable<Resource<Sample>> {
+
+    public PagedResources<Resource<Sample>> fetchAll(int startPage, int size) {
+
+		URI uri = UriComponentsBuilder.fromUri(clientProperties.getBiosampleSubmissionUri())
+				.pathSegment("samples")
+				.build().toUri();
+
+		RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaType.APPLICATION_JSON).build();
+		ResponseEntity<PagedResources<Resource<Sample>>> responseEntity = restOperations.exchange(
+				requestEntity,
+				new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() { } );
+
+		if (!responseEntity.getStatusCode().is2xxSuccessful()) {
+			throw new RuntimeException("Problem GETing samples");
+		}
+
+		return responseEntity.getBody();
+    }
+
+    private class FetchCallable implements Callable<Resource<Sample>> {
 
 		private final String accession;
 		
