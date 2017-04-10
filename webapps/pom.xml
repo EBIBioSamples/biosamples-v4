@@ -21,6 +21,6 @@
 	<modules>
         <module>core</module>
 		<module>sampletab</module>
-		<!--<module>legacyxml</module>-->
+		<module>legacyxml</module>
 	</modules>
 </project>
