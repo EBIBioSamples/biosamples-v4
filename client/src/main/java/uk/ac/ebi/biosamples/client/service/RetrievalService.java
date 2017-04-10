@@ -1,14 +1,5 @@
 package uk.ac.ebi.biosamples.client.service;
 
-import java.net.URI;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.NoSuchElementException;
-import java.util.Queue;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
@@ -18,11 +9,19 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
-
 import uk.ac.ebi.biosamples.client.ClientProperties;
 import uk.ac.ebi.biosamples.model.Sample;
+
+import java.net.URI;
+import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 public class RetrievalService {
 	
@@ -53,10 +52,13 @@ public class RetrievalService {
 		return executor.submit(new FetchCallable(accession));
 	}
 
-    public PagedResources<Resource<Sample>> fetchAll(int startPage, int size) {
+    public PagedResources<Resource<Sample>> fetchPaginated(String text, int startPage, int size) {
 
 		URI uri = UriComponentsBuilder.fromUri(clientProperties.getBiosampleSubmissionUri())
 				.pathSegment("samples")
+                .queryParam("text", !text.isEmpty() ? text : new String[0])
+                .queryParam("rows", size)
+				.queryParam("start", startPage)
 				.build().toUri();
 
 		RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaType.APPLICATION_JSON).build();

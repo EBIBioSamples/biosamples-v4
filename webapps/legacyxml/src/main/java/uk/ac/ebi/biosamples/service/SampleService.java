@@ -6,6 +6,7 @@ import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.Sort;
 
 import java.net.URI;
 
@@ -21,8 +22,10 @@ public class SampleService {
         this.client = client;
     }
 
-    public PagedResources<Resource<Sample>> getSamples() {
-        return client.fetchPagedSamples(0, 25);
+    // FIXME The sorting is not implemented in the samples endpoint in the core, do we actually use it?
+    public PagedResources<Resource<Sample>> getSamples(String query, int start, int size, Sort sortMethod) {
+        return client.fetchPagedSamples(query, start, size);
     }
+
 
 }

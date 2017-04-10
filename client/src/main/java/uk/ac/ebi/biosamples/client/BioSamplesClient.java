@@ -78,7 +78,7 @@ public class BioSamplesClient {
 	}
 
 
-	public PagedResources<Resource<Sample>> fetchPagedSamples(int startPage, int size) {
-		return retrievalService.fetchAll(startPage, size);
+	public PagedResources<Resource<Sample>> fetchPagedSamples(String text, int startPage, int size) {
+		return retrievalService.fetchPaginated(text, startPage, size);
 	}
 }
