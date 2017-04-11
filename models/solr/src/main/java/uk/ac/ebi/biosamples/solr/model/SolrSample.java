@@ -34,7 +34,7 @@ public class SolrSample {
 	 * Store the update date as a string so that it can be used easily by solr
 	 * Use a TrieDate type for better range query performance
 	 */
-	@Indexed(name="update_dt", required=true, type="date")
+	@Indexed(name="update_dt", required=true, type="date") //TODO why type=date ?
 	protected String update;
 
 	@Indexed(name="*_av_ss", copyTo="autocomplete")
@@ -63,6 +63,7 @@ public class SolrSample {
 	 */
 	@Indexed(name="attributetypes_ss", copyTo={"autocomplete_ss",})
 	protected List<String> attributeTypes;
+	//TODO consider renaming as used only for faceting
 	
 
 	/**
