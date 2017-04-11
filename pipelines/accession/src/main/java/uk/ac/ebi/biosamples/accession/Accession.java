@@ -24,6 +24,7 @@ import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Component;
 
 import uk.ac.ebi.biosamples.PipelinesProperties;
+import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.client.service.SubmissionService;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -42,17 +43,20 @@ public class Accession implements ApplicationRunner{
 	@Autowired
 	private AccessionDao accessionDao;
 	@Autowired
-	private SubmissionService submissionService;
+	private BioSamplesClient bioSamplesClient;
 
 	@Override
 	public void run(ApplicationArguments args) throws Exception {
 		log.info("Processing Accession pipeline...");
 		
-		try (AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, pipelinesProperties.getThreadCount())) {
+		try (AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, 
+				pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax())) {
 			Map<String, Future<Void>> futures = new HashMap<>();
 			accessionDao.doAssayAccessionCallback(new AccessionCallbackHandler(executorService, futures, "SAMEA"));
 			accessionDao.doReferenceAccessionCallback(new AccessionCallbackHandler(executorService, futures, "SAME"));
 			accessionDao.doGroupAccessionCallback(new AccessionCallbackHandler(executorService, futures, "SAMEG"));
+			//wait for everything to finish
+			ThreadUtils.checkFutures(futures, 0);
 		}
 	}	
 	
@@ -119,7 +123,7 @@ public class Accession implements ApplicationRunner{
 			attributes.add(Attribute.build("deleted", Boolean.toString(deleted)));
 			
 			Sample sample = Sample.build(name, accession, release, update, attributes, null, null);
-			submissionService.submit(sample);
+			bioSamplesClient.persist(sample);
 			return null;
 		}
 	}

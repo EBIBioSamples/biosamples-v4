@@ -34,7 +34,7 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor implements Au
 	/**
 	 * By default creates a pool with a queue size of 1000 that 
 	 * will test to increase/decrease threads every 60 seconds
-	 * and does not guarantee to distribute jobs fairly amoung threads
+	 * and does not guarantee to distribute jobs fairly among threads
 	 * @return
 	 */
 	public static AdaptiveThreadPoolExecutor create() {
@@ -42,10 +42,11 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor implements Au
 	}
 
 	public static AdaptiveThreadPoolExecutor create(int maxQueueSize, int pollInterval, boolean fairness) {
-		return create(maxQueueSize, pollInterval, fairness, Runtime.getRuntime().availableProcessors());
+		return create(maxQueueSize, pollInterval, fairness, Runtime.getRuntime().availableProcessors(),
+				Runtime.getRuntime().availableProcessors()*8);
 	}
 
-	public static AdaptiveThreadPoolExecutor create(int maxQueueSize, int pollInterval, boolean fairness, int initialPoolSize) {
+	public static AdaptiveThreadPoolExecutor create(int maxQueueSize, int pollInterval, boolean fairness, int initialPoolSize, int maxThreads) {
 
 		//default to the number of processors
 		int corePoolSize = initialPoolSize;
@@ -70,7 +71,7 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor implements Au
 		AdaptiveThreadPoolExecutor threadPool = new AdaptiveThreadPoolExecutor(corePoolSize, maximumPoolSize,
 				keepAliveTime, unit, workQueue, rejectedExecutionHandler);
 		
-		Thread monitorThread = new Thread(new PoolMonitor(threadPool, pollInterval));
+		Thread monitorThread = new Thread(new PoolMonitor(threadPool, pollInterval, maxThreads));
 		monitorThread.setDaemon(true);
 		monitorThread.start();
 		
@@ -93,10 +94,12 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor implements Au
 		private final Map<Integer, Double> threadsScores = new HashMap<>();
 		private final Map<Integer, Long> threadsTime = new HashMap<>();
 		private final double margin = 1.1;
+		private final int maxThreads;
 
-		public PoolMonitor(AdaptiveThreadPoolExecutor pool, int pollInterval) {
+		public PoolMonitor(AdaptiveThreadPoolExecutor pool, int pollInterval, int maxThreads) {
 			this.pool = pool;
 			this.pollInterval = pollInterval;
+			this.maxThreads = maxThreads;
 		}
 
 		@Override
@@ -165,7 +168,8 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor implements Au
 					pool.setMaximumPoolSize(bestThreads);
 				} else {
 					//experiment if we might do better increase or decreasing the threads	
-					if (!threadsScores.containsKey(currentThreads+1) || threadsScores.get(currentThreads+1) > margin*score) {
+					if ((!threadsScores.containsKey(currentThreads+1) || threadsScores.get(currentThreads+1) > margin*score) 
+							&& currentThreads < maxThreads ) {
 						//increase the number of threads			
 						log.info("Adjusting to try "+(currentThreads+1)+" threads");
 						pool.setCorePoolSize(currentThreads+1);

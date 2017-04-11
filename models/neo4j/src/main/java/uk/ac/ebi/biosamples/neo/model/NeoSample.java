@@ -20,21 +20,23 @@ public class NeoSample {
 	@Property
 	@Index(unique=true, primary=true)
 	private String accession;
+
+	@Property
+	private String name;
 	
 	@Relationship(type = "RELATED_TO", direction = Relationship.UNDIRECTED)
 	private Set<NeoRelationship> relationships;
 
-    @Relationship(type = "EXTERNAL_REFERENCE")
-	private Set<NeoUrl> externalReferences;
+    @Relationship(type = "HAS_EXTERNAL_REFERENCE")
+	private Set<NeoExternalReference> externalReferences;
+
+    @Relationship(type = "HAS_ATTRIBUTE")
+	private Set<NeoAttribute> attributes;
 
 	@SuppressWarnings("unused")
 	private NeoSample() {
 	}
-
-	public NeoSample(String accession) {
-		this.accession = accession;
-	}
-
+	
 	public Long getId() {
 		return id;
 	}
@@ -47,6 +49,10 @@ public class NeoSample {
 		return relationships;
 	}
 
+	public Set<NeoAttribute> getAttributes() {
+		return attributes;
+	}
+
 	public void addRelationships(NeoRelationship relationship) {
 		if (relationships == null) {
 			relationships = new HashSet<>();
@@ -54,11 +60,11 @@ public class NeoSample {
 		relationships.add(relationship);
 	}
 
-	public Set<NeoUrl> getExternalReferences() {
+	public Set<NeoExternalReference> getExternalReferences() {
 		return externalReferences;
 	}
 
-	public void addExternalReference(NeoUrl reference) {
+	public void addExternalReference(NeoExternalReference reference) {
 		if (externalReferences == null) {
 			externalReferences = new HashSet<>();
 		}
@@ -78,25 +84,59 @@ public class NeoSample {
     	return sb.toString();
     }
 
-	public static NeoSample create(String accession, Set<NeoRelationship> relationships, Set<NeoUrl> externalReferences) {
-		NeoSample neoSample = new NeoSample(accession);
+    
+    /**
+     * Create a new sample node with its attributes and external references and relationships
+     * 
+     * @param accession
+     * @param name
+     * @param attributes
+     * @param relationships
+     * @param externalReferences
+     * @return
+     */
+	public static NeoSample create(String accession, String name, Set<NeoAttribute> attributes,
+			Set<NeoRelationship> relationships,  Set<NeoExternalReference> externalReferences) {
+		NeoSample neoSample = new NeoSample();
+		neoSample.accession = accession;
+		neoSample.name = name;
 
+		if (attributes == null || attributes.size() == 0) {
+			neoSample.attributes = null;
+		} else {
+			neoSample.attributes = new HashSet<>();
+			neoSample.attributes.addAll(attributes);
+		}
+		
 		if (relationships == null || relationships.size() == 0) {
 			neoSample.relationships = null;
 		} else {
-			neoSample.relationships = new TreeSet<>();
+			neoSample.relationships = new HashSet<>();
 			neoSample.relationships.addAll(relationships);
 		}
-
 		
 		if (externalReferences == null || externalReferences.size() == 0) {
 			neoSample.externalReferences = null;
 		} else {
-			neoSample.externalReferences = new TreeSet<>();
+			neoSample.externalReferences = new HashSet<>();
 			neoSample.externalReferences.addAll(externalReferences);
 		}	
 		
 		return neoSample;
 	}
+
+	/**
+	 * Create a sample node object with only an accession. This is useful for using as referencces
+	 * in building relationships
+	 * 
+	 * @param accession
+	 * @return
+	 */
+    public static NeoSample create(String accession) {
+		NeoSample neoSample = new NeoSample();
+		neoSample.accession = accession;
+		return neoSample;    	
+    }
+	
 }
 

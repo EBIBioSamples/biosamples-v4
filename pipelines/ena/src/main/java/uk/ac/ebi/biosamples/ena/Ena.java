@@ -59,7 +59,8 @@ public class Ena implements ApplicationRunner {
 		} else {
 			toDate = LocalDate.parse("3000-01-01", DateTimeFormatter.ISO_LOCAL_DATE);
 		}
-		try (AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, pipelinesProperties.getThreadCount())) {
+		try (AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, 
+				pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax())) {
 
 			EraRowCallbackHandler eraRowCallbackHandler = new EraRowCallbackHandler(executorService);
 			eraProDao.doSampleCallback(fromDate, toDate, eraRowCallbackHandler);

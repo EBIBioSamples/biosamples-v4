@@ -1,32 +1,38 @@
 {
-	"accession":"TEST1",
-	"name":"Test Sample",
-	"update":"2016-05-05T11:36:57",
-	"release":"2016-04-01T11:36:57",
-	"attributes":[
+	"accession": "TEST1",
+	"name": "Test Sample",
+	"update": "2016-05-05T11:36:57",
+	"release": "2016-04-01T11:36:57",
+	"attributes": [
 		{
-			"key":"organism",
-		 	"value":"Homo sapiens",
-		 	"iri":"http://purl.obolibrary.org/obo/NCBITaxon_9606"
-		 },
-		{	
-			"key":"age",
-		 	"value":"3",
-		 	"unit":"year"
-		 },
+			"type": "organism",
+			"value": "Homo sapiens",
+			"iri": "http://purl.obolibrary.org/obo/NCBITaxon_9606"
+		},
 		{
-			"key":"organism part",
-		 	"value":"heart"
-		 },
+			"type": "age",
+			"value": "3",
+			"unit": "year"
+		},
 		{
-			"key":"organism part",
-		 	"value":"lung"
-		 }],
-	"relationships":[
+			"type": "organism part",
+			"value": "heart"
+		},
 		{
-			"source":"TEST1",
-			"type":"derived from",
-			"target":"TEST2"
-		}],
-	"externalReferences":["http://www.google.com"]
+			"type": "organism part",
+			"value": "lung"
+		}
+	],
+	"relationships": [
+		{
+			"source": "TEST1",
+			"type": "derived from",
+			"target": "TEST2"
+		}
+	],
+	"externalReferences": [
+		{
+			"url": "http://www.google.com"
+		}
+	]
 }

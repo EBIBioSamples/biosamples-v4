@@ -14,6 +14,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
 
 import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.utils.TaxonomyService;
@@ -53,7 +54,7 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 
 		SortedSet<Attribute> attributes = new TreeSet<>();
 		SortedSet<Relationship> relationships = new TreeSet<>();
-		SortedSet<URI> externalReferences = new TreeSet<>();
+		SortedSet<ExternalReference> externalReferences = new TreeSet<>();
 
 		log.trace("Converting " + name);
 
@@ -100,7 +101,7 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 		
         //Do the organism attribute
 		int organismTaxId = Integer.parseInt(XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, TAXON_ID).text());
-		URI organismUri = taxonomyService.getUriForTaxonId(organismTaxId);
+		String organismUri = taxonomyService.getUriForTaxonId(organismTaxId);
 		String organismName = ""+organismTaxId;
 		if (XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, SCIENTIFIC_NAME).exists()) {
 			organismName = XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, SCIENTIFIC_NAME).text();
@@ -160,10 +161,11 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 					//sometimes ids might be comma separated or a range joined by a dash
 					for (String id : enaService.splitIdentifiers(idGrouped)) {
 						if ("ENA-EXPERIMENT".equals(db)) {
-							externalReferences.add(URI.create("https://www.ebi.ac.uk/ena/data/view/"+id));						
+							externalReferences.add(ExternalReference.build("https://www.ebi.ac.uk/ena/data/view/"+id));						
 						} else if ("ENA-ANALYSIS".equals(db)) {
-							externalReferences.add(URI.create("https://www.ebi.ac.uk/ena/data/view/"+id));						
+							externalReferences.add(ExternalReference.build("https://www.ebi.ac.uk/ena/data/view/"+id));						
 						}
+						//TODO link to samples, or to experiment+analysis
 					}
 				}				
 			}

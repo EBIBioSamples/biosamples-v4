@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.client.service.SubmissionService;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
@@ -30,7 +31,7 @@ public class EnaCallable implements Callable<Void> {
 	private Logger log = LoggerFactory.getLogger(getClass());
 	
 	@Autowired
-	private SubmissionService submissionService;
+	private BioSamplesClient bioSamplesClient;
 	
 	@Autowired
 	private RestTemplate restTemplate;
@@ -76,7 +77,7 @@ public class EnaCallable implements Callable<Void> {
 			LocalDateTime update = eraProDao.getUpdateDateTime(sampleAccession);
 			
 			sample = Sample.build(sample.getName(), sampleAccession, release, update, sample.getAttributes(), sample.getRelationships(), sample.getExternalReferences());
-			submissionService.submit(sample);
+			bioSamplesClient.persist(sample);
 		} else {
 			log.warn("Unable to find SAMPLE element for "+sampleAccession);
 		}

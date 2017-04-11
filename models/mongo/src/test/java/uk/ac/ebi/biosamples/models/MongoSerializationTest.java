@@ -13,6 +13,7 @@ import org.springframework.test.context.junit4.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 
@@ -47,7 +48,7 @@ public class MongoSerializationTest {
 		LocalDateTime release = LocalDateTime.of(LocalDate.of(2016, 4, 1), LocalTime.of(11, 36, 57));
 
 		SortedSet<Attribute> attributes = new TreeSet<>();
-		attributes.add(Attribute.build("organism", "Homo sapiens", new URI("http://purl.obolibrary.org/obo/NCBITaxon_9606"), null));
+		attributes.add(Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
 		attributes.add(Attribute.build("age", "3", null, "year"));
 		attributes.add(Attribute.build("organism part", "lung", null, null));
 		attributes.add(Attribute.build("organism part", "heart", null, null));
@@ -55,8 +56,8 @@ public class MongoSerializationTest {
 		SortedSet<Relationship> relationships = new TreeSet<>();
 		relationships.add(Relationship.build("derived from", "TEST2", "TEST1"));
 		
-		SortedSet<URI> externalReferences = new TreeSet<>();
-		externalReferences.add(URI.create("http://www.google.com"));
+		SortedSet<ExternalReference> externalReferences = new TreeSet<>();
+		externalReferences.add(ExternalReference.build("http://www.google.com"));
 
 		return MongoSample.build(name, accession, release, update, attributes, relationships, externalReferences);
 	}

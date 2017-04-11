@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.client.service.SubmissionService;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Relationship;
@@ -34,7 +35,7 @@ public class NcbiElementCallable implements Callable<Void> {
 	private TaxonomyService taxonomyService;
 	
 	@Autowired
-	private SubmissionService submissionService;
+	private BioSamplesClient bioSamplesClient;
 
 	public NcbiElementCallable(Element sampleElem) {
 		this.sampleElem = sampleElem;
@@ -79,7 +80,7 @@ public class NcbiElementCallable implements Callable<Void> {
 		}
 
 		// handle the organism		
-		URI organismIri = null;
+		String organismIri = null;
 		String organismValue = null;
 		if (XmlPathBuilder.of(sampleElem).path("Description", "Organism").attributeExists("taxonomy_id")) {
 			int taxonId = Integer.parseInt(XmlPathBuilder.of(sampleElem).path("Description", "Organism").attribute("taxonomy_id"));
@@ -136,7 +137,7 @@ public class NcbiElementCallable implements Callable<Void> {
 		Sample sample = Sample.build(name, accession, releaseDate, updateDate, attrs, rels, null);
 		
 		//now pass it along to the actual submission process
-		submissionService.submit(sample);
+		bioSamplesClient.persist(sample);
 
 		log.trace("Element callable finished");
 		

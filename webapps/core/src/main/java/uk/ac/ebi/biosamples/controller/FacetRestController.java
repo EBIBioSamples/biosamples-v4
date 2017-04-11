@@ -27,7 +27,7 @@ public class FacetRestController {
 	}
 
     @CrossOrigin(methods = RequestMethod.GET)
-	@GetMapping(value = "/facets/samples", produces = { MediaType.APPLICATION_JSON_VALUE, MediaTypes.HAL_JSON_VALUE })
+	@GetMapping(value = "/samples/facets", produces = { MediaType.APPLICATION_JSON_VALUE, MediaTypes.HAL_JSON_VALUE })
 	public ResponseEntity<SampleFacets> search(
 			@RequestParam(name="text", required=false) String text,
 			@RequestParam(name="filter", required=false) String[] filters) {

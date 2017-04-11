@@ -37,7 +37,7 @@ import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
  * Primary controller for REST operations both in JSON and XML and both read and
  * write.
  * 
- * See {@link HtmlController} for the HTML equivalent controller.
+ * See {@link SampleHtmlController} for the HTML equivalent controller.
  * 
  * @author faulcon
  *

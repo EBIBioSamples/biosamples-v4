@@ -33,7 +33,7 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 			
 			for (Attribute attr : sample.getAttributes()) {
 				
-				String key = attr.getKey();
+				String key = attr.getType();
 				//key = SolrSampleService.attributeTypeToField(key);
 				
 				String value = attr.getValue();

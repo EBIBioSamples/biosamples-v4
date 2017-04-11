@@ -54,9 +54,16 @@ public class InverseRelationshipService  {
 				String target = neoRelationship.getTarget().getAccession();
 				String source = neoRelationship.getOwner().getAccession();
 				String relType = neoRelationship.getSpecificType();
-				Relationship rel = Relationship.build(relType, target, source);
-				relationships.add(rel);
-				log.trace("Adding relationship from "+source+" to "+target);
+				Relationship rel = null;
+				try { 
+					rel = Relationship.build(relType, target, source);
+				} catch (IllegalArgumentException e) {
+					//do nothing
+				}
+				if (rel != null) {
+					relationships.add(rel);
+					log.trace("Adding relationship from "+source+" to "+target);
+				}
 			}
 			
 			return Sample.build(sample.getName(), sample.getAccession(), sample.getRelease(), sample.getUpdate(), 

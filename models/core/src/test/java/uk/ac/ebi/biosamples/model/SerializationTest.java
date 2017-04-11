@@ -9,6 +9,7 @@ import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.autoconfigure.json.JsonTest;
 import org.springframework.boot.test.json.JacksonTester;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,6 +36,7 @@ import java.util.TreeSet;
 @RunWith(SpringRunner.class)
 @JsonTest
 //@TestPropertySource(properties = {"spring.jackson.serialization.WRITE_DATES_AS_TIMESTAMPS=false","spring.jackson.serialization.WRITE_NULL_MAP_VALUES=false"})
+@TestPropertySource(properties={"spring.jackson.serialization.INDENT_OUTPUT=true"})
 public class SerializationTest {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
@@ -54,7 +56,7 @@ public class SerializationTest {
 		LocalDateTime release = LocalDateTime.of(LocalDate.of(2016, 4, 1), LocalTime.of(11, 36, 57, 0));
 
 		SortedSet<Attribute> attributes = new TreeSet<>();
-		attributes.add(Attribute.build("organism", "Homo sapiens", new URI("http://purl.obolibrary.org/obo/NCBITaxon_9606"), null));
+		attributes.add(Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
 		attributes.add(Attribute.build("age", "3", null, "year"));
 		attributes.add(Attribute.build("organism part", "lung", null, null));
 		attributes.add(Attribute.build("organism part", "heart", null, null));
@@ -62,8 +64,8 @@ public class SerializationTest {
 		SortedSet<Relationship> relationships = new TreeSet<>();
 		relationships.add(Relationship.build("derived from", "TEST2", "TEST1"));
 		
-		SortedSet<URI> externalReferences = new TreeSet<>();
-		externalReferences.add(URI.create("http://www.google.com"));
+		SortedSet<ExternalReference> externalReferences = new TreeSet<>();
+		externalReferences.add(ExternalReference.build("http://www.google.com"));
 
 		return Sample.build(name, accession, release, update, attributes, relationships, externalReferences);
 	}
@@ -72,7 +74,7 @@ public class SerializationTest {
 	public void testSerialize() throws Exception {
 		Sample details = getSimpleSample();
 
-		System.out.println(this.json.write(details).getJson());
+		log.info(this.json.write(details).getJson());
 
 		// Use JSON path based assertions
 		assertThat(this.json.write(details)).hasJsonPathStringValue("@.accession");
@@ -84,26 +86,35 @@ public class SerializationTest {
 
 	@Test
 	public void testDeserialize() throws Exception {
+		Sample fileSample = this.json.readObject("/TEST1.json");
+		Sample simpleSample = getSimpleSample();
+		log.info("fileSample = "+fileSample);
+		log.info("simpleSample = "+simpleSample);
 		// Use JSON path based assertions
-		assertThat(this.json.readObject("/TEST1.json").getName()).isEqualTo("Test Sample");
-		assertThat(this.json.readObject("/TEST1.json").getAccession()).isEqualTo("TEST1");
+		assertThat(fileSample.getName()).isEqualTo("Test Sample");
+		assertThat(fileSample.getAccession()).isEqualTo("TEST1");
 		// Assert against a `.json` file
-		assertThat(this.json.readObject("/TEST1.json")).isEqualTo(getSimpleSample());
+		assertThat(fileSample).isEqualTo(simpleSample);
 		
 		//check that a specific attribute exists
-		assertThat(this.json.readObject("/TEST1.json").getAttributes().contains(Attribute.build("organism part", "heart", null, null)));
+		assertThat(fileSample.getAttributes().contains(Attribute.build("organism part", "heart", null, null)));
 	}
 
 	@Test
 	public void testRoundTrip() throws Exception {
 		Sample sample = getSimpleSample();
+		log.info("roundTrip sample = "+sample);
+		
 		String json = this.json.write(sample).getJson();
+		log.info("roundTrip json = "+json);
+		
 		InputStream inputStream = new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
 		Sample sampleRedux = this.json.readObject(inputStream);
-		String jsonRedux = this.json.write(sampleRedux).getJson();
+		log.info("roundTrip sampleRedux = "+sampleRedux);
 		
-		System.out.println(json);
-		System.out.println(jsonRedux);
+		String jsonRedux = this.json.write(sampleRedux).getJson();
+		log.info("roundTrip jsonRedux = "+jsonRedux);
+
 
         BufferedReader br = new BufferedReader(new InputStreamReader(new ClassPathResource("/TEST1.json").getInputStream()),1024);
         StringBuilder stringBuilder = new StringBuilder();

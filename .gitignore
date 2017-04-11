@@ -1,4 +1,5 @@
 *.log
+*.log.*
 application.properties
 ncbi.xml.gz
 /run_env.sh
@@ -6,4 +7,4 @@ ncbi.xml.gz
 bin/
 target/
 
-docker-migration.sh
+docker-env.sh
