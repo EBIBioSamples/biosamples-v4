@@ -37,7 +37,7 @@ public class ResultQuery {
     }
 
     private Element getSummary(PagedResources<Resource<Sample>> results) {
-        Element summary = new Element("SummaryInfo");
+        Element summary = new Element("SummaryInfo", XMLNS);
 
         PageMetadata pageMetadata = results.getMetadata();
         long totalElementsValue = pageMetadata.getTotalElements();
@@ -64,7 +64,7 @@ public class ResultQuery {
     private List<Element> getAccessionList(PagedResources<Resource<Sample>> results) {
         List<Element> accessions = new ArrayList<>();
         for (Resource<Sample> result : results.getContent()) {
-            Element rqDocument = new Element("BioSample");
+            Element rqDocument = new Element("BioSample", XMLNS);
             rqDocument.setAttribute("id", result.getContent().getAccession());
             accessions.add(rqDocument);
         }

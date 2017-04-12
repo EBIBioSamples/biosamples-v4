@@ -56,7 +56,7 @@ public class RetrievalService {
 
 		URI uri = UriComponentsBuilder.fromUri(clientProperties.getBiosampleSubmissionUri())
 				.pathSegment("samples")
-                .queryParam("text", !text.isEmpty() ? text : new String[0])
+                .queryParam("text", !text.isEmpty() ? text : "*:*")
                 .queryParam("rows", size)
 				.queryParam("start", startPage)
 				.build().toUri();

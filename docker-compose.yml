@@ -103,9 +103,9 @@ services:
     - -jar
     - webapps-legacyxml-4.0.0-SNAPSHOT.war
     environment:
-    - biosamples.submissionuri=http://biosamples-webapps-core:8080/biosamples/beta
-    - server.servlet.context-path=/biosamples/beta/xml
-    - server.context-path=/biosamples/beta/xml
+    - biosamples.submissionuri=http://localhost:8081/biosamples/beta
+    - server.servlet.context-path=/biosamples/beta
+    - server.context-path=/biosamples/beta
     ports:
     - 8083:8080
     logging:
