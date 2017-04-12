@@ -12,6 +12,9 @@ public class PipelinesProperties {
 
 	@Value("${biosamples.threadcount:1}")
 	private int threadCount;
+
+	@Value("${biosamples.threadcount.max:32}")
+	private int threadCountMax;
 	
 	public File getNcbiFile() {
 		return ncbiFile;
@@ -19,5 +22,9 @@ public class PipelinesProperties {
 
 	public int getThreadCount() {
 		return threadCount;
+	}
+
+	public int getThreadCountMax() {
+		return threadCountMax;
 	}
 }

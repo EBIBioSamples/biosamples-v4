@@ -40,10 +40,10 @@ public class CustomAttributeSerializer extends StdSerializer<SortedSet> {
 		SortedMap<String, SortedMap<String,Attribute>> attributeMap = new TreeMap<>();
 		if (attributes != null && attributes.size() > 0) {
 			for (Attribute attribute : attributes) {
-				if (!attributeMap.containsKey(attribute.getKey())) {
-					attributeMap.put(attribute.getKey(), new TreeMap<>());
+				if (!attributeMap.containsKey(attribute.getType())) {
+					attributeMap.put(attribute.getType(), new TreeMap<>());
 				}
-				attributeMap.get(attribute.getKey()).put(attribute.getValue(), Attribute.build(null, null, attribute.getIri(), attribute.getUnit()));			
+				attributeMap.get(attribute.getType()).put(attribute.getValue(), Attribute.build(null, null, attribute.getIri(), attribute.getUnit()));			
 			}
 
 	        for (String type : attributeMap.keySet()) {

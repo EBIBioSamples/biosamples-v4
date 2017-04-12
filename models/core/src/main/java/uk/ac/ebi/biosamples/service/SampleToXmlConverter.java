@@ -56,19 +56,19 @@ public class SampleToXmlConverter implements Converter<Sample, Document> {
 		SortedMap<String, SortedMap<String, String>> attrUnit = new TreeMap<>();
 		
 		for (Attribute attribute : source.getAttributes()) {
-			if (!attrTypeValue.containsKey(attribute.getKey())) {
-				attrTypeValue.put(attribute.getKey(), new TreeSet<>());
-				attrIri.put(attribute.getKey(), new TreeMap<>());
-				attrUnit.put(attribute.getKey(), new TreeMap<>());
+			if (!attrTypeValue.containsKey(attribute.getType())) {
+				attrTypeValue.put(attribute.getType(), new TreeSet<>());
+				attrIri.put(attribute.getType(), new TreeMap<>());
+				attrUnit.put(attribute.getType(), new TreeMap<>());
 			}
-			attrTypeValue.get(attribute.getKey()).add(attribute.getValue());
+			attrTypeValue.get(attribute.getType()).add(attribute.getValue());
 			
 			if (attribute.getIri() != null && attribute.getIri().toString().length() > 0) {
-				attrIri.get(attribute.getKey()).put(attribute.getValue(), attribute.getIri().toString());
+				attrIri.get(attribute.getType()).put(attribute.getValue(), attribute.getIri().toString());
 			}
 
 			if (attribute.getUnit() != null && attribute.getUnit().trim().length() > 0) {
-				attrUnit.get(attribute.getKey()).put(attribute.getValue(), attribute.getUnit());
+				attrUnit.get(attribute.getType()).put(attribute.getValue(), attribute.getUnit());
 			}
 		}
 		

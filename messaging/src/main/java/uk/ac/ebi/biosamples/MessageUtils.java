@@ -17,7 +17,7 @@ public class MessageUtils {
 	@Autowired
 	private AmqpAdmin admin;
 
-	protected Integer getQueueCount(final String name) {
+	public Integer getQueueCount(final String name) {
         Properties props = admin.getQueueProperties(name);
         Integer messageCount = Integer.valueOf(props.get("QUEUE_MESSAGE_COUNT").toString());
         log.trace("QUEUE_MESSAGE_COUNT="+messageCount);

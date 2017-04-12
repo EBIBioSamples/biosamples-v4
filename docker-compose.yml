@@ -1,6 +1,6 @@
 version: '2'
 services:
-    
+
   biosamples-webapps-core:
     build: .
     image: biosamples:latest
@@ -9,11 +9,14 @@ services:
     - neo4j
     - mongo
     - rabbitmq
+    - logstash
+    volumes:
+    - ./docker/logs:/logs
     command:
     - java
     - -Dcom.sun.management.jmxremote.rmi.port=9090
     - -Dcom.sun.management.jmxremote=true
-    - -Dcom.sun.management.jmxremote.port=9090 
+    - -Dcom.sun.management.jmxremote.port=9090
     - -Dcom.sun.management.jmxremote.ssl=false
     - -Dcom.sun.management.jmxremote.authenticate=false
     - -Dcom.sun.management.jmxremote.local.only=false
@@ -22,7 +25,8 @@ services:
     - webapps-core-4.0.0-SNAPSHOT.war
     environment:
     - spring.data.solr.host=http://solr:8983/solr
-    - spring.data.neo4j.uri=bolt://neo4j:7687
+    #- spring.data.neo4j.uri=bolt://neo4j:7687
+    - spring.data.neo4j.uri=http://neo4j:7474
     - spring.data.neo4j.username=neo4j
     - spring.data.neo4j.indexes.auto=assert
     - spring.data.mongodb.host=mongo
@@ -30,34 +34,95 @@ services:
     - spring.jackson.serialization-inclusion=non_null
     - spring.rabbitmq.host=rabbitmq
     - spring.jackson.serialization.WRITE_NULL_MAP_VALUES=false
-    - server.servlet.context-path=/biosamples/beta #spring-boot 2.0.x
-    - server.context-path=/biosamples/beta #spring-boot 1.5.x
+    - server.servlet.context-path=/biosamples/beta
+    - server.context-path=/biosamples/beta
     - management.security.enabled=false
+    - logging.file=/logs/webapps-core.log
+    - server.tomcat.accesslog.enabled=true
+    - server.tomcat.accesslog.directory=/logs
+    - server.tomcat.accesslog.prefix=webapps-core.access
+    # Charset of HTTP requests and responses. Added to the "Content-Type" header if not set explicitly.
+    - spring.http.encoding.charset=UTF-8
+    # Enable http encoding support.
+    - spring.http.encoding.enabled=true
+    # Force the encoding to the configured charset on HTTP requests and responses.
+    - spring.http.encoding.force=true
+    
+    
     ports:
     - 8081:8080
     - 9090:9090
+    logging:
+      driver: gelf
+      options:
+        gelf-address: "udp://localhost:12201"
     
   biosamples-webapps-sampletab:
     image: biosamples:latest
     links:
     - biosamples-webapps-core
+    - logstash
+    volumes:
+    - ./docker/logs:/logs
     command:
     - java
     - -jar
     - webapps-sampletab-4.0.0-SNAPSHOT.war
     environment:
     - biosamples.submissionuri=http://biosamples-webapps-core:8080/biosamples/beta
-    - server.servlet.context-path=/biosamples/beta #spring-boot 2.0.x
-    - server.context-path=/biosamples/beta #spring-boot 1.5.x
+    - server.servlet.context-path=/biosamples/beta/sampletab
+    - server.context-path=/biosamples/beta/sampletab
     - management.security.enabled=false
+    - logging.file=/logs/webapps-sampletab.log
+    - server.tomcat.accesslog.enabled=true
+    - server.tomcat.accesslog.directory=/logs
+    - server.tomcat.accesslog.prefix=webapps-sampletab.access
+    # Charset of HTTP requests and responses. Added to the "Content-Type" header if not set explicitly.
+    - spring.http.encoding.charset=UTF-8
+    # Enable http encoding support.
+    - spring.http.encoding.enabled=true
+    # Force the encoding to the configured charset on HTTP requests and responses.
+    - spring.http.encoding.force=true
     ports:
     - 8082:8080
+    logging:
+      driver: gelf
+      options:
+        gelf-address: "udp://localhost:12201"
+
+  
+  biosamples-webapps-legacyxml:
+    image: biosamples:latest
+    links:
+    - biosamples-webapps-core
+    - logstash
+    volumes:
+    - ./docker/logs:/logs
+    command:
+    - java
+    - -jar
+    - webapps-legacyxml-4.0.0-SNAPSHOT.war
+    environment:
+    - biosamples.submissionuri=http://biosamples-webapps-core:8080/biosamples/beta
+    - server.servlet.context-path=/biosamples/beta/xml
+    - server.context-path=/biosamples/beta/xml
+    ports:
+    - 8083:8080
+    logging:
+      driver: gelf
+      options:
+        gelf-address: "udp://localhost:12201"
+
+    
     
   biosamples-agents-neo4j:
     image: biosamples:latest
     links:
     - neo4j
     - rabbitmq
+    - logstash
+    volumes:
+    - ./docker/logs:/logs
     command:
     - java
     - -jar
@@ -65,33 +130,54 @@ services:
     environment:
     - spring.rabbitmq.publisher-confirms=true
     - spring.rabbitmq.host=rabbitmq
-    - spring.data.neo4j.uri=bolt://neo4j:7687
+    - spring.rabbitmq.listener.concurrency=25
+    - spring.rabbitmq.listener.max-concurrency=25
+    #- spring.data.neo4j.uri=bolt://neo4j:7687
+    - spring.data.neo4j.uri=http://neo4j:7474
     - spring.data.neo4j.username=neo4j
-    - spring.data.neo4j.indexes.auto=assert
+    - spring.data.neo4j.indexes.auto=validate
+    - indexes.auto=validate
     - biosamples.agent.neo4j.stayalive=true
+    - logging.file=/logs/agents-neo4j.log
+    - logging.level=debug
+    - logging.level.org.springframework.data.neo4j=debug
+    logging:
+      driver: gelf
+      options:
+        gelf-address: "udp://localhost:12201"
     
   biosamples-agents-solr:
     image: biosamples:latest
     links:
     - solr
     - rabbitmq
+    - logstash
+    volumes:
+    - ./docker/logs:/logs
     command:
     - java
     - -jar
     - agents-solr-4.0.0-SNAPSHOT.jar
     environment:
     - spring.rabbitmq.publisher-confirms=true
-    #need to have a high number of threads so they can each wait while they are batched into solr
     - spring.rabbitmq.listener.concurrency=250
     - spring.rabbitmq.listener.max-concurrency=250
     - spring.data.solr.host=http://solr:8983/solr
     - spring.rabbitmq.host=rabbitmq
     - biosamples.agent.solr.stayalive=true
+    - logging.file=/logs/agents-solr.log
+    logging:
+      driver: gelf
+      options:
+        gelf-address: "udp://localhost:12201"
     
   biosamples-agents-curation:
     image: biosamples:latest
     links:
     - rabbitmq
+    - logstash
+    volumes:
+    - ./docker/logs:/logs
     command:
     - java
     - -jar
@@ -100,13 +186,20 @@ services:
     - spring.rabbitmq.publisher-confirms=true
     - spring.rabbitmq.host=rabbitmq
     - biosamples.agent.curation.stayalive=true
+    - logging.file=/logs/agents-curation.log
+    logging:
+      driver: gelf
+      options:
+        gelf-address: "udp://localhost:12201"
+    
     
   biosamples-pipelines-ena:
     image: biosamples:latest
     links:
     - biosamples-webapps-core
+    - logstash
     volumes:
-    - ./logs:/logs
+    - ./docker/logs:/logs
     command:
     - java
     - -jar
@@ -115,29 +208,39 @@ services:
     - spring.datasource.erapro.url=jdbc:oracle:thin:@ora-vm-009.ebi.ac.uk:1541:ERAPRO
     - spring.datasource.erapro.username=era_reader
     - spring.datasource.erapro.password=reader
-    - spring.datasource.erapro.driver-class-name=oracle.jdbc.driver.OracleDriver    
+    - spring.datasource.erapro.driver-class-name=oracle.jdbc.driver.OracleDriver
+    - logging.file=/logs/pipelines-ena.log
+    logging:
+      driver: gelf
+      options:
+        gelf-address: "udp://localhost:12201"
     
   biosamples-pipelines-ncbi:
     image: biosamples:latest
     links:
     - biosamples-webapps-core
+    - logstash
     volumes:
-    - ./logs:/logs
+    - ./docker/logs:/logs
     command:
     - java
     - -jar
     - pipelines-ncbi-4.0.0-SNAPSHOT.jar
     environment:
-    #from https://github.com/google/guava/blob/master/guava/src/com/google/common/cache/CacheBuilderSpec.java
     - spring.cache.guava.spec=maximumSize=500,expireAfterAccess=60s,recordStats=true
-    
+    - logging.file=/logs/pipelines-ena.log
+    logging:
+      driver: gelf
+      options:
+        gelf-address: "udp://localhost:12201"
     
   biosamples-pipelines-accession:
     image: biosamples:latest
     links:
     - biosamples-webapps-core
+    - logstash
     volumes:
-    - ./logs:/logs
+    - ./docker/logs:/logs
     command:
     - java
     - -jar
@@ -147,6 +250,11 @@ services:
     - spring.datasource.accession.username=bsd_acc
     - spring.datasource.accession.password=b5d4ccpr0
     - spring.datasource.accession.driver-class-name=oracle.jdbc.driver.OracleDriver
+    - logging.file=/logs/pipelines-ena.log
+    logging:
+      driver: gelf
+      options:
+        gelf-address: "udp://localhost:12201"
     
   mongo:
     image: mongo:3.2
@@ -164,14 +272,18 @@ services:
     - rabbitmq_data:/var/lib/rabbitmq/mnesia/rabbit@biosamples-rabbitmq
     
   neo4j:
-    image: neo4j:3.0
+    #we can use enterprise under AGPLv3 because we are open source
+    image: neo4j:3.1-enterprise
     environment:
     - NEO4J_AUTH=none
+    - NEO4J_dbms_memory_pagecache_size=4G
+    - NEO4J_dbms_memory_heap_maxSize=2G
     ports:
     - 7687:7687
     - 7474:7474
     volumes:
     - neo4j_data:/data
+    - ./docker/logs/neo4j:/logs
     
   solr:
     image: solr:6.3-alpine
@@ -187,14 +299,46 @@ services:
     - solr-precreate
     - samples
     
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:5.3.0
+    ports:
+    - 9200:9200
+    volumes:
+    - elasticsearch_logs_data:/usr/share/elasticsearch/data
+    environment:
+    - xpack.security.enabled=false
+    - network.host=_eth0_
+    
+  logstash:
+    #build: docker/logstash/
+    image: docker.elastic.co/logstash/logstash:5.3.0
+    volumes:
+    - ./docker/logstash/pipeline:/usr/share/logstash/pipeline
+    - ./docker/logs:/logs
+    ports:
+    - 9600:9600
+    #need to explicitly say we'll be recieving udp packets here
+    - 12201:12201/udp
+    links:
+    - elasticsearch
+    
+  kibana:
+    image: docker.elastic.co/kibana/kibana:5.3.0
+    ports:
+    - 5601:5601
+    links:
+    - elasticsearch
+    environment:
+    - XPACK_SECURITY_ENABLED=false
+    
 networks:
   default:
     ipam:
       config:
       - subnet: 172.28.0.0/16
 volumes:
-  #get image sizes with `du -h /var/lib/docker/volumes/*_data` as docker user (root)
   solr_samples_data: null
   mongo_data: null
   neo4j_data: null
   rabbitmq_data: null
+  elasticsearch_logs_data: null

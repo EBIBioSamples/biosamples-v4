@@ -1,14 +1,18 @@
-package uk.ac.ebi.biosamples;
+package uk.ac.ebi.biosamples.solr;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.stereotype.Component;
 
+import uk.ac.ebi.biosamples.MessageUtils;
+import uk.ac.ebi.biosamples.Messaging;
 import uk.ac.ebi.biosamples.messages.threaded.MessageBuffer;
+import uk.ac.ebi.biosamples.solr.model.SolrSample;
 
 @Component
 public class SolrRunner implements ApplicationRunner, ExitCodeGenerator {
@@ -19,12 +23,11 @@ public class SolrRunner implements ApplicationRunner, ExitCodeGenerator {
 	private MessageUtils messageUtils;
 	
 	@Autowired
-	private AgentSolrProperties agentSolrProperties;
-	
+	private AgentSolrProperties agentSolrProperties;	
 
-	//wire in the message buffer so we can retunr a non-zero exit code if there are any problems
+	//wire in the message buffer so we can return a non-zero exit code if there are any problems
 	@Autowired
-	private MessageBuffer messageBuffer;
+	private SolrMessageBuffer messageBuffer;
 
 	@Override
 	public void run(ApplicationArguments args) throws Exception {

@@ -40,6 +40,9 @@ import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.model.MongoSubmission;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSubmissionRepository;
+import uk.ac.ebi.biosamples.mongo.service.MongoAccessionService;
+import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
+import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
 import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
 
@@ -54,10 +57,20 @@ import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
 @Service
 public class SampleService {
 
+	private Logger log = LoggerFactory.getLogger(getClass());
+	
 	@Autowired
 	private MongoSampleRepository mongoSampleRepository;
 	@Autowired
 	private MongoSubmissionRepository mongoSubmissionRepository;
+	
+	@Autowired
+	private MongoAccessionService mongoAccessionService;
+	
+	@Autowired
+	private SampleToMongoSampleConverter sampleToMongoSampleConverter;
+	@Autowired
+	private MongoSampleToSampleConverter mongoSampleToSampleConverter;
 	
 	@Autowired
 	private InverseRelationshipService inverseRelationshipService;
@@ -69,22 +82,8 @@ public class SampleService {
 	private AmqpTemplate amqpTemplate;
 	
 	@Autowired
-	private ConversionService conversionService;
-	
-	@Autowired
 	private WebappProperties webappProperties;
-
-	private BlockingQueue<String> accessionCandidateQueue;;
-	private long accessionCandidateCounter;
-
-	private Logger log = LoggerFactory.getLogger(getClass());
 	
-	@PostConstruct
-	public void doSetup() {
-		accessionCandidateQueue = new LinkedBlockingQueue<>(webappProperties.getAcessionQueueSize());
-		accessionCandidateCounter = webappProperties.getAccessionMinimum();
-	}
-
 	/**
 	 * Throws an IllegalArgumentException of no sample with that accession exists
 	 * 
@@ -100,7 +99,7 @@ public class SampleService {
 		}
 
 		// convert it into the format to return
-		Sample sample = conversionService.convert(mongoSample, Sample.class);
+		Sample sample = mongoSampleToSampleConverter.convert(mongoSample);
 		
 		// add any additional inverse relationships
 		sample = inverseRelationshipService.insertInverses(sample);
@@ -186,7 +185,7 @@ public class SampleService {
 		// TODO validate that relationships have this sample as the source 
 
 		// convert it to the storage specific version
-		MongoSample mongoSample = conversionService.convert(sample, MongoSample.class);
+		MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);
 		// save the sample in the repository
 		if (mongoSample.hasAccession()) {
 			//update the existing accession
@@ -195,7 +194,7 @@ public class SampleService {
 			//TODO see if there is an existing accession for this user and name
 						
 			//assign it a new accession
-			mongoSample = accessionAndInsert(mongoSample);
+			mongoSample = mongoAccessionService.accessionAndInsert(mongoSample);
 			//update the sample object with the assigned accession
 			sample = Sample.build(sample.getName(), mongoSample.getAccession(), sample.getRelease(), sample.getUpdate(),
 					sample.getAttributes(), sample.getRelationships(), sample.getExternalReferences());
@@ -206,49 +205,4 @@ public class SampleService {
 		return sample;
 	}
 
-	private MongoSample accessionAndInsert(MongoSample sample) {
-		// inspired by Optimistic Loops of
-		// https://docs.mongodb.com/v3.0/tutorial/create-an-auto-incrementing-field/
-		boolean success = false;
-		// TODO limit number of tries
-		while (!success) {
-			// TODO add a timeout here
-			try {
-				sample.accession = accessionCandidateQueue.take();
-			} catch (InterruptedException e) {
-				throw new RuntimeException(e);
-			}
-
-			try {
-				sample = mongoSampleRepository.insertNew(sample);
-				success = true;
-			} catch (MongoWriteException e) {
-				if (e.getError().getCategory() == ErrorCategory.DUPLICATE_KEY) {
-					success = false;
-					sample.accession = null;
-				} else {
-					throw e;
-				}
-			}
-		}
-		return sample;
-	}
-
-	@Scheduled(fixedDelay = 100)
-	public void prepareAccessions() {
-		while (accessionCandidateQueue.remainingCapacity() > 0) {
-			String accessionCandidate = webappProperties.getAccessionPrefix() + accessionCandidateCounter;
-			// if the accession already exists, skip it
-			if (mongoSampleRepository.exists(accessionCandidate)) {
-				accessionCandidateCounter += 1;
-				// if the accession can't be put in the queue at this time
-				// (queue full), stop
-			} else if (!accessionCandidateQueue.offer(accessionCandidate)) {
-				return;
-			} else {
-				//put it into the queue, move on to next
-				accessionCandidateCounter += 1;
-			}
-		}
-	}
 }

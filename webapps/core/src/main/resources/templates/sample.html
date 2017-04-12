@@ -56,7 +56,7 @@
 						<th>Value</th>
 					</tr>
 					<tr th:each="attribute : ${sample.attributes}">
-						<td th:text="${attribute.key}">Attribute Key</td>
+						<td th:text="${attribute.type}">Attribute Type</td>
 
 						<td
 							th:if="${not #strings.isEmpty(attribute.iri) and #strings.isEmpty(attribute.unit)}"><a

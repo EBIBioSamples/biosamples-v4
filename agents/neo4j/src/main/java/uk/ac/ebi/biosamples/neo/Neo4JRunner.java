@@ -1,14 +1,21 @@
-package uk.ac.ebi.biosamples;
+package uk.ac.ebi.biosamples.neo;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.stereotype.Component;
 
+import uk.ac.ebi.biosamples.MessageUtils;
+import uk.ac.ebi.biosamples.Messaging;
+import uk.ac.ebi.biosamples.messages.threaded.MessageBuffer;
+import uk.ac.ebi.biosamples.neo.model.NeoSample;
+
 @Component
-public class Neo4JRunner implements ApplicationRunner {
+public class Neo4JRunner implements ApplicationRunner, ExitCodeGenerator {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -17,6 +24,10 @@ public class Neo4JRunner implements ApplicationRunner {
 	
 	@Autowired
 	private AgentNeo4JProperties agentNeo4JProperties;
+
+	//wire in the message buffer so we can return a non-zero exit code if there are any problems
+	@Autowired
+	private NeoMessageBuffer messageBuffer;
 
 	@Override
 	public void run(ApplicationArguments args) throws Exception {
@@ -29,6 +40,17 @@ public class Neo4JRunner implements ApplicationRunner {
 			log.trace("Messages remaining in "+Messaging.queueToBeIndexedNeo4J+" "+messageCount);
 		}
 		
+	}
+
+	@Override
+	public int getExitCode() {
+		//exit code depends on message buffer
+		boolean hadProblem = messageBuffer.hadProblem.get();
+		if (hadProblem) {
+			return 1;
+		} else {
+			return 0;
+		}
 	}
 
 }

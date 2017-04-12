@@ -65,7 +65,8 @@ public class Ncbi implements ApplicationRunner {
 			if (pipelinesProperties.getThreadCount() > 0) {
 				ExecutorService executorService = null;
 				try {
-					executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, pipelinesProperties.getThreadCount());
+					executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, 
+							pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax());
 					Queue<Future<Void>> futures = new LinkedList<>();
 
 					callback.setExecutorService(executorService);

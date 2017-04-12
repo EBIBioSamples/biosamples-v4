@@ -53,6 +53,11 @@ public class SampleTabService {
 			//beware, works by side-effect
 			populateAttributes(accession, sampleNode.getAttributes(), attributes, relationships, externalReferences);
 			
+			if (sampleNode.getSampleDescription() != null && 
+					sampleNode.getSampleDescription().trim().length() > 0) {
+				attributes.add(Attribute.build("description", sampleNode.getSampleDescription()));
+			}			
+			
 			//only build a sample if there is at least one attribute or it has no "parent" node
 			//otherwise, it is just a group membership tracking dummy
 			if (attributes.size() > 0 || sampleNode.getChildNodes().size() == 0) {			

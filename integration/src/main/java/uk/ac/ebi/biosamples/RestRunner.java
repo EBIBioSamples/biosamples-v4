@@ -210,6 +210,7 @@ public class RestRunner implements ApplicationRunner, ExitCodeGenerator, Ordered
 		SortedSet<Attribute> attributes = new TreeSet<>();
 		attributes.add(
 			Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
+		attributes.add(Attribute.build("UTF-8 test", "αβ", null, null));
 
 		return Sample.build(name, accession, release, update, attributes, new TreeSet<>(), new TreeSet<>());
 	}

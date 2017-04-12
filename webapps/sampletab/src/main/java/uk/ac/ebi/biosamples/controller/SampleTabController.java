@@ -34,8 +34,10 @@ public class SampleTabController {
 	@Autowired
 	private SampleTabService sampleTabService;
 
-	@RequestMapping(method = RequestMethod.POST, value = "sampletab/v4")
+	@RequestMapping(method = RequestMethod.POST, value = "v4", consumes = "text/plain;charset=UTF-8")
 	public ResponseEntity<String> acceptSampleTab(@RequestBody String sampleTab, HttpServletRequest request, HttpServletResponse response) {
+
+		log.trace("recieved SampleTab submission \n"+sampleTab);
 
         //setup parser to listen for errors
         SampleTabParser<SampleData> parser = new SampleTabParser<SampleData>();
