@@ -70,8 +70,8 @@ services:
     - webapps-sampletab-4.0.0-SNAPSHOT.war
     environment:
     - biosamples.submissionuri=http://biosamples-webapps-core:8080/biosamples/beta
-    - server.servlet.context-path=/biosamples/beta
-    - server.context-path=/biosamples/beta
+    - server.servlet.context-path=/biosamples/beta/sampletab
+    - server.context-path=/biosamples/beta/sampletab
     - management.security.enabled=false
     - logging.file=/logs/webapps-sampletab.log
     - server.tomcat.accesslog.enabled=true
@@ -104,8 +104,8 @@ services:
     - webapps-legacyxml-4.0.0-SNAPSHOT.war
     environment:
     - biosamples.submissionuri=http://biosamples-webapps-core:8080/biosamples/beta
-    - server.servlet.context-path=/biosamples/beta
-    - server.context-path=/biosamples/beta
+    - server.servlet.context-path=/biosamples/beta/xml
+    - server.context-path=/biosamples/beta/xml
     ports:
     - 8083:8080
     logging:
