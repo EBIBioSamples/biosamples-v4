@@ -89,6 +89,28 @@ services:
       driver: gelf
       options:
         gelf-address: "udp://localhost:12201"
+
+  
+  biosamples-webapps-legacyxml:
+    image: biosamples:latest
+    links:
+    - biosamples-webapps-core
+    - logstash
+    volumes:
+    - ./docker/logs:/logs
+    command:
+    - java
+    - -jar
+    - webapps-legacyxml-4.0.0-SNAPSHOT.war
+    environment:
+    - biosamples.submissionuri=http://localhost:8081/biosamples/beta
+    ports:
+    - 8083:8080
+    logging:
+      driver: gelf
+      options:
+        gelf-address: "udp://localhost:12201"
+
     
     
   biosamples-agents-neo4j:
