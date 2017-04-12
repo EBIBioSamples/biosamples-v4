@@ -1,8 +1,5 @@
 package uk.ac.ebi.biosamples.client.service;
 
-import java.net.URI;
-import java.util.concurrent.ExecutorService;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
@@ -13,9 +10,11 @@ import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
-
 import uk.ac.ebi.biosamples.client.ClientProperties;
 import uk.ac.ebi.biosamples.model.Sample;
+
+import java.net.URI;
+import java.util.concurrent.ExecutorService;
 
 public class SubmissionService {
 	
@@ -46,7 +45,7 @@ public class SubmissionService {
 		//if the sample has an accession, put to that
 		if (sample.getAccession() != null) {
 			//samples with an existing accession should be PUT			
-			URI uri = UriComponentsBuilder.fromUri(clientProperties.getBiosampleSubmissionUri())
+			URI uri = UriComponentsBuilder.fromUri(clientProperties.getBiosamplesClientUri())
 					.pathSegment("samples",sample.getAccession())
 					.build().toUri();
 			
@@ -64,7 +63,7 @@ public class SubmissionService {
 			
 		} else {
 			//samples without an existing accession should be POST			
-			URI uri = UriComponentsBuilder.fromUri(clientProperties.getBiosampleSubmissionUri())
+			URI uri = UriComponentsBuilder.fromUri(clientProperties.getBiosamplesClientUri())
 					.pathSegment("samples")
 					.build().toUri();
 			

@@ -20,7 +20,7 @@ services:
     - -Dcom.sun.management.jmxremote.ssl=false
     - -Dcom.sun.management.jmxremote.authenticate=false
     - -Dcom.sun.management.jmxremote.local.only=false
-    - -Djava.rmi.server.hostname=172.28.0.1
+    - -Djava.rmi.server.hostname=172.22.69.244
     - -jar
     - webapps-core-4.0.0-SNAPSHOT.war
     environment:
@@ -69,7 +69,7 @@ services:
     - -jar
     - webapps-sampletab-4.0.0-SNAPSHOT.war
     environment:
-    - biosamples.submissionuri=http://biosamples-webapps-core:8080/biosamples/beta
+    - biosamples.client.uri=http://biosamples-webapps-core:8080/biosamples/beta
     - server.servlet.context-path=/biosamples/beta/sampletab
     - server.context-path=/biosamples/beta/sampletab
     - management.security.enabled=false
@@ -100,14 +100,19 @@ services:
     - ./docker/logs:/logs
     command:
     - java
+    - -agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=n
     - -jar
     - webapps-legacyxml-4.0.0-SNAPSHOT.war
     environment:
-    - biosamples.submissionuri=http://localhost:8081/biosamples/beta
-    - server.servlet.context-path=/biosamples/beta
-    - server.context-path=/biosamples/beta
+    - biosamples.redirect.context=http://localhost:8081/biosamples/beta
+    - biosamples.client.uri=http://biosamples-webapps-core:8080/biosamples/beta
+    - server.servlet.context-path=/biosamples/beta/xml
+    - server.context-path=/biosamples/beta/xml
+    - logging.file=/logs/webapps-legacyxml.log
+    - -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000  
     ports:
     - 8083:8080
+    - 8000:8000
     logging:
       driver: gelf
       options:

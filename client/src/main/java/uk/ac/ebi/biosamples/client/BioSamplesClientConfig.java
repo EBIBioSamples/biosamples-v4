@@ -1,6 +1,7 @@
 package uk.ac.ebi.biosamples.client;
 
-import java.util.List;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HeaderElement;
 import org.apache.http.HeaderElementIterator;
 import org.apache.http.HttpResponse;
@@ -13,21 +14,19 @@ import org.apache.http.message.BasicHeaderElementIterator;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.protocol.HttpContext;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.hateoas.hal.Jackson2HalModule;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.List;
 
 @Configuration
 public class BioSamplesClientConfig {
@@ -87,10 +86,10 @@ public class BioSamplesClientConfig {
 	 */
 	@Bean
 	@ConditionalOnMissingBean
-	public RestOperations getRestOperations(ClientHttpRequestFactory clientHttpRequestFactory, ObjectMapper mapper) {
-		RestTemplate restTemplate = new RestTemplate();
+	public RestOperations getRestOperations(RestTemplateBuilder builder, ClientHttpRequestFactory clientHttpRequestFactory, ObjectMapper mapper) {
+		RestTemplate restTemplate = builder.build();
 		restTemplate.setRequestFactory(clientHttpRequestFactory);
-		
+
 		//need to create a new message converter to handle hal+json
 		//ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -104,8 +103,10 @@ public class BioSamplesClientConfig {
 		List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();
 		converters.add(0,converter);
 		restTemplate.setMessageConverters(converters);
-		
-		
+
 		return restTemplate;
 	}
+
+
+
 }

@@ -8,7 +8,6 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import uk.ac.ebi.biosamples.model.ResultQuery;
@@ -26,8 +25,8 @@ public class RedirectController {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 
-	@Value("${biosamples.submissionuri}")
-	private URI biosampleSubmissionUri;
+	@Value("${biosamples.redirect.context}")
+	private URI biosamplesRedirectContext;
 
 	private SampleService sampleService;
 
@@ -37,14 +36,14 @@ public class RedirectController {
 
 	@GetMapping(value="/samples/{accession}")
 	public void redirectSample(@PathVariable String accession, HttpServletResponse response) throws IOException {
-		String redirectUrl = String.format("%s/samples/%s", biosampleSubmissionUri, accession);
+		String redirectUrl = String.format("%s/samples/%s", biosamplesRedirectContext, accession);
 		response.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_XML.getType());
 		response.sendRedirect(redirectUrl);
 	}
 
 	@GetMapping(value="/groups/{accession:SAMEG\\d+}")
 	public void  redirectGroups(@PathVariable String accession, HttpServletResponse response) throws IOException {
-		String redirectUrl = String.format("%s/groups/%s", biosampleSubmissionUri, accession);
+		String redirectUrl = String.format("%s/groups/%s", biosamplesRedirectContext, accession);
 		response.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_XML.getType());
 		response.sendRedirect(redirectUrl);
 	}
