@@ -41,6 +41,8 @@ import uk.ac.ebi.biosamples.mongo.model.MongoSubmission;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSubmissionRepository;
 import uk.ac.ebi.biosamples.mongo.service.MongoAccessionService;
+import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
+import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
 import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
 
@@ -66,6 +68,11 @@ public class SampleService {
 	private MongoAccessionService mongoAccessionService;
 	
 	@Autowired
+	private SampleToMongoSampleConverter sampleToMongoSampleConverter;
+	@Autowired
+	private MongoSampleToSampleConverter mongoSampleToSampleConverter;
+	
+	@Autowired
 	private InverseRelationshipService inverseRelationshipService;
 	
 	@Autowired
@@ -73,9 +80,6 @@ public class SampleService {
 
 	@Autowired
 	private AmqpTemplate amqpTemplate;
-	
-	@Autowired
-	private ConversionService conversionService;
 	
 	@Autowired
 	private WebappProperties webappProperties;
@@ -95,7 +99,7 @@ public class SampleService {
 		}
 
 		// convert it into the format to return
-		Sample sample = conversionService.convert(mongoSample, Sample.class);
+		Sample sample = mongoSampleToSampleConverter.convert(mongoSample);
 		
 		// add any additional inverse relationships
 		sample = inverseRelationshipService.insertInverses(sample);
@@ -181,7 +185,7 @@ public class SampleService {
 		// TODO validate that relationships have this sample as the source 
 
 		// convert it to the storage specific version
-		MongoSample mongoSample = conversionService.convert(sample, MongoSample.class);
+		MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);
 		// save the sample in the repository
 		if (mongoSample.hasAccession()) {
 			//update the existing accession
