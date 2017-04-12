@@ -7,20 +7,18 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 //import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
-import org.springframework.data.neo4j.repository.config.EnableNeo4jRepositories;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.servlet.handler.MappedInterceptor;
+import org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy;
 
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.neo.NeoConfig;
 import uk.ac.ebi.biosamples.xml.XmlSampleHttpMessageConverter;
 
 @SpringBootApplication
 //@EnableHypermediaSupport(type = { EnableHypermediaSupport.HypermediaType.HAL })
 @EnableAsync
-@EnableNeo4jRepositories(basePackageClasses = NeoConfig.class)
 public class Application extends SpringBootServletInitializer {
 
 	public static void main(String[] args) {
@@ -43,6 +41,11 @@ public class Application extends SpringBootServletInitializer {
     	ex.setMaxPoolSize(128);
     	ex.setQueueCapacity(2056);
     	return ex;
+    }
+    
+    @Bean
+    public RepositoryDetectionStrategy repositoryDetectionStrategy() {
+    	return RepositoryDetectionStrategy.RepositoryDetectionStrategies.ANNOTATED;
     }
     
 }
