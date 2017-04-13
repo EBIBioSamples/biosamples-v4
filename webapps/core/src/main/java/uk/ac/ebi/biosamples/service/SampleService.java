@@ -35,7 +35,7 @@ import uk.ac.ebi.biosamples.Messaging;
 import uk.ac.ebi.biosamples.WebappProperties;
 import uk.ac.ebi.biosamples.model.Autocomplete;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.SampleFacets;
+import uk.ac.ebi.biosamples.model.SampleFacet;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.model.MongoSubmission;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
@@ -139,7 +139,7 @@ public class SampleService {
 		return pageSample;
 	}
 	
-	public SampleFacets getFacets(String text, MultiValueMap<String,String> filters, int noOfFacets, int noOfFacetValues) {
+	public List<SampleFacet> getFacets(String text, MultiValueMap<String,String> filters, int noOfFacets, int noOfFacetValues) {
 		Pageable facetPageable = new PageRequest(0,noOfFacets);
 		Pageable facetValuePageable = new PageRequest(0,noOfFacetValues);
 		//TODO if a facet is enabled as a filter, then that value will be the only filter displayed
