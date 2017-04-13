@@ -56,20 +56,20 @@ import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 @RequestMapping("/samples")
 public class SampleRestController {
 
-	@Autowired
-	private SampleService sampleService;
+	private final SampleService sampleService;
 
-	private SampleResourceAssembler sampleResourceAssembler;
+	private final SampleResourceAssembler sampleResourceAssembler;
 
-	@Autowired
-	private EntityLinks entityLinks;
+	private final EntityLinks entityLinks;
 	
 	private Logger log = LoggerFactory.getLogger(getClass());
 
-	public SampleRestController(@Autowired SampleService sampleService,
-			@Autowired SampleResourceAssembler sampleResourceAssembler) {
+	public SampleRestController(SampleService sampleService,
+			SampleResourceAssembler sampleResourceAssembler,
+			EntityLinks entityLinks) {
 		this.sampleService = sampleService;
 		this.sampleResourceAssembler = sampleResourceAssembler;
+		this.entityLinks = entityLinks;
 	}
 
     @CrossOrigin(methods = RequestMethod.GET)
@@ -100,7 +100,7 @@ public class SampleRestController {
 		//this is hacky, but no clear way to do this in spring-hateoas currently
 		pagedResources.removeLinks();
 		UriTemplate selfUriTemplate = new UriTemplate(entityLinks.linkToCollectionResource(Sample.class).getHref()+"{?text,filter,start,rows}");
-		pagedResources.add(new Link(selfUriTemplate.toString(),"self"));
+		pagedResources.add(new Link(selfUriTemplate.toString(),Link.REL_SELF));
 		//TODO first/last/next/prev
 		UriTemplate autocompleteUriTemplate = new UriTemplate(entityLinks.linkToCollectionResource(Sample.class).getHref()+"/autocomplete{?text,filter,rows}");
 		pagedResources.add(new Link(autocompleteUriTemplate.toString(),"autocomplete"));
