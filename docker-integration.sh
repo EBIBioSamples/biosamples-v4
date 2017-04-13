@@ -19,6 +19,6 @@ echo "sleeping for 10 seconds..."
 sleep 10
 
 #run phase 2 (post-agent) testing
-java -jar integration/target/integration-4.0.0-SNAPSHOT.jar --phase=2 --biosamples.client.uri=http://localhost:8081/biosamples/beta --biosamples.submissionuri.sampletab=http://localhost:8082/biosamples/beta
+java -jar integration/target/integration-4.0.0-SNAPSHOT.jar --phase=2 --biosamples.client.uri=http://localhost:8081/biosamples/beta --biosamples.submissionuri.sampletab=http://localhost:8082/biosamples/beta/sampletab
 
 echo "Successfullly completed"
