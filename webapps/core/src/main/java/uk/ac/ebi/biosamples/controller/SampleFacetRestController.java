@@ -1,18 +1,25 @@
 package uk.ac.ebi.biosamples.controller;
 
+import java.util.Collection;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.ExposesResourceFor;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.Resources;
+import org.springframework.hateoas.UriTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SampleFacet;
 import uk.ac.ebi.biosamples.service.SampleService;
 
@@ -21,22 +28,46 @@ import uk.ac.ebi.biosamples.service.SampleService;
 @RequestMapping("/samples/facets")
 public class SampleFacetRestController {
 
-	@Autowired
-	private SampleService sampleService;
+	private final SampleService sampleService;
 
-    @CrossOrigin(methods = RequestMethod.GET)
+	private final EntityLinks entityLinks;
+	
+	private Logger log = LoggerFactory.getLogger(getClass());
+
+	public SampleFacetRestController(SampleService sampleService,
+			EntityLinks entityLinks) {
+		this.sampleService = sampleService;
+		this.entityLinks = entityLinks;
+	}
+    
+
+    @CrossOrigin
 	@GetMapping(produces = { MediaType.APPLICATION_JSON_VALUE})
-	public ResponseEntity<List<SampleFacet>> getFacetsJson(
+	public ResponseEntity<Collection<SampleFacet>> getFacetsJson(
+			@RequestParam(name="text", required=false) String text,
+			@RequestParam(name="filter", required=false) String[] filters) {
+    	ResponseEntity<Resources<SampleFacet>> halResponse = getFacetsHal(text,filters);
+		return ResponseEntity.status(halResponse.getStatusCode()).headers(halResponse.getHeaders()).body(halResponse.getBody().getContent());    
+	}
+
+    @CrossOrigin
+	@GetMapping(produces = { MediaTypes.HAL_JSON_VALUE})
+	public ResponseEntity<Resources<SampleFacet>> getFacetsHal(
 			@RequestParam(name="text", required=false) String text,
 			@RequestParam(name="filter", required=false) String[] filters) {
     	
     	//TODO support rows and start parameters
 
-    	List<SampleFacet> sampleFacets = sampleService.getFacets(text, sampleService.getFilters(filters), 10, 10);
-		//PagedResources<Resource<SampleFacet>> paged = new PagedResources<Resource<SampleFacet>>(sampleFacets, null);
-		//TODO use proper hateoas resource(s) and links and pageing
-    	//TODO as resource
-		return ResponseEntity.ok()
-				.body(sampleFacets);
+    	List<SampleFacet> sampleFacets = sampleService.getFacets(text, sampleService.getFilters(filters), 10, 10);    	
+    	Resources<SampleFacet> resources = new Resources<>(sampleFacets);
+    	
+		//Links for the entire page
+		//this is hacky, but no clear way to do this in spring-hateoas currently
+    	resources.removeLinks();
+		UriTemplate selfUriTemplate = new UriTemplate(entityLinks.linkToCollectionResource(SampleFacet.class).getHref()+"{?text,filter}");
+		resources.add(new Link(selfUriTemplate.toString(),Link.REL_SELF));
+		UriTemplate sampleUriTemplate = new UriTemplate(entityLinks.linkToCollectionResource(Sample.class).getHref()+"{?text,filter,start,rows}");
+		resources.add(new Link(sampleUriTemplate.toString(),"samples"));
+		return ResponseEntity.ok().body(resources);
 	}
 }
