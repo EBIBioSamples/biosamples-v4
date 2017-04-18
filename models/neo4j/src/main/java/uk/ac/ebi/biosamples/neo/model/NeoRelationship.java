@@ -56,7 +56,7 @@ public class NeoRelationship  {
     
     @Override
     public int hashCode() {
-    	return Objects.hash(type, target, owner);
+    	return Objects.hash(type, target.getAccession(), owner.getAccession());
     }	
 
 	public static NeoRelationship build(NeoSample owner, String specificType, NeoSample target) {
