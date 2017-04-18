@@ -3,6 +3,7 @@ package uk.ac.ebi.biosamples.neo.model;
 import org.neo4j.ogm.annotation.NodeEntity;
 import org.neo4j.ogm.annotation.Property;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
@@ -10,6 +11,12 @@ import java.util.TreeSet;
 import org.neo4j.ogm.annotation.GraphId;
 import org.neo4j.ogm.annotation.Index;
 import org.neo4j.ogm.annotation.Relationship;
+import org.neo4j.ogm.annotation.typeconversion.Convert;
+
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+import uk.ac.ebi.biosamples.neo.service.LocalDateTimeConverter;
 
 @NodeEntity(label = "Sample")
 public class NeoSample {
@@ -23,6 +30,13 @@ public class NeoSample {
 
 	@Property
 	private String name;
+
+	@Convert(LocalDateTimeConverter.class)
+	@Property(name="update")
+	private LocalDateTime update;
+	@Convert(LocalDateTimeConverter.class)
+	@Property(name="release")
+	private LocalDateTime release;
 	
 	@Relationship(type = "RELATED_TO", direction = Relationship.UNDIRECTED)
 	private Set<NeoRelationship> relationships;
@@ -45,6 +59,16 @@ public class NeoSample {
 		return accession;
 	}
 
+	public String getName() {
+		return name;
+	}
+	public LocalDateTime getUpdate() {
+		return update;
+	}
+	public LocalDateTime getRelease() {
+		return release;
+	}
+	
 	public Set<NeoRelationship> getRelationships() {
 		return relationships;
 	}
@@ -53,29 +77,23 @@ public class NeoSample {
 		return attributes;
 	}
 
-	public void addRelationships(NeoRelationship relationship) {
-		if (relationships == null) {
-			relationships = new HashSet<>();
-		}
-		relationships.add(relationship);
-	}
-
 	public Set<NeoExternalReference> getExternalReferences() {
 		return externalReferences;
-	}
-
-	public void addExternalReference(NeoExternalReference reference) {
-		if (externalReferences == null) {
-			externalReferences = new HashSet<>();
-		}
-		externalReferences.add(reference);
 	}
 
     @Override
     public String toString() {
     	StringBuilder sb = new StringBuilder();
     	sb.append("NeoSample(");
+    	sb.append(name);
+    	sb.append(",");
     	sb.append(accession);
+    	sb.append(",");
+    	sb.append(release);
+    	sb.append(",");
+    	sb.append(update);
+    	sb.append(",");
+    	sb.append(attributes);
     	sb.append(",");
     	sb.append(relationships);
     	sb.append(",");
@@ -95,11 +113,13 @@ public class NeoSample {
      * @param externalReferences
      * @return
      */
-	public static NeoSample create(String accession, String name, Set<NeoAttribute> attributes,
-			Set<NeoRelationship> relationships,  Set<NeoExternalReference> externalReferences) {
+	public static NeoSample build(String name, String accession, LocalDateTime release, LocalDateTime update, 
+			Set<NeoAttribute> attributes, Set<NeoRelationship> relationships, Set<NeoExternalReference> externalReferences) {
 		NeoSample neoSample = new NeoSample();
 		neoSample.accession = accession;
 		neoSample.name = name;
+		neoSample.release = release;
+		neoSample.update = update;
 
 		if (attributes == null || attributes.size() == 0) {
 			neoSample.attributes = null;

@@ -49,7 +49,7 @@ public class SampleToNeoSampleConverter
 		for (Relationship relationship : sample.getRelationships()) {
 			relationships.add(relationshipToNeoRelationshipConverter.convert(relationship));
 		}				
-		return NeoSample.create(sample.getAccession(), sample.getName(),
+		return NeoSample.build(sample.getName(), sample.getAccession(), sample.getRelease(), sample.getUpdate(),
 				attributes, relationships, externalReferences);
 	
 	}
