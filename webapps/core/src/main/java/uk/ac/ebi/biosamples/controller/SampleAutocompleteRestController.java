@@ -8,6 +8,7 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.UriTemplate;
+import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
@@ -42,9 +43,9 @@ public class SampleAutocompleteRestController {
 	@GetMapping(produces = { MediaType.APPLICATION_JSON_VALUE })
 	public ResponseEntity<Autocomplete> getAutocompleteJson(
 			@RequestParam(name="text", required=false) String text,
-			@RequestParam(name="filter", required=false) String[] filters,
+			@RequestParam(name="filter", required=false) String[] filter,
 			@RequestParam(name="rows", defaultValue="10") Integer rows) {
-    	ResponseEntity<Resource<Autocomplete>> halResponse = getAutocompleteHal(text,filters,rows);
+    	ResponseEntity<Resource<Autocomplete>> halResponse = getAutocompleteHal(text,filter,rows);
 		return ResponseEntity.status(halResponse.getStatusCode()).headers(halResponse.getHeaders()).body(halResponse.getBody().getContent());    	
 	}
     
@@ -52,19 +53,26 @@ public class SampleAutocompleteRestController {
 	@GetMapping(produces = { MediaTypes.HAL_JSON_VALUE })
 	public ResponseEntity<Resource<Autocomplete>> getAutocompleteHal(
 			@RequestParam(name="text", required=false) String text,
-			@RequestParam(name="filter", required=false) String[] filters,
+			@RequestParam(name="filter", required=false) String[] filter,
 			@RequestParam(name="rows", defaultValue="10") Integer rows) {
-		MultiValueMap<String, String> filtersMap = sampleService.getFilters(filters);
+		MultiValueMap<String, String> filtersMap = sampleService.getFilters(filter);
     	Autocomplete autocomplete = sampleService.getAutocomplete(text, filtersMap, rows);
     	Resource<Autocomplete> resource = new Resource<>(autocomplete);
 
 		//Links for the entire page
 		//this is hacky, but no clear way to do this in spring-hateoas currently
     	resource.removeLinks();
-		UriTemplate selfUriTemplate = new UriTemplate(entityLinks.linkToCollectionResource(Autocomplete.class).getHref()+"{?text,filter,rows}");
-		resource.add(new Link(selfUriTemplate.toString(),Link.REL_SELF));
-		UriTemplate sampleUriTemplate = new UriTemplate(entityLinks.linkToCollectionResource(Sample.class).getHref()+"{?text,filter,start,rows}");
-		resource.add(new Link(sampleUriTemplate.toString(),"samples"));
+    	//to generate the HAL template correctly, the parameter name must match the requestparam name
+    	resource.add(ControllerLinkBuilder.linkTo(
+				ControllerLinkBuilder.methodOn(SampleFacetRestController.class)
+					.getFacetsHal(text, filter))
+				.withSelfRel());
+		
+    	resource.add(ControllerLinkBuilder.linkTo(
+				ControllerLinkBuilder.methodOn(SampleRestController.class)
+					.searchHal(text, filter, null, null, null))
+				.withRel("samples"));
+		
 		return ResponseEntity.ok().body(resource);
 	}
 }

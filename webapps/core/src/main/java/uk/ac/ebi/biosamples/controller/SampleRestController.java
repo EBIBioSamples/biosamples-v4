@@ -76,7 +76,7 @@ public class SampleRestController {
 	@GetMapping(produces = { MediaTypes.HAL_JSON_VALUE })
 	public ResponseEntity<PagedResources<Resource<Sample>>> searchHal(
 			@RequestParam(name="text", required=false) String text,
-			@RequestParam(name="filter", required=false) String[] filters,
+			@RequestParam(name="filter", required=false) String[] filter,
 			@RequestParam(name="start", defaultValue="0") Integer start,
 			@RequestParam(name="rows", defaultValue="10") Integer rows,
 			PagedResourcesAssembler<Sample> assembler) {
@@ -91,7 +91,7 @@ public class SampleRestController {
 		}
 		Pageable pageable = new PageRequest(start/rows, rows);
 
-		MultiValueMap<String, String> filtersMap = sampleService.getFilters(filters);
+		MultiValueMap<String, String> filtersMap = sampleService.getFilters(filter);
 		Page<Sample> pageSample = sampleService.getSamplesByText(text, filtersMap, pageable);
 		//add the links to each individual sample on the page
 		PagedResources<Resource<Sample>> pagedResources = assembler.toResource(pageSample, sampleResourceAssembler);
@@ -99,13 +99,22 @@ public class SampleRestController {
 		//Links for the entire page
 		//this is hacky, but no clear way to do this in spring-hateoas currently
 		pagedResources.removeLinks();
-		UriTemplate selfUriTemplate = new UriTemplate(entityLinks.linkToCollectionResource(Sample.class).getHref()+"{?text,filter,start,rows}");
-		pagedResources.add(new Link(selfUriTemplate.toString(),Link.REL_SELF));
+
+    	//to generate the HAL template correctly, the parameter name must match the requestparam name
+		pagedResources.add(ControllerLinkBuilder.linkTo(
+				ControllerLinkBuilder.methodOn(SampleRestController.class)
+					.searchHal(text, filter, start, rows, null))
+				.withSelfRel());
+		pagedResources.add(ControllerLinkBuilder.linkTo(
+				ControllerLinkBuilder.methodOn(SampleAutocompleteRestController.class)
+					.getAutocompleteHal(text, filter, null))
+				.withRel("autocomplete"));
+		pagedResources.add(ControllerLinkBuilder.linkTo(
+				ControllerLinkBuilder.methodOn(SampleFacetRestController.class)
+					.getFacetsHal(text, filter))
+				.withRel("facet"));
+
 		//TODO first/last/next/prev
-		UriTemplate autocompleteUriTemplate = new UriTemplate(entityLinks.linkToCollectionResource(Sample.class).getHref()+"/autocomplete{?text,filter,rows}");
-		pagedResources.add(new Link(autocompleteUriTemplate.toString(),"autocomplete"));
-		UriTemplate facetsUriTemplate = new UriTemplate(entityLinks.linkToCollectionResource(Sample.class).getHref()+"/facets{?text,filter}");
-		pagedResources.add(new Link(facetsUriTemplate.toString(),"facets"));
 	
 		return ResponseEntity.ok()
 				.body(pagedResources);
@@ -115,11 +124,11 @@ public class SampleRestController {
 	@GetMapping(produces = { MediaType.APPLICATION_JSON_VALUE })
 	public ResponseEntity<List<Sample>> searchJson(
 			@RequestParam(name="text", required=false) String text,
-			@RequestParam(name="filter", required=false) String[] filters,
+			@RequestParam(name="filter", required=false) String[] filter,
 			@RequestParam(name="start", defaultValue="0") Integer start,
 			@RequestParam(name="rows", defaultValue="10") Integer rows,
 			PagedResourcesAssembler<Sample> assembler) {
-    	ResponseEntity<PagedResources<Resource<Sample>>> halResponse = searchHal(text,filters,start,rows,assembler);
+    	ResponseEntity<PagedResources<Resource<Sample>>> halResponse = searchHal(text,filter,start,rows,assembler);
 
     	List<Sample> sampleList = new ArrayList<Sample>();
     	halResponse.getBody().getContent().stream().forEach(resource -> sampleList.add(resource.getContent()));    	
