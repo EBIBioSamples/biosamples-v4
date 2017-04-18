@@ -36,5 +36,5 @@ echo "checking webapps-core is up"
 ./http-status-check -u http://localhost:8081/biosamples/beta/samples -t 30
 echo "checking webapps-sampletab is up"
 ./http-status-check -u http://localhost:8082/biosamples/beta/health -t 30
-echo "checking legacyxml is up"
-./http-status-check -u http://localhost:8083/xml/samples?query=*:* -t 30
+# echo "checking legacyxml is up"
+# ./http-status-check -u http://localhost:8083/xml/samples?query=*:* -t 30

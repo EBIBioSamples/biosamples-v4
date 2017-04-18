@@ -12,10 +12,11 @@ import java.util.Map;
  * Phase 2 - data available in biosamples database and readable from interfaces (api, html,...)
  */
 public enum Phase {
-    ONE(1),
-    TWO(2),
-    UNKNOWN(-1),
-    NO_PHASE(0);
+    ONE(1, "Input"),
+    TWO(2, "Read"),
+    UNKNOWN(-1, "Unknown"),
+    NO_PHASE(0, "No phase");
+
     static final Map<Integer, Phase> phaseLookup = new HashMap<>();
 
     static {
@@ -31,13 +32,20 @@ public enum Phase {
     }
 
     private int phaseCode;
+    private String description;
 
-    Phase(int phaseRepresentation) {
+
+    Phase(int phaseRepresentation, String description) {
         this.phaseCode = phaseRepresentation;
+        this.description = description;
     }
 
     public int getCode() {
         return this.phaseCode;
+    }
+
+    public String getDescription() {
+        return description;
     }
 
     public static Phase readPhaseFromArguments(ApplicationArguments args) {
@@ -45,7 +53,7 @@ public enum Phase {
             int phaseCode = Integer.parseInt(args.getOptionValues("phase").get(0));
             Phase phase = phaseLookup.getOrDefault(phaseCode, Phase.UNKNOWN);
             if (phase.equals(UNKNOWN)) {
-                throw new IllegalArgumentException(String.format("Unkown phase %d", phaseCode));
+                throw new IllegalArgumentException(String.format("Unknown phase %d", phaseCode));
             }
         }
         return NO_PHASE;
