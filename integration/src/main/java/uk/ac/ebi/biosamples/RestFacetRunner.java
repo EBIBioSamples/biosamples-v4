@@ -1,40 +1,29 @@
 package uk.ac.ebi.biosamples;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.ExitCodeGenerator;
-import org.springframework.core.Ordered;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.Resources;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.ExternalReference;
-import uk.ac.ebi.biosamples.model.Relationship;
-import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SampleFacet;
 
+import java.net.URI;
+import java.util.List;
+
 @Component
-public class RestFacetRunner implements ApplicationRunner, ExitCodeGenerator, Ordered {
+@Order(3)
+@Profile("rest")
+public class RestFacetRunner implements ApplicationRunner, ExitCodeGenerator {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -74,11 +63,6 @@ public class RestFacetRunner implements ApplicationRunner, ExitCodeGenerator, Or
 		//if we got here without throwing, then we finished sucessfully
 		exitCode = 0;
 		log.info("Finished RestSearchRunner");
-	}
-
-	@Override
-	public int getOrder() {
-		return 3;
 	}
 
 	@Override

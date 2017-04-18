@@ -10,7 +10,7 @@ import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.model.Sample;
 
@@ -22,9 +22,10 @@ public class BiosamplesRestOperations {
     private Logger log = LoggerFactory.getLogger(this.getClass());
 
     private IntegrationProperties integrationProperties;
-    private RestTemplate restTemplate;
-    public BiosamplesRestOperations(RestTemplate restTemplate, IntegrationProperties properties) {
-        this.restTemplate = restTemplate;
+    private RestOperations restOperations;
+
+    public BiosamplesRestOperations(RestOperations restOperations, IntegrationProperties properties) {
+        this.restOperations = restOperations;
         this.integrationProperties = properties;
     }
 
@@ -34,7 +35,7 @@ public class BiosamplesRestOperations {
 
         log.info("GETting from "+uri);
         RequestEntity<Void> request = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
-        ResponseEntity<Resource<Sample>> response = restTemplate.exchange(request, new ParameterizedTypeReference<Resource<Sample>>(){});
+        ResponseEntity<Resource<Sample>> response = restOperations.exchange(request, new ParameterizedTypeReference<Resource<Sample>>(){});
         return response;
     }
 
@@ -44,7 +45,7 @@ public class BiosamplesRestOperations {
 
         log.info("PUTting to "+uri);
         RequestEntity<Sample> request = RequestEntity.put(uri).contentType(MediaType.APPLICATION_JSON).body(sample);
-        ResponseEntity<Resource<Sample>> response = restTemplate.exchange(request, new ParameterizedTypeReference<Resource<Sample>>(){});
+        ResponseEntity<Resource<Sample>> response = restOperations.exchange(request, new ParameterizedTypeReference<Resource<Sample>>(){});
         if (!sample.equals(response.getBody().getContent())) {
             log.info("sample = "+sample);
             log.info("response.getBody() = "+response.getBody());

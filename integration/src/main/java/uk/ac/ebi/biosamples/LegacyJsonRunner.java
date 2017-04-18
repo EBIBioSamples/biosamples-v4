@@ -2,14 +2,15 @@ package uk.ac.ebi.biosamples;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.ExitCodeGenerator;
-import org.springframework.core.Ordered;
+import org.springframework.context.annotation.Profile;
+import org.springframework.core.annotation.Order;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpStatusCodeException;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
@@ -24,15 +25,20 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 @SuppressWarnings("Duplicates")
-public class LegacyJsonRunner implements ApplicationRunner, ExitCodeGenerator, Ordered {
+@Component
+@Order(5)
+@Profile({"default", "rest", "test"})
+public class LegacyJsonRunner implements ApplicationRunner, ExitCodeGenerator {
 
     private Logger log = LoggerFactory.getLogger(this.getClass());
 
     @SuppressWarnings("FieldCanBeLocal") private int exitCode = 1;
-    @SuppressWarnings("FieldCanBeLocal") private int runOrder = 4;
 
-    @Autowired
-    private BiosamplesRestOperations biosamplesCommonRest;
+    private final BiosamplesRestOperations biosamplesCommonRest;
+
+    public LegacyJsonRunner(BiosamplesRestOperations biosamplesCommonRest) {
+        this.biosamplesCommonRest = biosamplesCommonRest;
+    }
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
@@ -130,8 +136,4 @@ public class LegacyJsonRunner implements ApplicationRunner, ExitCodeGenerator, O
         return exitCode;
     }
 
-    @Override
-    public int getOrder() {
-        return runOrder;
-    }
 }

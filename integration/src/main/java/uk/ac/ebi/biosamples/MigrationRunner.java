@@ -1,24 +1,25 @@
 package uk.ac.ebi.biosamples;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.ExitCodeGenerator;
+import org.springframework.context.annotation.Profile;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.hateoas.Resource;
+import org.springframework.stereotype.Component;
+import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.model.Sample;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
-import org.springframework.boot.ExitCodeGenerator;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.hateoas.Resource;
-import org.springframework.stereotype.Component;
-
-import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Sample;
-
 @Component
+@Profile({"default", "migration"})
 public class MigrationRunner implements ApplicationRunner, ExitCodeGenerator {
 
 	private BioSamplesClient bioSamplesClient;

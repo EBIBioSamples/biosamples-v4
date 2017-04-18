@@ -54,6 +54,8 @@ public enum Phase {
             Phase phase = phaseLookup.getOrDefault(phaseCode, Phase.UNKNOWN);
             if (phase.equals(UNKNOWN)) {
                 throw new IllegalArgumentException(String.format("Unknown phase %d", phaseCode));
+            } else {
+                return phase;
             }
         }
         return NO_PHASE;
