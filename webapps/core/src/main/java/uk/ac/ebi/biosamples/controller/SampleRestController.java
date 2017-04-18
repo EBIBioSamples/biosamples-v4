@@ -57,9 +57,7 @@ import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 public class SampleRestController {
 
 	private final SampleService sampleService;
-
 	private final SampleResourceAssembler sampleResourceAssembler;
-
 	private final EntityLinks entityLinks;
 	
 	private Logger log = LoggerFactory.getLogger(getClass());
@@ -73,38 +71,21 @@ public class SampleRestController {
 	}
 
     @CrossOrigin(methods = RequestMethod.GET)
-	@GetMapping(produces = { MediaTypes.HAL_JSON_VALUE })
+	@GetMapping(produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
 	public ResponseEntity<PagedResources<Resource<Sample>>> searchHal(
 			@RequestParam(name="text", required=false) String text,
 			@RequestParam(name="filter", required=false) String[] filter,
-			@RequestParam(name="start", defaultValue="0") Integer start,
-			@RequestParam(name="rows", defaultValue="10") Integer rows,
-			PagedResourcesAssembler<Sample> assembler) {
-
-		//force a minimum of 1 result
-		if (rows < 1) {
-			rows = 1;
-		}
-		//cap it for our protection
-		if (rows > 1000) {
-			rows = 1000;
-		}
-		Pageable pageable = new PageRequest(start/rows, rows);
+			Pageable page,
+			PagedResourcesAssembler<Sample> pageAssembler) {
 
 		MultiValueMap<String, String> filtersMap = sampleService.getFilters(filter);
-		Page<Sample> pageSample = sampleService.getSamplesByText(text, filtersMap, pageable);
+		Page<Sample> pageSample = sampleService.getSamplesByText(text, filtersMap, page);
 		//add the links to each individual sample on the page
-		PagedResources<Resource<Sample>> pagedResources = assembler.toResource(pageSample, sampleResourceAssembler);
-
-		//Links for the entire page
-		//this is hacky, but no clear way to do this in spring-hateoas currently
-		pagedResources.removeLinks();
+		//also adds links to first/last/next/prev at the same time
+		PagedResources<Resource<Sample>> pagedResources = pageAssembler.toResource(pageSample, sampleResourceAssembler,
+				entityLinks.linkToCollectionResource(Sample.class));
 
     	//to generate the HAL template correctly, the parameter name must match the requestparam name
-		pagedResources.add(ControllerLinkBuilder.linkTo(
-				ControllerLinkBuilder.methodOn(SampleRestController.class)
-					.searchHal(text, filter, start, rows, null))
-				.withSelfRel());
 		pagedResources.add(ControllerLinkBuilder.linkTo(
 				ControllerLinkBuilder.methodOn(SampleAutocompleteRestController.class)
 					.getAutocompleteHal(text, filter, null))
@@ -113,36 +94,19 @@ public class SampleRestController {
 				ControllerLinkBuilder.methodOn(SampleFacetRestController.class)
 					.getFacetsHal(text, filter))
 				.withRel("facet"));
-
-		//TODO first/last/next/prev
 	
 		return ResponseEntity.ok()
 				.body(pagedResources);
 	}
-    
+        
     @CrossOrigin(methods = RequestMethod.GET)
-	@GetMapping(produces = { MediaType.APPLICATION_JSON_VALUE })
-	public ResponseEntity<List<Sample>> searchJson(
-			@RequestParam(name="text", required=false) String text,
-			@RequestParam(name="filter", required=false) String[] filter,
-			@RequestParam(name="start", defaultValue="0") Integer start,
-			@RequestParam(name="rows", defaultValue="10") Integer rows,
-			PagedResourcesAssembler<Sample> assembler) {
-    	ResponseEntity<PagedResources<Resource<Sample>>> halResponse = searchHal(text,filter,start,rows,assembler);
-
-    	List<Sample> sampleList = new ArrayList<Sample>();
-    	halResponse.getBody().getContent().stream().forEach(resource -> sampleList.add(resource.getContent()));    	
-		return ResponseEntity.status(halResponse.getStatusCode()).headers(halResponse.getHeaders()).body(sampleList);    	
-    }
-    
-    @CrossOrigin(methods = RequestMethod.GET)
-	@GetMapping(value = "/{accession}", produces = { MediaTypes.HAL_JSON_VALUE })
-	public ResponseEntity<Resource<Sample>> getSampleHal(@PathVariable String accession) {
+	@GetMapping(value = "/{id}", produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE  })
+	public ResponseEntity<Resource<Sample>> getSampleHal(@PathVariable String id) {
 		log.info("starting call");
 		// convert it into the format to return
 		Sample sample = null;
 		try {
-			sample = sampleService.fetch(accession);
+			sample = sampleService.fetch(id);
 		} catch (IllegalArgumentException e) {
 			// did not exist, throw 404
 			return ResponseEntity.notFound().build();
@@ -172,17 +136,6 @@ public class SampleRestController {
 
 		log.info("started call");
 		return response;
-	}
-    
-    @CrossOrigin(methods = RequestMethod.GET)
-	@GetMapping(value = "/{accession}", produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
-	public ResponseEntity<Sample> getSampleJsonXml(@PathVariable String accession) {
-		ResponseEntity<Resource<Sample>> halResponse = getSampleHal(accession);
-		Sample sample = null;
-		if (halResponse.getBody() != null && halResponse.getBody().getContent() != null) {
-			sample = halResponse.getBody().getContent();
-		}
-		return ResponseEntity.status(halResponse.getStatusCode()).headers(halResponse.getHeaders()).body(sample);
 	}
 
 	@PutMapping(value = "/{accession}", consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
