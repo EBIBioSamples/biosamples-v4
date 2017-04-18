@@ -78,7 +78,10 @@ public class RestRunner implements ApplicationRunner, ExitCodeGenerator, Ordered
 			doPut(sampleTest2);
 			
 			// get to check it worked
-			doGetAndSucess(sampleTest2);
+			Sample sampleTest2Rest = doGetAndSucess(sampleTest2);
+			if (!sampleTest2Rest.getAttributes().contains(Attribute.build("UTF-8 test", "αβ", null, null))) {
+				throw new RuntimeException("Unable to find UTF-8 characters");
+			}
 			
 		} else if (args.containsOption("phase") && Integer.parseInt(args.getOptionValues("phase").get(0)) == 2) {
 			

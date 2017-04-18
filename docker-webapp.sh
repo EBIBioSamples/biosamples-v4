@@ -32,9 +32,9 @@ echo "checking neo4j is up"
 docker-compose up -d biosamples-webapps-core biosamples-webapps-sampletab biosamples-webapps-legacyxml
 echo "checking webapps-core is up"
 #would like to check on /health but currently it is bugged so solr is always down
-./http-status-check -u http://localhost:8081/biosamples/beta/actuator -t 30
+./http-status-check -u http://localhost:8081/biosamples/beta/actuator -t 45
 ./http-status-check -u http://localhost:8081/biosamples/beta/samples -t 30
 echo "checking webapps-sampletab is up"
-./http-status-check -u http://localhost:8082/biosamples/beta/health -t 30
-# echo "checking legacyxml is up"
-# ./http-status-check -u http://localhost:8083/xml/samples?query=*:* -t 30
+./http-status-check -u http://localhost:8082/biosamples/beta/sampletab/health -t 30
+echo "checking webapps-legacyxml is up"
+./http-status-check -u http://localhost:8083/biosamples/beta/xml/health -t 30

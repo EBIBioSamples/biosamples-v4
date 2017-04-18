@@ -35,7 +35,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SampleFacet;
 import uk.ac.ebi.biosamples.model.SampleFacetValue;
-import uk.ac.ebi.biosamples.model.SampleFacets;
 import uk.ac.ebi.biosamples.service.SampleService;
 
 /**
@@ -84,7 +83,7 @@ public class SampleHtmlController {
 		Pageable pageable = new PageRequest(start/rows, rows);
 		Page<Sample> pageSample = sampleService.getSamplesByText(text, filtersMap, pageable);
 		//default to getting 10 values from 10 facets
-		SampleFacets sampleFacets = sampleService.getFacets(text, filtersMap, 10, 10);
+		List<SampleFacet> sampleFacets = sampleService.getFacets(text, filtersMap, 10, 10);
 		
 		//build URLs for the facets depending on if they are enabled or not
 		UriComponentsBuilder uriBuilder = ServletUriComponentsBuilder.fromRequest(request);		

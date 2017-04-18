@@ -9,15 +9,17 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestOperations;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.client.ClientProperties;
 import uk.ac.ebi.biosamples.model.Sample;
 
 import java.net.URI;
-import java.util.*;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.NoSuchElementException;
+import java.util.Queue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -28,14 +30,15 @@ public class RetrievalService {
 	private Logger log = LoggerFactory.getLogger(getClass());
 	
 	private final ClientProperties clientProperties;
-	
+
+
 	//use RestOperations as the interface implemented by RestTemplate
 	//easier to mock for testing
 	private final RestOperations restOperations;
 	
 	private final ExecutorService executor;
 	
-	public RetrievalService(ClientProperties clientProperties, RestOperations restOperations, 
+	public RetrievalService(ClientProperties clientProperties, RestOperations restOperations,
 			ExecutorService executor) {
 		this.clientProperties = clientProperties;
 		this.restOperations = restOperations;
@@ -54,9 +57,9 @@ public class RetrievalService {
 
     public PagedResources<Resource<Sample>> fetchPaginated(String text, int startPage, int size) {
 
-		URI uri = UriComponentsBuilder.fromUri(clientProperties.getBiosampleSubmissionUri())
+		URI uri = UriComponentsBuilder.fromUri(clientProperties.getBiosamplesClientUri())
 				.pathSegment("samples")
-                .queryParam("text", !text.isEmpty() ? text : new String[0])
+                .queryParam("text", !text.isEmpty() ? text : "*:*")
                 .queryParam("rows", size)
 				.queryParam("start", startPage)
 				.build().toUri();
@@ -84,7 +87,7 @@ public class RetrievalService {
 		@Override
 		public Resource<Sample> call() throws Exception {
 			
-			URI uri = UriComponentsBuilder.fromUri(clientProperties.getBiosampleSubmissionUri())
+			URI uri = UriComponentsBuilder.fromUri(clientProperties.getBiosamplesClientUri())
 					.pathSegment("samples",accession)
 					.build().toUri();
 			

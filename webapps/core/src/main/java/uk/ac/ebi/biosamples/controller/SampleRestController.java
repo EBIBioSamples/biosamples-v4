@@ -3,6 +3,9 @@ package uk.ac.ebi.biosamples.controller;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,10 +13,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.ExposesResourceFor;
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.UriTemplate;
+import org.springframework.hateoas.mvc.BasicLinkBuilder;
+import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +32,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -44,26 +53,30 @@ import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
  */
 @RestController
 @ExposesResourceFor(Sample.class)
+@RequestMapping("/samples")
 public class SampleRestController {
 
-	private SampleService sampleService;
+	private final SampleService sampleService;
 
-	private SampleResourceAssembler sampleResourceAssembler;
+	private final SampleResourceAssembler sampleResourceAssembler;
+
+	private final EntityLinks entityLinks;
 	
 	private Logger log = LoggerFactory.getLogger(getClass());
 
-	public SampleRestController(@Autowired SampleService sampleService,
-			@Autowired SampleResourceAssembler sampleResourceAssembler) {
+	public SampleRestController(SampleService sampleService,
+			SampleResourceAssembler sampleResourceAssembler,
+			EntityLinks entityLinks) {
 		this.sampleService = sampleService;
 		this.sampleResourceAssembler = sampleResourceAssembler;
-
+		this.entityLinks = entityLinks;
 	}
 
     @CrossOrigin(methods = RequestMethod.GET)
-	@GetMapping(value = "/samples", produces = { MediaType.APPLICATION_JSON_VALUE, MediaTypes.HAL_JSON_VALUE })
-	public ResponseEntity<PagedResources<Resource<Sample>>> search(
+	@GetMapping(produces = { MediaTypes.HAL_JSON_VALUE })
+	public ResponseEntity<PagedResources<Resource<Sample>>> searchHal(
 			@RequestParam(name="text", required=false) String text,
-			@RequestParam(name="filter", required=false) String[] filters,
+			@RequestParam(name="filter", required=false) String[] filter,
 			@RequestParam(name="start", defaultValue="0") Integer start,
 			@RequestParam(name="rows", defaultValue="10") Integer rows,
 			PagedResourcesAssembler<Sample> assembler) {
@@ -78,46 +91,53 @@ public class SampleRestController {
 		}
 		Pageable pageable = new PageRequest(start/rows, rows);
 
-		MultiValueMap<String, String> filtersMap = sampleService.getFilters(filters);
+		MultiValueMap<String, String> filtersMap = sampleService.getFilters(filter);
 		Page<Sample> pageSample = sampleService.getSamplesByText(text, filtersMap, pageable);
+		//add the links to each individual sample on the page
 		PagedResources<Resource<Sample>> pagedResources = assembler.toResource(pageSample, sampleResourceAssembler);
-		
+
+		//Links for the entire page
 		//this is hacky, but no clear way to do this in spring-hateoas currently
-		//pagedResources.removeLinks();
-		//String linkUri = (BasicLinkBuilder.linkToCurrentMapping().slash("samples").toUri().toString())+"{?text,start,rows,filter}";
-		//pagedResources.add(new Link(linkUri, "self"));
-		
+		pagedResources.removeLinks();
+
+    	//to generate the HAL template correctly, the parameter name must match the requestparam name
+		pagedResources.add(ControllerLinkBuilder.linkTo(
+				ControllerLinkBuilder.methodOn(SampleRestController.class)
+					.searchHal(text, filter, start, rows, null))
+				.withSelfRel());
+		pagedResources.add(ControllerLinkBuilder.linkTo(
+				ControllerLinkBuilder.methodOn(SampleAutocompleteRestController.class)
+					.getAutocompleteHal(text, filter, null))
+				.withRel("autocomplete"));
+		pagedResources.add(ControllerLinkBuilder.linkTo(
+				ControllerLinkBuilder.methodOn(SampleFacetRestController.class)
+					.getFacetsHal(text, filter))
+				.withRel("facet"));
+
 		//TODO first/last/next/prev
-		//pagedResources.add(ControllerLinkBuilder.linkTo(ControllerLinkBuilder.methodOn(SampleRestController.class).search(text, filters, start, rows, assembler)).withSelfRel());
 	
 		return ResponseEntity.ok()
 				.body(pagedResources);
 	}
     
     @CrossOrigin(methods = RequestMethod.GET)
-	@GetMapping(value = "/samples/autocomplete", produces = { MediaType.APPLICATION_JSON_VALUE })
-	public ResponseEntity<Autocomplete> autocomplete(
-			@RequestParam(name="query", required=false) String text,
-			@RequestParam(name="filter", required=false) String[] filters,
-			@RequestParam(name="rows", defaultValue="10") Integer rows) {
-		MultiValueMap<String, String> filtersMap = sampleService.getFilters(filters);
-    	Autocomplete autocomplete = sampleService.getAutocomplete(text, filtersMap, rows);
-		return ResponseEntity.ok().body(autocomplete);
-	}
-    
+	@GetMapping(produces = { MediaType.APPLICATION_JSON_VALUE })
+	public ResponseEntity<List<Sample>> searchJson(
+			@RequestParam(name="text", required=false) String text,
+			@RequestParam(name="filter", required=false) String[] filter,
+			@RequestParam(name="start", defaultValue="0") Integer start,
+			@RequestParam(name="rows", defaultValue="10") Integer rows,
+			PagedResourcesAssembler<Sample> assembler) {
+    	ResponseEntity<PagedResources<Resource<Sample>>> halResponse = searchHal(text,filter,start,rows,assembler);
 
-    @CrossOrigin(methods = RequestMethod.GET)
-	@GetMapping(value = "/samples/{accession}", produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
-	public ResponseEntity<Sample> readResource(@PathVariable String accession) {
-		ResponseEntity<Resource<Sample>> halResponse = readResourceHal(accession);
-		return ResponseEntity.status(halResponse.getStatusCode()).headers(halResponse.getHeaders()).body(halResponse.getBody().getContent());
-	}
-
-    
+    	List<Sample> sampleList = new ArrayList<Sample>();
+    	halResponse.getBody().getContent().stream().forEach(resource -> sampleList.add(resource.getContent()));    	
+		return ResponseEntity.status(halResponse.getStatusCode()).headers(halResponse.getHeaders()).body(sampleList);    	
+    }
     
     @CrossOrigin(methods = RequestMethod.GET)
-	@GetMapping(value = "/samples/{accession}", produces = { MediaTypes.HAL_JSON_VALUE })
-	public ResponseEntity<Resource<Sample>> readResourceHal(@PathVariable String accession) {
+	@GetMapping(value = "/{accession}", produces = { MediaTypes.HAL_JSON_VALUE })
+	public ResponseEntity<Resource<Sample>> getSampleHal(@PathVariable String accession) {
 		log.info("starting call");
 		// convert it into the format to return
 		Sample sample = null;
@@ -153,10 +173,20 @@ public class SampleRestController {
 		log.info("started call");
 		return response;
 	}
+    
+    @CrossOrigin(methods = RequestMethod.GET)
+	@GetMapping(value = "/{accession}", produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
+	public ResponseEntity<Sample> getSampleJsonXml(@PathVariable String accession) {
+		ResponseEntity<Resource<Sample>> halResponse = getSampleHal(accession);
+		Sample sample = null;
+		if (halResponse.getBody() != null && halResponse.getBody().getContent() != null) {
+			sample = halResponse.getBody().getContent();
+		}
+		return ResponseEntity.status(halResponse.getStatusCode()).headers(halResponse.getHeaders()).body(sample);
+	}
 
-	@PutMapping(value = "/samples/{accession}", consumes = { MediaType.APPLICATION_JSON_VALUE,
-			MediaType.APPLICATION_XML_VALUE })
-	public ResponseEntity<Resource<Sample>> update(@PathVariable String accession, @RequestBody Sample sample) {
+	@PutMapping(value = "/{accession}", consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
+	public ResponseEntity<Resource<Sample>> putJsonXml(@PathVariable String accession, @RequestBody Sample sample) {
 		if (!sample.getAccession().equals(accession)) {
 			// if the accession in the body is different to the accession in the
 			// url, throw an error
@@ -168,15 +198,16 @@ public class SampleRestController {
 
 		log.info("Recieved PUT for " + accession);
 		sampleService.store(sample);
+		
+		//assemble a resource to return
 		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
 		
 		// create the response object with the appropriate status
 		return ResponseEntity.accepted().body(sampleResource);
 	}
 
-	@PostMapping(value = "/samples", consumes = { MediaType.APPLICATION_JSON_VALUE,
-			MediaType.APPLICATION_XML_VALUE })
-	public ResponseEntity<Resource<Sample>> submit(@RequestBody Sample sample) {
+	@PostMapping(consumes = { MediaType.APPLICATION_JSON_VALUE,	MediaType.APPLICATION_XML_VALUE })
+	public ResponseEntity<Resource<Sample>> postJsonXml(@RequestBody Sample sample) {
 		log.info("Recieved POST");
 		sample = sampleService.store(sample);
 		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
