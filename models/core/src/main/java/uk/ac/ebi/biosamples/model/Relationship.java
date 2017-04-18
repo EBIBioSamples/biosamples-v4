@@ -82,9 +82,9 @@ public class Relationship implements Comparable<Relationship> {
     }
     
     @JsonCreator
-    public static Relationship build(@JsonProperty("type") String type, 
-    		@JsonProperty("target") String target,
-    		@JsonProperty("source") String source) {
+    public static Relationship build(@JsonProperty("source") String source, 
+    		@JsonProperty("type") String type,
+    		@JsonProperty("target") String target) {
     	if (type == null || type.trim().length() == 0) throw new IllegalArgumentException("type cannot be empty");
     	if (target == null || target.trim().length() == 0) throw new IllegalArgumentException("target cannot be empty");
     	if (source == null || source.trim().length() == 0) throw new IllegalArgumentException("source cannot be empty");
