@@ -16,8 +16,7 @@ public class NeoRelationshipToRelationshipConverter
 
 	@Override
 	public Relationship convert(NeoRelationship neo) {
-		throw new IllegalArgumentException("Not implemented");
-		
+		return Relationship.build(neo.getOwner().getAccession(), neo.getType(), neo.getTarget().getAccession());
 	}
 
 }

@@ -16,7 +16,7 @@ public class NeoExternalReferenceToExternalReferenceConverter
 
 	@Override
 	public ExternalReference convert(NeoExternalReference neo) {
-		throw new IllegalArgumentException("Not implemented");
+		return ExternalReference.build(neo.getUrl());
 		
 	}
 

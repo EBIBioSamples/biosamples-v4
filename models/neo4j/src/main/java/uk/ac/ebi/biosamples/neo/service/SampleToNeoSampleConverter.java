@@ -24,19 +24,21 @@ import uk.ac.ebi.biosamples.neo.model.NeoExternalReference;
 public class SampleToNeoSampleConverter
 		implements Converter<Sample, NeoSample> {
 	
-	//@Autowired
-	//private ConversionService conversionService;
-	
-	@Autowired
 	private AttributeToNeoAttributeConverter attributeToNeoAttributeConverter;
-	@Autowired
 	private ExternalReferenceToNeoExternalReferenceConverter externalReferenceToNeoExternalReferenceConverter;
-	@Autowired
 	private RelationshipToNeoRelationshipConverter relationshipToNeoRelationshipConverter;
+
+	public SampleToNeoSampleConverter( AttributeToNeoAttributeConverter attributeToNeoAttributeConverter,
+			ExternalReferenceToNeoExternalReferenceConverter externalReferenceToNeoExternalReferenceConverter,
+			RelationshipToNeoRelationshipConverter relationshipToNeoRelationshipConverter) {
+		
+		this.attributeToNeoAttributeConverter = attributeToNeoAttributeConverter;
+		this.externalReferenceToNeoExternalReferenceConverter = externalReferenceToNeoExternalReferenceConverter;
+		this.relationshipToNeoRelationshipConverter = relationshipToNeoRelationshipConverter;
+	}
 
 	@Override
 	public NeoSample convert(Sample sample) {
-		
 		Set<NeoAttribute> attributes = new HashSet<>();
 		for (Attribute attribute : sample.getAttributes()) {
 			attributes.add(attributeToNeoAttributeConverter.convert(attribute));
@@ -50,8 +52,7 @@ public class SampleToNeoSampleConverter
 			relationships.add(relationshipToNeoRelationshipConverter.convert(relationship));
 		}				
 		return NeoSample.build(sample.getName(), sample.getAccession(), sample.getRelease(), sample.getUpdate(),
-				attributes, relationships, externalReferences);
-	
+				attributes, relationships, externalReferences);	
 	}
 
 }

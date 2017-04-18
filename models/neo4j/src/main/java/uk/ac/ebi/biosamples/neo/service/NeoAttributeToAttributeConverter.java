@@ -16,7 +16,7 @@ public class NeoAttributeToAttributeConverter
 
 	@Override
 	public Attribute convert(NeoAttribute neo) {
-		throw new IllegalArgumentException("Not implemented");
+		return Attribute.build(neo.getType(), neo.getValue(), neo.getIri(), neo.getUnit());
 		
 	}
 

@@ -23,7 +23,7 @@ public class RelationshipToNeoRelationshipConverter
 		NeoSample owner = NeoSample.create(relationship.getSource());
 		NeoSample target = NeoSample.create(relationship.getTarget());
 		
-		return NeoRelationship.build(owner, target, relationship.getType());
+		return NeoRelationship.build(owner, relationship.getType(), target);
 	}
 
 }

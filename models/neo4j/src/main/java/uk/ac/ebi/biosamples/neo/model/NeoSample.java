@@ -5,6 +5,7 @@ import org.neo4j.ogm.annotation.Property;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -16,6 +17,7 @@ import org.neo4j.ogm.annotation.typeconversion.Convert;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
+import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.neo.service.LocalDateTimeConverter;
 
 @NodeEntity(label = "Sample")
@@ -80,6 +82,28 @@ public class NeoSample {
 	public Set<NeoExternalReference> getExternalReferences() {
 		return externalReferences;
 	}
+
+	@Override
+    public boolean equals(Object o) {
+
+        if (o == this) return true;
+        if (!(o instanceof NeoSample)) {
+            return false;
+        }
+        NeoSample other = (NeoSample) o;
+        return Objects.equals(this.name, other.name) 
+        		&& Objects.equals(this.accession, other.accession)
+        		&& Objects.equals(this.release, other.release)
+        		&& Objects.equals(this.update, other.update)
+        		&& Objects.equals(this.attributes, other.attributes)
+        		&& Objects.equals(this.relationships, other.relationships)
+        		&& Objects.equals(this.externalReferences, other.externalReferences);
+    }
+    
+    @Override
+    public int hashCode() {
+    	return Objects.hash(name, accession, release, update, attributes, relationships, externalReferences);
+    }
 
     @Override
     public String toString() {

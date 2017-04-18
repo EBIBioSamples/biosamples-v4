@@ -20,7 +20,7 @@ public class NeoRelationship  {
 	private NeoSample target;
 
 	@Property
-	private String specificType;
+	private String type;
 
 	private NeoRelationship() {
 	};
@@ -29,8 +29,8 @@ public class NeoRelationship  {
 		return id;
 	};
 
-	public String getSpecificType() {
-		return specificType;
+	public String getType() {
+		return type;
 	}
 
 	public NeoSample getOwner() {
@@ -49,21 +49,21 @@ public class NeoRelationship  {
             return false;
         }
         NeoRelationship other = (NeoRelationship) o;
-        return Objects.equals(this.specificType, other.specificType) 
-        		&& Objects.equals(this.target, other.target)
-        		&& Objects.equals(this.owner, other.owner);
+        return Objects.equals(this.type, other.type) 
+        		&& Objects.equals(this.target.getAccession(), other.target.getAccession())
+        		&& Objects.equals(this.owner.getAccession(), other.owner.getAccession());
     }
     
     @Override
     public int hashCode() {
-    	return Objects.hash(specificType, target, owner);
+    	return Objects.hash(type, target, owner);
     }	
 
-	public static NeoRelationship build(NeoSample owner, NeoSample target, String specificType) {
+	public static NeoRelationship build(NeoSample owner, String specificType, NeoSample target) {
 		NeoRelationship newRelationship = new NeoRelationship();
 		newRelationship.owner = owner;
 		newRelationship.target = target;
-		newRelationship.specificType = specificType;
+		newRelationship.type = specificType;
 		return newRelationship;
 	}
 }
