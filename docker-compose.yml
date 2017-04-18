@@ -119,7 +119,6 @@ services:
         gelf-address: "udp://localhost:12201"
 
     
-    
   biosamples-agents-neo4j:
     image: biosamples:latest
     links:
@@ -340,7 +339,7 @@ networks:
   default:
     ipam:
       config:
-      - subnet: 172.28.0.0/16
+      - subnet: 172.29.0.0/16
 volumes:
   solr_samples_data: null
   mongo_data: null
