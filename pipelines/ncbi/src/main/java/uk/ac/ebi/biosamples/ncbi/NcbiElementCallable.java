@@ -107,7 +107,7 @@ public class NcbiElementCallable implements Callable<Void> {
 				//if its a self-relationship, then don't add it
 				//otherwise add it
 				if (!value.equals(accession)) {
-					rels.add(Relationship.build(key, value, accession));
+					rels.add(Relationship.build(accession, key, value));
 				}				
 			} else {
 				//its an attribute

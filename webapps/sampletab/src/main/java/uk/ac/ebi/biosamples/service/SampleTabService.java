@@ -86,7 +86,7 @@ public class SampleTabService {
 				log.info("Found parent");
 				if (node instanceof SampleNode) {
 					SampleNode sampleNode = (SampleNode) node;
-					relationships.add(Relationship.build("has member", sampleNode.getSampleAccession(), accession));
+					relationships.add(Relationship.build(accession, "has member", sampleNode.getSampleAccession()));
 					log.info("Adding relationship from "+accession+" to "+sampleNode.getSampleAccession());
 				}
 			}		
@@ -156,7 +156,7 @@ public class SampleTabService {
 				AbstractRelationshipAttribute abstractRelationshipAttribute = (AbstractRelationshipAttribute) attribute;
 				type = abstractRelationshipAttribute.getAttributeType();
 				value = abstractRelationshipAttribute.getAttributeValue();
-				relationships.add(Relationship.build(type, value, accession));
+				relationships.add(Relationship.build(accession, type, value));
 			}				
 		}		
 	}

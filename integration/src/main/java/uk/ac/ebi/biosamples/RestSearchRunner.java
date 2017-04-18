@@ -84,7 +84,7 @@ public class RestSearchRunner implements ApplicationRunner, ExitCodeGenerator, O
 		attributes.add(Attribute.build("organism part", "heart", null, null));
 
 		SortedSet<Relationship> relationships = new TreeSet<>();
-		relationships.add(Relationship.build("derived from", "TEST2", "TEST1"));
+		relationships.add(Relationship.build("TEST1", "derived from", "TEST2"));
 		
 		SortedSet<ExternalReference> externalReferences = new TreeSet<>();
 		externalReferences.add(ExternalReference.build("http://www.google.com"));

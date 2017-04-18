@@ -53,10 +53,10 @@ public class InverseRelationshipService  {
 			for(NeoRelationship neoRelationship : neoSample.getRelationships()) {
 				String target = neoRelationship.getTarget().getAccession();
 				String source = neoRelationship.getOwner().getAccession();
-				String relType = neoRelationship.getSpecificType();
+				String relType = neoRelationship.getType();
 				Relationship rel = null;
 				try { 
-					rel = Relationship.build(relType, target, source);
+					rel = Relationship.build(source, relType, target);
 				} catch (IllegalArgumentException e) {
 					//do nothing
 				}
