@@ -32,17 +32,23 @@ public class NeoSampleToSampleConverter
 	@Override
 	public Sample convert(NeoSample neo) {		
 		Set<Attribute> attributes = new HashSet<>();
-		for (NeoAttribute attribute : neo.getAttributes()) {
-			attributes.add(neoAttributeToAttributeConverter.convert(attribute));
+		if (neo.getAttributes() != null) {
+			for (NeoAttribute attribute : neo.getAttributes()) {
+				attributes.add(neoAttributeToAttributeConverter.convert(attribute));
+			}
 		}
 		Set<ExternalReference> externalReferences = new HashSet<>();
-		for (NeoExternalReference externalReference : neo.getExternalReferences()) {
-			externalReferences.add(neoExternalReferenceToExternalReferenceConverter.convert(externalReference));
+		if (neo.getExternalReferences() != null) {
+			for (NeoExternalReference externalReference : neo.getExternalReferences()) {
+				externalReferences.add(neoExternalReferenceToExternalReferenceConverter.convert(externalReference));
+			}
 		}
 		Set<Relationship> relationships = new HashSet<>();
-		for (NeoRelationship relationship : neo.getRelationships()) {
-			relationships.add(neoRelationshipToRelationshipConverter.convert(relationship));
-		}				
+		if (neo.getRelationships() != null) {
+			for (NeoRelationship relationship : neo.getRelationships()) {
+				relationships.add(neoRelationshipToRelationshipConverter.convert(relationship));
+			}				
+		}
 		return Sample.build(neo.getName(), neo.getAccession(), neo.getRelease(), neo.getUpdate(),
 				attributes, relationships, externalReferences);
 	}

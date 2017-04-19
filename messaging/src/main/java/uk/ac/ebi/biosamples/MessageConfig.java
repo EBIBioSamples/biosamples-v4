@@ -22,11 +22,6 @@ public class MessageConfig {
 	}
 
 	@Bean
-	public Queue getQueueToBeIndexedNeo4J() {
-		return new Queue(Messaging.queueToBeIndexedNeo4J, true);
-	}
-
-	@Bean
 	public Queue getQueueToBeCurated() {
 		return new Queue(Messaging.queueToBeCurated, true);
 	}
@@ -43,11 +38,6 @@ public class MessageConfig {
 	@Bean
 	public Binding bindingIndexingSolr() {
 		return BindingBuilder.bind(getQueueToBeIndexedSolr()).to(getExchangeForIndexing());
-	}
-
-	@Bean
-	public Binding bindingIndexingNeo4J() {
-		return BindingBuilder.bind(getQueueToBeIndexedNeo4J()).to(getExchangeForIndexing());
 	}
 
 	@Bean

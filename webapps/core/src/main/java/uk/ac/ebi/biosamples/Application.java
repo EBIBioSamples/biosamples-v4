@@ -1,7 +1,11 @@
 package uk.ac.ebi.biosamples;
 
+import java.time.LocalDateTime;
 import java.util.concurrent.Executor;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 //import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
@@ -14,6 +18,8 @@ import org.springframework.web.servlet.handler.MappedInterceptor;
 import org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy;
 
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.neo.model.NeoSample;
+import uk.ac.ebi.biosamples.neo.repo.NeoSampleRepository;
 import uk.ac.ebi.biosamples.xml.XmlSampleHttpMessageConverter;
 
 @SpringBootApplication
@@ -48,4 +54,22 @@ public class Application extends SpringBootServletInitializer {
     	return RepositoryDetectionStrategy.RepositoryDetectionStrategies.ANNOTATED;
     }
     
+    /*
+    @Bean
+    public ApplicationRunner appRunner() {
+    	return new ApplicationRunner() {
+
+    		@Autowired
+    		private NeoSampleRepository neoSampleRepository;
+    		
+			@Override
+			public void run(ApplicationArguments args) throws Exception {
+				NeoSample sample = NeoSample.build("TestInsert", "foo", LocalDateTime.now(), LocalDateTime.now(), null, null, null);
+				neoSampleRepository.insertNew(sample);
+				//this should throw an exception?
+				neoSampleRepository.insertNew(sample);
+			}    		
+    	};
+    }
+    */
 }

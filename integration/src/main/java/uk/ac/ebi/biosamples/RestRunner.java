@@ -77,17 +77,9 @@ public class RestRunner implements ApplicationRunner, ExitCodeGenerator {
 			doGetAndPrivate(sampleTest1);
 			
 			//put the second sample in
-			doPut(sampleTest2);
-			
-			// get to check it worked
-			Sample sampleTest2Rest = doGetAndSucess(sampleTest2);
-			if (!sampleTest2Rest.getAttributes().contains(Attribute.build("UTF-8 test", "αβ", null, null))) {
-				throw new RuntimeException("Unable to find UTF-8 characters");
-			}
-			
-		} else if (args.containsOption("phase") && Integer.parseInt(args.getOptionValues("phase").get(0)) == 2) {
-			
-			//at this point, the agents should have run and updated things
+			doPut(sampleTest2);			
+
+			//at this point, the inverse relationship should have been added
 
 			sampleTest2 = Sample.build(sampleTest2.getName(), sampleTest2.getAccession(),
 					sampleTest2.getRelease(), sampleTest2.getUpdate(),
@@ -95,7 +87,12 @@ public class RestRunner implements ApplicationRunner, ExitCodeGenerator {
 			
 			//check that it has the additional relationship added
 			// get to check it worked
-			doGetAndSucess(sampleTest2);
+			Sample sampleTest2Rest = doGetAndSucess(sampleTest2);
+			
+			//check utf -8
+			if (!sampleTest2Rest.getAttributes().contains(Attribute.build("UTF-8 test", "αβ", null, null))) {
+				throw new RuntimeException("Unable to find UTF-8 characters");
+			}
 			
 			//now do another update to delete the relationship
 			//might as well make it public now too
@@ -103,7 +100,12 @@ public class RestRunner implements ApplicationRunner, ExitCodeGenerator {
 					LocalDateTime.of(LocalDate.of(2016, 4, 1), LocalTime.of(11, 36, 57, 0)), sampleTest1.getUpdate(),
 					sampleTest1.getAttributes(), new TreeSet<>(), sampleTest1.getExternalReferences());
 			doPut(sampleTest1);
-						
+			
+			
+			
+			
+		} else if (args.containsOption("phase") && Integer.parseInt(args.getOptionValues("phase").get(0)) == 2) {
+									
 		}
 		
 		//TODO check that deleting a relationships on an update actually deletes it from get too

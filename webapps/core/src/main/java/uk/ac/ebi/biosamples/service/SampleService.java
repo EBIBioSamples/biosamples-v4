@@ -36,13 +36,14 @@ import uk.ac.ebi.biosamples.WebappProperties;
 import uk.ac.ebi.biosamples.model.Autocomplete;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SampleFacet;
-import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.model.MongoSubmission;
-import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSubmissionRepository;
 import uk.ac.ebi.biosamples.mongo.service.MongoAccessionService;
-import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
-import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
+import uk.ac.ebi.biosamples.neo.model.NeoSample;
+import uk.ac.ebi.biosamples.neo.repo.NeoSampleRepository;
+import uk.ac.ebi.biosamples.neo.service.NeoAccessionService;
+import uk.ac.ebi.biosamples.neo.service.NeoSampleToSampleConverter;
+import uk.ac.ebi.biosamples.neo.service.SampleToNeoSampleConverter;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
 import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
 
@@ -59,18 +60,23 @@ public class SampleService {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 	
-	@Autowired
-	private MongoSampleRepository mongoSampleRepository;
+	//@Autowired
+	//private MongoSampleRepository mongoSampleRepository;
 	@Autowired
 	private MongoSubmissionRepository mongoSubmissionRepository;
 	
 	@Autowired
-	private MongoAccessionService mongoAccessionService;
+	private NeoAccessionService neoAccessionService;
+	
+
+	@Autowired
+	private NeoSampleRepository neoSampleRepository;
+	
 	
 	@Autowired
-	private SampleToMongoSampleConverter sampleToMongoSampleConverter;
+	private SampleToNeoSampleConverter sampleToNeoSampleConverter;
 	@Autowired
-	private MongoSampleToSampleConverter mongoSampleToSampleConverter;
+	private NeoSampleToSampleConverter neoSampleToSampleConverter;
 	
 	@Autowired
 	private InverseRelationshipService inverseRelationshipService;
@@ -93,13 +99,13 @@ public class SampleService {
 	 */
 	public Sample fetch(String accession) throws IllegalArgumentException {
 		// return the raw sample from the repository
-		MongoSample mongoSample = mongoSampleRepository.findOne(accession);
-		if (mongoSample == null) {
+		NeoSample neoSample = neoSampleRepository.findOneByAccession(accession);
+		if (neoSample == null) {
 			throw new IllegalArgumentException("Unable to find sample (" + accession + ")");
 		}
 
 		// convert it into the format to return
-		Sample sample = mongoSampleToSampleConverter.convert(mongoSample);
+		Sample sample = neoSampleToSampleConverter.convert(neoSample);
 		
 		// add any additional inverse relationships
 		sample = inverseRelationshipService.insertInverses(sample);
@@ -153,18 +159,17 @@ public class SampleService {
 		// TODO validate that relationships have this sample as the source 
 
 		// convert it to the storage specific version
-		MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);
+		NeoSample neoSample = sampleToNeoSampleConverter.convert(sample);
 		// save the sample in the repository
-		if (mongoSample.hasAccession()) {
+		if (sample.hasAccession()) {
 			//update the existing accession
-			mongoSampleRepository.save(mongoSample);
+			neoSampleRepository.save(neoSample);
 		} else {
 			//TODO see if there is an existing accession for this user and name
-						
 			//assign it a new accession
-			mongoSample = mongoAccessionService.accessionAndInsert(mongoSample);
+			neoSample = neoAccessionService.accessionAndInsert(neoSample);
 			//update the sample object with the assigned accession
-			sample = Sample.build(sample.getName(), mongoSample.getAccession(), sample.getRelease(), sample.getUpdate(),
+			sample = Sample.build(sample.getName(), neoSample.getAccession(), sample.getRelease(), sample.getUpdate(),
 					sample.getAttributes(), sample.getRelationships(), sample.getExternalReferences());
 		}
 		// send a message for further processing

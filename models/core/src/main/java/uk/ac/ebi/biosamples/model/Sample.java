@@ -7,6 +7,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -39,6 +40,14 @@ public class Sample {
 	@JsonProperty("accession")
 	public String getAccession() {
 		return accession;
+	}
+	@JsonIgnore
+	public boolean hasAccession() {
+		if ( accession != null && accession.trim().length() != 0) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	@JsonProperty("name")
