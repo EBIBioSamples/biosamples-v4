@@ -13,7 +13,7 @@ import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.neo.model.NeoExternalReference;
 import uk.ac.ebi.biosamples.neo.repo.NeoExternalReferenceRepository;
-import uk.ac.ebi.biosamples.neo.service.NeoExternalReferenceToExternalReferenceConverter;
+import uk.ac.ebi.biosamples.neo.service.modelconverter.NeoExternalReferenceToExternalReferenceConverter;
 
 @Service
 public class ExternalReferenceService {
@@ -38,6 +38,11 @@ public class ExternalReferenceService {
 	}
 	
 	public ExternalReference getExternalReference(String id) {
-		return neoExternalReferenceToExternalReferenceConverter.convert(neoExternalReferenceRepository.findOneByUrlHash(id));
+		NeoExternalReference neoExternalReference = neoExternalReferenceRepository.findOneByUrlHash(id);
+		if (neoExternalReference == null) {
+			return null;
+		} else {
+			return neoExternalReferenceToExternalReferenceConverter.convert(neoExternalReference);
+		}
 	}
 }

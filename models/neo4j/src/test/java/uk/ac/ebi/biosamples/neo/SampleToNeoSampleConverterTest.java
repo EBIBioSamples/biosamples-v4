@@ -27,12 +27,13 @@ import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.neo.model.NeoAttribute;
 import uk.ac.ebi.biosamples.neo.model.NeoExternalReference;
+import uk.ac.ebi.biosamples.neo.model.NeoExternalReferenceApplication;
 import uk.ac.ebi.biosamples.neo.model.NeoRelationship;
 import uk.ac.ebi.biosamples.neo.model.NeoSample;
-import uk.ac.ebi.biosamples.neo.service.AttributeToNeoAttributeConverter;
-import uk.ac.ebi.biosamples.neo.service.ExternalReferenceToNeoExternalReferenceConverter;
-import uk.ac.ebi.biosamples.neo.service.RelationshipToNeoRelationshipConverter;
-import uk.ac.ebi.biosamples.neo.service.SampleToNeoSampleConverter;
+import uk.ac.ebi.biosamples.neo.service.modelconverter.AttributeToNeoAttributeConverter;
+import uk.ac.ebi.biosamples.neo.service.modelconverter.ExternalReferenceToNeoExternalReferenceConverter;
+import uk.ac.ebi.biosamples.neo.service.modelconverter.RelationshipToNeoRelationshipConverter;
+import uk.ac.ebi.biosamples.neo.service.modelconverter.SampleToNeoSampleConverter;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -92,20 +93,18 @@ public class SampleToNeoSampleConverterTest {
 		String accession = "TEST1";
 		LocalDateTime update = LocalDateTime.of(LocalDate.of(2016, 5, 5), LocalTime.of(11, 36, 57, 0));
 		LocalDateTime release = LocalDateTime.of(LocalDate.of(2016, 4, 1), LocalTime.of(11, 36, 57, 0));
-
-		Set<NeoAttribute> attributes = new HashSet<>();
-		attributes.add(NeoAttribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
-		attributes.add(NeoAttribute.build("age", "3", null, "year"));
-		attributes.add(NeoAttribute.build("organism part", "lung", null, null));
-		attributes.add(NeoAttribute.build("organism part", "heart", null, null));
+		NeoSample neoSample = NeoSample.build(name, accession, release, update, null, null, null);
 		
-		Set<NeoRelationship> relationships = new HashSet<>();
-		relationships.add(NeoRelationship.build(NeoSample.create("TEST1"), "derived from", NeoSample.create("TEST2")));
+		neoSample.getAttributes().add(NeoAttribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
+		neoSample.getAttributes().add(NeoAttribute.build("age", "3", null, "year"));
+		neoSample.getAttributes().add(NeoAttribute.build("organism part", "lung", null, null));
+		neoSample.getAttributes().add(NeoAttribute.build("organism part", "heart", null, null));
 		
-		Set<NeoExternalReference> externalReferences = new HashSet<>();
-		externalReferences.add(NeoExternalReference.build("http://www.google.com"));
+		neoSample.getRelationships().add(NeoRelationship.build(NeoSample.create("TEST1"), "derived from", NeoSample.create("TEST2")));
+		
+		neoSample.getExternalReferenceApplications().add(NeoExternalReferenceApplication.build(neoSample, NeoExternalReference.build("http://www.google.com")));
 
-		return NeoSample.build(name, accession, release, update, attributes, relationships, externalReferences);
+		return neoSample;
 	}
 	
 	@SpringBootConfiguration

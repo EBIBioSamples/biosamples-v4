@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.neo.service;
+package uk.ac.ebi.biosamples.neo.service.modelconverter;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -14,6 +14,7 @@ import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.neo.model.NeoAttribute;
 import uk.ac.ebi.biosamples.neo.model.NeoExternalReference;
+import uk.ac.ebi.biosamples.neo.model.NeoExternalReferenceApplication;
 import uk.ac.ebi.biosamples.neo.model.NeoRelationship;
 import uk.ac.ebi.biosamples.neo.model.NeoSample;
 
@@ -38,9 +39,11 @@ public class NeoSampleToSampleConverter
 			}
 		}
 		Set<ExternalReference> externalReferences = new HashSet<>();
-		if (neo.getExternalReferences() != null) {
-			for (NeoExternalReference externalReference : neo.getExternalReferences()) {
-				externalReferences.add(neoExternalReferenceToExternalReferenceConverter.convert(externalReference));
+		if (neo.getExternalReferenceApplications() != null) {
+			for (NeoExternalReferenceApplication externalReferenceApplication : neo.getExternalReferenceApplications()) {
+				NeoExternalReference neoExternalReference = externalReferenceApplication.getExternalReference();
+				ExternalReference externalReference = neoExternalReferenceToExternalReferenceConverter.convert(neoExternalReference); 
+				externalReferences.add(externalReference);
 			}
 		}
 		Set<Relationship> relationships = new HashSet<>();

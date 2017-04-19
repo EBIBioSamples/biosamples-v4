@@ -37,12 +37,13 @@ public class NeoSample {
 	@Relationship(type = "RELATED_TO", direction = Relationship.UNDIRECTED)
 	private Set<NeoRelationship> relationships;
 
-    @Relationship(type = "HAS_EXTERNAL_REFERENCE")
-	private Set<NeoExternalReference> externalReferences;
+    @Relationship(type = "HAS_EXTERNAL_REFERENCE", direction = Relationship.OUTGOING)
+	private Set<NeoExternalReferenceApplication> externalReferenceApplications;
 
     @Relationship(type = "HAS_ATTRIBUTE")
 	private Set<NeoAttribute> attributes;
 
+    @Relationship(type = "HAS_CURATION")
 	private Set<NeoCurationApplication> curationApplications;
 
 	private NeoSample() {
@@ -74,8 +75,8 @@ public class NeoSample {
 		return attributes;
 	}
 
-	public Set<NeoExternalReference> getExternalReferences() {
-		return externalReferences;
+	public Set<NeoExternalReferenceApplication> getExternalReferenceApplications() {
+		return externalReferenceApplications;
 	}
 
 	public Set<NeoCurationApplication> getCurationApplications() {
@@ -96,12 +97,12 @@ public class NeoSample {
         		&& Objects.equals(this.update, other.update)
         		&& Objects.equals(this.attributes, other.attributes)
         		&& Objects.equals(this.relationships, other.relationships)
-        		&& Objects.equals(this.externalReferences, other.externalReferences);
+        		&& Objects.equals(this.externalReferenceApplications, other.externalReferenceApplications);
     }
     
     @Override
     public int hashCode() {
-    	return Objects.hash(name, accession, release, update, attributes, relationships, externalReferences);
+    	return Objects.hash(name, accession, release, update, attributes, relationships, externalReferenceApplications);
     }
 
     @Override
@@ -120,7 +121,7 @@ public class NeoSample {
     	sb.append(",");
     	sb.append(relationships);
     	sb.append(",");
-    	sb.append(externalReferences);
+    	sb.append(externalReferenceApplications);
     	sb.append(")");
     	return sb.toString();
     }
@@ -137,32 +138,32 @@ public class NeoSample {
      * @return
      */
 	public static NeoSample build(String name, String accession, LocalDateTime release, LocalDateTime update, 
-			Set<NeoAttribute> attributes, Set<NeoRelationship> relationships, Set<NeoExternalReference> externalReferences) {
+			Set<NeoAttribute> attributes, Set<NeoRelationship> relationships, Set<NeoExternalReferenceApplication> externalReferenceApplications) {
 		NeoSample neoSample = new NeoSample();
 		neoSample.accession = accession;
 		neoSample.name = name;
 		neoSample.release = release;
 		neoSample.update = update;
 
+		neoSample.attributes = new HashSet<>();
 		if (attributes == null || attributes.size() == 0) {
-			neoSample.attributes = null;
+			//do nothing
 		} else {
-			neoSample.attributes = new HashSet<>();
 			neoSample.attributes.addAll(attributes);
 		}
-		
+
+		neoSample.relationships = new HashSet<>();
 		if (relationships == null || relationships.size() == 0) {
-			neoSample.relationships = null;
+			//do nothing
 		} else {
-			neoSample.relationships = new HashSet<>();
 			neoSample.relationships.addAll(relationships);
 		}
-		
-		if (externalReferences == null || externalReferences.size() == 0) {
-			neoSample.externalReferences = null;
+
+		neoSample.externalReferenceApplications = new HashSet<>();
+		if (externalReferenceApplications == null || externalReferenceApplications.size() == 0) {
+			//dop nothing
 		} else {
-			neoSample.externalReferences = new HashSet<>();
-			neoSample.externalReferences.addAll(externalReferences);
+			neoSample.externalReferenceApplications.addAll(externalReferenceApplications);
 		}	
 		
 		return neoSample;

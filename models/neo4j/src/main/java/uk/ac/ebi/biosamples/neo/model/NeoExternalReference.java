@@ -2,11 +2,13 @@ package uk.ac.ebi.biosamples.neo.model;
 
 
 import java.util.Objects;
+import java.util.Set;
 
 import org.neo4j.ogm.annotation.GraphId;
 import org.neo4j.ogm.annotation.Index;
 import org.neo4j.ogm.annotation.NodeEntity;
 import org.neo4j.ogm.annotation.Property;
+import org.neo4j.ogm.annotation.Relationship;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -22,12 +24,11 @@ public class NeoExternalReference {
 	private Long id;
 
 	@Property
-	@Index(unique=false, primary=false)
-	private String url;
-	
-	@Property
 	@Index(unique=true, primary=true)
-	private String urlHash;
+	private String url;
+
+    @Relationship(type = "HAS_EXTERNAL_REFERENCE", direction=Relationship.INCOMING)
+	private Set<NeoExternalReferenceApplication> applications;
 
 	private NeoExternalReference() {}
 	
@@ -35,14 +36,13 @@ public class NeoExternalReference {
 		return id;
 	}	
 	
-	public String getUrl(){
+	public String getUrl() {
 		return url;
 	}
 	
-	public String getUrlHash(){
-		return urlHash;
+	public Set<NeoExternalReferenceApplication> getApplications() {
+		return applications;
 	}
-	
 	
 	@Override
     public boolean equals(Object o) {
@@ -73,7 +73,7 @@ public class NeoExternalReference {
     	UriComponents uriComponents = uriComponentsBuilder.build().normalize();
 
     	url = uriComponents.toUriString();
-
+/*
     	String urlHash = Hashing.sha256().newHasher()
 			.putUnencodedChars(Objects.nonNull(uriComponents.getScheme()) ? uriComponents.getScheme() : "")
 			.putUnencodedChars(Objects.nonNull(uriComponents.getSchemeSpecificPart()) ? uriComponents.getSchemeSpecificPart() : "")
@@ -84,10 +84,9 @@ public class NeoExternalReference {
 			.putUnencodedChars(Objects.nonNull(uriComponents.getQuery()) ? uriComponents.getQuery() : "")
 			.putUnencodedChars(Objects.nonNull(uriComponents.getFragment()) ? uriComponents.getFragment() : "")
 			.hash().toString();
-    	
+*/    	
 		NeoExternalReference neoUrl = new NeoExternalReference();
 		neoUrl.url = url;
-		neoUrl.urlHash = urlHash;
 		return neoUrl;
 	}
 }

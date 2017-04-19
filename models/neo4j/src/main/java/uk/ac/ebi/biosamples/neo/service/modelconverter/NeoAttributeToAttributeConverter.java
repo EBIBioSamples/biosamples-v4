@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.neo.service;
+package uk.ac.ebi.biosamples.neo.service.modelconverter;
 
 import org.springframework.boot.context.properties.ConfigurationPropertiesBinding;
 import org.springframework.core.convert.converter.Converter;

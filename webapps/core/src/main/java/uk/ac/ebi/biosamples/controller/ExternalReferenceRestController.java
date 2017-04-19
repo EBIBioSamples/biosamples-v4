@@ -70,6 +70,9 @@ public class ExternalReferenceRestController {
 	@GetMapping(value="/{id}", produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
 	public ResponseEntity<Resource<ExternalReference>> getSingle(@PathVariable String id) {
     	ExternalReference externalReference = externalReferenceService.getExternalReference(id);
+    	if (externalReference == null) {
+    		return ResponseEntity.notFound().build();
+    	}
     	Resource<ExternalReference> resource = externalReferenceResourceAssembler.toResource(externalReference);
 		return ResponseEntity.ok()
 				.body(resource);

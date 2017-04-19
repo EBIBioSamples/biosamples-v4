@@ -42,8 +42,8 @@ import uk.ac.ebi.biosamples.mongo.service.MongoAccessionService;
 import uk.ac.ebi.biosamples.neo.model.NeoSample;
 import uk.ac.ebi.biosamples.neo.repo.NeoSampleRepository;
 import uk.ac.ebi.biosamples.neo.service.NeoAccessionService;
-import uk.ac.ebi.biosamples.neo.service.NeoSampleToSampleConverter;
-import uk.ac.ebi.biosamples.neo.service.SampleToNeoSampleConverter;
+import uk.ac.ebi.biosamples.neo.service.modelconverter.NeoSampleToSampleConverter;
+import uk.ac.ebi.biosamples.neo.service.modelconverter.SampleToNeoSampleConverter;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
 import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
 
@@ -106,9 +106,6 @@ public class SampleService {
 
 		// convert it into the format to return
 		Sample sample = neoSampleToSampleConverter.convert(neoSample);
-		
-		// add any additional inverse relationships
-		sample = inverseRelationshipService.insertInverses(sample);
 		
 		//TODO only have relationships to things that are present
 		

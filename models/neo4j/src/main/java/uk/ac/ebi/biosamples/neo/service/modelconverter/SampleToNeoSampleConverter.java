@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.neo.service;
+package uk.ac.ebi.biosamples.neo.service.modelconverter;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -18,6 +18,7 @@ import uk.ac.ebi.biosamples.neo.model.NeoRelationship;
 import uk.ac.ebi.biosamples.neo.model.NeoSample;
 import uk.ac.ebi.biosamples.neo.model.NeoAttribute;
 import uk.ac.ebi.biosamples.neo.model.NeoExternalReference;
+import uk.ac.ebi.biosamples.neo.model.NeoExternalReferenceApplication;
 
 @Service
 @ConfigurationPropertiesBinding
@@ -39,20 +40,20 @@ public class SampleToNeoSampleConverter
 
 	@Override
 	public NeoSample convert(Sample sample) {
-		Set<NeoAttribute> attributes = new HashSet<>();
+		NeoSample neoSample = NeoSample.build(sample.getName(), sample.getAccession(), sample.getRelease(), sample.getUpdate(),
+				null, null, null);
 		for (Attribute attribute : sample.getAttributes()) {
-			attributes.add(attributeToNeoAttributeConverter.convert(attribute));
+			neoSample.getAttributes().add(attributeToNeoAttributeConverter.convert(attribute));
 		}
-		Set<NeoExternalReference> externalReferences = new HashSet<>();
 		for (ExternalReference externalReference : sample.getExternalReferences()) {
-			externalReferences.add(externalReferenceToNeoExternalReferenceConverter.convert(externalReference));
+			NeoExternalReference neoExternalReference = externalReferenceToNeoExternalReferenceConverter.convert(externalReference);
+			NeoExternalReferenceApplication neoExternalReferenceApplication = NeoExternalReferenceApplication.build(neoSample, neoExternalReference);
+			neoSample.getExternalReferenceApplications().add(neoExternalReferenceApplication);
 		}
-		Set<NeoRelationship> relationships = new HashSet<>();
 		for (Relationship relationship : sample.getRelationships()) {
-			relationships.add(relationshipToNeoRelationshipConverter.convert(relationship));
+			neoSample.getRelationships().add(relationshipToNeoRelationshipConverter.convert(relationship));
 		}				
-		return NeoSample.build(sample.getName(), sample.getAccession(), sample.getRelease(), sample.getUpdate(),
-				attributes, relationships, externalReferences);	
+		return neoSample;	
 	}
 
 }

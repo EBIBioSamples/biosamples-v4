@@ -15,7 +15,7 @@ import uk.ac.ebi.biosamples.messages.threaded.MessageSampleStatus;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.neo.model.NeoSample;
 import uk.ac.ebi.biosamples.neo.repo.NeoSampleRepository;
-import uk.ac.ebi.biosamples.neo.service.SampleToNeoSampleConverter;
+import uk.ac.ebi.biosamples.neo.service.modelconverter.SampleToNeoSampleConverter;
 
 @Service
 public class MessageHandlerNeo4J {

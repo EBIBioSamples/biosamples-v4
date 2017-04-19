@@ -27,10 +27,10 @@ import uk.ac.ebi.biosamples.neo.model.NeoAttribute;
 import uk.ac.ebi.biosamples.neo.model.NeoExternalReference;
 import uk.ac.ebi.biosamples.neo.model.NeoRelationship;
 import uk.ac.ebi.biosamples.neo.model.NeoSample;
-import uk.ac.ebi.biosamples.neo.service.AttributeToNeoAttributeConverter;
-import uk.ac.ebi.biosamples.neo.service.ExternalReferenceToNeoExternalReferenceConverter;
-import uk.ac.ebi.biosamples.neo.service.RelationshipToNeoRelationshipConverter;
-import uk.ac.ebi.biosamples.neo.service.SampleToNeoSampleConverter;
+import uk.ac.ebi.biosamples.neo.service.modelconverter.AttributeToNeoAttributeConverter;
+import uk.ac.ebi.biosamples.neo.service.modelconverter.ExternalReferenceToNeoExternalReferenceConverter;
+import uk.ac.ebi.biosamples.neo.service.modelconverter.RelationshipToNeoRelationshipConverter;
+import uk.ac.ebi.biosamples.neo.service.modelconverter.SampleToNeoSampleConverter;
 
 import static org.assertj.core.api.Assertions.*;
 
