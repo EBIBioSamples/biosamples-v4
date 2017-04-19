@@ -7,6 +7,7 @@ import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.stereotype.Service;
 
 import uk.ac.ebi.biosamples.controller.SampleRestController;
+import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Sample;
 
 /**
@@ -28,10 +29,11 @@ public class SampleResourceAssembler implements ResourceAssembler<Sample, Resour
 	public Resource<Sample> toResource(Sample sample) {
 		Resource<Sample> resource = new Resource<>(sample);
 		
-		//resource.add(ControllerLinkBuilder
-		//		.linkTo(ControllerLinkBuilder.methodOn(SampleRestController.class).getSampleHal(sample.getAccession()))
-		//		.withSelfRel());
 		resource.add(entityLinks.linkToSingleResource(Sample.class, sample.getAccession()).withSelfRel());
+		
+		for (ExternalReference externalReference : sample.getExternalReferences()) {
+			resource.add(entityLinks.linkToSingleResource(ExternalReference.class, externalReference.getId()).withRel("externalreference"));
+		}
 		
 		return resource;
 	}
