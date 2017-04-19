@@ -139,38 +139,6 @@ public class SampleService {
 		return pageSample;
 	}
 	
-	public List<SampleFacet> getFacets(String text, MultiValueMap<String,String> filters, int noOfFacets, int noOfFacetValues) {
-		Pageable facetPageable = new PageRequest(0,noOfFacets);
-		Pageable facetValuePageable = new PageRequest(0,noOfFacetValues);
-		//TODO if a facet is enabled as a filter, then that value will be the only filter displayed
-		return solrSampleService.getFacets(text, filters, facetPageable, facetValuePageable);
-	}
-	
-	public MultiValueMap<String,String> getFilters(String[] filterStrings) {
-		if (filterStrings == null) return null;
-		if (filterStrings.length == 0) return null;
-		//sort the array
-		Arrays.sort(filterStrings);
-		SortedSet<String> filterStringSet = new TreeSet<>(Arrays.asList(filterStrings));
-		//strip the requestParams down to just the selected facet information
-		MultiValueMap<String,String> filters = new LinkedMultiValueMap<>();
-		for (String filterString : filterStringSet) {
-			log.info("looking at filter string '"+filterString+"'");
-			if (filterString.contains(":")) {
-				String key = filterString.substring(0, filterString.indexOf(":"));
-				String value = filterString.substring(filterString.indexOf(":")+1, filterString.length());
-				//key = SolrSampleService.attributeTypeToField(key);
-				filters.add(key, value);
-				log.info("adding filter "+key+" = "+value);
-			} else {
-				String key=filterString;
-				//key = SolrSampleService.attributeTypeToField(key);
-				filters.add(key, null);
-				log.info("adding filter "+key);
-			}
-		}
-		return filters;
-	}
 	
 	public Autocomplete getAutocomplete(String autocompletePrefix, MultiValueMap<String,String> filters, int noSuggestions) {
 		return solrSampleService.getAutocomplete(autocompletePrefix, filters, noSuggestions);

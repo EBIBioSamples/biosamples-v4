@@ -13,6 +13,8 @@ import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.autoconfigure.json.JsonTest;
@@ -38,13 +40,15 @@ import static org.assertj.core.api.Assertions.*;
 @JsonTest
 public class SampleToNeoSampleConverterTest {
 
-	private SampleToNeoSampleConverter sampleToNeoSampleConverterTest;
-	
+	private SampleToNeoSampleConverter sampleToNeoSampleConverter;
+
+
+	private Logger log = LoggerFactory.getLogger(getClass());
 	
 
     @Before
     public void setup() {
-    	sampleToNeoSampleConverterTest = new SampleToNeoSampleConverter(new AttributeToNeoAttributeConverter(), 
+    	sampleToNeoSampleConverter = new SampleToNeoSampleConverter(new AttributeToNeoAttributeConverter(), 
     			new ExternalReferenceToNeoExternalReferenceConverter(),
     			new RelationshipToNeoRelationshipConverter());
     }
@@ -52,8 +56,12 @@ public class SampleToNeoSampleConverterTest {
 	@Test
 	public void basicTest() {
 		Sample sample = getSimpleSample();
-		
-		Assertions.assertThat(sampleToNeoSampleConverterTest.convert(sample)).isEqualTo(getNeoSimpleSample());
+		NeoSample neoSample = getNeoSimpleSample();
+		NeoSample neoSampleConverted = sampleToNeoSampleConverter.convert(sample);
+		log.info(""+sample);
+		log.info(""+neoSample);
+		log.info(""+neoSampleConverted);
+		Assertions.assertThat(neoSampleConverted).isEqualTo(neoSample);
 	}
 	
 

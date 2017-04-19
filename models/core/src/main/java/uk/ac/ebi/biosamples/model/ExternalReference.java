@@ -1,20 +1,35 @@
 package uk.ac.ebi.biosamples.model;
 
+import java.nio.charset.Charset;
 import java.util.Objects;
 
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Charsets;
+import com.google.common.hash.Hashing;
 
 public class ExternalReference implements Comparable<ExternalReference> {
 	
 	private final String url;
+	
+	private final String urlHash;
 
-	private ExternalReference(String url) {
+	private ExternalReference(String url, String urlHash) {
 		this.url = url;
+		this.urlHash = urlHash;
 	}
 
 	public String getUrl() {
 		return this.url;
+	}
+
+	@JsonIgnore
+	public String getId() {
+		return this.urlHash;
 	}
 	
 	@Override
@@ -29,7 +44,7 @@ public class ExternalReference implements Comparable<ExternalReference> {
     
     @Override
     public int hashCode() {
-    	return Objects.hash(url);
+    	return Objects.hash(urlHash);
     }
 
 	@Override
@@ -54,8 +69,23 @@ public class ExternalReference implements Comparable<ExternalReference> {
     }
 
     @JsonCreator
-    public static ExternalReference build(@JsonProperty("url") String url) {
-		ExternalReference externalReference = new ExternalReference(url);
+    public static ExternalReference build(@JsonProperty("url") String url) {    	
+    	UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromUriString(url);
+    	UriComponents uriComponents = uriComponentsBuilder.build().normalize();
+
+    	url = uriComponents.toUriString();
+    	
+    	String urlHash = Hashing.sha256().newHasher()
+			.putUnencodedChars(Objects.nonNull(uriComponents.getScheme()) ? uriComponents.getScheme() : "")
+			.putUnencodedChars(Objects.nonNull(uriComponents.getSchemeSpecificPart()) ? uriComponents.getSchemeSpecificPart() : "")
+			.putUnencodedChars(Objects.nonNull(uriComponents.getUserInfo()) ? uriComponents.getUserInfo() : "")
+			.putUnencodedChars(Objects.nonNull(uriComponents.getHost()) ? uriComponents.getHost() : "")
+			.putInt(Objects.nonNull(uriComponents.getPort()) ? uriComponents.getPort() : 0)
+			.putUnencodedChars(Objects.nonNull(uriComponents.getPath()) ? uriComponents.getPath() : "")
+			.putUnencodedChars(Objects.nonNull(uriComponents.getQuery()) ? uriComponents.getQuery() : "")
+			.putUnencodedChars(Objects.nonNull(uriComponents.getFragment()) ? uriComponents.getFragment() : "")
+			.hash().toString();
+    	ExternalReference externalReference = new ExternalReference(url, urlHash);
 		return externalReference;
 	}
 }

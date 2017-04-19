@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -90,7 +91,9 @@ public class Accession implements ApplicationRunner{
 			try {
 				ThreadUtils.checkFutures(futures, 100);
 			} catch (InterruptedException e) {
-				log.warn("Interupted while checking for futures");
+				log.warn("Interupted while checking for futures", e);
+			} catch (ExecutionException e) {
+				throw new RuntimeException(e);
 			}
 		}
 	}

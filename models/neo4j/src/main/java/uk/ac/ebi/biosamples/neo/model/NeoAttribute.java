@@ -7,8 +7,6 @@ import org.neo4j.ogm.annotation.Index;
 import org.neo4j.ogm.annotation.NodeEntity;
 import org.neo4j.ogm.annotation.Property;
 
-import uk.ac.ebi.biosamples.model.Attribute;
-
 @NodeEntity(label = "Attribute")
 public class NeoAttribute implements Comparable<NeoAttribute> {
 
@@ -140,10 +138,10 @@ public class NeoAttribute implements Comparable<NeoAttribute> {
 		//to unique and merge nodes
 		String compositeIdentifier = type+"_"+value;
 		if (iri != null)  {
-			compositeIdentifier = compositeIdentifier+"_"+iri;
+			compositeIdentifier = compositeIdentifier+"|"+iri;
 		}
 		if (unit != null)  {
-			compositeIdentifier = compositeIdentifier+"_"+unit;
+			compositeIdentifier = compositeIdentifier+"|"+unit;
 		}
 		neoAttribute.compositeIdentifier = compositeIdentifier;
 		return neoAttribute;

@@ -35,6 +35,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SampleFacet;
 import uk.ac.ebi.biosamples.model.SampleFacetValue;
+import uk.ac.ebi.biosamples.service.FacetService;
+import uk.ac.ebi.biosamples.service.FilterService;
 import uk.ac.ebi.biosamples.service.SampleService;
 
 /**
@@ -52,9 +54,12 @@ public class SampleHtmlController {
 	private Logger log = LoggerFactory.getLogger(getClass());
 
 	private SampleService sampleService;
+	private FacetService facetService;
+	private FilterService filterService;
 
-	public SampleHtmlController(@Autowired SampleService sampleService) {
+	public SampleHtmlController(SampleService sampleService, FacetService facetService, FilterService filterService) {
 		this.sampleService = sampleService;
+		this.facetService = facetService;
 	}
 
 	@GetMapping(value = "/")
@@ -78,12 +83,12 @@ public class SampleHtmlController {
 			rows = 1000;
 		}
 		
-		MultiValueMap<String, String> filtersMap = sampleService.getFilters(filters);
+		MultiValueMap<String, String> filtersMap = filterService.getFilters(filters);
 						
 		Pageable pageable = new PageRequest(start/rows, rows);
 		Page<Sample> pageSample = sampleService.getSamplesByText(text, filtersMap, pageable);
 		//default to getting 10 values from 10 facets
-		List<SampleFacet> sampleFacets = sampleService.getFacets(text, filtersMap, 10, 10);
+		List<SampleFacet> sampleFacets = facetService.getFacets(text, filtersMap, 10, 10);
 		
 		//build URLs for the facets depending on if they are enabled or not
 		UriComponentsBuilder uriBuilder = ServletUriComponentsBuilder.fromRequest(request);		

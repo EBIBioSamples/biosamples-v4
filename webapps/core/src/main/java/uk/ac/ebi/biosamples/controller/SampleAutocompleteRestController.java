@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import uk.ac.ebi.biosamples.model.Autocomplete;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.service.FilterService;
 import uk.ac.ebi.biosamples.service.SampleService;
 
 @RestController
@@ -28,14 +29,16 @@ import uk.ac.ebi.biosamples.service.SampleService;
 public class SampleAutocompleteRestController {
 
 	private final SampleService sampleService;
+	private final FilterService filterService;
 
 	private final EntityLinks entityLinks;
 	
 	private Logger log = LoggerFactory.getLogger(getClass());
 
-	public SampleAutocompleteRestController(SampleService sampleService,
+	public SampleAutocompleteRestController(SampleService sampleService, FilterService filterService,
 			EntityLinks entityLinks) {
 		this.sampleService = sampleService;
+		this.filterService = filterService;
 		this.entityLinks = entityLinks;
 	}
     
@@ -55,7 +58,7 @@ public class SampleAutocompleteRestController {
 			@RequestParam(name="text", required=false) String text,
 			@RequestParam(name="filter", required=false) String[] filter,
 			@RequestParam(name="rows", defaultValue="10") Integer rows) {
-		MultiValueMap<String, String> filtersMap = sampleService.getFilters(filter);
+		MultiValueMap<String, String> filtersMap = filterService.getFilters(filter);
     	Autocomplete autocomplete = sampleService.getAutocomplete(text, filtersMap, rows);
     	Resource<Autocomplete> resource = new Resource<>(autocomplete);
 

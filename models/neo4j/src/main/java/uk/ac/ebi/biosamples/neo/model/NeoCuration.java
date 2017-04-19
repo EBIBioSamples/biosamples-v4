@@ -1,9 +1,14 @@
 package uk.ac.ebi.biosamples.neo.model;
 
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.neo4j.ogm.annotation.GraphId;
+import org.neo4j.ogm.annotation.Index;
 import org.neo4j.ogm.annotation.NodeEntity;
+import org.neo4j.ogm.annotation.Property;
 import org.neo4j.ogm.annotation.Relationship;
 
 @NodeEntity(label = "Curation")
@@ -17,8 +22,11 @@ public class NeoCuration {
     
     @Relationship(type = "HAS_POST_ATTRIBUTE")    
 	private Set<NeoAttribute> attributesPost;
+    
+	@Property
+	@Index(unique=true, primary=true)
+	private String compositeIdentifier;
 
-	@SuppressWarnings("unused")
 	private NeoCuration() {
 	}
 	
@@ -26,11 +34,51 @@ public class NeoCuration {
 		return id;
 	}
 
+	/**
+	 * Do not modify this directly
+	 * @return
+	 */
 	public Set<NeoAttribute> getAttributesPre() {
 		return attributesPre;
 	}
 
+
+	/**
+	 * Do not modify this directly
+	 * @return
+	 */
 	public Set<NeoAttribute> getAttributesPost() {
 		return attributesPost;
+	}
+	
+	public NeoCuration build(Set<NeoAttribute> attributesPre, Set<NeoAttribute> attributesPost) {
+		NeoCuration neoCuration = new NeoCuration();
+		neoCuration.attributesPre = new TreeSet<>(attributesPre);
+		neoCuration.attributesPost = new TreeSet<>(attributesPost);
+		
+		StringBuilder sb = new StringBuilder();
+		Iterator<NeoAttribute> it = attributesPre.iterator();
+		while (it.hasNext()) {
+			NeoAttribute attribute = it.next();
+			sb.append(attribute.getType());
+			sb.append("|");
+			sb.append(attribute.getValue());
+			if (it.hasNext()) {
+				sb.append("|");
+			}
+		}
+		it = attributesPost.iterator();
+		while (it.hasNext()) {
+			NeoAttribute attribute = it.next();
+			sb.append(attribute.getType());
+			sb.append("|");
+			sb.append(attribute.getValue());
+			if (it.hasNext()) {
+				sb.append("|");
+			}
+		}
+		neoCuration.compositeIdentifier = sb.toString();
+				
+		return neoCuration;
 	}
 }

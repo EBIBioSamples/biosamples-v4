@@ -40,6 +40,7 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.ac.ebi.biosamples.model.Autocomplete;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.SampleService;
+import uk.ac.ebi.biosamples.service.FilterService;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 
 /**
@@ -57,15 +58,18 @@ import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 public class SampleRestController {
 
 	private final SampleService sampleService;
+	private final FilterService filterService;
 	private final SampleResourceAssembler sampleResourceAssembler;
 	private final EntityLinks entityLinks;
 	
 	private Logger log = LoggerFactory.getLogger(getClass());
 
 	public SampleRestController(SampleService sampleService,
+			FilterService filterService,
 			SampleResourceAssembler sampleResourceAssembler,
 			EntityLinks entityLinks) {
 		this.sampleService = sampleService;
+		this.filterService = filterService;
 		this.sampleResourceAssembler = sampleResourceAssembler;
 		this.entityLinks = entityLinks;
 	}
@@ -78,7 +82,7 @@ public class SampleRestController {
 			Pageable page,
 			PagedResourcesAssembler<Sample> pageAssembler) {
 
-		MultiValueMap<String, String> filtersMap = sampleService.getFilters(filter);
+		MultiValueMap<String, String> filtersMap = filterService.getFilters(filter);
 		Page<Sample> pageSample = sampleService.getSamplesByText(text, filtersMap, page);
 		//add the links to each individual sample on the page
 		//also adds links to first/last/next/prev at the same time
@@ -119,23 +123,11 @@ public class SampleRestController {
 
 		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
 		
-		//dummy sleep
-//		try {
-//			log.info("sleeping");
-//			Thread.sleep(1000);
-//			log.info("slept");
-//		} catch (InterruptedException e) {
-//			throw new RuntimeException(e);
-//		}
-		
 		// create the response object with the appropriate status
-		ResponseEntity<Resource<Sample>> response =  ResponseEntity.ok()
+		return ResponseEntity.ok()
 				.lastModified(sample.getUpdate().toEpochSecond(ZoneOffset.UTC))
 				.eTag(String.valueOf(sample.hashCode()))
 				.contentType(MediaTypes.HAL_JSON).body(sampleResource);
-
-		log.info("started call");
-		return response;
 	}
 
 	@PutMapping(value = "/{accession}", consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })

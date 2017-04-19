@@ -48,6 +48,11 @@
 		</dependency>
 
 		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>21.0</version>
+		</dependency>
+		<dependency>
 			<groupId>cglib</groupId>
 			<artifactId>cglib</artifactId>
 			<version>2.2.2</version>
@@ -62,12 +67,12 @@
 				<artifactId>spring-data-solr</artifactId>
 				<version>2.2.0.DATASOLR-364-SNAPSHOT</version>
 			</dependency>
-			
+
 			<dependency>
 				<groupId>org.thymeleaf.extras</groupId>
 				<artifactId>thymeleaf-extras-java8time</artifactId>
 				<version>3.0.0.RELEASE</version>
-			</dependency>			
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 

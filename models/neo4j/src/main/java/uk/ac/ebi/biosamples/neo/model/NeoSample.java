@@ -7,17 +7,11 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import java.util.TreeSet;
 
 import org.neo4j.ogm.annotation.GraphId;
 import org.neo4j.ogm.annotation.Index;
 import org.neo4j.ogm.annotation.Relationship;
 import org.neo4j.ogm.annotation.typeconversion.Convert;
-
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
-import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.neo.service.LocalDateTimeConverter;
 
 @NodeEntity(label = "Sample")
@@ -49,7 +43,8 @@ public class NeoSample {
     @Relationship(type = "HAS_ATTRIBUTE")
 	private Set<NeoAttribute> attributes;
 
-	@SuppressWarnings("unused")
+	private Set<NeoCurationApplication> curationApplications;
+
 	private NeoSample() {
 	}
 	
@@ -81,6 +76,10 @@ public class NeoSample {
 
 	public Set<NeoExternalReference> getExternalReferences() {
 		return externalReferences;
+	}
+
+	public Set<NeoCurationApplication> getCurationApplications() {
+		return curationApplications;
 	}
 
 	@Override

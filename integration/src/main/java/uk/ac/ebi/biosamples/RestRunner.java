@@ -89,7 +89,7 @@ public class RestRunner implements ApplicationRunner, ExitCodeGenerator, Ordered
 
 			sampleTest2 = Sample.build(sampleTest2.getName(), sampleTest2.getAccession(),
 					sampleTest2.getRelease(), sampleTest2.getUpdate(),
-					sampleTest2.getAttributes(), sampleTest1.getRelationships(), new TreeSet<>());
+					sampleTest2.getAttributes(), sampleTest1.getRelationships(), sampleTest2.getExternalReferences());
 			
 			//check that it has the additional relationship added
 			// get to check it worked

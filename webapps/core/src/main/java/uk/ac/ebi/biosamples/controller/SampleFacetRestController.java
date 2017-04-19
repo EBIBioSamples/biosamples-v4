@@ -30,6 +30,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SampleFacet;
+import uk.ac.ebi.biosamples.service.FacetService;
+import uk.ac.ebi.biosamples.service.FilterService;
 import uk.ac.ebi.biosamples.service.SampleService;
 
 @RestController
@@ -37,15 +39,17 @@ import uk.ac.ebi.biosamples.service.SampleService;
 @RequestMapping("/samples/facets")
 public class SampleFacetRestController {
 
-	private final SampleService sampleService;
+	private final FacetService facetService;
+	private final FilterService filterService;
 
 	private final EntityLinks entityLinks;
 	
 	private Logger log = LoggerFactory.getLogger(getClass());
 
-	public SampleFacetRestController(SampleService sampleService,
+	public SampleFacetRestController(FacetService facetService, FilterService filterService,
 			EntityLinks entityLinks) {
-		this.sampleService = sampleService;
+		this.facetService = facetService;
+		this.filterService = filterService;
 		this.entityLinks = entityLinks;
 	}
     
@@ -67,7 +71,7 @@ public class SampleFacetRestController {
     	
     	//TODO support rows and start parameters
 
-    	List<SampleFacet> sampleFacets = sampleService.getFacets(text, sampleService.getFilters(filter), 10, 10);    	
+    	List<SampleFacet> sampleFacets = facetService.getFacets(text, filterService.getFilters(filter), 10, 10);    	
     	Resources<SampleFacet> resources = new Resources<>(sampleFacets);
     	
 		//Links for the entire page
