@@ -3,8 +3,10 @@ set -e
 
 mvn -T 2C clean package
 
-docker-compose stop biosamples-webapps-core biosamples-webapps-sampletab biosamples-webapps-legacyxml mongo neo4j solr rabbitmq biosamples-agents-neo4j biosamples-agents-solr biosamples-agents-curation
-docker-compose rm -f biosamples-webapps-core biosamples-webapps-sampletab biosamples-webapps-legacyxml mongo neo4j solr rabbitmq biosamples-agents-neo4j biosamples-agents-solr biosamples-agents-curation
+docker-compose stop biosamples-webapps-core biosamples-webapps-sampletab biosamples-webapps-legacyxml mongo neo4j solr rabbitmq biosamples-agents-solr biosamples-agents-curation
+set +e
+docker-compose rm -f -v biosamples-webapps-core biosamples-webapps-sampletab biosamples-webapps-legacyxml mongo neo4j solr rabbitmq biosamples-agents-solr biosamples-agents-curation
+
 
 #cleanup any previous data
 docker volume ls -q | grep mongo_data | xargs docker volume rm
@@ -13,6 +15,8 @@ docker volume ls -q | grep solr_samples_data | xargs docker volume rm
 docker volume ls -q | grep rabbitmq_data | xargs docker volume rm
 #remove any images, in case of out-of-date or corrupt images
 #docker images -q | xargs -r docker rmi
+
+set -e
 
 #rm docker/logs/*.log docker/logs/*.log.* docker/logs/neo4j/*.log
 
