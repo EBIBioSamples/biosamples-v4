@@ -17,8 +17,8 @@ public class NeoSampleRepositoryImpl implements NeoSampleRepositoryCustom {
 	}
 	
 	@Override
-	public NeoSample insertNew(NeoSample sample) {
-		String cypher = "CREATE (s:Sample {accession:'"+sample.getAccession()+"'}) RETURN s";
+	public NeoSample testNewAccession(String accession) {
+		String cypher = "CREATE (s:Sample {accession:'"+accession+"'}) RETURN s";
 		Map<String,String> parameters = new HashMap<>();
 		//parameters.put("accession", sample.getAccession());
 		return session.queryForObject(NeoSample.class, cypher, parameters);

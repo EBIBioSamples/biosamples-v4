@@ -157,21 +157,25 @@ public class SampleService {
 		mongoSubmissionRepository.save(new MongoSubmission(sample, LocalDateTime.now()));
 
 		// TODO validate that relationships have this sample as the source 
+		
+		//assign it a new accession		
+		if (!sample.hasAccession()) {
+
+			//TODO see if there is an existing accession for this user and name
+			String accession = null;
+			accession = neoAccessionService.generateAccession();
+			//update the sample object with the assigned accession
+			sample = Sample.build(sample.getName(), accession, sample.getRelease(), sample.getUpdate(),
+					sample.getAttributes(), sample.getRelationships(), sample.getExternalReferences());
+		}
 
 		// convert it to the storage specific version
 		NeoSample neoSample = sampleToNeoSampleConverter.convert(sample);
-		// save the sample in the repository
-		if (sample.hasAccession()) {
-			//update the existing accession
+		
+		synchronized(this) {
 			neoSampleRepository.save(neoSample);
-		} else {
-			//TODO see if there is an existing accession for this user and name
-			//assign it a new accession
-			neoSample = neoAccessionService.accessionAndInsert(neoSample);
-			//update the sample object with the assigned accession
-			sample = Sample.build(sample.getName(), neoSample.getAccession(), sample.getRelease(), sample.getUpdate(),
-					sample.getAttributes(), sample.getRelationships(), sample.getExternalReferences());
 		}
+		
 		// send a message for further processing
 		amqpTemplate.convertAndSend(Messaging.exchangeForIndexing, "", sample);
 		//return the sample in case we have modified it i.e accessioned

@@ -4,6 +4,6 @@ import uk.ac.ebi.biosamples.neo.model.NeoSample;
 
 public interface NeoSampleRepositoryCustom {
 	
-	public NeoSample insertNew(NeoSample sample);
+	public NeoSample testNewAccession(String accession);
 
 }

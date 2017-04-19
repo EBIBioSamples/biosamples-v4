@@ -36,31 +36,25 @@ public class NeoAccessionService {
 		accessionCandidateCounter = neoProperties.getAccessionMinimum();
 	}
 
-	public NeoSample accessionAndInsert(NeoSample sample) {
+	public String generateAccession() {
 		// inspired by Optimistic Loops of
 		// https://docs.mongodb.com/v3.0/tutorial/create-an-auto-incrementing-field/
-		boolean success = false;
+		String accessionCandidate = null;
 		// TODO limit number of tries
-		while (!success) {
+		while (accessionCandidate == null) {
 			// TODO add a timeout here
 			try {
-				sample = NeoSample.build(sample.getName(), accessionCandidateQueue.take(), 
-						sample.getRelease(), sample.getUpdate(), sample.getAttributes(), sample.getRelationships(), sample.getExternalReferences());
-			} catch (InterruptedException e) {
-				throw new RuntimeException(e);
+				accessionCandidate = accessionCandidateQueue.take();
+			} catch (InterruptedException e1) {
+				throw new RuntimeException(e1);
 			}
-
 			try {
-				sample = neoSampleRepository.insertNew(sample);
-				success = true;
+				neoSampleRepository.testNewAccession(accessionCandidate);
 			} catch (DataIntegrityViolationException e) {
-				success = false;
-				sample = NeoSample.build(sample.getName(), null, 
-						sample.getRelease(), sample.getUpdate(), sample.getAttributes(), sample.getRelationships(), sample.getExternalReferences());
+				accessionCandidate = null;
 			}
-			
 		}
-		return sample;
+		return accessionCandidate;
 	}
 
 	@Scheduled(fixedDelay = 100)
