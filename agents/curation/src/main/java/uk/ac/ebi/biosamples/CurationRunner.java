@@ -25,8 +25,8 @@ public class CurationRunner implements ApplicationRunner {
 		Integer messageCount = null;
 		while (agentCurationProperties.getAgentCurationStayalive() || messageCount == null || messageCount > 0) {
 			Thread.sleep(1000);
-			messageCount = messageUtils.getQueueCount(Messaging.queueToBeIndexedNeo4J);
-			log.trace("Messages remaining in "+Messaging.queueToBeIndexedNeo4J+" "+messageCount);
+			messageCount = messageUtils.getQueueCount(Messaging.queueToBeCurated);
+			log.trace("Messages remaining in "+Messaging.queueToBeCurated+" "+messageCount);
 		}
 		
 	}
