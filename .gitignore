@@ -8,3 +8,4 @@ bin/
 target/
 
 docker-env.sh
+webapps/legacyjson/legacy_endpoints.json

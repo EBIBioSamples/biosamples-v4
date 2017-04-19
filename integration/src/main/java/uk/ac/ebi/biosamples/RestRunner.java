@@ -1,21 +1,14 @@
 package uk.ac.ebi.biosamples;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.ExitCodeGenerator;
-import org.springframework.core.Ordered;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.annotation.Order;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
@@ -27,14 +20,23 @@ import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
-
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
 @Component
-public class RestRunner implements ApplicationRunner, ExitCodeGenerator, Ordered {
+@Order(1)
+@Profile({"default", "rest"})
+public class RestRunner implements ApplicationRunner, ExitCodeGenerator {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -216,11 +218,6 @@ public class RestRunner implements ApplicationRunner, ExitCodeGenerator, Ordered
 		attributes.add(Attribute.build("UTF-8 test", "αβ", null, null));
 
 		return Sample.build(name, accession, release, update, attributes, new TreeSet<>(), new TreeSet<>());
-	}
-
-	@Override
-	public int getOrder() {
-		return 1;
 	}
 
 	@Override

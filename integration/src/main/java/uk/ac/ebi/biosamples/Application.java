@@ -15,7 +15,7 @@ public class Application {
 	public static PropertySourcesPlaceholderConfigurer getPropertySourcesPlaceholderConfigurer() {
 		return new PropertySourcesPlaceholderConfigurer();
 	}
-	
+
 	public static void main(String[] args) {
 		SpringApplication.exit(SpringApplication.run(Application.class, args));
 	}

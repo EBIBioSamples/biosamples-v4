@@ -1,21 +1,14 @@
 package uk.ac.ebi.biosamples;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.ExitCodeGenerator;
-import org.springframework.core.Ordered;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.annotation.Order;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.Resources;
@@ -24,14 +17,23 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
-
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
 @Component
-public class RestSearchRunner implements ApplicationRunner, ExitCodeGenerator, Ordered {
+@Order(2)
+@Profile("rest")
+public class RestSearchRunner implements ApplicationRunner, ExitCodeGenerator {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -90,11 +92,6 @@ public class RestSearchRunner implements ApplicationRunner, ExitCodeGenerator, O
 		externalReferences.add(ExternalReference.build("http://www.google.com"));
 
 		return Sample.build(name, accession, release, update, attributes, relationships, externalReferences);
-	}
-
-	@Override
-	public int getOrder() {
-		return 2;
 	}
 
 	@Override
