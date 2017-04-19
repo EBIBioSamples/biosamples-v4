@@ -29,10 +29,6 @@ public class ExternalReferenceResourceAssembler implements ResourceAssembler<Ext
 	public Resource<ExternalReference> toResource(ExternalReference externalReference) {
 		Resource<ExternalReference> resource = new Resource<>(externalReference);
 		
-		//resource.add(ControllerLinkBuilder
-		//		.linkTo(ControllerLinkBuilder.methodOn(SampleRestController.class).getSampleHal(sample.getAccession()))
-		//		.withSelfRel());
-		
 		resource.add(entityLinks.linkToSingleResource(ExternalReference.class, externalReference.getId()).withSelfRel());
 		
 		return resource;
