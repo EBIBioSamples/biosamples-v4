@@ -87,8 +87,33 @@ public class LegacyJsonRunner implements ApplicationRunner, ExitCodeGenerator {
     private void doPut(Sample sample) {
        restOperations.doPut(sample);
     }
+<<<<<<< HEAD
 */
     
+=======
+
+    /**
+     * Get v3 representation of sample and compare with actual legacy json serialization
+     * @param sample
+     */
+    private void doLegacyGetAndCompareSuccess(Sample sample) throws IOException {
+        // Getting JsonNode from the legacy api module
+        ResponseEntity<JsonNode> response = biosamplesCommonRest.doGetLegacyJsonAsNode(sample);
+        assert response.getStatusCode().is2xxSuccessful();
+        assert response.getBody() != null;
+        JsonNode legacyNode = response.getBody();
+
+        // Getting JsonNode from the json file
+        File jsonFile = getLegacyApiSampleTest(sample.getAccession());
+        JsonNode rootNode = mapper.readTree(jsonFile);
+
+        // Check both have accession field and is equal
+        assert rootNode.get("accession").asText().equals(legacyNode.get("accession").asText());
+
+        // Check both
+    }
+
+>>>>>>> minor comments added
     private Sample getSampleTest() throws URISyntaxException {
         String name = "ERS1077923";
         String accession = "SAMEA3890789";
