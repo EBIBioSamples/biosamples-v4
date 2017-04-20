@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -38,8 +39,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import uk.ac.ebi.biosamples.model.Autocomplete;
+import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.SampleService;
+import uk.ac.ebi.biosamples.service.ExternalReferenceResourceAssembler;
 import uk.ac.ebi.biosamples.service.FilterService;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 
@@ -59,7 +62,10 @@ public class SampleRestController {
 
 	private final SampleService sampleService;
 	private final FilterService filterService;
+	
 	private final SampleResourceAssembler sampleResourceAssembler;
+	private final ExternalReferenceResourceAssembler externalReferenceResourceAssembler;
+	
 	private final EntityLinks entityLinks;
 	
 	private Logger log = LoggerFactory.getLogger(getClass());
@@ -67,10 +73,12 @@ public class SampleRestController {
 	public SampleRestController(SampleService sampleService,
 			FilterService filterService,
 			SampleResourceAssembler sampleResourceAssembler,
+			ExternalReferenceResourceAssembler externalReferenceResourceAssembler,
 			EntityLinks entityLinks) {
 		this.sampleService = sampleService;
 		this.filterService = filterService;
 		this.sampleResourceAssembler = sampleResourceAssembler;
+		this.externalReferenceResourceAssembler = externalReferenceResourceAssembler;
 		this.entityLinks = entityLinks;
 	}
 
@@ -116,6 +124,13 @@ public class SampleRestController {
 			return ResponseEntity.notFound().build();
 		}
 		
+		if (sample.getName() == null) {
+			//if it has no name, then its just created by accessioning or reference
+			//can't read it, but could put to it
+			//TODO make sure "options" is correct for this
+			return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
+		}
+		
 		// check if the release date is in the future and if so return it as private
 		if (sample.getRelease().isAfter(LocalDateTime.now())) {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -129,6 +144,45 @@ public class SampleRestController {
 				.eTag(String.valueOf(sample.hashCode()))
 				.contentType(MediaTypes.HAL_JSON).body(sampleResource);
 	}
+
+    @CrossOrigin(methods = RequestMethod.GET)
+	@GetMapping(value = "/{id}/externalreferences", produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE  })
+	public ResponseEntity<PagedResources<Resource<ExternalReference>>> getSampleExternalReferencesHal(@PathVariable String id,
+			Pageable pageable,
+			PagedResourcesAssembler<ExternalReference> pageAssembler) {
+    	
+    	//get the response as if we'd called the sample endpoint
+    	ResponseEntity<Resource<Sample>> sampleResponse = getSampleHal(id);
+    	if (!sampleResponse.getStatusCode().is2xxSuccessful()) {
+    		//propagate any non-2xx status code from /{id}/ to this endpoint
+    		return ResponseEntity.status(sampleResponse.getStatusCode()).build();
+    	}
+    	
+    	//the sample is valid, so pull it out of the response
+    	Sample sample = sampleResponse.getBody().getContent();
+    	//make sure we have an non-null list of external reference
+    	List<ExternalReference> externalReferences = new ArrayList<>();
+    	if (sample.getExternalReferences() != null) {
+    		externalReferences.addAll(sample.getExternalReferences());
+    	}
+    	
+    	//get the sublist of the external references that matches the pageable
+    	List<ExternalReference> sublistexternalReferences = externalReferences.subList(pageable.getOffset(), 
+    			Math.min(pageable.getOffset()+pageable.getPageSize(), externalReferences.size()));    	
+    	
+    	//convert the sublist into an actual page 
+    	Page<ExternalReference> pageExternalReference = new PageImpl<>(sublistexternalReferences,
+    			pageable, externalReferences.size());
+    	
+    	//use the resource assembler and a link to this method to build out the response content
+		PagedResources<Resource<ExternalReference>> pagedResources = pageAssembler.toResource(pageExternalReference, externalReferenceResourceAssembler,
+				ControllerLinkBuilder.linkTo(ControllerLinkBuilder
+						.methodOn(SampleRestController.class).getSampleExternalReferencesHal(id, pageable, pageAssembler))
+						.withRel("externalreferences"));
+		
+		return ResponseEntity.ok()
+				.body(pagedResources);
+    }
 
 	@PutMapping(value = "/{accession}", consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
 	public ResponseEntity<Resource<Sample>> putJsonXml(@PathVariable String accession, @RequestBody Sample sample) {

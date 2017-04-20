@@ -31,8 +31,11 @@ public class SampleResourceAssembler implements ResourceAssembler<Sample, Resour
 		
 		resource.add(entityLinks.linkToSingleResource(Sample.class, sample.getAccession()).withSelfRel());
 		
-		for (ExternalReference externalReference : sample.getExternalReferences()) {
-			resource.add(entityLinks.linkToSingleResource(ExternalReference.class, externalReference.getId()).withRel("externalreference"));
+		
+		if (sample.getExternalReferences() != null && sample.getExternalReferences().size() > 0) {
+			resource.add(ControllerLinkBuilder.linkTo(ControllerLinkBuilder
+					.methodOn(SampleRestController.class).getSampleExternalReferencesHal(sample.getAccession(), null, null))
+					.withRel("externalreferences"));
 		}
 		
 		return resource;

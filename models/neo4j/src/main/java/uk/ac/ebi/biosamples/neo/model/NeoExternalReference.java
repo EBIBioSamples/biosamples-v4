@@ -27,6 +27,10 @@ public class NeoExternalReference {
 	@Index(unique=true, primary=true)
 	private String url;
 
+	@Property
+	@Index(unique=true, primary=false)	
+	private String urlHash;
+
     @Relationship(type = "HAS_EXTERNAL_REFERENCE", direction=Relationship.INCOMING)
 	private Set<NeoExternalReferenceApplication> applications;
 
@@ -38,6 +42,10 @@ public class NeoExternalReference {
 	
 	public String getUrl() {
 		return url;
+	}
+	
+	public String getUrlHash() {
+		return urlHash;
 	}
 	
 	public Set<NeoExternalReferenceApplication> getApplications() {
@@ -73,7 +81,7 @@ public class NeoExternalReference {
     	UriComponents uriComponents = uriComponentsBuilder.build().normalize();
 
     	url = uriComponents.toUriString();
-/*
+
     	String urlHash = Hashing.sha256().newHasher()
 			.putUnencodedChars(Objects.nonNull(uriComponents.getScheme()) ? uriComponents.getScheme() : "")
 			.putUnencodedChars(Objects.nonNull(uriComponents.getSchemeSpecificPart()) ? uriComponents.getSchemeSpecificPart() : "")
@@ -84,9 +92,10 @@ public class NeoExternalReference {
 			.putUnencodedChars(Objects.nonNull(uriComponents.getQuery()) ? uriComponents.getQuery() : "")
 			.putUnencodedChars(Objects.nonNull(uriComponents.getFragment()) ? uriComponents.getFragment() : "")
 			.hash().toString();
-*/    	
+    	
 		NeoExternalReference neoUrl = new NeoExternalReference();
 		neoUrl.url = url;
+		neoUrl.urlHash = urlHash;
 		return neoUrl;
 	}
 }

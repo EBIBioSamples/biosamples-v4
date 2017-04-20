@@ -1,7 +1,12 @@
 package uk.ac.ebi.biosamples.model;
 
 import java.nio.charset.Charset;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -17,14 +22,22 @@ public class ExternalReference implements Comparable<ExternalReference> {
 	private final String url;
 	
 	private final String urlHash;
+	
+	private final SortedSet<String> samples;
 
-	private ExternalReference(String url, String urlHash) {
+	private ExternalReference(String url, String urlHash, SortedSet<String> samples) {
 		this.url = url;
 		this.urlHash = urlHash;
+		this.samples = Collections.unmodifiableSortedSet(new TreeSet<>(samples));
 	}
 
 	public String getUrl() {
 		return this.url;
+	}
+	
+	@JsonIgnore
+	public SortedSet<String> getSamples() {
+		return samples;
 	}
 
 	@JsonIgnore
@@ -68,8 +81,13 @@ public class ExternalReference implements Comparable<ExternalReference> {
     	return sb.toString();
     }
 
+
     @JsonCreator
-    public static ExternalReference build(@JsonProperty("url") String url) {    	
+    public static ExternalReference build(@JsonProperty("url") String url) {  
+    	return build(url, new TreeSet<>());
+    }
+    
+    public static ExternalReference build(String url, SortedSet<String> samples) {    	
     	UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromUriString(url);
     	UriComponents uriComponents = uriComponentsBuilder.build().normalize();
 
@@ -85,7 +103,12 @@ public class ExternalReference implements Comparable<ExternalReference> {
 			.putUnencodedChars(Objects.nonNull(uriComponents.getQuery()) ? uriComponents.getQuery() : "")
 			.putUnencodedChars(Objects.nonNull(uriComponents.getFragment()) ? uriComponents.getFragment() : "")
 			.hash().toString();
-    	ExternalReference externalReference = new ExternalReference(url, urlHash);
+    	
+    	if (samples == null) {
+    		samples = new TreeSet<>();
+    	}
+    	
+    	ExternalReference externalReference = new ExternalReference(url, urlHash, samples);
 		return externalReference;
 	}
 }
