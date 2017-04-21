@@ -26,8 +26,8 @@ public class FilterService {
 	private SolrSampleService solrSampleService;
 
 	public MultiValueMap<String,String> getFilters(String[] filterStrings) {
-		if (filterStrings == null) return null;
-		if (filterStrings.length == 0) return null;
+		if (filterStrings == null) return new LinkedMultiValueMap<>();
+		if (filterStrings.length == 0) return new LinkedMultiValueMap<>();
 		//sort the array
 		Arrays.sort(filterStrings);
 		SortedSet<String> filterStringSet = new TreeSet<>(Arrays.asList(filterStrings));

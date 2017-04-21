@@ -53,13 +53,14 @@ public class SampleHtmlController {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 
-	private SampleService sampleService;
-	private FacetService facetService;
-	private FilterService filterService;
+	private final SampleService sampleService;
+	private final FacetService facetService;
+	private final FilterService filterService;
 
 	public SampleHtmlController(SampleService sampleService, FacetService facetService, FilterService filterService) {
 		this.sampleService = sampleService;
 		this.facetService = facetService;
+		this.filterService = filterService;
 	}
 
 	@GetMapping(value = "/")
