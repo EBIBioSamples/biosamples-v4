@@ -1,8 +1,11 @@
 package uk.ac.ebi.biosamples.neo.model;
 
 
+import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.neo4j.ogm.annotation.GraphId;
 import org.neo4j.ogm.annotation.Index;
@@ -32,9 +35,16 @@ public class NeoExternalReference {
 	private String urlHash;
 
     @Relationship(type = "HAS_EXTERNAL_REFERENCE", direction=Relationship.INCOMING)
-	private Set<NeoExternalReferenceApplication> applications;
+	private SortedSet<NeoExternalReferenceApplication> applications;
 
-	private NeoExternalReference() {}
+	private NeoExternalReference() {
+	}
+	
+	private NeoExternalReference(String url, String urlHash) {
+		this.url = url;
+		this.urlHash = urlHash;
+		this.applications = new TreeSet<>();
+	}
 	
 	public Long getId() {
 		return id;
@@ -93,9 +103,7 @@ public class NeoExternalReference {
 			.putUnencodedChars(Objects.nonNull(uriComponents.getFragment()) ? uriComponents.getFragment() : "")
 			.hash().toString();
     	
-		NeoExternalReference neoUrl = new NeoExternalReference();
-		neoUrl.url = url;
-		neoUrl.urlHash = urlHash;
+		NeoExternalReference neoUrl = new NeoExternalReference(url, urlHash);
 		return neoUrl;
 	}
 }

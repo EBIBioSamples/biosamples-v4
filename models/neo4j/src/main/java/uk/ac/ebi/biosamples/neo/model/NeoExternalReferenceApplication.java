@@ -10,10 +10,11 @@ import org.neo4j.ogm.annotation.RelationshipEntity;
 import org.neo4j.ogm.annotation.StartNode;
 import org.neo4j.ogm.annotation.typeconversion.Convert;
 
+import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.neo.service.LocalDateTimeConverter;
 
 @RelationshipEntity(type = "HAS_EXTERNAL_REFERENCE")
-public class NeoExternalReferenceApplication {
+public class NeoExternalReferenceApplication implements Comparable<NeoExternalReferenceApplication> {
 
 	@GraphId
 	private Long id;
@@ -62,6 +63,22 @@ public class NeoExternalReferenceApplication {
     	return Objects.hash(sample.getAccession(), externalReference.getUrl(), time);
     }	
 
+	@Override
+	public int compareTo(NeoExternalReferenceApplication other) {
+		if (other == null) {
+			return 1;
+		}
+		
+		if (!this.sample.getAccession().equals(other.sample.getAccession())) {
+			return this.sample.getAccession().compareTo(other.sample.getAccession());
+		}
+
+		if (!this.externalReference.getUrl().equals(other.externalReference.getUrl())) {
+			return this.externalReference.getUrl().compareTo(other.externalReference.getUrl());
+		}
+		
+		return 0;
+	}
 	
 	public static NeoExternalReferenceApplication build(NeoSample sample, NeoExternalReference externalReference) {
 		NeoExternalReferenceApplication neoExternalReferenceApplication = new NeoExternalReferenceApplication();

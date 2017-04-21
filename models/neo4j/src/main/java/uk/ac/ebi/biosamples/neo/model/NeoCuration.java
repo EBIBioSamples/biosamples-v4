@@ -24,6 +24,9 @@ public class NeoCuration {
     @Relationship(type = "HAS_POST_ATTRIBUTE")    
 	private Set<NeoAttribute> attributesPost;
     
+    @Relationship(type = "APPLIED_TO")
+    private Set<NeoCurationApplication> applications;
+    
 	@Property
 	@Index(unique=true, primary=true)
 	private String compositeIdentifier;
@@ -52,7 +55,11 @@ public class NeoCuration {
 		return attributesPost;
 	}
 	
-	public NeoCuration build(Collection<NeoAttribute> attributesPre, Collection<NeoAttribute> attributesPost) {
+	public Set<NeoCurationApplication> getApplications() {
+		return applications;
+	}
+	
+	public static NeoCuration build(Collection<NeoAttribute> attributesPre, Collection<NeoAttribute> attributesPost) {
 		NeoCuration neoCuration = new NeoCuration();
 		neoCuration.attributesPre = new TreeSet<>(attributesPre);
 		neoCuration.attributesPost = new TreeSet<>(attributesPost);

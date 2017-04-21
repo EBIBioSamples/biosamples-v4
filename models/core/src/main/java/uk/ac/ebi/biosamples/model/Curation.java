@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -17,9 +18,25 @@ public class Curation implements Comparable<Curation>{
 
 	private SortedSet<Attribute> postAttributes;
 
+	private SortedSet<String> sampleAccessions;
+
 	
-	private Curation(SortedSet<Attribute> preAttributes, SortedSet<Attribute> postAttributes) {
+	private Curation(Collection<Attribute> preAttributes, 
+			Collection<Attribute> postAttributes, 
+			SortedSet<String> sampleAccessions) {
+		this.preAttributes = Collections.unmodifiableSortedSet(new TreeSet<>(preAttributes));
+		this.postAttributes = Collections.unmodifiableSortedSet(new TreeSet<>(postAttributes));
+		this.sampleAccessions = Collections.unmodifiableSortedSet(new TreeSet<>(sampleAccessions));
 	}
+	
+	public SortedSet<Attribute> getPreAttributes() {
+		return preAttributes;
+	}
+	
+	public SortedSet<Attribute> getPostAttributes() {
+		return postAttributes;
+	}
+	
 	
     @Override
     public int hashCode() {
@@ -75,16 +92,23 @@ public class Curation implements Comparable<Curation>{
     }
 
     @JsonCreator
-	static public Curation build(@JsonProperty("pre") Collection<Attribute> preAttributes, @JsonProperty("post") Collection<Attribute> postAttributes) {
+    public static Curation build(@JsonProperty("pre") Collection<Attribute> preAttributes, 
+			@JsonProperty("post") Collection<Attribute> postAttributes,
+			@JsonProperty("samples") Collection<String> samples) {
+    	
 		SortedSet<Attribute> sortedPreAttributes = new TreeSet<>();
 		SortedSet<Attribute> sortedPostAttributes = new TreeSet<>();
+		SortedSet<String> sortedSamples = new TreeSet<>();
+		
 		if (preAttributes != null) sortedPreAttributes.addAll(preAttributes);
 		if (postAttributes != null) sortedPostAttributes.addAll(postAttributes);
+		if (samples != null) sortedSamples.addAll(samples);
 
 		sortedPreAttributes = Collections.unmodifiableSortedSet(sortedPreAttributes);
 		sortedPostAttributes = Collections.unmodifiableSortedSet(sortedPostAttributes);
+		sortedSamples = Collections.unmodifiableSortedSet(sortedSamples);
 		
-		return new Curation(sortedPreAttributes, sortedPostAttributes);
+		return new Curation(sortedPreAttributes, sortedPostAttributes, sortedSamples);
 	}
 }
 

@@ -67,6 +67,8 @@ public class RestExternalReferenceRunner implements ApplicationRunner, ExitCodeG
 			//check /samples/{id}/externalreferences
 			testSamplesExternalReference(sample);
 			
+			testSamplesExternalReferenceCreation(sample);
+			
 			//check /externalreferences
 			testExternalReferences();
 			
@@ -94,6 +96,23 @@ public class RestExternalReferenceRunner implements ApplicationRunner, ExitCodeG
 				if (t.getLink("self") == null) throw new IllegalArgumentException("Must have self link");					
 			}
 		});
+	}
+	
+	private void testSamplesExternalReferenceCreation(Sample sample) {
+		
+		URI uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUri()).pathSegment("samples")
+			.pathSegment(sample.getAccession()).pathSegment("externalreferences").build().toUri();
+
+		ExternalReference externalReference = ExternalReference.build("http://www.test.com/a");
+		
+		log.info("POSTing to "+uri);
+		RequestEntity<ExternalReference> request = RequestEntity.post(uri)
+				.contentType(MediaType.APPLICATION_JSON).body(externalReference);
+		
+		ResponseEntity<Resource<ExternalReference>> response = restTemplate.exchange(request, 
+				new ParameterizedTypeReference<Resource<ExternalReference>>(){});
+		
+		response.getBody().getContent();
 	}
 	
 	private void testExternalReferences() {

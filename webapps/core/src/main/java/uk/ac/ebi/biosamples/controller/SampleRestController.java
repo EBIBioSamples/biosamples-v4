@@ -54,10 +54,8 @@ public class SampleRestController {
 
 	private final SampleService sampleService;
 	private final FilterService filterService;
-	private final ExternalReferenceService externalReferenceService;
 	
 	private final SampleResourceAssembler sampleResourceAssembler;
-	private final ExternalReferenceResourceAssembler externalReferenceResourceAssembler;
 	
 	private final EntityLinks entityLinks;
 	
@@ -65,15 +63,11 @@ public class SampleRestController {
 
 	public SampleRestController(SampleService sampleService,
 			FilterService filterService,
-			ExternalReferenceService externalReferenceService,
 			SampleResourceAssembler sampleResourceAssembler,
-			ExternalReferenceResourceAssembler externalReferenceResourceAssembler,
 			EntityLinks entityLinks) {
 		this.sampleService = sampleService;
 		this.filterService = filterService;
-		this.externalReferenceService = externalReferenceService;
 		this.sampleResourceAssembler = sampleResourceAssembler;
-		this.externalReferenceResourceAssembler = externalReferenceResourceAssembler;
 		this.entityLinks = entityLinks;
 	}
 
@@ -139,32 +133,6 @@ public class SampleRestController {
 				.eTag(String.valueOf(sample.hashCode()))
 				.contentType(MediaTypes.HAL_JSON).body(sampleResource);
 	}
-
-    @CrossOrigin(methods = RequestMethod.GET)
-	@GetMapping(value = "/{id}/externalreferences", produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE  })
-	public ResponseEntity<PagedResources<Resource<ExternalReference>>> getSampleExternalReferencesHal(@PathVariable String id,
-			Pageable pageable,
-			PagedResourcesAssembler<ExternalReference> pageAssembler) {
-    	
-    	//get the response as if we'd called the sample endpoint
-    	ResponseEntity<Resource<Sample>> sampleResponse = getSampleHal(id);
-    	if (!sampleResponse.getStatusCode().is2xxSuccessful()) {
-    		//propagate any non-2xx status code from /{id}/ to this endpoint
-    		return ResponseEntity.status(sampleResponse.getStatusCode()).build();
-    	}
-    	
-    	//get the content from the services
-    	Page<ExternalReference> pageExternalReference = externalReferenceService.getExternalReferencesOfSample(id, pageable);
-    	
-    	//use the resource assembler and a link to this method to build out the response content
-		PagedResources<Resource<ExternalReference>> pagedResources = pageAssembler.toResource(pageExternalReference, externalReferenceResourceAssembler,
-				ControllerLinkBuilder.linkTo(ControllerLinkBuilder
-						.methodOn(SampleRestController.class).getSampleExternalReferencesHal(id, pageable, pageAssembler))
-						.withRel("externalreferences"));
-		
-		return ResponseEntity.ok()
-				.body(pagedResources);
-    }
 
 	@PutMapping(value = "/{accession}", consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
 	public ResponseEntity<Resource<Sample>> putJsonXml(@PathVariable String accession, @RequestBody Sample sample) {
