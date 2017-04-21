@@ -184,7 +184,8 @@ public class SampleRestController {
 		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
 		
 		// create the response object with the appropriate status
-		return ResponseEntity.accepted().body(sampleResource);
+		return ResponseEntity.accepted()
+				.body(sampleResource);
 	}
 
 	@PostMapping(consumes = { MediaType.APPLICATION_JSON_VALUE,	MediaType.APPLICATION_XML_VALUE })
@@ -194,6 +195,7 @@ public class SampleRestController {
 		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
 		
 		// create the response object with the appropriate status
-		return ResponseEntity.created(URI.create(sampleResource.getLink("self").getHref())).body(sampleResource);
+		return ResponseEntity.created(URI.create(sampleResource.getLink("self").getHref()))
+				.body(sampleResource);
 	}
 }

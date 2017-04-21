@@ -4,6 +4,7 @@ import org.neo4j.ogm.annotation.NodeEntity;
 import org.neo4j.ogm.annotation.Property;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -138,7 +139,8 @@ public class NeoSample {
      * @return
      */
 	public static NeoSample build(String name, String accession, LocalDateTime release, LocalDateTime update, 
-			Set<NeoAttribute> attributes, Set<NeoRelationship> relationships, Set<NeoExternalReferenceApplication> externalReferenceApplications) {
+			Collection<NeoAttribute> attributes, Collection<NeoRelationship> relationships, 
+			Collection<NeoExternalReferenceApplication> externalReferenceApplications) {
 		NeoSample neoSample = new NeoSample();
 		neoSample.accession = accession;
 		neoSample.name = name;

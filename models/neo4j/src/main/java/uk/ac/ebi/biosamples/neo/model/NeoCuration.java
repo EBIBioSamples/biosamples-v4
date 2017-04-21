@@ -1,5 +1,6 @@
 package uk.ac.ebi.biosamples.neo.model;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -51,7 +52,7 @@ public class NeoCuration {
 		return attributesPost;
 	}
 	
-	public NeoCuration build(Set<NeoAttribute> attributesPre, Set<NeoAttribute> attributesPost) {
+	public NeoCuration build(Collection<NeoAttribute> attributesPre, Collection<NeoAttribute> attributesPost) {
 		NeoCuration neoCuration = new NeoCuration();
 		neoCuration.attributesPre = new TreeSet<>(attributesPre);
 		neoCuration.attributesPost = new TreeSet<>(attributesPost);
