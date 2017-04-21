@@ -2,6 +2,8 @@ package uk.ac.ebi.biosamples.neo.service.modelconverter;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.springframework.boot.context.properties.ConfigurationPropertiesBinding;
 import org.springframework.core.convert.converter.Converter;
@@ -20,11 +22,11 @@ public class NeoExternalReferenceToExternalReferenceConverter
 
 	@Override
 	public ExternalReference convert(NeoExternalReference neo) {
-		Set<String> samples = new HashSet<>();
+		SortedSet<String> samples = new TreeSet<>();
 		for (NeoExternalReferenceApplication application : neo.getApplications()) {
 			samples.add(application.getSample().getAccession());
 		}
-		return ExternalReference.build(neo.getUrl());
+		return ExternalReference.build(neo.getUrl(), samples);
 		
 	}
 
