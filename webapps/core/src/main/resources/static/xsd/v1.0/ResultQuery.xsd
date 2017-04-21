@@ -13,20 +13,4 @@
       </xs:sequence>
     </xs:complexType>
   </xs:element>
- <!-- <xs:element name="SummaryInfo">
-    <xs:complexType>
-      <xs:sequence>
-        <xs:element ref="Total"/>
-        <xs:element ref="From"/>
-        <xs:element ref="To"/>
-        <xs:element ref="PageNumber"/>
-        <xs:element ref="PageSize"/>
-      </xs:sequence>
-    </xs:complexType>
-  </xs:element>
-  <xs:element name="Total" type="xs:integer"/>
-  <xs:element name="From" type="xs:integer"/>
-  <xs:element name="To" type="xs:integer"/>
-  <xs:element name="PageNumber" type="xs:integer"/>
-  <xs:element name="PageSize" type="xs:integer"/>-->
 </xs:schema>
