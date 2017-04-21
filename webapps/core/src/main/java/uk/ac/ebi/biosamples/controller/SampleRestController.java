@@ -3,25 +3,17 @@ package uk.ac.ebi.biosamples.controller;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.ExposesResourceFor;
-import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.UriTemplate;
-import org.springframework.hateoas.mvc.BasicLinkBuilder;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -38,11 +30,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import uk.ac.ebi.biosamples.model.Autocomplete;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.ExternalReferenceResourceAssembler;
+import uk.ac.ebi.biosamples.service.ExternalReferenceService;
 import uk.ac.ebi.biosamples.service.FilterService;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 
@@ -62,6 +54,7 @@ public class SampleRestController {
 
 	private final SampleService sampleService;
 	private final FilterService filterService;
+	private final ExternalReferenceService externalReferenceService;
 	
 	private final SampleResourceAssembler sampleResourceAssembler;
 	private final ExternalReferenceResourceAssembler externalReferenceResourceAssembler;
@@ -72,11 +65,13 @@ public class SampleRestController {
 
 	public SampleRestController(SampleService sampleService,
 			FilterService filterService,
+			ExternalReferenceService externalReferenceService,
 			SampleResourceAssembler sampleResourceAssembler,
 			ExternalReferenceResourceAssembler externalReferenceResourceAssembler,
 			EntityLinks entityLinks) {
 		this.sampleService = sampleService;
 		this.filterService = filterService;
+		this.externalReferenceService = externalReferenceService;
 		this.sampleResourceAssembler = sampleResourceAssembler;
 		this.externalReferenceResourceAssembler = externalReferenceResourceAssembler;
 		this.entityLinks = entityLinks;
@@ -158,21 +153,8 @@ public class SampleRestController {
     		return ResponseEntity.status(sampleResponse.getStatusCode()).build();
     	}
     	
-    	//the sample is valid, so pull it out of the response
-    	Sample sample = sampleResponse.getBody().getContent();
-    	//make sure we have an non-null list of external reference
-    	List<ExternalReference> externalReferences = new ArrayList<>();
-    	if (sample.getExternalReferences() != null) {
-    		externalReferences.addAll(sample.getExternalReferences());
-    	}
-    	
-    	//get the sublist of the external references that matches the pageable
-    	List<ExternalReference> sublistexternalReferences = externalReferences.subList(pageable.getOffset(), 
-    			Math.min(pageable.getOffset()+pageable.getPageSize(), externalReferences.size()));    	
-    	
-    	//convert the sublist into an actual page 
-    	Page<ExternalReference> pageExternalReference = new PageImpl<>(sublistexternalReferences,
-    			pageable, externalReferences.size());
+    	//get the content from the services
+    	Page<ExternalReference> pageExternalReference = externalReferenceService.getExternalReferencesOfSample(id, pageable);
     	
     	//use the resource assembler and a link to this method to build out the response content
 		PagedResources<Resource<ExternalReference>> pagedResources = pageAssembler.toResource(pageExternalReference, externalReferenceResourceAssembler,

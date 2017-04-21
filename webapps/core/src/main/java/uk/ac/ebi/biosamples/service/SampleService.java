@@ -34,14 +34,18 @@ import com.mongodb.MongoWriteException;
 import uk.ac.ebi.biosamples.Messaging;
 import uk.ac.ebi.biosamples.WebappProperties;
 import uk.ac.ebi.biosamples.model.Autocomplete;
+import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SampleFacet;
 import uk.ac.ebi.biosamples.mongo.model.MongoSubmission;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSubmissionRepository;
 import uk.ac.ebi.biosamples.mongo.service.MongoAccessionService;
+import uk.ac.ebi.biosamples.neo.model.NeoExternalReference;
 import uk.ac.ebi.biosamples.neo.model.NeoSample;
+import uk.ac.ebi.biosamples.neo.repo.NeoExternalReferenceRepository;
 import uk.ac.ebi.biosamples.neo.repo.NeoSampleRepository;
 import uk.ac.ebi.biosamples.neo.service.NeoAccessionService;
+import uk.ac.ebi.biosamples.neo.service.modelconverter.NeoExternalReferenceToExternalReferenceConverter;
 import uk.ac.ebi.biosamples.neo.service.modelconverter.NeoSampleToSampleConverter;
 import uk.ac.ebi.biosamples.neo.service.modelconverter.SampleToNeoSampleConverter;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
@@ -71,12 +75,17 @@ public class SampleService {
 
 	@Autowired
 	private NeoSampleRepository neoSampleRepository;
+	@Autowired
+	private NeoExternalReferenceRepository neoExternalReferenceRepository;
 	
 	
+	//TODO use a ConversionService to manage all these
 	@Autowired
 	private SampleToNeoSampleConverter sampleToNeoSampleConverter;
 	@Autowired
 	private NeoSampleToSampleConverter neoSampleToSampleConverter;
+	@Autowired
+	private NeoExternalReferenceToExternalReferenceConverter neoExternalReferenceToExternalReferenceConverter;
 	
 	@Autowired
 	private InverseRelationshipService inverseRelationshipService;
@@ -177,6 +186,12 @@ public class SampleService {
 		amqpTemplate.convertAndSend(Messaging.exchangeForIndexing, "", sample);
 		//return the sample in case we have modified it i.e accessioned
 		return sample;
+	}
+	
+	public Page<Sample> getSamplesOfExternalReference(String urlHash, Pageable pageable) {
+		Page<NeoSample> pageNeoSample = neoSampleRepository.findByExternalReferenceUrlHash(urlHash, pageable);
+		Page<Sample> pageSample = pageNeoSample.map(neoSampleToSampleConverter);
+		return pageSample;
 	}
 
 }

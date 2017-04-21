@@ -103,24 +103,8 @@ public class ExternalReferenceRestController {
     		return ResponseEntity.status(externalReferenceResponse.getStatusCode()).build();
     	}
 
-    	//the externalReference is valid, so pull it out of the response
-    	ExternalReference externalReference = externalReferenceResponse.getBody().getContent();
-    	//make sure we have an non-null list of samples
-    	//fetch sample details from 
-    	List<Sample> samples = new ArrayList<>();
-    	if (externalReference.getSamples() != null) {
-    		for (String accession : externalReference.getSamples()) {
-    			samples.add(sampleService.fetch(accession));
-    		}
-    	}
-
-    	//get the sublist of the sampless that matches the pageable
-    	List<Sample> sublistexternalReferences = samples.subList(pageable.getOffset(), 
-    			Math.min(pageable.getOffset()+pageable.getPageSize(), samples.size()));    	
-    	
-    	//convert the sublist into an actual page 
-    	Page<Sample> pageSample = new PageImpl<>(sublistexternalReferences,
-    			pageable, samples.size());
+    	//get the content from the services
+    	Page<Sample> pageSample = sampleService.getSamplesOfExternalReference(id, pageable);    	
     	
     	//use the resource assembler and a link to this method to build out the response content
 		PagedResources<Resource<Sample>> pagedResources = pageAssembler.toResource(pageSample, sampleResourceAssembler,
