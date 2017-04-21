@@ -1,6 +1,7 @@
 package uk.ac.ebi.biosamples.model;
 
 import java.nio.charset.Charset;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
@@ -25,7 +26,7 @@ public class ExternalReference implements Comparable<ExternalReference> {
 	
 	private final SortedSet<String> samples;
 
-	private ExternalReference(String url, String urlHash, SortedSet<String> samples) {
+	private ExternalReference(String url, String urlHash, Collection<String> samples) {
 		this.url = url;
 		this.urlHash = urlHash;
 		this.samples = Collections.unmodifiableSortedSet(new TreeSet<>(samples));
@@ -87,7 +88,7 @@ public class ExternalReference implements Comparable<ExternalReference> {
     	return build(url, new TreeSet<>());
     }
     
-    public static ExternalReference build(String url, SortedSet<String> samples) {    	
+    public static ExternalReference build(String url, Collection<String> sampleAccessions) {    	
     	UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromUriString(url);
     	UriComponents uriComponents = uriComponentsBuilder.build().normalize();
 
@@ -104,11 +105,12 @@ public class ExternalReference implements Comparable<ExternalReference> {
 			.putUnencodedChars(Objects.nonNull(uriComponents.getFragment()) ? uriComponents.getFragment() : "")
 			.hash().toString();
     	
-    	if (samples == null) {
-    		samples = new TreeSet<>();
+    	SortedSet<String> sortedSamples = new TreeSet<>();
+    	if (sampleAccessions != null) {
+    		sortedSamples.addAll(sampleAccessions);
     	}
     	
-    	ExternalReference externalReference = new ExternalReference(url, urlHash, samples);
+    	ExternalReference externalReference = new ExternalReference(url, urlHash, sampleAccessions);
 		return externalReference;
 	}
 }
