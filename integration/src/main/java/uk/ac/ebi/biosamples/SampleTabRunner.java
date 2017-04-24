@@ -52,10 +52,10 @@ public class SampleTabRunner implements ApplicationRunner, ExitCodeGenerator {
 				ResponseEntity<String> response = restTemplate.exchange(request, String.class);				
 				//TODO check at the right URLs with GET to make sure all arrived
 				//TODO check UTF-8 characters
-				if (!biosamplesClient.fetch("SAMEA2186845").getAttributes().contains(Attribute.build("description", "Test sample α"))) {
+				if (!biosamplesClient.fetch("SAMEA2186845").getCharacteristics().contains(Attribute.build("description", "Test sample α"))) {
 					throw new RuntimeException("SAMEA2186845 does not have 'description':'Test sample α'");
 				}
-				if (!biosamplesClient.fetch("SAMEA2186844").getAttributes().contains(Attribute.build("description", "Test sample β"))) {
+				if (!biosamplesClient.fetch("SAMEA2186844").getCharacteristics().contains(Attribute.build("description", "Test sample β"))) {
 					throw new RuntimeException("SAMEA2186844 does not have 'description':'Test sample β'");
 				}
 				});	

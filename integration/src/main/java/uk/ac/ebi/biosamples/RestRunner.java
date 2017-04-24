@@ -70,7 +70,7 @@ public class RestRunner implements ApplicationRunner, ExitCodeGenerator {
 			// put a version that is private
 			sampleTest1 = Sample.build(sampleTest1.getName(), sampleTest1.getAccession(),
 					LocalDateTime.of(LocalDate.of(2116, 4, 1), LocalTime.of(11, 36, 57, 0)), sampleTest1.getUpdate(),
-					sampleTest1.getAttributes(), sampleTest1.getRelationships(), sampleTest1.getExternalReferences());
+					sampleTest1.getCharacteristics(), sampleTest1.getRelationships(), sampleTest1.getExternalReferences());
 			doPut(sampleTest1);
 	
 			// check the response code
@@ -83,14 +83,14 @@ public class RestRunner implements ApplicationRunner, ExitCodeGenerator {
 
 			sampleTest2 = Sample.build(sampleTest2.getName(), sampleTest2.getAccession(),
 					sampleTest2.getRelease(), sampleTest2.getUpdate(),
-					sampleTest2.getAttributes(), sampleTest1.getRelationships(), sampleTest2.getExternalReferences());
+					sampleTest2.getCharacteristics(), sampleTest1.getRelationships(), sampleTest2.getExternalReferences());
 			
 			//check that it has the additional relationship added
 			// get to check it worked
 			Sample sampleTest2Rest = doGetAndSucess(sampleTest2);
 			
 			//check utf -8
-			if (!sampleTest2Rest.getAttributes().contains(Attribute.build("UTF-8 test", "αβ", null, null))) {
+			if (!sampleTest2Rest.getCharacteristics().contains(Attribute.build("UTF-8 test", "αβ", null, null))) {
 				throw new RuntimeException("Unable to find UTF-8 characters");
 			}
 			
@@ -98,7 +98,7 @@ public class RestRunner implements ApplicationRunner, ExitCodeGenerator {
 			//might as well make it public now too
 			sampleTest1 = Sample.build(sampleTest1.getName(), sampleTest1.getAccession(),
 					LocalDateTime.of(LocalDate.of(2016, 4, 1), LocalTime.of(11, 36, 57, 0)), sampleTest1.getUpdate(),
-					sampleTest1.getAttributes(), new TreeSet<>(), sampleTest1.getExternalReferences());
+					sampleTest1.getCharacteristics(), new TreeSet<>(), sampleTest1.getExternalReferences());
 			doPut(sampleTest1);
 			
 			

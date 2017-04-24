@@ -172,7 +172,7 @@ public class SampleService {
 			accession = neoAccessionService.generateAccession();
 			//update the sample object with the assigned accession
 			sample = Sample.build(sample.getName(), accession, sample.getRelease(), sample.getUpdate(),
-					sample.getAttributes(), sample.getRelationships(), sample.getExternalReferences());
+					sample.getCharacteristics(), sample.getRelationships(), sample.getExternalReferences());
 		}
 
 		// convert it to the storage specific version

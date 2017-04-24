@@ -42,7 +42,7 @@ public class SampleToNeoSampleConverter
 	public NeoSample convert(Sample sample) {
 		NeoSample neoSample = NeoSample.build(sample.getName(), sample.getAccession(), sample.getRelease(), sample.getUpdate(),
 				null, null, null);
-		for (Attribute attribute : sample.getAttributes()) {
+		for (Attribute attribute : sample.getCharacteristics()) {
 			neoSample.getAttributes().add(attributeToNeoAttributeConverter.convert(attribute));
 		}
 		for (ExternalReference externalReference : sample.getExternalReferences()) {

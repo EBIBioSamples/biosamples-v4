@@ -16,11 +16,11 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import uk.ac.ebi.biosamples.service.CustomLocalDateTimeDeserializer;
 import uk.ac.ebi.biosamples.service.CustomLocalDateTimeSerializer;
-import uk.ac.ebi.biosamples.service.CustomAttributeSerializer;
+import uk.ac.ebi.biosamples.service.CharacteristicSerializer;
+import uk.ac.ebi.biosamples.service.CharacteristicDeserializer;
 
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonIgnoreProperties(value={"characteristics"}, allowGetters=true)
 public class Sample {
 	
 	protected String accession;
@@ -55,27 +55,22 @@ public class Sample {
 	public String getName() {
 		return name;
 	}
-	
-	@JsonProperty("release")
+
+	//DO NOT specify the JSON property value manually, must be autoinferred or errors
 	@JsonSerialize(using = CustomLocalDateTimeSerializer.class)
 	public LocalDateTime getRelease() {
 		return release;
 	}
 
-	@JsonProperty("update")
+	//DO NOT specify the JSON property value manually, must be autoinferred or errors
 	@JsonSerialize(using = CustomLocalDateTimeSerializer.class)
 	public LocalDateTime getUpdate() {
 		return update;
 	}
+	
 
-	@JsonProperty("attributes")
-	public SortedSet<Attribute> getAttributes() {
-		return attributes;
-	}
-
-	@Deprecated
-    @JsonSerialize(using = CustomAttributeSerializer.class)
-	@JsonProperty("characteristics")
+	//DO NOT specify the JSON property value manually, must be autoinferred or errors
+    @JsonSerialize(using = CharacteristicSerializer.class)
 	public SortedSet<Attribute> getCharacteristics() {
 		return attributes;
 	}
@@ -137,15 +132,14 @@ public class Sample {
     	sb.append(")");
     	return sb.toString();
     }
-		    
 
     //Used for deserializtion (JSON -> Java)
     @JsonCreator
 	public static Sample build(@JsonProperty("name") String name, 
 			@JsonProperty("accession") String accession, 
 			@JsonProperty("release") @JsonDeserialize(using = CustomLocalDateTimeDeserializer.class) LocalDateTime release, 
-			@JsonProperty("update") @JsonDeserialize(using = CustomLocalDateTimeDeserializer.class) LocalDateTime update, 
-			@JsonProperty("attributes") Set<Attribute> attributes, 
+			@JsonProperty("update") @JsonDeserialize(using = CustomLocalDateTimeDeserializer.class) LocalDateTime update,
+			@JsonProperty("characteristics") @JsonDeserialize(using = CharacteristicDeserializer.class) Set<Attribute> attributes,
 			@JsonProperty("relationships") Set<Relationship> relationships, 
 			@JsonProperty("externalReferences") Set<ExternalReference> externalReferences) {
     	

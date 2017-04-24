@@ -1,7 +1,8 @@
 package uk.ac.ebi.biosamples.service;
 
 import java.io.IOException;
-import java.time.format.DateTimeFormatter;
+
+
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -15,17 +16,36 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Sample;
 
-public class CustomAttributeSerializer extends StdSerializer<SortedSet> {
+
+/*
+
+"characteristics": {
+    "material": [
+      {
+        "text": "specimen from organism",
+        "ontologyTerms": [
+          "http://purl.obolibrary.org/obo/OBI_0001479"
+        ]
+      }
+    ],
+    "specimenCollectionDate": [
+      {
+        "text": "2013-05",
+        "unit": "YYYY-MM"
+      }
+    ],
+
+ */
+public class CharacteristicSerializer extends StdSerializer<SortedSet> {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 
-	public CustomAttributeSerializer(){
+	public CharacteristicSerializer(){
 		this(SortedSet.class);
 	}
 
-	public CustomAttributeSerializer(Class<SortedSet> t) {
+	public CharacteristicSerializer(Class<SortedSet> t) {
 		super(t);
 	}
 
@@ -43,22 +63,27 @@ public class CustomAttributeSerializer extends StdSerializer<SortedSet> {
 				if (!attributeMap.containsKey(attribute.getType())) {
 					attributeMap.put(attribute.getType(), new TreeMap<>());
 				}
-				attributeMap.get(attribute.getType()).put(attribute.getValue(), Attribute.build(null, null, attribute.getIri(), attribute.getUnit()));			
+				attributeMap.get(attribute.getType()).put(attribute.getValue(), Attribute.build(attribute.getType(), attribute.getValue(), attribute.getIri(), attribute.getUnit()));			
 			}
 
 	        for (String type : attributeMap.keySet()) {
-	        	gen.writeObjectFieldStart(type);
+	        	gen.writeArrayFieldStart(type);	        	
+	        	
 	            for (String value : attributeMap.get(type).keySet()) {
-	            	gen.writeObjectFieldStart(value);
+	            	gen.writeStartObject();
+	                gen.writeStringField("text", value);
 	            	if (attributeMap.get(type).get(value).getIri() != null) {
-	            		gen.writeStringField("iri", attributeMap.get(type).get(value).getIri().toString());
+		                gen.writeArrayFieldStart("ontologyTerms");
+		                gen.writeString(attributeMap.get(type).get(value).getIri().toString());
+		                gen.writeEndArray();
 	            	}
 	            	if (attributeMap.get(type).get(value).getUnit() != null) {
 	            		gen.writeStringField("unit", attributeMap.get(type).get(value).getUnit());		
 	            	}
-	                gen.writeEndObject();
+	            	gen.writeEndObject();
 	            }
-	            gen.writeEndObject();
+	            
+	            gen.writeEndArray();
 	        }
 		}
 
