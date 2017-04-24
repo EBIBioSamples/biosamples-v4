@@ -38,8 +38,8 @@ public class NeoSample {
 	@Relationship(type = "RELATED_TO", direction = Relationship.UNDIRECTED)
 	private Set<NeoRelationship> relationships;
 
-    @Relationship(type = "HAS_EXTERNAL_REFERENCE", direction = Relationship.OUTGOING)
-	private Set<NeoExternalReferenceApplication> externalReferenceApplications;
+    @Relationship(type = "HAS_EXTERNAL_REFERENCE_SOURCE", direction = Relationship.INCOMING)
+	private Collection<NeoExternalReferenceLink> externalReferenceLinks;
 
     @Relationship(type = "HAS_ATTRIBUTE")
 	private Set<NeoAttribute> attributes;
@@ -76,8 +76,8 @@ public class NeoSample {
 		return attributes;
 	}
 
-	public Set<NeoExternalReferenceApplication> getExternalReferenceApplications() {
-		return externalReferenceApplications;
+	public Collection<NeoExternalReferenceLink> getExternalReferenceLinks() {
+		return externalReferenceLinks;
 	}
 
 	public Set<NeoCurationApplication> getCurationApplications() {
@@ -98,12 +98,12 @@ public class NeoSample {
         		&& Objects.equals(this.update, other.update)
         		&& Objects.equals(this.attributes, other.attributes)
         		&& Objects.equals(this.relationships, other.relationships)
-        		&& Objects.equals(this.externalReferenceApplications, other.externalReferenceApplications);
+        		&& Objects.equals(this.externalReferenceLinks, other.externalReferenceLinks);
     }
     
     @Override
     public int hashCode() {
-    	return Objects.hash(name, accession, release, update, attributes, relationships, externalReferenceApplications);
+    	return Objects.hash(name, accession, release, update, attributes, relationships, externalReferenceLinks);
     }
 
     @Override
@@ -122,7 +122,7 @@ public class NeoSample {
     	sb.append(",");
     	sb.append(relationships);
     	sb.append(",");
-    	sb.append(externalReferenceApplications);
+    	sb.append(externalReferenceLinks);
     	sb.append(")");
     	return sb.toString();
     }
@@ -140,7 +140,7 @@ public class NeoSample {
      */
 	public static NeoSample build(String name, String accession, LocalDateTime release, LocalDateTime update, 
 			Collection<NeoAttribute> attributes, Collection<NeoRelationship> relationships, 
-			Collection<NeoExternalReferenceApplication> externalReferenceApplications) {
+			Collection<NeoExternalReferenceLink> externalReferenceApplications) {
 		NeoSample neoSample = new NeoSample();
 		neoSample.accession = accession;
 		neoSample.name = name;
@@ -161,11 +161,11 @@ public class NeoSample {
 			neoSample.relationships.addAll(relationships);
 		}
 
-		neoSample.externalReferenceApplications = new HashSet<>();
+		neoSample.externalReferenceLinks = new HashSet<>();
 		if (externalReferenceApplications == null || externalReferenceApplications.size() == 0) {
 			//dop nothing
 		} else {
-			neoSample.externalReferenceApplications.addAll(externalReferenceApplications);
+			neoSample.externalReferenceLinks.addAll(externalReferenceApplications);
 		}	
 		
 		return neoSample;

@@ -25,7 +25,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 @SuppressWarnings("Duplicates")
-@Component
+//@Component
 @Order(5)
 @Profile({"default", "rest", "test"})
 public class LegacyJsonRunner implements ApplicationRunner, ExitCodeGenerator {

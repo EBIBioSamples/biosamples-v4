@@ -14,7 +14,7 @@ import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.neo.model.NeoAttribute;
 import uk.ac.ebi.biosamples.neo.model.NeoExternalReference;
-import uk.ac.ebi.biosamples.neo.model.NeoExternalReferenceApplication;
+import uk.ac.ebi.biosamples.neo.model.NeoExternalReferenceLink;
 import uk.ac.ebi.biosamples.neo.model.NeoRelationship;
 import uk.ac.ebi.biosamples.neo.model.NeoSample;
 
@@ -23,33 +23,27 @@ import uk.ac.ebi.biosamples.neo.model.NeoSample;
 public class NeoSampleToSampleConverter
 		implements Converter<NeoSample, Sample> {
 	
-	@Autowired
-	private NeoAttributeToAttributeConverter neoAttributeToAttributeConverter;
-	@Autowired
-	private NeoExternalReferenceToExternalReferenceConverter neoExternalReferenceToExternalReferenceConverter;
-	@Autowired
-	private NeoRelationshipToRelationshipConverter neoRelationshipToRelationshipConverter;
-
 	@Override
 	public Sample convert(NeoSample neo) {		
 		Set<Attribute> attributes = new HashSet<>();
 		if (neo.getAttributes() != null) {
 			for (NeoAttribute attribute : neo.getAttributes()) {
-				attributes.add(neoAttributeToAttributeConverter.convert(attribute));
+				attributes.add(Attribute.build(attribute.getType(), attribute.getValue(), attribute.getIri(), attribute.getUnit()));
 			}
 		}
 		Set<ExternalReference> externalReferences = new HashSet<>();
-		if (neo.getExternalReferenceApplications() != null) {
-			for (NeoExternalReferenceApplication externalReferenceApplication : neo.getExternalReferenceApplications()) {
-				NeoExternalReference neoExternalReference = externalReferenceApplication.getExternalReference();
-				ExternalReference externalReference = neoExternalReferenceToExternalReferenceConverter.convert(neoExternalReference); 
-				externalReferences.add(externalReference);
+		if (neo.getExternalReferenceLinks() != null) {
+			for (NeoExternalReferenceLink externalReferenceApplication : neo.getExternalReferenceLinks()) {
+				NeoExternalReference neoExternalReference = externalReferenceApplication.getExternalReference(); 
+				if (neoExternalReference != null) {
+					externalReferences.add(ExternalReference.build(neoExternalReference.getUrl()));
+				}
 			}
 		}
 		Set<Relationship> relationships = new HashSet<>();
 		if (neo.getRelationships() != null) {
 			for (NeoRelationship relationship : neo.getRelationships()) {
-				relationships.add(neoRelationshipToRelationshipConverter.convert(relationship));
+				relationships.add(Relationship.build(relationship.getOwner().getAccession(), relationship.getType(), relationship.getTarget().getAccession()));
 			}				
 		}
 		return Sample.build(neo.getName(), neo.getAccession(), neo.getRelease(), neo.getUpdate(),

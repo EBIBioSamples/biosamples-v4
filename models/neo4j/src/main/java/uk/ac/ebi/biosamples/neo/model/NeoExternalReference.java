@@ -34,8 +34,8 @@ public class NeoExternalReference {
 	@Index(unique=true, primary=false)	
 	private String urlHash;
 
-    @Relationship(type = "HAS_EXTERNAL_REFERENCE", direction=Relationship.INCOMING)
-	private SortedSet<NeoExternalReferenceApplication> applications;
+    @Relationship(type = "HAS_EXTERNAL_REFERENCE_TARGET", direction=Relationship.INCOMING)
+	private SortedSet<NeoExternalReferenceLink> links;
 
 	private NeoExternalReference() {
 	}
@@ -43,7 +43,7 @@ public class NeoExternalReference {
 	private NeoExternalReference(String url, String urlHash) {
 		this.url = url;
 		this.urlHash = urlHash;
-		this.applications = new TreeSet<>();
+		this.links = new TreeSet<>();
 	}
 	
 	public Long getId() {
@@ -58,8 +58,8 @@ public class NeoExternalReference {
 		return urlHash;
 	}
 	
-	public Set<NeoExternalReferenceApplication> getApplications() {
-		return applications;
+	public Set<NeoExternalReferenceLink> getLinks() {
+		return links;
 	}
 	
 	@Override

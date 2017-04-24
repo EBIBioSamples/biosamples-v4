@@ -1,11 +1,8 @@
 package uk.ac.ebi.biosamples.neo;
 
-import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -15,27 +12,21 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.autoconfigure.json.JsonTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import junit.framework.Assert;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.neo.model.NeoAttribute;
 import uk.ac.ebi.biosamples.neo.model.NeoExternalReference;
-import uk.ac.ebi.biosamples.neo.model.NeoExternalReferenceApplication;
+import uk.ac.ebi.biosamples.neo.model.NeoExternalReferenceLink;
 import uk.ac.ebi.biosamples.neo.model.NeoRelationship;
 import uk.ac.ebi.biosamples.neo.model.NeoSample;
-import uk.ac.ebi.biosamples.neo.service.modelconverter.AttributeToNeoAttributeConverter;
-import uk.ac.ebi.biosamples.neo.service.modelconverter.ExternalReferenceToNeoExternalReferenceConverter;
-import uk.ac.ebi.biosamples.neo.service.modelconverter.RelationshipToNeoRelationshipConverter;
 import uk.ac.ebi.biosamples.neo.service.modelconverter.SampleToNeoSampleConverter;
 
-import static org.assertj.core.api.Assertions.*;
 
 @RunWith(SpringRunner.class)
 @JsonTest
@@ -49,9 +40,7 @@ public class SampleToNeoSampleConverterTest {
 
     @Before
     public void setup() {
-    	sampleToNeoSampleConverter = new SampleToNeoSampleConverter(new AttributeToNeoAttributeConverter(), 
-    			new ExternalReferenceToNeoExternalReferenceConverter(),
-    			new RelationshipToNeoRelationshipConverter());
+    	sampleToNeoSampleConverter = new SampleToNeoSampleConverter();
     }
 	
 	@Test
@@ -102,7 +91,7 @@ public class SampleToNeoSampleConverterTest {
 		
 		neoSample.getRelationships().add(NeoRelationship.build(NeoSample.create("TEST1"), "derived from", NeoSample.create("TEST2")));
 		
-		neoSample.getExternalReferenceApplications().add(NeoExternalReferenceApplication.build(neoSample, NeoExternalReference.build("http://www.google.com")));
+		neoSample.getExternalReferenceLinks().add(NeoExternalReferenceLink.build(neoSample, NeoExternalReference.build("http://www.google.com")));
 
 		return neoSample;
 	}

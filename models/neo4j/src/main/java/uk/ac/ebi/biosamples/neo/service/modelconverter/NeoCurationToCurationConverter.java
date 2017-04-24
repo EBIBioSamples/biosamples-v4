@@ -17,7 +17,7 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.neo.model.NeoCuration;
 import uk.ac.ebi.biosamples.neo.model.NeoCurationApplication;
 import uk.ac.ebi.biosamples.neo.model.NeoExternalReference;
-import uk.ac.ebi.biosamples.neo.model.NeoExternalReferenceApplication;
+import uk.ac.ebi.biosamples.neo.model.NeoExternalReferenceLink;
 import uk.ac.ebi.biosamples.neo.model.NeoSample;
 
 @Service
@@ -25,9 +25,6 @@ import uk.ac.ebi.biosamples.neo.model.NeoSample;
 public class NeoCurationToCurationConverter
 		implements Converter<NeoCuration, Curation> {
 
-	@Autowired
-	private NeoAttributeToAttributeConverter neoAttributeToAttributeConverter;
-	
 	@Override
 	public Curation convert(NeoCuration neo) {
 		SortedSet<String> samples = new TreeSet<>();
@@ -37,6 +34,8 @@ public class NeoCurationToCurationConverter
 		
 		Set<Attribute> preAttributes = new HashSet<>();
 		Set<Attribute> postAttributes = new HashSet<>();
+		
+		//TODO finish
 		
 		return Curation.build(preAttributes, postAttributes, samples);
 		

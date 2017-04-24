@@ -22,6 +22,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
+import uk.ac.ebi.biosamples.model.ExternalReferenceLink;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SampleFacet;
@@ -65,12 +66,15 @@ public class RestExternalReferenceRunner implements ApplicationRunner, ExitCodeG
 			client.persist(sample);
 			
 			//check /samples/{id}/externalreferences
-			testSamplesExternalReference(sample);
+			//testSamplesExternalReference(sample);
 			
-			testSamplesExternalReferenceCreation(sample);
+			//testSamplesExternalReferenceCreation(sample);
 			
 			//check /externalreferences
 			testExternalReferences();
+			
+			//check /externalreferencelinks
+			testExternalReferenceLinks();
 			
 			
 		} else if (args.containsOption("phase") && Integer.parseInt(args.getOptionValues("phase").get(0)) == 2) {
@@ -125,6 +129,21 @@ public class RestExternalReferenceRunner implements ApplicationRunner, ExitCodeG
 		response.getBody().forEach( new Consumer<Resource<ExternalReference>>() {
 			@Override
 			public void accept(Resource<ExternalReference> t) {
+				if (t.getLink("self") == null) throw new IllegalArgumentException("Must have self link");					
+			}
+		});
+	}
+	
+	private void testExternalReferenceLinks() {
+		URI uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUri()).pathSegment("externalreferencelinks").build().toUri();
+
+		log.info("GETting from "+uri);
+		RequestEntity<Void> request = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
+		ResponseEntity<PagedResources<Resource<ExternalReferenceLink>>> response = restTemplate.exchange(request, 
+				new ParameterizedTypeReference<PagedResources<Resource<ExternalReferenceLink>>>(){});
+		response.getBody().forEach( new Consumer<Resource<ExternalReferenceLink>>() {
+			@Override
+			public void accept(Resource<ExternalReferenceLink> t) {
 				if (t.getLink("self") == null) throw new IllegalArgumentException("Must have self link");					
 			}
 		});

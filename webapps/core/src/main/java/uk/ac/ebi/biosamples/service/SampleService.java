@@ -87,8 +87,6 @@ public class SampleService {
 	@Autowired
 	private NeoExternalReferenceToExternalReferenceConverter neoExternalReferenceToExternalReferenceConverter;
 	
-	@Autowired
-	private InverseRelationshipService inverseRelationshipService;
 	
 	@Autowired
 	private SolrSampleService solrSampleService;
@@ -108,7 +106,7 @@ public class SampleService {
 	 */
 	public Sample fetch(String accession) throws IllegalArgumentException {
 		// return the raw sample from the repository
-		NeoSample neoSample = neoSampleRepository.findOneByAccession(accession);
+		NeoSample neoSample = neoSampleRepository.findOneByAccession(accession,2);
 		if (neoSample == null) {
 			throw new IllegalArgumentException("Unable to find sample (" + accession + ")");
 		}

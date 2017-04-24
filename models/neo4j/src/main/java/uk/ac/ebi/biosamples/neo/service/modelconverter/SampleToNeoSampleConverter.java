@@ -18,24 +18,15 @@ import uk.ac.ebi.biosamples.neo.model.NeoRelationship;
 import uk.ac.ebi.biosamples.neo.model.NeoSample;
 import uk.ac.ebi.biosamples.neo.model.NeoAttribute;
 import uk.ac.ebi.biosamples.neo.model.NeoExternalReference;
-import uk.ac.ebi.biosamples.neo.model.NeoExternalReferenceApplication;
+import uk.ac.ebi.biosamples.neo.model.NeoExternalReferenceLink;
 
 @Service
 @ConfigurationPropertiesBinding
 public class SampleToNeoSampleConverter
 		implements Converter<Sample, NeoSample> {
 	
-	private AttributeToNeoAttributeConverter attributeToNeoAttributeConverter;
-	private ExternalReferenceToNeoExternalReferenceConverter externalReferenceToNeoExternalReferenceConverter;
-	private RelationshipToNeoRelationshipConverter relationshipToNeoRelationshipConverter;
-
-	public SampleToNeoSampleConverter( AttributeToNeoAttributeConverter attributeToNeoAttributeConverter,
-			ExternalReferenceToNeoExternalReferenceConverter externalReferenceToNeoExternalReferenceConverter,
-			RelationshipToNeoRelationshipConverter relationshipToNeoRelationshipConverter) {
+	public SampleToNeoSampleConverter() {
 		
-		this.attributeToNeoAttributeConverter = attributeToNeoAttributeConverter;
-		this.externalReferenceToNeoExternalReferenceConverter = externalReferenceToNeoExternalReferenceConverter;
-		this.relationshipToNeoRelationshipConverter = relationshipToNeoRelationshipConverter;
 	}
 
 	@Override
@@ -43,15 +34,30 @@ public class SampleToNeoSampleConverter
 		NeoSample neoSample = NeoSample.build(sample.getName(), sample.getAccession(), sample.getRelease(), sample.getUpdate(),
 				null, null, null);
 		for (Attribute attribute : sample.getCharacteristics()) {
-			neoSample.getAttributes().add(attributeToNeoAttributeConverter.convert(attribute));
+			neoSample.getAttributes().add(NeoAttribute.build(attribute.getType(), attribute.getValue(), attribute.getIri(), attribute.getUnit()));
 		}
 		for (ExternalReference externalReference : sample.getExternalReferences()) {
-			NeoExternalReference neoExternalReference = externalReferenceToNeoExternalReferenceConverter.convert(externalReference);
-			NeoExternalReferenceApplication neoExternalReferenceApplication = NeoExternalReferenceApplication.build(neoSample, neoExternalReference);
-			neoSample.getExternalReferenceApplications().add(neoExternalReferenceApplication);
+			//create the external reference node
+			NeoExternalReference neoExternalReference = NeoExternalReference.build(externalReference.getUrl());
+			//build the link from both ends
+			NeoExternalReferenceLink neoExternalReferenceApplication = NeoExternalReferenceLink.build(neoSample, neoExternalReference);
+			//then add the link back to the ends
+			neoSample.getExternalReferenceLinks().add(neoExternalReferenceApplication);
+			neoExternalReference.getLinks().add(neoExternalReferenceApplication);
 		}
 		for (Relationship relationship : sample.getRelationships()) {
-			neoSample.getRelationships().add(relationshipToNeoRelationshipConverter.convert(relationship));
+
+			NeoSample owner = NeoSample.create(relationship.getSource());
+			NeoSample target = NeoSample.create(relationship.getTarget());
+			
+			if (owner.getAccession().equals(sample.getAccession())) {
+				owner = neoSample;
+			}
+			if (target.getAccession().equals(sample.getAccession())) {
+				target = neoSample;
+			}
+						
+			neoSample.getRelationships().add(NeoRelationship.build(owner, relationship.getType(), target));
 		}				
 		return neoSample;	
 	}

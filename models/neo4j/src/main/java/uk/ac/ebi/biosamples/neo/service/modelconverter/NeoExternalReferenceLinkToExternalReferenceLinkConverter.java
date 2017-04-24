@@ -10,6 +10,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
 
 import uk.ac.ebi.biosamples.model.ExternalReference;
+import uk.ac.ebi.biosamples.model.ExternalReferenceLink;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.neo.model.NeoExternalReference;
 import uk.ac.ebi.biosamples.neo.model.NeoExternalReferenceLink;
@@ -17,19 +18,14 @@ import uk.ac.ebi.biosamples.neo.model.NeoSample;
 
 @Service
 @ConfigurationPropertiesBinding
-public class NeoExternalReferenceToExternalReferenceConverter
-		implements Converter<NeoExternalReference, ExternalReference> {
+public class NeoExternalReferenceLinkToExternalReferenceLinkConverter
+		implements Converter<NeoExternalReferenceLink, ExternalReferenceLink> {
 
 	@Override
-	public ExternalReference convert(NeoExternalReference neo) {
+	public ExternalReferenceLink convert(NeoExternalReferenceLink neo) {
 		if (neo == null) return null;
-		SortedSet<String> samples = new TreeSet<>();
-		if (neo.getLinks() != null) {
-			for (NeoExternalReferenceLink application : neo.getLinks()) {
-				samples.add(application.getSample().getAccession());
-			}
-		}
-		return ExternalReference.build(neo.getUrl(), samples);
+		//if there are errors here, neo probably wans't loaded with enough depth
+		return ExternalReferenceLink.build( neo.getSample().getAccession(), neo.getExternalReference().getUrl(), neo.getId());
 		
 	}
 

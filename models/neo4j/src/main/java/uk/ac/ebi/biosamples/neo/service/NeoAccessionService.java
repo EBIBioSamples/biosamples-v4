@@ -62,7 +62,7 @@ public class NeoAccessionService {
 		while (accessionCandidateQueue.remainingCapacity() > 0) {
 			String accessionCandidate = neoProperties.getAccessionPrefix() + accessionCandidateCounter;
 			// if the accession already exists, skip it
-			if (neoSampleRepository.findOneByAccession(accessionCandidate) != null) {
+			if (neoSampleRepository.findOneByAccession(accessionCandidate,0) != null) {
 				accessionCandidateCounter += 1;
 				// if the accession can't be put in the queue at this time
 				// (queue full), stop
