@@ -9,6 +9,7 @@ import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.autoconfigure.json.JsonTest;
 import org.springframework.boot.test.json.JacksonTester;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.hateoas.Resource;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.*;
 
@@ -37,11 +38,11 @@ import java.util.TreeSet;
 @JsonTest
 //@TestPropertySource(properties = {"spring.jackson.serialization.WRITE_DATES_AS_TIMESTAMPS=false","spring.jackson.serialization.WRITE_NULL_MAP_VALUES=false"})
 @TestPropertySource(properties={"spring.jackson.serialization.INDENT_OUTPUT=true"})
-public class SerializationTest {
+public class ResourceSerializationTest {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 
-	private JacksonTester<Sample> json;
+	private JacksonTester<Resource<Sample>> json;
 	
     @Before
     public void setup() {
@@ -72,7 +73,7 @@ public class SerializationTest {
 
 	@Test
 	public void testSerialize() throws Exception {
-		Sample details = getSimpleSample();
+		Resource<Sample> details = new Resource<>(getSimpleSample());
 
 		log.info(this.json.write(details).getJson());
 
@@ -86,30 +87,30 @@ public class SerializationTest {
 
 	@Test
 	public void testDeserialize() throws Exception {
-		Sample fileSample = this.json.readObject("/TEST1.json");
-		Sample simpleSample = getSimpleSample();
+		Resource<Sample> fileSample = this.json.readObject("/TEST1.json");
+		Resource<Sample> simpleSample = new Resource<>(getSimpleSample());
 		log.info("fileSample = "+fileSample);
 		log.info("simpleSample = "+simpleSample);
 		// Use JSON path based assertions
-		assertThat(fileSample.getName()).isEqualTo("Test Sample");
-		assertThat(fileSample.getAccession()).isEqualTo("TEST1");
+		assertThat(fileSample.getContent().getName()).isEqualTo("Test Sample");
+		assertThat(fileSample.getContent().getAccession()).isEqualTo("TEST1");
 		// Assert against a `.json` file
 		assertThat(fileSample).isEqualTo(simpleSample);
 		
 		//check that a specific attribute exists
-		assertThat(fileSample.getCharacteristics().contains(Attribute.build("organism part", "heart", null, null)));
+		assertThat(fileSample.getContent().getCharacteristics().contains(Attribute.build("organism part", "heart", null, null)));
 	}
 
 	@Test
 	public void testRoundTrip() throws Exception {
-		Sample sample = getSimpleSample();
+		Resource<Sample> sample = new Resource<>(getSimpleSample());
 		log.info("roundTrip sample = "+sample);
 		
 		String json = this.json.write(sample).getJson();
 		log.info("roundTrip json = "+json);
 		
 		InputStream inputStream = new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
-		Sample sampleRedux = this.json.readObject(inputStream);
+		Resource<Sample> sampleRedux = this.json.readObject(inputStream);
 		log.info("roundTrip sampleRedux = "+sampleRedux);
 		
 		String jsonRedux = this.json.write(sampleRedux).getJson();

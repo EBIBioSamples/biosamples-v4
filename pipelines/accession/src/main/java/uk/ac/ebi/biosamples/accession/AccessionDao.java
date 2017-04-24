@@ -28,7 +28,7 @@ public class AccessionDao {
 	}
 
 	public void doGroupAccessionCallback(RowCallbackHandler rch) {
-		String sql = "SELECT * FROM SAMPLE_GROUP";
+		String sql = "SELECT * FROM SAMPLE_GROUPS";
 		jdbcTemplate.query(sql, rch);
 	}
 }

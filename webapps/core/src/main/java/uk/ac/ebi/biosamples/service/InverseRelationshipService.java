@@ -67,7 +67,7 @@ public class InverseRelationshipService  {
 			}
 			
 			return Sample.build(sample.getName(), sample.getAccession(), sample.getRelease(), sample.getUpdate(), 
-					sample.getAttributes(), relationships, sample.getExternalReferences());
+					sample.getCharacteristics(), relationships, sample.getExternalReferences());
 		}
 	}
 }

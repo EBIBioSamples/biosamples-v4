@@ -55,7 +55,7 @@ public class SampleToXmlConverter implements Converter<Sample, Document> {
 		SortedMap<String, SortedMap<String, String>> attrIri = new TreeMap<>();
 		SortedMap<String, SortedMap<String, String>> attrUnit = new TreeMap<>();
 		
-		for (Attribute attribute : source.getAttributes()) {
+		for (Attribute attribute : source.getCharacteristics()) {
 			if (!attrTypeValue.containsKey(attribute.getType())) {
 				attrTypeValue.put(attribute.getType(), new TreeSet<>());
 				attrIri.put(attribute.getType(), new TreeMap<>());

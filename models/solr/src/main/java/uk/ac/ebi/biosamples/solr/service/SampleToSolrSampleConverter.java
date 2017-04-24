@@ -26,12 +26,12 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 		Map<String, List<String>> attributeIris = null;
 		Map<String, List<String>> attributeUnits = null;
 		
-		if (sample.getAttributes() != null && sample.getAttributes().size() > 0) {
+		if (sample.getCharacteristics() != null && sample.getCharacteristics().size() > 0) {
 			attributeValues = new HashMap<>();
 			attributeIris = new HashMap<>();
 			attributeUnits = new HashMap<>();
 			
-			for (Attribute attr : sample.getAttributes()) {
+			for (Attribute attr : sample.getCharacteristics()) {
 				
 				String key = attr.getType();
 				//key = SolrSampleService.attributeTypeToField(key);
