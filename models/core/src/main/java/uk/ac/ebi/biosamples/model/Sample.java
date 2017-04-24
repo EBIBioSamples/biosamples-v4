@@ -67,7 +67,11 @@ public class Sample {
 	public LocalDateTime getUpdate() {
 		return update;
 	}
-	
+
+    @JsonIgnore
+	public SortedSet<Attribute> getAttributes() {
+		return attributes;
+	}
 
 	//DO NOT specify the JSON property value manually, must be autoinferred or errors
     @JsonSerialize(using = CharacteristicSerializer.class)
