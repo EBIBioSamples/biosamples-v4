@@ -98,6 +98,12 @@ public class RestExternalReferenceRunner implements ApplicationRunner, ExitCodeG
 			if (selfLink == null) {
 				throw new RuntimeException("Must have self link");
 			}
+			if (externalReferenceResource.getLink("samples") == null) {
+				throw new RuntimeException("Must have samples link");
+			}
+			if (externalReferenceResource.getLink("externalreferencelinks") == null) {
+				throw new RuntimeException("Must have externalreferencelinks link");
+			}
 			if (!testedSelf) {
 				URI uriLink = URI.create(selfLink.getHref());
 				log.info("GETting from "+uriLink);
@@ -128,6 +134,12 @@ public class RestExternalReferenceRunner implements ApplicationRunner, ExitCodeG
 			Link selfLink = externalReferenceLinkResource.getLink("self");
 			if (selfLink == null) {
 				throw new RuntimeException("Must have self link");
+			}
+			if (externalReferenceLinkResource.getLink("sample") == null) {
+				throw new RuntimeException("Must have sample link");
+			}
+			if (externalReferenceLinkResource.getLink("externalreference") == null) {
+				throw new RuntimeException("Must have externalreference link");
 			}
 			if (!testedSelf) {
 				URI uriLink = URI.create(selfLink.getHref());
