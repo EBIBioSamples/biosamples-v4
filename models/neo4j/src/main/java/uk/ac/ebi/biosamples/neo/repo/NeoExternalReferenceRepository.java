@@ -15,10 +15,10 @@ public interface NeoExternalReferenceRepository extends Neo4jRepository<NeoExter
 	public NeoExternalReference findOneByUrlHash(String urlHash, @Depth int depth);
 	public NeoExternalReference findOneById(Long id, @Depth int depth);
 
-	@Query("MATCH (s:Sample)-(:ExternalReferenceLink)-(x:ExternalReference) WHERE s.accession={accession} RETURN x")
+	@Query("MATCH (s:Sample)--(:ExternalReferenceLink)--(x:ExternalReference) WHERE s.accession={accession} RETURN x")
 	public Page<NeoExternalReference> findBySampleAccession(@Param("accession") String accession, Pageable pageable);
 
-	@Query("MATCH (l:ExternalReferenceLink)-(x:ExternalReference) WHERE l.hash={hash} RETURN x")
+	@Query("MATCH (l:ExternalReferenceLink)--(x:ExternalReference) WHERE l.hash={hash} RETURN x")
 	public Page<NeoExternalReference> findByExternalReferenceLinkHash(@Param("hash") String hash, Pageable pageable);
 	
 }
