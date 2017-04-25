@@ -5,20 +5,14 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationPropertiesBinding;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
 
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Curation;
-import uk.ac.ebi.biosamples.model.ExternalReference;
-import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.neo.model.NeoCuration;
 import uk.ac.ebi.biosamples.neo.model.NeoCurationApplication;
-import uk.ac.ebi.biosamples.neo.model.NeoExternalReference;
-import uk.ac.ebi.biosamples.neo.model.NeoExternalReferenceLink;
-import uk.ac.ebi.biosamples.neo.model.NeoSample;
 
 @Service
 @ConfigurationPropertiesBinding

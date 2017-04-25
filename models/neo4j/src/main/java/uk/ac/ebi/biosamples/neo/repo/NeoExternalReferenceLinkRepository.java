@@ -7,9 +7,7 @@ import org.springframework.data.neo4j.annotation.Query;
 import org.springframework.data.neo4j.repository.Neo4jRepository;
 import org.springframework.data.repository.query.Param;
 
-import uk.ac.ebi.biosamples.neo.model.NeoExternalReference;
 import uk.ac.ebi.biosamples.neo.model.NeoExternalReferenceLink;
-import uk.ac.ebi.biosamples.neo.model.NeoSample;
 
 public interface NeoExternalReferenceLinkRepository extends Neo4jRepository<NeoExternalReferenceLink,String> {
 

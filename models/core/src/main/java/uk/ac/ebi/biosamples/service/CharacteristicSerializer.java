@@ -1,8 +1,6 @@
 package uk.ac.ebi.biosamples.service;
 
 import java.io.IOException;
-
-
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;

@@ -1,10 +1,10 @@
 package uk.ac.ebi.biosamples;
 
-import org.springframework.boot.ApplicationArguments;
-
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.springframework.boot.ApplicationArguments;
 
 /**
  * Class representing a phase of the integration test:

@@ -1,5 +1,8 @@
 package uk.ac.ebi.biosamples.client.service;
 
+import java.net.URI;
+import java.util.concurrent.ExecutorService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
@@ -10,11 +13,9 @@ import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
+
 import uk.ac.ebi.biosamples.client.ClientProperties;
 import uk.ac.ebi.biosamples.model.Sample;
-
-import java.net.URI;
-import java.util.concurrent.ExecutorService;
 
 public class SubmissionService {
 	

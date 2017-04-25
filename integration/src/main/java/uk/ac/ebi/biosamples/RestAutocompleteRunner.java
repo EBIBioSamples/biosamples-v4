@@ -1,5 +1,7 @@
 package uk.ac.ebi.biosamples;
 
+import java.net.URI;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,9 +17,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
-import uk.ac.ebi.biosamples.model.Autocomplete;
 
-import java.net.URI;
+import uk.ac.ebi.biosamples.model.Autocomplete;
 
 @Component
 @Order(4)

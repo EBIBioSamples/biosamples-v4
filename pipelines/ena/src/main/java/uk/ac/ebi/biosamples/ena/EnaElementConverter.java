@@ -1,6 +1,5 @@
 package uk.ac.ebi.biosamples.ena;
 
-import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.SortedSet;

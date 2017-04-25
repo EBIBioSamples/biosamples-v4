@@ -8,11 +8,7 @@ import org.springframework.stereotype.Service;
 
 import uk.ac.ebi.biosamples.controller.ExternalReferenceExternalReferenceLinkRestController;
 import uk.ac.ebi.biosamples.controller.ExternalReferenceSampleRestController;
-import uk.ac.ebi.biosamples.controller.SampleExternalReferenceLinksRestController;
-import uk.ac.ebi.biosamples.controller.SampleRestController;
 import uk.ac.ebi.biosamples.model.ExternalReference;
-import uk.ac.ebi.biosamples.model.ExternalReferenceLink;
-import uk.ac.ebi.biosamples.model.Sample;
 
 /**
  * This class is used by Spring to add HAL _links for {@Link Sample} objects.

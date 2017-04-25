@@ -1,18 +1,20 @@
 package uk.ac.ebi.biosamples.client;
 
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestOperations;
-import uk.ac.ebi.biosamples.client.service.RetrievalService;
-import uk.ac.ebi.biosamples.client.service.SubmissionService;
-import uk.ac.ebi.biosamples.model.Sample;
-
-import javax.annotation.PreDestroy;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+
+import javax.annotation.PreDestroy;
+
+import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.Resource;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestOperations;
+
+import uk.ac.ebi.biosamples.client.service.RetrievalService;
+import uk.ac.ebi.biosamples.client.service.SubmissionService;
+import uk.ac.ebi.biosamples.model.Sample;
 
 /**
  * This is the primary class for interacting with BioSamples.

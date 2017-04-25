@@ -1,7 +1,6 @@
 package uk.ac.ebi.biosamples.model;
 
 import java.io.UnsupportedEncodingException;
-import java.net.URI;
 import java.net.URLEncoder;
 import java.util.Objects;
 

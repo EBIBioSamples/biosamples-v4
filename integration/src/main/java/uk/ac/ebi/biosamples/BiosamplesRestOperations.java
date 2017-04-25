@@ -1,5 +1,7 @@
 package uk.ac.ebi.biosamples;
 
+import java.net.URI;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
@@ -12,9 +14,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
-import uk.ac.ebi.biosamples.model.Sample;
 
-import java.net.URI;
+import uk.ac.ebi.biosamples.model.Sample;
 
 @Component
 public class BiosamplesRestOperations {

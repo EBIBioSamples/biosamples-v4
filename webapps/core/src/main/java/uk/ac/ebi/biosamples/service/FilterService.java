@@ -1,20 +1,16 @@
 package uk.ac.ebi.biosamples.service;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import uk.ac.ebi.biosamples.model.SampleFacet;
 import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
 
 @Service

@@ -1,5 +1,8 @@
 package uk.ac.ebi.biosamples;
 
+import java.net.URI;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,10 +18,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
-import uk.ac.ebi.biosamples.model.SampleFacet;
 
-import java.net.URI;
-import java.util.List;
+import uk.ac.ebi.biosamples.model.SampleFacet;
 
 @Component
 @Order(3)

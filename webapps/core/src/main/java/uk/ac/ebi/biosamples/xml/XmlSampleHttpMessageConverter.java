@@ -3,6 +3,7 @@ package uk.ac.ebi.biosamples.xml;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+
 import org.dom4j.Document;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;

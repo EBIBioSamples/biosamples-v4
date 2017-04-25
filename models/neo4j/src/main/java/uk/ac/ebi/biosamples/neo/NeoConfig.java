@@ -1,6 +1,5 @@
 package uk.ac.ebi.biosamples.neo;
 
-import org.neo4j.ogm.autoindex.AutoIndexMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

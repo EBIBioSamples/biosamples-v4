@@ -2,16 +2,13 @@ package uk.ac.ebi.biosamples.neo;
 
 import java.util.Collection;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Transactional;
 
 import uk.ac.ebi.biosamples.messages.threaded.MessageBuffer;
 import uk.ac.ebi.biosamples.neo.model.NeoSample;
 import uk.ac.ebi.biosamples.neo.repo.NeoSampleRepository;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Component
 public class NeoMessageBuffer extends MessageBuffer<NeoSample, NeoSampleRepository> {

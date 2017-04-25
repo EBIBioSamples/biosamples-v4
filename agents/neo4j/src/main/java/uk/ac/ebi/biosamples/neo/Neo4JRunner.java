@@ -3,7 +3,6 @@ package uk.ac.ebi.biosamples.neo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.ExitCodeGenerator;
@@ -11,8 +10,6 @@ import org.springframework.stereotype.Component;
 
 import uk.ac.ebi.biosamples.MessageUtils;
 import uk.ac.ebi.biosamples.Messaging;
-import uk.ac.ebi.biosamples.messages.threaded.MessageBuffer;
-import uk.ac.ebi.biosamples.neo.model.NeoSample;
 
 @Component
 public class Neo4JRunner implements ApplicationRunner, ExitCodeGenerator {

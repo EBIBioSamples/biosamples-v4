@@ -1,6 +1,5 @@
 package uk.ac.ebi.biosamples.model;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;

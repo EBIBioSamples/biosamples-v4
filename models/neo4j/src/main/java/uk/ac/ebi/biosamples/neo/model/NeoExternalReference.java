@@ -1,7 +1,6 @@
 package uk.ac.ebi.biosamples.neo.model;
 
 
-import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
@@ -15,10 +14,7 @@ import org.neo4j.ogm.annotation.Relationship;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.google.common.base.Charsets;
 import com.google.common.hash.Hashing;
-
-import uk.ac.ebi.biosamples.model.ExternalReference;
 
 @NodeEntity(label = "ExternalReference")
 public class NeoExternalReference {
