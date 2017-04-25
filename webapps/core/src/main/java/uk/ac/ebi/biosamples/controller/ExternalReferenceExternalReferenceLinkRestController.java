@@ -44,7 +44,7 @@ import uk.ac.ebi.biosamples.service.FilterService;
 import uk.ac.ebi.biosamples.service.SampleService;
 
 @RestController
-@RequestMapping("/externalreference/{urlhash}/externalreferencelinks")
+@RequestMapping("/externalreferences/{urlhash}/externalreferencelinks")
 public class ExternalReferenceExternalReferenceLinkRestController {
 
 	private final EntityLinks entityLinks;

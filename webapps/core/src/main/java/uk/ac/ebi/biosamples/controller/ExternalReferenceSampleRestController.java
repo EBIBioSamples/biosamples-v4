@@ -23,7 +23,7 @@ import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 import uk.ac.ebi.biosamples.service.SampleService;
 
 @RestController
-@RequestMapping("/externalreference/{urlhash}/samples")
+@RequestMapping("/externalreferences/{urlhash}/samples")
 public class ExternalReferenceSampleRestController {
 
 	private final EntityLinks entityLinks;
