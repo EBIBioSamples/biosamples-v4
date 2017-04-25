@@ -96,8 +96,7 @@ public class SampleRestController {
 					.getFacetsHal(text, filter))
 				.withRel("facet"));
 	
-		return ResponseEntity.ok()
-				.body(pagedResources);
+		return ResponseEntity.ok(pagedResources);
 	}
         
     @CrossOrigin(methods = RequestMethod.GET)

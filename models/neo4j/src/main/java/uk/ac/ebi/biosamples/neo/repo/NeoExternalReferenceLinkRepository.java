@@ -16,7 +16,7 @@ public interface NeoExternalReferenceLinkRepository extends Neo4jRepository<NeoE
 	public NeoExternalReferenceLink findOneById(String id, @Depth int depth);
 	public NeoExternalReferenceLink findOneByHash(String keyHash, @Depth int depth);
 
-	@Query("MATCH (s:Sample)-(l:ExternalReferenceLink) WHERE s.accession={accession} RETURN l")
+	@Query("MATCH (s:Sample)--(l:ExternalReferenceLink) WHERE s.accession={accession} RETURN l")
 	public Page<NeoExternalReferenceLink> findBySampleAccession(@Param("accession") String accession, Pageable pageable);
 
 	@Query("MATCH (l:ExternalReferenceLink)--(x:ExternalReference) WHERE x.urlHash={urlHash} RETURN l")
