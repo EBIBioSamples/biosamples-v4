@@ -38,28 +38,13 @@ public class ExternalReferenceService {
 	}
 	
 	public Page<ExternalReference> getExternalReferencesOfSample(String accession, Pageable pageable) {
-		Page<NeoExternalReference> pageNeoExternalReference = neoExternalReferenceRepository.findBySampleAccession(accession, pageable);
-		
+		Page<NeoExternalReference> pageNeoExternalReference = neoExternalReferenceRepository.findBySampleAccession(accession, pageable);		
 		//get them in greater depth
-		pageNeoExternalReference.map(nxr -> neoExternalReferenceRepository.findOne(nxr.getUrlHash(), 2));
-		
+		pageNeoExternalReference.map(nxr -> neoExternalReferenceRepository.findOne(nxr.getUrlHash(), 2));		
 		//convert them into a state to return
-		Page<ExternalReference> pageExternalReference = pageNeoExternalReference.map(neoExternalReferenceToExternalReferenceConverter);
-		
+		Page<ExternalReference> pageExternalReference = pageNeoExternalReference.map(neoExternalReferenceToExternalReferenceConverter);		
 		return pageExternalReference;
 	}
+	
 
-	public ExternalReference store(ExternalReference externalReference, String sampleAccession) {
-/*
-		// convert it to the storage specific version
-		NeoExternalReference neoExternalReference = externalReferenceToNeoExternalReferenceConverter.convert(externalReference);
-		neoExternalReference.getLinks().add(NeoExternalReferenceLink.build(NeoSample.create(sampleAccession), neoExternalReference));
-		
-		synchronized(this) {
-			neoExternalReference = neoExternalReferenceRepository.save(neoExternalReference);
-		}
-	*/	
-		//return neoExternalReferenceToExternalReferenceConverter.convert(neoExternalReference);
-		return null;
-	}
 }

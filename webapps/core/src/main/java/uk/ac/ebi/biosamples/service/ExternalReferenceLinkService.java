@@ -30,5 +30,16 @@ public class ExternalReferenceLinkService {
 		ExternalReferenceLink link = neoExternalReferenceLinkToExternalReferenceLinkConverter.convert(neo);
 		return link;
 	}
+	
+	public Page<ExternalReferenceLink> getExternalReferenceLinksForSample(String accession, Pageable pageable) {
+		Page<NeoExternalReferenceLink> neoPage = neoExternalReferenceLinkRepository.findBySampleAccession(accession, pageable);
+		Page<ExternalReferenceLink> page = neoPage.map(neoExternalReferenceLinkToExternalReferenceLinkConverter);
+		return page;
+	}
 
+	public Page<ExternalReferenceLink> getExternalReferenceLinksForExternalReference(String urlHash, Pageable pageable) {
+		Page<NeoExternalReferenceLink> neoPage = neoExternalReferenceLinkRepository.findByExternalReferenceUrlHash(urlHash, pageable);
+		Page<ExternalReferenceLink> page = neoPage.map(neoExternalReferenceLinkToExternalReferenceLinkConverter);
+		return page;
+	}
 }

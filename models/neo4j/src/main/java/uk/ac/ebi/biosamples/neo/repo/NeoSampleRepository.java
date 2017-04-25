@@ -14,7 +14,10 @@ public interface NeoSampleRepository extends Neo4jRepository<NeoSample,String>, 
 	public NeoSample findOneByAccession(String accession, @Depth int depth);
 	public NeoSample findOneById(Long id, @Depth int depth);
 	
-	@Query("MATCH (s:Sample)-[:HAS_EXTERNAL_REFERENCE]-(x:ExternalReference) WHERE x.urlHash={urlHash} RETURN s")
+	@Query("MATCH (s:Sample)--(:ExternalReferenceLink)--(x:ExternalReference) WHERE x.urlHash={urlHash} RETURN s")
 	public Page<NeoSample> findByExternalReferenceUrlHash(@Param("urlHash") String urlHash, Pageable pageable);
+	
+	@Query("MATCH (s:Sample)--(l:ExternalReferenceLink) WHERE l.hash={hash} RETURN s")
+	public Page<NeoSample> findByExternalReferenceLinkHash(@Param("hash") String hash, Pageable pageable);
 	
 }

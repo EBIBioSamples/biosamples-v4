@@ -11,11 +11,13 @@ public class ExternalReferenceLink implements Comparable<ExternalReferenceLink> 
 	private final String sample;
 	private final String url;
 	private final String hash;
+	private final String urlHash;
 	
-	private ExternalReferenceLink(String sample, String url, String hash) {
+	private ExternalReferenceLink(String sample, String url, String hash, String urlHash) {
 		this.sample = sample;
 		this.url = url;
 		this.hash = hash;
+		this.urlHash = urlHash;
 	}
 	
 	
@@ -30,6 +32,11 @@ public class ExternalReferenceLink implements Comparable<ExternalReferenceLink> 
 	@JsonIgnore
 	public String getId() {
 		return hash;
+	}
+
+	@JsonIgnore
+	public String getUrlHash() {
+		return urlHash;
 	}
 	
 	@Override
@@ -78,12 +85,13 @@ public class ExternalReferenceLink implements Comparable<ExternalReferenceLink> 
     @JsonCreator
 	static public ExternalReferenceLink build(@JsonProperty("sample") String sample, 
 			@JsonProperty("url") String url) {
-		return ExternalReferenceLink.build(sample, url, null);
+		return ExternalReferenceLink.build(sample, url, null, null);
 	}
 
 	static public ExternalReferenceLink build(String sample, 
 			String url, 
-			String id) {
-		return new ExternalReferenceLink(sample, url, id);
+			String hash, 
+			String urlHash) {
+		return new ExternalReferenceLink(sample, url, hash, urlHash);
 	}
 }

@@ -25,7 +25,7 @@ public class NeoExternalReferenceLinkToExternalReferenceLinkConverter
 	public ExternalReferenceLink convert(NeoExternalReferenceLink neo) {
 		if (neo == null) return null;
 		//if there are errors here, neo probably wans't loaded with enough depth
-		return ExternalReferenceLink.build( neo.getSample().getAccession(), neo.getExternalReference().getUrl(), neo.getHash());
+		return ExternalReferenceLink.build( neo.getSample().getAccession(), neo.getExternalReference().getUrl(), neo.getHash(), neo.getExternalReference().getUrlHash());
 		
 	}
 
