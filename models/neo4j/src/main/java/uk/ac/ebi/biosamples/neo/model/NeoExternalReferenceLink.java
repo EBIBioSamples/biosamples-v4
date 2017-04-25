@@ -6,14 +6,18 @@ import java.util.SortedSet;
 
 import org.neo4j.ogm.annotation.EndNode;
 import org.neo4j.ogm.annotation.GraphId;
+import org.neo4j.ogm.annotation.Index;
 import org.neo4j.ogm.annotation.NodeEntity;
 import org.neo4j.ogm.annotation.Property;
 import org.neo4j.ogm.annotation.Relationship;
 import org.neo4j.ogm.annotation.RelationshipEntity;
 import org.neo4j.ogm.annotation.StartNode;
 import org.neo4j.ogm.annotation.typeconversion.Convert;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.google.common.collect.ComparisonChain;
+import com.google.common.hash.Hashing;
 
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.neo.service.LocalDateTimeConverter;
@@ -29,9 +33,19 @@ public class NeoExternalReferenceLink implements Comparable<NeoExternalReference
 
     @Relationship(type = "HAS_EXTERNAL_REFERENCE_TARGET")
 	private NeoExternalReference externalReference;
+
+
+	@Property
+	@Index(unique=true, primary=true)	
+	private String hash;
+    
 	
-	private NeoExternalReferenceLink() {
-		
+	private NeoExternalReferenceLink() {	}
+	
+	private NeoExternalReferenceLink(NeoSample sample, NeoExternalReference neoExternalReference, String hash) {
+		this.sample = sample;
+		this.externalReference = neoExternalReference;
+		this.hash = hash;
 	}
 
 	public NeoSample getSample() {
@@ -42,8 +56,8 @@ public class NeoExternalReferenceLink implements Comparable<NeoExternalReference
 		return externalReference;
 	}
 	
-	public Long getId() {
-		return id;
+	public String getHash() {
+		return hash;
 	}
 
 	@Override
@@ -117,9 +131,15 @@ public class NeoExternalReferenceLink implements Comparable<NeoExternalReference
 	}
 
 	public static NeoExternalReferenceLink build(NeoSample sample, NeoExternalReference externalReference) {
-		NeoExternalReferenceLink neoExternalReferenceApplication = new NeoExternalReferenceLink();
-		neoExternalReferenceApplication.sample = sample;
-		neoExternalReferenceApplication.externalReference = externalReference;
+
+    	String hash = Hashing.sha256().newHasher()
+			.putUnencodedChars(externalReference.getUrl())
+			.putUnencodedChars(sample.getAccession())
+			.hash().toString();
+    	
+    	//TODO bake user id into hash
+    	
+    	NeoExternalReferenceLink neoExternalReferenceApplication = new NeoExternalReferenceLink(sample, externalReference, hash);
 		return neoExternalReferenceApplication;
 	}
 }

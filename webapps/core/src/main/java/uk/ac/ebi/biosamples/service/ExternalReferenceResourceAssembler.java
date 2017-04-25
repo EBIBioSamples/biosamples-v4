@@ -29,11 +29,9 @@ public class ExternalReferenceResourceAssembler implements ResourceAssembler<Ext
 	public Resource<ExternalReference> toResource(ExternalReference externalReference) {
 		Resource<ExternalReference> resource = new Resource<>(externalReference);
 		
-		resource.add(entityLinks.linkToSingleResource(ExternalReference.class, externalReference.getId()).withSelfRel());
+		resource.add(entityLinks.linkToSingleResource(ExternalReference.class, externalReference.getHash()).withSelfRel());
 		
-		for (String sample : externalReference.getSamples()) {
-			resource.add(entityLinks.linkToSingleResource(Sample.class, sample).withRel("sample"));
-		}
+		//TODO add externalreferencelink and sample link
 		
 		return resource;
 	}

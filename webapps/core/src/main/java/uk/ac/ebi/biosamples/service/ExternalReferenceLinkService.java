@@ -20,13 +20,13 @@ public class ExternalReferenceLinkService {
 	private NeoExternalReferenceLinkToExternalReferenceLinkConverter neoExternalReferenceLinkToExternalReferenceLinkConverter;
 
 	public Page<ExternalReferenceLink> getPage(Pageable pageable) {
-		Page<NeoExternalReferenceLink> neoPage = neoExternalReferenceLinkRepository.findAll(pageable,2);
+		Page<NeoExternalReferenceLink> neoPage = neoExternalReferenceLinkRepository.findAll(pageable,1);
 		Page<ExternalReferenceLink> page = neoPage.map(neoExternalReferenceLinkToExternalReferenceLinkConverter);
 		return page;
 	}
 
 	public ExternalReferenceLink getExternalReferenceLink(String id) {
-		NeoExternalReferenceLink neo = neoExternalReferenceLinkRepository.findOne(id, 2);
+		NeoExternalReferenceLink neo = neoExternalReferenceLinkRepository.findOneByHash(id, 1);
 		ExternalReferenceLink link = neoExternalReferenceLinkToExternalReferenceLinkConverter.convert(neo);
 		return link;
 	}

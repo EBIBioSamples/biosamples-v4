@@ -12,7 +12,7 @@ import uk.ac.ebi.biosamples.neo.model.NeoSample;
 
 public interface NeoExternalReferenceRepository extends Neo4jRepository<NeoExternalReference,String> {
 
-	public NeoExternalReference findOneByUrlHash(String accession, @Depth int depth);
+	public NeoExternalReference findOneByUrlHash(String urlHash, @Depth int depth);
 	public NeoExternalReference findOneById(Long id, @Depth int depth);
 
 	@Query("MATCH (s:Sample)-(:ExternalReferenceLink)-(x:ExternalReference) WHERE s.accession={accession} RETURN x")

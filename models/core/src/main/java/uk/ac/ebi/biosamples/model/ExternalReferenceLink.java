@@ -3,22 +3,33 @@ package uk.ac.ebi.biosamples.model;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ExternalReferenceLink implements Comparable<ExternalReferenceLink> {
 
 	private final String sample;
-	private final String externalReference;
-	private final Long id;
+	private final String url;
+	private final String hash;
 	
-	private ExternalReferenceLink(String sample, String externalReference, Long id) {
+	private ExternalReferenceLink(String sample, String url, String hash) {
 		this.sample = sample;
-		this.externalReference = externalReference;
-		this.id = id;
+		this.url = url;
+		this.hash = hash;
+	}
+	
+	
+	public String getSample() {
+		return sample;
+	}
+	
+	public String getUrl() {
+		return url;
 	}
 
-	public Long getId() {
-		return id;
+	@JsonIgnore
+	public String getId() {
+		return hash;
 	}
 	
 	@Override
@@ -28,13 +39,13 @@ public class ExternalReferenceLink implements Comparable<ExternalReferenceLink> 
             return false;
         }
         ExternalReferenceLink other = (ExternalReferenceLink) o;
-        return Objects.equals(this.externalReference, other.externalReference)
+        return Objects.equals(this.url, other.url)
         		&& Objects.equals(this.sample, other.sample);
     }
     
     @Override
     public int hashCode() {
-    	return Objects.hash(sample, externalReference);
+    	return Objects.hash(sample, url);
     }
 
 	@Override
@@ -46,8 +57,8 @@ public class ExternalReferenceLink implements Comparable<ExternalReferenceLink> 
 		if (!this.sample.equals(other.sample)) {
 			return this.sample.compareTo(other.sample);
 		}
-		if (!this.externalReference.equals(other.externalReference)) {
-			return this.externalReference.compareTo(other.externalReference);
+		if (!this.url.equals(other.url)) {
+			return this.url.compareTo(other.url);
 		}
 		return 0;
 	}	
@@ -58,30 +69,21 @@ public class ExternalReferenceLink implements Comparable<ExternalReferenceLink> 
     	sb.append("ExternalReference(");
     	sb.append(this.sample);
     	sb.append(",");
-    	sb.append(this.externalReference);
+    	sb.append(this.url);
     	sb.append(")");
     	return sb.toString();
     }
 
-	
-	public String getSample() {
-		return sample;
-	}
-
-	public String getExternalReference() {
-		return externalReference;
-	}
-
     //Used for deserializtion (JSON -> Java)
     @JsonCreator
 	static public ExternalReferenceLink build(@JsonProperty("sample") String sample, 
-			@JsonProperty("url") String externalReference) {
-		return ExternalReferenceLink.build(sample, externalReference, null);
+			@JsonProperty("url") String url) {
+		return ExternalReferenceLink.build(sample, url, null);
 	}
 
 	static public ExternalReferenceLink build(String sample, 
-			String externalReference, 
-			Long id) {
-		return new ExternalReferenceLink(sample, externalReference, id);
+			String url, 
+			String id) {
+		return new ExternalReferenceLink(sample, url, id);
 	}
 }

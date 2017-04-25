@@ -23,13 +23,7 @@ public class NeoExternalReferenceToExternalReferenceConverter
 	@Override
 	public ExternalReference convert(NeoExternalReference neo) {
 		if (neo == null) return null;
-		SortedSet<String> samples = new TreeSet<>();
-		if (neo.getLinks() != null) {
-			for (NeoExternalReferenceLink application : neo.getLinks()) {
-				samples.add(application.getSample().getAccession());
-			}
-		}
-		return ExternalReference.build(neo.getUrl(), samples);
+		return ExternalReference.build(neo.getUrl());
 		
 	}
 

@@ -20,30 +20,20 @@ import com.google.common.hash.Hashing;
 
 public class ExternalReference implements Comparable<ExternalReference> {
 	
-	private final String url;
-	
-	private final String urlHash;
-	
-	private final SortedSet<String> samples;
+	private final String url;	
+	private final String hash;	
 
-	private ExternalReference(String url, String urlHash, Collection<String> samples) {
+	private ExternalReference(String url, String hash) {
 		this.url = url;
-		this.urlHash = urlHash;
-		this.samples = Collections.unmodifiableSortedSet(new TreeSet<>(samples));
+		this.hash = hash;
 	}
 
 	public String getUrl() {
 		return this.url;
 	}
-	
 	@JsonIgnore
-	public SortedSet<String> getSamples() {
-		return samples;
-	}
-
-	@JsonIgnore
-	public String getId() {
-		return this.urlHash;
+	public String getHash() {
+		return this.hash;
 	}
 	
 	@Override
@@ -58,7 +48,7 @@ public class ExternalReference implements Comparable<ExternalReference> {
     
     @Override
     public int hashCode() {
-    	return Objects.hash(urlHash);
+    	return Objects.hash(hash);
     }
 
 	@Override
@@ -84,17 +74,13 @@ public class ExternalReference implements Comparable<ExternalReference> {
 
 
     @JsonCreator
-    public static ExternalReference build(@JsonProperty("url") String url) {  
-    	return build(url, new TreeSet<>());
-    }
-    
-    public static ExternalReference build(String url, Collection<String> sampleAccessions) {    	
+    public static ExternalReference build(@JsonProperty("url") String url) {    	
     	UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromUriString(url);
     	UriComponents uriComponents = uriComponentsBuilder.build().normalize();
 
     	url = uriComponents.toUriString();
     	
-    	String urlHash = Hashing.sha256().newHasher()
+    	String hash = Hashing.sha256().newHasher()
 			.putUnencodedChars(Objects.nonNull(uriComponents.getScheme()) ? uriComponents.getScheme() : "")
 			.putUnencodedChars(Objects.nonNull(uriComponents.getSchemeSpecificPart()) ? uriComponents.getSchemeSpecificPart() : "")
 			.putUnencodedChars(Objects.nonNull(uriComponents.getUserInfo()) ? uriComponents.getUserInfo() : "")
@@ -104,13 +90,8 @@ public class ExternalReference implements Comparable<ExternalReference> {
 			.putUnencodedChars(Objects.nonNull(uriComponents.getQuery()) ? uriComponents.getQuery() : "")
 			.putUnencodedChars(Objects.nonNull(uriComponents.getFragment()) ? uriComponents.getFragment() : "")
 			.hash().toString();
-    	
-    	SortedSet<String> sortedSamples = new TreeSet<>();
-    	if (sampleAccessions != null) {
-    		sortedSamples.addAll(sampleAccessions);
-    	}
-    	
-    	ExternalReference externalReference = new ExternalReference(url, urlHash, sampleAccessions);
+    	    	
+    	ExternalReference externalReference = new ExternalReference(url, hash);
 		return externalReference;
 	}
 }

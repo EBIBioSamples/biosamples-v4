@@ -12,6 +12,10 @@ import uk.ac.ebi.biosamples.neo.model.NeoExternalReferenceLink;
 import uk.ac.ebi.biosamples.neo.model.NeoSample;
 
 public interface NeoExternalReferenceLinkRepository extends Neo4jRepository<NeoExternalReferenceLink,String> {
+
+	public NeoExternalReferenceLink findOneById(String id, @Depth int depth);
+	public NeoExternalReferenceLink findOneByHash(String keyHash, @Depth int depth);
+
 	
 	
 }

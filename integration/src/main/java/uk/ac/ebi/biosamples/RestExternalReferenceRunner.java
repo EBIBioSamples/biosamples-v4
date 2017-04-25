@@ -9,6 +9,7 @@ import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.annotation.Order;
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
@@ -18,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.web.util.UriTemplate;
 
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
@@ -65,16 +67,12 @@ public class RestExternalReferenceRunner implements ApplicationRunner, ExitCodeG
 			
 			client.persist(sample);
 			
-			//check /samples/{id}/externalreferences
-			//testSamplesExternalReference(sample);
-			
-			//testSamplesExternalReferenceCreation(sample);
+			//check /externalreferencelinks
+			testExternalReferenceLinks();
+
 			
 			//check /externalreferences
 			testExternalReferences();
-			
-			//check /externalreferencelinks
-			testExternalReferenceLinks();
 			
 			
 		} else if (args.containsOption("phase") && Integer.parseInt(args.getOptionValues("phase").get(0)) == 2) {
@@ -84,54 +82,35 @@ public class RestExternalReferenceRunner implements ApplicationRunner, ExitCodeG
 		exitCode = 0;
 		log.info("Finished RestSearchRunner");
 	}
-	
-	private void testSamplesExternalReference(Sample sample) {
 		
-		URI uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUri()).pathSegment("samples")
-			.pathSegment(sample.getAccession()).pathSegment("externalreferences").build().toUri();
-
-		log.info("GETting from "+uri);
-		RequestEntity<Void> request = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
-		ResponseEntity<PagedResources<Resource<ExternalReference>>> response = restTemplate.exchange(request, 
-				new ParameterizedTypeReference<PagedResources<Resource<ExternalReference>>>(){});
-		response.getBody().forEach( new Consumer<Resource<ExternalReference>>() {
-			@Override
-			public void accept(Resource<ExternalReference> t) {
-				if (t.getLink("self") == null) throw new IllegalArgumentException("Must have self link");					
-			}
-		});
-	}
-	
-	private void testSamplesExternalReferenceCreation(Sample sample) {
-		
-		URI uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUri()).pathSegment("samples")
-			.pathSegment(sample.getAccession()).pathSegment("externalreferences").build().toUri();
-
-		ExternalReference externalReference = ExternalReference.build("http://www.test.com/a");
-		
-		log.info("POSTing to "+uri);
-		RequestEntity<ExternalReference> request = RequestEntity.post(uri)
-				.contentType(MediaType.APPLICATION_JSON).body(externalReference);
-		
-		ResponseEntity<Resource<ExternalReference>> response = restTemplate.exchange(request, 
-				new ParameterizedTypeReference<Resource<ExternalReference>>(){});
-		
-		response.getBody().getContent();
-	}
-	
 	private void testExternalReferences() {
 		URI uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUri()).pathSegment("externalreferences").build().toUri();
 
 		log.info("GETting from "+uri);
 		RequestEntity<Void> request = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
 		ResponseEntity<PagedResources<Resource<ExternalReference>>> response = restTemplate.exchange(request, 
-				new ParameterizedTypeReference<PagedResources<Resource<ExternalReference>>>(){});
-		response.getBody().forEach( new Consumer<Resource<ExternalReference>>() {
-			@Override
-			public void accept(Resource<ExternalReference> t) {
-				if (t.getLink("self") == null) throw new IllegalArgumentException("Must have self link");					
+				new ParameterizedTypeReference<PagedResources<Resource<ExternalReference>>>(){});		
+		
+		boolean testedSelf = false;
+		
+		for (Resource<ExternalReference> externalReferenceResource : response.getBody()) {
+			Link selfLink = externalReferenceResource.getLink("self");
+			if (selfLink == null) {
+				throw new RuntimeException("Must have self link");
 			}
-		});
+			if (!testedSelf) {
+				URI uriLink = URI.create(selfLink.getHref());
+				log.info("GETting from "+uriLink);
+				RequestEntity<Void> requestLink = RequestEntity.get(uriLink).accept(MediaTypes.HAL_JSON).build();
+				ResponseEntity<Resource<ExternalReference>> responseLink = restTemplate.exchange(requestLink, 
+						new ParameterizedTypeReference<Resource<ExternalReference>>(){});
+				if (!responseLink.getStatusCode().is2xxSuccessful()) {
+					throw new RuntimeException("Unable to follow self link");
+				}
+				testedSelf = true;
+			}
+		}	
+	
 	}
 	
 	private void testExternalReferenceLinks() {
@@ -141,12 +120,27 @@ public class RestExternalReferenceRunner implements ApplicationRunner, ExitCodeG
 		RequestEntity<Void> request = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
 		ResponseEntity<PagedResources<Resource<ExternalReferenceLink>>> response = restTemplate.exchange(request, 
 				new ParameterizedTypeReference<PagedResources<Resource<ExternalReferenceLink>>>(){});
-		response.getBody().forEach( new Consumer<Resource<ExternalReferenceLink>>() {
-			@Override
-			public void accept(Resource<ExternalReferenceLink> t) {
-				if (t.getLink("self") == null) throw new IllegalArgumentException("Must have self link");					
+		
+		
+		boolean testedSelf = false;
+		
+		for (Resource<ExternalReferenceLink> externalReferenceLinkResource : response.getBody()) {
+			Link selfLink = externalReferenceLinkResource.getLink("self");
+			if (selfLink == null) {
+				throw new RuntimeException("Must have self link");
 			}
-		});
+			if (!testedSelf) {
+				URI uriLink = URI.create(selfLink.getHref());
+				log.info("GETting from "+uriLink);
+				RequestEntity<Void> requestLink = RequestEntity.get(uriLink).accept(MediaTypes.HAL_JSON).build();
+				ResponseEntity<Resource<ExternalReferenceLink>> responseLink = restTemplate.exchange(requestLink, 
+						new ParameterizedTypeReference<Resource<ExternalReferenceLink>>(){});
+				if (!responseLink.getStatusCode().is2xxSuccessful()) {
+					throw new RuntimeException("Unable to follow self link");
+				}
+				testedSelf = true;
+			}
+		}
 	}
 	
 	private Sample getSampleTest1() throws URISyntaxException {

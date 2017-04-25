@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import uk.ac.ebi.biosamples.model.ExternalReference;
+import uk.ac.ebi.biosamples.model.ExternalReferenceLink;
 import uk.ac.ebi.biosamples.model.Sample;
 
 @RestController
@@ -33,6 +34,7 @@ public class RootHalController {
     	
     	resource.add(entityLinks.linkToCollectionResource(Sample.class).withRel("samples"));
     	resource.add(entityLinks.linkToCollectionResource(ExternalReference.class).withRel("externalReferences"));
+    	resource.add(entityLinks.linkToCollectionResource(ExternalReferenceLink.class).withRel("externalReferenceLinks"));
     	
     	return ResponseEntity.ok().body(resource);
     }
