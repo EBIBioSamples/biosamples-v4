@@ -11,8 +11,8 @@ import org.springframework.stereotype.Service;
 
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Curation;
+import uk.ac.ebi.biosamples.neo.model.NeoAttribute;
 import uk.ac.ebi.biosamples.neo.model.NeoCuration;
-import uk.ac.ebi.biosamples.neo.model.NeoCurationApplication;
 
 @Service
 @ConfigurationPropertiesBinding
@@ -20,18 +20,23 @@ public class NeoCurationToCurationConverter
 		implements Converter<NeoCuration, Curation> {
 
 	@Override
-	public Curation convert(NeoCuration neo) {
-		SortedSet<String> samples = new TreeSet<>();
-		for (NeoCurationApplication application : neo.getApplications()) {
-			samples.add(application.getTarget().getAccession());
-		}
-		
+	public Curation convert(NeoCuration neo) {		
 		Set<Attribute> preAttributes = new HashSet<>();
 		Set<Attribute> postAttributes = new HashSet<>();
 		
-		//TODO finish
+		for (NeoAttribute neoAttribute : neo.getAttributesPre()) {
+			Attribute attribute = Attribute.build(neoAttribute.getType(), 
+					neoAttribute.getValue(), neoAttribute.getIri(), neoAttribute.getUnit());
+			preAttributes.add(attribute);
+		}
+
+		for (NeoAttribute neoAttribute : neo.getAttributesPost()) {
+			Attribute attribute = Attribute.build(neoAttribute.getType(), 
+					neoAttribute.getValue(), neoAttribute.getIri(), neoAttribute.getUnit());
+			postAttributes.add(attribute);
+		}
 		
-		return Curation.build(preAttributes, postAttributes, samples);
+		return Curation.build(preAttributes, postAttributes);
 		
 	}
 

@@ -44,8 +44,8 @@ public class NeoSample {
     @Relationship(type = "HAS_ATTRIBUTE")
 	private Set<NeoAttribute> attributes;
 
-    @Relationship(type = "HAS_CURATION")
-	private Set<NeoCurationApplication> curationApplications;
+    @Relationship(type = "HAS_CURATION_SOURCE", direction = Relationship.INCOMING)
+	private Set<NeoCurationLink> curationLinks;
 
 	private NeoSample() {
 	}
@@ -80,8 +80,8 @@ public class NeoSample {
 		return externalReferenceLinks;
 	}
 
-	public Set<NeoCurationApplication> getCurationApplications() {
-		return curationApplications;
+	public Set<NeoCurationLink> getCurationLinks() {
+		return curationLinks;
 	}
 
 	@Override

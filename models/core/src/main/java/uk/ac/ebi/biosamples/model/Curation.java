@@ -9,22 +9,24 @@ import java.util.TreeSet;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.hash.Hasher;
+import com.google.common.hash.Hashing;
+
 
 public class Curation implements Comparable<Curation>{
 	
 	private SortedSet<Attribute> preAttributes;
 
 	private SortedSet<Attribute> postAttributes;
-
-	private SortedSet<String> sampleAccessions;
-
+	
+	private String hash;
 	
 	private Curation(Collection<Attribute> preAttributes, 
-			Collection<Attribute> postAttributes, 
-			SortedSet<String> sampleAccessions) {
+			Collection<Attribute> postAttributes,
+			String hash) {
 		this.preAttributes = Collections.unmodifiableSortedSet(new TreeSet<>(preAttributes));
 		this.postAttributes = Collections.unmodifiableSortedSet(new TreeSet<>(postAttributes));
-		this.sampleAccessions = Collections.unmodifiableSortedSet(new TreeSet<>(sampleAccessions));
+		this.hash = hash;
 	}
 	
 	public SortedSet<Attribute> getPreAttributes() {
@@ -35,6 +37,9 @@ public class Curation implements Comparable<Curation>{
 		return postAttributes;
 	}
 	
+	public String getHash() {
+		return hash;
+	}
 	
     @Override
     public int hashCode() {
@@ -91,22 +96,34 @@ public class Curation implements Comparable<Curation>{
 
     @JsonCreator
     public static Curation build(@JsonProperty("pre") Collection<Attribute> preAttributes, 
-			@JsonProperty("post") Collection<Attribute> postAttributes,
-			@JsonProperty("samples") Collection<String> samples) {
+			@JsonProperty("post") Collection<Attribute> postAttributes) {
     	
 		SortedSet<Attribute> sortedPreAttributes = new TreeSet<>();
 		SortedSet<Attribute> sortedPostAttributes = new TreeSet<>();
-		SortedSet<String> sortedSamples = new TreeSet<>();
 		
 		if (preAttributes != null) sortedPreAttributes.addAll(preAttributes);
 		if (postAttributes != null) sortedPostAttributes.addAll(postAttributes);
-		if (samples != null) sortedSamples.addAll(samples);
 
 		sortedPreAttributes = Collections.unmodifiableSortedSet(sortedPreAttributes);
 		sortedPostAttributes = Collections.unmodifiableSortedSet(sortedPostAttributes);
-		sortedSamples = Collections.unmodifiableSortedSet(sortedSamples);
 		
-		return new Curation(sortedPreAttributes, sortedPostAttributes, sortedSamples);
+
+    	Hasher hasher = Hashing.sha256().newHasher();
+    	for (Attribute a : sortedPreAttributes) {
+    		hasher.putUnencodedChars(a.getType());
+    		hasher.putUnencodedChars(a.getValue());
+    		hasher.putUnencodedChars(a.getUnit());
+    		hasher.putUnencodedChars(a.getIri());
+    	}
+    	for (Attribute a : sortedPostAttributes) {
+    		hasher.putUnencodedChars(a.getType());
+    		hasher.putUnencodedChars(a.getValue());
+    		hasher.putUnencodedChars(a.getUnit());
+    		hasher.putUnencodedChars(a.getIri());
+    	}
+    	String hash = hasher.hash().toString();
+		
+		return new Curation(sortedPreAttributes, sortedPostAttributes, hash);
 	}
 }
 

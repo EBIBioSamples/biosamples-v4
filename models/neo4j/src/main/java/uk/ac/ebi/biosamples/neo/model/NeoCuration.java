@@ -11,6 +11,11 @@ import org.neo4j.ogm.annotation.NodeEntity;
 import org.neo4j.ogm.annotation.Property;
 import org.neo4j.ogm.annotation.Relationship;
 
+import com.google.common.hash.Hasher;
+import com.google.common.hash.Hashing;
+
+import uk.ac.ebi.biosamples.model.Attribute;
+
 @NodeEntity(label = "Curation")
 public class NeoCuration {
 
@@ -23,12 +28,12 @@ public class NeoCuration {
     @Relationship(type = "HAS_POST_ATTRIBUTE")    
 	private Set<NeoAttribute> attributesPost;
     
-    @Relationship(type = "APPLIED_TO")
-    private Set<NeoCurationApplication> applications;
+    @Relationship(type = "HAS_CURATION_TARGET")
+    private Set<NeoCurationLink> links;
     
 	@Property
 	@Index(unique=true, primary=true)
-	private String compositeIdentifier;
+	private String hash;
 
 	private NeoCuration() {
 	}
@@ -36,56 +41,46 @@ public class NeoCuration {
 	public Long getId() {
 		return id;
 	}
-
-	/**
-	 * Do not modify this directly
-	 * @return
-	 */
+	
+	public Set<NeoCurationLink> getLinks() {
+		return links;
+	}
+	
+	public String getHash() {
+		return hash;
+	}
+	
 	public Set<NeoAttribute> getAttributesPre() {
 		return attributesPre;
 	}
-
-
-	/**
-	 * Do not modify this directly
-	 * @return
-	 */
+	
 	public Set<NeoAttribute> getAttributesPost() {
 		return attributesPost;
 	}
 	
-	public Set<NeoCurationApplication> getApplications() {
-		return applications;
-	}
 	
 	public static NeoCuration build(Collection<NeoAttribute> attributesPre, Collection<NeoAttribute> attributesPost) {
 		NeoCuration neoCuration = new NeoCuration();
 		neoCuration.attributesPre = new TreeSet<>(attributesPre);
 		neoCuration.attributesPost = new TreeSet<>(attributesPost);
+
+    	Hasher hasher = Hashing.sha256().newHasher();
+    	for (NeoAttribute a : neoCuration.attributesPre) {
+    		hasher.putUnencodedChars(a.getType());
+    		hasher.putUnencodedChars(a.getValue());
+    		hasher.putUnencodedChars(a.getUnit());
+    		hasher.putUnencodedChars(a.getIri());
+    	}
+    	for (NeoAttribute a : neoCuration.attributesPost) {
+    		hasher.putUnencodedChars(a.getType());
+    		hasher.putUnencodedChars(a.getValue());
+    		hasher.putUnencodedChars(a.getUnit());
+    		hasher.putUnencodedChars(a.getIri());
+    	}
+		neoCuration.hash = hasher.hash().toString();
+
+    	//TODO bake user id into hash
 		
-		StringBuilder sb = new StringBuilder();
-		Iterator<NeoAttribute> it = attributesPre.iterator();
-		while (it.hasNext()) {
-			NeoAttribute attribute = it.next();
-			sb.append(attribute.getType());
-			sb.append("|");
-			sb.append(attribute.getValue());
-			if (it.hasNext()) {
-				sb.append("|");
-			}
-		}
-		it = attributesPost.iterator();
-		while (it.hasNext()) {
-			NeoAttribute attribute = it.next();
-			sb.append(attribute.getType());
-			sb.append("|");
-			sb.append(attribute.getValue());
-			if (it.hasNext()) {
-				sb.append("|");
-			}
-		}
-		neoCuration.compositeIdentifier = sb.toString();
-				
 		return neoCuration;
 	}
 }

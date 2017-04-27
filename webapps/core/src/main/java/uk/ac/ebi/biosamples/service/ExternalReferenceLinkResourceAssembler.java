@@ -31,7 +31,7 @@ public class ExternalReferenceLinkResourceAssembler
 		
 		resource.add(entityLinks.linkToSingleResource(Sample.class, externalRefrenceLink.getSample())
 				.withRel("sample"));
-		resource.add(entityLinks.linkToSingleResource(ExternalReference.class, externalRefrenceLink.getUrlHash())
+		resource.add(entityLinks.linkToSingleResource(ExternalReference.class, externalRefrenceLink.getExternalReference().getHash())
 				.withRel("externalReference"));
 		
 		return resource;

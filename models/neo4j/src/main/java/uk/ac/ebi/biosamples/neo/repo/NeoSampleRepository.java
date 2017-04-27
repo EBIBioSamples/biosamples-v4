@@ -20,4 +20,8 @@ public interface NeoSampleRepository extends Neo4jRepository<NeoSample,String>, 
 	@Query("MATCH (s:Sample)--(l:ExternalReferenceLink) WHERE l.hash={hash} RETURN s")
 	public Page<NeoSample> findByExternalReferenceLinkHash(@Param("hash") String hash, Pageable pageable);
 	
+
+	@Query("MATCH (s:Sample)--(:CurationLink)--(x:Curation) WHERE x.hash={hash} RETURN s")
+	public Page<NeoSample> findByCurationHash(@Param("hash") String hash, Pageable pageable);
+	
 }

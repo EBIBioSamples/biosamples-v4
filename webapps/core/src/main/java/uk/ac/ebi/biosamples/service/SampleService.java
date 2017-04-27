@@ -173,6 +173,15 @@ public class SampleService {
 		return pageSample;
 	}
 
+	public Page<Sample> getSamplesOfCuration(String hash, Pageable pageable) {
+		Page<NeoSample> pageNeoSample = neoSampleRepository.findByCurationHash(hash, pageable);
+		//get them in greater depth
+		pageNeoSample.map(s -> neoSampleRepository.findOne(s.getAccession(), 2));		
+		//convert them into a state to return
+		Page<Sample> pageSample = pageNeoSample.map(neoSampleToSampleConverter);
+		return pageSample;
+	}
+
 	
 	
 }

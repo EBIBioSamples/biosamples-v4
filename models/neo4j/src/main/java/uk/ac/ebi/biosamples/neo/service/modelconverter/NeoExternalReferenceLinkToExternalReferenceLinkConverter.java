@@ -18,9 +18,7 @@ public class NeoExternalReferenceLinkToExternalReferenceLinkConverter
 		//if there are errors here, neo probably wans't loaded with enough depth
 		return ExternalReferenceLink.build( 
 				neo.getSample().getAccession(), 
-				neo.getExternalReference().getUrl(), 
-				neo.getHash(),
-				neo.getExternalReference().getUrlHash());
+				neo.getExternalReference().getUrl());
 		
 	}
 

@@ -5,19 +5,18 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.hash.Hashing;
 
 public class ExternalReferenceLink implements Comparable<ExternalReferenceLink> {
 
 	private final String sample;
-	private final String url;
+	private final ExternalReference externalReference;
 	private final String hash;
-	private final String urlHash;
 	
-	private ExternalReferenceLink(String sample, String url, String hash, String urlHash) {
+	private ExternalReferenceLink(String sample, ExternalReference externalReference, String hash) {
 		this.sample = sample;
-		this.url = url;
+		this.externalReference = externalReference;
 		this.hash = hash;
-		this.urlHash = urlHash;
 	}
 	
 	
@@ -25,18 +24,18 @@ public class ExternalReferenceLink implements Comparable<ExternalReferenceLink> 
 		return sample;
 	}
 	
+	@JsonIgnore
+	public ExternalReference getExternalReference(){
+		return externalReference;
+	}
+	
 	public String getUrl() {
-		return url;
+		return externalReference.getUrl();
 	}
 
 	@JsonIgnore
 	public String getId() {
 		return hash;
-	}
-
-	@JsonIgnore
-	public String getUrlHash() {
-		return urlHash;
 	}
 	
 	@Override
@@ -46,13 +45,13 @@ public class ExternalReferenceLink implements Comparable<ExternalReferenceLink> 
             return false;
         }
         ExternalReferenceLink other = (ExternalReferenceLink) o;
-        return Objects.equals(this.url, other.url)
+        return Objects.equals(this.externalReference, other.externalReference)
         		&& Objects.equals(this.sample, other.sample);
     }
     
     @Override
     public int hashCode() {
-    	return Objects.hash(sample, url);
+    	return Objects.hash(sample, externalReference);
     }
 
 	@Override
@@ -64,8 +63,8 @@ public class ExternalReferenceLink implements Comparable<ExternalReferenceLink> 
 		if (!this.sample.equals(other.sample)) {
 			return this.sample.compareTo(other.sample);
 		}
-		if (!this.url.equals(other.url)) {
-			return this.url.compareTo(other.url);
+		if (!this.externalReference.equals(other.externalReference)) {
+			return this.externalReference.compareTo(other.externalReference);
 		}
 		return 0;
 	}	
@@ -76,7 +75,7 @@ public class ExternalReferenceLink implements Comparable<ExternalReferenceLink> 
     	sb.append("ExternalReference(");
     	sb.append(this.sample);
     	sb.append(",");
-    	sb.append(this.url);
+    	sb.append(this.externalReference);
     	sb.append(")");
     	return sb.toString();
     }
@@ -85,13 +84,13 @@ public class ExternalReferenceLink implements Comparable<ExternalReferenceLink> 
     @JsonCreator
 	static public ExternalReferenceLink build(@JsonProperty("sample") String sample, 
 			@JsonProperty("url") String url) {
-		return ExternalReferenceLink.build(sample, url, null, null);
-	}
-
-	static public ExternalReferenceLink build(String sample, 
-			String url, 
-			String hash, 
-			String urlHash) {
-		return new ExternalReferenceLink(sample, url, hash, urlHash);
+    	ExternalReference externalReference = ExternalReference.build(url);
+    	
+    	String hash = Hashing.sha256().newHasher()
+			.putUnencodedChars(externalReference.getUrl())
+			.putUnencodedChars(sample)
+			.hash().toString();
+    	
+		return new ExternalReferenceLink(sample, externalReference, hash);
 	}
 }
