@@ -82,11 +82,11 @@ public class SampleTabService {
 				
 			//add relationships from the group node to any member samples
 			for (Node node : groupNode.getParentNodes()) {
-				log.info("Found parent");
+				//log.info("Found parent");
 				if (node instanceof SampleNode) {
 					SampleNode sampleNode = (SampleNode) node;
 					relationships.add(Relationship.build(accession, "has member", sampleNode.getSampleAccession()));
-					log.info("Adding relationship from "+accession+" to "+sampleNode.getSampleAccession());
+					//log.info("Adding relationship from "+accession+" to "+sampleNode.getSampleAccession());
 				}
 			}		
 			

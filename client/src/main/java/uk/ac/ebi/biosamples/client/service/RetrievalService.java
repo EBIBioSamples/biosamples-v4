@@ -55,13 +55,13 @@ public class RetrievalService {
 		return executor.submit(new FetchCallable(accession));
 	}
 
-    public PagedResources<Resource<Sample>> fetchPaginated(String text, int startPage, int size) {
+    public PagedResources<Resource<Sample>> fetchPaginated(String text, int page, int size) {
 
 		URI uri = UriComponentsBuilder.fromUri(clientProperties.getBiosamplesClientUri())
 				.pathSegment("samples")
                 .queryParam("text", !text.isEmpty() ? text : "*:*")
-                .queryParam("rows", size)
-				.queryParam("start", startPage)
+				.queryParam("page", page)
+                .queryParam("size", size)
 				.build().toUri();
 
 		RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaType.APPLICATION_JSON).build();

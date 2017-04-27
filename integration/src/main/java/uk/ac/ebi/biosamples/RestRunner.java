@@ -56,58 +56,68 @@ public class RestRunner implements ApplicationRunner, ExitCodeGenerator {
 		
 		Sample sampleTest1 = getSampleTest1();
 		Sample sampleTest2 = getSampleTest2();
-	
-		if (args.containsOption("phase") && Integer.parseInt(args.getOptionValues("phase").get(0)) == 1) {
-	
-			// get and check that nothing exists already
-			doGetAndFail(sampleTest1);
-	
-			// put a sample
-			doPut(sampleTest1);
-	
-			// get to check it worked
-			doGetAndSucess(sampleTest1);
-	
-			// put a version that is private
-			sampleTest1 = Sample.build(sampleTest1.getName(), sampleTest1.getAccession(),
-					LocalDateTime.of(LocalDate.of(2116, 4, 1), LocalTime.of(11, 36, 57, 0)), sampleTest1.getUpdate(),
-					sampleTest1.getCharacteristics(), sampleTest1.getRelationships(), sampleTest1.getExternalReferences());
-			doPut(sampleTest1);
-	
-			// check the response code
-			doGetAndPrivate(sampleTest1);
-			
-			//put the second sample in
-			doPut(sampleTest2);			
 
-			//at this point, the inverse relationship should have been added
+        switch (Phase.readPhaseFromArguments(args)) {
+        	case ONE:
+				// get and check that nothing exists already
+				doGetAndFail(sampleTest1);
+		
+				// put a sample
+				doPut(sampleTest1);
+				
+				break;
+        	case TWO:
+		
+				// get to check it worked
+				doGetAndSucess(sampleTest1);
+		
+				// put a version that is private
+				sampleTest1 = Sample.build(sampleTest1.getName(), sampleTest1.getAccession(),
+						LocalDateTime.of(LocalDate.of(2116, 4, 1), LocalTime.of(11, 36, 57, 0)), sampleTest1.getUpdate(),
+						sampleTest1.getCharacteristics(), sampleTest1.getRelationships(), sampleTest1.getExternalReferences());
+				doPut(sampleTest1);
+				
+				break;
+        	case THREE:        		
+				
+				// check the response code
+				doGetAndPrivate(sampleTest1);
+				
+				//put the second sample in
+				doPut(sampleTest2);			
+	
+				
 
-			sampleTest2 = Sample.build(sampleTest2.getName(), sampleTest2.getAccession(),
-					sampleTest2.getRelease(), sampleTest2.getUpdate(),
-					sampleTest2.getCharacteristics(), sampleTest1.getRelationships(), sampleTest2.getExternalReferences());
-			
-			//check that it has the additional relationship added
-			// get to check it worked
-			Sample sampleTest2Rest = doGetAndSucess(sampleTest2);
-			
-			//check utf -8
-			if (!sampleTest2Rest.getCharacteristics().contains(Attribute.build("UTF-8 test", "αβ", null, null))) {
-				throw new RuntimeException("Unable to find UTF-8 characters");
-			}
-			
-			//now do another update to delete the relationship
-			//might as well make it public now too
-			sampleTest1 = Sample.build(sampleTest1.getName(), sampleTest1.getAccession(),
-					LocalDateTime.of(LocalDate.of(2016, 4, 1), LocalTime.of(11, 36, 57, 0)), sampleTest1.getUpdate(),
-					sampleTest1.getCharacteristics(), new TreeSet<>(), sampleTest1.getExternalReferences());
-			doPut(sampleTest1);
-			
-			
-			
-			
-		} else if (args.containsOption("phase") && Integer.parseInt(args.getOptionValues("phase").get(0)) == 2) {
-									
-		}
+				break;
+        	case FOUR:
+
+				//at this point, the inverse relationship should have been added
+	
+				sampleTest2 = Sample.build(sampleTest2.getName(), sampleTest2.getAccession(),
+						sampleTest2.getRelease(), sampleTest2.getUpdate(),
+						sampleTest2.getCharacteristics(), sampleTest1.getRelationships(), sampleTest2.getExternalReferences());
+				
+				//check that it has the additional relationship added
+				// get to check it worked
+				Sample sampleTest2Rest = doGetAndSucess(sampleTest2);
+				
+				//check utf -8
+				if (!sampleTest2Rest.getCharacteristics().contains(Attribute.build("UTF-8 test", "αβ", null, null))) {
+					throw new RuntimeException("Unable to find UTF-8 characters");
+				}
+				
+				//now do another update to delete the relationship
+				//might as well make it public now too
+				sampleTest1 = Sample.build(sampleTest1.getName(), sampleTest1.getAccession(),
+						LocalDateTime.of(LocalDate.of(2016, 4, 1), LocalTime.of(11, 36, 57, 0)), sampleTest1.getUpdate(),
+						sampleTest1.getCharacteristics(), new TreeSet<>(), sampleTest1.getExternalReferences());
+				doPut(sampleTest1);
+				
+				
+				break;
+			        		
+        	default:
+        }
 		
 		//TODO check that deleting a relationships on an update actually deletes it from get too
 		

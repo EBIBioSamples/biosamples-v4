@@ -130,7 +130,7 @@ public class SampleRestController {
 				.contentType(MediaTypes.HAL_JSON).body(sampleResource);
 	}
 
-	@PutMapping(value = "/{accession}", consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
+	@PutMapping(value = "/{accession}", consumes = { MediaType.APPLICATION_JSON_VALUE })
 	public ResponseEntity<Resource<Sample>> putJsonXml(@PathVariable String accession, @RequestBody Sample sample) {
 		if (!sample.getAccession().equals(accession)) {
 			// if the accession in the body is different to the accession in the
@@ -152,7 +152,7 @@ public class SampleRestController {
 				.body(sampleResource);
 	}
 
-	@PostMapping(consumes = { MediaType.APPLICATION_JSON_VALUE,	MediaType.APPLICATION_XML_VALUE })
+	@PostMapping(consumes = { MediaType.APPLICATION_JSON_VALUE })
 	public ResponseEntity<Resource<Sample>> postJsonXml(@RequestBody Sample sample) {
 		log.info("Recieved POST");
 		sample = sampleService.store(sample);

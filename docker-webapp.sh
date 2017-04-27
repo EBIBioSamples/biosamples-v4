@@ -1,7 +1,9 @@
 #!/bin/bash
 set -e
 
+#mvn -T 2C -Dmaven.test.skip=true clean package
 mvn -T 2C clean package
+
 
 docker-compose stop biosamples-webapps-core biosamples-webapps-sampletab biosamples-webapps-legacyxml mongo neo4j solr rabbitmq biosamples-agents-solr biosamples-agents-curation
 set +e

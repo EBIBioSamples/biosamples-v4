@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -34,7 +35,7 @@ public class SampleTabController {
 	@Autowired
 	private SampleTabService sampleTabService;
 
-	@RequestMapping(method = RequestMethod.POST, value = "v4", consumes = "text/plain;charset=UTF-8")
+	@RequestMapping(method = RequestMethod.POST, value = "v4", consumes = {MediaType.TEXT_PLAIN_VALUE, "application/text"})
 	public ResponseEntity<String> acceptSampleTab(@RequestBody String sampleTab, HttpServletRequest request, HttpServletResponse response) {
 
 		log.trace("recieved SampleTab submission \n"+sampleTab);

@@ -23,7 +23,7 @@ import uk.ac.ebi.biosamples.model.Attribute;
 
 @Component
 @Order(3)
-@Profile({"default", "submission"})
+@Profile({ "default", "submission" })
 public class SampleTabRunner implements ApplicationRunner, ExitCodeGenerator {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
@@ -33,75 +33,83 @@ public class SampleTabRunner implements ApplicationRunner, ExitCodeGenerator {
 
 	@Autowired
 	private RestOperations restTemplate;
-	
+
 	@Autowired
 	private BioSamplesClient biosamplesClient;
-	
+
 	private int exitCode = 1;
 
 	@Override
 	public void run(ApplicationArguments args) throws Exception {
-		log.info("Starting SampleTabRunner"); 		
-		
-		URI uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUriSampleTab()).pathSegment("v4").build().toUri();
+		log.info("Starting SampleTabRunner");
 
-		if (args.containsOption("phase") && Integer.parseInt(args.getOptionValues("phase").get(0)) == 1) {	
-			
-			runCallableOnSampleTabResource("/GSB-32.txt", sampleTabString -> {				
-				log.info("PUTing to "+uri);
-				RequestEntity<String> request = RequestEntity.post(uri).contentType(MediaType.parseMediaType("text/plain;charset=UTF-8")).body(sampleTabString);
-				ResponseEntity<String> response = restTemplate.exchange(request, String.class);				
-				//TODO check at the right URLs with GET to make sure all arrived
-				//TODO check UTF-8 characters
-				if (!biosamplesClient.fetch("SAMEA2186845").getCharacteristics().contains(Attribute.build("description", "Test sample α"))) {
-					throw new RuntimeException("SAMEA2186845 does not have 'description':'Test sample α'");
-				}
-				if (!biosamplesClient.fetch("SAMEA2186844").getCharacteristics().contains(Attribute.build("description", "Test sample β"))) {
-					throw new RuntimeException("SAMEA2186844 does not have 'description':'Test sample β'");
-				}
-				});	
-			
-			runCallableOnSampleTabResource("/GSB-32_unaccession.txt", sampleTabString -> {				
-				log.info("PUTing to "+uri);
-				RequestEntity<String> request = RequestEntity.post(uri).contentType(MediaType.TEXT_PLAIN).body(sampleTabString);
-				ResponseEntity<String> response = restTemplate.exchange(request, String.class);	
-				//TODO check at the right URLs with GET to make sure all arrived
-				});
-			
-			runCallableOnSampleTabResource("/GSB-1004.txt", sampleTabString -> {				
-				log.info("PUTing to "+uri);
-				RequestEntity<String> request = RequestEntity.post(uri).contentType(MediaType.TEXT_PLAIN).body(sampleTabString);
-				ResponseEntity<String> response = restTemplate.exchange(request, String.class);	
-				//TODO check that SAMEA103886236 does not exist
-				});
-			
-			runCallableOnSampleTabResource("/GSB-1000.txt", sampleTabString -> {				
-				log.info("PUTing to "+uri);
-				RequestEntity<String> request = RequestEntity.post(uri).contentType(MediaType.TEXT_PLAIN).body(sampleTabString);
-				ResponseEntity<String> response = restTemplate.exchange(request, String.class);	
-				//TODO check that SAMEA103886236 does exist
-				});
+		URI uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUriSampleTab())
+				.pathSegment("v4").build().toUri();
 
-		} else if (args.containsOption("phase") && Integer.parseInt(args.getOptionValues("phase").get(0)) == 2) {
-			//TODO check that SAMEA103886236 is a "member of" SAMEG318804
+		switch (Phase.readPhaseFromArguments(args)) {
+		case ONE:
+			runCallableOnSampleTabResource("/GSB-32.txt", sampleTabString -> {
+				log.info("PUTing to " + uri);
+				RequestEntity<String> request = RequestEntity.post(uri)
+						.contentType(MediaType.parseMediaType("text/plain;charset=UTF-8")).body(sampleTabString);
+				ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+			});
+
+			runCallableOnSampleTabResource("/GSB-32_unaccession.txt", sampleTabString -> {
+				log.info("PUTing to " + uri);
+				RequestEntity<String> request = RequestEntity.post(uri).contentType(MediaType.TEXT_PLAIN)
+						.body(sampleTabString);
+				ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+				// TODO check at the right URLs with GET to make sure all
+				// arrived
+			});
+
+			runCallableOnSampleTabResource("/GSB-1004.txt", sampleTabString -> {
+				log.info("PUTing to " + uri);
+				RequestEntity<String> request = RequestEntity.post(uri).contentType(MediaType.TEXT_PLAIN)
+						.body(sampleTabString);
+				ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+				// TODO check that SAMEA103886236 does not exist
+			});
+
+			runCallableOnSampleTabResource("/GSB-1000.txt", sampleTabString -> {
+				log.info("PUTing to " + uri);
+				RequestEntity<String> request = RequestEntity.post(uri).contentType(MediaType.TEXT_PLAIN)
+						.body(sampleTabString);
+				ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+				// TODO check that SAMEA103886236 does exist
+			});
+
+			break;
+			
+		case TWO:
+			// check at the right URLs with GET to make sure UTF arrived
+			if (!biosamplesClient.fetch("SAMEA2186845").getCharacteristics()
+					.contains(Attribute.build("description", "Test sample α"))) {
+				throw new RuntimeException("SAMEA2186845 does not have 'description':'Test sample α'");
+			}
+			if (!biosamplesClient.fetch("SAMEA2186844").getCharacteristics()
+					.contains(Attribute.build("description", "Test sample β"))) {
+				throw new RuntimeException("SAMEA2186844 does not have 'description':'Test sample β'");
+			}
+			break;
 		}
-		
-		//if we got here without throwing, then we finished successfully
+
+		// if we got here without throwing, then we finished successfully
 		exitCode = 0;
 		log.info("Finished SampleTabRunner");
-		
+
 	}
-	
 
 	private interface SampleTabCallback {
 		public void callback(String sampleTabString);
 	}
-	
+
 	private void runCallableOnSampleTabResource(String resource, SampleTabCallback callback) {
 
 		Scanner scanner = null;
-		String sampleTabString = null;	
-		
+		String sampleTabString = null;
+
 		try {
 			scanner = new Scanner(this.getClass().getResourceAsStream(resource), "UTF-8");
 			sampleTabString = scanner.useDelimiter("\\A").next();
@@ -110,10 +118,10 @@ public class SampleTabRunner implements ApplicationRunner, ExitCodeGenerator {
 				scanner.close();
 			}
 		}
-		
-		log.trace("sending SampleTab submission \n"+sampleTabString);
-		
-		if (sampleTabString != null) {			
+
+		log.trace("sending SampleTab submission \n" + sampleTabString);
+
+		if (sampleTabString != null) {
 			callback.callback(sampleTabString);
 		}
 	}

@@ -4,6 +4,8 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 
 /**
@@ -12,12 +14,17 @@ import org.springframework.boot.ApplicationArguments;
  * Phase 2 - data available in biosamples database and readable from interfaces (api, html,...)
  */
 public enum Phase {
-    ONE(1, "Input"),
-    TWO(2, "Read"),
-    UNKNOWN(-1, "Unknown"),
-    NO_PHASE(0, "No phase");
+    UNKNOWN(-1),
+    NO_PHASE(0),
+    ONE(1),
+    TWO(2),
+    THREE(3),
+    FOUR(4),
+    FIVE(5);
 
-    static final Map<Integer, Phase> phaseLookup = new HashMap<>();
+	static private Logger log = LoggerFactory.getLogger(Phase.class);
+
+    static private final Map<Integer, Phase> phaseLookup = new HashMap<>();
 
     static {
         for(Phase s : EnumSet.allOf(Phase.class))
@@ -32,29 +39,22 @@ public enum Phase {
     }
 
     private int phaseCode;
-    private String description;
-
-
-    Phase(int phaseRepresentation, String description) {
+    Phase(int phaseRepresentation) {
         this.phaseCode = phaseRepresentation;
-        this.description = description;
     }
 
     public int getCode() {
         return this.phaseCode;
     }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public static Phase readPhaseFromArguments(ApplicationArguments args) {
+    
+    static public Phase readPhaseFromArguments(ApplicationArguments args) {
         if (args.containsOption("phase")) {
             int phaseCode = Integer.parseInt(args.getOptionValues("phase").get(0));
             Phase phase = phaseLookup.getOrDefault(phaseCode, Phase.UNKNOWN);
             if (phase.equals(UNKNOWN)) {
                 throw new IllegalArgumentException(String.format("Unknown phase %d", phaseCode));
             } else {
+            	log.info("reading arguments for phase "+phase);
                 return phase;
             }
         }

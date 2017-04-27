@@ -6,10 +6,12 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import org.neo4j.driver.v1.exceptions.TransientException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -155,13 +157,6 @@ public class SampleService {
 			sample = Sample.build(sample.getName(), accession, sample.getRelease(), sample.getUpdate(),
 					sample.getCharacteristics(), sample.getRelationships(), sample.getExternalReferences());
 		}
-
-		// convert it to the storage specific version
-		NeoSample neoSample = sampleToNeoSampleConverter.convert(sample);
-		
-		synchronized(this) {
-			neoSampleRepository.save(neoSample);
-		}
 		
 		// send a message for further processing
 		amqpTemplate.convertAndSend(Messaging.exchangeForIndexing, "", sample);
@@ -178,4 +173,6 @@ public class SampleService {
 		return pageSample;
 	}
 
+	
+	
 }

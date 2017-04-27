@@ -2,6 +2,7 @@ package uk.ac.ebi.biosamples.neo;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,10 @@ import uk.ac.ebi.biosamples.neo.service.modelconverter.SampleToNeoSampleConverte
 public class MessageHandlerNeo4J {
 	private Logger log = LoggerFactory.getLogger(getClass());
 
+
+	@Autowired
+	private AmqpTemplate amqpTemplate;
+	
 	@Autowired
 	private NeoMessageBuffer messageBuffer;
 
@@ -56,6 +61,9 @@ public class MessageHandlerNeo4J {
 		
 		
 		//repository.save(neoSample);
+
+		// send a message for further processing
+		amqpTemplate.convertAndSend(Messaging.exchangeForCuration, "", sample);
 		
 		log.trace("Handed "+sample.getAccession());
 	}

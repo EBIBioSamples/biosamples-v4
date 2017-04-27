@@ -1,5 +1,6 @@
 package uk.ac.ebi.biosamples;
 
+import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -12,6 +13,9 @@ public class MessageHandlerCuration {
 	
 	@Autowired
 	public BioSamplesClient BioSamplesClient;
+
+	@Autowired
+	private AmqpTemplate amqpTemplate;
 
 	@RabbitListener(queues = Messaging.queueToBeCurated)
 	public void handle(Sample sample) {		
@@ -30,10 +34,10 @@ public class MessageHandlerCuration {
 		
 		//lowercase attribute types		
 		//lowercase relationship types
+
+		// send a message for further processing
+		amqpTemplate.convertAndSend(Messaging.exchangeForIndexingSolr, "", sample);
 		
-		if (changed) {
-			//if we did any changes, send the updated version to the interface
-		}
 	}
 
 }

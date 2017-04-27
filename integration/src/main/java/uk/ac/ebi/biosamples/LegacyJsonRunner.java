@@ -24,7 +24,6 @@ import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 
-@SuppressWarnings("Duplicates")
 //@Component
 @Order(5)
 @Profile({"default", "rest", "test"})
@@ -32,7 +31,7 @@ public class LegacyJsonRunner implements ApplicationRunner, ExitCodeGenerator {
 
     private Logger log = LoggerFactory.getLogger(this.getClass());
 
-    @SuppressWarnings("FieldCanBeLocal") private int exitCode = 1;
+    private int exitCode = 1;
 
     private final BiosamplesRestOperations biosamplesCommonRest;
 
@@ -44,35 +43,17 @@ public class LegacyJsonRunner implements ApplicationRunner, ExitCodeGenerator {
     public void run(ApplicationArguments args) throws Exception {
         switch (Phase.readPhaseFromArguments(args)) {
             case ONE:
-                phaseOne();
+                Sample sample  = this.getSampleTest();
+                doGetAndFail(sample);
+                doPut(sample);
+                doGetAndSuccess(sample);
                 break;
             case TWO:
-                phaseTwo();
                 break;
             default:
 
         }
     }
-
-
-    /**
-     * Input phase
-     */
-    private void phaseOne() throws URISyntaxException {
-        Sample sample  = this.getSampleTest();
-        doGetAndFail(sample);
-        doPut(sample);
-        doGetAndSuccess(sample);
-
-    }
-
-    /**
-     * Read phase
-     */
-    private void phaseTwo() {
-
-    }
-
     private Sample doGetAndSuccess(Sample sample) {
         ResponseEntity<Resource<Sample>> response = biosamplesCommonRest.doGet(sample);
         // check the status code is 200 success

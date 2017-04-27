@@ -119,36 +119,36 @@ services:
         gelf-address: "udp://localhost:12201"
 
     
-#  biosamples-agents-neo4j:
-#    image: biosamples:latest
-#    links:
-#    - neo4j
-#    - rabbitmq
-#    - logstash
-#    volumes:
-#    - ./docker/logs:/logs
-#    command:
-#    - java
-#    - -jar
-#    - agents-neo4j-4.0.0-SNAPSHOT.jar
-#    environment:
-#    - spring.rabbitmq.publisher-confirms=true
-#    - spring.rabbitmq.host=rabbitmq
-#    - spring.rabbitmq.listener.concurrency=25
-#    - spring.rabbitmq.listener.max-concurrency=25
-#    #- spring.data.neo4j.uri=bolt://neo4j:7687
-#    - spring.data.neo4j.uri=http://neo4j:7474
-#    - spring.data.neo4j.username=neo4j
-#    - spring.data.neo4j.indexes.auto=validate
-#    - indexes.auto=validate
-#    - biosamples.agent.neo4j.stayalive=true
-#    - logging.file=/logs/agents-neo4j.log
-#    - logging.level=debug
-#    - logging.level.org.springframework.data.neo4j=debug
-#    logging:
-#      driver: gelf
-#      options:
-#        gelf-address: "udp://localhost:12201"
+  biosamples-agents-neo4j:
+    image: biosamples:latest
+    links:
+    - neo4j
+    - rabbitmq
+    - logstash
+    volumes:
+    - ./docker/logs:/logs
+    command:
+    - java
+    - -jar
+    - agents-neo4j-4.0.0-SNAPSHOT.jar
+    environment:
+    - spring.rabbitmq.publisher-confirms=true
+    - spring.rabbitmq.host=rabbitmq
+    - spring.rabbitmq.listener.concurrency=25
+    - spring.rabbitmq.listener.max-concurrency=25
+    #- spring.data.neo4j.uri=bolt://neo4j:7687
+    - spring.data.neo4j.uri=http://neo4j:7474
+    - spring.data.neo4j.username=neo4j
+    - spring.data.neo4j.indexes.auto=validate
+    - indexes.auto=validate
+    - biosamples.agent.neo4j.stayalive=true
+    - logging.file=/logs/agents-neo4j.log
+    - logging.level=debug
+    - logging.level.org.springframework.data.neo4j=debug
+    logging:
+      driver: gelf
+      options:
+        gelf-address: "udp://localhost:12201"
     
   biosamples-agents-solr:
     image: biosamples:latest
