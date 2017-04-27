@@ -86,12 +86,15 @@ public class RestExternalReferenceRunner implements ApplicationRunner, ExitCodeG
 		
 		for (Resource<ExternalReference> externalReferenceResource : response.getBody()) {
 			Link selfLink = externalReferenceResource.getLink("self");
+			
 			if (selfLink == null) {
 				throw new RuntimeException("Must have self link");
 			}
+			
 			if (externalReferenceResource.getLink("samples") == null) {
 				throw new RuntimeException("Must have samples link");
 			}
+			
 			if (!testedSelf) {
 				URI uriLink = URI.create(selfLink.getHref());
 				log.info("GETting from "+uriLink);

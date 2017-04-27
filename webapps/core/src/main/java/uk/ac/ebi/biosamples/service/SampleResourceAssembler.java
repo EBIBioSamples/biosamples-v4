@@ -34,7 +34,7 @@ public class SampleResourceAssembler implements ResourceAssembler<Sample, Resour
 		if (sample.getExternalReferences() != null && sample.getExternalReferences().size() > 0) {					
 			resource.add(ControllerLinkBuilder.linkTo(
 					ControllerLinkBuilder.methodOn(SampleExternalReferenceLinksRestController.class)
-						.getExternalReferenceLinkPageJson(sample.getAccession(), null, null)).withRel("externalreferencelinks"));
+						.getExternalReferenceLinkPageJson(sample.getAccession(), null, null)).withRel("externalReferenceLinks"));
 		}
 		
 		return resource;
