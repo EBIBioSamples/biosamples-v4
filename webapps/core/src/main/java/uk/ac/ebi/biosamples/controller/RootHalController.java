@@ -31,7 +31,6 @@ public class RootHalController {
     	
     	resource.add(entityLinks.linkToCollectionResource(Sample.class).withRel("samples"));
     	resource.add(entityLinks.linkToCollectionResource(ExternalReference.class).withRel("externalReferences"));
-    	resource.add(entityLinks.linkToCollectionResource(ExternalReferenceLink.class).withRel("externalReferenceLinks"));
     	
     	return ResponseEntity.ok().body(resource);
     }

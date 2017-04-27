@@ -6,8 +6,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import uk.ac.ebi.biosamples.model.ExternalReference;
+import uk.ac.ebi.biosamples.model.ExternalReferenceLink;
 import uk.ac.ebi.biosamples.neo.model.NeoExternalReference;
+import uk.ac.ebi.biosamples.neo.model.NeoExternalReferenceLink;
+import uk.ac.ebi.biosamples.neo.repo.NeoExternalReferenceLinkRepository;
 import uk.ac.ebi.biosamples.neo.repo.NeoExternalReferenceRepository;
+import uk.ac.ebi.biosamples.neo.service.modelconverter.NeoExternalReferenceLinkToExternalReferenceLinkConverter;
 import uk.ac.ebi.biosamples.neo.service.modelconverter.NeoExternalReferenceToExternalReferenceConverter;
 
 @Service
@@ -15,9 +19,13 @@ public class ExternalReferenceService {
 
 	@Autowired
 	private NeoExternalReferenceRepository neoExternalReferenceRepository;
+	@Autowired
+	private NeoExternalReferenceLinkRepository neoExternalReferenceLinkRepository;
 	
 	@Autowired
 	private NeoExternalReferenceToExternalReferenceConverter neoExternalReferenceToExternalReferenceConverter;
+	@Autowired
+	private NeoExternalReferenceLinkToExternalReferenceLinkConverter neoExternalReferenceLinkToExternalReferenceLinkConverter;
 	
 	public Page<ExternalReference> getPage(Pageable pageable){
 		Page<NeoExternalReference> pageNeoExternalReference = neoExternalReferenceRepository.findAll(pageable,2);
@@ -34,14 +42,19 @@ public class ExternalReferenceService {
 		}
 	}
 	
-	public Page<ExternalReference> getExternalReferencesForSample(String accession, Pageable pageable) {
-		Page<NeoExternalReference> pageNeoExternalReference = neoExternalReferenceRepository.findBySampleAccession(accession, pageable);		
+	public Page<ExternalReferenceLink> getExternalReferenceLinksForSample(String accession, Pageable pageable) {
+		Page<NeoExternalReferenceLink> pageNeoExternalReferenceLink = neoExternalReferenceLinkRepository.findBySampleAccession(accession, pageable);		
 		//get them in greater depth
-		pageNeoExternalReference.map(nxr -> neoExternalReferenceRepository.findOne(nxr.getUrlHash(), 2));		
+		pageNeoExternalReferenceLink.map(nxr -> neoExternalReferenceLinkRepository.findOne(nxr.getHash(), 2));		
 		//convert them into a state to return
-		Page<ExternalReference> pageExternalReference = pageNeoExternalReference.map(neoExternalReferenceToExternalReferenceConverter);		
+		Page<ExternalReferenceLink> pageExternalReference = pageNeoExternalReferenceLink.map(neoExternalReferenceLinkToExternalReferenceLinkConverter);		
 		return pageExternalReference;
 	}
-	
+
+	public ExternalReferenceLink getExternalReferenceLink(String hash) {
+		NeoExternalReferenceLink neo = neoExternalReferenceLinkRepository.findOneByHash(hash, 1);
+		ExternalReferenceLink link = neoExternalReferenceLinkToExternalReferenceLinkConverter.convert(neo);
+		return link;
+	}
 
 }

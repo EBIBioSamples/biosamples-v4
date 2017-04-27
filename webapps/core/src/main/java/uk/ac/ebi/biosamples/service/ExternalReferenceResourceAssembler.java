@@ -6,8 +6,7 @@ import org.springframework.hateoas.ResourceAssembler;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.stereotype.Service;
 
-import uk.ac.ebi.biosamples.controller.ExternalReferenceExternalReferenceLinkRestController;
-import uk.ac.ebi.biosamples.controller.ExternalReferenceSampleRestController;
+import uk.ac.ebi.biosamples.controller.ExternalReferenceRestController;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 
 /**
@@ -32,12 +31,8 @@ public class ExternalReferenceResourceAssembler implements ResourceAssembler<Ext
 		resource.add(entityLinks.linkToSingleResource(ExternalReference.class, externalReference.getHash()).withSelfRel());
 
 		resource.add(ControllerLinkBuilder.linkTo(
-				ControllerLinkBuilder.methodOn(ExternalReferenceExternalReferenceLinkRestController.class)
-					.getExternalReferenceLinksJson(externalReference.getHash(), null, null))
-				.withRel("externalreferencelinks"));
-		resource.add(ControllerLinkBuilder.linkTo(
-				ControllerLinkBuilder.methodOn(ExternalReferenceSampleRestController.class)
-					.getSamplesHal(externalReference.getHash(), null, null))
+				ControllerLinkBuilder.methodOn(ExternalReferenceRestController.class)
+					.getExternalReferenceSamplesHal(externalReference.getHash(), null, null))
 				.withRel("samples"));
 		
 		return resource;

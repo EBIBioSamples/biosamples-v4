@@ -3,8 +3,10 @@ package uk.ac.ebi.biosamples.service;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceAssembler;
+import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.stereotype.Service;
 
+import uk.ac.ebi.biosamples.controller.SampleExternalReferenceLinksRestController;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.ExternalReferenceLink;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -23,8 +25,10 @@ public class ExternalReferenceLinkResourceAssembler
 	public Resource<ExternalReferenceLink> toResource(ExternalReferenceLink externalRefrenceLink) {
 		Resource<ExternalReferenceLink> resource = new Resource<>(externalRefrenceLink);
 
-		resource.add(entityLinks.linkToSingleResource(ExternalReferenceLink.class, externalRefrenceLink.getId())
-				.withSelfRel());
+		resource.add(ControllerLinkBuilder.linkTo(
+				ControllerLinkBuilder.methodOn(SampleExternalReferenceLinksRestController.class)
+					.getExternalReferenceLinkJson(externalRefrenceLink.getSample(), externalRefrenceLink.getId())).withSelfRel());
+		
 		resource.add(entityLinks.linkToSingleResource(Sample.class, externalRefrenceLink.getSample())
 				.withRel("sample"));
 		resource.add(entityLinks.linkToSingleResource(ExternalReference.class, externalRefrenceLink.getUrlHash())

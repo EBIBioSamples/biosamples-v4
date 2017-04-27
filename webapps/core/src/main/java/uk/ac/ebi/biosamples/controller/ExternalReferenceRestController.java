@@ -60,7 +60,8 @@ public class ExternalReferenceRestController {
 			Pageable page,
 			PagedResourcesAssembler<ExternalReference> pageAssembler) {
     	Page<ExternalReference> pageExternalReference = externalReferenceService.getPage(page);
-		PagedResources<Resource<ExternalReference>> pagedResources = pageAssembler.toResource(pageExternalReference, externalReferenceResourceAssembler,
+		PagedResources<Resource<ExternalReference>> pagedResources = pageAssembler.toResource(pageExternalReference, 
+				externalReferenceResourceAssembler,
 				entityLinks.linkToCollectionResource(ExternalReference.class));
 		
 		return ResponseEntity.ok()
@@ -68,43 +69,43 @@ public class ExternalReferenceRestController {
     }
 	
     @CrossOrigin(methods = RequestMethod.GET)
-	@GetMapping(value="/{id}", produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
-	public ResponseEntity<Resource<ExternalReference>> getExternalReferenceHal(@PathVariable String id) {
-    	ExternalReference externalReference = externalReferenceService.getExternalReference(id);
+	@GetMapping(value="/{urlhash}", produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
+	public ResponseEntity<Resource<ExternalReference>> getExternalReferenceHal(@PathVariable String urlhash) {
+    	ExternalReference externalReference = externalReferenceService.getExternalReference(urlhash);
     	if (externalReference == null) {
     		return ResponseEntity.notFound().build();
     	}
     	Resource<ExternalReference> resource = externalReferenceResourceAssembler.toResource(externalReference);
-    	//TODO add link to samples that use this link
 		return ResponseEntity.ok()
 				.body(resource);
     }
 
 	
     @CrossOrigin(methods = RequestMethod.GET)
-	@GetMapping(value="/{id}/samples", produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
-	public ResponseEntity<PagedResources<Resource<Sample>>> getExternalReferenceSamplesHal(@PathVariable String id,
+	@GetMapping(value="/{urlhash}/samples", produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
+	public ResponseEntity<PagedResources<Resource<Sample>>> getExternalReferenceSamplesHal(@PathVariable String urlhash,
 			Pageable pageable,
 			PagedResourcesAssembler<Sample> pageAssembler) {
 
     	//get the response as if we'd called the externalReference endpoint
-    	ResponseEntity<Resource<ExternalReference>> externalReferenceResponse = getExternalReferenceHal(id);
+    	ResponseEntity<Resource<ExternalReference>> externalReferenceResponse = getExternalReferenceHal(urlhash);
     	if (!externalReferenceResponse.getStatusCode().is2xxSuccessful()) {
     		//propagate any non-2xx status code from /{id}/ to this endpoint
     		return ResponseEntity.status(externalReferenceResponse.getStatusCode()).build();
     	}
 
     	//get the content from the services
-    	Page<Sample> pageSample = sampleService.getSamplesOfExternalReference(id, pageable);    	
+    	Page<Sample> pageSample = sampleService.getSamplesOfExternalReference(urlhash, pageable);    	
     	
     	//use the resource assembler and a link to this method to build out the response content
 		PagedResources<Resource<Sample>> pagedResources = pageAssembler.toResource(pageSample, sampleResourceAssembler,
-				ControllerLinkBuilder.linkTo(ControllerLinkBuilder
-						.methodOn(ExternalReferenceRestController.class).getExternalReferenceSamplesHal(id, pageable, pageAssembler))
-						.withRel("samples"));
+			ControllerLinkBuilder.linkTo(ControllerLinkBuilder.methodOn(ExternalReferenceRestController.class)
+					.getExternalReferenceSamplesHal(urlhash, pageable, pageAssembler))
+				.withRel("samples"));
 		
 		return ResponseEntity.ok()
 				.body(pagedResources);
     	
     }
+    
 }
