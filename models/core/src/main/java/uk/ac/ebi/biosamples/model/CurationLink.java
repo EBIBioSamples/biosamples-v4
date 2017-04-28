@@ -2,15 +2,33 @@ package uk.ac.ebi.biosamples.model;
 
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.hash.Hashing;
+
 public class CurationLink implements Comparable<CurationLink> {
 
 	private final Curation curation;
 	private final String sample;
+	private final String hash;
 	
 	
-	private CurationLink(String sample, Curation curation) {
+	private CurationLink(String sample, Curation curation, String hash) {
 		this.sample = sample;
 		this.curation = curation;
+		this.hash = hash;
+	}
+	
+	public String getSample() {
+		return sample;
+	}
+	
+	public Curation getCuration() {
+		return curation;
+	}
+	
+	public String getHash() {
+		return hash;
 	}
 
 	
@@ -56,8 +74,15 @@ public class CurationLink implements Comparable<CurationLink> {
     	return sb.toString();
     }
 
-	
-	public static CurationLink build(Curation curation, String sample) {
-		return new CurationLink(sample,curation);
+    //Used for deserializtion (JSON -> Java)
+    @JsonCreator
+	public static CurationLink build(@JsonProperty("curation") Curation curation, @JsonProperty("sample") String sample) {
+
+    	String hash = Hashing.sha256().newHasher()
+			.putUnencodedChars(curation.getHash())
+			.putUnencodedChars(sample)
+			.hash().toString();
+    	
+		return new CurationLink(sample,curation,hash);
 	}
 }

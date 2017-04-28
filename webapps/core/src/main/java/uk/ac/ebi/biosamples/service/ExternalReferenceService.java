@@ -45,7 +45,7 @@ public class ExternalReferenceService {
 	public Page<ExternalReferenceLink> getExternalReferenceLinksForSample(String accession, Pageable pageable) {
 		Page<NeoExternalReferenceLink> pageNeoExternalReferenceLink = neoExternalReferenceLinkRepository.findBySampleAccession(accession, pageable);		
 		//get them in greater depth
-		pageNeoExternalReferenceLink.map(nxr -> neoExternalReferenceLinkRepository.findOne(nxr.getHash(), 2));		
+		pageNeoExternalReferenceLink = pageNeoExternalReferenceLink.map(nxr -> neoExternalReferenceLinkRepository.findOneByHash(nxr.getHash(), 2));		
 		//convert them into a state to return
 		Page<ExternalReferenceLink> pageExternalReference = pageNeoExternalReferenceLink.map(neoExternalReferenceLinkToExternalReferenceLinkConverter);		
 		return pageExternalReference;

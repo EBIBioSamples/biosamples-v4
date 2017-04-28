@@ -131,7 +131,7 @@ public class SampleRestController {
 	}
 
 	@PutMapping(value = "/{accession}", consumes = { MediaType.APPLICATION_JSON_VALUE })
-	public ResponseEntity<Resource<Sample>> putJsonXml(@PathVariable String accession, @RequestBody Sample sample) {
+	public ResponseEntity<Resource<Sample>> put(@PathVariable String accession, @RequestBody Sample sample) {
 		if (!sample.getAccession().equals(accession)) {
 			// if the accession in the body is different to the accession in the
 			// url, throw an error
@@ -153,7 +153,7 @@ public class SampleRestController {
 	}
 
 	@PostMapping(consumes = { MediaType.APPLICATION_JSON_VALUE })
-	public ResponseEntity<Resource<Sample>> postJsonXml(@RequestBody Sample sample) {
+	public ResponseEntity<Resource<Sample>> post(@RequestBody Sample sample) {
 		log.info("Recieved POST");
 		sample = sampleService.store(sample);
 		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);

@@ -48,6 +48,10 @@ public class NeoCurationLink implements Comparable<NeoCurationLink> {
 	public NeoSample getSample() {
 		return sample;
 	}
+	
+	public String getHash() {
+		return hash;
+	}
 
 	@Override
     public boolean equals(Object o) {
@@ -125,7 +129,7 @@ public class NeoCurationLink implements Comparable<NeoCurationLink> {
 		newRelationship.sample = sample;
 		
 
-    	String hash = Hashing.sha256().newHasher()
+		newRelationship.hash = Hashing.sha256().newHasher()
 			.putUnencodedChars(curation.getHash())
 			.putUnencodedChars(sample.getAccession())
 			.hash().toString();

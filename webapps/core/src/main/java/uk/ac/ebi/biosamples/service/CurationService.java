@@ -6,9 +6,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import uk.ac.ebi.biosamples.model.Curation;
+import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.ExternalReference;
+import uk.ac.ebi.biosamples.model.ExternalReferenceLink;
 import uk.ac.ebi.biosamples.neo.model.NeoCuration;
+import uk.ac.ebi.biosamples.neo.model.NeoCurationLink;
 import uk.ac.ebi.biosamples.neo.model.NeoExternalReference;
+import uk.ac.ebi.biosamples.neo.model.NeoExternalReferenceLink;
 import uk.ac.ebi.biosamples.neo.repo.NeoCurationLinkRepository;
 import uk.ac.ebi.biosamples.neo.repo.NeoCurationRepository;
 import uk.ac.ebi.biosamples.neo.repo.NeoExternalReferenceLinkRepository;
@@ -44,6 +48,21 @@ public class CurationService {
 		} else {
 			return neoCurationToCurationConverter.convert(neoCuration);
 		}
+	}
+
+	public Page<CurationLink> getCurationLinksForSample(String accession, Pageable pageable) {
+		Page<NeoCurationLink> pageNeoCurationLink = neoCurationLinkRepository.findBySampleAccession(accession, pageable);		
+		//get them in greater depth
+		pageNeoCurationLink = pageNeoCurationLink.map(nxr -> neoCurationLinkRepository.findOneByHash(nxr.getHash(), 2));		
+		//convert them into a state to return
+		Page<CurationLink> pageCuration = pageNeoCurationLink.map(neoCurationLinkToCurationLinkConverter);		
+		return pageCuration;
+	}
+
+	public CurationLink getCurationLink(String hash) {
+		NeoCurationLink neo = neoCurationLinkRepository.findOneByHash(hash, 1);
+		CurationLink link = neoCurationLinkToCurationLinkConverter.convert(neo);
+		return link;
 	}
 
 }
