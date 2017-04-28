@@ -119,10 +119,11 @@ public class Accession implements ApplicationRunner{
 			LocalDateTime update = LocalDateTime.ofInstant(Instant.ofEpochMilli(dateAssigned.getTime()), ZoneId.systemDefault());
 
 			SortedSet<Attribute> attributes = new TreeSet<>();
-			attributes.add(Attribute.build("other", "migrated from accession database at "+LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)));
-			attributes.add(Attribute.build("user accession", userAccession));
-			attributes.add(Attribute.build("submission accession", submissionAccession));
-			attributes.add(Attribute.build("deleted", Boolean.toString(deleted)));
+			//commented out, this makes loading into neo4j slow
+			//attributes.add(Attribute.build("other", "migrated from accession database at "+LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)));
+			//attributes.add(Attribute.build("user accession", userAccession));
+			//attributes.add(Attribute.build("submission accession", submissionAccession));
+			//attributes.add(Attribute.build("deleted", Boolean.toString(deleted)));
 			
 			Sample sample = Sample.build(name, accession, release, update, attributes, null, null);
 			bioSamplesClient.persist(sample);
