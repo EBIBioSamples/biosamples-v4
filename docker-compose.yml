@@ -25,8 +25,8 @@ services:
     - webapps-core-4.0.0-SNAPSHOT.war
     environment:
     - spring.data.solr.host=http://solr:8983/solr
-    #- spring.data.neo4j.uri=bolt://neo4j:7687
-    - spring.data.neo4j.uri=http://neo4j:7474
+    - spring.data.neo4j.uri=bolt://neo4j:7687
+    #- spring.data.neo4j.uri=http://neo4j:7474
     - spring.data.neo4j.username=neo4j
     - spring.data.neo4j.indexes.auto=assert
     - spring.data.mongodb.host=mongo
@@ -136,8 +136,8 @@ services:
     - spring.rabbitmq.host=rabbitmq
     - spring.rabbitmq.listener.concurrency=25
     - spring.rabbitmq.listener.max-concurrency=25
-    #- spring.data.neo4j.uri=bolt://neo4j:7687
-    - spring.data.neo4j.uri=http://neo4j:7474
+    - spring.data.neo4j.uri=bolt://neo4j:7687
+    #- spring.data.neo4j.uri=http://neo4j:7474
     - spring.data.neo4j.username=neo4j
     - spring.data.neo4j.indexes.auto=validate
     - indexes.auto=validate
@@ -277,7 +277,7 @@ services:
     
   neo4j:
     #we can use enterprise under AGPLv3 because we are open source
-    image: neo4j:3.1-enterprise
+    image: neo4j:3.1.2-enterprise
     environment:
     - NEO4J_AUTH=none
     - NEO4J_dbms_memory_pagecache_size=4G
