@@ -93,7 +93,7 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor implements Au
 		private final int pollInterval;
 		private final Map<Integer, Double> threadsScores = new HashMap<>();
 		private final Map<Integer, Long> threadsTime = new HashMap<>();
-		private final double margin = 1.1;
+		private final double margin = 1.0;
 		private final int maxThreads;
 
 		public PoolMonitor(AdaptiveThreadPoolExecutor pool, int pollInterval, int maxThreads) {
@@ -126,9 +126,10 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor implements Au
 				int doneJobs = pool.completedJobs.getAndSet(0);
 				
 				//number of jobs per sec per thread
-				double score = (((double)doneJobs)*1000000000.0d)/(interval*currentThreads);
+				//double score = (((double)doneJobs)*1000000000.0d)/(interval*currentThreads);
+				double score = (((double)doneJobs)*1000000000.0d)/(interval);
 				
-				log.trace("Completed "+doneJobs+" in "+interval+"ns using "+currentThreads+" threads : score = "+score);
+				log.info("Completed "+doneJobs+" in "+interval+"ns using "+currentThreads+" threads : score = "+score);
 				
 								
 				//store the result of this score
@@ -159,7 +160,7 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor implements Au
 						bestThreads = testThreads;
 					}
 				}
-				log.trace("Best scoring number of threads is "+bestThreads+" with "+bestScore);
+				log.info("Best scoring number of threads is "+bestThreads+" with "+bestScore);
 								
 				//if we are more than margin below the best, change to the best
 				if (bestThreads != currentThreads && margin*score < bestScore) {	
