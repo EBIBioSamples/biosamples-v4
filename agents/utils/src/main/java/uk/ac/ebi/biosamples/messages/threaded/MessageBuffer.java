@@ -54,9 +54,17 @@ public abstract class MessageBuffer<S, T extends CrudRepository<S,?>> {
 		long now = Instant.now().toEpochMilli();
 		long latestTimeLong = latestTime.get();
 		log.trace(""+remaining+" queue spaces and now "+now+" vs "+latestTimeLong);
-		if (remaining <= 0.1*QUEUE_SIZE
+		if (remaining <= 0.01*QUEUE_SIZE
 				|| (now > latestTimeLong && latestTimeLong != 0)) {
 
+			if (remaining <= 0.01*QUEUE_SIZE) {
+				log.info("Committing queue because full");
+			}
+			if (now > latestTimeLong && latestTimeLong != 0) {
+				log.info("Committing queue because old");
+			}
+			
+			
 			//create a local collection of the messages
 			List<MessageSampleStatus<S>> messageSampleStatuses = new ArrayList<>(QUEUE_SIZE);
 			
