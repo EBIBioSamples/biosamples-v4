@@ -32,7 +32,7 @@ public class NeoMessageBuffer extends MessageBuffer<NeoSample, NeoSampleReposito
 				return;
 			} catch (ConcurrencyFailureException e) {
 				retryCount += 1 ;
-				log.info("Retrying due to transient exception. Attempt number "+retryCount);
+				log.warn("Retrying due to transient exception. Attempt number "+retryCount);
 				try {
 					Thread.sleep(random.nextInt(400)+100);
 				} catch (InterruptedException e1) {
@@ -40,7 +40,7 @@ public class NeoMessageBuffer extends MessageBuffer<NeoSample, NeoSampleReposito
 				}
 			}
 		}
-		log.warn("Unable to save within "+retryCount+" retries");
+		throw new RuntimeException("Unable to save within "+retryCount+" retries");
 	}
 
 }
