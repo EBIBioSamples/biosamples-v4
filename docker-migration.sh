@@ -7,7 +7,7 @@ source docker-env.sh
 
 #start up the agents
 docker-compose up -d biosamples-agents-solr biosamples-agents-neo4j biosamples-agents-curation
-#docker-compose scale biosamples-agents-solr=5 biosamples-agents-neo4j=5
+#docker-compose scale biosamples-agents-solr=1 biosamples-agents-neo4j=5
 
 #pre-assign existing biosample accessions FIRST
 ARGS=

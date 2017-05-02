@@ -47,6 +47,8 @@ services:
     - spring.http.encoding.enabled=true
     # Force the encoding to the configured charset on HTTP requests and responses.
     - spring.http.encoding.force=true
+    - endpoints.shutdown.enabled=true
+    - endpoints.shutdown.sensitive=false
     
     
     ports:
@@ -83,6 +85,8 @@ services:
     - spring.http.encoding.enabled=true
     # Force the encoding to the configured charset on HTTP requests and responses.
     - spring.http.encoding.force=true
+    - endpoints.shutdown.enabled=true
+    - endpoints.shutdown.sensitive=false
     ports:
     - 8082:8080
     logging:
@@ -110,6 +114,8 @@ services:
     - server.context-path=/biosamples/beta/xml
     - logging.file=/logs/webapps-legacyxml.log
     - -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000  
+    - endpoints.shutdown.enabled=true
+    - endpoints.shutdown.sensitive=false
     ports:
     - 8083:8080
     - 8000:8000
@@ -134,8 +140,8 @@ services:
     environment:
     - spring.rabbitmq.publisher-confirms=true
     - spring.rabbitmq.host=rabbitmq
-    - spring.rabbitmq.listener.concurrency=25
-    - spring.rabbitmq.listener.max-concurrency=25
+    - spring.rabbitmq.listener.concurrency=1000
+    - spring.rabbitmq.listener.max-concurrency=1000
     - spring.data.neo4j.uri=bolt://neo4j:7687
     #- spring.data.neo4j.uri=http://neo4j:7474
     - spring.data.neo4j.username=neo4j
@@ -164,8 +170,8 @@ services:
     - agents-solr-4.0.0-SNAPSHOT.jar
     environment:
     - spring.rabbitmq.publisher-confirms=true
-    - spring.rabbitmq.listener.concurrency=250
-    - spring.rabbitmq.listener.max-concurrency=250
+    - spring.rabbitmq.listener.concurrency=1000
+    - spring.rabbitmq.listener.max-concurrency=1000
     - spring.data.solr.host=http://solr:8983/solr
     - spring.rabbitmq.host=rabbitmq
     - biosamples.agent.solr.stayalive=true
