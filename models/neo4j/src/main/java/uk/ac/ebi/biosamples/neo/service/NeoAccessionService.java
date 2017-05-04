@@ -15,19 +15,29 @@ import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.neo.NeoProperties;
 import uk.ac.ebi.biosamples.neo.repo.NeoSampleRepository;
 
-@Service
+/**
+ * Do not declare an explicit bean, rely on users to create bean in config
+ * 
+ * 
+ * @author faulcon
+ *
+ */
 public class NeoAccessionService {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 
-	@Autowired
 	private NeoSampleRepository neoSampleRepository;
+	
+	private NeoProperties neoProperties;
 
 	private BlockingQueue<String> accessionCandidateQueue;;
 	private long accessionCandidateCounter;
 	
-	@Autowired
-	private NeoProperties neoProperties;
+	
+	public NeoAccessionService(NeoSampleRepository neoSampleRepository, NeoProperties neoProperties) {
+		this.neoSampleRepository = neoSampleRepository;
+		this.neoProperties = neoProperties;
+	}
 
 	@PostConstruct
 	public void doSetup() {

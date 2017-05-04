@@ -14,6 +14,9 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.servlet.handler.MappedInterceptor;
 
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.neo.NeoProperties;
+import uk.ac.ebi.biosamples.neo.repo.NeoSampleRepository;
+import uk.ac.ebi.biosamples.neo.service.NeoAccessionService;
 import uk.ac.ebi.biosamples.xml.XmlSampleHttpMessageConverter;
 
 @SpringBootApplication
@@ -47,6 +50,13 @@ public class Application extends SpringBootServletInitializer {
     public RepositoryDetectionStrategy repositoryDetectionStrategy() {
     	return RepositoryDetectionStrategy.RepositoryDetectionStrategies.ANNOTATED;
     }
+    
+    @Bean
+    public NeoAccessionService neoAccessionService(NeoSampleRepository neoSampleRepository, NeoProperties neoProperties) {
+    	return new NeoAccessionService(neoSampleRepository, neoProperties);
+    }
+    
+    
     
     /*
     @Bean
