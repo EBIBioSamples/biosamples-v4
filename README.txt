@@ -10,25 +10,16 @@ Install docker-compose https://docs.docker.com/compose/
 
 `docker-compose up biosamples-webapps-api`
 
+Note: this will download around 1GB of docker containers
+
 public interface at http://localhost:8081/
 
 internal RabbitMQ interface at http://localhost:15672/
 internal Neo4J interface at http://localhost:7474/
 internal Solr interface at http://localhost:8983/
 
-
-Note: this will download around 1GB of docker containers
-
-
-curl -X PUT -H "Content-Type: application/json" --data @models/core/src/test/resources/TEST1.json "http://localhost:8081/samples/TEST1" \
-  && curl -X PUT -H "Content-Type: application/json" --data @models/core/src/test/resources/TEST2.json "http://localhost:8081/samples/TEST2"
-  
-curl -X POST -H "Content-Type: application/json" --data @models/core/src/test/resources/unaccessioned.json "http://localhost:8081/samples"
-
-curl -X GET -H "Content-Type: application/json" "http://localhost:8081/samples/TEST1"
-
-Getting started
-===============
+Development getting started
+===========================
 
 To checkout and compile the code, you will need Git, Maven, and a JDK 8. On ubuntu-based Linux distributions (16.04 or higher) you can do this with:
 
