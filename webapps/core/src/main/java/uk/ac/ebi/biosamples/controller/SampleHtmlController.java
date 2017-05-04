@@ -191,7 +191,7 @@ public class SampleHtmlController {
 
 		// check if the release date is in the future and if so return it as
 		// private
-		if (sample != null && LocalDateTime.now().isBefore(sample.getRelease())) {
+		if (sample != null && (sample.getRelease() == null || LocalDateTime.now().isBefore(sample.getRelease()))) {
 			response.setStatus(HttpStatus.FORBIDDEN.value());
 			return "error/403";
 		}
