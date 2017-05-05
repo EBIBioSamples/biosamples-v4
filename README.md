@@ -8,15 +8,17 @@ Install docker-compose https://docs.docker.com/compose/
 
 `docker-compose build`
 
-`docker-compose up biosamples-webapps-api`
+`docker-compose up biosamples-webapps-core`
 
 Note: this will download around 1GB of docker containers
 
-public interface at http://localhost:8081/
+public interface at http://localhost:8081/biosamples/beta
 
 internal RabbitMQ interface at http://localhost:15672/
 internal Neo4J interface at http://localhost:7474/
 internal Solr interface at http://localhost:8983/
+
+An example of the JSON format that can be sent by POST to http://localhost:8081/biosamples/beta/samples is https://github.com/EBIBioSamples/biosamples-v4/blob/master/models/core/src/test/resources/TEST1.json
 
 Development getting started
 ===========================
@@ -54,7 +56,7 @@ Download the XML dump (~400Mb) to the current directory:
 
 Run the pipeline to send the data to the submission API via REST
 
-`java -jar pipelines/target/pipelines-4.0.0-SNAPSHOT.jar --ncbi`
+`java -jar pipelines/ncbi/target/pipelines-ncbi-4.0.0-SNAPSHOT.jar --ncbi`
 
 
 Developing
@@ -104,8 +106,8 @@ Note that you can bring maven and docker together into a single commandline like
 `mvn -T 2C package && docker-compose build && docker-compose run --service-ports biosamples-pipelines`
 
 Beware, Docker tar's and copies all the files on the filesystem from the location of docker-compose 
-down. If you have data files there (e.g. downloads from ncbi, docker volumes) then that process can
-take so long as to make using Docker impractical.
+down. If you have data files there (e.g. downloads from ncbi, docker volumes, logs) then that process can
+take so long that it makes using Docker impractical.
  
 As docker-compose creates new volumes each time, you may fill the disk docker is working on. 
 To delete all docker volumes use:
