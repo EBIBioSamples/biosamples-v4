@@ -167,8 +167,6 @@ services:
     - biosamples.agent.curation.stayalive=true
     - logging.file=/logs/agents-curation.log
     
-    
-    
   mongo:
     image: mongo:3.2
     volumes:
