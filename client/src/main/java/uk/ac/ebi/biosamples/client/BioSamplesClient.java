@@ -47,8 +47,8 @@ public class BioSamplesClient {
 		Traverson traverson = new Traverson(clientProperties.getBiosamplesClientUri(), MediaTypes.HAL_JSON);
 		//traverson.setRestOperations(restOperations);
 		
-		sampleRetrievalService = new SampleRetrievalService(clientProperties, restOperations, threadPoolExecutor);
-		sampleSubmissionService = new SampleSubmissionService(clientProperties, restOperations, threadPoolExecutor);
+		sampleRetrievalService = new SampleRetrievalService(restOperations, traverson, threadPoolExecutor);
+		sampleSubmissionService = new SampleSubmissionService(restOperations, traverson, threadPoolExecutor);
 		externalReferenceSubmissionService = new ExternalReferenceSubmissionService(restOperations, traverson, threadPoolExecutor);
 	}
 

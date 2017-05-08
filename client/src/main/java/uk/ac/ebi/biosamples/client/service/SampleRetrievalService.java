@@ -17,6 +17,8 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.client.Hop;
+import org.springframework.hateoas.client.Traverson;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
@@ -34,18 +36,14 @@ public class SampleRetrievalService {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 
-	private final ClientProperties clientProperties;
-
-	// use RestOperations as the interface implemented by RestTemplate
-	// easier to mock for testing
+	private final Traverson traverson;
+	private final ExecutorService executor;
 	private final RestOperations restOperations;
 
-	private final ExecutorService executor;
-
-	public SampleRetrievalService(ClientProperties clientProperties, RestOperations restOperations,
+	public SampleRetrievalService(RestOperations restOperations, Traverson traverson,
 			ExecutorService executor) {
-		this.clientProperties = clientProperties;
 		this.restOperations = restOperations;
+		this.traverson = traverson;
 		this.executor = executor;
 	}
 
@@ -60,8 +58,8 @@ public class SampleRetrievalService {
 	}
 
 	@Deprecated
-	public PagedResources<Resource<Sample>> fetchPaginated(String text, int page, int size) {
-		URI uri = UriComponentsBuilder.fromUri(clientProperties.getBiosamplesClientUri()).pathSegment("samples")
+	public PagedResources<Resource<Sample>> fetchPaginated(String text, int page, int size) {		
+		URI uri = UriComponentsBuilder.fromUriString(traverson.follow("samples").asLink().getHref())
 				.queryParam("text", !text.isEmpty() ? text : "*:*").queryParam("page", page).queryParam("size", size)
 				.build().toUri();
 
@@ -88,9 +86,10 @@ public class SampleRetrievalService {
 		@Override
 		public Optional<Resource<Sample>> call() throws Exception {
 
-			URI uri = UriComponentsBuilder.fromUri(clientProperties.getBiosamplesClientUri())
-					.pathSegment("samples", accession).build().toUri();
-
+			URI uri = URI.create(traverson.follow("samples")
+					.follow(Hop.rel("sample").withParameter("accession", accession))
+					.asLink().getHref());
+			
 			log.info("GETing " + uri);
 
 			RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
