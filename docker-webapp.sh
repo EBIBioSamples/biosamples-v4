@@ -18,9 +18,10 @@ docker volume ls -q | grep rabbitmq_data | xargs docker volume rm
 #remove any images, in case of out-of-date or corrupt images
 #docker images -q | xargs -r docker rmi
 
+
 set -e
 
-#rm docker/logs/*.log docker/logs/*.log.* docker/logs/neo4j/*.log
+#rm -rf docker/logs/*.log docker/logs/*.log.* docker/logs/neo4j/*.log
 
 #make sure we have up-to-date jar files in the docker image
 docker-compose build
@@ -37,9 +38,7 @@ echo "checking neo4j is up"
 
 docker-compose up -d biosamples-webapps-core biosamples-webapps-sampletab biosamples-webapps-legacyxml
 echo "checking webapps-core is up"
-#would like to check on /health but currently it is bugged so solr is always down
-./http-status-check -u http://localhost:8081/biosamples/beta/actuator -t 45
-./http-status-check -u http://localhost:8081/biosamples/beta/samples -t 30
+./http-status-check -u http://localhost:8081/biosamples/beta/health -t 45
 echo "checking webapps-sampletab is up"
 ./http-status-check -u http://localhost:8082/biosamples/beta/sampletab/health -t 30
 echo "checking webapps-legacyxml is up"
