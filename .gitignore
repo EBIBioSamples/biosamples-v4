@@ -4,6 +4,8 @@ application.properties
 ncbi.xml.gz
 /run_env.sh
 
+docker-compose.override.yml
+
 bin/
 target/
 

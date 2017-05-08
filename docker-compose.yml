@@ -14,13 +14,6 @@ services:
     - ./docker/logs:/logs
     command:
     - java
-    - -Dcom.sun.management.jmxremote.rmi.port=9090
-    - -Dcom.sun.management.jmxremote=true
-    - -Dcom.sun.management.jmxremote.port=9090
-    - -Dcom.sun.management.jmxremote.ssl=false
-    - -Dcom.sun.management.jmxremote.authenticate=false
-    - -Dcom.sun.management.jmxremote.local.only=false
-    - -Djava.rmi.server.hostname=172.22.69.244
     - -jar
     - webapps-core-4.0.0-SNAPSHOT.war
     environment:
@@ -49,15 +42,9 @@ services:
     - spring.http.encoding.force=true
     - endpoints.shutdown.enabled=true
     - endpoints.shutdown.sensitive=false
-    
-    
     ports:
     - 8081:8080
     - 9090:9090
-    logging:
-      driver: gelf
-      options:
-        gelf-address: "udp://localhost:12201"
     
   biosamples-webapps-sampletab:
     image: biosamples:latest
@@ -89,10 +76,6 @@ services:
     - endpoints.shutdown.sensitive=false
     ports:
     - 8082:8080
-    logging:
-      driver: gelf
-      options:
-        gelf-address: "udp://localhost:12201"
 
   
   biosamples-webapps-legacyxml:
@@ -104,7 +87,6 @@ services:
     - ./docker/logs:/logs
     command:
     - java
-    - -agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=n
     - -jar
     - webapps-legacyxml-4.0.0-SNAPSHOT.war
     environment:
@@ -113,16 +95,11 @@ services:
     - server.servlet.context-path=/biosamples/beta/xml
     - server.context-path=/biosamples/beta/xml
     - logging.file=/logs/webapps-legacyxml.log
-    - -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000  
     - endpoints.shutdown.enabled=true
     - endpoints.shutdown.sensitive=false
     ports:
     - 8083:8080
     - 8000:8000
-    logging:
-      driver: gelf
-      options:
-        gelf-address: "udp://localhost:12201"
 
     
   biosamples-agents-neo4j:
@@ -151,10 +128,6 @@ services:
     - logging.file=/logs/agents-neo4j.log
     - logging.level=debug
     - logging.level.org.springframework.data.neo4j=debug
-    logging:
-      driver: gelf
-      options:
-        gelf-address: "udp://localhost:12201"
     
   biosamples-agents-solr:
     image: biosamples:latest
@@ -176,10 +149,6 @@ services:
     - spring.rabbitmq.host=rabbitmq
     - biosamples.agent.solr.stayalive=true
     - logging.file=/logs/agents-solr.log
-    logging:
-      driver: gelf
-      options:
-        gelf-address: "udp://localhost:12201"
     
   biosamples-agents-curation:
     image: biosamples:latest
@@ -197,74 +166,8 @@ services:
     - spring.rabbitmq.host=rabbitmq
     - biosamples.agent.curation.stayalive=true
     - logging.file=/logs/agents-curation.log
-    logging:
-      driver: gelf
-      options:
-        gelf-address: "udp://localhost:12201"
     
     
-  biosamples-pipelines-ena:
-    image: biosamples:latest
-    links:
-    - biosamples-webapps-core
-    - logstash
-    volumes:
-    - ./docker/logs:/logs
-    command:
-    - java
-    - -jar
-    - pipelines-ena-4.0.0-SNAPSHOT.jar
-    environment:
-    - spring.datasource.erapro.url=jdbc:oracle:thin:@ora-vm-009.ebi.ac.uk:1541:ERAPRO
-    - spring.datasource.erapro.username=era_reader
-    - spring.datasource.erapro.password=reader
-    - spring.datasource.erapro.driver-class-name=oracle.jdbc.driver.OracleDriver
-    - logging.file=/logs/pipelines-ena.log
-    logging:
-      driver: gelf
-      options:
-        gelf-address: "udp://localhost:12201"
-    
-  biosamples-pipelines-ncbi:
-    image: biosamples:latest
-    links:
-    - biosamples-webapps-core
-    - logstash
-    volumes:
-    - ./docker/logs:/logs
-    command:
-    - java
-    - -jar
-    - pipelines-ncbi-4.0.0-SNAPSHOT.jar
-    environment:
-    - spring.cache.guava.spec=maximumSize=500,expireAfterAccess=60s,recordStats=true
-    - logging.file=/logs/pipelines-ena.log
-    logging:
-      driver: gelf
-      options:
-        gelf-address: "udp://localhost:12201"
-    
-  biosamples-pipelines-accession:
-    image: biosamples:latest
-    links:
-    - biosamples-webapps-core
-    - logstash
-    volumes:
-    - ./docker/logs:/logs
-    command:
-    - java
-    - -jar
-    - pipelines-accession-4.0.0-SNAPSHOT.jar
-    environment:
-    - spring.datasource.accession.url=jdbc:oracle:thin:@ora-vm-063.ebi.ac.uk:1541:biosddev
-    - spring.datasource.accession.username=bsd_acc
-    - spring.datasource.accession.password=b5d4ccpr0
-    - spring.datasource.accession.driver-class-name=oracle.jdbc.driver.OracleDriver
-    - logging.file=/logs/pipelines-ena.log
-    logging:
-      driver: gelf
-      options:
-        gelf-address: "udp://localhost:12201"
     
   mongo:
     image: mongo:3.2
@@ -303,49 +206,12 @@ services:
     - solr_samples_data:/opt/solr/server/solr/mycores
     environment:
     - VERBOSE=yes
-    - SOLR_HEAP=16g
+    - SOLR_HEAP=8g
     entrypoint:
     - docker-entrypoint.sh
     - solr-precreate
     - samples
     
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:5.3.0
-    ports:
-    - 9200:9200
-    volumes:
-    - elasticsearch_logs_data:/usr/share/elasticsearch/data
-    environment:
-    - xpack.security.enabled=false
-    - network.host=_eth0_
-    
-  logstash:
-    #build: docker/logstash/
-    image: docker.elastic.co/logstash/logstash:5.3.0
-    volumes:
-    - ./docker/logstash/pipeline:/usr/share/logstash/pipeline
-    - ./docker/logs:/logs
-    ports:
-    - 9600:9600
-    #need to explicitly say we'll be recieving udp packets here
-    - 12201:12201/udp
-    links:
-    - elasticsearch
-    
-  kibana:
-    image: docker.elastic.co/kibana/kibana:5.3.0
-    ports:
-    - 5601:5601
-    links:
-    - elasticsearch
-    environment:
-    - XPACK_SECURITY_ENABLED=false
-    
-networks:
-  default:
-    ipam:
-      config:
-      - subnet: 172.29.0.0/16
 volumes:
   solr_samples_data: null
   mongo_data: null
