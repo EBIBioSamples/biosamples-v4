@@ -26,9 +26,6 @@ set -e
 #make sure we have up-to-date jar files in the docker image
 docker-compose build
 
-
-docker-compose up -d logstash elasticsearch kibana
-
 #start up the webapps (and dependencies)
 docker-compose up -d solr neo4j
 echo "checking solr is up"

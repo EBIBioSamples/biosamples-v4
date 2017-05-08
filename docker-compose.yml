@@ -9,7 +9,6 @@ services:
     - neo4j
     - mongo
     - rabbitmq
-    - logstash
     volumes:
     - ./docker/logs:/logs
     command:
@@ -50,7 +49,6 @@ services:
     image: biosamples:latest
     links:
     - biosamples-webapps-core
-    - logstash
     volumes:
     - ./docker/logs:/logs
     command:
@@ -82,7 +80,6 @@ services:
     image: biosamples:latest
     links:
     - biosamples-webapps-core
-    - logstash
     volumes:
     - ./docker/logs:/logs
     command:
@@ -107,7 +104,6 @@ services:
     links:
     - neo4j
     - rabbitmq
-    - logstash
     volumes:
     - ./docker/logs:/logs
     command:
@@ -134,7 +130,6 @@ services:
     links:
     - solr
     - rabbitmq
-    - logstash
     volumes:
     - ./docker/logs:/logs
     command:
@@ -154,7 +149,6 @@ services:
     image: biosamples:latest
     links:
     - rabbitmq
-    - logstash
     volumes:
     - ./docker/logs:/logs
     command:
