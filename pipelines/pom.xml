@@ -13,8 +13,8 @@
 	</parent>
 
 	<modules>
-		<module>accession</module>
-		<module>ena</module>
+<!-- 		<module>accession</module> -->
+<!-- 		<module>ena</module> -->
 		<module>ncbi</module>
 		<module>utils</module>
 	</modules>
