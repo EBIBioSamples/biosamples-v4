@@ -9,6 +9,7 @@ import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.stereotype.Component;
 
 import uk.ac.ebi.biosamples.messages.threaded.MessageBuffer;
+import uk.ac.ebi.biosamples.messages.threaded.MessageProperties;
 import uk.ac.ebi.biosamples.neo.model.NeoSample;
 import uk.ac.ebi.biosamples.neo.repo.NeoSampleRepository;
 
@@ -18,8 +19,8 @@ public class NeoMessageBuffer extends MessageBuffer<NeoSample, NeoSampleReposito
 
 	private Random random = new Random();
 	
-	public NeoMessageBuffer(NeoSampleRepository repository) {
-		super(repository);
+	public NeoMessageBuffer(NeoSampleRepository repository, MessageProperties messageProperties) {
+		super(repository, messageProperties);
 	}
 
 	@Override

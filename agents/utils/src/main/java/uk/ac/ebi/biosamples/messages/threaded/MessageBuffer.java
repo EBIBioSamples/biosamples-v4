@@ -24,12 +24,14 @@ public abstract class MessageBuffer<S, T extends CrudRepository<S,?>> {
     private final AtomicLong latestTime;
     public final AtomicBoolean hadProblem = new AtomicBoolean(false);
  
-    static final int QUEUE_SIZE = 1000;
+    private final int queueSize;
+    
     static final int MAX_WAIT = 1000;
 	
-	public MessageBuffer(@Autowired T repository) {
+	public MessageBuffer(@Autowired T repository, @Autowired MessageProperties messageProperties) {
 		this.repository = repository;
-		messageSampleStatusQueue = new ArrayBlockingQueue<>(QUEUE_SIZE);
+		this.queueSize = messageProperties.getAgentQueueSize();
+		messageSampleStatusQueue = new ArrayBlockingQueue<>(queueSize);
 		latestTime = new AtomicLong(0);
 	}
 	
@@ -54,10 +56,10 @@ public abstract class MessageBuffer<S, T extends CrudRepository<S,?>> {
 		long now = Instant.now().toEpochMilli();
 		long latestTimeLong = latestTime.get();
 		log.trace(""+remaining+" queue spaces and now "+now+" vs "+latestTimeLong);
-		if (remaining <= 0.01*QUEUE_SIZE
+		if (remaining <= 0.01*queueSize
 				|| (now > latestTimeLong && latestTimeLong != 0)) {
 
-			if (remaining <= 0.01*QUEUE_SIZE) {
+			if (remaining <= 0.01*queueSize) {
 				log.info("Committing queue because full");
 			}
 			if (now > latestTimeLong && latestTimeLong != 0) {
@@ -66,14 +68,14 @@ public abstract class MessageBuffer<S, T extends CrudRepository<S,?>> {
 			
 			
 			//create a local collection of the messages
-			List<MessageSampleStatus<S>> messageSampleStatuses = new ArrayList<>(QUEUE_SIZE);
+			List<MessageSampleStatus<S>> messageSampleStatuses = new ArrayList<>(queueSize);
 			
 			try {
 				//unset the latest time so that it can be set again by the next message
 				latestTime.set(0);
 				
 				//drain the master queue into it
-				messageSampleStatusQueue.drainTo(messageSampleStatuses, QUEUE_SIZE);					
+				messageSampleStatusQueue.drainTo(messageSampleStatuses, queueSize);					
 				//now we can process the local copy without worrying about new ones being added
 				
 				//split out the samples into a separate list
