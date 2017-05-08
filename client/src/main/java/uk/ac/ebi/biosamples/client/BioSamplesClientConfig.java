@@ -17,6 +17,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.client.Traverson;
 import org.springframework.hateoas.hal.Jackson2HalModule;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.ClientHttpRequestFactory;
@@ -31,7 +33,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Configuration
 public class BioSamplesClientConfig {
-
 	
 	//sets resttemplate to use connection pooling
 	@Bean

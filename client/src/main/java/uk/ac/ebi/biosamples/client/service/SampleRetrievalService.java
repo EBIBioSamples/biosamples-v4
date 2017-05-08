@@ -4,6 +4,7 @@ import java.net.URI;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -16,29 +17,32 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import uk.ac.ebi.biosamples.client.ClientProperties;
 import uk.ac.ebi.biosamples.model.Sample;
 
-public class RetrievalService {
-	
+public class SampleRetrievalService {
+
 	private Logger log = LoggerFactory.getLogger(getClass());
-	
+
 	private final ClientProperties clientProperties;
 
-
-	//use RestOperations as the interface implemented by RestTemplate
-	//easier to mock for testing
+	// use RestOperations as the interface implemented by RestTemplate
+	// easier to mock for testing
 	private final RestOperations restOperations;
-	
+
 	private final ExecutorService executor;
-	
-	public RetrievalService(ClientProperties clientProperties, RestOperations restOperations,
+
+	public SampleRetrievalService(ClientProperties clientProperties, RestOperations restOperations,
 			ExecutorService executor) {
 		this.clientProperties = clientProperties;
 		this.restOperations = restOperations;
@@ -51,92 +55,96 @@ public class RetrievalService {
 	 * @param sample
 	 * @return
 	 */
-	public Future<Resource<Sample>> fetch(String accession) {
+	public Future<Optional<Resource<Sample>>> fetch(String accession) {
 		return executor.submit(new FetchCallable(accession));
 	}
 
-    public PagedResources<Resource<Sample>> fetchPaginated(String text, int page, int size) {
-
-		URI uri = UriComponentsBuilder.fromUri(clientProperties.getBiosamplesClientUri())
-				.pathSegment("samples")
-                .queryParam("text", !text.isEmpty() ? text : "*:*")
-				.queryParam("page", page)
-                .queryParam("size", size)
+	@Deprecated
+	public PagedResources<Resource<Sample>> fetchPaginated(String text, int page, int size) {
+		URI uri = UriComponentsBuilder.fromUri(clientProperties.getBiosamplesClientUri()).pathSegment("samples")
+				.queryParam("text", !text.isEmpty() ? text : "*:*").queryParam("page", page).queryParam("size", size)
 				.build().toUri();
 
 		RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaType.APPLICATION_JSON).build();
-		ResponseEntity<PagedResources<Resource<Sample>>> responseEntity = restOperations.exchange(
-				requestEntity,
-				new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() { } );
+		ResponseEntity<PagedResources<Resource<Sample>>> responseEntity = restOperations.exchange(requestEntity,
+				new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {
+				});
 
 		if (!responseEntity.getStatusCode().is2xxSuccessful()) {
 			throw new RuntimeException("Problem GETing samples");
 		}
 
 		return responseEntity.getBody();
-    }
+	}
 
-    private class FetchCallable implements Callable<Resource<Sample>> {
+	private class FetchCallable implements Callable<Optional<Resource<Sample>>> {
 
 		private final String accession;
-		
+
 		public FetchCallable(String accession) {
 			this.accession = accession;
 		}
-		
-		@Override
-		public Resource<Sample> call() throws Exception {
-			
-			URI uri = UriComponentsBuilder.fromUri(clientProperties.getBiosamplesClientUri())
-					.pathSegment("samples",accession)
-					.build().toUri();
-			
-			log.info("GETing "+uri);
-			
-			RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
-			ResponseEntity<Resource<Sample>> responseEntity = restOperations.exchange(requestEntity, 
-		new ParameterizedTypeReference<Resource<Sample>>(){});
-						
-			if (!responseEntity.getStatusCode().is2xxSuccessful()) {
-				log.error("Unable to GET "+accession+" : "+responseEntity.toString());
-				throw new RuntimeException("Problem GETing "+accession);
-			}			
 
-			log.info("GOTted "+uri);
+		@Override
+		public Optional<Resource<Sample>> call() throws Exception {
+
+			URI uri = UriComponentsBuilder.fromUri(clientProperties.getBiosamplesClientUri())
+					.pathSegment("samples", accession).build().toUri();
+
+			log.info("GETing " + uri);
+
+			RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
 			
-			return responseEntity.getBody();
-		}		
+			ResponseEntity<Resource<Sample>> responseEntity = null;
+			try {
+				responseEntity = restOperations.exchange(requestEntity,
+					new ParameterizedTypeReference<Resource<Sample>>() {
+					});
+			} catch (HttpStatusCodeException e) {
+				if (e.getStatusCode().equals(HttpStatus.FORBIDDEN)
+						|| e.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
+					return Optional.empty();
+				}
+			}
+			if (!responseEntity.getStatusCode().is2xxSuccessful()) {
+				log.error("Unable to GET " + accession + " : " + responseEntity.toString());
+				throw new RuntimeException("Problem GETing " + accession);
+			}
+
+			log.info("GOTted " + uri);
+
+			return Optional.of(responseEntity.getBody());
+		}
 	}
-	
-	public Iterable<Resource<Sample>> fetchAll(Iterable<String> accessions) {
+
+	public Iterable<Optional<Resource<Sample>>> fetchAll(Iterable<String> accessions) {
 		return new IterableResourceFetch(accessions);
 	}
-	
-	private class IterableResourceFetch implements Iterable<Resource<Sample>> {
+
+	private class IterableResourceFetch implements Iterable<Optional<Resource<Sample>>> {
 
 		private final Iterable<String> accessions;
-		
+
 		public IterableResourceFetch(Iterable<String> accessions) {
 			this.accessions = accessions;
 		}
 
 		@Override
-		public Iterator<Resource<Sample>> iterator() {
+		public Iterator<Optional<Resource<Sample>>> iterator() {
 			return new IteratorResourceFetch(accessions.iterator());
-		}	
-	
-		private class IteratorResourceFetch implements Iterator<Resource<Sample>> {
+		}
+
+		private class IteratorResourceFetch implements Iterator<Optional<Resource<Sample>>> {
 
 			private final Iterator<String> accessions;
-			private final Queue<Future<Resource<Sample>>> queue = new LinkedList<>();
-			//TODO application property this
+			private final Queue<Future<Optional<Resource<Sample>>>> queue = new LinkedList<>();
+			// TODO application property this
 			private final int queueMaxSize = 1000;
-			
+
 			public IteratorResourceFetch(Iterator<String> accessions) {
 				this.accessions = accessions;
 			}
 
-			
 			@Override
 			public boolean hasNext() {
 				if (this.accessions.hasNext()) {
@@ -148,25 +156,25 @@ public class RetrievalService {
 			}
 
 			@Override
-			public Resource<Sample> next() {
+			public Optional<Resource<Sample>> next() {
 				if (!hasNext()) {
 					throw new NoSuchElementException();
 				}
-				
-				//fill up the queue if possible
+
+				// fill up the queue if possible
 				while (queue.size() < queueMaxSize && accessions.hasNext()) {
-					log.info("Queue size is "+queue.size());
+					log.info("Queue size is " + queue.size());
 					String nextAccession = accessions.next();
 					queue.add(fetch(nextAccession));
 				}
-				
-				//get the end of the queue and wait for it to finish if needed
-				Future<Resource<Sample>> future = queue.poll();
-				//this shouldn't happen, but best to check
+
+				// get the end of the queue and wait for it to finish if needed
+				Future<Optional<Resource<Sample>>> future = queue.poll();
+				// this shouldn't happen, but best to check
 				if (future == null) {
 					throw new NoSuchElementException();
 				}
-				
+
 				try {
 					return future.get();
 				} catch (InterruptedException e) {

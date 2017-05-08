@@ -92,18 +92,22 @@ public class SampleRestController {
 				ControllerLinkBuilder.methodOn(SampleFacetRestController.class)
 					.getFacetsHal(text, filter))
 				.withRel("facet"));
-	
+		pagedResources.add(ControllerLinkBuilder.linkTo(
+				ControllerLinkBuilder.methodOn(SampleRestController.class)
+					.getSampleHal(null))
+				.withRel("sample"));
+		
 		return ResponseEntity.ok(pagedResources);
 	}
         
     @CrossOrigin(methods = RequestMethod.GET)
-	@GetMapping(value = "/{id}", produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE  })
-	public ResponseEntity<Resource<Sample>> getSampleHal(@PathVariable String id) {
+	@GetMapping(value = "/{accession}", produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE  })
+	public ResponseEntity<Resource<Sample>> getSampleHal(@PathVariable String accession) {
 		log.info("starting call");
 		// convert it into the format to return
 		Sample sample = null;
 		try {
-			sample = sampleService.fetch(id);
+			sample = sampleService.fetch(accession);
 		} catch (IllegalArgumentException e) {
 			// did not exist, throw 404
 			return ResponseEntity.notFound().build();

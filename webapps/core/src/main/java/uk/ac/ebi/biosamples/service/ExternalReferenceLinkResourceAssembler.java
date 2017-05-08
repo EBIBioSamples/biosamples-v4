@@ -22,16 +22,16 @@ public class ExternalReferenceLinkResourceAssembler
 	}
 
 	@Override
-	public Resource<ExternalReferenceLink> toResource(ExternalReferenceLink externalRefrenceLink) {
-		Resource<ExternalReferenceLink> resource = new Resource<>(externalRefrenceLink);
+	public Resource<ExternalReferenceLink> toResource(ExternalReferenceLink externalReferenceLink) {
+		Resource<ExternalReferenceLink> resource = new Resource<>(externalReferenceLink);
 
 		resource.add(ControllerLinkBuilder.linkTo(
 				ControllerLinkBuilder.methodOn(SampleExternalReferenceLinksRestController.class)
-					.getExternalReferenceLinkJson(externalRefrenceLink.getSample(), externalRefrenceLink.getId())).withSelfRel());
+					.getExternalReferenceLinkJson(externalReferenceLink.getSample(), externalReferenceLink.getId())).withSelfRel());
 		
-		resource.add(entityLinks.linkToSingleResource(Sample.class, externalRefrenceLink.getSample())
+		resource.add(entityLinks.linkToSingleResource(Sample.class, externalReferenceLink.getSample())
 				.withRel("sample"));
-		resource.add(entityLinks.linkToSingleResource(ExternalReference.class, externalRefrenceLink.getExternalReference().getHash())
+		resource.add(entityLinks.linkToSingleResource(ExternalReference.class, externalReferenceLink.getExternalReference().getHash())
 				.withRel("externalReference"));
 		
 		return resource;

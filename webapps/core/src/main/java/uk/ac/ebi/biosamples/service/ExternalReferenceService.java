@@ -11,6 +11,7 @@ import uk.ac.ebi.biosamples.neo.model.NeoExternalReference;
 import uk.ac.ebi.biosamples.neo.model.NeoExternalReferenceLink;
 import uk.ac.ebi.biosamples.neo.repo.NeoExternalReferenceLinkRepository;
 import uk.ac.ebi.biosamples.neo.repo.NeoExternalReferenceRepository;
+import uk.ac.ebi.biosamples.neo.service.modelconverter.ExternalReferenceLinkToNeoExternalReferenceLinkConverter;
 import uk.ac.ebi.biosamples.neo.service.modelconverter.NeoExternalReferenceLinkToExternalReferenceLinkConverter;
 import uk.ac.ebi.biosamples.neo.service.modelconverter.NeoExternalReferenceToExternalReferenceConverter;
 
@@ -26,6 +27,9 @@ public class ExternalReferenceService {
 	private NeoExternalReferenceToExternalReferenceConverter neoExternalReferenceToExternalReferenceConverter;
 	@Autowired
 	private NeoExternalReferenceLinkToExternalReferenceLinkConverter neoExternalReferenceLinkToExternalReferenceLinkConverter;
+	
+	@Autowired
+	private ExternalReferenceLinkToNeoExternalReferenceLinkConverter externalReferenceLinkToNeoExternalReferenceLinkConverter;
 	
 	public Page<ExternalReference> getPage(Pageable pageable){
 		Page<NeoExternalReference> pageNeoExternalReference = neoExternalReferenceRepository.findAll(pageable,2);
@@ -55,6 +59,12 @@ public class ExternalReferenceService {
 		NeoExternalReferenceLink neo = neoExternalReferenceLinkRepository.findOneByHash(hash, 1);
 		ExternalReferenceLink link = neoExternalReferenceLinkToExternalReferenceLinkConverter.convert(neo);
 		return link;
+	}
+	
+	public ExternalReferenceLink store(ExternalReferenceLink externalReferenceLink) {
+		NeoExternalReferenceLink neo = externalReferenceLinkToNeoExternalReferenceLinkConverter.convert(externalReferenceLink);
+		neo = neoExternalReferenceLinkRepository.save(neo);
+		return neoExternalReferenceLinkToExternalReferenceLinkConverter.convert(neo);
 	}
 
 }

@@ -27,6 +27,7 @@ public class Sample {
 	
 	protected LocalDateTime release; 
 	protected LocalDateTime update;
+	protected LocalDateTime creation;
 
 	protected SortedSet<Attribute> attributes;
 	protected SortedSet<Relationship> relationships;

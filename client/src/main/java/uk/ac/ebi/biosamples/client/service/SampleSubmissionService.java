@@ -11,13 +11,14 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import uk.ac.ebi.biosamples.client.ClientProperties;
 import uk.ac.ebi.biosamples.model.Sample;
 
-public class SubmissionService {
+public class SampleSubmissionService {
 	
 	private Logger log = LoggerFactory.getLogger(getClass());
 	
@@ -29,7 +30,7 @@ public class SubmissionService {
 	
 	private final ExecutorService executor;
 	
-	public SubmissionService(ClientProperties clientProperties, RestOperations restOperations, ExecutorService executor) {
+	public SampleSubmissionService(ClientProperties clientProperties, RestOperations restOperations, ExecutorService executor) {
 		this.clientProperties = clientProperties;
 		this.restOperations = restOperations;
 		this.executor = executor;
@@ -42,7 +43,8 @@ public class SubmissionService {
 	 * @param sample
 	 * @return
 	 */
-	public Resource<Sample> submit(Sample sample) {
+	//TODO make async
+	public Resource<Sample> submit(Sample sample) throws RestClientException{
 		//if the sample has an accession, put to that
 		if (sample.getAccession() != null) {
 			//samples with an existing accession should be PUT			
@@ -74,10 +76,6 @@ public class SubmissionService {
 					.contentType(MediaType.APPLICATION_JSON).accept(MediaTypes.HAL_JSON).body(sample);
 			ResponseEntity<Resource<Sample>> responseEntity = restOperations.exchange(requestEntity, new ParameterizedTypeReference<Resource<Sample>>(){});
 						
-			if (!responseEntity.getStatusCode().is2xxSuccessful()) {
-				log.error("Unable to POST "+sample.getAccession()+" : "+responseEntity.toString());
-				throw new RuntimeException("Problem POSTing "+sample.getAccession());
-			}			
 			return responseEntity.getBody();
 		}
 	}
