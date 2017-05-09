@@ -68,14 +68,22 @@ public class NeoCuration {
     	for (NeoAttribute a : neoCuration.attributesPre) {
     		hasher.putUnencodedChars(a.getType());
     		hasher.putUnencodedChars(a.getValue());
-    		hasher.putUnencodedChars(a.getUnit());
-    		hasher.putUnencodedChars(a.getIri());
+    		if (a.getUnit() != null) {
+    			hasher.putUnencodedChars(a.getUnit());
+    		}
+    		if (a.getIri() != null) {
+    			hasher.putUnencodedChars(a.getIri());
+    		}
     	}
     	for (NeoAttribute a : neoCuration.attributesPost) {
     		hasher.putUnencodedChars(a.getType());
     		hasher.putUnencodedChars(a.getValue());
-    		hasher.putUnencodedChars(a.getUnit());
-    		hasher.putUnencodedChars(a.getIri());
+    		if (a.getUnit() != null) {
+    			hasher.putUnencodedChars(a.getUnit());
+    		}
+    		if (a.getIri() != null) {
+    			hasher.putUnencodedChars(a.getIri());
+    		}
     	}
 		neoCuration.hash = hasher.hash().toString();
 

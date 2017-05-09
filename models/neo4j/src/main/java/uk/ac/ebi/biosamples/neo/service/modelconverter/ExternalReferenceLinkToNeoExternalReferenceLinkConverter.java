@@ -10,7 +10,6 @@ import uk.ac.ebi.biosamples.neo.model.NeoExternalReferenceLink;
 import uk.ac.ebi.biosamples.neo.model.NeoSample;
 
 @Service
-@ConfigurationPropertiesBinding
 public class ExternalReferenceLinkToNeoExternalReferenceLinkConverter
 		implements Converter<ExternalReferenceLink, NeoExternalReferenceLink> {
 

@@ -10,7 +10,7 @@ import uk.ac.ebi.biosamples.controller.ExternalReferenceRestController;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 
 /**
- * This class is used by Spring to add HAL _links for {@Link Sample} objects.
+ * This class is used by Spring to add HAL _links for {@Link ExternalReference} objects.
  * 
  * @author faulcon
  *

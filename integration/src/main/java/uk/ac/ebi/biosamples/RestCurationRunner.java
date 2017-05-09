@@ -5,6 +5,8 @@ import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -29,6 +31,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.ExternalReferenceLink;
 import uk.ac.ebi.biosamples.model.Relationship;
@@ -37,7 +40,7 @@ import uk.ac.ebi.biosamples.model.Sample;
 @Component
 @Order(6)
 @Profile({ "default", "rest" })
-public class RestExternalReferenceRunner implements ApplicationRunner, ExitCodeGenerator {
+public class RestCurationRunner implements ApplicationRunner, ExitCodeGenerator {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -55,62 +58,75 @@ public class RestExternalReferenceRunner implements ApplicationRunner, ExitCodeG
 	@Override
 	public void run(ApplicationArguments args) throws Exception {
 
-		log.info("Starting RestExternalReferenceRunner");
+		log.info("Starting RestCurationRunner");
 		Sample sample = getSampleTest1();
 
 		if (args.containsOption("phase") && Integer.parseInt(args.getOptionValues("phase").get(0)) == 1) {
 
 			client.persistSample(sample);
-
+			
 		} else if (args.containsOption("phase") && Integer.parseInt(args.getOptionValues("phase").get(0)) == 2) {
-			// check /externalreferences
-			testExternalReferences();
 
-			testSampleExternalReferences(sample, 10);
+			Set<Attribute> attributesPre = new HashSet<>();
+			attributesPre.add(Attribute.build("Organism", "9606"));
+			Set<Attribute> attributesPost = new HashSet<>();
+			attributesPost.add(Attribute.build("Organism", "Homo sapiens"));			
+			client.persistCuration(sample.getAccession(), Curation.build(attributesPre, attributesPost));
 
-			client.persistExternalReference(sample.getAccession(), "http://www.ebi.ac.uk/ena/ERA123456");
 
-			testSampleExternalReferences(sample, 11);
+			attributesPre = new HashSet<>();
+			attributesPre.add(Attribute.build("Organism", "Homo sapiens"));
+			attributesPost = new HashSet<>();
+			attributesPost.add(Attribute.build("Organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));			
+			client.persistCuration(sample.getAccession(), Curation.build(attributesPre, attributesPost));
+
+		} else if (args.containsOption("phase") && Integer.parseInt(args.getOptionValues("phase").get(0)) == 3) {
+			
+			// check /curations
+			testCurations();
+			
+			testSampleCurations(sample);
 		}
 
 		// if we got here without throwing, then we finished successfully
 		exitCode = 0;
-		log.info("Finished RestSearchRunner");
+		log.info("Finished RestCurationRunner");
 	}
 
-	private void testExternalReferences() {
+	private void testCurations() {
+		//TODO use client
 		URI uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUri())
-				.pathSegment("externalreferences").build().toUri();
+				.pathSegment("curations").build().toUri();
 
 		log.info("GETting from " + uri);
 		RequestEntity<Void> request = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
-		ResponseEntity<PagedResources<Resource<ExternalReference>>> response = restTemplate.exchange(request,
-				new ParameterizedTypeReference<PagedResources<Resource<ExternalReference>>>() {
+		ResponseEntity<PagedResources<Resource<Curation>>> response = restTemplate.exchange(request,
+				new ParameterizedTypeReference<PagedResources<Resource<Curation>>>() {
 				});
 
 		boolean testedSelf = false;
-		PagedResources<Resource<ExternalReference>> paged = response.getBody();
+		PagedResources<Resource<Curation>> paged = response.getBody();
 
-		for (Resource<ExternalReference> externalReferenceResource : paged) {
-			Link selfLink = externalReferenceResource.getLink("self");
+		for (Resource<Curation> curationResource : paged) {
+			Link selfLink = curationResource.getLink("self");
 
 			if (selfLink == null) {
-				throw new RuntimeException("Must have self link on "+externalReferenceResource);
+				throw new RuntimeException("Must have self link on "+curationResource);
 			}
 
-			if (externalReferenceResource.getLink("samples") == null) {
-				throw new RuntimeException("Must have samples link on "+externalReferenceResource);
+			if (curationResource.getLink("samples") == null) {
+				throw new RuntimeException("Must have samples link on "+curationResource);
 			}
 
 			if (!testedSelf) {
 				URI uriLink = URI.create(selfLink.getHref());
 				log.info("GETting from " + uriLink);
 				RequestEntity<Void> requestLink = RequestEntity.get(uriLink).accept(MediaTypes.HAL_JSON).build();
-				ResponseEntity<Resource<ExternalReference>> responseLink = restTemplate.exchange(requestLink,
-						new ParameterizedTypeReference<Resource<ExternalReference>>() {
+				ResponseEntity<Resource<Curation>> responseLink = restTemplate.exchange(requestLink,
+						new ParameterizedTypeReference<Resource<Curation>>() {
 						});
 				if (!responseLink.getStatusCode().is2xxSuccessful()) {
-					throw new RuntimeException("Unable to follow self link on "+externalReferenceResource);
+					throw new RuntimeException("Unable to follow self link on "+curationResource);
 				}
 				testedSelf = true;
 			}
@@ -118,46 +134,38 @@ public class RestExternalReferenceRunner implements ApplicationRunner, ExitCodeG
 
 	}
 
-	private void testSampleExternalReferences(Sample sample, int expectedCount) {
+	private void testSampleCurations(Sample sample) {
+		//TODO use client
 		URI uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUri()).pathSegment("samples")
-				.pathSegment(sample.getAccession()).pathSegment("externalreferencelinks").build().toUri();
+				.pathSegment(sample.getAccession()).pathSegment("curationlinks").build().toUri();
 
 		log.info("GETting from " + uri);
 		RequestEntity<Void> request = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
-		ResponseEntity<PagedResources<Resource<ExternalReference>>> response = restTemplate.exchange(request,
-				new ParameterizedTypeReference<PagedResources<Resource<ExternalReference>>>() {
+		ResponseEntity<PagedResources<Resource<Curation>>> response = restTemplate.exchange(request,
+				new ParameterizedTypeReference<PagedResources<Resource<Curation>>>() {
 				});
 
-		PagedResources<Resource<ExternalReference>> paged = response.getBody();
+		PagedResources<Resource<Curation>> paged = response.getBody();
 
-		if (paged.getMetadata().getTotalElements() != expectedCount) {
+		if (paged.getMetadata().getTotalElements() != 2) {
 			throw new RuntimeException(
-					"Expecting "+expectedCount+" external references, found " + paged.getMetadata().getTotalElements());
+					"Expecting 2 external references, found " + paged.getMetadata().getTotalElements());
 		}
 
 	}
 
 	private Sample getSampleTest1() throws URISyntaxException {
 		String name = "Test Sample";
-		String accession = "TESTExRef1";
+		String accession = "TESTCur1";
 		LocalDateTime update = LocalDateTime.of(LocalDate.of(2016, 5, 5), LocalTime.of(11, 36, 57, 0));
 		LocalDateTime release = LocalDateTime.of(LocalDate.of(2016, 4, 1), LocalTime.of(11, 36, 57, 0));
 
 		SortedSet<Attribute> attributes = new TreeSet<>();
+		attributes.add(Attribute.build("Organism", "9606"));
 
 		SortedSet<Relationship> relationships = new TreeSet<>();
 
 		SortedSet<ExternalReference> externalReferences = new TreeSet<>();
-		externalReferences.add(ExternalReference.build("http://www.test.com/1"));
-		externalReferences.add(ExternalReference.build("http://www.test.com/2"));
-		externalReferences.add(ExternalReference.build("http://www.test.com/3"));
-		externalReferences.add(ExternalReference.build("http://www.test.com/4"));
-		externalReferences.add(ExternalReference.build("http://www.test.com/5"));
-		externalReferences.add(ExternalReference.build("http://www.test.com/6"));
-		externalReferences.add(ExternalReference.build("http://www.test.com/7"));
-		externalReferences.add(ExternalReference.build("http://www.test.com/8"));
-		externalReferences.add(ExternalReference.build("http://www.test.com/9"));
-		externalReferences.add(ExternalReference.build("http://www.test.com/0"));
 
 		return Sample.build(name, accession, release, update, attributes, relationships, externalReferences);
 	}

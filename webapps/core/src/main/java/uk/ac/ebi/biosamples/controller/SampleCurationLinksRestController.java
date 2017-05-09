@@ -1,5 +1,7 @@
 package uk.ac.ebi.biosamples.controller;
 
+import java.net.URI;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -15,9 +17,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.ExternalReferenceLink;
@@ -73,4 +78,19 @@ public class SampleCurationLinksRestController {
     	
 		return ResponseEntity.ok(resource);   
 	}
+    
+    @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity<Resource<CurationLink>> createCurationLinkJson(
+			@PathVariable String accession,
+			@RequestBody Curation curation) {
+		log.info("Recieved POST for " + accession + " : "+curation);		
+    	CurationLink curationLink = CurationLink.build(accession, curation);
+    	
+    	curationLink = curationService.store(curationLink);
+    	Resource<CurationLink> resource = curationLinkResourceAssembler.toResource(curationLink);
+
+		// create the response object with the appropriate status
+		return ResponseEntity.created(URI.create(resource.getLink("self").getHref()))
+				.body(resource);
+    }
 }

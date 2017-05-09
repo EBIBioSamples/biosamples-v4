@@ -17,9 +17,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestOperations;
 
+import uk.ac.ebi.biosamples.client.service.CurationSubmissionService;
 import uk.ac.ebi.biosamples.client.service.ExternalReferenceSubmissionService;
 import uk.ac.ebi.biosamples.client.service.SampleRetrievalService;
 import uk.ac.ebi.biosamples.client.service.SampleSubmissionService;
+import uk.ac.ebi.biosamples.model.Curation;
+import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.ExternalReferenceLink;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -38,6 +41,8 @@ public class BioSamplesClient {
 	private final SampleRetrievalService sampleRetrievalService;
 	private final SampleSubmissionService sampleSubmissionService;
 	private final ExternalReferenceSubmissionService externalReferenceSubmissionService;
+	private final CurationSubmissionService curationSubmissionService;
+	
 	private final ExecutorService threadPoolExecutor;
 	
 	public BioSamplesClient(ClientProperties clientProperties, RestOperations restOperations) {
@@ -50,6 +55,7 @@ public class BioSamplesClient {
 		sampleRetrievalService = new SampleRetrievalService(restOperations, traverson, threadPoolExecutor);
 		sampleSubmissionService = new SampleSubmissionService(restOperations, traverson, threadPoolExecutor);
 		externalReferenceSubmissionService = new ExternalReferenceSubmissionService(restOperations, traverson, threadPoolExecutor);
+		curationSubmissionService = new CurationSubmissionService(restOperations, traverson, threadPoolExecutor);
 	}
 
 
@@ -99,6 +105,10 @@ public class BioSamplesClient {
 	
 	public Resource<ExternalReferenceLink> persistExternalReference(String accession, String url) throws RestClientException {
 		return externalReferenceSubmissionService.persistExternalReference(accession, ExternalReference.build(url));
+	}
+	
+	public Resource<CurationLink> persistCuration(String accession, Curation curation) throws RestClientException {
+		return curationSubmissionService.persistCuration(accession, curation);
 	}
         
     @Deprecated

@@ -78,6 +78,7 @@ public class SampleExternalReferenceLinksRestController {
     public ResponseEntity<Resource<ExternalReferenceLink>> createExternalReferenceLinkJson(
 			@PathVariable String accession,
 			@RequestBody ExternalReference externalReference) {
+		log.info("Recieved POST for " + accession + " : "+externalReference);
     	ExternalReferenceLink externalReferenceLink = ExternalReferenceLink.build(accession, externalReference.getUrl());
     	
     	externalReferenceLink = externalReferenceService.store(externalReferenceLink);

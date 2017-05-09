@@ -76,7 +76,7 @@ public class CurationLink implements Comparable<CurationLink> {
 
     //Used for deserializtion (JSON -> Java)
     @JsonCreator
-	public static CurationLink build(@JsonProperty("curation") Curation curation, @JsonProperty("sample") String sample) {
+	public static CurationLink build(@JsonProperty("sample") String sample, @JsonProperty("curation") Curation curation) {
 
     	String hash = Hashing.sha256().newHasher()
 			.putUnencodedChars(curation.getHash())

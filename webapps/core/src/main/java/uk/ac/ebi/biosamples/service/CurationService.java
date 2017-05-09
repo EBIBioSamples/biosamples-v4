@@ -17,6 +17,7 @@ import uk.ac.ebi.biosamples.neo.repo.NeoCurationLinkRepository;
 import uk.ac.ebi.biosamples.neo.repo.NeoCurationRepository;
 import uk.ac.ebi.biosamples.neo.repo.NeoExternalReferenceLinkRepository;
 import uk.ac.ebi.biosamples.neo.repo.NeoExternalReferenceRepository;
+import uk.ac.ebi.biosamples.neo.service.modelconverter.CurationLinkToNeoCurationLinkConverter;
 import uk.ac.ebi.biosamples.neo.service.modelconverter.NeoCurationLinkToCurationLinkConverter;
 import uk.ac.ebi.biosamples.neo.service.modelconverter.NeoCurationToCurationConverter;
 import uk.ac.ebi.biosamples.neo.service.modelconverter.NeoExternalReferenceLinkToExternalReferenceLinkConverter;
@@ -34,6 +35,8 @@ public class CurationService {
 	private NeoCurationToCurationConverter neoCurationToCurationConverter;
 	@Autowired
 	private NeoCurationLinkToCurationLinkConverter neoCurationLinkToCurationLinkConverter;
+	@Autowired
+	private CurationLinkToNeoCurationLinkConverter curationLinkToNeoCurationLinkConverter;
 
 	public Page<Curation> getPage(Pageable pageable) {
 		Page<NeoCuration> pageNeoCuration = neoCurationRepository.findAll(pageable,2);
@@ -63,6 +66,12 @@ public class CurationService {
 		NeoCurationLink neo = neoCurationLinkRepository.findOneByHash(hash, 1);
 		CurationLink link = neoCurationLinkToCurationLinkConverter.convert(neo);
 		return link;
+	}
+	
+	public CurationLink store(CurationLink curationLink) {
+		NeoCurationLink neo = curationLinkToNeoCurationLinkConverter.convert(curationLink);
+		neo = neoCurationLinkRepository.save(neo);
+		return neoCurationLinkToCurationLinkConverter.convert(neo);
 	}
 
 }
