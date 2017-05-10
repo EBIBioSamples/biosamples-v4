@@ -1,7 +1,6 @@
 package uk.ac.ebi.biosamples.neo.model;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -13,8 +12,6 @@ import org.neo4j.ogm.annotation.Relationship;
 
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
-
-import uk.ac.ebi.biosamples.model.Attribute;
 
 @NodeEntity(label = "Curation")
 public class NeoCuration {

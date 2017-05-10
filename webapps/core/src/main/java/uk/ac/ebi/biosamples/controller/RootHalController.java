@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.ExternalReference;
-import uk.ac.ebi.biosamples.model.ExternalReferenceLink;
 import uk.ac.ebi.biosamples.model.Sample;
 
 @RestController

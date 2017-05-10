@@ -7,21 +7,13 @@ import org.springframework.stereotype.Service;
 
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.CurationLink;
-import uk.ac.ebi.biosamples.model.ExternalReference;
-import uk.ac.ebi.biosamples.model.ExternalReferenceLink;
 import uk.ac.ebi.biosamples.neo.model.NeoCuration;
 import uk.ac.ebi.biosamples.neo.model.NeoCurationLink;
-import uk.ac.ebi.biosamples.neo.model.NeoExternalReference;
-import uk.ac.ebi.biosamples.neo.model.NeoExternalReferenceLink;
 import uk.ac.ebi.biosamples.neo.repo.NeoCurationLinkRepository;
 import uk.ac.ebi.biosamples.neo.repo.NeoCurationRepository;
-import uk.ac.ebi.biosamples.neo.repo.NeoExternalReferenceLinkRepository;
-import uk.ac.ebi.biosamples.neo.repo.NeoExternalReferenceRepository;
 import uk.ac.ebi.biosamples.neo.service.modelconverter.CurationLinkToNeoCurationLinkConverter;
 import uk.ac.ebi.biosamples.neo.service.modelconverter.NeoCurationLinkToCurationLinkConverter;
 import uk.ac.ebi.biosamples.neo.service.modelconverter.NeoCurationToCurationConverter;
-import uk.ac.ebi.biosamples.neo.service.modelconverter.NeoExternalReferenceLinkToExternalReferenceLinkConverter;
-import uk.ac.ebi.biosamples.neo.service.modelconverter.NeoExternalReferenceToExternalReferenceConverter;
 
 @Service
 public class CurationService {

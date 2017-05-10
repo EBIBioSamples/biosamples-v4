@@ -1,21 +1,13 @@
 package uk.ac.ebi.biosamples.neo.model;
 
-import java.time.LocalDateTime;
 import java.util.Objects;
 
-import org.neo4j.ogm.annotation.EndNode;
 import org.neo4j.ogm.annotation.GraphId;
 import org.neo4j.ogm.annotation.Index;
 import org.neo4j.ogm.annotation.NodeEntity;
 import org.neo4j.ogm.annotation.Property;
 import org.neo4j.ogm.annotation.Relationship;
-import org.neo4j.ogm.annotation.RelationshipEntity;
-import org.neo4j.ogm.annotation.StartNode;
-import org.neo4j.ogm.annotation.typeconversion.Convert;
-
 import com.google.common.hash.Hashing;
-
-import uk.ac.ebi.biosamples.neo.service.LocalDateTimeConverter;
 
 @NodeEntity(label = "CurationLink")
 public class NeoCurationLink implements Comparable<NeoCurationLink> {
