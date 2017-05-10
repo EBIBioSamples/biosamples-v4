@@ -36,6 +36,9 @@ public class Ena implements ApplicationRunner {
 
 	@Autowired
 	private ApplicationContext context;
+	
+	@Autowired
+	private EnaCallableFactory enaCallableFactory;
 
 	private Map<String, Future<Void>> futures = new HashMap<>();
 	
@@ -83,10 +86,7 @@ public class Ena implements ApplicationRunner {
 		public void processRow(ResultSet rs) throws SQLException {
 			String sampleAccession = rs.getString("BIOSAMPLE_ID");
 
-			// have to create multiple beans via context so they all autowire etc
-			// this is apparently bad Inversion Of Control but I can't see a
-			// better way to do it
-			Callable<Void> callable = context.getBean(EnaCallable.class, sampleAccession);
+			Callable<Void> callable = enaCallableFactory.build(sampleAccession); 
 			futures.put(sampleAccession, executorService.submit(callable));
 		}
 		

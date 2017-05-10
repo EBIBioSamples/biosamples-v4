@@ -15,6 +15,7 @@ import org.apache.http.protocol.HTTP;
 import org.apache.http.protocol.HttpContext;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.boot.web.client.RestTemplateCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.hateoas.MediaTypes;
@@ -85,12 +86,9 @@ public class BioSamplesClientConfig {
 	 * @param clientHttpRequestFactory
 	 * @param mapper
 	 * @return
-	 */
 	@Bean
 	@ConditionalOnMissingBean
-	public RestOperations getRestOperations(RestTemplateBuilder builder, ClientHttpRequestFactory clientHttpRequestFactory, ObjectMapper mapper) {
-		RestTemplate restTemplate = builder.build();
-		restTemplate.setRequestFactory(clientHttpRequestFactory);
+	public RestOperations getRestOperations(RestTemplateBuilder builder, ObjectMapper mapper) {
 
 		//need to create a new message converter to handle hal+json
 		//ObjectMapper mapper = new ObjectMapper();
@@ -108,7 +106,20 @@ public class BioSamplesClientConfig {
 
 		return restTemplate;
 	}
+	 */
 
 
+	@Bean
+	public RestTemplateCustomizer restTemplateCustomizer(ClientHttpRequestFactory clientHttpRequestFactory) {
+		return new RestTemplateCustomizer() {
+
+			@Override
+			public void customize(RestTemplate restTemplate) {
+				restTemplate.setRequestFactory(clientHttpRequestFactory);
+				
+			}
+			
+		};
+	}
 
 }

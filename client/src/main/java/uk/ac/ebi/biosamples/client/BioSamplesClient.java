@@ -9,6 +9,7 @@ import java.util.stream.StreamSupport;
 
 import javax.annotation.PreDestroy;
 
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
@@ -16,6 +17,7 @@ import org.springframework.hateoas.client.Traverson;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestOperations;
+import org.springframework.web.client.RestTemplate;
 
 import uk.ac.ebi.biosamples.client.service.CurationSubmissionService;
 import uk.ac.ebi.biosamples.client.service.ExternalReferenceSubmissionService;
@@ -45,12 +47,14 @@ public class BioSamplesClient {
 	
 	private final ExecutorService threadPoolExecutor;
 	
-	public BioSamplesClient(ClientProperties clientProperties, RestOperations restOperations) {
+	public BioSamplesClient(ClientProperties clientProperties, RestTemplateBuilder restTemplateBuilder) {
 		//TODO application.properties this
 		threadPoolExecutor = Executors.newFixedThreadPool(64);
 		
+		RestTemplate restOperations = restTemplateBuilder.build();
+		
 		Traverson traverson = new Traverson(clientProperties.getBiosamplesClientUri(), MediaTypes.HAL_JSON);
-		//traverson.setRestOperations(restOperations);
+		traverson.setRestOperations(restOperations);
 		
 		sampleRetrievalService = new SampleRetrievalService(restOperations, traverson, threadPoolExecutor);
 		sampleSubmissionService = new SampleSubmissionService(restOperations, traverson, threadPoolExecutor);
