@@ -3,6 +3,7 @@ package uk.ac.ebi.biosamples.controller;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +16,8 @@ import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
+import org.springframework.http.CacheControl;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -51,57 +54,54 @@ public class SampleRestController {
 
 	private final SampleService sampleService;
 	private final FilterService filterService;
-	
+
 	private final SampleResourceAssembler sampleResourceAssembler;
-	
+
 	private final EntityLinks entityLinks;
-	
+
 	private Logger log = LoggerFactory.getLogger(getClass());
 
-	public SampleRestController(SampleService sampleService,
-			FilterService filterService,
-			SampleResourceAssembler sampleResourceAssembler,
-			EntityLinks entityLinks) {
+	public SampleRestController(SampleService sampleService, FilterService filterService,
+			SampleResourceAssembler sampleResourceAssembler, EntityLinks entityLinks) {
 		this.sampleService = sampleService;
 		this.filterService = filterService;
 		this.sampleResourceAssembler = sampleResourceAssembler;
 		this.entityLinks = entityLinks;
 	}
 
-    @CrossOrigin(methods = RequestMethod.GET)
+	@CrossOrigin(methods = RequestMethod.GET)
 	@GetMapping(produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
 	public ResponseEntity<PagedResources<Resource<Sample>>> searchHal(
-			@RequestParam(name="text", required=false) String text,
-			@RequestParam(name="filter", required=false) String[] filter,
-			Pageable page,
+			@RequestParam(name = "text", required = false) String text,
+			@RequestParam(name = "filter", required = false) String[] filter, Pageable page,
 			PagedResourcesAssembler<Sample> pageAssembler) {
 
 		MultiValueMap<String, String> filtersMap = filterService.getFilters(filter);
 		Page<Sample> pageSample = sampleService.getSamplesByText(text, filtersMap, page);
-		//add the links to each individual sample on the page
-		//also adds links to first/last/next/prev at the same time
+		// add the links to each individual sample on the page
+		// also adds links to first/last/next/prev at the same time
 		PagedResources<Resource<Sample>> pagedResources = pageAssembler.toResource(pageSample, sampleResourceAssembler,
 				entityLinks.linkToCollectionResource(Sample.class));
 
-    	//to generate the HAL template correctly, the parameter name must match the requestparam name
-		pagedResources.add(ControllerLinkBuilder.linkTo(
-				ControllerLinkBuilder.methodOn(SampleAutocompleteRestController.class)
-					.getAutocompleteHal(text, filter, null))
-				.withRel("autocomplete"));
-		pagedResources.add(ControllerLinkBuilder.linkTo(
-				ControllerLinkBuilder.methodOn(SampleFacetRestController.class)
-					.getFacetsHal(text, filter))
+		// to generate the HAL template correctly, the parameter name must match
+		// the requestparam name
+		pagedResources
+				.add(ControllerLinkBuilder.linkTo(ControllerLinkBuilder.methodOn(SampleAutocompleteRestController.class)
+						.getAutocompleteHal(text, filter, null)).withRel("autocomplete"));
+		pagedResources.add(ControllerLinkBuilder
+				.linkTo(ControllerLinkBuilder.methodOn(SampleFacetRestController.class).getFacetsHal(text, filter))
 				.withRel("facet"));
-		pagedResources.add(ControllerLinkBuilder.linkTo(
-				ControllerLinkBuilder.methodOn(SampleRestController.class)
-					.getSampleHal(null))
+		pagedResources.add(ControllerLinkBuilder
+				.linkTo(ControllerLinkBuilder.methodOn(SampleRestController.class).getSampleHal(null))
 				.withRel("sample"));
-		
-		return ResponseEntity.ok(pagedResources);
+
+		return ResponseEntity.ok()
+				.header(HttpHeaders.CACHE_CONTROL, CacheControl.maxAge(5, TimeUnit.MINUTES).cachePublic().getHeaderValue())
+				.body(pagedResources);
 	}
-        
-    @CrossOrigin(methods = RequestMethod.GET)
-	@GetMapping(value = "/{accession}", produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE  })
+
+	@CrossOrigin(methods = RequestMethod.GET)
+	@GetMapping(value = "/{accession}", produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
 	public ResponseEntity<Resource<Sample>> getSampleHal(@PathVariable String accession) {
 		log.info("starting call");
 		// convert it into the format to return
@@ -112,26 +112,26 @@ public class SampleRestController {
 			// did not exist, throw 404
 			return ResponseEntity.notFound().build();
 		}
-		
+
 		if (sample.getName() == null) {
-			//if it has no name, then its just created by accessioning or reference
-			//can't read it, but could put to it
-			//TODO make sure "options" is correct for this
+			// if it has no name, then its just created by accessioning or
+			// reference
+			// can't read it, but could put to it
+			// TODO make sure "options" is correct for this
 			return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
 		}
-		
-		// check if the release date is in the future and if so return it as private
+
+		// check if the release date is in the future and if so return it as
+		// private
 		if (sample.getRelease().isAfter(LocalDateTime.now())) {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		}
 
 		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
-		
+
 		// create the response object with the appropriate status
-		return ResponseEntity.ok()
-				.lastModified(sample.getUpdate().toEpochSecond(ZoneOffset.UTC))
-				.eTag(String.valueOf(sample.hashCode()))
-				.contentType(MediaTypes.HAL_JSON).body(sampleResource);
+		return ResponseEntity.ok().lastModified(sample.getUpdate().toEpochSecond(ZoneOffset.UTC))
+				.eTag(String.valueOf(sample.hashCode())).contentType(MediaTypes.HAL_JSON).body(sampleResource);
 	}
 
 	@PutMapping(value = "/{accession}", consumes = { MediaType.APPLICATION_JSON_VALUE })
@@ -147,13 +147,12 @@ public class SampleRestController {
 
 		log.info("Recieved PUT for " + accession);
 		sampleService.store(sample);
-		
-		//assemble a resource to return
+
+		// assemble a resource to return
 		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
-		
+
 		// create the response object with the appropriate status
-		return ResponseEntity.accepted()
-				.body(sampleResource);
+		return ResponseEntity.accepted().body(sampleResource);
 	}
 
 	@PostMapping(consumes = { MediaType.APPLICATION_JSON_VALUE })
@@ -161,9 +160,8 @@ public class SampleRestController {
 		log.info("Recieved POST");
 		sample = sampleService.store(sample);
 		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
-		
+
 		// create the response object with the appropriate status
-		return ResponseEntity.created(URI.create(sampleResource.getLink("self").getHref()))
-				.body(sampleResource);
+		return ResponseEntity.created(URI.create(sampleResource.getLink("self").getHref())).body(sampleResource);
 	}
 }
