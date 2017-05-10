@@ -6,12 +6,10 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import org.neo4j.driver.v1.exceptions.TransientException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -21,19 +19,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
 
 import uk.ac.ebi.biosamples.Messaging;
-import uk.ac.ebi.biosamples.WebappProperties;
 import uk.ac.ebi.biosamples.model.Autocomplete;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.mongo.model.MongoSubmission;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSubmissionRepository;
 import uk.ac.ebi.biosamples.neo.model.NeoSample;
-import uk.ac.ebi.biosamples.neo.repo.NeoExternalReferenceRepository;
 import uk.ac.ebi.biosamples.neo.repo.NeoSampleRepository;
 import uk.ac.ebi.biosamples.neo.service.NeoAccessionService;
-import uk.ac.ebi.biosamples.neo.service.modelconverter.NeoExternalReferenceToExternalReferenceConverter;
 import uk.ac.ebi.biosamples.neo.service.modelconverter.NeoSampleToSampleConverter;
-import uk.ac.ebi.biosamples.neo.service.modelconverter.SampleToNeoSampleConverter;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
+import uk.ac.ebi.biosamples.solr.service.SolrSampleThreadSafeService;
 import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
 
 /**
@@ -66,6 +61,8 @@ public class SampleService {
 	
 	@Autowired
 	private SolrSampleService solrSampleService;
+	@Autowired
+	private SolrSampleThreadSafeService cachedFindSolrSampleByText;
 
 	@Autowired
 	private AmqpTemplate amqpTemplate;
@@ -102,7 +99,10 @@ public class SampleService {
 	
 	//does this asynchonously
 	public Page<Sample> getSamplesByText(String text, MultiValueMap<String,String> filters, Pageable pageable) {
-		Page<SolrSample> pageSolrSample = solrSampleService.fetchSolrSampleByText(text, filters, pageable);
+		//Page<SolrSample> pageSolrSample = solrSampleService.fetchSolrSampleByText(text, filters, pageable);
+		
+		Page<SolrSample> pageSolrSample = cachedFindSolrSampleByText.fetchSolrSampleByText(text, filters, pageable);
+		
 		// for each result fetch the version from Mongo and add inverse relationships
 		//Page<Sample> pageSample = pageSolrSample.map(ss->fetch(ss.getAccession()));
 		

@@ -2,6 +2,10 @@ package uk.ac.ebi.biosamples.solr.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +23,8 @@ import org.springframework.data.solr.core.query.SimpleFilterQuery;
 import org.springframework.data.solr.core.query.SimpleQuery;
 import org.springframework.data.solr.core.query.result.FacetFieldEntry;
 import org.springframework.data.solr.core.query.result.FacetPage;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
 
@@ -28,18 +34,22 @@ import uk.ac.ebi.biosamples.model.SampleFacetsBuilder;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
 import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
 
+/**
+ * Consider using solrSampleAsyncService or SolrSampleThreadSafeService
+ * instead of this class.
+ * 
+ */
 @Service
 public class SolrSampleService {
 
-	private final SolrSampleRepository solrSampleRepository;	
-
+	private final SolrSampleRepository solrSampleRepository;
+	
 	private Logger log = LoggerFactory.getLogger(getClass());
 	
 	public SolrSampleService(SolrSampleRepository solrSampleRepository) {
 		this.solrSampleRepository = solrSampleRepository;
 	}		
-	
-	//TODO add caching
+
 	public Page<SolrSample> fetchSolrSampleByText(String searchTerm, MultiValueMap<String,String> filters, Pageable pageable) {
 		//default to search all
 		if (searchTerm == null || searchTerm.trim().length() == 0) {
@@ -60,7 +70,7 @@ public class SolrSampleService {
 		
 		// return the samples from solr that match the query
 		return solrSampleRepository.findByQuery(query);
-	}	
+	}
 		
 	public List<SampleFacet> getFacets(String searchTerm, MultiValueMap<String,String> filters, Pageable facetPageable, Pageable facetValuePageable) {
 		//default to search all

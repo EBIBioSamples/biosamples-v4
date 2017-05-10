@@ -77,7 +77,10 @@ public class SampleRestController {
 			PagedResourcesAssembler<Sample> pageAssembler) {
 
 		MultiValueMap<String, String> filtersMap = filterService.getFilters(filter);
+		
+		
 		Page<Sample> pageSample = sampleService.getSamplesByText(text, filtersMap, page);
+		
 		// add the links to each individual sample on the page
 		// also adds links to first/last/next/prev at the same time
 		PagedResources<Resource<Sample>> pagedResources = pageAssembler.toResource(pageSample, sampleResourceAssembler,
