@@ -29,6 +29,9 @@ services:
     #Configure root path to server from
     - server.servlet.context-path=/biosamples/beta
     - server.context-path=/biosamples/beta
+    #Enable use behind a proxy with original urls
+    - server.use-forward-headers=true
+    #REMOVE FOR PRODUCTION
     - management.security.enabled=false
     #Improve logging
     - logging.file=/logs/webapps-core.log
