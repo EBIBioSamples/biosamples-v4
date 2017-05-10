@@ -33,6 +33,11 @@ services:
     - server.tomcat.accesslog.enabled=true
     - server.tomcat.accesslog.directory=/logs
     - server.tomcat.accesslog.prefix=webapps-core.access
+    #Enable gzip compression of responses
+    - server.compression.enabled=true
+    - server.compression.mime-types=application/json,application/hal+json,application/xml,text/html,application/json,text/css
+    #Don't waste CPU compressing very small responses
+    - server.compression.min-response-size=2048
     # Charset of HTTP requests and responses. Added to the "Content-Type" header if not set explicitly.
     - spring.http.encoding.charset=UTF-8
     # Enable http encoding support.
