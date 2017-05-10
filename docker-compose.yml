@@ -33,6 +33,7 @@ services:
     - server.tomcat.accesslog.enabled=true
     - server.tomcat.accesslog.directory=/logs
     - server.tomcat.accesslog.prefix=webapps-core.access
+    - server.tomcat.accesslog.pattern=%h %l %u %t "%r" %s %b (%D ms)
     # Charset of HTTP requests and responses. Added to the "Content-Type" header if not set explicitly.
     - spring.http.encoding.charset=UTF-8
     # Enable http encoding support.
@@ -113,8 +114,9 @@ services:
     environment:
     - spring.rabbitmq.publisher-confirms=true
     - spring.rabbitmq.host=rabbitmq
-    - spring.rabbitmq.listener.concurrency=1000
-    - spring.rabbitmq.listener.max-concurrency=1000
+    - spring.rabbitmq.listener.concurrency=250
+    - spring.rabbitmq.listener.max-concurrency=250
+    - biosamples.agent.queuesize=250
     - spring.data.neo4j.uri=bolt://neo4j:7687
     #- spring.data.neo4j.uri=http://neo4j:7474
     - spring.data.neo4j.username=neo4j
@@ -140,6 +142,7 @@ services:
     - spring.rabbitmq.publisher-confirms=true
     - spring.rabbitmq.listener.concurrency=1000
     - spring.rabbitmq.listener.max-concurrency=1000
+    - biosamples.agent.queuesize=1000
     - spring.data.solr.host=http://solr:8983/solr
     - spring.rabbitmq.host=rabbitmq
     - biosamples.agent.solr.stayalive=true
@@ -195,7 +198,7 @@ services:
     ports:
     - 8983:8983
     volumes:
-    - solr_samples_data:/opt/solr/server/solr/mycores
+    - solr_data:/opt/solr/server/solr/mycores
     environment:
     - VERBOSE=yes
     - SOLR_HEAP=8g
@@ -205,7 +208,7 @@ services:
     - samples
     
 volumes:
-  solr_samples_data: null
+  solr_data: null
   mongo_data: null
   neo4j_data: null
   rabbitmq_data: null
