@@ -49,14 +49,11 @@ public class SampleService {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 	
-	//@Autowired
-	//private MongoSampleRepository mongoSampleRepository;
 	@Autowired
 	private MongoSubmissionRepository mongoSubmissionRepository;
 	
 	@Autowired
-	private NeoAccessionService neoAccessionService;
-	
+	private NeoAccessionService neoAccessionService;	
 
 	@Autowired
 	private NeoSampleRepository neoSampleRepository;
@@ -79,9 +76,6 @@ public class SampleService {
 	@Autowired
 	private AmqpTemplate amqpTemplate;
 	
-	@Autowired
-	private WebappProperties webappProperties;
-	
 	/**
 	 * Throws an IllegalArgumentException of no sample with that accession exists
 	 * 
@@ -90,6 +84,9 @@ public class SampleService {
 	 * @throws IllegalArgumentException
 	 */
 	public Sample fetch(String accession) throws IllegalArgumentException {
+		
+		log.info("Fetching accession from neoSampleRepository "+accession);
+		
 		// return the raw sample from the repository
 		NeoSample neoSample = neoSampleRepository.findOneByAccession(accession,2);
 		if (neoSample == null) {
@@ -109,26 +106,12 @@ public class SampleService {
 		return new AsyncResult<>(fetch(accession));
 	}
 	
-	//does this asynchonously
 	public Page<Sample> getSamplesByText(String text, MultiValueMap<String,String> filters, Pageable pageable) {
 		Page<SolrSample> pageSolrSample = solrSampleService.fetchSolrSampleByText(text, filters, pageable);
-		// for each result fetch the version from Mongo and add inverse relationships
-		//Page<Sample> pageSample = pageSolrSample.map(ss->fetch(ss.getAccession()));
 		
-		List<Future<Sample>> futures = new ArrayList<>();
-		for (SolrSample solrSample : pageSolrSample) {
-			futures.add(fetchAsync(solrSample.getAccession()));
-		}
 		List<Sample> samples = new ArrayList<>();
-		for (Future<Sample> future : futures) {
-			Sample sample = null;
-			try {
-				sample = future.get();
-			} catch (InterruptedException | ExecutionException e) {
-				//TODO handle better
-				throw new RuntimeException(e);
-			}
-			samples.add(sample);
+		for (SolrSample solrSample : pageSolrSample) {
+			samples.add(fetch(solrSample.getAccession()));
 		}		
 		Page<Sample> pageSample = new PageImpl<>(samples,pageable, pageSolrSample.getTotalElements());
 		return pageSample;
