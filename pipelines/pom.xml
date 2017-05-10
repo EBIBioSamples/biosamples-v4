@@ -14,6 +14,8 @@
 
 	<profiles>
 		<profile>
+		<!-- this profile contains references to internal-only artifacts -->
+		<!-- i.e. oracle drivers that cannot be redistributed in public -->
 			<id>embl-ebi</id>
 			<modules>
 				<module>accession</module>
