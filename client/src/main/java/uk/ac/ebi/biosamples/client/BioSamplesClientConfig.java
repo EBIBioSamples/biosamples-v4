@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.http.HeaderElement;
 import org.apache.http.HeaderElementIterator;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.conn.ConnectionKeepAliveStrategy;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.cache.CacheConfig;
@@ -38,12 +39,13 @@ public class BioSamplesClientConfig {
 	//sets resttemplate to use connection pooling
 	@Bean
 	@ConditionalOnMissingBean
-	public ClientHttpRequestFactory getClientHttpRequestFactory() {
+	public HttpComponentsClientHttpRequestFactory getClientHttpRequestFactory() {
+    	//TODO add application properties to configure this
 
-    	PoolingHttpClientConnectionManager conman = new PoolingHttpClientConnectionManager();
-    	conman.setMaxTotal(64);
-    	conman.setDefaultMaxPerRoute(64);
-    	conman.setValidateAfterInactivity(1000);
+    	PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
+    	connectionManager.setMaxTotal(64);
+    	connectionManager.setDefaultMaxPerRoute(64);
+    	connectionManager.setValidateAfterInactivity(1000);
     	
     	ConnectionKeepAliveStrategy keepAliveStrategy = new ConnectionKeepAliveStrategy() {
             @Override
@@ -64,61 +66,40 @@ public class BioSamplesClientConfig {
         };
     	
         //use a caching http client to respect cache-content header
-        CacheConfig cacheConfig = CacheConfig.custom()
-                .setMaxCacheEntries(1000)
-                .setMaxObjectSize(8192)
+        CacheConfig cacheConfig = 
+        		CacheConfig.custom()
+                .setMaxCacheEntries(1000) //cache up to 1000 responses
+                .setMaxObjectSize(8*1024*1024) //cache up to 8Mb per response
+                .setSharedCache(false) //behave like a browser cache
                 .build();
+                
+        //enforce a timeout of 60 seconds
+        RequestConfig requestConfig = RequestConfig.custom()
+        		  .setConnectTimeout(60 * 1000)
+        		  .setConnectionRequestTimeout(60 * 1000)
+        		  .setSocketTimeout(60 * 1000)
+        		  .build();
         
+        //build the final client
     	CloseableHttpClient httpClient = 
     			CachingHttpClients.custom()
     	        .setCacheConfig(cacheConfig)
     			.setKeepAliveStrategy(keepAliveStrategy)
-    			.setConnectionManager(conman).build();
+    			.setConnectionManager(connectionManager)
+    			.setDefaultRequestConfig(requestConfig)
+    			.build();
 
-    	//TODO add application properties to configure this
     	return new HttpComponentsClientHttpRequestFactory(httpClient);
-	}
+	}	
 	
-	/**
-	 * Creates a rest template for use with the other components. Configures it to support hal+json
-	 * and to use connection pooling
-	 *  
-	 * @param clientHttpRequestFactory
-	 * @param mapper
-	 * @return
+	
 	@Bean
-	@ConditionalOnMissingBean
-	public RestOperations getRestOperations(RestTemplateBuilder builder, ObjectMapper mapper) {
-
-		//need to create a new message converter to handle hal+json
-		//ObjectMapper mapper = new ObjectMapper();
-		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		mapper.registerModule(new Jackson2HalModule());
-		MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
-		converter.setSupportedMediaTypes(MediaType.parseMediaTypes("application/hal+json"));
-		converter.setObjectMapper(mapper);
-
-		//add the new converters to the restTemplate
-		//but make sure it is BEFORE the existing converters
-		List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();
-		converters.add(0,converter);
-		restTemplate.setMessageConverters(converters);
-
-		return restTemplate;
-	}
-	 */
-
-
-	@Bean
-	public RestTemplateCustomizer restTemplateCustomizer(ClientHttpRequestFactory clientHttpRequestFactory) {
+	public RestTemplateCustomizer restTemplateCustomizer(HttpComponentsClientHttpRequestFactory clientHttpRequestFactory) {
 		return new RestTemplateCustomizer() {
-
 			@Override
 			public void customize(RestTemplate restTemplate) {
 				restTemplate.setRequestFactory(clientHttpRequestFactory);
-				
-			}
-			
+			}			
 		};
 	}
 
