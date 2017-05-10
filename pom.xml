@@ -27,6 +27,12 @@
 		<neo4j-ogm.version>2.1.2</neo4j-ogm.version>
 	</properties>
 
+	<profiles>
+		<profile>
+			<id>embl-ebi</id>
+		</profile>
+	</profiles>
+
 	<modules>
 		<module>models</module>
 		<module>messaging</module>

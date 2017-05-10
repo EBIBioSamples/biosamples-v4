@@ -23,17 +23,24 @@ services:
     - spring.data.neo4j.indexes.auto=assert
     - spring.data.mongodb.host=mongo
     - spring.rabbitmq.publisher-confirms=true
-    - spring.jackson.serialization-inclusion=non_null
     - spring.rabbitmq.host=rabbitmq
+    - spring.jackson.serialization-inclusion=non_null
     - spring.jackson.serialization.WRITE_NULL_MAP_VALUES=false
+    #Configure root path to server from
     - server.servlet.context-path=/biosamples/beta
     - server.context-path=/biosamples/beta
     - management.security.enabled=false
+    #Improve logging
     - logging.file=/logs/webapps-core.log
     - server.tomcat.accesslog.enabled=true
     - server.tomcat.accesslog.directory=/logs
     - server.tomcat.accesslog.prefix=webapps-core.access
     - server.tomcat.accesslog.pattern=%h %l %u %t "%r" %s %b (%D ms)
+    #Enable gzip compression of responses
+    - server.compression.enabled=true
+    - server.compression.mime-types=application/json,application/hal+json,application/xml,text/html,application/json,text/css
+    #Don't waste CPU compressing very small responses
+    - server.compression.min-response-size=2048
     # Charset of HTTP requests and responses. Added to the "Content-Type" header if not set explicitly.
     - spring.http.encoding.charset=UTF-8
     # Enable http encoding support.

@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>pipelines</artifactId>
-	
+
 	<packaging>pom</packaging>
 
 	<parent>
@@ -12,9 +12,19 @@
 		<version>4.0.0-SNAPSHOT</version>
 	</parent>
 
+	<profiles>
+		<profile>
+		<!-- this profile contains references to internal-only artifacts -->
+		<!-- i.e. oracle drivers that cannot be redistributed in public -->
+			<id>embl-ebi</id>
+			<modules>
+				<module>accession</module>
+				<module>ena</module>
+			</modules>
+		</profile>
+	</profiles>
+
 	<modules>
-<!-- 		<module>accession</module> -->
-<!-- 		<module>ena</module> -->
 		<module>ncbi</module>
 		<module>utils</module>
 	</modules>
