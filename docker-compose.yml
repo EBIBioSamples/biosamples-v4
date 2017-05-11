@@ -126,7 +126,8 @@ services:
     - spring.rabbitmq.host=rabbitmq
     - spring.rabbitmq.listener.concurrency=250
     - spring.rabbitmq.listener.max-concurrency=250
-    - biosamples.agent.queuesize=250
+    - biosamples.agent.neo4j.queuesize=250
+    - biosamples.agent.neo4j.queuetime=500
     - spring.data.neo4j.uri=bolt://neo4j:7687
     #- spring.data.neo4j.uri=http://neo4j:7474
     - spring.data.neo4j.username=neo4j
@@ -152,7 +153,8 @@ services:
     - spring.rabbitmq.publisher-confirms=true
     - spring.rabbitmq.listener.concurrency=1000
     - spring.rabbitmq.listener.max-concurrency=1000
-    - biosamples.agent.queuesize=1000
+    - biosamples.agent.solr.queuesize=1000
+    - biosamples.agent.solr.queuetime=10000
     - spring.data.solr.host=http://solr:8983/solr
     - spring.rabbitmq.host=rabbitmq
     - biosamples.agent.solr.stayalive=true

@@ -99,7 +99,7 @@ public class SampleRestController {
 				.withRel("sample"));
 
 		return ResponseEntity.ok()
-				.header(HttpHeaders.CACHE_CONTROL, CacheControl.maxAge(5, TimeUnit.MINUTES).cachePublic().getHeaderValue())
+				.header(HttpHeaders.CACHE_CONTROL, CacheControl.maxAge(15, TimeUnit.MINUTES).cachePublic().getHeaderValue())
 				.body(pagedResources);
 	}
 

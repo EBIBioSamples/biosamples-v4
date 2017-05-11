@@ -62,7 +62,7 @@ public class SampleService {
 	@Autowired
 	private SolrSampleService solrSampleService;
 	@Autowired
-	private SolrSampleThreadSafeService cachedFindSolrSampleByText;
+	private SolrSampleThreadSafeService solrSampleThreadSafeService;
 
 	@Autowired
 	private AmqpTemplate amqpTemplate;
@@ -101,7 +101,7 @@ public class SampleService {
 	public Page<Sample> getSamplesByText(String text, MultiValueMap<String,String> filters, Pageable pageable) {
 		//Page<SolrSample> pageSolrSample = solrSampleService.fetchSolrSampleByText(text, filters, pageable);
 		
-		Page<SolrSample> pageSolrSample = cachedFindSolrSampleByText.fetchSolrSampleByText(text, filters, pageable);
+		Page<SolrSample> pageSolrSample = solrSampleThreadSafeService.fetchSolrSampleByText(text, filters, pageable);
 		
 		// for each result fetch the version from Mongo and add inverse relationships
 		//Page<Sample> pageSample = pageSolrSample.map(ss->fetch(ss.getAccession()));

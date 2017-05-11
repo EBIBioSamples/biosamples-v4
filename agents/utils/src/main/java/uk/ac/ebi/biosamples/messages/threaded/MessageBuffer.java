@@ -25,12 +25,12 @@ public abstract class MessageBuffer<S, T extends CrudRepository<S,?>> {
     public final AtomicBoolean hadProblem = new AtomicBoolean(false);
  
     private final int queueSize;
-    
-    static final int MAX_WAIT = 1000;
+    private final int queueTime;
 	
-	public MessageBuffer(@Autowired T repository, @Autowired MessageProperties messageProperties) {
+	public MessageBuffer(@Autowired T repository, int queueSize, int queueTime) {
 		this.repository = repository;
-		this.queueSize = messageProperties.getAgentQueueSize();
+		this.queueSize = queueSize;
+		this.queueTime = queueTime;
 		messageSampleStatusQueue = new ArrayBlockingQueue<>(queueSize);
 		latestTime = new AtomicLong(0);
 	}
@@ -38,7 +38,7 @@ public abstract class MessageBuffer<S, T extends CrudRepository<S,?>> {
 	public MessageSampleStatus<S> recieve(S sample) throws InterruptedException {
 		//if there is no maximum time
 		//set it to wait in the future
-		latestTime.compareAndSet(0, Instant.now().toEpochMilli()+MAX_WAIT);
+		latestTime.compareAndSet(0, Instant.now().toEpochMilli()+queueTime);
 		
 		MessageSampleStatus<S> status = MessageSampleStatus.build(sample);
 		
