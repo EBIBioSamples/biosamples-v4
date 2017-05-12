@@ -193,7 +193,7 @@ services:
     
   neo4j:
     #we can use enterprise under AGPLv3 because we are open source
-    image: neo4j:3.1.2-enterprise
+    image: neo4j:3.2-enterprise
     environment:
     - NEO4J_AUTH=none
     - NEO4J_dbms_memory_pagecache_size=4G
@@ -206,7 +206,7 @@ services:
     - ./docker/logs/neo4j:/logs
     
   solr:
-    image: solr:6.3-alpine
+    image: solr:6.5-alpine
     ports:
     - 8983:8983
     volumes:
