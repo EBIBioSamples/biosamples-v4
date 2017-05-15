@@ -66,6 +66,10 @@ public class RestSearchRunner implements ApplicationRunner, ExitCodeGenerator {
 			if (response.getBody().getContent().size() <= 0) {
 				throw new RuntimeException("No search results found!");
 			}
+			//check that there is at least one link returned
+			if (response.getBody().getLinks().size() <= 0) {
+				throw new RuntimeException("No search result links found!");
+			}
 		}
 		
 		//if we got here without throwing, then we finished sucessfully

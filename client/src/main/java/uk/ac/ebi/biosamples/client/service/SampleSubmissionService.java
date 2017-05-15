@@ -6,7 +6,9 @@ import java.util.concurrent.ExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.client.Hop;
 import org.springframework.hateoas.client.Traverson;
@@ -44,10 +46,16 @@ public class SampleSubmissionService {
 		// if the sample has an accession, put to that
 		if (sample.getAccession() != null) {
 			// samples with an existing accession should be PUT
-
-			URI uri = URI.create(traverson.follow("samples")
-					.follow(Hop.rel("sample").withParameter("accession", sample.getAccession())).asLink().getHref());
-
+			
+			//don't do all this in traverson because it will get the end and then use the self link
+			//because we might PUT to something that doesn't exist (e.g. migration of data)
+			//this will cause an error. So instead manually de-template the link without getting it.
+			PagedResources<Resource<Sample>> pagedSamples = traverson.follow("samples").toObject(new ParameterizedTypeReference<PagedResources<Resource<Sample>>>(){});			
+			Link sampleLink = pagedSamples.getLink("sample");
+			sampleLink = sampleLink.expand(sample.getAccession());
+			
+			URI uri = URI.create(sampleLink.getHref());
+			
 			log.trace("PUTing to " + uri + " " + sample);
 
 			RequestEntity<Sample> requestEntity = RequestEntity.put(uri).contentType(MediaType.APPLICATION_JSON)

@@ -76,7 +76,6 @@ public class SolrSample {
 	
 	public SolrSample(){}
 	
-	
 	public String getAccession() {
 		return accession;
 	}
@@ -142,16 +141,10 @@ public class SolrSample {
 	/**
 	 * Avoid using this directly, use the SolrSampleToSampleConverter or SampleToSolrSampleConverter instead
 	 * 
-	 * @param name
-	 * @param accession
-	 * @param release
-	 * @param update
-	 * @param attributes
-	 * @param relationships
-	 * @return
 	 */
 	public static SolrSample build(String name, String accession, String release, String update, 
-			Map<String, List<String>> attributeValues, Map<String, List<String>> attributeIris, Map<String, List<String>> attributeUnits) {
+			Map<String, List<String>> attributeValues, Map<String, List<String>> attributeIris, 
+			Map<String, List<String>> attributeUnits) {
 		SolrSample sample = new SolrSample();
 		sample.accession = accession;
 		sample.name = name;
@@ -160,9 +153,9 @@ public class SolrSample {
 		sample.attributeValues = attributeValues;
 		sample.attributeIris = attributeIris;
 		sample.attributeUnits = attributeUnits;
+		
 		//TODO handle relationships too
 		//but how to do inverse?
-		//TODO handle external references
 		//TODO validate maps
 		sample.attributeTypes = null;
 		if (attributeValues != null && attributeValues.keySet().size() > 0) {
@@ -173,7 +166,8 @@ public class SolrSample {
 			}
 			Collections.sort(attributeTypes);
 			sample.attributeTypes = attributeTypes;
-		}
+		}		
+		
 		//copy into the other fields
 		//this should be done in a copyfield but that doesn't work for some reason?
 		sample.autocompleteTerms = new ArrayList<>();

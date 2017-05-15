@@ -11,7 +11,7 @@ docker-compose rm -f -v biosamples-webapps-core biosamples-webapps-sampletab bio
 #cleanup any previous data
 docker volume ls -q | grep mongo_data | xargs docker volume rm
 docker volume ls -q | grep neo4j_data | xargs docker volume rm
-docker volume ls -q | grep solr_samples_data | xargs docker volume rm
+docker volume ls -q | grep solr_data | xargs docker volume rm
 docker volume ls -q | grep rabbitmq_data | xargs docker volume rm
 #remove any images, in case of out-of-date or corrupt images
 #docker images -q | xargs -r docker rmi
