@@ -6,11 +6,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
 
 import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
 
@@ -67,11 +69,26 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 					attributeUnits.get(key).add(attr.getUnit());
 				}
 			}
+		}	
+		//turn external reference into additional attributes for facet & filter
+		for (ExternalReference externalReference : sample.getExternalReferences()) {
+			String value = getNickname(externalReference.getUrl());
+			String key = "external reference";
+			
+			if (attributeValues == null) {
+				attributeValues = new HashMap<>();
+			}			
+			if (!attributeValues.containsKey(key)) {
+				attributeValues.put(key, new ArrayList<>());
+			}
+			attributeValues.get(key).add(value);
 		}
 		
 		String releaseSolr = formatDate(sample.getRelease());
 		String updateSolr = formatDate(sample.getUpdate());		
-				
+			
+		
+		
 		
 		return SolrSample.build(sample.getName(), sample.getAccession(), releaseSolr, updateSolr,
 				attributeValues, attributeIris, attributeUnits);
@@ -90,5 +107,16 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 		d = LocalDateTime.of(year,month,dayOfMonth,hour,minute,second,nano);		
 		String solrDate =  solrDateTimeFormatter.format(d);
 		return solrDate;
+	}
+	
+	private String getNickname(String url) {
+		//TODO make this more configurable
+		if (url.contains("www.ebi.ac.uk/ena")) {
+			return "ENA";
+		} else if (url.contains("www.ebi.ac.uk/arrayexpress")) {
+			return "ArrayExpress";
+		} else {
+			return "other";
+		}
 	}
 }

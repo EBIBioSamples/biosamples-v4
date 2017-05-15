@@ -191,9 +191,17 @@ public class SolrSampleService {
 	}
 	
 	public static String fieldToAttributeType(String field) {
-		//strip _av_ss
-		field = field.substring(0, field.length()-6);
-		field = field.replaceAll("_", " ");
+		//strip _ss
+		if (field.endsWith("_ss")) {
+			field = field.substring(0, field.length()-3);			
+		}		
+		//strip _av
+		if (field.endsWith("_av")) {
+			field = field.substring(0, field.length()-3);			
+		}				
+		//replace _ with space
+		field = field.replace("_", " ");
+		
 		return field;
 	}
 }
