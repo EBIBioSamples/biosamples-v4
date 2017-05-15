@@ -1,0 +1,9 @@
+docker/
+models/
+messaging/
+client/
+ncbi.xml.gz
+**/.settings/
+**/.classpath
+**/.project
+**/bin/
