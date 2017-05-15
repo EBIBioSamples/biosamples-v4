@@ -64,8 +64,6 @@ public class BioSamplesClientConfig {
                     }
                 }
                 //default to one second live time
-                log.info("FOOOM!!!");
-                
                 return 1 * 1000;
             }
         };
