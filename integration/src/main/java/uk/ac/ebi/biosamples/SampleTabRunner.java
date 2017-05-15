@@ -49,14 +49,14 @@ public class SampleTabRunner implements ApplicationRunner, ExitCodeGenerator {
 		switch (Phase.readPhaseFromArguments(args)) {
 		case ONE:
 			runCallableOnSampleTabResource("/GSB-32.txt", sampleTabString -> {
-				log.info("PUTing to " + uri);
+				log.info("POSTing to " + uri);
 				RequestEntity<String> request = RequestEntity.post(uri)
 						.contentType(MediaType.parseMediaType("text/plain;charset=UTF-8")).body(sampleTabString);
 				ResponseEntity<String> response = restTemplate.exchange(request, String.class);
 			});
 
 			runCallableOnSampleTabResource("/GSB-32_unaccession.txt", sampleTabString -> {
-				log.info("PUTing to " + uri);
+				log.info("POSTing to " + uri);
 				RequestEntity<String> request = RequestEntity.post(uri).contentType(MediaType.TEXT_PLAIN)
 						.body(sampleTabString);
 				ResponseEntity<String> response = restTemplate.exchange(request, String.class);
@@ -65,7 +65,7 @@ public class SampleTabRunner implements ApplicationRunner, ExitCodeGenerator {
 			});
 
 			runCallableOnSampleTabResource("/GSB-1004.txt", sampleTabString -> {
-				log.info("PUTing to " + uri);
+				log.info("POSTing to " + uri);
 				RequestEntity<String> request = RequestEntity.post(uri).contentType(MediaType.TEXT_PLAIN)
 						.body(sampleTabString);
 				ResponseEntity<String> response = restTemplate.exchange(request, String.class);
@@ -73,7 +73,7 @@ public class SampleTabRunner implements ApplicationRunner, ExitCodeGenerator {
 			});
 
 			runCallableOnSampleTabResource("/GSB-1000.txt", sampleTabString -> {
-				log.info("PUTing to " + uri);
+				log.info("POSTing to " + uri);
 				RequestEntity<String> request = RequestEntity.post(uri).contentType(MediaType.TEXT_PLAIN)
 						.body(sampleTabString);
 				ResponseEntity<String> response = restTemplate.exchange(request, String.class);
