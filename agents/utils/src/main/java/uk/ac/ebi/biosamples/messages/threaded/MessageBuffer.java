@@ -46,7 +46,15 @@ public abstract class MessageBuffer<S, T extends CrudRepository<S,?>> {
 		messageSampleStatusQueue.put(status);
 		return status;
 	}
-
+	
+	public boolean areAllStored() {
+		for (MessageSampleStatus<S> messageSampleStatus : messageSampleStatusQueue) {
+			if (messageSampleStatus.storedInRepository.get() == false) {
+				return false;
+			}
+		}
+		return true;
+	}
 	
 	@Scheduled(fixedDelay = 100)
 	public void checkQueueStatus() {
