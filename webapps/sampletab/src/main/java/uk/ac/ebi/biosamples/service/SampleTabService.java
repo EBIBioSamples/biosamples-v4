@@ -61,7 +61,7 @@ public class SampleTabService {
 			//otherwise, it is just a group membership tracking dummy
 			if (attributes.size() > 0 || sampleNode.getChildNodes().size() == 0) {			
 				Sample sample = Sample.build(name, accession, release, update, attributes, relationships, externalReferences);
-				sample = bioSamplesClient.persist(sample);
+				sample = bioSamplesClient.persistSample(sample);
 				if (accession == null) {
 					sampleNode.setSampleAccession(sample.getAccession());
 				}
@@ -92,7 +92,7 @@ public class SampleTabService {
 			
 			//this must be the last bit to build and save the object
 			Sample sample = Sample.build(name, accession, release, update, attributes, relationships, externalReferences);
-			sample = bioSamplesClient.persist(sample);
+			sample = bioSamplesClient.persistSample(sample);
 			if (accession == null) {
 				groupNode.setGroupAccession(sample.getAccession());
 			}				
