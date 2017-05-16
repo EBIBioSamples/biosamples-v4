@@ -49,6 +49,10 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 					attributeValues.put(key, new ArrayList<>());
 				}
 				
+				//if there is a unit, add it to the value for search & facet purposes
+				if (attr.getUnit() != null) {
+					value = value+" ("+attr.getUnit()+")";
+				}
 				attributeValues.get(key).add(value);
 
 				if (!attributeIris.containsKey(key)) {
