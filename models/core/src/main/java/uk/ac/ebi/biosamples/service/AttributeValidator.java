@@ -13,6 +13,7 @@ import uk.ac.ebi.biosamples.model.Sample;
 public class AttributeValidator  {
 
 	public void validate(Attribute attribute, Collection<String> errors) {
+		/*
 		if (attribute.getType().length() > 255) {
 			errors.add(attribute+" type too long");
 		}
@@ -25,6 +26,7 @@ public class AttributeValidator  {
 		if (attribute.getUnit() != null && attribute.getUnit().length() > 255) {
 			errors.add(attribute+" unit too long");
 		}
+		*/
 	}
 
 }
