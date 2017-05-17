@@ -135,7 +135,7 @@ public class NcbiElementCallable implements Callable<Void> {
 		Sample sample = Sample.build(name, accession, releaseDate, updateDate, attrs, rels, null);
 		
 		//now pass it along to the actual submission process
-		bioSamplesClient.persist(sample);
+		bioSamplesClient.persistSample(sample);
 
 		log.trace("Element callable finished");
 		

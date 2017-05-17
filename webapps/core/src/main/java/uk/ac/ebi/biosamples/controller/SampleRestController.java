@@ -156,11 +156,7 @@ public class SampleRestController {
 		// TODO compare to existing version to check if changes
 
 		log.info("Recieved PUT for " + accession);
-		try {
-			sample = sampleService.store(sample);
-		} catch (BindException e) {
-			throw new SampleValidationException(e);
-		}
+		sample = sampleService.store(sample);
 
 		// assemble a resource to return
 		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
@@ -172,41 +168,11 @@ public class SampleRestController {
 	@PostMapping(consumes = { MediaType.APPLICATION_JSON_VALUE })
 	public ResponseEntity<Resource<Sample>> post(@RequestBody Sample sample) {
 		log.info("Recieved POST");
-		try {
-			sample = sampleService.store(sample);
-		} catch (BindException e) {
-			throw new SampleValidationException(e);
-		}
+		sample = sampleService.store(sample);
 		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
 
 		// create the response object with the appropriate status
 		return ResponseEntity.created(URI.create(sampleResource.getLink("self").getHref())).body(sampleResource);
 	}
 
-	@SuppressWarnings("unused")
-	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	private class SampleValidationException extends RuntimeException {
-		private static final long serialVersionUID = -7937033504537036300L;
-
-		public SampleValidationException() {
-			super();
-		}
-
-		public SampleValidationException(String message, Throwable cause, boolean enableSuppression,
-				boolean writableStackTrace) {
-			super(message, cause, enableSuppression, writableStackTrace);
-		}
-
-		public SampleValidationException(String message, Throwable cause) {
-			super(message, cause);
-		}
-
-		public SampleValidationException(String message) {
-			super(message);
-		}
-
-		public SampleValidationException(Throwable cause) {
-			super(cause);
-		}
-	}
 }

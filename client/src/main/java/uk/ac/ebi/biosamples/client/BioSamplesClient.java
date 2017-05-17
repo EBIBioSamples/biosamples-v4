@@ -1,5 +1,6 @@
 package uk.ac.ebi.biosamples.client;
 
+import java.util.Collection;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -27,6 +28,7 @@ import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.ExternalReferenceLink;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.service.SampleValidator;
 
 /**
  * This is the primary class for interacting with BioSamples.
@@ -44,9 +46,11 @@ public class BioSamplesClient {
 	private final ExternalReferenceSubmissionService externalReferenceSubmissionService;
 	private final CurationSubmissionService curationSubmissionService;
 	
+	private final SampleValidator sampleValidator;
+	
 	private final ExecutorService threadPoolExecutor;
 	
-	public BioSamplesClient(ClientProperties clientProperties, RestTemplateBuilder restTemplateBuilder) {
+	public BioSamplesClient(ClientProperties clientProperties, RestTemplateBuilder restTemplateBuilder, SampleValidator sampleValidator) {
 		//TODO application.properties this
 		threadPoolExecutor = Executors.newFixedThreadPool(64);
 		
@@ -59,6 +63,8 @@ public class BioSamplesClient {
 		sampleSubmissionService = new SampleSubmissionService(restOperations, traverson, threadPoolExecutor);
 		externalReferenceSubmissionService = new ExternalReferenceSubmissionService(restOperations, traverson, threadPoolExecutor);
 		curationSubmissionService = new CurationSubmissionService(restOperations, traverson, threadPoolExecutor);
+		
+		this.sampleValidator = sampleValidator;
 	}
 
 
@@ -99,6 +105,12 @@ public class BioSamplesClient {
 	}	
 
 	public Resource<Sample> persistSampleResource(Sample sample) throws RestClientException {
+		//validate client-side before submission
+		Collection<String> errors = sampleValidator.validate(sample);		
+		if (errors.size() > 0) {
+			throw new IllegalArgumentException("Sample not valid");
+		}
+		
 		return sampleSubmissionService.submit(sample);
 	}
 	

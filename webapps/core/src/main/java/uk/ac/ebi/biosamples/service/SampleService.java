@@ -2,6 +2,7 @@ package uk.ac.ebi.biosamples.service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -15,6 +16,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
@@ -22,6 +24,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import uk.ac.ebi.biosamples.Messaging;
 import uk.ac.ebi.biosamples.model.Autocomplete;
@@ -111,17 +114,17 @@ public class SampleService {
 	//is replaced. But because it keys on accession, only do that for updates (PUT) not unaccessioned samples (POST)
 	//Note, pages of samples will not be cache busted, only single-accession sample retrieval
 	@CacheEvict(cacheNames=WebappProperties.fetch, key="#sample.accession", condition="#sample.accession != null")
-	public Sample store(Sample sample) throws BindException {
+	public Sample store(Sample sample) {
 		// TODO check if there is an existing copy and if there are any changes
 		
 		// save the submission in the repository
 		mongoSubmissionRepository.save(new MongoSubmission(sample, LocalDateTime.now()));
 
 		//do validation
-		BindException errors = new BindException(sample, "sample");
-		ValidationUtils.invokeValidator(sampleValidator, sample, errors);
-		if (errors.hasErrors()) {
-			throw errors;
+		Collection<String> errors = sampleValidator.validate(sample);
+		if (errors.size() > 0) {
+			log.error("Found errors : "+errors);
+			throw new SampleValidationException();
 		}
 		
 		
@@ -143,6 +146,32 @@ public class SampleService {
 		//return the sample in case we have modified it i.e accessioned
 		return sample;
 	}
-	
+
+	@SuppressWarnings("unused")
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	public class SampleValidationException extends RuntimeException {
+		private static final long serialVersionUID = -7937033504537036300L;
+
+		public SampleValidationException() {
+			super();
+		}
+
+		public SampleValidationException(String message, Throwable cause, boolean enableSuppression,
+				boolean writableStackTrace) {
+			super(message, cause, enableSuppression, writableStackTrace);
+		}
+
+		public SampleValidationException(String message, Throwable cause) {
+			super(message, cause);
+		}
+
+		public SampleValidationException(String message) {
+			super(message);
+		}
+
+		public SampleValidationException(Throwable cause) {
+			super(cause);
+		}
+	}
 	
 }

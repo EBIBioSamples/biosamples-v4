@@ -1,5 +1,8 @@
 package uk.ac.ebi.biosamples.service;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 import org.springframework.stereotype.Service;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
@@ -9,29 +12,25 @@ import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
 
 @Service
-public class SampleValidator implements Validator {
+public class SampleValidator {
 
 	private final AttributeValidator attributeValidator;
 	
 	public SampleValidator(AttributeValidator attributeValidator) {
 		this.attributeValidator = attributeValidator;
 	}
-	
-	@Override
-	public boolean supports(Class<?> clazz) {
-		return Sample.class.isAssignableFrom(clazz);
-	}
 
-	@Override
-	public void validate(Object target, Errors errors) {
-		Sample sample = (Sample) target;
-		
-        errors.pushNestedPath("attributes");
+	public Collection<String> validate(Sample sample) {
+		Collection<String> errors = new ArrayList<String>();
+		validate(sample,errors);
+		return errors;
+	}
+	
+	public void validate(Sample sample, Collection<String> errors) {
+		//TODO more validation
 		for (Attribute attribute : sample.getAttributes()) {
-            ValidationUtils.invokeValidator(this.attributeValidator, attribute, errors);
+			attributeValidator.validate(attribute, errors);
 		}
-        errors.popNestedPath();
-        //TODO more validation
 	}
 
 }
