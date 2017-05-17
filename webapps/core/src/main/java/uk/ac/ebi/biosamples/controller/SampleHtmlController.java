@@ -37,6 +37,7 @@ import uk.ac.ebi.biosamples.model.SampleFacet;
 import uk.ac.ebi.biosamples.model.SampleFacetValue;
 import uk.ac.ebi.biosamples.service.FacetService;
 import uk.ac.ebi.biosamples.service.FilterService;
+import uk.ac.ebi.biosamples.service.SamplePageService;
 import uk.ac.ebi.biosamples.service.SampleService;
 
 /**
@@ -54,11 +55,14 @@ public class SampleHtmlController {
 	private Logger log = LoggerFactory.getLogger(getClass());
 
 	private final SampleService sampleService;
+	private final SamplePageService samplePageService;
 	private final FacetService facetService;
 	private final FilterService filterService;
 
-	public SampleHtmlController(SampleService sampleService, FacetService facetService, FilterService filterService) {
+	public SampleHtmlController(SampleService sampleService, 
+			SamplePageService samplePageService,FacetService facetService, FilterService filterService) {
 		this.sampleService = sampleService;
+		this.samplePageService = samplePageService;
 		this.facetService = facetService;
 		this.filterService = filterService;
 	}
@@ -87,7 +91,7 @@ public class SampleHtmlController {
 		MultiValueMap<String, String> filtersMap = filterService.getFilters(filters);
 						
 		Pageable pageable = new PageRequest(start/rows, rows);
-		Page<Sample> pageSample = sampleService.getSamplesByText(text, filtersMap, pageable);
+		Page<Sample> pageSample = samplePageService.getSamplesByText(text, filtersMap, pageable);
 		//default to getting 10 values from 10 facets
 		List<SampleFacet> sampleFacets = facetService.getFacets(text, filtersMap, 10, 10);
 		

@@ -6,21 +6,16 @@ import java.util.TreeSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
 
 @Service
 public class FilterService {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 	
-	@Autowired
-	private SolrSampleService solrSampleService;
-
 	public MultiValueMap<String,String> getFilters(String[] filterStrings) {
 		if (filterStrings == null) return new LinkedMultiValueMap<>();
 		if (filterStrings.length == 0) return new LinkedMultiValueMap<>();

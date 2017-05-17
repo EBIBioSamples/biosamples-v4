@@ -22,7 +22,8 @@ public class CurationService {
 	private NeoCurationRepository neoCurationRepository;
 	@Autowired
 	private NeoCurationLinkRepository neoCurationLinkRepository;
-	
+
+	//TODO use a ConversionService to manage all these
 	@Autowired
 	private NeoCurationToCurationConverter neoCurationToCurationConverter;
 	@Autowired

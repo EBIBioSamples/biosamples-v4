@@ -10,6 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -17,6 +19,9 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
+import org.springframework.validation.BindException;
+import org.springframework.validation.Errors;
+import org.springframework.validation.ValidationUtils;
 
 import uk.ac.ebi.biosamples.Messaging;
 import uk.ac.ebi.biosamples.model.Autocomplete;
@@ -30,6 +35,7 @@ import uk.ac.ebi.biosamples.neo.service.modelconverter.NeoSampleToSampleConverte
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
 import uk.ac.ebi.biosamples.solr.service.SolrSampleThreadSafeService;
 import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
+import uk.ac.ebi.biosamples.WebappProperties;
 
 /**
  * Service layer business logic for centralising repository access and
@@ -59,10 +65,12 @@ public class SampleService {
 	private NeoSampleToSampleConverter neoSampleToSampleConverter;
 	
 	
+	@Autowired 
+	private SampleValidator sampleValidator;
+	
 	@Autowired
 	private SolrSampleService solrSampleService;
-	@Autowired
-	private SolrSampleThreadSafeService solrSampleThreadSafeService;
+	
 
 	@Autowired
 	private AmqpTemplate amqpTemplate;
@@ -74,6 +82,8 @@ public class SampleService {
 	 * @return
 	 * @throws IllegalArgumentException
 	 */
+	//can't use a sync cache because we need to use CacheEvict
+	@Cacheable(cacheNames=WebappProperties.fetch)
 	public Sample fetch(String accession) throws IllegalArgumentException {
 		
 		log.info("Fetching accession from neoSampleRepository "+accession);
@@ -92,50 +102,29 @@ public class SampleService {
 		return sample;
 	}
 	
-	@Async("threadPoolTaskExecutor")
-	public Future<Sample> fetchAsync(String accession) {
-		return new AsyncResult<>(fetch(accession));
-	}
-	
-	//does this asynchonously
-	public Page<Sample> getSamplesByText(String text, MultiValueMap<String,String> filters, Pageable pageable) {
-		//Page<SolrSample> pageSolrSample = solrSampleService.fetchSolrSampleByText(text, filters, pageable);
-		
-		Page<SolrSample> pageSolrSample = solrSampleThreadSafeService.fetchSolrSampleByText(text, filters, pageable);
-		
-		// for each result fetch the version from Mongo and add inverse relationships
-		//Page<Sample> pageSample = pageSolrSample.map(ss->fetch(ss.getAccession()));
-		
-		List<Future<Sample>> futures = new ArrayList<>();
-		for (SolrSample solrSample : pageSolrSample) {
-			futures.add(fetchAsync(solrSample.getAccession()));
-		}
-		List<Sample> samples = new ArrayList<>();
-		for (Future<Sample> future : futures) {
-			Sample sample = null;
-			try {
-				sample = future.get();
-			} catch (InterruptedException | ExecutionException e) {
-				//TODO handle better
-				throw new RuntimeException(e);
-			}
-			samples.add(sample);
-		}		
-		Page<Sample> pageSample = new PageImpl<>(samples,pageable, pageSolrSample.getTotalElements());
-		return pageSample;
-	}
-	
 	
 	public Autocomplete getAutocomplete(String autocompletePrefix, MultiValueMap<String,String> filters, int noSuggestions) {
 		return solrSampleService.getAutocomplete(autocompletePrefix, filters, noSuggestions);
 	}
 
-	public Sample store(Sample sample) {
+	//because the fetch caches the sample, if an updated version is stored, we need to make sure that any cached version
+	//is replaced. But because it keys on accession, only do that for updates (PUT) not unaccessioned samples (POST)
+	//Note, pages of samples will not be cache busted, only single-accession sample retrieval
+	@CacheEvict(cacheNames=WebappProperties.fetch, key="#sample.accession", condition="#sample.accession != null")
+	public Sample store(Sample sample) throws BindException {
 		// TODO check if there is an existing copy and if there are any changes
 		
 		// save the submission in the repository
 		mongoSubmissionRepository.save(new MongoSubmission(sample, LocalDateTime.now()));
 
+		//do validation
+		BindException errors = new BindException(sample, "sample");
+		ValidationUtils.invokeValidator(sampleValidator, sample, errors);
+		if (errors.hasErrors()) {
+			throw errors;
+		}
+		
+		
 		// TODO validate that relationships have this sample as the source 
 		
 		//assign it a new accession		
@@ -154,25 +143,6 @@ public class SampleService {
 		//return the sample in case we have modified it i.e accessioned
 		return sample;
 	}
-	
-	public Page<Sample> getSamplesOfExternalReference(String urlHash, Pageable pageable) {
-		Page<NeoSample> pageNeoSample = neoSampleRepository.findByExternalReferenceUrlHash(urlHash, pageable);
-		//get them in greater depth
-		pageNeoSample.map(s -> neoSampleRepository.findOne(s.getAccession(), 2));		
-		//convert them into a state to return
-		Page<Sample> pageSample = pageNeoSample.map(neoSampleToSampleConverter);
-		return pageSample;
-	}
-
-	public Page<Sample> getSamplesOfCuration(String hash, Pageable pageable) {
-		Page<NeoSample> pageNeoSample = neoSampleRepository.findByCurationHash(hash, pageable);
-		//get them in greater depth
-		pageNeoSample.map(s -> neoSampleRepository.findOne(s.getAccession(), 2));		
-		//convert them into a state to return
-		Page<Sample> pageSample = pageNeoSample.map(neoSampleToSampleConverter);
-		return pageSample;
-	}
-
 	
 	
 }

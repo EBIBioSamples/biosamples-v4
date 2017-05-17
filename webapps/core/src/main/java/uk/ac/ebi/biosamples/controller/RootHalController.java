@@ -1,8 +1,12 @@
 package uk.ac.ebi.biosamples.controller;
 
+import java.util.concurrent.TimeUnit;
+
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.ResourceSupport;
+import org.springframework.http.CacheControl;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,7 +37,9 @@ public class RootHalController {
     	resource.add(entityLinks.linkToCollectionResource(ExternalReference.class).withRel("externalReferences"));
     	resource.add(entityLinks.linkToCollectionResource(Curation.class).withRel("curations"));
     	
-    	return ResponseEntity.ok().body(resource);
+    	return ResponseEntity.ok()
+				.header(HttpHeaders.CACHE_CONTROL, CacheControl.maxAge(60, TimeUnit.MINUTES).cachePublic().getHeaderValue())
+				.body(resource);
     }
 			
 }

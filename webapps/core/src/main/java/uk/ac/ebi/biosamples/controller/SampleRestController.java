@@ -22,6 +22,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
+import org.springframework.validation.BindException;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,10 +32,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.FilterService;
+import uk.ac.ebi.biosamples.service.SamplePageService;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 import uk.ac.ebi.biosamples.service.SampleService;
 
@@ -53,6 +56,7 @@ import uk.ac.ebi.biosamples.service.SampleService;
 public class SampleRestController {
 
 	private final SampleService sampleService;
+	private final SamplePageService samplePageService;
 	private final FilterService filterService;
 
 	private final SampleResourceAssembler sampleResourceAssembler;
@@ -61,9 +65,11 @@ public class SampleRestController {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 
-	public SampleRestController(SampleService sampleService, FilterService filterService,
+	public SampleRestController(SampleService sampleService, 
+			SamplePageService samplePageService,FilterService filterService,
 			SampleResourceAssembler sampleResourceAssembler, EntityLinks entityLinks) {
 		this.sampleService = sampleService;
+		this.samplePageService = samplePageService;
 		this.filterService = filterService;
 		this.sampleResourceAssembler = sampleResourceAssembler;
 		this.entityLinks = entityLinks;
@@ -79,7 +85,7 @@ public class SampleRestController {
 		MultiValueMap<String, String> filtersMap = filterService.getFilters(filter);
 		
 		
-		Page<Sample> pageSample = sampleService.getSamplesByText(text, filtersMap, page);
+		Page<Sample> pageSample = samplePageService.getSamplesByText(text, filtersMap, page);
 		
 		// add the links to each individual sample on the page
 		// also adds links to first/last/next/prev at the same time
@@ -134,6 +140,7 @@ public class SampleRestController {
 
 		// create the response object with the appropriate status
 		return ResponseEntity.ok().lastModified(sample.getUpdate().toEpochSecond(ZoneOffset.UTC))
+				//.header(HttpHeaders.CACHE_CONTROL, CacheControl.maxAge(1, TimeUnit.MINUTES).cachePublic().getHeaderValue())
 				.eTag(String.valueOf(sample.hashCode())).contentType(MediaTypes.HAL_JSON).body(sampleResource);
 	}
 
@@ -149,7 +156,11 @@ public class SampleRestController {
 		// TODO compare to existing version to check if changes
 
 		log.info("Recieved PUT for " + accession);
-		sampleService.store(sample);
+		try {
+			sample = sampleService.store(sample);
+		} catch (BindException e) {
+			throw new SampleValidationException(e);
+		}
 
 		// assemble a resource to return
 		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
@@ -161,10 +172,41 @@ public class SampleRestController {
 	@PostMapping(consumes = { MediaType.APPLICATION_JSON_VALUE })
 	public ResponseEntity<Resource<Sample>> post(@RequestBody Sample sample) {
 		log.info("Recieved POST");
-		sample = sampleService.store(sample);
+		try {
+			sample = sampleService.store(sample);
+		} catch (BindException e) {
+			throw new SampleValidationException(e);
+		}
 		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
 
 		// create the response object with the appropriate status
 		return ResponseEntity.created(URI.create(sampleResource.getLink("self").getHref())).body(sampleResource);
+	}
+
+	@SuppressWarnings("unused")
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	private class SampleValidationException extends RuntimeException {
+		private static final long serialVersionUID = -7937033504537036300L;
+
+		public SampleValidationException() {
+			super();
+		}
+
+		public SampleValidationException(String message, Throwable cause, boolean enableSuppression,
+				boolean writableStackTrace) {
+			super(message, cause, enableSuppression, writableStackTrace);
+		}
+
+		public SampleValidationException(String message, Throwable cause) {
+			super(message, cause);
+		}
+
+		public SampleValidationException(String message) {
+			super(message);
+		}
+
+		public SampleValidationException(Throwable cause) {
+			super(cause);
+		}
 	}
 }

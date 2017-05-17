@@ -51,6 +51,8 @@ public class RestRunner implements ApplicationRunner, ExitCodeGenerator {
 
 	@Override
 	public void run(ApplicationArguments args) throws Exception {
+		
+		//TODO check that large attribtues are rejected with 400 
 
 		log.info("Starting RestRunner");
 		

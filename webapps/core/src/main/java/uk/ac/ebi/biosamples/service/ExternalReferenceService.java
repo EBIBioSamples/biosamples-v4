@@ -22,12 +22,12 @@ public class ExternalReferenceService {
 	private NeoExternalReferenceRepository neoExternalReferenceRepository;
 	@Autowired
 	private NeoExternalReferenceLinkRepository neoExternalReferenceLinkRepository;
-	
+
+	//TODO use a ConversionService to manage all these
 	@Autowired
 	private NeoExternalReferenceToExternalReferenceConverter neoExternalReferenceToExternalReferenceConverter;
 	@Autowired
-	private NeoExternalReferenceLinkToExternalReferenceLinkConverter neoExternalReferenceLinkToExternalReferenceLinkConverter;
-	
+	private NeoExternalReferenceLinkToExternalReferenceLinkConverter neoExternalReferenceLinkToExternalReferenceLinkConverter;	
 	@Autowired
 	private ExternalReferenceLinkToNeoExternalReferenceLinkConverter externalReferenceLinkToNeoExternalReferenceLinkConverter;
 	

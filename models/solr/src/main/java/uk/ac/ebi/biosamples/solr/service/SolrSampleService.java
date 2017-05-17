@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -25,6 +26,7 @@ import uk.ac.ebi.biosamples.model.Autocomplete;
 import uk.ac.ebi.biosamples.model.SampleFacet;
 import uk.ac.ebi.biosamples.model.SampleFacetsBuilder;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
+import uk.ac.ebi.biosamples.solr.SolrConfig;
 import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
 
 /**
@@ -43,6 +45,7 @@ public class SolrSampleService {
 		this.solrSampleRepository = solrSampleRepository;
 	}		
 
+	@Cacheable(cacheNames=SolrConfig.FETCHSOLRSAMPLEBYTEXT, sync=true)
 	public Page<SolrSample> fetchSolrSampleByText(String searchTerm, MultiValueMap<String,String> filters, Pageable pageable) {
 		//default to search all
 		if (searchTerm == null || searchTerm.trim().length() == 0) {
@@ -64,7 +67,8 @@ public class SolrSampleService {
 		// return the samples from solr that match the query
 		return solrSampleRepository.findByQuery(query);
 	}
-		
+
+	@Cacheable(cacheNames=SolrConfig.GETFACETS, sync=true)
 	public List<SampleFacet> getFacets(String searchTerm, MultiValueMap<String,String> filters, Pageable facetPageable, Pageable facetValuePageable) {
 		//default to search all
 		if (searchTerm == null || searchTerm.trim().length() == 0) {
@@ -112,7 +116,8 @@ public class SolrSampleService {
 		return builder.build();
 		
 	}
-	
+
+	@Cacheable(cacheNames=SolrConfig.GETAUTOCOMPLETE, sync=true)
 	public Autocomplete getAutocomplete(String autocompletePrefix, MultiValueMap<String,String> filters, int maxSuggestions) {
 		//default to search all
 		String searchTerm = "*:*";

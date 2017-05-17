@@ -24,6 +24,7 @@ import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.ExternalReferenceResourceAssembler;
 import uk.ac.ebi.biosamples.service.ExternalReferenceService;
+import uk.ac.ebi.biosamples.service.SamplePageService;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 import uk.ac.ebi.biosamples.service.SampleService;
 
@@ -33,6 +34,7 @@ import uk.ac.ebi.biosamples.service.SampleService;
 public class ExternalReferenceRestController {
 
 	private final SampleService sampleService;
+	private final SamplePageService samplePageService;
 	private final ExternalReferenceService externalReferenceService;
 	
 	private final SampleResourceAssembler sampleResourceAssembler;
@@ -43,11 +45,13 @@ public class ExternalReferenceRestController {
 	private Logger log = LoggerFactory.getLogger(getClass());
 
 	public ExternalReferenceRestController(SampleService sampleService, 
+			SamplePageService samplePageService,
 			ExternalReferenceService externalReferenceService,
 			SampleResourceAssembler sampleResourceAssembler,
 			ExternalReferenceResourceAssembler externalReferenceResourceAssembler,
 			EntityLinks entityLinks) {
 		this.sampleService = sampleService;
+		this.samplePageService = samplePageService;
 		this.entityLinks = entityLinks;
 		this.sampleResourceAssembler = sampleResourceAssembler;
 		this.externalReferenceService = externalReferenceService;
@@ -95,7 +99,7 @@ public class ExternalReferenceRestController {
     	}
 
     	//get the content from the services
-    	Page<Sample> pageSample = sampleService.getSamplesOfExternalReference(urlhash, pageable);    	
+    	Page<Sample> pageSample = samplePageService.getSamplesOfExternalReference(urlhash, pageable);    	
     	
     	//use the resource assembler and a link to this method to build out the response content
 		PagedResources<Resource<Sample>> pagedResources = pageAssembler.toResource(pageSample, sampleResourceAssembler,

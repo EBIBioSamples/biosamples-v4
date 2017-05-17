@@ -24,6 +24,7 @@ import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.CurationResourceAssembler;
 import uk.ac.ebi.biosamples.service.CurationService;
+import uk.ac.ebi.biosamples.service.SamplePageService;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 import uk.ac.ebi.biosamples.service.SampleService;
 
@@ -33,6 +34,7 @@ import uk.ac.ebi.biosamples.service.SampleService;
 public class CurationRestController {
 
 	private final SampleService sampleService;
+	private final SamplePageService samplePageService;
 	private final CurationService curationService;
 	
 	private final SampleResourceAssembler sampleResourceAssembler;
@@ -43,11 +45,13 @@ public class CurationRestController {
 	private Logger log = LoggerFactory.getLogger(getClass());
 
 	public CurationRestController(SampleService sampleService, 
+			SamplePageService samplePageService,
 			CurationService curationService,
 			SampleResourceAssembler sampleResourceAssembler,
 			CurationResourceAssembler curationResourceAssembler,
 			EntityLinks entityLinks) {
 		this.sampleService = sampleService;
+		this.samplePageService = samplePageService;
 		this.entityLinks = entityLinks;
 		this.sampleResourceAssembler = sampleResourceAssembler;
 		this.curationService = curationService;
@@ -95,7 +99,7 @@ public class CurationRestController {
     	}
 
     	//get the content from the services
-    	Page<Sample> pageSample = sampleService.getSamplesOfCuration(hash, pageable);    	
+    	Page<Sample> pageSample = samplePageService.getSamplesOfCuration(hash, pageable);    	
     	
     	//use the resource assembler and a link to this method to build out the response content
 		PagedResources<Resource<Sample>> pagedResources = pageAssembler.toResource(pageSample, sampleResourceAssembler,
