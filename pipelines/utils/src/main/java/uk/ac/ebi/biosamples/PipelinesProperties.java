@@ -14,7 +14,7 @@ public class PipelinesProperties {
 	@Value("${biosamples.threadcount:1}")
 	private int threadCount;
 
-	@Value("${biosamples.threadcount.max:32}")
+	@Value("${biosamples.threadcount.max:8}")
 	private int threadCountMax;
 	
 	public File getNcbiFile() {
