@@ -10,6 +10,8 @@ import java.util.stream.StreamSupport;
 
 import javax.annotation.PreDestroy;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.PagedResources;
@@ -40,6 +42,8 @@ import uk.ac.ebi.biosamples.service.SampleValidator;
  */
 @Service
 public class BioSamplesClient {
+
+	private Logger log = LoggerFactory.getLogger(getClass());
 	
 	private final SampleRetrievalService sampleRetrievalService;
 	private final SampleSubmissionService sampleSubmissionService;
@@ -108,6 +112,7 @@ public class BioSamplesClient {
 		//validate client-side before submission
 		Collection<String> errors = sampleValidator.validate(sample);		
 		if (errors.size() > 0) {
+			log.info("Errors : "+errors);
 			throw new IllegalArgumentException("Sample not valid");
 		}
 		
