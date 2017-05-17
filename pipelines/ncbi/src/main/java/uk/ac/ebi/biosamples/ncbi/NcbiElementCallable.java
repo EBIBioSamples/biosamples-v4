@@ -74,7 +74,15 @@ public class NcbiElementCallable implements Callable<Void> {
 
 		
 		if (XmlPathBuilder.of(sampleElem).path("Description", "Comment", "Paragraph").exists()) {
-			attrs.add(Attribute.build("description", XmlPathBuilder.of(sampleElem).path("Description", "Comment", "Paragraph").text(),  null,  null));
+			String key = "description";
+			String value = XmlPathBuilder.of(sampleElem).path("Description", "Comment", "Paragraph").text().trim();
+			/*
+			if (value.length() > 255) {
+				log.warn("Truncating attribute "+key+" for length on "+accession);
+				value = value.substring(0, 252)+"...";
+			}
+			*/
+			attrs.add(Attribute.build(key, value,  null,  null));
 		}
 
 		// handle the organism		
@@ -100,6 +108,12 @@ public class NcbiElementCallable implements Callable<Void> {
 				key = attrElem.attributeValue("attribute_name");
 			}
 			String value = attrElem.getTextTrim();
+			/*
+			if (value.length() > 255) {
+				log.warn("Truncating attribute "+key+" for length on "+accession);
+				value = value.substring(0, 252)+"...";
+			}
+			*/
 			//value is a sample accession, assume its a relationship
 			if (value.matches("SAM[END]A?[0-9]+")) {
 				//if its a self-relationship, then don't add it
