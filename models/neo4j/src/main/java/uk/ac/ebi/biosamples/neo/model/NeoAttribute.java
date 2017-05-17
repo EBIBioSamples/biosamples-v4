@@ -16,19 +16,15 @@ public class NeoAttribute implements Comparable<NeoAttribute> {
 	private Long id;
 
 	@Property
-	@Index
 	private String type;
 
 	@Property
-	@Index
 	private String value;
 
 	@Property
-	@Index
 	private String iri;
 
 	@Property
-	@Index
 	private String unit;
 	
 	@Property

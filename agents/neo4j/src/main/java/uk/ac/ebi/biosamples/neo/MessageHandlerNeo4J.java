@@ -7,6 +7,7 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import uk.ac.ebi.biosamples.MessageContent;
 import uk.ac.ebi.biosamples.Messaging;
 import uk.ac.ebi.biosamples.messages.threaded.MessageSampleStatus;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -32,15 +33,11 @@ public class MessageHandlerNeo4J {
 	private SampleToNeoSampleConverter sampleToNeoSampleConverter;
 
 	@RabbitListener(queues = Messaging.queueToBeIndexedNeo4J)
-	//@Transactional
-	public void handle(Sample sample) {
-		log.trace("Handling "+sample.getAccession());
-		
-		NeoSample neoSample = sampleToNeoSampleConverter.convert(sample);
-		
-		MessageSampleStatus<NeoSample> messageSampleStatus;
+	public void handle(MessageContent messageContent) {
+				
+		MessageSampleStatus<MessageContent> messageSampleStatus;
 		try {
-			messageSampleStatus = messageBuffer.recieve(neoSample);
+			messageSampleStatus = messageBuffer.recieve(messageContent);
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		}
@@ -58,13 +55,10 @@ public class MessageHandlerNeo4J {
 		if (messageSampleStatus.hadProblem.isMarked()) {
 			throw messageSampleStatus.hadProblem.getReference();
 		}
-		
-		
-		//repository.save(neoSample);
 
-		// send a message for further processing
-		amqpTemplate.convertAndSend(Messaging.exchangeForCuration, "", sample);
-		
-		log.trace("Handed "+sample.getAccession());
+		// send a message for further processing if necessary
+		if (messageContent.hasSample()) {
+			amqpTemplate.convertAndSend(Messaging.exchangeForIndexingSolr, "", messageContent.getSample());
+		}
 	}
 }

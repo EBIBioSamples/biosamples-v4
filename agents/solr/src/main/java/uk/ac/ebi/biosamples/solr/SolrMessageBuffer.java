@@ -9,14 +9,17 @@ import uk.ac.ebi.biosamples.solr.model.SolrSample;
 import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
 
 @Component
-public class SolrMessageBuffer extends MessageBuffer<SolrSample, SolrSampleRepository> {
+public class SolrMessageBuffer extends MessageBuffer<SolrSample> {
 
-	public SolrMessageBuffer(SolrSampleRepository repository, AgentSolrProperties properties) {
-		super(repository, properties.getAgentSolrQueueSize(), properties.getAgentSolrQueueTime());
+	private final SolrSampleRepository repository;
+	
+	public SolrMessageBuffer(AgentSolrProperties properties, SolrSampleRepository repository) {
+		super(properties.getAgentSolrQueueSize(), properties.getAgentSolrQueueTime());
+		this.repository = repository;
 	}
 
 	@Override
-	protected void save(SolrSampleRepository repository, Collection<SolrSample> samples) {
+	protected void save(Collection<SolrSample> samples) {
 		repository.save(samples);		
 	}
 

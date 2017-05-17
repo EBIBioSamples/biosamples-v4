@@ -15,10 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.scheduling.annotation.Scheduled;
 
-public abstract class MessageBuffer<S, T extends CrudRepository<S,?>> {
+public abstract class MessageBuffer<S> {
 	private Logger log = LoggerFactory.getLogger(this.getClass());
-
-	private final T repository;	
 	
     private final BlockingQueue<MessageSampleStatus<S>> messageSampleStatusQueue;
     private final AtomicLong latestTime;
@@ -27,8 +25,7 @@ public abstract class MessageBuffer<S, T extends CrudRepository<S,?>> {
     private final int queueSize;
     private final int queueTime;
 	
-	public MessageBuffer(@Autowired T repository, int queueSize, int queueTime) {
-		this.repository = repository;
+	public MessageBuffer(int queueSize, int queueTime) {
 		this.queueSize = queueSize;
 		this.queueTime = queueTime;
 		messageSampleStatusQueue = new ArrayBlockingQueue<>(queueSize);
@@ -91,7 +88,7 @@ public abstract class MessageBuffer<S, T extends CrudRepository<S,?>> {
 				messageSampleStatuses.stream().forEach(m -> samples.add(m.sample));
 		
 				//send everything as a single transaction
-				save(repository, samples);
+				save(samples);
 				//this was a hard commit so they are now written to disk
 				
 				//if there was a problem, an exception would be thrown
@@ -118,5 +115,5 @@ public abstract class MessageBuffer<S, T extends CrudRepository<S,?>> {
 	 * @param repository
 	 * @param samples
 	 */
-	protected abstract void save(T repository, Collection<S> samples);
+	protected abstract void save(Collection<S> samples);
 }

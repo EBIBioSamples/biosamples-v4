@@ -26,6 +26,7 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import uk.ac.ebi.biosamples.MessageContent;
 import uk.ac.ebi.biosamples.Messaging;
 import uk.ac.ebi.biosamples.model.Autocomplete;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -142,7 +143,7 @@ public class SampleService {
 		}
 		
 		// send a message for further processing
-		amqpTemplate.convertAndSend(Messaging.exchangeForIndexing, "", sample);
+		amqpTemplate.convertAndSend(Messaging.exchangeForIndexing, "", MessageContent.build(sample, false));
 		//return the sample in case we have modified it i.e accessioned
 		return sample;
 	}
