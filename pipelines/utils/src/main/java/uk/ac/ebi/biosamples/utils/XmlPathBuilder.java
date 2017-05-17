@@ -40,20 +40,20 @@ public class XmlPathBuilder {
 		return target;
 	}
 	
-	@SuppressWarnings("unchecked")
 	public List<Element> elements() {
-		
+		return elements(null);
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Element> elements(String name) {
 		List<Element> elements = new ArrayList<>();
         for (Iterator<Element> i = element().elementIterator(); i.hasNext();) {
             Element child = i.next();
-            elements.add(child);
+            if (name == null || child.getName().equals(name)) {
+            	elements.add(child);
+            }
         }
-		
-		return elements;
-	}
-	
-	public List<Element> elements(String name) {
-		return elements().stream().filter(e -> e.getName().equals(name)).collect(Collectors.toList());
+        return elements;
 	}
 	
 	public String text() {
