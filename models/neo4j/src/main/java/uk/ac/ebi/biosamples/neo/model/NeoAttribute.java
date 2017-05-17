@@ -7,6 +7,8 @@ import org.neo4j.ogm.annotation.Index;
 import org.neo4j.ogm.annotation.NodeEntity;
 import org.neo4j.ogm.annotation.Property;
 
+import com.google.common.hash.Hashing;
+
 @NodeEntity(label = "Attribute")
 public class NeoAttribute implements Comparable<NeoAttribute> {
 
@@ -136,14 +138,14 @@ public class NeoAttribute implements Comparable<NeoAttribute> {
 		
 		//build the composite identifier here so that neo4j can use it as a primary index
 		//to unique and merge nodes
-		String compositeIdentifier = type+"_"+value;
-		if (iri != null)  {
-			compositeIdentifier = compositeIdentifier+"|"+iri;
-		}
-		if (unit != null)  {
-			compositeIdentifier = compositeIdentifier+"|"+unit;
-		}
-		neoAttribute.compositeIdentifier = compositeIdentifier;
+		//simple concatenation can get too long, so use a hash here
+		neoAttribute.compositeIdentifier = Hashing.sha256().newHasher()
+			.putUnencodedChars(Objects.nonNull(type) ? type : "")
+			.putUnencodedChars(Objects.nonNull(value) ? value : "")
+			.putUnencodedChars(Objects.nonNull(iri) ? iri : "")
+			.putUnencodedChars(Objects.nonNull(unit) ? unit : "")
+			.hash().toString();
+		
 		return neoAttribute;
 	}
 }
