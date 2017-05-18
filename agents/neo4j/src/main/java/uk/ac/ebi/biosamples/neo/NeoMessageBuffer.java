@@ -76,7 +76,7 @@ public class NeoMessageBuffer extends MessageBuffer<MessageContent> {
 				curationLinks.add(neoCurationLink);
 			}
 		}
-		
+		//TODO make this a single transaction instead of 3 transactions
 		neoSampleRepository.save(samples);
 		neoExternalReferenceLinkRepository.save(externalRefenceLinks);
 		neoCurationLinkRepository.save(curationLinks);

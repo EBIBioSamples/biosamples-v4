@@ -27,6 +27,7 @@ public class MongoSubmission {
 	private String user;
 
 	private Sample sample;
+	//TODO also store submission of curation and external reference links
 	
 	private MongoSubmission(){}
 	
