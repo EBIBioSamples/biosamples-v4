@@ -95,6 +95,10 @@ public class BioSamplesClient {
 		}
 	}
 
+	public Iterable<Resource<Sample>> fetchSampleResourceAll() throws RestClientException {
+		return sampleRetrievalService.fetchAll();
+	}
+
 	public Iterable<Optional<Resource<Sample>>> fetchSampleResourceAll(Iterable<String> accessions) throws RestClientException {
 		return sampleRetrievalService.fetchAll(accessions);
 	}

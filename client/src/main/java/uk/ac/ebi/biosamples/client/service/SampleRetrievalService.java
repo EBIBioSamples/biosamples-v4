@@ -14,6 +14,7 @@ import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
@@ -102,14 +103,81 @@ public class SampleRetrievalService {
 					return Optional.empty();
 				}
 			}
-			if (!responseEntity.getStatusCode().is2xxSuccessful()) {
-				log.error("Unable to GET " + accession + " : " + responseEntity.toString());
-				throw new RuntimeException("Problem GETing " + accession);
-			}
-
 			log.info("GOTted " + uri);
 
 			return Optional.of(responseEntity.getBody());
+		}
+	}
+	
+	public Iterable<Resource<Sample>> fetchAll() {
+		return new IterableResourceFetchAll(traverson);
+	}
+
+	private class IterableResourceFetchAll implements Iterable<Resource<Sample>> {
+
+		//TODO pre-emtively grab the next page as a future
+		
+		private final Traverson traverson;
+		
+		public IterableResourceFetchAll(Traverson traverson) {
+			this.traverson = traverson;
+		}
+		
+		public Iterator<Resource<Sample>> iterator() {
+			//get the first page
+			//PagedResources<Resource<Sample>> page = traverson.follow("samples").toObject(new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {});
+			URI uri = UriComponentsBuilder.fromHttpUrl(traverson.follow("samples").asLink().getHref()).queryParam("size", "1000").build().toUri();
+			RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
+			ResponseEntity<PagedResources<Resource<Sample>>> responseEntity = restOperations.exchange(requestEntity,
+					new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {
+					});
+			return new IteratorResourceFetchAll(responseEntity.getBody());
+		}
+		
+		private class IteratorResourceFetchAll implements Iterator<Resource<Sample>> {
+
+			
+			private PagedResources<Resource<Sample>> page;
+			private Iterator<Resource<Sample>> pageIterator;
+			
+			public IteratorResourceFetchAll(PagedResources<Resource<Sample>> page) {
+				this.page = page;
+				this.pageIterator = page.iterator();
+			}
+			
+			@Override
+			public boolean hasNext() {
+				if (pageIterator.hasNext()) {
+					return true;
+				}
+				//does the page have a next page?
+				if (page.hasLink(Link.REL_NEXT)) {
+					return true;
+				}
+				return false;
+			}
+
+			@Override
+			public Resource<Sample> next() {
+				if (pageIterator.hasNext()) {
+					return pageIterator.next();
+				}
+				//does the page have a next page?
+				if (page.hasLink(Link.REL_NEXT)) {
+					URI uri = URI.create(page.getLink(Link.REL_NEXT).getHref());
+					RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
+					ResponseEntity<PagedResources<Resource<Sample>>> responseEntity = restOperations.exchange(requestEntity,
+							new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {
+							});
+					this.page = responseEntity.getBody();
+					this.pageIterator = page.iterator();
+					return this.pageIterator.next();
+				}
+				//no more in this iterator and no more pages, so end	
+				throw new NoSuchElementException();
+			}
+			
+			
 		}
 	}
 
