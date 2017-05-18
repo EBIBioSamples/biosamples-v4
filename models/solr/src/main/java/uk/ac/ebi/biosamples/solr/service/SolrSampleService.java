@@ -29,11 +29,6 @@ import uk.ac.ebi.biosamples.solr.model.SolrSample;
 import uk.ac.ebi.biosamples.solr.SolrConfig;
 import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
 
-/**
- * Consider using solrSampleAsyncService or SolrSampleThreadSafeService
- * instead of this class.
- * 
- */
 @Service
 public class SolrSampleService {
 
