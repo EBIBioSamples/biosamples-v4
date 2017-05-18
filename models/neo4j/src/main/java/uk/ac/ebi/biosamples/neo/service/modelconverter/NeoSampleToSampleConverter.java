@@ -16,14 +16,28 @@ import uk.ac.ebi.biosamples.neo.model.NeoExternalReference;
 import uk.ac.ebi.biosamples.neo.model.NeoExternalReferenceLink;
 import uk.ac.ebi.biosamples.neo.model.NeoRelationship;
 import uk.ac.ebi.biosamples.neo.model.NeoSample;
+import uk.ac.ebi.biosamples.neo.repo.NeoExternalReferenceLinkRepository;
+import uk.ac.ebi.biosamples.neo.repo.NeoSampleRepository;
 
 @Service
-@ConfigurationPropertiesBinding
 public class NeoSampleToSampleConverter
 		implements Converter<NeoSample, Sample> {
 	
+	private final NeoExternalReferenceLinkRepository neoExternalReferenceLinkRepository;
+	
+	public NeoSampleToSampleConverter(NeoExternalReferenceLinkRepository neoExternalReferenceLinkRepository) {
+		this.neoExternalReferenceLinkRepository = neoExternalReferenceLinkRepository;
+	}
+	
+	/**
+	 * This will load associated objects as necessary.
+	 * 
+	 * 
+	 */
 	@Override
 	public Sample convert(NeoSample neo) {		
+		
+		
 		Set<Attribute> attributes = new HashSet<>();
 		if (neo.getAttributes() != null) {
 			for (NeoAttribute attribute : neo.getAttributes()) {
@@ -32,8 +46,11 @@ public class NeoSampleToSampleConverter
 		}
 		Set<ExternalReference> externalReferences = new HashSet<>();
 		if (neo.getExternalReferenceLinks() != null) {
-			for (NeoExternalReferenceLink externalReferenceApplication : neo.getExternalReferenceLinks()) {
-				NeoExternalReference neoExternalReference = externalReferenceApplication.getExternalReference(); 
+			for (NeoExternalReferenceLink externalReferenceLink : neo.getExternalReferenceLinks()) {
+				//recursively load external reference links to ensure that the external references exist
+				externalReferenceLink = neoExternalReferenceLinkRepository.findOneByHash(externalReferenceLink.getHash(), 1);
+				
+				NeoExternalReference neoExternalReference = externalReferenceLink.getExternalReference(); 
 				if (neoExternalReference != null) {
 					externalReferences.add(ExternalReference.build(neoExternalReference.getUrl()));
 				}
