@@ -27,5 +27,6 @@
 	<modules>
 		<module>ncbi</module>
 		<module>utils</module>
+		<module>curation</module>
 	</modules>
 </project>
