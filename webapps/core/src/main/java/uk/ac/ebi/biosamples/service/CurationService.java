@@ -1,10 +1,13 @@
 package uk.ac.ebi.biosamples.service;
 
+import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import uk.ac.ebi.biosamples.MessageContent;
+import uk.ac.ebi.biosamples.Messaging;
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.neo.model.NeoCuration;
@@ -31,6 +34,9 @@ public class CurationService {
 	@Autowired
 	private CurationLinkToNeoCurationLinkConverter curationLinkToNeoCurationLinkConverter;
 
+	@Autowired
+	private AmqpTemplate amqpTemplate;
+	
 	public Page<Curation> getPage(Pageable pageable) {
 		Page<NeoCuration> pageNeoCuration = neoCurationRepository.findAll(pageable,2);
 		Page<Curation> pageCuration = pageNeoCuration.map(neoCurationToCurationConverter);		
@@ -62,9 +68,8 @@ public class CurationService {
 	}
 	
 	public CurationLink store(CurationLink curationLink) {
-		NeoCurationLink neo = curationLinkToNeoCurationLinkConverter.convert(curationLink);
-		neo = neoCurationLinkRepository.save(neo);
-		return neoCurationLinkToCurationLinkConverter.convert(neo);
+		amqpTemplate.convertAndSend(Messaging.exchangeForIndexing, "", MessageContent.build(curationLink, false));
+		return curationLink;
 	}
 
 }

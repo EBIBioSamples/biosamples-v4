@@ -1,10 +1,13 @@
 package uk.ac.ebi.biosamples.service;
 
+import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import uk.ac.ebi.biosamples.MessageContent;
+import uk.ac.ebi.biosamples.Messaging;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.ExternalReferenceLink;
 import uk.ac.ebi.biosamples.neo.model.NeoExternalReference;
@@ -22,7 +25,7 @@ public class ExternalReferenceService {
 	private NeoExternalReferenceRepository neoExternalReferenceRepository;
 	@Autowired
 	private NeoExternalReferenceLinkRepository neoExternalReferenceLinkRepository;
-
+	
 	//TODO use a ConversionService to manage all these
 	@Autowired
 	private NeoExternalReferenceToExternalReferenceConverter neoExternalReferenceToExternalReferenceConverter;
@@ -30,6 +33,9 @@ public class ExternalReferenceService {
 	private NeoExternalReferenceLinkToExternalReferenceLinkConverter neoExternalReferenceLinkToExternalReferenceLinkConverter;	
 	@Autowired
 	private ExternalReferenceLinkToNeoExternalReferenceLinkConverter externalReferenceLinkToNeoExternalReferenceLinkConverter;
+
+	@Autowired
+	private AmqpTemplate amqpTemplate;
 	
 	public Page<ExternalReference> getPage(Pageable pageable){
 		Page<NeoExternalReference> pageNeoExternalReference = neoExternalReferenceRepository.findAll(pageable,2);
@@ -62,9 +68,8 @@ public class ExternalReferenceService {
 	}
 	
 	public ExternalReferenceLink store(ExternalReferenceLink externalReferenceLink) {
-		NeoExternalReferenceLink neo = externalReferenceLinkToNeoExternalReferenceLinkConverter.convert(externalReferenceLink);
-		neo = neoExternalReferenceLinkRepository.save(neo);
-		return neoExternalReferenceLinkToExternalReferenceLinkConverter.convert(neo);
+		amqpTemplate.convertAndSend(Messaging.exchangeForIndexing, "", MessageContent.build(externalReferenceLink, false));
+		return externalReferenceLink;
 	}
 
 }

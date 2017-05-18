@@ -126,8 +126,7 @@ public class SampleService {
 			log.error("Found errors : "+errors);
 			throw new SampleValidationException();
 		}
-		
-		
+				
 		// TODO validate that relationships have this sample as the source 
 		
 		//assign it a new accession		
@@ -141,7 +140,7 @@ public class SampleService {
 					sample.getCharacteristics(), sample.getRelationships(), sample.getExternalReferences());
 		}
 		
-		// send a message for further processing
+		// send a message for storage and further processing
 		amqpTemplate.convertAndSend(Messaging.exchangeForIndexing, "", MessageContent.build(sample, false));
 		//return the sample in case we have modified it i.e accessioned
 		return sample;
