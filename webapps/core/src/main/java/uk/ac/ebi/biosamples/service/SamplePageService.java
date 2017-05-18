@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +33,6 @@ import uk.ac.ebi.biosamples.neo.service.NeoAccessionService;
 import uk.ac.ebi.biosamples.neo.service.modelconverter.NeoSampleToSampleConverter;
 import uk.ac.ebi.biosamples.solr.SolrConfig;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
-import uk.ac.ebi.biosamples.solr.service.SolrSampleThreadSafeService;
 import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
 
 /**
@@ -63,13 +64,16 @@ public class SamplePageService {
 	
 
 	@Cacheable(cacheNames=WebappProperties.getSamplesByText, sync=true)
-	public Page<Sample> getSamplesByText(String text, MultiValueMap<String,String> filters, Pageable pageable) {
-		//Page<SolrSample> pageSolrSample = solrSampleService.fetchSolrSampleByText(text, filters, pageable);
-		
+	public Page<Sample> getSamplesByText(String text, MultiValueMap<String,String> filters, Pageable pageable) {		
 		Page<SolrSample> pageSolrSample = solrSampleService.fetchSolrSampleByText(text, filters, pageable);
 		
-		// for each result fetch the version from Mongo and add inverse relationships
-		Page<Sample> pageSample = pageSolrSample.map(ss->sampleService.fetch(ss.getAccession()));
+		// for each result fetch the stored and add inverse relationships
+		
+		//stream process each solrSample into a sample *in parallel*
+		Page<Sample> pageSample = new PageImpl<>(StreamSupport.stream(pageSolrSample.spliterator(), true)
+					.map(ss->sampleService.fetch(ss.getAccession())).collect(Collectors.toList()), 
+				pageable,pageSolrSample.getTotalElements()); 
+		
 		
 		return pageSample;
 	}

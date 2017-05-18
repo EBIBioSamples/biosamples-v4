@@ -37,7 +37,6 @@ import uk.ac.ebi.biosamples.neo.repo.NeoSampleRepository;
 import uk.ac.ebi.biosamples.neo.service.NeoAccessionService;
 import uk.ac.ebi.biosamples.neo.service.modelconverter.NeoSampleToSampleConverter;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
-import uk.ac.ebi.biosamples.solr.service.SolrSampleThreadSafeService;
 import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
 import uk.ac.ebi.biosamples.WebappProperties;
 
@@ -93,7 +92,7 @@ public class SampleService {
 		log.info("Fetching accession from neoSampleRepository "+accession);
 		
 		// return the raw sample from the repository
-		NeoSample neoSample = neoSampleRepository.findOneByAccession(accession,2);
+		NeoSample neoSample = neoSampleRepository.findOneByAccession(accession,1);
 		if (neoSample == null) {
 			throw new IllegalArgumentException("Unable to find sample (" + accession + ")");
 		}
