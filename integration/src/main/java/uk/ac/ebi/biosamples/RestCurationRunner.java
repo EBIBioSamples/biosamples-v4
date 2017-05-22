@@ -148,7 +148,7 @@ public class RestCurationRunner implements ApplicationRunner, ExitCodeGenerator 
 
 		if (paged.getMetadata().getTotalElements() != 2) {
 			throw new RuntimeException(
-					"Expecting 2 external references, found " + paged.getMetadata().getTotalElements());
+					"Expecting 2 curations, found " + paged.getMetadata().getTotalElements());
 		}
 
 	}

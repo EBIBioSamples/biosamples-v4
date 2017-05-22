@@ -18,8 +18,8 @@ public class MessageContent {
 
 	private MessageContent(Sample sample, ExternalReferenceLink externalReferenceLink, CurationLink curationLink, boolean delete) {
 		this.sample = sample;
-		this.externalReferenceLink = null;
-		this.curationLink = null;
+		this.externalReferenceLink = externalReferenceLink;
+		this.curationLink = curationLink;
 		this.delete = delete;
 	}
 	
