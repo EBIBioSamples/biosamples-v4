@@ -19,7 +19,7 @@ public class SolrMessageBuffer extends MessageBuffer<SolrSample> {
 	}
 
 	@Override
-	protected void save(Collection<SolrSample> samples) {
+	public void save(Collection<SolrSample> samples) {
 		repository.save(samples);		
 	}
 

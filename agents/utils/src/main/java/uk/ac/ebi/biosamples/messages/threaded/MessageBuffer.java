@@ -115,5 +115,5 @@ public abstract class MessageBuffer<S> {
 	 * @param repository
 	 * @param samples
 	 */
-	protected abstract void save(Collection<S> samples);
+	public abstract void save(Collection<S> samples);
 }

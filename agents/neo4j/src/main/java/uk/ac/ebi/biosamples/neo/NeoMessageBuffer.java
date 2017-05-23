@@ -31,65 +31,19 @@ import uk.ac.ebi.biosamples.neo.service.modelconverter.SampleToNeoSampleConverte
 
 @Component
 public class NeoMessageBuffer extends MessageBuffer<MessageContent> {
-	private Logger log = LoggerFactory.getLogger(this.getClass());
-
-	private final NeoSampleRepository neoSampleRepository;
-	private final SampleToNeoSampleConverter sampleToNeoSampleConverter;
-
-	private final NeoExternalReferenceLinkRepository neoExternalReferenceLinkRepository;
-
-	private final NeoCurationLinkRepository neoCurationLinkRepository;
 	
-	public NeoMessageBuffer(AgentNeo4JProperties properties, NeoSampleRepository neoSampleRepository,
-			SampleToNeoSampleConverter sampleToNeoSampleConverter,
-			NeoExternalReferenceLinkRepository neoExternalReferenceLinkRepository,
-			NeoCurationLinkRepository neoCurationLinkRepository) {
+	private final NeoMessageBufferTransaction neoMessageBufferTransaction;
+	
+	private Logger log = LoggerFactory.getLogger(this.getClass());
+	
+	public NeoMessageBuffer(AgentNeo4JProperties properties, NeoMessageBufferTransaction neoMessageBufferTransaction) {
 		super(properties.getAgentNeo4JQueueSize(), properties.getAgentNeo4JQueueTime());
-		this.neoSampleRepository = neoSampleRepository;
-		this.sampleToNeoSampleConverter = sampleToNeoSampleConverter;
-		this.neoExternalReferenceLinkRepository = neoExternalReferenceLinkRepository;
-		this.neoCurationLinkRepository = neoCurationLinkRepository;
+		this.neoMessageBufferTransaction = neoMessageBufferTransaction;
 	}
 
 	@Override
-	@Transactional
-	protected void save(Collection<MessageContent> messageContents) {		
-		for (MessageContent messageContent : messageContents) {
-			if (messageContent.hasSample()) {
-				Sample sample = messageContent.getSample();
-				NeoSample neoSample = sampleToNeoSampleConverter.convert(sample);
-				neoSampleRepository.save(neoSample);
-			}
-			if (messageContent.hasExternalReferenceLink()) {
-				ExternalReferenceLink externalRefrerenceLink = messageContent.getExternalReferenceLink();
-				
-				NeoExternalReference neoExternalReference = NeoExternalReference.build(externalRefrerenceLink.getUrl());
-				NeoSample neoSample = neoSampleRepository.findOneByAccession(externalRefrerenceLink.getSample(), 0);	
-				
-				NeoExternalReferenceLink neoExternalReferenceLink = NeoExternalReferenceLink.build(neoExternalReference, neoSample);
-				
-				neoExternalReferenceLinkRepository.save(neoExternalReferenceLink);
-			}
-			if (messageContent.hasCurationLink()) {
-				CurationLink curationLink = messageContent.getCurationLink();
-				
-				Collection<NeoAttribute> attributesPre = new ArrayList<>();
-				Collection<NeoAttribute> attributesPost = new ArrayList<>();
-				for (Attribute attribute : curationLink.getCuration().getAttributesPre()) {
-					attributesPre.add(NeoAttribute.build(attribute.getType(), attribute.getValue(), attribute.getIri(), attribute.getUnit()));
-				}
-				for (Attribute attribute : curationLink.getCuration().getAttributesPost()) {
-					attributesPost.add(NeoAttribute.build(attribute.getType(), attribute.getValue(), attribute.getIri(), attribute.getUnit()));
-				}
-				
-				NeoCuration neoCuration = NeoCuration.build(attributesPre, attributesPost);
-				NeoSample neoSample = neoSampleRepository.findOneByAccession(curationLink.getSample(), 0);
-				
-				NeoCurationLink neoCurationLink = NeoCurationLink.build(neoCuration, neoSample);
-				
-				neoCurationLinkRepository.save(neoCurationLink);
-			}
-		}
+	public void save(Collection<MessageContent> messageContents) {		
+		neoMessageBufferTransaction.save(messageContents);
 	}
 
 }
