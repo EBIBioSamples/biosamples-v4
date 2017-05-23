@@ -91,7 +91,7 @@ public class SampleToNeoSampleConverterTest {
 		
 		neoSample.getRelationships().add(NeoRelationship.build(NeoSample.create("TEST1"), "derived from", NeoSample.create("TEST2")));
 		
-		neoSample.getExternalReferenceLinks().add(NeoExternalReferenceLink.build(neoSample, NeoExternalReference.build("http://www.google.com")));
+		neoSample.getExternalReferenceLinks().add(NeoExternalReferenceLink.build(NeoExternalReference.build("http://www.google.com"), neoSample));
 
 		return neoSample;
 	}

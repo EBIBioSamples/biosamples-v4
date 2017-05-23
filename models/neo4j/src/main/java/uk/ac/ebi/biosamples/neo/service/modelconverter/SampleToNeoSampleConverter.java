@@ -34,7 +34,7 @@ public class SampleToNeoSampleConverter
 			//create the external reference node
 			NeoExternalReference neoExternalReference = NeoExternalReference.build(externalReference.getUrl());
 			//build the link from both ends
-			NeoExternalReferenceLink neoExternalReferenceApplication = NeoExternalReferenceLink.build(neoSample, neoExternalReference);
+			NeoExternalReferenceLink neoExternalReferenceApplication = NeoExternalReferenceLink.build(neoExternalReference, neoSample);
 			//then add the link back to the ends
 			neoSample.getExternalReferenceLinks().add(neoExternalReferenceApplication);
 			neoExternalReference.getLinks().add(neoExternalReferenceApplication);

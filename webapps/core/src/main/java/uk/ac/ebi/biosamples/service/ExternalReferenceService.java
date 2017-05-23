@@ -14,7 +14,6 @@ import uk.ac.ebi.biosamples.neo.model.NeoExternalReference;
 import uk.ac.ebi.biosamples.neo.model.NeoExternalReferenceLink;
 import uk.ac.ebi.biosamples.neo.repo.NeoExternalReferenceLinkRepository;
 import uk.ac.ebi.biosamples.neo.repo.NeoExternalReferenceRepository;
-import uk.ac.ebi.biosamples.neo.service.modelconverter.ExternalReferenceLinkToNeoExternalReferenceLinkConverter;
 import uk.ac.ebi.biosamples.neo.service.modelconverter.NeoExternalReferenceLinkToExternalReferenceLinkConverter;
 import uk.ac.ebi.biosamples.neo.service.modelconverter.NeoExternalReferenceToExternalReferenceConverter;
 
@@ -31,8 +30,6 @@ public class ExternalReferenceService {
 	private NeoExternalReferenceToExternalReferenceConverter neoExternalReferenceToExternalReferenceConverter;
 	@Autowired
 	private NeoExternalReferenceLinkToExternalReferenceLinkConverter neoExternalReferenceLinkToExternalReferenceLinkConverter;	
-	@Autowired
-	private ExternalReferenceLinkToNeoExternalReferenceLinkConverter externalReferenceLinkToNeoExternalReferenceLinkConverter;
 
 	@Autowired
 	private AmqpTemplate amqpTemplate;

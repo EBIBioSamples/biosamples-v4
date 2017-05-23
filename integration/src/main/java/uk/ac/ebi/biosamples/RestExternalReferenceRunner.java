@@ -71,6 +71,9 @@ public class RestExternalReferenceRunner implements ApplicationRunner, ExitCodeG
 		} else if (args.containsOption("phase") && Integer.parseInt(args.getOptionValues("phase").get(0)) == 3) {
 
 			testSampleExternalReferences(sample, 11);
+			
+			//check there was no side-effects
+			client.fetchSample(sample.getAccession());
 		}
 
 		// if we got here without throwing, then we finished successfully

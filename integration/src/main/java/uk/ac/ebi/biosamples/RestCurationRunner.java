@@ -85,6 +85,9 @@ public class RestCurationRunner implements ApplicationRunner, ExitCodeGenerator 
 			testCurations();
 			
 			testSampleCurations(sample);
+			
+			//check there was no side-effects
+			client.fetchSample(sample.getAccession());
 		}
 
 		// if we got here without throwing, then we finished successfully

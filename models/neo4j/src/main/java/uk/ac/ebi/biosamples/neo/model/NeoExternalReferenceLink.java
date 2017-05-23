@@ -118,7 +118,7 @@ public class NeoExternalReferenceLink implements Comparable<NeoExternalReference
 		return 0;
 	}
 
-	public static NeoExternalReferenceLink build(NeoSample sample, NeoExternalReference externalReference) {
+	public static NeoExternalReferenceLink build(NeoExternalReference externalReference, NeoSample sample) {
 
     	String hash = Hashing.sha256().newHasher()
 			.putUnencodedChars(externalReference.getUrl())

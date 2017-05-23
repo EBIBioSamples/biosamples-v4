@@ -14,7 +14,6 @@ import uk.ac.ebi.biosamples.neo.model.NeoCuration;
 import uk.ac.ebi.biosamples.neo.model.NeoCurationLink;
 import uk.ac.ebi.biosamples.neo.repo.NeoCurationLinkRepository;
 import uk.ac.ebi.biosamples.neo.repo.NeoCurationRepository;
-import uk.ac.ebi.biosamples.neo.service.modelconverter.CurationLinkToNeoCurationLinkConverter;
 import uk.ac.ebi.biosamples.neo.service.modelconverter.NeoCurationLinkToCurationLinkConverter;
 import uk.ac.ebi.biosamples.neo.service.modelconverter.NeoCurationToCurationConverter;
 
@@ -31,8 +30,6 @@ public class CurationService {
 	private NeoCurationToCurationConverter neoCurationToCurationConverter;
 	@Autowired
 	private NeoCurationLinkToCurationLinkConverter neoCurationLinkToCurationLinkConverter;
-	@Autowired
-	private CurationLinkToNeoCurationLinkConverter curationLinkToNeoCurationLinkConverter;
 
 	@Autowired
 	private AmqpTemplate amqpTemplate;
