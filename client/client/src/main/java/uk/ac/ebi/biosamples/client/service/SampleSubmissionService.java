@@ -52,6 +52,9 @@ public class SampleSubmissionService {
 			//this will cause an error. So instead manually de-template the link without getting it.
 			PagedResources<Resource<Sample>> pagedSamples = traverson.follow("samples").toObject(new ParameterizedTypeReference<PagedResources<Resource<Sample>>>(){});			
 			Link sampleLink = pagedSamples.getLink("sample");
+			if (sampleLink == null) {
+				throw new NullPointerException("Unable to find sample link");
+			}
 			sampleLink = sampleLink.expand(sample.getAccession());
 			
 			URI uri = URI.create(sampleLink.getHref());

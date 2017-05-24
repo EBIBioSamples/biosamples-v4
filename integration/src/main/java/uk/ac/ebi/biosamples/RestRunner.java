@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.ExitCodeGenerator;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.annotation.Order;
@@ -41,18 +42,21 @@ public class RestRunner implements ApplicationRunner, ExitCodeGenerator {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 
-	@Autowired
-	private IntegrationProperties integrationProperties;
+	private final IntegrationProperties integrationProperties;
 
-	@Autowired
-	private RestOperations restTemplate;
+	private final RestOperations restTemplate;
 	
 	private int exitCode = 1;
+	
+	public RestRunner(RestTemplateBuilder restTemplateBuilder, IntegrationProperties integrationProperties) {
+		this.restTemplate = restTemplateBuilder.build();
+		this.integrationProperties = integrationProperties;
+	}
 
 	@Override
 	public void run(ApplicationArguments args) throws Exception {
 		
-		//TODO check that large attribtues are rejected with 400 
+		//TODO check that large attributes are rejected with 400 
 
 		log.info("Starting RestRunner");
 		

@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.ExitCodeGenerator;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.annotation.Order;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Autocomplete;
 
 @Component
@@ -27,11 +29,17 @@ public class RestAutocompleteRunner implements ApplicationRunner, ExitCodeGenera
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 
-	@Autowired
-	private IntegrationProperties integrationProperties;
+	private final IntegrationProperties integrationProperties;
 
-	@Autowired
-	private RestOperations restTemplate;
+	private final RestOperations restTemplate;
+
+	private final BioSamplesClient client;
+	
+	public RestAutocompleteRunner(RestTemplateBuilder restTemplateBuilder, IntegrationProperties integrationProperties, BioSamplesClient client) {
+		this.client = client;
+		this.restTemplate = restTemplateBuilder.build();
+		this.integrationProperties = integrationProperties;
+	}
 	
 	private int exitCode = 1;
 

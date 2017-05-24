@@ -1,16 +1,13 @@
-package uk.ac.ebi.biosamples;
+package uk.ac.ebi.biosamples.client;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.boot.web.client.RestTemplateCustomizer;
-//import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
-import org.springframework.boot.web.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.hal.Jackson2HalModule;
@@ -22,21 +19,26 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.client.ClientProperties;
+import uk.ac.ebi.biosamples.service.AttributeValidator;
 import uk.ac.ebi.biosamples.service.SampleValidator;
 
-@SpringBootApplication
-public class Application extends SpringBootServletInitializer {
+@Configuration
+@ConditionalOnMissingBean(BioSamplesClient.class)
+public class BioSamplesAutoConfiguration {
 
-	public static void main(String[] args) {
-		SpringApplication.run(Application.class, args);
+	@Bean	
+	public AttributeValidator attributeValidator() {
+		return new AttributeValidator();
 	}
-
+	
+	@Bean	
+	public SampleValidator sampleValidator(AttributeValidator attributeValidator) {
+		return new SampleValidator(attributeValidator);
+	}
+	
 	@Bean
 	public BioSamplesClient bioSamplesClient(ClientProperties clientProperties, 
-			RestTemplateBuilder restTemplateBuilder, SampleValidator sampleValidator) {
-		
+			RestTemplateBuilder restTemplateBuilder, SampleValidator sampleValidator) {		
 		//make sure there is a application/hal+json converter		
 		//traverson will make its own but not if we want to customize the resttemplate in any way (e.g. caching)
 		restTemplateBuilder = restTemplateBuilder.additionalCustomizers(new RestTemplateCustomizer() {
@@ -57,8 +59,6 @@ public class Application extends SpringBootServletInitializer {
 				restTemplate.setMessageConverters(converters);
 			}			
 		});
-		
-		
 		return new BioSamplesClient(clientProperties, restTemplateBuilder, sampleValidator);
 	}
 }

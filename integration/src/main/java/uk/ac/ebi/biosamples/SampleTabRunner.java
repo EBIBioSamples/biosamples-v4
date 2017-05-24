@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.ExitCodeGenerator;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
@@ -28,14 +29,17 @@ public class SampleTabRunner implements ApplicationRunner, ExitCodeGenerator {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 
-	@Autowired
-	private IntegrationProperties integrationProperties;
+	private final IntegrationProperties integrationProperties;
 
-	@Autowired
-	private RestOperations restTemplate;
+	private final RestOperations restTemplate;
 
-	@Autowired
-	private BioSamplesClient biosamplesClient;
+	private final BioSamplesClient client;
+	
+	public SampleTabRunner(RestTemplateBuilder restTemplateBuilder, IntegrationProperties integrationProperties, BioSamplesClient client) {
+		this.client = client;
+		this.restTemplate = restTemplateBuilder.build();
+		this.integrationProperties = integrationProperties;
+	}
 
 	private int exitCode = 1;
 
@@ -84,11 +88,11 @@ public class SampleTabRunner implements ApplicationRunner, ExitCodeGenerator {
 			
 		case TWO:
 			// check at the right URLs with GET to make sure UTF arrived
-			if (!biosamplesClient.fetch("SAMEA2186845").getCharacteristics()
+			if (!client.fetch("SAMEA2186845").getCharacteristics()
 					.contains(Attribute.build("description", "Test sample α"))) {
 				throw new RuntimeException("SAMEA2186845 does not have 'description':'Test sample α'");
 			}
-			if (!biosamplesClient.fetch("SAMEA2186844").getCharacteristics()
+			if (!client.fetch("SAMEA2186844").getCharacteristics()
 					.contains(Attribute.build("description", "Test sample β"))) {
 				throw new RuntimeException("SAMEA2186844 does not have 'description':'Test sample β'");
 			}

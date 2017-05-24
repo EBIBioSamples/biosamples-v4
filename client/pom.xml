@@ -2,9 +2,9 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>client</artifactId>
+	<artifactId>client-pom</artifactId>
 
-	<packaging>jar</packaging>
+	<packaging>pom</packaging>
 
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
@@ -13,31 +13,8 @@
 		<relativePath>../</relativePath>
 	</parent>
 
-	<dependencies>
-		<dependency>
-			<groupId>uk.ac.ebi.biosamples</groupId>
-			<artifactId>models-core</artifactId>
-			<version>${bsd2017.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.hateoas</groupId>
-			<artifactId>spring-hateoas</artifactId>
-		</dependency>
-		<!-- unmentioned requirements of hateoas -->
-		<dependency>
-			<groupId>org.springframework.plugin</groupId>
-			<artifactId>spring-plugin-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.jayway.jsonpath</groupId>
-			<artifactId>json-path</artifactId>
-		</dependency>
-
-		<!-- HTTP POST handling -->
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient-cache</artifactId>
-			<version>${httpclient.version}</version>
-		</dependency>
-	</dependencies>
+	<modules>
+		<module>client</module>
+		<module>starter</module>
+	</modules>
 </project>

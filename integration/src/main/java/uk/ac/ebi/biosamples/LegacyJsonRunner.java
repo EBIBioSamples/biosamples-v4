@@ -12,12 +12,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.ExitCodeGenerator;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.RestOperations;
 
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
@@ -33,10 +35,10 @@ public class LegacyJsonRunner implements ApplicationRunner, ExitCodeGenerator {
 
     private int exitCode = 1;
 
-    private final BiosamplesRestOperations biosamplesCommonRest;
+    private final RestOperations restOperations;
 
-    public LegacyJsonRunner(BiosamplesRestOperations biosamplesCommonRest) {
-        this.biosamplesCommonRest = biosamplesCommonRest;
+    public LegacyJsonRunner(RestTemplateBuilder restTemplateBuilder) {
+        this.restOperations = restTemplateBuilder.build();
     }
 
     @Override
@@ -44,18 +46,20 @@ public class LegacyJsonRunner implements ApplicationRunner, ExitCodeGenerator {
         switch (Phase.readPhaseFromArguments(args)) {
             case ONE:
                 Sample sample  = this.getSampleTest();
-                doGetAndFail(sample);
-                doPut(sample);
-                doGetAndSuccess(sample);
+//                doGetAndFail(sample);
+//                doPut(sample);
                 break;
             case TWO:
+//              doGetAndSuccess(sample);
                 break;
             default:
 
         }
     }
+
+/*    
     private Sample doGetAndSuccess(Sample sample) {
-        ResponseEntity<Resource<Sample>> response = biosamplesCommonRest.doGet(sample);
+        ResponseEntity<Resource<Sample>> response = restOperations.doGet(sample);
         // check the status code is 200 success
         if (!HttpStatus.OK.equals(response.getStatusCode())) {
             throw new RuntimeException("Expected a 200 response");
@@ -71,7 +75,7 @@ public class LegacyJsonRunner implements ApplicationRunner, ExitCodeGenerator {
 
     private void doGetAndFail(Sample sample) {
         try {
-            biosamplesCommonRest.doGet(sample);
+            restOperations.doGet(sample);
         } catch (HttpStatusCodeException e) {
             if (HttpStatus.NOT_FOUND.equals(e.getStatusCode())) {
                 // we expect to get a 404 error
@@ -85,9 +89,10 @@ public class LegacyJsonRunner implements ApplicationRunner, ExitCodeGenerator {
     }
 
     private void doPut(Sample sample) {
-       biosamplesCommonRest.doPut(sample);
+       restOperations.doPut(sample);
     }
-
+*/
+    
     private Sample getSampleTest() throws URISyntaxException {
         String name = "ERS1077923";
         String accession = "SAMEA3890789";
