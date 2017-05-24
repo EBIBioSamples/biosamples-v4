@@ -18,7 +18,9 @@ import uk.ac.ebi.biosamples.neo.model.NeoExternalReference;
 import uk.ac.ebi.biosamples.neo.model.NeoExternalReferenceLink;
 import uk.ac.ebi.biosamples.neo.model.NeoSample;
 import uk.ac.ebi.biosamples.neo.repo.NeoCurationLinkRepository;
+import uk.ac.ebi.biosamples.neo.repo.NeoCurationRepository;
 import uk.ac.ebi.biosamples.neo.repo.NeoExternalReferenceLinkRepository;
+import uk.ac.ebi.biosamples.neo.repo.NeoExternalReferenceRepository;
 import uk.ac.ebi.biosamples.neo.repo.NeoSampleRepository;
 import uk.ac.ebi.biosamples.neo.service.modelconverter.SampleToNeoSampleConverter;
 
@@ -29,17 +31,23 @@ public class NeoMessageBufferTransaction {
 	private final NeoSampleRepository neoSampleRepository;
 	private final SampleToNeoSampleConverter sampleToNeoSampleConverter;
 
+	private final NeoExternalReferenceRepository neoExternalReferenceRepository;
 	private final NeoExternalReferenceLinkRepository neoExternalReferenceLinkRepository;
 
+	private final NeoCurationRepository neoCurationRepository;
 	private final NeoCurationLinkRepository neoCurationLinkRepository;
 	
 	public NeoMessageBufferTransaction(NeoSampleRepository neoSampleRepository,
 			SampleToNeoSampleConverter sampleToNeoSampleConverter,
+			NeoExternalReferenceRepository neoExternalReferenceRepository,
 			NeoExternalReferenceLinkRepository neoExternalReferenceLinkRepository,
+			NeoCurationRepository neoCurationRepository,
 			NeoCurationLinkRepository neoCurationLinkRepository) {
 		this.neoSampleRepository = neoSampleRepository;
 		this.sampleToNeoSampleConverter = sampleToNeoSampleConverter;
+		this.neoExternalReferenceRepository = neoExternalReferenceRepository;
 		this.neoExternalReferenceLinkRepository = neoExternalReferenceLinkRepository;
+		this.neoCurationRepository = neoCurationRepository;
 		this.neoCurationLinkRepository = neoCurationLinkRepository;
 	}
 	
@@ -56,11 +64,12 @@ public class NeoMessageBufferTransaction {
 				ExternalReferenceLink externalRefrerenceLink = messageContent.getExternalReferenceLink();
 				
 				NeoExternalReference neoExternalReference = NeoExternalReference.build(externalRefrerenceLink.getUrl());
-				NeoSample neoSample = neoSampleRepository.findOneByAccession(externalRefrerenceLink.getSample(), 0);	
+				NeoSample neoSample = neoSampleRepository.findOneByAccession(externalRefrerenceLink.getSample(),1);	
 				
 				NeoExternalReferenceLink neoExternalReferenceLink = NeoExternalReferenceLink.build(neoExternalReference, neoSample);
 				
-				neoExternalReferenceLinkRepository.save(neoExternalReferenceLink);
+				neoExternalReferenceRepository.save(neoExternalReference,0);
+				neoExternalReferenceLinkRepository.save(neoExternalReferenceLink,1);
 			}
 			if (messageContent.hasCurationLink()) {
 				CurationLink curationLink = messageContent.getCurationLink();
@@ -75,11 +84,12 @@ public class NeoMessageBufferTransaction {
 				}
 				
 				NeoCuration neoCuration = NeoCuration.build(attributesPre, attributesPost);
-				NeoSample neoSample = neoSampleRepository.findOneByAccession(curationLink.getSample(), 0);
+				NeoSample neoSample = neoSampleRepository.findOneByAccession(curationLink.getSample(),1);
 				
 				NeoCurationLink neoCurationLink = NeoCurationLink.build(neoCuration, neoSample);
-				
-				neoCurationLinkRepository.save(neoCurationLink);
+
+				neoCurationRepository.save(neoCuration,1);
+				neoCurationLinkRepository.save(neoCurationLink,1);
 			}
 		}
 	}
