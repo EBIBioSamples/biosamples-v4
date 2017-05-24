@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -86,7 +87,7 @@ public class SampleService {
 	 * @throws IllegalArgumentException
 	 */
 	//can't use a sync cache because we need to use CacheEvict
-	@Cacheable(cacheNames=WebappProperties.fetch)
+	@Cacheable(cacheNames=WebappProperties.fetch, key="#root.args[0]")
 	public Sample fetch(String accession) throws IllegalArgumentException {
 		
 		log.info("Fetching accession from neoSampleRepository "+accession);
@@ -111,9 +112,9 @@ public class SampleService {
 	}
 
 	//because the fetch caches the sample, if an updated version is stored, we need to make sure that any cached version
-	//is replaced. But because it keys on accession, only do that for updates (PUT) not unaccessioned samples (POST)
+	//is replaced.
 	//Note, pages of samples will not be cache busted, only single-accession sample retrieval
-	@CacheEvict(cacheNames=WebappProperties.fetch, key="#sample.accession", condition="#sample.accession != null")
+	@CachePut(cacheNames=WebappProperties.fetch, key="#result.accession")
 	public Sample store(Sample sample) {
 		// TODO check if there is an existing copy and if there are any changes
 		

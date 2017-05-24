@@ -66,7 +66,7 @@ public class RestAutocompleteRunner implements ApplicationRunner, ExitCodeGenera
 		
 		//if we got here without throwing, then we finished sucessfully
 		exitCode = 0;
-		log.info("Finished RestSearchRunner");
+		log.info("Finished RestAutocompleteRunner");
 	}
 
 

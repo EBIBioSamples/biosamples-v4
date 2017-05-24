@@ -125,7 +125,7 @@ public class SampleRetrievalService {
 		
 		public Iterator<Resource<Sample>> iterator() {
 			//get the first page
-			//PagedResources<Resource<Sample>> page = traverson.follow("samples").toObject(new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {});
+			//TODO allow sample page size to be cusomized in property
 			URI uri = UriComponentsBuilder.fromHttpUrl(traverson.follow("samples").asLink().getHref()).queryParam("size", "1000").build().toUri();
 			RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
 			ResponseEntity<PagedResources<Resource<Sample>>> responseEntity = restOperations.exchange(requestEntity,
