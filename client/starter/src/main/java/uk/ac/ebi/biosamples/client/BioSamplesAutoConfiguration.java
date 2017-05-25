@@ -27,13 +27,21 @@ import uk.ac.ebi.biosamples.service.SampleValidator;
 public class BioSamplesAutoConfiguration {
 
 	@Bean	
+	@ConditionalOnMissingBean(AttributeValidator.class)
 	public AttributeValidator attributeValidator() {
 		return new AttributeValidator();
 	}
 	
 	@Bean	
+	@ConditionalOnMissingBean(SampleValidator.class)
 	public SampleValidator sampleValidator(AttributeValidator attributeValidator) {
 		return new SampleValidator(attributeValidator);
+	}
+	
+	@Bean	
+	@ConditionalOnMissingBean(ClientProperties.class)
+	public ClientProperties clientProperties() {
+		return new ClientProperties();
 	}
 	
 	@Bean
@@ -49,12 +57,12 @@ public class BioSamplesAutoConfiguration {
 				mapper.registerModule(new Jackson2HalModule());
 				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
-				//MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
 				MappingJackson2HttpMessageConverter halConverter = new TypeConstrainedMappingJackson2HttpMessageConverter(ResourceSupport.class);
 				halConverter.setObjectMapper(mapper);
 				halConverter.setSupportedMediaTypes(Arrays.asList(MediaTypes.HAL_JSON));
 
-				converters.add(0,halConverter);
+				//make sure this is inserted first
+				converters.add(0, halConverter);
 				
 				restTemplate.setMessageConverters(converters);
 			}			
