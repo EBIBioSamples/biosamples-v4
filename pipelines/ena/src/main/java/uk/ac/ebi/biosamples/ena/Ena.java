@@ -61,15 +61,20 @@ public class Ena implements ApplicationRunner {
 		} else {
 			toDate = LocalDate.parse("3000-01-01", DateTimeFormatter.ISO_LOCAL_DATE);
 		}
-		try (AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, 
-				pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax())) {
-
-			EraRowCallbackHandler eraRowCallbackHandler = new EraRowCallbackHandler(executorService);
-			eraProDao.doSampleCallback(fromDate, toDate, eraRowCallbackHandler);
-			
-			log.info("waiting for futures");
-			// wait for anything to finish
-			ThreadUtils.checkFutures(futures, 0);
+		
+		if (pipelinesProperties.getThreadCount() > 0) {
+			try (AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, 
+					pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax())) {
+	
+				EraRowCallbackHandler eraRowCallbackHandler = new EraRowCallbackHandler(executorService);
+				eraProDao.doSampleCallback(fromDate, toDate, eraRowCallbackHandler);
+				
+				log.info("waiting for futures");
+				// wait for anything to finish
+				ThreadUtils.checkFutures(futures, 0);
+			}
+		} else {
+			throw new IllegalArgumentException("Must specificy at least 1 thead to use");
 		}
 	}
 	
