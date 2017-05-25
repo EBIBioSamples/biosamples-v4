@@ -53,6 +53,7 @@ public class SampleSubmissionService {
 			PagedResources<Resource<Sample>> pagedSamples = traverson.follow("samples").toObject(new ParameterizedTypeReference<PagedResources<Resource<Sample>>>(){});			
 			Link sampleLink = pagedSamples.getLink("sample");
 			if (sampleLink == null) {
+				log.info("Problem handling page "+pagedSamples);
 				throw new NullPointerException("Unable to find sample link");
 			}
 			sampleLink = sampleLink.expand(sample.getAccession());
