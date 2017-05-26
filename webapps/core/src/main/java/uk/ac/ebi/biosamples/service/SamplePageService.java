@@ -51,18 +51,13 @@ public class SamplePageService {
 
 	//@Cacheable(cacheNames=WebappProperties.getSamplesByText, sync=true)
 	public Page<Sample> getSamplesByText(String text, MultiValueMap<String,String> filters, Pageable pageable) {		
-		Page<SolrSample> pageSolrSample = solrSampleService.fetchSolrSampleByText(text, filters, pageable);
-		log.info("Found "+pageSolrSample.getNumberOfElements()+" results from solr");
-		
-		// for each result fetch the stored and add inverse relationships
-		
+		Page<SolrSample> pageSolrSample = solrSampleService.fetchSolrSampleByText(text, filters, pageable);		
+		//for each result fetch the stored version and add e.g. inverse relationships		
 		//stream process each solrSample into a sample *in parallel*
 		Page<Sample> pageSample = new PageImpl<>(StreamSupport.stream(pageSolrSample.spliterator(), true)
 					.map(ss->sampleService.fetch(ss.getAccession())).collect(Collectors.toList()), 
 				pageable,pageSolrSample.getTotalElements()); 
-		
-		log.info("Found "+pageSolrSample.getNumberOfElements()+" results after fetch");
-		
+				
 		return pageSample;
 	}
 	

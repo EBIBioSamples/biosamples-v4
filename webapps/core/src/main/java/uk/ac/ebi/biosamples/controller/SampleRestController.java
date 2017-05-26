@@ -101,8 +101,6 @@ public class SampleRestController {
 		pagedResources.add(ControllerLinkBuilder
 				.linkTo(ControllerLinkBuilder.methodOn(SampleRestController.class).getSampleHal(null))
 				.withRel("sample"));
-		
-		log.info("Found "+pageSample.getNumberOfElements()+" results on this page");
 
 		return ResponseEntity.ok()
 				.header(HttpHeaders.CACHE_CONTROL, CacheControl.maxAge(15, TimeUnit.MINUTES).cachePublic().getHeaderValue())
