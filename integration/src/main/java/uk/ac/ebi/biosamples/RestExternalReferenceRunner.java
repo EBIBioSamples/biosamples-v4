@@ -5,12 +5,12 @@ import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Arrays;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.ExitCodeGenerator;
@@ -30,6 +30,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -37,55 +38,50 @@ import uk.ac.ebi.biosamples.model.Sample;
 @Component
 @Order(6)
 @Profile({ "default", "rest" })
-public class RestExternalReferenceRunner implements ApplicationRunner, ExitCodeGenerator {
+public class RestExternalReferenceRunner extends AbstractIntegration {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 
-	private final IntegrationProperties integrationProperties;
-
-	private final RestOperations restTemplate;
-
-	private final BioSamplesClient client;
-	
-	public RestExternalReferenceRunner(RestTemplateBuilder restTemplateBuilder, IntegrationProperties integrationProperties, BioSamplesClient client) {
-		this.client = client;
-		this.restTemplate = restTemplateBuilder.build();
-		this.integrationProperties = integrationProperties;
+	public RestExternalReferenceRunner(BioSamplesClient client) {
+		super(client);
 	}
-
-	private int exitCode = 1;
 
 	@Override
-	public void run(ApplicationArguments args) throws Exception {
-
-		log.info("Starting RestExternalReferenceRunner");
+	protected void phaseOne() {
 		Sample sample = getSampleTest1();
-
-		if (args.containsOption("phase") && Integer.parseInt(args.getOptionValues("phase").get(0)) == 1) {
-
-			client.persistSample(sample);
-
-		} else if (args.containsOption("phase") && Integer.parseInt(args.getOptionValues("phase").get(0)) == 2) {
-			// check /externalreferences
-			testExternalReferences();
-
-			testSampleExternalReferences(sample, 10);
-
-			client.persistExternalReference(sample.getAccession(), "http://www.ebi.ac.uk/ena/ERA123456");
-		} else if (args.containsOption("phase") && Integer.parseInt(args.getOptionValues("phase").get(0)) == 3) {
-
-			testSampleExternalReferences(sample, 11);
-			
-			//check there was no side-effects
-			client.fetchSample(sample.getAccession());
-		}
-
-		// if we got here without throwing, then we finished successfully
-		exitCode = 0;
-		log.info("Finished RestSearchRunner");
+		client.persistSample(sample);		
 	}
 
+	@Override
+	protected void phaseTwo() {
+		Sample sample = getSampleTest1();
+		
+		testExternalReferences();
+		//testSampleExternalReferences(sample, 10);		
+		client.persistCuration(sample.getAccession(), 
+				Curation.build(null,  null, null, Arrays.asList(ExternalReference.build("http://www.ebi.ac.uk/ena/ERA123456"))));
+		
+	}
+
+	@Override
+	protected void phaseThree() {
+		Sample sample = getSampleTest1();
+		//testSampleExternalReferences(sample, 11);		
+		//check there was no side-effects
+		client.fetchSample(sample.getAccession());		
+	}
+
+	@Override
+	protected void phaseFour() {
+		
+	}
+
+	@Override
+	protected void phaseFive() {
+		
+	}
 	private void testExternalReferences() {
+/*
 		URI uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUri())
 				.pathSegment("externalreferences").build().toUri();
 
@@ -122,29 +118,21 @@ public class RestExternalReferenceRunner implements ApplicationRunner, ExitCodeG
 				testedSelf = true;
 			}
 		}
-
+*/
 	}
 
 	private void testSampleExternalReferences(Sample sample, int expectedCount) {
-		URI uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUri()).pathSegment("samples")
-				.pathSegment(sample.getAccession()).pathSegment("externalreferencelinks").build().toUri();
-
-		log.info("GETting from " + uri);
-		RequestEntity<Void> request = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
-		ResponseEntity<PagedResources<Resource<ExternalReference>>> response = restTemplate.exchange(request,
-				new ParameterizedTypeReference<PagedResources<Resource<ExternalReference>>>() {
-				});
-
-		PagedResources<Resource<ExternalReference>> paged = response.getBody();
-
-		if (paged.getMetadata().getTotalElements() != expectedCount) {
+		sample = client.fetchSample(sample.getAccession()).get();
+		
+		
+		if (sample.getExternalReferences().size() != expectedCount) {
 			throw new RuntimeException("Expecting " + expectedCount + " external references, found "
-					+ paged.getMetadata().getTotalElements());
+					+ sample.getExternalReferences().size());
 		}
 
 	}
 
-	private Sample getSampleTest1() throws URISyntaxException {
+	private Sample getSampleTest1() {
 		String name = "Test Sample";
 		String accession = "TESTExRef1";
 		LocalDateTime update = LocalDateTime.of(LocalDate.of(2016, 5, 5), LocalTime.of(11, 36, 57, 0));
@@ -167,11 +155,6 @@ public class RestExternalReferenceRunner implements ApplicationRunner, ExitCodeG
 		externalReferences.add(ExternalReference.build("http://www.test.com/0"));
 
 		return Sample.build(name, accession, release, update, attributes, relationships, externalReferences);
-	}
-
-	@Override
-	public int getExitCode() {
-		return exitCode;
 	}
 
 }

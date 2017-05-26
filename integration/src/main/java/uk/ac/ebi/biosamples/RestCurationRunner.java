@@ -12,7 +12,6 @@ import java.util.TreeSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.ExitCodeGenerator;
@@ -74,14 +73,14 @@ public class RestCurationRunner implements ApplicationRunner, ExitCodeGenerator 
 			attributesPre.add(Attribute.build("Organism", "9606"));
 			Set<Attribute> attributesPost = new HashSet<>();
 			attributesPost.add(Attribute.build("Organism", "Homo sapiens"));			
-			client.persistCuration(sample.getAccession(), Curation.build(attributesPre, attributesPost));
+			client.persistCuration(sample.getAccession(), Curation.build(attributesPre, attributesPost, null, null));
 
 
 			attributesPre = new HashSet<>();
 			attributesPre.add(Attribute.build("Organism", "Homo sapiens"));
 			attributesPost = new HashSet<>();
 			attributesPost.add(Attribute.build("Organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));			
-			client.persistCuration(sample.getAccession(), Curation.build(attributesPre, attributesPost));
+			client.persistCuration(sample.getAccession(), Curation.build(attributesPre, attributesPost, null, null));
 
 		} else if (args.containsOption("phase") && Integer.parseInt(args.getOptionValues("phase").get(0)) == 3) {
 			

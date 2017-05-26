@@ -32,7 +32,6 @@ public class Sample {
 	protected SortedSet<Attribute> attributes;
 	protected SortedSet<Relationship> relationships;
 	protected SortedSet<ExternalReference> externalReferences;
-	protected SortedSet<Curation> curations;
 
 	protected Sample() {
 		
@@ -87,11 +86,6 @@ public class Sample {
 	@JsonProperty("externalReferences")
 	public SortedSet<ExternalReference> getExternalReferences() {
 		return externalReferences;
-	}
-
-	@JsonIgnore
-	public SortedSet<Curation> getCurations() {
-		return curations;
 	}
 
 	@Override

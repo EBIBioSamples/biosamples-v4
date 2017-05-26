@@ -2,22 +2,17 @@ package uk.ac.ebi.biosamples.neo.model;
 
 
 import java.util.Objects;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
 import org.neo4j.ogm.annotation.GraphId;
 import org.neo4j.ogm.annotation.Index;
 import org.neo4j.ogm.annotation.NodeEntity;
 import org.neo4j.ogm.annotation.Property;
-import org.neo4j.ogm.annotation.Relationship;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.google.common.hash.Hashing;
 
 @NodeEntity(label = "ExternalReference")
-public class NeoExternalReference {
+public class NeoExternalReference implements Comparable<NeoExternalReference>{
 
 	@GraphId
 	private Long id;
@@ -30,8 +25,6 @@ public class NeoExternalReference {
 	@Index(unique=true, primary=false)	
 	private String urlHash;
 
-    @Relationship(type = "HAS_EXTERNAL_REFERENCE_TARGET", direction=Relationship.INCOMING)
-	private SortedSet<NeoExternalReferenceLink> links;
 
 	private NeoExternalReference() {
 	}
@@ -39,7 +32,6 @@ public class NeoExternalReference {
 	private NeoExternalReference(String url, String urlHash) {
 		this.url = url;
 		this.urlHash = urlHash;
-		this.links = new TreeSet<>();
 	}
 	
 	public Long getId() {
@@ -52,10 +44,6 @@ public class NeoExternalReference {
 	
 	public String getUrlHash() {
 		return urlHash;
-	}
-	
-	public Set<NeoExternalReferenceLink> getLinks() {
-		return links;
 	}
 	
 	@Override
@@ -76,11 +64,22 @@ public class NeoExternalReference {
     @Override
     public String toString() {
     	StringBuilder sb = new StringBuilder();
-    	sb.append("NeoUrl(");
+    	sb.append("NeoExternalReference(");
     	sb.append(url);
     	sb.append(")");
     	return sb.toString();
     }
+
+	@Override
+	public int compareTo(NeoExternalReference other) {
+		if (other == null) {
+			return 1;
+		}
+		if (!this.url.equals(other.url)) {
+			return this.url.compareTo(other.url);
+		}
+		return 0;
+	}
     
 	public static NeoExternalReference build(String url) {	
     	UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromUriString(url);

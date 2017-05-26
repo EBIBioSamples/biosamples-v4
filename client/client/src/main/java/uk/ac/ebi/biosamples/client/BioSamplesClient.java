@@ -22,13 +22,10 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import uk.ac.ebi.biosamples.client.service.CurationSubmissionService;
-import uk.ac.ebi.biosamples.client.service.ExternalReferenceSubmissionService;
 import uk.ac.ebi.biosamples.client.service.SampleRetrievalService;
 import uk.ac.ebi.biosamples.client.service.SampleSubmissionService;
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.CurationLink;
-import uk.ac.ebi.biosamples.model.ExternalReference;
-import uk.ac.ebi.biosamples.model.ExternalReferenceLink;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.SampleValidator;
 
@@ -47,7 +44,6 @@ public class BioSamplesClient {
 	
 	private final SampleRetrievalService sampleRetrievalService;
 	private final SampleSubmissionService sampleSubmissionService;
-	private final ExternalReferenceSubmissionService externalReferenceSubmissionService;
 	private final CurationSubmissionService curationSubmissionService;
 	
 	private final SampleValidator sampleValidator;
@@ -65,7 +61,6 @@ public class BioSamplesClient {
 		
 		sampleRetrievalService = new SampleRetrievalService(restOperations, traverson, threadPoolExecutor);
 		sampleSubmissionService = new SampleSubmissionService(restOperations, traverson, threadPoolExecutor);
-		externalReferenceSubmissionService = new ExternalReferenceSubmissionService(restOperations, traverson, threadPoolExecutor);
 		curationSubmissionService = new CurationSubmissionService(restOperations, traverson, threadPoolExecutor);
 		
 		this.sampleValidator = sampleValidator;
@@ -125,10 +120,6 @@ public class BioSamplesClient {
 	
 	public Sample persistSample(Sample sample) throws RestClientException {
 		return persistSampleResource(sample).getContent();
-	}
-	
-	public Resource<ExternalReferenceLink> persistExternalReference(String accession, String url) throws RestClientException {
-		return externalReferenceSubmissionService.persistExternalReference(accession, ExternalReference.build(url));
 	}
 	
 	public Resource<CurationLink> persistCuration(String accession, Curation curation) throws RestClientException {

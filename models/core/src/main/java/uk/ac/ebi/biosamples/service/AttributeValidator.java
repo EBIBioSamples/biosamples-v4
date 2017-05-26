@@ -3,11 +3,7 @@ package uk.ac.ebi.biosamples.service;
 import java.util.Collection;
 
 import org.springframework.stereotype.Service;
-import org.springframework.validation.Errors;
-import org.springframework.validation.Validator;
-
 import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Sample;
 
 @Service
 public class AttributeValidator  {

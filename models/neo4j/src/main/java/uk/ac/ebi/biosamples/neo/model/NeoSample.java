@@ -38,14 +38,11 @@ public class NeoSample {
 	@Relationship(type = "RELATED_TO", direction = Relationship.UNDIRECTED)
 	private Set<NeoRelationship> relationships;
 
-    @Relationship(type = "HAS_EXTERNAL_REFERENCE_SOURCE", direction = Relationship.INCOMING)
-	private Collection<NeoExternalReferenceLink> externalReferenceLinks;
-
     @Relationship(type = "HAS_ATTRIBUTE")
 	private Set<NeoAttribute> attributes;
 
-    @Relationship(type = "HAS_CURATION_SOURCE", direction = Relationship.INCOMING)
-	private Set<NeoCurationLink> curationLinks;
+    @Relationship(type = "HAS_EXTERNAL_REFERENCE")
+	private Set<NeoExternalReference> externalReferences;
 
 	private NeoSample() {
 	}
@@ -76,13 +73,10 @@ public class NeoSample {
 		return attributes;
 	}
 
-	public Collection<NeoExternalReferenceLink> getExternalReferenceLinks() {
-		return externalReferenceLinks;
+	public Set<NeoExternalReference> getExternalReferences() {
+		return externalReferences;
 	}
 
-	public Set<NeoCurationLink> getCurationLinks() {
-		return curationLinks;
-	}
 
 	@Override
     public boolean equals(Object o) {
@@ -98,12 +92,12 @@ public class NeoSample {
         		&& Objects.equals(this.update, other.update)
         		&& Objects.equals(this.attributes, other.attributes)
         		&& Objects.equals(this.relationships, other.relationships)
-        		&& Objects.equals(this.externalReferenceLinks, other.externalReferenceLinks);
+        		&& Objects.equals(this.externalReferences, other.externalReferences);
     }
     
     @Override
     public int hashCode() {
-    	return Objects.hash(name, accession, release, update, attributes, relationships, externalReferenceLinks);
+    	return Objects.hash(name, accession, release, update, attributes, relationships, externalReferences);
     }
 
     @Override
@@ -122,7 +116,7 @@ public class NeoSample {
     	sb.append(",");
     	sb.append(relationships);
     	sb.append(",");
-    	sb.append(externalReferenceLinks);
+    	sb.append(externalReferences);
     	sb.append(")");
     	return sb.toString();
     }
@@ -140,7 +134,7 @@ public class NeoSample {
      */
 	public static NeoSample build(String name, String accession, LocalDateTime release, LocalDateTime update, 
 			Collection<NeoAttribute> attributes, Collection<NeoRelationship> relationships, 
-			Collection<NeoExternalReferenceLink> externalReferenceApplications) {
+			Collection<NeoExternalReference> externalReferences) {
 		NeoSample neoSample = new NeoSample();
 		neoSample.accession = accession;
 		neoSample.name = name;
@@ -161,11 +155,11 @@ public class NeoSample {
 			neoSample.relationships.addAll(relationships);
 		}
 
-		neoSample.externalReferenceLinks = new HashSet<>();
-		if (externalReferenceApplications == null || externalReferenceApplications.size() == 0) {
+		neoSample.externalReferences = new HashSet<>();
+		if (externalReferences == null || externalReferences.size() == 0) {
 			//dop nothing
 		} else {
-			neoSample.externalReferenceLinks.addAll(externalReferenceApplications);
+			neoSample.externalReferences.addAll(externalReferences);
 		}	
 		
 		return neoSample;

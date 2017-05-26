@@ -24,6 +24,12 @@ public class NeoCuration {
     
     @Relationship(type = "HAS_POST_ATTRIBUTE")    
 	private Set<NeoAttribute> attributesPost;
+
+    @Relationship(type = "HAS_PRE_EXTERNAL_REFERENCE")
+	private Set<NeoExternalReference> externalPre;
+    
+    @Relationship(type = "HAS_POST_EXTERNAL_REFERENCE")    
+	private Set<NeoExternalReference> externalPost;
     
     @Relationship(type = "HAS_CURATION_TARGET")
     private Set<NeoCurationLink> links;
@@ -55,11 +61,22 @@ public class NeoCuration {
 		return attributesPost;
 	}
 	
+	public Set<NeoExternalReference> getExternalsPre() {
+		return externalPre;
+	}
 	
-	public static NeoCuration build(Collection<NeoAttribute> attributesPre, Collection<NeoAttribute> attributesPost) {
+	public Set<NeoExternalReference> getExternalsPost() {
+		return externalPost;
+	}
+	
+	
+	public static NeoCuration build(Collection<NeoAttribute> attributesPre, Collection<NeoAttribute> attributesPost,
+			Collection<NeoExternalReference> externalPre, Collection<NeoExternalReference> externalPost) {
 		NeoCuration neoCuration = new NeoCuration();
 		neoCuration.attributesPre = new TreeSet<>(attributesPre);
 		neoCuration.attributesPost = new TreeSet<>(attributesPost);
+		neoCuration.externalPre = new TreeSet<>(externalPre);
+		neoCuration.externalPost = new TreeSet<>(externalPost);
 
     	Hasher hasher = Hashing.sha256().newHasher();
     	for (NeoAttribute a : neoCuration.attributesPre) {
@@ -81,6 +98,12 @@ public class NeoCuration {
     		if (a.getIri() != null) {
     			hasher.putUnencodedChars(a.getIri());
     		}
+    	}
+    	for (NeoExternalReference a : externalPre) {
+    		hasher.putUnencodedChars(a.getUrl());
+    	}
+    	for (NeoExternalReference a : externalPost) {
+    		hasher.putUnencodedChars(a.getUrl());
     	}
 		neoCuration.hash = hasher.hash().toString();
 

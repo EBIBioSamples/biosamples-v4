@@ -3,7 +3,6 @@ package uk.ac.ebi.biosamples.neo.service.modelconverter;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.springframework.boot.context.properties.ConfigurationPropertiesBinding;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
 
@@ -13,20 +12,15 @@ import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.neo.model.NeoAttribute;
 import uk.ac.ebi.biosamples.neo.model.NeoExternalReference;
-import uk.ac.ebi.biosamples.neo.model.NeoExternalReferenceLink;
 import uk.ac.ebi.biosamples.neo.model.NeoRelationship;
 import uk.ac.ebi.biosamples.neo.model.NeoSample;
-import uk.ac.ebi.biosamples.neo.repo.NeoExternalReferenceLinkRepository;
-import uk.ac.ebi.biosamples.neo.repo.NeoSampleRepository;
 
 @Service
 public class NeoSampleToSampleConverter
 		implements Converter<NeoSample, Sample> {
 	
-	private final NeoExternalReferenceLinkRepository neoExternalReferenceLinkRepository;
 	
-	public NeoSampleToSampleConverter(NeoExternalReferenceLinkRepository neoExternalReferenceLinkRepository) {
-		this.neoExternalReferenceLinkRepository = neoExternalReferenceLinkRepository;
+	public NeoSampleToSampleConverter() {
 	}
 	
 	/**
@@ -45,15 +39,9 @@ public class NeoSampleToSampleConverter
 			}
 		}
 		Set<ExternalReference> externalReferences = new HashSet<>();
-		if (neo.getExternalReferenceLinks() != null) {
-			for (NeoExternalReferenceLink externalReferenceLink : neo.getExternalReferenceLinks()) {
-				//recursively load external reference links to ensure that the external references exist
-				externalReferenceLink = neoExternalReferenceLinkRepository.findOneByHash(externalReferenceLink.getHash(), 1);
-				
-				NeoExternalReference neoExternalReference = externalReferenceLink.getExternalReference(); 
-				if (neoExternalReference != null) {
-					externalReferences.add(ExternalReference.build(neoExternalReference.getUrl()));
-				}
+		if (neo.getExternalReferences() != null) {
+			for (NeoExternalReference neoExternalReference : neo.getExternalReferences()) {
+				externalReferences.add(ExternalReference.build(neoExternalReference.getUrl()));
 			}
 		}
 		Set<Relationship> relationships = new HashSet<>();

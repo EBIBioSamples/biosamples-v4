@@ -22,7 +22,6 @@ import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.neo.model.NeoAttribute;
 import uk.ac.ebi.biosamples.neo.model.NeoExternalReference;
-import uk.ac.ebi.biosamples.neo.model.NeoExternalReferenceLink;
 import uk.ac.ebi.biosamples.neo.model.NeoRelationship;
 import uk.ac.ebi.biosamples.neo.model.NeoSample;
 import uk.ac.ebi.biosamples.neo.service.modelconverter.SampleToNeoSampleConverter;
@@ -91,7 +90,7 @@ public class SampleToNeoSampleConverterTest {
 		
 		neoSample.getRelationships().add(NeoRelationship.build(NeoSample.create("TEST1"), "derived from", NeoSample.create("TEST2")));
 		
-		neoSample.getExternalReferenceLinks().add(NeoExternalReferenceLink.build(NeoExternalReference.build("http://www.google.com"), neoSample));
+		neoSample.getExternalReferences().add(NeoExternalReference.build("http://www.google.com"));
 
 		return neoSample;
 	}

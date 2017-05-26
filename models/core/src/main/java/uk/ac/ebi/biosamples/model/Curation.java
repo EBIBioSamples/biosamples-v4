@@ -15,26 +15,40 @@ import com.google.common.hash.Hashing;
 
 public class Curation implements Comparable<Curation>{
 	
-	private SortedSet<Attribute> attributesPre;
+	private final SortedSet<Attribute> attributesPre;
+	private final SortedSet<Attribute> attributesPost;
 
-	private SortedSet<Attribute> attributesPost;
+	private final SortedSet<ExternalReference> externalPre;
+	private final SortedSet<ExternalReference> externaPost;
 	
 	private String hash;
 	
-	private Curation(Collection<Attribute> preAttributes, 
-			Collection<Attribute> postAttributes,
+	private Curation(Collection<Attribute> attributesPre, 
+			Collection<Attribute> attributesPost,
+			Collection<ExternalReference> externalPre, 
+			Collection<ExternalReference> externaPost,
 			String hash) {
-		this.attributesPre = Collections.unmodifiableSortedSet(new TreeSet<>(preAttributes));
-		this.attributesPost = Collections.unmodifiableSortedSet(new TreeSet<>(postAttributes));
+		this.attributesPre = Collections.unmodifiableSortedSet(new TreeSet<>(attributesPre));
+		this.attributesPost = Collections.unmodifiableSortedSet(new TreeSet<>(attributesPost));
+		this.externalPre = Collections.unmodifiableSortedSet(new TreeSet<>(externalPre));
+		this.externaPost = Collections.unmodifiableSortedSet(new TreeSet<>(externaPost));
 		this.hash = hash;
 	}
-	
+	@JsonProperty("attributesPre")
 	public SortedSet<Attribute> getAttributesPre() {
 		return attributesPre;
 	}
-	
+	@JsonProperty("attributesPost")
 	public SortedSet<Attribute> getAttributesPost() {
 		return attributesPost;
+	}
+	@JsonProperty("externalReferencesPre")
+	public SortedSet<ExternalReference> getExternalReferencesPre() {
+		return externalPre;
+	}
+	@JsonProperty("externalReferencesPost")
+	public SortedSet<ExternalReference> getExternalReferencesPost() {
+		return externaPost;
 	}
 	
 	public String getHash() {
@@ -43,7 +57,7 @@ public class Curation implements Comparable<Curation>{
 	
     @Override
     public int hashCode() {
-    	return Objects.hash(attributesPre, attributesPost);
+    	return Objects.hash(hash);
     }
 
 	@Override
@@ -80,6 +94,35 @@ public class Curation implements Comparable<Curation>{
 				}
 			}
 		}
+		
+		if (!this.externalPre.equals(other.externalPre)) {
+			if (this.externalPre.size() < other.externalPre.size()) {
+				return -1;
+			} else if (this.externalPre.size() > other.externalPre.size()) {
+				return 1;
+			} else {
+				Iterator<ExternalReference> thisIt = this.externalPre.iterator();
+				Iterator<ExternalReference> otherIt = other.externalPre.iterator();
+				while (thisIt.hasNext() && otherIt.hasNext()) {
+					int val = thisIt.next().compareTo(otherIt.next());
+					if (val != 0) return val;
+				}
+			}
+		}
+		if (!this.externaPost.equals(other.externaPost)) {
+			if (this.externaPost.size() < other.externaPost.size()) {
+				return -1;
+			} else if (this.externaPost.size() > other.externaPost.size()) {
+				return 1;
+			} else {
+				Iterator<ExternalReference> thisIt = this.externaPost.iterator();
+				Iterator<ExternalReference> otherIt = other.externaPost.iterator();
+				while (thisIt.hasNext() && otherIt.hasNext()) {
+					int val = thisIt.next().compareTo(otherIt.next());
+					if (val != 0) return val;
+				}
+			}
+		}
 		return 0;
 	}
 
@@ -90,23 +133,34 @@ public class Curation implements Comparable<Curation>{
     	sb.append(attributesPre);
     	sb.append(",");
     	sb.append(attributesPost);
+    	sb.append(",");
+    	sb.append(externalPre);
+    	sb.append(",");
+    	sb.append(externaPost);
     	sb.append(")");
     	return sb.toString();
     }
 
     @JsonCreator
-    public static Curation build(@JsonProperty("pre") Collection<Attribute> attributesPre, 
-			@JsonProperty("post") Collection<Attribute> attributesPost) {
+    public static Curation build(@JsonProperty("attributesPre") Collection<Attribute> attributesPre, 
+			@JsonProperty("attributesPost") Collection<Attribute> attributesPost,
+			@JsonProperty("externalReferencesPre") Collection<ExternalReference> externalPre, 
+			@JsonProperty("externalReferencesPost") Collection<ExternalReference> externaPost) {
     	
 		SortedSet<Attribute> sortedPreAttributes = new TreeSet<>();
-		SortedSet<Attribute> sortedPostAttributes = new TreeSet<>();
+		SortedSet<Attribute> sortedPostAttributes = new TreeSet<>();    	
+		SortedSet<ExternalReference> sortedPreExternal = new TreeSet<>();
+		SortedSet<ExternalReference> sortedPostExternal = new TreeSet<>();
 		
 		if (attributesPre != null) sortedPreAttributes.addAll(attributesPre);
-		if (attributesPost != null) sortedPostAttributes.addAll(attributesPost);
+		if (attributesPost != null) sortedPostAttributes.addAll(attributesPost);		
+		if (externalPre != null) sortedPreExternal.addAll(externalPre);
+		if (externaPost != null) sortedPostExternal.addAll(externaPost);
 
 		sortedPreAttributes = Collections.unmodifiableSortedSet(sortedPreAttributes);
 		sortedPostAttributes = Collections.unmodifiableSortedSet(sortedPostAttributes);
-		
+		sortedPreExternal = Collections.unmodifiableSortedSet(sortedPreExternal);
+		sortedPostExternal = Collections.unmodifiableSortedSet(sortedPostExternal);
 
     	Hasher hasher = Hashing.sha256().newHasher();
     	for (Attribute a : sortedPreAttributes) {
@@ -129,9 +183,15 @@ public class Curation implements Comparable<Curation>{
     			hasher.putUnencodedChars(a.getIri());
     		}
     	}
+    	for (ExternalReference a : sortedPreExternal) {
+    		hasher.putUnencodedChars(a.getUrl());
+    	}
+    	for (ExternalReference a : sortedPostExternal) {
+    		hasher.putUnencodedChars(a.getUrl());
+    	}
     	String hash = hasher.hash().toString();
 		
-		return new Curation(sortedPreAttributes, sortedPostAttributes, hash);
+		return new Curation(sortedPreAttributes, sortedPostAttributes, sortedPreExternal, sortedPostExternal, hash);
 	}
 }
 

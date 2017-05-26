@@ -1,30 +1,16 @@
 package uk.ac.ebi.biosamples.service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
-import org.springframework.validation.BindException;
-import org.springframework.validation.Errors;
-import org.springframework.validation.ValidationUtils;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import uk.ac.ebi.biosamples.MessageContent;
@@ -37,7 +23,6 @@ import uk.ac.ebi.biosamples.neo.model.NeoSample;
 import uk.ac.ebi.biosamples.neo.repo.NeoSampleRepository;
 import uk.ac.ebi.biosamples.neo.service.NeoAccessionService;
 import uk.ac.ebi.biosamples.neo.service.modelconverter.NeoSampleToSampleConverter;
-import uk.ac.ebi.biosamples.solr.model.SolrSample;
 import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
 import uk.ac.ebi.biosamples.WebappProperties;
 
@@ -87,7 +72,7 @@ public class SampleService {
 	 * @throws IllegalArgumentException
 	 */
 	//can't use a sync cache because we need to use CacheEvict
-	@Cacheable(cacheNames=WebappProperties.fetch, key="#root.args[0]")
+	//@Cacheable(cacheNames=WebappProperties.fetch, key="#root.args[0]")
 	public Sample fetch(String accession) throws IllegalArgumentException {
 		
 		log.info("Fetching accession from neoSampleRepository "+accession);
@@ -114,7 +99,7 @@ public class SampleService {
 	//because the fetch caches the sample, if an updated version is stored, we need to make sure that any cached version
 	//is replaced.
 	//Note, pages of samples will not be cache busted, only single-accession sample retrieval
-	@CachePut(cacheNames=WebappProperties.fetch, key="#result.accession")
+	//@CachePut(cacheNames=WebappProperties.fetch, key="#result.accession")
 	public Sample store(Sample sample) {
 		// TODO check if there is an existing copy and if there are any changes
 		

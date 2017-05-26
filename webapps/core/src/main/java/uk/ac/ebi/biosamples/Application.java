@@ -3,20 +3,19 @@ package uk.ac.ebi.biosamples;
 import java.util.concurrent.Executor;
 
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.cache.CacheManagerCustomizer;
 //import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.servlet.handler.MappedInterceptor;
-
-import com.github.benmanes.caffeine.cache.CaffeineSpec;
 
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.neo.NeoProperties;
@@ -24,9 +23,12 @@ import uk.ac.ebi.biosamples.neo.repo.NeoSampleRepository;
 import uk.ac.ebi.biosamples.neo.service.NeoAccessionService;
 import uk.ac.ebi.biosamples.xml.XmlSampleHttpMessageConverter;
 
-@SpringBootApplication
+//@SpringBootApplication
+@Configuration
+@EnableAutoConfiguration
+@ComponentScan(lazyInit = true)
 @EnableAsync
-@EnableCaching(proxyTargetClass=true)
+@EnableCaching
 public class Application extends SpringBootServletInitializer {
 
 	public static void main(String[] args) {

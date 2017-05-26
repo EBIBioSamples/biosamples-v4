@@ -1,7 +1,6 @@
 package uk.ac.ebi.biosamples.zooma;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -12,13 +11,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestOperations;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -101,7 +98,7 @@ public class ZoomaProcessor {
 				if (iri.isPresent()) {
 					log.info("Mapped "+attribute+" to "+iri.get());
 					Attribute mapped = Attribute.build(attribute.getType(), attribute.getValue(), iri.get(), null);
-					Curation curation = Curation.build(Collections.singleton(attribute), Collections.singleton(mapped));
+					Curation curation = Curation.build(Collections.singleton(attribute), Collections.singleton(mapped), null, null);
 				
 					//save the curation back in biosamples
 					biosamplesClient.persistCuration(sample.getContent().getAccession(), curation);

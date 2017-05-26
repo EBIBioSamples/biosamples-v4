@@ -10,8 +10,6 @@ import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.MessageContent;
 import uk.ac.ebi.biosamples.Messaging;
 import uk.ac.ebi.biosamples.messages.threaded.MessageSampleStatus;
-import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.neo.model.NeoSample;
 import uk.ac.ebi.biosamples.neo.repo.NeoSampleRepository;
 import uk.ac.ebi.biosamples.neo.service.modelconverter.SampleToNeoSampleConverter;
 

@@ -6,8 +6,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
-
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
 
