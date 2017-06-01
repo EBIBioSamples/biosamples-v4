@@ -1,12 +1,5 @@
 package uk.ac.ebi.biosamples;
 
-import java.net.URISyntaxException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
@@ -16,11 +9,17 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.web.client.RestOperations;
-
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
+
+import java.net.URISyntaxException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 //@Component
 @Order(5)
@@ -87,33 +86,7 @@ public class LegacyJsonRunner implements ApplicationRunner, ExitCodeGenerator {
     private void doPut(Sample sample) {
        restOperations.doPut(sample);
     }
-<<<<<<< HEAD
 */
-    
-=======
-
-    /**
-     * Get v3 representation of sample and compare with actual legacy json serialization
-     * @param sample
-     */
-    private void doLegacyGetAndCompareSuccess(Sample sample) throws IOException {
-        // Getting JsonNode from the legacy api module
-        ResponseEntity<JsonNode> response = biosamplesCommonRest.doGetLegacyJsonAsNode(sample);
-        assert response.getStatusCode().is2xxSuccessful();
-        assert response.getBody() != null;
-        JsonNode legacyNode = response.getBody();
-
-        // Getting JsonNode from the json file
-        File jsonFile = getLegacyApiSampleTest(sample.getAccession());
-        JsonNode rootNode = mapper.readTree(jsonFile);
-
-        // Check both have accession field and is equal
-        assert rootNode.get("accession").asText().equals(legacyNode.get("accession").asText());
-
-        // Check both
-    }
-
->>>>>>> minor comments added
     private Sample getSampleTest() throws URISyntaxException {
         String name = "ERS1077923";
         String accession = "SAMEA3890789";
