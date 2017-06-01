@@ -2,6 +2,7 @@ package uk.ac.ebi.biosamples.solr;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,9 @@ public class MessageHandlerSolr {
 	
 	@Autowired
 	private SampleToSolrSampleConverter sampleToSolrSampleConverter;
+	
+	@Autowired
+	private AmqpTemplate amqpTemplate;
 
 	@RabbitListener(queues = Messaging.queueToBeIndexedSolr)
 	public void handle(Sample sample) {
@@ -48,7 +52,9 @@ public class MessageHandlerSolr {
 		if (messageSampleStatus.hadProblem.isMarked()) {
 			throw messageSampleStatus.hadProblem.getReference();
 		}
-		
+
+		//pass along to the curation queue for further processing
+		amqpTemplate.convertAndSend(Messaging.exchangeForCuration, "", sample);
 		log.info("Handed "+sample.getAccession());
 		
 	}

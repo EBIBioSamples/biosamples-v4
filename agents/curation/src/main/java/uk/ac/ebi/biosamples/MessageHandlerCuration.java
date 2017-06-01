@@ -34,9 +34,6 @@ public class MessageHandlerCuration {
 		
 		//lowercase attribute types		
 		//lowercase relationship types
-
-		// send a message for further processing
-		amqpTemplate.convertAndSend(Messaging.exchangeForIndexingSolr, "", sample);
 		
 	}
 

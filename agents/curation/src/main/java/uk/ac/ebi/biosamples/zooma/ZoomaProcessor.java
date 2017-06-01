@@ -36,6 +36,7 @@ public class ZoomaProcessor {
 	private final RestOperations restOperations;
 	private final BioSamplesClient biosamplesClient;
 	
+	//TODO make this an application.properties value
 	private final UriComponents uriBuilder = 
 			UriComponentsBuilder.fromUriString("http://www.ebi.ac.uk/spot/zooma/v2/api/services/annotate?propertyValue={value}&propertyType={type}").build();
 	
