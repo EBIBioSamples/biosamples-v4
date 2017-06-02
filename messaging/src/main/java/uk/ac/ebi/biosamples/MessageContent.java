@@ -46,7 +46,7 @@ public class MessageContent {
 	}
 	@JsonCreator
 	public static MessageContent build(@JsonProperty("sample") Sample sample, 
-			@JsonProperty("curationLInk") CurationLink curationLink, @JsonProperty("delete") boolean delete) {
+			@JsonProperty("curationLink") CurationLink curationLink, @JsonProperty("delete") boolean delete) {
 		return new MessageContent(sample, curationLink, delete);
 	}
 }
