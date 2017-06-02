@@ -17,6 +17,8 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.servlet.handler.MappedInterceptor;
 
+import com.github.benmanes.caffeine.cache.CaffeineSpec;
+
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.neo.NeoProperties;
 import uk.ac.ebi.biosamples.neo.repo.NeoSampleRepository;
@@ -61,6 +63,12 @@ public class Application extends SpringBootServletInitializer {
     @Bean
     public NeoAccessionService neoAccessionService(NeoSampleRepository neoSampleRepository, NeoProperties neoProperties) {
     	return new NeoAccessionService(neoSampleRepository, neoProperties);
+    }
+    
+    
+    @Bean
+    public CaffeineSpec CaffeineSpec() {
+    	return CaffeineSpec.parse("maximumSize=500,expireAfterWrite=60s");
     }
     
     /*

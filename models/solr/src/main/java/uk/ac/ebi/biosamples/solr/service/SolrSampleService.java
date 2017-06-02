@@ -40,7 +40,6 @@ public class SolrSampleService {
 		this.solrSampleRepository = solrSampleRepository;
 	}		
 
-	//@Cacheable(cacheNames=SolrConfig.FETCHSOLRSAMPLEBYTEXT, sync=true)
 	public Page<SolrSample> fetchSolrSampleByText(String searchTerm, MultiValueMap<String,String> filters, Pageable pageable) {
 		//default to search all
 		if (searchTerm == null || searchTerm.trim().length() == 0) {
@@ -63,7 +62,6 @@ public class SolrSampleService {
 		return solrSampleRepository.findByQuery(query);
 	}
 
-	//@Cacheable(cacheNames=SolrConfig.GETFACETS, sync=true)
 	public List<SampleFacet> getFacets(String searchTerm, MultiValueMap<String,String> filters, Pageable facetPageable, Pageable facetValuePageable) {
 		//default to search all
 		if (searchTerm == null || searchTerm.trim().length() == 0) {
@@ -112,7 +110,6 @@ public class SolrSampleService {
 		
 	}
 
-	//@Cacheable(cacheNames=SolrConfig.GETAUTOCOMPLETE, sync=true)
 	public Autocomplete getAutocomplete(String autocompletePrefix, MultiValueMap<String,String> filters, int maxSuggestions) {
 		//default to search all
 		String searchTerm = "*:*";
