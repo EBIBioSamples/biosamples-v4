@@ -51,9 +51,9 @@ public class ZoomaProcessor {
 	}
 	
 	
-	public void process(Resource<Sample> sample) {
+	public void process(Sample sample) {
 		
-		for (Attribute attribute : sample.getContent().getAttributes()) {
+		for (Attribute attribute : sample.getAttributes()) {
 			
 			if (attribute.getIri() != null) {
 				continue;
@@ -102,7 +102,7 @@ public class ZoomaProcessor {
 					Curation curation = Curation.build(Collections.singleton(attribute), Collections.singleton(mapped), null, null);
 				
 					//save the curation back in biosamples
-					biosamplesClient.persistCuration(sample.getContent().getAccession(), curation);
+					biosamplesClient.persistCuration(sample.getAccession(), curation);
 				}
 			}
 		}
