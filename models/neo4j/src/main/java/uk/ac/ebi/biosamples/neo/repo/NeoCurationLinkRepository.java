@@ -17,7 +17,4 @@ public interface NeoCurationLinkRepository extends Neo4jRepository<NeoCurationLi
 	@Query("MATCH (s:Sample)--(l:CurationLink) WHERE s.accession={accession} RETURN l")
 	public Page<NeoCurationLink> findBySampleAccession(@Param("accession") String accession, Pageable pageable);
 
-	@Query("MATCH (l:CurationLink)--(x:Curation) WHERE x.hash={hash} RETURN l")
-	public Page<NeoCurationLink> findByCurationHash(@Param("hash") String hash, Pageable pageable);
-
 }

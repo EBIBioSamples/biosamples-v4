@@ -8,6 +8,9 @@ import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
@@ -16,6 +19,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import uk.ac.ebi.biosamples.MessageContent;
 import uk.ac.ebi.biosamples.Messaging;
 import uk.ac.ebi.biosamples.model.Autocomplete;
+import uk.ac.ebi.biosamples.model.Curation;
+import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.mongo.model.MongoSubmission;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSubmissionRepository;
@@ -60,6 +65,8 @@ public class SampleService {
 	@Autowired
 	private SolrSampleService solrSampleService;
 	
+	@Autowired
+	private CurationService curationService;
 
 	@Autowired
 	private AmqpTemplate amqpTemplate;
@@ -85,6 +92,10 @@ public class SampleService {
 
 		// convert it into the format to return
 		Sample sample = neoSampleToSampleConverter.convert(neoSample);
+		
+		//add curation from a set of users
+		//TODO limit curation to a set of users (possibly empty set)
+		sample = curationService.applyAllCurationToSample(sample);
 		
 		//TODO only have relationships to things that are present
 		
