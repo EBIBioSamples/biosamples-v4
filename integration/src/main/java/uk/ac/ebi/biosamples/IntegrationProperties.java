@@ -10,7 +10,7 @@ public class IntegrationProperties {
 
 	
 	@Value("${biosamples.client.uri:http://localhost:8081}")
-	public URI biosampleSubmissionUri;
+	private URI biosampleSubmissionUri;
 
 	public URI getBiosampleSubmissionUri() {
 		return biosampleSubmissionUri;
