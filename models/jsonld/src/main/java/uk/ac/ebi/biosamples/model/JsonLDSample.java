@@ -82,5 +82,4 @@ public class JsonLDSample {
     public void setAdditionalProperties(List<JsonLDPropertyValue> additionalProperties) {
         this.additionalProperties = additionalProperties;
     }
-
 }
