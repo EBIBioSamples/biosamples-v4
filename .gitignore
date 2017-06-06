@@ -12,3 +12,6 @@ target/
 docker-env.sh
 webapps/legacyjson/legacy_endpoints.json
 docker-compose.debug.override.yml
+docker-agents.sh
+webapps/core/src/main/java/uk/ac/ebi/biosamples/xml/XmlExceptionHttpMessageConverter.java.backup
+*.backup
