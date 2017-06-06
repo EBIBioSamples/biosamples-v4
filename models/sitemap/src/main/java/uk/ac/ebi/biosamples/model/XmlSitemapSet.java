@@ -27,7 +27,7 @@ import java.util.Collection;
 @XmlAccessorType(value = XmlAccessType.NONE)
 @XmlRootElement(name = "sitemapset")
 public class XmlSitemapSet {
-    @XmlElements({@XmlElement(name = "sitemap", type = XmlSitemap.class)})
+    @XmlElements({@XmlElement(name = "model", type = XmlSitemap.class)})
     private final Collection<XmlSitemap> xmlSitemaps = new ArrayList();
 
     public void addSitemap(XmlSitemap xmlSitemap) {

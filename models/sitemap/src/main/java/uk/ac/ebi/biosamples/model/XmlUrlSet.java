@@ -27,7 +27,7 @@ import java.util.List;
  * @author mrelac
  */
 @XmlAccessorType(value = XmlAccessType.NONE)
-@XmlRootElement(name = "urlset", namespace = "http://www.sitemaps.org/schemas/sitemap/0.9")
+@XmlRootElement(name = "urlset")
 public class XmlUrlSet {
 
     private final static int MAX_SITEMAP_ENTRIES = 50000;
@@ -39,8 +39,8 @@ public class XmlUrlSet {
 
         final int size = xmlUrls.size();
 
-        // Reservoir sampling to get random entries in the sitemap (this will get them all
-        // eventually, but not exceed the sitemap entry size restriction)
+        // Reservoir sampling to get random entries in the model (this will get them all
+        // eventually, but not exceed the model entry size restriction)
         if (size >= MAX_SITEMAP_ENTRIES) {
             // Randomly replace elements in the reservoir with a decreasing probability.
             int idx = new Double(Math.floor(Math.random() * size)).intValue();

@@ -28,7 +28,7 @@ import java.util.Collection;
 @XmlRootElement(name = "sitemapindex")
 public class XmlSitemapIndex {
 
-    @XmlElements({@XmlElement(name = "sitemap", type = uk.ac.ebi.biosamples.model.XmlSitemapSet.class)})
+    @XmlElements({@XmlElement(name = "model", type = uk.ac.ebi.biosamples.model.XmlSitemap.class)})
     private final Collection<XmlSitemap> xmlSitemaps = new ArrayList();
 
     public void addSitemap(XmlSitemap xmlSitemap) {

@@ -28,10 +28,11 @@ import uk.ac.ebi.biosamples.client.service.CurationRetrievalService;
 import uk.ac.ebi.biosamples.client.service.CurationSubmissionService;
 import uk.ac.ebi.biosamples.client.service.SampleRetrievalService;
 import uk.ac.ebi.biosamples.client.service.SampleSubmissionService;
+import uk.ac.ebi.biosamples.service.SampleValidator;
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.service.SampleValidator;
+
 
 /**
  * This is the primary class for interacting with BioSamples.

@@ -20,10 +20,6 @@ import uk.ac.ebi.biosamples.service.SamplePageService;
 import uk.ac.ebi.biosamples.service.SampleService;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import java.io.StringWriter;
 import java.net.MalformedURLException;
 
 @Controller
@@ -32,7 +28,7 @@ public class SitemapController {
 
     private Logger log = LoggerFactory.getLogger(this.getClass());
 
-    @Value("${sitemap.page.size:10000}")
+    @Value("${model.page.size:10000}")
     private int sitemapPageSize;
 
     private SampleService sampleService;
@@ -45,27 +41,26 @@ public class SitemapController {
 
     @RequestMapping(method= RequestMethod.GET, produces= MediaType.APPLICATION_XML_VALUE)
     @ResponseBody
-    public String createSampleSitemapIndex(HttpServletRequest request) throws MalformedURLException {
+    public XmlSitemapIndex createSampleSitemapIndex(HttpServletRequest request) throws MalformedURLException {
 
         long sampleCount = getTotalSamples();
         long pageNumber = Math.floorDiv(sampleCount,sitemapPageSize) + 1L;
         XmlSitemapIndex xmlSitemapIndex = new XmlSitemapIndex();
-        String requestUrl = request.getRequestURL().toString().replaceFirst(request.getRequestURI(), "");
         for (int i=0; i< pageNumber; i++) {
             String location = generateBaseUrl(request) + String.format("/sitemap/%d", i+1);
             XmlSitemap xmlSiteMap = new XmlSitemap(location);
             xmlSitemapIndex.addSitemap(xmlSiteMap);
         }
-        return getSitemapFile(xmlSitemapIndex);
+        return xmlSitemapIndex;
 
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_XML_VALUE)
     @ResponseBody
-    public String createSampleSitemapPage(@PathVariable("id") int pageNumber, HttpServletRequest request) throws ParseException {
+    public XmlUrlSet createSampleSitemapPage(@PathVariable("id") int pageNumber, HttpServletRequest request) throws ParseException {
         final long startTime = System.currentTimeMillis();
         Pageable pageRequest = new PageRequest(pageNumber - 1, sitemapPageSize);
-        Page<Sample> samplePage = samplePageService.getSamplesByText("", null, pageRequest);
+        Page<Sample> samplePage = samplePageService.getSamplesByText("", null, null, null, pageRequest);
         XmlUrlSet xmlUrlSet = new XmlUrlSet();
         for(Sample sample: samplePage.getContent()) {
             String location = generateBaseUrl(request) + String.format("/samples/%s", sample.getAccession());
@@ -74,32 +69,8 @@ public class SitemapController {
                     .hasPriority(XmlUrl.Priority.MEDIUM).build();
             xmlUrlSet.addUrl(url);
         }
-        log.debug(String.format("Returning sitemap for %d samples took %d millis", sitemapPageSize, System.currentTimeMillis() - startTime));
-        return getSitemapFile(xmlUrlSet);
-    }
-
-    private String getSitemapFile(Object xmlObject) {
-        StringWriter writer = new StringWriter(2048);
-
-        try {
-            JAXBContext jaxbContext = JAXBContext.newInstance(xmlObject.getClass());
-            Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
-
-            jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-            jaxbMarshaller.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
-            // Set the XML root tag to not include that standalone="yes" attribute
-            // Why U no work, JAXB? :O//
-            //jaxbMarshaller.setProperty("com.sun.xml.bind.xmlHeaders", "<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-
-            jaxbMarshaller.marshal(xmlObject, writer);
-
-        } catch (JAXBException e) {
-            e.printStackTrace();
-        }
-
-        return writer.toString();
-
-//        return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + writer.toString();
+        log.debug(String.format("Returning model for %d samples took %d millis", sitemapPageSize, System.currentTimeMillis() - startTime));
+        return xmlUrlSet;
     }
 
     private String generateBaseUrl(HttpServletRequest request) {
@@ -112,7 +83,7 @@ public class SitemapController {
     private long getTotalSamples() {
         Pageable pageable = new PageRequest(0, 1);
         MultiValueMap<String, String> filters = new LinkedMultiValueMap<>();
-        Page<Sample> samplePage = samplePageService.getSamplesByText("", filters, pageable);
+        Page<Sample> samplePage = samplePageService.getSamplesByText("", filters, null, null, pageable);
         return samplePage.getTotalElements();
     }
 }
