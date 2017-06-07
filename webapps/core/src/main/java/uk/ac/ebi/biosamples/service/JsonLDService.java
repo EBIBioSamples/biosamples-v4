@@ -33,12 +33,12 @@ public class JsonLDService {
 
     /**
      * Convert a ld+json sample to corresponding formatted json string
-     * @param jsonLD the ld+json object
+     * @param jsonld the ld+json object
      * @return the formatted string representing the ld+json object
      */
-    public String jsonLDToString(JsonLDSample jsonLD) {
+    public String jsonLDToString(JsonLDSample jsonld) {
         try {
-            return this.objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonLD);
+            return this.objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(this);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             return this.toString();
