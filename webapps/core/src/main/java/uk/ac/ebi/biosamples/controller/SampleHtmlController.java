@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
-import uk.ac.ebi.biosamples.model.JsonLDSample;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SampleFacet;
 import uk.ac.ebi.biosamples.model.SampleFacetValue;
@@ -44,18 +43,18 @@ public class SampleHtmlController {
 
 	private final SampleReadService sampleService;
 	private final SamplePageService samplePageService;
-	private final ConvertionService convertionService;
+	private final JsonLDService jsonLDService;
 	private final FacetService facetService;
 	private final FilterService filterService;
 
 	public SampleHtmlController(SampleReadService sampleService,
 								SamplePageService samplePageService,
-								ConvertionService convertionService,
+								JsonLDService jsonLDService,
 								FacetService facetService,
 								FilterService filterService) {
 		this.sampleService = sampleService;
 		this.samplePageService = samplePageService;
-		this.convertionService = convertionService;
+		this.jsonLDService = jsonLDService;
 		this.facetService = facetService;
 		this.filterService = filterService;
 	}
@@ -296,9 +295,9 @@ public class SampleHtmlController {
 		//response.setHeader(HttpHeaders.LAST_MODIFIED, String.valueOf(sample.getUpdate().toEpochSecond(ZoneOffset.UTC)));
 		//response.setHeader(HttpHeaders.ETAG, String.valueOf(sample.hashCode()));
 
-		JsonLDSample jsonLDSample = convertionService.sampleToJsonLD(sample);
+		String jsonLDString = jsonLDService.jsonLDToString(jsonLDService.sampleToJsonLD(sample));
 		model.addAttribute("sample", sample);
-		model.addAttribute("jsonLD", jsonLDSample);
+		model.addAttribute("jsonLD", jsonLDString);
 
 		return "sample";
 	}

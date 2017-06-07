@@ -1,7 +1,6 @@
 package uk.ac.ebi.biosamples.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.List;
@@ -81,13 +80,4 @@ public class JsonLDSample {
         this.additionalProperties = additionalProperties;
     }
 
-    @Override
-    public String toString() {
-        try {
-            return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(this);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            return this.toString();
-        }
-    }
 }
