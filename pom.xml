@@ -11,12 +11,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<!-- <version>1.4.4.RELEASE</version> -->
-		<!-- This has problems with the converters -->
 		<version>1.5.3.RELEASE</version>
-		<!-- <version>1.5.3.BUILD-SNAPSHOT</version> -->
-		<!-- This uses Thymeleaf 3 -->
-		<!-- <version>2.0.0.BUILD-SNAPSHOT</version> -->
 	</parent>
 
 	<properties>
