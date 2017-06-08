@@ -56,6 +56,7 @@
 </project>
 =======
 
+<<<<<<< HEAD
   <parent>
     <groupId>uk.ac.ebi.biosamples</groupId>
     <artifactId>biosamples</artifactId>
@@ -109,4 +110,53 @@
     </plugins>
   </build>
 </project>
+<<<<<<< HEAD
 >>>>>>> Add a new integration test for the legacy XML endpoint
+=======
+=======
+	<parent>
+		<groupId>uk.ac.ebi.biosamples</groupId>
+		<artifactId>biosamples</artifactId>
+		<version>4.0.0-SNAPSHOT</version>
+		<relativePath>../</relativePath>
+	</parent>
+	
+	<dependencies>
+		<dependency>
+			<groupId>uk.ac.ebi.biosamples</groupId>
+			<artifactId>biosamples-spring-boot-starter</artifactId>
+			<version>${bsd2017.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>uk.ac.ebi.biosamples</groupId>
+			<artifactId>models-sitemap</artifactId>
+			<version>${bsd2017.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.seleniumhq.selenium</groupId>
+			<artifactId>selenium-java</artifactId>
+			<version>3.4.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.seleniumhq.selenium</groupId>
+			<artifactId>selenium-server</artifactId>
+			<version>3.4.0</version>
+		</dependency>
+
+	</dependencies>
+	
+ 	<build>
+ 		<plugins>
+ 			<plugin>
+ 				<groupId>org.springframework.boot</groupId>
+ 				<artifactId>spring-boot-maven-plugin</artifactId>
+ 			</plugin>
+ 		</plugins>
+ 	</build>
+</project>
+>>>>>>> Add integration test for json-ld using selenium
+>>>>>>> Add integration test for json-ld using selenium
