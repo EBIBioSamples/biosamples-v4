@@ -22,9 +22,9 @@ public class JsonLDService {
         return this.jsonLDSampleConverter.convert(sample);
     }
 
-    public String jsonLDToString(JsonLDSample jsonld) {
+    public String jsonLDToString(JsonLDSample jsonLD) {
         try {
-            return this.objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(this);
+            return this.objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonLD);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             return this.toString();
