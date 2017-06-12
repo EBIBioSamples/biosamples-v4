@@ -2,6 +2,9 @@ package uk.ac.ebi.biosamples.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * ld+json object for the MedicalCode in schema.org {@link}https://health-lifesci.schema.org/MedicalCode
+ */
 public class JsonLDMedicalCode {
 
     @JsonProperty("@context")

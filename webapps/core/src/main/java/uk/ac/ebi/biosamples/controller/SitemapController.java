@@ -39,6 +39,12 @@ public class SitemapController {
         this.samplePageService = pageService;
     }
 
+    /**
+     * Generate the sitemap index
+     * @param request the request
+     * @return the sitemap index in xml format
+     * @throws MalformedURLException
+     */
     @RequestMapping(method= RequestMethod.GET, produces= MediaType.APPLICATION_XML_VALUE)
     @ResponseBody
     public XmlSitemapIndex createSampleSitemapIndex(HttpServletRequest request) throws MalformedURLException {
@@ -55,6 +61,13 @@ public class SitemapController {
 
     }
 
+    /**
+     * Generate a sitemap subpage
+     * @param pageNumber the page number
+     * @param request the request object
+     * @return the sitemap page content
+     * @throws ParseException
+     */
     @RequestMapping(value = "/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_XML_VALUE)
     @ResponseBody
     public XmlUrlSet createSampleSitemapPage(@PathVariable("id") int pageNumber, HttpServletRequest request) throws ParseException {
@@ -73,6 +86,11 @@ public class SitemapController {
         return xmlUrlSet;
     }
 
+    /**
+     * Generate the proper url based on the request
+     * @param request
+     * @return the base url for the links in the sitemap
+     */
     private String generateBaseUrl(HttpServletRequest request) {
         String requestURI = request.getRequestURI();
         String requestURL = request.getRequestURL().toString();
@@ -80,6 +98,11 @@ public class SitemapController {
                 request.getContextPath();
 
     }
+
+    /**
+     * Get the total number of samples in the database
+     * @return the number of samples
+     */
     private long getTotalSamples() {
         Pageable pageable = new PageRequest(0, 1);
         MultiValueMap<String, String> filters = new LinkedMultiValueMap<>();

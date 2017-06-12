@@ -23,8 +23,7 @@ import java.util.Date;
 import java.util.TimeZone;
 
 /**
- *
- * @author mrelac
+ * Class representing the sitemap entry
  */
 public class XmlSitemap {
     

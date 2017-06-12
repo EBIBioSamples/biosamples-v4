@@ -2,6 +2,10 @@ package uk.ac.ebi.biosamples.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * Object to represent the ld+json version of the @see <a href="http://schema.org/PropertyValue">Property Value</a>
+ * in schema.org
+ */
 public class JsonLDPropertyValue {
 
     @JsonProperty("@context")

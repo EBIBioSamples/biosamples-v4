@@ -5,6 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.List;
 
+/**
+ * Object representing BioSchema Sample entity
+ */
 public class JsonLDSample {
 
     @JsonProperty("@context")
