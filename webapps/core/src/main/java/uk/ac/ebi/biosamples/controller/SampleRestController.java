@@ -3,10 +3,13 @@ package uk.ac.ebi.biosamples.controller;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -21,6 +24,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,6 +43,9 @@ import uk.ac.ebi.biosamples.service.FilterService;
 import uk.ac.ebi.biosamples.service.SamplePageService;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 import uk.ac.ebi.biosamples.service.SampleService;
+import uk.ac.ebi.tsc.aap.client.model.Domain;
+import uk.ac.ebi.tsc.aap.client.model.User;
+import uk.ac.ebi.tsc.aap.client.repo.DomainService;
 
 /**
  * Primary controller for REST operations both in JSON and XML and both read and
@@ -61,6 +69,7 @@ public class SampleRestController {
 
 	private final EntityLinks entityLinks;
 
+		
 	private Logger log = LoggerFactory.getLogger(getClass());
 
 	public SampleRestController(SampleService sampleService, 
@@ -78,10 +87,21 @@ public class SampleRestController {
 	public ResponseEntity<PagedResources<Resource<Sample>>> searchHal(
 			@RequestParam(name = "text", required = false) String text,
 			@RequestParam(name = "filter", required = false) String[] filter, Pageable page,
+			Authentication authentication,
 			PagedResourcesAssembler<Sample> pageAssembler) {
 
 		MultiValueMap<String, String> filtersMap = filterService.getFilters(filter);
 		
+		Set<String> domains = new HashSet<>();		
+		if (authentication != null && authentication.getAuthorities() != null) {
+			for (GrantedAuthority grantedAuthority : authentication.getAuthorities()) {
+				if (Domain.class.isInstance(grantedAuthority)) {
+					Domain domain = (Domain) grantedAuthority;
+					domain.getDomainReference();
+				}
+			}
+		}
+		//TODO finish
 		
 		Page<Sample> pageSample = samplePageService.getSamplesByText(text, filtersMap, page);
 		

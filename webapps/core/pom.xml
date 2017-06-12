@@ -58,6 +58,7 @@
 			<artifactId>thymeleaf-extras-java8time</artifactId>
 		</dependency>
 
+		<!-- other spring dependencies -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-actuator</artifactId>
@@ -69,6 +70,22 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-rest</artifactId>
+		</dependency>
+		
+		<!-- aap client -->
+<!--         <dependency> -->
+<!--             <groupId>org.springframework.boot</groupId> -->
+<!--             <artifactId>spring-boot-starter-security</artifactId> -->
+<!--         </dependency> -->
+		<dependency>
+			<groupId>uk.ac.ebi.tsc.aap.client</groupId>
+			<artifactId>security</artifactId>
+			<version>0.2-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>uk.ac.ebi.tsc.aap.client</groupId>
+			<artifactId>service</artifactId>
+			<version>0.2-SNAPSHOT</version>
 		</dependency>
 
 		<!-- mark tomcat as provided so we can deploy to tomcat -->

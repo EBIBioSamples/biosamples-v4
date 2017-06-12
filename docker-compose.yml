@@ -16,6 +16,12 @@ services:
     - -jar
     - webapps-core-4.0.0-SNAPSHOT.war
     environment:
+    #AAP certificate
+    - jwt.certificate=public.der
+    - security.basic.path=
+    - aap.domains.url=https://explore.api.aap.tsi.ebi.ac.uk
+    - aap.token.url=https://explore.api.aap.tsi.ebi.ac.uk/auth
+    #configure other services
     - spring.data.solr.host=http://solr:8983/solr
     - spring.data.neo4j.uri=bolt://neo4j:7687
     #- spring.data.neo4j.uri=http://neo4j:7474

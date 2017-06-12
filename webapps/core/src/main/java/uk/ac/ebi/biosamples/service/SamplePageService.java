@@ -1,5 +1,7 @@
 package uk.ac.ebi.biosamples.service;
 
+import java.security.Principal;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -10,6 +12,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
 
@@ -49,8 +52,10 @@ public class SamplePageService {
 	private SolrSampleService solrSampleService;
 	
 
-	//@Cacheable(cacheNames=WebappProperties.getSamplesByText, sync=true)
-	public Page<Sample> getSamplesByText(String text, MultiValueMap<String,String> filters, Pageable pageable) {		
+	public Page<Sample> getSamplesByText(String text, MultiValueMap<String,String> filters, 
+			Pageable pageable) {		
+		
+				
 		Page<SolrSample> pageSolrSample = solrSampleService.fetchSolrSampleByText(text, filters, pageable);		
 		//for each result fetch the stored version and add e.g. inverse relationships		
 		//stream process each solrSample into a sample *in parallel*
@@ -62,7 +67,6 @@ public class SamplePageService {
 	}
 	
 
-	//@Cacheable(cacheNames=WebappProperties.getSamplesOfExternalReference, sync=true)
 	public Page<Sample> getSamplesOfExternalReference(String urlHash, Pageable pageable) {
 		Page<NeoSample> pageNeoSample = neoSampleRepository.findByExternalReferenceUrlHash(urlHash, pageable);
 		//get them in greater depth
@@ -72,7 +76,6 @@ public class SamplePageService {
 		return pageSample;
 	}
 
-	//@Cacheable(cacheNames=WebappProperties.getSamplesOfCuration, sync=true)
 	public Page<Sample> getSamplesOfCuration(String hash, Pageable pageable) {
 		Page<NeoSample> pageNeoSample = neoSampleRepository.findByCurationHash(hash, pageable);
 		//get them in greater depth
