@@ -4,16 +4,20 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.hateoas.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
+import uk.ac.ebi.biosamples.model.JsonLDSample;
 import uk.ac.ebi.biosamples.model.Sample;
 
 import java.time.LocalDateTime;
@@ -26,13 +30,16 @@ import java.util.regex.Pattern;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @Profile({"default", "selenium", "test"})
 public class JsonLDIntegration extends AbstractIntegration {
+    RestOperations restTemplate;
     WebDriver chromeDriver;
     IntegrationProperties integrationProperties;
 
-    public JsonLDIntegration(BioSamplesClient client,
+    public JsonLDIntegration(RestTemplateBuilder templateBuilder,
+                             BioSamplesClient client,
                              IntegrationProperties props) {
         super(client);
         integrationProperties = props;
+        restTemplate = templateBuilder.build();
     }
 
     @Override
@@ -52,31 +59,8 @@ public class JsonLDIntegration extends AbstractIntegration {
     @Override
     protected void phaseTwo() {
         Sample testSample = getTestSample();
-        chromeDriver = new ChromeDriver();
-        try {
-            Optional<Resource<Sample>> optionalSample = client.fetchSampleResource(testSample.getAccession());
-            if (optionalSample.isPresent()) {
-                Resource<Sample> sampleResource = optionalSample.get();
-                String sampleAccession = sampleResource.getContent().getAccession();
-                UriComponents sampleURI = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUri()).pathSegment("samples", sampleAccession).build();
-                chromeDriver.get(sampleURI.toString());
-                WebElement jsonLDScript = chromeDriver.findElement(By.cssSelector("script[type='application/ld+json']"));
-                if (jsonLDScript == null) {
-                    throw new RuntimeException("The ld+json script has not been found in the page for sample " + sampleAccession);
-                }
-                String jsonLDContent = jsonLDScript.getAttribute("innerHTML");
-                if (jsonLDIsEmpty(jsonLDContent)) {
-                    throw new RuntimeException("The ld+json content is empty");
-                }
-                if (!jsonLDHasAccession(jsonLDContent,testSample.getAccession())) {
-                    throw new RuntimeException("The ld+json doesn't have the correct identifier");
-                }
-            } else {
-                throw new RuntimeException("No sample has been found to check for jsonld content");
-            }
-        } finally {
-            chromeDriver.close();
-        }
+        checkPresenceOnWebPage(testSample);
+        checkPresenceWithRest(testSample);
 
     }
 
@@ -126,5 +110,46 @@ public class JsonLDIntegration extends AbstractIntegration {
 
     private boolean jsonLDHasAccession(String jsonLDContent, String accession) {
         return Pattern.compile("\"identifier\"\\s*:\\s*\"" + accession + "\",").matcher(jsonLDContent).find();
+    }
+
+    private void checkPresenceOnWebPage(Sample sample) {
+        chromeDriver = new ChromeDriver();
+        try {
+            Optional<Resource<Sample>> optionalSample = client.fetchSampleResource(sample.getAccession());
+            if (optionalSample.isPresent()) {
+                Resource<Sample> sampleResource = optionalSample.get();
+                String sampleAccession = sampleResource.getContent().getAccession();
+                UriComponents sampleURI = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUri()).pathSegment("samples", sampleAccession).build();
+                chromeDriver.get(sampleURI.toString());
+                WebElement jsonLDScript = chromeDriver.findElement(By.cssSelector("script[type='application/ld+json']"));
+                if (jsonLDScript == null) {
+                    throw new RuntimeException("The ld+json script has not been found in the page for sample " + sampleAccession);
+                }
+                String jsonLDContent = jsonLDScript.getAttribute("innerHTML");
+                if (jsonLDIsEmpty(jsonLDContent)) {
+                    throw new RuntimeException("The ld+json content is empty");
+                }
+                if (!jsonLDHasAccession(jsonLDContent,sample.getAccession())) {
+                    throw new RuntimeException("The ld+json doesn't have the correct identifier");
+                }
+            } else {
+                throw new RuntimeException("No sample has been found to check for jsonld content");
+            }
+        } finally {
+            chromeDriver.close();
+        }
+
+    }
+
+    private void checkPresenceWithRest(Sample sample) {
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(this.integrationProperties.getBiosampleSubmissionUri());
+        uriBuilder.pathSegment("samples", sample.getAccession()+".ldjson");
+        ResponseEntity<JsonLDSample> responseEntity = restTemplate.getForEntity(uriBuilder.toUriString(), JsonLDSample.class);
+        if (!responseEntity.getStatusCode().is2xxSuccessful()) {
+            throw new RuntimeException("Error retrieving sample in application/ld+json format from the webapp");
+        }
+        JsonLDSample jsonLDSample = responseEntity.getBody();
+        assert jsonLDSample.getIdentifier().equals(sample.getAccession());
+
     }
 }
