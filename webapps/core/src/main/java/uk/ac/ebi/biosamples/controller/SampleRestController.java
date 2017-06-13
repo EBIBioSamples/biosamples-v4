@@ -1,6 +1,7 @@
 package uk.ac.ebi.biosamples.controller;
 
 import java.net.URI;
+import java.security.Principal;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.HashSet;
@@ -26,6 +27,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -162,8 +164,12 @@ public class SampleRestController {
 				.eTag(String.valueOf(sample.hashCode())).contentType(MediaTypes.HAL_JSON).body(sampleResource);
 	}
 
+	
 	@PutMapping(value = "/{accession}", consumes = { MediaType.APPLICATION_JSON_VALUE })
-	public ResponseEntity<Resource<Sample>> put(@PathVariable String accession, @RequestBody Sample sample) {
+	public ResponseEntity<Resource<Sample>> put(@PathVariable String accession, 
+			@RequestBody Sample sample, 
+			Authentication authentication) {
+		
 		if (!sample.getAccession().equals(accession)) {
 			// if the accession in the body is different to the accession in the
 			// url, throw an error
@@ -171,9 +177,10 @@ public class SampleRestController {
 			throw new RuntimeException("Accessions must match (" + accession + " vs " + sample.getAccession() + ")");
 		}
 
-		// TODO compare to existing version to check if changes
+		
 
 		log.info("Recieved PUT for " + accession);
+				
 		sample = sampleService.store(sample);
 
 		// assemble a resource to return
