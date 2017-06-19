@@ -37,17 +37,16 @@ public class RestIntegration extends AbstractIntegration {
 		this.restTemplate = restTemplateBuilder.build();
 		
 	}
-	
+
 	@Override
 	protected void phaseOne() {
 		Sample sampleTest1 = getSampleTest1();
-		
 		// get and check that nothing exists already
 		Optional<Resource<Sample>> optional = client.fetchSampleResource(sampleTest1.getAccession());
 		if (optional.isPresent()) {
 			throw new RuntimeException("Found existing "+sampleTest1.getAccession());
 		}
-		
+
 		// put a sample
 		Resource<Sample> resource = client.persistSampleResource(sampleTest1);
 		if (!sampleTest1.equals(resource.getContent())) {
@@ -56,17 +55,15 @@ public class RestIntegration extends AbstractIntegration {
 			throw new RuntimeException("Expected response to equal submission");
 		}
 	}
-	
+
 	@Override
 	protected void phaseTwo() {
 		Sample sampleTest1 = getSampleTest1();
-		
 		// get to check it worked
 		Optional<Resource<Sample>> optional = client.fetchSampleResource(sampleTest1.getAccession());
 		if (!optional.isPresent()) {
 			throw new RuntimeException("No existing "+sampleTest1.getAccession());
 		}
-		
 		//disabled because not fully operational
 		//checkIfModifiedSince(optional.get());
 		//checkIfMatch(optional.get());
@@ -75,23 +72,21 @@ public class RestIntegration extends AbstractIntegration {
 		sampleTest1 = Sample.build(sampleTest1.getName(), sampleTest1.getAccession(),
 				LocalDateTime.of(LocalDate.of(2116, 4, 1), LocalTime.of(11, 36, 57, 0)), sampleTest1.getUpdate(),
 				sampleTest1.getCharacteristics(), sampleTest1.getRelationships(), sampleTest1.getExternalReferences());
-		
 		Resource<Sample> resource = client.persistSampleResource(sampleTest1);
 		if (!sampleTest1.equals(resource.getContent())) {
 			log.warn("expected: "+sampleTest1);
 			log.warn("found: "+resource.getContent());
 			throw new RuntimeException("Expected response to equal submission");
 		}
-		
+
 		//TODO check If-Unmodified-Since
 		//TODO check If-None-Match
 	}
-	
+
 	@Override
 	protected void phaseThree() {
 		Sample sampleTest1 = getSampleTest1();
 		Sample sampleTest2 = getSampleTest2();
-		
 		// check that it is private again
 		Optional<Resource<Sample>> optional = client.fetchSampleResource(sampleTest1.getAccession());
 		if (optional.isPresent()) {
@@ -104,19 +99,19 @@ public class RestIntegration extends AbstractIntegration {
 			log.warn("expected: "+sampleTest2);
 			log.warn("found: "+resource.getContent());
 			throw new RuntimeException("Expected response to equal submission");
-		}		
+		}
 	}
-	
+
 	@Override
-	protected void phaseFour() {	
+	protected void phaseFour() {
 		Sample sampleTest1 = getSampleTest1();
 		Sample sampleTest2 = getSampleTest2();
 		//at this point, the inverse relationship should have been added
-		
+
 		sampleTest2 = Sample.build(sampleTest2.getName(), sampleTest2.getAccession(),
 				sampleTest2.getRelease(), sampleTest2.getUpdate(),
 				sampleTest2.getCharacteristics(), sampleTest1.getRelationships(), sampleTest2.getExternalReferences());
-		
+
 		//check that it has the additional relationship added
 		// get to check it worked
 		Optional<Resource<Sample>> optional = client.fetchSampleResource(sampleTest2.getAccession());
@@ -130,13 +125,10 @@ public class RestIntegration extends AbstractIntegration {
 			log.warn("found: "+sampleTest2Rest);
 			throw new RuntimeException("No matching "+sampleTest2.getAccession());
 		}
-		
 		//check utf -8
 		if (!sampleTest2Rest.getCharacteristics().contains(Attribute.build("UTF-8 test", "αβ", null, null))) {
 			throw new RuntimeException("Unable to find UTF-8 characters");
 		}
-		
-		
 		//now do another update to delete the relationship
 		//might as well make it public now too
 		sampleTest1 = Sample.build(sampleTest1.getName(), sampleTest1.getAccession(),
@@ -187,14 +179,14 @@ public class RestIntegration extends AbstractIntegration {
 
 		SortedSet<Attribute> attributes = new TreeSet<>();
 		attributes.add(
-			Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
+				Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
 		attributes.add(Attribute.build("age", "3", null, "year"));
 		attributes.add(Attribute.build("organism part", "lung", null, null));
 		attributes.add(Attribute.build("organism part", "heart", null, null));
 
 		SortedSet<Relationship> relationships = new TreeSet<>();
 		relationships.add(Relationship.build("TESTrest1", "derived from", "TESTrest2"));
-		
+
 		SortedSet<ExternalReference> externalReferences = new TreeSet<>();
 		externalReferences.add(ExternalReference.build("http://www.google.com"));
 
@@ -209,7 +201,7 @@ public class RestIntegration extends AbstractIntegration {
 
 		SortedSet<Attribute> attributes = new TreeSet<>();
 		attributes.add(
-			Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
+				Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
 		attributes.add(Attribute.build("UTF-8 test", "αβ", null, null));
 
 		return Sample.build(name, accession, release, update, attributes, new TreeSet<>(), new TreeSet<>());

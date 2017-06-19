@@ -8,24 +8,11 @@
 
   <packaging>pom</packaging>
 
-<<<<<<< HEAD
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>1.5.4.RELEASE</version>
 	</parent>
-=======
-  <parent>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-parent</artifactId>
-    <!-- <version>1.4.4.RELEASE</version> -->
-    <!-- This has problems with the converters -->
-    <version>1.5.4.RELEASE</version>
-    <!-- <version>1.5.3.BUILD-SNAPSHOT</version> -->
-    <!-- This uses Thymeleaf 3 -->
-    <!-- <version>2.0.0.BUILD-SNAPSHOT</version> -->
-  </parent>
->>>>>>> update spring boot to 1.5.4
 
   <properties>
     <bsd2017.version>4.0.0-SNAPSHOT</bsd2017.version>
@@ -41,7 +28,6 @@
     </profile>
   </profiles>
 
-<<<<<<< HEAD
 	<modules>
 		<module>models</module>
 		<module>messaging</module>
@@ -52,17 +38,6 @@
 		<module>client</module>
 		<module>properties</module>
 	</modules>
-=======
-  <modules>
-    <module>models</module>
-    <module>messaging</module>
-    <module>agents</module>
-    <module>webapps</module>
-    <module>pipelines</module>
-    <module>integration</module>
-    <module>client</module>
-  </modules>
->>>>>>> update spring boot to 1.5.4
 
   <dependencies>
     <dependency>
