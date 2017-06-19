@@ -9,8 +9,19 @@ import java.util.TreeSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.annotation.Order;
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
+
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
@@ -18,12 +29,16 @@ import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 
 @Component
+@Order(2)
 public class RestIntegration extends AbstractIntegration {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
+	private final RestTemplate restTemplate;
 	
-	public RestIntegration(BioSamplesClient client) {
+	public RestIntegration(BioSamplesClient client, RestTemplateBuilder restTemplateBuilder) {
 		super(client);
+		this.restTemplate = restTemplateBuilder.build();
+		
 	}
 	
 	@Override
@@ -52,6 +67,9 @@ public class RestIntegration extends AbstractIntegration {
 		if (!optional.isPresent()) {
 			throw new RuntimeException("No existing "+sampleTest1.getAccession());
 		}
+		
+		checkIfModifiedSince(optional.get());
+		checkIfMatch(optional.get());
 
 		// put a version that is private
 		sampleTest1 = Sample.build(sampleTest1.getName(), sampleTest1.getAccession(),
@@ -62,6 +80,9 @@ public class RestIntegration extends AbstractIntegration {
 		if (!sampleTest1.equals(resource.getContent())) {
 			throw new RuntimeException("Expected response to equal submission");
 		}
+		
+		//TODO check If-Unmodified-Since
+		//TODO check If-None-Match
 	}
 	
 	@Override
@@ -121,6 +142,30 @@ public class RestIntegration extends AbstractIntegration {
 	protected void phaseFive() {	
 	}
 
+	private void checkIfModifiedSince(Resource<Sample> sample) {
+		HttpHeaders headers = new HttpHeaders();
+		headers.setIfModifiedSince(0);
+		ResponseEntity<Resource<Sample>> response = restTemplate.exchange(sample.getLink(Link.REL_SELF).getHref(), 
+				HttpMethod.GET, new HttpEntity<Void>(headers), 
+				new ParameterizedTypeReference<Resource<Sample>>(){});
+		
+		if (!response.getStatusCode().equals(HttpStatus.NOT_MODIFIED)) {
+			throw new RuntimeException("Got something other than a 304 response");
+		}
+	}
+	private void checkIfMatch(Resource<Sample> sample) {
+		HttpHeaders headers = new HttpHeaders();
+		headers.setIfNoneMatch("W/\""+sample.getContent().hashCode()+"\"");
+		ResponseEntity<Resource<Sample>> response = restTemplate.exchange(sample.getLink(Link.REL_SELF).getHref(), 
+				HttpMethod.GET, new HttpEntity<Void>(headers), 
+				new ParameterizedTypeReference<Resource<Sample>>(){});
+		
+		if (!response.getStatusCode().equals(HttpStatus.NOT_MODIFIED)) {
+			throw new RuntimeException("Got something other than a 304 response");
+		}
+	}
+	
+	
 	private Sample getSampleTest1() {
 		String name = "Test Sample";
 		String accession = "TESTrest1";

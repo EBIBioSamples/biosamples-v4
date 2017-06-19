@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import uk.ac.ebi.biosamples.model.Sample;
@@ -74,42 +75,8 @@ public class SampleRestController {
 	}
 
 	@CrossOrigin(methods = RequestMethod.GET)
-	@GetMapping(produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
-	public ResponseEntity<PagedResources<Resource<Sample>>> searchHal(
-			@RequestParam(name = "text", required = false) String text,
-			@RequestParam(name = "filter", required = false) String[] filter, Pageable page,
-			PagedResourcesAssembler<Sample> pageAssembler) {
-
-		MultiValueMap<String, String> filtersMap = filterService.getFilters(filter);
-		
-		
-		Page<Sample> pageSample = samplePageService.getSamplesByText(text, filtersMap, page);
-		
-		// add the links to each individual sample on the page
-		// also adds links to first/last/next/prev at the same time
-		PagedResources<Resource<Sample>> pagedResources = pageAssembler.toResource(pageSample, sampleResourceAssembler,
-				entityLinks.linkToCollectionResource(Sample.class));
-
-		// to generate the HAL template correctly, the parameter name must match
-		// the requestparam name
-		pagedResources
-				.add(ControllerLinkBuilder.linkTo(ControllerLinkBuilder.methodOn(SampleAutocompleteRestController.class)
-						.getAutocompleteHal(text, filter, null)).withRel("autocomplete"));
-		pagedResources.add(ControllerLinkBuilder
-				.linkTo(ControllerLinkBuilder.methodOn(SampleFacetRestController.class).getFacetsHal(text, filter))
-				.withRel("facet"));
-		pagedResources.add(ControllerLinkBuilder
-				.linkTo(ControllerLinkBuilder.methodOn(SampleRestController.class).getSampleHal(null))
-				.withRel("sample"));
-
-		return ResponseEntity.ok()
-				.header(HttpHeaders.CACHE_CONTROL, CacheControl.maxAge(15, TimeUnit.MINUTES).cachePublic().getHeaderValue())
-				.body(pagedResources);
-	}
-
-	@CrossOrigin(methods = RequestMethod.GET)
 	@GetMapping(value = "/{accession}", produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
-	public ResponseEntity<Resource<Sample>> getSampleHal(@PathVariable String accession) {
+	public Resource<Sample> getSampleHal(@PathVariable String accession) {
 		log.info("starting call");
 		// convert it into the format to return
 		Sample sample = null;
@@ -117,30 +84,44 @@ public class SampleRestController {
 			sample = sampleService.fetch(accession);
 		} catch (IllegalArgumentException e) {
 			// did not exist, throw 404
-			return ResponseEntity.notFound().build();
+			//return ResponseEntity.notFound().build();
+			throw new SampleNotFoundException();
 		}
 
 		if (sample.getName() == null) {
 			// if it has no name, then its just created by accessioning or
 			// reference
 			// can't read it, but could put to it
+			// TODO use METHOD_NOT_ALLOWED
 			// TODO make sure "options" is correct for this
-			return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
+			throw new SampleNotFoundException();
 		}
 
 		// check if the release date is in the future and if so return it as
 		// private
 		if (sample.getRelease().isAfter(LocalDateTime.now())) {
-			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+			throw new SampleNotAccessibleException();
 		}
 
 		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
 
 		// create the response object with the appropriate status
-		return ResponseEntity.ok().lastModified(sample.getUpdate().toEpochSecond(ZoneOffset.UTC))
-				//.header(HttpHeaders.CACHE_CONTROL, CacheControl.maxAge(1, TimeUnit.MINUTES).cachePublic().getHeaderValue())
+		return sampleResource;
+		/*
+		return ResponseEntity.ok().lastModified(sample.getUpdate().toInstant(ZoneOffset.UTC).toEpochMilli())
+				.header(HttpHeaders.CACHE_CONTROL, CacheControl.maxAge(1, TimeUnit.MINUTES).cachePublic().getHeaderValue())
 				.eTag(String.valueOf(sample.hashCode())).contentType(MediaTypes.HAL_JSON).body(sampleResource);
+		*/
 	}
+
+	@ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "No such Sample") // 404
+	public class SampleNotFoundException extends RuntimeException {
+	}
+
+	@ResponseStatus(value = HttpStatus.FORBIDDEN, reason = "Sample not accessible") // 403
+	public class SampleNotAccessibleException extends RuntimeException {
+	}
+	
 
 	@PutMapping(value = "/{accession}", consumes = { MediaType.APPLICATION_JSON_VALUE })
 	public ResponseEntity<Resource<Sample>> put(@PathVariable String accession, @RequestBody Sample sample) {
