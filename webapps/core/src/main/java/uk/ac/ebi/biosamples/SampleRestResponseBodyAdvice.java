@@ -37,15 +37,18 @@ public class SampleRestResponseBodyAdvice implements ResponseBodyAdvice<Resource
 		
 		//an ETag has to be set even on a 304 response see https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.5
 		response.getHeaders().setETag(eTag);
+		//cache-control has to be set even on a 304
+		response.getHeaders().setCacheControl(CacheControl.maxAge(1, TimeUnit.MINUTES).getHeaderValue());
 		
+
+		//the client used a modified cache header that is sufficient to 
+		//allow the clients cached copy to be used
 		if ((request.getHeaders().getIfNoneMatch().contains(eTag) 
 				|| request.getHeaders().getIfNoneMatch().contains("*")) 
 				|| (request.getHeaders().getIfModifiedSince() != -1 
 					&& request.getHeaders().getIfModifiedSince() <= lastModified)
 				|| (request.getHeaders().getIfUnmodifiedSince() != -1 
 					&& request.getHeaders().getIfUnmodifiedSince() > lastModified)) {
-			//the client used a modified cache header that is sufficient to 
-			//allow the clients cached copy to be used
 			
 			//if the request is a get, then use 302
 			//if the request is a put, then use 412
@@ -59,8 +62,6 @@ public class SampleRestResponseBodyAdvice implements ResponseBodyAdvice<Resource
 		
 		
 		response.getHeaders().setLastModified(lastModified);
-		
-		response.getHeaders().setCacheControl(CacheControl.maxAge(1, TimeUnit.MINUTES).cachePublic().getHeaderValue());
 		
 		return body;
 	}
