@@ -1,5 +1,6 @@
 package uk.ac.ebi.biosamples.service;
 
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -42,8 +43,9 @@ public class SampleTabService {
 		for (SampleNode sampleNode : sampleData.scd.getNodes(SampleNode.class)) {
 			String accession = sampleNode.getSampleAccession();
 			String name = sampleNode.getNodeName();
-			LocalDateTime release = LocalDateTime.ofInstant(Instant.ofEpochMilli(sampleData.msi.submissionReleaseDate.getTime()), ZoneId.systemDefault());
-			LocalDateTime update = LocalDateTime.ofInstant(Instant.ofEpochMilli(sampleData.msi.submissionUpdateDate.getTime()), ZoneId.systemDefault());
+			
+			LocalDateTime release = LocalDateTime.ofInstant(Instant.ofEpochMilli(sampleData.msi.submissionReleaseDate.getTime()), ZoneId.of("UTC"));
+			LocalDateTime update = LocalDateTime.ofInstant(Instant.ofEpochMilli(sampleData.msi.submissionUpdateDate.getTime()), ZoneId.of("UTC"));
 
 			SortedSet<Attribute> attributes = new TreeSet<>();
 			SortedSet<Relationship> relationships = new TreeSet<>();
