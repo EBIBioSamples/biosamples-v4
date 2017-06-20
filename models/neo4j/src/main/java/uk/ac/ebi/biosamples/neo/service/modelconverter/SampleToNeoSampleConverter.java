@@ -40,14 +40,18 @@ public class SampleToNeoSampleConverter
 
 		for (Relationship relationship : sample.getRelationships()) {
 
-			NeoSample owner = NeoSample.create(relationship.getSource());
-			NeoSample target = NeoSample.create(relationship.getTarget());
+			NeoSample owner;
+			NeoSample target;
 			
-			if (owner.getAccession().equals(sample.getAccession())) {
+			if (relationship.getSource().equals(sample.getAccession())) {
 				owner = neoSample;
+			} else {
+				owner = NeoSample.create(relationship.getSource());
 			}
-			if (target.getAccession().equals(sample.getAccession())) {
+			if (relationship.getTarget().equals(sample.getAccession())) {
 				target = neoSample;
+			} else {
+				target = NeoSample.create(relationship.getTarget());
 			}
 						
 			neoSample.getRelationships().add(NeoRelationship.build(owner, relationship.getType(), target));
