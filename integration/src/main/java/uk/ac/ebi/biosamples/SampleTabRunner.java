@@ -22,7 +22,7 @@ import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 
 @Component
-@Order(3)
+@Order(5)
 @Profile({ "default", "submission" })
 public class SampleTabRunner implements ApplicationRunner, ExitCodeGenerator {
 
