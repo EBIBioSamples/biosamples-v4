@@ -55,7 +55,6 @@ public class SampleRetrievalService {
 		return executor.submit(new FetchCallable(accession));
 	}
 
-	@Deprecated
 	public PagedResources<Resource<Sample>> fetchPaginated(String text, int page, int size) {		
 		URI uri = UriComponentsBuilder.fromUriString(traverson.follow("samples").asLink().getHref())
 				.queryParam("text", !text.isEmpty() ? text : "*:*").queryParam("page", page).queryParam("size", size)

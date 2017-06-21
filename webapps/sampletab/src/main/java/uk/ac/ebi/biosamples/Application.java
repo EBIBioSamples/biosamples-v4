@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.client.ClientProperties;
+import uk.ac.ebi.biosamples.client.service.AapClientService;
 import uk.ac.ebi.biosamples.service.SampleValidator;
 
 @SpringBootApplication
@@ -34,7 +35,7 @@ public class Application extends SpringBootServletInitializer {
 
 	@Bean
 	public BioSamplesClient bioSamplesClient(ClientProperties clientProperties, 
-			RestTemplateBuilder restTemplateBuilder, SampleValidator sampleValidator) {
+			RestTemplateBuilder restTemplateBuilder, SampleValidator sampleValidator, AapClientService aapClientService) {
 		
 		//make sure there is a application/hal+json converter		
 		//traverson will make its own but not if we want to customize the resttemplate in any way (e.g. caching)
@@ -58,6 +59,6 @@ public class Application extends SpringBootServletInitializer {
 		});
 		
 		
-		return new BioSamplesClient(clientProperties, restTemplateBuilder, sampleValidator);
+		return new BioSamplesClient(clientProperties, restTemplateBuilder, sampleValidator, aapClientService);
 	}
 }

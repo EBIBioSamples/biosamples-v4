@@ -25,6 +25,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -42,6 +43,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.service.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.FilterService;
 import uk.ac.ebi.biosamples.service.SamplePageService;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
@@ -67,19 +69,21 @@ public class SampleRestController {
 	private final SampleService sampleService;
 	private final SamplePageService samplePageService;
 	private final FilterService filterService;
+	private final BioSamplesAapService bioSamplesAapService;
 
 	private final SampleResourceAssembler sampleResourceAssembler;
 
 	private final EntityLinks entityLinks;
-
 		
 	private Logger log = LoggerFactory.getLogger(getClass());
 
 	public SampleRestController(SampleService sampleService, 
-			SamplePageService samplePageService,FilterService filterService,
+			SamplePageService samplePageService,FilterService filterService, 
+			BioSamplesAapService bioSamplesAapService,
 			SampleResourceAssembler sampleResourceAssembler, EntityLinks entityLinks) {
 		this.sampleService = sampleService;
 		this.samplePageService = samplePageService;
+		this.bioSamplesAapService = bioSamplesAapService;
 		this.filterService = filterService;
 		this.sampleResourceAssembler = sampleResourceAssembler;
 		this.entityLinks = entityLinks;
@@ -131,21 +135,38 @@ public class SampleRestController {
 	@ResponseStatus(value = HttpStatus.FORBIDDEN, reason = "Sample not accessible") // 403
 	public class SampleNotAccessibleException extends RuntimeException {
 	}
+
+	@ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Sample accession must match URL accession") // 400
+	public class SampleAccessionMismatchException extends RuntimeException {
+	}
+
+	@ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Sample must specify a domain") // 400
+	public class SampleDomainMissingException extends RuntimeException {
+	}
 	
+	@PreAuthorize("isAuthenticated()")
 	@PutMapping(value = "/{accession}", consumes = { MediaType.APPLICATION_JSON_VALUE })
-	public ResponseEntity<Resource<Sample>> put(@PathVariable String accession, 
-			@RequestBody Sample sample, 
-			Authentication authentication) {
+	public Resource<Sample> put(@PathVariable String accession, 
+			@RequestBody Sample sample) {
 		
 		if (!sample.getAccession().equals(accession)) {
 			// if the accession in the body is different to the accession in the
 			// url, throw an error
 			// TODO create proper exception with right http error code
-			throw new RuntimeException("Accessions must match (" + accession + " vs " + sample.getAccession() + ")");
+			throw new SampleAccessionMismatchException();
+		}		
+		if (sample.getDomain() == null || sample.getDomain().length() == 0) {
+			// if the accession in the body is different to the accession in the
+			// url, throw an error
+			// TODO create proper exception with right http error code
+			throw new SampleDomainMissingException();
 		}
 		log.info("Recieved PUT for " + accession);
-
-		//TODO check sample has a domain owner that the authenticated user has access to
+		
+		//check sample is assigned to a domain that the authenticated user has access to
+		if (!bioSamplesAapService.getDomains().contains(sample.getDomain())) {
+			throw new SampleNotAccessibleException();
+		}
 				
 		sample = sampleService.store(sample);
 
@@ -153,12 +174,26 @@ public class SampleRestController {
 		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
 
 		// create the response object with the appropriate status
-		return ResponseEntity.accepted().body(sampleResource);
+		return sampleResource;
 	}
 
+	@PreAuthorize("isAuthenticated()")
 	@PostMapping(consumes = { MediaType.APPLICATION_JSON_VALUE })
 	public ResponseEntity<Resource<Sample>> post(@RequestBody Sample sample) {
+
+		if (sample.getDomain() == null || sample.getDomain().length() == 0) {
+			// if the accession in the body is different to the accession in the
+			// url, throw an error
+			// TODO create proper exception with right http error code
+			throw new SampleDomainMissingException();
+		}
 		log.info("Recieved POST");
+
+		//check sample is assigned to a domain that the authenticated user has access to
+		if (!bioSamplesAapService.getDomains().contains(sample.getDomain())) {
+			throw new SampleNotAccessibleException();
+		}
+				
 		sample = sampleService.store(sample);
 		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
 

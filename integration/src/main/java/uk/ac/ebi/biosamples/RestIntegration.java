@@ -170,6 +170,7 @@ public class RestIntegration extends AbstractIntegration {
 		String name = "Test Sample";
 		String accession = "TESTrest1";
         String domain = "abcde12345";
+        domain = "aap-users-domain";
 		LocalDateTime update = LocalDateTime.of(LocalDate.of(2016, 5, 5), LocalTime.of(11, 36, 57, 0));
 		LocalDateTime release = LocalDateTime.of(LocalDate.of(2016, 4, 1), LocalTime.of(11, 36, 57, 0));
 
@@ -193,6 +194,7 @@ public class RestIntegration extends AbstractIntegration {
 		String name = "Test Sample the second";
 		String accession = "TESTrest2";
         String domain = "abcde12345";
+        domain = "aap-users-domain";
 		LocalDateTime update = LocalDateTime.of(LocalDate.of(2016, 5, 5), LocalTime.of(11, 36, 57, 0));
 		LocalDateTime release = LocalDateTime.of(LocalDate.of(2016, 4, 1), LocalTime.of(11, 36, 57, 0));
 

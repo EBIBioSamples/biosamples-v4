@@ -82,9 +82,10 @@ public class SampleTabController {
             return ResponseEntity.badRequest().body(sb.toString());
         }
         
+        String jwt = null; //TODO get from request
         //no errors
         //TODO do AAP domain property
-        sampleTabService.saveSampleTab(sampledata, "DUMMY-DOMAIN");
+        sampleTabService.saveSampleTab(sampledata, "DUMMY-DOMAIN", jwt);
         return ResponseEntity.ok("");
 	}
 }

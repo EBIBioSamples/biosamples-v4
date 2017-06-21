@@ -39,63 +39,67 @@ import uk.ac.ebi.biosamples.model.Sample;
 @Component
 @Order(6)
 @Profile({ "default", "rest" })
-public class RestCurationRunner implements ApplicationRunner, ExitCodeGenerator {
+public class RestCurationIntegration extends AbstractIntegration {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 
 	private final IntegrationProperties integrationProperties;
 
 	private final RestOperations restTemplate;
-
-	private final BioSamplesClient client;
 	
-	public RestCurationRunner(RestTemplateBuilder restTemplateBuilder, IntegrationProperties integrationProperties, BioSamplesClient client) {
-		this.client = client;
+	public RestCurationIntegration(RestTemplateBuilder restTemplateBuilder, IntegrationProperties integrationProperties, BioSamplesClient client) {
+		super(client);
 		this.restTemplate = restTemplateBuilder.build();
 		this.integrationProperties = integrationProperties;
 	}
 
-	private int exitCode = 1;
+	@Override
+	protected void phaseOne(){
+		Sample sample = getSampleTest1();
+		client.persistSample(getSampleTest1());
+	}
 
 	@Override
-	public void run(ApplicationArguments args) throws Exception {
-
-		log.info("Starting RestCurationRunner");
+	protected void phaseTwo() {
 		Sample sample = getSampleTest1();
 
-		if (args.containsOption("phase") && Integer.parseInt(args.getOptionValues("phase").get(0)) == 1) {
-
-			client.persistSample(sample);
-			
-		} else if (args.containsOption("phase") && Integer.parseInt(args.getOptionValues("phase").get(0)) == 2) {
-
-			Set<Attribute> attributesPre = new HashSet<>();
-			attributesPre.add(Attribute.build("Organism", "9606"));
-			Set<Attribute> attributesPost = new HashSet<>();
-			attributesPost.add(Attribute.build("Organism", "Homo sapiens"));			
-			client.persistCuration(sample.getAccession(), Curation.build(attributesPre, attributesPost, null, null));
+		Set<Attribute> attributesPre = new HashSet<>();
+		attributesPre.add(Attribute.build("Organism", "9606"));
+		Set<Attribute> attributesPost = new HashSet<>();
+		attributesPost.add(Attribute.build("Organism", "Homo sapiens"));			
+		client.persistCuration(sample.getAccession(), Curation.build(attributesPre, attributesPost, null, null));
 
 
-			attributesPre = new HashSet<>();
-			attributesPre.add(Attribute.build("Organism", "Homo sapiens"));
-			attributesPost = new HashSet<>();
-			attributesPost.add(Attribute.build("Organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));			
-			client.persistCuration(sample.getAccession(), Curation.build(attributesPre, attributesPost, null, null));
+		attributesPre = new HashSet<>();
+		attributesPre.add(Attribute.build("Organism", "Homo sapiens"));
+		attributesPost = new HashSet<>();
+		attributesPost.add(Attribute.build("Organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));			
+		client.persistCuration(sample.getAccession(), Curation.build(attributesPre, attributesPost, null, null));
+		
+	}
 
-		} else if (args.containsOption("phase") && Integer.parseInt(args.getOptionValues("phase").get(0)) == 3) {
-			
-			// check /curations
-			testCurations();
-			
-			testSampleCurations(sample);
-			
-			//check there was no side-effects
-			client.fetchSample(sample.getAccession());
-		}
+	@Override
+	protected void phaseThree(){
+		Sample sample = getSampleTest1();
+		
+		// check /curations
+		testCurations();
+		
+		testSampleCurations(sample);
+		
+		//check there was no side-effects
+		client.fetchSample(sample.getAccession());
+		
+	}
 
-		// if we got here without throwing, then we finished successfully
-		exitCode = 0;
-		log.info("Finished RestCurationRunner");
+	@Override
+	protected void phaseFour() {
+		
+	}
+
+	@Override
+	protected void phaseFive() {
+		
 	}
 
 	private void testCurations() {
@@ -159,7 +163,7 @@ public class RestCurationRunner implements ApplicationRunner, ExitCodeGenerator 
 
 	}
 
-	private Sample getSampleTest1() throws URISyntaxException {
+	private Sample getSampleTest1() {
 		String name = "Test Sample";
 		String accession = "TESTCur1";
         String domain = "abcde12345";

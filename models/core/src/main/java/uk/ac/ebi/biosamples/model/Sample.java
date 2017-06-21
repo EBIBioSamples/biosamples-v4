@@ -157,9 +157,9 @@ public class Sample {
 			@JsonProperty("externalReferences") Set<ExternalReference> externalReferences) {
     	
 		Sample sample = new Sample();
-		sample.accession = accession;
-		sample.name = name;
-		sample.domain = domain;
+		sample.accession = accession.trim();
+		sample.name = name.trim();
+		sample.domain = domain.trim();
 
 		//this ensures that all components are present, even if they default to zero
 		if (release != null) {

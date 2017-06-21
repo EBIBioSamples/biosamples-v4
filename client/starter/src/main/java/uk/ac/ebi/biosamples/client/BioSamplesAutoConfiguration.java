@@ -31,6 +31,7 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import uk.ac.ebi.biosamples.client.service.AapClientService;
 import uk.ac.ebi.biosamples.service.AttributeValidator;
 import uk.ac.ebi.biosamples.service.SampleValidator;
 
@@ -56,9 +57,15 @@ public class BioSamplesAutoConfiguration {
 		return new ClientProperties();
 	}
 	
+	@Bean	
+	@ConditionalOnMissingBean(AapClientService.class)
+	public AapClientService aapClientService(RestTemplateBuilder restTemplateBuilder, ClientProperties clientProperties) {
+		return new AapClientService(restTemplateBuilder, clientProperties);
+	}
+	
 	@Bean
 	public BioSamplesClient bioSamplesClient(ClientProperties clientProperties, 
-			RestTemplateBuilder restTemplateBuilder, SampleValidator sampleValidator) {		
+			RestTemplateBuilder restTemplateBuilder, SampleValidator sampleValidator, AapClientService aapClientService) {		
 		restTemplateBuilder = restTemplateBuilder.additionalCustomizers(new RestTemplateCustomizer() {
 			public void customize(RestTemplate restTemplate) {
 				
@@ -121,6 +128,6 @@ public class BioSamplesAutoConfiguration {
 				restTemplate.setMessageConverters(converters);
 			}			
 		});
-		return new BioSamplesClient(clientProperties, restTemplateBuilder, sampleValidator);
+		return new BioSamplesClient(clientProperties, restTemplateBuilder, sampleValidator, aapClientService);
 	}
 }

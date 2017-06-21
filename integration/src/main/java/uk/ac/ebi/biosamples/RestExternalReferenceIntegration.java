@@ -38,11 +38,11 @@ import uk.ac.ebi.biosamples.model.Sample;
 @Component
 @Order(6)
 @Profile({ "default", "rest" })
-public class RestExternalReferenceRunner extends AbstractIntegration {
+public class RestExternalReferenceIntegration extends AbstractIntegration {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 
-	public RestExternalReferenceRunner(BioSamplesClient client) {
+	public RestExternalReferenceIntegration(BioSamplesClient client) {
 		super(client);
 	}
 

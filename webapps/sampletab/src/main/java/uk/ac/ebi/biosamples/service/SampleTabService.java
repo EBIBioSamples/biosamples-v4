@@ -39,7 +39,8 @@ public class SampleTabService {
 		this.bioSamplesClient = bioSamplesClient;
 	}
 	
-	public SampleData saveSampleTab(SampleData sampleData, String domain) {
+	public SampleData saveSampleTab(SampleData sampleData, String domain, String jwt) {
+		
 		for (SampleNode sampleNode : sampleData.scd.getNodes(SampleNode.class)) {
 			String accession = sampleNode.getSampleAccession();
 			String name = sampleNode.getNodeName();
