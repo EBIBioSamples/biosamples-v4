@@ -50,7 +50,7 @@ public class NeoSampleToSampleConverter
 				relationships.add(Relationship.build(relationship.getOwner().getAccession(), relationship.getType(), relationship.getTarget().getAccession()));
 			}				
 		}
-		return Sample.build(neo.getName(), neo.getAccession(), neo.getRelease(), neo.getUpdate(),
+		return Sample.build(neo.getName(), neo.getAccession(), neo.getDomain(), neo.getRelease(), neo.getUpdate(),
 				attributes, relationships, externalReferences);
 	}
 

@@ -28,6 +28,9 @@ public class EnaCallable implements Callable<Void> {
 	private final EnaElementConverter enaElementConverter;
 	private final EraProDao eraProDao;
 
+	//TODO do this properly
+	private final String domain = "DUMMY-DOMAIN";
+	
 	public EnaCallable(String sampleAccession, BioSamplesClient bioSamplesClient, RestTemplate restTemplate,
 			EnaElementConverter enaElementConverter, EraProDao eraProDao) {
 		this.sampleAccession = sampleAccession;
@@ -66,7 +69,7 @@ public class EnaCallable implements Callable<Void> {
 			LocalDateTime release = eraProDao.getReleaseDateTime(sampleAccession);
 			LocalDateTime update = eraProDao.getUpdateDateTime(sampleAccession);
 
-			sample = Sample.build(sample.getName(), sampleAccession, release, update, sample.getCharacteristics(),
+			sample = Sample.build(sample.getName(), sampleAccession, domain, release, update, sample.getCharacteristics(),
 					sample.getRelationships(), sample.getExternalReferences());
 			bioSamplesClient.persistSample(sample);
 		} else {

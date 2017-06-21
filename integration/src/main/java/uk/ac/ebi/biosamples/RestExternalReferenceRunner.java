@@ -135,6 +135,7 @@ public class RestExternalReferenceRunner extends AbstractIntegration {
 	private Sample getSampleTest1() {
 		String name = "Test Sample";
 		String accession = "TESTExRef1";
+        String domain = "abcde12345";
 		LocalDateTime update = LocalDateTime.of(LocalDate.of(2016, 5, 5), LocalTime.of(11, 36, 57, 0));
 		LocalDateTime release = LocalDateTime.of(LocalDate.of(2016, 4, 1), LocalTime.of(11, 36, 57, 0));
 
@@ -154,7 +155,7 @@ public class RestExternalReferenceRunner extends AbstractIntegration {
 		externalReferences.add(ExternalReference.build("http://www.test.com/9"));
 		externalReferences.add(ExternalReference.build("http://www.test.com/0"));
 
-		return Sample.build(name, accession, release, update, attributes, relationships, externalReferences);
+		return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences);
 	}
 
 }

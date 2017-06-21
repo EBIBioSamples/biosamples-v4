@@ -92,6 +92,7 @@ public class LegacyJsonRunner implements ApplicationRunner, ExitCodeGenerator {
     private Sample getSampleTest() throws URISyntaxException {
         String name = "ERS1077923";
         String accession = "SAMEA3890789";
+        String domain = "abcde12345";
         LocalDateTime update = LocalDateTime.of(LocalDate.of(2016, 8, 6), LocalTime.of(11, 36, 57, 0));
         LocalDateTime release = LocalDateTime.of(LocalDate.of(2016, 8, 6), LocalTime.of(11, 36, 57, 0));
 
@@ -109,7 +110,7 @@ public class LegacyJsonRunner implements ApplicationRunner, ExitCodeGenerator {
         externalReferences.add(ExternalReference.build("http://www.ebi.ac.uk/ena/data/view/SAMEA3890789"));
         externalReferences.add(ExternalReference.build("http://www.ebi.ac.uk/ena/data/view/ERS1077923"));
 
-        return Sample.build(name, accession, release, update, attributes, relationships, externalReferences);
+        return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences);
     }
 
 

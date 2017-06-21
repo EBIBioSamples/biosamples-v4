@@ -39,7 +39,7 @@ public class SampleTabService {
 		this.bioSamplesClient = bioSamplesClient;
 	}
 	
-	public SampleData saveSampleTab(SampleData sampleData) {
+	public SampleData saveSampleTab(SampleData sampleData, String domain) {
 		for (SampleNode sampleNode : sampleData.scd.getNodes(SampleNode.class)) {
 			String accession = sampleNode.getSampleAccession();
 			String name = sampleNode.getNodeName();
@@ -62,7 +62,7 @@ public class SampleTabService {
 			//only build a sample if there is at least one attribute or it has no "parent" node
 			//otherwise, it is just a group membership tracking dummy
 			if (attributes.size() > 0 || sampleNode.getChildNodes().size() == 0) {			
-				Sample sample = Sample.build(name, accession, release, update, attributes, relationships, externalReferences);
+				Sample sample = Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences);
 				sample = bioSamplesClient.persistSample(sample);
 				if (accession == null) {
 					sampleNode.setSampleAccession(sample.getAccession());
@@ -93,7 +93,7 @@ public class SampleTabService {
 			}		
 			
 			//this must be the last bit to build and save the object
-			Sample sample = Sample.build(name, accession, release, update, attributes, relationships, externalReferences);
+			Sample sample = Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences);
 			sample = bioSamplesClient.persistSample(sample);
 			if (accession == null) {
 				groupNode.setGroupAccession(sample.getAccession());

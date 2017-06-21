@@ -47,6 +47,7 @@ public class SerializationTest {
 	private Sample getSimpleSample() throws URISyntaxException {
 		String name = "Test Sample";
 		String accession = "TEST1";
+		String domain = "abcde12345";
 		LocalDateTime update = LocalDateTime.of(LocalDate.of(2016, 5, 5), LocalTime.of(11, 36, 57, 0));
 		LocalDateTime release = LocalDateTime.of(LocalDate.of(2016, 4, 1), LocalTime.of(11, 36, 57, 0));
 
@@ -62,7 +63,7 @@ public class SerializationTest {
 		SortedSet<ExternalReference> externalReferences = new TreeSet<>();
 		externalReferences.add(ExternalReference.build("http://www.google.com"));
 
-		return Sample.build(name, accession, release, update, attributes, relationships, externalReferences);
+		return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences);
 	}
 
 	@Test

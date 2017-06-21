@@ -170,7 +170,7 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 			}
 		}
 		
-		return Sample.build(name, accession, null, null, attributes, relationships, externalReferences);
+		return Sample.build(name, accession, null, null, null, attributes, relationships, externalReferences);
 	}
 
 }

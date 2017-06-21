@@ -83,7 +83,8 @@ public class SampleTabController {
         }
         
         //no errors
-        sampleTabService.saveSampleTab(sampledata);
+        //TODO do AAP domain property
+        sampleTabService.saveSampleTab(sampledata, "DUMMY-DOMAIN");
         return ResponseEntity.ok("");
 	}
 }

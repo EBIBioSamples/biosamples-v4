@@ -143,10 +143,9 @@ public class SampleRestController {
 			// TODO create proper exception with right http error code
 			throw new RuntimeException("Accessions must match (" + accession + " vs " + sample.getAccession() + ")");
 		}
-
-		
-
 		log.info("Recieved PUT for " + accession);
+
+		//TODO check sample has a domain owner that the authenticated user has access to
 				
 		sample = sampleService.store(sample);
 

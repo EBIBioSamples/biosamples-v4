@@ -135,7 +135,7 @@ public class SampleService {
 			String accession = null;
 			accession = neoAccessionService.generateAccession();
 			//update the sample object with the assigned accession
-			sample = Sample.build(sample.getName(), accession, sample.getRelease(), sample.getUpdate(),
+			sample = Sample.build(sample.getName(), accession, sample.getDomain(), sample.getRelease(), sample.getUpdate(),
 					sample.getCharacteristics(), sample.getRelationships(), sample.getExternalReferences());
 		}
 		
