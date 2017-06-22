@@ -55,7 +55,7 @@ public class SolrSampleService {
 
 		//filter out non-public
 		FilterQuery filterQuery = new SimpleFilterQuery();
-		filterQuery.addCriteria(new Criteria("release_dt").lessThan("NOW"));
+		filterQuery.addCriteria(new Criteria("release_dt").lessThan("NOW").and("release_dt").isNotNull());
 		query.addFilterQuery(filterQuery);
 		
 		// return the samples from solr that match the query
