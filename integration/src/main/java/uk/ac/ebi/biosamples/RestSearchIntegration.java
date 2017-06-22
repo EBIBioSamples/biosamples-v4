@@ -1,5 +1,13 @@
 package uk.ac.ebi.biosamples;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
@@ -8,6 +16,7 @@ import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 
@@ -25,14 +34,14 @@ import java.util.TreeSet;
 public class RestSearchIntegration extends AbstractIntegration {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
-	
+
 	private Sample test1 = getSampleTest1();
 	private Sample test2 = getSampleTest2();
 	
 	public RestSearchIntegration(BioSamplesClient client) {
 		super(client);
 	}
-	
+
 	@Override
 	protected void phaseOne() {
 		//put a private sample
@@ -45,19 +54,18 @@ public class RestSearchIntegration extends AbstractIntegration {
 		if (!test2.equals(resource.getContent())) {
 			throw new RuntimeException("Expected response to equal submission");
 		}
-		
 	}
-	
+
 	@Override
 	protected void phaseTwo() {
-		List<Resource<Sample>> samples = new ArrayList<>();		
+		List<Resource<Sample>> samples = new ArrayList<>();
 		for (Resource<Sample> sample : client.fetchSampleResourceAll()) {
 			samples.add(sample);
 		}
-		
+
 		if (samples.size() <= 0) {
 			throw new RuntimeException("No search results found!");
-		}	
+		}
 
 		//check that the private sample is not in search results
 		//check that the referenced non-existing sample not in search result
@@ -70,21 +78,17 @@ public class RestSearchIntegration extends AbstractIntegration {
 				throw new RuntimeException("Found non-public sample TESTrestsearch3 in search samples");
 			}
 		}
-		
 	}
-	
+
 	@Override
-	protected void phaseThree() {	
-	}
-	
+	protected void phaseThree() { }
+
 	@Override
-	protected void phaseFour() {	
-	}
-	
+	protected void phaseFour() { }
+
 	@Override
-	protected void phaseFive() {	
-	}
-	
+	protected void phaseFive() { }
+
 	private Sample getSampleTest1() {
 		String name = "Test Sample";
 		String accession = "TESTrestsearch1";
@@ -93,7 +97,7 @@ public class RestSearchIntegration extends AbstractIntegration {
 
 		SortedSet<Attribute> attributes = new TreeSet<>();
 		attributes.add(
-			Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
+				Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
 
 		return Sample.build(name, accession, release, update, attributes, new TreeSet<>(), new TreeSet<>());
 	}
@@ -106,11 +110,11 @@ public class RestSearchIntegration extends AbstractIntegration {
 
 		SortedSet<Attribute> attributes = new TreeSet<>();
 		attributes.add(
-			Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
+				Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
 
 		SortedSet<Relationship> relationships = new TreeSet<>();
 		relationships.add(Relationship.build("TESTrestsearch2", "derived from", "TESTrestsearch3"));
-		
+
 		return Sample.build(name, accession, release, update, attributes, relationships, new TreeSet<>());
 	}
 

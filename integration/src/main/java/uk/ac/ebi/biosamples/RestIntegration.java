@@ -186,7 +186,6 @@ public class RestIntegration extends AbstractIntegration {
 
 		SortedSet<Relationship> relationships = new TreeSet<>();
 		relationships.add(Relationship.build("TESTrest1", "derived from", "TESTrest2"));
-
 		SortedSet<ExternalReference> externalReferences = new TreeSet<>();
 		externalReferences.add(ExternalReference.build("http://www.google.com"));
 
