@@ -109,7 +109,7 @@ public class Sample {
         Sample other = (Sample) o;
         return Objects.equals(this.name, other.name) 
         		&& Objects.equals(this.accession, other.accession)
-        		&& Objects.equals(this.domain, other.domain)
+        		//&& Objects.equals(this.domain, other.domain)
         		&& Objects.equals(this.release, other.release)
         		&& Objects.equals(this.update, other.update)
         		&& Objects.equals(this.attributes, other.attributes)
@@ -157,9 +157,14 @@ public class Sample {
 			@JsonProperty("externalReferences") Set<ExternalReference> externalReferences) {
     	
 		Sample sample = new Sample();
-		sample.accession = accession.trim();
+		if (accession != null) {
+			sample.accession = accession.trim();
+		}
+		if (name == null ) throw new IllegalArgumentException("Sample name must be provided");
 		sample.name = name.trim();
-		sample.domain = domain.trim();
+		if (domain != null) {
+			sample.domain = domain.trim();
+		}
 
 		//this ensures that all components are present, even if they default to zero
 		if (release != null) {

@@ -102,9 +102,13 @@ public class SampleSubmissionService {
 				URI uri = URI.create(traverson.follow("samples").asLink().getHref());
 
 				log.trace("POSTing to " + uri + " " + sample);
+				String jwt = aapClientService.getJwt();
 
-				RequestEntity<Sample> requestEntity = RequestEntity.post(uri).contentType(MediaType.APPLICATION_JSON)
-						.accept(MediaTypes.HAL_JSON).body(sample);
+				RequestEntity<Sample> requestEntity = RequestEntity.post(uri)
+						.contentType(MediaType.APPLICATION_JSON)
+						.accept(MediaTypes.HAL_JSON)
+						.header(HttpHeaders.AUTHORIZATION, "Bearer "+jwt)
+						.body(sample);
 				ResponseEntity<Resource<Sample>> responseEntity = restOperations.exchange(requestEntity,
 						new ParameterizedTypeReference<Resource<Sample>>() {
 						});

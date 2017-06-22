@@ -85,7 +85,7 @@ public class SampleTabController {
         String jwt = null; //TODO get from request
         //no errors
         //TODO do AAP domain property
-        sampleTabService.saveSampleTab(sampledata, "DUMMY-DOMAIN", jwt);
+        sampleTabService.saveSampleTab(sampledata, "aap-users-domain", jwt);
         return ResponseEntity.ok("");
 	}
 }
