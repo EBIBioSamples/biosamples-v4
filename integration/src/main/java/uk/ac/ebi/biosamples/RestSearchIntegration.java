@@ -93,7 +93,7 @@ public class RestSearchIntegration extends AbstractIntegration {
 		attributes.add(
 			Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
 
-		return Sample.build(name, accession, release, update, attributes, new TreeSet<>(), new TreeSet<>());
+		return Sample.build(name, accession, null, release, update, attributes, new TreeSet<>(), new TreeSet<>());
 	}
 
 	private Sample getSampleTest2() {
@@ -109,7 +109,7 @@ public class RestSearchIntegration extends AbstractIntegration {
 		SortedSet<Relationship> relationships = new TreeSet<>();
 		relationships.add(Relationship.build("TESTrestsearch2", "derived from", "TESTrestsearch3"));
 		
-		return Sample.build(name, accession, release, update, attributes, relationships, new TreeSet<>());
+		return Sample.build(name, accession, null, release, update, attributes, relationships, new TreeSet<>());
 	}
 
 }
