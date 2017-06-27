@@ -7,6 +7,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -34,35 +35,41 @@ public class BioSamplesAapService {
 	public Set<String> getDomains() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		log.info("authentication = "+authentication);
-		
-		
-		UserAuthentication userAuthentication = (UserAuthentication) authentication;
-				
-		log.info("userAuthentication = "+userAuthentication.getName());
-		log.info("userAuthentication = "+userAuthentication.getAuthorities());
-		log.info("userAuthentication = "+userAuthentication.getPrincipal());
-		log.info("userAuthentication = "+userAuthentication.getCredentials());
-		
+
+		//not sure this can ever happen
 		if (authentication == null) {
 			return Collections.emptySet();
-		}
-		Set<String> domains = new HashSet<>();
-		for (GrantedAuthority authority : authentication.getAuthorities()) {
-			if (authority instanceof Domain) {
-				log.info("Found domain "+authority);
-				Domain domain = (Domain) authority;
 
-				log.info("domain.getDomainName() = "+domain.getDomainName());
-				log.info("domain.getDomainReference() = "+domain.getDomainReference());
-				
-				//NOTE this should use reference, but that is not populated in the tokens at the moment
-				//domains.add(domain.getDomainReference());
-				domains.add(domain.getDomainName());
-			} else {
-				log.info("Found non-domain "+authority);
+		} else if (authentication instanceof AnonymousAuthenticationToken) {
+			return Collections.emptySet();
+		} else if (authentication instanceof UserAuthentication) {
+			UserAuthentication userAuthentication = (UserAuthentication) authentication;
+					
+			log.info("userAuthentication = "+userAuthentication.getName());
+			log.info("userAuthentication = "+userAuthentication.getAuthorities());
+			log.info("userAuthentication = "+userAuthentication.getPrincipal());
+			log.info("userAuthentication = "+userAuthentication.getCredentials());
+			
+			Set<String> domains = new HashSet<>();
+			for (GrantedAuthority authority : authentication.getAuthorities()) {
+				if (authority instanceof Domain) {
+					log.info("Found domain "+authority);
+					Domain domain = (Domain) authority;
+	
+					log.info("domain.getDomainName() = "+domain.getDomainName());
+					log.info("domain.getDomainReference() = "+domain.getDomainReference());
+					
+					//NOTE this should use reference, but that is not populated in the tokens at the moment
+					//domains.add(domain.getDomainReference());
+					domains.add(domain.getDomainName());
+				} else {
+					log.info("Found non-domain "+authority);
+				}
 			}
+			return domains;
+		} else {
+			return Collections.emptySet();
 		}
-		return domains;
 	}
 	
 	public Sample handleDomain(Sample sample) throws SampleNotAccessibleException,SampleNotAccessibleException {

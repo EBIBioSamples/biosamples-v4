@@ -23,6 +23,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.client.ClientProperties;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
@@ -34,11 +35,14 @@ public class RestIntegration extends AbstractIntegration {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 	private final RestTemplate restTemplate;
+	private final BioSamplesClient annonymousClient;
 	
-	public RestIntegration(BioSamplesClient client, RestTemplateBuilder restTemplateBuilder) {
+	
+	public RestIntegration(BioSamplesClient client, RestTemplateBuilder restTemplateBuilder, ClientProperties clientProperties) {
 		super(client);
 		this.restTemplate = restTemplateBuilder.build();
 		
+		this.annonymousClient = new BioSamplesClient(clientProperties.getBiosamplesClientUri(), restTemplateBuilder, null, null);
 	}
 	
 	@Override
@@ -89,11 +93,19 @@ public class RestIntegration extends AbstractIntegration {
 	protected void phaseThree() {
 		Sample sampleTest1 = getSampleTest1();
 		Sample sampleTest2 = getSampleTest2();
+		Optional<Resource<Sample>> optional;
 		
-		// check that it is private again
-		Optional<Resource<Sample>> optional = client.fetchSampleResource(sampleTest1.getAccession());
+		//check that it is private 
+		optional = annonymousClient.fetchSampleResource(sampleTest1.getAccession());
 		if (optional.isPresent()) {
-			throw new RuntimeException("Found existing "+sampleTest1.getAccession());
+			throw new RuntimeException("Can access private "+sampleTest1.getAccession()+" as annonymous");
+		}
+				
+		
+		//check that it is accessible, if authorized
+		optional = client.fetchSampleResource(sampleTest1.getAccession());
+		if (!optional.isPresent()) {
+			throw new RuntimeException("Cannot access private "+sampleTest1.getAccession());
 		}
 		
 		//put the second sample in

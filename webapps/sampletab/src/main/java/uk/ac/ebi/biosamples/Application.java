@@ -32,7 +32,7 @@ public class Application extends SpringBootServletInitializer {
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);
 	}
-
+/*
 	@Bean
 	public BioSamplesClient bioSamplesClient(ClientProperties clientProperties, 
 			RestTemplateBuilder restTemplateBuilder, SampleValidator sampleValidator, AapClientService aapClientService) {
@@ -59,6 +59,7 @@ public class Application extends SpringBootServletInitializer {
 		});
 		
 		
-		return new BioSamplesClient(clientProperties, restTemplateBuilder, sampleValidator, aapClientService);
+		return new BioSamplesClient(clientProperties.getBiosamplesClientUri(), restTemplateBuilder, sampleValidator, aapClientService);
 	}
+	*/
 }

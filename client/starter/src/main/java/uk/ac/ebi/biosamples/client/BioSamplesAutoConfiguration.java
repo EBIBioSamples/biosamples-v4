@@ -60,7 +60,8 @@ public class BioSamplesAutoConfiguration {
 	@Bean	
 	@ConditionalOnMissingBean(AapClientService.class)
 	public AapClientService aapClientService(RestTemplateBuilder restTemplateBuilder, ClientProperties clientProperties) {
-		return new AapClientService(restTemplateBuilder, clientProperties);
+		return new AapClientService(restTemplateBuilder, clientProperties.getBiosamplesClientAapUri(), 
+				clientProperties.getBiosamplesClientAapUsername(), clientProperties.getBiosamplesClientAapPassword());
 	}
 	
 	@Bean
@@ -128,6 +129,6 @@ public class BioSamplesAutoConfiguration {
 				restTemplate.setMessageConverters(converters);
 			}			
 		});
-		return new BioSamplesClient(clientProperties, restTemplateBuilder, sampleValidator, aapClientService);
+		return new BioSamplesClient(clientProperties.getBiosamplesClientUri(), restTemplateBuilder, sampleValidator, aapClientService);
 	}
 }

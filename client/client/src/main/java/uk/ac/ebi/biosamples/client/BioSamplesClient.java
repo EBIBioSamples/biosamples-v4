@@ -1,6 +1,7 @@
 package uk.ac.ebi.biosamples.client;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -44,8 +45,7 @@ import uk.ac.ebi.biosamples.service.SampleValidator;
  * @author faulcon
  *
  */
-@Service
-public class BioSamplesClient {
+public class BioSamplesClient implements AutoCloseable {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 	
@@ -57,50 +57,59 @@ public class BioSamplesClient {
 	
 	private final ExecutorService threadPoolExecutor;
 	
-	public BioSamplesClient(ClientProperties clientProperties, RestTemplateBuilder restTemplateBuilder, 
+	public BioSamplesClient(URI uri, RestTemplateBuilder restTemplateBuilder, 
 			SampleValidator sampleValidator, AapClientService aapClientService) {
 		//TODO application.properties this
 		threadPoolExecutor = Executors.newFixedThreadPool(64);
 		
 		RestTemplate restOperations = restTemplateBuilder.build();
-		
-		restOperations.getInterceptors().add(new ClientHttpRequestInterceptor() {
-
-			@Override
-			public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution)
-					throws IOException {
-				//pass along to the next interceptor
 				
-				if (!request.getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
-					//
-				}
-				
-				return execution.execute(request, body);
-			}
-			
-		});
+		if (aapClientService != null) {		
+			restOperations.getInterceptors().add(new AapClientHttpRequestInterceptor(aapClientService));
+		}
 		
-		
-		Traverson traverson = new Traverson(clientProperties.getBiosamplesClientUri(), MediaTypes.HAL_JSON);
+		Traverson traverson = new Traverson(uri, MediaTypes.HAL_JSON);
 		traverson.setRestOperations(restOperations);
 		
 		sampleRetrievalService = new SampleRetrievalService(restOperations, traverson, threadPoolExecutor);
-		sampleSubmissionService = new SampleSubmissionService(restOperations, traverson, threadPoolExecutor, aapClientService);
+		sampleSubmissionService = new SampleSubmissionService(restOperations, traverson, threadPoolExecutor);
 		curationSubmissionService = new CurationSubmissionService(restOperations, traverson, threadPoolExecutor);
 		
 		this.sampleValidator = sampleValidator;
 	}
 
+	private static class AapClientHttpRequestInterceptor implements ClientHttpRequestInterceptor {
+		
+		private final AapClientService aapClientService;
 
+		public AapClientHttpRequestInterceptor(AapClientService aapClientService) {
+			this.aapClientService = aapClientService;
+		}
+
+		@Override
+		public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution)
+				throws IOException {			
+			if (aapClientService != null && !request.getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
+				String jwt = aapClientService.getJwt();
+				request.getHeaders().set(HttpHeaders.AUTHORIZATION, "Bearer "+jwt);
+			}
+
+			//pass along to the next interceptor
+			return execution.execute(request, body);
+		}
+		
+	}
     
     @PreDestroy
-    public void shutdownBioSamplesClientTaskExecutor() {
+    public void close() {
     	if (threadPoolExecutor != null) {
-    		threadPoolExecutor.shutdownNow();
     		try {
-				threadPoolExecutor.awaitTermination(1, TimeUnit.MINUTES);
+	    		threadPoolExecutor.shutdown();
+				if (!threadPoolExecutor.awaitTermination(1, TimeUnit.MINUTES)) {
+		    		threadPoolExecutor.shutdownNow();
+				}
 			} catch (InterruptedException e) {
-				throw new RuntimeException(e);
+				//don't care about being interrupted here?
 			}
     	}
     }
@@ -133,11 +142,13 @@ public class BioSamplesClient {
 	}
 
 	public Resource<Sample> persistSampleResource(Sample sample) throws RestClientException {
-		//validate client-side before submission
-		Collection<String> errors = sampleValidator.validate(sample);		
-		if (errors.size() > 0) {
-			log.info("Errors : "+errors);
-			throw new IllegalArgumentException("Sample not valid");
+		if (sampleValidator != null) {
+			//validate client-side before submission
+			Collection<String> errors = sampleValidator.validate(sample);		
+			if (errors.size() > 0) {
+				log.info("Errors : "+errors);
+				throw new IllegalArgumentException("Sample not valid");
+			}
 		}
 
 		try {

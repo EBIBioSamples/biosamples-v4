@@ -100,6 +100,8 @@ public class SampleRetrievalService {
 				if (e.getStatusCode().equals(HttpStatus.FORBIDDEN)
 						|| e.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
 					return Optional.empty();
+				} else {
+					throw e;
 				}
 			}
 			log.info("GOTted " + uri);

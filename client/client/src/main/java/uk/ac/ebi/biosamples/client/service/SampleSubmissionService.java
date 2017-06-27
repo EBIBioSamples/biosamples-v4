@@ -30,13 +30,11 @@ public class SampleSubmissionService {
 	private final Traverson traverson;
 	private final ExecutorService executor;
 	private final RestOperations restOperations;
-	private final AapClientService aapClientService;
 
-	public SampleSubmissionService(RestOperations restOperations, Traverson traverson, ExecutorService executor, AapClientService aapClientService) {
+	public SampleSubmissionService(RestOperations restOperations, Traverson traverson, ExecutorService executor) {
 		this.restOperations = restOperations;
 		this.traverson = traverson;
 		this.executor = executor;
-		this.aapClientService = aapClientService;
 	}
 
 	/**
@@ -79,13 +77,10 @@ public class SampleSubmissionService {
 				URI uri = URI.create(sampleLink.getHref());
 				
 				log.trace("PUTing to " + uri + " " + sample);
-				
-				String jwt = aapClientService.getJwt();
 
 				RequestEntity<Sample> requestEntity = RequestEntity.put(uri)
 						.contentType(MediaType.APPLICATION_JSON)
 						.accept(MediaTypes.HAL_JSON)
-						.header(HttpHeaders.AUTHORIZATION, "Bearer "+jwt)
 						.body(sample);
 				ResponseEntity<Resource<Sample>> responseEntity = restOperations.exchange(requestEntity,
 						new ParameterizedTypeReference<Resource<Sample>>() {
@@ -102,12 +97,10 @@ public class SampleSubmissionService {
 				URI uri = URI.create(traverson.follow("samples").asLink().getHref());
 
 				log.trace("POSTing to " + uri + " " + sample);
-				String jwt = aapClientService.getJwt();
 
 				RequestEntity<Sample> requestEntity = RequestEntity.post(uri)
 						.contentType(MediaType.APPLICATION_JSON)
 						.accept(MediaTypes.HAL_JSON)
-						.header(HttpHeaders.AUTHORIZATION, "Bearer "+jwt)
 						.body(sample);
 				ResponseEntity<Resource<Sample>> responseEntity = restOperations.exchange(requestEntity,
 						new ParameterizedTypeReference<Resource<Sample>>() {

@@ -16,30 +16,31 @@ import org.springframework.web.client.RestOperations;
 
 import uk.ac.ebi.biosamples.client.ClientProperties;
 
-@Service
 public class AapClientService {
 	
 	private Logger log = LoggerFactory.getLogger(getClass());
 
 	private final RestOperations restOperations;
-	private final ClientProperties clientProperties;
 	
-	public AapClientService(RestTemplateBuilder restTemplateBuilder, ClientProperties clientProperties) {
+	private final URI aapUri;
+	private final String username;
+	private final String password;
+	
+	
+	public AapClientService(RestTemplateBuilder restTemplateBuilder, URI aapUri, String username, String password) {
 		this.restOperations = restTemplateBuilder.build();
-		this.clientProperties = clientProperties;
+		this.aapUri = aapUri;
+		this.username = username;
+		this.password = password;
 	}
 	
 	//TODO put some sort of cache/validation layer over this
-	public String getJwt() {
-		URI uri = clientProperties.getBiosamplesClientAapUri();
-		String username = clientProperties.getBiosamplesClientAapUsername();
-		String password = clientProperties.getBiosamplesClientAapPassword();
-		
+	public String getJwt() {		
 		String auth = username + ":" + password;
         byte[] encodedAuth = Base64.getEncoder().encode(auth.getBytes(Charset.forName("US-ASCII")) );
         String authHeader = "Basic " + new String( encodedAuth );		
 		
-		ResponseEntity<String> response = restOperations.exchange(RequestEntity.get(uri)
+		ResponseEntity<String> response = restOperations.exchange(RequestEntity.get(aapUri)
 				.header(HttpHeaders.AUTHORIZATION, authHeader)
 				.accept(MediaType.TEXT_PLAIN)
 				.build(), String.class);

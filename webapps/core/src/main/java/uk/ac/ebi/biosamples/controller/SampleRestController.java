@@ -92,7 +92,9 @@ public class SampleRestController {
 
 		// check if the release date is in the future and if so return it as
 		// private
-		if (sample.getRelease().isAfter(LocalDateTime.now())) {
+		//if the current user belongs to a domain that owns the sample, allow it
+		if (sample.getRelease().isAfter(LocalDateTime.now())
+				&& (bioSamplesAapService.getDomains() == null || !bioSamplesAapService.getDomains().contains(sample.getDomain())) ) {
 			throw new SampleNotAccessibleException();
 		}
 
