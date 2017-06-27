@@ -3,6 +3,8 @@ package uk.ac.ebi.biosamples;
 import java.time.ZoneOffset;
 import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.MethodParameter;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.CacheControl;
@@ -22,6 +24,8 @@ import uk.ac.ebi.biosamples.model.Sample;
 @RestControllerAdvice(assignableTypes = SampleRestController.class)
 public class SampleRestResponseBodyAdvice implements ResponseBodyAdvice<Resource<Sample>> {
 
+	private Logger log = LoggerFactory.getLogger(getClass());
+
 	@Override
 	public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
 		return true;
@@ -31,6 +35,20 @@ public class SampleRestResponseBodyAdvice implements ResponseBodyAdvice<Resource
 	public Resource<Sample> beforeBodyWrite(Resource<Sample> body, MethodParameter returnType,
 			MediaType selectedContentType, Class<? extends HttpMessageConverter<?>> selectedConverterType,
 			ServerHttpRequest request, ServerHttpResponse response) {
+		
+		if (body == null) {
+			//error, stop here
+			log.info("null body detected");
+			return body;
+		} else if (request.getMethod().equals(HttpMethod.PUT)
+				|| request.getMethod().equals(HttpMethod.POST)
+				|| request.getMethod().equals(HttpMethod.PATCH)
+				|| request.getMethod().equals(HttpMethod.DELETE)) {
+
+			//modifying request, no caching
+			log.info("no caching on put/post/patch/delete requests");
+			return body;
+		}
 		
 		long lastModified = body.getContent().getUpdate().toInstant(ZoneOffset.UTC).toEpochMilli();
 		String eTag = "W/\""+body.getContent().hashCode()+"\"";
@@ -50,13 +68,8 @@ public class SampleRestResponseBodyAdvice implements ResponseBodyAdvice<Resource
 				|| (request.getHeaders().getIfUnmodifiedSince() != -1 
 					&& request.getHeaders().getIfUnmodifiedSince() > lastModified)) {
 			
-			//if the request is a get, then use 302
-			//if the request is a put, then use 412
-			if (request.getMethod().equals(HttpMethod.GET)) {
-				response.setStatusCode(HttpStatus.NOT_MODIFIED);
-			} else if (request.getMethod().equals(HttpMethod.PUT)) {
-				response.setStatusCode(HttpStatus.PRECONDITION_FAILED);
-			}
+			//if the request is a get, then use 304
+			response.setStatusCode(HttpStatus.NOT_MODIFIED);
 			return null;
 		}
 		

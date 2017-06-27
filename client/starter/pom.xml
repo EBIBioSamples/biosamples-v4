@@ -14,7 +14,7 @@
 			<artifactId>client</artifactId>
 			<version>4.0.0-SNAPSHOT</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-autoconfigure</artifactId>
@@ -30,8 +30,16 @@
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
 		</dependency>
-	</dependencies>	
-	
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient-cache</artifactId>
+			<!-- this doenst work because dependencies is a dependencyManagement not a parent -->
+			<!-- <version>${httpclient.version}</version> -->
+			<version>4.5.3</version>
+		</dependency>
+
+	</dependencies>
+
 	<dependencyManagement>
 		<dependencies> <!-- The parent should provide all that -->
 			<dependency>
@@ -43,7 +51,7 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
-	
+
 	<distributionManagement>
 		<repository>
 			<id>ossrh</id>
@@ -54,7 +62,7 @@
 			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
 		</snapshotRepository>
 	</distributionManagement>
-	
+
 	<build>
 		<plugins>
 			<plugin>

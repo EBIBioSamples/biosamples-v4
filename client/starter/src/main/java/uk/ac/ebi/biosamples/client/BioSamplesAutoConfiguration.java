@@ -10,6 +10,8 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.conn.ConnectionKeepAliveStrategy;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.cache.CacheConfig;
+import org.apache.http.impl.client.cache.CachingHttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicHeaderElementIterator;
 import org.apache.http.protocol.HTTP;
@@ -73,6 +75,8 @@ public class BioSamplesAutoConfiguration {
 				//use a keep alive strategy to try to make it easier to maintain connections for reuse
 				ConnectionKeepAliveStrategy keepAliveStrategy = new ConnectionKeepAliveStrategy() {
 				    public long getKeepAliveDuration(HttpResponse response, HttpContext context) {
+				    	
+				    	//check if there is a non-standard keep alive header present
 				        HeaderElementIterator it = new BasicHeaderElementIterator
 				            (response.headerIterator(HTTP.CONN_KEEP_ALIVE));
 				        while (it.hasNext()) {
@@ -84,7 +88,7 @@ public class BioSamplesAutoConfiguration {
 				                return Long.parseLong(value) * 1000;
 				            }
 				        }
-				        //default to 15s
+				        //default to 15s if no header
 				        return 15 * 1000;
 				    }
 				};
@@ -95,6 +99,13 @@ public class BioSamplesAutoConfiguration {
 				poolingHttpClientConnectionManager.setDefaultMaxPerRoute(16);
 				poolingHttpClientConnectionManager.setMaxTotal(16);
 				
+				//set a local cache for cacheable responses
+				CacheConfig cacheConfig = CacheConfig.custom()
+				        .setMaxCacheEntries(1024)
+				        .setMaxObjectSize(1024*1024) //max size of 1Mb
+				        //number of entries x size of entries = 1Gb total cache size
+				        .setSharedCache(false) //act like a browser cache not a middle-hop cache
+				        .build();
 				
 				//set a timeout limit
 				//TODO put this in application.properties
@@ -106,7 +117,8 @@ public class BioSamplesAutoConfiguration {
 				
 				
 				//make the actual client
-				HttpClient httpClient = HttpClientBuilder.create()
+				HttpClient httpClient = CachingHttpClientBuilder.create()
+						.setCacheConfig(cacheConfig)
 						.setConnectionManager(poolingHttpClientConnectionManager)
 						.setKeepAliveStrategy(keepAliveStrategy)
 						.setDefaultRequestConfig(config)
