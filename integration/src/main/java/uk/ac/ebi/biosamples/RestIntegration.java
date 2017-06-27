@@ -200,6 +200,11 @@ public class RestIntegration extends AbstractIntegration {
 
 		return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences);
 	}
+	
+	@Override
+	public void close() {
+		annonymousClient.close();
+	}
 
 	private Sample getSampleTest2() {
 		String name = "Test Sample the second";

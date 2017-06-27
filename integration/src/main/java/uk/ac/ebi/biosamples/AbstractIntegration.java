@@ -61,7 +61,14 @@ public abstract class AbstractIntegration implements ApplicationRunner, ExitCode
 			phaseFive();
 			log.info("Finished phase five");
 		}	
+		
+		close();
+		
 		exitCode = 0;
+	}
+	
+	public void close() {
+		//do nothing
 	}
 
 }

@@ -24,6 +24,7 @@ import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -45,7 +46,7 @@ import uk.ac.ebi.biosamples.service.SampleValidator;
  * @author faulcon
  *
  */
-public class BioSamplesClient implements AutoCloseable {
+public class BioSamplesClient {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 	
