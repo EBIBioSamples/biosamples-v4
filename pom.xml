@@ -36,6 +36,7 @@
 		<module>pipelines</module>
 		<module>integration</module>
 		<module>client</module>
+		<module>properties</module>
 	</modules>
 
 	<dependencies>

@@ -4,6 +4,7 @@ import java.util.Collection;
 
 import org.springframework.stereotype.Component;
 
+import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.messages.threaded.MessageBuffer;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
 import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
@@ -13,7 +14,7 @@ public class SolrMessageBuffer extends MessageBuffer<SolrSample> {
 
 	private final SolrSampleRepository repository;
 	
-	public SolrMessageBuffer(AgentSolrProperties properties, SolrSampleRepository repository) {
+	public SolrMessageBuffer(BioSamplesProperties properties, SolrSampleRepository repository) {
 		super(properties.getAgentSolrQueueSize(), properties.getAgentSolrQueueTime());
 		this.repository = repository;
 	}
