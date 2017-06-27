@@ -8,6 +8,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.stereotype.Component;
 
+import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.MessageUtils;
 import uk.ac.ebi.biosamples.Messaging;
 
@@ -20,7 +21,7 @@ public class Neo4JRunner implements ApplicationRunner, ExitCodeGenerator {
 	private MessageUtils messageUtils;
 	
 	@Autowired
-	private AgentNeo4JProperties agentNeo4JProperties;
+	private BioSamplesProperties biosamplesProperties;
 
 	//wire in the message buffer so we can return a non-zero exit code if there are any problems
 	@Autowired
@@ -31,7 +32,7 @@ public class Neo4JRunner implements ApplicationRunner, ExitCodeGenerator {
 		// as long as there are messages to read, keep this thread alive
 		// that will also keep the async message client alive too?
 		Integer messageCount = null;
-		while (agentNeo4JProperties.getAgentNeo4JStayalive() 
+		while (biosamplesProperties.getAgentNeo4JStayalive() 
 				|| messageCount == null || messageCount > 0
 				||!messageBuffer.areAllStored()) {
 			Thread.sleep(1000);
