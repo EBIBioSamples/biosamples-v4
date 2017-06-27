@@ -33,6 +33,7 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.client.service.AapClientService;
 import uk.ac.ebi.biosamples.service.AttributeValidator;
 import uk.ac.ebi.biosamples.service.SampleValidator;
@@ -52,22 +53,16 @@ public class BioSamplesAutoConfiguration {
 	public SampleValidator sampleValidator(AttributeValidator attributeValidator) {
 		return new SampleValidator(attributeValidator);
 	}
-	
-	@Bean	
-	@ConditionalOnMissingBean(ClientProperties.class)
-	public ClientProperties clientProperties() {
-		return new ClientProperties();
-	}
-	
+		
 	@Bean	
 	@ConditionalOnMissingBean(AapClientService.class)
-	public AapClientService aapClientService(RestTemplateBuilder restTemplateBuilder, ClientProperties clientProperties) {
-		return new AapClientService(restTemplateBuilder, clientProperties.getBiosamplesClientAapUri(), 
-				clientProperties.getBiosamplesClientAapUsername(), clientProperties.getBiosamplesClientAapPassword());
+	public AapClientService aapClientService(RestTemplateBuilder restTemplateBuilder, BioSamplesProperties bioSamplesProperties) {
+		return new AapClientService(restTemplateBuilder, bioSamplesProperties.getBiosamplesClientAapUri(), 
+				bioSamplesProperties.getBiosamplesClientAapUsername(), bioSamplesProperties.getBiosamplesClientAapPassword());
 	}
 	
 	@Bean
-	public BioSamplesClient bioSamplesClient(ClientProperties clientProperties, 
+	public BioSamplesClient bioSamplesClient(BioSamplesProperties bioSamplesProperties, 
 			RestTemplateBuilder restTemplateBuilder, SampleValidator sampleValidator, AapClientService aapClientService) {		
 		restTemplateBuilder = restTemplateBuilder.additionalCustomizers(new RestTemplateCustomizer() {
 			public void customize(RestTemplate restTemplate) {
@@ -141,6 +136,6 @@ public class BioSamplesAutoConfiguration {
 				restTemplate.setMessageConverters(converters);
 			}			
 		});
-		return new BioSamplesClient(clientProperties.getBiosamplesClientUri(), restTemplateBuilder, sampleValidator, aapClientService);
+		return new BioSamplesClient(bioSamplesProperties.getBiosamplesClientUri(), restTemplateBuilder, sampleValidator, aapClientService);
 	}
 }

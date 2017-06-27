@@ -23,7 +23,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.client.ClientProperties;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
@@ -38,7 +37,7 @@ public class RestIntegration extends AbstractIntegration {
 	private final BioSamplesClient annonymousClient;
 	
 	
-	public RestIntegration(BioSamplesClient client, RestTemplateBuilder restTemplateBuilder, ClientProperties clientProperties) {
+	public RestIntegration(BioSamplesClient client, RestTemplateBuilder restTemplateBuilder, BioSamplesProperties clientProperties) {
 		super(client);
 		this.restTemplate = restTemplateBuilder.build();
 		
