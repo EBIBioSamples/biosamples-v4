@@ -68,7 +68,6 @@ public class CurationService {
 		}
 	}
 
-	@Deprecated
 	public Page<CurationLink> getCurationLinksForSample(String accession, Pageable pageable) {
 		Page<NeoCurationLink> pageNeoCurationLink = neoCurationLinkRepository.findBySampleAccession(accession, pageable);		
 		//get them in greater depth
@@ -136,7 +135,7 @@ public class CurationService {
 			attributes.add(attribute);
 		}
 		for (ExternalReference externalReference : curation.getExternalReferencesPost()) {
-			if (!externalReferences.contains(externalReference)) {
+			if (externalReferences.contains(externalReference)) {
 				throw new IllegalArgumentException("Attempting to apply curation "+curation+" to sample "+sample);
 			}
 			externalReferences.add(externalReference);
