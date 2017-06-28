@@ -60,6 +60,8 @@ public class SampleRetrievalService {
 				.queryParam("text", !text.isEmpty() ? text : "*:*").queryParam("page", page).queryParam("size", size)
 				.build().toUri();
 
+		log.info("GETing " + uri);
+
 		RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaType.APPLICATION_JSON).build();
 		ResponseEntity<PagedResources<Resource<Sample>>> responseEntity = restOperations.exchange(requestEntity,
 				new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {
@@ -68,6 +70,9 @@ public class SampleRetrievalService {
 		if (!responseEntity.getStatusCode().is2xxSuccessful()) {
 			throw new RuntimeException("Problem GETing samples");
 		}
+		
+
+		log.info("GETted " + uri);
 
 		return responseEntity.getBody();
 	}
@@ -104,7 +109,7 @@ public class SampleRetrievalService {
 					throw e;
 				}
 			}
-			log.info("GOTted " + uri);
+			log.info("GETted " + uri);
 
 			return Optional.of(responseEntity.getBody());
 		}

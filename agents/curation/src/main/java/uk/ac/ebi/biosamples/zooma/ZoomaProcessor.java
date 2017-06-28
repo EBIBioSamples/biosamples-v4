@@ -102,7 +102,7 @@ public class ZoomaProcessor {
 					Curation curation = Curation.build(Collections.singleton(attribute), Collections.singleton(mapped), null, null);
 				
 					//save the curation back in biosamples
-					biosamplesClient.persistCuration(sample.getAccession(), curation);
+					//biosamplesClient.persistCuration(sample.getAccession(), curation);
 				}
 			}
 		}

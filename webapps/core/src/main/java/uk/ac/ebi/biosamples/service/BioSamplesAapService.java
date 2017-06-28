@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import uk.ac.ebi.biosamples.BioSamplesProperties;
+import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.tsc.aap.client.model.Domain;
 import uk.ac.ebi.tsc.aap.client.security.UserAuthentication;
@@ -34,8 +35,12 @@ public class BioSamplesAapService {
 		traverson.setRestOperations(restTemplateBuilder.build());
 	}
 
+	@ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Curation Link must specify a domain") // 400
+	public static class CurationLinkDomainMissingException extends RuntimeException {
+	}	
+
 	@ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Sample must specify a domain") // 400
-	public static class SampleDomainMissingException extends RuntimeException {
+	public static class DomainMissingException extends RuntimeException {
 	}
 
 	@ResponseStatus(value = HttpStatus.FORBIDDEN, reason = "Sample not accessible") // 403
@@ -88,7 +93,7 @@ public class BioSamplesAapService {
 		}
 	}
 	
-	public Sample handleDomain(Sample sample) throws SampleNotAccessibleException,SampleNotAccessibleException {
+	public Sample handleSampleDomain(Sample sample) throws SampleNotAccessibleException, DomainMissingException {
 		
 		//get the domains the current user has access to
 		Set<String> usersDomains = getDomains();
@@ -101,16 +106,40 @@ public class BioSamplesAapService {
 						sample.getAttributes(), sample.getRelationships(), sample.getExternalReferences());
 			} else {			
 				//if the sample doesn't have a domain, and we can't guess one, then end
-				throw new SampleDomainMissingException();
+				throw new DomainMissingException();
 			}
 		}
 
 		//check sample is assigned to a domain that the authenticated user has access to
 		if (!usersDomains.contains(sample.getDomain())) {
-			log.info("User asked to submit to domain "+sample.getDomain()+" but has access to "+usersDomains);
+			log.info("User asked to submit sample to domain "+sample.getDomain()+" but has access to "+usersDomains);
 			throw new SampleNotAccessibleException();
 		}
 		
 		return sample;
+	}
+
+	public CurationLink handleCurationLinkDomain(CurationLink curationLink) throws CurationLinkDomainMissingException {
+		
+		//get the domains the current user has access to
+		Set<String> usersDomains = getDomains();
+		
+		if (curationLink.getDomain() == null || curationLink.getDomain().length() == 0) {
+			//if the sample doesn't have a domain, and the user has one domain, then they must be submitting to that domain
+			if (usersDomains.size() == 1) {
+				curationLink = CurationLink.build(curationLink.getSample(), usersDomains.iterator().next(), curationLink.getCuration());
+			} else {			
+				//if the sample doesn't have a domain, and we can't guess one, then end
+				throw new CurationLinkDomainMissingException();
+			}
+		}
+
+		//check sample is assigned to a domain that the authenticated user has access to
+		if (!usersDomains.contains(curationLink.getDomain())) {
+			log.info("User asked to submit curation to domain "+curationLink.getDomain()+" but has access to "+usersDomains);
+			throw new SampleNotAccessibleException();
+		}
+		
+		return curationLink;
 	}
 }

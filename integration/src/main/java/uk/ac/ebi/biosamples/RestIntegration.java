@@ -7,6 +7,8 @@ import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import javax.annotation.PreDestroy;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -200,8 +202,8 @@ public class RestIntegration extends AbstractIntegration {
 		return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences);
 	}
 	
-	@Override
-	public void close() {
+	@PreDestroy
+	public void destroy() {
 		annonymousClient.close();
 	}
 

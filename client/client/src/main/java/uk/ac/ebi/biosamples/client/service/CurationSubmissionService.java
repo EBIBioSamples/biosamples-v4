@@ -34,19 +34,17 @@ public class CurationSubmissionService {
 		this.executor = executor;
 	}
 
-	// TODO make async
-	public Resource<CurationLink> persistCuration(String accession,
-			Curation curation) throws RestClientException {
+	public Resource<CurationLink> submit(CurationLink curationLink) throws RestClientException {
 
 		URI target = URI.create(traverson.follow("samples")
-				.follow(Hop.rel("sample").withParameter("accession", accession))
+				.follow(Hop.rel("sample").withParameter("accession", curationLink.getSample()))
 				.follow("curationLinks")
 				.asLink().getHref());
 
-		log.info("POSTing to " + target + " " + curation);
-
-		RequestEntity<Curation> requestEntity = RequestEntity.post(target)
-				.contentType(MediaType.APPLICATION_JSON).accept(MediaTypes.HAL_JSON).body(curation);
+		log.info("POSTing to " + target + " " + curationLink);
+		
+		RequestEntity<CurationLink> requestEntity = RequestEntity.post(target)
+				.contentType(MediaType.APPLICATION_JSON).accept(MediaTypes.HAL_JSON).body(curationLink);
 		ResponseEntity<Resource<CurationLink>> responseEntity = restOperations.exchange(requestEntity,
 				new ParameterizedTypeReference<Resource<CurationLink>>() {
 				});

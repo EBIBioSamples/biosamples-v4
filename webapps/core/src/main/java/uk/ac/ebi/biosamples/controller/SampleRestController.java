@@ -130,7 +130,7 @@ public class SampleRestController {
 		}		
 		
 		log.info("Recieved PUT for " + accession);
-		sample = bioSamplesAapService.handleDomain(sample);		
+		sample = bioSamplesAapService.handleSampleDomain(sample);		
 		sample = sampleService.store(sample);
 
 		// assemble a resource to return
@@ -145,7 +145,7 @@ public class SampleRestController {
 	public ResponseEntity<Resource<Sample>> post(@RequestBody Sample sample) {
 		
 		log.info("Recieved POST");
-		sample = bioSamplesAapService.handleDomain(sample);
+		sample = bioSamplesAapService.handleSampleDomain(sample);
 		sample = sampleService.store(sample);
 		
 		// assemble a resource to return

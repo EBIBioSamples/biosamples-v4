@@ -32,6 +32,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Curation;
+import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -66,15 +67,15 @@ public class RestCurationIntegration extends AbstractIntegration {
 		Set<Attribute> attributesPre = new HashSet<>();
 		attributesPre.add(Attribute.build("Organism", "9606"));
 		Set<Attribute> attributesPost = new HashSet<>();
-		attributesPost.add(Attribute.build("Organism", "Homo sapiens"));			
-		client.persistCuration(sample.getAccession(), Curation.build(attributesPre, attributesPost, null, null));
+		attributesPost.add(Attribute.build("Organism", "Homo sapiens"));		
+		client.persistCuration(CurationLink.build(sample.getAccession(), null, Curation.build(attributesPre, attributesPost, null, null)));
 
 
 		attributesPre = new HashSet<>();
 		attributesPre.add(Attribute.build("Organism", "Homo sapiens"));
 		attributesPost = new HashSet<>();
 		attributesPost.add(Attribute.build("Organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));			
-		client.persistCuration(sample.getAccession(), Curation.build(attributesPre, attributesPost, null, null));
+		client.persistCuration(CurationLink.build(sample.getAccession(), null, Curation.build(attributesPre, attributesPost, null, null)));
 		
 	}
 

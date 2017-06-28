@@ -31,6 +31,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Curation;
+import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -57,9 +58,9 @@ public class RestExternalReferenceIntegration extends AbstractIntegration {
 		Sample sample = getSampleTest1();
 		
 		testExternalReferences();
-		//testSampleExternalReferences(sample, 10);		
-		client.persistCuration(sample.getAccession(), 
-				Curation.build(null,  null, null, Arrays.asList(ExternalReference.build("http://www.ebi.ac.uk/ena/ERA123456"))));
+		//testSampleExternalReferences(sample, 10);
+		client.persistCuration(CurationLink.build(sample.getAccession(), null, 
+				Curation.build(null,  null, null, Arrays.asList(ExternalReference.build("http://www.ebi.ac.uk/ena/ERA123456")))));
 		
 	}
 

@@ -165,8 +165,8 @@ public class BioSamplesClient {
 		return persistSampleResource(sample).getContent();
 	}
 	
-	public Resource<CurationLink> persistCuration(String accession, Curation curation) throws RestClientException {
-		return curationSubmissionService.persistCuration(accession, curation);
+	public Resource<CurationLink> persistCuration(CurationLink curationLink) throws RestClientException {
+		return curationSubmissionService.submit(curationLink);
 	}
 
 	public PagedResources<Resource<Sample>> fetchPagedSamples(String text, int startPage, int size) {

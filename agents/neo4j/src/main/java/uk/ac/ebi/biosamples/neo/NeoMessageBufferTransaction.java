@@ -9,6 +9,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import uk.ac.ebi.biosamples.MessageContent;
+import uk.ac.ebi.biosamples.model.Curation;
+import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.neo.model.NeoCuration;
 import uk.ac.ebi.biosamples.neo.model.NeoCurationLink;
@@ -41,6 +43,7 @@ public class NeoMessageBufferTransaction {
 		this.neoCurationRepository = neoCurationRepository;
 		this.neoCurationLinkRepository = neoCurationLinkRepository;
 		this.curationToNeoCurationConverter = curationToNeoCurationConverter;
+		
 	}
 	
 	@Transactional
@@ -77,12 +80,30 @@ public class NeoMessageBufferTransaction {
 				neoSample = neoSampleRepository.save(neoSample, 1);
 			}
 			if (messageContent.hasCurationLink()) {				
-				NeoCuration neoCuration = curationToNeoCurationConverter.convert(messageContent.getCurationLink().getCuration());
+				//NeoCuration neoCuration = curationToNeoCurationConverter.convert(messageContent.getCurationLink().getCuration());
 				//make sure the neoCuration is saved
-				neoCuration = neoCurationRepository.save(neoCuration);
+				//neoCuration = neoCurationRepository.save(neoCuration);
+
+				//because can refer to an existing sample, need to make sure we use existing objects
 				
-				NeoSample neoSample = neoSampleRepository.findOneByAccession(messageContent.getCurationLink().getSample(),1);							
-				NeoCurationLink neoCurationLink = NeoCurationLink.build(neoCuration, neoSample);
+				CurationLink curationLink = messageContent.getCurationLink();
+				Curation curation = curationLink.getCuration();
+				NeoCuration neoCuration = curationToNeoCurationConverter.convert(curation);
+				neoCuration = neoCurationRepository.findOneByHash(neoCuration.getHash(), 1);
+				if (neoCuration == null) {
+					//no existing one, so make one to save
+					neoCuration = curationToNeoCurationConverter.convert(curation);
+				}
+				
+				NeoSample owner = neoSampleRepository.findOneByAccession(curationLink.getSample(), 0);
+				if (owner == null) {
+					//no existing sample, throw error
+					throw new RuntimeException("CurationLink refers to non-existing sample "+curationLink.getSample());
+				}
+				
+				
+				NeoCurationLink neoCurationLink = NeoCurationLink.build(neoCuration, owner, curationLink.getDomain());
+				
 				neoCurationLink = neoCurationLinkRepository.save(neoCurationLink);
 			}
 		}

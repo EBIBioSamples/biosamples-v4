@@ -11,18 +11,22 @@ import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.CurationLink;
+import uk.ac.ebi.biosamples.service.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.CurationLinkResourceAssembler;
 import uk.ac.ebi.biosamples.service.CurationService;
 
@@ -32,13 +36,15 @@ public class SampleCurationLinksRestController {
 
 	private final CurationService curationService;
 	private final CurationLinkResourceAssembler curationLinkResourceAssembler;
+	private final BioSamplesAapService bioSamplesAapService;
 	
 	private Logger log = LoggerFactory.getLogger(getClass());
 
 	public SampleCurationLinksRestController(CurationService curationService,
-			CurationLinkResourceAssembler curationLinkResourceAssembler) {
+			CurationLinkResourceAssembler curationLinkResourceAssembler, BioSamplesAapService bioSamplesAapService) {
 		this.curationService = curationService;
 		this.curationLinkResourceAssembler = curationLinkResourceAssembler;
+		this.bioSamplesAapService = bioSamplesAapService;
 	}
     
     @CrossOrigin
@@ -71,14 +77,25 @@ public class SampleCurationLinksRestController {
     	
 		return ResponseEntity.ok(resource);   
 	}
-    
-    @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
+
+	@PreAuthorize("isAuthenticated()")
+    @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE}, produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<Resource<CurationLink>> createCurationLinkJson(
 			@PathVariable String accession,
-			@RequestBody Curation curation) {
-		log.info("Recieved POST for " + accession + " : "+curation);		
-    	CurationLink curationLink = CurationLink.build(accession, curation);
+			@RequestBody CurationLink curationLink) {
+		
+		log.info("Recieved POST for " + curationLink);		
+		
+		if (curationLink.getSample() == null) {
+			//curationLink has no sample, use the one specified in the URL
+		} else if (!curationLink.getSample().equals(accession)) {
+			//points to a different sample, this is an error
+			throw new SampleNotMatchException();
+		}
+		
+		curationLink = bioSamplesAapService.handleCurationLinkDomain(curationLink);	
     	
+		//now actually persist it
     	curationLink = curationService.store(curationLink);
     	Resource<CurationLink> resource = curationLinkResourceAssembler.toResource(curationLink);
 
@@ -86,4 +103,8 @@ public class SampleCurationLinksRestController {
 		return ResponseEntity.created(URI.create(resource.getLink("self").getHref()))
 				.body(resource);
     }
+
+	@ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Sample must match URL or be omitted") // 400
+	public static class SampleNotMatchException extends RuntimeException {
+	}
 }
