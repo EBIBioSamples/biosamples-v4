@@ -2,6 +2,7 @@ package uk.ac.ebi.biosamples;
 
 import java.nio.charset.Charset;
 import java.time.ZoneOffset;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -99,7 +100,7 @@ public class SampleRestResponseBodyAdvice implements ResponseBodyAdvice<Resource
 		}
 		
 		
-		response.getHeaders().setLastModified(lastModified);
+		//response.getHeaders().setLastModified(lastModified);
 		
 		response.getHeaders().setCacheControl(CacheControl.maxAge(1, TimeUnit.MINUTES).cachePublic().getHeaderValue());
 
