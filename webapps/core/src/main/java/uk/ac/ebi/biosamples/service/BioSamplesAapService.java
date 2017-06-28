@@ -6,6 +6,9 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.client.Traverson;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -13,6 +16,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.ResponseStatus;
+
+import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.tsc.aap.client.model.Domain;
 import uk.ac.ebi.tsc.aap.client.security.UserAuthentication;
@@ -20,9 +25,14 @@ import uk.ac.ebi.tsc.aap.client.security.UserAuthentication;
 @Service
 public class BioSamplesAapService {
 
-	
 	private Logger log = LoggerFactory.getLogger(getClass());
-
+	
+	private final Traverson traverson;
+	
+	public BioSamplesAapService(RestTemplateBuilder restTemplateBuilder, BioSamplesProperties bioSamplesProperties) {
+		traverson = new Traverson(bioSamplesProperties.getBiosamplesClientAapUri(), MediaTypes.HAL_JSON);
+		traverson.setRestOperations(restTemplateBuilder.build());
+	}
 
 	@ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Sample must specify a domain") // 400
 	public static class SampleDomainMissingException extends RuntimeException {
@@ -43,14 +53,19 @@ public class BioSamplesAapService {
 		} else if (authentication instanceof AnonymousAuthenticationToken) {
 			return Collections.emptySet();
 		} else if (authentication instanceof UserAuthentication) {
+			
 			UserAuthentication userAuthentication = (UserAuthentication) authentication;
 					
 			log.info("userAuthentication = "+userAuthentication.getName());
 			log.info("userAuthentication = "+userAuthentication.getAuthorities());
 			log.info("userAuthentication = "+userAuthentication.getPrincipal());
 			log.info("userAuthentication = "+userAuthentication.getCredentials());
-			
+
 			Set<String> domains = new HashSet<>();
+			
+			//TODO get from AAP API not JWT ?
+			//traverson.follow("users");
+			
 			for (GrantedAuthority authority : authentication.getAuthorities()) {
 				if (authority instanceof Domain) {
 					log.info("Found domain "+authority);
@@ -66,6 +81,7 @@ public class BioSamplesAapService {
 					log.info("Found non-domain "+authority);
 				}
 			}
+			
 			return domains;
 		} else {
 			return Collections.emptySet();
