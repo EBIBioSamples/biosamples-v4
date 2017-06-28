@@ -151,6 +151,7 @@ public class SampleRestController {
 		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
 
 		// create the response object with the appropriate status
+		//TODO work out how to avoid using ResponseEntity but also set location header
 		return ResponseEntity.created(URI.create(sampleResource.getLink("self").getHref())).body(sampleResource);
 	}
 

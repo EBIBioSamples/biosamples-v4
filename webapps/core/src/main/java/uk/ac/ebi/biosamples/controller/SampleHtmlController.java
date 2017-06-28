@@ -200,8 +200,8 @@ public class SampleHtmlController {
 			return "error/403";
 		}
 
-		response.setHeader(HttpHeaders.LAST_MODIFIED, String.valueOf(sample.getUpdate().toEpochSecond(ZoneOffset.UTC)));
-		response.setHeader(HttpHeaders.ETAG, String.valueOf(sample.hashCode()));
+		//response.setHeader(HttpHeaders.LAST_MODIFIED, String.valueOf(sample.getUpdate().toEpochSecond(ZoneOffset.UTC)));
+		//response.setHeader(HttpHeaders.ETAG, String.valueOf(sample.hashCode()));
 
 		model.addAttribute("sample", sample);
 		return "sample";
