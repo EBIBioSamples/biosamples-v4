@@ -23,7 +23,6 @@ import uk.ac.ebi.biosamples.model.Attribute;
 
 @Component
 @Order(5)
-@Profile({ "default", "submission" })
 public class SampleTabRunner implements ApplicationRunner, ExitCodeGenerator {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
