@@ -46,7 +46,11 @@ public class NeoMessageBufferTransaction {
 	
 	@Transactional
 	public void save(Collection<MessageContent> messageContents) {		
+<<<<<<< HEAD
 		log.info("Starting save");
+=======
+		
+>>>>>>> Moved solr over to message content, separated read and write services
 		for (MessageContent messageContent : messageContents) {
 			if (messageContent.delete) {
 				//TODO delete a sample or curationlink
@@ -88,7 +92,11 @@ public class NeoMessageBufferTransaction {
 					neoCuration = neoCurationRepository.save(neoCuration);
 					
 					NeoSample neoSample = neoSampleRepository.findOneByAccession(messageContent.getCurationLink().getSample(),1);							
+<<<<<<< HEAD
 					NeoCurationLink neoCurationLink = NeoCurationLink.build(neoCuration, neoSample, messageContent.getCurationLink().getCreated());
+=======
+					NeoCurationLink neoCurationLink = NeoCurationLink.build(neoCuration, neoSample);
+>>>>>>> Moved solr over to message content, separated read and write services
 					neoCurationLink = neoCurationLinkRepository.save(neoCurationLink);
 				}
 			}

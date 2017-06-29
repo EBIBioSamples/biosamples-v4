@@ -45,10 +45,10 @@ public class CurationReadService {
 	private NeoCurationToCurationConverter neoCurationToCurationConverter;
 	@Autowired
 	private NeoCurationLinkToCurationLinkConverter neoCurationLinkToCurationLinkConverter;
-	
+
 	@Autowired
 	private CurationApplicationService curationApplicationService;
-	
+
 	public Page<Curation> getPage(Pageable pageable) {
 		Page<NeoCuration> pageNeoCuration = neoCurationRepository.findAll(pageable,2);
 		Page<Curation> pageCuration = pageNeoCuration.map(neoCurationToCurationConverter);		

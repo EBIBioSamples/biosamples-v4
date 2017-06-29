@@ -23,6 +23,7 @@ import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.concurrent.TimeUnit;
+import uk.ac.ebi.biosamples.service.SampleReadService;
 
 /**
  * Primary controller for REST operations both in JSON and XML and both read and
