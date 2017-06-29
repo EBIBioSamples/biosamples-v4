@@ -12,7 +12,6 @@ import java.util.stream.StreamSupport;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -20,8 +19,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import uk.ac.ebi.biosamples.MessageContent;
-import uk.ac.ebi.biosamples.Messaging;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.CurationLink;
@@ -35,7 +32,7 @@ import uk.ac.ebi.biosamples.neo.service.modelconverter.NeoCurationLinkToCuration
 import uk.ac.ebi.biosamples.neo.service.modelconverter.NeoCurationToCurationConverter;
 
 @Service
-public class CurationService {
+public class CurationReadService {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 
@@ -49,9 +46,6 @@ public class CurationService {
 	private NeoCurationToCurationConverter neoCurationToCurationConverter;
 	@Autowired
 	private NeoCurationLinkToCurationLinkConverter neoCurationLinkToCurationLinkConverter;
-
-	@Autowired
-	private AmqpTemplate amqpTemplate;
 	
 	public Page<Curation> getPage(Pageable pageable) {
 		Page<NeoCuration> pageNeoCuration = neoCurationRepository.findAll(pageable,2);
@@ -102,11 +96,6 @@ public class CurationService {
 		NeoCurationLink neo = neoCurationLinkRepository.findOneByHash(hash, 1);
 		CurationLink link = neoCurationLinkToCurationLinkConverter.convert(neo);
 		return link;
-	}
-	
-	public CurationLink store(CurationLink curationLink) {
-		amqpTemplate.convertAndSend(Messaging.exchangeForIndexing, "", MessageContent.build(curationLink, false));
-		return curationLink;
 	}
 	
 	public Sample applyCurationToSample(Sample sample, Curation curation) {

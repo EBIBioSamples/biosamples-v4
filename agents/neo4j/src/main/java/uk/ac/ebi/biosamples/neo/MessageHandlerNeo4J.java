@@ -10,8 +10,6 @@ import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.MessageContent;
 import uk.ac.ebi.biosamples.Messaging;
 import uk.ac.ebi.biosamples.messages.threaded.MessageSampleStatus;
-import uk.ac.ebi.biosamples.neo.repo.NeoSampleRepository;
-import uk.ac.ebi.biosamples.neo.service.modelconverter.SampleToNeoSampleConverter;
 
 @Service
 public class MessageHandlerNeo4J {
@@ -23,12 +21,6 @@ public class MessageHandlerNeo4J {
 	
 	@Autowired
 	private NeoMessageBuffer messageBuffer;
-
-	@Autowired
-	private NeoSampleRepository repository;
-	
-	@Autowired
-	private SampleToNeoSampleConverter sampleToNeoSampleConverter;
 
 	@RabbitListener(queues = Messaging.queueToBeIndexedNeo4J)
 	public void handle(MessageContent messageContent) {
@@ -55,8 +47,7 @@ public class MessageHandlerNeo4J {
 		}
 
 		// send a message for further processing if necessary
-		if (messageContent.hasSample()) {
-			amqpTemplate.convertAndSend(Messaging.exchangeForIndexingSolr, "", messageContent.getSample());
-		}
+		//TODO bundle in additional information of relevant samples
+		amqpTemplate.convertAndSend(Messaging.exchangeForIndexingSolr, "", messageContent);
 	}
 }

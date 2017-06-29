@@ -7,6 +7,7 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import uk.ac.ebi.biosamples.MessageContent;
 import uk.ac.ebi.biosamples.Messaging;
 import uk.ac.ebi.biosamples.messages.threaded.MessageSampleStatus;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -27,10 +28,17 @@ public class MessageHandlerSolr {
 	private AmqpTemplate amqpTemplate;
 
 	@RabbitListener(queues = Messaging.queueToBeIndexedSolr)
-	public void handle(Sample sample) {
-		log.info("Handling "+sample.getAccession());
+	public void handle(MessageContent messageContent) {
 		
+		if (messageContent.getSample() == null) {
+			log.warn("Recieved message without sample");
+			return;
+		}
+		
+		Sample sample = messageContent.getSample();		
 		SolrSample solrSample = sampleToSolrSampleConverter.convert(sample);
+		
+		//TODO expand this conversion - OLS, related external references, etc
 				
 		MessageSampleStatus<SolrSample> messageSampleStatus;
 		try {

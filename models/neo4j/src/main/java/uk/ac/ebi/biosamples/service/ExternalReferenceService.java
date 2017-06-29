@@ -1,6 +1,5 @@
 package uk.ac.ebi.biosamples.service;
 
-import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,21 +16,18 @@ public class ExternalReferenceService {
 	@Autowired
 	private NeoExternalReferenceRepository neoExternalReferenceRepository;
 	
-	//TODO use a ConversionService to manage all these
 	@Autowired
 	private NeoExternalReferenceToExternalReferenceConverter neoExternalReferenceToExternalReferenceConverter;
 
-	@Autowired
-	private AmqpTemplate amqpTemplate;
 	
 	public Page<ExternalReference> getPage(Pageable pageable){
-		Page<NeoExternalReference> pageNeoExternalReference = neoExternalReferenceRepository.findAll(pageable,2);
+		Page<NeoExternalReference> pageNeoExternalReference = neoExternalReferenceRepository.findAll(pageable,0);
 		Page<ExternalReference> pageExternalReference = pageNeoExternalReference.map(neoExternalReferenceToExternalReferenceConverter);		
 		return pageExternalReference;
 	}
 	
 	public ExternalReference getExternalReference(String urlHash) {
-		NeoExternalReference neoExternalReference = neoExternalReferenceRepository.findOneByUrlHash(urlHash,2);
+		NeoExternalReference neoExternalReference = neoExternalReferenceRepository.findOneByUrlHash(urlHash,0);
 		if (neoExternalReference == null) {
 			return null;
 		} else {

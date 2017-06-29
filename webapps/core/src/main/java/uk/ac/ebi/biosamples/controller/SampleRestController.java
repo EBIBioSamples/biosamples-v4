@@ -39,6 +39,7 @@ import uk.ac.ebi.biosamples.service.FilterService;
 import uk.ac.ebi.biosamples.service.SamplePageService;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 import uk.ac.ebi.biosamples.service.SampleService;
+import uk.ac.ebi.biosamples.service.SampleReadService;
 
 /**
  * Primary controller for REST operations both in JSON and XML and both read and

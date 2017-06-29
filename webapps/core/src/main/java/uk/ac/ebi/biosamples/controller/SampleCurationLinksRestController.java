@@ -24,20 +24,24 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.service.CurationLinkResourceAssembler;
-import uk.ac.ebi.biosamples.service.CurationService;
+import uk.ac.ebi.biosamples.service.CurationPersistService;
+import uk.ac.ebi.biosamples.service.CurationReadService;
 
 @RestController
 @RequestMapping("/samples/{accession}/curationlinks")
 public class SampleCurationLinksRestController {
 
-	private final CurationService curationService;
+	private final CurationReadService curationReadService;
+	private final CurationPersistService curationPersistService;
 	private final CurationLinkResourceAssembler curationLinkResourceAssembler;
 	
 	private Logger log = LoggerFactory.getLogger(getClass());
 
-	public SampleCurationLinksRestController(CurationService curationService,
+	public SampleCurationLinksRestController(CurationReadService curationReadService,
+			CurationPersistService curationPersistService,
 			CurationLinkResourceAssembler curationLinkResourceAssembler) {
-		this.curationService = curationService;
+		this.curationReadService = curationReadService;
+		this.curationPersistService = curationPersistService;
 		this.curationLinkResourceAssembler = curationLinkResourceAssembler;
 	}
     
@@ -48,7 +52,7 @@ public class SampleCurationLinksRestController {
 			Pageable pageable,
 			PagedResourcesAssembler<CurationLink> pageAssembler) {
     	
-    	Page<CurationLink> page = curationService.getCurationLinksForSample(accession, pageable);
+    	Page<CurationLink> page = curationReadService.getCurationLinksForSample(accession, pageable);
     	
 		//add the links to each individual sample on the page
 		//also adds links to first/last/next/prev at the same time
@@ -66,7 +70,7 @@ public class SampleCurationLinksRestController {
 			@PathVariable String accession,
 			@PathVariable String id) {
     	
-    	CurationLink curationLink = curationService.getCurationLink(id);    	
+    	CurationLink curationLink = curationReadService.getCurationLink(id);    	
     	Resource<CurationLink> resource = curationLinkResourceAssembler.toResource(curationLink);
     	
 		return ResponseEntity.ok(resource);   
@@ -79,7 +83,7 @@ public class SampleCurationLinksRestController {
 		log.info("Recieved POST for " + accession + " : "+curation);		
     	CurationLink curationLink = CurationLink.build(accession, curation);
     	
-    	curationLink = curationService.store(curationLink);
+    	curationLink = curationPersistService.store(curationLink);
     	Resource<CurationLink> resource = curationLinkResourceAssembler.toResource(curationLink);
 
 		// create the response object with the appropriate status

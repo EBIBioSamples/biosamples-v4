@@ -38,7 +38,7 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.FilterService;
 import uk.ac.ebi.biosamples.service.SamplePageService;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
-import uk.ac.ebi.biosamples.service.SampleService;
+import uk.ac.ebi.biosamples.service.SampleReadService;
 
 /**
  * Primary controller for REST operations both in JSON and XML and both read and
@@ -54,7 +54,7 @@ import uk.ac.ebi.biosamples.service.SampleService;
 @RequestMapping("/samples")
 public class SamplesRestController {
 
-	private final SampleService sampleService;
+	private final SampleReadService sampleService;
 	private final SamplePageService samplePageService;
 	private final FilterService filterService;
 
@@ -64,7 +64,7 @@ public class SamplesRestController {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 
-	public SamplesRestController(SampleService sampleService, 
+	public SamplesRestController(SampleReadService sampleService, 
 			SamplePageService samplePageService,FilterService filterService,
 			SampleResourceAssembler sampleResourceAssembler, EntityLinks entityLinks) {
 		this.sampleService = sampleService;

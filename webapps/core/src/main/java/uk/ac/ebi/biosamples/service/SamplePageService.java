@@ -43,7 +43,7 @@ public class SamplePageService {
 	private NeoSampleToSampleConverter neoSampleToSampleConverter;
 
 	@Autowired
-	private SampleService sampleService;
+	private SampleReadService sampleService;
 	
 	@Autowired
 	private SolrSampleService solrSampleService;

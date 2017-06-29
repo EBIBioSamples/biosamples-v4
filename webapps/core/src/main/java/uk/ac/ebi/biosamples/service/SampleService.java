@@ -67,10 +67,13 @@ public class SampleService {
 	private SolrSampleService solrSampleService;
 	
 	@Autowired
-	private CurationService curationService;
+	private CurationReadService curationReadService;
 
 	@Autowired
 	private AmqpTemplate amqpTemplate;
+	
+	@Autowired
+	private SampleReadService sampleReadService;
 	
 	/**
 	 * Throws an IllegalArgumentException of no sample with that accession exists
@@ -80,27 +83,9 @@ public class SampleService {
 	 * @throws IllegalArgumentException
 	 */
 	//can't use a sync cache because we need to use CacheEvict
-	//@Cacheable(cacheNames=WebappProperties.fetch, key="#root.args[0]")
+	@Cacheable(cacheNames=WebappProperties.fetch, key="#root.args[0]")
 	public Sample fetch(String accession) throws IllegalArgumentException {
-		
-		log.info("Fetching accession from neoSampleRepository "+accession);
-		
-		// return the raw sample from the repository
-		NeoSample neoSample = neoSampleRepository.findOneByAccession(accession,1);
-		if (neoSample == null) {
-			throw new IllegalArgumentException("Unable to find sample (" + accession + ")");
-		}
-		//TODO only have relationships to things that are accessible
-
-		// convert it into the format to return
-		Sample sample = neoSampleToSampleConverter.convert(neoSample);
-		
-		//add curation from a set of users
-		//TODO limit curation to a set of users (possibly empty set)
-		sample = curationService.applyAllCurationToSample(sample);
-		
-		
-		return sample;
+		return sampleReadService.fetch(accession);
 	}
 	
 	

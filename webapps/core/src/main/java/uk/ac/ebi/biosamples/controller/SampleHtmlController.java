@@ -38,7 +38,7 @@ import uk.ac.ebi.biosamples.model.SampleFacetValue;
 import uk.ac.ebi.biosamples.service.FacetService;
 import uk.ac.ebi.biosamples.service.FilterService;
 import uk.ac.ebi.biosamples.service.SamplePageService;
-import uk.ac.ebi.biosamples.service.SampleService;
+import uk.ac.ebi.biosamples.service.SampleReadService;
 
 /**
  * Primary controller for HTML operations.
@@ -54,12 +54,12 @@ public class SampleHtmlController {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 
-	private final SampleService sampleService;
+	private final SampleReadService sampleService;
 	private final SamplePageService samplePageService;
 	private final FacetService facetService;
 	private final FilterService filterService;
 
-	public SampleHtmlController(SampleService sampleService, 
+	public SampleHtmlController(SampleReadService sampleService, 
 			SamplePageService samplePageService,FacetService facetService, FilterService filterService) {
 		this.sampleService = sampleService;
 		this.samplePageService = samplePageService;
