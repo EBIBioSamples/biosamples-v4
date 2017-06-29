@@ -2,7 +2,6 @@ package uk.ac.ebi.biosamples;
 
 import java.nio.charset.Charset;
 import java.time.ZoneOffset;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -21,7 +20,6 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
 import com.google.common.hash.Hashing;
 
-import groovy.util.logging.Log;
 import uk.ac.ebi.biosamples.controller.SampleRestController;
 import uk.ac.ebi.biosamples.model.Sample;
 

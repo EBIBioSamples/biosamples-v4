@@ -23,7 +23,6 @@ import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.XmlFragmenter;
 
-@SuppressWarnings("unused")
 @Component
 public class Ncbi implements ApplicationRunner {
 
