@@ -27,30 +27,22 @@ public class Neo4JRunner implements ApplicationRunner, ExitCodeGenerator {
 	@Autowired
 	private BioSamplesProperties biosamplesProperties;
 	@Autowired
-	private Neo4JMessageHandler neo4JMessageHandler;
+	private MessageUtils messageUtils;
+	
 	
 	private int exitCode = 0;
 
 	@Override
 	public void run(ApplicationArguments args) throws Exception {
-		log.info("Starting run()");
-		
-		MessageContent messageContent = null;
-		long lastMessage = System.nanoTime();
-		long interval = System.nanoTime()-lastMessage;
-		//TODO application property this
-		while (interval < 15*1000000 || biosamplesProperties.getAgentNeo4JStayalive()) {
-			log.info("Handling new message");
-			messageContent = neo4JMessageHandler.handle();
-			log.info("Handled "+messageContent);
-			
-			if (messageContent != null) {
-				lastMessage = System.nanoTime();
-			}
-			interval = System.nanoTime()-lastMessage;
-		} 
-		
-		log.info("Finishing run()");
+		// as long as there are messages to read, keep this thread alive
+		// that will also keep the async message client alive too?
+		Long messageCount = null;
+		while (biosamplesProperties.getAgentNeo4JStayalive() 
+				|| messageCount == null || messageCount > 0 ) {
+			Thread.sleep(1000);
+			messageCount = messageUtils.getQueueCount(Messaging.queueToBeIndexedNeo4J);
+			log.trace("Messages remaining in "+Messaging.queueToBeIndexedNeo4J+" "+messageCount);
+		}
 	}
 
 	@Override
