@@ -123,19 +123,20 @@ services:
     - agents-neo4j-4.0.0-SNAPSHOT.jar
     environment:
     - spring.rabbitmq.publisher-confirms=true
+    - spring.rabbitmq.publisher-returns=true
+    - spring.rabbitmq.listener.concurrency=1
+    - spring.rabbitmq.listener.max-concurrency=1
     - spring.rabbitmq.host=rabbitmq
-    - spring.rabbitmq.listener.concurrency=250
-    - spring.rabbitmq.listener.max-concurrency=250
-    - biosamples.agent.neo4j.queuesize=250
-    - biosamples.agent.neo4j.queuetime=500
-    - spring.data.neo4j.uri=bolt://neo4j:7687
-    #- spring.data.neo4j.uri=http://neo4j:7474
+    #- spring.data.neo4j.uri=bolt://neo4j:7687
+    - spring.data.neo4j.uri=http://neo4j:7474
     - spring.data.neo4j.username=neo4j
     - spring.data.neo4j.indexes.auto=validate
     - biosamples.agent.neo4j.stayalive=true
     - logging.file=/logs/agents-neo4j.log
-    - logging.level=debug
+    #- logging.level=debug
     - logging.level.org.springframework.data.neo4j=debug
+    - logging.level.org.springframework.transaction=INFO
+    - spring.aop.proxy-target-class=true
     
   biosamples-agents-solr:
     image: biosamples:latest
@@ -150,6 +151,7 @@ services:
     - agents-solr-4.0.0-SNAPSHOT.jar
     environment:
     - spring.rabbitmq.publisher-confirms=true
+    - spring.rabbitmq.publisher-returns=true
     - spring.rabbitmq.listener.concurrency=1000
     - spring.rabbitmq.listener.max-concurrency=1000
     - biosamples.agent.solr.queuesize=1000
@@ -186,6 +188,7 @@ services:
     image: rabbitmq:3.6-management
     hostname: biosamples-rabbitmq
     ports:
+    - 5672:5672
     - 15672:15672
     volumes:
     - rabbitmq_data:/var/lib/rabbitmq/mnesia/rabbit@biosamples-rabbitmq
