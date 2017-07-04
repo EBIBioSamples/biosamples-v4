@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,7 +23,7 @@ import uk.ac.ebi.biosamples.neo.service.modelconverter.SampleToNeoSampleConverte
 
 @Component
 public class NeoMessageBufferTransaction {
-
+	private Logger log = LoggerFactory.getLogger(getClass());
 
 	private final NeoSampleRepository neoSampleRepository;
 	private final SampleToNeoSampleConverter sampleToNeoSampleConverter;
@@ -44,7 +46,7 @@ public class NeoMessageBufferTransaction {
 	
 	@Transactional
 	public void save(Collection<MessageContent> messageContents) {		
-		
+		log.info("Starting save");
 		for (MessageContent messageContent : messageContents) {
 			if (messageContent.delete) {
 				//TODO delete a sample or curationlink
@@ -90,6 +92,7 @@ public class NeoMessageBufferTransaction {
 					neoCurationLink = neoCurationLinkRepository.save(neoCurationLink);
 				}
 			}
-		}
+		}		
+		log.info("Finishing save");
 	}
 }

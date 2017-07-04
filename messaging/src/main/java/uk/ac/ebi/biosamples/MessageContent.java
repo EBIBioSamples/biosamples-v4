@@ -28,8 +28,7 @@ public class MessageContent {
 	
 	public boolean hasSample() {
 		return this.sample != null;
-	}
-	
+	}	
 	
 	public boolean hasCurationLink() {
 		return this.curationLink != null;
@@ -41,12 +40,26 @@ public class MessageContent {
 	
 	public List<Sample> getRelated() {
 		return related;
-	}
-	
+	}	
 	
 	public CurationLink getCurationLink() {
 		return curationLink;
 	}
+	
+    @Override
+    public String toString() {
+    	StringBuilder sb = new StringBuilder();
+    	sb.append("MessageContent(");
+    	sb.append(sample);
+    	sb.append(",");
+    	sb.append(curationLink);
+    	sb.append(",");
+    	sb.append(related);
+    	sb.append(",");
+    	sb.append(delete);
+    	sb.append(")");
+    	return sb.toString();
+    }
 
 	public static MessageContent build(Sample sample, boolean delete) {
 		return new MessageContent(sample,  null, Collections.emptyList(), delete);
