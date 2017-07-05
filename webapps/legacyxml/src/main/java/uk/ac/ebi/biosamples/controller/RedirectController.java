@@ -43,7 +43,7 @@ public class RedirectController {
 
 	@GetMapping(value="/groups/{accession:SAMEG\\d+}")
 	public void  redirectGroups(@PathVariable String accession, HttpServletResponse response) throws IOException {
-		String redirectUrl = String.format("%s/groups/%s", biosamplesRedirectContext, accession);
+		String redirectUrl = String.format("%s/samples/%s", biosamplesRedirectContext, accession);
 		response.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_XML.getType());
 		response.sendRedirect(redirectUrl);
 	}

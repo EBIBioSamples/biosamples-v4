@@ -17,7 +17,12 @@
 			<artifactId>biosamples-spring-boot-starter</artifactId>
 			<version>${bsd2017.version}</version>
 		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>uk.ac.ebi.biosamples</groupId>
+            <artifactId>webapps-legacyxml</artifactId>
+            <version>4.0.0-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
 	
  	<build>
  		<plugins>

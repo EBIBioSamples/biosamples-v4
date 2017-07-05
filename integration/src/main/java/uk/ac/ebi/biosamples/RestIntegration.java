@@ -1,5 +1,22 @@
 package uk.ac.ebi.biosamples;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.context.annotation.Profile;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.annotation.Order;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.Resource;
+import org.springframework.http.*;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
+import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.ExternalReference;
+import uk.ac.ebi.biosamples.model.Relationship;
+import uk.ac.ebi.biosamples.model.Sample;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -7,29 +24,9 @@ import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.core.annotation.Order;
-import org.springframework.hateoas.Link;
-import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
-
-import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.ExternalReference;
-import uk.ac.ebi.biosamples.model.Relationship;
-import uk.ac.ebi.biosamples.model.Sample;
-
 @Component
 @Order(2)
+@Profile({"default", "rest"})
 public class RestIntegration extends AbstractIntegration {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
