@@ -1,5 +1,7 @@
 package uk.ac.ebi.biosamples;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Profile;
 import org.springframework.hateoas.Resource;
@@ -26,6 +28,7 @@ public class XMLSearchIntegration extends AbstractIntegration {
     
     private final RestTemplate restTemplate;
     private final IntegrationProperties integrationProperties;
+    Logger log = LoggerFactory.getLogger(getClass());
 
     public XMLSearchIntegration(BioSamplesClient client,
                                 RestTemplateBuilder restTemplateBuilder,
@@ -55,20 +58,26 @@ public class XMLSearchIntegration extends AbstractIntegration {
     protected void phaseTwo() {
         Sample test1 = getSampleXMLTest1();
 
+        log.info("Check existence of sample " + test1.getAccession());
         Optional<Resource<Sample>> optional = client.fetchSampleResource(test1.getAccession());
         if (!optional.isPresent()) {
             throw new RuntimeException("Expected sample not found "+test1.getAccession());
         }
+        log.info("Sample " + test1.getAccession() + " found correctly");
 
         UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleLegaxyXmlUri());
         uriBuilder.pathSegment("samples", test1.getAccession());
-        //TODO FINISH THIS
+
+        log.info(String.format("Searching sample %s using legacy xml api", test1.getAccession()));
         ResponseEntity<Sample> responseEntity = restTemplate.getForEntity(uriBuilder.build().toUri(), Sample.class);
         if (!responseEntity.getStatusCode().is2xxSuccessful()) {
             throw new RuntimeException("Expected sample not found in the xml legacy "+test1.getAccession());
         }
+        log.info(String.format("Sample %s found using legacy xml api", test1.getAccession()));
 
-        assert responseEntity.getBody().equals(test1);
+        if (!responseEntity.getBody().equals(test1)) {
+            throw new RuntimeException("Response body doesn't match expected sample");
+        }
         /*
         try {
 
@@ -96,6 +105,7 @@ public class XMLSearchIntegration extends AbstractIntegration {
         HttpHeaders jsonHeaders = new HttpHeaders();
         jsonHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 
+        log.info("Try to generate a BAD REQUEST using legacy xml samples end-point without required parameter");
         try {
             restTemplate.exchange(testBadRequest.toUriString(),
                     HttpMethod.GET,
@@ -112,6 +122,7 @@ public class XMLSearchIntegration extends AbstractIntegration {
         }
 
         // Check application/json request
+        log.info("Try to generate a NOT ACCEPTABLE error using legacy xml samples end-point with application/json accept header");
         try {
             restTemplate.exchange(testBadRequest.toUriString(),
                     HttpMethod.GET,
@@ -131,6 +142,7 @@ public class XMLSearchIntegration extends AbstractIntegration {
         testProperRequest.queryParam("query", "test");
 
 
+        log.info("Try to retrieve a result query object from the legacy xml api");
         ResponseEntity<String> responseEntity = restTemplate.exchange(
                     testProperRequest.toUriString(),
                     HttpMethod.GET,
@@ -157,7 +169,7 @@ public class XMLSearchIntegration extends AbstractIntegration {
 		String name = "Test XML Sample";
 		String accession = "SAMEAXML123123";
 		LocalDateTime update = LocalDateTime.of(LocalDate.of(2016, 5, 5), LocalTime.of(11, 36, 57, 0));
-		LocalDateTime release = LocalDateTime.of(LocalDate.of(2116, 4, 1), LocalTime.of(11, 36, 57, 0));
+		LocalDateTime release = LocalDateTime.of(LocalDate.of(2016, 4, 1), LocalTime.of(11, 36, 57, 0));
 
 		SortedSet<Attribute> attributes = new TreeSet<>();
 		attributes.add(
