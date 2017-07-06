@@ -113,12 +113,18 @@ public class XMLSearchIntegration extends AbstractIntegration {
                     Sample.class);
         } catch(HttpClientErrorException ex) {
             boolean expectedResponse = ex.getStatusCode().is4xxClientError();
-            expectedResponse = expectedResponse && ex.getRawStatusCode() == 400;
-            expectedResponse = expectedResponse && ex.getResponseHeaders().getContentType().equals(MediaType.TEXT_XML);
-
             if (!expectedResponse) {
-                throw ex;
+                throw new RuntimeException("Excepted response doesn't match 4xx client error", ex);
             }
+            expectedResponse = expectedResponse && ex.getRawStatusCode() == 400;
+            if (!expectedResponse) {
+                throw new RuntimeException("Excepted response doesn't match 400 BAD REQUEST", ex);
+            }
+            expectedResponse = expectedResponse && ex.getResponseHeaders().getContentType().equals(MediaType.TEXT_XML);
+            if (!expectedResponse) {
+                throw new RuntimeException("Excepted response content-type doesn't match text/xml", ex);
+            }
+
         }
 
         // Check application/json request
@@ -130,10 +136,16 @@ public class XMLSearchIntegration extends AbstractIntegration {
                     Sample.class);
         } catch(HttpClientErrorException ex) {
             boolean expectedResponse = ex.getStatusCode().is4xxClientError();
+            if (!expectedResponse) {
+                throw new RuntimeException("Excepted response doesn't match 4xx client error", ex);
+            }
             expectedResponse = expectedResponse && ex.getRawStatusCode() == 406;
+            if (!expectedResponse) {
+                throw new RuntimeException("Excepted response doesn't match 406 NOT ACCEPTABLE", ex);
+            }
             expectedResponse = expectedResponse && ex.getResponseHeaders().getContentType().includes(MediaType.APPLICATION_JSON);
             if (!expectedResponse) {
-                throw ex;
+                throw new RuntimeException("Excepted response content-type doesn't match application/json", ex);
             }
         }
 
