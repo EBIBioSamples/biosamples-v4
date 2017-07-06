@@ -120,7 +120,7 @@ public class XMLSearchIntegration extends AbstractIntegration {
             if (!expectedResponse) {
                 throw new RuntimeException("Excepted response doesn't match 400 BAD REQUEST", ex);
             }
-            expectedResponse = expectedResponse && ex.getResponseHeaders().getContentType().equals(MediaType.TEXT_XML);
+            expectedResponse = expectedResponse && ex.getResponseHeaders().getContentType().includes(MediaType.TEXT_XML);
             if (!expectedResponse) {
                 throw new RuntimeException("Excepted response content-type doesn't match text/xml", ex);
             }
