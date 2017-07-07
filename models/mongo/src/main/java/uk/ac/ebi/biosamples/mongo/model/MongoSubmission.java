@@ -1,11 +1,15 @@
 package uk.ac.ebi.biosamples.mongo.model;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
@@ -22,30 +26,45 @@ public class MongoSubmission {
 	@JsonSerialize(using = CustomLocalDateTimeSerializer.class)
 	@JsonDeserialize(using = CustomLocalDateTimeDeserializer.class)
 	@LastModifiedDate
-	private LocalDateTime datetime;
+	private final LocalDateTime datetime;
 	
-	private String user;
-
-	private Sample sample;
-	//TODO also store submission of curation and external reference links
+	private final Map<String, List<String>> headers;
+	private final String url;
+	private final String content;
+	private final String method;
 	
-	private MongoSubmission(){}
-	
-	public MongoSubmission(Sample sample, LocalDateTime datetime){
-		this.sample = sample;
+	private MongoSubmission(LocalDateTime datetime, String method, String url, Map<String, List<String>> headers, String content){
+		this.headers = headers;
+		this.url = url;
 		this.datetime = datetime;
+		this.method = method;
+		this.content = content;
 	}
 
 	public LocalDateTime getDatetime() {
 		return datetime;
 	}
 
-	public String getUser() {
-		return user;
+	public Map<String, List<String>> getHeaders() {
+		return headers;
 	}
 
-	public Sample getSample() {
-		return sample;
+	public String getUrl() {
+		return url;
 	}
-	
+
+	public String getContent() {
+		return content;
+	}
+
+	public String getMethod() {
+		return method;
+	}
+
+    @JsonCreator
+	public static MongoSubmission build(
+			@JsonProperty("datetime") LocalDateTime datetime, @JsonProperty("method") String method, @JsonProperty("url") String url, @JsonProperty("headers") Map<String, List<String>> headers, 
+			 @JsonProperty("content") String content) {
+		return new MongoSubmission(datetime, method, url, headers, content);
+	}
 }

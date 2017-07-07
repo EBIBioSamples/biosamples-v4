@@ -92,9 +92,6 @@ public class SampleService {
 	@CacheEvict(cacheNames=WebappProperties.fetch, key="#result.accession")
 	public Sample store(Sample sample) {
 		// TODO check if there is an existing copy and if there are any changes
-		
-		// save the submission in the repository
-		mongoSubmissionRepository.save(new MongoSubmission(sample, LocalDateTime.now()));
 
 		//do validation
 		Collection<String> errors = sampleValidator.validate(sample);
