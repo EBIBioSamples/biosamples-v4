@@ -108,7 +108,7 @@ public class BigIntegration extends AbstractIntegration {
 			relationships.add(Relationship.build("SAMbig"+i, "derived from", other.getAccession()));
 		}
 		
-		Sample sample = Sample.build("big sample "+i, "SAMbig"+i, null, release, update, attributes, relationships, null);
+		Sample sample = Sample.build("big sample "+i, "SAMbig"+i, release, update, attributes, relationships, null);
 
 		log.info("built "+sample.getAccession());
 		return sample;
