@@ -2,11 +2,14 @@ package uk.ac.ebi.biosamples.client;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.StreamSupport;
 
@@ -151,9 +154,9 @@ public class BioSamplesClient {
 				throw new IllegalArgumentException("Sample not valid");
 			}
 		}
-
+		
 		try {
-			return sampleSubmissionService.submit(sample).get();
+			return sampleSubmissionService.submitAsync(sample).get();
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		} catch (ExecutionException e) {
@@ -165,8 +168,69 @@ public class BioSamplesClient {
 		return persistSampleResource(sample).getContent();
 	}
 	
+	public Collection<Resource<Sample>> persistSamples(Collection<Sample> samples) throws RestClientException {
+		List<Resource<Sample>> results = new ArrayList<>();
+		List<Future<Resource<Sample>>> futures = new ArrayList<>();
+		
+		for (Sample sample : samples) {
+			futures.add(sampleSubmissionService.submitAsync(sample));
+		}
+		
+		for (Future<Resource<Sample>> future : futures) {
+			Resource<Sample> sample;
+
+			try {
+				sample = future.get();
+			} catch (InterruptedException e) {
+				throw new RuntimeException(e);
+			} catch (ExecutionException e) {
+				throw new RuntimeException(e.getCause());
+			}
+			results.add(sample);
+		}
+		return results;
+	}
+        
+    @Deprecated
+	public Resource<Sample> fetchResource(String accession) {
+		try {
+			//TODO add timeout?
+			Optional<Resource<Sample>> optional = sampleRetrievalService.fetch(accession).get();
+			if (optional.isPresent()) {
+				return optional.get();
+			} else {
+				return null;
+			}
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		} catch (ExecutionException e) {
+			throw new RuntimeException(e.getCause());
+		}
+	}
+	
 	public Resource<CurationLink> persistCuration(CurationLink curationLink) throws RestClientException {
 		return curationSubmissionService.submit(curationLink);
+	}
+	
+	@Deprecated
+	public Sample fetch(String accession) {
+		return fetchResource(accession).getContent();
+	}	
+
+	@Deprecated
+	public Resource<Sample> persistResource(Sample sample) {
+		try {
+			//TODO add timeout?
+			return sampleSubmissionService.submitAsync(sample).get();
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		} catch (ExecutionException e) {
+			throw new RuntimeException(e.getCause());
+		}
+	}
+	@Deprecated
+	public Sample persist(Sample sample) {
+		return persistResource(sample).getContent();
 	}
 
 	public PagedResources<Resource<Sample>> fetchPagedSamples(String text, int startPage, int size) {

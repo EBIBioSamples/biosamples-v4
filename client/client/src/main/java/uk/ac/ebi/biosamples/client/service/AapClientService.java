@@ -23,6 +23,7 @@ public class AapClientService {
 	private final String username;
 	private final String password;
 	
+	private String jwt = null;
 	
 	public AapClientService(RestTemplateBuilder restTemplateBuilder, URI aapUri, String username, String password) {
 		this.restOperations = restTemplateBuilder.build();

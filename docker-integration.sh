@@ -7,6 +7,7 @@ set -e
 ARGS=
 ARGS="$ARGS --biosamples.client.uri=http://localhost:8081/biosamples/beta" 
 ARGS="$ARGS --biosamples.submissionuri.sampletab=http://localhost:8082/biosamples/beta/sampletab"
+ARGS="$ARGS --biosamples.legacyxml.uri=http://localhost:8083/biosamples/beta/xml"
 
 
 for X in 1 2 3 4 5

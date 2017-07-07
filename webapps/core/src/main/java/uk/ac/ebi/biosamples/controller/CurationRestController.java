@@ -23,19 +23,19 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.CurationResourceAssembler;
-import uk.ac.ebi.biosamples.service.CurationService;
+import uk.ac.ebi.biosamples.service.CurationReadService;
 import uk.ac.ebi.biosamples.service.SamplePageService;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
-import uk.ac.ebi.biosamples.service.SampleService;
+import uk.ac.ebi.biosamples.service.SampleReadService;
 
 @RestController
 @ExposesResourceFor(Curation.class)
 @RequestMapping("/curations")
 public class CurationRestController {
 
-	private final SampleService sampleService;
+	private final SampleReadService sampleService;
 	private final SamplePageService samplePageService;
-	private final CurationService curationService;
+	private final CurationReadService curationReadService;
 	
 	private final SampleResourceAssembler sampleResourceAssembler;
 	private final CurationResourceAssembler curationResourceAssembler;
@@ -44,9 +44,9 @@ public class CurationRestController {
 	
 	private Logger log = LoggerFactory.getLogger(getClass());
 
-	public CurationRestController(SampleService sampleService, 
+	public CurationRestController(SampleReadService sampleService, 
 			SamplePageService samplePageService,
-			CurationService curationService,
+			CurationReadService curationService,
 			SampleResourceAssembler sampleResourceAssembler,
 			CurationResourceAssembler curationResourceAssembler,
 			EntityLinks entityLinks) {
@@ -54,7 +54,7 @@ public class CurationRestController {
 		this.samplePageService = samplePageService;
 		this.entityLinks = entityLinks;
 		this.sampleResourceAssembler = sampleResourceAssembler;
-		this.curationService = curationService;
+		this.curationReadService = curationService;
 		this.curationResourceAssembler = curationResourceAssembler;
 	}
 	
@@ -63,7 +63,7 @@ public class CurationRestController {
 	public ResponseEntity<PagedResources<Resource<Curation>>> getPagedHal(
 			Pageable page,
 			PagedResourcesAssembler<Curation> pageAssembler) {
-    	Page<Curation> pageExternalReference = curationService.getPage(page);
+    	Page<Curation> pageExternalReference = curationReadService.getPage(page);
 		PagedResources<Resource<Curation>> pagedResources = pageAssembler.toResource(pageExternalReference, 
 				curationResourceAssembler,
 				entityLinks.linkToCollectionResource(Curation.class));
@@ -75,7 +75,7 @@ public class CurationRestController {
     @CrossOrigin(methods = RequestMethod.GET)
 	@GetMapping(value="/{hash}", produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
 	public ResponseEntity<Resource<Curation>> getCurationHal(@PathVariable String hash) {
-    	Curation curation = curationService.getCuration(hash);
+    	Curation curation = curationReadService.getCuration(hash);
     	if (curation == null) {
     		return ResponseEntity.notFound().build();
     	}

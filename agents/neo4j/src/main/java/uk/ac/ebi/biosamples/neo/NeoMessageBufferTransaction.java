@@ -2,9 +2,10 @@ package uk.ac.ebi.biosamples.neo;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,7 +25,7 @@ import uk.ac.ebi.biosamples.neo.service.modelconverter.SampleToNeoSampleConverte
 
 @Component
 public class NeoMessageBufferTransaction {
-
+	private Logger log = LoggerFactory.getLogger(getClass());
 
 	private final NeoSampleRepository neoSampleRepository;
 	private final SampleToNeoSampleConverter sampleToNeoSampleConverter;
@@ -48,64 +49,52 @@ public class NeoMessageBufferTransaction {
 	
 	@Transactional
 	public void save(Collection<MessageContent> messageContents) {		
+		log.trace("Starting save");
 		for (MessageContent messageContent : messageContents) {
-			if (messageContent.hasSample()) {
-				Sample sample = messageContent.getSample();
-				NeoSample neoSample = sampleToNeoSampleConverter.convert(sample);
-				
-				//because relationships can refer to existing samples, make sure we use the existing NeoSample objects				
-				Set<NeoRelationship> newRelationships = new HashSet<>();
-				for (NeoRelationship oldRelationship : neoSample.getRelationships()) {
-					NeoSample owner = oldRelationship.getOwner();
-					NeoSample target = oldRelationship.getTarget();
-					if (!owner.getAccession().equals(neoSample.getAccession())) {
-						owner = neoSampleRepository.findOneByAccession(owner.getAccession(), 0);
-						//if we couldn't find an existing one, use this dummy
-						if (owner == null) {
-							owner = oldRelationship.getOwner();
+			if (messageContent.delete) {
+				//TODO delete a sample or curationlink
+			} else {
+				//add or update a sample
+				if (messageContent.hasSample()) {
+					Sample sample = messageContent.getSample();
+					NeoSample neoSample = sampleToNeoSampleConverter.convert(sample);
+					
+					//because relationships can refer to existing samples, make sure we use the existing NeoSample objects				
+					Set<NeoRelationship> newRelationships = new HashSet<>();
+					for (NeoRelationship oldRelationship : neoSample.getRelationships()) {
+						NeoSample owner = oldRelationship.getOwner();
+						NeoSample target = oldRelationship.getTarget();
+						if (!owner.getAccession().equals(neoSample.getAccession())) {
+							owner = neoSampleRepository.findOneByAccession(owner.getAccession(), 0);
+							//if we couldn't find an existing one, use this dummy
+							if (owner == null) {
+								owner = oldRelationship.getOwner();
+							}
 						}
-					}
-					if (!target.getAccession().equals(neoSample.getAccession())) {
-						target = neoSampleRepository.findOneByAccession(target.getAccession(), 0);
-						//if we couldn't find an existing one, use this dummy		
-						if (target == null) {
-							target = oldRelationship.getTarget();
+						if (!target.getAccession().equals(neoSample.getAccession())) {
+							target = neoSampleRepository.findOneByAccession(target.getAccession(), 0);
+							//if we couldn't find an existing one, use this dummy		
+							if (target == null) {
+								target = oldRelationship.getTarget();
+							}
 						}
+						newRelationships.add(NeoRelationship.build(owner, oldRelationship.getType(), target));
 					}
-					newRelationships.add(NeoRelationship.build(owner, oldRelationship.getType(), target));
+					neoSample.getRelationships().clear();
+					neoSample.getRelationships().addAll(newRelationships);				
+					
+					neoSample = neoSampleRepository.save(neoSample, 1);
+				} else if (messageContent.hasCurationLink()) {				
+					NeoCuration neoCuration = curationToNeoCurationConverter.convert(messageContent.getCurationLink().getCuration());
+					//make sure the neoCuration is saved
+					neoCuration = neoCurationRepository.save(neoCuration);
+					
+					NeoSample neoSample = neoSampleRepository.findOneByAccession(messageContent.getCurationLink().getSample(), 0);							
+					NeoCurationLink neoCurationLink = NeoCurationLink.build(neoCuration, neoSample, messageContent.getCurationLink().getDomain());
+					neoCurationLink = neoCurationLinkRepository.save(neoCurationLink);
 				}
-				neoSample.getRelationships().clear();
-				neoSample.getRelationships().addAll(newRelationships);				
-				
-				neoSample = neoSampleRepository.save(neoSample, 1);
 			}
-			if (messageContent.hasCurationLink()) {				
-				//NeoCuration neoCuration = curationToNeoCurationConverter.convert(messageContent.getCurationLink().getCuration());
-				//make sure the neoCuration is saved
-				//neoCuration = neoCurationRepository.save(neoCuration);
-
-				//because can refer to an existing sample, need to make sure we use existing objects
-				
-				CurationLink curationLink = messageContent.getCurationLink();
-				Curation curation = curationLink.getCuration();
-				NeoCuration neoCuration = curationToNeoCurationConverter.convert(curation);
-				neoCuration = neoCurationRepository.findOneByHash(neoCuration.getHash(), 1);
-				if (neoCuration == null) {
-					//no existing one, so make one to save
-					neoCuration = curationToNeoCurationConverter.convert(curation);
-				}
-				
-				NeoSample owner = neoSampleRepository.findOneByAccession(curationLink.getSample(), 0);
-				if (owner == null) {
-					//no existing sample, throw error
-					throw new RuntimeException("CurationLink refers to non-existing sample "+curationLink.getSample());
-				}
-				
-				
-				NeoCurationLink neoCurationLink = NeoCurationLink.build(neoCuration, owner, curationLink.getDomain());
-				
-				neoCurationLink = neoCurationLinkRepository.save(neoCurationLink);
-			}
-		}
+		}		
+		log.trace("Finishing save");
 	}
 }

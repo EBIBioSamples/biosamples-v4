@@ -1,9 +1,9 @@
 package uk.ac.ebi.biosamples;
 
-import java.net.URI;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import java.net.URI;
 
 @Component
 public class IntegrationProperties {
@@ -22,4 +22,9 @@ public class IntegrationProperties {
 	public URI getBiosampleSubmissionUriSampleTab() {
 		return biosampleSubmissionUriSampletab;
 	}
+
+	@Value("${biosamples.legacyxml.uri:http://localhost:8083}")
+	private URI biosampleLegaxyXmlUri;
+
+	public URI getBiosampleLegaxyXmlUri() { return biosampleLegaxyXmlUri; }
 }

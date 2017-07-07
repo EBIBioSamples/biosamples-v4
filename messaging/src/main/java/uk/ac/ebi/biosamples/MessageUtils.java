@@ -5,22 +5,31 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.AmqpAdmin;
+import org.springframework.amqp.rabbit.core.ChannelCallback;
+import org.springframework.amqp.rabbit.core.RabbitAdmin;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import com.rabbitmq.client.Channel;
 
 @Component
 public class MessageUtils {
 
+	@Autowired
+	private RabbitTemplate rabbitTemplate;
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 	
-	@Autowired
-	private AmqpAdmin admin;
 
-	public Integer getQueueCount(final String name) {
-        Properties props = admin.getQueueProperties(name);
-        Integer messageCount = Integer.valueOf(props.get("QUEUE_MESSAGE_COUNT").toString());
-        log.trace("QUEUE_MESSAGE_COUNT="+messageCount);
-        return messageCount;
+	public long getQueueCount(String queue) {
+		long count = rabbitTemplate.execute(new ChannelCallback<Long>() {
+			@Override
+			public Long doInRabbit(Channel channel) throws Exception {
+				return channel.messageCount(queue);
+			}			
+		});
+		log.info("Number of messages in "+queue+" = "+count);
+		return count;
 	}
 }

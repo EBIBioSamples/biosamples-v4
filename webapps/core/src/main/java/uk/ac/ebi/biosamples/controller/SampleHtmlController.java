@@ -2,7 +2,6 @@ package uk.ac.ebi.biosamples.controller;
 
 import java.net.URI;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -19,7 +18,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
@@ -38,7 +36,7 @@ import uk.ac.ebi.biosamples.model.SampleFacetValue;
 import uk.ac.ebi.biosamples.service.FacetService;
 import uk.ac.ebi.biosamples.service.FilterService;
 import uk.ac.ebi.biosamples.service.SamplePageService;
-import uk.ac.ebi.biosamples.service.SampleService;
+import uk.ac.ebi.biosamples.service.SampleReadService;
 
 /**
  * Primary controller for HTML operations.
@@ -54,12 +52,12 @@ public class SampleHtmlController {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 
-	private final SampleService sampleService;
+	private final SampleReadService sampleService;
 	private final SamplePageService samplePageService;
 	private final FacetService facetService;
 	private final FilterService filterService;
 
-	public SampleHtmlController(SampleService sampleService, 
+	public SampleHtmlController(SampleReadService sampleService, 
 			SamplePageService samplePageService,FacetService facetService, FilterService filterService) {
 		this.sampleService = sampleService;
 		this.samplePageService = samplePageService;
@@ -200,8 +198,8 @@ public class SampleHtmlController {
 			return "error/403";
 		}
 
-		response.setHeader(HttpHeaders.LAST_MODIFIED, String.valueOf(sample.getUpdate().toEpochSecond(ZoneOffset.UTC)));
-		response.setHeader(HttpHeaders.ETAG, String.valueOf(sample.hashCode()));
+		//response.setHeader(HttpHeaders.LAST_MODIFIED, String.valueOf(sample.getUpdate().toEpochSecond(ZoneOffset.UTC)));
+		//response.setHeader(HttpHeaders.ETAG, String.valueOf(sample.hashCode()));
 
 		model.addAttribute("sample", sample);
 		return "sample";

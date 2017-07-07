@@ -1,5 +1,6 @@
 package uk.ac.ebi.biosamples;
 
+import java.nio.charset.Charset;
 import java.time.ZoneOffset;
 import java.util.concurrent.TimeUnit;
 
@@ -17,7 +18,8 @@ import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
-import groovy.util.logging.Log;
+import com.google.common.hash.Hashing;
+
 import uk.ac.ebi.biosamples.controller.SampleRestController;
 import uk.ac.ebi.biosamples.model.Sample;
 
@@ -46,15 +48,21 @@ public class SampleRestResponseBodyAdvice implements ResponseBodyAdvice<Resource
 				|| request.getMethod().equals(HttpMethod.DELETE)) {
 
 			//modifying request, no caching
+			//coditional requests are checked earlier
 			log.info("no caching on put/post/patch/delete requests");
 			return body;
 		}
 		
 		long lastModified = body.getContent().getUpdate().toInstant(ZoneOffset.UTC).toEpochMilli();
-		String eTag = "W/\""+body.getContent().hashCode()+"\"";
+		//String eTag = "W/\""+body.getContent().hashCode()+"\"";
+		String eTag =  "\""+Hashing.sha256().newHasher()
+				.putInt(body.getContent().hashCode())
+				.putString(selectedContentType.toString(), Charset.defaultCharset())
+				.hash().toString()+"\"";
 		
 		//an ETag has to be set even on a 304 response see https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.5
-		response.getHeaders().setETag(eTag);
+		//@faulcon 28/06/17 disabled because not sure it is working correctly
+		//response.getHeaders().setETag(eTag);
 		//cache-control has to be set even on a 304
 		response.getHeaders().setCacheControl(CacheControl.maxAge(1, TimeUnit.MINUTES).getHeaderValue());
 		
@@ -74,7 +82,7 @@ public class SampleRestResponseBodyAdvice implements ResponseBodyAdvice<Resource
 		}
 		
 		
-		response.getHeaders().setLastModified(lastModified);
+		//response.getHeaders().setLastModified(lastModified);
 		
 		return body;
 	}

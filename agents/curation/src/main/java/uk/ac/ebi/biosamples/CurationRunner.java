@@ -22,7 +22,7 @@ public class CurationRunner implements ApplicationRunner {
 	public void run(ApplicationArguments args) throws Exception {
 		// as long as there are messages to read, keep this thread alive
 		// that will also keep the async message client alive too?
-		Integer messageCount = null;
+		Long messageCount = null;
 		while (biosamplesProperties.getAgentCurationStayalive() || messageCount == null || messageCount > 0) {
 			Thread.sleep(1000);
 			messageCount = messageUtils.getQueueCount(Messaging.queueToBeCurated);

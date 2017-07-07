@@ -26,14 +26,14 @@ import uk.ac.ebi.biosamples.service.ExternalReferenceResourceAssembler;
 import uk.ac.ebi.biosamples.service.ExternalReferenceService;
 import uk.ac.ebi.biosamples.service.SamplePageService;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
-import uk.ac.ebi.biosamples.service.SampleService;
+import uk.ac.ebi.biosamples.service.SampleReadService;
 
 @RestController
 @ExposesResourceFor(ExternalReference.class)
 @RequestMapping("/externalreferences")
 public class ExternalReferenceRestController {
 
-	private final SampleService sampleService;
+	private final SampleReadService sampleService;
 	private final SamplePageService samplePageService;
 	private final ExternalReferenceService externalReferenceService;
 	
@@ -44,7 +44,7 @@ public class ExternalReferenceRestController {
 	
 	private Logger log = LoggerFactory.getLogger(getClass());
 
-	public ExternalReferenceRestController(SampleService sampleService, 
+	public ExternalReferenceRestController(SampleReadService sampleService, 
 			SamplePageService samplePageService,
 			ExternalReferenceService externalReferenceService,
 			SampleResourceAssembler sampleResourceAssembler,

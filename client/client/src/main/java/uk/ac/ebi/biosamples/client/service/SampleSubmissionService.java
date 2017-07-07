@@ -36,7 +36,7 @@ public class SampleSubmissionService {
 		this.traverson = traverson;
 		this.executor = executor;
 	}
-
+	
 	/**
 	 * This will send the sample to biosamples, either by POST if it has no
 	 * accession or by PUT if the sample already has an accession associated
@@ -45,14 +45,13 @@ public class SampleSubmissionService {
 	 * @param jwt json web token authorizing access to the domain the sample is assigned to
 	 * @return
 	 */
-	public Future<Resource<Sample>> submit(Sample sample) throws RestClientException {
+	public Future<Resource<Sample>> submitAsync(Sample sample) throws RestClientException {
 		return executor.submit(new SubmitCallable(sample));
 	}
 
 	private class SubmitCallable implements Callable<Resource<Sample>> {
-		
 		private final Sample sample;
-		
+
 		public SubmitCallable(Sample sample) {
 			this.sample = sample;
 		}
@@ -66,7 +65,8 @@ public class SampleSubmissionService {
 				//don't do all this in traverson because it will get the end and then use the self link
 				//because we might PUT to something that doesn't exist (e.g. migration of data)
 				//this will cause an error. So instead manually de-template the link without getting it.
-				PagedResources<Resource<Sample>> pagedSamples = traverson.follow("samples").toObject(new ParameterizedTypeReference<PagedResources<Resource<Sample>>>(){});			
+				PagedResources<Resource<Sample>> pagedSamples = traverson.follow("samples")
+						.toObject(new ParameterizedTypeReference<PagedResources<Resource<Sample>>>(){});			
 				Link sampleLink = pagedSamples.getLink("sample");
 				if (sampleLink == null) {
 					log.info("Problem handling page "+pagedSamples);
@@ -77,38 +77,33 @@ public class SampleSubmissionService {
 				URI uri = URI.create(sampleLink.getHref());
 				
 				log.trace("PUTing to " + uri + " " + sample);
-
-				RequestEntity<Sample> requestEntity = RequestEntity.put(uri)
-						.contentType(MediaType.APPLICATION_JSON)
-						.accept(MediaTypes.HAL_JSON)
-						.body(sample);
+	
+				RequestEntity<Sample> requestEntity = RequestEntity.put(uri).contentType(MediaType.APPLICATION_JSON)
+						.accept(MediaTypes.HAL_JSON).body(sample);
 				ResponseEntity<Resource<Sample>> responseEntity = restOperations.exchange(requestEntity,
 						new ParameterizedTypeReference<Resource<Sample>>() {
 						});
-
+	
 				if (!responseEntity.getStatusCode().is2xxSuccessful()) {
 					log.error("Unable to PUT " + sample.getAccession() + " : " + responseEntity.toString());
 					throw new RuntimeException("Problem PUTing " + sample.getAccession());
 				}
 				return responseEntity.getBody();
-
+	
 			} else {
 				// samples without an existing accession should be POST
 				URI uri = URI.create(traverson.follow("samples").asLink().getHref());
-
+	
 				log.trace("POSTing to " + uri + " " + sample);
-
-				RequestEntity<Sample> requestEntity = RequestEntity.post(uri)
-						.contentType(MediaType.APPLICATION_JSON)
-						.accept(MediaTypes.HAL_JSON)
-						.body(sample);
+	
+				RequestEntity<Sample> requestEntity = RequestEntity.post(uri).contentType(MediaType.APPLICATION_JSON)
+						.accept(MediaTypes.HAL_JSON).body(sample);
 				ResponseEntity<Resource<Sample>> responseEntity = restOperations.exchange(requestEntity,
 						new ParameterizedTypeReference<Resource<Sample>>() {
 						});
-
+	
 				return responseEntity.getBody();
 			}
 		}
-		
 	}
 }

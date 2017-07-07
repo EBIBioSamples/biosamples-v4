@@ -1,10 +1,11 @@
 package uk.ac.ebi.biosamples.solr.service;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -26,7 +27,6 @@ import uk.ac.ebi.biosamples.model.Autocomplete;
 import uk.ac.ebi.biosamples.model.SampleFacet;
 import uk.ac.ebi.biosamples.model.SampleFacetsBuilder;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
-import uk.ac.ebi.biosamples.solr.SolrConfig;
 import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
 
 @Service
@@ -182,7 +182,15 @@ public class SolrSampleService {
 	
 	
 	public static String attributeTypeToField(String type) {
-		type = type.replaceAll(" ", "_");
+		//solr only allows alphanumeric field types
+		try {
+			type = Base64.getEncoder().encodeToString(type.getBytes("UTF-8"));
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(e);
+		}
+		//although its base64 encoded, that include = which solr doesn't allow
+		type = type.replaceAll("=", "_");
+		
 		type = type+"_av_ss";
 		return type;
 	}
@@ -195,9 +203,15 @@ public class SolrSampleService {
 		//strip _av
 		if (field.endsWith("_av")) {
 			field = field.substring(0, field.length()-3);			
-		}				
-		//replace _ with space
-		field = field.replace("_", " ");
+		}		
+
+		//although its base64 encoded, that include = which solr doesn't allow
+		field = field.replace("_", "=");
+		try {
+			field = new String(Base64.getDecoder().decode(field), "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(e);
+		}
 		
 		return field;
 	}

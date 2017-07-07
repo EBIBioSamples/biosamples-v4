@@ -1,6 +1,5 @@
 package uk.ac.ebi.biosamples.service;
 
-import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;

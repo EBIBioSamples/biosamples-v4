@@ -1,7 +1,10 @@
 package uk.ac.ebi.biosamples.solr.model;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -150,9 +153,56 @@ public class SolrSample {
 		sample.name = name;
 		sample.release =  release;
 		sample.update = update;
-		sample.attributeValues = attributeValues;
-		sample.attributeIris = attributeIris;
-		sample.attributeUnits = attributeUnits;
+		
+		
+		sample.attributeValues = new HashMap<>();
+		sample.attributeIris = new HashMap<>();
+		sample.attributeUnits = new HashMap<>();
+
+		if (attributeValues != null) {
+			for (String key : attributeValues.keySet()) {
+				//solr only allows alphanumeric field types
+				String base64Key;
+				try {
+					base64Key = Base64.getEncoder().encodeToString(key.getBytes("UTF-8"));
+				} catch (UnsupportedEncodingException e) {
+					throw new RuntimeException(e);
+				}
+				String safeKey = base64Key.replaceAll("=", "_");
+				sample.attributeValues.put(safeKey, attributeValues.get(key));
+			}
+		}
+
+		if (attributeIris != null) {
+			for (String key : attributeIris.keySet()) {
+				//solr only allows alphanumeric field types
+				String base64Key;
+				try {
+					base64Key = Base64.getEncoder().encodeToString(key.getBytes("UTF-8"));
+				} catch (UnsupportedEncodingException e) {
+					throw new RuntimeException(e);
+				}
+				String safeKey = base64Key.replaceAll("=", "_");
+				sample.attributeIris.put(safeKey, attributeIris.get(key));
+			}
+		}
+
+		if (attributeUnits != null) {
+			for (String key : attributeUnits.keySet()) {
+				//solr only allows alphanumeric field types
+				String base64Key;
+				try {
+					base64Key = Base64.getEncoder().encodeToString(key.getBytes("UTF-8"));
+				} catch (UnsupportedEncodingException e) {
+					throw new RuntimeException(e);
+				}
+				String safeKey = base64Key.replaceAll("=", "_");
+				sample.attributeUnits.put(safeKey, attributeUnits.get(key));
+			}
+		}
+		
+		
+		
 		
 		//TODO handle relationships too
 		//but how to do inverse?
