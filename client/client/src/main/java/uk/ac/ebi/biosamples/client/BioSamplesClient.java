@@ -156,7 +156,7 @@ public class BioSamplesClient {
 	public Iterable<Resource<Curation>> fetchCurationResourceAll() throws RestClientException {
 		return curationRetrievalService.fetchAll();
 	}
-	
+
 	public Resource<CurationLink> persistCuration(String accession, Curation curation) throws RestClientException {
 		return curationSubmissionService.persistCuration(accession, curation);
 	}
