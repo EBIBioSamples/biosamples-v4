@@ -130,6 +130,9 @@ public class SampleHtmlController {
 			}
 		}
 								
+		
+			
+		
 		model.addAttribute("text", text);		
 		model.addAttribute("start", start);
 		model.addAttribute("rows", rows);
@@ -137,11 +140,77 @@ public class SampleHtmlController {
 		model.addAttribute("facets", sampleFacets);
 		model.addAttribute("facetsuri", facetsUri);
 		model.addAttribute("filters", filtersList);
+		model.addAttribute("paginations", getPaginations(pageSample, uriBuilder));
 				
 		//TODO add "clear all facets" button
 		//TODO title of webpage
 		
 		return "samples";
+	}
+	
+	private List<Pagination> getPaginations(Page<Sample> pageSample, UriComponentsBuilder uriBuilder) {
+
+		
+		List<Pagination> paginations = new ArrayList<>();
+		
+		int pageTotal = pageSample.getTotalPages();
+		int pageCurrent = pageSample.getNumber()+1;
+
+		log.info("pageCurrent = "+pageCurrent);
+		log.info("pageTotal = "+pageTotal);
+		
+		if (pageTotal <=6) {
+			//few enough pages to fit onto a single bar
+			for (int i=1; i <= pageTotal; i++ ) {
+				paginations.add(new Pagination(i, false, pageCurrent, uriBuilder, pageSample));
+			}
+		} else {
+			//need at least one ellipsis		
+			//if we are in the first 4 or the last 4			
+			if (pageCurrent <= 4 ) {
+				paginations.add(new Pagination(1, false, pageCurrent, uriBuilder, pageSample));
+				paginations.add(new Pagination(2, false, pageCurrent, uriBuilder, pageSample));
+				paginations.add(new Pagination(3, false, pageCurrent, uriBuilder, pageSample));
+				paginations.add(new Pagination(4, false, pageCurrent, uriBuilder, pageSample));
+				paginations.add(new Pagination(5, false, pageCurrent, uriBuilder, pageSample));
+				paginations.add(new Pagination(pageTotal, true, pageCurrent, uriBuilder, pageSample));
+			} else if (pageTotal - pageCurrent <= 3) {
+				paginations.add(new Pagination(1, false, pageCurrent, uriBuilder, pageSample));
+				paginations.add(new Pagination(pageTotal-4, true, pageCurrent, uriBuilder, pageSample));
+				paginations.add(new Pagination(pageTotal-3, false, pageCurrent, uriBuilder, pageSample));
+				paginations.add(new Pagination(pageTotal-2, false, pageCurrent, uriBuilder, pageSample));
+				paginations.add(new Pagination(pageTotal-1, false, pageCurrent, uriBuilder, pageSample));
+				paginations.add(new Pagination(pageTotal, false, pageCurrent, uriBuilder, pageSample));			
+			} else {
+				//will need two sets of ellipsis
+				paginations.add(new Pagination(1, false, pageCurrent, uriBuilder, pageSample));
+				paginations.add(new Pagination(pageCurrent-1, true, pageCurrent, uriBuilder, pageSample));	
+				paginations.add(new Pagination(pageCurrent, false, pageCurrent, uriBuilder, pageSample));	
+				paginations.add(new Pagination(pageCurrent+1, false, pageCurrent, uriBuilder, pageSample));	
+				paginations.add(new Pagination(pageTotal, true, pageCurrent, uriBuilder, pageSample));
+			}
+		}
+		
+		for (Pagination pagination : paginations) {
+			log.info("FOOOMA! "+pagination.page+"\t"+pagination.url+"\t"+pagination.skip);
+		}
+				
+		return paginations;
+	}
+	
+	private static class Pagination {
+		public final int page;
+		public final String url;
+		public final boolean skip;
+		public final boolean current;
+		
+		public Pagination(int pageNo, boolean skip, int currentNo, UriComponentsBuilder uriBuilder, Page<Sample> pageSample) {
+			this.page = pageNo;
+			this.skip = skip;
+			this.current = (currentNo == pageNo);
+			this.url = uriBuilder.cloneBuilder()
+					.replaceQueryParam("start", (pageNo-1)*pageSample.getSize()).build(true).toUri().toString();
+		}
 	}
 	
 	private URI getFilterUri(UriComponentsBuilder uriBuilder, List<String> filters, String filterAdd, String filterRemove) {
@@ -155,7 +224,7 @@ public class SampleHtmlController {
 				tempFiltersList.remove(filterAdd.split(":")[0]);
 			} else {
 				//remove facet-specific filters when adding a filter-all facet
-				Iterator<String> it =tempFiltersList.iterator();
+				Iterator<String> it = tempFiltersList.iterator();
 				while (it.hasNext()) {
 					if (it.next().startsWith(filterAdd+":")) {
 						it.remove();
@@ -169,9 +238,11 @@ public class SampleHtmlController {
 		Collections.sort(tempFiltersList);
 		String[] tempFiltersArray = new String[tempFiltersList.size()];
 		tempFiltersArray = tempFiltersList.toArray(tempFiltersArray);
-		URI uri = uriBuilder.cloneBuilder().replaceQueryParam("filter", (Object[])tempFiltersArray).build().encode().toUri();
+		URI uri = uriBuilder.cloneBuilder().replaceQueryParam("filter", (Object[])tempFiltersArray).build(false).toUri();
 		return uri;
 	}
+	
+	
 
 	@GetMapping(value = "/samples/{accession}")
 	public String samplesAccession(Model model, @PathVariable String accession, HttpServletRequest request,
