@@ -1,6 +1,8 @@
 package uk.ac.ebi.biosamples.service;
 
 import java.security.Principal;
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -50,11 +52,11 @@ public class SamplePageService {
 	private SolrSampleService solrSampleService;
 	
 
-	public Page<Sample> getSamplesByText(String text, MultiValueMap<String,String> filters, 
+	public Page<Sample> getSamplesByText(String text, MultiValueMap<String,String> filters, Collection<String> domains,
 			Pageable pageable) {		
 		
 				
-		Page<SolrSample> pageSolrSample = solrSampleService.fetchSolrSampleByText(text, filters, pageable);		
+		Page<SolrSample> pageSolrSample = solrSampleService.fetchSolrSampleByText(text, filters, domains, pageable);		
 		//for each result fetch the stored version and add e.g. inverse relationships		
 		//stream process each solrSample into a sample *in parallel*
 		Page<Sample> pageSample = new PageImpl<>(StreamSupport.stream(pageSolrSample.spliterator(), true)

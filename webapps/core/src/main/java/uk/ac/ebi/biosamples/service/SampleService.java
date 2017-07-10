@@ -45,23 +45,12 @@ public class SampleService {
 	@Autowired
 	private NeoAccessionService neoAccessionService;	
 
-	@Autowired
-	private NeoSampleRepository neoSampleRepository;
-	
-	
-	//TODO use a ConversionService to manage all these
-	@Autowired
-	private NeoSampleToSampleConverter neoSampleToSampleConverter;
-	
 	
 	@Autowired 
 	private SampleValidator sampleValidator;
 	
 	@Autowired
 	private SolrSampleService solrSampleService;
-	
-	@Autowired
-	private CurationReadService curationReadService;
 
 	@Autowired
 	private AmqpTemplate amqpTemplate;

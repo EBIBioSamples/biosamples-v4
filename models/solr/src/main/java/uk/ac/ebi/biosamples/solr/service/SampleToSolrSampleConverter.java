@@ -92,7 +92,7 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 		
 		
 		
-		return SolrSample.build(sample.getName(), sample.getAccession(), releaseSolr, updateSolr,
+		return SolrSample.build(sample.getName(), sample.getAccession(), sample.getDomain(), releaseSolr, updateSolr,
 				attributeValues, attributeIris, attributeUnits);
 	}
 	

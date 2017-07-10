@@ -3,6 +3,7 @@ package uk.ac.ebi.biosamples.solr.service;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collection;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +41,7 @@ public class SolrSampleService {
 		this.solrSampleRepository = solrSampleRepository;
 	}		
 
-	public Page<SolrSample> fetchSolrSampleByText(String searchTerm, MultiValueMap<String,String> filters, Pageable pageable) {
+	public Page<SolrSample> fetchSolrSampleByText(String searchTerm, MultiValueMap<String,String> filters, Collection<String> domains, Pageable pageable) {
 		//default to search all
 		if (searchTerm == null || searchTerm.trim().length() == 0) {
 			searchTerm = "*:*";
@@ -55,7 +56,8 @@ public class SolrSampleService {
 
 		//filter out non-public
 		FilterQuery filterQuery = new SimpleFilterQuery();
-		filterQuery.addCriteria(new Criteria("release_dt").lessThan("NOW").and("release_dt").isNotNull());
+		filterQuery.addCriteria(new Criteria("release_dt").lessThan("NOW").and("release_dt").isNotNull()
+				.or(new Criteria("domain_s").in(domains)));
 		query.addFilterQuery(filterQuery);
 		
 		// return the samples from solr that match the query

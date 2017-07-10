@@ -29,6 +29,7 @@ import uk.ac.ebi.biosamples.service.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.BioSamplesAapService.SampleNotAccessibleException;
 import uk.ac.ebi.biosamples.service.FilterService;
 import uk.ac.ebi.biosamples.service.SamplePageService;
+import uk.ac.ebi.biosamples.service.SampleReadService;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 import uk.ac.ebi.biosamples.service.SampleService;
 
@@ -74,13 +75,7 @@ public class SampleRestController {
 		log.info("starting call");
 		// convert it into the format to return
 		Sample sample = null;
-		try {
-			sample = sampleService.fetch(accession);
-		} catch (IllegalArgumentException e) {
-			// did not exist, throw 404
-			//return ResponseEntity.notFound().build();
-			throw new SampleNotFoundException();
-		}
+		sample = sampleService.fetch(accession);
 
 		if (sample.getName() == null) {
 			// if it has no name, then its just created by accessioning or
@@ -88,30 +83,15 @@ public class SampleRestController {
 			// can't read it, but could put to it
 			// TODO use METHOD_NOT_ALLOWED
 			// TODO make sure "options" is correct for this
-			throw new SampleNotFoundException();
+			throw new SampleReadService.SampleNotFoundException(accession);
 		}
-
-		// check if the release date is in the future and if so return it as
-		// private
-		//if the current user belongs to a domain that owns the sample, allow it
-		if (sample.getRelease().isAfter(LocalDateTime.now())
-				&& (bioSamplesAapService.getDomains() == null || !bioSamplesAapService.getDomains().contains(sample.getDomain())) ) {
-			throw new SampleNotAccessibleException();
-		}
+		
+		bioSamplesAapService.checkAccessible(sample);
 
 		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
-
+		
 		// create the response object with the appropriate status
 		return sampleResource;
-		/*
-		return ResponseEntity.ok().lastModified(sample.getUpdate().toInstant(ZoneOffset.UTC).toEpochMilli())
-				.header(HttpHeaders.CACHE_CONTROL, CacheControl.maxAge(1, TimeUnit.MINUTES).cachePublic().getHeaderValue())
-				.eTag(String.valueOf(sample.hashCode())).contentType(MediaTypes.HAL_JSON).body(sampleResource);
-		*/
-	}
-
-	@ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "No such Sample") // 404
-	public static class SampleNotFoundException extends RuntimeException {
 	}
 
 	@ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Sample accession must match URL accession") // 400

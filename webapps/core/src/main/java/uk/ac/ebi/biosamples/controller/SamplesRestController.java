@@ -1,5 +1,6 @@
 package uk.ac.ebi.biosamples.controller;
 
+import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.service.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.FilterService;
 import uk.ac.ebi.biosamples.service.SamplePageService;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
@@ -48,6 +50,8 @@ public class SamplesRestController {
 	private final SampleReadService sampleService;
 	private final SamplePageService samplePageService;
 	private final FilterService filterService;
+	private final BioSamplesAapService bioSamplesAapService;
+
 
 	private final SampleResourceAssembler sampleResourceAssembler;
 
@@ -57,10 +61,12 @@ public class SamplesRestController {
 
 	public SamplesRestController(SampleReadService sampleService, 
 			SamplePageService samplePageService,FilterService filterService,
+			BioSamplesAapService bioSamplesAapService,
 			SampleResourceAssembler sampleResourceAssembler, EntityLinks entityLinks) {
 		this.sampleService = sampleService;
 		this.samplePageService = samplePageService;
 		this.filterService = filterService;
+		this.bioSamplesAapService = bioSamplesAapService;
 		this.sampleResourceAssembler = sampleResourceAssembler;
 		this.entityLinks = entityLinks;
 	}
@@ -73,9 +79,10 @@ public class SamplesRestController {
 			PagedResourcesAssembler<Sample> pageAssembler) {
 
 		MultiValueMap<String, String> filtersMap = filterService.getFilters(filter);
+
+		Collection<String> domains = bioSamplesAapService.getDomains();
 		
-		
-		Page<Sample> pageSample = samplePageService.getSamplesByText(text, filtersMap, page);
+		Page<Sample> pageSample = samplePageService.getSamplesByText(text, filtersMap, domains, page);
 		
 		// add the links to each individual sample on the page
 		// also adds links to first/last/next/prev at the same time

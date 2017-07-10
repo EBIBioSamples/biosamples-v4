@@ -137,9 +137,8 @@ public class RestIntegration extends AbstractIntegration {
 		}
 		
 		//now do another update to delete the relationship
-		//might as well make it public now too
 		sampleTest1 = Sample.build(sampleTest1.getName(), sampleTest1.getAccession(), sampleTest1.getDomain(),
-				LocalDateTime.of(LocalDate.of(2016, 4, 1), LocalTime.of(11, 36, 57, 0)), sampleTest1.getUpdate(),
+				LocalDateTime.of(LocalDate.of(2116, 4, 1), LocalTime.of(11, 36, 57, 0)), sampleTest1.getUpdate(),
 				sampleTest1.getCharacteristics(), new TreeSet<>(), sampleTest1.getExternalReferences());
 		Resource<Sample> resource = client.persistSampleResource(sampleTest1);
 		if (!sampleTest1.equals(resource.getContent())) {

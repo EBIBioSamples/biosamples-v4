@@ -3,7 +3,10 @@ package uk.ac.ebi.biosamples.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.ResponseStatus;
+
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.neo.model.NeoSample;
 import uk.ac.ebi.biosamples.neo.repo.NeoSampleRepository;
@@ -41,14 +44,14 @@ public class SampleReadService {
 	 */
 	//can't use a sync cache because we need to use CacheEvict
 	//@Cacheable(cacheNames=WebappProperties.fetch, key="#root.args[0]")
-	public Sample fetch(String accession) throws IllegalArgumentException {
+	public Sample fetch(String accession) throws SampleNotFoundException {
 		
 		log.info("Fetching accession from neoSampleRepository "+accession);
 		
 		// return the raw sample from the repository
 		NeoSample neoSample = neoSampleRepository.findOneByAccession(accession,1);
 		if (neoSample == null) {
-			throw new IllegalArgumentException("Unable to find sample (" + accession + ")");
+			throw new SampleNotFoundException(accession);
 		}
 		//TODO only have relationships to things that are accessible
 
@@ -62,6 +65,14 @@ public class SampleReadService {
 		
 		return sample;
 	}
-	
+
+
+	@ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "No such Sample") // 404
+	public static class SampleNotFoundException extends RuntimeException {
+
+		public SampleNotFoundException(String accession) {
+			super("Unable to find accession "+accession);
+		}
+	}
 	
 }

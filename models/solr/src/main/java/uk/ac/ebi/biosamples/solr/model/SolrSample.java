@@ -27,6 +27,8 @@ public class SolrSample {
 	protected String accession;
 	@Indexed(name="name_s", required=true, copyTo={"autocomplete_ss"})
 	protected String name; 
+	@Indexed(name="domain_s", required=true)
+	protected String domain; 
 
 	/**
 	 * Store the release date as a string so that it can be used easily by solr
@@ -145,7 +147,7 @@ public class SolrSample {
 	 * Avoid using this directly, use the SolrSampleToSampleConverter or SampleToSolrSampleConverter instead
 	 * 
 	 */
-	public static SolrSample build(String name, String accession, String release, String update, 
+	public static SolrSample build(String name, String accession, String domain, String release, String update, 
 			Map<String, List<String>> attributeValues, Map<String, List<String>> attributeIris, 
 			Map<String, List<String>> attributeUnits) {
 		SolrSample sample = new SolrSample();
@@ -153,7 +155,7 @@ public class SolrSample {
 		sample.name = name;
 		sample.release =  release;
 		sample.update = update;
-		
+		sample.domain = domain;
 		
 		sample.attributeValues = new HashMap<>();
 		sample.attributeIris = new HashMap<>();

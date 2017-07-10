@@ -4,6 +4,7 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -33,10 +34,12 @@ import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SampleFacet;
 import uk.ac.ebi.biosamples.model.SampleFacetValue;
+import uk.ac.ebi.biosamples.service.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.FacetService;
 import uk.ac.ebi.biosamples.service.FilterService;
 import uk.ac.ebi.biosamples.service.SamplePageService;
 import uk.ac.ebi.biosamples.service.SampleReadService;
+import uk.ac.ebi.biosamples.service.SampleService;
 
 /**
  * Primary controller for HTML operations.
@@ -52,17 +55,19 @@ public class SampleHtmlController {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 
-	private final SampleReadService sampleService;
+	private final SampleService sampleService;
 	private final SamplePageService samplePageService;
 	private final FacetService facetService;
 	private final FilterService filterService;
+	private final BioSamplesAapService bioSamplesAapService;
 
-	public SampleHtmlController(SampleReadService sampleService, 
-			SamplePageService samplePageService,FacetService facetService, FilterService filterService) {
+	public SampleHtmlController(SampleService sampleService, 
+			SamplePageService samplePageService,FacetService facetService, FilterService filterService,BioSamplesAapService bioSamplesAapService) {
 		this.sampleService = sampleService;
 		this.samplePageService = samplePageService;
 		this.facetService = facetService;
 		this.filterService = filterService;
+		this.bioSamplesAapService = bioSamplesAapService;
 	}
 
 	@GetMapping(value = "/")
@@ -87,9 +92,11 @@ public class SampleHtmlController {
 		}
 		
 		MultiValueMap<String, String> filtersMap = filterService.getFilters(filters);
+		
+		Collection<String> domains = bioSamplesAapService.getDomains();
 						
 		Pageable pageable = new PageRequest(start/rows, rows);
-		Page<Sample> pageSample = samplePageService.getSamplesByText(text, filtersMap, pageable);
+		Page<Sample> pageSample = samplePageService.getSamplesByText(text, filtersMap, domains, pageable);
 		//default to getting 10 values from 10 facets
 		List<SampleFacet> sampleFacets = facetService.getFacets(text, filtersMap, 10, 10);
 		
@@ -177,26 +184,16 @@ public class SampleHtmlController {
 	public String samplesAccession(Model model, @PathVariable String accession, HttpServletRequest request,
 			HttpServletResponse response) {
 		Sample sample = null;
-		try {
-			sample = sampleService.fetch(accession);
-		} catch (IllegalArgumentException e) {
-			// did not exist, throw 404
-			log.info("Returning a 404 for " + request.getRequestURL());
-			response.setStatus(HttpStatus.NOT_FOUND.value());
-			return "error/404";
-		}
+		
+		sample = sampleService.fetch(accession);
 
 		if (sample == null) {
 			// throw internal server error
 			throw new RuntimeException("Unable to retrieve " + accession);
 		}
 
-		// check if the release date is in the future and if so return it as
-		// private
-		if (sample != null && (sample.getRelease() == null || LocalDateTime.now().isBefore(sample.getRelease()))) {
-			response.setStatus(HttpStatus.FORBIDDEN.value());
-			return "error/403";
-		}
+		bioSamplesAapService.checkAccessible(sample);
+
 
 		//response.setHeader(HttpHeaders.LAST_MODIFIED, String.valueOf(sample.getUpdate().toEpochSecond(ZoneOffset.UTC)));
 		//response.setHeader(HttpHeaders.ETAG, String.valueOf(sample.hashCode()));

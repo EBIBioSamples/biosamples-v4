@@ -1,5 +1,6 @@
 package uk.ac.ebi.biosamples.service;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.service.BioSamplesAapService.SampleNotAccessibleException;
 import uk.ac.ebi.tsc.aap.client.model.Domain;
 import uk.ac.ebi.tsc.aap.client.security.UserAuthentication;
 
@@ -47,6 +49,13 @@ public class BioSamplesAapService {
 	public static class SampleNotAccessibleException extends RuntimeException {
 	}
 	
+	/**
+	 * 
+	 * Returns a set of domains that the current user has access to (uses thread-bound spring security)
+	 * Always returns a set, even if its empty if not logged in
+	 * 
+	 * @return
+	 */
 	public Set<String> getDomains() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		log.info("authentication = "+authentication);
@@ -93,6 +102,17 @@ public class BioSamplesAapService {
 		}
 	}
 	
+	/**
+	 * Function that checks if a sample has a domain the current user has access to,
+	 * or if the user only has a single domain sets the sample to that domain.
+	 * 
+	 * May return a different version of the sample, so return needs to be stored in future for that sample.
+	 * 
+	 * @param sample
+	 * @return
+	 * @throws SampleNotAccessibleException
+	 * @throws DomainMissingException
+	 */
 	public Sample handleSampleDomain(Sample sample) throws SampleNotAccessibleException, DomainMissingException {
 		
 		//get the domains the current user has access to
@@ -119,6 +139,17 @@ public class BioSamplesAapService {
 		return sample;
 	}
 
+	/**
+	 * Function that checks if a CurationLink has a domain the current user has access to,
+	 * or if the user only has a single domain sets theCurationLink to that domain.
+	 * 
+	 * May return a different version of the CurationLink, so return needs to be stored in future for that CurationLink.
+	 * 
+	 * @param sample
+	 * @return
+	 * @throws SampleNotAccessibleException
+	 * @throws DomainMissingException
+	 */
 	public CurationLink handleCurationLinkDomain(CurationLink curationLink) throws CurationLinkDomainMissingException {
 		
 		//get the domains the current user has access to
@@ -141,5 +172,17 @@ public class BioSamplesAapService {
 		}
 		
 		return curationLink;
+	}
+	
+	
+	public void checkAccessible(Sample sample) throws SampleNotAccessibleException {
+
+		if (sample.getRelease().isBefore(LocalDateTime.now())) {
+			//release date in past, accessible
+		} else if (getDomains().contains(sample.getDomain())) {
+			//if the current user belongs to a domain that owns the sample, accessible
+		} else {
+			throw new SampleNotAccessibleException();
+		}
 	}
 }
