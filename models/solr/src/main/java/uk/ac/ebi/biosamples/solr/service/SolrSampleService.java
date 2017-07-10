@@ -77,7 +77,7 @@ public class SolrSampleService {
 		
 		//filter out non-public
 		FilterQuery filterQuery = new SimpleFilterQuery();
-		filterQuery.addCriteria(new Criteria("release_dt").lessThan("NOW"));
+		filterQuery.addCriteria(new Criteria("release_dt").lessThan("NOW").and("release_dt").isNotNull());
 		query.addFilterQuery(filterQuery);
 		
 		Page<FacetFieldEntry> facetFields = solrSampleRepository.getFacetFields(query, facetPageable);
@@ -124,7 +124,7 @@ public class SolrSampleService {
 
 		//filter out non-public
 		FilterQuery filterQuery = new SimpleFilterQuery();
-		filterQuery.addCriteria(new Criteria("release_dt").lessThan("NOW"));
+		filterQuery.addCriteria(new Criteria("release_dt").lessThan("NOW").and("release_dt").isNotNull());
 		query.addFilterQuery(filterQuery);
 
 		FacetOptions facetOptions = new FacetOptions();
