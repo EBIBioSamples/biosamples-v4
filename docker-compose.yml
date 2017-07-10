@@ -208,7 +208,7 @@ services:
     - ./docker/logs/neo4j:/logs
     
   solr:
-    image: solr:6.5-alpine
+    image: solr:6.6-alpine
     ports:
     - 8983:8983
     volumes:
