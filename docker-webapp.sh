@@ -1,18 +1,30 @@
-#!/bin/bash
+##!/bin/bash
 set -e
+
+clean=
+while [ "$1" != "" ]; do
+    case $1 in
+        -c | --clean )    		clean=1
+                                ;;
+    esac
+    shift
+done
 
 #mvn -T 2C -Dmaven.test.skip=true clean package
 mvn -T 2C clean package
-
 
 docker-compose stop biosamples-webapps-core biosamples-webapps-sampletab biosamples-webapps-legacyxml mongo neo4j solr rabbitmq biosamples-agents-solr biosamples-agents-curation biosamples-agents-neo4j
 set +e
 docker-compose rm -f -v biosamples-webapps-core biosamples-webapps-sampletab biosamples-webapps-legacyxml mongo neo4j solr rabbitmq biosamples-agents-solr biosamples-agents-curation biosamples-agents-neo4j
 #cleanup any previous data
-docker volume ls -q | grep mongo_data | xargs docker volume rm
-docker volume ls -q | grep neo4j_data | xargs docker volume rm
-docker volume ls -q | grep solr_data | xargs docker volume rm
-docker volume ls -q | grep rabbitmq_data | xargs docker volume rm
+if [ -n $clean ]
+then
+	echo "Cleaning existing volumes"
+	docker volume ls -q | grep mongo_data | xargs docker volume rm
+	docker volume ls -q | grep neo4j_data | xargs docker volume rm
+	docker volume ls -q | grep solr_data | xargs docker volume rm
+	docker volume ls -q | grep rabbitmq_data | xargs docker volume rm
+fi
 #remove any images, in case of out-of-date or corrupt images
 #docker images -q | xargs -r docker rmi
 set -e

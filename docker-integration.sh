@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-./docker-webapp.sh
+./docker-webapp.sh --clean
 
 #setup arguments to use for tests
 ARGS=

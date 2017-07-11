@@ -130,9 +130,6 @@ public class SampleHtmlController {
 			}
 		}
 								
-		
-			
-		
 		model.addAttribute("text", text);		
 		model.addAttribute("start", start);
 		model.addAttribute("rows", rows);
@@ -149,15 +146,9 @@ public class SampleHtmlController {
 	}
 		
 	private Paginations getPaginations(Page<Sample> pageSample, UriComponentsBuilder uriBuilder) {
-
-		
 		
 		int pageTotal = pageSample.getTotalPages();
 		int pageCurrent = pageSample.getNumber()+1;
-
-		log.info("pageCurrent = "+pageCurrent);
-		log.info("pageTotal = "+pageTotal);
-		
 		
 		Pagination previous = null;
 		if (pageCurrent > 1) {
@@ -202,11 +193,7 @@ public class SampleHtmlController {
 				paginations.add(new Pagination(pageTotal, true, pageCurrent, uriBuilder, pageSample));
 			}
 		}
-		
-		for (Pagination pagination : paginations) {
-			log.info("FOOOMA! "+pagination.page+"\t"+pagination.url+"\t"+pagination.skip);
-		}
-				
+						
 		return paginations;
 	}
 	
