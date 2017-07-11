@@ -31,11 +31,11 @@
 				Showing	1 to 10 of 6268 results
 			</p>
 			
-			<span th:replace=":: pagination (${page.getNumber()}, ${page.getTotalPages()}, ${paginations})"></span>
+			<span th:replace=":: pagination (${paginations})"></span>
 			
 			<div class="button-grid" th:each="sample : ${page}" th:insert="fragments/samples :: result (${sample})"></div>
 			
-			<span th:replace=":: pagination (${page.getNumber()}, ${page.getTotalPages()}, ${paginations})"></span>
+			<span th:replace=":: pagination (${paginations})"></span>
 		</div>
 		<div th:if="${page.getTotalElements() == 0}" >
 			<p>No results found</p>
@@ -59,11 +59,11 @@
 		<span class="shield__key" th:text="${key}">key</span><span class="shield__value" th:text="${value}">value</span>
 	</span>
 
-	<section th:fragment="pagination (current, total, paginations)">
+	<section th:fragment="pagination (paginations)">
 		<!-- https://ebiwd.github.io/EBI-Pattern-library/sample-site/boilerplate/search-results.html -->
 		<ul class="pagination" role="navigation" aria-label="Pagination">
-			<li th:if="${current} == 1" class="pagination-previous"><a href="#" aria-label="Previous page">Previous <span class="show-for-sr">page</span></a></li>
-			<li th:if="${current} != 1" class="pagination-previous disabled">Previous <span	class="show-for-sr" >page</span></li>
+			<li th:if="${paginations.previous}" class="pagination-previous"><a th:href="${paginations.previous.url}" aria-label="Previous page">Previous <span class="show-for-sr">page</span></a></li>
+			<li th:if="!${paginations.previous}" class="pagination-previous disabled">Previous <span class="show-for-sr" >page</span></li>
 			
 			<span th:each="pagination : ${paginations}" th:remove="tag">
 				<li class="ellipsis" aria-hidden="true" th:if="${pagination.skip} == true"></li>
@@ -71,26 +71,9 @@
 				<li class=current th:if="${pagination.current}"><span class="show-for-sr">You're on	page</span><span th:text=" ${pagination.page}" th:remove="tag"></span></li>
 			</span>
 			
-			<li th:if="${current} != ${total}" class="pagination-next"><a href="#" aria-label="Next page">Next <span class="show-for-sr">page</span></a></li>
-			<li th:if="${current} == ${total}" class="pagination-next disabled">Next <span class="show-for-sr">page</span></li>
-		</ul>
-		
-		<!-- 
-		<ul class="pagination" role="navigation" aria-label="Pagination">
-			<li class="pagination-previous disabled">Previous <span	class="show-for-sr">page</span></li>
-			<li class="current"><span class="show-for-sr">You're on	page</span> 1</li>
-			<li><a href="#" aria-label="Page 2">2</a></li>
-			<li><a href="#" aria-label="Page 3">3</a></li>
-			<li><a href="#" aria-label="Page 4">4</a></li>
-			<li class="ellipsis" aria-hidden="true"></li>
-			<li><a href="#" aria-label="Page 12">12</a></li>
-			<li><a href="#" aria-label="Page 13">13</a></li>
-			<li class="pagination-next"><a href="#" aria-label="Next page">Next	<span class="show-for-sr">page</span>
-			</a></li>
-		</ul>
-		 -->
-		
-		
+			<li th:if="${paginations.next}" class="pagination-next"><a th:href="${paginations.next.url}" aria-label="Next page">Next <span class="show-for-sr">page</span></a></li>
+			<li th:if="!${paginations.next}" class="pagination-next disabled">Next <span class="show-for-sr">page</span></li>
+		</ul>		
 	</section>
 </body>
 </html>

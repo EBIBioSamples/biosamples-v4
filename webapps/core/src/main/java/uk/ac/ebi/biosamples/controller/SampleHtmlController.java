@@ -147,17 +147,29 @@ public class SampleHtmlController {
 		
 		return "samples";
 	}
-	
-	private List<Pagination> getPaginations(Page<Sample> pageSample, UriComponentsBuilder uriBuilder) {
+		
+	private Paginations getPaginations(Page<Sample> pageSample, UriComponentsBuilder uriBuilder) {
 
 		
-		List<Pagination> paginations = new ArrayList<>();
 		
 		int pageTotal = pageSample.getTotalPages();
 		int pageCurrent = pageSample.getNumber()+1;
 
 		log.info("pageCurrent = "+pageCurrent);
 		log.info("pageTotal = "+pageTotal);
+		
+		
+		Pagination previous = null;
+		if (pageCurrent > 1) {
+			previous = new Pagination(pageCurrent-1, false, pageCurrent, uriBuilder, pageSample);
+		}
+		
+		Pagination next = null;
+		if (pageCurrent < pageTotal) {
+			next = new Pagination(pageCurrent+1, false, pageCurrent, uriBuilder, pageSample);
+		}
+
+		Paginations paginations = new Paginations(pageCurrent, pageTotal, previous, next);
 		
 		if (pageTotal <=6) {
 			//few enough pages to fit onto a single bar
@@ -198,6 +210,32 @@ public class SampleHtmlController {
 		return paginations;
 	}
 	
+	private static class Paginations implements Iterable<Pagination> {
+
+		private final List<Pagination> paginations = new ArrayList<>();
+		public final Pagination previous;
+		public final Pagination next;
+		public final int current;
+		public final int total;
+		
+		public Paginations(int current, int total, Pagination previous, Pagination next) {
+			this.current = current;
+			this.total = total;
+			this.previous = previous;
+			this.next = next;
+		}
+		
+		public void add(Pagination pagination) {
+			paginations.add(pagination);
+		}
+		
+		@Override
+		public Iterator<Pagination> iterator() {
+			return paginations.iterator();
+		}
+		
+	}
+	
 	private static class Pagination {
 		public final int page;
 		public final String url;
@@ -209,7 +247,8 @@ public class SampleHtmlController {
 			this.skip = skip;
 			this.current = (currentNo == pageNo);
 			this.url = uriBuilder.cloneBuilder()
-					.replaceQueryParam("start", (pageNo-1)*pageSample.getSize()).build(true).toUri().toString();
+					.replaceQueryParam("start", (pageNo-1)*pageSample.getSize())
+					.build(true).toUri().toString();
 		}
 	}
 	
@@ -238,7 +277,10 @@ public class SampleHtmlController {
 		Collections.sort(tempFiltersList);
 		String[] tempFiltersArray = new String[tempFiltersList.size()];
 		tempFiltersArray = tempFiltersList.toArray(tempFiltersArray);
-		URI uri = uriBuilder.cloneBuilder().replaceQueryParam("filter", (Object[])tempFiltersArray).build(false).toUri();
+		URI uri = uriBuilder.cloneBuilder()
+				.replaceQueryParam("filter", (Object[])tempFiltersArray)
+				.replaceQueryParam("start") //reset back to page 1
+				.build(false).toUri();
 		return uri;
 	}
 	
