@@ -3,6 +3,8 @@ package uk.ac.ebi.biosamples.controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
@@ -10,8 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import uk.ac.ebi.biosamples.model.ResultQuery;
-import uk.ac.ebi.biosamples.model.Sort;
+import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.service.SampleService;
 
 import javax.servlet.http.HttpServletResponse;
@@ -22,6 +23,7 @@ import java.util.Map;
 
 @Controller
 public class RedirectController {
+
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 
@@ -36,31 +38,32 @@ public class RedirectController {
 
 	@GetMapping(value="/samples/{accession}")
 	public void redirectSample(@PathVariable String accession, HttpServletResponse response) throws IOException {
-		String redirectUrl = String.format("%s/samples/%s", biosamplesRedirectContext, accession);
+		String redirectUrl = String.format("%s/samples/%s.xml", biosamplesRedirectContext, accession);
 		response.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_XML.getType());
 		response.sendRedirect(redirectUrl);
 	}
 
 	@GetMapping(value="/groups/{accession:SAMEG\\d+}")
 	public void  redirectGroups(@PathVariable String accession, HttpServletResponse response) throws IOException {
-		String redirectUrl = String.format("%s/samples/%s", biosamplesRedirectContext, accession);
+		String redirectUrl = String.format("%s/samples/%s.xml", biosamplesRedirectContext, accession);
 		response.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_XML.getType());
 		response.sendRedirect(redirectUrl);
 	}
 
 	@GetMapping(value = {"/samples", "/groups"}, produces = {MediaType.TEXT_XML_VALUE})
-	public @ResponseBody String getSamples(
+	public @ResponseBody XMLResultQuery getSamples(
 			@RequestParam String query,
 			@RequestParam(defaultValue = "25") int size,
 			@RequestParam(defaultValue = "1") int page,
 			@RequestParam(defaultValue = "desc") String sort
 	) {
-		ResultQuery result = ResultQuery.fromPagedResource(sampleService.getSamples(query, page, size, Sort.forParam(sort)));
-	    return result.renderDocument();
+		PagedResources<Resource<Sample>> results = sampleService.getSamples(query, page, size, Sort.forParam(sort));
+		return XMLResultQuery.fromPagedResource(results, BioSampleEntity.SAMPLE);
+
 	}
 
 
-	// FIXME No groups is provided with the new BioSamples v4, not sure how to handle this
+//	// FIXME No groups is provided with the new BioSamples v4, not sure how to handle this
 	@GetMapping(value = {"/groupsamples/{groupAccession:SAMEG\\d+}/query={values}"}, produces = {MediaType.TEXT_XML_VALUE})
 	public @ResponseBody String getSamplesInGroup(
 			@PathVariable String groupAccession,

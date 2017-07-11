@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.http.converter.xml.MarshallingHttpMessageConverter;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import uk.ac.ebi.biosamples.model.CustomXmlError;
+import uk.ac.ebi.biosamples.model.XMLResultQuery;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -44,8 +45,9 @@ public class Application extends SpringBootServletInitializer {
 		Map<String, Object> props = new HashMap<>();
 		props.put(javax.xml.bind.Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
 		Jaxb2Marshaller jaxb2Marshaller = new Jaxb2Marshaller();
-		jaxb2Marshaller.setClassesToBeBound(CustomXmlError.class);
+		jaxb2Marshaller.setClassesToBeBound(CustomXmlError.class, XMLResultQuery.class);
 		jaxb2Marshaller.setMarshallerProperties(props);
+
 		return jaxb2Marshaller;
 	}
 }
