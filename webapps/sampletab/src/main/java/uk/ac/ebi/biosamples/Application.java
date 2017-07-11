@@ -10,6 +10,8 @@ import org.springframework.boot.web.client.RestTemplateCustomizer;
 //import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.hal.Jackson2HalModule;
@@ -26,12 +28,15 @@ import uk.ac.ebi.biosamples.client.ClientProperties;
 import uk.ac.ebi.biosamples.service.SampleValidator;
 
 @SpringBootApplication
+@ComponentScan(lazyInit = true, excludeFilters={
+		  @ComponentScan.Filter(type=FilterType.ASSIGNABLE_TYPE, value=BioSamplesClient.class)})
 public class Application extends SpringBootServletInitializer {
 
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);
 	}
-
+	
+/*
 	@Bean
 	public BioSamplesClient bioSamplesClient(ClientProperties clientProperties, 
 			RestTemplateBuilder restTemplateBuilder, SampleValidator sampleValidator) {
@@ -60,4 +65,5 @@ public class Application extends SpringBootServletInitializer {
 		
 		return new BioSamplesClient(clientProperties, restTemplateBuilder, sampleValidator);
 	}
+*/
 }
