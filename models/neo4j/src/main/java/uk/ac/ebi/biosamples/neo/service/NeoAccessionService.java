@@ -43,6 +43,8 @@ public class NeoAccessionService {
 	}
 
 	public String generateAccession() {
+		log.info("generating an accession");
+		
 		// inspired by Optimistic Loops of
 		// https://docs.mongodb.com/v3.0/tutorial/create-an-auto-incrementing-field/
 		String accessionCandidate = null;
@@ -54,18 +56,23 @@ public class NeoAccessionService {
 			} catch (InterruptedException e1) {
 				throw new RuntimeException(e1);
 			}
+			
+			log.info("testing accession "+accessionCandidate);
+			
 			try {
 				neoSampleRepository.testNewAccession(accessionCandidate);
 			} catch (DataIntegrityViolationException e) {
 				accessionCandidate = null;
 			}
 		}
+		log.info("generated accession "+accessionCandidate);
 		return accessionCandidate;
 	}
 
 	@Scheduled(fixedDelay = 100)
 	public void prepareAccessions() {
 		while (accessionCandidateQueue.remainingCapacity() > 0) {
+			log.info("Adding more accessions to queue");
 			String accessionCandidate = neoProperties.getAccessionPrefix() + accessionCandidateCounter;
 			// if the accession already exists, skip it
 			if (neoSampleRepository.findOneByAccession(accessionCandidate,0) != null) {
@@ -78,6 +85,7 @@ public class NeoAccessionService {
 				//put it into the queue, move on to next
 				accessionCandidateCounter += 1;
 			}
+			log.info("Added more accessions to queue");
 		}
 	}
 }

@@ -1,6 +1,5 @@
 package uk.ac.ebi.biosamples.service;
 
-import java.time.LocalDateTime;
 import java.util.Collection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,11 +16,7 @@ import uk.ac.ebi.biosamples.MessageContent;
 import uk.ac.ebi.biosamples.Messaging;
 import uk.ac.ebi.biosamples.model.Autocomplete;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.mongo.model.MongoSubmission;
-import uk.ac.ebi.biosamples.mongo.repo.MongoSubmissionRepository;
-import uk.ac.ebi.biosamples.neo.repo.NeoSampleRepository;
 import uk.ac.ebi.biosamples.neo.service.NeoAccessionService;
-import uk.ac.ebi.biosamples.neo.service.modelconverter.NeoSampleToSampleConverter;
 import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
 import uk.ac.ebi.biosamples.WebappProperties;
 
@@ -39,18 +34,7 @@ public class SampleService {
 	private Logger log = LoggerFactory.getLogger(getClass());
 	
 	@Autowired
-	private MongoSubmissionRepository mongoSubmissionRepository;
-	
-	@Autowired
 	private NeoAccessionService neoAccessionService;	
-
-	@Autowired
-	private NeoSampleRepository neoSampleRepository;
-	
-	
-	//TODO use a ConversionService to manage all these
-	@Autowired
-	private NeoSampleToSampleConverter neoSampleToSampleConverter;
 	
 	
 	@Autowired 
@@ -58,9 +42,6 @@ public class SampleService {
 	
 	@Autowired
 	private SolrSampleService solrSampleService;
-	
-	@Autowired
-	private CurationReadService curationReadService;
 
 	@Autowired
 	private AmqpTemplate amqpTemplate;

@@ -13,7 +13,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.CustomLocalDateTimeDeserializer;
 import uk.ac.ebi.biosamples.service.CustomLocalDateTimeSerializer;
 
