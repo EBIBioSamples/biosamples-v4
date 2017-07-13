@@ -50,4 +50,5 @@ public class Application extends SpringBootServletInitializer {
 
 		return jaxb2Marshaller;
 	}
+
 }

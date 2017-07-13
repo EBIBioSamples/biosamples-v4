@@ -8,6 +8,7 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,6 +19,7 @@ import uk.ac.ebi.biosamples.service.SampleService;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
+import java.security.InvalidParameterException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -56,8 +58,11 @@ public class RedirectController {
 			@RequestParam(defaultValue = "25") int size,
 			@RequestParam(defaultValue = "1") int page,
 			@RequestParam(defaultValue = "desc") String sort
-	) {
-		PagedResources<Resource<Sample>> results = sampleService.getSamples(query, page, size, Sort.forParam(sort));
+	) throws MethodArgumentNotValidException {
+	    if (page < 1) {
+	        throw new InvalidParameterException("Page parameter has to be 1-based");
+		}
+		PagedResources<Resource<Sample>> results = sampleService.getPagedSamples(query, page - 1, size, Sort.forParam(sort));
 		return XMLResultQuery.fromPagedResource(results, BioSampleEntity.SAMPLE);
 
 	}
@@ -75,7 +80,7 @@ public class RedirectController {
         int size  = Integer.parseInt(queryParams.getOrDefault("size", "25"));
         int page  = Integer.parseInt(queryParams.getOrDefault("page", "1"));
         Sort sort = Sort.forParam(queryParams.getOrDefault("sort","desc"));
-		ResultQuery result = ResultQuery.fromPagedResource(sampleService.getSamples(query,page, size, sort));
+		ResultQuery result = ResultQuery.fromPagedResource(sampleService.getPagedSamples(query,page, size, sort));
 		return result.renderDocument();
 	}
 

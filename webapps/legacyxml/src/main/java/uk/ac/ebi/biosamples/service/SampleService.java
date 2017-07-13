@@ -20,7 +20,7 @@ public class SampleService {
     }
 
     // FIXME The sorting is not implemented in the samples endpoint in the core, do we actually use it?
-    public PagedResources<Resource<Sample>> getSamples(String query, int start, int size, Sort sortMethod) {
+    public PagedResources<Resource<Sample>> getPagedSamples(String query, int start, int size, Sort sortMethod) {
         return client.fetchPagedSamples(query, start, size);
     }
 
