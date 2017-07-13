@@ -11,13 +11,13 @@ import org.springframework.hateoas.Resource;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ResultQuery {
+public class LegacyResultQuery {
 
-    private final Namespace XMLNS = Namespace.getNamespace("http://www.ebi.ac.uk/biosamples/ResultQuery/1.0");
+    private final Namespace XMLNS = Namespace.getNamespace("http://www.ebi.ac.uk/biosamples/LegacyResultQuery/1.0");
 
     private Document doc;
 
-    private ResultQuery(PagedResources<Resource<Sample>> sampleResources) {
+    private LegacyResultQuery(PagedResources<Resource<Sample>> sampleResources) {
         this.doc = startDocument();
         Element root = getDocumentRoot();
 
@@ -72,7 +72,7 @@ public class ResultQuery {
     }
 
     private Element getDocumentRoot() {
-        Element root = new Element("ResultQuery", XMLNS);
+        Element root = new Element("LegacyResultQuery", XMLNS);
 
         Namespace xsi = Namespace.getNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");
         root.addNamespaceDeclaration(xsi);
@@ -93,8 +93,8 @@ public class ResultQuery {
         return xmlOutput.outputString(this.doc);
     }
 
-    public static ResultQuery fromPagedResource(PagedResources<Resource<Sample>> pagedResources) {
-        return new ResultQuery(pagedResources);
+    public static LegacyResultQuery fromPagedResource(PagedResources<Resource<Sample>> pagedResources) {
+        return new LegacyResultQuery(pagedResources);
     }
 
 }

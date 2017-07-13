@@ -8,24 +8,24 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@XmlRootElement(name = "ResultQuery")//, namespace = "http://www.ebi.ac.uk/biosamples/ResultQuery/1.0")
+@XmlRootElement(name = "ResultQuery")
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(propOrder = {"summaryInfo", "sampleList"})
-public class XMLResultQuery {
+public class BioSampleResultQuery {
 
-    public XMLResultQuery() {}
+    public BioSampleResultQuery() {}
 
     @XmlElement(name="BioSample")
-    private Collection<ResultEntry> sampleList;
+    protected Collection<ResultEntry> sampleList;
 
     @XmlElement(name="SummaryInfo")
-    private SummaryInfo summaryInfo;
+    protected SummaryInfo summaryInfo;
 
-    private void setSampleList(Collection<ResultEntry> sampleList) {
+    protected void setSampleList(Collection<ResultEntry> sampleList) {
         this.sampleList = sampleList;
     }
 
-    private void setSummaryInfo(PagedResources.PageMetadata pageMetadata) {
+    protected void setSummaryInfo(PagedResources.PageMetadata pageMetadata) {
         this.summaryInfo = SummaryInfo.fromPageMetadata(pageMetadata);
     }
 
@@ -33,20 +33,22 @@ public class XMLResultQuery {
         return this.sampleList;
     }
 
-    public static XMLResultQuery fromPagedResource(PagedResources<Resource<Sample>> resources, BioSampleEntity entity) {
 
-        XMLResultQuery resultQuery = new XMLResultQuery();
+    public SummaryInfo getSummaryInfo() {
+        return summaryInfo;
+    }
+
+    public static BioSampleResultQuery fromPagedResource(PagedResources<Resource<Sample>> resources) {
+
+        BioSampleResultQuery resultQuery = new BioSampleResultQuery();
         resultQuery.setSummaryInfo(resources.getMetadata());
         List<ResultEntry> sampleList =resources.getContent().stream().map((Resource<Sample> s) -> {
             String accession = s.getContent().getAccession();
-            if (entity.equals(BioSampleEntity.GROUP)) {
-                return new BioSampleGroupResultEntry(accession);
-            } else {
-                return new BioSampleResultEntry(accession);
-            }
+            return new ResultEntry(accession);
         }).collect(Collectors.toList());
         resultQuery.setSampleList(sampleList);
         return resultQuery;
     }
+
 }
 

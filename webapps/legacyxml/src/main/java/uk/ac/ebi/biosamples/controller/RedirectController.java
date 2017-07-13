@@ -8,7 +8,6 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -52,21 +51,35 @@ public class RedirectController {
 		response.sendRedirect(redirectUrl);
 	}
 
-	@GetMapping(value = {"/samples", "/groups"}, produces = {MediaType.TEXT_XML_VALUE})
-	public @ResponseBody XMLResultQuery getSamples(
+	@GetMapping(value = {"/samples"}, produces = {MediaType.TEXT_XML_VALUE})
+	public @ResponseBody
+	BioSampleResultQuery getSamples(
 			@RequestParam String query,
 			@RequestParam(defaultValue = "25") int size,
 			@RequestParam(defaultValue = "1") int page,
 			@RequestParam(defaultValue = "desc") String sort
-	) throws MethodArgumentNotValidException {
+	) throws InvalidParameterException {
 	    if (page < 1) {
 	        throw new InvalidParameterException("Page parameter has to be 1-based");
 		}
 		PagedResources<Resource<Sample>> results = sampleService.getPagedSamples(query, page - 1, size, Sort.forParam(sort));
-		return XMLResultQuery.fromPagedResource(results, BioSampleEntity.SAMPLE);
-
+        return BioSampleResultQuery.fromPagedResource(results);
 	}
 
+	@GetMapping(value = {"/groups"}, produces = {MediaType.TEXT_XML_VALUE})
+	public @ResponseBody
+	BioSampleGroupResultQuery getGroups(
+			@RequestParam String query,
+			@RequestParam(defaultValue = "25") int size,
+			@RequestParam(defaultValue = "1") int page,
+			@RequestParam(defaultValue = "desc") String sort
+	) throws InvalidParameterException {
+		if (page < 1) {
+			throw new InvalidParameterException("Page parameter has to be 1-based");
+		}
+		PagedResources<Resource<Sample>> results = sampleService.getPagedSamples(query, page - 1, size, Sort.forParam(sort));
+        return BioSampleGroupResultQuery.fromPagedResource(results);
+	}
 
 //	// FIXME No groups is provided with the new BioSamples v4, not sure how to handle this
 	@GetMapping(value = {"/groupsamples/{groupAccession:SAMEG\\d+}/query={values}"}, produces = {MediaType.TEXT_XML_VALUE})
@@ -80,7 +93,7 @@ public class RedirectController {
         int size  = Integer.parseInt(queryParams.getOrDefault("size", "25"));
         int page  = Integer.parseInt(queryParams.getOrDefault("page", "1"));
         Sort sort = Sort.forParam(queryParams.getOrDefault("sort","desc"));
-		ResultQuery result = ResultQuery.fromPagedResource(sampleService.getPagedSamples(query,page, size, sort));
+		LegacyResultQuery result = LegacyResultQuery.fromPagedResource(sampleService.getPagedSamples(query,page, size, sort));
 		return result.renderDocument();
 	}
 

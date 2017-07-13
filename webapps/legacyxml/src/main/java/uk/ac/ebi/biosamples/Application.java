@@ -8,9 +8,11 @@ import org.springframework.boot.web.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.converter.xml.MarshallingHttpMessageConverter;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
+import uk.ac.ebi.biosamples.model.BioSampleResultQuery;
 import uk.ac.ebi.biosamples.model.CustomXmlError;
-import uk.ac.ebi.biosamples.model.XMLResultQuery;
+import uk.ac.ebi.biosamples.model.BioSampleGroupResultQuery;
 
+import javax.xml.bind.Marshaller;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -43,9 +45,12 @@ public class Application extends SpringBootServletInitializer {
 	@Bean(name = "jaxb2Marshaller")
 	public Jaxb2Marshaller getJaxb2Marshaller() {
 		Map<String, Object> props = new HashMap<>();
-		props.put(javax.xml.bind.Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+		props.put(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+		props.put(Marshaller.JAXB_SCHEMA_LOCATION,"http://www.ebi.ac.uk/biosamples/SampleGroupExport/1.0 http://www.ebi.ac.uk/biosamples/assets/xsd/v1.0/ResultQuerySampleSchema.xsd");
 		Jaxb2Marshaller jaxb2Marshaller = new Jaxb2Marshaller();
-		jaxb2Marshaller.setClassesToBeBound(CustomXmlError.class, XMLResultQuery.class);
+		jaxb2Marshaller.setClassesToBeBound(CustomXmlError.class,
+				BioSampleGroupResultQuery.class,
+				BioSampleResultQuery.class);
 		jaxb2Marshaller.setMarshallerProperties(props);
 
 		return jaxb2Marshaller;
