@@ -7,7 +7,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlRootElement(name="SummaryInfo")
-@XmlType( propOrder = {"from", "to", "pageNumber", "pageSize", "total"})
+@XmlType( propOrder = {"total", "from", "to", "pageNumber", "pageSize"})
 public class SummaryInfo {
 
     private PagedResources.PageMetadata pageMetadata;
@@ -19,7 +19,7 @@ public class SummaryInfo {
 
     @XmlElement(name = "From")
     long getFrom() {
-        return getPageNumber() * getPageSize() + 1;
+        return this.pageMetadata.getNumber() * getPageSize() + 1;
     }
     @XmlElement(name = "To")
     long getTo() {
@@ -39,7 +39,7 @@ public class SummaryInfo {
     }
 
     private long getPageEnd() {
-        return (getPageNumber()+ 1) * getPageSize();
+        return getPageNumber() * getPageSize();
     }
 
     public void setPageMetadata(PagedResources.PageMetadata pageMetadata) {

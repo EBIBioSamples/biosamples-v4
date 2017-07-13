@@ -3,20 +3,19 @@ package uk.ac.ebi.biosamples.model;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.*;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @XmlRootElement(name = "ResultQuery")//, namespace = "http://www.ebi.ac.uk/biosamples/ResultQuery/1.0")
 @XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(propOrder = {"summaryInfo", "sampleList"})
 public class XMLResultQuery {
 
     public XMLResultQuery() {}
 
+    @XmlElement(name="BioSample")
     private Collection<ResultEntry> sampleList;
 
     @XmlElement(name="SummaryInfo")
