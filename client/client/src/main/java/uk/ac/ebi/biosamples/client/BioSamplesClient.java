@@ -1,18 +1,5 @@
 package uk.ac.ebi.biosamples.client;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.StreamSupport;
-
-import javax.annotation.PreDestroy;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -20,10 +7,8 @@ import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.client.Traverson;
-import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-
 import uk.ac.ebi.biosamples.client.service.CurationSubmissionService;
 import uk.ac.ebi.biosamples.client.service.SampleRetrievalService;
 import uk.ac.ebi.biosamples.client.service.SampleSubmissionService;
@@ -31,6 +16,14 @@ import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.SampleValidator;
+
+import javax.annotation.PreDestroy;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.*;
+import java.util.stream.StreamSupport;
 
 /**
  * This is the primary class for interacting with BioSamples.
@@ -40,7 +33,6 @@ import uk.ac.ebi.biosamples.service.SampleValidator;
  * @author faulcon
  *
  */
-@Service
 public class BioSamplesClient {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
@@ -100,7 +92,20 @@ public class BioSamplesClient {
 	public Iterable<Optional<Resource<Sample>>> fetchSampleResourceAll(Iterable<String> accessions) throws RestClientException {
 		return sampleRetrievalService.fetchAll(accessions);
 	}
-	
+
+
+	/**
+	 * Search for samples using pagination. This method should be used for specific pagination needs. When in need for
+	 * all results from a search, prefer the iterator implementation.
+	 * @param text
+	 * @param page
+	 * @param size
+	 * @return a paginated results of samples relative to the search term
+	 */
+	public PagedResources<Resource<Sample>> fetchPagedSamples(String text, int page, int size) {
+		return sampleRetrievalService.search(text, page, size);
+	}
+
 	public Optional<Sample> fetchSample(String accession) throws RestClientException {
 		Optional<Resource<Sample>> resource = fetchSampleResource(accession);
 		if (resource.isPresent()) {
@@ -202,8 +207,4 @@ public class BioSamplesClient {
 		return persistResource(sample).getContent();
 	}
 
-	@Deprecated
-	public PagedResources<Resource<Sample>> fetchPagedSamples(String text, int startPage, int size) {
-		return sampleRetrievalService.fetchPaginated(text, startPage, size);
-	}
 }

@@ -55,13 +55,13 @@ public class SampleRetrievalService {
 		return executor.submit(new FetchCallable(accession));
 	}
 
-	@Deprecated
-	public PagedResources<Resource<Sample>> fetchPaginated(String text, int page, int size) {		
+//	@Deprecated
+	public PagedResources<Resource<Sample>> search(String text, int page, int size) {
 		URI uri = UriComponentsBuilder.fromUriString(traverson.follow("samples").asLink().getHref())
 				.queryParam("text", !text.isEmpty() ? text : "*:*").queryParam("page", page).queryParam("size", size)
 				.build().toUri();
 
-		RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaType.APPLICATION_JSON).build();
+		RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
 		ResponseEntity<PagedResources<Resource<Sample>>> responseEntity = restOperations.exchange(requestEntity,
 				new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {
 				});
