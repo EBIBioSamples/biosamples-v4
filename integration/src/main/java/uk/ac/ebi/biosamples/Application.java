@@ -12,8 +12,6 @@ import uk.ac.ebi.biosamples.client.BioSamplesClient;
 //@SpringBootApplication
 @Configuration
 @EnableAutoConfiguration
-@ComponentScan(lazyInit = true, excludeFilters={
-		  @ComponentScan.Filter(type=FilterType.ASSIGNABLE_TYPE, value=BioSamplesClient.class)})
 public class Application {
 
 

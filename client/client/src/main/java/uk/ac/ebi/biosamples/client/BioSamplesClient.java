@@ -40,7 +40,6 @@ import uk.ac.ebi.biosamples.service.SampleValidator;
  * @author faulcon
  *
  */
-@Service
 public class BioSamplesClient {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
