@@ -1,9 +1,6 @@
 package uk.ac.ebi.biosamples;
 
-import java.nio.charset.Charset;
-import java.time.ZoneOffset;
-import java.util.concurrent.TimeUnit;
-
+import com.google.common.hash.Hashing;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.MethodParameter;
@@ -17,11 +14,12 @@ import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
-
-import com.google.common.hash.Hashing;
-
 import uk.ac.ebi.biosamples.controller.SampleRestController;
 import uk.ac.ebi.biosamples.model.Sample;
+
+import java.nio.charset.Charset;
+import java.time.ZoneOffset;
+import java.util.concurrent.TimeUnit;
 
 @RestControllerAdvice(assignableTypes = SampleRestController.class)
 public class SampleRestResponseBodyAdvice implements ResponseBodyAdvice<Resource<Sample>> {
@@ -30,7 +28,7 @@ public class SampleRestResponseBodyAdvice implements ResponseBodyAdvice<Resource
 
 	@Override
 	public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
-		return true;
+		return returnType.getMethod().getReturnType() == Resource.class;
 	}
 
 	@Override

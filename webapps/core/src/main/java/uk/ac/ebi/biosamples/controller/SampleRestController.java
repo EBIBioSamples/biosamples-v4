@@ -1,7 +1,5 @@
 package uk.ac.ebi.biosamples.controller;
 
-import java.net.URI;
-import java.time.LocalDateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.EntityLinks;
@@ -11,22 +9,15 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.FilterService;
 import uk.ac.ebi.biosamples.service.SamplePageService;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 import uk.ac.ebi.biosamples.service.SampleService;
+
+import java.net.URI;
+import java.time.LocalDateTime;
 
 /**
  * Primary controller for REST operations both in JSON and XML and both read and
@@ -100,6 +91,13 @@ public class SampleRestController {
 				.header(HttpHeaders.CACHE_CONTROL, CacheControl.maxAge(1, TimeUnit.MINUTES).cachePublic().getHeaderValue())
 				.eTag(String.valueOf(sample.hashCode())).contentType(MediaTypes.HAL_JSON).body(sampleResource);
 		*/
+	}
+
+	@CrossOrigin(methods = RequestMethod.GET)
+	@GetMapping(value = "/{accession}", produces = { MediaType.APPLICATION_XML_VALUE })
+	public Sample getSampleXml(@PathVariable String accession) {
+	    Sample sampleContent = this.getSampleHal(accession).getContent();
+	    return sampleContent;
 	}
 
 	@ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "No such Sample") // 404
