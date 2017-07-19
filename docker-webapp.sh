@@ -24,9 +24,6 @@ then
 	docker volume ls -q | grep neo4j_data | xargs docker volume rm
 	docker volume ls -q | grep solr_data | xargs docker volume rm
 	docker volume ls -q | grep rabbitmq_data | xargs docker volume rm
-
-	echo "Creating neo4j indexes"
-	docker-compose run --rm --service-ports biosamples-agents-neo4j java -jar agents-neo4j-4.0.0-SNAPSHOT.jar --biosamples.agent.neo4j.stayalive=false --spring.data.neo4j.indexes.auto=assert
 fi
 #remove any images, in case of out-of-date or corrupt images
 #docker images -q | xargs -r docker rmi
@@ -47,6 +44,14 @@ echo "checking rabbitmq is up"
 ./http-status-check -u http://localhost:15672 -t 30
 echo "checking mongo is up"
 ./http-status-check -u http://localhost:27017 -t 30
+
+if [ -n $clean ]
+then
+        echo "Creating neo4j indexes"
+        docker-compose run --rm --service-ports biosamples-agents-neo4j java -jar agents-neo4j-4.0.0-SNAPSHOT.jar --biosamples.agent.neo4j.stayalive=false --spring.data.neo4j.indexes.auto=assert
+fi
+
+
 
 docker-compose up -d biosamples-webapps-core biosamples-webapps-sampletab biosamples-webapps-legacyxml
 echo "checking webapps-core is up"
