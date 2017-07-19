@@ -193,5 +193,28 @@ public class Curation implements Comparable<Curation>{
 		
 		return new Curation(sortedPreAttributes, sortedPostAttributes, sortedPreExternal, sortedPostExternal, hash);
 	}
+
+    public static Curation build(Collection<Attribute> attributesPre, 
+			Collection<Attribute> attributesPost) {
+    	return build(attributesPre, attributesPost, null, null);
+    }
+
+    public static Curation build(Attribute attributePre, 
+			Attribute attributePost) {
+    	
+    	if (attributePre == null && attributePost == null) {
+    		throw new IllegalArgumentException("Must specify pre and/or post attribute");
+    	} else if (attributePre == null) {
+    		//insertion curation
+    		return build(null, Collections.singleton(attributePost), null, null);
+    	} else if (attributePost == null) {
+    		//deletion curation
+    		return build(Collections.singleton(attributePre), null, null, null);
+    	} else {
+    		//one-to-one edit curation
+    		return build(Collections.singleton(attributePre), Collections.singleton(attributePost), null, null);
+    	}
+    }
+    
 }
 

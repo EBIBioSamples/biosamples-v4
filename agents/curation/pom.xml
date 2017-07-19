@@ -12,7 +12,12 @@
 		<relativePath>../../</relativePath>
 	</parent>
 
-	<dependencies>
+	<dependencies>	
+		<dependency>
+			<groupId>uk.ac.ebi.biosamples</groupId>
+			<artifactId>biosamples-spring-boot-starter</artifactId>
+			<version>${bsd2017.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>properties</artifactId>
@@ -20,17 +25,7 @@
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
-			<artifactId>models-core</artifactId>
-			<version>${bsd2017.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>messaging</artifactId>
-			<version>${bsd2017.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>uk.ac.ebi.biosamples</groupId>
-			<artifactId>client</artifactId>
 			<version>${bsd2017.version}</version>
 		</dependency>
 		<dependency>
