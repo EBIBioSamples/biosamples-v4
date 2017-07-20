@@ -15,7 +15,15 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import uk.ac.ebi.biosamples.MessageContent;
 import uk.ac.ebi.biosamples.Messaging;
 import uk.ac.ebi.biosamples.model.Autocomplete;
+import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.mongo.repo.MongoExternalReferenceRepository;
+import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
+import uk.ac.ebi.biosamples.mongo.service.ExternalReferenceToMongoExternalReferenceConverter;
+import uk.ac.ebi.biosamples.mongo.service.MongoAccessionService;
+import uk.ac.ebi.biosamples.mongo.service.MongoExternalReferenceToExternalReferenceConverter;
+import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
+import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
 import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
 import uk.ac.ebi.biosamples.WebappProperties;
 
@@ -33,7 +41,19 @@ public class SampleService {
 	private Logger log = LoggerFactory.getLogger(getClass());
 	
 	@Autowired
-	private NeoAccessionService neoAccessionService;	
+	private MongoAccessionService mongoAccessionService;
+	@Autowired
+	private MongoSampleRepository mongoSampleRepository;
+	@Autowired
+	private MongoExternalReferenceRepository mongoExternalReferenceRepository;				
+	@Autowired
+	private MongoSampleToSampleConverter mongoSampleToSampleConverter;
+	@Autowired
+	private SampleToMongoSampleConverter sampleToMongoSampleConverter;			
+	@Autowired
+	private MongoExternalReferenceToExternalReferenceConverter mongoExternalReferenceToExternalReferenceConverter;
+	@Autowired
+	private ExternalReferenceToMongoExternalReferenceConverter externalReferenceToMongoExternalReferenceConverter;
 	
 	
 	@Autowired 
@@ -84,17 +104,19 @@ public class SampleService {
 		
 		//assign it a new accession		
 		if (!sample.hasAccession()) {
-
 			//TODO see if there is an existing accession for this user and name
-			String accession = null;
-			accession = neoAccessionService.generateAccession();
-			//update the sample object with the assigned accession
-			sample = Sample.build(sample.getName(), accession, sample.getRelease(), sample.getUpdate(),
-					sample.getCharacteristics(), sample.getRelationships(), sample.getExternalReferences());
+			sample = mongoAccessionService.generateAccession(sample);
+		} else {
+			sample = mongoSampleToSampleConverter.convert(mongoSampleRepository.save(sampleToMongoSampleConverter.convert(sample)));
+		}
+		
+		//put any external references in the external reference collection
+		for (ExternalReference externalReference : sample.getExternalReferences()) {
+			mongoExternalReferenceRepository.save(externalReferenceToMongoExternalReferenceConverter.convert(externalReference));
 		}
 		
 		// send a message for storage and further processing
-		amqpTemplate.convertAndSend(Messaging.exchangeForIndexing, "", MessageContent.build(sample, false));
+		amqpTemplate.convertAndSend(Messaging.exchangeForIndexingSolr, "", MessageContent.build(sample, false));
 		//return the sample in case we have modified it i.e accessioned
 		return sample;
 	}

@@ -9,6 +9,12 @@ import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.MessageContent;
 import uk.ac.ebi.biosamples.Messaging;
 import uk.ac.ebi.biosamples.model.CurationLink;
+import uk.ac.ebi.biosamples.mongo.repo.MongoCurationLinkRepository;
+import uk.ac.ebi.biosamples.mongo.repo.MongoCurationRepository;
+import uk.ac.ebi.biosamples.mongo.service.CurationLinkToMongoCurationLinkConverter;
+import uk.ac.ebi.biosamples.mongo.service.CurationToMongoCurationConverter;
+import uk.ac.ebi.biosamples.mongo.service.MongoCurationLinkToCurationLinkConverter;
+import uk.ac.ebi.biosamples.mongo.service.MongoCurationToCurationConverter;
 
 @Service
 public class CurationPersistService {
@@ -18,8 +24,26 @@ public class CurationPersistService {
 	@Autowired
 	private AmqpTemplate amqpTemplate;
 	
+	@Autowired
+	private MongoCurationLinkRepository mongoCurationLinkRepository;
+	@Autowired
+	private CurationLinkToMongoCurationLinkConverter curationLinkToMongoCurationLinkConverter;
+	@Autowired
+	private MongoCurationLinkToCurationLinkConverter mongoCurationLinkToCurationLinkConverter;
+	
+	@Autowired
+	private MongoCurationRepository mongoCurationRepository;
+	@Autowired
+	private CurationToMongoCurationConverter curationToMongoCurationConverter;
+	@Autowired
+	private MongoCurationToCurationConverter mongoCurationToCurationConverter;
 	
 	public CurationLink store(CurationLink curationLink) {
+
+		mongoCurationRepository.save(curationToMongoCurationConverter.convert(curationLink.getCuration()));
+		curationLink = mongoCurationLinkToCurationLinkConverter.convert(mongoCurationLinkRepository.save(curationLinkToMongoCurationLinkConverter.convert(curationLink)));
+		
+		
 		amqpTemplate.convertAndSend(Messaging.exchangeForIndexing, "", MessageContent.build(curationLink, false));
 		return curationLink;
 	}

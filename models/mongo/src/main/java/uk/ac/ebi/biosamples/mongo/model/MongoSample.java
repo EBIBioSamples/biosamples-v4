@@ -42,10 +42,6 @@ public class MongoSample {
 	protected SortedSet<Relationship> relationships;
 	protected SortedSet<ExternalReference> externalReferences;
 
-	private MongoSample() {
-		
-	}
-
 	@JsonIgnore
 	public boolean hasAccession() {
 		if ( accession != null && accession.trim().length() != 0) {

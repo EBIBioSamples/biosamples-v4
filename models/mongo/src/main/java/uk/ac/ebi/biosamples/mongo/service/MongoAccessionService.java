@@ -1,5 +1,6 @@
 package uk.ac.ebi.biosamples.mongo.service;
 
+import java.util.Iterator;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import com.mongodb.ErrorCategory;
 import com.mongodb.MongoWriteException;
 
+import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.mongo.MongoProperties;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
@@ -25,6 +27,11 @@ public class MongoAccessionService {
 
 	@Autowired
 	private MongoSampleRepository mongoSampleRepository;
+	
+	@Autowired
+	private SampleToMongoSampleConverter sampleToMongoSampleConverter;
+	@Autowired
+	private MongoSampleToSampleConverter mongoSampleToSampleConverter;
 
 	private BlockingQueue<String> accessionCandidateQueue;;
 	private long accessionCandidateCounter;
@@ -38,7 +45,15 @@ public class MongoAccessionService {
 		accessionCandidateCounter = mongoProperties.getAccessionMinimum();
 	}
 
-	public MongoSample accessionAndInsert(MongoSample sample) {
+
+
+	public Sample generateAccession(Sample sample) {
+		MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);
+		mongoSample = accessionAndInsert(mongoSample);
+		return mongoSampleToSampleConverter.convert(mongoSample);
+	}
+	
+	private MongoSample accessionAndInsert(MongoSample sample) {
 		log.info("generating an accession");
 		// inspired by Optimistic Loops of
 		// https://docs.mongodb.com/v3.0/tutorial/create-an-auto-incrementing-field/
@@ -71,7 +86,19 @@ public class MongoAccessionService {
 	}
 
 	@Scheduled(fixedDelay = 100)
-	public void prepareAccessions() {
+	public void prepareAccessions() {	
+		//check that all accessions are still available		
+		Iterator<String> it = accessionCandidateQueue.iterator();
+		while (it.hasNext()) {
+			String accessionCandidate = it.next();
+			MongoSample sample = mongoSampleRepository.findOne(accessionCandidate);
+			if (sample != null) {
+				log.warn("Removing accession "+accessionCandidate+" from queue because now assigned");
+				it.remove();
+			}
+		}
+	
+		
 		while (accessionCandidateQueue.remainingCapacity() > 0) {
 			log.info("Adding more accessions to queue");
 			String accessionCandidate = mongoProperties.getAccessionPrefix() + accessionCandidateCounter;
