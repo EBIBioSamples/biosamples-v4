@@ -105,6 +105,11 @@ public class RestCurationIntegration extends AbstractIntegration {
 	}
 
 	private void testCurations() {
+		
+		
+		
+		
+		/*
 		//TODO use client
 		URI uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUri())
 				.pathSegment("curations").build().toUri();
@@ -124,9 +129,9 @@ public class RestCurationIntegration extends AbstractIntegration {
 		if (paged.getContent().size() == 0) {
 			throw new RuntimeException("No curations in list");
 		}
+		*/
 		
-		
-		for (Resource<Curation> curationResource : paged) {
+		for (Resource<Curation> curationResource : client.fetchCurationResourceAll()) {
 			Link selfLink = curationResource.getLink("self");
 			Link samplesLink = curationResource.getLink("samples");
 
