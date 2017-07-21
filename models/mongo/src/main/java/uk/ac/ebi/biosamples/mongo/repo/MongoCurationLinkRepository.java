@@ -13,5 +13,5 @@ public interface MongoCurationLinkRepository extends MongoRepository<MongoCurati
 	Page<MongoCurationLink> findByCurationHash(String hash, Pageable page);
 	
 	
-	Page<String> findDistrinctSampleByCurationHash(String hash, Pageable page);
+	Page<MongoCurationLink> findDistinctCurationLinkByCurationHash(String hash, Pageable page);
 }
