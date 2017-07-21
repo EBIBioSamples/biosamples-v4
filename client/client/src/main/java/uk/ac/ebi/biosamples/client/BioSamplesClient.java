@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import uk.ac.ebi.biosamples.client.service.CurationRetrievalService;
 import uk.ac.ebi.biosamples.client.service.CurationSubmissionService;
 import uk.ac.ebi.biosamples.client.service.SampleRetrievalService;
 import uk.ac.ebi.biosamples.client.service.SampleSubmissionService;
@@ -46,6 +47,7 @@ public class BioSamplesClient {
 	
 	private final SampleRetrievalService sampleRetrievalService;
 	private final SampleSubmissionService sampleSubmissionService;
+	private final CurationRetrievalService curationRetrievalService;
 	private final CurationSubmissionService curationSubmissionService;
 	
 	private final SampleValidator sampleValidator;
@@ -63,6 +65,7 @@ public class BioSamplesClient {
 		
 		sampleRetrievalService = new SampleRetrievalService(restOperations, traverson, threadPoolExecutor);
 		sampleSubmissionService = new SampleSubmissionService(restOperations, traverson, threadPoolExecutor);
+		curationRetrievalService = new CurationRetrievalService(restOperations, traverson, threadPoolExecutor);
 		curationSubmissionService = new CurationSubmissionService(restOperations, traverson, threadPoolExecutor);
 		
 		this.sampleValidator = sampleValidator;
@@ -150,6 +153,10 @@ public class BioSamplesClient {
 			results.add(sample);
 		}
 		return results;
+	}
+
+	public Iterable<Resource<Curation>> fetchCurationResourceAll() throws RestClientException {
+		return curationRetrievalService.fetchAll();
 	}
 	
 	public Resource<CurationLink> persistCuration(String accession, Curation curation) throws RestClientException {
