@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -119,13 +120,13 @@ public class Accession implements ApplicationRunner{
 
 			SortedSet<Attribute> attributes = new TreeSet<>();
 			//commented out, this makes loading into neo4j slow
-			//attributes.add(Attribute.build("other", "migrated from accession database at "+LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)));
-			//attributes.add(Attribute.build("user accession", userAccession));
-			//attributes.add(Attribute.build("submission accession", submissionAccession));
-			//attributes.add(Attribute.build("deleted", Boolean.toString(deleted)));
+			attributes.add(Attribute.build("other", "migrated from accession database at "+LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)));
+			attributes.add(Attribute.build("user accession", userAccession));
+			attributes.add(Attribute.build("submission accession", submissionAccession));
+			attributes.add(Attribute.build("deleted", Boolean.toString(deleted)));
 			
 			Sample sample = Sample.build(name, accession, release, update, attributes, null, null);
-			bioSamplesClient.persist(sample);
+			bioSamplesClient.persistSample(sample);
 			return null;
 		}
 	}
