@@ -118,11 +118,18 @@ public class RestIntegration extends AbstractIntegration {
 			throw new RuntimeException("No existing "+sampleTest2.getAccession());
 		}
 		Sample sampleTest2Rest = optional.get().getContent();
+		//check other details i.e relationship
+		if (!sampleTest2.equals(sampleTest2Rest)) {
+			log.warn("expected: "+sampleTest2);
+			log.warn("found: "+sampleTest2Rest);
+			throw new RuntimeException("No matching "+sampleTest2.getAccession());
+		}
 		
 		//check utf -8
 		if (!sampleTest2Rest.getCharacteristics().contains(Attribute.build("UTF-8 test", "αβ", null, null))) {
 			throw new RuntimeException("Unable to find UTF-8 characters");
 		}
+		
 		
 		//now do another update to delete the relationship
 		//might as well make it public now too
