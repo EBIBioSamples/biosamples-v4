@@ -85,7 +85,7 @@ public class MongoAccessionService {
 		return sample;
 	}
 
-	@Scheduled(fixedDelay = 100)
+	@Scheduled(fixedDelay = 1000)
 	public void prepareAccessions() {	
 		//check that all accessions are still available		
 		Iterator<String> it = accessionCandidateQueue.iterator();
