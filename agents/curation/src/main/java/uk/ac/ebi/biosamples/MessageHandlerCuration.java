@@ -107,8 +107,8 @@ public class MessageHandlerCuration {
         string = string.replaceAll("\uff09", ") "); //full-width right parenthesis
         string = string.replaceAll("\uff08", " ("); //full-width left parenthesis
         
-        //replace underscores with spaces
-        string = string.replaceAll("_", " ");
+        //replace underscores with spaces, maybe?
+        //string = string.replaceAll("_", " ");
 
         //trim extra whitespace at start and end
         string = string.trim();
