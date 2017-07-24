@@ -20,11 +20,6 @@ public class MessageConfig {
 	public Queue getQueueToBeIndexedSolr() {
 		return new Queue(Messaging.queueToBeIndexedSolr, true);
 	}
-
-	@Bean
-	public Queue getQueueToBeIndexedNeo4J() {
-		return new Queue(Messaging.queueToBeIndexedNeo4J, true);
-	}
 	
 	@Bean
 	public Queue getQueueToBeCurated() {
@@ -43,10 +38,6 @@ public class MessageConfig {
 		return new FanoutExchange(Messaging.exchangeForIndexingSolr, true, false);
 	}
 
-	@Bean
-	public FanoutExchange getExchangeForIndexingNeo4J() {
-		return new FanoutExchange(Messaging.exchangeForIndexingNeo4J, true, false);
-	}
 
 	@Bean
 	public FanoutExchange getExchangeForCuration() {
@@ -58,12 +49,7 @@ public class MessageConfig {
 
 	@Bean
 	public Binding bindingForIndexing() {
-		return BindingBuilder.bind(getExchangeForIndexingNeo4J()).to(getExchangeForIndexing());
-	}
-
-	@Bean
-	public Binding bindingForIndexingNeo4J() {
-		return BindingBuilder.bind(getQueueToBeIndexedNeo4J()).to(getExchangeForIndexingNeo4J());
+		return BindingBuilder.bind(getExchangeForIndexingSolr()).to(getExchangeForIndexing());
 	}
 
 	@Bean
