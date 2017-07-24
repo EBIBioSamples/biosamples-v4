@@ -40,9 +40,16 @@ public class CurationPersistService {
 	
 	public CurationLink store(CurationLink curationLink) {
 
-		mongoCurationRepository.save(curationToMongoCurationConverter.convert(curationLink.getCuration()));
-		curationLink = mongoCurationLinkToCurationLinkConverter.convert(mongoCurationLinkRepository.save(curationLinkToMongoCurationLinkConverter.convert(curationLink)));
-		
+		//TODO do this as a trigger on the curation link repo
+		//if it already exists, no need to save
+		if (mongoCurationRepository.findOne(curationLink.getCuration().getHash()) == null) {
+			mongoCurationRepository.save(curationToMongoCurationConverter.convert(curationLink.getCuration()));
+		}
+
+		//if it already exists, no need to save
+		if (mongoCurationLinkRepository.findOne(curationLink.getHash()) == null) {
+			curationLink = mongoCurationLinkToCurationLinkConverter.convert(mongoCurationLinkRepository.save(curationLinkToMongoCurationLinkConverter.convert(curationLink)));
+		}
 		
 		amqpTemplate.convertAndSend(Messaging.exchangeForIndexing, "", MessageContent.build(curationLink, false));
 		return curationLink;

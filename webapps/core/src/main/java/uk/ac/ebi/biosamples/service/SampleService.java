@@ -110,13 +110,17 @@ public class SampleService {
 			sample = mongoSampleToSampleConverter.convert(mongoSampleRepository.save(sampleToMongoSampleConverter.convert(sample)));
 		}
 		
+		//TODO do this as a trigger on the sample repo
 		//put any external references in the external reference collection
 		for (ExternalReference externalReference : sample.getExternalReferences()) {
-			mongoExternalReferenceRepository.save(externalReferenceToMongoExternalReferenceConverter.convert(externalReference));
+			//if it already exists, no need to save
+			if (mongoExternalReferenceRepository.findOne(externalReference.getHash()) == null) {
+				mongoExternalReferenceRepository.save(externalReferenceToMongoExternalReferenceConverter.convert(externalReference));
+			}
 		}
 		
 		// send a message for storage and further processing
-		amqpTemplate.convertAndSend(Messaging.exchangeForIndexingSolr, "", MessageContent.build(sample, false));
+		amqpTemplate.convertAndSend(Messaging.exchangeForIndexing, "", MessageContent.build(sample, false));
 		//return the sample in case we have modified it i.e accessioned
 		return sample;
 	}
