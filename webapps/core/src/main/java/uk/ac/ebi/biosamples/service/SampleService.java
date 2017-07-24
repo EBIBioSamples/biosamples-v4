@@ -43,17 +43,11 @@ public class SampleService {
 	@Autowired
 	private MongoAccessionService mongoAccessionService;
 	@Autowired
-	private MongoSampleRepository mongoSampleRepository;
-	@Autowired
-	private MongoExternalReferenceRepository mongoExternalReferenceRepository;				
+	private MongoSampleRepository mongoSampleRepository;			
 	@Autowired
 	private MongoSampleToSampleConverter mongoSampleToSampleConverter;
 	@Autowired
 	private SampleToMongoSampleConverter sampleToMongoSampleConverter;			
-	@Autowired
-	private MongoExternalReferenceToExternalReferenceConverter mongoExternalReferenceToExternalReferenceConverter;
-	@Autowired
-	private ExternalReferenceToMongoExternalReferenceConverter externalReferenceToMongoExternalReferenceConverter;
 	
 	
 	@Autowired 
@@ -110,16 +104,9 @@ public class SampleService {
 			sample = mongoSampleToSampleConverter.convert(mongoSampleRepository.save(sampleToMongoSampleConverter.convert(sample)));
 		}
 		
-		//TODO do this as a trigger on the sample repo
-		//put any external references in the external reference collection
-		for (ExternalReference externalReference : sample.getExternalReferences()) {
-			//if it already exists, no need to save
-			if (mongoExternalReferenceRepository.findOne(externalReference.getHash()) == null) {
-				mongoExternalReferenceRepository.save(externalReferenceToMongoExternalReferenceConverter.convert(externalReference));
-			}
-		}
 		
 		// send a message for storage and further processing
+		//TODO as a event listener
 		amqpTemplate.convertAndSend(Messaging.exchangeForIndexing, "", MessageContent.build(sample, false));
 		//return the sample in case we have modified it i.e accessioned
 		return sample;

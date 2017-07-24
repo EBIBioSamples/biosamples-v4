@@ -8,6 +8,7 @@ import java.util.TreeSet;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -39,8 +40,8 @@ public class MongoSample {
 	protected LocalDateTime update;
 
 	protected SortedSet<Attribute> attributes;
-	protected SortedSet<Relationship> relationships;
-	protected SortedSet<ExternalReference> externalReferences;
+	protected SortedSet<MongoRelationship> relationships;
+	protected SortedSet<MongoExternalReference> externalReferences;
 
 	@JsonIgnore
 	public boolean hasAccession() {
@@ -71,11 +72,11 @@ public class MongoSample {
 		return attributes;
 	}
 
-	public SortedSet<Relationship> getRelationships() {
+	public SortedSet<MongoRelationship> getRelationships() {
 		return relationships;
 	}
 
-	public SortedSet<ExternalReference> getExternalReferences() {
+	public SortedSet<MongoExternalReference> getExternalReferences() {
 		return externalReferences;
 	}
 
@@ -130,8 +131,8 @@ public class MongoSample {
     		@JsonProperty("release") LocalDateTime release, 
     		@JsonProperty("update") LocalDateTime update, 
     		@JsonProperty("attributes") Set<Attribute> attributes, 
-    		@JsonProperty("relationships") Set<Relationship> relationships, 
-    		@JsonProperty("externalReferences") SortedSet<ExternalReference> externalReferences) {
+    		@JsonProperty("relationships") Set<MongoRelationship> relationships, 
+    		@JsonProperty("externalReferences") SortedSet<MongoExternalReference> externalReferences) {
 		
 		MongoSample sample = new MongoSample();
 		
@@ -139,25 +140,19 @@ public class MongoSample {
 		sample.name = name;
 		sample.release = release;
 		sample.update = update;
-		
-		if (attributes == null || attributes.size() == 0) {
-			sample.attributes = null;
-		} else {
-			sample.attributes = new TreeSet<>();
+
+		sample.attributes = new TreeSet<>();
+		if (attributes != null && attributes.size() > 0) {
 			sample.attributes.addAll(attributes);
 		}
 
-		if (relationships == null || relationships.size() == 0) {
-			sample.relationships = null;
-		} else {
-			sample.relationships = new TreeSet<>();
+		sample.relationships = new TreeSet<>();
+		if (relationships != null || relationships.size() > 0) {
 			sample.relationships.addAll(relationships);
 		}
 
-		if (externalReferences == null || externalReferences.size() == 0) {
-			sample.externalReferences = null;
-		} else {
-			sample.externalReferences = new TreeSet<>();
+		sample.externalReferences = new TreeSet<>();
+		if (externalReferences != null || externalReferences.size() > 0) {
 			sample.externalReferences.addAll(externalReferences);
 		}	
 		

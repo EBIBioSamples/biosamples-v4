@@ -23,11 +23,11 @@ public class SampleReadService {
 	private Logger log = LoggerFactory.getLogger(getClass());
 	
 	@Autowired
-	private MongoSampleRepository neoSampleRepository;
+	private MongoSampleRepository mongoSampleRepository;
 	
 	//TODO use a ConversionService to manage all these
 	@Autowired
-	private MongoSampleToSampleConverter neoSampleToSampleConverter;
+	private MongoSampleToSampleConverter mongoSampleToSampleConverter;
 	
 	@Autowired
 	private CurationReadService curationReadService;
@@ -46,14 +46,14 @@ public class SampleReadService {
 		log.info("Fetching accession from neoSampleRepository "+accession);
 		
 		// return the raw sample from the repository
-		MongoSample mongoSample = neoSampleRepository.findOne(accession);
+		MongoSample mongoSample = mongoSampleRepository.findOne(accession);
 		if (mongoSample == null) {
 			throw new IllegalArgumentException("Unable to find sample (" + accession + ")");
 		}
 		//TODO only have relationships to things that are accessible
 
 		// convert it into the format to return
-		Sample sample = neoSampleToSampleConverter.convert(mongoSample);
+		Sample sample = mongoSampleToSampleConverter.convert(mongoSample);
 		
 		//add curation from a set of users
 		//TODO limit curation to a set of users (possibly empty set)

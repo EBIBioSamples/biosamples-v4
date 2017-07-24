@@ -24,6 +24,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
+import uk.ac.ebi.biosamples.mongo.model.MongoExternalReference;
+import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 
 @RunWith(SpringRunner.class)
@@ -52,11 +54,11 @@ public class MongoSerializationTest {
 		attributes.add(Attribute.build("organism part", "lung", null, null));
 		attributes.add(Attribute.build("organism part", "heart", null, null));
 		
-		SortedSet<Relationship> relationships = new TreeSet<>();
-		relationships.add(Relationship.build("TEST1", "derived from", "TEST2"));
+		SortedSet<MongoRelationship> relationships = new TreeSet<>();
+		relationships.add(MongoRelationship.build("TEST1", "derived from", "TEST2"));
 		
-		SortedSet<ExternalReference> externalReferences = new TreeSet<>();
-		externalReferences.add(ExternalReference.build("http://www.google.com"));
+		SortedSet<MongoExternalReference> externalReferences = new TreeSet<>();
+		externalReferences.add(MongoExternalReference.build("http://www.google.com"));
 
 		return MongoSample.build(name, accession, release, update, attributes, relationships, externalReferences);
 	}
