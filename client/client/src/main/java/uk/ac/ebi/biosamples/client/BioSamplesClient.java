@@ -71,18 +71,15 @@ public class BioSamplesClient {
 		this.sampleValidator = sampleValidator;
 	}
 
-
-    
     @PreDestroy
-    public void shutdownBioSamplesClientTaskExecutor() {
-    	if (threadPoolExecutor != null) {
-    		threadPoolExecutor.shutdownNow();
-    		try {
-				threadPoolExecutor.awaitTermination(1, TimeUnit.MINUTES);
-			} catch (InterruptedException e) {
-				throw new RuntimeException(e);
-			}
-    	}
+    public void close() {
+    	log.info("Closing thread pool");
+		threadPoolExecutor.shutdownNow();
+		try {
+			threadPoolExecutor.awaitTermination(1, TimeUnit.MINUTES);
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		}
     }
     
 	public Optional<Resource<Sample>> fetchSampleResource(String accession) throws RestClientException {
