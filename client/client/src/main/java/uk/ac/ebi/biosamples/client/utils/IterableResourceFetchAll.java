@@ -14,6 +14,7 @@ import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.client.Traverson;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -27,6 +28,7 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
 	private final RestOperations restOperations;
 	private final String[] rels;
 	private final ParameterizedTypeReference<PagedResources<Resource<T>>> parameterizedTypeReference;
+	private final MultiValueMap<String,String> params;
 	
 	/**
 	 * ParameterizedTypeReference must be ParameterizedTypeReference<PagedResources<Resource<T>>> but this
@@ -39,17 +41,20 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
 	 * @param rels
 	 */
 	public IterableResourceFetchAll(Traverson traverson, RestOperations restOperations, 
-			ParameterizedTypeReference<PagedResources<Resource<T>>> parameterizedTypeReference, String... rels) {
+			ParameterizedTypeReference<PagedResources<Resource<T>>> parameterizedTypeReference, 
+			MultiValueMap<String,String> params, String... rels) {
 		this.traverson = traverson;
 		this.restOperations = restOperations;
 		this.rels = rels;
 		this.parameterizedTypeReference = parameterizedTypeReference;
+		this.params = params;
 	}
 	
 	public Iterator<Resource<T>> iterator() {			
 		//get the first page
 		//TODO allow sample page size to be customised in property
-		URI uri = UriComponentsBuilder.fromHttpUrl(traverson.follow(rels).asLink().getHref()).queryParam("size", "1000").build().toUri();
+		URI uri = UriComponentsBuilder.fromHttpUrl(traverson.follow(rels).asLink().getHref())
+				.queryParams(params).queryParam("size", "1000").build().toUri();
 		RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
 		ResponseEntity<PagedResources<Resource<T>>> responseEntity = restOperations.exchange(requestEntity,
 				parameterizedTypeReference);

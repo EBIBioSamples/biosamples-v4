@@ -9,11 +9,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
+import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
+
 public class CustomLocalDateTimeSolrSerializer extends StdSerializer<LocalDateTime> {
 
-	
-	DateTimeFormatter solrFormatter = DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss'Z'");
-	
+		
 	public CustomLocalDateTimeSolrSerializer() {
 		this(null);
 	}
@@ -25,6 +25,6 @@ public class CustomLocalDateTimeSolrSerializer extends StdSerializer<LocalDateTi
 	@Override
 	public void serialize(LocalDateTime value, JsonGenerator gen, SerializerProvider arg2)
 			throws IOException, JsonProcessingException {
-		gen.writeString(solrFormatter.format(value));
+		gen.writeString(SolrSampleService.solrFormatter.format(value));
 	}
 }

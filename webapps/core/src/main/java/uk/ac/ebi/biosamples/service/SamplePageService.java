@@ -1,5 +1,6 @@
 package uk.ac.ebi.biosamples.service;
 
+import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -48,8 +49,9 @@ public class SamplePageService {
 	
 
 	//@Cacheable(cacheNames=WebappProperties.getSamplesByText, sync=true)
-	public Page<Sample> getSamplesByText(String text, MultiValueMap<String,String> filters, Pageable pageable) {		
-		Page<SolrSample> pageSolrSample = solrSampleService.fetchSolrSampleByText(text, filters, pageable);		
+	public Page<Sample> getSamplesByText(String text, MultiValueMap<String,String> filters, 
+			LocalDateTime after, LocalDateTime before, Pageable pageable) {		
+		Page<SolrSample> pageSolrSample = solrSampleService.fetchSolrSampleByText(text, filters, after, before, pageable);		
 		//for each result fetch the stored version and add e.g. inverse relationships		
 		//stream process each solrSample into a sample *in parallel*
 		Page<Sample> pageSample = new PageImpl<>(StreamSupport.stream(pageSolrSample.spliterator(), true)
@@ -57,10 +59,8 @@ public class SamplePageService {
 				pageable,pageSolrSample.getTotalElements()); 
 				
 		return pageSample;
-	}
-	
+	}	
 
-	//@Cacheable(cacheNames=WebappProperties.getSamplesOfExternalReference, sync=true)
 	public Page<Sample> getSamplesOfExternalReference(String urlHash, Pageable pageable) {
 		Page<NeoSample> pageNeoSample = neoSampleRepository.findByExternalReferenceUrlHash(urlHash, pageable);
 		//get them in greater depth
@@ -70,7 +70,6 @@ public class SamplePageService {
 		return pageSample;
 	}
 
-	//@Cacheable(cacheNames=WebappProperties.getSamplesOfCuration, sync=true)
 	public Page<Sample> getSamplesOfCuration(String hash, Pageable pageable) {
 		Page<NeoSample> pageNeoSample = neoSampleRepository.findByCurationHash(hash, pageable);
 		//get them in greater depth
@@ -79,7 +78,6 @@ public class SamplePageService {
 		Page<Sample> pageSample = pageNeoSample.map(neoSampleToSampleConverter);
 		return pageSample;
 	}
-
 	
 	
 }

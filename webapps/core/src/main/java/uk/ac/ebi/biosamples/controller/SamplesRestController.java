@@ -1,5 +1,7 @@
 package uk.ac.ebi.biosamples.controller;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -29,6 +31,7 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.FilterService;
 import uk.ac.ebi.biosamples.service.SamplePageService;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
+import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
 import uk.ac.ebi.biosamples.service.SampleReadService;
 
 /**
@@ -69,13 +72,32 @@ public class SamplesRestController {
 	@GetMapping(produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
 	public ResponseEntity<PagedResources<Resource<Sample>>> searchHal(
 			@RequestParam(name = "text", required = false) String text,
+			@RequestParam(name = "updatedafter", required = false) String updatedAfter,
+			@RequestParam(name = "updatedbefore", required = false) String updatedBefore,
 			@RequestParam(name = "filter", required = false) String[] filter, Pageable page,
 			PagedResourcesAssembler<Sample> pageAssembler) {
 
 		MultiValueMap<String, String> filtersMap = filterService.getFilters(filter);
 		
+		LocalDateTime updatedAfterDate = null;
+		if (updatedAfter != null) {
+			try {
+				updatedAfterDate = LocalDateTime.parse(updatedAfter, SolrSampleService.solrFormatter);
+			} catch (DateTimeParseException e) {
+				//do nothing
+			}
+		}
+
+		LocalDateTime updatedBeforeDate = null;
+		if (updatedBefore != null) {
+			try {
+				updatedBeforeDate = LocalDateTime.parse(updatedBefore, SolrSampleService.solrFormatter);
+			} catch (DateTimeParseException e) {
+				//do nothing
+			}
+		}
 		
-		Page<Sample> pageSample = samplePageService.getSamplesByText(text, filtersMap, page);
+		Page<Sample> pageSample = samplePageService.getSamplesByText(text, filtersMap, updatedAfterDate, updatedBeforeDate, page);
 		
 		// add the links to each individual sample on the page
 		// also adds links to first/last/next/prev at the same time

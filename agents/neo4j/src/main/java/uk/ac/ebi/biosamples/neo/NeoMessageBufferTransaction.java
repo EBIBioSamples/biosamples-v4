@@ -88,7 +88,7 @@ public class NeoMessageBufferTransaction {
 					neoCuration = neoCurationRepository.save(neoCuration);
 					
 					NeoSample neoSample = neoSampleRepository.findOneByAccession(messageContent.getCurationLink().getSample(),1);							
-					NeoCurationLink neoCurationLink = NeoCurationLink.build(neoCuration, neoSample);
+					NeoCurationLink neoCurationLink = NeoCurationLink.build(neoCuration, neoSample, messageContent.getCurationLink().getCreated());
 					neoCurationLink = neoCurationLinkRepository.save(neoCurationLink);
 				}
 			}

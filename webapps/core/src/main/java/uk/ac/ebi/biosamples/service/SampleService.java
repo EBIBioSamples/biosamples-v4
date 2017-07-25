@@ -1,5 +1,6 @@
 package uk.ac.ebi.biosamples.service;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,7 +94,14 @@ public class SampleService {
 					sample.getCharacteristics(), sample.getRelationships(), sample.getExternalReferences());
 		}
 		
+		//update update date
+		//TODO put in eventlistener
+		sample = Sample.build(sample.getName(), sample.getAccession(), sample.getRelease(), LocalDateTime.now(),
+				sample.getCharacteristics(), sample.getRelationships(), sample.getExternalReferences());
+		
+		
 		// send a message for storage and further processing
+		//TODO put in eventlistener
 		amqpTemplate.convertAndSend(Messaging.exchangeForIndexing, "", MessageContent.build(sample, false));
 		//return the sample in case we have modified it i.e accessioned
 		return sample;

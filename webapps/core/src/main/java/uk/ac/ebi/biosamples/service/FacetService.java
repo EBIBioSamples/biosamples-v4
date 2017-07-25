@@ -25,6 +25,7 @@ public class FacetService {
 		Pageable facetPageable = new PageRequest(0,noOfFacets);
 		Pageable facetValuePageable = new PageRequest(0,noOfFacetValues);
 		//TODO if a facet is enabled as a filter, then that value will be the only filter displayed
-		return solrSampleService.getFacets(text, filters, facetPageable, facetValuePageable);
+		//TODO allow update date range
+		return solrSampleService.getFacets(text, filters, null, null, facetPageable, facetValuePageable);
 	}
 }
