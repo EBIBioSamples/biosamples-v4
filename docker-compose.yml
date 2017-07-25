@@ -26,6 +26,7 @@ services:
     - spring.rabbitmq.host=rabbitmq
     - spring.jackson.serialization-inclusion=non_null
     - spring.jackson.serialization.WRITE_NULL_MAP_VALUES=false
+    - spring.jackson.serialization.indent_output=true
     #Configure root path to server from
     - server.servlet.context-path=/biosamples/beta
     - server.context-path=/biosamples/beta
@@ -102,6 +103,7 @@ services:
     - biosamples.client.uri=http://biosamples-webapps-core:8080/biosamples/beta
     - server.servlet.context-path=/biosamples/beta/xml
     - server.context-path=/biosamples/beta/xml
+    - spring.jackson.serialization.indent_output=true
     - logging.file=/logs/webapps-legacyxml.log
     - endpoints.shutdown.enabled=true
     - endpoints.shutdown.sensitive=false

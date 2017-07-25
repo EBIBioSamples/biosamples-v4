@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-clean=
+clean=0
 while [ "$1" != "" ]; do
     case $1 in
         -c | --clean )    		clean=1
@@ -17,7 +17,8 @@ docker-compose stop biosamples-webapps-core biosamples-webapps-sampletab biosamp
 set +e
 docker-compose rm -f -v biosamples-webapps-core biosamples-webapps-sampletab biosamples-webapps-legacyxml mongo neo4j solr rabbitmq biosamples-agents-solr biosamples-agents-curation biosamples-agents-neo4j
 #cleanup any previous data
-if [ -n $clean ]
+echo "The clean value is $clean"
+if [ $clean == 1 ]
 then
 	echo "Cleaning existing volumes"
 	docker volume ls -q | grep mongo_data | xargs docker volume rm

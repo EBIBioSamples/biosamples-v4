@@ -1,10 +1,8 @@
 package uk.ac.ebi.biosamples;
 
-import java.util.concurrent.Executor;
-
+import com.github.benmanes.caffeine.cache.CaffeineSpec;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-//import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
@@ -15,14 +13,15 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.servlet.handler.MappedInterceptor;
-
-import com.github.benmanes.caffeine.cache.CaffeineSpec;
-
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.neo.NeoProperties;
 import uk.ac.ebi.biosamples.neo.repo.NeoSampleRepository;
 import uk.ac.ebi.biosamples.neo.service.NeoAccessionService;
 import uk.ac.ebi.biosamples.xml.XmlSampleHttpMessageConverter;
+
+import java.util.concurrent.Executor;
+
+//import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 
 //@SpringBootApplication
 @Configuration
@@ -35,7 +34,7 @@ public class Application extends SpringBootServletInitializer {
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);
 	}
-	
+
 	@Bean
 	public MappedInterceptor getCacheHeaderMappedInterceptor() {
 	    return new MappedInterceptor(new String[]{"/**"}, new CacheControlInterceptor());
@@ -44,8 +43,8 @@ public class Application extends SpringBootServletInitializer {
 	@Bean
 	public HttpMessageConverter<Sample> getXmlSampleHttpMessageConverter() {
 		return new XmlSampleHttpMessageConverter();
-	}	
-    
+	}
+
     @Bean(name = "threadPoolTaskExecutor")
     public Executor threadPoolTaskExecutor() {
     	ThreadPoolTaskExecutor ex = new ThreadPoolTaskExecutor();
