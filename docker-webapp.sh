@@ -13,7 +13,7 @@ done
 #mvn -T 2C -Dmaven.test.skip=true clean package
 mvn -T 2C clean package
 
-docker-compose stop biosamples-webapps-core biosamples-webapps-sampletab biosamples-webapps-legacyxml mongo neo4j solr rabbitmq biosamples-agents-solr biosamples-agents-curation biosamples-agents-neo4j
+docker-compose stop biosamples-webapps-core biosamples-webapps-sampletab biosamples-webapps-legacyxml mongo neo4j solr rabbitmq biosamples-agents-solr biosamples-agents-curation
 set +e
 docker-compose rm -f -v biosamples-webapps-core biosamples-webapps-sampletab biosamples-webapps-legacyxml mongo neo4j solr rabbitmq biosamples-agents-solr biosamples-agents-curation biosamples-agents-neo4j
 #cleanup any previous data
@@ -21,7 +21,6 @@ if [ -n $clean ]
 then
 	echo "Cleaning existing volumes"
 	docker volume ls -q | grep mongo_data | xargs docker volume rm
-	docker volume ls -q | grep neo4j_data | xargs docker volume rm
 	docker volume ls -q | grep solr_data | xargs docker volume rm
 	docker volume ls -q | grep rabbitmq_data | xargs docker volume rm
 fi
@@ -38,19 +37,10 @@ docker-compose build
 docker-compose up -d solr neo4j rabbitmq mongo
 echo "checking solr is up"
 ./http-status-check -u http://localhost:8983 -t 30
-echo "checking neo4j is up"
-./http-status-check -u http://localhost:7474 -t 30
 echo "checking rabbitmq is up"
 ./http-status-check -u http://localhost:15672 -t 30
 echo "checking mongo is up"
 ./http-status-check -u http://localhost:27017 -t 30
-
-if [ -n $clean ]
-then
-        echo "Creating neo4j indexes"
-        docker-compose run --rm --service-ports biosamples-agents-neo4j java -jar agents-neo4j-4.0.0-SNAPSHOT.jar --biosamples.agent.neo4j.stayalive=false --spring.data.neo4j.indexes.auto=assert
-fi
-
 
 
 docker-compose up -d biosamples-webapps-core biosamples-webapps-sampletab biosamples-webapps-legacyxml

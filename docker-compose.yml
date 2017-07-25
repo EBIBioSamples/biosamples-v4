@@ -86,7 +86,6 @@ services:
     - endpoints.shutdown.sensitive=false
     ports:
     - 8082:8080
-
   
   biosamples-webapps-legacyxml:
     image: biosamples:latest
@@ -109,36 +108,7 @@ services:
     ports:
     - 8083:8080
     - 8000:8000
-
-    
-  biosamples-agents-neo4j:
-    image: biosamples:latest
-    links:
-    - neo4j
-    - rabbitmq
-    volumes:
-    - ./docker/logs:/logs
-    command:
-    - java
-    - -jar
-    - agents-neo4j-4.0.0-SNAPSHOT.jar
-    environment:
-    - spring.rabbitmq.publisher-confirms=true
-    - spring.rabbitmq.publisher-returns=true
-    - spring.rabbitmq.listener.concurrency=1
-    - spring.rabbitmq.listener.max-concurrency=1
-    - spring.rabbitmq.host=rabbitmq
-    #- spring.data.neo4j.uri=bolt://neo4j:7687
-    - spring.data.neo4j.uri=http://neo4j:7474
-    - spring.data.neo4j.username=neo4j
-    - spring.data.neo4j.indexes.auto=validate
-    - biosamples.agent.neo4j.stayalive=true
-    - logging.file=/logs/agents-neo4j.log
-    #- logging.level=debug
-    - logging.level.org.springframework.data.neo4j=debug
-    - logging.level.org.springframework.transaction=INFO
-    - spring.aop.proxy-target-class=true
-    
+   
   biosamples-agents-solr:
     image: biosamples:latest
     links:
@@ -175,7 +145,10 @@ services:
     environment:
     - spring.rabbitmq.publisher-confirms=true
     - spring.rabbitmq.host=rabbitmq
+    - spring.rabbitmq.listener.concurrency=1
+    - spring.rabbitmq.listener.max-concurrency=24
     - biosamples.agent.curation.stayalive=true
+    - biosamples.client.uri=http://biosamples-webapps-core:8080/biosamples/beta
     - logging.file=/logs/agents-curation.log
     
   mongo:
@@ -194,19 +167,6 @@ services:
     volumes:
     - rabbitmq_data:/var/lib/rabbitmq/mnesia/rabbit@biosamples-rabbitmq
     
-  neo4j:
-    #we can use enterprise under AGPLv3 because we are open source
-    image: neo4j:3.2-enterprise
-    environment:
-    - NEO4J_AUTH=none
-    - NEO4J_dbms_memory_pagecache_size=4G
-    - NEO4J_dbms_memory_heap_maxSize=2G
-    ports:
-    - 7687:7687
-    - 7474:7474
-    volumes:
-    - neo4j_data:/data
-    - ./docker/logs/neo4j:/logs
     
   solr:
     image: solr:6.6-alpine
@@ -225,6 +185,5 @@ services:
 volumes:
   solr_data: null
   mongo_data: null
-  neo4j_data: null
   rabbitmq_data: null
   elasticsearch_logs_data: null
