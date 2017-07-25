@@ -8,22 +8,25 @@ import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.service.CurationApplicationService;
 
 @Service
 public class SampleCurationRunner implements Runnable {
 	
 	private final Sample sample;
 	private final BioSamplesClient bioSamplesClient;
+	private final CurationApplicationService curationApplicationService;
 	
-	public SampleCurationRunner(BioSamplesClient bioSamplesClient, Sample sample) {
+	public SampleCurationRunner(BioSamplesClient bioSamplesClient, CurationApplicationService curationApplicationService, Sample sample) {
 		this.bioSamplesClient = bioSamplesClient;
+		this.curationApplicationService = curationApplicationService;
 		this.sample = sample;
 	}
 
 
 	@Override
 	public void run() {		
-		
+		Sample sample = this.sample;
 		
 		for (Attribute attribute : sample.getAttributes()) {
 			//clean unexpected characters
@@ -31,15 +34,16 @@ public class SampleCurationRunner implements Runnable {
 			String newValue = cleanString(attribute.getValue());
 			if (!attribute.getType().equals(newType) || !attribute.getValue().equals(newValue)) {
 				Attribute newAttribute = Attribute.build(newType, newValue, attribute.getIri(), attribute.getUnit());
-				bioSamplesClient.persistCuration(sample.getAccession(), Curation.build(attribute, newAttribute));
-				//TODO apply curation
-				
+				Curation curation = Curation.build(attribute, newAttribute);
+				bioSamplesClient.persistCuration(sample.getAccession(), curation);
+				sample = curationApplicationService.applyCurationToSample(sample, curation);				
 			}
 			
 			//if no information content, remove
 			if (isEqualToNotApplicable(attribute.getValue())) {
-				bioSamplesClient.persistCuration(sample.getAccession(), Curation.build(attribute, null));
-				//TODO apply curation
+				Curation curation = Curation.build(attribute, null);
+				bioSamplesClient.persistCuration(sample.getAccession(), curation);
+				sample = curationApplicationService.applyCurationToSample(sample, curation);
 			}			
 			
 			//if it has a unit, make sure it is clean
@@ -47,8 +51,9 @@ public class SampleCurationRunner implements Runnable {
 				String newUnit = correctUnit(attribute.getUnit());
 				if (!attribute.getUnit().equals(newUnit)) {
 					Attribute newAttribute = Attribute.build(attribute.getType(), attribute.getValue(), attribute.getIri(), newUnit);
-					bioSamplesClient.persistCuration(sample.getAccession(), Curation.build(attribute, newAttribute));
-					//TODO apply curation
+					Curation curation = Curation.build(attribute, newAttribute);
+					bioSamplesClient.persistCuration(sample.getAccession(), curation);
+					sample = curationApplicationService.applyCurationToSample(sample, curation);
 				}
 			}
 		}
