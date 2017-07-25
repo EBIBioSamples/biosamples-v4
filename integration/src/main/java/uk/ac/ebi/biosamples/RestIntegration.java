@@ -55,6 +55,8 @@ public class RestIntegration extends AbstractIntegration {
 		// put a sample
 		Resource<Sample> resource = client.persistSampleResource(sampleTest1);
 		if (!sampleTest1.equals(resource.getContent())) {
+			log.warn("expected: "+sampleTest1);
+			log.warn("found: "+resource.getContent());
 			throw new RuntimeException("Expected response to equal submission");
 		}
 	}
@@ -80,6 +82,8 @@ public class RestIntegration extends AbstractIntegration {
 		
 		Resource<Sample> resource = client.persistSampleResource(sampleTest1);
 		if (!sampleTest1.equals(resource.getContent())) {
+			log.warn("expected: "+sampleTest1);
+			log.warn("found: "+resource.getContent());
 			throw new RuntimeException("Expected response to equal submission");
 		}
 		
@@ -109,6 +113,8 @@ public class RestIntegration extends AbstractIntegration {
 		//put the second sample in
 		Resource<Sample> resource = client.persistSampleResource(sampleTest2);
 		if (!sampleTest2.equals(resource.getContent())) {
+			log.warn("expected: "+sampleTest2);
+			log.warn("found: "+resource.getContent());
 			throw new RuntimeException("Expected response to equal submission");
 		}		
 	}
@@ -130,11 +136,18 @@ public class RestIntegration extends AbstractIntegration {
 			throw new RuntimeException("No existing "+sampleTest2.getAccession());
 		}
 		Sample sampleTest2Rest = optional.get().getContent();
+		//check other details i.e relationship
+		if (!sampleTest2.equals(sampleTest2Rest)) {
+			log.warn("expected: "+sampleTest2);
+			log.warn("found: "+sampleTest2Rest);
+			throw new RuntimeException("No matching "+sampleTest2.getAccession());
+		}
 		
 		//check utf -8
 		if (!sampleTest2Rest.getCharacteristics().contains(Attribute.build("UTF-8 test", "αβ", null, null))) {
 			throw new RuntimeException("Unable to find UTF-8 characters");
 		}
+		
 		
 		//now do another update to delete the relationship
 		sampleTest1 = Sample.build(sampleTest1.getName(), sampleTest1.getAccession(), sampleTest1.getDomain(),
@@ -142,6 +155,8 @@ public class RestIntegration extends AbstractIntegration {
 				sampleTest1.getCharacteristics(), new TreeSet<>(), sampleTest1.getExternalReferences());
 		Resource<Sample> resource = client.persistSampleResource(sampleTest1);
 		if (!sampleTest1.equals(resource.getContent())) {
+			log.warn("expected: "+sampleTest1);
+			log.warn("found: "+resource.getContent());
 			throw new RuntimeException("Expected response to equal submission");
 		}
 		

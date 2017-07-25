@@ -1,6 +1,7 @@
 package uk.ac.ebi.biosamples.controller;
 
 import java.net.URI;
+import java.time.LocalDateTime;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,6 +98,7 @@ public class SampleCurationLinksRestController {
 			throw new SampleNotMatchException();
 		}
 		
+		curationLink = CurationLink.build(accession, curationLink.getCuration(), curationLink.getDomain(), LocalDateTime.now());
 		curationLink = bioSamplesAapService.handleCurationLinkDomain(curationLink);	
     	
 		//now actually persist it

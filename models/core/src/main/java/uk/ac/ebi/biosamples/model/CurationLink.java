@@ -1,11 +1,17 @@
 package uk.ac.ebi.biosamples.model;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.hash.Hasher;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.hash.Hashing;
+
+import uk.ac.ebi.biosamples.service.CustomLocalDateTimeDeserializer;
+import uk.ac.ebi.biosamples.service.CustomLocalDateTimeSerializer;
 
 public class CurationLink implements Comparable<CurationLink> {
 
@@ -13,13 +19,14 @@ public class CurationLink implements Comparable<CurationLink> {
 	private final String sample;
 	private final String domain;
 	private final String hash;
+	protected final LocalDateTime created;
 	
-	
-	private CurationLink(String sample, String domain, Curation curation, String hash) {
+	private CurationLink(String sample, String domain, Curation curation, String hash, LocalDateTime created) {
 		this.sample = sample;
 		this.domain = domain;
 		this.curation = curation;
 		this.hash = hash;
+		this.created = created;
 	}
 	
 	public String getSample() {
@@ -36,6 +43,11 @@ public class CurationLink implements Comparable<CurationLink> {
 	
 	public String getHash() {
 		return hash;
+	}
+
+	@JsonSerialize(using = CustomLocalDateTimeSerializer.class)
+	public LocalDateTime getCreated() {
+		return created;
 	}
 
 	
@@ -89,9 +101,10 @@ public class CurationLink implements Comparable<CurationLink> {
 
     //Used for deserializtion (JSON -> Java)
     @JsonCreator
-	public static CurationLink build(@JsonProperty("sample") String sample, @JsonProperty("domain") String domain, @JsonProperty("curation") Curation curation) {
-
-    	
+	public static CurationLink build(@JsonProperty("sample") String sample, 
+			@JsonProperty("curation") Curation curation, 
+			@JsonProperty("domain") String domain, 
+			@JsonProperty("created") @JsonDeserialize(using = CustomLocalDateTimeDeserializer.class) LocalDateTime created) {
     	Hasher hasher = Hashing.sha256().newHasher();
     	
     	if (sample != null) {
@@ -104,6 +117,6 @@ public class CurationLink implements Comparable<CurationLink> {
 
     	String hash = hasher.hash().toString();
     	
-		return new CurationLink(sample,domain, curation, hash);
+		return new CurationLink(sample, domain, curation, hash, created);
 	}
 }

@@ -158,7 +158,8 @@ public class BioSamplesAapService {
 		if (curationLink.getDomain() == null || curationLink.getDomain().length() == 0) {
 			//if the sample doesn't have a domain, and the user has one domain, then they must be submitting to that domain
 			if (usersDomains.size() == 1) {
-				curationLink = CurationLink.build(curationLink.getSample(), usersDomains.iterator().next(), curationLink.getCuration());
+				curationLink = CurationLink.build(curationLink.getSample(), curationLink.getCuration(), 
+						usersDomains.iterator().next(), curationLink.getCreated());
 			} else {			
 				//if the sample doesn't have a domain, and we can't guess one, then end
 				throw new CurationLinkDomainMissingException();

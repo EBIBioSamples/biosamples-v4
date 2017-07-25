@@ -38,10 +38,12 @@ public class AapClientService {
         byte[] encodedAuth = Base64.getEncoder().encode(auth.getBytes(Charset.forName("US-ASCII")) );
         String authHeader = "Basic " + new String( encodedAuth );		
 		
-		ResponseEntity<String> response = restOperations.exchange(RequestEntity.get(aapUri)
+        RequestEntity<?> request = RequestEntity.get(aapUri)
 				.header(HttpHeaders.AUTHORIZATION, authHeader)
-				.accept(MediaType.TEXT_PLAIN)
-				.build(), String.class);
+				//.accept(MediaType.TEXT_PLAIN)
+				.build();
+        
+		ResponseEntity<String> response = restOperations.exchange(request, String.class);
 		
 		String jwt = response.getBody();
 		log.info("jwt = "+jwt);

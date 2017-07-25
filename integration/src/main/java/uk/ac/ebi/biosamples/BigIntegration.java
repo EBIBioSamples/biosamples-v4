@@ -98,6 +98,7 @@ public class BigIntegration extends AbstractIntegration {
 
 		LocalDateTime update = LocalDateTime.of(LocalDate.of(2016, 5, 5), LocalTime.of(11, 36, 57, 0));
 		LocalDateTime release = LocalDateTime.of(LocalDate.of(2016, 4, 1), LocalTime.of(11, 36, 57, 0));
+        String domain = null;// "abcde12345";
 		
 		SortedSet<Attribute> attributes = new TreeSet<>();
 		attributes.add(
@@ -108,7 +109,7 @@ public class BigIntegration extends AbstractIntegration {
 			relationships.add(Relationship.build("SAMbig"+i, "derived from", other.getAccession()));
 		}
 		
-		Sample sample = Sample.build("big sample "+i, "SAMbig"+i, null, release, update, attributes, relationships, null);
+		Sample sample = Sample.build("big sample "+i, "SAMbig"+i, domain, release, update, attributes, relationships, null);
 
 		log.info("built "+sample.getAccession());
 		return sample;

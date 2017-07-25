@@ -4,6 +4,7 @@ import java.security.Principal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -51,12 +52,9 @@ public class SamplePageService {
 	@Autowired
 	private SolrSampleService solrSampleService;
 	
-
 	public Page<Sample> getSamplesByText(String text, MultiValueMap<String,String> filters, Collection<String> domains,
-			Pageable pageable) {		
-		
-				
-		Page<SolrSample> pageSolrSample = solrSampleService.fetchSolrSampleByText(text, filters, domains, pageable);		
+			LocalDateTime after, LocalDateTime before, Pageable pageable) {		
+		Page<SolrSample> pageSolrSample = solrSampleService.fetchSolrSampleByText(text, filters, domains, after, before, pageable);		
 		//for each result fetch the stored version and add e.g. inverse relationships		
 		//stream process each solrSample into a sample *in parallel*
 		Page<Sample> pageSample = new PageImpl<>(StreamSupport.stream(pageSolrSample.spliterator(), true)
@@ -64,8 +62,7 @@ public class SamplePageService {
 				pageable,pageSolrSample.getTotalElements()); 
 				
 		return pageSample;
-	}
-	
+	}	
 
 	public Page<Sample> getSamplesOfExternalReference(String urlHash, Pageable pageable) {
 		Page<NeoSample> pageNeoSample = neoSampleRepository.findByExternalReferenceUrlHash(urlHash, pageable);
@@ -84,7 +81,6 @@ public class SamplePageService {
 		Page<Sample> pageSample = pageNeoSample.map(neoSampleToSampleConverter);
 		return pageSample;
 	}
-
 	
 	
 }

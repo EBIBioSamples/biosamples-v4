@@ -23,8 +23,8 @@ public class NeoCurationLinkToCurationLinkConverter
 	
 	@Override
 	public CurationLink convert(NeoCurationLink neo) {	
-		Curation curation = neoCurationToCurationConverter.convert(neo.getCuration());	
-		return CurationLink.build(neo.getSample().getAccession(), neo.getDomain(), curation);
+		Curation curation = neoCurationToCurationConverter.convert(neo.getCuration());
+		return CurationLink.build(neo.getSample().getAccession(), curation, neo.getDomain(), neo.getCreated());
 	}
 
 }

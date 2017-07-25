@@ -1,6 +1,8 @@
 package uk.ac.ebi.biosamples.client.service;
 
 import java.net.URI;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
@@ -14,7 +16,6 @@ import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
@@ -24,15 +25,20 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import uk.ac.ebi.biosamples.client.utils.IterableResourceFetchAll;
 import uk.ac.ebi.biosamples.model.Sample;
 
 public class SampleRetrievalService {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
+	
+	public static final DateTimeFormatter solrFormatter = DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss'Z'");
 
 	private final Traverson traverson;
 	private final ExecutorService executor;
@@ -115,76 +121,36 @@ public class SampleRetrievalService {
 		}
 	}
 	
-	public Iterable<Resource<Sample>> fetchAll() {
-		return new IterableResourceFetchAll(traverson);
+	public Iterable<Resource<Sample>> fetchAll() {	
+		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();		
+		return new IterableResourceFetchAll<Sample>(traverson, restOperations,
+				new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {}, 
+				params,	"samples");
 	}
 
-	private class IterableResourceFetchAll implements Iterable<Resource<Sample>> {
+	public Iterable<Resource<Sample>> fetchUpdatedAfter(LocalDateTime updatedAfter) {	
+		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();		
+		params.add("updatedafter", solrFormatter.format(updatedAfter));
+		return new IterableResourceFetchAll<Sample>(traverson, restOperations,
+				new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {}, 
+				params,	"samples");
+	}
 
-		//TODO pre-emtively grab the next page as a future
-		
-		private final Traverson traverson;
-		
-		public IterableResourceFetchAll(Traverson traverson) {
-			this.traverson = traverson;
-		}
-		
-		public Iterator<Resource<Sample>> iterator() {
-			//get the first page
-			//TODO allow sample page size to be cusomized in property
-			URI uri = UriComponentsBuilder.fromHttpUrl(traverson.follow("samples").asLink().getHref()).queryParam("size", "1000").build().toUri();
-			RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
-			ResponseEntity<PagedResources<Resource<Sample>>> responseEntity = restOperations.exchange(requestEntity,
-					new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {
-					});
-			return new IteratorResourceFetchAll(responseEntity.getBody());
-		}
-		
-		private class IteratorResourceFetchAll implements Iterator<Resource<Sample>> {
+	public Iterable<Resource<Sample>> fetchUpdatedBefore(LocalDateTime updatedBefore) {	
+		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();		
+		params.add("updatedbefore", solrFormatter.format(updatedBefore));
+		return new IterableResourceFetchAll<Sample>(traverson, restOperations,
+				new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {}, 
+				params,	"samples");
+	}
 
-			
-			private PagedResources<Resource<Sample>> page;
-			private Iterator<Resource<Sample>> pageIterator;
-			
-			public IteratorResourceFetchAll(PagedResources<Resource<Sample>> page) {
-				this.page = page;
-				this.pageIterator = page.iterator();
-			}
-			
-			@Override
-			public boolean hasNext() {
-				if (pageIterator.hasNext()) {
-					return true;
-				}
-				//does the page have a next page?
-				if (page.hasLink(Link.REL_NEXT)) {
-					return true;
-				}
-				return false;
-			}
-
-			@Override
-			public Resource<Sample> next() {
-				if (pageIterator.hasNext()) {
-					return pageIterator.next();
-				}
-				//does the page have a next page?
-				if (page.hasLink(Link.REL_NEXT)) {
-					URI uri = URI.create(page.getLink(Link.REL_NEXT).getHref());
-					RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
-					ResponseEntity<PagedResources<Resource<Sample>>> responseEntity = restOperations.exchange(requestEntity,
-							new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {
-							});
-					this.page = responseEntity.getBody();
-					this.pageIterator = page.iterator();
-					return this.pageIterator.next();
-				}
-				//no more in this iterator and no more pages, so end	
-				throw new NoSuchElementException();
-			}
-			
-			
-		}
+	public Iterable<Resource<Sample>> fetchUpdatedBetween(LocalDateTime updatedAfter, LocalDateTime updatedBefore) {	
+		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();		
+		params.add("updatedafter", solrFormatter.format(updatedAfter));
+		params.add("updatedbefore", solrFormatter.format(updatedBefore));
+		return new IterableResourceFetchAll<Sample>(traverson, restOperations,
+				new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {}, 
+				params,	"samples");
 	}
 
 	public Iterable<Optional<Resource<Sample>>> fetchAll(Iterable<String> accessions) {

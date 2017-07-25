@@ -59,8 +59,9 @@ public class RestExternalReferenceIntegration extends AbstractIntegration {
 		
 		testExternalReferences();
 		//testSampleExternalReferences(sample, 10);
-		client.persistCuration(CurationLink.build(sample.getAccession(), null, 
-				Curation.build(null,  null, null, Arrays.asList(ExternalReference.build("http://www.ebi.ac.uk/ena/ERA123456")))));
+		client.persistCuration(CurationLink.build(sample.getAccession(), 
+				Curation.build(null,  null, null, Arrays.asList(ExternalReference.build("http://www.ebi.ac.uk/ena/ERA123456"))), 
+				null, null));
 		
 	}
 

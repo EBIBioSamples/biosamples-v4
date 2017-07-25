@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org"
 	xmlns:layout="http://www.w3.org/1999/xhtml">
-<head>
+<head th:replace="fragments/head :: head">
 <title>BioSamples &lt; EMBL-EBI</title>
 <!-- A few keywords that relate to the content of THIS PAGE (not the whole project) -->
 <meta name="keywords" content="biosamples, europe, EBI" />
@@ -15,11 +15,13 @@
 
 </head>
 <body>
+	<th:block th:include="fragments/header :: header"></th:block>
 	<div layout:fragment="content">
 		<div id="main-content-area" class="row">
-       	<h2>Error processing your request</h2>
-		<h3>404 - page not found</h3>
+			<h2>Error processing your request</h2>
+			<h3>404 - page not found</h3>
 		</div>
 	</div>
+	<th:block th:include="fragments/footer :: footer"></th:block>
 </body>
 </html>

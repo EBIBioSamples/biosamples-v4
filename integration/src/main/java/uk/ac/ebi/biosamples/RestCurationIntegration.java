@@ -48,6 +48,8 @@ public class RestCurationIntegration extends AbstractIntegration {
 
 	private final RestOperations restTemplate;
 	
+	private final Sample sample = getSampleTest1();
+	
 	public RestCurationIntegration(RestTemplateBuilder restTemplateBuilder, IntegrationProperties integrationProperties, BioSamplesClient client) {
 		super(client);
 		this.restTemplate = restTemplateBuilder.build();
@@ -55,33 +57,30 @@ public class RestCurationIntegration extends AbstractIntegration {
 	}
 
 	@Override
-	protected void phaseOne(){
-		Sample sample = getSampleTest1();
-		client.persistSample(getSampleTest1());
+	protected void phaseOne() {
+		client.persistSample(sample);		
 	}
 
 	@Override
 	protected void phaseTwo() {
-		Sample sample = getSampleTest1();
 
 		Set<Attribute> attributesPre = new HashSet<>();
 		attributesPre.add(Attribute.build("Organism", "9606"));
 		Set<Attribute> attributesPost = new HashSet<>();
-		attributesPost.add(Attribute.build("Organism", "Homo sapiens"));		
-		client.persistCuration(CurationLink.build(sample.getAccession(), null, Curation.build(attributesPre, attributesPost, null, null)));
+		attributesPost.add(Attribute.build("Organism", "Homo sapiens"));			
+		client.persistCuration(sample.getAccession(), Curation.build(attributesPre, attributesPost, null, null));
 
 
 		attributesPre = new HashSet<>();
 		attributesPre.add(Attribute.build("Organism", "Homo sapiens"));
 		attributesPost = new HashSet<>();
 		attributesPost.add(Attribute.build("Organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));			
-		client.persistCuration(CurationLink.build(sample.getAccession(), null, Curation.build(attributesPre, attributesPost, null, null)));
+		client.persistCuration(sample.getAccession(), Curation.build(attributesPre, attributesPost, null, null));
 		
 	}
 
 	@Override
-	protected void phaseThree(){
-		Sample sample = getSampleTest1();
+	protected void phaseThree() {
 		
 		// check /curations
 		testCurations();
@@ -95,40 +94,50 @@ public class RestCurationIntegration extends AbstractIntegration {
 
 	@Override
 	protected void phaseFour() {
+		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
 	protected void phaseFive() {
+		// TODO Auto-generated method stub
 		
 	}
 
 	private void testCurations() {
+		
+		
+		
+		
+		/*
 		//TODO use client
 		URI uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUri())
 				.pathSegment("curations").build().toUri();
-
+		
 		log.info("GETting from " + uri);
 		RequestEntity<Void> request = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
 		ResponseEntity<PagedResources<Resource<Curation>>> response = restTemplate.exchange(request,
 				new ParameterizedTypeReference<PagedResources<Resource<Curation>>>() {
 				});
-
-		boolean testedSelf = false;
+		if(!response.getStatusCode().is2xxSuccessful()) {
+			throw new RuntimeException("Unable to get curations list");
+		}
+		log.info("GETted from " + uri);
 		PagedResources<Resource<Curation>> paged = response.getBody();
 
-		for (Resource<Curation> curationResource : paged) {
+		
+		if (paged.getContent().size() == 0) {
+			throw new RuntimeException("No curations in list");
+		}
+		*/
+		
+		for (Resource<Curation> curationResource : client.fetchCurationResourceAll()) {
 			Link selfLink = curationResource.getLink("self");
+			Link samplesLink = curationResource.getLink("samples");
 
 			if (selfLink == null) {
 				throw new RuntimeException("Must have self link on "+curationResource);
-			}
-
-			if (curationResource.getLink("samples") == null) {
-				throw new RuntimeException("Must have samples link on "+curationResource);
-			}
-
-			if (!testedSelf) {
+			} else {
 				URI uriLink = URI.create(selfLink.getHref());
 				log.info("GETting from " + uriLink);
 				RequestEntity<Void> requestLink = RequestEntity.get(uriLink).accept(MediaTypes.HAL_JSON).build();
@@ -138,10 +147,25 @@ public class RestCurationIntegration extends AbstractIntegration {
 				if (!responseLink.getStatusCode().is2xxSuccessful()) {
 					throw new RuntimeException("Unable to follow self link on "+curationResource);
 				}
-				testedSelf = true;
+				log.info("GETted from " + uriLink);
+				
+			}
+
+			if (samplesLink == null) {
+				throw new RuntimeException("Must have samples link on "+curationResource);
+			} else {
+				URI uriLink = URI.create(samplesLink.getHref());
+				log.info("GETting from " + uriLink);
+				RequestEntity<Void> requestLink = RequestEntity.get(uriLink).accept(MediaTypes.HAL_JSON).build();
+				ResponseEntity<PagedResources<Resource<Sample>>> responseLink = restTemplate.exchange(requestLink,
+						new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {
+						});
+				if (!responseLink.getStatusCode().is2xxSuccessful()) {
+					throw new RuntimeException("Unable to follow samples link on "+curationResource);
+				}				
+				log.info("GETted from " + uriLink);
 			}
 		}
-
 	}
 
 	private void testSampleCurations(Sample sample) {
@@ -180,10 +204,4 @@ public class RestCurationIntegration extends AbstractIntegration {
 
 		return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences);
 	}
-
-	@Override
-	public int getExitCode() {
-		return exitCode;
-	}
-
 }

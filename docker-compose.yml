@@ -26,7 +26,8 @@ services:
     - spring.data.neo4j.uri=bolt://neo4j:7687
     #- spring.data.neo4j.uri=http://neo4j:7474
     - spring.data.neo4j.username=neo4j
-    - spring.data.neo4j.indexes.auto=assert
+    - spring.data.neo4j.indexes.auto=validate
+    #- spring.data.neo4j.indexes.auto=assert
     - spring.data.mongodb.host=mongo
     - spring.rabbitmq.publisher-confirms=true
     - spring.rabbitmq.host=rabbitmq
@@ -214,7 +215,7 @@ services:
     - ./docker/logs/neo4j:/logs
     
   solr:
-    image: solr:6.5-alpine
+    image: solr:6.6-alpine
     ports:
     - 8983:8983
     volumes:

@@ -18,11 +18,6 @@ import uk.ac.ebi.biosamples.MessageContent;
 import uk.ac.ebi.biosamples.Messaging;
 import uk.ac.ebi.biosamples.model.Autocomplete;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.mongo.model.MongoSubmission;
-import uk.ac.ebi.biosamples.mongo.repo.MongoSubmissionRepository;
-import uk.ac.ebi.biosamples.neo.repo.NeoSampleRepository;
-import uk.ac.ebi.biosamples.neo.service.NeoAccessionService;
-import uk.ac.ebi.biosamples.neo.service.modelconverter.NeoSampleToSampleConverter;
 import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
 import uk.ac.ebi.biosamples.WebappProperties;
 
@@ -40,11 +35,7 @@ public class SampleService {
 	private Logger log = LoggerFactory.getLogger(getClass());
 	
 	@Autowired
-	private MongoSubmissionRepository mongoSubmissionRepository;
-	
-	@Autowired
 	private NeoAccessionService neoAccessionService;	
-
 	
 	@Autowired 
 	private SampleValidator sampleValidator;
@@ -82,9 +73,6 @@ public class SampleService {
 	@CacheEvict(cacheNames=WebappProperties.fetch, key="#result.accession")
 	public Sample store(Sample sample) {
 		// TODO check if there is an existing copy and if there are any changes
-		
-		// save the submission in the repository
-		mongoSubmissionRepository.save(new MongoSubmission(sample, LocalDateTime.now()));
 
 		//do validation
 		Collection<String> errors = sampleValidator.validate(sample);
@@ -106,7 +94,14 @@ public class SampleService {
 					sample.getCharacteristics(), sample.getRelationships(), sample.getExternalReferences());
 		}
 		
+		//update update date
+		//TODO put in eventlistener
+		sample = Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(), sample.getRelease(), LocalDateTime.now(),
+				sample.getCharacteristics(), sample.getRelationships(), sample.getExternalReferences());
+		
+		
 		// send a message for storage and further processing
+		//TODO put in eventlistener
 		amqpTemplate.convertAndSend(Messaging.exchangeForIndexing, "", MessageContent.build(sample, false));
 		//return the sample in case we have modified it i.e accessioned
 		return sample;
