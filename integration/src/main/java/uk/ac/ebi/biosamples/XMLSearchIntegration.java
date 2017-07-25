@@ -17,10 +17,7 @@ import uk.ac.ebi.biosamples.model.Sample;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.Collections;
-import java.util.Optional;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 
 @Component
 @Profile({"default", "test"})
@@ -42,6 +39,7 @@ public class XMLSearchIntegration extends AbstractIntegration {
     @Override
     protected void phaseOne() {
         final Sample test1 = getSampleXMLTest1();
+        final Sample test2 = getPrivateSampleXMLTest2();
 
         Optional<Resource<Sample>> optional = client.fetchSampleResource(test1.getAccession());
         if (optional.isPresent()) {
@@ -52,11 +50,22 @@ public class XMLSearchIntegration extends AbstractIntegration {
         if (!test1.equals(resource.getContent())) {
             throw new RuntimeException("Expected response to equal submission");
         }
+
+        Optional<Resource<Sample>> optionalPrivate = client.fetchSampleResource(test2.getAccession());
+        if (optionalPrivate.isPresent()) {
+            throw new RuntimeException("Found existing "+test1.getAccession());
+        }
+
+        Resource<Sample> resourcePrivate = client.persistSampleResource(test2);
+        if (!test2.equals(resourcePrivate.getContent())) {
+            throw new RuntimeException("Expected response to equal submission");
+        }
     }
 
     @Override
     protected void phaseTwo() {
         Sample test1 = getSampleXMLTest1();
+        Sample test2 = getPrivateSampleXMLTest2();
 
         log.info("Check existence of sample " + test1.getAccession());
         Optional<Resource<Sample>> optional = client.fetchSampleResource(test1.getAccession());
@@ -65,27 +74,44 @@ public class XMLSearchIntegration extends AbstractIntegration {
         }
         log.info("Sample " + test1.getAccession() + " found correctly");
 
+
+        log.info(String.format("Searching sample %s using legacy xml api", test1.getAccession()));
         UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleLegaxyXmlUri());
         uriBuilder.pathSegment("samples", test1.getAccession());
 
-        log.info(String.format("Searching sample %s using legacy xml api", test1.getAccession()));
-        ResponseEntity<Sample> responseEntity = restTemplate.getForEntity(uriBuilder.build().toUri(), Sample.class);
+        // Set the accept header
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(Collections.singletonList(MediaType.TEXT_XML));
+        HttpEntity<?> entity = new HttpEntity<>(headers);
+
+        ResponseEntity<String> responseEntity = restTemplate.exchange(uriBuilder.build().toUri(), HttpMethod.GET, entity, String.class);
         if (!responseEntity.getStatusCode().is2xxSuccessful()) {
             throw new RuntimeException("Expected sample not found in the xml legacy "+test1.getAccession());
         }
         log.info(String.format("Sample %s found using legacy xml api", test1.getAccession()));
 
-        if (!responseEntity.getBody().equals(test1)) {
+        if (!responseEntity.getBody().contains(String.format("id=\"%s\"",test1.getAccession()))) {
             throw new RuntimeException("Response body doesn't match expected sample");
         }
-        /*
+
+        log.info(String.format("Searching private sample %s using legacy xml api", test1.getAccession()));
+        uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleLegaxyXmlUri());
+        uriBuilder.pathSegment("samples", test2.getAccession());
+
+        // Set the accept header
         try {
-
-        } catch(HttpClientErrorException ex) {
-
+            responseEntity = restTemplate.exchange(uriBuilder.build().toUri(), HttpMethod.GET, entity, String.class);
+            if (!responseEntity.getStatusCode().equals(HttpStatus.FORBIDDEN)) {
+                throw new RuntimeException(String.format("Sample %s should be forbidden and not available through the legaxy xml api", test2.getAccession()));
+            }
+        } catch (Exception e) {
+            if (e instanceof HttpClientErrorException) {
+                HttpClientErrorException clientErrorException = (HttpClientErrorException) e;
+                if (!clientErrorException.getStatusCode().equals(HttpStatus.FORBIDDEN)) {
+                    throw new RuntimeException(String.format("Sample %s should be forbidden and not available through the legaxy xml api", test2.getAccession()));
+                }
+            }
         }
-        */
-
 
     }
 
@@ -188,4 +214,19 @@ public class XMLSearchIntegration extends AbstractIntegration {
 			Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
 
 		return Sample.build(name, accession, release, update, attributes, new TreeSet<>(), new TreeSet<>());
-	}}
+	}
+
+	private Sample getPrivateSampleXMLTest2() {
+        String name = "Private XML sample";
+        String accession = "TestPrivateXML";
+        LocalDateTime update = LocalDateTime.of(LocalDate.of(2016, 5, 5), LocalTime.of(11, 36, 57, 0));
+        LocalDateTime release = LocalDateTime.of(LocalDate.of(2116, 4, 1), LocalTime.of(11, 36, 57, 0));
+
+        SortedSet<Attribute> attributes = new TreeSet<>();
+        attributes.add(
+                Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
+
+        return Sample.build(name, accession, release, update, attributes, new TreeSet<>(), new TreeSet<>());
+
+    }
+}
