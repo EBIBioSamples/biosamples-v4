@@ -51,6 +51,8 @@ public class RestIntegration extends AbstractIntegration {
 		// put a sample
 		Resource<Sample> resource = client.persistSampleResource(sampleTest1);
 		if (!sampleTest1.equals(resource.getContent())) {
+			log.warn("expected: "+sampleTest1);
+			log.warn("found: "+resource.getContent());
 			throw new RuntimeException("Expected response to equal submission");
 		}
 	}
@@ -76,6 +78,8 @@ public class RestIntegration extends AbstractIntegration {
 		
 		Resource<Sample> resource = client.persistSampleResource(sampleTest1);
 		if (!sampleTest1.equals(resource.getContent())) {
+			log.warn("expected: "+sampleTest1);
+			log.warn("found: "+resource.getContent());
 			throw new RuntimeException("Expected response to equal submission");
 		}
 		
@@ -97,6 +101,8 @@ public class RestIntegration extends AbstractIntegration {
 		//put the second sample in
 		Resource<Sample> resource = client.persistSampleResource(sampleTest2);
 		if (!sampleTest2.equals(resource.getContent())) {
+			log.warn("expected: "+sampleTest2);
+			log.warn("found: "+resource.getContent());
 			throw new RuntimeException("Expected response to equal submission");
 		}		
 	}
@@ -138,6 +144,8 @@ public class RestIntegration extends AbstractIntegration {
 				sampleTest1.getCharacteristics(), new TreeSet<>(), sampleTest1.getExternalReferences());
 		Resource<Sample> resource = client.persistSampleResource(sampleTest1);
 		if (!sampleTest1.equals(resource.getContent())) {
+			log.warn("expected: "+sampleTest1);
+			log.warn("found: "+resource.getContent());
 			throw new RuntimeException("Expected response to equal submission");
 		}
 		
