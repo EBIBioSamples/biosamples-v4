@@ -76,6 +76,11 @@ public class Ena implements ApplicationRunner {
 		} else {
 			throw new IllegalArgumentException("Must specificy at least 1 thead to use");
 		}
+		
+		//now print a list of things that failed
+		if (EnaCallable.failedQueue.size() > 0) {
+			log.info("Failed accessions: "+String.join(", ", EnaCallable.failedQueue));
+		}
 	}
 	
 	
