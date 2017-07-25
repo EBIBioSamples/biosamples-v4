@@ -14,8 +14,8 @@ done
 mvn -T 2C clean package
 
 set +e
-docker-compose stop biosamples-webapps-core biosamples-webapps-sampletab biosamples-webapps-legacyxml mongo neo4j solr rabbitmq biosamples-agents-solr biosamples-agents-curation
-docker-compose rm -f -v biosamples-webapps-core biosamples-webapps-sampletab biosamples-webapps-legacyxml mongo neo4j solr rabbitmq biosamples-agents-solr biosamples-agents-curation
+docker-compose stop biosamples-webapps-core biosamples-webapps-sampletab biosamples-webapps-legacyxml mongo solr rabbitmq biosamples-agents-solr biosamples-agents-curation
+docker-compose rm -f -v biosamples-webapps-core biosamples-webapps-sampletab biosamples-webapps-legacyxml mongo solr rabbitmq biosamples-agents-solr biosamples-agents-curation
 #cleanup any previous data
 if [ -n $clean ]
 then
@@ -38,7 +38,7 @@ set -e
 docker-compose build
 
 #start up the webapps (and dependencies)
-docker-compose up -d solr neo4j rabbitmq mongo
+docker-compose up -d solr rabbitmq mongo
 echo "checking solr is up"
 ./http-status-check -u http://localhost:8983 -t 30
 echo "checking rabbitmq is up"

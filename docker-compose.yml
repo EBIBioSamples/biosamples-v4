@@ -6,7 +6,6 @@ services:
     image: biosamples:latest
     links:
     - solr
-    - neo4j
     - mongo
     - rabbitmq
     volumes:

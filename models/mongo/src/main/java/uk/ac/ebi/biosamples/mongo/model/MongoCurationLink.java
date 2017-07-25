@@ -1,15 +1,20 @@
 package uk.ac.ebi.biosamples.mongo.model;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 import org.springframework.data.annotation.Id;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.hash.Hashing;
 
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.CurationLink;
+import uk.ac.ebi.biosamples.service.CustomLocalDateTimeDeserializer;
+import uk.ac.ebi.biosamples.service.CustomLocalDateTimeSerializer;
 
 public class MongoCurationLink implements Comparable<MongoCurationLink>{
 
@@ -18,11 +23,13 @@ public class MongoCurationLink implements Comparable<MongoCurationLink>{
 
 	private final Curation curation;
 	private final String sample;
+	protected final LocalDateTime created;
 
-	private MongoCurationLink(String sample, Curation curation, String hash) {
+	private MongoCurationLink(String sample, Curation curation, String hash, LocalDateTime created) {
 		this.sample = sample;
 		this.curation = curation;
 		this.hash = hash;
+		this.created = created;
 	}
 
 	public String getSample() {
@@ -35,6 +42,11 @@ public class MongoCurationLink implements Comparable<MongoCurationLink>{
 	
 	public String getHash() {
 		return hash;
+	}
+
+	@JsonSerialize(using = CustomLocalDateTimeSerializer.class)
+	public LocalDateTime getCreated() {
+		return created;
 	}
 
 	@Override
@@ -81,14 +93,15 @@ public class MongoCurationLink implements Comparable<MongoCurationLink>{
 
     //Used for deserializtion (JSON -> Java)
     @JsonCreator
-	public static MongoCurationLink build(@JsonProperty("sample") String sample, @JsonProperty("curation") Curation curation) {
+	public static MongoCurationLink build(@JsonProperty("sample") String sample, @JsonProperty("curation") Curation curation,
+			@JsonProperty("created") @JsonDeserialize(using = CustomLocalDateTimeDeserializer.class) LocalDateTime created) {
 
     	String hash = Hashing.sha256().newHasher()
 			.putUnencodedChars(curation.getHash())
 			.putUnencodedChars(sample)
 			.hash().toString();
     	
-		return new MongoCurationLink(sample,curation,hash);
+		return new MongoCurationLink(sample, curation, hash, created);
 	}
 
 }
