@@ -1,5 +1,6 @@
 package uk.ac.ebi.biosamples.neo.model;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 import org.neo4j.ogm.annotation.GraphId;
@@ -7,7 +8,11 @@ import org.neo4j.ogm.annotation.Index;
 import org.neo4j.ogm.annotation.NodeEntity;
 import org.neo4j.ogm.annotation.Property;
 import org.neo4j.ogm.annotation.Relationship;
+import org.neo4j.ogm.annotation.typeconversion.Convert;
+
 import com.google.common.hash.Hashing;
+
+import uk.ac.ebi.biosamples.neo.service.LocalDateTimeConverter;
 
 @NodeEntity(label = "CurationLink")
 public class NeoCurationLink implements Comparable<NeoCurationLink> {
@@ -26,6 +31,10 @@ public class NeoCurationLink implements Comparable<NeoCurationLink> {
 	@Index(unique=true, primary=true)	
 	private String hash;
 
+	@Convert(LocalDateTimeConverter.class)
+	@Property(name="created")
+	private LocalDateTime created;
+
 	private NeoCurationLink() {
 	};
 
@@ -39,6 +48,10 @@ public class NeoCurationLink implements Comparable<NeoCurationLink> {
 
 	public NeoSample getSample() {
 		return sample;
+	}
+	
+	public LocalDateTime getCreated() {
+		return created;
 	}
 	
 	public String getHash() {
@@ -115,19 +128,20 @@ public class NeoCurationLink implements Comparable<NeoCurationLink> {
 		return 0;
 	}
 	
-	public static NeoCurationLink build(NeoCuration curation, NeoSample sample) {
-		NeoCurationLink newRelationship = new NeoCurationLink();
-		newRelationship.curation = curation;
-		newRelationship.sample = sample;
+	public static NeoCurationLink build(NeoCuration curation, NeoSample sample, LocalDateTime created) {
+		NeoCurationLink neoCurationLink = new NeoCurationLink();
+		neoCurationLink.curation = curation;
+		neoCurationLink.sample = sample;
+		neoCurationLink.created = created;
 		
 
-		newRelationship.hash = Hashing.sha256().newHasher()
+		neoCurationLink.hash = Hashing.sha256().newHasher()
 			.putUnencodedChars(curation.getHash())
 			.putUnencodedChars(sample.getAccession())
 			.hash().toString();
     	
     	//TODO bake user id into hash
 		
-		return newRelationship;
+		return neoCurationLink;
 	}
 }

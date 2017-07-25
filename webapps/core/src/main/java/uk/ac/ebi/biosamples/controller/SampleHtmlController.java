@@ -89,7 +89,7 @@ public class SampleHtmlController {
 		MultiValueMap<String, String> filtersMap = filterService.getFilters(filters);
 						
 		Pageable pageable = new PageRequest(start/rows, rows);
-		Page<Sample> pageSample = samplePageService.getSamplesByText(text, filtersMap, pageable);
+		Page<Sample> pageSample = samplePageService.getSamplesByText(text, filtersMap, null, null, pageable);
 		//default to getting 10 values from 10 facets
 		List<SampleFacet> sampleFacets = facetService.getFacets(text, filtersMap, 10, 10);
 		

@@ -1,6 +1,8 @@
 package uk.ac.ebi.biosamples.solr.service;
 
 import java.io.UnsupportedEncodingException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -31,6 +33,8 @@ import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
 
 @Service
 public class SolrSampleService {
+	
+	public static final DateTimeFormatter solrFormatter = DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss'Z'");
 
 	private final SolrSampleRepository solrSampleRepository;
 	
@@ -40,7 +44,8 @@ public class SolrSampleService {
 		this.solrSampleRepository = solrSampleRepository;
 	}		
 
-	public Page<SolrSample> fetchSolrSampleByText(String searchTerm, MultiValueMap<String,String> filters, Pageable pageable) {
+	public Page<SolrSample> fetchSolrSampleByText(String searchTerm, MultiValueMap<String,String> filters, 
+			LocalDateTime after, LocalDateTime before, Pageable pageable) {
 		//default to search all
 		if (searchTerm == null || searchTerm.trim().length() == 0) {
 			searchTerm = "*:*";
@@ -54,15 +59,24 @@ public class SolrSampleService {
 		}		
 
 		//filter out non-public
+		//filter to update date range
 		FilterQuery filterQuery = new SimpleFilterQuery();
 		filterQuery.addCriteria(new Criteria("release_dt").lessThan("NOW").and("release_dt").isNotNull());
+		if (after != null && before != null) {
+			filterQuery.addCriteria(new Criteria("update_dt").between(after.format(solrFormatter), before.format(solrFormatter)));
+		} else if (after == null && before != null) {
+			filterQuery.addCriteria(new Criteria("update_dt").between("*", before.format(solrFormatter)));
+		} else if (after != null && before == null) {
+			filterQuery.addCriteria(new Criteria("update_dt").between(after.format(solrFormatter), "*"));
+		}
 		query.addFilterQuery(filterQuery);
 		
 		// return the samples from solr that match the query
 		return solrSampleRepository.findByQuery(query);
 	}
 
-	public List<SampleFacet> getFacets(String searchTerm, MultiValueMap<String,String> filters, Pageable facetPageable, Pageable facetValuePageable) {
+	public List<SampleFacet> getFacets(String searchTerm, MultiValueMap<String,String> filters, 
+			String after, String before, Pageable facetPageable, Pageable facetValuePageable) {
 		//default to search all
 		if (searchTerm == null || searchTerm.trim().length() == 0) {
 			searchTerm = "*:*";
@@ -78,6 +92,9 @@ public class SolrSampleService {
 		//filter out non-public
 		FilterQuery filterQuery = new SimpleFilterQuery();
 		filterQuery.addCriteria(new Criteria("release_dt").lessThan("NOW").and("release_dt").isNotNull());
+		if (after != null && before != null) {
+			filterQuery.addCriteria(new Criteria("update_dt").between(after, before));
+		}
 		query.addFilterQuery(filterQuery);
 		
 		Page<FacetFieldEntry> facetFields = solrSampleRepository.getFacetFields(query, facetPageable);

@@ -1,5 +1,6 @@
 package uk.ac.ebi.biosamples.service;
 
+import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -53,18 +54,17 @@ public class SamplePageService {
 	
 
 	//@Cacheable(cacheNames=WebappProperties.getSamplesByText, sync=true)
-	public Page<Sample> getSamplesByText(String text, MultiValueMap<String,String> filters, Pageable pageable) {		
-		Page<SolrSample> pageSolrSample = solrSampleService.fetchSolrSampleByText(text, filters, pageable);		
+	public Page<Sample> getSamplesByText(String text, MultiValueMap<String,String> filters, 
+			LocalDateTime after, LocalDateTime before, Pageable pageable) {		
+		Page<SolrSample> pageSolrSample = solrSampleService.fetchSolrSampleByText(text, filters, after, before, pageable);		
 		//for each result fetch the stored version and add e.g. inverse relationships		
 		//stream process each into a sample *in parallel*
 		Page<Sample> pageSample = new PageImpl<>(StreamSupport.stream(pageSolrSample.spliterator(), true)
 					.map(ss->sampleService.fetch(ss.getAccession())).collect(Collectors.toList()), 
 				pageable,pageSolrSample.getTotalElements()); 
 		return pageSample;
-	}
-	
+	}	
 
-	//@Cacheable(cacheNames=WebappProperties.getSamplesOfExternalReference, sync=true)
 	public Page<Sample> getSamplesOfExternalReference(String urlHash, Pageable pageable) {
 		Page<MongoSample> pageMongoSample = mongoSampleRepository.findByExternalReferences_Hash(urlHash, pageable);		
 		//convert them into a state to return
@@ -72,7 +72,6 @@ public class SamplePageService {
 		return pageSample;
 	}
 
-	//@Cacheable(cacheNames=WebappProperties.getSamplesOfCuration, sync=true)
 	public Page<Sample> getSamplesOfCuration(String hash, Pageable pageable) {
 		Page<MongoCurationLink> accession = mongoCurationLinkRepository.findDistinctCurationLinkByCurationHash(hash, pageable);
 		//stream process each into a sample *in parallel*
@@ -80,5 +79,5 @@ public class SamplePageService {
 					.map(mcl->sampleService.fetch(mcl.getSample())).collect(Collectors.toList()), 
 				pageable, accession.getTotalElements());			
 		return pageSample;
-	}	
+	}
 }

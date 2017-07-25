@@ -8,6 +8,8 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.client.Traverson;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestOperations;
 
 import uk.ac.ebi.biosamples.client.utils.IterableResourceFetchAll;
@@ -29,7 +31,9 @@ public class CurationRetrievalService {
 	}
 
 	public Iterable<Resource<Curation>> fetchAll() {
-		return new IterableResourceFetchAll<Curation>(traverson, restOperations, 
-				new ParameterizedTypeReference<PagedResources<Resource<Curation>>>() {}, "curations");
+		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();		
+		return new IterableResourceFetchAll<Curation>(traverson, restOperations,
+				new ParameterizedTypeReference<PagedResources<Resource<Curation>>>() {}, 
+				params, "curations");
 	}
 }

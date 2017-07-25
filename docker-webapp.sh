@@ -13,9 +13,9 @@ done
 #mvn -T 2C -Dmaven.test.skip=true clean package
 mvn -T 2C clean package
 
-docker-compose stop biosamples-webapps-core biosamples-webapps-sampletab biosamples-webapps-legacyxml mongo neo4j solr rabbitmq biosamples-agents-solr biosamples-agents-curation
 set +e
-docker-compose rm -f -v biosamples-webapps-core biosamples-webapps-sampletab biosamples-webapps-legacyxml mongo neo4j solr rabbitmq biosamples-agents-solr biosamples-agents-curation biosamples-agents-neo4j
+docker-compose stop biosamples-webapps-core biosamples-webapps-sampletab biosamples-webapps-legacyxml mongo neo4j solr rabbitmq biosamples-agents-solr biosamples-agents-curation
+docker-compose rm -f -v biosamples-webapps-core biosamples-webapps-sampletab biosamples-webapps-legacyxml mongo neo4j solr rabbitmq biosamples-agents-solr biosamples-agents-curation
 #cleanup any previous data
 if [ -n $clean ]
 then
@@ -23,12 +23,16 @@ then
 	docker volume ls -q | grep mongo_data | xargs docker volume rm
 	docker volume ls -q | grep solr_data | xargs docker volume rm
 	docker volume ls -q | grep rabbitmq_data | xargs docker volume rm
-fi
+
+        echo "Cleaning logs"
+        rm -rf docker/logs/*.log docker/logs/*.log.* docker/logs/neo4j/*.log
+
 #remove any images, in case of out-of-date or corrupt images
 #docker images -q | xargs -r docker rmi
-set -e
 
-#rm -rf docker/logs/*.log docker/logs/*.log.* docker/logs/neo4j/*.log
+
+fi
+set -e
 
 #make sure we have up-to-date jar files in the docker image
 docker-compose build
@@ -41,7 +45,6 @@ echo "checking rabbitmq is up"
 ./http-status-check -u http://localhost:15672 -t 30
 echo "checking mongo is up"
 ./http-status-check -u http://localhost:27017 -t 30
-
 
 docker-compose up -d biosamples-webapps-core biosamples-webapps-sampletab biosamples-webapps-legacyxml
 echo "checking webapps-core is up"

@@ -2,46 +2,74 @@ package uk.ac.ebi.biosamples;
 
 import java.util.Collections;
 
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Service;
 
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.zooma.ZoomaProcessor;
 
 @Service
-public class MessageHandlerCuration {
+public class SampleCurationRunner implements Runnable {
 	
-	
+	private final Sample sample;
 	private final BioSamplesClient bioSamplesClient;
 	
-	private final ZoomaProcessor zoomaProcessor;
-	
-	public MessageHandlerCuration(BioSamplesClient bioSamplesClient, ZoomaProcessor zoomaProcessor) {
+	public SampleCurationRunner(BioSamplesClient bioSamplesClient, Sample sample) {
 		this.bioSamplesClient = bioSamplesClient;
-		this.zoomaProcessor = zoomaProcessor;
+		this.sample = sample;
 	}
-	
-	/**
-	 * 
-	 * Takes a single Sample off the queue, and checks for the first curation it can find
-	 * If it finds one, then it submits the curation via BioSamplesClient and ends. Once that
-	 * curation has been loaded into the database, this sample will come back to this agent for 
-	 * further curation.
-	 * If no curation is found, no further action is taken.
-	 * 
-	 * 
-	 * Once a sufficient library of curations has been built up, this should be replaced with
-	 * application of curation from similar samples, not this crude brute-force approach
-	 * 
-	 * @param sample
-	 */
-	@RabbitListener(queues = Messaging.queueToBeCurated)
-	public void handle(Sample sample) {		
+
+
+	@Override
+	public void run() {		
 		
+		
+		for (Attribute attribute : sample.getAttributes()) {
+			//clean unexpected characters
+			String newType = cleanString(attribute.getType());
+			String newValue = cleanString(attribute.getValue());
+			if (!attribute.getType().equals(newType) || !attribute.getValue().equals(newValue)) {
+				Attribute newAttribute = Attribute.build(newType, newValue, attribute.getIri(), attribute.getUnit());
+				bioSamplesClient.persistCuration(sample.getAccession(), Curation.build(attribute, newAttribute));
+				//TODO apply curation
+				
+			}
+			
+			//if no information content, remove
+			if (isEqualToNotApplicable(attribute.getValue())) {
+				bioSamplesClient.persistCuration(sample.getAccession(), Curation.build(attribute, null));
+				//TODO apply curation
+			}			
+			
+			//if it has a unit, make sure it is clean
+			if (attribute.getUnit() != null) {
+				String newUnit = correctUnit(attribute.getUnit());
+				if (!attribute.getUnit().equals(newUnit)) {
+					Attribute newAttribute = Attribute.build(attribute.getType(), attribute.getValue(), attribute.getIri(), newUnit);
+					bioSamplesClient.persistCuration(sample.getAccession(), Curation.build(attribute, newAttribute));
+					//TODO apply curation
+				}
+			}
+		}
+		
+		
+		//TODO write me
+				
+		//query un-mapped attributes against Zooma
+		//zoomaProcessor.process(sample);
+		
+		//validate existing ontology terms against OLS
+		//expand short-version ontology terms using OLS
+		
+		//turn attributes with biosample accessions into relationships
+		
+		//split number+unit attributes
+		
+		//lowercase attribute types		
+		//lowercase relationship types		
 	}
+
 
     public String cleanString(String string) {
         if (string == null){
@@ -62,8 +90,8 @@ public class MessageHandlerCuration {
         string = string.replaceAll("\uff09", ") "); //full-width right parenthesis
         string = string.replaceAll("\uff08", " ("); //full-width left parenthesis
         
-        //replace underscores with spaces, maybe?
-        //string = string.replaceAll("_", " ");
+        //replace underscores with spaces
+        string = string.replaceAll("_", " ");
 
         //trim extra whitespace at start and end
         string = string.trim();
@@ -250,5 +278,7 @@ public class MessageHandlerCuration {
         	return unit;
         }
     }
+	
+	
 	
 }

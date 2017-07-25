@@ -1,6 +1,8 @@
 package uk.ac.ebi.biosamples.client.service;
 
 import java.net.URI;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
@@ -23,6 +25,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -33,6 +37,8 @@ import uk.ac.ebi.biosamples.model.Sample;
 public class SampleRetrievalService {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
+	
+	public static final DateTimeFormatter solrFormatter = DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss'Z'");
 
 	private final Traverson traverson;
 	private final ExecutorService executor;
@@ -109,9 +115,36 @@ public class SampleRetrievalService {
 		}
 	}
 	
-	public Iterable<Resource<Sample>> fetchAll() {
-		return new IterableResourceFetchAll<Sample>(traverson, restOperations, 
-				new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {}, "samples");
+	public Iterable<Resource<Sample>> fetchAll() {	
+		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();		
+		return new IterableResourceFetchAll<Sample>(traverson, restOperations,
+				new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {}, 
+				params,	"samples");
+	}
+
+	public Iterable<Resource<Sample>> fetchUpdatedAfter(LocalDateTime updatedAfter) {	
+		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();		
+		params.add("updatedafter", solrFormatter.format(updatedAfter));
+		return new IterableResourceFetchAll<Sample>(traverson, restOperations,
+				new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {}, 
+				params,	"samples");
+	}
+
+	public Iterable<Resource<Sample>> fetchUpdatedBefore(LocalDateTime updatedBefore) {	
+		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();		
+		params.add("updatedbefore", solrFormatter.format(updatedBefore));
+		return new IterableResourceFetchAll<Sample>(traverson, restOperations,
+				new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {}, 
+				params,	"samples");
+	}
+
+	public Iterable<Resource<Sample>> fetchUpdatedBetween(LocalDateTime updatedAfter, LocalDateTime updatedBefore) {	
+		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();		
+		params.add("updatedafter", solrFormatter.format(updatedAfter));
+		params.add("updatedbefore", solrFormatter.format(updatedBefore));
+		return new IterableResourceFetchAll<Sample>(traverson, restOperations,
+				new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {}, 
+				params,	"samples");
 	}
 
 	public Iterable<Optional<Resource<Sample>>> fetchAll(Iterable<String> accessions) {
