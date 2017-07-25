@@ -3,18 +3,23 @@ package uk.ac.ebi.biosamples.mongo.model;
 import java.util.Objects;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.hash.Hashing;
 
+@Document
 public class MongoRelationship implements Comparable<MongoRelationship> {
 
 	@Id
 	private final String hash;
 	
 	private final String type;
+	@Indexed
 	private final String target;
+	@Indexed
 	private final String source;
 	
 	private MongoRelationship(String type, String target, String source, String hash){

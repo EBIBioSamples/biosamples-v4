@@ -3,6 +3,7 @@ package uk.ac.ebi.biosamples.mongo.model;
 import java.util.Objects;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -11,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.hash.Hashing;
 
+@Document
 public class MongoExternalReference implements Comparable<MongoExternalReference> {
 	
 	private final String url;	
