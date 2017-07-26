@@ -63,7 +63,7 @@ public class CachingRequestBodyFilter extends OncePerRequestFilter {
 				// read the request to a string
 				final ContentCachingRequestWrapper wrapperAfterRequest = WebUtils.getNativeRequest(requestWrapper, ContentCachingRequestWrapper.class);
                 final String content = new String(wrapperAfterRequest.getContentAsByteArray(), wrapperAfterRequest.getCharacterEncoding());
-				log.info("content = " + content);
+				log.trace("content = " + content);
 				// now save the request to the database
 
 				StringBuffer requestStringBuffer = requestWrapper.getRequestURL();
@@ -73,7 +73,7 @@ public class CachingRequestBodyFilter extends OncePerRequestFilter {
 					requestStringBuffer.append(requestWrapper.getQueryString());
 				}
 				String url = requestStringBuffer.toString();
-				log.info("url = " + url);
+				log.trace("url = " + url);
 
 				// store the headers on the request too
 				Map<String, List<String>> headers = new HashMap<>();
@@ -88,7 +88,7 @@ public class CachingRequestBodyFilter extends OncePerRequestFilter {
 				}
 
 				// actually do the saving
-				log.info("Saving submission");
+				log.trace("Saving submission");
 				mongoSubmissionRepository.save(MongoSubmission.build(LocalDateTime.now(), request.getMethod(), url, headers, content));
 				
 			}
