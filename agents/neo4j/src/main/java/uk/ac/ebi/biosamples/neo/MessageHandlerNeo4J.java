@@ -6,7 +6,6 @@ import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import uk.ac.ebi.biosamples.MessageContent;
 import uk.ac.ebi.biosamples.Messaging;
 import uk.ac.ebi.biosamples.messages.threaded.MessageSampleStatus;
@@ -20,7 +19,7 @@ public class MessageHandlerNeo4J {
 	private AmqpTemplate amqpTemplate;
 	
 	@Autowired
-	private NeoMessageBuffer messageBuffer;
+	private uk.ac.ebi.biosamples.neo.NeoMessageBuffer messageBuffer;
 
 	@RabbitListener(queues = Messaging.queueToBeIndexedNeo4J)
 	public void handle(MessageContent messageContent) {

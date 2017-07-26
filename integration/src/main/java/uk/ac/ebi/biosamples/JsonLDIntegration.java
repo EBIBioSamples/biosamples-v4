@@ -26,7 +26,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
-@Component
+//@Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @Profile({"default", "selenium", "test"})
 public class JsonLDIntegration extends AbstractIntegration {

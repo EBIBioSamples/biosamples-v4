@@ -19,11 +19,7 @@ public class Neo4JRunner implements ApplicationRunner, ExitCodeGenerator {
 	
 	@Autowired
 	private BioSamplesProperties biosamplesProperties;
-<<<<<<< HEAD
-=======
 
-	//wire in the message buffer so we can return a non-zero exit code if there are any problems
->>>>>>> merged properties into a single submodule
 	@Autowired
 	private MessageUtils messageUtils;
 	
@@ -34,17 +30,10 @@ public class Neo4JRunner implements ApplicationRunner, ExitCodeGenerator {
 	public void run(ApplicationArguments args) throws Exception {
 		// as long as there are messages to read, keep this thread alive
 		// that will also keep the async message client alive too?
-<<<<<<< HEAD
 		Long messageCount = null;
-		while (biosamplesProperties.getAgentNeo4JStayalive() 
+		while (biosamplesProperties.getAgentNeo4JStayalive()
 				|| messageCount == null || messageCount > 0 ) {
-=======
-		Integer messageCount = null;
-		while (biosamplesProperties.getAgentNeo4JStayalive() 
-				|| messageCount == null || messageCount > 0
-				||!messageBuffer.areAllStored()) {
->>>>>>> merged properties into a single submodule
-			Thread.sleep(1000);
+		Thread.sleep(1000);
 			messageCount = messageUtils.getQueueCount(Messaging.queueToBeIndexedNeo4J);
 			log.trace("Messages remaining in "+Messaging.queueToBeIndexedNeo4J+" "+messageCount);
 		}

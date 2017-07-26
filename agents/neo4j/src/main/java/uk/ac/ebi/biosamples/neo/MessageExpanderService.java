@@ -1,28 +1,16 @@
 package uk.ac.ebi.biosamples.neo;
 
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import uk.ac.ebi.biosamples.MessageContent;
+import uk.ac.ebi.biosamples.model.Relationship;
+import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.service.SampleReadService;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import uk.ac.ebi.biosamples.MessageContent;
-import uk.ac.ebi.biosamples.model.Relationship;
-import uk.ac.ebi.biosamples.model.Sample;
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-import uk.ac.ebi.biosamples.neo.repo.NeoCurationLinkRepository;
-import uk.ac.ebi.biosamples.neo.repo.NeoCurationRepository;
-import uk.ac.ebi.biosamples.neo.repo.NeoSampleRepository;
-import uk.ac.ebi.biosamples.neo.service.modelconverter.CurationToNeoCurationConverter;
-import uk.ac.ebi.biosamples.neo.service.modelconverter.SampleToNeoSampleConverter;
->>>>>>> Moved solr over to message content, separated read and write services
-=======
->>>>>>> cleanup imports
-import uk.ac.ebi.biosamples.service.SampleReadService;
 
 @Service
 public class MessageExpanderService {

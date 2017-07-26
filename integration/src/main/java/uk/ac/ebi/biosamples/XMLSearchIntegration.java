@@ -22,7 +22,7 @@ import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-@Component
+//@Component
 @Profile({"default", "test"})
 public class XMLSearchIntegration extends AbstractIntegration {
     
