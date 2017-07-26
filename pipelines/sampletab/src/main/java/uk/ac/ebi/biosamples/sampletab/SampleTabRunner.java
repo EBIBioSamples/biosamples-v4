@@ -52,13 +52,12 @@ public class SampleTabRunner implements ApplicationRunner {
 			log.info("waiting for futures");
 			// wait for anything to finish
 			ThreadUtils.checkFutures(futures, 0);
+		} finally {
+			//now print a list of things that failed
+			if (SampleTabCallable.failedQueue.size() > 0) {
+				log.info("Failed files: "+String.join(" , ", SampleTabCallable.failedQueue));
+			}
 		}
-		
-		//now print a list of things that failed
-		if (SampleTabCallable.failedQueue.size() > 0) {
-			log.info("Failed files: "+String.join(" , ", SampleTabCallable.failedQueue));
-		}
-
 	}
 
 }
