@@ -44,7 +44,7 @@ public class MongoSampleEventListener extends AbstractMongoEventListener<MongoSa
 	@Override
 	public void onBeforeConvert(BeforeConvertEvent<MongoSample> event) {
 
-		log.info("processing onBeforeConvert for "+event.getSource());
+		log.trace("processing onBeforeConvert for "+event.getSource());
 		
 		//put any external references in the external reference collection		
 		SortedSet<MongoExternalReference> loadedExternalReferences = new TreeSet<>();		
@@ -67,10 +67,8 @@ public class MongoSampleEventListener extends AbstractMongoEventListener<MongoSa
 			}
 			loadedRelationships.add(relationship);
 		}		
-		event.getSource().getExternalReferences().clear();
-		event.getSource().getExternalReferences().addAll(loadedExternalReferences);
-		
-		
+		event.getSource().getRelationships().clear();
+		event.getSource().getRelationships().addAll(loadedRelationships);
 	}
 	
 	
@@ -80,9 +78,9 @@ public class MongoSampleEventListener extends AbstractMongoEventListener<MongoSa
 	 */
 	@Override
 	public void onAfterConvert(AfterConvertEvent<MongoSample> event) {
-		log.info("processing onAfterConvert for "+event.getSource());
+		log.trace("processing onAfterConvert for "+event.getSource());
 		List<MongoRelationship> relationships = mongoRelationshipRepository.findAllByTarget(event.getSource().getAccession());
-		log.info("Found relationships "+relationships);
+		log.trace("Found relationships "+relationships);
 		event.getSource().getRelationships().addAll(relationships);
 		
 	}
