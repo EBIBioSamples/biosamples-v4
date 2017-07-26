@@ -101,7 +101,7 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
 						});
 				this.page = responseEntity.getBody();
 				this.pageIterator = page.iterator();
-				return this.pageIterator.next();
+				return next();
 			}
 			//no more in this iterator and no more pages, so end	
 			throw new NoSuchElementException();
