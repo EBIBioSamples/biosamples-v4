@@ -55,10 +55,11 @@ public class CurationApplicationRunner implements ApplicationRunner {
 			log.info("waiting for futures");
 			// wait for anything to finish
 			ThreadUtils.checkFutures(futures, 0);
-		}
-		//now print a list of things that failed
-		if (SampleCurationCallable.failedQueue.size() > 0) {
-			log.info("Failed files: "+String.join(" , ", SampleCurationCallable.failedQueue));
+		} finally {
+			//now print a list of things that failed
+			if (SampleCurationCallable.failedQueue.size() > 0) {
+				log.info("Failed files: "+String.join(" , ", SampleCurationCallable.failedQueue));
+			}
 		}
 	}
 
