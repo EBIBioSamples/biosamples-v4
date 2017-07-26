@@ -12,6 +12,7 @@ import org.dom4j.io.SAXReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -77,7 +78,11 @@ public class EnaCallable implements Callable<Void> {
 			} else {
 				log.warn("Unable to find SAMPLE element for " + sampleAccession);
 			}
+		} catch (HttpServerErrorException e) {
+			log.error("Request failed with : "+e.getResponseBodyAsString());
+			failedQueue.add(sampleAccession);
 		} catch (Exception e) {
+			log.info("Adding "+sampleAccession+" to fail queue");
 			failedQueue.add(sampleAccession);
 		}
 		

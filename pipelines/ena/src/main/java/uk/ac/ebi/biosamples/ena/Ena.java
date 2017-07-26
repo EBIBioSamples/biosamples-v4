@@ -7,6 +7,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import org.slf4j.Logger;
@@ -63,22 +64,28 @@ public class Ena implements ApplicationRunner {
 		}
 		
 		if (pipelinesProperties.getThreadCount() == 0) {
-			throw new IllegalArgumentException("Must specificy at least 1 thead to use");
-		}
-		
-		try (AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, 
-				pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax())) {
-
-			EraRowCallbackHandler eraRowCallbackHandler = new EraRowCallbackHandler(executorService);
+			EraRowCallbackHandler eraRowCallbackHandler = new EraRowCallbackHandler(null);
 			eraProDao.doSampleCallback(fromDate, toDate, eraRowCallbackHandler);
-			
-			log.info("waiting for futures");
-			// wait for anything to finish
-			ThreadUtils.checkFutures(futures, 0);
-		} finally {
 			//now print a list of things that failed
 			if (EnaCallable.failedQueue.size() > 0) {
 				log.info("Failed accessions: "+String.join(", ", EnaCallable.failedQueue));
+			}			
+		} else {
+		
+			try (AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, false, 
+					pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax())) {
+	
+				EraRowCallbackHandler eraRowCallbackHandler = new EraRowCallbackHandler(executorService);
+				eraProDao.doSampleCallback(fromDate, toDate, eraRowCallbackHandler);
+				
+				log.info("waiting for futures");
+				// wait for anything to finish
+				ThreadUtils.checkFutures(futures, 0);
+			} finally {
+				//now print a list of things that failed
+				if (EnaCallable.failedQueue.size() > 0) {
+					log.info("Failed accessions: "+String.join(", ", EnaCallable.failedQueue));
+				}
 			}
 		}
 	}
@@ -95,9 +102,17 @@ public class Ena implements ApplicationRunner {
 		@Override
 		public void processRow(ResultSet rs) throws SQLException {
 			String sampleAccession = rs.getString("BIOSAMPLE_ID");
-
+			
 			Callable<Void> callable = enaCallableFactory.build(sampleAccession); 
-			futures.put(sampleAccession, executorService.submit(callable));
+			if (executorService == null) {
+				try {
+					callable.call();
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+			} else {
+				futures.put(sampleAccession, executorService.submit(callable));
+			}
 		}
 		
 	}

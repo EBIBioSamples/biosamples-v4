@@ -1,26 +1,34 @@
 package uk.ac.ebi.biosamples;
 
 import java.util.Collections;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.zooma.ZoomaProcessor;
 
 public class SampleCurationCallable implements Callable<Void> {
 
+	private Logger log = LoggerFactory.getLogger(getClass());
+
 	private final Sample sample;
 	private final BioSamplesClient bioSamplesClient;
+	private final ZoomaProcessor zoomaProcessor;
 
 	public static final ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<String>();
 
-	public SampleCurationCallable(BioSamplesClient bioSamplesClient, Sample sample) {
+	public SampleCurationCallable(BioSamplesClient bioSamplesClient, Sample sample, ZoomaProcessor zoomaProcessor) {
 		this.bioSamplesClient = bioSamplesClient;
 		this.sample = sample;
+		this.zoomaProcessor = zoomaProcessor;
 	}
 
 	@Override
@@ -35,14 +43,16 @@ public class SampleCurationCallable implements Callable<Void> {
 				if (!attribute.getType().equals(newType) || !attribute.getValue().equals(newValue)) {
 					Attribute newAttribute = Attribute.build(newType, newValue, attribute.getIri(),
 							attribute.getUnit());
-					bioSamplesClient.persistCuration(sample.getAccession(), Curation.build(attribute, newAttribute));
+					Curation curation = Curation.build(attribute, newAttribute);
+					bioSamplesClient.persistCuration(sample.getAccession(), curation );
 					// TODO apply curation
 
 				}
 
 				// if no information content, remove
 				if (isEqualToNotApplicable(attribute.getValue())) {
-					bioSamplesClient.persistCuration(sample.getAccession(), Curation.build(attribute, null));
+					Curation curation = Curation.build(attribute, null);
+					bioSamplesClient.persistCuration(sample.getAccession(), curation);
 					// TODO apply curation
 				}
 
@@ -52,8 +62,9 @@ public class SampleCurationCallable implements Callable<Void> {
 					if (!attribute.getUnit().equals(newUnit)) {
 						Attribute newAttribute = Attribute.build(attribute.getType(), attribute.getValue(),
 								attribute.getIri(), newUnit);
+						Curation curation = Curation.build(attribute, newAttribute); 
 						bioSamplesClient.persistCuration(sample.getAccession(),
-								Curation.build(attribute, newAttribute));
+								curation);
 						// TODO apply curation
 					}
 				}
@@ -62,8 +73,11 @@ public class SampleCurationCallable implements Callable<Void> {
 			// TODO write me
 
 			// query un-mapped attributes against Zooma
-			// zoomaProcessor.process(sample);
 
+			
+			
+			
+			
 			// validate existing ontology terms against OLS
 			// expand short-version ontology terms using OLS
 
@@ -226,6 +240,64 @@ public class SampleCurationCallable implements Callable<Void> {
 		} else {
 			// no change
 			return unit;
+		}
+	}
+	
+
+	private void zooma(Sample sample) {
+		
+		for (Attribute attribute : sample.getAttributes()) {
+			
+			if (attribute.getIri() != null) {
+				continue;
+			} 
+			if (attribute.getUnit() != null) {
+				continue;
+			} 
+			
+			if (attribute.getType().equals("synonym")) {
+				log.info("Skipping synonym "+attribute.getValue());
+				continue;
+			} 
+			if (attribute.getType().equals("label")) {
+				log.info("Skipping label "+attribute.getValue());
+				continue;
+			}
+			if (attribute.getType().equals("host_subject_id")) {
+				log.info("Skipping host_subject_id "+attribute.getValue());
+				continue;
+			}
+
+			
+			if (attribute.getValue().matches("^[0-9.-]+$")) {
+				log.info("Skipping number "+attribute.getValue());
+				continue;
+			}
+			if (attribute.getValue().matches("^[ESD]R[SRX][0-9]+$")) {
+				log.info("Skipping SRA/ENA/DDBJ identifier "+attribute.getValue());
+				continue;
+			} 
+			if (attribute.getValue().matches("^GSM[0-9]+$")) {
+				log.info("Skipping GEO identifier "+attribute.getValue());
+				continue;
+			} 
+			if (attribute.getValue().matches("^SAM[END]A?[0-9]+$")) {
+				log.info("Skipping BioSample identifier "+attribute.getValue());
+				continue;
+			}
+			
+			
+			if (attribute.getIri() == null && attribute.getType().length() < 64 && attribute.getValue().length() < 128) {
+				Optional<String> iri = zoomaProcessor.queryZooma(attribute.getType(), attribute.getValue());
+				if (iri.isPresent()) {
+					log.info("Mapped "+attribute+" to "+iri.get());
+					Attribute mapped = Attribute.build(attribute.getType(), attribute.getValue(), iri.get(), null);
+					Curation curation = Curation.build(Collections.singleton(attribute), Collections.singleton(mapped), null, null);
+				
+					//save the curation back in biosamples
+					bioSamplesClient.persistCuration(sample.getAccession(), curation);
+				}
+			}
 		}
 	}
 
