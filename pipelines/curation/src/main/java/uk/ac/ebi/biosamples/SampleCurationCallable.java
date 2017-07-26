@@ -7,6 +7,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 import org.springframework.stereotype.Service;
 
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
@@ -73,11 +76,8 @@ public class SampleCurationCallable implements Callable<Void> {
 			// TODO write me
 
 			// query un-mapped attributes against Zooma
+			// zoomaProcessor.process(sample);
 
-			
-			
-			
-			
 			// validate existing ontology terms against OLS
 			// expand short-version ontology terms using OLS
 
@@ -241,8 +241,7 @@ public class SampleCurationCallable implements Callable<Void> {
 			// no change
 			return unit;
 		}
-	}
-	
+	}	
 
 	private void zooma(Sample sample) {
 		
@@ -300,5 +299,4 @@ public class SampleCurationCallable implements Callable<Void> {
 			}
 		}
 	}
-
 }

@@ -88,6 +88,11 @@ public class Ena implements ApplicationRunner {
 				}
 			}
 		}
+		
+		//now print a list of things that failed
+		if (EnaCallable.failedQueue.size() > 0) {
+			log.info("Failed accessions: "+String.join(", ", EnaCallable.failedQueue));
+		}
 	}
 	
 	
