@@ -17,18 +17,21 @@ import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
+import uk.ac.ebi.biosamples.zooma.ZoomaProcessor;
 
 @Component
 public class CurationApplicationRunner implements ApplicationRunner {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 
-	private final BioSamplesClient bioSamplesClient;
-	@Autowired
-	private PipelinesProperties pipelinesProperties;
+	private final BioSamplesClient bioSamplesClient;	
+	private final PipelinesProperties pipelinesProperties;
+	private final ZoomaProcessor zoomaProcessor;
 	
-	public CurationApplicationRunner(BioSamplesClient bioSamplesClient) {
+	public CurationApplicationRunner(BioSamplesClient bioSamplesClient, PipelinesProperties pipelinesProperties, ZoomaProcessor zoomaProcessor) {
 		this.bioSamplesClient = bioSamplesClient;
+		this.pipelinesProperties = pipelinesProperties;
+		this.zoomaProcessor = zoomaProcessor;
 	}
 	
 	
@@ -47,7 +50,7 @@ public class CurationApplicationRunner implements ApplicationRunner {
 					throw new RuntimeException("Sample should not be null");
 				}
 
-				Callable<Void> task = new SampleCurationCallable(bioSamplesClient, sample);
+				Callable<Void> task = new SampleCurationCallable(bioSamplesClient, sample, zoomaProcessor);
 				
 				futures.put(sample.getAccession(), executorService.submit(task));
 			}
