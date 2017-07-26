@@ -94,10 +94,9 @@ public class SampleRestController {
 	}
 
 	@CrossOrigin(methods = RequestMethod.GET)
-	@GetMapping(value = "/{accession}", produces = { MediaType.APPLICATION_XML_VALUE })
+	@GetMapping(value = "/{accession}", produces = { MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE })
 	public Sample getSampleXml(@PathVariable String accession) {
-	    Sample sampleContent = this.getSampleHal(accession).getContent();
-	    return sampleContent;
+		return this.getSampleHal(accession).getContent();
 	}
 
 	@ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "No such Sample") // 404

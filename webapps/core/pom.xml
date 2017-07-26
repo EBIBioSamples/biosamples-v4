@@ -71,12 +71,23 @@
 			<artifactId>spring-boot-starter-data-rest</artifactId>
 		</dependency>
 
+        <!-- make xml serialization possible -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-xml</artifactId>
+		</dependency>
+
 		<!-- mark tomcat as provided so we can deploy to tomcat -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-tomcat</artifactId>
 			<scope>provided</scope>
 		</dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-oxm</artifactId>
+            <version>5.0.0.BUILD-SNAPSHOT</version>
+        </dependency>
 	</dependencies>
 
 	<build>
