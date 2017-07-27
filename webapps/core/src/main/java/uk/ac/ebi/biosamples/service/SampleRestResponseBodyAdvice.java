@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples;
+package uk.ac.ebi.biosamples.service;
 
 import java.nio.charset.Charset;
 import java.time.ZoneOffset;
@@ -40,7 +40,7 @@ public class SampleRestResponseBodyAdvice implements ResponseBodyAdvice<Resource
 		
 		if (body == null) {
 			//error, stop here
-			log.info("null body detected");
+			log.trace("null body detected");
 			return body;
 		} else if (request.getMethod().equals(HttpMethod.PUT)
 				|| request.getMethod().equals(HttpMethod.POST)
@@ -49,7 +49,7 @@ public class SampleRestResponseBodyAdvice implements ResponseBodyAdvice<Resource
 
 			//modifying request, no caching
 			//coditional requests are checked earlier
-			log.info("no caching on put/post/patch/delete requests");
+			log.trace("no caching on put/post/patch/delete requests");
 			return body;
 		}
 		

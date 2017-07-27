@@ -33,7 +33,7 @@ import uk.ac.ebi.biosamples.mongo.repo.MongoSubmissionRepository;
  *
  */
 @Component
-public class CachingRequestBodyFilter extends OncePerRequestFilter {
+public class SubmissionArchiveFilter extends OncePerRequestFilter {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 

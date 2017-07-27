@@ -19,6 +19,7 @@ import org.springframework.web.servlet.handler.MappedInterceptor;
 import com.github.benmanes.caffeine.cache.CaffeineSpec;
 
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.service.CacheControlInterceptor;
 import uk.ac.ebi.biosamples.xml.XmlSampleHttpMessageConverter;
 
 //@SpringBootApplication
