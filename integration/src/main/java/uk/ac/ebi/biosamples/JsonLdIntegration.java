@@ -29,12 +29,12 @@ import java.util.regex.Pattern;
 //@Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @Profile({"default", "selenium", "test"})
-public class JsonLDIntegration extends AbstractIntegration {
-    RestOperations restTemplate;
-    WebDriver chromeDriver;
-    IntegrationProperties integrationProperties;
+public class JsonLdIntegration extends AbstractIntegration {
+    private final RestOperations restTemplate;
+    private final WebDriver chromeDriver = new ChromeDriver();
+    private final IntegrationProperties integrationProperties;
 
-    public JsonLDIntegration(RestTemplateBuilder templateBuilder,
+    public JsonLdIntegration(RestTemplateBuilder templateBuilder,
                              BioSamplesClient client,
                              IntegrationProperties props) {
         super(client);
@@ -113,7 +113,6 @@ public class JsonLDIntegration extends AbstractIntegration {
     }
 
     private void checkPresenceOnWebPage(Sample sample) {
-        chromeDriver = new ChromeDriver();
         try {
             Optional<Resource<Sample>> optionalSample = client.fetchSampleResource(sample.getAccession());
             if (optionalSample.isPresent()) {

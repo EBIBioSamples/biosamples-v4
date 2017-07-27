@@ -22,16 +22,16 @@ import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-//@Component
+@Component
 @Profile({"default", "test"})
-public class XMLSearchIntegration extends AbstractIntegration {
+public class XmlSearchIntegration extends AbstractIntegration {
     
     private final RestTemplate restTemplate;
     private final IntegrationProperties integrationProperties;
 
     Logger log = LoggerFactory.getLogger(getClass());
 
-    public XMLSearchIntegration(BioSamplesClient client,
+    public XmlSearchIntegration(BioSamplesClient client,
                                 RestTemplateBuilder restTemplateBuilder,
                                 IntegrationProperties integrationProperties) {
         super(client);
