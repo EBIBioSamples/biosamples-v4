@@ -11,6 +11,6 @@ import uk.ac.ebi.biosamples.client.BioSamplesClient;
 public class Application {
 
 	public static void main(String[] args) {
-		SpringApplication.run(Application.class, args);
+		SpringApplication.exit(SpringApplication.run(Application.class, args));
 	}
 }

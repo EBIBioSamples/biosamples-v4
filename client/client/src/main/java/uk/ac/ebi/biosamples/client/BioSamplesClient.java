@@ -11,10 +11,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.StreamSupport;
 
 import javax.annotation.PreDestroy;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -27,11 +25,8 @@ import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
-import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-
 import uk.ac.ebi.biosamples.client.service.AapClientService;
 import uk.ac.ebi.biosamples.client.service.CurationRetrievalService;
 import uk.ac.ebi.biosamples.client.service.CurationSubmissionService;
@@ -41,6 +36,8 @@ import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.SampleValidator;
+
+
 
 /**
  * This is the primary class for interacting with BioSamples.
@@ -194,7 +191,6 @@ public class BioSamplesClient {
 	public Iterable<Resource<Curation>> fetchCurationResourceAll() throws RestClientException {
 		return curationRetrievalService.fetchAll();
 	}
-	
 	public Resource<CurationLink> persistCuration(String accession, Curation curation) throws RestClientException {
 		
 		return curationSubmissionService.submit(CurationLink.build(accession, curation, null, null));

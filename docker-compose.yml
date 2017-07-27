@@ -14,6 +14,7 @@ services:
     command:
     - java
     - -jar
+    - -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000
     - webapps-core-4.0.0-SNAPSHOT.war
     environment:
     #AAP certificate
@@ -62,6 +63,7 @@ services:
     ports:
     - 8081:8080
     - 9090:9090
+    - 8000:8000
     
   biosamples-webapps-sampletab:
     image: biosamples:latest
@@ -114,7 +116,7 @@ services:
     - endpoints.shutdown.sensitive=false
     ports:
     - 8083:8080
-    - 8000:8000
+    # - 8000:8000
 
     
   biosamples-agents-neo4j:

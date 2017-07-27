@@ -40,8 +40,8 @@ public class MessageContent {
 	
 	public List<Sample> getRelated() {
 		return related;
-	}	
-	
+	}
+
 	public CurationLink getCurationLink() {
 		return curationLink;
 	}

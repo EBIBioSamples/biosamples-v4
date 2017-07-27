@@ -121,7 +121,7 @@ public class SampleRetrievalService {
 		}
 	}
 	
-	public Iterable<Resource<Sample>> fetchAll() {	
+	public Iterable<Resource<Sample>> fetchAll() {
 		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();		
 		return new IterableResourceFetchAll<Sample>(traverson, restOperations,
 				new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {}, 

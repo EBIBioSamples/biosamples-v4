@@ -1,20 +1,7 @@
 package uk.ac.ebi.biosamples;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
-import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.ParameterizedTypeReference;
@@ -28,14 +15,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
-
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Curation;
-import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
+import java.net.URI;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 @Component
 @Order(6)
@@ -105,32 +98,7 @@ public class RestCurationIntegration extends AbstractIntegration {
 	}
 
 	private void testCurations() {
-		
-		
-		
-		
-		/*
-		//TODO use client
-		URI uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUri())
-				.pathSegment("curations").build().toUri();
-		
-		log.info("GETting from " + uri);
-		RequestEntity<Void> request = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
-		ResponseEntity<PagedResources<Resource<Curation>>> response = restTemplate.exchange(request,
-				new ParameterizedTypeReference<PagedResources<Resource<Curation>>>() {
-				});
-		if(!response.getStatusCode().is2xxSuccessful()) {
-			throw new RuntimeException("Unable to get curations list");
-		}
-		log.info("GETted from " + uri);
-		PagedResources<Resource<Curation>> paged = response.getBody();
-
-		
-		if (paged.getContent().size() == 0) {
-			throw new RuntimeException("No curations in list");
-		}
-		*/
-		
+				
 		for (Resource<Curation> curationResource : client.fetchCurationResourceAll()) {
 			Link selfLink = curationResource.getLink("self");
 			Link samplesLink = curationResource.getLink("samples");

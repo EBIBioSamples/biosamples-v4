@@ -1,10 +1,8 @@
 package uk.ac.ebi.biosamples;
 
-import java.util.concurrent.Executor;
-
+import com.github.benmanes.caffeine.cache.CaffeineSpec;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-//import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
@@ -16,14 +14,16 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.web.servlet.handler.MappedInterceptor;
-
-import com.github.benmanes.caffeine.cache.CaffeineSpec;
-
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.neo.NeoProperties;
 import uk.ac.ebi.biosamples.neo.repo.NeoSampleRepository;
 import uk.ac.ebi.biosamples.service.NeoAccessionService;
+import uk.ac.ebi.biosamples.service.CacheControlInterceptor;
 import uk.ac.ebi.biosamples.xml.XmlSampleHttpMessageConverter;
+
+import java.util.concurrent.Executor;
+
+//import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 
 //@SpringBootApplication
 @Configuration
@@ -45,7 +45,7 @@ public class Application extends SpringBootServletInitializer {
 	@Bean
 	public HttpMessageConverter<Sample> getXmlSampleHttpMessageConverter() {
 		return new XmlSampleHttpMessageConverter();
-	}	
+	}
     
     @Bean(name = "threadPoolTaskExecutor")
     public Executor threadPoolTaskExecutor() {
@@ -70,7 +70,8 @@ public class Application extends SpringBootServletInitializer {
     public CaffeineSpec CaffeineSpec() {
     	return CaffeineSpec.parse("maximumSize=500,expireAfterWrite=60s");
     }
-    
+
+
     /*
     @Bean
     public ApplicationRunner appRunner() {

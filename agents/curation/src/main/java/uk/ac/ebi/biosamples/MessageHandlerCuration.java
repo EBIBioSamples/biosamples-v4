@@ -1,15 +1,9 @@
 package uk.ac.ebi.biosamples;
 
-import java.util.Collections;
-
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Service;
-
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.zooma.ZoomaProcessor;
 
 @Service
 public class MessageHandlerCuration {
@@ -17,11 +11,8 @@ public class MessageHandlerCuration {
 	
 	private final BioSamplesClient bioSamplesClient;
 	
-	private final ZoomaProcessor zoomaProcessor;
-	
-	public MessageHandlerCuration(BioSamplesClient bioSamplesClient, ZoomaProcessor zoomaProcessor) {
+	public MessageHandlerCuration(BioSamplesClient bioSamplesClient) {
 		this.bioSamplesClient = bioSamplesClient;
-		this.zoomaProcessor = zoomaProcessor;
 	}
 	
 	/**

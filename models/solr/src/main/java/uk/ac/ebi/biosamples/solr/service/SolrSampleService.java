@@ -1,5 +1,21 @@
 package uk.ac.ebi.biosamples.solr.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.solr.core.query.*;
+import org.springframework.data.solr.core.query.result.FacetFieldEntry;
+import org.springframework.data.solr.core.query.result.FacetPage;
+import org.springframework.stereotype.Service;
+import org.springframework.util.MultiValueMap;
+import uk.ac.ebi.biosamples.model.Autocomplete;
+import uk.ac.ebi.biosamples.model.SampleFacet;
+import uk.ac.ebi.biosamples.model.SampleFacetsBuilder;
+import uk.ac.ebi.biosamples.solr.model.SolrSample;
+import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
+
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -7,30 +23,6 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.solr.core.query.Criteria;
-import org.springframework.data.solr.core.query.FacetOptions;
-import org.springframework.data.solr.core.query.FacetQuery;
-import org.springframework.data.solr.core.query.Field;
-import org.springframework.data.solr.core.query.FilterQuery;
-import org.springframework.data.solr.core.query.Query;
-import org.springframework.data.solr.core.query.SimpleFacetQuery;
-import org.springframework.data.solr.core.query.SimpleFilterQuery;
-import org.springframework.data.solr.core.query.SimpleQuery;
-import org.springframework.data.solr.core.query.result.FacetFieldEntry;
-import org.springframework.data.solr.core.query.result.FacetPage;
-import org.springframework.stereotype.Service;
-import org.springframework.util.MultiValueMap;
-
-import uk.ac.ebi.biosamples.model.Autocomplete;
-import uk.ac.ebi.biosamples.model.SampleFacet;
-import uk.ac.ebi.biosamples.model.SampleFacetsBuilder;
-import uk.ac.ebi.biosamples.solr.model.SolrSample;
-import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
 
 @Service
 public class SolrSampleService {

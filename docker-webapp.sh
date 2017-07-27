@@ -11,7 +11,7 @@ while [ "$1" != "" ]; do
 done
 
 #mvn -T 2C -Dmaven.test.skip=true clean package
-mvn -T 2C clean package
+mvn -T 2C -P embl-ebi clean package
 
 set +e
 docker-compose stop biosamples-webapps-core biosamples-webapps-sampletab biosamples-webapps-legacyxml mongo neo4j solr rabbitmq biosamples-agents-solr biosamples-agents-curation biosamples-agents-neo4j

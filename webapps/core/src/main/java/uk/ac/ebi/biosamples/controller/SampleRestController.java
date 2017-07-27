@@ -5,6 +5,12 @@ import java.time.LocalDateTime;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.mvc.ControllerLinkBuilder;
+import org.springframework.util.MultiValueMap;
+import uk.ac.ebi.biosamples.model.JsonLDSample;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.ExposesResourceFor;
 import org.springframework.hateoas.MediaTypes;
@@ -24,14 +30,19 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import uk.ac.ebi.biosamples.model.JsonLDSample;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.BioSamplesAapService.SampleNotAccessibleException;
 import uk.ac.ebi.biosamples.service.FilterService;
+import uk.ac.ebi.biosamples.service.JsonLDService;
 import uk.ac.ebi.biosamples.service.SamplePageService;
 import uk.ac.ebi.biosamples.service.SampleReadService;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 import uk.ac.ebi.biosamples.service.SampleService;
+
+import java.time.ZoneOffset;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Primary controller for REST operations both in JSON and XML and both read and
@@ -55,18 +66,23 @@ public class SampleRestController {
 	private final SampleResourceAssembler sampleResourceAssembler;
 
 	private final EntityLinks entityLinks;
-		
-	private Logger log = LoggerFactory.getLogger(getClass());
+
+    private final JsonLDService jsonLDService;
+
+    private Logger log = LoggerFactory.getLogger(getClass());
 
 	public SampleRestController(SampleService sampleService, 
 			SamplePageService samplePageService,FilterService filterService, 
 			BioSamplesAapService bioSamplesAapService,
-			SampleResourceAssembler sampleResourceAssembler, EntityLinks entityLinks) {
+			SampleResourceAssembler sampleResourceAssembler, 
+			EntityLinks entityLinks,
+            JsonLDService jsonLDService) {
 		this.sampleService = sampleService;
 		this.samplePageService = samplePageService;
 		this.bioSamplesAapService = bioSamplesAapService;
 		this.filterService = filterService;
 		this.sampleResourceAssembler = sampleResourceAssembler;
+		this.jsonLDService = jsonLDService;
 		this.entityLinks = entityLinks;
 	}
 
@@ -94,11 +110,28 @@ public class SampleRestController {
 		return sampleResource;
 	}
 
+    @CrossOrigin(methods = RequestMethod.GET)
+    @GetMapping(value = "/{accession}", produces = "application/ld+json")
+    public JsonLDSample getJsonLDSample(@PathVariable String accession) {
+        Sample sample = sampleService.fetch(accession);
+        if (sample.getName() == null) {
+            // if it has no name, then its just created by accessioning or
+            // reference
+            // can't read it, but could put to it
+            // TODO make sure "options" is correct for this
+			throw new SampleReadService.SampleNotFoundException(accession);
+        }
+        
+		bioSamplesAapService.checkAccessible(sample);
+		
+        return jsonLDService.sampleToJsonLD(sample);
+    }
+
 	@ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Sample accession must match URL accession") // 400
 	public static class SampleAccessionMismatchException extends RuntimeException {
 	}
-	
-	@PreAuthorize("isAuthenticated()")
+
+    @PreAuthorize("isAuthenticated()")
 	@PutMapping(value = "/{accession}", consumes = { MediaType.APPLICATION_JSON_VALUE })
 	public Resource<Sample> put(@PathVariable String accession, 
 			@RequestBody Sample sample) {

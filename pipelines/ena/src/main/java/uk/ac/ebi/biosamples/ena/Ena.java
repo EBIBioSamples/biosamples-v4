@@ -7,6 +7,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import org.slf4j.Logger;
@@ -62,8 +63,16 @@ public class Ena implements ApplicationRunner {
 			toDate = LocalDate.parse("3000-01-01", DateTimeFormatter.ISO_LOCAL_DATE);
 		}
 		
-		if (pipelinesProperties.getThreadCount() > 0) {
-			try (AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, 
+		if (pipelinesProperties.getThreadCount() == 0) {
+			EraRowCallbackHandler eraRowCallbackHandler = new EraRowCallbackHandler(null);
+			eraProDao.doSampleCallback(fromDate, toDate, eraRowCallbackHandler);
+			//now print a list of things that failed
+			if (EnaCallable.failedQueue.size() > 0) {
+				log.info("Failed accessions: "+String.join(", ", EnaCallable.failedQueue));
+			}			
+		} else {
+		
+			try (AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, false, 
 					pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax())) {
 	
 				EraRowCallbackHandler eraRowCallbackHandler = new EraRowCallbackHandler(executorService);
@@ -72,9 +81,12 @@ public class Ena implements ApplicationRunner {
 				log.info("waiting for futures");
 				// wait for anything to finish
 				ThreadUtils.checkFutures(futures, 0);
+			} finally {
+				//now print a list of things that failed
+				if (EnaCallable.failedQueue.size() > 0) {
+					log.info("Failed accessions: "+String.join(", ", EnaCallable.failedQueue));
+				}
 			}
-		} else {
-			throw new IllegalArgumentException("Must specificy at least 1 thead to use");
 		}
 	}
 	
@@ -90,9 +102,17 @@ public class Ena implements ApplicationRunner {
 		@Override
 		public void processRow(ResultSet rs) throws SQLException {
 			String sampleAccession = rs.getString("BIOSAMPLE_ID");
-
+			
 			Callable<Void> callable = enaCallableFactory.build(sampleAccession); 
-			futures.put(sampleAccession, executorService.submit(callable));
+			if (executorService == null) {
+				try {
+					callable.call();
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+			} else {
+				futures.put(sampleAccession, executorService.submit(callable));
+			}
 		}
 		
 	}

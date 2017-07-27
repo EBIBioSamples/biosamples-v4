@@ -29,7 +29,7 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
 	private final String[] rels;
 	private final ParameterizedTypeReference<PagedResources<Resource<T>>> parameterizedTypeReference;
 	private final MultiValueMap<String,String> params;
-	
+
 	/**
 	 * ParameterizedTypeReference must be ParameterizedTypeReference<PagedResources<Resource<T>>> but this
 	 * information is lost due to type erasure of the generic on compilation, and therefore has to be
@@ -41,7 +41,7 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
 	 * @param rels
 	 */
 	public IterableResourceFetchAll(Traverson traverson, RestOperations restOperations, 
-			ParameterizedTypeReference<PagedResources<Resource<T>>> parameterizedTypeReference, 
+			ParameterizedTypeReference<PagedResources<Resource<T>>> parameterizedTypeReference,
 			MultiValueMap<String,String> params, String... rels) {
 		this.traverson = traverson;
 		this.restOperations = restOperations;
@@ -101,7 +101,7 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
 						});
 				this.page = responseEntity.getBody();
 				this.pageIterator = page.iterator();
-				return this.pageIterator.next();
+				return next();
 			}
 			//no more in this iterator and no more pages, so end	
 			throw new NoSuchElementException();

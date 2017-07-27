@@ -32,8 +32,13 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.FilterService;
 import uk.ac.ebi.biosamples.service.SamplePageService;
+import uk.ac.ebi.biosamples.service.SampleReadService;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
+import java.util.concurrent.TimeUnit;
 import uk.ac.ebi.biosamples.service.SampleReadService;
 
 /**
@@ -62,7 +67,7 @@ public class SamplesRestController {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 
-	public SamplesRestController(SampleReadService sampleService, 
+	public SamplesRestController(SampleReadService sampleService,
 			SamplePageService samplePageService,FilterService filterService,
 			BioSamplesAapService bioSamplesAapService,
 			SampleResourceAssembler sampleResourceAssembler, EntityLinks entityLinks) {
@@ -106,7 +111,6 @@ public class SamplesRestController {
 		}
 		
 		Page<Sample> pageSample = samplePageService.getSamplesByText(text, filtersMap, domains, updatedAfterDate, updatedBeforeDate, page);
-		
 		// add the links to each individual sample on the page
 		// also adds links to first/last/next/prev at the same time
 		PagedResources<Resource<Sample>> pagedResources = pageAssembler.toResource(pageSample, sampleResourceAssembler,

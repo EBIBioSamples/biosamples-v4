@@ -45,7 +45,10 @@ public class CurationReadService {
 	private NeoCurationToCurationConverter neoCurationToCurationConverter;
 	@Autowired
 	private NeoCurationLinkToCurationLinkConverter neoCurationLinkToCurationLinkConverter;
-	
+
+	@Autowired
+	private CurationApplicationService curationApplicationService;
+
 	public Page<Curation> getPage(Pageable pageable) {
 		Page<NeoCuration> pageNeoCuration = neoCurationRepository.findAll(pageable,2);
 		Page<Curation> pageCuration = pageNeoCuration.map(neoCurationToCurationConverter);		
@@ -133,7 +136,7 @@ public class CurationReadService {
 				sample.getRelease(), sample.getUpdate(), attributes, sample.getRelationships(), externalReferences);
 	}
 	
-	public Sample applyAllCurationToSample(Sample sample) {
+	public Sample getAndApplyCurationsToSample(Sample sample) {
 
 		Set<Curation> curations = new HashSet<>();
 		int pageNo = 0;
@@ -147,28 +150,8 @@ public class CurationReadService {
 			pageNo += 1;
 		} while(pageNo < page.getTotalPages());
 		
-
-		boolean curationApplied = true;
-		while (curationApplied && curations.size() > 0) {
-			Iterator<Curation> it = curations.iterator();
-			curationApplied = false;
-			while (it.hasNext()) {
-				Curation curation = it.next();
-				try {
-					sample = applyCurationToSample(sample, curation);
-					it.remove();
-					curationApplied = true;
-				} catch (IllegalArgumentException e) {
-					//do nothing, will try again next loop
-				}
-			}
-		}
-		if (!curationApplied) {
-			//we stopped because we didn't apply any curation
-			//therefore we have some curations that can't be applied
-			//this is a warning
-			log.warn("Unapplied curation on "+sample.getAccession());
-		}
+		sample = curationApplicationService.applyAllCurationToSample(sample, curations);
+		
 		return sample;
 	}
 

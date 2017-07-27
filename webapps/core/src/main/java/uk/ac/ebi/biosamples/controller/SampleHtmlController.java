@@ -13,7 +13,6 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -30,16 +29,20 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
-
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SampleFacet;
 import uk.ac.ebi.biosamples.model.SampleFacetValue;
 import uk.ac.ebi.biosamples.service.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.FacetService;
 import uk.ac.ebi.biosamples.service.FilterService;
+import uk.ac.ebi.biosamples.service.JsonLDService;
 import uk.ac.ebi.biosamples.service.SamplePageService;
 import uk.ac.ebi.biosamples.service.SampleReadService;
 import uk.ac.ebi.biosamples.service.SampleService;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.net.URI;
+import java.time.LocalDateTime;
 
 /**
  * Primary controller for HTML operations.
@@ -57,14 +60,20 @@ public class SampleHtmlController {
 
 	private final SampleService sampleService;
 	private final SamplePageService samplePageService;
+	private final JsonLDService jsonLDService;
 	private final FacetService facetService;
 	private final FilterService filterService;
 	private final BioSamplesAapService bioSamplesAapService;
 
 	public SampleHtmlController(SampleService sampleService, 
-			SamplePageService samplePageService,FacetService facetService, FilterService filterService,BioSamplesAapService bioSamplesAapService) {
+			SamplePageService samplePageService,
+			JsonLDService jsonLDService,
+			FacetService facetService, 
+			FilterService filterService,
+			BioSamplesAapService bioSamplesAapService) {
 		this.sampleService = sampleService;
 		this.samplePageService = samplePageService;
+		this.jsonLDService = jsonLDService;
 		this.facetService = facetService;
 		this.filterService = filterService;
 		this.bioSamplesAapService = bioSamplesAapService;
@@ -298,7 +307,10 @@ public class SampleHtmlController {
 		//response.setHeader(HttpHeaders.LAST_MODIFIED, String.valueOf(sample.getUpdate().toEpochSecond(ZoneOffset.UTC)));
 		//response.setHeader(HttpHeaders.ETAG, String.valueOf(sample.hashCode()));
 
+		String jsonLDString = jsonLDService.jsonLDToString(jsonLDService.sampleToJsonLD(sample));
 		model.addAttribute("sample", sample);
+		model.addAttribute("jsonLD", jsonLDString);
+
 		return "sample";
 	}
 }
