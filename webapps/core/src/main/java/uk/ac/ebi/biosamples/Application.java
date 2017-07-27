@@ -22,6 +22,7 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.neo.NeoProperties;
 import uk.ac.ebi.biosamples.neo.repo.NeoSampleRepository;
 import uk.ac.ebi.biosamples.service.NeoAccessionService;
+import uk.ac.ebi.biosamples.service.CacheControlInterceptor;
 import uk.ac.ebi.biosamples.xml.XmlSampleHttpMessageConverter;
 
 //@SpringBootApplication
