@@ -58,8 +58,7 @@ public class SampleReadService {
 		//add curation from a set of users
 		//TODO limit curation to a set of users (possibly empty set)
 		sample = curationReadService.getAndApplyCurationsToSample(sample);
-		
-		
+
 		return sample;
 	}
 	

@@ -5,8 +5,15 @@
 	<artifactId>models</artifactId>
 
 	<packaging>pom</packaging>
+    <dependencies>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>2.8.6</version>
+        </dependency>
+    </dependencies>
 
-	<parent>
+    <parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
 		<version>4.0.0-SNAPSHOT</version>
@@ -17,5 +24,7 @@
 		<module>mongo</module>
 		<module>solr</module>
 		<module>neo4j</module>
+		<module>sitemap</module>
+		<module>jsonld</module>
 	</modules>
 </project>

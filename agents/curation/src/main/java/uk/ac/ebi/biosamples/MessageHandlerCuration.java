@@ -1,13 +1,8 @@
 package uk.ac.ebi.biosamples;
 
-import java.util.Collections;
-
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Service;
-
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.Sample;
 
 @Service

@@ -6,6 +6,9 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.time.ZoneOffset;
+import java.util.concurrent.TimeUnit;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.CacheControl;
@@ -69,21 +72,36 @@ public class SampleRestResponseBodyAdvice implements ResponseBodyAdvice<Resource
 
 		//the client used a modified cache header that is sufficient to 
 		//allow the clients cached copy to be used
-		if ((request.getHeaders().getIfNoneMatch().contains(eTag) 
+		lastModified = body.getContent().getUpdate().toInstant(ZoneOffset.UTC).toEpochMilli();
+		eTag = "W/\"" + body.getContent().hashCode() + "\"";
+		
+		//an ETag has to be set even on a 304 response see https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.5
+		response.getHeaders().setETag(eTag);
+		
+		if ((request.getHeaders().getIfNoneMatch().contains(eTag)
 				|| request.getHeaders().getIfNoneMatch().contains("*")) 
 				|| (request.getHeaders().getIfModifiedSince() != -1 
 					&& request.getHeaders().getIfModifiedSince() <= lastModified)
 				|| (request.getHeaders().getIfUnmodifiedSince() != -1 
 					&& request.getHeaders().getIfUnmodifiedSince() > lastModified)) {
+			//the client used a modified cache header that is sufficient to
+			//allow the clients cached copy to be used
 			
-			//if the request is a get, then use 304
-			response.setStatusCode(HttpStatus.NOT_MODIFIED);
+			//if the request is a get, then use 302
+			//if the request is a put, then use 412
+			if (request.getMethod().equals(HttpMethod.GET)) {
+				response.setStatusCode(HttpStatus.NOT_MODIFIED);
+			} else if (request.getMethod().equals(HttpMethod.PUT)) {
+				response.setStatusCode(HttpStatus.PRECONDITION_FAILED);
+			}
 			return null;
 		}
 		
 		
 		//response.getHeaders().setLastModified(lastModified);
 		
+		response.getHeaders().setCacheControl(CacheControl.maxAge(1, TimeUnit.MINUTES).cachePublic().getHeaderValue());
+
 		return body;
 	}
 
