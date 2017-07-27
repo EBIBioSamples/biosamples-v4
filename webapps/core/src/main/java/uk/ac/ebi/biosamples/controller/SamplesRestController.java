@@ -1,7 +1,5 @@
 package uk.ac.ebi.biosamples.controller;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeParseException;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -9,17 +7,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.EntityLinks;
-import org.springframework.hateoas.ExposesResourceFor;
-import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.*;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,8 +25,13 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.FilterService;
 import uk.ac.ebi.biosamples.service.SamplePageService;
+import uk.ac.ebi.biosamples.service.SampleReadService;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
+import java.util.concurrent.TimeUnit;
 import uk.ac.ebi.biosamples.service.SampleReadService;
 
 /**
@@ -58,7 +58,7 @@ public class SamplesRestController {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 
-	public SamplesRestController(SampleReadService sampleService, 
+	public SamplesRestController(SampleReadService sampleService,
 			SamplePageService samplePageService,FilterService filterService,
 			SampleResourceAssembler sampleResourceAssembler, EntityLinks entityLinks) {
 		this.sampleService = sampleService;
@@ -98,7 +98,7 @@ public class SamplesRestController {
 		}
 		
 		Page<Sample> pageSample = samplePageService.getSamplesByText(text, filtersMap, updatedAfterDate, updatedBeforeDate, page);
-		
+
 		// add the links to each individual sample on the page
 		// also adds links to first/last/next/prev at the same time
 		PagedResources<Resource<Sample>> pagedResources = pageAssembler.toResource(pageSample, sampleResourceAssembler,

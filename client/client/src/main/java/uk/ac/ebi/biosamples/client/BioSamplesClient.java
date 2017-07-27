@@ -1,18 +1,5 @@
 package uk.ac.ebi.biosamples.client;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.StreamSupport;
-
-import javax.annotation.PreDestroy;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -20,10 +7,8 @@ import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.client.Traverson;
-import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-
 import uk.ac.ebi.biosamples.client.service.CurationRetrievalService;
 import uk.ac.ebi.biosamples.client.service.CurationSubmissionService;
 import uk.ac.ebi.biosamples.client.service.SampleRetrievalService;
@@ -32,6 +17,15 @@ import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.SampleValidator;
+
+import javax.annotation.PreDestroy;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.*;
+import java.util.stream.StreamSupport;
+
 
 /**
  * This is the primary class for interacting with BioSamples.
@@ -155,7 +149,6 @@ public class BioSamplesClient {
 	public Iterable<Resource<Curation>> fetchCurationResourceAll() throws RestClientException {
 		return curationRetrievalService.fetchAll();
 	}
-	
 	public Resource<CurationLink> persistCuration(String accession, Curation curation) throws RestClientException {
 		return curationSubmissionService.persistCuration(accession, curation);
 	}

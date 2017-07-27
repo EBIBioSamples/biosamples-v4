@@ -22,12 +22,13 @@ import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-@Component
+//@Component
 @Profile({"default", "test"})
 public class XMLSearchIntegration extends AbstractIntegration {
     
     private final RestTemplate restTemplate;
     private final IntegrationProperties integrationProperties;
+
     Logger log = LoggerFactory.getLogger(getClass());
 
     public XMLSearchIntegration(BioSamplesClient client,
@@ -78,6 +79,8 @@ public class XMLSearchIntegration extends AbstractIntegration {
         if (!responseEntity.getBody().equals(test1)) {
             throw new RuntimeException("Response body doesn't match expected sample");
         }
+
+        assert responseEntity.getBody().equals(test1);
         /*
         try {
 
@@ -113,6 +116,7 @@ public class XMLSearchIntegration extends AbstractIntegration {
                     Sample.class);
         } catch(HttpClientErrorException ex) {
             boolean expectedResponse = ex.getStatusCode().is4xxClientError();
+
             if (!expectedResponse) {
                 throw new RuntimeException("Excepted response doesn't match 4xx client error", ex);
             }

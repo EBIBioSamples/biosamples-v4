@@ -20,7 +20,7 @@ import uk.ac.ebi.biosamples.Messaging;
 class MessageContentChannelCallback implements ChannelCallback<MessageContent> {
 
 	Logger log = LoggerFactory.getLogger(getClass());
-	
+
 	private final NeoMessageBufferTransaction neoMessageBufferTransaction;
 	private final ObjectMapper objectMapper;
 	private final RabbitTemplate rabbitTemplate;
@@ -36,16 +36,16 @@ class MessageContentChannelCallback implements ChannelCallback<MessageContent> {
 	public MessageContent doInRabbit(Channel channel) throws Exception {
 		GetResponse getResponse = channel.basicGet(Messaging.queueToBeIndexedNeo4J, false);
 		MessageContent messageContent = null;
-		
+
 		if (getResponse == null) {
 			log.warn("Null response");
 			return null;
 		} else if (getResponse.getBody() == null || getResponse.getBody().length == 0) {
 			log.warn("Empty message "+getResponse);
 		}
-			
+
 		messageContent = this.objectMapper.readerFor(MessageContent.class).readValue(getResponse.getBody());
-		
+
 		this.log.info("Got message "+messageContent);
 
 		try {
@@ -61,12 +61,12 @@ class MessageContentChannelCallback implements ChannelCallback<MessageContent> {
 			channel.basicNack(getResponse.getEnvelope().getDeliveryTag(), false, true);
 			return messageContent;
 		}
-		
+
 		//send on the next queue
 		rabbitTemplate.convertAndSend(Messaging.exchangeForIndexingSolr, "", messageContent);
-		
+
 		channel.basicAck(getResponse.getEnvelope().getDeliveryTag(), false);
-		
+
 		return messageContent;
 	}
 }
