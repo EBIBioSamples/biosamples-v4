@@ -73,7 +73,7 @@ public class SamplePageService {
 	}
 
 	public Page<Sample> getSamplesOfCuration(String hash, Pageable pageable) {
-		Page<MongoCurationLink> accession = mongoCurationLinkRepository.findDistinctCurationLinkByCurationHash(hash, pageable);
+		Page<MongoCurationLink> accession = mongoCurationLinkRepository.findByCurationHash(hash, pageable);
 		//stream process each into a sample *in parallel*
 		Page<Sample> pageSample = new PageImpl<>(StreamSupport.stream(accession.spliterator(), true)
 					.map(mcl->sampleService.fetch(mcl.getSample())).collect(Collectors.toList()), 
