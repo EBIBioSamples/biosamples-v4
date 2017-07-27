@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -22,10 +23,14 @@ public class MongoCurationLink implements Comparable<MongoCurationLink>{
 
 	@Id
 	private final String hash;
+	
+	@Indexed
+	private final String sample;
+	
+	@Indexed
+	protected final LocalDateTime created;
 
 	private final Curation curation;
-	private final String sample;
-	protected final LocalDateTime created;
 
 	private MongoCurationLink(String sample, Curation curation, String hash, LocalDateTime created) {
 		this.sample = sample;

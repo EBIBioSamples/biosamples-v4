@@ -14,5 +14,4 @@ public interface MongoRelationshipRepository extends MongoRepository<MongoRelati
 	
 	List<MongoRelationship> findAllByTarget(String target);
 	List<MongoRelationship> findAllBySource(String source);
-	List<MongoRelationship> findAllByType(String type);
 }
