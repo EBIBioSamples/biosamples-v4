@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.service.CurationApplicationService;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 import uk.ac.ebi.biosamples.zooma.ZoomaProcessor;
@@ -27,11 +28,14 @@ public class CurationApplicationRunner implements ApplicationRunner {
 	private final BioSamplesClient bioSamplesClient;	
 	private final PipelinesProperties pipelinesProperties;
 	private final ZoomaProcessor zoomaProcessor;
+	private final CurationApplicationService curationApplicationService;
 	
-	public CurationApplicationRunner(BioSamplesClient bioSamplesClient, PipelinesProperties pipelinesProperties, ZoomaProcessor zoomaProcessor) {
+	public CurationApplicationRunner(BioSamplesClient bioSamplesClient, PipelinesProperties pipelinesProperties, 
+			ZoomaProcessor zoomaProcessor, CurationApplicationService curationApplicationService) {
 		this.bioSamplesClient = bioSamplesClient;
 		this.pipelinesProperties = pipelinesProperties;
 		this.zoomaProcessor = zoomaProcessor;
+		this.curationApplicationService = curationApplicationService;
 	}
 	
 	
@@ -50,7 +54,7 @@ public class CurationApplicationRunner implements ApplicationRunner {
 					throw new RuntimeException("Sample should not be null");
 				}
 
-				Callable<Void> task = new SampleCurationCallable(bioSamplesClient, sample, zoomaProcessor);
+				Callable<Void> task = new SampleCurationCallable(bioSamplesClient, sample, zoomaProcessor, curationApplicationService);
 				
 				futures.put(sample.getAccession(), executorService.submit(task));
 			}

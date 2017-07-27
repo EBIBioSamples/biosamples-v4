@@ -13,6 +13,7 @@ import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.service.CurationApplicationService;
 import uk.ac.ebi.biosamples.zooma.ZoomaProcessor;
 
 public class SampleCurationCallable implements Callable<Void> {
@@ -22,76 +23,91 @@ public class SampleCurationCallable implements Callable<Void> {
 	private final Sample sample;
 	private final BioSamplesClient bioSamplesClient;
 	private final ZoomaProcessor zoomaProcessor;
+	private final CurationApplicationService curationApplicationService;
 
 	public static final ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<String>();
 
-	public SampleCurationCallable(BioSamplesClient bioSamplesClient, Sample sample, ZoomaProcessor zoomaProcessor) {
+	public SampleCurationCallable(BioSamplesClient bioSamplesClient, Sample sample, 
+			ZoomaProcessor zoomaProcessor, CurationApplicationService curationApplicationService) {
 		this.bioSamplesClient = bioSamplesClient;
 		this.sample = sample;
 		this.zoomaProcessor = zoomaProcessor;
+		this.curationApplicationService = curationApplicationService;
 	}
 
 	@Override
 	public Void call() throws Exception {
 
 		try {
-
-			for (Attribute attribute : sample.getAttributes()) {
-				// clean unexpected characters
-				String newType = cleanString(attribute.getType());
-				String newValue = cleanString(attribute.getValue());
-				if (!attribute.getType().equals(newType) || !attribute.getValue().equals(newValue)) {
-					Attribute newAttribute = Attribute.build(newType, newValue, attribute.getIri(),
-							attribute.getUnit());
-					Curation curation = Curation.build(attribute, newAttribute);
-					bioSamplesClient.persistCuration(sample.getAccession(), curation );
-					// TODO apply curation
-
-				}
-
-				// if no information content, remove
-				if (isEqualToNotApplicable(attribute.getValue())) {
-					Curation curation = Curation.build(attribute, null);
-					bioSamplesClient.persistCuration(sample.getAccession(), curation);
-					// TODO apply curation
-				}
-
-				// if it has a unit, make sure it is clean
-				if (attribute.getUnit() != null) {
-					String newUnit = correctUnit(attribute.getUnit());
-					if (!attribute.getUnit().equals(newUnit)) {
-						Attribute newAttribute = Attribute.build(attribute.getType(), attribute.getValue(),
-								attribute.getIri(), newUnit);
-						Curation curation = Curation.build(attribute, newAttribute); 
-						bioSamplesClient.persistCuration(sample.getAccession(),
-								curation);
-						// TODO apply curation
-					}
-				}
-			}
-
-			// TODO write me
-
-			// query un-mapped attributes against Zooma
-
+			Sample last = sample;
+			Sample curated = sample;
+			do {
+				last = curated;
+				curated = curate(last);
+			} while (!last.equals(curated));
 			
-			
-			
-			
-			// validate existing ontology terms against OLS
-			// expand short-version ontology terms using OLS
-
-			// turn attributes with biosample accessions into relationships
-
-			// split number+unit attributes
-
-			// lowercase attribute types
-			// lowercase relationship types
-
 		} catch (Exception e) {
 			failedQueue.add(sample.getAccession());
 		}
 		return null;
+	}
+	
+	public Sample curate(Sample sample) {
+		for (Attribute attribute : sample.getAttributes()) {
+			// clean unexpected characters
+			String newType = cleanString(attribute.getType());
+			String newValue = cleanString(attribute.getValue());
+			if (!attribute.getType().equals(newType) || !attribute.getValue().equals(newValue)) {
+				Attribute newAttribute = Attribute.build(newType, newValue, attribute.getIri(),
+						attribute.getUnit());
+				Curation curation = Curation.build(attribute, newAttribute);
+				bioSamplesClient.persistCuration(sample.getAccession(), curation);
+				sample = curationApplicationService.applyCurationToSample(sample, curation);
+				return sample;
+
+			}
+
+			// if no information content, remove
+			if (isEqualToNotApplicable(attribute.getValue())) {
+				Curation curation = Curation.build(attribute, null);
+				bioSamplesClient.persistCuration(sample.getAccession(), curation);
+				sample = curationApplicationService.applyCurationToSample(sample, curation);
+				return sample;
+			}
+
+			// if it has a unit, make sure it is clean
+			if (attribute.getUnit() != null) {
+				String newUnit = correctUnit(attribute.getUnit());
+				if (!attribute.getUnit().equals(newUnit)) {
+					Attribute newAttribute = Attribute.build(attribute.getType(), attribute.getValue(),
+							attribute.getIri(), newUnit);
+					Curation curation = Curation.build(attribute, newAttribute); 
+					bioSamplesClient.persistCuration(sample.getAccession(),
+							curation);
+					sample = curationApplicationService.applyCurationToSample(sample, curation);
+					return sample;
+				}
+			}
+		}
+
+		// TODO write me
+
+		// query un-mapped attributes against Zooma
+
+		
+		
+		
+		
+		// validate existing ontology terms against OLS
+		// expand short-version ontology terms using OLS
+
+		// turn attributes with biosample accessions into relationships
+
+		// split number+unit attributes
+
+		// lowercase attribute types
+		// lowercase relationship types
+		return sample;
 	}
 
 	public String cleanString(String string) {
