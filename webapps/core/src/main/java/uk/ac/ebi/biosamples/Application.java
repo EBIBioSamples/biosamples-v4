@@ -60,10 +60,6 @@ public class Application extends SpringBootServletInitializer {
     public CaffeineSpec CaffeineSpec() {
     	return CaffeineSpec.parse("maximumSize=500,expireAfterWrite=60s");
     }
-<<<<<<< HEAD
-    
-=======
-
 
     /*
     @Bean
@@ -83,5 +79,4 @@ public class Application extends SpringBootServletInitializer {
     	};
     }
     */
->>>>>>> master
 }
