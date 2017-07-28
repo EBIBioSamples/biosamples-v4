@@ -58,19 +58,22 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
 		RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
 		ResponseEntity<PagedResources<Resource<T>>> responseEntity = restOperations.exchange(requestEntity,
 				parameterizedTypeReference);
-		return new IteratorResourceFetchAll<T>(responseEntity.getBody(), restOperations);
+		return new IteratorResourceFetchAll<T>(responseEntity.getBody(), restOperations, parameterizedTypeReference);
 	}
 
-	private class IteratorResourceFetchAll<U> implements Iterator<Resource<U>> {
+	private class IteratorResourceFetchAll<T> implements Iterator<Resource<T>> {
 		
-		private PagedResources<Resource<U>> page;
-		private Iterator<Resource<U>> pageIterator;
+		private PagedResources<Resource<T>> page;
+		private Iterator<Resource<T>> pageIterator;
 		private final RestOperations restOperations;
+		private final ParameterizedTypeReference<PagedResources<Resource<T>>> parameterizedTypeReference;
 		
-		public IteratorResourceFetchAll(PagedResources<Resource<U>> page, RestOperations restOperations) {
+		public IteratorResourceFetchAll(PagedResources<Resource<T>> page, RestOperations restOperations,
+				ParameterizedTypeReference<PagedResources<Resource<T>>> parameterizedTypeReference) {
 			this.page = page;
 			this.pageIterator = page.iterator();
 			this.restOperations = restOperations;
+			this.parameterizedTypeReference = parameterizedTypeReference;
 		}
 		
 		@Override
@@ -88,23 +91,27 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
 		}
 	
 		@Override
-		public Resource<U> next() {
-			if (pageIterator.hasNext()) {
-				return pageIterator.next();
+		public Resource<T> next() {
+			Resource<T> next = null;
+			while (next == null) {
+				if (pageIterator.hasNext()) {
+					next = pageIterator.next(); 
+				} else if (page.hasLink(Link.REL_NEXT)) {
+					//does the page have a next page?
+					URI uri = URI.create(page.getLink(Link.REL_NEXT).getHref());
+					log.trace("IteratorResourceFetchAll following "+uri.toString());
+					RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
+					ResponseEntity<PagedResources<Resource<T>>> responseEntity = restOperations.exchange(requestEntity,
+							parameterizedTypeReference);
+					this.page = responseEntity.getBody();
+					this.pageIterator = page.iterator();
+					next = this.pageIterator.next();
+				} else {
+					//no more in this iterator and no more pages, so end	
+					throw new NoSuchElementException();
+				}
 			}
-			//does the page have a next page?
-			if (page.hasLink(Link.REL_NEXT)) {
-				URI uri = URI.create(page.getLink(Link.REL_NEXT).getHref());
-				RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
-				ResponseEntity<PagedResources<Resource<U>>> responseEntity = restOperations.exchange(requestEntity,
-						new ParameterizedTypeReference<PagedResources<Resource<U>>>() {
-						});
-				this.page = responseEntity.getBody();
-				this.pageIterator = page.iterator();
-				return next();
-			}
-			//no more in this iterator and no more pages, so end	
-			throw new NoSuchElementException();
+			return next;
 		}
 			
 			

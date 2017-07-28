@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.zooma;
+package uk.ac.ebi.biosamples.ols;
 
 import java.net.URI;
 import java.util.Arrays;
@@ -22,7 +22,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
 
 @Service
-public class ZoomaProcessor {
+public class OlsProcessor {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 
@@ -30,42 +30,39 @@ public class ZoomaProcessor {
 	
 	//TODO make this an application.properties value
 	private final UriComponents uriBuilder = 
-			UriComponentsBuilder.fromUriString("http://wwwdev.ebi.ac.uk/spot/zooma/v2/api/services/annotate?propertyValue={value}&propertyType={type}").build();
+			UriComponentsBuilder.fromUriString("http://wwwdev.ebi.ac.uk/ols/api/terms?id={shortcode}").build();
 		
-	public ZoomaProcessor(RestTemplateBuilder restTemplateBuilder) {
+	public OlsProcessor(RestTemplateBuilder restTemplateBuilder) {
 		this.restOperations = restTemplateBuilder.build();
 	}
 	
 	
-	@Cacheable("zooma")
-	public Optional<String> queryZooma(String type, String value) {
-		log.trace("Zooma getting : "+type+" : "+value);
-		URI uri = uriBuilder.expand(value, type).encode().toUri();
-		//log.info("Zooma uri : "+uri);
+	@Cacheable("ols_short")
+	public Optional<String> queryOlsForShortcode(String shortcode) {
+		log.info("OLS getting : "+shortcode);
+		URI uri = uriBuilder.expand(shortcode).encode().toUri();
 		
 		RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
-		ResponseEntity<List<JsonNode>> responseEntity = restOperations.exchange(requestEntity,
-				new ParameterizedTypeReference<List<JsonNode>>(){});
+		ResponseEntity<JsonNode> responseEntity = restOperations.exchange(requestEntity,
+				new ParameterizedTypeReference<JsonNode>(){});
 		
 		//if zero or more than one result found, abort
 		if (responseEntity.getBody().size() != 1) {
 			return Optional.empty();
 		}
-		JsonNode n = responseEntity.getBody().get(0);
+		JsonNode n = responseEntity.getBody();
 		
-		//if result is anything other than "high" confidence, abort
-		if (!n.has("confidence") || !n.get("confidence").asText().equals("HIGH")) {
-			return Optional.empty();
+		if (n.has("_embedded")) {
+			if (n.get("_embedded").has("terms")) {
+				if (n.get("_embedded").get("terms").size() == 1) {
+					if (n.get("_embedded").get("terms").get(0).has("iri")) {
+						String iri = n.get("_embedded").get("terms").get(0).get("iri").asText();
+						log.info("OLS mapped "+shortcode+"  to "+iri);
+						return Optional.of(iri);
+					}
+				}
+			}	
 		}
-		
-		//if result has anything other than 1 semantic tag, abort
-		if (!n.has("semanticTags") || n.get("semanticTags").size() != 1) {
-			return null;
-		}
-		String iri = n.get("semanticTags").get(0).asText();
-		log.info("Zooma mapped "+value+" ("+value+") to "+iri);
-		return Optional.of(iri);		
+		return Optional.empty();
 	}
-	
-	
 }

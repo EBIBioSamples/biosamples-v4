@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples;
+package uk.ac.ebi.biosamples.curation;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -7,15 +7,13 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentLinkedQueue;
-
 import org.springframework.stereotype.Service;
 
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.ols.OlsProcessor;
 import uk.ac.ebi.biosamples.service.CurationApplicationService;
 import uk.ac.ebi.biosamples.zooma.ZoomaProcessor;
 
@@ -26,49 +24,52 @@ public class SampleCurationCallable implements Callable<Void> {
 	private final Sample sample;
 	private final BioSamplesClient bioSamplesClient;
 	private final ZoomaProcessor zoomaProcessor;
+	private final OlsProcessor olsProcessor;
 	private final CurationApplicationService curationApplicationService;
 
 	public static final ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<String>();
 
 	public SampleCurationCallable(BioSamplesClient bioSamplesClient, Sample sample, 
-			ZoomaProcessor zoomaProcessor, CurationApplicationService curationApplicationService) {
+			ZoomaProcessor zoomaProcessor, 
+			OlsProcessor olsProcessor, 
+			CurationApplicationService curationApplicationService) {
 		this.bioSamplesClient = bioSamplesClient;
 		this.sample = sample;
 		this.zoomaProcessor = zoomaProcessor;
+		this.olsProcessor = olsProcessor;
 		this.curationApplicationService = curationApplicationService;
 	}
 
 	@Override
 	public Void call() throws Exception {
+
 		try {
+			
 			Sample last = sample;
 			Sample curated = sample;
 			do {
 				last = curated;
 				curated = curate(last);
 			} while (!last.equals(curated));
+
+			do {
+				last = curated;
+				curated = ols(last);
+			} while (!last.equals(curated));
+
+			do {
+				last = curated;
+				curated = zooma(last);
+			} while (!last.equals(curated));
 			
 		} catch (Exception e) {
+			log.warn("Encountered exception with "+sample.getAccession(), e);
 			failedQueue.add(sample.getAccession());
 		}
 		return null;
 	}
 	
 	public Sample curate(Sample sample) {
-
-		// query un-mapped attributes against Zooma
-		// zoomaProcessor.process(sample);
-
-		// validate existing ontology terms against OLS
-		// expand short-version ontology terms using OLS
-
-		// turn attributes with biosample accessions into relationships
-
-		// split number+unit attributes
-
-		// lowercase attribute types
-		// lowercase relationship types
-		
 		for (Attribute attribute : sample.getAttributes()) {
 			// clean unexpected characters
 			String newType = cleanString(attribute.getType());
@@ -110,7 +111,6 @@ public class SampleCurationCallable implements Callable<Void> {
 
 		// query un-mapped attributes against Zooma
 
-		sample = zooma(sample);
 		
 		
 		
@@ -273,7 +273,8 @@ public class SampleCurationCallable implements Callable<Void> {
 			// no change
 			return unit;
 		}
-	}	
+	}
+	
 
 	private Sample zooma(Sample sample) {
 		
@@ -321,7 +322,7 @@ public class SampleCurationCallable implements Callable<Void> {
 			if (attribute.getIri() == null && attribute.getType().length() < 64 && attribute.getValue().length() < 128) {
 				Optional<String> iri = zoomaProcessor.queryZooma(attribute.getType(), attribute.getValue());
 				if (iri.isPresent()) {
-					log.info("Mapped "+attribute+" to "+iri.get());
+					log.trace("Mapped "+attribute+" to "+iri.get());
 					Attribute mapped = Attribute.build(attribute.getType(), attribute.getValue(), iri.get(), null);
 					Curation curation = Curation.build(Collections.singleton(attribute), Collections.singleton(mapped), null, null);
 				
@@ -334,4 +335,25 @@ public class SampleCurationCallable implements Callable<Void> {
 		}
 		return sample;
 	}
+
+	private Sample ols(Sample sample) {
+		
+		for (Attribute attribute : sample.getAttributes()) {
+			if (attribute.getIri() != null && attribute.getIri().matches("^[A-Za-z]+[_:\\-][0-9]+$")) {
+				Optional<String> iri = olsProcessor.queryOlsForShortcode(attribute.getIri());
+				if (iri.isPresent()) {
+					log.trace("Mapped "+attribute+" to "+iri.get());
+					Attribute mapped = Attribute.build(attribute.getType(), attribute.getValue(), iri.get(), null);
+					Curation curation = Curation.build(Collections.singleton(attribute), Collections.singleton(mapped), null, null);
+				
+					//save the curation back in biosamples
+					bioSamplesClient.persistCuration(sample.getAccession(), curation);
+					sample = curationApplicationService.applyCurationToSample(sample, curation);
+					return sample;
+				}
+			}
+		}
+		return sample;
+	}
+
 }
