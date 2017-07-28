@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples;
+package uk.ac.ebi.biosamples.curation;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -13,8 +13,10 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
 
+import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.ols.OlsProcessor;
 import uk.ac.ebi.biosamples.service.CurationApplicationService;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
@@ -28,10 +30,14 @@ public class CurationApplicationRunner implements ApplicationRunner {
 	private final BioSamplesClient bioSamplesClient;	
 	private final PipelinesProperties pipelinesProperties;
 	private final ZoomaProcessor zoomaProcessor;
+	private final OlsProcessor olsProcessor;
 	private final CurationApplicationService curationApplicationService;
 	
-	public CurationApplicationRunner(BioSamplesClient bioSamplesClient, PipelinesProperties pipelinesProperties, 
-			ZoomaProcessor zoomaProcessor, CurationApplicationService curationApplicationService) {
+	public CurationApplicationRunner(BioSamplesClient bioSamplesClient, 
+			PipelinesProperties pipelinesProperties, 
+			ZoomaProcessor zoomaProcessor, 
+			OlsProcessor olsProcessor, 
+			CurationApplicationService curationApplicationService) {
 		this.bioSamplesClient = bioSamplesClient;
 		this.pipelinesProperties = pipelinesProperties;
 		this.zoomaProcessor = zoomaProcessor;
@@ -54,7 +60,7 @@ public class CurationApplicationRunner implements ApplicationRunner {
 					throw new RuntimeException("Sample should not be null");
 				}
 
-				Callable<Void> task = new SampleCurationCallable(bioSamplesClient, sample, zoomaProcessor, curationApplicationService);
+				Callable<Void> task = new SampleCurationCallable(bioSamplesClient, sample, zoomaProcessor, olsProcessor, curationApplicationService);
 				
 				futures.put(sample.getAccession(), executorService.submit(task));
 			}

@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples;
+package uk.ac.ebi.biosamples.curation;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -13,6 +13,7 @@ import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.ols.OlsProcessor;
 import uk.ac.ebi.biosamples.service.CurationApplicationService;
 import uk.ac.ebi.biosamples.zooma.ZoomaProcessor;
 
@@ -23,15 +24,19 @@ public class SampleCurationCallable implements Callable<Void> {
 	private final Sample sample;
 	private final BioSamplesClient bioSamplesClient;
 	private final ZoomaProcessor zoomaProcessor;
+	private final OlsProcessor olsProcessor;
 	private final CurationApplicationService curationApplicationService;
 
 	public static final ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<String>();
 
 	public SampleCurationCallable(BioSamplesClient bioSamplesClient, Sample sample, 
-			ZoomaProcessor zoomaProcessor, CurationApplicationService curationApplicationService) {
+			ZoomaProcessor zoomaProcessor, 
+			OlsProcessor olsProcessor, 
+			CurationApplicationService curationApplicationService) {
 		this.bioSamplesClient = bioSamplesClient;
 		this.sample = sample;
 		this.zoomaProcessor = zoomaProcessor;
+		this.olsProcessor = olsProcessor;
 		this.curationApplicationService = curationApplicationService;
 	}
 
@@ -44,6 +49,16 @@ public class SampleCurationCallable implements Callable<Void> {
 			do {
 				last = curated;
 				curated = curate(last);
+			} while (!last.equals(curated));
+
+			do {
+				last = curated;
+				curated = ols(last);
+			} while (!last.equals(curated));
+
+			do {
+				last = curated;
+				curated = zooma(last);
 			} while (!last.equals(curated));
 			
 		} catch (Exception e) {
@@ -94,7 +109,6 @@ public class SampleCurationCallable implements Callable<Void> {
 
 		// query un-mapped attributes against Zooma
 
-		
 		
 		
 		
@@ -260,7 +274,7 @@ public class SampleCurationCallable implements Callable<Void> {
 	}
 	
 
-	private void zooma(Sample sample) {
+	private Sample zooma(Sample sample) {
 		
 		for (Attribute attribute : sample.getAttributes()) {
 			
@@ -312,9 +326,32 @@ public class SampleCurationCallable implements Callable<Void> {
 				
 					//save the curation back in biosamples
 					bioSamplesClient.persistCuration(sample.getAccession(), curation);
+					sample = curationApplicationService.applyCurationToSample(sample, curation);
+					return sample;
 				}
 			}
 		}
+		return sample;
+	}
+
+	private Sample ols(Sample sample) {
+		
+		for (Attribute attribute : sample.getAttributes()) {
+			if (attribute.getIri() != null && attribute.getIri().matches("^[A-Za-z]+[_:\\-][0-9]+$")) {
+				Optional<String> iri = olsProcessor.queryOlsForShortcode(attribute.getIri());
+				if (iri.isPresent()) {
+					log.info("Mapped "+attribute+" to "+iri.get());
+					Attribute mapped = Attribute.build(attribute.getType(), attribute.getValue(), iri.get(), null);
+					Curation curation = Curation.build(Collections.singleton(attribute), Collections.singleton(mapped), null, null);
+				
+					//save the curation back in biosamples
+					bioSamplesClient.persistCuration(sample.getAccession(), curation);
+					sample = curationApplicationService.applyCurationToSample(sample, curation);
+					return sample;
+				}
+			}
+		}
+		return sample;
 	}
 
 }
