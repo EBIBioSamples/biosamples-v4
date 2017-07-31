@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples;
+package uk.ac.ebi.biosamples.curation;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -13,6 +13,8 @@ import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.ols.OlsProcessor;
+import uk.ac.ebi.biosamples.service.CurationApplicationService;
 import uk.ac.ebi.biosamples.zooma.ZoomaProcessor;
 
 public class SampleCurationCallable implements Callable<Void> {
@@ -22,76 +24,104 @@ public class SampleCurationCallable implements Callable<Void> {
 	private final Sample sample;
 	private final BioSamplesClient bioSamplesClient;
 	private final ZoomaProcessor zoomaProcessor;
+	private final OlsProcessor olsProcessor;
+	private final CurationApplicationService curationApplicationService;
 
 	public static final ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<String>();
 
-	public SampleCurationCallable(BioSamplesClient bioSamplesClient, Sample sample, ZoomaProcessor zoomaProcessor) {
+	public SampleCurationCallable(BioSamplesClient bioSamplesClient, Sample sample, 
+			ZoomaProcessor zoomaProcessor, 
+			OlsProcessor olsProcessor, 
+			CurationApplicationService curationApplicationService) {
 		this.bioSamplesClient = bioSamplesClient;
 		this.sample = sample;
 		this.zoomaProcessor = zoomaProcessor;
+		this.olsProcessor = olsProcessor;
+		this.curationApplicationService = curationApplicationService;
 	}
 
 	@Override
 	public Void call() throws Exception {
 
 		try {
+			Sample last = sample;
+			Sample curated = sample;
+			do {
+				last = curated;
+				curated = curate(last);
+			} while (!last.equals(curated));
 
-			for (Attribute attribute : sample.getAttributes()) {
-				// clean unexpected characters
-				String newType = cleanString(attribute.getType());
-				String newValue = cleanString(attribute.getValue());
-				if (!attribute.getType().equals(newType) || !attribute.getValue().equals(newValue)) {
-					Attribute newAttribute = Attribute.build(newType, newValue, attribute.getIri(),
-							attribute.getUnit());
-					Curation curation = Curation.build(attribute, newAttribute);
-					bioSamplesClient.persistCuration(sample.getAccession(), curation );
-					// TODO apply curation
+			do {
+				last = curated;
+				curated = ols(last);
+			} while (!last.equals(curated));
 
-				}
-
-				// if no information content, remove
-				if (isEqualToNotApplicable(attribute.getValue())) {
-					Curation curation = Curation.build(attribute, null);
-					bioSamplesClient.persistCuration(sample.getAccession(), curation);
-					// TODO apply curation
-				}
-
-				// if it has a unit, make sure it is clean
-				if (attribute.getUnit() != null) {
-					String newUnit = correctUnit(attribute.getUnit());
-					if (!attribute.getUnit().equals(newUnit)) {
-						Attribute newAttribute = Attribute.build(attribute.getType(), attribute.getValue(),
-								attribute.getIri(), newUnit);
-						Curation curation = Curation.build(attribute, newAttribute); 
-						bioSamplesClient.persistCuration(sample.getAccession(),
-								curation);
-						// TODO apply curation
-					}
-				}
-			}
-
-			// TODO write me
-
-			// query un-mapped attributes against Zooma
-
+			do {
+				last = curated;
+				curated = zooma(last);
+			} while (!last.equals(curated));
 			
-			
-			
-			
-			// validate existing ontology terms against OLS
-			// expand short-version ontology terms using OLS
-
-			// turn attributes with biosample accessions into relationships
-
-			// split number+unit attributes
-
-			// lowercase attribute types
-			// lowercase relationship types
-
 		} catch (Exception e) {
 			failedQueue.add(sample.getAccession());
 		}
 		return null;
+	}
+	
+	public Sample curate(Sample sample) {
+		for (Attribute attribute : sample.getAttributes()) {
+			// clean unexpected characters
+			String newType = cleanString(attribute.getType());
+			String newValue = cleanString(attribute.getValue());
+			if (!attribute.getType().equals(newType) || !attribute.getValue().equals(newValue)) {
+				Attribute newAttribute = Attribute.build(newType, newValue, attribute.getIri(),
+						attribute.getUnit());
+				Curation curation = Curation.build(attribute, newAttribute);
+				bioSamplesClient.persistCuration(sample.getAccession(), curation);
+				sample = curationApplicationService.applyCurationToSample(sample, curation);
+				return sample;
+
+			}
+
+			// if no information content, remove
+			if (isEqualToNotApplicable(attribute.getValue())) {
+				Curation curation = Curation.build(attribute, null);
+				bioSamplesClient.persistCuration(sample.getAccession(), curation);
+				sample = curationApplicationService.applyCurationToSample(sample, curation);
+				return sample;
+			}
+
+			// if it has a unit, make sure it is clean
+			if (attribute.getUnit() != null) {
+				String newUnit = correctUnit(attribute.getUnit());
+				if (!attribute.getUnit().equals(newUnit)) {
+					Attribute newAttribute = Attribute.build(attribute.getType(), attribute.getValue(),
+							attribute.getIri(), newUnit);
+					Curation curation = Curation.build(attribute, newAttribute); 
+					bioSamplesClient.persistCuration(sample.getAccession(),
+							curation);
+					sample = curationApplicationService.applyCurationToSample(sample, curation);
+					return sample;
+				}
+			}
+		}
+
+		// TODO write me
+
+		// query un-mapped attributes against Zooma
+
+		
+		
+		
+		// validate existing ontology terms against OLS
+		// expand short-version ontology terms using OLS
+
+		// turn attributes with biosample accessions into relationships
+
+		// split number+unit attributes
+
+		// lowercase attribute types
+		// lowercase relationship types
+		return sample;
 	}
 
 	public String cleanString(String string) {
@@ -244,7 +274,7 @@ public class SampleCurationCallable implements Callable<Void> {
 	}
 	
 
-	private void zooma(Sample sample) {
+	private Sample zooma(Sample sample) {
 		
 		for (Attribute attribute : sample.getAttributes()) {
 			
@@ -296,9 +326,32 @@ public class SampleCurationCallable implements Callable<Void> {
 				
 					//save the curation back in biosamples
 					bioSamplesClient.persistCuration(sample.getAccession(), curation);
+					sample = curationApplicationService.applyCurationToSample(sample, curation);
+					return sample;
 				}
 			}
 		}
+		return sample;
+	}
+
+	private Sample ols(Sample sample) {
+		
+		for (Attribute attribute : sample.getAttributes()) {
+			if (attribute.getIri() != null && attribute.getIri().matches("^[A-Za-z]+[_:\\-][0-9]+$")) {
+				Optional<String> iri = olsProcessor.queryOlsForShortcode(attribute.getIri());
+				if (iri.isPresent()) {
+					log.info("Mapped "+attribute+" to "+iri.get());
+					Attribute mapped = Attribute.build(attribute.getType(), attribute.getValue(), iri.get(), null);
+					Curation curation = Curation.build(Collections.singleton(attribute), Collections.singleton(mapped), null, null);
+				
+					//save the curation back in biosamples
+					bioSamplesClient.persistCuration(sample.getAccession(), curation);
+					sample = curationApplicationService.applyCurationToSample(sample, curation);
+					return sample;
+				}
+			}
+		}
+		return sample;
 	}
 
 }
