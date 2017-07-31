@@ -25,14 +25,14 @@ import java.util.TreeSet;
 public class RestSearchIntegration extends AbstractIntegration {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
-	
+
 	private Sample test1 = getSampleTest1();
 	private Sample test2 = getSampleTest2();
 	
 	public RestSearchIntegration(BioSamplesClient client) {
 		super(client);
 	}
-	
+
 	@Override
 	protected void phaseOne() {
 		//put a private sample
@@ -45,23 +45,23 @@ public class RestSearchIntegration extends AbstractIntegration {
 		if (!test2.equals(resource.getContent())) {
 			throw new RuntimeException("Expected response to equal submission");
 		}
-		
 	}
-	
+
 	@Override
 	protected void phaseTwo() {
-		List<Resource<Sample>> samples = new ArrayList<>();		
+		List<Resource<Sample>> samples = new ArrayList<>();
 		for (Resource<Sample> sample : client.fetchSampleResourceAll()) {
 			samples.add(sample);
 		}
-		
+
 		if (samples.size() <= 0) {
 			throw new RuntimeException("No search results found!");
-		}	
+		}
 
 		//check that the private sample is not in search results
 		//check that the referenced non-existing sample not in search result
 		for (Resource<Sample> resource : client.fetchSampleResourceAll()) {
+			log.info(""+resource);
 			if (resource.getContent().getAccession().equals(test1.getAccession())) {
 				throw new RuntimeException("Found non-public sample "+test1.getAccession()+" in search samples");
 			}
@@ -69,21 +69,17 @@ public class RestSearchIntegration extends AbstractIntegration {
 				throw new RuntimeException("Found non-public sample TESTrestsearch3 in search samples");
 			}
 		}
-		
 	}
-	
+
 	@Override
-	protected void phaseThree() {	
-	}
-	
+	protected void phaseThree() { }
+
 	@Override
-	protected void phaseFour() {	
-	}
-	
+	protected void phaseFour() { }
+
 	@Override
-	protected void phaseFive() {	
-	}
-	
+	protected void phaseFive() { }
+
 	private Sample getSampleTest1() {
 		String name = "Test Sample";
 		String accession = "TESTrestsearch1";
@@ -92,7 +88,7 @@ public class RestSearchIntegration extends AbstractIntegration {
 
 		SortedSet<Attribute> attributes = new TreeSet<>();
 		attributes.add(
-			Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
+				Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
 
 		return Sample.build(name, accession, release, update, attributes, new TreeSet<>(), new TreeSet<>());
 	}
@@ -105,11 +101,11 @@ public class RestSearchIntegration extends AbstractIntegration {
 
 		SortedSet<Attribute> attributes = new TreeSet<>();
 		attributes.add(
-			Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
+				Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
 
 		SortedSet<Relationship> relationships = new TreeSet<>();
 		relationships.add(Relationship.build("TESTrestsearch2", "derived from", "TESTrestsearch3"));
-		
+
 		return Sample.build(name, accession, release, update, attributes, relationships, new TreeSet<>());
 	}
 

@@ -1,36 +1,32 @@
 package uk.ac.ebi.biosamples.solr.service;
 
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.solr.core.query.Criteria;
-import org.springframework.data.solr.core.query.FacetOptions;
-import org.springframework.data.solr.core.query.FacetQuery;
-import org.springframework.data.solr.core.query.Field;
-import org.springframework.data.solr.core.query.FilterQuery;
-import org.springframework.data.solr.core.query.Query;
-import org.springframework.data.solr.core.query.SimpleFacetQuery;
-import org.springframework.data.solr.core.query.SimpleFilterQuery;
-import org.springframework.data.solr.core.query.SimpleQuery;
+import org.springframework.data.solr.core.query.*;
 import org.springframework.data.solr.core.query.result.FacetFieldEntry;
 import org.springframework.data.solr.core.query.result.FacetPage;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
-
 import uk.ac.ebi.biosamples.model.Autocomplete;
 import uk.ac.ebi.biosamples.model.SampleFacet;
 import uk.ac.ebi.biosamples.model.SampleFacetsBuilder;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
 import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
 
+import java.io.UnsupportedEncodingException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
+
 @Service
 public class SolrSampleService {
+	
+	public static final DateTimeFormatter solrFormatter = DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss'Z'");
 
 	private final SolrSampleRepository solrSampleRepository;
 	
@@ -40,7 +36,8 @@ public class SolrSampleService {
 		this.solrSampleRepository = solrSampleRepository;
 	}		
 
-	public Page<SolrSample> fetchSolrSampleByText(String searchTerm, MultiValueMap<String,String> filters, Pageable pageable) {
+	public Page<SolrSample> fetchSolrSampleByText(String searchTerm, MultiValueMap<String,String> filters, 
+			LocalDateTime after, LocalDateTime before, Pageable pageable) {
 		//default to search all
 		if (searchTerm == null || searchTerm.trim().length() == 0) {
 			searchTerm = "*:*";
@@ -54,15 +51,24 @@ public class SolrSampleService {
 		}		
 
 		//filter out non-public
+		//filter to update date range
 		FilterQuery filterQuery = new SimpleFilterQuery();
 		filterQuery.addCriteria(new Criteria("release_dt").lessThan("NOW").and("release_dt").isNotNull());
+		if (after != null && before != null) {
+			filterQuery.addCriteria(new Criteria("update_dt").between(after.format(solrFormatter), before.format(solrFormatter)));
+		} else if (after == null && before != null) {
+			filterQuery.addCriteria(new Criteria("update_dt").between("*", before.format(solrFormatter)));
+		} else if (after != null && before == null) {
+			filterQuery.addCriteria(new Criteria("update_dt").between(after.format(solrFormatter), "*"));
+		}
 		query.addFilterQuery(filterQuery);
 		
 		// return the samples from solr that match the query
 		return solrSampleRepository.findByQuery(query);
 	}
 
-	public List<SampleFacet> getFacets(String searchTerm, MultiValueMap<String,String> filters, Pageable facetPageable, Pageable facetValuePageable) {
+	public List<SampleFacet> getFacets(String searchTerm, MultiValueMap<String,String> filters, 
+			String after, String before, Pageable facetPageable, Pageable facetValuePageable) {
 		//default to search all
 		if (searchTerm == null || searchTerm.trim().length() == 0) {
 			searchTerm = "*:*";
@@ -78,6 +84,9 @@ public class SolrSampleService {
 		//filter out non-public
 		FilterQuery filterQuery = new SimpleFilterQuery();
 		filterQuery.addCriteria(new Criteria("release_dt").lessThan("NOW").and("release_dt").isNotNull());
+		if (after != null && before != null) {
+			filterQuery.addCriteria(new Criteria("update_dt").between(after, before));
+		}
 		query.addFilterQuery(filterQuery);
 		
 		Page<FacetFieldEntry> facetFields = solrSampleRepository.getFacetFields(query, facetPageable);

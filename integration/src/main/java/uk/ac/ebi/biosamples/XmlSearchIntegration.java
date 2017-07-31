@@ -21,13 +21,14 @@ import java.util.*;
 
 @Component
 @Profile({"default", "test"})
-public class XMLSearchIntegration extends AbstractIntegration {
+public class XmlSearchIntegration extends AbstractIntegration {
     
     private final RestTemplate restTemplate;
     private final IntegrationProperties integrationProperties;
+
     Logger log = LoggerFactory.getLogger(getClass());
 
-    public XMLSearchIntegration(BioSamplesClient client,
+    public XmlSearchIntegration(BioSamplesClient client,
                                 RestTemplateBuilder restTemplateBuilder,
                                 IntegrationProperties integrationProperties) {
         super(client);
@@ -94,6 +95,8 @@ public class XMLSearchIntegration extends AbstractIntegration {
             throw new RuntimeException("Response body doesn't match expected sample");
         }
 
+        assert responseEntity.getBody().equals(test1);
+
         log.info(String.format("Searching private sample %s using legacy xml api", test1.getAccession()));
         uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleLegaxyXmlUri());
         uriBuilder.pathSegment("samples", test2.getAccession());
@@ -139,6 +142,7 @@ public class XMLSearchIntegration extends AbstractIntegration {
                     Sample.class);
         } catch(HttpClientErrorException ex) {
             boolean expectedResponse = ex.getStatusCode().is4xxClientError();
+
             if (!expectedResponse) {
                 throw new RuntimeException("Excepted response doesn't match 4xx client error", ex);
             }

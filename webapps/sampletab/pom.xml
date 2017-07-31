@@ -27,11 +27,6 @@
 	</repositories>
 
 	<dependencies>
-<!-- 		<dependency> -->
-<!-- 			<groupId>uk.ac.ebi.biosamples</groupId> -->
-<!-- 			<artifactId>client</artifactId> -->
-<!-- 			<version>${bsd2017.version}</version> -->
-<!-- 		</dependency> -->
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>biosamples-spring-boot-starter</artifactId>

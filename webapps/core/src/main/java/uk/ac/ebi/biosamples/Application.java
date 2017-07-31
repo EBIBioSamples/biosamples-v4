@@ -16,7 +16,8 @@ import org.springframework.web.servlet.handler.MappedInterceptor;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.neo.NeoProperties;
 import uk.ac.ebi.biosamples.neo.repo.NeoSampleRepository;
-import uk.ac.ebi.biosamples.neo.service.NeoAccessionService;
+import uk.ac.ebi.biosamples.service.NeoAccessionService;
+import uk.ac.ebi.biosamples.service.CacheControlInterceptor;
 import uk.ac.ebi.biosamples.xml.XmlSampleHttpMessageConverter;
 
 import java.util.concurrent.Executor;
@@ -68,7 +69,8 @@ public class Application extends SpringBootServletInitializer {
     public CaffeineSpec CaffeineSpec() {
     	return CaffeineSpec.parse("maximumSize=500,expireAfterWrite=60s");
     }
-    
+
+
     /*
     @Bean
     public ApplicationRunner appRunner() {

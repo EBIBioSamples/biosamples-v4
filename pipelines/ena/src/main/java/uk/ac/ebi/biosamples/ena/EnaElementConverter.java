@@ -160,15 +160,18 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 					//sometimes ids might be comma separated or a range joined by a dash
 					for (String id : enaService.splitIdentifiers(idGrouped)) {
 						if ("ENA-EXPERIMENT".equals(db)) {
-							externalReferences.add(ExternalReference.build("https://www.ebi.ac.uk/ena/data/view/"+id));						
+							//externalReferences.add(ExternalReference.build("https://www.ebi.ac.uk/ena/data/view/"+id));						
 						} else if ("ENA-ANALYSIS".equals(db)) {
-							externalReferences.add(ExternalReference.build("https://www.ebi.ac.uk/ena/data/view/"+id));						
+							//externalReferences.add(ExternalReference.build("https://www.ebi.ac.uk/ena/data/view/"+id));						
 						}
-						//TODO link to samples, or to experiment+analysis
+						//TODO decide if link to samples, or to experiment+analysis
 					}
 				}				
 			}
 		}
+		//add external link on the sample
+		externalReferences.add(ExternalReference.build("https://www.ebi.ac.uk/ena/data/view/"+accession));
+		
 		
 		return Sample.build(name, accession, null, null, attributes, relationships, externalReferences);
 	}

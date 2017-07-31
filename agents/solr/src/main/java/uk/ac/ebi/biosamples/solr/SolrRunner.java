@@ -32,7 +32,7 @@ public class SolrRunner implements ApplicationRunner, ExitCodeGenerator {
 		// as long as there are messages to read, keep this thread alive
 		// that will also keep the async message client alive too?
 		Long messageCount = null;
-		while (biosamplesProperties.getAgentSolrStayalive() 
+		while (biosamplesProperties.getAgentSolrStayalive()
 				|| messageCount == null || messageCount > 0
 				||!messageBuffer.areAllStored()) {
 			Thread.sleep(1000);

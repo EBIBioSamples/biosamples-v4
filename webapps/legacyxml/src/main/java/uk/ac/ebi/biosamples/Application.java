@@ -4,6 +4,16 @@ package uk.ac.ebi.biosamples;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
+import org.springframework.context.annotation.Bean;
+import org.springframework.http.converter.xml.MarshallingHttpMessageConverter;
+import org.springframework.oxm.jaxb.Jaxb2Marshaller;
+import uk.ac.ebi.biosamples.model.BioSampleGroupResultQuery;
+import uk.ac.ebi.biosamples.model.BioSampleResultQuery;
+import uk.ac.ebi.biosamples.model.CustomXmlError;
+
+import javax.xml.bind.Marshaller;
+import java.util.HashMap;
+import java.util.Map;
 
 @SpringBootApplication
 public class Application extends SpringBootServletInitializer {

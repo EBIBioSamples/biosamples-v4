@@ -2,6 +2,15 @@ package uk.ac.ebi.biosamples.controller;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.*;
+import org.springframework.hateoas.mvc.ControllerLinkBuilder;
+import org.springframework.http.*;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.*;
+import uk.ac.ebi.biosamples.model.JsonLDSample;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.ExposesResourceFor;
 import org.springframework.hateoas.MediaTypes;
@@ -10,11 +19,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import uk.ac.ebi.biosamples.model.JsonLDSample;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.service.FilterService;
-import uk.ac.ebi.biosamples.service.SamplePageService;
-import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
-import uk.ac.ebi.biosamples.service.SampleService;
+import uk.ac.ebi.biosamples.service.*;
+
+import java.net.URI;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.concurrent.TimeUnit;
 
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -41,15 +53,19 @@ public class SampleRestController {
 
 	private final EntityLinks entityLinks;
 
-	private Logger log = LoggerFactory.getLogger(getClass());
+    private final JsonLDService jsonLDService;
+
+    private Logger log = LoggerFactory.getLogger(getClass());
 
 	public SampleRestController(SampleService sampleService, 
 			SamplePageService samplePageService,FilterService filterService,
-			SampleResourceAssembler sampleResourceAssembler, EntityLinks entityLinks) {
+			SampleResourceAssembler sampleResourceAssembler, EntityLinks entityLinks,
+            JsonLDService jsonLDService) {
 		this.sampleService = sampleService;
 		this.samplePageService = samplePageService;
 		this.filterService = filterService;
 		this.sampleResourceAssembler = sampleResourceAssembler;
+		this.jsonLDService = jsonLDService;
 		this.entityLinks = entityLinks;
 	}
 
@@ -106,7 +122,39 @@ public class SampleRestController {
 	@ResponseStatus(value = HttpStatus.FORBIDDEN, reason = "Sample not accessible") // 403
 	public class SampleNotAccessibleException extends RuntimeException {
 	}
-	
+
+
+    @CrossOrigin(methods = RequestMethod.GET)
+    @GetMapping(value = "/{accession}", produces = "application/ld+json")
+    public ResponseEntity<JsonLDSample> getJsonLDSample(@PathVariable String accession) {
+        Sample sample = null;
+        try {
+            sample = sampleService.fetch(accession);
+        } catch (IllegalArgumentException e) {
+            // did not exist, throw 404
+            return ResponseEntity.notFound().build();
+        }
+        if (sample.getName() == null) {
+            // if it has no name, then its just created by accessioning or
+            // reference
+            // can't read it, but could put to it
+            // TODO make sure "options" is correct for this
+            return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
+        }
+
+        // check if the release date is in the future and if so return it as
+        // private
+        if (sample.getRelease().isAfter(LocalDateTime.now())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        JsonLDSample jsonLDSample = jsonLDService.sampleToJsonLD(sample);
+
+        // create the response object with the appropriate status
+        return ResponseEntity.ok().lastModified(sample.getUpdate().toEpochSecond(ZoneOffset.UTC))
+                //.header(HttpHeaders.CACHE_CONTROL, CacheControl.maxAge(1, TimeUnit.MINUTES).cachePublic().getHeaderValue())
+                .eTag(String.valueOf(sample.hashCode())).body(jsonLDSample);
+    }
 
 	@PutMapping(value = "/{accession}", consumes = { MediaType.APPLICATION_JSON_VALUE })
 	public ResponseEntity<Resource<Sample>> put(@PathVariable String accession, @RequestBody Sample sample) {

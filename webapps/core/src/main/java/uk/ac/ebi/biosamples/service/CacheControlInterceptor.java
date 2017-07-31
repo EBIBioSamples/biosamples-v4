@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples;
+package uk.ac.ebi.biosamples.service;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;

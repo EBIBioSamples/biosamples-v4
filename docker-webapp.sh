@@ -11,10 +11,10 @@ while [ "$1" != "" ]; do
 done
 
 #mvn -T 2C -Dmaven.test.skip=true clean package
-mvn -T 2C clean package
+mvn -T 2C -P embl-ebi clean package
 
-docker-compose stop biosamples-webapps-core biosamples-webapps-sampletab biosamples-webapps-legacyxml mongo neo4j solr rabbitmq biosamples-agents-solr biosamples-agents-curation biosamples-agents-neo4j
 set +e
+docker-compose stop biosamples-webapps-core biosamples-webapps-sampletab biosamples-webapps-legacyxml mongo neo4j solr rabbitmq biosamples-agents-solr biosamples-agents-curation biosamples-agents-neo4j
 docker-compose rm -f -v biosamples-webapps-core biosamples-webapps-sampletab biosamples-webapps-legacyxml mongo neo4j solr rabbitmq biosamples-agents-solr biosamples-agents-curation biosamples-agents-neo4j
 #cleanup any previous data
 echo "The clean value is $clean"
@@ -25,12 +25,16 @@ then
 	docker volume ls -q | grep neo4j_data | xargs docker volume rm
 	docker volume ls -q | grep solr_data | xargs docker volume rm
 	docker volume ls -q | grep rabbitmq_data | xargs docker volume rm
-fi
+
+        echo "Cleaning logs"
+        rm -rf docker/logs/*.log docker/logs/*.log.* docker/logs/neo4j/*.log
+
 #remove any images, in case of out-of-date or corrupt images
 #docker images -q | xargs -r docker rmi
-set -e
 
-#rm -rf docker/logs/*.log docker/logs/*.log.* docker/logs/neo4j/*.log
+
+fi
+set -e
 
 #make sure we have up-to-date jar files in the docker image
 docker-compose build
@@ -45,6 +49,12 @@ echo "checking rabbitmq is up"
 ./http-status-check -u http://localhost:15672 -t 30
 echo "checking mongo is up"
 ./http-status-check -u http://localhost:27017 -t 30
+
+if [ -n $clean ]
+then
+        echo "Creating neo4j indexes"
+        docker-compose run --rm --service-ports biosamples-agents-neo4j java -jar agents-neo4j-4.0.0-SNAPSHOT.jar --biosamples.agent.neo4j.stayalive=false --spring.data.neo4j.indexes.auto=assert
+fi
 
 docker-compose up -d biosamples-webapps-core biosamples-webapps-sampletab biosamples-webapps-legacyxml
 echo "checking webapps-core is up"

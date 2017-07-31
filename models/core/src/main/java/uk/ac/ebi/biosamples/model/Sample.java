@@ -27,7 +27,6 @@ public class Sample {
 	
 	protected LocalDateTime release; 
 	protected LocalDateTime update;
-	protected LocalDateTime creation;
 
 	protected SortedSet<Attribute> attributes;
 	protected SortedSet<Relationship> relationships;
@@ -96,10 +95,12 @@ public class Sample {
             return false;
         }
         Sample other = (Sample) o;
+        
+        //dont use update date for comparisons 
+        
         return Objects.equals(this.name, other.name) 
         		&& Objects.equals(this.accession, other.accession)
         		&& Objects.equals(this.release, other.release)
-        		&& Objects.equals(this.update, other.update)
         		&& Objects.equals(this.attributes, other.attributes)
         		&& Objects.equals(this.relationships, other.relationships)
         		&& Objects.equals(this.externalReferences, other.externalReferences);
@@ -107,7 +108,8 @@ public class Sample {
     
     @Override
     public int hashCode() {
-    	return Objects.hash(name, accession, release, update, attributes, relationships, externalReferences);
+    	//dont put update date in the hash because its not in comparisono
+    	return Objects.hash(name, accession, release, attributes, relationships, externalReferences);
     }
     
     @Override

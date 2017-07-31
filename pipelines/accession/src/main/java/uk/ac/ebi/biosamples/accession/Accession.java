@@ -5,8 +5,10 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -51,9 +53,11 @@ public class Accession implements ApplicationRunner{
 		try (AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, 
 				pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax())) {
 			Map<String, Future<Void>> futures = new HashMap<>();
-			accessionDao.doAssayAccessionCallback(new AccessionCallbackHandler(executorService, futures, "SAMEA"));
-			accessionDao.doReferenceAccessionCallback(new AccessionCallbackHandler(executorService, futures, "SAME"));
-			accessionDao.doGroupAccessionCallback(new AccessionCallbackHandler(executorService, futures, "SAMEG"));
+			Map<String, Callable<Void>> callables = new HashMap<>();
+			int futureMax = pipelinesProperties.getThreadCountMax()*10;
+			accessionDao.doAssayAccessionCallback(new AccessionCallbackHandler(executorService, futures, callables, "SAMEA", futureMax));
+			accessionDao.doReferenceAccessionCallback(new AccessionCallbackHandler(executorService, futures, callables, "SAME", futureMax));
+			accessionDao.doGroupAccessionCallback(new AccessionCallbackHandler(executorService, futures, callables, "SAMEG", futureMax));
 			//wait for everything to finish
 			ThreadUtils.checkFutures(futures, 0);
 		}
@@ -63,12 +67,16 @@ public class Accession implements ApplicationRunner{
 		
 		private final ThreadPoolExecutor executor;
 		private final Map<String, Future<Void>> futures;
+		private final Map<String, Callable<Void>> callables;
 		private final String prefix;
+		private final int futureMax;
 		
-		public AccessionCallbackHandler(ThreadPoolExecutor executor, Map<String, Future<Void>> futures, String prefix) {
+		public AccessionCallbackHandler(ThreadPoolExecutor executor, Map<String, Future<Void>> futures, Map<String, Callable<Void>> callables, String prefix, int futureMax) {
 			this.executor = executor;
 			this.futures = futures;
 			this.prefix = prefix;
+			this.futureMax = futureMax;
+			this.callables = callables;
 		}
 
 		@Override
@@ -82,17 +90,16 @@ public class Accession implements ApplicationRunner{
 			String accession = prefix+accessionNo;
 			log.trace(""+accessionNo+" "+userAccession+" "+submissionAccession+" "+dateAssigned+" "+deleted);
 			
-			Callable<Void> callable = new AccessionCallable(accession, userAccession, submissionAccession, dateAssigned, deleted);			
+			Callable<Void> callable = new AccessionCallable(accession, userAccession, submissionAccession, dateAssigned, deleted);		
+			callables.put(accession, callable);
 			Future<Void> future = executor.submit(callable);
 			futures.put(accession, future);
 
 			try {
-				ThreadUtils.checkFutures(futures, 100);
+				ThreadUtils.checkAndRetryFutures(futures, callables, futureMax, executor);
 			} catch (InterruptedException e) {
 				log.warn("Interupted while checking for futures", e);
-			} catch (ExecutionException e) {
-				throw new RuntimeException(e);
-			}
+			} 
 		}
 	}
 	
@@ -119,13 +126,13 @@ public class Accession implements ApplicationRunner{
 
 			SortedSet<Attribute> attributes = new TreeSet<>();
 			//commented out, this makes loading into neo4j slow
-			//attributes.add(Attribute.build("other", "migrated from accession database at "+LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)));
-			//attributes.add(Attribute.build("user accession", userAccession));
-			//attributes.add(Attribute.build("submission accession", submissionAccession));
-			//attributes.add(Attribute.build("deleted", Boolean.toString(deleted)));
+			attributes.add(Attribute.build("other", "migrated from accession database at "+LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)));
+			attributes.add(Attribute.build("user accession", userAccession));
+			attributes.add(Attribute.build("submission accession", submissionAccession));
+			attributes.add(Attribute.build("deleted", Boolean.toString(deleted)));
 			
 			Sample sample = Sample.build(name, accession, release, update, attributes, null, null);
-			bioSamplesClient.persist(sample);
+			bioSamplesClient.persistSample(sample);
 			return null;
 		}
 	}

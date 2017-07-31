@@ -31,21 +31,21 @@ public class NeoMessageBufferTransaction {
 	private final NeoCurationRepository neoCurationRepository;
 	private final NeoCurationLinkRepository neoCurationLinkRepository;
 	private final CurationToNeoCurationConverter curationToNeoCurationConverter;
-	
+
 	public NeoMessageBufferTransaction(NeoSampleRepository neoSampleRepository,
-			SampleToNeoSampleConverter sampleToNeoSampleConverter,
-			NeoCurationRepository neoCurationRepository,
-			NeoCurationLinkRepository neoCurationLinkRepository,
-			CurationToNeoCurationConverter curationToNeoCurationConverter) {
+									   SampleToNeoSampleConverter sampleToNeoSampleConverter,
+									   NeoCurationRepository neoCurationRepository,
+									   NeoCurationLinkRepository neoCurationLinkRepository,
+									   CurationToNeoCurationConverter curationToNeoCurationConverter) {
 		this.neoSampleRepository = neoSampleRepository;
 		this.sampleToNeoSampleConverter = sampleToNeoSampleConverter;
 		this.neoCurationRepository = neoCurationRepository;
 		this.neoCurationLinkRepository = neoCurationLinkRepository;
 		this.curationToNeoCurationConverter = curationToNeoCurationConverter;
 	}
-	
+
 	@Transactional
-	public void save(Collection<MessageContent> messageContents) {		
+	public void save(Collection<MessageContent> messageContents) {
 		log.info("Starting save");
 		for (MessageContent messageContent : messageContents) {
 			if (messageContent.delete) {
@@ -55,7 +55,7 @@ public class NeoMessageBufferTransaction {
 				if (messageContent.hasSample()) {
 					Sample sample = messageContent.getSample();
 					NeoSample neoSample = sampleToNeoSampleConverter.convert(sample);
-					
+
 					//because relationships can refer to existing samples, make sure we use the existing NeoSample objects				
 					Set<NeoRelationship> newRelationships = new HashSet<>();
 					for (NeoRelationship oldRelationship : neoSample.getRelationships()) {
@@ -78,21 +78,21 @@ public class NeoMessageBufferTransaction {
 						newRelationships.add(NeoRelationship.build(owner, oldRelationship.getType(), target));
 					}
 					neoSample.getRelationships().clear();
-					neoSample.getRelationships().addAll(newRelationships);				
-					
+					neoSample.getRelationships().addAll(newRelationships);
+
 					neoSample = neoSampleRepository.save(neoSample, 1);
 				}
-				else if (messageContent.hasCurationLink()) {				
+				else if (messageContent.hasCurationLink()) {
 					NeoCuration neoCuration = curationToNeoCurationConverter.convert(messageContent.getCurationLink().getCuration());
 					//make sure the neoCuration is saved
 					neoCuration = neoCurationRepository.save(neoCuration);
-					
-					NeoSample neoSample = neoSampleRepository.findOneByAccession(messageContent.getCurationLink().getSample(),1);							
-					NeoCurationLink neoCurationLink = NeoCurationLink.build(neoCuration, neoSample);
+
+					NeoSample neoSample = neoSampleRepository.findOneByAccession(messageContent.getCurationLink().getSample(),1);
+					NeoCurationLink neoCurationLink = NeoCurationLink.build(neoCuration, neoSample, messageContent.getCurationLink().getCreated());
 					neoCurationLink = neoCurationLinkRepository.save(neoCurationLink);
 				}
 			}
-		}		
+		}
 		log.info("Finishing save");
 	}
 }

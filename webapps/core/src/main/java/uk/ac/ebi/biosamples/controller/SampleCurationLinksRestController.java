@@ -1,6 +1,7 @@
 package uk.ac.ebi.biosamples.controller;
 
 import java.net.URI;
+import java.time.LocalDateTime;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,7 +82,7 @@ public class SampleCurationLinksRestController {
 			@PathVariable String accession,
 			@RequestBody Curation curation) {
 		log.info("Recieved POST for " + accession + " : "+curation);		
-    	CurationLink curationLink = CurationLink.build(accession, curation);
+    	CurationLink curationLink = CurationLink.build(accession, curation, LocalDateTime.now());
     	
     	curationLink = curationPersistService.store(curationLink);
     	Resource<CurationLink> resource = curationLinkResourceAssembler.toResource(curationLink);
