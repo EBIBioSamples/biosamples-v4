@@ -9,7 +9,7 @@ services:
     - mongo
     - rabbitmq
     volumes:
-    - ./docker/logs:/logs
+    - logs:/data/db
     command:
     - java
     - -jar
@@ -63,7 +63,7 @@ services:
     links:
     - biosamples-webapps-core
     volumes:
-    - ./docker/logs:/logs
+    - logs:/data/db
     command:
     - java
     - -jar
@@ -93,7 +93,7 @@ services:
     links:
     - biosamples-webapps-core
     volumes:
-    - ./docker/logs:/logs
+    - logs:/data/db
     command:
     - java
     - -jar
@@ -115,7 +115,7 @@ services:
     - solr
     - rabbitmq
     volumes:
-    - ./docker/logs:/logs
+    - logs:/data/db
     command:
     - java
     - -jar
@@ -137,7 +137,7 @@ services:
     links:
     - rabbitmq
     volumes:
-    - ./docker/logs:/logs
+    - logs:/data/db
     command:
     - java
     - -jar
@@ -187,3 +187,4 @@ volumes:
   mongo_data: null
   rabbitmq_data: null
   elasticsearch_logs_data: null
+  logs: null

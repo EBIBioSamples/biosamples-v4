@@ -38,7 +38,7 @@ set -e
 docker-compose build
 
 #start up the webapps (and dependencies)
-docker-compose up -d solr rabbitmq mongo
+docker-compose up -d --remove-orphans solr rabbitmq mongo
 echo "checking solr is up"
 ./http-status-check -u http://localhost:8983 -t 30
 echo "checking rabbitmq is up"

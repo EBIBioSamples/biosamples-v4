@@ -10,6 +10,7 @@ docker-compose up -d biosamples-agents-solr biosamples-agents-curation
 
 #import from NCBI
 echo "Importing from NCBI"
+date
 ARGS=
 ARGS="$ARGS --biosamples.client.uri=http://localhost:8081/biosamples/beta" 
 ARGS="$ARGS --biosamples.ncbi.file=/home/faulcon/Desktop/biosample_set.xml.gz"
@@ -18,6 +19,7 @@ ARGS="$ARGS --biosamples.threadcount.max=16"
 #wget -O /home/faulcon/Desktop/biosample_set.xml.gz http://ftp.ncbi.nih.gov/biosample/biosample_set.xml.gz 
 time java -jar pipelines/ncbi/target/pipelines-ncbi-4.0.0-SNAPSHOT.jar $ARGS > /dev/null
 echo "Imported from NCBI"
+date
 
 #pre-assign existing biosample accessions FIRST
 echo "Importing accessions"
