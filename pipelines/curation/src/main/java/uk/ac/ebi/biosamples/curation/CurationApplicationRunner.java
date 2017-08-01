@@ -41,6 +41,7 @@ public class CurationApplicationRunner implements ApplicationRunner {
 		this.bioSamplesClient = bioSamplesClient;
 		this.pipelinesProperties = pipelinesProperties;
 		this.zoomaProcessor = zoomaProcessor;
+		this.olsProcessor = olsProcessor;
 		this.curationApplicationService = curationApplicationService;
 	}
 	
