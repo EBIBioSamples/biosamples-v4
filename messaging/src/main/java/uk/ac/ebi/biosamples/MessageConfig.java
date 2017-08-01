@@ -20,11 +20,6 @@ public class MessageConfig {
 	public Queue getQueueToBeIndexedSolr() {
 		return new Queue(Messaging.queueToBeIndexedSolr, true);
 	}
-	
-	@Bean
-	public Queue getQueueToBeCurated() {
-		return new Queue(Messaging.queueToBeCurated, true);
-	}
 
 	// declare exchanges
 
@@ -38,11 +33,6 @@ public class MessageConfig {
 		return new FanoutExchange(Messaging.exchangeForIndexingSolr, true, false);
 	}
 
-
-	@Bean
-	public FanoutExchange getExchangeForCuration() {
-		return new FanoutExchange(Messaging.exchangeForCuration, true, false);
-	}
 	
 	
 	// bind queues to exchanges
@@ -55,11 +45,6 @@ public class MessageConfig {
 	@Bean
 	public Binding bindingForIndexingSolr() {
 		return BindingBuilder.bind(getQueueToBeIndexedSolr()).to(getExchangeForIndexingSolr());
-	}
-
-	@Bean
-	public Binding bindingForCuration() {
-		return BindingBuilder.bind(getQueueToBeCurated()).to(getExchangeForCuration());
 	}
 	
 	//enable messaging in json	
