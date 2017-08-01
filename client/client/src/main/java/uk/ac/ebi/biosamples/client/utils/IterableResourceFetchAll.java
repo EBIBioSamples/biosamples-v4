@@ -3,6 +3,10 @@ package uk.ac.ebi.biosamples.client.utils;
 import java.net.URI;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +33,7 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
 	private final String[] rels;
 	private final ParameterizedTypeReference<PagedResources<Resource<T>>> parameterizedTypeReference;
 	private final MultiValueMap<String,String> params;
+	private final ExecutorService executor;
 
 	/**
 	 * ParameterizedTypeReference must be ParameterizedTypeReference<PagedResources<Resource<T>>> but this
@@ -40,9 +45,10 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
 	 * @param parameterizedTypeReference
 	 * @param rels
 	 */
-	public IterableResourceFetchAll(Traverson traverson, RestOperations restOperations, 
+	public IterableResourceFetchAll(ExecutorService executor, Traverson traverson, RestOperations restOperations, 
 			ParameterizedTypeReference<PagedResources<Resource<T>>> parameterizedTypeReference,
 			MultiValueMap<String,String> params, String... rels) {
+		this.executor = executor;
 		this.traverson = traverson;
 		this.restOperations = restOperations;
 		this.rels = rels;
@@ -52,38 +58,60 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
 	
 	public Iterator<Resource<T>> iterator() {			
 		//get the first page
-		//TODO allow sample page size to be customised in property
 		URI uri = UriComponentsBuilder.fromHttpUrl(traverson.follow(rels).asLink().getHref())
-				.queryParams(params).queryParam("size", "1000").build().toUri();
+				.queryParams(params).build().toUri();
 		RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
 		ResponseEntity<PagedResources<Resource<T>>> responseEntity = restOperations.exchange(requestEntity,
 				parameterizedTypeReference);
-		return new IteratorResourceFetchAll<T>(responseEntity.getBody(), restOperations);
+		return new IteratorResourceFetchAll<T>(responseEntity.getBody(), restOperations, parameterizedTypeReference, executor);
 	}
 
-	private class IteratorResourceFetchAll<U> implements Iterator<Resource<U>> {
+	private static class IteratorResourceFetchAll<U> implements Iterator<Resource<U>> {
 		
+		private Logger log = LoggerFactory.getLogger(getClass());	
+		
+		private final RestOperations restOperations;
+		private final ExecutorService executor;		
+		private final ParameterizedTypeReference<PagedResources<Resource<U>>> parameterizedTypeReference;
 		private PagedResources<Resource<U>> page;
 		private Iterator<Resource<U>> pageIterator;
-		private final RestOperations restOperations;
+		private Future<PagedResources<Resource<U>>> nextPageFuture;
 		
-		public IteratorResourceFetchAll(PagedResources<Resource<U>> page, RestOperations restOperations) {
+		public IteratorResourceFetchAll(PagedResources<Resource<U>> page, RestOperations restOperations, 
+				ParameterizedTypeReference<PagedResources<Resource<U>>> parameterizedTypeReference,
+				ExecutorService executor) {
 			this.page = page;
 			this.pageIterator = page.iterator();
 			this.restOperations = restOperations;
+			this.executor = executor;
+			this.parameterizedTypeReference = parameterizedTypeReference;
 		}
 		
 		@Override
-		public boolean hasNext() {
-			//TODO pre-emtively grab the next page as a future
+		synchronized public boolean hasNext() {
+			//pre-emptively grab the next page as a future
+			if (nextPageFuture == null && page.hasLink(Link.REL_NEXT)) {
+				URI uri = URI.create(page.getLink(Link.REL_NEXT).getHref());
+				nextPageFuture = executor.submit(new NextPageCallable<U>(restOperations, parameterizedTypeReference, uri));
+			}
 			
 			if (pageIterator.hasNext()) {
 				return true;
 			}
-			//does the page have a next page?
-			if (page.hasLink(Link.REL_NEXT)) {
-				return true;
-			}
+			//at the end of this page, move to next
+			if (nextPageFuture != null) {
+				try {
+					page = nextPageFuture.get();
+					nextPageFuture = null;
+					log.info("got next page from future "+page);
+				} catch (InterruptedException e) {
+					throw new RuntimeException(e);
+				} catch (ExecutionException e) {
+					throw new RuntimeException(e);
+				}
+				pageIterator = page.iterator();
+				return hasNext();
+			} 
 			return false;
 		}
 	
@@ -92,21 +120,53 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
 			if (pageIterator.hasNext()) {
 				return pageIterator.next();
 			}
-			//does the page have a next page?
-			if (page.hasLink(Link.REL_NEXT)) {
-				URI uri = URI.create(page.getLink(Link.REL_NEXT).getHref());
-				RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
-				ResponseEntity<PagedResources<Resource<U>>> responseEntity = restOperations.exchange(requestEntity,
-						new ParameterizedTypeReference<PagedResources<Resource<U>>>() {
-						});
-				this.page = responseEntity.getBody();
-				this.pageIterator = page.iterator();
-				return next();
-			}
+
+			//at the end of this page, move to next
+			if (nextPageFuture != null) {
+				try {
+					page = nextPageFuture.get();
+					pageIterator = page.iterator();
+					nextPageFuture = null;
+				} catch (InterruptedException e) {
+					throw new RuntimeException(e);
+				} catch (ExecutionException e) {
+					throw new RuntimeException(e);
+				}
+				if (pageIterator.hasNext()) {
+					return pageIterator.next();
+				}
+			} 
 			//no more in this iterator and no more pages, so end	
 			throw new NoSuchElementException();
+
 		}
 			
+		
+		private static class NextPageCallable<V> implements Callable<PagedResources<Resource<V>>> {
+			
+			private Logger log = LoggerFactory.getLogger(getClass());	
+
+			private final RestOperations restOperations;
+			private final URI uri;
+			private final ParameterizedTypeReference<PagedResources<Resource<V>>> parameterizedTypeReference;
+			
+			public NextPageCallable(RestOperations restOperations, 
+					ParameterizedTypeReference<PagedResources<Resource<V>>> parameterizedTypeReference,
+					URI uri) {
+				this.restOperations = restOperations;
+				this.uri = uri;
+				this.parameterizedTypeReference = parameterizedTypeReference;
+			}
+			
+			@Override
+			public PagedResources<Resource<V>> call() throws Exception {
+				RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
+				ResponseEntity<PagedResources<Resource<V>>> responseEntity = restOperations.exchange(requestEntity,
+						parameterizedTypeReference);
+				return responseEntity.getBody();				
+			}
+			
+		}
 			
 	}
 }

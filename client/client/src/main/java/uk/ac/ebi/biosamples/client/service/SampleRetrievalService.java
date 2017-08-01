@@ -31,6 +31,7 @@ import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import uk.ac.ebi.biosamples.client.ClientProperties;
 import uk.ac.ebi.biosamples.client.utils.IterableResourceFetchAll;
 import uk.ac.ebi.biosamples.model.Sample;
 
@@ -43,12 +44,14 @@ public class SampleRetrievalService {
 	private final Traverson traverson;
 	private final ExecutorService executor;
 	private final RestOperations restOperations;
+	private final ClientProperties clientProperties;
 
 	public SampleRetrievalService(RestOperations restOperations, Traverson traverson,
-			ExecutorService executor) {
+			ExecutorService executor, ClientProperties clientProperties) {
 		this.restOperations = restOperations;
 		this.traverson = traverson;
 		this.executor = executor;
+		this.clientProperties = clientProperties;
 	}
 
 	/**
@@ -117,32 +120,36 @@ public class SampleRetrievalService {
 	
 	public Iterable<Resource<Sample>> fetchAll() {
 		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();		
-		return new IterableResourceFetchAll<Sample>(traverson, restOperations,
+		params.add("size", Integer.toString(clientProperties.getBiosamplesClientPagesize()));
+		return new IterableResourceFetchAll<Sample>(executor, traverson, restOperations,
 				new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {}, 
 				params,	"samples");
 	}
 
 	public Iterable<Resource<Sample>> fetchUpdatedAfter(LocalDateTime updatedAfter) {	
 		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();		
+		params.add("size", Integer.toString(clientProperties.getBiosamplesClientPagesize()));
 		params.add("updatedafter", solrFormatter.format(updatedAfter));
-		return new IterableResourceFetchAll<Sample>(traverson, restOperations,
+		return new IterableResourceFetchAll<Sample>(executor, traverson, restOperations,
 				new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {}, 
 				params,	"samples");
 	}
 
 	public Iterable<Resource<Sample>> fetchUpdatedBefore(LocalDateTime updatedBefore) {	
 		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();		
+		params.add("size", Integer.toString(clientProperties.getBiosamplesClientPagesize()));
 		params.add("updatedbefore", solrFormatter.format(updatedBefore));
-		return new IterableResourceFetchAll<Sample>(traverson, restOperations,
+		return new IterableResourceFetchAll<Sample>(executor, traverson, restOperations,
 				new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {}, 
 				params,	"samples");
 	}
 
 	public Iterable<Resource<Sample>> fetchUpdatedBetween(LocalDateTime updatedAfter, LocalDateTime updatedBefore) {	
-		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();		
+		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();	
+		params.add("size", Integer.toString(clientProperties.getBiosamplesClientPagesize()));
 		params.add("updatedafter", solrFormatter.format(updatedAfter));
 		params.add("updatedbefore", solrFormatter.format(updatedBefore));
-		return new IterableResourceFetchAll<Sample>(traverson, restOperations,
+		return new IterableResourceFetchAll<Sample>(executor, traverson, restOperations,
 				new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {}, 
 				params,	"samples");
 	}
