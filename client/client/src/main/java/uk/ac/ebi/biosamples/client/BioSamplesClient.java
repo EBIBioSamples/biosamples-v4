@@ -57,9 +57,9 @@ public class BioSamplesClient {
 		Traverson traverson = new Traverson(clientProperties.getBiosamplesClientUri(), MediaTypes.HAL_JSON);
 		traverson.setRestOperations(restOperations);
 		
-		sampleRetrievalService = new SampleRetrievalService(restOperations, traverson, threadPoolExecutor);
+		sampleRetrievalService = new SampleRetrievalService(restOperations, traverson, threadPoolExecutor, clientProperties);
 		sampleSubmissionService = new SampleSubmissionService(restOperations, traverson, threadPoolExecutor);
-		curationRetrievalService = new CurationRetrievalService(restOperations, traverson, threadPoolExecutor);
+		curationRetrievalService = new CurationRetrievalService(restOperations, traverson, threadPoolExecutor, clientProperties);
 		curationSubmissionService = new CurationSubmissionService(restOperations, traverson, threadPoolExecutor);
 		
 		this.sampleValidator = sampleValidator;
