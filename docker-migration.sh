@@ -6,7 +6,7 @@ set -e
 source docker-env.sh
 
 #start up the agents
-docker-compose up -d biosamples-agents-solr biosamples-agents-curation
+docker-compose up -d biosamples-agents-solr
 
 #import from NCBI
 echo "Importing from NCBI"

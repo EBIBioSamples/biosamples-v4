@@ -131,26 +131,7 @@ services:
     - spring.rabbitmq.host=rabbitmq
     - biosamples.agent.solr.stayalive=true
     - logging.file=/logs/agents-solr.log
-    
-  biosamples-agents-curation:
-    image: biosamples:latest
-    links:
-    - rabbitmq
-    volumes:
-    - logs:/logs
-    command:
-    - java
-    - -jar
-    - agents-curation-4.0.0-SNAPSHOT.jar
-    environment:
-    - spring.rabbitmq.publisher-confirms=true
-    - spring.rabbitmq.host=rabbitmq
-    - spring.rabbitmq.listener.concurrency=1
-    - spring.rabbitmq.listener.max-concurrency=24
-    - biosamples.agent.curation.stayalive=true
-    - biosamples.client.uri=http://biosamples-webapps-core:8080/biosamples/beta
-    - logging.file=/logs/agents-curation.log
-    
+       
   mongo:
     image: mongo:3.2
     volumes:

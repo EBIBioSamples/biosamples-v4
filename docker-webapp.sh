@@ -14,8 +14,8 @@ done
 mvn -T 2C -P embl-ebi clean package
 
 set +e
-docker-compose stop biosamples-webapps-core biosamples-webapps-sampletab biosamples-webapps-legacyxml mongo solr rabbitmq biosamples-agents-solr biosamples-agents-curation
-docker-compose rm -f -v biosamples-webapps-core biosamples-webapps-sampletab biosamples-webapps-legacyxml mongo solr rabbitmq biosamples-agents-solr biosamples-agents-curation
+docker-compose stop biosamples-webapps-core biosamples-webapps-sampletab biosamples-webapps-legacyxml mongo solr rabbitmq biosamples-agents-solr
+docker-compose rm -f -v biosamples-webapps-core biosamples-webapps-sampletab biosamples-webapps-legacyxml mongo solr rabbitmq biosamples-agents-solr
 #cleanup any previous data
 if [ -n $clean ]
 then
