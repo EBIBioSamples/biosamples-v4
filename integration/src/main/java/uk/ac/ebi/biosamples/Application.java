@@ -1,7 +1,7 @@
 package uk.ac.ebi.biosamples;
 
-import org.openqa.grid.internal.utils.configuration.StandaloneConfiguration;
-import org.openqa.selenium.remote.server.SeleniumServer;
+//import org.openqa.grid.internal.utils.configuration.StandaloneConfiguration;
+//import org.openqa.selenium.remote.server.SeleniumServer;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -23,10 +23,10 @@ public class Application {
 		return new PropertySourcesPlaceholderConfigurer();
 	}
 
-	@Bean
-    public SeleniumServer getSeleniumServer() {
-        return new SeleniumServer(new StandaloneConfiguration());
-    }
+//	@Bean
+//    public SeleniumServer getSeleniumServer() {
+//        return new SeleniumServer(new StandaloneConfiguration());
+//    }
 
 	public static void main(String[] args) {
 		SpringApplication.exit(SpringApplication.run(Application.class, args));

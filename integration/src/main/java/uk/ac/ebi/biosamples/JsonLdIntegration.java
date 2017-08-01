@@ -1,9 +1,9 @@
 package uk.ac.ebi.biosamples;
 
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
+//import org.openqa.selenium.By;
+//import org.openqa.selenium.WebDriver;
+//import org.openqa.selenium.WebElement;
+//import org.openqa.selenium.chrome.ChromeDriver;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.Ordered;
@@ -31,7 +31,7 @@ import java.util.regex.Pattern;
 @Profile({"default", "selenium", "test"})
 public class JsonLdIntegration extends AbstractIntegration {
     private final RestOperations restTemplate;
-    private final WebDriver chromeDriver = new ChromeDriver();
+    //private final WebDriver chromeDriver = new ChromeDriver();
     private final IntegrationProperties integrationProperties;
 
     public JsonLdIntegration(RestTemplateBuilder templateBuilder,
@@ -59,7 +59,7 @@ public class JsonLdIntegration extends AbstractIntegration {
     @Override
     protected void phaseTwo() {
         Sample testSample = getTestSample();
-        checkPresenceOnWebPage(testSample);
+        //checkPresenceOnWebPage(testSample);
         checkPresenceWithRest(testSample);
 
     }
@@ -111,7 +111,7 @@ public class JsonLdIntegration extends AbstractIntegration {
     private boolean jsonLDHasAccession(String jsonLDContent, String accession) {
         return Pattern.compile("\"identifier\"\\s*:\\s*\"" + accession + "\",").matcher(jsonLDContent).find();
     }
-
+/*
     private void checkPresenceOnWebPage(Sample sample) {
         try {
             Optional<Resource<Sample>> optionalSample = client.fetchSampleResource(sample.getAccession());
@@ -139,7 +139,8 @@ public class JsonLdIntegration extends AbstractIntegration {
         }
 
     }
-
+*/
+    
     private void checkPresenceWithRest(Sample sample) {
         UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(this.integrationProperties.getBiosampleSubmissionUri());
         uriBuilder.pathSegment("samples", sample.getAccession()+".ldjson");
