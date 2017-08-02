@@ -20,7 +20,7 @@ import java.time.LocalTime;
 import java.util.*;
 
 @Component
-@Profile({"default", "test"})
+@Profile({"default","test"})
 public class XmlSearchIntegration extends AbstractIntegration {
     
     private final RestTemplate restTemplate;
@@ -103,8 +103,8 @@ public class XmlSearchIntegration extends AbstractIntegration {
 
         // Set the accept header
         try {
-            responseEntity = restTemplate.exchange(uriBuilder.build().toUri(), HttpMethod.GET, entity, String.class);
-            if (!responseEntity.getStatusCode().equals(HttpStatus.FORBIDDEN)) {
+            ResponseEntity<Sample> sampleResponseEntity = restTemplate.exchange(uriBuilder.build().toUri(), HttpMethod.GET, entity, Sample.class);
+            if (!sampleResponseEntity.getStatusCode().equals(HttpStatus.FORBIDDEN)) {
                 throw new RuntimeException(String.format("Sample %s should be forbidden and not available through the legaxy xml api", test2.getAccession()));
             }
         } catch (Exception e) {

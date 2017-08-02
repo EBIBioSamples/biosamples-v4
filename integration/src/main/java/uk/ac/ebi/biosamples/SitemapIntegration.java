@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -22,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 @Order
-//@Component
+@Component
 @Profile({"default"})
 public class SitemapIntegration extends AbstractIntegration {
 
