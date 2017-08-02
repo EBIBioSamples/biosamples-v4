@@ -110,19 +110,17 @@ public class SampleCurationCallable implements Callable<Void> {
 		// TODO write me
 
 		// query un-mapped attributes against Zooma
-
+	
 		
-		
-		
-		// validate existing ontology terms against OLS
+		// TODO validate existing ontology terms against OLS
 		// expand short-version ontology terms using OLS
 
-		// turn attributes with biosample accessions into relationships
+		// TODO turn attributes with biosample accessions into relationships
 
-		// split number+unit attributes
+		// TODO split number+unit attributes
 
-		// lowercase attribute types
-		// lowercase relationship types
+		// TODO lowercase attribute types
+		// TODO lowercase relationship types
 		return sample;
 	}
 

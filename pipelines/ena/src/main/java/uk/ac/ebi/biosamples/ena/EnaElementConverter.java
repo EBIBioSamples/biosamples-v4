@@ -172,7 +172,6 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 		//add external link on the sample
 		externalReferences.add(ExternalReference.build("https://www.ebi.ac.uk/ena/data/view/"+accession));
 		
-		
 		return Sample.build(name, accession, null, null, attributes, relationships, externalReferences);
 	}
 

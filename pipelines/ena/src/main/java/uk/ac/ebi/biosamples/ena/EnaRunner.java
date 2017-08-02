@@ -23,9 +23,8 @@ import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 
-@SuppressWarnings("unused")
 @Component
-public class Ena implements ApplicationRunner {
+public class EnaRunner implements ApplicationRunner {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 
@@ -34,12 +33,12 @@ public class Ena implements ApplicationRunner {
 
 	@Autowired
 	private EraProDao eraProDao;
-
-	@Autowired
-	private ApplicationContext context;
 	
 	@Autowired
 	private EnaCallableFactory enaCallableFactory;
+	
+	@Autowired
+	private NcbiCallableFactory ncbiCallableFactory;
 
 	private Map<String, Future<Void>> futures = new HashMap<>();
 	
@@ -64,7 +63,7 @@ public class Ena implements ApplicationRunner {
 		}
 		
 		if (pipelinesProperties.getThreadCount() == 0) {
-			EraRowCallbackHandler eraRowCallbackHandler = new EraRowCallbackHandler(null);
+			EraRowCallbackHandler eraRowCallbackHandler = new EraRowCallbackHandler(null, enaCallableFactory, futures);
 			eraProDao.doSampleCallback(fromDate, toDate, eraRowCallbackHandler);
 			//now print a list of things that failed
 			if (EnaCallable.failedQueue.size() > 0) {
@@ -75,8 +74,11 @@ public class Ena implements ApplicationRunner {
 			try (AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, false, 
 					pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax())) {
 	
-				EraRowCallbackHandler eraRowCallbackHandler = new EraRowCallbackHandler(executorService);
+				EraRowCallbackHandler eraRowCallbackHandler = new EraRowCallbackHandler(executorService, enaCallableFactory, futures);
 				eraProDao.doSampleCallback(fromDate, toDate, eraRowCallbackHandler);
+				
+				NcbiRowCallbackHandler ncbiRowCallbackHandler = new NcbiRowCallbackHandler(executorService, ncbiCallableFactory, futures);
+				eraProDao.getNcbiCallback(fromDate, toDate, eraRowCallbackHandler);
 				
 				log.info("waiting for futures");
 				// wait for anything to finish
@@ -96,12 +98,18 @@ public class Ena implements ApplicationRunner {
 	}
 	
 	
-	private class EraRowCallbackHandler implements RowCallbackHandler {
+	private static class EraRowCallbackHandler implements RowCallbackHandler {
 
 		private final AdaptiveThreadPoolExecutor executorService;
+		private final EnaCallableFactory enaCallableFactory;
+		private final Map<String, Future<Void>> futures;
 		
-		public EraRowCallbackHandler(AdaptiveThreadPoolExecutor executorService) {
+		public EraRowCallbackHandler(AdaptiveThreadPoolExecutor executorService, 
+				EnaCallableFactory enaCallableFactory, 
+				Map<String, Future<Void>>futures) {
 			this.executorService = executorService;
+			this.enaCallableFactory = enaCallableFactory;
+			this.futures = futures;
 		}
 		
 		@Override
@@ -109,6 +117,38 @@ public class Ena implements ApplicationRunner {
 			String sampleAccession = rs.getString("BIOSAMPLE_ID");
 			
 			Callable<Void> callable = enaCallableFactory.build(sampleAccession); 
+			if (executorService == null) {
+				try {
+					callable.call();
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+			} else {
+				futures.put(sampleAccession, executorService.submit(callable));
+			}
+		}
+		
+	}
+	
+	private static class NcbiRowCallbackHandler implements RowCallbackHandler {
+
+		private final AdaptiveThreadPoolExecutor executorService;
+		private final NcbiCallableFactory ncbiCallableFactory;
+		private final Map<String, Future<Void>> futures;
+		
+		public NcbiRowCallbackHandler(AdaptiveThreadPoolExecutor executorService,
+				NcbiCallableFactory ncbiCallableFactory,
+				Map<String, Future<Void>> futures) {
+			this.executorService = executorService;
+			this.ncbiCallableFactory = ncbiCallableFactory;
+			this.futures = futures;
+		}
+		
+		@Override
+		public void processRow(ResultSet rs) throws SQLException {
+			String sampleAccession = rs.getString("BIOSAMPLE_ID");
+			
+			Callable<Void> callable = ncbiCallableFactory.build(sampleAccession); 
 			if (executorService == null) {
 				try {
 					callable.call();
