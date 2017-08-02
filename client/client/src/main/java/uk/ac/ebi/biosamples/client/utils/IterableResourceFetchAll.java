@@ -80,6 +80,7 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
 		public IteratorResourceFetchAll(PagedResources<Resource<U>> page, RestOperations restOperations, 
 				ParameterizedTypeReference<PagedResources<Resource<U>>> parameterizedTypeReference,
 				ExecutorService executor) {
+
 			this.page = page;
 			this.pageIterator = page.iterator();
 			this.restOperations = restOperations;
@@ -138,7 +139,6 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
 			} 
 			//no more in this iterator and no more pages, so end	
 			throw new NoSuchElementException();
-
 		}
 			
 		

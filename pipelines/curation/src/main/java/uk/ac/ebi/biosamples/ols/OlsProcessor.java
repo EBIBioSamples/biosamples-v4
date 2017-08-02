@@ -56,7 +56,9 @@ public class OlsProcessor {
 			if (n.get("_embedded").has("terms")) {
 				if (n.get("_embedded").get("terms").size() == 1) {
 					if (n.get("_embedded").get("terms").get(0).has("iri")) {
-						return Optional.of(n.get("_embedded").get("terms").get(0).get("iri").asText());
+						String iri = n.get("_embedded").get("terms").get(0).get("iri").asText();
+						log.info("OLS mapped "+shortcode+"  to "+iri);
+						return Optional.of(iri);
 					}
 				}
 			}	

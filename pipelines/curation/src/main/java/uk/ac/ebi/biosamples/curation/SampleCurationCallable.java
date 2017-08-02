@@ -44,6 +44,7 @@ public class SampleCurationCallable implements Callable<Void> {
 	public Void call() throws Exception {
 
 		try {
+			
 			Sample last = sample;
 			Sample curated = sample;
 			do {
@@ -62,6 +63,7 @@ public class SampleCurationCallable implements Callable<Void> {
 			} while (!last.equals(curated));
 			
 		} catch (Exception e) {
+			log.warn("Encountered exception with "+sample.getAccession(), e);
 			failedQueue.add(sample.getAccession());
 		}
 		return null;
@@ -320,7 +322,7 @@ public class SampleCurationCallable implements Callable<Void> {
 			if (attribute.getIri() == null && attribute.getType().length() < 64 && attribute.getValue().length() < 128) {
 				Optional<String> iri = zoomaProcessor.queryZooma(attribute.getType(), attribute.getValue());
 				if (iri.isPresent()) {
-					log.info("Mapped "+attribute+" to "+iri.get());
+					log.trace("Mapped "+attribute+" to "+iri.get());
 					Attribute mapped = Attribute.build(attribute.getType(), attribute.getValue(), iri.get(), null);
 					Curation curation = Curation.build(Collections.singleton(attribute), Collections.singleton(mapped), null, null);
 				
@@ -340,7 +342,7 @@ public class SampleCurationCallable implements Callable<Void> {
 			if (attribute.getIri() != null && attribute.getIri().matches("^[A-Za-z]+[_:\\-][0-9]+$")) {
 				Optional<String> iri = olsProcessor.queryOlsForShortcode(attribute.getIri());
 				if (iri.isPresent()) {
-					log.info("Mapped "+attribute+" to "+iri.get());
+					log.trace("Mapped "+attribute+" to "+iri.get());
 					Attribute mapped = Attribute.build(attribute.getType(), attribute.getValue(), iri.get(), null);
 					Curation curation = Curation.build(Collections.singleton(attribute), Collections.singleton(mapped), null, null);
 				

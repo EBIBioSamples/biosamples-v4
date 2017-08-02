@@ -101,9 +101,6 @@ public class RestCurationIntegration extends AbstractIntegration {
 
 	private void testCurations() {
 		
-		
-		
-		
 		/*
 		//TODO use client
 		URI uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUri())

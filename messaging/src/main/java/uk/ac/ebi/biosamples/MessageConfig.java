@@ -21,16 +21,6 @@ public class MessageConfig {
 		return new Queue(Messaging.queueToBeIndexedSolr, true);
 	}
 
-	@Bean
-	public Queue getQueueToBeIndexedNeo4J() {
-		return new Queue(Messaging.queueToBeIndexedNeo4J, true);
-	}
-	
-	@Bean
-	public Queue getQueueToBeCurated() {
-		return new Queue(Messaging.queueToBeCurated, true);
-	}
-
 	// declare exchanges
 
 	@Bean
@@ -43,37 +33,18 @@ public class MessageConfig {
 		return new FanoutExchange(Messaging.exchangeForIndexingSolr, true, false);
 	}
 
-	@Bean
-	public FanoutExchange getExchangeForIndexingNeo4J() {
-		return new FanoutExchange(Messaging.exchangeForIndexingNeo4J, true, false);
-	}
-
-	@Bean
-	public FanoutExchange getExchangeForCuration() {
-		return new FanoutExchange(Messaging.exchangeForCuration, true, false);
-	}
 	
 	
 	// bind queues to exchanges
 
 	@Bean
 	public Binding bindingForIndexing() {
-		return BindingBuilder.bind(getExchangeForIndexingNeo4J()).to(getExchangeForIndexing());
-	}
-
-	@Bean
-	public Binding bindingForIndexingNeo4J() {
-		return BindingBuilder.bind(getQueueToBeIndexedNeo4J()).to(getExchangeForIndexingNeo4J());
+		return BindingBuilder.bind(getExchangeForIndexingSolr()).to(getExchangeForIndexing());
 	}
 
 	@Bean
 	public Binding bindingForIndexingSolr() {
 		return BindingBuilder.bind(getQueueToBeIndexedSolr()).to(getExchangeForIndexingSolr());
-	}
-
-	@Bean
-	public Binding bindingForCuration() {
-		return BindingBuilder.bind(getQueueToBeCurated()).to(getExchangeForCuration());
 	}
 	
 	//enable messaging in json	

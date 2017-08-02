@@ -69,7 +69,6 @@ public class JsonLdIntegration extends AbstractIntegration {
         if(isSeleniumTestRequired(env)) {
             checkPresenceOnWebPage(testSample);
         }
-
         checkPresenceWithRest(testSample);
 
     }

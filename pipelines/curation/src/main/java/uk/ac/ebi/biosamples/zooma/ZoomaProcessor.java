@@ -39,7 +39,7 @@ public class ZoomaProcessor {
 	
 	@Cacheable("zooma")
 	public Optional<String> queryZooma(String type, String value) {
-		log.info("Zooma getting : "+type+" : "+value);
+		log.trace("Zooma getting : "+type+" : "+value);
 		URI uri = uriBuilder.expand(value, type).encode().toUri();
 		//log.info("Zooma uri : "+uri);
 		
@@ -62,9 +62,9 @@ public class ZoomaProcessor {
 		if (!n.has("semanticTags") || n.get("semanticTags").size() != 1) {
 			return null;
 		}
-		
-		return Optional.of(n.get("semanticTags").get(0).asText());
-		
+		String iri = n.get("semanticTags").get(0).asText();
+		log.info("Zooma mapped "+value+" ("+value+") to "+iri);
+		return Optional.of(iri);		
 	}
 	
 	

@@ -53,7 +53,7 @@ public class CurationApplicationRunner implements ApplicationRunner {
 			Map<String, Future<Void>> futures = new HashMap<>();
 			
 			for (Resource<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll()) {
-				
+				log.trace("Handling "+sampleResource);
 				Sample sample = sampleResource.getContent();
 				if (sample == null) {
 					throw new RuntimeException("Sample should not be null");
