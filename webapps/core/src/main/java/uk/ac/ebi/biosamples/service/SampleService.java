@@ -15,7 +15,9 @@ import uk.ac.ebi.biosamples.Messaging;
 import uk.ac.ebi.biosamples.WebappProperties;
 import uk.ac.ebi.biosamples.model.Autocomplete;
 import uk.ac.ebi.biosamples.model.ExternalReference;
+import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.repo.MongoExternalReferenceRepository;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.service.ExternalReferenceToMongoExternalReferenceConverter;
@@ -100,19 +102,21 @@ public class SampleService {
 				
 		// TODO validate that relationships have this sample as the source 
 		
-		//assign it a new accession		
-		if (!sample.hasAccession()) {
+		if (sample.hasAccession()) {
+			MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);
+			mongoSample = mongoSampleRepository.save(mongoSample);
+			sample = mongoSampleToSampleConverter.convert(mongoSample);
+		} else {
+			//assign it a new accession		
 			//TODO see if there is an existing accession for this user and name
 			sample = mongoAccessionService.generateAccession(sample);
-		} else {
-			sample = mongoSampleToSampleConverter.convert(mongoSampleRepository.save(sampleToMongoSampleConverter.convert(sample)));
 		}
+		//TODO check if reverse relationships have been added by the listener
 		
 		//update update date
 		//TODO put in eventlistener
 		sample = Sample.build(sample.getName(), sample.getAccession(), sample.getRelease(), LocalDateTime.now(),
 				sample.getCharacteristics(), sample.getRelationships(), sample.getExternalReferences());
-		
 		
 		// send a message for storage and further processing
 		//TODO put in eventlistener
