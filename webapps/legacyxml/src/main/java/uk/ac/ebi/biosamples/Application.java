@@ -5,11 +5,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.converter.xml.Jaxb2RootElementHttpMessageConverter;
 import org.springframework.http.converter.xml.MarshallingHttpMessageConverter;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
-import uk.ac.ebi.biosamples.model.BioSampleGroupResultQuery;
-import uk.ac.ebi.biosamples.model.BioSampleResultQuery;
-import uk.ac.ebi.biosamples.model.CustomXmlError;
 
 import javax.xml.bind.Marshaller;
 import java.util.HashMap;
@@ -25,36 +23,7 @@ public class Application extends SpringBootServletInitializer {
 	}
 
 
-
-	 // @Override
-	 //  protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
-	    /*
-		// https://github.com/spring-projects/spring-boot/issues/2745
-		// The error page on Tomcat deployed application interfere with the
-		// proper error handling provided by the default error handler
-		//set register error pagefilter false
-		setRegisterErrorPageFilter(false);
-		builder.sources(Application.class);
-		return builder;
-	    */
-
-	     // Properties properties = new Properties();
-	     // properties.setProperty("spring.jackson.serialization.indent_output", "true");
-	     // builder.properties(properties);
-	     // return builder;
-	 //  }
-
-
-
-	// If you
-//	@Bean
-//	public Jaxb2RootElementHttpMessageConverter getJaxb2RootElementHttpMessageConverter() {
-//		Jaxb2RootElementHttpMessageConverter converter = new Jaxb2RootElementHttpMessageConverter();
-//		converter.setSupportedMediaTypes(Arrays.asList(MediaType.APPLICATION_XML, MediaType.TEXT_XML));
-//		return converter;
-//	}
-
-
+	/* Necessary to render the BioSamples XML using the format and comments */
 	@Bean(name = "marshallingHttpMessageConverter")
 	public MarshallingHttpMessageConverter getMarshallingHttpMessageConverter() {
 		MarshallingHttpMessageConverter marshallingHttpMessageConverter = new MarshallingHttpMessageConverter();
@@ -63,6 +32,7 @@ public class Application extends SpringBootServletInitializer {
 		return marshallingHttpMessageConverter;
 	}
 
+	/* Necessary to render the BioSamples XML using the format and comments */
 	@Bean(name = "jaxb2Marshaller")
 	public Jaxb2Marshaller getJaxb2Marshaller() {
 		String documentComment = "BioSamples XML API - version 1.0";
@@ -72,12 +42,18 @@ public class Application extends SpringBootServletInitializer {
 		props.put(Marshaller.JAXB_SCHEMA_LOCATION,"http://www.ebi.ac.uk/biosamples/SampleGroupExport/1.0 http://www.ebi.ac.uk/biosamples/assets/xsd/v1.0/ResultQuerySampleSchema.xsd");
 		props.put("com.sun.xml.internal.bind.xmlHeaders", String.format("\n<!-- %s -->", documentComment));
 		Jaxb2Marshaller jaxb2Marshaller = new Jaxb2Marshaller();
-		jaxb2Marshaller.setClassesToBeBound(CustomXmlError.class,
-				BioSampleGroupResultQuery.class,
-				BioSampleResultQuery.class);
+		jaxb2Marshaller.setPackagesToScan("uk.ac.ebi.biosamples.model");
 		jaxb2Marshaller.setMarshallerProperties(props);
 
 		return jaxb2Marshaller;
 	}
+
+	/* Necessary to render XML using Jaxb annotations*/
+	@Bean
+	public Jaxb2RootElementHttpMessageConverter getJaxb2RootElementHttpMessageConverter() {
+		return new Jaxb2RootElementHttpMessageConverter();
+	}
+
+
 
 }
