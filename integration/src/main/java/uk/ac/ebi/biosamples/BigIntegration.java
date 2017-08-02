@@ -70,7 +70,7 @@ public class BigIntegration extends AbstractIntegration {
 		long endTime = System.nanoTime();
 		double elapsedMs = (int) ((endTime-startTime)/1000000l);
 		if (elapsedMs > 1000) {
-			throw new RuntimeException("Took more than 1000ms to fetch highly-connected sample");
+			throw new RuntimeException("Took more than 1000ms to fetch highly-connected sample ("+elapsedMs+"ms)");
 			
 		}
 
