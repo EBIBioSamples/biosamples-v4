@@ -26,7 +26,6 @@ import java.util.Optional;
 import java.util.concurrent.*;
 import java.util.stream.StreamSupport;
 
-
 /**
  * This is the primary class for interacting with BioSamples.
  * 
@@ -93,7 +92,20 @@ public class BioSamplesClient {
 	public Iterable<Optional<Resource<Sample>>> fetchSampleResourceAll(Iterable<String> accessions) throws RestClientException {
 		return sampleRetrievalService.fetchAll(accessions);
 	}
-	
+
+
+	/**
+	 * Search for samples using pagination. This method should be used for specific pagination needs. When in need for
+	 * all results from a search, prefer the iterator implementation.
+	 * @param text
+	 * @param page
+	 * @param size
+	 * @return a paginated results of samples relative to the search term
+	 */
+	public PagedResources<Resource<Sample>> fetchPagedSamples(String text, int page, int size) {
+		return sampleRetrievalService.search(text, page, size);
+	}
+
 	public Optional<Sample> fetchSample(String accession) throws RestClientException {
 		Optional<Resource<Sample>> resource = fetchSampleResource(accession);
 		if (resource.isPresent()) {
@@ -198,8 +210,4 @@ public class BioSamplesClient {
 		return persistResource(sample).getContent();
 	}
 
-	@Deprecated
-	public PagedResources<Resource<Sample>> fetchPagedSamples(String text, int startPage, int size) {
-		return sampleRetrievalService.fetchPaginated(text, startPage, size);
-	}
 }

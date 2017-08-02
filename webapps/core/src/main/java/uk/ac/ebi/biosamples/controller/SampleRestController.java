@@ -2,15 +2,6 @@ package uk.ac.ebi.biosamples.controller;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.*;
-import org.springframework.hateoas.mvc.ControllerLinkBuilder;
-import org.springframework.http.*;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.*;
-import uk.ac.ebi.biosamples.model.JsonLDSample;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.ExposesResourceFor;
 import org.springframework.hateoas.MediaTypes;
@@ -26,7 +17,6 @@ import uk.ac.ebi.biosamples.service.*;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Primary controller for REST operations both in JSON and XML and both read and
@@ -104,6 +94,12 @@ public class SampleRestController {
 				.header(HttpHeaders.CACHE_CONTROL, CacheControl.maxAge(1, TimeUnit.MINUTES).cachePublic().getHeaderValue())
 				.eTag(String.valueOf(sample.hashCode())).contentType(MediaTypes.HAL_JSON).body(sampleResource);
 		*/
+	}
+
+	@CrossOrigin(methods = RequestMethod.GET)
+	@GetMapping(value = "/{accession}", produces = { MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE })
+	public Sample getSampleXml(@PathVariable String accession) {
+		return this.getSampleHal(accession).getContent();
 	}
 
 	@ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "No such Sample") // 404

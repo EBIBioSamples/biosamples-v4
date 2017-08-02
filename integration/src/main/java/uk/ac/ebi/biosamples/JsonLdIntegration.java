@@ -8,11 +8,11 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.env.Environment;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestOperations;
-import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
@@ -25,21 +25,26 @@ import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
-//@Component
+@Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @Profile({"default", "selenium", "test"})
 public class JsonLdIntegration extends AbstractIntegration {
+    private final Environment env;
     private final RestOperations restTemplate;
-    //private final WebDriver chromeDriver = new ChromeDriver();
+//    private WebDriver chromeDriver;
     private final IntegrationProperties integrationProperties;
 
     public JsonLdIntegration(RestTemplateBuilder templateBuilder,
                              BioSamplesClient client,
-                             IntegrationProperties props) {
+                             IntegrationProperties props,
+                             Environment env) {
         super(client);
         integrationProperties = props;
         restTemplate = templateBuilder.build();
+        this.env = env;
+
     }
 
     @Override
@@ -59,7 +64,10 @@ public class JsonLdIntegration extends AbstractIntegration {
     @Override
     protected void phaseTwo() {
         Sample testSample = getTestSample();
-        //checkPresenceOnWebPage(testSample);
+        // Check if selenium profile is activate
+        if(isSeleniumTestRequired(env)) {
+//            checkPresenceOnWebPage(testSample);
+        }
         checkPresenceWithRest(testSample);
 
     }
@@ -111,9 +119,11 @@ public class JsonLdIntegration extends AbstractIntegration {
     private boolean jsonLDHasAccession(String jsonLDContent, String accession) {
         return Pattern.compile("\"identifier\"\\s*:\\s*\"" + accession + "\",").matcher(jsonLDContent).find();
     }
-/*
+
+    /*
     private void checkPresenceOnWebPage(Sample sample) {
         try {
+            this.chromeDriver = new ChromeDriver();
             Optional<Resource<Sample>> optionalSample = client.fetchSampleResource(sample.getAccession());
             if (optionalSample.isPresent()) {
                 Resource<Sample> sampleResource = optionalSample.get();
@@ -139,8 +149,8 @@ public class JsonLdIntegration extends AbstractIntegration {
         }
 
     }
-*/
-    
+    */
+
     private void checkPresenceWithRest(Sample sample) {
         UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(this.integrationProperties.getBiosampleSubmissionUri());
         uriBuilder.pathSegment("samples", sample.getAccession()+".ldjson");
@@ -152,4 +162,9 @@ public class JsonLdIntegration extends AbstractIntegration {
         assert jsonLDSample.getIdentifier().equals(sample.getAccession());
 
     }
+
+    private boolean isSeleniumTestRequired(Environment env) {
+        return Stream.of(env.getActiveProfiles()).anyMatch(value -> value.matches("selenium"));
+    }
+
 }

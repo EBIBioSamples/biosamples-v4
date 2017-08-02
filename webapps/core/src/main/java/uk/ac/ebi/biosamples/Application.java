@@ -10,6 +10,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.xml.Jaxb2RootElementHttpMessageConverter;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.servlet.handler.MappedInterceptor;
@@ -32,7 +33,7 @@ public class Application extends SpringBootServletInitializer {
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);
 	}
-	
+
 	@Bean
 	public MappedInterceptor getCacheHeaderMappedInterceptor() {
 	    return new MappedInterceptor(new String[]{"/**"}, new CacheControlInterceptor());
@@ -42,7 +43,7 @@ public class Application extends SpringBootServletInitializer {
 	public HttpMessageConverter<Sample> getXmlSampleHttpMessageConverter() {
 		return new XmlSampleHttpMessageConverter();
 	}
-    
+
     @Bean(name = "threadPoolTaskExecutor")
     public Executor threadPoolTaskExecutor() {
     	ThreadPoolTaskExecutor ex = new ThreadPoolTaskExecutor();
@@ -55,7 +56,14 @@ public class Application extends SpringBootServletInitializer {
     public RepositoryDetectionStrategy repositoryDetectionStrategy() {
     	return RepositoryDetectionStrategy.RepositoryDetectionStrategies.ANNOTATED;
     }
-    
+
+
+    /* Necessary to render XML using Jaxb2 annotations */
+	@Bean
+	public Jaxb2RootElementHttpMessageConverter jaxb2RootElementHttpMessageConverter() {
+		return new Jaxb2RootElementHttpMessageConverter();
+	}
+
     @Bean
     public CaffeineSpec CaffeineSpec() {
     	return CaffeineSpec.parse("maximumSize=500,expireAfterWrite=60s");
@@ -79,4 +87,6 @@ public class Application extends SpringBootServletInitializer {
     	};
     }
     */
+
+
 }

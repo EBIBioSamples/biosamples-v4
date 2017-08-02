@@ -3,6 +3,8 @@ package uk.ac.ebi.biosamples;
 //import org.openqa.grid.internal.utils.configuration.StandaloneConfiguration;
 //import org.openqa.selenium.remote.server.SeleniumServer;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -10,9 +12,12 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
-import uk.ac.ebi.biosamples.client.BioSamplesClient;
 
 @SpringBootApplication
+//@Configuration
+//@EnableAutoConfiguration
+//@ComponentScan(lazyInit = true, excludeFilters={
+//		  @ComponentScan.Filter(type= FilterType.ASSIGNABLE_TYPE, value=BioSamplesClient.class)})
 public class Application {
 
 
