@@ -3,6 +3,9 @@ package uk.ac.ebi.biosamples.ncbi;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedList;
@@ -58,7 +61,10 @@ public class Ncbi implements ApplicationRunner {
 		callback.setFromDate(fromDate);
 		callback.setToDate(toDate);
 
-		try (InputStream is = new GZIPInputStream(new BufferedInputStream(new FileInputStream(pipelinesProperties.getNcbiFile())))) {
+		Path inputPath = Paths.get(pipelinesProperties.getNcbiFile());
+		inputPath = inputPath.toAbsolutePath();
+		
+		try (InputStream is = new GZIPInputStream(new BufferedInputStream(Files.newInputStream(inputPath)))) {
 
 			if (pipelinesProperties.getThreadCount() > 0) {
 				ExecutorService executorService = null;

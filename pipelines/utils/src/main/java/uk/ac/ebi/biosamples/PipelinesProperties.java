@@ -9,15 +9,15 @@ import org.springframework.stereotype.Component;
 public class PipelinesProperties {
 	
 	@Value("${biosamples.ncbi.file:biosample_set.xml.gz}")
-	private File ncbiFile;
+	private String ncbiFile;
 
 	@Value("${biosamples.threadcount:1}")
 	private int threadCount;
 
-	@Value("${biosamples.threadcount.max:8}")
+	@Value("${biosamples.threadcount.max:32}")
 	private int threadCountMax;
 	
-	public File getNcbiFile() {
+	public String getNcbiFile() {
 		return ncbiFile;
 	}
 
