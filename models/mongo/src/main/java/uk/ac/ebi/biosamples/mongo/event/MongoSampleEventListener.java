@@ -91,8 +91,9 @@ public class MongoSampleEventListener extends AbstractMongoEventListener<MongoSa
 	@Override
 	public void onAfterConvert(AfterConvertEvent<MongoSample> event) {
 		log.trace("processing onAfterConvert for "+event.getSource());
+		long startTime = System.nanoTime();
 		List<MongoRelationship> relationships = mongoRelationshipRepository.findAllByTarget(event.getSource().getAccession());
-		log.trace("Found relationships "+relationships);
+		log.trace("Found "+relationships.size()+" relationships in "+((System.nanoTime()-startTime)/1000000l)+"ms");
 		event.getSource().getRelationships().addAll(relationships);
 		
 	}
