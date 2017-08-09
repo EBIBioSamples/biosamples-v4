@@ -4,25 +4,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import uk.ac.ebi.biosamples.MessageContent;
 import uk.ac.ebi.biosamples.Messaging;
-import uk.ac.ebi.biosamples.WebappProperties;
 import uk.ac.ebi.biosamples.model.Autocomplete;
-import uk.ac.ebi.biosamples.model.ExternalReference;
-import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
-import uk.ac.ebi.biosamples.mongo.repo.MongoExternalReferenceRepository;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
-import uk.ac.ebi.biosamples.mongo.service.ExternalReferenceToMongoExternalReferenceConverter;
 import uk.ac.ebi.biosamples.mongo.service.MongoAccessionService;
-import uk.ac.ebi.biosamples.mongo.service.MongoExternalReferenceToExternalReferenceConverter;
 import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
 import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
 import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
@@ -96,28 +88,29 @@ public class SampleService {
 		//do validation
 		Collection<String> errors = sampleValidator.validate(sample);
 		if (errors.size() > 0) {
+			//TODO no validation information is provided to users
 			log.error("Found errors : "+errors);
 			throw new SampleValidationException();
 		}
 				
 		// TODO validate that relationships have this sample as the source 
-		
+		sample = Sample.build(sample.getName(), sample.getAccession(), sample.getRelease(), LocalDateTime.now(),
+				sample.getCharacteristics(), sample.getRelationships(), sample.getExternalReferences());
+
 		if (sample.hasAccession()) {
 			MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);
 			mongoSample = mongoSampleRepository.save(mongoSample);
 			sample = mongoSampleToSampleConverter.convert(mongoSample);
 		} else {
-			//assign it a new accession		
-			//TODO see if there is an existing accession for this user and name
+			//assign it a new accession
 			sample = mongoAccessionService.generateAccession(sample);
 		}
-		//TODO check if reverse relationships have been added by the listener
-		
-		//update update date
-		//TODO put in eventlistener
-		sample = Sample.build(sample.getName(), sample.getAccession(), sample.getRelease(), LocalDateTime.now(),
-				sample.getCharacteristics(), sample.getRelationships(), sample.getExternalReferences());
-		
+
+		//TODO
+		// 1. From the sample relationships get all the samples that are target of the relationship
+		// 2. Update these samples relationship
+		// 3.
+
 		// send a message for storage and further processing
 		//TODO put in eventlistener
 		amqpTemplate.convertAndSend(Messaging.exchangeForIndexing, "", MessageContent.build(sample, false));

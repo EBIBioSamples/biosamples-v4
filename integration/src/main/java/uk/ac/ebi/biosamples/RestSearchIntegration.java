@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
+import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
@@ -14,20 +15,19 @@ import uk.ac.ebi.biosamples.model.Sample;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 @Order(3)
-@Profile({"default", "rest"})
+@Profile({"default", "rest", "test"})
 public class RestSearchIntegration extends AbstractIntegration {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 
 	private Sample test1 = getSampleTest1();
 	private Sample test2 = getSampleTest2();
+	private Sample test4 = getSampleTest4();
 	
 	public RestSearchIntegration(BioSamplesClient client) {
 		super(client);
@@ -43,6 +43,11 @@ public class RestSearchIntegration extends AbstractIntegration {
 		//put a sample that refers to a non-existing sample
 		resource = client.persistSampleResource(test2);
 		if (!test2.equals(resource.getContent())) {
+			throw new RuntimeException("Expected response to equal submission");
+		}
+
+		resource = client.persistSampleResource(test4);
+		if (!test4.equals(resource.getContent())) {
 			throw new RuntimeException("Expected response to equal submission");
 		}
 	}
@@ -72,7 +77,35 @@ public class RestSearchIntegration extends AbstractIntegration {
 	}
 
 	@Override
-	protected void phaseThree() { }
+	protected void phaseThree() {
+		Sample sample2 = getSampleTest2();
+		Sample sample4 = getSampleTest4();
+		PagedResources<Resource<Sample>> pagedResources = client.search(getSampleTest2().getAccession());
+
+		SortedSet<Relationship> sample2AllRelationships = sample2.getRelationships();
+		sample2AllRelationships.addAll(sample4.getRelationships());
+
+		sample2 = Sample.build(sample2.getName(), sample2.getAccession(), sample2.getRelease(), sample2.getUpdate(),
+				sample2.getCharacteristics(), sample2AllRelationships, sample2.getExternalReferences());
+
+
+		List<Sample> expectedSearchResults = Arrays.asList(sample2, sample4);
+
+		List<Sample> searchResults = pagedResources.getContent().stream().map(Resource::getContent).collect(Collectors.toList());
+
+		if (searchResults.size() <= 0) {
+			throw new RuntimeException("No search results found!");
+		}
+
+		//check that the private sample is not in search results
+		//check that the referenced non-existing sample not in search result
+		for (Sample expectedSample: expectedSearchResults) {
+			if (!searchResults.contains(expectedSample)) {
+				throw new RuntimeException("Search results don't contains expected sample " + expectedSample.getAccession() + "!");
+			}
+		}
+
+	}
 
 	@Override
 	protected void phaseFour() { }
@@ -105,6 +138,24 @@ public class RestSearchIntegration extends AbstractIntegration {
 
 		SortedSet<Relationship> relationships = new TreeSet<>();
 		relationships.add(Relationship.build("TESTrestsearch2", "derived from", "TESTrestsearch3"));
+
+
+		return Sample.build(name, accession, release, update, attributes, relationships, new TreeSet<>());
+	}
+
+	private Sample getSampleTest4() {
+		String name = "Test Sample the fourth";
+		String accession = "TESTrestsearch4";
+		LocalDateTime update = LocalDateTime.of(LocalDate.of(2016, 5, 5), LocalTime.of(11, 36, 57, 0));
+		LocalDateTime release = LocalDateTime.of(LocalDate.of(2016, 4, 1), LocalTime.of(11, 36, 57, 0));
+
+		SortedSet<Attribute> attributes = new TreeSet<>();
+		attributes.add(
+				Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
+
+		// TODO need to add inverse relationships later
+		SortedSet<Relationship> relationships = new TreeSet<>();
+		relationships.add(Relationship.build("TESTrestsearch4", "derived from", "TESTrestsearch2"));
 
 		return Sample.build(name, accession, release, update, attributes, relationships, new TreeSet<>());
 	}

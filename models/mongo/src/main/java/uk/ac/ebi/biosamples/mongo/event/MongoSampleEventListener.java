@@ -1,25 +1,20 @@
 package uk.ac.ebi.biosamples.mongo.event;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.event.EventListener;
 import org.springframework.data.mongodb.core.mapping.event.AbstractMongoEventListener;
 import org.springframework.data.mongodb.core.mapping.event.AfterConvertEvent;
+import org.springframework.data.mongodb.core.mapping.event.AfterSaveEvent;
 import org.springframework.data.mongodb.core.mapping.event.BeforeConvertEvent;
-import org.springframework.stereotype.Component;
-
-import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.mongo.model.MongoExternalReference;
 import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.repo.MongoExternalReferenceRepository;
 import uk.ac.ebi.biosamples.mongo.repo.MongoRelationshipRepository;
+
+import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 public class MongoSampleEventListener extends AbstractMongoEventListener<MongoSample> {
 
@@ -95,6 +90,13 @@ public class MongoSampleEventListener extends AbstractMongoEventListener<MongoSa
 		List<MongoRelationship> relationships = mongoRelationshipRepository.findAllByTarget(event.getSource().getAccession());
 		log.trace("Found "+relationships.size()+" relationships in "+((System.nanoTime()-startTime)/1000000l)+"ms");
 		event.getSource().getRelationships().addAll(relationships);
-		
+	}
+
+	@Override
+	public void onAfterSave(AfterSaveEvent<MongoSample> event) {
+		log.trace("processing onAfterConvert for "+event.getSource());
+		List<MongoRelationship> relationships = mongoRelationshipRepository.findAllByTarget(event.getSource().getAccession());
+		log.trace("Found relationships "+relationships);
+		event.getSource().getRelationships().addAll(relationships);
 	}
 }
