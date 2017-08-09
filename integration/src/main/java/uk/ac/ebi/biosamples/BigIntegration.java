@@ -76,16 +76,16 @@ public class BigIntegration extends AbstractIntegration {
 		client.fetchSample("SAMbig"+noSamples);
 		endTime = System.nanoTime();
 		elapsedMs = (int) ((endTime-startTime)/1000000l);
-		if (elapsedMs > 1000) {
-			throw new RuntimeException("Took more than 1000ms to fetch highly-connected sample ("+elapsedMs+"ms)");			
+		if (elapsedMs > 5000) {
+			throw new RuntimeException("Took more than 5000ms to fetch highly-connected sample ("+elapsedMs+"ms)");			
 		}
 		
 		startTime = System.nanoTime();
 		client.fetchSample("SAMbig"+0);
 		endTime = System.nanoTime();
 		elapsedMs = (int) ((endTime-startTime)/1000000l);
-		if (elapsedMs > 1000) {
-			throw new RuntimeException("Took more than 1000ms to fetch highly-connected sample ("+elapsedMs+"ms)");			
+		if (elapsedMs > 5000) {
+			throw new RuntimeException("Took more than 5000ms to fetch highly-connected sample ("+elapsedMs+"ms)");			
 		}
 
 	}
