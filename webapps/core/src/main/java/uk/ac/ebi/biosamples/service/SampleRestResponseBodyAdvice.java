@@ -38,7 +38,7 @@ public class SampleRestResponseBodyAdvice implements ResponseBodyAdvice<Resource
 	public Resource<Sample> beforeBodyWrite(Resource<Sample> body, MethodParameter returnType,
 			MediaType selectedContentType, Class<? extends HttpMessageConverter<?>> selectedConverterType,
 			ServerHttpRequest request, ServerHttpResponse response) {
-		
+/*
 		if (body == null) {
 			//error, stop here
 			log.trace("null body detected");
@@ -65,7 +65,6 @@ public class SampleRestResponseBodyAdvice implements ResponseBodyAdvice<Resource
 		//@faulcon 28/06/17 disabled because not sure it is working correctly
 		//response.getHeaders().setETag(eTag);
 		//cache-control has to be set even on a 304
-		response.getHeaders().setCacheControl(CacheControl.maxAge(1, TimeUnit.MINUTES).getHeaderValue());
 		
 
 		//the client used a modified cache header that is sufficient to 
@@ -74,7 +73,7 @@ public class SampleRestResponseBodyAdvice implements ResponseBodyAdvice<Resource
 		eTag = "W/\"" + body.getContent().hashCode() + "\"";
 		
 		//an ETag has to be set even on a 304 response see https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.5
-		response.getHeaders().setETag(eTag);
+		//response.getHeaders().setETag(eTag);
 		
 		if ((request.getHeaders().getIfNoneMatch().contains(eTag)
 				|| request.getHeaders().getIfNoneMatch().contains("*")) 
@@ -98,8 +97,8 @@ public class SampleRestResponseBodyAdvice implements ResponseBodyAdvice<Resource
 		
 		//response.getHeaders().setLastModified(lastModified);
 		
-		response.getHeaders().setCacheControl(CacheControl.maxAge(1, TimeUnit.MINUTES).cachePublic().getHeaderValue());
-
+		//response.getHeaders().setCacheControl(CacheControl.maxAge(1, TimeUnit.MINUTES).cachePublic().getHeaderValue());
+*/
 		return body;
 	}
 

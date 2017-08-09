@@ -76,7 +76,7 @@ public class SampleService {
 	 * @throws IllegalArgumentException
 	 */
 	//can't use a sync cache because we need to use CacheEvict
-	@Cacheable(cacheNames=WebappProperties.fetch, key="#root.args[0]")
+	//@Cacheable(cacheNames=WebappProperties.fetch, key="#root.args[0]")
 	public Sample fetch(String accession) throws IllegalArgumentException {
 		return sampleReadService.fetch(accession);
 	}
@@ -89,7 +89,7 @@ public class SampleService {
 	//because the fetch caches the sample, if an updated version is stored, we need to make sure that any cached version
 	//is removed. 
 	//Note, pages of samples will not be cache busted, only single-accession sample retrieval
-	@CacheEvict(cacheNames=WebappProperties.fetch, key="#result.accession")
+	//@CacheEvict(cacheNames=WebappProperties.fetch, key="#result.accession")
 	public Sample store(Sample sample) {
 		// TODO check if there is an existing copy and if there are any changes
 

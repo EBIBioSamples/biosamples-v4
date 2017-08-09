@@ -145,6 +145,19 @@ public class RestIntegration extends AbstractIntegration {
 	
 	@Override
 	protected void phaseFive() {	
+		//check that deleting the relationship actually deleted it
+		Sample sampleTest2 = getSampleTest2();
+		Optional<Resource<Sample>> optional = client.fetchSampleResource(sampleTest2.getAccession());
+		if (!optional.isPresent()) {
+			throw new RuntimeException("No existing "+sampleTest2.getAccession());
+		}
+		Sample sampleTest2Rest = optional.get().getContent();
+		//check other details i.e relationship
+		if (!sampleTest2.equals(sampleTest2Rest)) {
+			log.warn("expected: "+sampleTest2);
+			log.warn("found: "+sampleTest2Rest);
+			throw new RuntimeException("No matching "+sampleTest2.getAccession());
+		}
 	}
 
 	private void checkIfModifiedSince(Resource<Sample> sample) {
@@ -158,6 +171,7 @@ public class RestIntegration extends AbstractIntegration {
 			throw new RuntimeException("Got something other than a 304 response");
 		}
 	}
+	
 	private void checkIfMatch(Resource<Sample> sample) {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setIfNoneMatch("W/\""+sample.getContent().hashCode()+"\"");
