@@ -21,21 +21,19 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.utils.TaxonomyService;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
-@Component
-@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class NcbiElementCallable implements Callable<Void> {
 	
 	private Logger log = LoggerFactory.getLogger(getClass());
 
 	private final Element sampleElem;
 	
-	@Autowired
-	private TaxonomyService taxonomyService;
+	private final TaxonomyService taxonomyService;
 	
-	@Autowired
-	private BioSamplesClient bioSamplesClient;
+	private final BioSamplesClient bioSamplesClient;
 
-	public NcbiElementCallable(Element sampleElem) {
+	public NcbiElementCallable(TaxonomyService taxonomyService, BioSamplesClient bioSamplesClient, Element sampleElem) {
+		this.taxonomyService = taxonomyService;
+		this.bioSamplesClient = bioSamplesClient;
 		this.sampleElem = sampleElem;
 	}
 

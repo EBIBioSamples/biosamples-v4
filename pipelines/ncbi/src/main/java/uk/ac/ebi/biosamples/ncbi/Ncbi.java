@@ -8,13 +8,16 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.GZIPInputStream;
 
+import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +27,7 @@ import org.springframework.stereotype.Component;
 
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
+import uk.ac.ebi.biosamples.utils.ThreadUtils;
 import uk.ac.ebi.biosamples.utils.XmlFragmenter;
 
 @Component
@@ -71,7 +75,7 @@ public class Ncbi implements ApplicationRunner {
 				try {
 					executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, 
 							pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax());
-					Queue<Future<Void>> futures = new LinkedList<>();
+					Map<Element, Future<Void>> futures = new HashMap<>();
 
 					callback.setExecutorService(executorService);
 					callback.setFutures(futures);
@@ -82,9 +86,7 @@ public class Ncbi implements ApplicationRunner {
 					log.info("waiting for futures");
 
 					// wait for anything to finish
-					for (Future<Void> future : futures) {
-						future.get();
-					}
+					ThreadUtils.checkFutures(futures, 0);
 				} finally {
 					log.info("shutting down");
 					executorService.shutdown();
