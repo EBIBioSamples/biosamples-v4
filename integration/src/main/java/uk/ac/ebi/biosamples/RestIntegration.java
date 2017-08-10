@@ -95,6 +95,10 @@ public class RestIntegration extends AbstractIntegration {
 		
 		//put the second sample in
 		Resource<Sample> resource = client.persistSampleResource(sampleTest2);
+		sampleTest2 = Sample.build(sampleTest2.getName(), sampleTest2.getAccession(),
+				sampleTest2.getRelease(), sampleTest2.getUpdate(),
+				sampleTest2.getCharacteristics(), sampleTest1.getRelationships(), sampleTest2.getExternalReferences());
+
 		if (!sampleTest2.equals(resource.getContent())) {
 			log.warn("expected: "+sampleTest2);
 			log.warn("found: "+resource.getContent());

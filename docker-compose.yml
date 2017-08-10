@@ -13,7 +13,7 @@ services:
     command:
     - java
     - -jar
-    - -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000
+    # - -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000
     - webapps-core-4.0.0-SNAPSHOT.war
     environment:
     - spring.data.solr.host=http://solr:8983/solr

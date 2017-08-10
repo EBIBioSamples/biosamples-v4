@@ -1,18 +1,17 @@
 package uk.ac.ebi.biosamples.solr.service;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
-
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
+import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample> {
@@ -25,12 +24,14 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 		Map<String, List<String>> attributeValues = null;
 		Map<String, List<String>> attributeIris = null;
 		Map<String, List<String>> attributeUnits = null;
-		
+		Map<String, List<String>> sourceRelationships = null;
+		Map<String, List<String>> targetRelationships = null;
+
 		if (sample.getCharacteristics() != null && sample.getCharacteristics().size() > 0) {
 			attributeValues = new HashMap<>();
 			attributeIris = new HashMap<>();
 			attributeUnits = new HashMap<>();
-			
+
 			for (Attribute attr : sample.getCharacteristics()) {
 				
 				String key = attr.getType();
@@ -85,15 +86,32 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 			}
 			attributeValues.get(key).add(value);
 		}
-		
+
+		// Add relationships owned by sample
+		SortedSet<Relationship> sampleSourceRelationships = getSourceRelationships(sample);
+		if ( sampleSourceRelationships != null && !sampleSourceRelationships.isEmpty()) {
+			sourceRelationships = new HashMap<>();
+			for (Relationship rel : sampleSourceRelationships) {
+				sourceRelationships.computeIfAbsent(rel.getType(), type -> new ArrayList<>()).add(rel.getTarget());
+			}
+		}
+
+		// Add relationships for which sample is the target
+		SortedSet<Relationship> sampleTargetRelationships = getTargetRelationships(sample);
+		if ( sampleTargetRelationships != null && !sampleTargetRelationships.isEmpty()) {
+			targetRelationships = new HashMap<>();
+			for (Relationship rel: sampleTargetRelationships) {
+				targetRelationships.computeIfAbsent(rel.getType(), type -> new ArrayList<>()).add(rel.getSource());
+            }
+		}
+
+
 		String releaseSolr = formatDate(sample.getRelease());
 		String updateSolr = formatDate(sample.getUpdate());		
-			
-		
-		
+
 		
 		return SolrSample.build(sample.getName(), sample.getAccession(), releaseSolr, updateSolr,
-				attributeValues, attributeIris, attributeUnits);
+				attributeValues, attributeIris, attributeUnits, sourceRelationships, targetRelationships);
 	}
 	
 	private String formatDate(LocalDateTime d) {
@@ -121,4 +139,13 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 			return "other";
 		}
 	}
+
+	private SortedSet<Relationship> getSourceRelationships(Sample sample) {
+		return sample.getRelationships().stream().filter(rel -> rel.getSource().equals(sample.getAccession())).collect(Collectors.toCollection(TreeSet::new));
+	}
+
+	private SortedSet<Relationship> getTargetRelationships(Sample sample) {
+		return sample.getRelationships().stream().filter(rel -> rel.getTarget().equals(sample.getAccession())).collect(Collectors.toCollection(TreeSet::new));
+	}
+
 }

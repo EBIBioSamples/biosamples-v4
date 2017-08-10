@@ -29,7 +29,7 @@ import java.util.stream.Stream;
 
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
-@Profile({"default", "selenium", "test"})
+@Profile({"default", "selenium"})
 public class JsonLdIntegration extends AbstractIntegration {
     private final Environment env;
     private final RestOperations restTemplate;

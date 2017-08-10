@@ -1,19 +1,13 @@
 package uk.ac.ebi.biosamples.solr.model;
 
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.springframework.data.annotation.Id;
 import org.springframework.data.solr.core.mapping.Dynamic;
 import org.springframework.data.solr.core.mapping.Indexed;
 import org.springframework.data.solr.core.mapping.SolrDocument;
-
 import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
+
+import java.io.UnsupportedEncodingException;
+import java.util.*;
 
 
 @SolrDocument(solrCoreName = "samples")
@@ -52,7 +46,25 @@ public class SolrSample {
 	@Indexed(name="*_au_ss")
 	@Dynamic
 	protected Map<String, List<String>> attributeUnits;
-	
+
+
+	/**
+	 * Relationships for which this sample is the source
+	 */
+	@Indexed(name="*_rs_ss")
+	@Dynamic
+	protected Map<String, List<String>> sourceRelationships;
+
+
+
+
+	/**
+	 * Relationships for which this sample is the target
+	 */
+	@Indexed(name="*_rt_ss")
+	@Dynamic
+	protected Map<String, List<String>> targetRelationships;
+
 	/**
 	 * This field shouldn't be populated directly, instead Solr will copy 
 	 * all the ontology terms from the attributes into it.
@@ -76,6 +88,8 @@ public class SolrSample {
 	 */
 	@Indexed(name="autocomplete_ss")
 	protected List<String> autocompleteTerms;
+
+
 	
 	public SolrSample(){}
 	
@@ -117,7 +131,15 @@ public class SolrSample {
 	public List<String> getOntologyIris() {
 		return ontologyIris;
 	}
-	
+
+
+	public Map<String, List<String>> getTargetRelationships() {
+		return targetRelationships;
+	}
+	public Map<String, List<String>> getSourceRelationships() {
+		return sourceRelationships;
+	}
+
 
     @Override
     public String toString() {
@@ -136,6 +158,10 @@ public class SolrSample {
     	sb.append(attributeIris);
     	sb.append(",");
     	sb.append(attributeUnits);
+    	sb.append(",");
+    	sb.append(sourceRelationships);
+    	sb.append(",");
+    	sb.append(targetRelationships);
     	sb.append(")");
     	return sb.toString();
     }
@@ -147,7 +173,8 @@ public class SolrSample {
 	 */
 	public static SolrSample build(String name, String accession, String release, String update, 
 			Map<String, List<String>> attributeValues, Map<String, List<String>> attributeIris, 
-			Map<String, List<String>> attributeUnits) {
+			Map<String, List<String>> attributeUnits, Map<String, List<String>> sourceRelationships,
+            Map<String,List<String>> targetRelationships) {
 		SolrSample sample = new SolrSample();
 		sample.accession = accession;
 		sample.name = name;
@@ -158,6 +185,8 @@ public class SolrSample {
 		sample.attributeValues = new HashMap<>();
 		sample.attributeIris = new HashMap<>();
 		sample.attributeUnits = new HashMap<>();
+		sample.sourceRelationships = new HashMap<>();
+		sample.targetRelationships = new HashMap<>();
 
 		if (attributeValues != null) {
 			for (String key : attributeValues.keySet()) {
@@ -200,12 +229,21 @@ public class SolrSample {
 				sample.attributeUnits.put(safeKey, attributeUnits.get(key));
 			}
 		}
-		
-		
-		
-		
+
 		//TODO handle relationships too
 		//but how to do inverse?
+		if (sourceRelationships != null) {
+
+			// TODO Check if is necessary to convert to Base64 also for relationships
+			sample.sourceRelationships.putAll(sourceRelationships);
+		}
+
+		if (targetRelationships != null) {
+
+			// TODO Check if is necessary to convert to Base64 also for relationships
+			sample.targetRelationships.putAll(targetRelationships);
+		}
+
 		//TODO validate maps
 		sample.attributeTypes = null;
 		if (attributeValues != null && attributeValues.keySet().size() > 0) {
