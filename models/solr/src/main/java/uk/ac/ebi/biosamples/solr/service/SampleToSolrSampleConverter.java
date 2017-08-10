@@ -11,6 +11,7 @@ import uk.ac.ebi.biosamples.solr.model.SolrSample;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample> {
@@ -87,19 +88,19 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 		}
 
 		// Add relationships owned by sample
-		if ( sample.getSourceRelationships() != null && !sample.getSourceRelationships().isEmpty()) {
+		SortedSet<Relationship> sampleSourceRelationships = getSourceRelationships(sample);
+		if ( sampleSourceRelationships != null && !sampleSourceRelationships.isEmpty()) {
 			sourceRelationships = new HashMap<>();
-			SortedSet<Relationship> sourceRels = sample.getSourceRelationships();
-			for (Relationship rel : sourceRels) {
+			for (Relationship rel : sampleSourceRelationships) {
 				sourceRelationships.computeIfAbsent(rel.getType(), type -> new ArrayList<>()).add(rel.getTarget());
 			}
 		}
 
 		// Add relationships for which sample is the target
-		if ( sample.getTargetRelationships() != null && !sample.getTargetRelationships().isEmpty()) {
+		SortedSet<Relationship> sampleTargetRelationships = getTargetRelationships(sample);
+		if ( sampleTargetRelationships != null && !sampleTargetRelationships.isEmpty()) {
 			targetRelationships = new HashMap<>();
-			SortedSet<Relationship> targetRels = sample.getTargetRelationships();
-			for (Relationship rel: targetRels) {
+			for (Relationship rel: sampleTargetRelationships) {
 				targetRelationships.computeIfAbsent(rel.getType(), type -> new ArrayList<>()).add(rel.getSource());
             }
 		}
@@ -138,4 +139,13 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 			return "other";
 		}
 	}
+
+	private SortedSet<Relationship> getSourceRelationships(Sample sample) {
+		return sample.getRelationships().stream().filter(rel -> rel.getSource().equals(sample.getAccession())).collect(Collectors.toCollection(TreeSet::new));
+	}
+
+	private SortedSet<Relationship> getTargetRelationships(Sample sample) {
+		return sample.getRelationships().stream().filter(rel -> rel.getTarget().equals(sample.getAccession())).collect(Collectors.toCollection(TreeSet::new));
+	}
+
 }

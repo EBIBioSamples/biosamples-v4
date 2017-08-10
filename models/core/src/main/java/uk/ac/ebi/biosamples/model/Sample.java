@@ -16,7 +16,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
 
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -188,11 +187,4 @@ public class Sample {
 	}
 
 
-	public SortedSet<Relationship> getSourceRelationships() {
-		return relationships.stream().filter(rel -> rel.getSource().equals(this.getAccession())).collect(Collectors.toCollection(TreeSet::new));
-	}
-
-	public SortedSet<Relationship> getTargetRelationships() {
-		return relationships.stream().filter(rel -> rel.getTarget().equals(this.getAccession())).collect(Collectors.toCollection(TreeSet::new));
-	}
 }

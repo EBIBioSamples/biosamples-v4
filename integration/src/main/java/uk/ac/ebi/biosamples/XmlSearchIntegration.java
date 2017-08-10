@@ -20,7 +20,7 @@ import java.time.LocalTime;
 import java.util.*;
 
 @Component
-@Profile({"default","test"})
+@Profile({"default"})
 public class XmlSearchIntegration extends AbstractIntegration {
     
     private final RestTemplate restTemplate;

@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 
 @Component
 @Order(3)
-@Profile({"default", "rest", "test"})
+@Profile({"default", "rest"})
 public class RestSearchIntegration extends AbstractIntegration {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
