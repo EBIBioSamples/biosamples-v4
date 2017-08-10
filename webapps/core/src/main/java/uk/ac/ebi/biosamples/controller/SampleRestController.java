@@ -59,7 +59,7 @@ public class SampleRestController {
 	@CrossOrigin(methods = RequestMethod.GET)
 	@GetMapping(value = "/{accession}", produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
 	public Resource<Sample> getSampleHal(@PathVariable String accession) {
-		log.info("starting call");
+		log.trace("starting call");
 		// convert it into the format to return
 		Sample sample = null;
 		try {
@@ -87,13 +87,7 @@ public class SampleRestController {
 
 		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
 
-		// create the response object with the appropriate status
 		return sampleResource;
-		/*
-		return ResponseEntity.ok().lastModified(sample.getUpdate().toInstant(ZoneOffset.UTC).toEpochMilli())
-				.header(HttpHeaders.CACHE_CONTROL, CacheControl.maxAge(1, TimeUnit.MINUTES).cachePublic().getHeaderValue())
-				.eTag(String.valueOf(sample.hashCode())).contentType(MediaTypes.HAL_JSON).body(sampleResource);
-		*/
 	}
 
 	@CrossOrigin(methods = RequestMethod.GET)

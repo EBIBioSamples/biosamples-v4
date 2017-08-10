@@ -81,7 +81,6 @@ public class SampleCurationLinksRestController {
     public ResponseEntity<Resource<CurationLink>> createCurationLinkJson(
 			@PathVariable String accession,
 			@RequestBody Curation curation) {
-		log.info("Recieved POST for " + accession + " : "+curation);		
     	CurationLink curationLink = CurationLink.build(accession, curation, LocalDateTime.now());
     	
     	curationLink = curationPersistService.store(curationLink);

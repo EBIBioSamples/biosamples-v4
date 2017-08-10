@@ -75,7 +75,7 @@ public class CurationReadService {
 	}
 	
 	public Sample applyCurationToSample(Sample sample, Curation curation) {
-		log.info("Applying curation "+curation+" to sample "+sample);
+		log.trace("Applying curation "+curation+" to sample "+sample.getAccession());
 		
 		SortedSet<Attribute> attributes = new TreeSet<Attribute>(sample.getAttributes());
 		SortedSet<ExternalReference> externalReferences = new TreeSet<ExternalReference>(sample.getExternalReferences());

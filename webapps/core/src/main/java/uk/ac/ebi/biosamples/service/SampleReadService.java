@@ -43,8 +43,6 @@ public class SampleReadService {
 	//@Cacheable(cacheNames=WebappProperties.fetch, key="#root.args[0]")
 	public Sample fetch(String accession) throws IllegalArgumentException {
 		
-		log.info("Fetching accession from neoSampleRepository "+accession);
-		
 		// return the raw sample from the repository
 		MongoSample mongoSample = mongoSampleRepository.findOne(accession);
 		if (mongoSample == null) {
