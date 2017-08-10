@@ -38,17 +38,17 @@ public class RestSearchIntegration extends AbstractIntegration {
 		//put a private sample
 		Resource<Sample> resource = client.persistSampleResource(test1);
 		if (!test1.equals(resource.getContent())) {
-			throw new RuntimeException("Expected response to equal submission");
+			throw new RuntimeException("Expected response ("+resource.getContent()+") to equal submission ("+test1+")");
 		}
 		//put a sample that refers to a non-existing sample
 		resource = client.persistSampleResource(test2);
 		if (!test2.equals(resource.getContent())) {
-			throw new RuntimeException("Expected response to equal submission");
+			throw new RuntimeException("Expected response ("+resource.getContent()+") to equal submission ("+test2+")");
 		}
 
 		resource = client.persistSampleResource(test4);
 		if (!test4.equals(resource.getContent())) {
-			throw new RuntimeException("Expected response to equal submission");
+			throw new RuntimeException("Expected response ("+resource.getContent()+") to equal submission ("+test4+")");
 		}
 	}
 
