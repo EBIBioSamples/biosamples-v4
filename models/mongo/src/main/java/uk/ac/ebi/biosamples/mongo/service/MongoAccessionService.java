@@ -54,7 +54,7 @@ public class MongoAccessionService {
 	}
 	
 	private MongoSample accessionAndInsert(MongoSample sample) {
-		log.info("generating an accession");
+		log.trace("generating an accession");
 		// inspired by Optimistic Loops of
 		// https://docs.mongodb.com/v3.0/tutorial/create-an-auto-incrementing-field/
 		boolean success = false;
@@ -81,7 +81,7 @@ public class MongoAccessionService {
 				}
 			}
 		}
-		log.info("generated accession "+sample);
+		log.debug("generated accession "+sample);
 		return sample;
 	}
 
@@ -100,7 +100,7 @@ public class MongoAccessionService {
 	
 		
 		while (accessionCandidateQueue.remainingCapacity() > 0) {
-			log.info("Adding more accessions to queue");
+			log.debug("Adding more accessions to queue");
 			String accessionCandidate = mongoProperties.getAccessionPrefix() + accessionCandidateCounter;
 			// if the accession already exists, skip it
 			if (mongoSampleRepository.exists(accessionCandidate)) {
@@ -113,7 +113,7 @@ public class MongoAccessionService {
 				//put it into the queue, move on to next
 				accessionCandidateCounter += 1;
 			}
-			log.info("Added more accessions to queue");
+			log.trace("Added more accessions to queue");
 		}
 	}
 }

@@ -148,7 +148,7 @@ public class SampleRestController {
 
 		// TODO compare to existing version to check if changes
 
-		log.info("Recieved PUT for " + accession);
+		log.debug("Recieved PUT for " + accession+" "+sample);
 		sample = sampleService.store(sample);
 
 		// assemble a resource to return
@@ -160,7 +160,7 @@ public class SampleRestController {
 
 	@PostMapping(consumes = { MediaType.APPLICATION_JSON_VALUE })
 	public ResponseEntity<Resource<Sample>> post(@RequestBody Sample sample) {
-		log.info("Recieved POST");
+		log.debug("Recieved POST for "+sample);
 		sample = sampleService.store(sample);
 		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
 

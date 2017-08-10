@@ -44,7 +44,7 @@ public class MongoSampleEventListener extends AbstractMongoEventListener<MongoSa
 	@Override
 	public void onBeforeConvert(BeforeConvertEvent<MongoSample> event) {
 
-		log.info("processing onBeforeConvert for "+event.getSource());
+		log.trace("processing onBeforeConvert for "+event.getSource());
 		
 		//put any external references in the external reference collection		
 		SortedSet<MongoExternalReference> loadedExternalReferences = new TreeSet<>();		
@@ -65,7 +65,7 @@ public class MongoSampleEventListener extends AbstractMongoEventListener<MongoSa
 		//find and delete any relationships that are no longer on the sample
 		for (MongoRelationship relationship : mongoRelationshipRepository.findAllBySource(event.getSource().getAccession())) {
 			if (!event.getSource().getRelationships().contains(relationship)) {
-				log.info("Deleting "+relationship);
+				log.debug("Deleting "+relationship);
 				mongoRelationshipRepository.delete(relationship);
 			}
 		}
