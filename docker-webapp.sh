@@ -34,9 +34,6 @@ then
 	docker volume ls -q | grep rabbitmq_data | xargs docker volume rm
 	docker volume ls -q | grep logs | xargs docker volume rm
 
-#        echo "Cleaning logs"
-#        rm -rf docker/logs/*.log docker/logs/*.log.* docker/logs/neo4j/*.log
-
 #remove any images, in case of out-of-date or corrupt images
 #docker images -q | xargs -r docker rmi
 

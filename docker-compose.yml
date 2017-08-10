@@ -137,6 +137,8 @@ services:
 
   biosamples-pipelines-ena:
     image: biosamples:latest
+    volumes:
+    - logs:/logs
     links:
     - biosamples-webapps-core
     command:
@@ -162,6 +164,8 @@ services:
     
   biosamples-pipelines-accession:
     image: biosamples:latest
+    volumes:
+    - logs:/logs
     links:
     - biosamples-webapps-core
     command:
@@ -170,7 +174,35 @@ services:
     - pipelines-accession-4.0.0-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples/beta
-    - LOGGING_FILE=/logs/pipelines-ena.log       
+    - LOGGING_FILE=/logs/pipelines-ena.log      
+    
+  biosamples-pipelines-sampletab:
+    image: biosamples:latest
+    volumes:
+    - logs:/logs
+    links:
+    - biosamples-webapps-core
+    command:
+    - java
+    - -jar
+    - pipelines-sampletab-4.0.0-SNAPSHOT.jar
+    environment:
+    - BIOSAMPLES_SAMPLETAB_URI=http://biosamples-webapps-sampletab:8080/biosamples/beta/sampletab/v4
+    - LOGGING_FILE=/logs/pipelines-sampletab.log  
+    
+  biosamples-pipelines-curation:
+    volumes:
+    - logs:/logs
+    image: biosamples:latest
+    links:
+    - biosamples-webapps-core
+    command:
+    - java
+    - -jar
+    - pipelines-curation-4.0.0-SNAPSHOT.jar
+    environment:
+    - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples/beta
+    - LOGGING_FILE=/logs/pipelines-curation.log
        
        
   mongo:
@@ -208,5 +240,4 @@ volumes:
   solr_data: null
   mongo_data: null
   rabbitmq_data: null
-  elasticsearch_logs_data: null
   logs: null
