@@ -74,6 +74,7 @@ public class SolrSample {
 	
 	/**
 	 * This field is required to get a list of attribute to use for faceting.
+	 * It includes attributes and relationships of the sample
 	 * Since faceting does not require it to be stored, it wont be to save space.
 	 * 
 	 */
@@ -205,13 +206,14 @@ public class SolrSample {
 		if (attributeIris != null) {
 			for (String key : attributeIris.keySet()) {
 				//solr only allows alphanumeric field types
-				String base64Key;
-				try {
-					base64Key = Base64.getEncoder().encodeToString(key.getBytes("UTF-8"));
-				} catch (UnsupportedEncodingException e) {
-					throw new RuntimeException(e);
-				}
-				String safeKey = base64Key.replaceAll("=", "_");
+//				String base64Key;
+//				try {
+//					base64Key = Base64.getEncoder().encodeToString(key.getBytes("UTF-8"));
+//				} catch (UnsupportedEncodingException e) {
+//					throw new RuntimeException(e);
+//				}
+//				String safeKey = base64Key.replaceAll("=", "_");
+                String safeKey = getSafeKey(key);
 				sample.attributeIris.put(safeKey, attributeIris.get(key));
 			}
 		}
@@ -219,13 +221,14 @@ public class SolrSample {
 		if (attributeUnits != null) {
 			for (String key : attributeUnits.keySet()) {
 				//solr only allows alphanumeric field types
-				String base64Key;
-				try {
-					base64Key = Base64.getEncoder().encodeToString(key.getBytes("UTF-8"));
-				} catch (UnsupportedEncodingException e) {
-					throw new RuntimeException(e);
-				}
-				String safeKey = base64Key.replaceAll("=", "_");
+//				String base64Key;
+//				try {
+//					base64Key = Base64.getEncoder().encodeToString(key.getBytes("UTF-8"));
+//				} catch (UnsupportedEncodingException e) {
+//					throw new RuntimeException(e);
+//				}
+//				String safeKey = base64Key.replaceAll("=", "_");
+                String safeKey = getSafeKey(key);
 				sample.attributeUnits.put(safeKey, attributeUnits.get(key));
 			}
 		}
@@ -233,15 +236,19 @@ public class SolrSample {
 		//TODO handle relationships too
 		//but how to do inverse?
 		if (outgoingRelationships != null) {
-
-			// TODO Check if is necessary to convert to Base64 also for relationships
-			sample.outgoingRelationships.putAll(outgoingRelationships);
+            for (String key : outgoingRelationships.keySet()) {
+                String safeKey = getSafeKey(key);
+                sample.outgoingRelationships.put(safeKey, outgoingRelationships.get(key));
+            }
+//			sample.outgoingRelationships.putAll(outgoingRelationships);
 		}
 
 		if (incomingRelationships != null) {
-
-			// TODO Check if is necessary to convert to Base64 also for relationships
-			sample.incomingRelationships.putAll(incomingRelationships);
+		    for (String key: incomingRelationships.keySet()) {
+		        String safeKey = getSafeKey(key);
+		        sample.incomingRelationships.put(safeKey, incomingRelationships.get(key));
+            }
+//			sample.incomingRelationships.putAll(incomingRelationships);
 		}
 
 		//TODO validate maps
@@ -254,8 +261,36 @@ public class SolrSample {
 			}
 			Collections.sort(attributeTypes);
 			sample.attributeTypes = attributeTypes;
-		}		
-		
+		}
+
+		if (outgoingRelationships != null && outgoingRelationships.keySet().size() > 0) {
+			List<String> outgoingRelationshipTypes = new ArrayList<>();
+			for (String key: outgoingRelationships.keySet()) {
+			    String safeKey = getSafeKey(key);
+			    safeKey = safeKey + "_or_ss";
+				outgoingRelationshipTypes.add(safeKey);
+			}
+
+			Collections.sort(outgoingRelationshipTypes);
+			if (sample.attributeTypes != null) {
+				sample.attributeTypes.addAll(outgoingRelationshipTypes);
+			}
+		}
+
+		if (incomingRelationships != null && incomingRelationships.keySet().size() > 0) {
+			List<String> incomingRelationshipTypes = new ArrayList<>();
+			for (String key: incomingRelationships.keySet()) {
+                String safeKey = getSafeKey(key);
+                safeKey = safeKey + "_ir_ss";
+				incomingRelationshipTypes.add(safeKey);
+			}
+
+			Collections.sort(incomingRelationshipTypes);
+			if (sample.attributeTypes != null) {
+				sample.attributeTypes.addAll(incomingRelationshipTypes);
+			}
+		}
+
 		//copy into the other fields
 		//this should be done in a copyfield but that doesn't work for some reason?
 		sample.autocompleteTerms = new ArrayList<>();
@@ -267,4 +302,14 @@ public class SolrSample {
 		}
 		return sample;
 	}
+
+    private static String getSafeKey(String key) {
+        String base64Key;
+        try {
+            base64Key = Base64.getEncoder().encodeToString(key.getBytes("UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
+        return base64Key.replaceAll("=", "_");
+    }
 }
