@@ -2,11 +2,9 @@ package uk.ac.ebi.biosamples.solr;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import uk.ac.ebi.biosamples.MessageContent;
 import uk.ac.ebi.biosamples.Messaging;
 import uk.ac.ebi.biosamples.messages.threaded.MessageSampleStatus;
@@ -39,7 +37,7 @@ public class MessageHandlerSolr {
 				
 		MessageSampleStatus<SolrSample> messageSampleStatus;
 		try {
-			messageSampleStatus = messageBuffer.recieve(solrSample);
+			messageSampleStatus = messageBuffer.recieve(solrSample.getAccession(), solrSample);
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		}

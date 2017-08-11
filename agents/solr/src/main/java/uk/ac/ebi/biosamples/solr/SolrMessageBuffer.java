@@ -1,16 +1,15 @@
 package uk.ac.ebi.biosamples.solr;
 
-import java.util.Collection;
-
 import org.springframework.stereotype.Component;
-
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.messages.threaded.MessageBuffer;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
 import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
 
+import java.util.Collection;
+
 @Component
-public class SolrMessageBuffer extends MessageBuffer<SolrSample> {
+public class SolrMessageBuffer extends MessageBuffer<String, SolrSample> {
 
 	private final SolrSampleRepository repository;
 	
