@@ -51,9 +51,9 @@ public class SolrSample {
 	/**
 	 * Relationships for which this sample is the source
 	 */
-	@Indexed(name="*_rs_ss")
+	@Indexed(name="*_or_ss")
 	@Dynamic
-	protected Map<String, List<String>> sourceRelationships;
+	protected Map<String, List<String>> outgoingRelationships;
 
 
 
@@ -61,9 +61,9 @@ public class SolrSample {
 	/**
 	 * Relationships for which this sample is the target
 	 */
-	@Indexed(name="*_rt_ss")
+	@Indexed(name="*_ir_ss")
 	@Dynamic
-	protected Map<String, List<String>> targetRelationships;
+	protected Map<String, List<String>> incomingRelationships;
 
 	/**
 	 * This field shouldn't be populated directly, instead Solr will copy 
@@ -133,11 +133,11 @@ public class SolrSample {
 	}
 
 
-	public Map<String, List<String>> getTargetRelationships() {
-		return targetRelationships;
+	public Map<String, List<String>> getIncomingRelationships() {
+		return incomingRelationships;
 	}
-	public Map<String, List<String>> getSourceRelationships() {
-		return sourceRelationships;
+	public Map<String, List<String>> getOutgoingRelationships() {
+		return outgoingRelationships;
 	}
 
 
@@ -159,9 +159,9 @@ public class SolrSample {
     	sb.append(",");
     	sb.append(attributeUnits);
     	sb.append(",");
-    	sb.append(sourceRelationships);
+    	sb.append(outgoingRelationships);
     	sb.append(",");
-    	sb.append(targetRelationships);
+    	sb.append(incomingRelationships);
     	sb.append(")");
     	return sb.toString();
     }
@@ -173,8 +173,8 @@ public class SolrSample {
 	 */
 	public static SolrSample build(String name, String accession, String release, String update, 
 			Map<String, List<String>> attributeValues, Map<String, List<String>> attributeIris, 
-			Map<String, List<String>> attributeUnits, Map<String, List<String>> sourceRelationships,
-            Map<String,List<String>> targetRelationships) {
+			Map<String, List<String>> attributeUnits, Map<String, List<String>> outgoingRelationships,
+            Map<String,List<String>> incomingRelationships) {
 		SolrSample sample = new SolrSample();
 		sample.accession = accession;
 		sample.name = name;
@@ -185,8 +185,8 @@ public class SolrSample {
 		sample.attributeValues = new HashMap<>();
 		sample.attributeIris = new HashMap<>();
 		sample.attributeUnits = new HashMap<>();
-		sample.sourceRelationships = new HashMap<>();
-		sample.targetRelationships = new HashMap<>();
+		sample.incomingRelationships = new HashMap<>();
+		sample.outgoingRelationships = new HashMap<>();
 
 		if (attributeValues != null) {
 			for (String key : attributeValues.keySet()) {
@@ -232,16 +232,16 @@ public class SolrSample {
 
 		//TODO handle relationships too
 		//but how to do inverse?
-		if (sourceRelationships != null) {
+		if (outgoingRelationships != null) {
 
 			// TODO Check if is necessary to convert to Base64 also for relationships
-			sample.sourceRelationships.putAll(sourceRelationships);
+			sample.outgoingRelationships.putAll(outgoingRelationships);
 		}
 
-		if (targetRelationships != null) {
+		if (incomingRelationships != null) {
 
 			// TODO Check if is necessary to convert to Base64 also for relationships
-			sample.targetRelationships.putAll(targetRelationships);
+			sample.incomingRelationships.putAll(incomingRelationships);
 		}
 
 		//TODO validate maps

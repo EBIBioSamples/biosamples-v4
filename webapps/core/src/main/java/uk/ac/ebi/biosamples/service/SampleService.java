@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import uk.ac.ebi.biosamples.MessageContent;
 import uk.ac.ebi.biosamples.Messaging;
 import uk.ac.ebi.biosamples.model.Autocomplete;
+import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
@@ -20,7 +21,8 @@ import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
 import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Service layer business logic for centralising repository access and
@@ -106,14 +108,19 @@ public class SampleService {
 			sample = mongoAccessionService.generateAccession(sample);
 		}
 
-		//TODO
-		// 1. From the sample relationships get all the samples that are target of the relationship
-		// 2. Update these samples relationship
-		// 3.
+		List<String> relatedSampleAccession = SampleRelationshipUtils.getOutgoingRelationships(sample).stream().map(Relationship::getTarget).collect(Collectors.toList());
+		List<Sample> relatedSamples = new ArrayList<>();
+		for (String accession : relatedSampleAccession) {
+			Optional.ofNullable(mongoSampleRepository.findOne(accession)).ifPresent(mongoSample ->relatedSamples.add(mongoSampleToSampleConverter.convert(mongoSample)));
+		}
 
 		// send a message for storage and further processing
 		//TODO put in eventlistener
 		amqpTemplate.convertAndSend(Messaging.exchangeForIndexing, "", MessageContent.build(sample, false));
+		for(Sample relatedSample: relatedSamples) {
+			amqpTemplate.convertAndSend(Messaging.exchangeForIndexing, "", MessageContent.build(relatedSample, false));
+		}
+
 		//return the sample in case we have modified it i.e accessioned
 		return sample;
 	}
