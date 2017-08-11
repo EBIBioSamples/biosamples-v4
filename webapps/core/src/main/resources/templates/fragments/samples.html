@@ -52,8 +52,12 @@
 				<span th:replace=":: shield (${attribute.type}, ( ${attribute.unit} ? (${attribute.value}+' ('+${attribute.unit})+')' : ${attribute.value} ) )"></span>
 			</span>
 			<span th:each="relationship : ${sample.relationships}" th:remove="tag"> 
-				<span th:if="${relationship.source} == ${sample.accession}}" th:replace=":: shield (${relationship.type}, ( ${relationship.target} ) )"></span>
-				<span th:if="${relationship.target} == ${sample.accession}}" th:replace=":: shield (${relationship.type}+' (reverse)', ( ${relationship.source} ) )"></span>
+				<span th:if="${#strings.equals(relationship.source,sample.accession)}" th:remove="tag" >
+					<span th:replace=":: shield (${relationship.type}, ( ${relationship.target} ) )"></span>
+				</span>
+				<span th:if="${#strings.equals(relationship.target,sample.accession)}" th:remove="tag">
+					<span th:replace=":: shield (${relationship.type}+' (reverse)', ( ${relationship.source} ) )"></span>
+				</span>
 			</span>
 		</span>
 		<a class="button readmore float-right" th:href="@{'/samples/'+${sample.accession}}"></a>
