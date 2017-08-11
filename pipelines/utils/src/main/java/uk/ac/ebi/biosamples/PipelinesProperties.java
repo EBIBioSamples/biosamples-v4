@@ -16,6 +16,25 @@ public class PipelinesProperties {
 
 	@Value("${biosamples.threadcount.max:32}")
 	private int threadCountMax;
+
+	@Value("${biosamples.connectioncount.max:32}")
+	private int connectionCountMax;
+	
+	@Value("${biosamples.connectioncount.default:32}")
+	private int connectionCountDefault;
+	
+	@Value("${biosamples.connectioncount.ols:32}")
+	private int connectionCountOls;
+	
+	@Value("${biosamples.connectioncount.zooma:32}")
+	private int connectionCountZooma;
+	
+	@Value("${biosamples.zooma:http://wwwdev.ebi.ac.uk/spot/zooma}")
+	private String zooma;
+	
+	@Value("${biosamples.ols:http://wwwdev.ebi.ac.uk/ols}")
+	private String ols;
+	
 	
 	public String getNcbiFile() {
 		return ncbiFile;
@@ -27,5 +46,29 @@ public class PipelinesProperties {
 
 	public int getThreadCountMax() {
 		return threadCountMax;
+	}
+
+	public int getConnectionCountMax() {
+		return connectionCountMax;
+	}
+
+	public int getConnectionCountDefault() {
+		return connectionCountDefault;
+	}
+
+	public int getConnectionCountOls() {
+		return connectionCountOls;
+	}
+
+	public int getConnectionCountZooma() {
+		return connectionCountZooma;
+	}
+	
+	public String getZooma() {
+		return zooma;
+	}
+	
+	public String getOls() {
+		return ols;
 	}
 }

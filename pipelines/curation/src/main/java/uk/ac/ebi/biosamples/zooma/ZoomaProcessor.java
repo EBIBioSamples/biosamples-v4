@@ -21,6 +21,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import uk.ac.ebi.biosamples.PipelinesProperties;
+
 @Service
 public class ZoomaProcessor {
 
@@ -29,11 +31,11 @@ public class ZoomaProcessor {
 	private final RestOperations restOperations;
 	
 	//TODO make this an application.properties value
-	private final UriComponents uriBuilder = 
-			UriComponentsBuilder.fromUriString("http://wwwdev.ebi.ac.uk/spot/zooma/v2/api/services/annotate?propertyValue={value}&propertyType={type}").build();
+	private final UriComponents uriBuilder;
 		
-	public ZoomaProcessor(RestTemplateBuilder restTemplateBuilder) {
+	public ZoomaProcessor(RestTemplateBuilder restTemplateBuilder, PipelinesProperties pipelinesProperties) {
 		this.restOperations = restTemplateBuilder.build();
+		uriBuilder = UriComponentsBuilder.fromUriString(pipelinesProperties.getZooma()+"/v2/api/services/annotate?propertyValue={value}&propertyType={type}").build();
 	}
 	
 	

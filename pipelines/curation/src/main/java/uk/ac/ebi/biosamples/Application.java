@@ -2,10 +2,12 @@ package uk.ac.ebi.biosamples;
 
 import org.apache.http.HeaderElement;
 import org.apache.http.HeaderElementIterator;
+import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.conn.ConnectionKeepAliveStrategy;
+import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.impl.client.cache.CacheConfig;
 import org.apache.http.impl.client.cache.CachingHttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
@@ -30,7 +32,7 @@ public class Application {
 
 	
 	@Bean
-	public RestTemplateCustomizer restTemplateCustomizer() {
+	public RestTemplateCustomizer restTemplateCustomizer(PipelinesProperties piplinesProperties) {
 		return new RestTemplateCustomizer() {
 			public void customize(RestTemplate restTemplate) {
 				
@@ -50,16 +52,18 @@ public class Application {
 				                return Long.parseLong(value) * 1000;
 				            }
 				        }
-				        //default to 15s if no header
-				        return 15 * 1000;
+				        //default to 60s if no header
+				        return 60 * 1000;
 				    }
 				};
 				
 				//set a number of connections to use at once for multiple threads
-				//TODO put this in application.properties
 				PoolingHttpClientConnectionManager poolingHttpClientConnectionManager = new PoolingHttpClientConnectionManager();
-				poolingHttpClientConnectionManager.setDefaultMaxPerRoute(16);
-				poolingHttpClientConnectionManager.setMaxTotal(16);
+				poolingHttpClientConnectionManager.setMaxTotal(piplinesProperties.getConnectionCountMax());
+				poolingHttpClientConnectionManager.setDefaultMaxPerRoute(piplinesProperties.getConnectionCountDefault());
+				poolingHttpClientConnectionManager.setMaxPerRoute(new HttpRoute(HttpHost.create(piplinesProperties.getZooma())), piplinesProperties.getConnectionCountZooma());
+				poolingHttpClientConnectionManager.setMaxPerRoute(new HttpRoute(HttpHost.create(piplinesProperties.getOls())), piplinesProperties.getConnectionCountOls());
+				
 				
 				//set a local cache for cacheable responses
 				CacheConfig cacheConfig = CacheConfig.custom()
