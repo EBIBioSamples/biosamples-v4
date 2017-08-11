@@ -228,7 +228,6 @@ public class SolrSample {
 //				}
 //				String safeKey = base64Key.replaceAll("=", "_");
 //                String safeKey = getSafeKey(key);
-
 				sample.attributeUnits.put(SolrSampleService.valueToSafeField(key), attributeUnits.get(key));
 			}
 		}
