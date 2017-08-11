@@ -51,7 +51,7 @@ public class SolrSample {
 	/**
 	 * Relationships for which this sample is the source
 	 */
-	@Indexed(name="*_rt_ss")
+	@Indexed(name="*_or_ss")
 	@Dynamic
 	protected Map<String, List<String>> outgoingRelationships;
 
@@ -61,7 +61,7 @@ public class SolrSample {
 	/**
 	 * Relationships for which this sample is the target
 	 */
-	@Indexed(name="*_rs_ss")
+	@Indexed(name="*_ir_ss")
 	@Dynamic
 	protected Map<String, List<String>> incomingRelationships;
 
