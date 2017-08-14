@@ -44,7 +44,7 @@ public class SampleService {
 	@Autowired
 	private MongoSampleToSampleConverter mongoSampleToSampleConverter;
 	@Autowired
-	private SampleToMongoSampleConverter sampleToMongoSampleConverter;			
+	private SampleToMongoSampleConverter sampleToMongoSampleConverter;	
 	
 	
 	@Autowired 
@@ -52,9 +52,6 @@ public class SampleService {
 	
 	@Autowired
 	private SolrSampleService solrSampleService;
-
-	@Autowired
-	private CurationReadService curationReadService;
 
 	@Autowired
 	private AmqpTemplate amqpTemplate;
@@ -108,10 +105,13 @@ public class SampleService {
 			sample = mongoAccessionService.generateAccession(sample);
 		}
 
-		List<String> relatedSampleAccession = SampleRelationshipUtils.getOutgoingRelationships(sample).stream().map(Relationship::getTarget).collect(Collectors.toList());
-		List<Sample> relatedSamples = new ArrayList<>();
-		for (String accession : relatedSampleAccession) {
-			Optional.ofNullable(mongoSampleRepository.findOne(accession)).ifPresent(mongoSample ->relatedSamples.add(mongoSampleToSampleConverter.convert(mongoSample)));
+		Collection<Sample> relatedSamples = new ArrayList<>();
+		for (Relationship relationship : SampleRelationshipUtils.getOutgoingRelationships(sample)) {
+			String accession = relationship.getTarget();
+			MongoSample mongoSample = mongoSampleRepository.findOne(accession);
+			if (mongoSample != null) {
+				relatedSamples.add(mongoSampleToSampleConverter.convert(mongoSample));
+			}
 		}
 
 		// send a message for storage and further processing
@@ -150,5 +150,32 @@ public class SampleService {
 			super(cause);
 		}
 	}
-	
+	/*
+	//this code recursively follows relationships
+	//TODO finish
+	public SortedSet<Sample> getRelated(Sample sample, String relationshipType) {
+		Queue<String> toCheck = new LinkedList<>();
+		Set<String> checked = new HashSet<>();
+		Collection<Sample> related = new TreeSet<>();
+		toCheck.add(sample.getAccession());
+		while (!toCheck.isEmpty()) {
+			String accessionToCheck = toCheck.poll();
+			checked.add(accessionToCheck);
+			Sample sampleToCheck = sampleReadService.fetch(accessionToCheck);
+			related.add(sampleToCheck);
+			for (Relationship rel : sampleToCheck.getRelationships()) {
+				if (relationshipType == null || relationshipType.equals(rel.getType())) {
+					if (!checked.contains(rel.getSource()) && toCheck.contains(rel.getSource())) {
+						toCheck.add(rel.getSource());
+					}
+					if (!checked.contains(rel.getTarget()) && toCheck.contains(rel.getTarget())) {
+						toCheck.add(rel.getTarget());
+					}
+				}
+			}
+		}
+		related.remove(sample);
+		return related;
+	}
+	*/
 }
