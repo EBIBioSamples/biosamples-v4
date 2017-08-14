@@ -6,7 +6,6 @@ import org.springframework.data.solr.core.mapping.Indexed;
 import org.springframework.data.solr.core.mapping.SolrDocument;
 import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
 
-import java.io.UnsupportedEncodingException;
 import java.util.*;
 
 
@@ -78,8 +77,8 @@ public class SolrSample {
 	 * Since faceting does not require it to be stored, it wont be to save space.
 	 * 
 	 */
-	@Indexed(name="attributetypes_ss", copyTo={"autocomplete_ss",})
-	protected List<String> attributeTypes;
+	@Indexed(name="facetfields_ss", copyTo={"autocomplete_ss",})
+	protected List<String> facetFields;
 	//TODO consider renaming as used only for faceting
 	
 
@@ -181,8 +180,8 @@ public class SolrSample {
 		sample.name = name;
 		sample.release =  release;
 		sample.update = update;
-		
-		
+
+
 		sample.attributeValues = new HashMap<>();
 		sample.attributeIris = new HashMap<>();
 		sample.attributeUnits = new HashMap<>();
@@ -192,14 +191,14 @@ public class SolrSample {
 		if (attributeValues != null) {
 			for (String key : attributeValues.keySet()) {
 				//solr only allows alphanumeric field types
-				String base64Key;
-				try {
-					base64Key = Base64.getEncoder().encodeToString(key.getBytes("UTF-8"));
-				} catch (UnsupportedEncodingException e) {
-					throw new RuntimeException(e);
-				}
-				String safeKey = base64Key.replaceAll("=", "_");
-				sample.attributeValues.put(safeKey, attributeValues.get(key));
+//				String base64Key;
+//				try {
+//					base64Key = Base64.getEncoder().encodeToString(key.getBytes("UTF-8"));
+//				} catch (UnsupportedEncodingException e) {
+//					throw new RuntimeException(e);
+//				}
+//				String safeKey = base64Key.replaceAll("=", "_");
+				sample.attributeValues.put(SolrSampleService.valueToSafeField(key), attributeValues.get(key));
 			}
 		}
 
@@ -213,8 +212,8 @@ public class SolrSample {
 //					throw new RuntimeException(e);
 //				}
 //				String safeKey = base64Key.replaceAll("=", "_");
-                String safeKey = getSafeKey(key);
-				sample.attributeIris.put(safeKey, attributeIris.get(key));
+//                String safeKey = getSafeKey(key);
+				sample.attributeIris.put(SolrSampleService.valueToSafeField(key), attributeIris.get(key));
 			}
 		}
 
@@ -228,8 +227,9 @@ public class SolrSample {
 //					throw new RuntimeException(e);
 //				}
 //				String safeKey = base64Key.replaceAll("=", "_");
-                String safeKey = getSafeKey(key);
-				sample.attributeUnits.put(safeKey, attributeUnits.get(key));
+//                String safeKey = getSafeKey(key);
+
+				sample.attributeUnits.put(SolrSampleService.valueToSafeField(key), attributeUnits.get(key));
 			}
 		}
 
@@ -237,57 +237,57 @@ public class SolrSample {
 		//but how to do inverse?
 		if (outgoingRelationships != null) {
             for (String key : outgoingRelationships.keySet()) {
-                String safeKey = getSafeKey(key);
-                sample.outgoingRelationships.put(safeKey, outgoingRelationships.get(key));
+                sample.outgoingRelationships.put(SolrSampleService.valueToSafeField(key), outgoingRelationships.get(key));
             }
 //			sample.outgoingRelationships.putAll(outgoingRelationships);
 		}
 
 		if (incomingRelationships != null) {
 		    for (String key: incomingRelationships.keySet()) {
-		        String safeKey = getSafeKey(key);
-		        sample.incomingRelationships.put(safeKey, incomingRelationships.get(key));
+		        sample.incomingRelationships.put(SolrSampleService.valueToSafeField(key), incomingRelationships.get(key));
             }
 //			sample.incomingRelationships.putAll(incomingRelationships);
 		}
 
 		//TODO validate maps
-		sample.attributeTypes = null;
+		sample.facetFields = null;
 		if (attributeValues != null && attributeValues.keySet().size() > 0) {
 			List<String> attributeTypes = new ArrayList<>();
 			for (String attributeType : attributeValues.keySet()) {
-				String field = SolrSampleService.attributeTypeToField(attributeType);
+				String field = SolrSampleService.valueToSafeField(attributeType, "_av_ss");
 				attributeTypes.add(field);
 			}
 			Collections.sort(attributeTypes);
-			sample.attributeTypes = attributeTypes;
+			sample.facetFields = attributeTypes;
 		}
 
 		if (outgoingRelationships != null && outgoingRelationships.keySet().size() > 0) {
 			List<String> outgoingRelationshipTypes = new ArrayList<>();
 			for (String key: outgoingRelationships.keySet()) {
-			    String safeKey = getSafeKey(key);
-			    safeKey = safeKey + "_or_ss";
-				outgoingRelationshipTypes.add(safeKey);
+//			    String safeKey = getSafeKey(key);
+//			    safeKey = safeKey + "_or_ss";
+                String field = SolrSampleService.valueToSafeField(key, "_or_ss");
+				outgoingRelationshipTypes.add(field);
 			}
 
 			Collections.sort(outgoingRelationshipTypes);
-			if (sample.attributeTypes != null) {
-				sample.attributeTypes.addAll(outgoingRelationshipTypes);
+			if (sample.facetFields != null) {
+				sample.facetFields.addAll(outgoingRelationshipTypes);
 			}
 		}
 
 		if (incomingRelationships != null && incomingRelationships.keySet().size() > 0) {
 			List<String> incomingRelationshipTypes = new ArrayList<>();
 			for (String key: incomingRelationships.keySet()) {
-                String safeKey = getSafeKey(key);
-                safeKey = safeKey + "_ir_ss";
-				incomingRelationshipTypes.add(safeKey);
+//                String safeKey = getSafeKey(key);
+//                safeKey = safeKey + "_ir_ss";
+                String field = SolrSampleService.valueToSafeField(key, "_ir_ss");
+				incomingRelationshipTypes.add(field);
 			}
 
 			Collections.sort(incomingRelationshipTypes);
-			if (sample.attributeTypes != null) {
-				sample.attributeTypes.addAll(incomingRelationshipTypes);
+			if (sample.facetFields != null) {
+				sample.facetFields.addAll(incomingRelationshipTypes);
 			}
 		}
 
@@ -302,14 +302,4 @@ public class SolrSample {
 		}
 		return sample;
 	}
-
-    private static String getSafeKey(String key) {
-        String base64Key;
-        try {
-            base64Key = Base64.getEncoder().encodeToString(key.getBytes("UTF-8"));
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
-        return base64Key.replaceAll("=", "_");
-    }
 }
