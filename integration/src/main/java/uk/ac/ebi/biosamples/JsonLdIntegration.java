@@ -57,7 +57,7 @@ public class JsonLdIntegration extends AbstractIntegration {
         }
         Resource<Sample> resource = client.persistSampleResource(testSample);
         if (!testSample.equals(resource.getContent())) {
-            throw new RuntimeException("Expected response to equal submission");
+			throw new RuntimeException("Expected response ("+resource.getContent()+") to equal submission ("+testSample+")");
         }
     }
 
