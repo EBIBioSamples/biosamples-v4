@@ -13,31 +13,16 @@ done
 #mvn -T 2C -Dmaven.test.skip=true clean package
 mvn -T 2C -P embl-ebi clean package
 
-set +e
-docker-compose stop biosamples-pipelines-ena biosamples-pipelines-ncbi biosamples-pipelines-accession
-docker-compose stop biosamples-agents-solr
-docker-compose stop biosamples-webapps-core biosamples-webapps-sampletab biosamples-webapps-legacyxml 
-docker-compose stop mongo solr rabbitmq
-
-docker-compose rm -f -v biosamples-pipelines-ena biosamples-pipelines-ncbi biosamples-pipelines-accession
-docker-compose rm -f -v biosamples-agents-solr
-docker-compose rm -f -v biosamples-webapps-core biosamples-webapps-sampletab biosamples-webapps-legacyxml 
-docker-compose rm -f -v mongo solr rabbitmq
-
 #cleanup any previous data
 echo "The clean value is $clean"
 if [ $clean == 1 ]
 then
 	echo "Cleaning existing volumes"
-	docker volume ls -q | grep mongo_data | xargs docker volume rm
-	docker volume ls -q | grep solr_data | xargs docker volume rm
-	docker volume ls -q | grep rabbitmq_data | xargs docker volume rm
-	docker volume ls -q | grep logs | xargs docker volume rm
-
-#remove any images, in case of out-of-date or corrupt images
-#docker images -q | xargs -r docker rmi
-
-
+	#remove any images, in case of out-of-date or corrupt images
+	#docker-compose down --volumes --rmi --remove-orphans
+	docker-compose down --volumes --remove-orphans
+else
+	docker-compose down --remove-orphans
 fi
 set -e
 
