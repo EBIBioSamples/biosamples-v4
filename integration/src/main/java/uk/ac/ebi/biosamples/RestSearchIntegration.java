@@ -101,8 +101,8 @@ public class RestSearchIntegration extends AbstractIntegration {
         List<String> sample4ExpectedSearchResults = Arrays.asList(sample4.getAccession(), sample5.getAccession(), sample2.getAccession());
 
 		// Get results for sample2
-		List<String> sample2EffectiveSearchResults = Collections.emptyList();
-		for (Resource<Sample> sample : client.fetchSampleResourceAll(getSampleTest2().getAccession())) {
+		List<String> sample2EffectiveSearchResults = new ArrayList<>();
+		for (Resource<Sample> sample : client.fetchSampleResourceAll(sample2.getAccession())) {
 			sample2EffectiveSearchResults.add(sample.getContent().getAccession());
 		}
 		
@@ -115,9 +115,9 @@ public class RestSearchIntegration extends AbstractIntegration {
 		}
 
 		// Get results for sample4
-		List<String> sample4EffectiveSearchResults = Collections.emptyList();
-		for (Resource<Sample> sample : client.fetchSampleResourceAll(getSampleTest4().getAccession())) {
-			sample2EffectiveSearchResults.add(sample.getContent().getAccession());
+		List<String> sample4EffectiveSearchResults = new ArrayList<>();
+		for (Resource<Sample> sample : client.fetchSampleResourceAll(sample4.getAccession())) {
+			sample4EffectiveSearchResults.add(sample.getContent().getAccession());
 		}
 
 		if (sample4EffectiveSearchResults.size() <= 0) {
