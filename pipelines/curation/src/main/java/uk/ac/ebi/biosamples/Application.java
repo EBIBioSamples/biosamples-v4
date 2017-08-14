@@ -85,6 +85,7 @@ public class Application {
 				//make the actual client
 				HttpClient httpClient = CachingHttpClientBuilder.create()
 						.setCacheConfig(cacheConfig)
+						.useSystemProperties()
 						.setConnectionManager(poolingHttpClientConnectionManager)
 						.setKeepAliveStrategy(keepAliveStrategy)
 						.setDefaultRequestConfig(config)
