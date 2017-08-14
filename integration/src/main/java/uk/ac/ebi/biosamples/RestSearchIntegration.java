@@ -101,12 +101,11 @@ public class RestSearchIntegration extends AbstractIntegration {
         List<String> sample4ExpectedSearchResults = Arrays.asList(sample4.getAccession(), sample5.getAccession(), sample2.getAccession());
 
 		// Get results for sample2
-		PagedResources<Resource<Sample>> pagedResources = client.fetchPagedSamples(getSampleTest2().getAccession(),0,10);
-		List<String> sample2EffectiveSearchResults = pagedResources.getContent().stream()
-				.map(Resource::getContent)
-				.map(Sample::getAccession)
-				.collect(Collectors.toList());
-
+		List<String> sample2EffectiveSearchResults = Collections.emptyList();
+		for (Resource<Sample> sample : client.fetchSampleResourceAll(getSampleTest2().getAccession())) {
+			sample2EffectiveSearchResults.add(sample.getContent().getAccession());
+		}
+		
 		if (sample2EffectiveSearchResults.size() <= 0) {
 			throw new RuntimeException("No search results found!");
 		}
@@ -116,11 +115,10 @@ public class RestSearchIntegration extends AbstractIntegration {
 		}
 
 		// Get results for sample4
-		pagedResources = client.fetchPagedSamples(getSampleTest4().getAccession(),0,10);
-		List<String> sample4EffectiveSearchResults = pagedResources.getContent().stream()
-				.map(Resource::getContent)
-				.map(Sample::getAccession)
-				.collect(Collectors.toList());
+		List<String> sample4EffectiveSearchResults = Collections.emptyList();
+		for (Resource<Sample> sample : client.fetchSampleResourceAll(getSampleTest4().getAccession())) {
+			sample2EffectiveSearchResults.add(sample.getContent().getAccession());
+		}
 
 		if (sample4EffectiveSearchResults.size() <= 0) {
 			throw new RuntimeException("No search results found!");

@@ -125,6 +125,15 @@ public class SampleRetrievalService {
 				new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {}, 
 				params,	"samples");
 	}
+	
+	public Iterable<Resource<Sample>> fetchAll(String text) {
+		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();		
+		params.add("text", text);
+		params.add("size", Integer.toString(clientProperties.getBiosamplesClientPagesize()));
+		return new IterableResourceFetchAll<Sample>(executor, traverson, restOperations,
+				new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {}, 
+				params,	"samples");
+	}
 
 	public Iterable<Resource<Sample>> fetchUpdatedAfter(LocalDateTime updatedAfter) {	
 		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();		
