@@ -93,15 +93,6 @@ public class BioSamplesClient {
 		return sampleRetrievalService.fetchAll(accessions);
 	}
 
-	public PagedResources<Resource<Sample>> search(String text) {
-	    return search(text, 0, 10);
-	}
-
-	public PagedResources<Resource<Sample>> search(String text, int page, int size) {
-		return sampleRetrievalService.search(text, page, size);
-	}
-
-
 	/**
 	 * Search for samples using pagination. This method should be used for specific pagination needs. When in need for
 	 * all results from a search, prefer the iterator implementation.

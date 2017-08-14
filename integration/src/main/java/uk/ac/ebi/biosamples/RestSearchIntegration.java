@@ -101,7 +101,7 @@ public class RestSearchIntegration extends AbstractIntegration {
         List<String> sample4ExpectedSearchResults = Arrays.asList(sample4.getAccession(), sample5.getAccession(), sample2.getAccession());
 
 		// Get results for sample2
-		PagedResources<Resource<Sample>> pagedResources = client.search(getSampleTest2().getAccession());
+		PagedResources<Resource<Sample>> pagedResources = client.fetchPagedSamples(getSampleTest2().getAccession(),0,10);
 		List<String> sample2EffectiveSearchResults = pagedResources.getContent().stream()
 				.map(Resource::getContent)
 				.map(Sample::getAccession)
@@ -116,7 +116,7 @@ public class RestSearchIntegration extends AbstractIntegration {
 		}
 
 		// Get results for sample4
-		pagedResources = client.search(getSampleTest4().getAccession());
+		pagedResources = client.fetchPagedSamples(getSampleTest4().getAccession(),0,10);
 		List<String> sample4EffectiveSearchResults = pagedResources.getContent().stream()
 				.map(Resource::getContent)
 				.map(Sample::getAccession)
