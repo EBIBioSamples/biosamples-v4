@@ -29,6 +29,8 @@ import uk.ac.ebi.biosamples.service.SampleReadService;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.concurrent.TimeUnit;
@@ -77,6 +79,26 @@ public class SamplesRestController {
 			@RequestParam(name = "filter", required = false) String[] filter, Pageable page,
 			PagedResourcesAssembler<Sample> pageAssembler) {
 
+		
+		if (text != null) {
+			try {
+				text = URLDecoder.decode(text, "UTF-8");
+			} catch (UnsupportedEncodingException e) {
+				throw new RuntimeException(e);
+			}
+		}
+		
+		if (filter != null) {
+			for (int i = 0; i < filter.length; i++) {
+				try {
+					filter[i] = URLDecoder.decode(filter[i], "UTF-8");
+				} catch (UnsupportedEncodingException e) {
+					throw new RuntimeException(e);
+				}
+			}
+		}
+		
+		
 		MultiValueMap<String, String> filtersMap = filterService.getFilters(filter);
 		
 		LocalDateTime updatedAfterDate = null;

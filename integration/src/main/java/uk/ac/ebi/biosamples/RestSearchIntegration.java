@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
-import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
@@ -16,7 +15,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Component
 @Order(1)
@@ -101,12 +99,11 @@ public class RestSearchIntegration extends AbstractIntegration {
         List<String> sample4ExpectedSearchResults = Arrays.asList(sample4.getAccession(), sample5.getAccession(), sample2.getAccession());
 
 		// Get results for sample2
-		PagedResources<Resource<Sample>> pagedResources = client.search(getSampleTest2().getAccession());
-		List<String> sample2EffectiveSearchResults = pagedResources.getContent().stream()
-				.map(Resource::getContent)
-				.map(Sample::getAccession)
-				.collect(Collectors.toList());
-
+		List<String> sample2EffectiveSearchResults = new ArrayList<>();
+		for (Resource<Sample> sample : client.fetchSampleResourceAll(sample2.getAccession())) {
+			sample2EffectiveSearchResults.add(sample.getContent().getAccession());
+		}
+		
 		if (sample2EffectiveSearchResults.size() <= 0) {
 			throw new RuntimeException("No search results found!");
 		}
@@ -116,11 +113,10 @@ public class RestSearchIntegration extends AbstractIntegration {
 		}
 
 		// Get results for sample4
-		pagedResources = client.search(getSampleTest4().getAccession());
-		List<String> sample4EffectiveSearchResults = pagedResources.getContent().stream()
-				.map(Resource::getContent)
-				.map(Sample::getAccession)
-				.collect(Collectors.toList());
+		List<String> sample4EffectiveSearchResults = new ArrayList<>();
+		for (Resource<Sample> sample : client.fetchSampleResourceAll(sample4.getAccession())) {
+			sample4EffectiveSearchResults.add(sample.getContent().getAccession());
+		}
 
 		if (sample4EffectiveSearchResults.size() <= 0) {
 			throw new RuntimeException("No search results found!");
