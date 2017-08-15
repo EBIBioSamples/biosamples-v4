@@ -198,13 +198,6 @@ public class SolrSample {
 		if (attributeValues != null) {
 			for (String key : attributeValues.keySet()) {
 				//solr only allows alphanumeric field types
-//				String base64Key;
-//				try {
-//					base64Key = Base64.getEncoder().encodeToString(key.getBytes("UTF-8"));
-//				} catch (UnsupportedEncodingException e) {
-//					throw new RuntimeException(e);
-//				}
-//				String safeKey = base64Key.replaceAll("=", "_");
 				sample.attributeValues.put(SolrSampleService.valueToSafeField(key), attributeValues.get(key));
 			}
 		}
@@ -223,20 +216,16 @@ public class SolrSample {
 			}
 		}
 
-		//TODO handle relationships too
-		//but how to do inverse?
 		if (outgoingRelationships != null) {
             for (String key : outgoingRelationships.keySet()) {
                 sample.outgoingRelationships.put(SolrSampleService.valueToSafeField(key), outgoingRelationships.get(key));
             }
-//			sample.outgoingRelationships.putAll(outgoingRelationships);
 		}
 
 		if (incomingRelationships != null) {
 		    for (String key: incomingRelationships.keySet()) {
 		        sample.incomingRelationships.put(SolrSampleService.valueToSafeField(key), incomingRelationships.get(key));
             }
-//			sample.incomingRelationships.putAll(incomingRelationships);
 		}
 
 		//TODO validate maps
@@ -254,8 +243,6 @@ public class SolrSample {
 		if (outgoingRelationships != null && outgoingRelationships.keySet().size() > 0) {
 			List<String> outgoingRelationshipTypes = new ArrayList<>();
 			for (String key: outgoingRelationships.keySet()) {
-//			    String safeKey = getSafeKey(key);
-//			    safeKey = safeKey + "_or_ss";
                 String field = SolrSampleService.valueToSafeField(key, "_or_ss");
 				outgoingRelationshipTypes.add(field);
 			}
@@ -269,8 +256,6 @@ public class SolrSample {
 		if (incomingRelationships != null && incomingRelationships.keySet().size() > 0) {
 			List<String> incomingRelationshipTypes = new ArrayList<>();
 			for (String key: incomingRelationships.keySet()) {
-//                String safeKey = getSafeKey(key);
-//                safeKey = safeKey + "_ir_ss";
                 String field = SolrSampleService.valueToSafeField(key, "_ir_ss");
 				incomingRelationshipTypes.add(field);
 			}

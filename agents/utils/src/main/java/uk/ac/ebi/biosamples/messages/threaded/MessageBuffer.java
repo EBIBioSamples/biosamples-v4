@@ -17,9 +17,6 @@ import java.util.concurrent.atomic.AtomicLong;
 public abstract class MessageBuffer<T,S> {
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 
-	// TODO
-	// 1. Turn the message status queue into a CuncurrentHashMap<Accession, MeesageSampleStatus<S>>
-//    private final BlockingQueue<MessageSampleStatus<S>> messageSampleStatusQueue;
 	private final ConcurrentMap<T, MessageSampleStatus<S>> messageSampleStatusMap;
     private final AtomicLong latestTime;
     public final AtomicBoolean hadProblem = new AtomicBoolean(false);
@@ -72,6 +69,7 @@ public abstract class MessageBuffer<T,S> {
 	public void checkQueueStatus() {
 		//check if enough time has elapsed
 		//or if the queue is long enough
+		//TODO break down this syncrhonized block so the solr commit is outside of it
 		synchronized (messageSampleStatusMap) {
             int remaining = queueSize - messageSampleStatusMap.size();
             long now = Instant.now().toEpochMilli();
@@ -88,18 +86,9 @@ public abstract class MessageBuffer<T,S> {
 				}
 
 
-				//create a local collection of the messages
-//				List<MessageSampleStatus<S>> messageSampleStatuses = new ArrayList<>(queueSize);
-
 				try {
 					//unset the latest time so that it can be set again by the next message
 					latestTime.set(0);
-
-					//drain the master queue into it
-//					messageSampleStatusQueue.drainTo(messageSampleStatuses, queueSize);
-
-					//now we can process the local copy without worrying about new ones being added
-
 					//split out the samples into a separate list
 					List<S> samples = new ArrayList<>();
 					messageSampleStatusMap.values().forEach(m -> samples.add(m.sample));
@@ -126,6 +115,7 @@ public abstract class MessageBuffer<T,S> {
 			}
 		}
 	}
+	
 	/**
 	 * This is the method that a specific sub-class should implement. Typically
 	 * this will be some sort of repository.save(samples) call in a transaction
