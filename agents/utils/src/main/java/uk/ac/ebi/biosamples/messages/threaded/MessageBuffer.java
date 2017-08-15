@@ -34,7 +34,7 @@ public abstract class MessageBuffer<T,S> {
 		latestTime = new AtomicLong(0);
 	}
 	
-	public MessageSampleStatus<S> recieve(T key, S sample) throws InterruptedException {
+	public MessageSampleStatus<S> receive(T key, S sample) throws InterruptedException {
 		//if there is no maximum time
 		//set it to wait in the future
 		latestTime.compareAndSet(0, Instant.now().toEpochMilli()+queueTime);

@@ -1,14 +1,13 @@
 package uk.ac.ebi.biosamples;
 
-import java.util.Collections;
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Sample;
+
+import java.util.Collections;
+import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class MessageContent {
@@ -17,7 +16,7 @@ public class MessageContent {
 	private final CurationLink curationLink;
 	private final List<Sample> related;
 	public final boolean delete;
-	
+
 
 	private MessageContent(Sample sample, CurationLink curationLink, List<Sample> related, boolean delete) {
 		this.sample = sample;
@@ -45,7 +44,7 @@ public class MessageContent {
 	public CurationLink getCurationLink() {
 		return curationLink;
 	}
-	
+
     @Override
     public String toString() {
     	StringBuilder sb = new StringBuilder();

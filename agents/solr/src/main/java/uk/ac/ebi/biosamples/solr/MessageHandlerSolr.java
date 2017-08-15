@@ -29,15 +29,15 @@ public class MessageHandlerSolr {
 			log.warn("Recieved message without sample");
 			return;
 		}
-		
-		Sample sample = messageContent.getSample();		
+
+		Sample sample = messageContent.getSample();
 		SolrSample solrSample = sampleToSolrSampleConverter.convert(sample);
 		
 		//TODO expand this conversion - OLS, related external references, etc
 				
 		MessageSampleStatus<SolrSample> messageSampleStatus;
 		try {
-			messageSampleStatus = messageBuffer.recieve(solrSample.getAccession(), solrSample);
+			messageSampleStatus = messageBuffer.receive(solrSample.getAccession(), solrSample);
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		}
