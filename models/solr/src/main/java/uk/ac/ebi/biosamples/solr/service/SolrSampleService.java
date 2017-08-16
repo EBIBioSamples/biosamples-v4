@@ -22,6 +22,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class SolrSampleService {
@@ -95,8 +97,8 @@ public class SolrSampleService {
 		List<String> facetFieldList = new ArrayList<>();
 		for (FacetFieldEntry ffe : facetFields) {
 			log.info("Putting "+ffe.getValue()+" with count "+ffe.getValueCount());
-			facetFieldList.add(ffe.getValue());				
-			builder.addFacet(SolrSampleService.safeFieldToValue(ffe.getValue()), ffe.getValueCount());
+			facetFieldList.add(ffe.getValue());
+			builder.addFacet(this.facetNameFromField(ffe.getValue()), ffe.getValueCount());
 		}
 		
 		//if there are no facets available (e.g. no samples)
@@ -111,7 +113,7 @@ public class SolrSampleService {
 			//for each value, put the number of them into this facets map
 			for (FacetFieldEntry ffe : facetPage.getFacetResultPage(field)) {
 				log.info("Adding "+field.getName()+" : "+ffe.getValue()+" with count "+ffe.getValueCount());					
-				builder.addFacetValue(SolrSampleService.safeFieldToValue(field.getName()), ffe.getValue(), ffe.getValueCount());
+				builder.addFacetValue(this.facetNameFromField(field.getName()), ffe.getValue(), ffe.getValueCount());
 			}
 		}
 		
@@ -164,7 +166,7 @@ public class SolrSampleService {
 		for (String facetType : filters.keySet()) {
 			Criteria facetCriteria = null;
 			
-			String facetField = valueToSafeField(facetType, "_av_ss");
+			String facetField = fieldFromFacetName(facetType);
 			for (String facatValue : filters.get(facetType)) {
 				if (facatValue == null) {
 					//no specific value, check if its not null
@@ -190,7 +192,7 @@ public class SolrSampleService {
 	}
 	
 	
-	public static String valueToSafeField(String type, String suffix) {
+	public static String valueToSafeField(String type) {
 		//solr only allows alphanumeric field types
 		try {
 			type = Base64.getEncoder().encodeToString(type.getBytes("UTF-8"));
@@ -200,41 +202,13 @@ public class SolrSampleService {
 		//although its base64 encoded, that include = which solr doesn't allow
 		type = type.replaceAll("=", "_");
 
-		if (!suffix.isEmpty()) {
-			type = type+suffix;
-		}
+//		if (!suffix.isEmpty()) {
+//			type = type+suffix;
+//		}
 		return type;
 	}
 
-	public static String valueToSafeField(String type) {
-		return valueToSafeField(type, "");
-	}
-
-	public static String safeFieldToValue(String field, String suffix) {
-		boolean inverse = false;
-        if (!suffix.isEmpty()) {
-        	field = field.substring(0, field.length() - suffix.length());
-		} else {
-            // Provide a default functionality
-    		//strip _ss
-    		if (field.endsWith("_ss")) {
-    			field = field.substring(0, field.length()-3);
-    		}
-    		//strip _av
-    		if (field.endsWith("_av")) {
-    			field = field.substring(0, field.length()-3);
-    		}
-
-    		if (field.endsWith("_or")) {
-    			field = field.substring(0, field.length()-3);
-			}
-
-			if (field.endsWith("_ir")) {
-    			inverse = true;
-    			field = field.substring(0, field.length() - 3);
-			}
-
-		}
+	public static String safeFieldToValue(String field) {
 
 		//although its base64 encoded, that include = which solr doesn't allow
 		field = field.replace("_", "=");
@@ -243,13 +217,52 @@ public class SolrSampleService {
 		} catch (UnsupportedEncodingException e) {
 			throw new RuntimeException(e);
 		}
-		if (inverse) {
-			field = field+" (inverse)";
-		}
+//		if (inverse) {
+//			field = field+" (inverse)";
+//		}
 		return field;
 	}
 
-	public static String safeFieldToValue(String field) {
-		return safeFieldToValue(field, "");
+	public String facetNameFromField(String encodedFacet) {
+
+		Pattern facetPattern = Pattern.compile("([a-zA-Z0-9_]+)(_(av|ir|or)_ss)");
+		Matcher matcher = facetPattern.matcher(encodedFacet);
+		if (matcher.matches()) {
+			String encodedField = matcher.group(1);
+			String suffix = matcher.group(2);
+
+			String decodedField = safeFieldToValue(encodedField);
+			switch (suffix) {
+				case "_ir_ss":
+					return "(Relation rev.) " + decodedField;
+				case "_or_ss":
+					return "(Relation) " + decodedField;
+				case "_av_ss":
+					return "(Attribute) " + decodedField;
+				default:
+					throw new RuntimeException("Unable to recognize facet " + encodedFacet);
+			}
+		} else {
+			throw new RuntimeException("Unable to recognize facet " + encodedFacet);
+		}
+
 	}
+
+	public String fieldFromFacetName(String facetname) {
+		String suffix, field;
+	    if (facetname.startsWith("(Relation rev.)")) {
+	    	suffix = "_ir_ss";
+	    	field = facetname.replace("(Relation rev.) ","");
+		} else if (facetname.startsWith("(Relation) ")) {
+	    	suffix = "_or_ss";
+	    	field = facetname.replace("(Relation) ","");
+		} else if (facetname.startsWith("(Attribute)")){
+	    	suffix = "_av_ss";
+	    	field = facetname.replace("(Attribute) ","");
+		} else {
+			throw new RuntimeException("Unexpected facet name " + facetname);
+		}
+		return valueToSafeField(field) + suffix;
+	}
+
 }

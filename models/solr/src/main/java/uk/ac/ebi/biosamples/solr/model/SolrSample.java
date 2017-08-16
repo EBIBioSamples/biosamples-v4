@@ -1,18 +1,12 @@
 package uk.ac.ebi.biosamples.solr.model;
 
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.springframework.data.annotation.Id;
 import org.springframework.data.solr.core.mapping.Dynamic;
 import org.springframework.data.solr.core.mapping.Indexed;
 import org.springframework.data.solr.core.mapping.SolrDocument;
 import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
+
+import java.util.*;
 
 
 
@@ -244,7 +238,7 @@ public class SolrSample {
 		if (attributeValues != null && attributeValues.keySet().size() > 0) {
 			List<String> attributeTypes = new ArrayList<>();
 			for (String attributeType : attributeValues.keySet()) {
-				String field = SolrSampleService.valueToSafeField(attributeType, "_av_ss");
+				String field = SolrSampleService.valueToSafeField(attributeType) + "_av_ss";
 				attributeTypes.add(field);
 			}
 			Collections.sort(attributeTypes);
@@ -256,7 +250,7 @@ public class SolrSample {
 			for (String key: outgoingRelationships.keySet()) {
 //			    String safeKey = getSafeKey(key);
 //			    safeKey = safeKey + "_or_ss";
-                String field = SolrSampleService.valueToSafeField(key, "_or_ss");
+                String field = SolrSampleService.valueToSafeField(key) + "_or_ss";
 				outgoingRelationshipTypes.add(field);
 			}
 
@@ -271,7 +265,7 @@ public class SolrSample {
 			for (String key: incomingRelationships.keySet()) {
 //                String safeKey = getSafeKey(key);
 //                safeKey = safeKey + "_ir_ss";
-                String field = SolrSampleService.valueToSafeField(key, "_ir_ss");
+                String field = SolrSampleService.valueToSafeField(key) +"_ir_ss";
 				incomingRelationshipTypes.add(field);
 			}
 
