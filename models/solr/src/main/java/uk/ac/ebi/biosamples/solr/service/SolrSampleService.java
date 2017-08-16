@@ -13,6 +13,7 @@ import org.springframework.util.MultiValueMap;
 import uk.ac.ebi.biosamples.model.Autocomplete;
 import uk.ac.ebi.biosamples.model.SampleFacet;
 import uk.ac.ebi.biosamples.model.SampleFacetsBuilder;
+import uk.ac.ebi.biosamples.solr.model.FacetType;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
 import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
 
@@ -22,8 +23,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service
 public class SolrSampleService {
@@ -225,44 +224,49 @@ public class SolrSampleService {
 
 	public String facetNameFromField(String encodedFacet) {
 
-		Pattern facetPattern = Pattern.compile("([a-zA-Z0-9_]+)(_(av|ir|or)_ss)");
-		Matcher matcher = facetPattern.matcher(encodedFacet);
-		if (matcher.matches()) {
-			String encodedField = matcher.group(1);
-			String suffix = matcher.group(2);
-
-			String decodedField = safeFieldToValue(encodedField);
-			switch (suffix) {
-				case "_ir_ss":
-					return "(Relation rev.) " + decodedField;
-				case "_or_ss":
-					return "(Relation) " + decodedField;
-				case "_av_ss":
-					return "(Attribute) " + decodedField;
-				default:
-					throw new RuntimeException("Unable to recognize facet " + encodedFacet);
-			}
-		} else {
-			throw new RuntimeException("Unable to recognize facet " + encodedFacet);
-		}
+		FacetType type = FacetType.ofField(encodedFacet);
+		String baseField = encodedFacet.replace(type.getFieldSuffix(), "");
+		return type.getFacetNamePrefix() + safeFieldToValue(baseField);
+//		Pattern facetPattern = Pattern.compile("([a-zA-Z0-9_]+)(_(av|ir|or)_ss)");
+//		Matcher matcher = facetPattern.matcher(encodedFacet);
+//		if (matcher.matches()) {
+//			String encodedField = matcher.group(1);
+//			String suffix = matcher.group(2);
+//
+//			String decodedField = safeFieldToValue(encodedField);
+//			switch (suffix) {
+//				case "_ir_ss":
+//					return "(Relation rev.) " + decodedField;
+//				case "_or_ss":
+//					return "(Relation) " + decodedField;
+//				case "_av_ss":
+//					return "(Attribute) " + decodedField;
+//				default:
+//					throw new RuntimeException("Unable to recognize facet " + encodedFacet);
+//			}
+//		} else {
+//			throw new RuntimeException("Unable to recognize facet " + encodedFacet);
+//		}
 
 	}
 
 	public String fieldFromFacetName(String facetname) {
-		String suffix, field;
-	    if (facetname.startsWith("(Relation rev.)")) {
-	    	suffix = "_ir_ss";
-	    	field = facetname.replace("(Relation rev.) ","");
-		} else if (facetname.startsWith("(Relation) ")) {
-	    	suffix = "_or_ss";
-	    	field = facetname.replace("(Relation) ","");
-		} else if (facetname.startsWith("(Attribute)")){
-	    	suffix = "_av_ss";
-	    	field = facetname.replace("(Attribute) ","");
-		} else {
-			throw new RuntimeException("Unexpected facet name " + facetname);
-		}
-		return valueToSafeField(field) + suffix;
+//		String suffix, field;
+//	    if (facetname.startsWith("(Relation rev.)")) {
+//	    	suffix = "_ir_ss";
+//	    	field = facetname.replace("(Relation rev.) ","");
+//		} else if (facetname.startsWith("(Relation) ")) {
+//	    	suffix = "_or_ss";
+//	    	field = facetname.replace("(Relation) ","");
+//		} else if (facetname.startsWith("(Attribute)")){
+//	    	suffix = "_av_ss";
+//	    	field = facetname.replace("(Attribute) ","");
+//		} else {
+//			throw new RuntimeException("Unexpected facet name " + facetname);
+//		}
+		FacetType type = FacetType.ofFacetName(facetname);
+		String field = facetname.replace(type.getFacetNamePrefix(), "");
+		return valueToSafeField(field) + type.getFieldSuffix();
 	}
 
 }
