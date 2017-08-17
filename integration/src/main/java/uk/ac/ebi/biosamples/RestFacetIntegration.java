@@ -73,7 +73,7 @@ public class RestFacetIntegration extends AbstractIntegration {
 		//check that the particular facets we expect are present
 		boolean found = false;
 		for (SampleFacet facet : response.getBody()) {
-			if (facet.getLabel().equals("geographic location (country and/or sea)")) {
+			if (facet.getLabel().equals("(Attribute) geographic location (country and/or sea)")) {
 				found = true;
 				//check that it has one value that is expected
 				if (facet.getValues().size() != 1) {
@@ -85,7 +85,7 @@ public class RestFacetIntegration extends AbstractIntegration {
 			}
 		} 
 		if (!found) {
-			throw new RuntimeException("Unable to find facet \"geographic location (country and/or sea)\"");
+			throw new RuntimeException("Unable to find facet \"(Attribute) geographic location (country and/or sea)\"");
 		}
 		
 	}
