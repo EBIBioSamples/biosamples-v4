@@ -61,9 +61,9 @@ public class SolrSampleService {
 		if (after != null && before != null) {
 			filterQuery.addCriteria(new Criteria("update_dt").between(after.format(solrFormatter), before.format(solrFormatter)));
 		} else if (after == null && before != null) {
-			filterQuery.addCriteria(new Criteria("update_dt").between("*", before.format(solrFormatter)));
+			filterQuery.addCriteria(new Criteria("update_dt").between("NOW-1000YEAR", before.format(solrFormatter)));
 		} else if (after != null && before == null) {
-			filterQuery.addCriteria(new Criteria("update_dt").between(after.format(solrFormatter), "*"));
+			filterQuery.addCriteria(new Criteria("update_dt").between(after.format(solrFormatter), "NOW+1000YEAR"));
 		}
 		query.addFilterQuery(filterQuery);
 		query.setTimeAllowed(TIMEALLOWED*1000); 
