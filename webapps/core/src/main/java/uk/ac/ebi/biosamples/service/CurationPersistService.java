@@ -50,7 +50,7 @@ public class CurationPersistService {
 			curationLink = mongoCurationLinkToCurationLinkConverter.convert(mongoCurationLinkRepository.save(curationLinkToMongoCurationLinkConverter.convert(curationLink)));
 		}
 		
-		amqpTemplate.convertAndSend(Messaging.exchangeForIndexing, "", MessageContent.build(curationLink, false));
+		amqpTemplate.convertAndSend(Messaging.exchangeForIndexingSolr, "", MessageContent.build(curationLink, false));
 		return curationLink;
 	}
 	

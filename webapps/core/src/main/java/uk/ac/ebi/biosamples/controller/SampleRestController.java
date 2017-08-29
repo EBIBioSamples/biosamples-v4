@@ -17,6 +17,7 @@ import uk.ac.ebi.biosamples.service.*;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Optional;
 
 /**
  * Primary controller for REST operations both in JSON and XML and both read and
@@ -61,31 +62,18 @@ public class SampleRestController {
 	public Resource<Sample> getSampleHal(@PathVariable String accession) {
 		log.trace("starting call");
 		// convert it into the format to return
-		Sample sample = null;
-		try {
-			sample = sampleService.fetch(accession);
-		} catch (IllegalArgumentException e) {
-			// did not exist, throw 404
-			//return ResponseEntity.notFound().build();
-			throw new SampleNotFoundException();
-		}
-
-		if (sample.getName() == null) {
-			// if it has no name, then its just created by accessioning or
-			// reference
-			// can't read it, but could put to it
-			// TODO use METHOD_NOT_ALLOWED
-			// TODO make sure "options" is correct for this
+		Optional<Sample> sample = sampleService.fetch(accession);
+		if (!sample.isPresent()) {
 			throw new SampleNotFoundException();
 		}
 
 		// check if the release date is in the future and if so return it as
 		// private
-		if (sample.getRelease().isAfter(LocalDateTime.now())) {
+		if (sample.get().getRelease().isAfter(LocalDateTime.now())) {
 			throw new SampleNotAccessibleException();
 		}
 
-		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
+		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample.get());
 
 		return sampleResource;
 	}
@@ -107,34 +95,21 @@ public class SampleRestController {
 
     @CrossOrigin(methods = RequestMethod.GET)
     @GetMapping(value = "/{accession}", produces = "application/ld+json")
-    public ResponseEntity<JsonLDSample> getJsonLDSample(@PathVariable String accession) {
-        Sample sample = null;
-        try {
-            sample = sampleService.fetch(accession);
-        } catch (IllegalArgumentException e) {
-            // did not exist, throw 404
-            return ResponseEntity.notFound().build();
-        }
-        if (sample.getName() == null) {
-            // if it has no name, then its just created by accessioning or
-            // reference
-            // can't read it, but could put to it
-            // TODO make sure "options" is correct for this
-            return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
-        }
+    public JsonLDSample getJsonLDSample(@PathVariable String accession) {
+		Optional<Sample> sample = sampleService.fetch(accession);
+		if (!sample.isPresent()) {
+			throw new SampleNotFoundException();
+		}
 
         // check if the release date is in the future and if so return it as
         // private
-        if (sample.getRelease().isAfter(LocalDateTime.now())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        if (sample.get().getRelease().isAfter(LocalDateTime.now())) {
+			throw new SampleNotAccessibleException();
         }
 
-        JsonLDSample jsonLDSample = jsonLDService.sampleToJsonLD(sample);
-
-        // create the response object with the appropriate status
-        return ResponseEntity.ok().lastModified(sample.getUpdate().toEpochSecond(ZoneOffset.UTC))
-                //.header(HttpHeaders.CACHE_CONTROL, CacheControl.maxAge(1, TimeUnit.MINUTES).cachePublic().getHeaderValue())
-                .eTag(String.valueOf(sample.hashCode())).body(jsonLDSample);
+        JsonLDSample jsonLDSample = jsonLDService.sampleToJsonLD(sample.get());
+        
+        return jsonLDSample;
     }
 
 	@PutMapping(value = "/{accession}", consumes = { MediaType.APPLICATION_JSON_VALUE })
