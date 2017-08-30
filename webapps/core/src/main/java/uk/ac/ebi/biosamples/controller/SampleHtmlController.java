@@ -303,14 +303,9 @@ public class SampleHtmlController {
 			return "error/404";
 		}
 
-		if (sample == null) {
-			// throw internal server error
-			throw new RuntimeException("Unable to retrieve " + accession);
-		}
-
 		// check if the release date is in the future and if so return it as
 		// private
-		if (sample != null && (sample.get().getRelease() == null || LocalDateTime.now().isBefore(sample.get().getRelease()))) {
+		if (sample.get().getRelease() == null || LocalDateTime.now().isBefore(sample.get().getRelease())) {
 			response.setStatus(HttpStatus.FORBIDDEN.value());
 			return "error/403";
 		}
@@ -319,7 +314,7 @@ public class SampleHtmlController {
 		//response.setHeader(HttpHeaders.ETAG, String.valueOf(sample.hashCode()));
 
 		String jsonLDString = jsonLDService.jsonLDToString(jsonLDService.sampleToJsonLD(sample.get()));
-		model.addAttribute("sample", sample);
+		model.addAttribute("sample", sample.get());
 		model.addAttribute("jsonLD", jsonLDString);
 
 		return "sample";
