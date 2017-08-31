@@ -31,6 +31,7 @@ public class RedirectController {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 
+	//TODO remove this in favour of using biosamples-client
 	@Value("${biosamples.redirect.context}")
 	private URI biosamplesRedirectContext;
 
@@ -61,9 +62,9 @@ public class RedirectController {
 			@RequestParam(defaultValue = "25") int size,
 			@RequestParam(defaultValue = "1") int page,
 			@RequestParam(defaultValue = "desc") String sort
-	) throws InvalidParameterException {
+	)  {
 	    if (page < 1) {
-	        throw new InvalidParameterException("Page parameter has to be 1-based");
+	        throw new IllegalArgumentException("Page parameter has to be 1-based");
 		}
 		PagedResources<Resource<Sample>> results = sampleService.getPagedSamples(query, page - 1, size, Sort.forParam(sort));
         return BioSampleResultQuery.fromPagedResource(results);
@@ -76,9 +77,9 @@ public class RedirectController {
 			@RequestParam(defaultValue = "25") int size,
 			@RequestParam(defaultValue = "1") int page,
 			@RequestParam(defaultValue = "desc") String sort
-	) throws InvalidParameterException {
+	) {
 		if (page < 1) {
-			throw new InvalidParameterException("Page parameter has to be 1-based");
+			throw new IllegalArgumentException("Page parameter has to be 1-based");
 		}
 		PagedResources<Resource<Sample>> results = sampleService.getPagedSamples(query, page - 1, size, Sort.forParam(sort));
         return BioSampleGroupResultQuery.fromPagedResource(results);
@@ -86,11 +87,13 @@ public class RedirectController {
 
 //	// FIXME No groups is provided with the new BioSamples v4, not sure how to handle this
     // TODO Consider group relationships as attribute and solve this as search through attribute query
-	@GetMapping(value = {"/groupsamples/{groupAccession:SAMEG\\d+}/query={values}"},  produces={MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE})
+	@GetMapping(value = {"/groupsamples/{groupAccession:SAMEG\\d+}/query={values}"},  
+			produces={MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE})
 	public @ResponseBody BioSampleResultQuery getSamplesInGroup(
 			@PathVariable String groupAccession,
             @PathVariable String values
 	) {
+		//TODO replace with a proper handling of arguments
         Map<String, String> queryParams = readGroupSamplesQuery(values);
 //        String query = String.format("%s AND %s", groupAccession, queryParams.get("text"));
         String query = queryParams.get("text");
