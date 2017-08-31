@@ -30,25 +30,20 @@ public class SampleTabIntegration extends AbstractIntegration {
 	private final IntegrationProperties integrationProperties;
 
 	private final RestOperations restTemplate;
+
+	private final URI uri;
 	
 	public SampleTabIntegration(RestTemplateBuilder restTemplateBuilder, IntegrationProperties integrationProperties, BioSamplesClient client) {
         super(client);
 		this.restTemplate = restTemplateBuilder.build();
 		this.integrationProperties = integrationProperties;
+
+		uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUriSampleTab())
+			.pathSegment("v4").build().toUri();
 	}
 
 	@Override
 	protected void phaseOne() {
-
-		URI uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUriSampleTab())
-				.pathSegment("v4").build().toUri();
-		
-		runCallableOnSampleTabResource("/GSB-32.txt", sampleTabString -> {
-			log.info("POSTing to " + uri);
-			RequestEntity<String> request = RequestEntity.post(uri)
-					.contentType(MediaType.parseMediaType("text/plain;charset=UTF-8")).body(sampleTabString);
-			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
-		});
 
 		runCallableOnSampleTabResource("/GSB-32_unaccession.txt", sampleTabString -> {
 			log.info("POSTing to " + uri);
@@ -79,21 +74,26 @@ public class SampleTabIntegration extends AbstractIntegration {
 
 	@Override
 	protected void phaseTwo() {
-		// check at the right URLs with GET to make sure UTF arrived
-		if (!client.fetch("SAMEA2186845").getCharacteristics()
-				.contains(Attribute.build("description", "Test sample α"))) {
-			throw new RuntimeException("SAMEA2186845 does not have 'description':'Test sample α'");
-		}
-		if (!client.fetch("SAMEA2186844").getCharacteristics()
-				.contains(Attribute.build("description", "Test sample β"))) {
-			throw new RuntimeException("SAMEA2186844 does not have 'description':'Test sample β'");
-		}
 		
+		runCallableOnSampleTabResource("/GSB-32.txt", sampleTabString -> {
+			log.info("POSTing to " + uri);
+			RequestEntity<String> request = RequestEntity.post(uri)
+					.contentType(MediaType.parseMediaType("text/plain;charset=UTF-8")).body(sampleTabString);
+			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+		});
 	}
 
 	@Override
 	protected void phaseThree() {
-		// TODO Auto-generated method stub
+		// check at the right URLs with GET to make sure UTF arrived
+		if (!client.fetchSampleResource("SAMEA2186845").get().getContent().getCharacteristics()
+				.contains(Attribute.build("description", "Test sample α"))) {
+			throw new RuntimeException("SAMEA2186845 does not have 'description':'Test sample α'");
+		}
+		if (!client.fetchSampleResource("SAMEA2186844").get().getContent().getCharacteristics()
+				.contains(Attribute.build("description", "Test sample β"))) {
+			throw new RuntimeException("SAMEA2186844 does not have 'description':'Test sample β'");
+		}
 		
 	}
 
