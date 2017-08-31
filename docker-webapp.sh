@@ -14,7 +14,6 @@ done
 mvn -T 2C -P embl-ebi clean package
 
 #cleanup any previous data
-echo "The clean value is $clean"
 if [ $clean == 1 ]
 then
 	echo "Cleaning existing volumes"
