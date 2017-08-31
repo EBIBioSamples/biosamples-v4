@@ -107,7 +107,8 @@ public class SampleService {
 
 
 		// send a message for storage and further processing
-		amqpTemplate.convertAndSend(Messaging.exchangeForIndexingSolr, "", MessageContent.build(sample, false));
+		amqpTemplate.convertAndSend(Messaging.exchangeForIndexingSolr, "", 
+				MessageContent.build(sample, null, Collections.emptyList(), false));
 		//TODO put in eventlistener
 		
 		//for each sample we have a relationship to, update it to index this sample as an inverse relationship	
@@ -116,7 +117,8 @@ public class SampleService {
 			if (relationship.getSource().equals(sample.getAccession())) {
 				Optional<Sample> target = fetch(relationship.getTarget());
 				if (target.isPresent()) {
-					amqpTemplate.convertAndSend(Messaging.exchangeForIndexingSolr, "", MessageContent.build(target.get(), false));
+					amqpTemplate.convertAndSend(Messaging.exchangeForIndexingSolr, "", 
+							MessageContent.build(target.get(), null, Collections.emptyList(), false));
 				}
 			}
 		}

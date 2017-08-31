@@ -1,5 +1,7 @@
 package uk.ac.ebi.biosamples.service;
 
+import java.util.Collections;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.AmqpTemplate;
@@ -50,7 +52,7 @@ public class CurationPersistService {
 			curationLink = mongoCurationLinkToCurationLinkConverter.convert(mongoCurationLinkRepository.save(curationLinkToMongoCurationLinkConverter.convert(curationLink)));
 		}
 		
-		amqpTemplate.convertAndSend(Messaging.exchangeForIndexingSolr, "", MessageContent.build(curationLink, false));
+		amqpTemplate.convertAndSend(Messaging.exchangeForIndexingSolr, "", MessageContent.build(null, curationLink, Collections.emptyList(), false));
 		return curationLink;
 	}
 	

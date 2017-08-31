@@ -2,6 +2,7 @@ package uk.ac.ebi.biosamples.messages.threaded;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import java.time.Instant;
@@ -31,27 +32,49 @@ public abstract class MessageBuffer<T,S> {
 		latestTime = new AtomicLong(0);
 	}
 	
-	public MessageSampleStatus<S> recieve(T key, S sample) throws InterruptedException {
+	public MessageSampleStatus<S> recieve(T key, S sample, long messageTime) throws InterruptedException {
 		//if there is no maximum time
 		//set it to wait in the future
 		latestTime.compareAndSet(0, Instant.now().toEpochMilli()+queueTime);
 		
-		MessageSampleStatus<S> status = MessageSampleStatus.build(sample);
+		MessageSampleStatus<S> status = MessageSampleStatus.build(sample, messageTime);
 		
 		//this will block until space is available
-		MessageSampleStatus<S> oldValue = null;
 		boolean done = false;
 		while (!done) {
 			synchronized (messageSampleStatusMap) {
 				if (messageSampleStatusMap.size() < queueSize) {
-					oldValue = messageSampleStatusMap.put(key, status);
+
+					
+					if (messageSampleStatusMap.containsKey(key)) {
+						//there is an existing version
+						MessageSampleStatus<S> oldValue = messageSampleStatusMap.get(key);
+						//compare timestamps - discard oldest
+						MessageSampleStatus<S> toDiscard = null;
+						if (status.messageTime < oldValue.messageTime) {
+							toDiscard = status;
+							log.warn("Discdarding new message");
+						} else if (status.messageTime > oldValue.messageTime) {
+							toDiscard = oldValue;
+							messageSampleStatusMap.put(key, status);
+							log.warn("Discdarding old message");
+						} else {
+							//if they have exactly the same time, discard the latest one and raise a warning
+							toDiscard = status;
+							log.warn("Duplicate messages for ("+sample.toString()+") at "+messageTime);
+						}
+						
+						//make sure it is properly removed out of the entire rabbitmq system by using 
+						toDiscard.hadProblem.set(new AmqpRejectAndDontRequeueException("Replaced by newer message"));
+						
+					} else {
+						//no existing version, can simply add this as new
+						messageSampleStatusMap.put(key, status);
+					}
 					done = true;
 				}
 			}
 			Thread.sleep(10);
-		}
-		if (oldValue != null) {
-			oldValue.storedInRepository.set(true);
 		}
 		return status;
 	}
@@ -108,7 +131,7 @@ public abstract class MessageBuffer<T,S> {
 					//store that we encountered a problem of some kind
 					log.error("Storing warning", e);
 					hadProblem.set(true);
-					messageSampleStatusMap.values().forEach(m -> m.hadProblem.set(e, true));
+					messageSampleStatusMap.values().forEach(m -> m.hadProblem.set(e));
 					//re-throw the exception
 					throw e;
 				}
