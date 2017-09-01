@@ -5,6 +5,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,8 +61,8 @@ public class MigrationRunner implements ApplicationRunner, ExitCodeGenerator {
 			//now query to get each of the accessions and time how long it takes
 			long startTime = System.nanoTime();
 						
-			for (Resource<Sample> resource : bioSamplesClient.fetchResourceAll(accessions) ){
-				String acc = resource.getContent().getAccession();
+			for (Optional<Resource<Sample>> resource : bioSamplesClient.fetchSampleResourceAll(accessions) ){
+				String acc = resource.get().getContent().getAccession();
 				log.trace(acc);
 			}
 			

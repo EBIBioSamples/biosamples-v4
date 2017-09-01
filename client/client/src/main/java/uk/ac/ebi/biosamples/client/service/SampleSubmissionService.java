@@ -19,6 +19,7 @@ import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestOperations;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import uk.ac.ebi.biosamples.model.Sample;
 
@@ -43,15 +44,17 @@ public class SampleSubmissionService {
 	 * @param sample
 	 * @return
 	 */
-	public Future<Resource<Sample>> submitAsync(Sample sample) throws RestClientException {
-		return executor.submit(new SubmitCallable(sample));
+	public Future<Resource<Sample>> submitAsync(Sample sample, Boolean setUpdateDate) throws RestClientException {
+		return executor.submit(new SubmitCallable(sample, setUpdateDate));
 	}
 
 	private class SubmitCallable implements Callable<Resource<Sample>> {
 		private final Sample sample;
+		private final Boolean setUpdateDate;
 
-		public SubmitCallable(Sample sample) {
+		public SubmitCallable(Sample sample, Boolean setUpdateDate) {
 			this.sample = sample;
+			this.setUpdateDate = setUpdateDate;
 		}
 
 		@Override
@@ -70,13 +73,19 @@ public class SampleSubmissionService {
 					throw new NullPointerException("Unable to find sample link");
 				}
 				sampleLink = sampleLink.expand(sample.getAccession());
-				
-				URI uri = URI.create(sampleLink.getHref());
+								
+				UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromUriString(sampleLink.getHref());
+				if (setUpdateDate != null) {
+					uriComponentsBuilder.queryParam("setupdatedate", setUpdateDate);
+				}
+				URI uri = uriComponentsBuilder.build(true).toUri();
 				
 				log.trace("PUTing to " + uri + " " + sample);
 	
-				RequestEntity<Sample> requestEntity = RequestEntity.put(uri).contentType(MediaType.APPLICATION_JSON)
-						.accept(MediaTypes.HAL_JSON).body(sample);
+				RequestEntity<Sample> requestEntity = RequestEntity.put(uri)
+						.contentType(MediaType.APPLICATION_JSON)
+						.accept(MediaTypes.HAL_JSON)
+						.body(sample);
 				ResponseEntity<Resource<Sample>> responseEntity = restOperations.exchange(requestEntity,
 						new ParameterizedTypeReference<Resource<Sample>>() {
 						});
@@ -89,12 +98,20 @@ public class SampleSubmissionService {
 	
 			} else {
 				// samples without an existing accession should be POST
-				URI uri = URI.create(traverson.follow("samples").asLink().getHref());
-	
+				Link sampleLink = traverson.follow("samples").asLink();
+
+				UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromUriString(sampleLink.getHref());
+				if (setUpdateDate != null) {
+					uriComponentsBuilder.queryParam("setupdatedate", setUpdateDate);
+				}
+				URI uri = uriComponentsBuilder.build(true).toUri();
+				
 				log.trace("POSTing to " + uri + " " + sample);
 	
-				RequestEntity<Sample> requestEntity = RequestEntity.post(uri).contentType(MediaType.APPLICATION_JSON)
-						.accept(MediaTypes.HAL_JSON).body(sample);
+				RequestEntity<Sample> requestEntity = RequestEntity.post(uri)
+						.contentType(MediaType.APPLICATION_JSON)
+						.accept(MediaTypes.HAL_JSON)
+						.body(sample);
 				ResponseEntity<Resource<Sample>> responseEntity = restOperations.exchange(requestEntity,
 						new ParameterizedTypeReference<Resource<Sample>>() {
 						});

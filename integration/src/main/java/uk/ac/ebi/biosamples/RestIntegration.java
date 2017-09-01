@@ -48,7 +48,7 @@ public class RestIntegration extends AbstractIntegration {
 		}
 
 		// put a sample
-		Resource<Sample> resource = client.persistSampleResource(sampleTest1);
+		Resource<Sample> resource = client.persistSampleResource(sampleTest1, true);
 		if (!sampleTest1.equals(resource.getContent())) {
 			log.warn("expected: "+sampleTest1);
 			log.warn("found: "+resource.getContent());
@@ -63,6 +63,10 @@ public class RestIntegration extends AbstractIntegration {
 		Optional<Resource<Sample>> optional = client.fetchSampleResource(sampleTest1.getAccession());
 		if (!optional.isPresent()) {
 			throw new RuntimeException("No existing "+sampleTest1.getAccession());
+		}
+		//check the update date
+		if (optional.get().getContent().getUpdate().getYear() == sampleTest1.getUpdate().getYear()) {
+			throw new RuntimeException("Update date was not modified to current year as intended");			
 		}
 		//disabled because not fully operational
 		//checkIfModifiedSince(optional.get());
@@ -94,7 +98,7 @@ public class RestIntegration extends AbstractIntegration {
 		}
 		
 		//put the second sample in
-		Resource<Sample> resource = client.persistSampleResource(sampleTest2);
+		Resource<Sample> resource = client.persistSampleResource(sampleTest2, false);
 		sampleTest2 = Sample.build(sampleTest2.getName(), sampleTest2.getAccession(),
 				sampleTest2.getRelease(), sampleTest2.getUpdate(),
 				sampleTest2.getCharacteristics(), sampleTest1.getRelationships(), sampleTest2.getExternalReferences());
@@ -133,12 +137,16 @@ public class RestIntegration extends AbstractIntegration {
 		if (!sampleTest2Rest.getCharacteristics().contains(Attribute.build("UTF-8 test", "αβ", null, null))) {
 			throw new RuntimeException("Unable to find UTF-8 characters");
 		}
+		//check the update date
+		if (sampleTest2Rest.getUpdate().getYear() != sampleTest2.getUpdate().getYear()) {
+			throw new RuntimeException("Update date was modified when it shouldn't have been");			
+		}
 		//now do another update to delete the relationship
 		//might as well make it public now too
 		sampleTest1 = Sample.build(sampleTest1.getName(), sampleTest1.getAccession(),
 				LocalDateTime.of(LocalDate.of(2016, 4, 1), LocalTime.of(11, 36, 57, 0)), sampleTest1.getUpdate(),
 				sampleTest1.getCharacteristics(), new TreeSet<>(), sampleTest1.getExternalReferences());
-		Resource<Sample> resource = client.persistSampleResource(sampleTest1);
+		Resource<Sample> resource = client.persistSampleResource(sampleTest1, false);
 		if (!sampleTest1.equals(resource.getContent())) {
 			log.warn("expected: "+sampleTest1);
 			log.warn("found: "+resource.getContent());
@@ -162,6 +170,7 @@ public class RestIntegration extends AbstractIntegration {
 			log.warn("found: "+sampleTest2Rest);
 			throw new RuntimeException("No matching "+sampleTest2.getAccession());
 		}
+		
 	}
 
 	private void checkIfModifiedSince(Resource<Sample> sample) {
