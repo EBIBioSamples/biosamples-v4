@@ -91,10 +91,10 @@ public class SampleService {
 			log.error("Found errors : "+errors);
 			throw new SampleValidationException();
 		}
-				
+
+		// TODO compare to existing version to check if changes
+
 		// TODO validate that relationships have this sample as the source 
-		sample = Sample.build(sample.getName(), sample.getAccession(), sample.getRelease(), LocalDateTime.now(),
-				sample.getCharacteristics(), sample.getRelationships(), sample.getExternalReferences());
 
 		if (sample.hasAccession()) {
 			MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);

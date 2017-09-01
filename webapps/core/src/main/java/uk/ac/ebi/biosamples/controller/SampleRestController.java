@@ -113,7 +113,8 @@ public class SampleRestController {
     }
 
 	@PutMapping(value = "/{accession}", consumes = { MediaType.APPLICATION_JSON_VALUE })
-	public ResponseEntity<Resource<Sample>> put(@PathVariable String accession, @RequestBody Sample sample) {
+	public ResponseEntity<Resource<Sample>> put(@PathVariable String accession, @RequestBody Sample sample,
+			@RequestParam(name = "setupdatedate", required = false, defaultValue="true") boolean setUpdateDate) {
 		if (!sample.getAccession().equals(accession)) {
 			// if the accession in the body is different to the accession in the
 			// url, throw an error
@@ -121,9 +122,14 @@ public class SampleRestController {
 			throw new RuntimeException("Accessions must match (" + accession + " vs " + sample.getAccession() + ")");
 		}
 
-		// TODO compare to existing version to check if changes
-
 		log.debug("Recieved PUT for " + accession+" "+sample);
+
+		//TODO limit use of this method to write super-users only
+		if (setUpdateDate) {
+			sample = Sample.build(sample.getName(), sample.getAccession(), sample.getRelease(), LocalDateTime.now(),
+					sample.getCharacteristics(), sample.getRelationships(), sample.getExternalReferences());
+		}
+		
 		sample = sampleService.store(sample);
 
 		// assemble a resource to return
@@ -134,8 +140,16 @@ public class SampleRestController {
 	}
 
 	@PostMapping(consumes = { MediaType.APPLICATION_JSON_VALUE })
-	public ResponseEntity<Resource<Sample>> post(@RequestBody Sample sample) {
+	public ResponseEntity<Resource<Sample>> post(@RequestBody Sample sample,
+			@RequestParam(name = "setupdatedate", required = false, defaultValue="true") boolean setUpdateDate) {
 		log.debug("Recieved POST for "+sample);
+
+		//TODO limit use of this method to write super-users only
+		if (setUpdateDate) {
+			sample = Sample.build(sample.getName(), sample.getAccession(), sample.getRelease(), LocalDateTime.now(),
+					sample.getCharacteristics(), sample.getRelationships(), sample.getExternalReferences());
+		}
+		
 		sample = sampleService.store(sample);
 		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
 
