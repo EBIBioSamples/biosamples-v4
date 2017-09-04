@@ -119,6 +119,11 @@ public class BioSamplesClient {
 	}	
 
 	public Resource<Sample> persistSampleResource(Sample sample) throws RestClientException {
+		return persistSampleResource(sample, null);
+	}
+	
+	
+	public Resource<Sample> persistSampleResource(Sample sample, Boolean setUpdateDate) throws RestClientException {
 		//validate client-side before submission
 		Collection<String> errors = sampleValidator.validate(sample);		
 		if (errors.size() > 0) {
@@ -127,7 +132,7 @@ public class BioSamplesClient {
 		}
 		
 		try {
-			return sampleSubmissionService.submitAsync(sample).get();
+			return sampleSubmissionService.submitAsync(sample, setUpdateDate).get();
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		} catch (ExecutionException e) {
@@ -138,12 +143,20 @@ public class BioSamplesClient {
 	public Sample persistSample(Sample sample) throws RestClientException {
 		return persistSampleResource(sample).getContent();
 	}
+	
 	public Collection<Resource<Sample>> persistSamples(Collection<Sample> samples) throws RestClientException {
+		return persistSamples(samples, null);
+	}
+	
+	public Collection<Resource<Sample>> persistSamples(Collection<Sample> samples, Boolean setUpdateDate) throws RestClientException {
+		
+		
+		
 		List<Resource<Sample>> results = new ArrayList<>();
 		List<Future<Resource<Sample>>> futures = new ArrayList<>();
 		
 		for (Sample sample : samples) {
-			futures.add(sampleSubmissionService.submitAsync(sample));
+			futures.add(sampleSubmissionService.submitAsync(sample, setUpdateDate));
 		}
 		
 		for (Future<Resource<Sample>> future : futures) {
@@ -167,7 +180,7 @@ public class BioSamplesClient {
 	public Resource<CurationLink> persistCuration(String accession, Curation curation) throws RestClientException {
 		return curationSubmissionService.persistCuration(accession, curation);
 	}
-        
+        /*
     @Deprecated
 	public Resource<Sample> fetchResource(String accession) {
 		try {
@@ -212,5 +225,5 @@ public class BioSamplesClient {
 	public Sample persist(Sample sample) {
 		return persistResource(sample).getContent();
 	}
-
+*/
 }

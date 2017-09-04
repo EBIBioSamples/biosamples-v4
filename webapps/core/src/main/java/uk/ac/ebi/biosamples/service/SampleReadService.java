@@ -1,5 +1,7 @@
 package uk.ac.ebi.biosamples.service;
 
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,12 +43,12 @@ public class SampleReadService {
 	 */
 	//can't use a sync cache because we need to use CacheEvict
 	//@Cacheable(cacheNames=WebappProperties.fetch, key="#root.args[0]")
-	public Sample fetch(String accession) throws IllegalArgumentException {
+	public Optional<Sample> fetch(String accession) throws IllegalArgumentException {
 		
 		// return the raw sample from the repository
 		MongoSample mongoSample = mongoSampleRepository.findOne(accession);
 		if (mongoSample == null) {
-			throw new IllegalArgumentException("Unable to find sample (" + accession + ")");
+			return Optional.empty();
 		}
 		//TODO only have relationships to things that are accessible
 
@@ -58,7 +60,7 @@ public class SampleReadService {
 		sample = curationReadService.applyAllCurationToSample(sample);
 		
 		
-		return sample;
+		return Optional.of(sample);
 	}
 	
 	

@@ -68,7 +68,7 @@ public class SampleService {
 	 */
 	//can't use a sync cache because we need to use CacheEvict
 	//@Cacheable(cacheNames=WebappProperties.fetch, key="#root.args[0]")
-	public Sample fetch(String accession) throws IllegalArgumentException {
+	public Optional<Sample> fetch(String accession) {
 		return sampleReadService.fetch(accession);
 	}
 	
@@ -91,10 +91,10 @@ public class SampleService {
 			log.error("Found errors : "+errors);
 			throw new SampleValidationException();
 		}
-				
+
+		// TODO compare to existing version to check if changes
+
 		// TODO validate that relationships have this sample as the source 
-		sample = Sample.build(sample.getName(), sample.getAccession(), sample.getRelease(), LocalDateTime.now(),
-				sample.getCharacteristics(), sample.getRelationships(), sample.getExternalReferences());
 
 		if (sample.hasAccession()) {
 			MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);
@@ -105,22 +105,24 @@ public class SampleService {
 			sample = mongoAccessionService.generateAccession(sample);
 		}
 
-		Collection<Sample> relatedSamples = new ArrayList<>();
-		for (Relationship relationship : SampleRelationshipUtils.getOutgoingRelationships(sample)) {
-			String accession = relationship.getTarget();
-			MongoSample mongoSample = mongoSampleRepository.findOne(accession);
-			if (mongoSample != null) {
-				relatedSamples.add(mongoSampleToSampleConverter.convert(mongoSample));
-			}
-		}
 
 		// send a message for storage and further processing
+		amqpTemplate.convertAndSend(Messaging.exchangeForIndexingSolr, "", 
+				MessageContent.build(sample, null, Collections.emptyList(), false));
 		//TODO put in eventlistener
-		amqpTemplate.convertAndSend(Messaging.exchangeForIndexing, "", MessageContent.build(sample, false));
-		for(Sample relatedSample: relatedSamples) {
-			amqpTemplate.convertAndSend(Messaging.exchangeForIndexing, "", MessageContent.build(relatedSample, false));
+		
+		//for each sample we have a relationship to, update it to index this sample as an inverse relationship	
+		//TODO put in eventlistener	
+		for (Relationship relationship : sample.getRelationships()) {
+			if (relationship.getSource().equals(sample.getAccession())) {
+				Optional<Sample> target = fetch(relationship.getTarget());
+				if (target.isPresent()) {
+					amqpTemplate.convertAndSend(Messaging.exchangeForIndexingSolr, "", 
+							MessageContent.build(target.get(), null, Collections.emptyList(), false));
+				}
+			}
 		}
-
+		
 		//return the sample in case we have modified it i.e accessioned
 		return sample;
 	}

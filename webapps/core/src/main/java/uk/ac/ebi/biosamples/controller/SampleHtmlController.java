@@ -9,6 +9,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.MultiValueMap;
@@ -26,6 +27,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.net.URI;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 
 /**
@@ -67,6 +70,8 @@ public class SampleHtmlController {
 
 	@GetMapping(value = "/samples")
 	public String samples(Model model, @RequestParam(name="text", required=false) String text,
+			@RequestParam(name = "updatedafter", required = false) String updatedAfter,
+			@RequestParam(name = "updatedbefore", required = false) String updatedBefore,
 			@RequestParam(name="filter", required=false) String[] filters,
 			@RequestParam(name="start", defaultValue="0") Integer start,
 			@RequestParam(name="rows", defaultValue="10") Integer rows,
@@ -82,9 +87,28 @@ public class SampleHtmlController {
 		}
 		
 		MultiValueMap<String, String> filtersMap = filterService.getFilters(filters);
+		
+		LocalDateTime updatedAfterDate = null;
+		if (updatedAfter != null) {
+			try {
+				updatedAfterDate = LocalDateTime.parse(updatedAfter, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+			} catch (DateTimeParseException e) {
+				//TODO make an exception
+				throw new RuntimeException("Unable to parse date "+updatedAfter); 
+			}
+		}
+		LocalDateTime updatedBeforeDate = null;
+		if (updatedBefore != null) {
+			try {
+				updatedBeforeDate = LocalDateTime.parse(updatedBefore, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+			} catch (DateTimeParseException e) {
+				//TODO make an exception
+				throw new RuntimeException("Unable to parse date "+updatedBefore);
+			}
+		}
 						
 		Pageable pageable = new PageRequest(start/rows, rows);
-		Page<Sample> pageSample = samplePageService.getSamplesByText(text, filtersMap, null, null, pageable);
+		Page<Sample> pageSample = samplePageService.getSamplesByText(text, filtersMap, updatedAfterDate, updatedBeforeDate, pageable);
 		//default to getting 10 values from 10 facets
 		List<SampleFacet> sampleFacets = facetService.getFacets(text, filtersMap, 10, 10);
 		
@@ -271,24 +295,17 @@ public class SampleHtmlController {
 	@GetMapping(value = "/samples/{accession}")
 	public String samplesAccession(Model model, @PathVariable String accession, HttpServletRequest request,
 			HttpServletResponse response) {
-		Sample sample = null;
-		try {
-			sample = sampleService.fetch(accession);
-		} catch (IllegalArgumentException e) {
+		Optional<Sample> sample = sampleService.fetch(accession);
+		if (!sample.isPresent()) {
 			// did not exist, throw 404
 			log.info("Returning a 404 for " + request.getRequestURL());
 			response.setStatus(HttpStatus.NOT_FOUND.value());
 			return "error/404";
 		}
 
-		if (sample == null) {
-			// throw internal server error
-			throw new RuntimeException("Unable to retrieve " + accession);
-		}
-
 		// check if the release date is in the future and if so return it as
 		// private
-		if (sample != null && (sample.getRelease() == null || LocalDateTime.now().isBefore(sample.getRelease()))) {
+		if (sample.get().getRelease() == null || LocalDateTime.now().isBefore(sample.get().getRelease())) {
 			response.setStatus(HttpStatus.FORBIDDEN.value());
 			return "error/403";
 		}
@@ -296,8 +313,8 @@ public class SampleHtmlController {
 		//response.setHeader(HttpHeaders.LAST_MODIFIED, String.valueOf(sample.getUpdate().toEpochSecond(ZoneOffset.UTC)));
 		//response.setHeader(HttpHeaders.ETAG, String.valueOf(sample.hashCode()));
 
-		String jsonLDString = jsonLDService.jsonLDToString(jsonLDService.sampleToJsonLD(sample));
-		model.addAttribute("sample", sample);
+		String jsonLDString = jsonLDService.jsonLDToString(jsonLDService.sampleToJsonLD(sample.get()));
+		model.addAttribute("sample", sample.get());
 		model.addAttribute("jsonLD", jsonLDString);
 
 		return "sample";

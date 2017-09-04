@@ -31,6 +31,10 @@ public class SolrSampleService {
 
 	private final SolrSampleRepository solrSampleRepository;
 	
+	//maximum time allowed for a solr search in s
+	//TODO application.properties this
+	private static final int TIMEALLOWED = 30;
+	
 	private Logger log = LoggerFactory.getLogger(getClass());
 	
 	public SolrSampleService(SolrSampleRepository solrSampleRepository) {
@@ -58,11 +62,12 @@ public class SolrSampleService {
 		if (after != null && before != null) {
 			filterQuery.addCriteria(new Criteria("update_dt").between(after.format(solrFormatter), before.format(solrFormatter)));
 		} else if (after == null && before != null) {
-			filterQuery.addCriteria(new Criteria("update_dt").between("*", before.format(solrFormatter)));
+			filterQuery.addCriteria(new Criteria("update_dt").between("NOW-1000YEAR", before.format(solrFormatter)));
 		} else if (after != null && before == null) {
-			filterQuery.addCriteria(new Criteria("update_dt").between(after.format(solrFormatter), "*"));
+			filterQuery.addCriteria(new Criteria("update_dt").between(after.format(solrFormatter), "NOW+1000YEAR"));
 		}
 		query.addFilterQuery(filterQuery);
+		query.setTimeAllowed(TIMEALLOWED*1000); 
 		
 		// return the samples from solr that match the query
 		return solrSampleRepository.findByQuery(query);
@@ -89,6 +94,7 @@ public class SolrSampleService {
 			filterQuery.addCriteria(new Criteria("update_dt").between(after, before));
 		}
 		query.addFilterQuery(filterQuery);
+		query.setTimeAllowed(TIMEALLOWED*1000); 
 		
 		Page<FacetFieldEntry> facetFields = solrSampleRepository.getFacetFields(query, facetPageable);
 
@@ -142,6 +148,7 @@ public class SolrSampleService {
 		facetOptions.setPageable(new PageRequest(0, maxSuggestions));
 		facetOptions.setFacetPrefix(autocompletePrefix);
 		query.setFacetOptions(facetOptions);
+		query.setTimeAllowed(TIMEALLOWED*1000); 
 		
 		FacetPage<?> facetPage = solrSampleRepository.findByFacetQuery(query);
 		

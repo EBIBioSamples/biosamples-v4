@@ -23,7 +23,7 @@ public class MessageHandlerSolr {
 	private SampleToSolrSampleConverter sampleToSolrSampleConverter;
 	
 	@RabbitListener(queues = Messaging.queueToBeIndexedSolr)
-	public void handle(MessageContent messageContent) {
+	public void handle(MessageContent messageContent) throws Exception {
 		
 		if (messageContent.getSample() == null) {
 			log.warn("Recieved message without sample");
@@ -37,13 +37,13 @@ public class MessageHandlerSolr {
 				
 		MessageSampleStatus<SolrSample> messageSampleStatus;
 		try {
-			messageSampleStatus = messageBuffer.receive(solrSample.getAccession(), solrSample);
+			messageSampleStatus = messageBuffer.recieve(solrSample.getAccession(), solrSample, messageContent.getCreationTime());
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		}
 		
 		while (!messageSampleStatus.storedInRepository.get()
-				&& !messageSampleStatus.hadProblem.isMarked()) {			
+				&& messageSampleStatus.hadProblem.get() == null) {			
 			//wait a little bit
 			try {
 				Thread.sleep(100);
@@ -52,8 +52,8 @@ public class MessageHandlerSolr {
 			}
 		}
 		
-		if (messageSampleStatus.hadProblem.isMarked()) {
-			throw messageSampleStatus.hadProblem.getReference();
+		if (messageSampleStatus.hadProblem.get() != null) {
+			throw messageSampleStatus.hadProblem.get();
 		}
 
 		log.info("Handed "+sample.getAccession());

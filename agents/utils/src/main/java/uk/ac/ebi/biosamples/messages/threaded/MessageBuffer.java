@@ -2,6 +2,7 @@ package uk.ac.ebi.biosamples.messages.threaded;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import java.time.Instant;
@@ -17,9 +18,6 @@ import java.util.concurrent.atomic.AtomicLong;
 public abstract class MessageBuffer<T,S> {
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 
-	// TODO
-	// 1. Turn the message status queue into a CuncurrentHashMap<Accession, MeesageSampleStatus<S>>
-//    private final BlockingQueue<MessageSampleStatus<S>> messageSampleStatusQueue;
 	private final ConcurrentMap<T, MessageSampleStatus<S>> messageSampleStatusMap;
     private final AtomicLong latestTime;
     public final AtomicBoolean hadProblem = new AtomicBoolean(false);
@@ -34,27 +32,49 @@ public abstract class MessageBuffer<T,S> {
 		latestTime = new AtomicLong(0);
 	}
 	
-	public MessageSampleStatus<S> receive(T key, S sample) throws InterruptedException {
+	public MessageSampleStatus<S> recieve(T key, S sample, long messageTime) throws InterruptedException {
 		//if there is no maximum time
 		//set it to wait in the future
 		latestTime.compareAndSet(0, Instant.now().toEpochMilli()+queueTime);
 		
-		MessageSampleStatus<S> status = MessageSampleStatus.build(sample);
+		MessageSampleStatus<S> status = MessageSampleStatus.build(sample, messageTime);
 		
 		//this will block until space is available
-		MessageSampleStatus<S> oldValue = null;
 		boolean done = false;
 		while (!done) {
 			synchronized (messageSampleStatusMap) {
 				if (messageSampleStatusMap.size() < queueSize) {
-					oldValue = messageSampleStatusMap.put(key, status);
+
+					
+					if (messageSampleStatusMap.containsKey(key)) {
+						//there is an existing version
+						MessageSampleStatus<S> oldValue = messageSampleStatusMap.get(key);
+						//compare timestamps - discard oldest
+						MessageSampleStatus<S> toDiscard = null;
+						if (status.messageTime < oldValue.messageTime) {
+							toDiscard = status;
+							log.warn("Discdarding new message");
+						} else if (status.messageTime > oldValue.messageTime) {
+							toDiscard = oldValue;
+							messageSampleStatusMap.put(key, status);
+							log.warn("Discdarding old message");
+						} else {
+							//if they have exactly the same time, discard the latest one and raise a warning
+							toDiscard = status;
+							log.warn("Duplicate messages for ("+sample.toString()+") at "+messageTime);
+						}
+						
+						//make sure it is properly removed out of the entire rabbitmq system by using 
+						toDiscard.hadProblem.set(new AmqpRejectAndDontRequeueException("Replaced by newer message"));
+						
+					} else {
+						//no existing version, can simply add this as new
+						messageSampleStatusMap.put(key, status);
+					}
 					done = true;
 				}
 			}
 			Thread.sleep(10);
-		}
-		if (oldValue != null) {
-			oldValue.storedInRepository.set(true);
 		}
 		return status;
 	}
@@ -72,6 +92,7 @@ public abstract class MessageBuffer<T,S> {
 	public void checkQueueStatus() {
 		//check if enough time has elapsed
 		//or if the queue is long enough
+		//TODO break down this syncrhonized block so the solr commit is outside of it
 		synchronized (messageSampleStatusMap) {
             int remaining = queueSize - messageSampleStatusMap.size();
             long now = Instant.now().toEpochMilli();
@@ -88,18 +109,9 @@ public abstract class MessageBuffer<T,S> {
 				}
 
 
-				//create a local collection of the messages
-//				List<MessageSampleStatus<S>> messageSampleStatuses = new ArrayList<>(queueSize);
-
 				try {
 					//unset the latest time so that it can be set again by the next message
 					latestTime.set(0);
-
-					//drain the master queue into it
-//					messageSampleStatusQueue.drainTo(messageSampleStatuses, queueSize);
-
-					//now we can process the local copy without worrying about new ones being added
-
 					//split out the samples into a separate list
 					List<S> samples = new ArrayList<>();
 					messageSampleStatusMap.values().forEach(m -> samples.add(m.sample));
@@ -119,18 +131,18 @@ public abstract class MessageBuffer<T,S> {
 					//store that we encountered a problem of some kind
 					log.error("Storing warning", e);
 					hadProblem.set(true);
-					messageSampleStatusMap.values().forEach(m -> m.hadProblem.set(e, true));
+					messageSampleStatusMap.values().forEach(m -> m.hadProblem.set(e));
 					//re-throw the exception
 					throw e;
 				}
 			}
 		}
 	}
+	
 	/**
 	 * This is the method that a specific sub-class should implement. Typically
 	 * this will be some sort of repository.save(samples) call in a transaction
 	 * 	
-	 * @param repository
 	 * @param samples
 	 */
 	public abstract void save(Collection<S> samples);

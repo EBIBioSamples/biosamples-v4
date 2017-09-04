@@ -16,13 +16,15 @@ public class MessageContent {
 	private final CurationLink curationLink;
 	private final List<Sample> related;
 	public final boolean delete;
+	private final long creationTime;
+	
 
-
-	private MessageContent(Sample sample, CurationLink curationLink, List<Sample> related, boolean delete) {
+	private MessageContent(Sample sample, CurationLink curationLink, List<Sample> related, boolean delete, long creationTime) {
 		this.sample = sample;
 		this.curationLink = curationLink;
 		this.related = related;
 		this.delete = delete;
+		this.creationTime = creationTime;
 	}
 	
 	public boolean hasSample() {
@@ -45,6 +47,10 @@ public class MessageContent {
 		return curationLink;
 	}
 
+	public long getCreationTime() {
+		return creationTime;
+	}
+	
     @Override
     public String toString() {
     	StringBuilder sb = new StringBuilder();
@@ -60,16 +66,11 @@ public class MessageContent {
     	return sb.toString();
     }
 
-	public static MessageContent build(Sample sample, boolean delete) {
-		return new MessageContent(sample,  null, Collections.emptyList(), delete);
-	}	
-	public static MessageContent build(CurationLink curationLink, boolean delete) {
-		return new MessageContent(null,  curationLink, Collections.emptyList(), delete);
-	}
 	@JsonCreator
 	public static MessageContent build(@JsonProperty("sample") Sample sample, 
 			@JsonProperty("curationLink") CurationLink curationLink, 
 			@JsonProperty("related") List<Sample> related, @JsonProperty("delete") boolean delete) {
-		return new MessageContent(sample, curationLink, related, delete);
+		long creationTime = System.nanoTime();
+		return new MessageContent(sample, curationLink, related, delete, creationTime);
 	}
 }

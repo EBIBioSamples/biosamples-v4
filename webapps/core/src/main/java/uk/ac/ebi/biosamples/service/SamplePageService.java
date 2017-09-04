@@ -60,7 +60,7 @@ public class SamplePageService {
 		//for each result fetch the stored version and add e.g. inverse relationships		
 		//stream process each into a sample *in parallel*
 		Page<Sample> pageSample = new PageImpl<>(StreamSupport.stream(pageSolrSample.spliterator(), true)
-					.map(ss->sampleService.fetch(ss.getAccession())).collect(Collectors.toList()), 
+					.map(ss->sampleService.fetch(ss.getAccession()).get()).collect(Collectors.toList()), 
 				pageable,pageSolrSample.getTotalElements()); 
 		return pageSample;
 	}	
@@ -76,7 +76,7 @@ public class SamplePageService {
 		Page<MongoCurationLink> accession = mongoCurationLinkRepository.findByCurationHash(hash, pageable);
 		//stream process each into a sample *in parallel*
 		Page<Sample> pageSample = new PageImpl<>(StreamSupport.stream(accession.spliterator(), true)
-					.map(mcl->sampleService.fetch(mcl.getSample())).collect(Collectors.toList()), 
+					.map(mcl->sampleService.fetch(mcl.getSample()).get()).collect(Collectors.toList()), 
 				pageable, accession.getTotalElements());			
 		return pageSample;
 	}

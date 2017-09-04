@@ -4,6 +4,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.sql.Date;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,6 +21,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import uk.ac.ebi.arrayexpress2.magetab.exception.ParseException;
@@ -36,7 +39,9 @@ public class SampleTabController {
 	private SampleTabService sampleTabService;
 
 	@RequestMapping(method = RequestMethod.POST, value = "v4", consumes = {MediaType.TEXT_PLAIN_VALUE, "application/text"})
-	public ResponseEntity<String> acceptSampleTab(@RequestBody String sampleTab, HttpServletRequest request, HttpServletResponse response) {
+	public ResponseEntity<String> acceptSampleTab(@RequestBody String sampleTab,
+			@RequestParam(name = "setupdatedate", required = false, defaultValue="true") boolean setUpdateDate,
+			HttpServletRequest request, HttpServletResponse response) {
 
 		log.trace("recieved SampleTab submission \n"+sampleTab);
 
@@ -83,6 +88,13 @@ public class SampleTabController {
         }
         
         //no errors
+        
+        //set the update date to now
+		//TODO limit use of this method to write super-users only
+        if (setUpdateDate) {
+        	sampledata.msi.submissionUpdateDate = Date.from(Instant.now());
+        }
+        
         sampleTabService.saveSampleTab(sampledata);
         return ResponseEntity.ok("");
 	}
