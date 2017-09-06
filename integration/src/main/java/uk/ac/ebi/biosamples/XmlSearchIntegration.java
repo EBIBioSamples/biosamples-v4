@@ -80,15 +80,9 @@ public class XmlSearchIntegration extends AbstractIntegration {
         UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleLegaxyXmlUri());
         uriBuilder.pathSegment("samples", test1.getAccession());
 
-        // Set the accept header
-        HttpHeaders headers = new HttpHeaders();
-        headers.setAccept(Collections.singletonList(MediaType.TEXT_XML));
-        HttpEntity<?> entity = new HttpEntity<>(headers);
-
-        ResponseEntity<String> responseEntity = restTemplate.exchange(uriBuilder.build().toUri(), HttpMethod.GET, entity, String.class);
-        if (!responseEntity.getStatusCode().is2xxSuccessful()) {
-            throw new RuntimeException("Expected sample not found in the xml legacy "+test1.getAccession());
-        }
+        RequestEntity<?> request = RequestEntity.get(uriBuilder.build().toUri()).accept(MediaType.TEXT_XML).build();
+        ResponseEntity<String> responseEntity = restTemplate.exchange(request, String.class);       
+        
         log.info(String.format("Sample %s found using legacy xml api", test1.getAccession()));
 
         if (!responseEntity.getBody().contains(String.format("id=\"%s\"",test1.getAccession()))) {
@@ -101,18 +95,16 @@ public class XmlSearchIntegration extends AbstractIntegration {
         uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleLegaxyXmlUri());
         uriBuilder.pathSegment("samples", test2.getAccession());
 
-        // Set the accept header
         try {
-            ResponseEntity<Sample> sampleResponseEntity = restTemplate.exchange(uriBuilder.build().toUri(), HttpMethod.GET, entity, Sample.class);
+            RequestEntity<?> sampleRequestEntity = RequestEntity.get(uriBuilder.build().toUri()).accept(MediaType.TEXT_XML).build();
+            ResponseEntity<Sample> sampleResponseEntity = restTemplate.exchange(sampleRequestEntity, Sample.class);
             if (!sampleResponseEntity.getStatusCode().equals(HttpStatus.FORBIDDEN)) {
                 throw new RuntimeException(String.format("Sample %s should be forbidden and not available through the legaxy xml api", test2.getAccession()));
             }
-        } catch (Exception e) {
-            if (e instanceof HttpClientErrorException) {
-                HttpClientErrorException clientErrorException = (HttpClientErrorException) e;
-                if (!clientErrorException.getStatusCode().equals(HttpStatus.FORBIDDEN)) {
-                    throw new RuntimeException(String.format("Sample %s should be forbidden and not available through the legaxy xml api", test2.getAccession()));
-                }
+        } catch (HttpClientErrorException e) {
+            log.info("e.getStatusCode() = "+e.getStatusCode());
+            if (!e.getStatusCode().equals(HttpStatus.FORBIDDEN)) {
+                throw new RuntimeException(String.format("Sample %s should be forbidden and not available through the legaxy xml api", test2.getAccession()));
             }
         }
 
