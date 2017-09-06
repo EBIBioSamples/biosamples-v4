@@ -43,22 +43,23 @@ public class RedirectController {
 
 	@GetMapping(value="/samples/{accession}", produces={MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE})
 	public void redirectSample(@PathVariable String accession, HttpServletResponse response) throws IOException {
-		String redirectUrl = String.format("%s/samples/%s", biosamplesRedirectContext, accession);
-		response.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_XML.getType());
+		//this is a little hacky, but in order to make sure that XML is returned (and only XML) from the 
+		//content negotiation on the "real" endpoint, we need to use springs extension-based negotiation backdoor
+		//THIS IS NOT W3C standards in any way!
+		String redirectUrl = String.format("%s/samples/%s.xml", biosamplesRedirectContext, accession);
 		response.sendRedirect(redirectUrl);
 	}
 
 	@GetMapping(value="/groups/{accession:SAMEG\\d+}", produces={MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE})
 	public void  redirectGroups(@PathVariable String accession, HttpServletResponse response) throws IOException {
-		String redirectUrl = String.format("%s/samples/%s", biosamplesRedirectContext, accession);
-		response.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_XML.getType());
+		String redirectUrl = String.format("%s/samples/%s.xml", biosamplesRedirectContext, accession);
 		response.sendRedirect(redirectUrl);
 	}
 
 	@GetMapping(value = {"/samples"}, produces={MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE})
 	public @ResponseBody
 	BioSampleResultQuery getSamples(
-			@RequestParam String query,
+			@RequestParam(required=true) String query,
 			@RequestParam(defaultValue = "25") int size,
 			@RequestParam(defaultValue = "1") int page,
 			@RequestParam(defaultValue = "desc") String sort
@@ -73,7 +74,7 @@ public class RedirectController {
 	@GetMapping(value = {"/groups"}, produces={MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE})
 	public @ResponseBody
 	BioSampleGroupResultQuery getGroups(
-			@RequestParam String query,
+			@RequestParam(required=true) String query,
 			@RequestParam(defaultValue = "25") int size,
 			@RequestParam(defaultValue = "1") int page,
 			@RequestParam(defaultValue = "desc") String sort
