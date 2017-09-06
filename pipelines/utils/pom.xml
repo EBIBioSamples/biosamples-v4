@@ -30,5 +30,10 @@
 			<artifactId>httpclient-cache</artifactId>
 			<version>${httpclient.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>xmlunit</groupId>
+			<artifactId>xmlunit</artifactId>
+			<version>1.4</version>
+		</dependency>
 	</dependencies>
 </project>
