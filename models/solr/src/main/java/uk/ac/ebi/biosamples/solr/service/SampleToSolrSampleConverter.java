@@ -6,6 +6,7 @@ import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.service.ExternalReferenceNicknameService;
 import uk.ac.ebi.biosamples.service.SampleRelationshipUtils;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
 
@@ -17,7 +18,13 @@ import java.util.*;
 public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample> {
 
 	
+	private final ExternalReferenceNicknameService externalReferenceNicknameService;
+	
 	private final DateTimeFormatter solrDateTimeFormatter = DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss'Z'");
+	
+	public SampleToSolrSampleConverter(ExternalReferenceNicknameService externalReferenceNicknameService) {
+		this.externalReferenceNicknameService = externalReferenceNicknameService;
+	}
 	
 	@Override
 	public SolrSample convert(Sample sample) {
@@ -75,7 +82,7 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 		}	
 		//turn external reference into additional attributes for facet & filter
 		for (ExternalReference externalReference : sample.getExternalReferences()) {
-			String value = getNickname(externalReference.getUrl());
+			String value = externalReferenceNicknameService.getNickname(externalReference);
 			String key = "external reference";
 			
 			if (attributeValues == null) {
@@ -127,17 +134,6 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 		d = LocalDateTime.of(year,month,dayOfMonth,hour,minute,second,nano);		
 		String solrDate =  solrDateTimeFormatter.format(d);
 		return solrDate;
-	}
-	
-	private String getNickname(String url) {
-		//TODO make this more configurable
-		if (url.contains("www.ebi.ac.uk/ena")) {
-			return "ENA";
-		} else if (url.contains("www.ebi.ac.uk/arrayexpress")) {
-			return "ArrayExpress";
-		} else {
-			return "other";
-		}
 	}
 
 
