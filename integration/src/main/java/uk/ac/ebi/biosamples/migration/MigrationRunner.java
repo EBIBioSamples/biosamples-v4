@@ -67,6 +67,10 @@ public class MigrationRunner implements ApplicationRunner, ExitCodeGenerator {
 		String oldUrl = "http://wwwdev.ebi.ac.uk/biosamples/xml/samples";
 		String newUrl = "http://snowy.ebi.ac.uk:9083/biosamples/beta/xml/samples";//"http://wwwdev.ebi.ac.uk/biosamples/beta/xml/samples";
 		
+		
+		
+		
+		
 		try  {
 			executorService = Executors.newFixedThreadPool(64);
 			Queue<String> oldQueue = new ArrayBlockingQueue<>(128);
@@ -84,15 +88,17 @@ public class MigrationRunner implements ApplicationRunner, ExitCodeGenerator {
 			
 			AccessionComparisonCallable comparisonCallable = new AccessionComparisonCallable(restTemplate, oldUrl, newUrl, bothQueue, bothFinished);
 			
-			Future<Void> oldFuture = executorService.submit(oldCallable);
-			Future<Void> newFuture = executorService.submit(newCallable);
-			Future<Void> bothFuture = executorService.submit(bothCallable);
-			Future<Void> comparisonFuture = executorService.submit(comparisonCallable);
+			comparisonCallable.compare("SAMEA19131418");
+			
+			//Future<Void> oldFuture = executorService.submit(oldCallable);
+			//Future<Void> newFuture = executorService.submit(newCallable);
+			//Future<Void> bothFuture = executorService.submit(bothCallable);
+			//Future<Void> comparisonFuture = executorService.submit(comparisonCallable);
 					
-			oldFuture.get();
-			newFuture.get();
-			bothFuture.get();
-			comparisonFuture.get();
+			//oldFuture.get();
+			//newFuture.get();
+			//bothFuture.get();
+			//comparisonFuture.get();
 		} finally {
 			executorService.shutdownNow();
 		}
