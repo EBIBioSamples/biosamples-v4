@@ -16,6 +16,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import uk.ac.ebi.biosamples.service.ExternalReferenceNicknameService;
 import uk.ac.ebi.biosamples.service.SampleToXmlConverter;
 
 @RunWith(SpringRunner.class)
@@ -27,7 +28,8 @@ public class XmlTest {
 		
 	@Test
 	public void testSerialize() throws Exception {
-		SampleToXmlConverter sampleToXmlConverter = new SampleToXmlConverter();
+		ExternalReferenceNicknameService externalReferenceNicknameService = new ExternalReferenceNicknameService();
+		SampleToXmlConverter sampleToXmlConverter = new SampleToXmlConverter(externalReferenceNicknameService);
 		Sample jsonSample = objectMapper.readValue(this.getClass().getResource("/TEST1.json"), Sample.class);
 		Document docFromJson = sampleToXmlConverter.convert(jsonSample);
 		

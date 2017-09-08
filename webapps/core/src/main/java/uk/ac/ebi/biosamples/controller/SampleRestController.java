@@ -6,10 +6,12 @@ import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.ExposesResourceFor;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import uk.ac.ebi.biosamples.controller.exception.SampleNotAccessibleException;
+import uk.ac.ebi.biosamples.controller.exception.SampleNotFoundException;
 import uk.ac.ebi.biosamples.model.JsonLDSample;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.*;
@@ -84,16 +86,7 @@ public class SampleRestController {
 		return this.getSampleHal(accession).getContent();
 	}
 
-	@ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "No such Sample") // 404
-	public class SampleNotFoundException extends RuntimeException {
-	}
-
-	@ResponseStatus(value = HttpStatus.FORBIDDEN, reason = "Sample not accessible") // 403
-	public class SampleNotAccessibleException extends RuntimeException {
-	}
-
-
-    @CrossOrigin(methods = RequestMethod.GET)
+	@CrossOrigin(methods = RequestMethod.GET)
     @GetMapping(value = "/{accession}", produces = "application/ld+json")
     public JsonLDSample getJsonLDSample(@PathVariable String accession) {
 		Optional<Sample> sample = sampleService.fetch(accession);
