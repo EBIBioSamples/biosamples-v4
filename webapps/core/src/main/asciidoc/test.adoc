@@ -1,2 +1,35 @@
+== OLS Documentation
 
-include::{snippets}/index-example/http-request.adoc[]
+=== What are you looking for?
+
+link:website[Website documentation]:: Documentation on how to use the OLS website
+link:developer[Developer documentation]:: Documentation for developers including how to use the OLS REST API, how to use the OLS widgets and how to install a local OLS
+
+== FAQ
+
+* How can I ask for a certain ontology to be included in OLS? +
+e-mail ols-support@ebi.ac.uk or open an issue on link:https://github.com/EBISPOT/OLS/issues[Github]
+* How can I hear about updates to the OLS? +
+Sign up to the link:https://listserver.ebi.ac.uk/mailman/listinfo/ols-announce[OLS announce mailing list] or follow us on link:https://twitter.com/EBIOLS[Twitter]
+* How do I migrate from the previous OLS version SOAP API? +
+The OLS API changed in 2016, details about these changes can be found link:http://www.ebi.ac.uk/ols/roadmap.html[here]
+* What ontology formats does OLS support? +
+OBO and OWL 2
+* What reasoners are supported by OLS? +
+Hermit and ELK
+* How does OLS handle OWL imports? +
+OWL imports are followed so any imported files will be indexed as part of the ontology. If any import fails these will be ignored
+* How often does OLS check for updates in external ontology files? +
+OLS updates nightly to always provide the latest ontology versions
+* How can I use OLS in my own applications? +
+The use of OLS for applications is widely supported by the API, which allows you to retrieve exactly the data you need. Check the API section for more information. In addition, some specific functionality (graphview, treeview, autocomplete) of OLS is available as stand alone widget and can be easily integrated into other websites.
+* What is the Neo4j schema? +
+See the OLS schema documentation link:neo4j-schema[here]
+* What is the Solr schema? +
+See the OLS Solr schema documentation link:solr-schema[here]
+* How can I build a local version of OLS? ? +
+See the documentation link:installation-guide[here]
+* How can I build a standalone Solr server for an ontology? +
+See the documentation link:https://github.com/EBISPOT/OLS/tree/master/ols-apps/ols-solr-app[here]
+* How can I build a standalone Neo4j server for an ontology? +
+See the documentation link:https://github.com/EBISPOT/OLS/tree/master/ols-apps/ols-neo4j-app[here]
