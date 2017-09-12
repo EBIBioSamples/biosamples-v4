@@ -64,7 +64,7 @@ select * from cv_status;
 
 	public void doSampleCallback(LocalDate minDate, LocalDate maxDate, RowCallbackHandler rch) {
 
-		String query = "SELECT BIOSAMPLE_ID FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND EGA_ID IS NULL AND BIOSAMPLE_AUTHORITY= 'N' "
+		String query = "SELECT UNIQUE(BIOSAMPLE_ID) FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND EGA_ID IS NULL AND BIOSAMPLE_AUTHORITY= 'N' "
 				+ "AND STATUS_ID = 4 AND ((LAST_UPDATED BETWEEN ? AND ?) OR (FIRST_PUBLIC BETWEEN ? AND ?)) ORDER BY BIOSAMPLE_ID ASC";
 		
 		Date minDateOld = java.sql.Date.valueOf(minDate);
@@ -118,7 +118,8 @@ select * from cv_status;
 	
 	
 	public void getNcbiCallback(LocalDate minDate, LocalDate maxDate, RowCallbackHandler rch) {
-		String query = "SELECT BIOSAMPLE_ID FROM SAMPLE WHERE BIOSAMPLE_ID NOT LIKE 'SAME%' "
+		
+		String query = "SELECT UNIQUE(BIOSAMPLE_ID) FROM SAMPLE WHERE BIOSAMPLE_ID NOT LIKE 'SAME%' "
 				+ "AND STATUS_ID = 4 AND ((LAST_UPDATED BETWEEN ? AND ?) OR (FIRST_PUBLIC BETWEEN ? AND ?)) ORDER BY BIOSAMPLE_ID ASC";
 		
 		Date minDateOld = java.sql.Date.valueOf(minDate);
