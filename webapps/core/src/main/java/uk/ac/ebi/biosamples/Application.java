@@ -14,6 +14,11 @@ import org.springframework.http.converter.xml.Jaxb2RootElementHttpMessageConvert
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.servlet.handler.MappedInterceptor;
+import org.thymeleaf.spring4.templateresolver.SpringResourceTemplateResolver;
+import org.thymeleaf.templateresolver.ITemplateResolver;
+import org.thymeleaf.templateresolver.ServletContextTemplateResolver;
+import org.thymeleaf.templateresolver.UrlTemplateResolver;
+
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.CacheControlInterceptor;
 import uk.ac.ebi.biosamples.xml.XmlSampleHttpMessageConverter;
@@ -68,7 +73,24 @@ public class Application extends SpringBootServletInitializer {
     public CaffeineSpec CaffeineSpec() {
     	return CaffeineSpec.parse("maximumSize=500,expireAfterWrite=60s");
     }
-
+    @Bean
+    public ITemplateResolver templateResolver() {
+    	return new UrlTemplateResolver();
+    }
+    
+    /*
+    @Bean
+    public ITemplateResolver templateResolver() {
+        SpringResourceTemplateResolver resolver = new SpringResourceTemplateResolver();
+        // For Spring Boot
+        resolver.setPrefix("classpath:/templates/asciidoc/");
+        resolver.setSuffix(".html");
+        resolver.setTemplateMode("HTML5");
+        resolver.setCacheable(false);
+        return resolver;
+    } 
+     */
+    
     /*
     @Bean
     public ApplicationRunner appRunner() {

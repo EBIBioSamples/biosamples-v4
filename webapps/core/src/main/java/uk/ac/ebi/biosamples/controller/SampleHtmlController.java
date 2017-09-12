@@ -68,6 +68,11 @@ public class SampleHtmlController {
 		return "index";
 	}
 
+	@GetMapping(value = "/test")
+	public String test() {
+		return "test";
+	}
+
 	@GetMapping(value = "/samples")
 	public String samples(Model model, @RequestParam(name="text", required=false) String text,
 			@RequestParam(name = "updatedafter", required = false) String updatedAfter,
