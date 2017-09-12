@@ -10,6 +10,9 @@ import org.springframework.data.solr.core.query.result.FacetFieldEntry;
 import org.springframework.data.solr.core.query.result.FacetPage;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
+
+import com.google.common.io.BaseEncoding;
+
 import uk.ac.ebi.biosamples.model.Autocomplete;
 import uk.ac.ebi.biosamples.model.SampleFacet;
 import uk.ac.ebi.biosamples.model.SampleFacetsBuilder;
@@ -20,7 +23,6 @@ import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 
 @Service
@@ -200,11 +202,11 @@ public class SolrSampleService {
 	public static String valueToSafeField(String type, String suffix) {
 		//solr only allows alphanumeric field types
 		try {
-			type = Base64.getEncoder().encodeToString(type.getBytes("UTF-8"));
+			type = BaseEncoding.base32().encode(type.getBytes("UTF-8"));
 		} catch (UnsupportedEncodingException e) {
 			throw new RuntimeException(e);
 		}
-		//although its base64 encoded, that include = which solr doesn't allow
+		//although its base32 encoded, that include = which solr doesn't allow
 		type = type.replaceAll("=", "_");
 
 		if (!suffix.isEmpty()) {
@@ -241,10 +243,10 @@ public class SolrSampleService {
 
 		}
 
-		//although its base64 encoded, that include = which solr doesn't allow
+		//although its base32 encoded, that include = which solr doesn't allow
 		field = field.replace("_", "=");
 		try {
-			field = new String(Base64.getDecoder().decode(field), "UTF-8");
+			field = new String(BaseEncoding.base32().decode(field), "UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			throw new RuntimeException(e);
 		}
