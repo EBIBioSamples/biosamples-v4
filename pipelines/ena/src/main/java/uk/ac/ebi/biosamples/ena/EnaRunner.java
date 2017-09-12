@@ -78,7 +78,7 @@ public class EnaRunner implements ApplicationRunner {
 				eraProDao.doSampleCallback(fromDate, toDate, eraRowCallbackHandler);
 				
 				NcbiRowCallbackHandler ncbiRowCallbackHandler = new NcbiRowCallbackHandler(executorService, ncbiCallableFactory, futures);
-				eraProDao.getNcbiCallback(fromDate, toDate, eraRowCallbackHandler);
+				eraProDao.getNcbiCallback(fromDate, toDate, ncbiRowCallbackHandler);
 				
 				log.info("waiting for futures");
 				// wait for anything to finish

@@ -71,6 +71,17 @@ select * from cv_status;
 		Date maxDateOld = java.sql.Date.valueOf(maxDate);
 		jdbcTemplate.query(query, rch, minDateOld, maxDateOld, minDateOld, maxDateOld);
 	}
+	
+	
+	public void getNcbiCallback(LocalDate minDate, LocalDate maxDate, RowCallbackHandler rch) {
+		
+		String query = "SELECT UNIQUE(BIOSAMPLE_ID) FROM SAMPLE WHERE (BIOSAMPLE_ID LIKE 'SAMN%' OR BIOSAMPLE_ID LIKE 'SAMD%' ) "
+				+ "AND STATUS_ID = 4 AND ((LAST_UPDATED BETWEEN ? AND ?) OR (FIRST_PUBLIC BETWEEN ? AND ?)) ORDER BY BIOSAMPLE_ID ASC";
+		
+		Date minDateOld = java.sql.Date.valueOf(minDate);
+		Date maxDateOld = java.sql.Date.valueOf(maxDate);
+		jdbcTemplate.query(query, rch, minDateOld, maxDateOld, minDateOld, maxDateOld);
+	}
 
 	public List<String> getPrivateSamples() {
         log.trace("Getting private sample ids");
@@ -114,16 +125,5 @@ select * from cv_status;
 		String dateString = jdbcTemplate.queryForObject(sql, String.class, biosampleAccession);
 		log.trace("Release date is "+dateString);
 		return LocalDate.parse(dateString, DateTimeFormatter.ISO_LOCAL_DATE).atStartOfDay();
-	}
-	
-	
-	public void getNcbiCallback(LocalDate minDate, LocalDate maxDate, RowCallbackHandler rch) {
-		
-		String query = "SELECT UNIQUE(BIOSAMPLE_ID) FROM SAMPLE WHERE BIOSAMPLE_ID NOT LIKE 'SAME%' "
-				+ "AND STATUS_ID = 4 AND ((LAST_UPDATED BETWEEN ? AND ?) OR (FIRST_PUBLIC BETWEEN ? AND ?)) ORDER BY BIOSAMPLE_ID ASC";
-		
-		Date minDateOld = java.sql.Date.valueOf(minDate);
-		Date maxDateOld = java.sql.Date.valueOf(maxDate);
-		jdbcTemplate.queryForList(query, rch, minDateOld, maxDateOld, minDateOld, maxDateOld);
 	}
 }
