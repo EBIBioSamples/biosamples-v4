@@ -55,13 +55,13 @@ public class SolrSampleRepositoryImpl implements SolrSampleRepositoryCustom  {
 		//configure the facet options to use the attribute types fields
 		//and to have the appropriate paging
 		FacetOptions facetOptions = new FacetOptions();
-		facetOptions.addFacetOnField("attributetypes_ss");
+		facetOptions.addFacetOnField("facetfields_ss");
 		facetOptions.setPageable(facetPageable);
 
 		query.setFacetOptions(facetOptions);
 		//execute the query against the solr server
 		FacetPage<SolrSample> page = solrOperations.queryForFacetPage(query, SolrSample.class);
-		return page.getFacetResultPage("attributetypes_ss");
+		return page.getFacetResultPage("facetfields_ss");
 	}
 
 	@Override

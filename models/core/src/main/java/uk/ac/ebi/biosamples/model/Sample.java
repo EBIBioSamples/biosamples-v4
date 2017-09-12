@@ -1,26 +1,26 @@
 package uk.ac.ebi.biosamples.model;
 
-import java.time.LocalDateTime;
-import java.util.Objects;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
 import uk.ac.ebi.biosamples.service.CharacteristicDeserializer;
 import uk.ac.ebi.biosamples.service.CharacteristicSerializer;
 import uk.ac.ebi.biosamples.service.CustomLocalDateTimeDeserializer;
 import uk.ac.ebi.biosamples.service.CustomLocalDateTimeSerializer;
 
+import java.time.LocalDateTime;
+import java.util.Iterator;
+import java.util.Objects;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Sample {
+public class Sample implements Comparable<Sample> {
 	
 	protected String accession;
 	protected String name; 
@@ -107,7 +107,7 @@ public class Sample {
         }
         Sample other = (Sample) o;
         
-        //dont use update date for comparisons 
+        //dont use update date for comparisons, too volatile
         
         return Objects.equals(this.name, other.name) 
         		&& Objects.equals(this.accession, other.accession)
@@ -117,10 +117,73 @@ public class Sample {
         		&& Objects.equals(this.relationships, other.relationships)
         		&& Objects.equals(this.externalReferences, other.externalReferences);
     }
+
+	@Override
+	public int compareTo(Sample other) {
+		if (other == null) {
+			return 1;
+		}
+		
+		if (!this.accession.equals(other.accession)) {
+			return this.accession.compareTo(other.accession);
+		}
+		
+		if (!this.name.equals(other.name)) {
+			return this.name.compareTo(other.name);
+		}
+
+		if (!this.release.equals(other.release)) {
+			return this.release.compareTo(other.release);
+		}
+		
+		if (!this.attributes.equals(other.attributes)) {
+			if (this.attributes.size() < other.attributes.size()) {
+				return -1;
+			} else if (this.attributes.size() > other.attributes.size()) {
+				return 1;
+			} else {
+				Iterator<Attribute> thisIt = this.attributes.iterator();
+				Iterator<Attribute> otherIt = other.attributes.iterator();
+				while (thisIt.hasNext() && otherIt.hasNext()) {
+					int val = thisIt.next().compareTo(otherIt.next());
+					if (val != 0) return val;
+				}
+			}
+		}
+		if (!this.relationships.equals(other.relationships)) {
+			if (this.relationships.size() < other.relationships.size()) {
+				return -1;
+			} else if (this.relationships.size() > other.relationships.size()) {
+				return 1;
+			} else {
+				Iterator<Relationship> thisIt = this.relationships.iterator();
+				Iterator<Relationship> otherIt = other.relationships.iterator();
+				while (thisIt.hasNext() && otherIt.hasNext()) {
+					int val = thisIt.next().compareTo(otherIt.next());
+					if (val != 0) return val;
+				}
+			}
+		}
+		if (!this.externalReferences.equals(other.externalReferences)) {
+			if (this.externalReferences.size() < other.externalReferences.size()) {
+				return -1;
+			} else if (this.externalReferences.size() > other.externalReferences.size()) {
+				return 1;
+			} else {
+				Iterator<ExternalReference> thisIt = this.externalReferences.iterator();
+				Iterator<ExternalReference> otherIt = other.externalReferences.iterator();
+				while (thisIt.hasNext() && otherIt.hasNext()) {
+					int val = thisIt.next().compareTo(otherIt.next());
+					if (val != 0) return val;
+				}
+			}
+		}
+		return 0;
+	}
     
     @Override
     public int hashCode() {
-    	//dont put update date in the hash because its not in comparisono
+    	//dont put update date in the hash because its not in comparison
     	return Objects.hash(name, accession, release, attributes, relationships, externalReferences);
     }
     
@@ -207,5 +270,6 @@ public class Sample {
 		
 		return sample;
 	}
+
 
 }

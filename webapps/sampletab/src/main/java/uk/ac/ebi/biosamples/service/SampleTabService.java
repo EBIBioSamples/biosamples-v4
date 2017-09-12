@@ -155,7 +155,7 @@ public class SampleTabService {
 			} else if (attribute instanceof AbstractRelationshipAttribute) {
 				//this is a relationship, store appropriately
 				AbstractRelationshipAttribute abstractRelationshipAttribute = (AbstractRelationshipAttribute) attribute;
-				type = abstractRelationshipAttribute.getAttributeType();
+				type = abstractRelationshipAttribute.getAttributeType().toLowerCase();
 				value = abstractRelationshipAttribute.getAttributeValue();
 				relationships.add(Relationship.build(accession, type, value));
 			}				

@@ -2,11 +2,9 @@ package uk.ac.ebi.biosamples.solr;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import uk.ac.ebi.biosamples.MessageContent;
 import uk.ac.ebi.biosamples.Messaging;
 import uk.ac.ebi.biosamples.messages.threaded.MessageSampleStatus;
@@ -24,11 +22,8 @@ public class MessageHandlerSolr {
 	@Autowired
 	private SampleToSolrSampleConverter sampleToSolrSampleConverter;
 	
-	@Autowired
-	private AmqpTemplate amqpTemplate;
-
 	@RabbitListener(queues = Messaging.queueToBeIndexedSolr)
-	public void handle(MessageContent messageContent) {
+	public void handle(MessageContent messageContent) throws Exception {
 		
 		if (messageContent.getSample() == null) {
 			log.warn("Recieved message without sample");
@@ -42,13 +37,13 @@ public class MessageHandlerSolr {
 				
 		MessageSampleStatus<SolrSample> messageSampleStatus;
 		try {
-			messageSampleStatus = messageBuffer.recieve(solrSample);
+			messageSampleStatus = messageBuffer.recieve(solrSample.getAccession(), solrSample, messageContent.getCreationTime());
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		}
 		
 		while (!messageSampleStatus.storedInRepository.get()
-				&& !messageSampleStatus.hadProblem.isMarked()) {			
+				&& messageSampleStatus.hadProblem.get() == null) {			
 			//wait a little bit
 			try {
 				Thread.sleep(100);
@@ -57,12 +52,10 @@ public class MessageHandlerSolr {
 			}
 		}
 		
-		if (messageSampleStatus.hadProblem.isMarked()) {
-			throw messageSampleStatus.hadProblem.getReference();
+		if (messageSampleStatus.hadProblem.get() != null) {
+			throw messageSampleStatus.hadProblem.get();
 		}
 
-		//pass along to the curation queue for further processing
-		amqpTemplate.convertAndSend(Messaging.exchangeForCuration, "", sample);
 		log.info("Handed "+sample.getAccession());
 		
 	}

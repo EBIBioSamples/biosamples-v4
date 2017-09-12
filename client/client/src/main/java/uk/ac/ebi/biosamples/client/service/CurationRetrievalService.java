@@ -9,6 +9,7 @@ import org.springframework.hateoas.client.Traverson;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestOperations;
+
 import uk.ac.ebi.biosamples.client.utils.IterableResourceFetchAll;
 import uk.ac.ebi.biosamples.model.Curation;
 
@@ -21,16 +22,19 @@ public class CurationRetrievalService {
 	private final Traverson traverson;
 	private final ExecutorService executor;
 	private final RestOperations restOperations;
+	private final int pageSize;
 
-	public CurationRetrievalService(RestOperations restOperations, Traverson traverson, ExecutorService executor) {
+	public CurationRetrievalService(RestOperations restOperations, Traverson traverson, ExecutorService executor, int pageSize) {
 		this.restOperations = restOperations;
 		this.traverson = traverson;
 		this.executor = executor;
+		this.pageSize = pageSize;
 	}
 
 	public Iterable<Resource<Curation>> fetchAll() {
 		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();
-		return new IterableResourceFetchAll<Curation>(traverson, restOperations,
+		params.add("size", Integer.toString(pageSize));
+		return new IterableResourceFetchAll<Curation>(executor, traverson, restOperations,
 				new ParameterizedTypeReference<PagedResources<Resource<Curation>>>() {}, 
 				params, "curations");
 	}

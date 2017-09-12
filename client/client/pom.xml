@@ -20,6 +20,11 @@
 			<version>${bsd2017.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>uk.ac.ebi.biosamples</groupId>
+			<artifactId>properties</artifactId>
+			<version>${bsd2017.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework.hateoas</groupId>
 			<artifactId>spring-hateoas</artifactId>
 		</dependency>

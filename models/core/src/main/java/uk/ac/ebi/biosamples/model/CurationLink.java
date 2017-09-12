@@ -102,21 +102,23 @@ public class CurationLink implements Comparable<CurationLink> {
     //Used for deserializtion (JSON -> Java)
     @JsonCreator
 	public static CurationLink build(@JsonProperty("sample") String sample, 
-			@JsonProperty("curation") Curation curation, 
+			@JsonProperty("curation") Curation curation,
 			@JsonProperty("domain") String domain, 
 			@JsonProperty("created") @JsonDeserialize(using = CustomLocalDateTimeDeserializer.class) LocalDateTime created) {
-    	Hasher hasher = Hashing.sha256().newHasher();
+   	
     	
-    	if (sample != null) {
-    		hasher.putUnencodedChars(sample);
-    	}
-		if (domain != null) {
-			hasher.putUnencodedChars(domain);
-		}
-		hasher.putUnencodedChars(curation.getHash());
+    	Hasher hasher = Hashing.sha256().newHasher()
+        		.putUnencodedChars(sample)
+    			.putUnencodedChars(curation.getHash());
 
+    	if (domain != null) {
+    		hasher.putUnencodedChars(domain);
+    	}
+    			
     	String hash = hasher.hash().toString();
     	
+    	
+
 		return new CurationLink(sample, domain, curation, hash, created);
 	}
 }

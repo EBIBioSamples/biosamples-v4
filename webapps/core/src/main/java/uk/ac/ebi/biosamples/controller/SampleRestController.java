@@ -30,10 +30,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import org.springframework.web.bind.annotation.*;
+
+import uk.ac.ebi.biosamples.controller.exception.SampleNotAccessibleException;
+import uk.ac.ebi.biosamples.controller.exception.SampleNotFoundException;
 import uk.ac.ebi.biosamples.model.JsonLDSample;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.BioSamplesAapService;
-import uk.ac.ebi.biosamples.service.BioSamplesAapService.SampleNotAccessibleException;
 import uk.ac.ebi.biosamples.service.FilterService;
 import uk.ac.ebi.biosamples.service.JsonLDService;
 import uk.ac.ebi.biosamples.service.SamplePageService;
@@ -42,7 +45,7 @@ import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 import uk.ac.ebi.biosamples.service.SampleService;
 
 import java.time.ZoneOffset;
-import java.util.concurrent.TimeUnit;
+import java.util.Optional;
 
 /**
  * Primary controller for REST operations both in JSON and XML and both read and
@@ -88,43 +91,41 @@ public class SampleRestController {
 
 	@GetMapping(value = "/{accession}", produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
 	public Resource<Sample> getSampleHal(@PathVariable String accession) {
-		log.info("starting call");
+		log.trace("starting call");
 		// convert it into the format to return
-		Sample sample = null;
-		sample = sampleService.fetch(accession);
-
-		if (sample.getName() == null) {
-			// if it has no name, then its just created by accessioning or
-			// reference
-			// can't read it, but could put to it
-			// TODO use METHOD_NOT_ALLOWED
-			// TODO make sure "options" is correct for this
-			throw new SampleReadService.SampleNotFoundException(accession);
+		Optional<Sample> sample = sampleService.fetch(accession);
+		if (!sample.isPresent()) {
+			throw new SampleNotFoundException();
 		}
-		
-		bioSamplesAapService.checkAccessible(sample);
-
-		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
-		
-		// create the response object with the appropriate status
+		bioSamplesAapService.checkAccessible(sample.get());
+		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample.get());
 		return sampleResource;
 	}
 
-    @CrossOrigin(methods = RequestMethod.GET)
+	@CrossOrigin(methods = RequestMethod.GET)
+	@GetMapping(value = "/{accession}", produces = { MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE })
+	public Sample getSampleXml(@PathVariable String accession) {
+		return this.getSampleHal(accession).getContent();
+	}
+
+	@CrossOrigin(methods = RequestMethod.GET)
     @GetMapping(value = "/{accession}", produces = "application/ld+json")
     public JsonLDSample getJsonLDSample(@PathVariable String accession) {
-        Sample sample = sampleService.fetch(accession);
-        if (sample.getName() == null) {
-            // if it has no name, then its just created by accessioning or
-            // reference
-            // can't read it, but could put to it
-            // TODO make sure "options" is correct for this
-			throw new SampleReadService.SampleNotFoundException(accession);
+		Optional<Sample> sample = sampleService.fetch(accession);
+		if (!sample.isPresent()) {
+			throw new SampleNotFoundException();
+		}
+		bioSamplesAapService.checkAccessible(sample.get());
+
+        // check if the release date is in the future and if so return it as
+        // private
+        if (sample.get().getRelease().isAfter(LocalDateTime.now())) {
+			throw new SampleNotAccessibleException();
         }
+
+        JsonLDSample jsonLDSample = jsonLDService.sampleToJsonLD(sample.get());
         
-		bioSamplesAapService.checkAccessible(sample);
-		
-        return jsonLDService.sampleToJsonLD(sample);
+        return jsonLDSample;
     }
 
 	@ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Sample accession must match URL accession") // 400
@@ -134,9 +135,9 @@ public class SampleRestController {
     @PreAuthorize("isAuthenticated()")
 	@PutMapping(value = "/{accession}", consumes = { MediaType.APPLICATION_JSON_VALUE })
 	public Resource<Sample> put(@PathVariable String accession, 
-			@RequestBody Sample sample) {
-		
-		if (sample.getAccession() == null || !sample.getAccession().equals(accession)) {
+			@RequestBody Sample sample,
+			@RequestParam(name = "setupdatedate", required = false, defaultValue="true") boolean setUpdateDate) {
+	if (sample.getAccession() == null || !sample.getAccession().equals(accession)) {
 			// if the accession in the body is different to the accession in the
 			// url, throw an error
 			// TODO create proper exception with right http error code
@@ -145,6 +146,13 @@ public class SampleRestController {
 		
 		log.info("Recieved PUT for " + accession);
 		sample = bioSamplesAapService.handleSampleDomain(sample);		
+		
+		//TODO limit use of this method to write super-users only
+		if (setUpdateDate) {
+			sample = Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(), sample.getRelease(), LocalDateTime.now(),
+					sample.getCharacteristics(), sample.getRelationships(), sample.getExternalReferences());
+		}
+		
 		sample = sampleService.store(sample);
 
 		// assemble a resource to return
@@ -156,10 +164,17 @@ public class SampleRestController {
 
 	@PreAuthorize("isAuthenticated()")
 	@PostMapping(consumes = { MediaType.APPLICATION_JSON_VALUE })
-	public ResponseEntity<Resource<Sample>> post(@RequestBody Sample sample) {
-		
-		log.info("Recieved POST");
+	public ResponseEntity<Resource<Sample>> post(@RequestBody Sample sample,
+			@RequestParam(name = "setupdatedate", required = false, defaultValue="true") boolean setUpdateDate) {
+		log.debug("Recieved POST for "+sample);
 		sample = bioSamplesAapService.handleSampleDomain(sample);
+
+		//TODO limit use of this method to write super-users only
+		if (setUpdateDate) {
+			sample = Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(), sample.getRelease(), LocalDateTime.now(),
+					sample.getCharacteristics(), sample.getRelationships(), sample.getExternalReferences());
+		}
+		
 		sample = sampleService.store(sample);
 		
 		// assemble a resource to return

@@ -1,8 +1,5 @@
 package uk.ac.ebi.biosamples;
 
-import java.net.URI;
-import java.util.Scanner;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
@@ -17,13 +14,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
-
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 
+import java.net.URI;
+import java.util.Scanner;
+
 @Component
 @Order(5)
-@Profile({ "default", "submission" })
+@Profile({"default"})
 public class SampleTabIntegration extends AbstractIntegration {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
@@ -31,32 +30,28 @@ public class SampleTabIntegration extends AbstractIntegration {
 	private final IntegrationProperties integrationProperties;
 
 	private final RestOperations restTemplate;
+
+	private final URI uri;
 	
 	public SampleTabIntegration(RestTemplateBuilder restTemplateBuilder, IntegrationProperties integrationProperties, BioSamplesClient client) {
-		super(client);
+        super(client);
 		this.restTemplate = restTemplateBuilder.build();
 		this.integrationProperties = integrationProperties;
+
+		uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUriSampleTab())
+			.pathSegment("v4").build().toUri();
 	}
 
 	@Override
 	protected void phaseOne() {
-
-		URI uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUriSampleTab())
-				.pathSegment("v4").build().toUri();
-		
-		runCallableOnSampleTabResource("/GSB-32.txt", sampleTabString -> {
-			log.info("POSTing to " + uri);
-			RequestEntity<String> request = RequestEntity.post(uri)
-					.contentType(MediaType.parseMediaType("text/plain;charset=UTF-8")).body(sampleTabString);
-			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
-		});
 
 		runCallableOnSampleTabResource("/GSB-32_unaccession.txt", sampleTabString -> {
 			log.info("POSTing to " + uri);
 			RequestEntity<String> request = RequestEntity.post(uri).contentType(MediaType.TEXT_PLAIN)
 					.body(sampleTabString);
 			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
-			// TODO check at the right URLs with GET to make sure all arrived
+			// TODO check at the right URLs with GET to make sure all
+			// arrived
 		});
 
 		runCallableOnSampleTabResource("/GSB-1004.txt", sampleTabString -> {
@@ -74,16 +69,28 @@ public class SampleTabIntegration extends AbstractIntegration {
 			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
 			// TODO check that SAMEA103886236 does exist
 		});
+		
 	}
 
 	@Override
 	protected void phaseTwo() {
+		
+		runCallableOnSampleTabResource("/GSB-32.txt", sampleTabString -> {
+			log.info("POSTing to " + uri);
+			RequestEntity<String> request = RequestEntity.post(uri)
+					.contentType(MediaType.parseMediaType("text/plain;charset=UTF-8")).body(sampleTabString);
+			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+		});
+	}
+
+	@Override
+	protected void phaseThree() {
 		// check at the right URLs with GET to make sure UTF arrived
-		if (!client.fetchSample("SAMEA2186845").get().getCharacteristics()
+		if (!client.fetchSampleResource("SAMEA2186845").get().getContent().getCharacteristics()
 				.contains(Attribute.build("description", "Test sample α"))) {
 			throw new RuntimeException("SAMEA2186845 does not have 'description':'Test sample α'");
 		}
-		if (!client.fetchSample("SAMEA2186844").get().getCharacteristics()
+		if (!client.fetchSampleResource("SAMEA2186844").get().getContent().getCharacteristics()
 				.contains(Attribute.build("description", "Test sample β"))) {
 			throw new RuntimeException("SAMEA2186844 does not have 'description':'Test sample β'");
 		}
@@ -91,15 +98,15 @@ public class SampleTabIntegration extends AbstractIntegration {
 	}
 
 	@Override
-	protected void phaseThree() {
-	}
-
-	@Override
 	protected void phaseFour() {
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	protected void phaseFive() {
+		// TODO Auto-generated method stub
+		
 	}
 
 
@@ -127,4 +134,5 @@ public class SampleTabIntegration extends AbstractIntegration {
 			callback.callback(sampleTabString);
 		}
 	}
+
 }

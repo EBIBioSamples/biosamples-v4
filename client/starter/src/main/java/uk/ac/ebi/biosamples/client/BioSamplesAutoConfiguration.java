@@ -38,7 +38,6 @@ import uk.ac.ebi.biosamples.service.AttributeValidator;
 import uk.ac.ebi.biosamples.service.SampleValidator;
 
 @Configuration
-@ConditionalOnMissingBean(BioSamplesClient.class)
 public class BioSamplesAutoConfiguration {
 
 	@Bean	
@@ -61,6 +60,7 @@ public class BioSamplesAutoConfiguration {
 	}
 	
 	@Bean
+	@ConditionalOnMissingBean(BioSamplesClient.class)
 	public BioSamplesClient bioSamplesClient(BioSamplesProperties bioSamplesProperties, 
 			RestTemplateBuilder restTemplateBuilder, SampleValidator sampleValidator, AapClientService aapClientService) {		
 		restTemplateBuilder = restTemplateBuilder.additionalCustomizers(new RestTemplateCustomizer() {
@@ -113,6 +113,7 @@ public class BioSamplesAutoConfiguration {
 				//make the actual client
 				HttpClient httpClient = CachingHttpClientBuilder.create()
 						.setCacheConfig(cacheConfig)
+						.useSystemProperties()
 						.setConnectionManager(poolingHttpClientConnectionManager)
 						.setKeepAliveStrategy(keepAliveStrategy)
 						.setDefaultRequestConfig(config)
@@ -135,6 +136,7 @@ public class BioSamplesAutoConfiguration {
 				restTemplate.setMessageConverters(converters);
 			}			
 		});
-		return new BioSamplesClient(bioSamplesProperties.getBiosamplesClientUri(), restTemplateBuilder, sampleValidator, aapClientService);
+		return new BioSamplesClient(bioSamplesProperties.getBiosamplesClientUri(), restTemplateBuilder, 
+				sampleValidator, aapClientService, bioSamplesProperties);
 	}
 }

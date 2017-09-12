@@ -61,14 +61,14 @@ public class RestCurationIntegration extends AbstractIntegration {
 		attributesPre.add(Attribute.build("Organism", "9606"));
 		Set<Attribute> attributesPost = new HashSet<>();
 		attributesPost.add(Attribute.build("Organism", "Homo sapiens"));			
-		client.persistCuration(sample.getAccession(), Curation.build(attributesPre, attributesPost, null, null));
+		client.persistCuration(sample.getAccession(), Curation.build(attributesPre, attributesPost, null, null), null);
 
 
 		attributesPre = new HashSet<>();
 		attributesPre.add(Attribute.build("Organism", "Homo sapiens"));
 		attributesPost = new HashSet<>();
 		attributesPost.add(Attribute.build("Organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));			
-		client.persistCuration(sample.getAccession(), Curation.build(attributesPre, attributesPost, null, null));
+		client.persistCuration(sample.getAccession(), Curation.build(attributesPre, attributesPost, null, null), null);
 		
 	}
 
@@ -98,7 +98,27 @@ public class RestCurationIntegration extends AbstractIntegration {
 	}
 
 	private void testCurations() {
-				
+		/*
+		//TODO use client
+		URI uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUri())
+				.pathSegment("curations").build().toUri();
+		
+		log.info("GETting from " + uri);
+		RequestEntity<Void> request = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
+		ResponseEntity<PagedResources<Resource<Curation>>> response = restTemplate.exchange(request,
+				new ParameterizedTypeReference<PagedResources<Resource<Curation>>>() {
+				});
+		if(!response.getStatusCode().is2xxSuccessful()) {
+			throw new RuntimeException("Unable to get curations list");
+		}
+		log.info("GETted from " + uri);
+		PagedResources<Resource<Curation>> paged = response.getBody();
+
+		
+		if (paged.getContent().size() == 0) {
+			throw new RuntimeException("No curations in list");
+		}
+		*/
 		for (Resource<Curation> curationResource : client.fetchCurationResourceAll()) {
 			Link selfLink = curationResource.getLink("self");
 			Link samplesLink = curationResource.getLink("samples");

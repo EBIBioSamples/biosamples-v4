@@ -2,8 +2,11 @@ package uk.ac.ebi.biosamples;
 
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.Exchange;
+import org.springframework.amqp.core.ExchangeBuilder;
 import org.springframework.amqp.core.FanoutExchange;
 import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
@@ -17,63 +20,44 @@ public class MessageConfig {
 	// declare queues
 
 	@Bean
-	public Queue getQueueToBeIndexedSolr() {
-		return new Queue(Messaging.queueToBeIndexedSolr, true);
+	public Queue getQueueToBeIndexedSolr() {		
+		return QueueBuilder.durable(Messaging.queueToBeIndexedSolr)
+				.withArgument("x-dead-letter-exchange", Messaging.exchangeDeadLetter)
+				.build();
 	}
 
-	@Bean
-	public Queue getQueueToBeIndexedNeo4J() {
-		return new Queue(Messaging.queueToBeIndexedNeo4J, true);
-	}
 	
+	//this queue sets up a delay before messages are requeued on the original solr indexing queue
+	//do not consume from this queue
+	//instead, allow all messages to reach the end of their "lifetime" (time-to-live) and then 
+	//requeue them as if they were being sent to a dead-letter queue
 	@Bean
-	public Queue getQueueToBeCurated() {
-		return new Queue(Messaging.queueToBeCurated, true);
+	public Queue getQueueRetryDeadLetter() {		
+		return QueueBuilder.durable(Messaging.queueRetryDeadLetter)
+				.withArgument("x-message-ttl", 30000) //30 seconds
+				.withArgument("x-dead-letter-exchange", Messaging.exchangeForIndexingSolr)
+				.build();
 	}
 
 	// declare exchanges
 
 	@Bean
-	public FanoutExchange getExchangeForIndexing() {
-		return new FanoutExchange(Messaging.exchangeForIndexing, true, false);
+	public Exchange getExchangeForIndexingSolr() {
+		return ExchangeBuilder.fanoutExchange(Messaging.exchangeForIndexingSolr).durable(true).build();
 	}
 
 	@Bean
-	public FanoutExchange getExchangeForIndexingSolr() {
-		return new FanoutExchange(Messaging.exchangeForIndexingSolr, true, false);
+	public Exchange getExchangeDeadLetter() {		
+		return ExchangeBuilder.directExchange(Messaging.exchangeDeadLetter).durable(true).build();
 	}
 
-	@Bean
-	public FanoutExchange getExchangeForIndexingNeo4J() {
-		return new FanoutExchange(Messaging.exchangeForIndexingNeo4J, true, false);
-	}
-
-	@Bean
-	public FanoutExchange getExchangeForCuration() {
-		return new FanoutExchange(Messaging.exchangeForCuration, true, false);
-	}
 	
 	
 	// bind queues to exchanges
 
 	@Bean
-	public Binding bindingForIndexing() {
-		return BindingBuilder.bind(getExchangeForIndexingNeo4J()).to(getExchangeForIndexing());
-	}
-
-	@Bean
-	public Binding bindingForIndexingNeo4J() {
-		return BindingBuilder.bind(getQueueToBeIndexedNeo4J()).to(getExchangeForIndexingNeo4J());
-	}
-
-	@Bean
 	public Binding bindingForIndexingSolr() {
-		return BindingBuilder.bind(getQueueToBeIndexedSolr()).to(getExchangeForIndexingSolr());
-	}
-
-	@Bean
-	public Binding bindingForCuration() {
-		return BindingBuilder.bind(getQueueToBeCurated()).to(getExchangeForCuration());
+		return BindingBuilder.bind(getQueueToBeIndexedSolr()).to(getExchangeForIndexingSolr()).with(Messaging.queueToBeIndexedSolr).noargs();
 	}
 	
 	//enable messaging in json	

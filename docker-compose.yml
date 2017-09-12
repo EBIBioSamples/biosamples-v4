@@ -6,15 +6,14 @@ services:
     image: biosamples:latest
     links:
     - solr
-    - neo4j
     - mongo
     - rabbitmq
     volumes:
-    - ./docker/logs:/logs
+    - logs:/logs
     command:
     - java
     - -jar
-    - -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000
+    # - -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000
     - webapps-core-4.0.0-SNAPSHOT.war
     environment:
     #AAP certificate
@@ -34,6 +33,7 @@ services:
     - spring.rabbitmq.host=rabbitmq
     - spring.jackson.serialization-inclusion=non_null
     - spring.jackson.serialization.WRITE_NULL_MAP_VALUES=false
+    - spring.jackson.serialization.indent_output=true
     #Configure root path to server from
     - server.servlet.context-path=/biosamples/beta
     - server.context-path=/biosamples/beta
@@ -42,7 +42,7 @@ services:
     #REMOVE FOR PRODUCTION
     - management.security.enabled=false
     #Improve logging
-    - logging.file=/logs/webapps-core.log
+    - LOGGING_FILE=/logs/webapps-core.log
     - server.tomcat.accesslog.enabled=true
     - server.tomcat.accesslog.directory=/logs
     - server.tomcat.accesslog.prefix=webapps-core.access
@@ -70,82 +70,52 @@ services:
     links:
     - biosamples-webapps-core
     volumes:
-    - ./docker/logs:/logs
+    - logs:/logs
     command:
     - java
     - -jar
     - webapps-sampletab-4.0.0-SNAPSHOT.war
     environment:
-    - biosamples.client.uri=http://biosamples-webapps-core:8080/biosamples/beta
-    - server.servlet.context-path=/biosamples/beta/sampletab
-    - server.context-path=/biosamples/beta/sampletab
-    - management.security.enabled=false
-    - logging.file=/logs/webapps-sampletab.log
-    - server.tomcat.accesslog.enabled=true
-    - server.tomcat.accesslog.directory=/logs
-    - server.tomcat.accesslog.prefix=webapps-sampletab.access
+    - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples/beta
+    - SERVER_SERVLET_CONTEXT-PATH=/biosamples/beta/sampletab
+    - SERVER_CONTEXT-PATH=/biosamples/beta/sampletab
+    - MANAGEMENT_SECURITY_ENABLED=false
+    - LOGGING_FILE=/logs/webapps-sampletab.log
+    - SERVER_TOMCAT_ACCESSLOG_ENABLED=true
+    - SERVER_TOMCAT_ACCESSLOG_DIRECTORY=/logs
+    - SERVER_TOMCAT_ACCESSLOG_PREFIX=webapps-sampletab.access
     # Charset of HTTP requests and responses. Added to the "Content-Type" header if not set explicitly.
-    - spring.http.encoding.charset=UTF-8
+    - SPRING_HTTP_ENCODING_CHARSET=UTF-8
     # Enable http encoding support.
-    - spring.http.encoding.enabled=true
+    - SPRING_HTTP_ENCODING_ENABLED=true
     # Force the encoding to the configured charset on HTTP requests and responses.
     - spring.http.encoding.force=true
-    - endpoints.shutdown.enabled=true
-    - endpoints.shutdown.sensitive=false
+    - ENDPOINTS_SHUTDOWN_ENABLED=true
+    - ENDPOINTS_SHUTDOWN_SENSITIVE=false
     ports:
     - 8082:8080
-
   
   biosamples-webapps-legacyxml:
     image: biosamples:latest
     links:
     - biosamples-webapps-core
     volumes:
-    - ./docker/logs:/logs
+    - logs:/logs
     command:
     - java
     - -jar
     - webapps-legacyxml-4.0.0-SNAPSHOT.war
     environment:
-    - biosamples.redirect.context=http://localhost:8081/biosamples/beta
-    - biosamples.client.uri=http://biosamples-webapps-core:8080/biosamples/beta
-    - server.servlet.context-path=/biosamples/beta/xml
-    - server.context-path=/biosamples/beta/xml
-    - logging.file=/logs/webapps-legacyxml.log
-    - endpoints.shutdown.enabled=true
-    - endpoints.shutdown.sensitive=false
+    - BIOSAMPLES_REDIRECT_CONTEXT=http://localhost:8081/biosamples/beta
+    - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples/beta
+    - SERVER_SERVLET_CONTEXT-PATH=/biosamples/beta/xml
+    - SERVER_CONTEXT-PATH=/biosamples/beta/xml
+    - SPRING_JACKSON_SERIALIZATION_INDENT_OUTPUT=true
+    - LOGGING_FILE=/logs/webapps-legacyxml.log
+    - ENDPOINTS_SHUTDOWN_ENABLED=true
+    - ENDPOINTS_SHUTDOWN_SENSITIVE=false
     ports:
     - 8083:8080
-    # - 8000:8000
-
-    
-  biosamples-agents-neo4j:
-    image: biosamples:latest
-    links:
-    - neo4j
-    - rabbitmq
-    volumes:
-    - ./docker/logs:/logs
-    command:
-    - java
-    - -jar
-    - agents-neo4j-4.0.0-SNAPSHOT.jar
-    environment:
-    - spring.rabbitmq.publisher-confirms=true
-    - spring.rabbitmq.publisher-returns=true
-    - spring.rabbitmq.listener.concurrency=1
-    - spring.rabbitmq.listener.max-concurrency=1
-    - spring.rabbitmq.host=rabbitmq
-    #- spring.data.neo4j.uri=bolt://neo4j:7687
-    - spring.data.neo4j.uri=http://neo4j:7474
-    - spring.data.neo4j.username=neo4j
-    - spring.data.neo4j.indexes.auto=validate
-    - biosamples.agent.neo4j.stayalive=true
-    - logging.file=/logs/agents-neo4j.log
-    #- logging.level=debug
-    - logging.level.org.springframework.data.neo4j=debug
-    - logging.level.org.springframework.transaction=INFO
-    - spring.aop.proxy-target-class=true
     
   biosamples-agents-solr:
     image: biosamples:latest
@@ -153,39 +123,94 @@ services:
     - solr
     - rabbitmq
     volumes:
-    - ./docker/logs:/logs
+    - logs:/logs
     command:
     - java
     - -jar
     - agents-solr-4.0.0-SNAPSHOT.jar
     environment:
-    - spring.rabbitmq.publisher-confirms=true
-    - spring.rabbitmq.publisher-returns=true
-    - spring.rabbitmq.listener.concurrency=1000
-    - spring.rabbitmq.listener.max-concurrency=1000
-    - biosamples.agent.solr.queuesize=1000
-    - biosamples.agent.solr.queuetime=10000
-    - spring.data.solr.host=http://solr:8983/solr
-    - spring.rabbitmq.host=rabbitmq
-    - biosamples.agent.solr.stayalive=true
-    - logging.file=/logs/agents-solr.log
-    
-  biosamples-agents-curation:
+    - SPRING_RABBITMQ_PUBLISHER-CONFIRMS=true
+    - SPRING_RABBITMQ_PUBLISHER-RETURNS=true
+    - SPRING_RABBITMQ_LISTENER_CONCURRENCY=1000
+    - SPRING_RABBITMQ_LISTENER_MAX-CONCURRENCY=1000
+    - BIOSAMPLES_AGENT_SOLR_QUEUESIZE=1000
+    - BIOSAMPLES_AGENT_SOLR_QUEUETIME=10000
+    - SPRING_DATA_SOLR_HOST=http://solr:8983/solr
+    - SPRING_RABBITMQ_HOST=rabbitmq
+    - BIOSAMPLES_AGENT_SOLR_STAYALIVE=true
+    - LOGGING_FILE=/logs/agents-solr.log
+       
+
+  biosamples-pipelines-ena:
     image: biosamples:latest
-    links:
-    - rabbitmq
     volumes:
-    - ./docker/logs:/logs
+    - logs:/logs
+    links:
+    - biosamples-webapps-core
     command:
     - java
     - -jar
-    - agents-curation-4.0.0-SNAPSHOT.jar
+    - pipelines-ena-4.0.0-SNAPSHOT.jar
     environment:
-    - spring.rabbitmq.publisher-confirms=true
-    - spring.rabbitmq.host=rabbitmq
-    - biosamples.agent.curation.stayalive=true
-    - logging.file=/logs/agents-curation.log
+    - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples/beta
+    - LOGGING_FILE=/logs/pipelines-ena.log
     
+  biosamples-pipelines-ncbi:
+    image: biosamples-pipelines-ncbi:latest
+    build:
+      context: docker/pipelines-ncbi/
+    volumes:
+    - logs:/logs
+    links:
+    - biosamples-webapps-core
+    environment:
+    - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples/beta
+    - LOGGING_FILE=/logs/pipelines-ncbi.log
+    - SPRING_CACHE_GUAVA_SPEC=maximumSize=500,expireAfterAccess=60s,recordStats=true
+    
+  biosamples-pipelines-accession:
+    image: biosamples:latest
+    volumes:
+    - logs:/logs
+    links:
+    - biosamples-webapps-core
+    command:
+    - java
+    - -jar
+    - pipelines-accession-4.0.0-SNAPSHOT.jar
+    environment:
+    - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples/beta
+    - LOGGING_FILE=/logs/pipelines-ena.log      
+    
+  biosamples-pipelines-sampletab:
+    image: biosamples:latest
+    volumes:
+    - logs:/logs
+    links:
+    - biosamples-webapps-core
+    command:
+    - java
+    - -jar
+    - pipelines-sampletab-4.0.0-SNAPSHOT.jar
+    environment:
+    - BIOSAMPLES_SAMPLETAB_URI=http://biosamples-webapps-sampletab:8080/biosamples/beta/sampletab/v4
+    - LOGGING_FILE=/logs/pipelines-sampletab.log  
+    
+  biosamples-pipelines-curation:
+    volumes:
+    - logs:/logs
+    image: biosamples:latest
+    links:
+    - biosamples-webapps-core
+    command:
+    - java
+    - -jar
+    - pipelines-curation-4.0.0-SNAPSHOT.jar
+    environment:
+    - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples/beta
+    - LOGGING_FILE=/logs/pipelines-curation.log
+       
+       
   mongo:
     image: mongo:3.2
     volumes:
@@ -194,27 +219,14 @@ services:
     - 27017:27017
     
   rabbitmq:
-    image: rabbitmq:3.6-management
+    image: rabbitmq:3.6-management-alpine
     hostname: biosamples-rabbitmq
     ports:
     - 5672:5672
     - 15672:15672
     volumes:
-    - rabbitmq_data:/var/lib/rabbitmq/mnesia/rabbit@biosamples-rabbitmq
+    - rabbitmq_data:/var/lib/rabbitmq/mnesia
     
-  neo4j:
-    #we can use enterprise under AGPLv3 because we are open source
-    image: neo4j:3.2-enterprise
-    environment:
-    - NEO4J_AUTH=none
-    - NEO4J_dbms_memory_pagecache_size=4G
-    - NEO4J_dbms_memory_heap_maxSize=2G
-    ports:
-    - 7687:7687
-    - 7474:7474
-    volumes:
-    - neo4j_data:/data
-    - ./docker/logs/neo4j:/logs
     
   solr:
     image: solr:6.6-alpine
@@ -233,6 +245,5 @@ services:
 volumes:
   solr_data: null
   mongo_data: null
-  neo4j_data: null
   rabbitmq_data: null
-  elasticsearch_logs_data: null
+  logs: null

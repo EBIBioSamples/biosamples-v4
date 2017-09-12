@@ -1,22 +1,24 @@
 package uk.ac.ebi.biosamples.messages.threaded;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.amqp.AmqpRejectAndDontRequeueException;
+import org.springframework.scheduling.annotation.Scheduled;
+
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Scheduled;
-
-public abstract class MessageBuffer<S> {
+public abstract class MessageBuffer<T,S> {
 	private Logger log = LoggerFactory.getLogger(this.getClass());
-	
-    private final BlockingQueue<MessageSampleStatus<S>> messageSampleStatusQueue;
+
+	private final ConcurrentMap<T, MessageSampleStatus<S>> messageSampleStatusMap;
     private final AtomicLong latestTime;
     public final AtomicBoolean hadProblem = new AtomicBoolean(false);
  
@@ -26,25 +28,60 @@ public abstract class MessageBuffer<S> {
 	public MessageBuffer(int queueSize, int queueTime) {
 		this.queueSize = queueSize;
 		this.queueTime = queueTime;
-		messageSampleStatusQueue = new ArrayBlockingQueue<>(queueSize);
+		messageSampleStatusMap = new ConcurrentHashMap<>();
 		latestTime = new AtomicLong(0);
 	}
 	
-	public MessageSampleStatus<S> recieve(S sample) throws InterruptedException {
+	public MessageSampleStatus<S> recieve(T key, S sample, long messageTime) throws InterruptedException {
 		//if there is no maximum time
 		//set it to wait in the future
 		latestTime.compareAndSet(0, Instant.now().toEpochMilli()+queueTime);
 		
-		MessageSampleStatus<S> status = MessageSampleStatus.build(sample);
+		MessageSampleStatus<S> status = MessageSampleStatus.build(sample, messageTime);
 		
 		//this will block until space is available
-		messageSampleStatusQueue.put(status);
+		boolean done = false;
+		while (!done) {
+			synchronized (messageSampleStatusMap) {
+				if (messageSampleStatusMap.size() < queueSize) {
+
+					
+					if (messageSampleStatusMap.containsKey(key)) {
+						//there is an existing version
+						MessageSampleStatus<S> oldValue = messageSampleStatusMap.get(key);
+						//compare timestamps - discard oldest
+						MessageSampleStatus<S> toDiscard = null;
+						if (status.messageTime < oldValue.messageTime) {
+							toDiscard = status;
+							log.warn("Discdarding new message");
+						} else if (status.messageTime > oldValue.messageTime) {
+							toDiscard = oldValue;
+							messageSampleStatusMap.put(key, status);
+							log.warn("Discdarding old message");
+						} else {
+							//if they have exactly the same time, discard the latest one and raise a warning
+							toDiscard = status;
+							log.warn("Duplicate messages for ("+sample.toString()+") at "+messageTime);
+						}
+						
+						//make sure it is properly removed out of the entire rabbitmq system by using 
+						toDiscard.hadProblem.set(new AmqpRejectAndDontRequeueException("Replaced by newer message"));
+						
+					} else {
+						//no existing version, can simply add this as new
+						messageSampleStatusMap.put(key, status);
+					}
+					done = true;
+				}
+			}
+			Thread.sleep(10);
+		}
 		return status;
 	}
 	
 	public boolean areAllStored() {
-		for (MessageSampleStatus<S> messageSampleStatus : messageSampleStatusQueue) {
-			if (messageSampleStatus.storedInRepository.get() == false) {
+		for (MessageSampleStatus<S> messageSampleStatus : messageSampleStatusMap.values()) {
+			if (!messageSampleStatus.storedInRepository.get()) {
 				return false;
 			}
 		}
@@ -55,57 +92,53 @@ public abstract class MessageBuffer<S> {
 	public void checkQueueStatus() {
 		//check if enough time has elapsed
 		//or if the queue is long enough
-		int remaining = messageSampleStatusQueue.remainingCapacity();
-		long now = Instant.now().toEpochMilli();
-		long latestTimeLong = latestTime.get();
-		log.trace(""+remaining+" queue spaces and now "+now+" vs "+latestTimeLong);
-		if (remaining <= 0.01*queueSize
-				|| (now > latestTimeLong && latestTimeLong != 0)) {
+		//TODO break down this syncrhonized block so the solr commit is outside of it
+		synchronized (messageSampleStatusMap) {
+            int remaining = queueSize - messageSampleStatusMap.size();
+            long now = Instant.now().toEpochMilli();
+            long latestTimeLong = latestTime.get();
+            log.trace(""+remaining+" queue spaces and now "+now+" vs "+latestTimeLong);
+            if (remaining <= 0.01*queueSize
+                    || (now > latestTimeLong && latestTimeLong != 0)) {
 
-			if (remaining <= 0.01*queueSize) {
-				log.info("Committing queue because full");
+				if (remaining <= 0.01 * queueSize) {
+					log.info("Committing queue because full");
+				}
+				if (now > latestTimeLong && latestTimeLong != 0) {
+					log.info("Committing queue because old");
+				}
+
+
+				try {
+					//unset the latest time so that it can be set again by the next message
+					latestTime.set(0);
+					//split out the samples into a separate list
+					List<S> samples = new ArrayList<>();
+					messageSampleStatusMap.values().forEach(m -> samples.add(m.sample));
+
+					//send everything as a single transaction
+					save(samples);
+					//this was a hard commit so they are now written to disk
+
+					//if there was a problem, an exception would be thrown
+					//since we are still here, no unrecoverable problems occurred
+
+					//mark each of the status as completed
+					//this will trigger the waiting threads to continue
+					messageSampleStatusMap.values().forEach(m -> m.storedInRepository.set(true));
+					messageSampleStatusMap.clear();
+				} catch (RuntimeException e) {
+					//store that we encountered a problem of some kind
+					log.error("Storing warning", e);
+					hadProblem.set(true);
+					messageSampleStatusMap.values().forEach(m -> m.hadProblem.set(e));
+					//re-throw the exception
+					throw e;
+				}
 			}
-			if (now > latestTimeLong && latestTimeLong != 0) {
-				log.info("Committing queue because old");
-			}
-			
-			
-			//create a local collection of the messages
-			List<MessageSampleStatus<S>> messageSampleStatuses = new ArrayList<>(queueSize);
-			
-			try {
-				//unset the latest time so that it can be set again by the next message
-				latestTime.set(0);
-				
-				//drain the master queue into it
-				messageSampleStatusQueue.drainTo(messageSampleStatuses, queueSize);					
-				//now we can process the local copy without worrying about new ones being added
-				
-				//split out the samples into a separate list
-				List<S> samples = new ArrayList<>(messageSampleStatuses.size());
-				messageSampleStatuses.stream().forEach(m -> samples.add(m.sample));
-		
-				//send everything as a single transaction
-				save(samples);
-				//this was a hard commit so they are now written to disk
-				
-				//if there was a problem, an exception would be thrown
-				//since we are still here, no unrecoverable problems occurred
-				
-				//mark each of the status as completed
-				//this will trigger the waiting threads to continue
-				messageSampleStatuses.stream().forEach(m -> m.storedInRepository.set(true));
-			} catch (RuntimeException e) {
-				//store that we encountered a problem of some kind
-				log.error("Storing warning", e);
-				hadProblem.set(true);
-				messageSampleStatuses.stream().forEach(m -> m.hadProblem.set(e,true));
-				//re-throw the exception
-				throw e;
-			}
-			
 		}
 	}
+	
 	/**
 	 * This is the method that a specific sub-class should implement. Typically
 	 * this will be some sort of repository.save(samples) call in a transaction

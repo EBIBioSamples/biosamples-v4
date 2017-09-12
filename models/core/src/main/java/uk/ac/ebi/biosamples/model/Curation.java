@@ -13,7 +13,7 @@ import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
 
 
-public class Curation implements Comparable<Curation>{
+public class Curation implements Comparable<Curation> {
 	
 	private final SortedSet<Attribute> attributesPre;
 	private final SortedSet<Attribute> attributesPost;

@@ -43,12 +43,14 @@ public class SampleRetrievalService {
 	private final Traverson traverson;
 	private final ExecutorService executor;
 	private final RestOperations restOperations;
+	private final int pageSize;
 
 	public SampleRetrievalService(RestOperations restOperations, Traverson traverson,
-			ExecutorService executor) {
+			ExecutorService executor, int pageSize) {
 		this.restOperations = restOperations;
 		this.traverson = traverson;
 		this.executor = executor;
+		this.pageSize = pageSize;
 	}
 
 	/**
@@ -61,14 +63,15 @@ public class SampleRetrievalService {
 		return executor.submit(new FetchCallable(accession));
 	}
 
-	public PagedResources<Resource<Sample>> fetchPaginated(String text, int page, int size) {		
+//	@Deprecated
+	public PagedResources<Resource<Sample>> search(String text, int page, int size) {
 		URI uri = UriComponentsBuilder.fromUriString(traverson.follow("samples").asLink().getHref())
 				.queryParam("text", !text.isEmpty() ? text : "*:*").queryParam("page", page).queryParam("size", size)
 				.build().toUri();
 
 		log.info("GETing " + uri);
 
-		RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaType.APPLICATION_JSON).build();
+		RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
 		ResponseEntity<PagedResources<Resource<Sample>>> responseEntity = restOperations.exchange(requestEntity,
 				new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {
 				});
@@ -123,32 +126,45 @@ public class SampleRetrievalService {
 	
 	public Iterable<Resource<Sample>> fetchAll() {
 		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();		
-		return new IterableResourceFetchAll<Sample>(traverson, restOperations,
+		params.add("size", Integer.toString(pageSize));
+		return new IterableResourceFetchAll<Sample>(executor, traverson, restOperations,
+				new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {}, 
+				params,	"samples");
+	}
+	
+	public Iterable<Resource<Sample>> fetchAll(String text) {
+		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();		
+		params.add("text", text);
+		params.add("size", Integer.toString(pageSize));
+		return new IterableResourceFetchAll<Sample>(executor, traverson, restOperations,
 				new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {}, 
 				params,	"samples");
 	}
 
 	public Iterable<Resource<Sample>> fetchUpdatedAfter(LocalDateTime updatedAfter) {	
 		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();		
+		params.add("size", Integer.toString(pageSize));
 		params.add("updatedafter", solrFormatter.format(updatedAfter));
-		return new IterableResourceFetchAll<Sample>(traverson, restOperations,
+		return new IterableResourceFetchAll<Sample>(executor, traverson, restOperations,
 				new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {}, 
 				params,	"samples");
 	}
 
 	public Iterable<Resource<Sample>> fetchUpdatedBefore(LocalDateTime updatedBefore) {	
 		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();		
+		params.add("size", Integer.toString(pageSize));
 		params.add("updatedbefore", solrFormatter.format(updatedBefore));
-		return new IterableResourceFetchAll<Sample>(traverson, restOperations,
+		return new IterableResourceFetchAll<Sample>(executor, traverson, restOperations,
 				new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {}, 
 				params,	"samples");
 	}
 
 	public Iterable<Resource<Sample>> fetchUpdatedBetween(LocalDateTime updatedAfter, LocalDateTime updatedBefore) {	
-		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();		
+		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();	
+		params.add("size", Integer.toString(pageSize));
 		params.add("updatedafter", solrFormatter.format(updatedAfter));
 		params.add("updatedbefore", solrFormatter.format(updatedBefore));
-		return new IterableResourceFetchAll<Sample>(traverson, restOperations,
+		return new IterableResourceFetchAll<Sample>(executor, traverson, restOperations,
 				new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {}, 
 				params,	"samples");
 	}

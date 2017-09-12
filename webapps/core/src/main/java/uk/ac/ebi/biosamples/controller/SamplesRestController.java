@@ -36,7 +36,10 @@ import uk.ac.ebi.biosamples.service.SampleReadService;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.concurrent.TimeUnit;
 import uk.ac.ebi.biosamples.service.SampleReadService;
@@ -88,6 +91,27 @@ public class SamplesRestController {
 			@RequestParam(name = "filter", required = false) String[] filter, Pageable page,
 			PagedResourcesAssembler<Sample> pageAssembler) {
 
+		
+		//Need to decode the %20 and similar from the parameters
+		//this is *not* needed for the html controller
+		if (text != null) {
+			try {
+				text = URLDecoder.decode(text, "UTF-8");
+			} catch (UnsupportedEncodingException e) {
+				throw new RuntimeException(e);
+			}
+		}		
+		if (filter != null) {
+			for (int i = 0; i < filter.length; i++) {
+				try {
+					filter[i] = URLDecoder.decode(filter[i], "UTF-8");
+				} catch (UnsupportedEncodingException e) {
+					throw new RuntimeException(e);
+				}
+			}
+		}
+		
+		
 		MultiValueMap<String, String> filtersMap = filterService.getFilters(filter);
 
 		Collection<String> domains = bioSamplesAapService.getDomains();
@@ -95,18 +119,19 @@ public class SamplesRestController {
 		LocalDateTime updatedAfterDate = null;
 		if (updatedAfter != null) {
 			try {
-				updatedAfterDate = LocalDateTime.parse(updatedAfter, SolrSampleService.solrFormatter);
+				updatedAfterDate = LocalDateTime.parse(updatedAfter, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 			} catch (DateTimeParseException e) {
-				//do nothing
+				//TODO make an exception
+				return ResponseEntity.badRequest().build();
 			}
 		}
-
 		LocalDateTime updatedBeforeDate = null;
 		if (updatedBefore != null) {
 			try {
-				updatedBeforeDate = LocalDateTime.parse(updatedBefore, SolrSampleService.solrFormatter);
+				updatedBeforeDate = LocalDateTime.parse(updatedBefore, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 			} catch (DateTimeParseException e) {
-				//do nothing
+				//TODO make an exception
+				return ResponseEntity.badRequest().build();
 			}
 		}
 		

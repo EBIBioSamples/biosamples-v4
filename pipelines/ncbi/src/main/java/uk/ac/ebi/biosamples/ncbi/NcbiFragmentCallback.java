@@ -2,6 +2,7 @@ package uk.ac.ebi.biosamples.ncbi;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -16,6 +17,9 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import org.xml.sax.Attributes;
 
+import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.utils.TaxonomyService;
+import uk.ac.ebi.biosamples.utils.ThreadUtils;
 import uk.ac.ebi.biosamples.utils.XmlFragmenter.ElementCallback;
 
 @Component
@@ -23,15 +27,20 @@ public class NcbiFragmentCallback implements ElementCallback {
 	
 	private Logger log = LoggerFactory.getLogger(getClass());
 
-	@Autowired
-	private ApplicationContext context;
+	
+	private final TaxonomyService taxonomyService;
+	
+	private final BioSamplesClient bioSamplesClient;
 	
 	private LocalDate fromDate;
 	private LocalDate toDate;
 	private ExecutorService executorService;
-	private Queue<Future<Void>> futures;
+	private Map<Element, Future<Void>> futures;
 	
-	private NcbiFragmentCallback(){};
+	private NcbiFragmentCallback(TaxonomyService taxonomyService, BioSamplesClient bioSamplesClient){
+		this.taxonomyService = taxonomyService;
+		this.bioSamplesClient = bioSamplesClient;
+	};
 	
 	public LocalDate getFromDate() {
 		return fromDate;
@@ -57,11 +66,11 @@ public class NcbiFragmentCallback implements ElementCallback {
 		this.executorService = executorService;
 	}
 
-	public Queue<Future<Void>> getFutures() {
+	public Map<Element, Future<Void>> getFutures() {
 		return futures;
 	}
 
-	public void setFutures(Queue<Future<Void>> futures) {
+	public void setFutures(Map<Element, Future<Void>> futures) {
 		this.futures = futures;
 	}
 
@@ -71,11 +80,7 @@ public class NcbiFragmentCallback implements ElementCallback {
 		
 		log.trace("Handling element");
 		
-		// have to create multiple beans via context so they all have
-		// their own dao object
-		// this is apparently bad Inversion Of Control but I can't see a
-		// better way to do it
-		Callable<Void> callable = context.getBean(NcbiElementCallable.class, element);
+		Callable<Void> callable = new NcbiElementCallable(taxonomyService, bioSamplesClient, element);
 		
 		if (executorService == null) {
 			try {
@@ -86,8 +91,9 @@ public class NcbiFragmentCallback implements ElementCallback {
 		} else {
 			Future<Void> future = executorService.submit(callable);
 			if (futures != null) {
-				futures.add(future);
+				futures.put(element, future);
 			}
+			ThreadUtils.checkFutures(futures, 100);
 		}
 	}
 

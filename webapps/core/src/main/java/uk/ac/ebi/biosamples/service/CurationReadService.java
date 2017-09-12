@@ -1,112 +1,81 @@
 package uk.ac.ebi.biosamples.service;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import uk.ac.ebi.biosamples.MessageContent;
-import uk.ac.ebi.biosamples.Messaging;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.neo.model.NeoCuration;
-import uk.ac.ebi.biosamples.neo.model.NeoCurationLink;
-import uk.ac.ebi.biosamples.neo.repo.NeoCurationLinkRepository;
-import uk.ac.ebi.biosamples.neo.repo.NeoCurationRepository;
-import uk.ac.ebi.biosamples.neo.service.modelconverter.NeoCurationLinkToCurationLinkConverter;
-import uk.ac.ebi.biosamples.neo.service.modelconverter.NeoCurationToCurationConverter;
+import uk.ac.ebi.biosamples.mongo.model.MongoCuration;
+import uk.ac.ebi.biosamples.mongo.model.MongoCurationLink;
+import uk.ac.ebi.biosamples.mongo.repo.MongoCurationLinkRepository;
+import uk.ac.ebi.biosamples.mongo.repo.MongoCurationRepository;
+import uk.ac.ebi.biosamples.mongo.service.MongoCurationLinkToCurationLinkConverter;
+import uk.ac.ebi.biosamples.mongo.service.MongoCurationToCurationConverter;
 
 @Service
-public class CurationService {
+public class CurationReadService {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
-
 	@Autowired
-	private NeoCurationRepository neoCurationRepository;
+	private MongoCurationRepository mongoCurationRepository;
 	@Autowired
-	private NeoCurationLinkRepository neoCurationLinkRepository;
+	private MongoCurationLinkRepository mongoCurationLinkRepository;
 
 	//TODO use a ConversionService to manage all these
 	@Autowired
-	private NeoCurationToCurationConverter neoCurationToCurationConverter;
+	private MongoCurationLinkToCurationLinkConverter mongoCurationLinkToCurationLinkConverter;
 	@Autowired
-	private NeoCurationLinkToCurationLinkConverter neoCurationLinkToCurationLinkConverter;
-
-	@Autowired
-	private AmqpTemplate amqpTemplate;
+	private MongoCurationToCurationConverter mongoCurationToCurationConverter;
 	
 	public Page<Curation> getPage(Pageable pageable) {
-		Page<NeoCuration> pageNeoCuration = neoCurationRepository.findAll(pageable,2);
-		Page<Curation> pageCuration = pageNeoCuration.map(neoCurationToCurationConverter);		
+		Page<MongoCuration> pageNeoCuration = mongoCurationRepository.findAll(pageable);
+		Page<Curation> pageCuration = pageNeoCuration.map(mongoCurationToCurationConverter);		
 		return pageCuration;
 	}
 
 	public Curation getCuration(String hash) {
-		NeoCuration neoCuration = neoCurationRepository.findOneByHash(hash,2);
+		MongoCuration neoCuration = mongoCurationRepository.findOne(hash);
 		if (neoCuration == null) {
 			return null;
 		} else {
-			return neoCurationToCurationConverter.convert(neoCuration);
+			return mongoCurationToCurationConverter.convert(neoCuration);
 		}
 	}
 
-	@Deprecated
 	public Page<CurationLink> getCurationLinksForSample(String accession, Pageable pageable) {
-		Page<NeoCurationLink> pageNeoCurationLink = neoCurationLinkRepository.findBySampleAccession(accession, pageable);		
-		//get them in greater depth
-		pageNeoCurationLink = pageNeoCurationLink.map(nxr -> neoCurationLinkRepository.findOneByHash(nxr.getHash(), 2));		
+		Page<MongoCurationLink> pageNeoCurationLink = mongoCurationLinkRepository.findBySample(accession, pageable);		
 		//convert them into a state to return
-		Page<CurationLink> pageCuration = pageNeoCurationLink.map(neoCurationLinkToCurationLinkConverter);		
+		Page<CurationLink> pageCuration = pageNeoCurationLink.map(mongoCurationLinkToCurationLinkConverter);		
 		return pageCuration;
 	}
 
 
 	public Page<Curation> getCurationsForSample(String accession, Pageable pageable) {
-		Page<NeoCuration> pageNeoCuration = neoCurationRepository.findBySampleAccession(accession, pageable,1);		
-		//convert them into a state to return
-		//Page<Curation> pageCuration = pageNeoCuration.map(neoCurationToCurationConverter);		
-		
-
-		//stream process each *in parallel*
-		Page<Curation> pageCuration = new PageImpl<>(StreamSupport.stream(pageNeoCuration.spliterator(), true)
-					.map(new Function<NeoCuration,Curation>() {
-						@Override
-						public Curation apply(NeoCuration nc) {
-							return neoCurationToCurationConverter.convert(neoCurationRepository.findOneByHash(nc.getHash(), 1));
-						}
-					}).collect(Collectors.toList()), 
-				pageable, pageNeoCuration.getTotalElements()); 
-		
-		
-		return pageCuration;
+		return getCurationLinksForSample(accession, pageable).map(curationLink -> curationLink.getCuration());
 	}
 
 	public CurationLink getCurationLink(String hash) {
-		NeoCurationLink neo = neoCurationLinkRepository.findOneByHash(hash, 1);
-		CurationLink link = neoCurationLinkToCurationLinkConverter.convert(neo);
+		MongoCurationLink neo = mongoCurationLinkRepository.findOne(hash);
+		CurationLink link = mongoCurationLinkToCurationLinkConverter.convert(neo);
 		return link;
 	}
-		
+	
 	public Sample applyCurationToSample(Sample sample, Curation curation) {
-		log.info("Applying curation "+curation+" to sample "+sample);
+		log.trace("Applying curation "+curation+" to sample "+sample.getAccession());
 		
 		SortedSet<Attribute> attributes = new TreeSet<Attribute>(sample.getAttributes());
 		SortedSet<ExternalReference> externalReferences = new TreeSet<ExternalReference>(sample.getExternalReferences());
@@ -131,13 +100,14 @@ public class CurationService {
 			attributes.add(attribute);
 		}
 		for (ExternalReference externalReference : curation.getExternalReferencesPost()) {
-			if (!externalReferences.contains(externalReference)) {
+			if (externalReferences.contains(externalReference)) {
 				throw new IllegalArgumentException("Attempting to apply curation "+curation+" to sample "+sample);
 			}
 			externalReferences.add(externalReference);
 		}
 		
-		return Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(), sample.getRelease(), sample.getUpdate(), attributes, sample.getRelationships(), externalReferences);
+		return Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(), 
+				sample.getRelease(), sample.getUpdate(), attributes, sample.getRelationships(), externalReferences);
 	}
 	
 	public Sample applyAllCurationToSample(Sample sample) {

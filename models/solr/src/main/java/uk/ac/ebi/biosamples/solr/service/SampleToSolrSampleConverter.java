@@ -1,36 +1,44 @@
 package uk.ac.ebi.biosamples.solr.service;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
-
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
+import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.service.ExternalReferenceNicknameService;
+import uk.ac.ebi.biosamples.service.SampleRelationshipUtils;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 @Service
 public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample> {
 
 	
+	private final ExternalReferenceNicknameService externalReferenceNicknameService;
+	
 	private final DateTimeFormatter solrDateTimeFormatter = DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss'Z'");
+	
+	public SampleToSolrSampleConverter(ExternalReferenceNicknameService externalReferenceNicknameService) {
+		this.externalReferenceNicknameService = externalReferenceNicknameService;
+	}
 	
 	@Override
 	public SolrSample convert(Sample sample) {
 		Map<String, List<String>> attributeValues = null;
 		Map<String, List<String>> attributeIris = null;
 		Map<String, List<String>> attributeUnits = null;
-		
+		Map<String, List<String>> outgoingRelationships = null;
+		Map<String, List<String>> incomingRelationships = null;
+
 		if (sample.getCharacteristics() != null && sample.getCharacteristics().size() > 0) {
 			attributeValues = new HashMap<>();
 			attributeIris = new HashMap<>();
 			attributeUnits = new HashMap<>();
-			
+
 			for (Attribute attr : sample.getCharacteristics()) {
 				
 				String key = attr.getType();
@@ -74,7 +82,7 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 		}	
 		//turn external reference into additional attributes for facet & filter
 		for (ExternalReference externalReference : sample.getExternalReferences()) {
-			String value = getNickname(externalReference.getUrl());
+			String value = externalReferenceNicknameService.getNickname(externalReference);
 			String key = "external reference";
 			
 			if (attributeValues == null) {
@@ -85,15 +93,32 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 			}
 			attributeValues.get(key).add(value);
 		}
-		
+
+		// Add relationships owned by sample
+		SortedSet<Relationship> sampleOutgoingRelationships = SampleRelationshipUtils.getOutgoingRelationships(sample);
+		if ( sampleOutgoingRelationships != null && !sampleOutgoingRelationships.isEmpty()) {
+			outgoingRelationships = new HashMap<>();
+			for (Relationship rel : sampleOutgoingRelationships) {
+				outgoingRelationships.computeIfAbsent(rel.getType(), type -> new ArrayList<>()).add(rel.getTarget());
+			}
+		}
+
+		// Add relationships for which sample is the target
+		SortedSet<Relationship> sampleIngoingRelationships = SampleRelationshipUtils.getIncomingRelationships(sample);
+		if ( sampleIngoingRelationships != null && !sampleIngoingRelationships.isEmpty()) {
+			incomingRelationships = new HashMap<>();
+			for (Relationship rel: sampleIngoingRelationships) {
+				incomingRelationships.computeIfAbsent(rel.getType(), type -> new ArrayList<>()).add(rel.getSource());
+            }
+		}
+
+
 		String releaseSolr = formatDate(sample.getRelease());
 		String updateSolr = formatDate(sample.getUpdate());		
-			
-		
-		
+
 		
 		return SolrSample.build(sample.getName(), sample.getAccession(), sample.getDomain(), releaseSolr, updateSolr,
-				attributeValues, attributeIris, attributeUnits);
+				attributeValues, attributeIris, attributeUnits, outgoingRelationships, incomingRelationships);
 	}
 	
 	private String formatDate(LocalDateTime d) {
@@ -110,15 +135,6 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 		String solrDate =  solrDateTimeFormatter.format(d);
 		return solrDate;
 	}
-	
-	private String getNickname(String url) {
-		//TODO make this more configurable
-		if (url.contains("www.ebi.ac.uk/ena")) {
-			return "ENA";
-		} else if (url.contains("www.ebi.ac.uk/arrayexpress")) {
-			return "ArrayExpress";
-		} else {
-			return "other";
-		}
-	}
+
+
 }

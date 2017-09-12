@@ -27,6 +27,8 @@ import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+
+import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.client.service.AapClientService;
 import uk.ac.ebi.biosamples.client.service.CurationRetrievalService;
 import uk.ac.ebi.biosamples.client.service.CurationSubmissionService;
@@ -36,7 +38,6 @@ import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.SampleValidator;
-
 
 
 /**
@@ -61,22 +62,26 @@ public class BioSamplesClient {
 	private final ExecutorService threadPoolExecutor;
 	
 	public BioSamplesClient(URI uri, RestTemplateBuilder restTemplateBuilder, 
-			SampleValidator sampleValidator, AapClientService aapClientService) {
+			SampleValidator sampleValidator, AapClientService aapClientService, 
+			BioSamplesProperties bioSamplesProperties) {
 		//TODO application.properties this
 		threadPoolExecutor = Executors.newFixedThreadPool(64);
 		
 		RestTemplate restOperations = restTemplateBuilder.build();
 				
 		if (aapClientService != null) {		
+			log.info("Adding AapClientHttpRequestInterceptor");
 			restOperations.getInterceptors().add(new AapClientHttpRequestInterceptor(aapClientService));
+		} else {
+			log.info("No AapClientService avaliable");
 		}
 		
 		Traverson traverson = new Traverson(uri, MediaTypes.HAL_JSON);
 		traverson.setRestOperations(restOperations);
 		
-		sampleRetrievalService = new SampleRetrievalService(restOperations, traverson, threadPoolExecutor);
+		sampleRetrievalService = new SampleRetrievalService(restOperations, traverson, threadPoolExecutor, bioSamplesProperties.getBiosamplesClientPagesize());
 		sampleSubmissionService = new SampleSubmissionService(restOperations, traverson, threadPoolExecutor);
-		curationRetrievalService = new CurationRetrievalService(restOperations, traverson, threadPoolExecutor);
+		curationRetrievalService = new CurationRetrievalService(restOperations, traverson, threadPoolExecutor, bioSamplesProperties.getBiosamplesClientPagesize());
 		curationSubmissionService = new CurationSubmissionService(restOperations, traverson, threadPoolExecutor);
 		
 		this.sampleValidator = sampleValidator;
@@ -124,7 +129,31 @@ public class BioSamplesClient {
 			throw new RuntimeException(e.getCause());
 		}
 	}
-	
+
+	public Iterable<Resource<Sample>> fetchSampleResourceAll() throws RestClientException {
+		return sampleRetrievalService.fetchAll();
+	}
+
+	public Iterable<Resource<Sample>> fetchSampleResourceAll(String text) throws RestClientException {
+		return sampleRetrievalService.fetchAll(text);
+	}
+
+	public Iterable<Optional<Resource<Sample>>> fetchSampleResourceAll(Iterable<String> accessions) throws RestClientException {
+		return sampleRetrievalService.fetchAll(accessions);
+	}
+
+	/**
+	 * Search for samples using pagination. This method should be used for specific pagination needs. When in need for
+	 * all results from a search, prefer the iterator implementation.
+	 * @param text
+	 * @param page
+	 * @param size
+	 * @return a paginated results of samples relative to the search term
+	 */
+	public PagedResources<Resource<Sample>> fetchPagedSamples(String text, int page, int size) {
+		return sampleRetrievalService.search(text, page, size);
+	}
+
 	public Optional<Sample> fetchSample(String accession) throws RestClientException {
 		Optional<Resource<Sample>> resource = fetchSampleResource(accession);
 		if (resource.isPresent()) {
@@ -134,26 +163,21 @@ public class BioSamplesClient {
 		}
 	}	
 
-	public Iterable<Resource<Sample>> fetchSampleResourceAll() throws RestClientException {
-		return sampleRetrievalService.fetchAll();
-	}
-
-	public Iterable<Optional<Resource<Sample>>> fetchSampleResourceAll(Iterable<String> accessions) throws RestClientException {
-		return sampleRetrievalService.fetchAll(accessions);
-	}
-
 	public Resource<Sample> persistSampleResource(Sample sample) throws RestClientException {
-		if (sampleValidator != null) {
-			//validate client-side before submission
-			Collection<String> errors = sampleValidator.validate(sample);		
-			if (errors.size() > 0) {
-				log.info("Errors : "+errors);
-				throw new IllegalArgumentException("Sample not valid");
-			}
+		return persistSampleResource(sample, null);
+	}
+	
+	
+	public Resource<Sample> persistSampleResource(Sample sample, Boolean setUpdateDate) throws RestClientException {
+		//validate client-side before submission
+		Collection<String> errors = sampleValidator.validate(sample);		
+		if (errors.size() > 0) {
+			log.info("Errors : "+errors);
+			throw new IllegalArgumentException("Sample not valid");
 		}
 		
 		try {
-			return sampleSubmissionService.submitAsync(sample).get();
+			return sampleSubmissionService.submitAsync(sample, setUpdateDate).get();
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		} catch (ExecutionException e) {
@@ -166,11 +190,18 @@ public class BioSamplesClient {
 	}
 	
 	public Collection<Resource<Sample>> persistSamples(Collection<Sample> samples) throws RestClientException {
+		return persistSamples(samples, null);
+	}
+	
+	public Collection<Resource<Sample>> persistSamples(Collection<Sample> samples, Boolean setUpdateDate) throws RestClientException {
+		
+		
+		
 		List<Resource<Sample>> results = new ArrayList<>();
 		List<Future<Resource<Sample>>> futures = new ArrayList<>();
 		
 		for (Sample sample : samples) {
-			futures.add(sampleSubmissionService.submitAsync(sample));
+			futures.add(sampleSubmissionService.submitAsync(sample, setUpdateDate));
 		}
 		
 		for (Future<Resource<Sample>> future : futures) {
@@ -191,54 +222,8 @@ public class BioSamplesClient {
 	public Iterable<Resource<Curation>> fetchCurationResourceAll() throws RestClientException {
 		return curationRetrievalService.fetchAll();
 	}
-	public Resource<CurationLink> persistCuration(String accession, Curation curation) throws RestClientException {
+	public Resource<CurationLink> persistCuration(String accession, Curation curation, String domain) throws RestClientException {
 		
-		return curationSubmissionService.submit(CurationLink.build(accession, curation, null, null));
-	}
-        
-    @Deprecated
-	public Resource<Sample> fetchResource(String accession) {
-		try {
-			//TODO add timeout?
-			Optional<Resource<Sample>> optional = sampleRetrievalService.fetch(accession).get();
-			if (optional.isPresent()) {
-				return optional.get();
-			} else {
-				return null;
-			}
-		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
-		} catch (ExecutionException e) {
-			throw new RuntimeException(e.getCause());
-		}
-	}
-	
-	public Resource<CurationLink> persistCuration(CurationLink curationLink) throws RestClientException {
-		return curationSubmissionService.submit(curationLink);
-	}
-	
-	@Deprecated
-	public Sample fetch(String accession) {
-		return fetchResource(accession).getContent();
-	}	
-
-	@Deprecated
-	public Resource<Sample> persistResource(Sample sample) {
-		try {
-			//TODO add timeout?
-			return sampleSubmissionService.submitAsync(sample).get();
-		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
-		} catch (ExecutionException e) {
-			throw new RuntimeException(e.getCause());
-		}
-	}
-	@Deprecated
-	public Sample persist(Sample sample) {
-		return persistResource(sample).getContent();
-	}
-
-	public PagedResources<Resource<Sample>> fetchPagedSamples(String text, int startPage, int size) {
-		return sampleRetrievalService.fetchPaginated(text, startPage, size);
+		return curationSubmissionService.submit(CurationLink.build(accession, curation, domain, null));
 	}
 }

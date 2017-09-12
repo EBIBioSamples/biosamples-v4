@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 @Order
-//@Component
+@Component
 @Profile({"default"})
 public class SitemapIntegration extends AbstractIntegration {
 
@@ -39,6 +39,7 @@ public class SitemapIntegration extends AbstractIntegration {
         super(client);
         this.biosamplesSubmissionUri = integrationProperties.getBiosampleSubmissionUri();
         this.restTemplate = restTemplateBuilder.build();
+
     }
 
     @Override

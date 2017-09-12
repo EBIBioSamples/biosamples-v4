@@ -21,6 +21,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import uk.ac.ebi.biosamples.PipelinesProperties;
+
 @Service
 public class OlsProcessor {
 
@@ -29,11 +31,11 @@ public class OlsProcessor {
 	private final RestOperations restOperations;
 	
 	//TODO make this an application.properties value
-	private final UriComponents uriBuilder = 
-			UriComponentsBuilder.fromUriString("http://wwwdev.ebi.ac.uk/ols/api/terms?id={shortcode}").build();
+	private final UriComponents uriBuilder;
 		
-	public OlsProcessor(RestTemplateBuilder restTemplateBuilder) {
+	public OlsProcessor(RestTemplateBuilder restTemplateBuilder, PipelinesProperties pipelinesProperties) {
 		this.restOperations = restTemplateBuilder.build();
+		uriBuilder = UriComponentsBuilder.fromUriString(pipelinesProperties.getOls()+"/api/terms?id={shortcode}").build();
 	}
 	
 	
@@ -56,7 +58,9 @@ public class OlsProcessor {
 			if (n.get("_embedded").has("terms")) {
 				if (n.get("_embedded").get("terms").size() == 1) {
 					if (n.get("_embedded").get("terms").get(0).has("iri")) {
-						return Optional.of(n.get("_embedded").get("terms").get(0).get("iri").asText());
+						String iri = n.get("_embedded").get("terms").get(0).get("iri").asText();
+						log.info("OLS mapped "+shortcode+"  to "+iri);
+						return Optional.of(iri);
 					}
 				}
 			}	

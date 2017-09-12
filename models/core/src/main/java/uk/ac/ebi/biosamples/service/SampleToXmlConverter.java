@@ -16,16 +16,23 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
 
 import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Sample;
 
 @Service
 @ConfigurationPropertiesBinding
 public class SampleToXmlConverter implements Converter<Sample, Document> {
 	
-	private DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ISO_DATE_TIME;
+	private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ISO_DATE_TIME;
 	
-	private Namespace xmlns = Namespace.get("http://www.ebi.ac.uk/biosamples/SampleGroupExport/1.0");
-	private Namespace xsi = Namespace.get("xsi", "http://www.w3.org/2001/XMLSchema-instance");
+	private final Namespace xmlns = Namespace.get("http://www.ebi.ac.uk/biosamples/SampleGroupExport/1.0");
+	private final Namespace xsi = Namespace.get("xsi", "http://www.w3.org/2001/XMLSchema-instance");
+	private final ExternalReferenceNicknameService externalReferenceNicknameService;
+	
+	
+	public SampleToXmlConverter(ExternalReferenceNicknameService externalReferenceNicknameService) {
+		this.externalReferenceNicknameService = externalReferenceNicknameService;
+	}
 	
 	@Override
 	public Document convert(Sample source) {
@@ -56,6 +63,20 @@ public class SampleToXmlConverter implements Converter<Sample, Document> {
 		SortedMap<String, SortedMap<String, String>> attrUnit = new TreeMap<>();
 		
 		for (Attribute attribute : source.getCharacteristics()) {
+
+/*
+	<Property class="Sample Name" characteristic="false" comment="false"
+		type="STRING">
+		<QualifiedValue>
+			<Value>Test Sample</Value>
+			<TermSourceREF>
+				<Name />
+				<TermSourceID>http://purl.obolibrary.org/obo/NCBITaxon_9606</TermSourceID>
+			</TermSourceREF>
+			<Unit>year</Unit>
+		</QualifiedValue>
+	</Property>		
+ */
 			if (!attrTypeValue.containsKey(attribute.getType())) {
 				attrTypeValue.put(attribute.getType(), new TreeSet<>());
 				attrIri.put(attribute.getType(), new TreeMap<>());
@@ -100,22 +121,25 @@ public class SampleToXmlConverter implements Converter<Sample, Document> {
 		}
 		
 		//TODO derivedFrom element
-		//TODO external references
+		
+		for (ExternalReference externalReference : source.getExternalReferences()) {
+			/*
+			  <Database>
+			    <ID>ERS1463623</ID>
+			    <Name>ENA</Name>
+			    <URI>http://www.ebi.ac.uk/ena/data/view/ERS1463623</URI>
+			  </Database>
+		 	*/	
+			Element database = bioSample.addElement(QName.get("Database", xmlns));
+			//Element databaseId = database.addElement(QName.get("ID", xmlns));
+			//TODO work out how to get the databaseid
+			Element databaseName = database.addElement(QName.get("Name", xmlns));
+			databaseName.setText(externalReferenceNicknameService.getNickname(externalReference));
+			Element databaseUri = database.addElement(QName.get("URI", xmlns));
+			databaseUri.setText(externalReference.getUrl());
+		}
 		return doc;
 	}
 
-/*
-	<Property class="Sample Name" characteristic="false" comment="false"
-		type="STRING">
-		<QualifiedValue>
-			<Value>Test Sample</Value>
-			<TermSourceREF>
-				<Name />
-				<TermSourceID>http://purl.obolibrary.org/obo/NCBITaxon_9606</TermSourceID>
-			</TermSourceREF>
-			<Unit>year</Unit>
-		</QualifiedValue>
-	</Property>		
- */
 
 }

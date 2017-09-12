@@ -74,7 +74,7 @@
 						<!-- /local-title -->
 			            <!-- local-search -->
 						<div class="columns medium-5">
-				            <form id="local-search" name="local-search" th:action="@{samples}" method="get">
+				            <form id="local-search" name="local-search" th:action="@{/samples}" method="get">
 				              <fieldset>				              
 				              	<input type="hidden" name="filter" th:each="filter : ${filters}" th:value="${filter}">
 				                <div class="input-group margin-bottom-none">

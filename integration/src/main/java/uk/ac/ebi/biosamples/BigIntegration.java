@@ -36,15 +36,18 @@ public class BigIntegration extends AbstractIntegration {
 	@Override
 	protected void phaseOne() {
 		
-		//generate a large number of samples
 		List<Sample> samples = new ArrayList<>();
-		for (int i = 0; i < noSamples; i++) {
+		//generate a root sample
+		Sample root = generateSample(0, Collections.emptyList(), null);
+		samples.add(root);
+		//generate a large number of samples
+		for (int i = 1; i < noSamples; i++) {
 
-			Sample sample = generateSample(i, Collections.emptyList());
+			Sample sample = generateSample(i, Collections.emptyList(), root);
 			samples.add(sample);
 		}
 		//generate one sample to rule them all
-		samples.add(generateSample(noSamples, samples));
+		samples.add(generateSample(noSamples, samples, null));
 		
 		//time how long it takes to submit them
 		
@@ -56,22 +59,33 @@ public class BigIntegration extends AbstractIntegration {
 		double msPerSample = elapsedMs/noSamples;
 		log.info("Submitted "+noSamples+" samples in "+elapsedMs+"ms ("+msPerSample+"ms each)");
 		if (msPerSample > 15) {
-			throw new RuntimeException("Took more than 15ms per sample to submit");
+			throw new RuntimeException("Took more than 15ms per sample to submit ("+msPerSample+"ms each)");
 		}
 
 	}
 
 	@Override
 	protected void phaseTwo() {
+		long startTime;
+		long endTime;
+		double elapsedMs;
+		
 		// time how long it takes to get the highly connected sample
 		
-		long startTime = System.nanoTime();
+		startTime = System.nanoTime();
 		client.fetchSample("SAMbig"+noSamples);
-		long endTime = System.nanoTime();
-		double elapsedMs = (int) ((endTime-startTime)/1000000l);
-		if (elapsedMs > 1000) {
-			throw new RuntimeException("Took more than 1000ms to fetch highly-connected sample");
-			
+		endTime = System.nanoTime();
+		elapsedMs = (int) ((endTime-startTime)/1000000l);
+		if (elapsedMs > 5000) {
+			throw new RuntimeException("Took more than 5000ms to fetch highly-connected sample ("+elapsedMs+"ms)");			
+		}
+		
+		startTime = System.nanoTime();
+		client.fetchSample("SAMbig"+0);
+		endTime = System.nanoTime();
+		elapsedMs = (int) ((endTime-startTime)/1000000l);
+		if (elapsedMs > 5000) {
+			throw new RuntimeException("Took more than 5000ms to fetch highly-connected sample ("+elapsedMs+"ms)");			
 		}
 
 	}
@@ -94,7 +108,7 @@ public class BigIntegration extends AbstractIntegration {
 
 	}
 	
-	public Sample generateSample(int i, List<Sample> samples) {
+	public Sample generateSample(int i, List<Sample> samples, Sample root) {
 
 		LocalDateTime update = LocalDateTime.of(LocalDate.of(2016, 5, 5), LocalTime.of(11, 36, 57, 0));
 		LocalDateTime release = LocalDateTime.of(LocalDate.of(2016, 4, 1), LocalTime.of(11, 36, 57, 0));
@@ -107,6 +121,9 @@ public class BigIntegration extends AbstractIntegration {
 		SortedSet<Relationship> relationships = new TreeSet<>();
 		for (Sample other : samples) {
 			relationships.add(Relationship.build("SAMbig"+i, "derived from", other.getAccession()));
+		}
+		if (root != null) {
+			relationships.add(Relationship.build("SAMbig"+i, "derived from", root.getAccession()));
 		}
 		
 		Sample sample = Sample.build("big sample "+i, "SAMbig"+i, domain, release, update, attributes, relationships, null);

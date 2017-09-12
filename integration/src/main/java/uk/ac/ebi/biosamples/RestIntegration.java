@@ -39,7 +39,7 @@ public class RestIntegration extends AbstractIntegration {
 		super(client);
 		this.restTemplate = restTemplateBuilder.build();
 		
-		this.annonymousClient = new BioSamplesClient(clientProperties.getBiosamplesClientUri(), restTemplateBuilder, null, null);
+		this.annonymousClient = new BioSamplesClient(clientProperties.getBiosamplesClientUri(), restTemplateBuilder, null, null, clientProperties);
 	}
 
 	@Override
@@ -52,7 +52,7 @@ public class RestIntegration extends AbstractIntegration {
 		}
 
 		// put a sample
-		Resource<Sample> resource = client.persistSampleResource(sampleTest1);
+		Resource<Sample> resource = client.persistSampleResource(sampleTest1, true);
 		if (!sampleTest1.equals(resource.getContent())) {
 			log.warn("expected: "+sampleTest1);
 			log.warn("found: "+resource.getContent());
@@ -67,6 +67,10 @@ public class RestIntegration extends AbstractIntegration {
 		Optional<Resource<Sample>> optional = client.fetchSampleResource(sampleTest1.getAccession());
 		if (!optional.isPresent()) {
 			throw new RuntimeException("No existing "+sampleTest1.getAccession());
+		}
+		//check the update date
+		if (optional.get().getContent().getUpdate().getYear() == sampleTest1.getUpdate().getYear()) {
+			throw new RuntimeException("Update date was not modified to current year as intended");			
 		}
 		//disabled because not fully operational
 		//checkIfModifiedSince(optional.get());
@@ -100,14 +104,18 @@ public class RestIntegration extends AbstractIntegration {
 		}
 				
 		
-		//check that it is accessible, if authorized
+		//check that it is accessible, if authorised
 		optional = client.fetchSampleResource(sampleTest1.getAccession());
 		if (!optional.isPresent()) {
 			throw new RuntimeException("Cannot access private "+sampleTest1.getAccession());
 		}
 		
 		//put the second sample in
-		Resource<Sample> resource = client.persistSampleResource(sampleTest2);
+		Resource<Sample> resource = client.persistSampleResource(sampleTest2, false);
+		sampleTest2 = Sample.build(sampleTest2.getName(), sampleTest2.getAccession(), null,
+				sampleTest2.getRelease(), sampleTest2.getUpdate(),
+				sampleTest2.getCharacteristics(), sampleTest1.getRelationships(), sampleTest2.getExternalReferences());
+
 		if (!sampleTest2.equals(resource.getContent())) {
 			log.warn("expected: "+sampleTest2);
 			log.warn("found: "+resource.getContent());
@@ -142,6 +150,10 @@ public class RestIntegration extends AbstractIntegration {
 		if (!sampleTest2Rest.getCharacteristics().contains(Attribute.build("UTF-8 test", "αβ", null, null))) {
 			throw new RuntimeException("Unable to find UTF-8 characters");
 		}
+		//check the update date
+		if (sampleTest2Rest.getUpdate().getYear() != sampleTest2.getUpdate().getYear()) {
+			throw new RuntimeException("Update date was modified when it shouldn't have been");			
+		}
 		//now do another update to delete the relationship
 		sampleTest1 = Sample.build(sampleTest1.getName(), sampleTest1.getAccession(), sampleTest1.getDomain(),
 				LocalDateTime.of(LocalDate.of(2116, 4, 1), LocalTime.of(11, 36, 57, 0)), sampleTest1.getUpdate(),
@@ -157,6 +169,20 @@ public class RestIntegration extends AbstractIntegration {
 	
 	@Override
 	protected void phaseFive() {	
+		//check that deleting the relationship actually deleted it
+		Sample sampleTest2 = getSampleTest2();
+		Optional<Resource<Sample>> optional = client.fetchSampleResource(sampleTest2.getAccession());
+		if (!optional.isPresent()) {
+			throw new RuntimeException("No existing "+sampleTest2.getAccession());
+		}
+		Sample sampleTest2Rest = optional.get().getContent();
+		//check other details i.e relationship
+		if (!sampleTest2.equals(sampleTest2Rest)) {
+			log.warn("expected: "+sampleTest2);
+			log.warn("found: "+sampleTest2Rest);
+			throw new RuntimeException("No matching "+sampleTest2.getAccession());
+		}
+		
 	}
 
 	private void checkIfModifiedSince(Resource<Sample> sample) {
@@ -170,6 +196,7 @@ public class RestIntegration extends AbstractIntegration {
 			throw new RuntimeException("Got something other than a 304 response");
 		}
 	}
+	
 	private void checkIfMatch(Resource<Sample> sample) {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setIfNoneMatch("W/\""+sample.getContent().hashCode()+"\"");

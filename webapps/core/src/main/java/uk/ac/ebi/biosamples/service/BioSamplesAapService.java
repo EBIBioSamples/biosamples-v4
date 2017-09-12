@@ -177,7 +177,7 @@ public class BioSamplesAapService {
 	
 	
 	public void checkAccessible(Sample sample) throws SampleNotAccessibleException {
-
+		//TODO throw different exceptions in different situations
 		if (sample.getRelease().isBefore(LocalDateTime.now())) {
 			//release date in past, accessible
 		} else if (getDomains().contains(sample.getDomain())) {

@@ -21,6 +21,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import uk.ac.ebi.biosamples.PipelinesProperties;
+
 @Service
 public class ZoomaProcessor {
 
@@ -29,17 +31,17 @@ public class ZoomaProcessor {
 	private final RestOperations restOperations;
 	
 	//TODO make this an application.properties value
-	private final UriComponents uriBuilder = 
-			UriComponentsBuilder.fromUriString("http://wwwdev.ebi.ac.uk/spot/zooma/v2/api/services/annotate?propertyValue={value}&propertyType={type}").build();
+	private final UriComponents uriBuilder;
 		
-	public ZoomaProcessor(RestTemplateBuilder restTemplateBuilder) {
+	public ZoomaProcessor(RestTemplateBuilder restTemplateBuilder, PipelinesProperties pipelinesProperties) {
 		this.restOperations = restTemplateBuilder.build();
+		uriBuilder = UriComponentsBuilder.fromUriString(pipelinesProperties.getZooma()+"/v2/api/services/annotate?propertyValue={value}&propertyType={type}").build();
 	}
 	
 	
 	@Cacheable("zooma")
 	public Optional<String> queryZooma(String type, String value) {
-		log.info("Zooma getting : "+type+" : "+value);
+		log.trace("Zooma getting : "+type+" : "+value);
 		URI uri = uriBuilder.expand(value, type).encode().toUri();
 		//log.info("Zooma uri : "+uri);
 		
@@ -62,9 +64,9 @@ public class ZoomaProcessor {
 		if (!n.has("semanticTags") || n.get("semanticTags").size() != 1) {
 			return null;
 		}
-		
-		return Optional.of(n.get("semanticTags").get(0).asText());
-		
+		String iri = n.get("semanticTags").get(0).asText();
+		log.info("Zooma mapped "+value+" ("+value+") to "+iri);
+		return Optional.of(iri);		
 	}
 	
 	

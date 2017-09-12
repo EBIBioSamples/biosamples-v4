@@ -1,7 +1,7 @@
-docker/
 models/
 messaging/
 client/
+properties/
 ncbi.xml.gz
 **/.settings/
 **/.classpath

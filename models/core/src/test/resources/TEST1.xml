@@ -1,19 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BioSample 
-	xmlns="http://www.ebi.ac.uk/biosamples/SampleGroupExport/1.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+<BioSample xmlns="http://www.ebi.ac.uk/biosamples/SampleGroupExport/1.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.ebi.ac.uk/biosamples/SampleGroupExport/1.0 http://www.ebi.ac.uk/biosamples/assets/xsd/v1.0/BioSDSchema.xsd"
-	id="TEST1" 
-	submissionUpdateDate="2016-05-05T11:36:57+00:00"
-	submissionReleaseDate="2016-04-01T11:36:57+00:00" >
+	id="TEST1" submissionUpdateDate="2016-05-05T11:36:57+00:00"
+	submissionReleaseDate="2016-04-01T11:36:57+00:00">
 	<Property class="Sample Name" characteristic="false" comment="false"
 		type="STRING">
 		<QualifiedValue>
 			<Value>Test Sample</Value>
 		</QualifiedValue>
 	</Property>
-	<Property class="age" characteristic="false"
-		comment="false" type="STRING">
+	<Property class="age" characteristic="false" comment="false"
+		type="STRING">
 		<QualifiedValue>
 			<Value>3</Value>
 			<Unit>year</Unit>
@@ -38,5 +36,10 @@
 			<Value>lung</Value>
 		</QualifiedValue>
 	</Property>
-<!-- 	<derivedFrom>TEST2</derivedFrom> -->
+	<Database>
+		<Name>other</Name>
+		<URI>http://www.google.com</URI>
+	</Database>
+
+	<!-- <derivedFrom>TEST2</derivedFrom> -->
 </BioSample>

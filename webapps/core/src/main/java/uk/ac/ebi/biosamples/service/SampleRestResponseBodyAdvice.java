@@ -1,9 +1,6 @@
 package uk.ac.ebi.biosamples.service;
 
-import java.nio.charset.Charset;
-import java.time.ZoneOffset;
-import java.util.concurrent.TimeUnit;
-
+import com.google.common.hash.Hashing;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.time.ZoneOffset;
@@ -20,11 +17,12 @@ import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
-
-import com.google.common.hash.Hashing;
-
 import uk.ac.ebi.biosamples.controller.SampleRestController;
 import uk.ac.ebi.biosamples.model.Sample;
+
+import java.nio.charset.Charset;
+import java.time.ZoneOffset;
+import java.util.concurrent.TimeUnit;
 
 @RestControllerAdvice(assignableTypes = SampleRestController.class)
 public class SampleRestResponseBodyAdvice implements ResponseBodyAdvice<Resource<Sample>> {
@@ -33,14 +31,14 @@ public class SampleRestResponseBodyAdvice implements ResponseBodyAdvice<Resource
 
 	@Override
 	public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
-		return true;
+		return returnType.getMethod().getReturnType() == Resource.class;
 	}
 
 	@Override
 	public Resource<Sample> beforeBodyWrite(Resource<Sample> body, MethodParameter returnType,
 			MediaType selectedContentType, Class<? extends HttpMessageConverter<?>> selectedConverterType,
 			ServerHttpRequest request, ServerHttpResponse response) {
-		
+/*
 		if (body == null) {
 			//error, stop here
 			log.trace("null body detected");
@@ -67,7 +65,6 @@ public class SampleRestResponseBodyAdvice implements ResponseBodyAdvice<Resource
 		//@faulcon 28/06/17 disabled because not sure it is working correctly
 		//response.getHeaders().setETag(eTag);
 		//cache-control has to be set even on a 304
-		response.getHeaders().setCacheControl(CacheControl.maxAge(1, TimeUnit.MINUTES).getHeaderValue());
 		
 
 		//the client used a modified cache header that is sufficient to 
@@ -76,7 +73,7 @@ public class SampleRestResponseBodyAdvice implements ResponseBodyAdvice<Resource
 		eTag = "W/\"" + body.getContent().hashCode() + "\"";
 		
 		//an ETag has to be set even on a 304 response see https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.5
-		response.getHeaders().setETag(eTag);
+		//response.getHeaders().setETag(eTag);
 		
 		if ((request.getHeaders().getIfNoneMatch().contains(eTag)
 				|| request.getHeaders().getIfNoneMatch().contains("*")) 
@@ -100,8 +97,8 @@ public class SampleRestResponseBodyAdvice implements ResponseBodyAdvice<Resource
 		
 		//response.getHeaders().setLastModified(lastModified);
 		
-		response.getHeaders().setCacheControl(CacheControl.maxAge(1, TimeUnit.MINUTES).cachePublic().getHeaderValue());
-
+		//response.getHeaders().setCacheControl(CacheControl.maxAge(1, TimeUnit.MINUTES).cachePublic().getHeaderValue());
+*/
 		return body;
 	}
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-clean=
+clean=0
 while [ "$1" != "" ]; do
     case $1 in
         -c | --clean )    		clean=1
@@ -11,27 +11,17 @@ while [ "$1" != "" ]; do
 done
 
 #mvn -T 2C -Dmaven.test.skip=true clean package
-mvn -T 2C -P embl-ebi clean package
+mvn -T 2C -P embl-ebi package
 
-set +e
-docker-compose stop biosamples-webapps-core biosamples-webapps-sampletab biosamples-webapps-legacyxml mongo neo4j solr rabbitmq biosamples-agents-solr biosamples-agents-curation biosamples-agents-neo4j
-docker-compose rm -f -v biosamples-webapps-core biosamples-webapps-sampletab biosamples-webapps-legacyxml mongo neo4j solr rabbitmq biosamples-agents-solr biosamples-agents-curation biosamples-agents-neo4j
 #cleanup any previous data
-if [ -n $clean ]
+if [ $clean == 1 ]
 then
 	echo "Cleaning existing volumes"
-	docker volume ls -q | grep mongo_data | xargs docker volume rm
-	docker volume ls -q | grep neo4j_data | xargs docker volume rm
-	docker volume ls -q | grep solr_data | xargs docker volume rm
-	docker volume ls -q | grep rabbitmq_data | xargs docker volume rm
-
-        echo "Cleaning logs"
-        rm -rf docker/logs/*.log docker/logs/*.log.* docker/logs/neo4j/*.log
-
-#remove any images, in case of out-of-date or corrupt images
-#docker images -q | xargs -r docker rmi
-
-
+	#remove any images, in case of out-of-date or corrupt images
+	#docker-compose down --volumes --rmi --remove-orphans
+	docker-compose down --volumes --remove-orphans
+else
+	docker-compose down --remove-orphans
 fi
 set -e
 
@@ -39,21 +29,13 @@ set -e
 docker-compose build
 
 #start up the webapps (and dependencies)
-docker-compose up -d solr neo4j rabbitmq mongo
+docker-compose up -d --remove-orphans solr rabbitmq mongo
 echo "checking solr is up"
 ./http-status-check -u http://localhost:8983 -t 30
-echo "checking neo4j is up"
-./http-status-check -u http://localhost:7474 -t 30
 echo "checking rabbitmq is up"
 ./http-status-check -u http://localhost:15672 -t 30
 echo "checking mongo is up"
 ./http-status-check -u http://localhost:27017 -t 30
-
-if [ -n $clean ]
-then
-        echo "Creating neo4j indexes"
-        docker-compose run --rm --service-ports biosamples-agents-neo4j java -jar agents-neo4j-4.0.0-SNAPSHOT.jar --biosamples.agent.neo4j.stayalive=false --spring.data.neo4j.indexes.auto=assert
-fi
 
 docker-compose up -d biosamples-webapps-core biosamples-webapps-sampletab biosamples-webapps-legacyxml
 echo "checking webapps-core is up"

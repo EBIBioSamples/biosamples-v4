@@ -31,6 +31,9 @@ public class BioSamplesProperties {
 	
 	@Value("${biosamples.client.uri:http://localhost:8081}")
 	private URI biosamplesClientUri;
+
+	@Value("${biosamples.client.pagesize:1000}")
+	private int biosamplesClientPagesize;
 	
 	@Value("${biosamples.client.aap.uri:https://explore.api.aap.tsi.ebi.ac.uk/auth}")
 	private URI biosamplesClientAapUri;
@@ -46,6 +49,10 @@ public class BioSamplesProperties {
 	
 	public URI getBiosamplesClientUri() {
 		return biosamplesClientUri;
+	}
+	
+	public int getBiosamplesClientPagesize() {
+		return biosamplesClientPagesize;
 	}
 	
 	public URI getBiosamplesClientAapUri() {
