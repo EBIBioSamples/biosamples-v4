@@ -2,7 +2,9 @@ package uk.ac.ebi.biosamples.client.service;
 
 import java.net.URI;
 import java.nio.charset.Charset;
+import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.Date;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +14,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestOperations;
+
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.exceptions.JWTDecodeException;
+import com.auth0.jwt.interfaces.DecodedJWT;
 
 public class AapClientService {
 	
@@ -24,6 +30,7 @@ public class AapClientService {
 	private final String password;
 	
 	private String jwt = null;
+	private Date expiry = null;
 	
 	public AapClientService(RestTemplateBuilder restTemplateBuilder, URI aapUri, String username, String password) {
 		this.restOperations = restTemplateBuilder.build();
@@ -34,19 +41,33 @@ public class AapClientService {
 	
 	//TODO put some sort of cache/validation layer over this
 	public String getJwt() {		
-		String auth = username + ":" + password;
-        byte[] encodedAuth = Base64.getEncoder().encode(auth.getBytes(Charset.forName("US-ASCII")) );
-        String authHeader = "Basic " + new String( encodedAuth );		
 		
-        RequestEntity<?> request = RequestEntity.get(aapUri)
-				.header(HttpHeaders.AUTHORIZATION, authHeader)
-				//.accept(MediaType.TEXT_PLAIN)
-				.build();
-        
-		ResponseEntity<String> response = restOperations.exchange(request, String.class);
+		if (jwt == null || expiry.before(new Date())) {
 		
-		String jwt = response.getBody();
+			String auth = username + ":" + password;
+	        byte[] encodedAuth = Base64.getEncoder().encode(auth.getBytes(Charset.forName("US-ASCII")) );
+	        String authHeader = "Basic " + new String( encodedAuth );		
+			
+	        RequestEntity<?> request = RequestEntity.get(aapUri)
+					.header(HttpHeaders.AUTHORIZATION, authHeader)
+					.accept(MediaType.TEXT_PLAIN)
+					.build();
+	        
+			ResponseEntity<String> response = restOperations.exchange(request, String.class);
+			
+			jwt = response.getBody();
+			
+			try {
+			    DecodedJWT decodedJwt = JWT.decode(jwt);
+			    expiry = decodedJwt.getExpiresAt();
+			} catch (JWTDecodeException e){
+			    //Invalid token
+				throw new RuntimeException(e);
+			}
+
 		log.info("jwt = "+jwt);
+		}
+		
 		return jwt;
 	}
 }
