@@ -31,10 +31,12 @@ public class BioSamplesAapService {
 	private Logger log = LoggerFactory.getLogger(getClass());
 	
 	private final Traverson traverson;
+	private final BioSamplesProperties bioSamplesProperties;
 	
 	public BioSamplesAapService(RestTemplateBuilder restTemplateBuilder, BioSamplesProperties bioSamplesProperties) {
 		traverson = new Traverson(bioSamplesProperties.getBiosamplesClientAapUri(), MediaTypes.HAL_JSON);
 		traverson.setRestOperations(restTemplateBuilder.build());
+		this.bioSamplesProperties = bioSamplesProperties;
 	}
 
 	@ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Curation Link must specify a domain") // 400
@@ -131,12 +133,14 @@ public class BioSamplesAapService {
 		}
 
 		//check sample is assigned to a domain that the authenticated user has access to
-		if (!usersDomains.contains(sample.getDomain())) {
-			log.info("User asked to submit sample to domain "+sample.getDomain()+" but has access to "+usersDomains);
+		if (usersDomains.contains(bioSamplesProperties.getBiosamplesAapSuperWrite())) {
+			return sample;
+		} else if (usersDomains.contains(sample.getDomain())) {
+			return sample;
+		} else {
+			log.info("User asked to submit curation to domain "+sample.getDomain()+" but has access to "+usersDomains);
 			throw new SampleNotAccessibleException();
 		}
-		
-		return sample;
 	}
 
 	/**
@@ -167,12 +171,15 @@ public class BioSamplesAapService {
 		}
 
 		//check sample is assigned to a domain that the authenticated user has access to
-		if (!usersDomains.contains(curationLink.getDomain())) {
+		if (usersDomains.contains(bioSamplesProperties.getBiosamplesAapSuperWrite())) {
+			return curationLink;
+		} else if (usersDomains.contains(curationLink.getDomain())) {
+			return curationLink;
+		} else {
 			log.info("User asked to submit curation to domain "+curationLink.getDomain()+" but has access to "+usersDomains);
 			throw new SampleNotAccessibleException();
 		}
 		
-		return curationLink;
 	}
 	
 	
@@ -180,6 +187,8 @@ public class BioSamplesAapService {
 		//TODO throw different exceptions in different situations
 		if (sample.getRelease().isBefore(LocalDateTime.now())) {
 			//release date in past, accessible
+		} else if (getDomains().contains(bioSamplesProperties.getBiosamplesAapSuperRead())) {
+			//if the current user belongs to a super read domain, accessible
 		} else if (getDomains().contains(sample.getDomain())) {
 			//if the current user belongs to a domain that owns the sample, accessible
 		} else {

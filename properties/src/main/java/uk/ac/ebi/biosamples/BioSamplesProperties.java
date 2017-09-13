@@ -27,7 +27,6 @@ public class BioSamplesProperties {
 
 	@Value("${biosamples.agent.solr.queuetime:1000}")
 	private int agentSolrQueueTime;
-
 	
 	@Value("${biosamples.client.uri:http://localhost:8081}")
 	private URI biosamplesClientUri;
@@ -45,6 +44,12 @@ public class BioSamplesProperties {
 	//can't use "null" because it will be a string
 	@Value("${biosamples.client.aap.password:#{null}}")
 	private String biosamplesClientAapPassword;
+	
+	@Value("${biosamples.aap.super.read:biosamples.super.read}")
+	private String biosamplesAapSuperRead;
+	
+	@Value("${biosamples.aap.super.write:biosamples.super.write}")
+	private String biosamplesAapSuperWrite;
 
 	
 	public URI getBiosamplesClientUri() {
@@ -65,6 +70,14 @@ public class BioSamplesProperties {
 	
 	public String getBiosamplesClientAapPassword() {
 		return biosamplesClientAapPassword;
+	}
+	
+	public String getBiosamplesAapSuperRead() {
+		return biosamplesAapSuperRead;
+	}
+	
+	public String getBiosamplesAapSuperWrite() {
+		return biosamplesAapSuperWrite;
 	}
 	
 	public boolean getAgentCurationStayalive() {
