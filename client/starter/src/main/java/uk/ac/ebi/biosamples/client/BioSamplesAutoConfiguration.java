@@ -51,6 +51,12 @@ public class BioSamplesAutoConfiguration {
 	public SampleValidator sampleValidator(AttributeValidator attributeValidator) {
 		return new SampleValidator(attributeValidator);
 	}
+	
+	@Bean	
+	@ConditionalOnMissingBean(BioSamplesProperties.class)
+	public BioSamplesProperties bioSamplesProperties() {
+		return new BioSamplesProperties();
+	}
 		
 	@Bean	
 	@ConditionalOnMissingBean(AapClientService.class)
