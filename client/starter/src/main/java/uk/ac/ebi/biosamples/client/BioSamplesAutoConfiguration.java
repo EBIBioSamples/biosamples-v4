@@ -15,7 +15,9 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicHeaderElementIterator;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.protocol.HttpContext;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.web.WebClientAutoConfiguration;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.boot.web.client.RestTemplateCustomizer;
 import org.springframework.context.annotation.Bean;
@@ -38,6 +40,7 @@ import uk.ac.ebi.biosamples.service.AttributeValidator;
 import uk.ac.ebi.biosamples.service.SampleValidator;
 
 @Configuration
+@AutoConfigureAfter(WebClientAutoConfiguration.class)
 public class BioSamplesAutoConfiguration {
 
 	@Bean	
