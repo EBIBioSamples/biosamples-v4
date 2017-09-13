@@ -146,12 +146,12 @@ public class MongoSample {
 		}
 
 		sample.relationships = new TreeSet<>();
-		if (relationships != null || relationships.size() > 0) {
+		if (relationships != null && relationships.size() > 0) {
 			sample.relationships.addAll(relationships);
 		}
 
 		sample.externalReferences = new TreeSet<>();
-		if (externalReferences != null || externalReferences.size() > 0) {
+		if (externalReferences != null && externalReferences.size() > 0) {
 			sample.externalReferences.addAll(externalReferences);
 		}	
 		
