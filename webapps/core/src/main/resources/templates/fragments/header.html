@@ -44,8 +44,8 @@
 															class="input-group-field"
 															placeholder="Search all of EMBL-EBI" />
 														<div class="input-group-button">
-															<input type="submit" name="submit" value="Search" class="button" /> 
-															<input type="hidden" name="db" value="allebi" checked="checked" /> 
+															<input type="submit" name="submit" value="Search" class="button" />
+															<input type="hidden" name="db" value="allebi" checked="checked" />
 															<input type="hidden" name="requestFrom" value="global-masthead"	checked="checked" />
 														</div>
 													</div>
@@ -76,7 +76,7 @@
 						<div class="columns medium-5">
 				            <form id="local-search" name="local-search" th:action="@{/samples}" method="get">
 				              <fieldset>				              
-				              	<input type="hidden" name="filter" th:each="filter : ${filters}" th:value="${filter}">
+				              	<!--<input type="hidden" name="filter" th:each="filter : ${filters}" th:value="@{${filter}}">-->
 				                <div class="input-group margin-bottom-none">
 				                  <input type="text" name="text" id="local-searchbox" placeholder="Search" class="input-group-field" th:value="${param.text}" />
 				                  <div class="input-group-button"><input type="submit" class="button icon icon-functional" value="1" ></div>

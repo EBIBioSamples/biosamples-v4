@@ -6,21 +6,43 @@
 <body>
 	<section th:fragment="facets (facets, facetsuri, filters)">
 		<div class="button-grid">
-			<div th:each="facet : ${facets}">
-				<a class="button columns medium-12 margin-top-medium padding-top-small padding-bottom-small" 
-						th:classappend="${filters.contains(facet.label)} ? 'secondary'"
-						th:href="${facetsuri.get(facet.label)}"> 
+			<div th:each="facet : ${facets}"
+				 th:with="facetType=${facet.getType().getFacetId()}, filterName=${facetType + ':' + facet.label}">
+                <a class="button columns medium-12 margin-top-medium padding-top-small padding-bottom-small" style="position: relative;"
+				   th:classappend="${#lists.contains(filters, filterName)} ? 'secondary'">
+					<input th:form="local-search"
+						   th:id="${filterName}"
+						   type="checkbox" name="filter"
+						   th:value="${filterName}"
+						   th:checked="${#lists.contains(filters, filterName)}"
+						   style="position: absolute; left: 0; top: 0; width:100%; height:100%" />
 					<span class="lead float-left text-left" th:text="${facet.label}"></span>
 					<span class="lead float-right text-right" th:text="${facet.count}"></span>
-				</a> 
-				<span th:each="value : ${facet.getValues()}" th:remove="tag">
-					<a class="button columns medium-12 padding-top-small padding-bottom-small"
-						th:classappend="${filters.contains(facet.label+':'+value.label)} ? 'secondary'"
-						th:href="${facetsuri.get(facet.label+':'+value.label)}"> 
-						<span class="float-left text-left" th:text="${value.label}"></span> 
-						<span class="float-right text-right" th:text="${value.count}"></span>
-					</a>
-				</span>
+				</a>
+				<a th:each="resource : ${facet.getContent()}"
+					 th:with="value=${resource.getContent()}, valueFilterName=${filterName + ':' + value.label}"
+					 class="button columns medium-12 padding-top-small padding-bottom-small"
+				     th:classappend="${#lists.contains(filters, valueFilterName)} ? 'secondary'"
+					 style="position: relative">
+					<input th:form="local-search" th:with="filterName=${facetType + ':' + facet.label}"
+						   th:id="${valueFilterName}"
+						   type="checkbox" name="filter"
+						   th:value="${valueFilterName}"
+						   th:checked="${#lists.contains(filters, valueFilterName)}"
+						   style="position: absolute; left: 0; top: 0; width:100%; height:100%" />
+					<span class="float-left text-left" th:text="${value.label}"></span>
+					<span class="float-right text-right" th:text="${value.count}"></span>
+				</a>
+				<!--<span th:each="resource : ${facet.getContent()}" th:remove="tag"-->
+					  <!--th:with="value=${resource.getContent()}, valueFilterName=${filterName + ':' + value.label}">-->
+				<!--</span>-->
+				<!--<a class="button columns medium-12 margin-top-medium padding-top-small padding-bottom-small" th:text="${facetType}"></a>-->
+				<!--<a class="button columns medium-12 margin-top-medium padding-top-small padding-bottom-small"-->
+				<!--th:classappend="${filters.contains(facetType+':'+facet.label)} ? 'secondary'">-->
+				<!--&lt;!&ndash;th:href="${facetsuri.get(facet.label)}">&ndash;&gt;-->
+				<!--<span class="lead float-left text-left" th:text="${facet.label}"></span>-->
+				<!--<span class="lead float-right text-right" th:text="${facet.count}"></span>-->
+				<!--</a>-->
 			</div>
 		</div>
 	</section>

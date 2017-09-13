@@ -1,14 +1,16 @@
 package uk.ac.ebi.biosamples.service;
 
-import java.util.Arrays;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.util.UriUtils;
+
+import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 
 @Service
@@ -23,22 +25,40 @@ public class FilterService {
 		Arrays.sort(filterStrings);
 		SortedSet<String> filterStringSet = new TreeSet<>(Arrays.asList(filterStrings));
 		//strip the requestParams down to just the selected facet information
-		MultiValueMap<String,String> filters = new LinkedMultiValueMap<>();
+		MultiValueMap<String, String> filters = new LinkedMultiValueMap<>();
 		for (String filterString : filterStringSet) {
-			log.info("looking at filter string '"+filterString+"'");
+			log.info("looking at filter string '" + filterString + "'");
 			if (filterString.contains(":")) {
-				String key = filterString.substring(0, filterString.indexOf(":"));
-				String value = filterString.substring(filterString.indexOf(":")+1, filterString.length());
-				//key = SolrSampleService.attributeTypeToField(key);
-				filters.add(key, value);
-				log.info("adding filter "+key+" = "+value);
-			} else {
-				String key=filterString;
-				//key = SolrSampleService.attributeTypeToField(key);
-				filters.add(key, null);
-				log.info("adding filter "+key);
+				// Assume filter format is FacetType:FacetLabel:FacetLabelValue
+
+				String[] filterParts = filterString.split(":", 3);
+				String key = filterParts[0] + ":" + filterParts[1];
+				String value = null;
+				if (filterParts.length > 2) {
+					value = filterParts[2];
+				}
+				filters.add(decodeParam(key), decodeParam(value));
+				log.info("adding filter " + key + " = " + value);
 			}
 		}
 		return filters;
 	}
+
+	private String encodeParam(String queryParam) {
+		try {
+			return UriUtils.encodeQueryParam(queryParam, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	private String decodeParam(String queryParam) {
+		try {
+			return UriUtils.decode(queryParam, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+
 }

@@ -1,7 +1,5 @@
 package uk.ac.ebi.biosamples.controller;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -9,7 +7,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.MultiValueMap;
@@ -20,9 +17,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.SampleFacet;
-import uk.ac.ebi.biosamples.model.SampleFacetValue;
+import uk.ac.ebi.biosamples.model.facets.StringListFacet;
 import uk.ac.ebi.biosamples.service.*;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.net.URI;
@@ -115,11 +112,25 @@ public class SampleHtmlController {
 		Pageable pageable = new PageRequest(start/rows, rows);
 		Page<Sample> pageSample = samplePageService.getSamplesByText(text, filtersMap, updatedAfterDate, updatedBeforeDate, pageable);
 		//default to getting 10 values from 10 facets
-		List<SampleFacet> sampleFacets = facetService.getFacets(text, filtersMap, 10, 10);
+		List<StringListFacet> sampleFacets = facetService.getFacets(text, filtersMap, 10, 10);
+		// TODO Encode filters using
+//		sampleFacets.stream().map(stringListFacet ->
+//		{
+//			Map<String, Object> parameters = new HashMap<>();
+//			parameters.put("text", text);
+//			parameters.put("updatedafter", updatedAfter);
+//			parameters.put("updatedbefore", updatedBefore);
+//			List<Resource<LabelCountEntry>> facetEntries = (List<Resource<LabelCountEntry>>) stringListFacet.getContent();
+//			for(Resource<LabelCountEntry> resource: facetEntries) {
+//				resource.getLink("filter").expand(parameters);
+//
+//			}
+//
+//		})
 		
 		//build URLs for the facets depending on if they are enabled or not
-		UriComponentsBuilder uriBuilder = ServletUriComponentsBuilder.fromRequest(request);		
-		Map<String, String> facetsUri = new HashMap<>();		
+		UriComponentsBuilder uriBuilder = ServletUriComponentsBuilder.fromRequest(request);
+		Map<String, String> facetsUri = new HashMap<>();
 		List<String> filtersList = new ArrayList<>();
 		if (filters != null) {
 			filtersList.addAll(Arrays.asList(filters));
@@ -127,32 +138,34 @@ public class SampleHtmlController {
 		Collections.sort(filtersList);
 		
 		//now actually build the URLs for each facet
-		URI uri;
-		for (SampleFacet sampleFacet : sampleFacets) {
-			//check if the filter all is on
-			if (filtersList.contains(sampleFacet.getLabel())) {
-				uri = getFilterUri(uriBuilder, filtersList, null, sampleFacet.getLabel());
-				facetsUri.put(sampleFacet.getLabel(), uri.toString());				
-			} else {
-				//filter is off, add uri to turn it on
-				uri = getFilterUri(uriBuilder, filtersList, sampleFacet.getLabel(), null);
-				facetsUri.put(sampleFacet.getLabel(), uri.toString());
-			}	
-			//check for each facet
-			for (SampleFacetValue sampleFacetValue : sampleFacet.getValues()) {
-				//check if the filter for this facet is on
-				String filter = sampleFacet.getLabel()+":"+sampleFacetValue.label;
-				if (filtersList.contains(filter)) {
-					//filter is on, add uri to turn it off
-					uri = getFilterUri(uriBuilder, filtersList, null, filter);
-					facetsUri.put(filter, uri.toString());
-				} else {
-					//filter is off, add uri to turn it on
-					uri = getFilterUri(uriBuilder, filtersList, filter, null);
-					facetsUri.put(filter, uri.toString());	
-				}
-			}
-		}
+		// TODO sampleFacets is a generic facet, need to make this part compatible with more than List of label facet
+//		URI uri;
+//		for (StringListFacet sampleFacet : sampleFacets) {
+//			//check if the filter all is on
+//			String facetLabel = String.format("%s:%s",sampleFacet.getType().getFacetId(), sampleFacet.getLabel());
+//			if (filtersList.contains(facetLabel)) {
+//				uri = getFilterUri(uriBuilder, filtersList, null, facetLabel);
+//				facetsUri.put(sampleFacet.getLabel(), uri.toString());
+//			} else {
+//				//filter is off, add uri to turn it on
+//				uri = getFilterUri(uriBuilder, filtersList, facetLabel, null);
+//				facetsUri.put(sampleFacet.getLabel(), uri.toString());
+//			}
+//			//check for each facet
+//			for (LabelCountEntry sampleFacetValue : sampleFacet.getContent()) {
+//				//check if the filter for this facet is on
+//				String filter = facetLabel+":"+sampleFacetValue.label;
+//				if (filtersList.contains(filter)) {
+//					//filter is on, add uri to turn it off
+//					uri = getFilterUri(uriBuilder, filtersList, null, filter);
+//					facetsUri.put(filter, uri.toString());
+//				} else {
+//					//filter is off, add uri to turn it on
+//					uri = getFilterUri(uriBuilder, filtersList, filter, null);
+//					facetsUri.put(filter, uri.toString());
+//				}
+//			}
+//		}
 								
 		model.addAttribute("text", text);		
 		model.addAttribute("start", start);
@@ -259,7 +272,7 @@ public class SampleHtmlController {
 			this.current = (currentNo == pageNo);
 			this.url = uriBuilder.cloneBuilder()
 					.replaceQueryParam("start", (pageNo-1)*pageSample.getSize())
-					.build(true).toUri().toString();
+					.build(true).encode().toUri().toString();
 		}
 	}
 	
