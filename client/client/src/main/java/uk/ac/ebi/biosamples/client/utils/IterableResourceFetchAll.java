@@ -22,8 +22,6 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import uk.ac.ebi.biosamples.model.Sample;
-
 public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
 	
 	private Logger log = LoggerFactory.getLogger(getClass());	

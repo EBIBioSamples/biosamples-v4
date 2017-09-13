@@ -1,8 +1,6 @@
 package uk.ac.ebi.biosamples.solr.model;
 
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;

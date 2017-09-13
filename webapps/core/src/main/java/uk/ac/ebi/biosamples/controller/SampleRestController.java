@@ -18,7 +18,6 @@ import uk.ac.ebi.biosamples.service.*;
 
 import java.net.URI;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.Optional;
 
 /**

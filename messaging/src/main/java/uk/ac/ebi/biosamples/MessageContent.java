@@ -1,6 +1,5 @@
 package uk.ac.ebi.biosamples;
 
-import java.util.Collections;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
