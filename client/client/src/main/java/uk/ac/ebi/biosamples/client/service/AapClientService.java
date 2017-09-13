@@ -50,7 +50,7 @@ public class AapClientService {
 			
 	        RequestEntity<?> request = RequestEntity.get(aapUri)
 					.header(HttpHeaders.AUTHORIZATION, authHeader)
-					.accept(MediaType.TEXT_PLAIN)
+					//.accept(MediaType.TEXT_PLAIN)
 					.build();
 	        
 			ResponseEntity<String> response = restOperations.exchange(request, String.class);
