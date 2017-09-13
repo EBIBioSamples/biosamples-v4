@@ -1,0 +1,50 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.w3.org/1999/xhtml">
+	
+<head th:replace="fragments/head :: head">
+	<title>BioSamples &lt; EMBL-EBI</title>
+	<!-- A few keywords that relate to the content of THIS PAGE (not the whole project) -->
+	<meta name="keywords" content="biosamples, europe, EBI" />
+	<!-- Describe what this page is about -->
+	<meta name="description" content="EMBL-EBI" />
+	
+	<meta name="ebi:last-review" content="2016-12-20" />
+	<!-- The last time the content was reviewed -->
+	<meta name="ebi:expiry" content="2017-12-20" />
+	<!-- When this content is no longer relevant -->
+</head>
+
+<body>
+	<div th:insert="fragments/header :: header"></div>
+	<div layout:fragment="content">
+		<div id="main-content-area" class="row"> 
+	        <h2>About BioSamples</h2>
+	
+	        <h3 class="icon icon-generic" data-icon="i">What is BioSamples?</h3>
+	        <p class="justify">The BioSamples database aggregates sample information for reference samples e.g. Coriell Cell lines and samples for which data exist in one of the EBI's assay databases such as ArrayExpress, the European Nucleotide Archive, or PRIDE. It provides links to assays for specific samples, and accepts direct submissions of samples.</p>
+	
+	        <h3 class="icon icon-generic" data-icon="P">Publications / how to cite</h3>
+	        <ul>
+	            <li><strong>Citing BioSample database</strong>: please use the following publication:
+	                Faulconbridge A., et al., 2014. <a href="//europepmc.org/abstract/MED/24265224">Updates to BioSamples database at European Bioinformatics Institute</a>. Nucleic Acids Res, 10.1093/nar/gkt1081. Pubmed ID 24265224.</li>
+	            <li><strong>Citing BioSample records in your manuscript</strong>: please include your sample and group accession numbers and the URL to BioSample home page e.g. "Sample meta-data are available in the BioSamples database (http://www.ebi.ac.uk/biosamples) under accession numbers SAMxxxxxx, SAMxxxxxx, SAMxxxxxx, and SAMxxxxxx."</li>
+	        </ul>
+	
+	        <h3 class="icon icon-generic" data-icon="}">The team behind BioSamples</h3>
+	        <p class="justify">The BioSamples team is part of the <a href="/about/people/helen-parkinson">Helen Parkinson's team</a> at EMBL-EBI. The team consists of bioinformaticians, ontologists, software engineers and web developers.</p>
+	
+	
+	        <h3 class="icon icon-generic" data-icon="I"><a id="acknowledgements">Acknowledgements</a></h3>
+	        <p class="justify">BioSamples and related activities are supported by member states of the European Molecular Biology Laboratory; European Commission: BioMedBridges [284209]; Wellcome Trust and Medical Research Council (MRC): Human Induced Pluripotent Stem Cells Initiative (HipSci).</p>
+	
+	        <h5>The BioSamples team would like to thank the following companies for their support:</h5>
+	        <ul>
+	            <li><a href="http://www.atlassian.com" target="_blank">Atlassian</a> for <a href="http://www.atlassian.com/software/bamboo/overview" target="_blank">Bamboo</a> - Continuous Integration and Release Management tool.</li>
+	            <li><a href="http://www.browserstack.com" target="_blank">BrowserStack</a> for providing the infrastructure that allows us to test our service in real browsers. <a href="http://www.browserstack.com" target="_blank"><img src="https://www.browserstack.com/images/mail/browserstack-logo-footer.png" width="120"></a></li>
+	        </ul>
+		</div>
+	</div> 
+	<div th:insert="fragments/footer :: footer"></div>	
+</body>
+</html>

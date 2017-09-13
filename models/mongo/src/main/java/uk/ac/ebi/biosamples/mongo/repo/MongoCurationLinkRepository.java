@@ -5,7 +5,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import uk.ac.ebi.biosamples.mongo.model.MongoCurationLink;
-import uk.ac.ebi.biosamples.mongo.model.MongoSubmission;
 
 public interface MongoCurationLinkRepository extends MongoRepository<MongoCurationLink, String> {
 	

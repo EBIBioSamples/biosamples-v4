@@ -1,7 +1,6 @@
 package uk.ac.ebi.biosamples.messages.threaded;
 
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicMarkableReference;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class MessageSampleStatus<S> {

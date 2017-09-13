@@ -27,7 +27,7 @@ public class NcbiCallable implements Callable<Void> {
 		log.info("HANDLING " + accession);
 		ExternalReference exRef = ExternalReference.build("https://www.ebi.ac.uk/ena/data/view/"+accession);
 		Curation curation = Curation.build(null, null, null, Collections.singleton(exRef));
-		bioSamplesClient.persistCuration(accession, curation);
+		bioSamplesClient.persistCuration(accession, curation, null);
 		log.info("HANDLED " + accession);
 		return null;
 	}

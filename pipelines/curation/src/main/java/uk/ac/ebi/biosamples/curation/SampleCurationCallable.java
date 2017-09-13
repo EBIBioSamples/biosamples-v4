@@ -7,8 +7,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Curation;
@@ -78,7 +76,7 @@ public class SampleCurationCallable implements Callable<Void> {
 				Attribute newAttribute = Attribute.build(newType, newValue, attribute.getIri(),
 						attribute.getUnit());
 				Curation curation = Curation.build(attribute, newAttribute);
-				bioSamplesClient.persistCuration(sample.getAccession(), curation);
+				bioSamplesClient.persistCuration(sample.getAccession(), curation, null);
 				sample = curationApplicationService.applyCurationToSample(sample, curation);
 				return sample;
 
@@ -87,7 +85,7 @@ public class SampleCurationCallable implements Callable<Void> {
 			// if no information content, remove
 			if (isEqualToNotApplicable(attribute.getValue())) {
 				Curation curation = Curation.build(attribute, null);
-				bioSamplesClient.persistCuration(sample.getAccession(), curation);
+				bioSamplesClient.persistCuration(sample.getAccession(), curation, null);
 				sample = curationApplicationService.applyCurationToSample(sample, curation);
 				return sample;
 			}
@@ -100,7 +98,7 @@ public class SampleCurationCallable implements Callable<Void> {
 							attribute.getIri(), newUnit);
 					Curation curation = Curation.build(attribute, newAttribute); 
 					bioSamplesClient.persistCuration(sample.getAccession(),
-							curation);
+							curation, null);
 					sample = curationApplicationService.applyCurationToSample(sample, curation);
 					return sample;
 				}
@@ -325,7 +323,7 @@ public class SampleCurationCallable implements Callable<Void> {
 					Curation curation = Curation.build(Collections.singleton(attribute), Collections.singleton(mapped), null, null);
 				
 					//save the curation back in biosamples
-					bioSamplesClient.persistCuration(sample.getAccession(), curation);
+					bioSamplesClient.persistCuration(sample.getAccession(), curation, null);
 					sample = curationApplicationService.applyCurationToSample(sample, curation);
 					return sample;
 				}
@@ -345,7 +343,7 @@ public class SampleCurationCallable implements Callable<Void> {
 					Curation curation = Curation.build(Collections.singleton(attribute), Collections.singleton(mapped), null, null);
 				
 					//save the curation back in biosamples
-					bioSamplesClient.persistCuration(sample.getAccession(), curation);
+					bioSamplesClient.persistCuration(sample.getAccession(), curation, null);
 					sample = curationApplicationService.applyCurationToSample(sample, curation);
 					return sample;
 				}

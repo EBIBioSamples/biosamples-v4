@@ -77,7 +77,7 @@ public class EnaCallable implements Callable<Void> {
 
 				sample = Sample.build(sample.getName(), sampleAccession, domain, release, update, sample.getCharacteristics(),
 						sample.getRelationships(), sample.getExternalReferences());
-				bioSamplesClient.persistSample(sample);
+				bioSamplesClient.persistSampleResource(sample);
 			} else {
 				log.warn("Unable to find SAMPLE element for " + sampleAccession);
 			}

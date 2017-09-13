@@ -8,7 +8,6 @@ import java.util.TreeSet;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -19,8 +18,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.ExternalReference;
-import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.service.CustomLocalDateTimeDeserializer;
 import uk.ac.ebi.biosamples.service.CustomLocalDateTimeSerializer;
 
@@ -164,12 +161,12 @@ public class MongoSample {
 		}
 
 		sample.relationships = new TreeSet<>();
-		if (relationships != null || relationships.size() > 0) {
+		if (relationships != null && relationships.size() > 0) {
 			sample.relationships.addAll(relationships);
 		}
 
 		sample.externalReferences = new TreeSet<>();
-		if (externalReferences != null || externalReferences.size() > 0) {
+		if (externalReferences != null && externalReferences.size() > 0) {
 			sample.externalReferences.addAll(externalReferences);
 		}	
 		

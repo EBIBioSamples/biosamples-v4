@@ -1,0 +1,45 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.w3.org/1999/xhtml">
+	
+<head th:replace="fragments/head :: head">
+	<title>BioSamples &lt; EMBL-EBI</title>
+	<!-- A few keywords that relate to the content of THIS PAGE (not the whole project) -->
+	<meta name="keywords" content="biosamples, europe, EBI" />
+	<!-- Describe what this page is about -->
+	<meta name="description" content="EMBL-EBI" />
+	
+	<meta name="ebi:last-review" content="2016-12-20" />
+	<!-- The last time the content was reviewed -->
+	<meta name="ebi:expiry" content="2017-12-20" />
+	<!-- When this content is no longer relevant -->
+</head>
+
+<body>
+	<div th:insert="fragments/header :: header"></div>
+	<div layout:fragment="content">
+		<div id="main-content-area" class="row">
+			<div class="small-12 columns">
+				<h2>Welcome to BioSamples Database Help</h2>
+				<div class="small-6 columns">
+					<div style="padding: 30px 15px; position: relative; background-color: rgb(249, 243, 238);">
+						<a href="help/search">
+							<img th:src="@{/images/user.png}" title="user icon" />
+							<em>I'd	like to browse or search BioSamples Database</em>
+						</a>
+					</div>
+				</div>
+				<div class="small-6 columns">
+					<div style="padding: 30px 15px; position: relative; background-color: rgb(238, 249, 243);">
+						<a href="help/submit">
+							<img th:src="@{/images/submitter.png}" title="submitter icon" />
+							<em>I'd like to submit data to BioSamples Database</em>
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div> 
+	<div th:insert="fragments/footer :: footer"></div>	
+</body>
+</html>

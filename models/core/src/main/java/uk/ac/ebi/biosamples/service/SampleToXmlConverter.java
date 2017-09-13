@@ -1,6 +1,7 @@
 package uk.ac.ebi.biosamples.service;
 
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -14,6 +15,7 @@ import org.dom4j.QName;
 import org.springframework.boot.context.properties.ConfigurationPropertiesBinding;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
@@ -58,6 +60,7 @@ public class SampleToXmlConverter implements Converter<Sample, Document> {
 		Element v = qv.addElement("Value");
 		v.addText(source.getName());
 		
+		//first make a temporary collections of information to allow sorting
 		SortedMap<String, SortedSet<String>> attrTypeValue = new TreeMap<>();
 		SortedMap<String, SortedMap<String, String>> attrIri = new TreeMap<>();
 		SortedMap<String, SortedMap<String, String>> attrUnit = new TreeMap<>();
@@ -125,18 +128,23 @@ public class SampleToXmlConverter implements Converter<Sample, Document> {
 		for (ExternalReference externalReference : source.getExternalReferences()) {
 			/*
 			  <Database>
-			    <ID>ERS1463623</ID>
 			    <Name>ENA</Name>
 			    <URI>http://www.ebi.ac.uk/ena/data/view/ERS1463623</URI>
+			    <ID>ERS1463623</ID>
 			  </Database>
 		 	*/	
 			Element database = bioSample.addElement(QName.get("Database", xmlns));
-			//Element databaseId = database.addElement(QName.get("ID", xmlns));
-			//TODO work out how to get the databaseid
+			
 			Element databaseName = database.addElement(QName.get("Name", xmlns));
 			databaseName.setText(externalReferenceNicknameService.getNickname(externalReference));
+			
 			Element databaseUri = database.addElement(QName.get("URI", xmlns));
 			databaseUri.setText(externalReference.getUrl());
+			//use the last segment of the URI as the ID
+			//not perfect, but good enough?
+			Element databaseId = database.addElement(QName.get("ID", xmlns));
+			List<String> pathSegments = UriComponentsBuilder.fromUriString(externalReference.getUrl()).build().getPathSegments();
+			databaseId.setText(pathSegments.get(pathSegments.size()-1));
 		}
 		return doc;
 	}
