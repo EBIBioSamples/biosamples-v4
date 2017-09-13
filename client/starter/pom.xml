@@ -11,11 +11,6 @@
 	<dependencies>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
-			<artifactId>properties</artifactId>
-			<version>4.0.0.BSD-777-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>client</artifactId>
 			<version>4.0.0.BSD-777-SNAPSHOT</version>
 		</dependency>
