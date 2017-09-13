@@ -1,4 +1,6 @@
 #!/bin/bash
 set -e
 
-java -jar integration/target/integration-4.0.0-SNAPSHOT.jar --migration --biosamples.submissionuri=http://localhost:8081/biosamples/beta
+./docker-webapp.sh
+
+java -jar integration/target/integration-4.0.0-SNAPSHOT.jar --spring.profiles.active=migration --biosamples.client.uri=http://localhost:8081/biosamples/beta
