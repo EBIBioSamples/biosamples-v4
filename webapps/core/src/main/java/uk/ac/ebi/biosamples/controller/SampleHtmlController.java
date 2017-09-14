@@ -65,6 +65,21 @@ public class SampleHtmlController {
 		return "index";
 	}
 
+	@GetMapping(value = "/about")
+	public String about() {
+		return "about";
+	}
+
+	@GetMapping(value = "/help")
+	public String helpIndex() {
+		return "help/index";
+	}
+
+	@GetMapping(value = "/help/{page}")
+	public String helpIndex(@PathVariable String page) {
+		return "help/"+page;
+	}
+
 	@GetMapping(value = "/test")
 	public String test() {
 		return "test";
@@ -272,7 +287,7 @@ public class SampleHtmlController {
 			this.current = (currentNo == pageNo);
 			this.url = uriBuilder.cloneBuilder()
 					.replaceQueryParam("start", (pageNo-1)*pageSample.getSize())
-					.build(true).encode().toUri().toString();
+					.build().toUriString();
 		}
 	}
 	

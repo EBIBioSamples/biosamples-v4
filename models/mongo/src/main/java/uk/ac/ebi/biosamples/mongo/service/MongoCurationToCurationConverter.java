@@ -5,9 +5,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
 
 import uk.ac.ebi.biosamples.model.Curation;
-import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.mongo.model.MongoCuration;
-import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 
 @Service
 @ConfigurationPropertiesBinding

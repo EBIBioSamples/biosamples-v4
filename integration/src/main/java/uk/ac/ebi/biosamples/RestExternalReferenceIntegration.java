@@ -15,21 +15,14 @@ import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.*;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.Arrays;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
 @Component
 @Order(6)
 @Profile({ "default", "rest" })
-public class RestExternalReferenceRunner extends AbstractIntegration {
+public class RestExternalReferenceIntegration extends AbstractIntegration {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 
-	public RestExternalReferenceRunner(BioSamplesClient client) {
+	public RestExternalReferenceIntegration(BioSamplesClient client) {
 		super(client);
 	}
 

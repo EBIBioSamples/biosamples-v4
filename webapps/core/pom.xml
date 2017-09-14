@@ -125,9 +125,8 @@
 				<configuration>
 					<sourceDirectory>src/main/asciidoc</sourceDirectory>
 					<outputDirectory>${project.build.directory}/${project.artifactId}-${project.version}/WEB-INF/classes/templates/asciidoc/</outputDirectory>
-<!-- 					<outputDirectory>src/main/resources/templates/fragments/</outputDirectory> -->
 					<backend>html</backend>
-					<doctype>book</doctype>
+<!-- 					<doctype>book</doctype> -->
 					<!-- <attributes> -->
 					<!-- <snippets>${snippetsDirectory}</snippets> -->
 					<!-- </attributes> -->
