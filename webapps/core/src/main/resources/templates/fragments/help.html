@@ -1,0 +1,20 @@
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+</head>
+<body>
+	<section th:fragment="sidebar ()">
+		<div class="small-12 medium-3 columns sidebar" data-sticky-container>
+			<div class="sticky" data-sticky data-anchor="main-content-area"
+				data-options="marginTop:4;">
+				<ul class="menu vertical">
+					<li><a th:href="@{/help/search}">searching</a></li>
+					<li><a th:href="@{/help/submit}">submitting</a></li>
+					<li><a th:href="@{/help/faq}">FAQ</a></li>
+				</ul>
+			</div>
+		</div>
+	</section>
+</body>
+</html>
