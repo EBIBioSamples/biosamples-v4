@@ -1,7 +1,5 @@
 package uk.ac.ebi.biosamples.controller;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -22,6 +20,8 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SampleFacet;
 import uk.ac.ebi.biosamples.model.SampleFacetValue;
 import uk.ac.ebi.biosamples.service.*;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -271,7 +271,7 @@ public class SampleHtmlController {
 			this.current = (currentNo == pageNo);
 			this.url = uriBuilder.cloneBuilder()
 					.replaceQueryParam("start", (pageNo-1)*pageSample.getSize())
-					.build(true).toUri().toString();
+					.build().toUriString();
 		}
 	}
 	
