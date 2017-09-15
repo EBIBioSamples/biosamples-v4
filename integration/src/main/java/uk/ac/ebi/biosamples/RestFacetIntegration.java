@@ -16,7 +16,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.facets.Facet;
+import uk.ac.ebi.biosamples.model.facets.StringListFacet;
 
 import java.net.URI;
 import java.time.LocalDate;
@@ -60,7 +60,7 @@ public class RestFacetIntegration extends AbstractIntegration {
 
 		log.info("GETting from "+uri);
 		RequestEntity<Void> request = RequestEntity.get(uri).accept(MediaType.APPLICATION_JSON).build();
-		ResponseEntity<List<Facet>> response = restTemplate.exchange(request, new ParameterizedTypeReference<List<Facet>>(){});
+		ResponseEntity<List<StringListFacet>> response = restTemplate.exchange(request, new ParameterizedTypeReference<List<StringListFacet>>() {});
 		//check that there is at least one sample returned
 		//if there are zero, then probably nothing was indexed
 		if (response.getBody().size() <= 0) {

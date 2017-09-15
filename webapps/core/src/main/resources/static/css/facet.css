@@ -1,10 +1,28 @@
-div.facet {
-  border: 5px solid #389198;
+.facet-checkbox {
+     display: none;
 }
 
-.facet-header {
+label.facet {
+    display: flex;
+    align-items: baseline;
 }
 
-.facet-value {
-	padding-left : 2em;
+div div.facet-container:first-child label.facet{
+    margin-top: .5rem
+}
+
+div div.facet-container label.facet {
+    margin-top: 1px;
+}
+
+label.facet > .show-if-checked {
+    margin-right: 5px;
+}
+
+.facet-container label.facet > *:nth-last-child(1) {
+    flex-grow: 1;
+}
+
+.facet-container .facet-checkbox:not(:checked) ~ .facet > .show-if-checked {
+    visibility:hidden
 }
