@@ -1,8 +1,7 @@
 package uk.ac.ebi.biosamples.client;
 
-import java.util.Arrays;
-import java.util.List;
-
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HeaderElement;
 import org.apache.http.HeaderElementIterator;
 import org.apache.http.HttpResponse;
@@ -28,18 +27,20 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
-
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
+import uk.ac.ebi.biosamples.model.facets.AttributeFacet;
+import uk.ac.ebi.biosamples.model.facets.InverseRelationFacet;
+import uk.ac.ebi.biosamples.model.facets.RelationFacet;
 import uk.ac.ebi.biosamples.service.AttributeValidator;
 import uk.ac.ebi.biosamples.service.SampleValidator;
+
+import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @ConditionalOnMissingBean(BioSamplesClient.class)
 public class BioSamplesAutoConfiguration {
 
-	@Bean	
+	@Bean
 	@ConditionalOnMissingBean(AttributeValidator.class)
 	public AttributeValidator attributeValidator() {
 		return new AttributeValidator();
@@ -124,6 +125,8 @@ public class BioSamplesAutoConfiguration {
 				List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();				
 				ObjectMapper mapper = new ObjectMapper();
 				mapper.registerModule(new Jackson2HalModule());
+				//TODO check if this is relevant
+				mapper.registerSubtypes(AttributeFacet.class, RelationFacet.class, InverseRelationFacet.class);
 				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 				MappingJackson2HttpMessageConverter halConverter = new TypeConstrainedMappingJackson2HttpMessageConverter(ResourceSupport.class);
 				halConverter.setObjectMapper(mapper);

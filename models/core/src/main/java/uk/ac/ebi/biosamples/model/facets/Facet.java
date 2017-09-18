@@ -1,5 +1,8 @@
 package uk.ac.ebi.biosamples.model.facets;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.List;
 
 /**
@@ -34,7 +37,9 @@ public abstract class Facet implements Comparable<Facet> {
 
     public abstract List getContent();
 
+    @JsonProperty(value = "type")
     public abstract FacetType getType();
+
 
     @Override
     public int compareTo(Facet o) {

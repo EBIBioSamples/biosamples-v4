@@ -1,13 +1,13 @@
 package uk.ac.ebi.biosamples.model.facets;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import org.springframework.hateoas.core.Relation;
 
 import java.util.List;
 
+@Relation(collectionRelation = "facets")
 public class InverseRelationFacet extends StringListFacet {
 
-    private InverseRelationFacet(String label, long count, List attributeList) {
+    InverseRelationFacet(String label, long count, List attributeList) {
         super(label, count, attributeList);
     }
 
@@ -16,8 +16,7 @@ public class InverseRelationFacet extends StringListFacet {
         return FacetType.INCOMING_RELATIONSHIP;
     }
 
-    @JsonCreator
-    public static InverseRelationFacet build(@JsonProperty("label") String label, @JsonProperty("count") long count, @JsonProperty("content") List attributeList) {
+    public static InverseRelationFacet build(String label, long count, List attributeList) {
         return new InverseRelationFacet(label, count, attributeList);
     }
 }

@@ -1,5 +1,9 @@
 package uk.ac.ebi.biosamples.model.facets;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,6 +33,7 @@ public enum FacetType {
         return solrSuffix;
     }
 
+    @JsonValue
     public String getFacetId() {
         return facetId;
     }
@@ -42,7 +47,8 @@ public enum FacetType {
         throw new IllegalArgumentException("Field " + field + " is not of a known type");
     }
 
-    public static FacetType ofFacetName(String facetName) {
+    @JsonCreator
+    public static FacetType ofFacetName(@JsonProperty String facetName) {
         for(FacetType type: values()) {
             if (facetName.startsWith(type.getFacetId())) {
                 return type;

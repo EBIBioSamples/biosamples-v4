@@ -2,29 +2,23 @@ package uk.ac.ebi.biosamples;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Profile;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.annotation.Order;
+import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.Resource;
-import org.springframework.http.MediaType;
-import org.springframework.http.RequestEntity;
-import org.springframework.http.ResponseEntity;
+import org.springframework.hateoas.Resources;
+import org.springframework.hateoas.client.Traverson;
+import org.springframework.hateoas.mvc.TypeReferences;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.facets.StringListFacet;
 
-import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 
 @Component
 @Order(3)
@@ -33,13 +27,11 @@ public class RestFacetIntegration extends AbstractIntegration {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 	
-	private final RestTemplate restTemplate;
 	private final IntegrationProperties integrationProperties;
 	
-	public RestFacetIntegration(BioSamplesClient client, IntegrationProperties integrationProperties, RestTemplateBuilder restTemplateBuilder) {
+	public RestFacetIntegration(BioSamplesClient client, IntegrationProperties integrationProperties) {
 		super(client);
 		this.integrationProperties = integrationProperties;
-		this.restTemplate = restTemplateBuilder.build();
 	}
 
 	@Override
@@ -55,38 +47,49 @@ public class RestFacetIntegration extends AbstractIntegration {
 	@Override
 	protected void phaseTwo() {
 
-		URI uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUri())
-				.pathSegment("samples").pathSegment("facets").queryParam("text", "TESTrestfacet1").build().toUri();
+		Map<String, Object> parameters = new HashMap<>();
+		parameters.put("text","TESTrestfacet1");
+		Traverson traverson = new Traverson(integrationProperties.getBiosampleSubmissionUri(), MediaTypes.HAL_JSON);
+		Traverson.TraversalBuilder builder = traverson.follow("samples", "facet").withTemplateParameters(parameters);
+		Resources<StringListFacet> facets = builder.toObject(new TypeReferences.ResourcesType<StringListFacet>(){});
 
-		log.info("GETting from "+uri);
-		RequestEntity<Void> request = RequestEntity.get(uri).accept(MediaType.APPLICATION_JSON).build();
-		ResponseEntity<List<StringListFacet>> response = restTemplate.exchange(request, new ParameterizedTypeReference<List<StringListFacet>>() {});
-		//check that there is at least one sample returned
-		//if there are zero, then probably nothing was indexed
-		if (response.getBody().size() <= 0) {
+		log.info("GETting from " + builder.asLink().expand(parameters).getHref());
+
+		if (facets.getContent().size() <= 0) {
 			throw new RuntimeException("No facets found!");
 		}
-		if (response.getBody().get(0).getCount() <= 0) {
+		List<StringListFacet> content = new ArrayList<StringListFacet>(facets.getContent());
+		if (content.get(0).getContent().size() <= 0) {
 			throw new RuntimeException("No facet values found!");
 		}
 		
 		//check that the particular facets we expect are present
 
 		//TODO reintroduce this part of code
-		boolean found = true;
-//		for (Facet facet : response.getBody()) {
+		boolean facetIsCorrect = false;
+		for (StringListFacet facet : content) {
+		    switch (facet.getLabel()) {
+		    	case "organism":
+		    		facetIsCorrect = true;
+		    		break;
+				case "geographic location (country and/or sea)":
+					facetIsCorrect = true;
+					break;
+				default:
+					facetIsCorrect = false;
+			}
 //			if (facet.getLabel().equals("(Attribute) geographic location (country and/or sea)")) {
 //				found = true;
 //				//check that it has one value that is expected
-//				if (facet.getValues().size() != 1) {
+//				if (facet.getContent().size() != 1) {
 //					throw new RuntimeException("More than one facet value for \"geographic location (country and/or sea)\"");
 //				}
-//				if (!facet.getValues().iterator().next().label.equals("Land of Oz")) {
+//				if (!facet.getContent().iterator().next().equals("Land of Oz")) {
 //					throw new RuntimeException("Facet value for \"geographic location (country and/or sea)\" was not \"Land of Oz\"");
 //				}
 //			}
-//		}
-		if (!found) {
+		}
+		if (!facetIsCorrect) {
 			throw new RuntimeException("Unable to find facet \"(Attribute) geographic location (country and/or sea)\"");
 		}
 		

@@ -15,7 +15,6 @@ import uk.ac.ebi.biosamples.model.facets.StringListFacet;
 import uk.ac.ebi.biosamples.service.FacetService;
 import uk.ac.ebi.biosamples.service.FilterService;
 
-import java.util.Collection;
 import java.util.List;
 
 @RestController
@@ -38,17 +37,9 @@ public class SampleFacetRestController {
 	}
     
 
-    @CrossOrigin
-	@GetMapping(produces = { MediaType.APPLICATION_JSON_VALUE})
-	public ResponseEntity<Collection<StringListFacet>> getFacetsJson(
-			@RequestParam(name="text", required=false) String text,
-			@RequestParam(name="filter", required=false) String[] filter) {
-    	ResponseEntity<Resources<StringListFacet>> halResponse = getFacetsHal(text,filter);
-		return ResponseEntity.status(halResponse.getStatusCode()).headers(halResponse.getHeaders()).body(halResponse.getBody().getContent());    
-	}
 
     @CrossOrigin
-	@GetMapping(produces = { MediaTypes.HAL_JSON_VALUE})
+	@GetMapping(produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
 	public ResponseEntity<Resources<StringListFacet>> getFacetsHal(
 			@RequestParam(name="text", required=false) String text,
 			@RequestParam(name="filter", required=false) String[] filter) {
@@ -56,7 +47,11 @@ public class SampleFacetRestController {
     	//TODO support rows and start parameters
 
     	List<StringListFacet> sampleFacets = facetService.getFacets(text, filterService.getFilters(filter), 10, 10);
-    	Resources<StringListFacet> resources = new Resources<>(sampleFacets);
+
+//    	PagedResources<StringListFacet> resources = new PagedResources<>(
+//    			sampleFacets,
+//				new PagedResources.PageMetadata(10, 1, 10, 5));
+        Resources<StringListFacet> resources = new Resources<>(sampleFacets);
     	
 		//Links for the entire page
 		//this is hacky, but no clear way to do this in spring-hateoas currently
@@ -67,7 +62,7 @@ public class SampleFacetRestController {
 				ControllerLinkBuilder.methodOn(SampleFacetRestController.class)
 					.getFacetsHal(text, filter))
 				.withSelfRel());
-		
+
 		resources.add(ControllerLinkBuilder.linkTo(
 				ControllerLinkBuilder.methodOn(SamplesRestController.class)
 					.searchHal(text, null, null, filter,null, null))

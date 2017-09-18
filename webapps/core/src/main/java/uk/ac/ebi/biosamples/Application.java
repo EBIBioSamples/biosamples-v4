@@ -16,7 +16,6 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.servlet.handler.MappedInterceptor;
 import org.thymeleaf.templateresolver.ITemplateResolver;
 import org.thymeleaf.templateresolver.UrlTemplateResolver;
-
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.CacheControlInterceptor;
 import uk.ac.ebi.biosamples.xml.XmlSampleHttpMessageConverter;
@@ -36,6 +35,11 @@ public class Application extends SpringBootServletInitializer {
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);
 	}
+
+//	@Bean
+//	public RelProvider customRelProvider() {
+//	    return new MyCustomRelProvider();
+//	}
 
 	@Bean
 	public MappedInterceptor getCacheHeaderMappedInterceptor() {

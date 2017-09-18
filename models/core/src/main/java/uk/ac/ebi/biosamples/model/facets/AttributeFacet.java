@@ -1,14 +1,14 @@
 package uk.ac.ebi.biosamples.model.facets;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import org.springframework.hateoas.core.Relation;
 
 import java.util.List;
 
+@Relation(collectionRelation = "facets")
 public class AttributeFacet extends StringListFacet {
 
 
-    private AttributeFacet(String label, long count, List attributeList) {
+    AttributeFacet(String label, long count, List attributeList) {
         super(label, count, attributeList);
     }
 
@@ -17,9 +17,5 @@ public class AttributeFacet extends StringListFacet {
         return FacetType.ATTRIBUTE;
     }
 
-    @JsonCreator
-    public static AttributeFacet build(@JsonProperty("label") String label, @JsonProperty("count") long count, @JsonProperty("content") List attributeList) {
-        return new AttributeFacet(label, count, attributeList);
-    }
 
 }
