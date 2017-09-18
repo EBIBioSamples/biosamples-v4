@@ -2,13 +2,11 @@ package uk.ac.ebi.biosamples.controller;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.hateoas.EntityLinks;
-import org.springframework.hateoas.ExposesResourceFor;
-import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.Resources;
+import org.springframework.hateoas.*;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.model.facets.Facet;
 import uk.ac.ebi.biosamples.model.facets.StringListFacet;
@@ -25,6 +23,7 @@ public class SampleFacetRestController {
 	private final FacetService facetService;
 	private final FilterService filterService;
 
+
 	private final EntityLinks entityLinks;
 	
 	private Logger log = LoggerFactory.getLogger(getClass());
@@ -40,18 +39,18 @@ public class SampleFacetRestController {
 
     @CrossOrigin
 	@GetMapping(produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
-	public ResponseEntity<Resources<StringListFacet>> getFacetsHal(
+	public ResponseEntity<Resources<Resource<StringListFacet>>> getFacetsHal(
 			@RequestParam(name="text", required=false) String text,
 			@RequestParam(name="filter", required=false) String[] filter) {
     	
     	//TODO support rows and start parameters
-
-    	List<StringListFacet> sampleFacets = facetService.getFacets(text, filterService.getFilters(filter), 10, 10);
+		MultiValueMap<String, String> filters = filterService.getFilters(filter);
+    	List<Resource<StringListFacet>> sampleFacets = facetService.getFacets(text, filterService.getFilters(filter), 10, 10);
 
 //    	PagedResources<StringListFacet> resources = new PagedResources<>(
 //    			sampleFacets,
 //				new PagedResources.PageMetadata(10, 1, 10, 5));
-        Resources<StringListFacet> resources = new Resources<>(sampleFacets);
+        Resources<Resource<StringListFacet>> resources = new Resources<>(sampleFacets);
     	
 		//Links for the entire page
 		//this is hacky, but no clear way to do this in spring-hateoas currently

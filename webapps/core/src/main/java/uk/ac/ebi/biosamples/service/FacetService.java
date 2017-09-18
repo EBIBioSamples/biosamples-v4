@@ -30,7 +30,7 @@ public class FacetService {
 	}
 
 
-	public List<StringListFacet> getFacets(String text, MultiValueMap<String,String> filters, int noOfFacets, int noOfFacetValues) {
+	public List<Resource<StringListFacet>> getFacets(String text, MultiValueMap<String,String> filters, int noOfFacets, int noOfFacetValues) {
 		Pageable facetPageable = new PageRequest(0,noOfFacets);
 		Pageable facetValuePageable = new PageRequest(0,noOfFacetValues);
 		//TODO if a facet is enabled as a filter, then that value will be the only filter displayed
@@ -46,15 +46,17 @@ public class FacetService {
 
 
 		// Need to return a resource for each facet created from solr
-		List<StringListFacet> resourceFacets = new ArrayList<>();
+		List<Resource<StringListFacet>> resourceFacets = new ArrayList<>();
 		for(StringListFacet facet: solrFacets) {
-			LabelFilterResourceAssembler resourceAssembler =
-					new LabelFilterResourceAssembler(text, null, null, filtersArray, facet);
+			FacetResourceAssembler.LabelFilterResourceAssembler resourceAssembler =
+					new FacetResourceAssembler.LabelFilterResourceAssembler(text, null, null, filtersArray, facet);
+			FacetResourceAssembler.StringListFacetResourceAssembler facetResourceAssembler =
+					new FacetResourceAssembler.StringListFacetResourceAssembler(text, null, null, filtersArray, facet);
 			List<LabelCountEntry> content = (List<LabelCountEntry>) facet.getContent();
 			List<Resource<LabelCountEntry>> resourceContent =
 					content.stream().map(resourceAssembler::toResource).collect(Collectors.toList());
 			StringListFacet newFacet = FacetFactory.buildStringList(facet.getType(), facet.getLabel(), facet.getCount(), resourceContent);
-			resourceFacets.add(newFacet);
+			resourceFacets.add(facetResourceAssembler.toResource(newFacet));
 		}
 		return resourceFacets;
 	}
