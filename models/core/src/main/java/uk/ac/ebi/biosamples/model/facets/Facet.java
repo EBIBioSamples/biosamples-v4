@@ -35,7 +35,7 @@ public abstract class Facet implements Comparable<Facet> {
         return count;
     }
 
-    public abstract List getContent();
+    public abstract Object getContent();
 
     @JsonProperty(value = "type")
     public abstract FacetType getType();

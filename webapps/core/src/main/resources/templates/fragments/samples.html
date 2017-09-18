@@ -6,8 +6,10 @@
 <body>
 	<section th:fragment="facets (facets, facetsuri, filters)">
 		<div class="button-grid">
-			<div th:each="facet : ${facets}"
-				 th:with="facetType=${facet.getType().getFacetId()}, filterName=${facetType + ':' + facet.label}">
+			<div th:each="facetResource : ${facets}"
+				 th:with="facet=${facetResource.getContent()},
+				 		  facetType=${facet.getType().getFacetId()},
+				 		  filterName=${facetType + ':' + facet.label}">
                 <div class="facet-container">
                     <input th:form="local-search"
                            class="facet-checkbox"
@@ -31,7 +33,8 @@
 				     <!--th:classappend="${#lists.contains(filters, valueFilterName)} ? 'secondary'" >-->
                 <div th:each="resource: ${facet.getContent()}"
 					  class="facet-container"
-					  th:with="value=${resource.getContent()}, valueFilterName=${filterName + ':' + value.label}">
+					  th:with="value=${resource.getContent()},
+					  		   valueFilterName=${filterName + ':' + value.label}">
                     <input th:form="local-search" th:with="filterName=${facetType + ':' + facet.label}"
                            th:id="${valueFilterName}"
                            class="facet-checkbox"

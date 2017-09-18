@@ -35,7 +35,7 @@ public enum FacetType {
 
     @JsonValue
     public String getFacetId() {
-        return facetId;
+        return facetId.toLowerCase();
     }
 
     public static FacetType ofField(String field) {
@@ -50,7 +50,7 @@ public enum FacetType {
     @JsonCreator
     public static FacetType ofFacetName(@JsonProperty String facetName) {
         for(FacetType type: values()) {
-            if (facetName.startsWith(type.getFacetId())) {
+            if (facetName.toLowerCase().startsWith(type.getFacetId())) {
                 return type;
             }
         }
