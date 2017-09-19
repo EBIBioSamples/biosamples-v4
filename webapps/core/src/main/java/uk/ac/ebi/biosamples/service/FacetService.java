@@ -39,9 +39,15 @@ public class FacetService {
 
 
 		List<String> tempFilters = new ArrayList<>();
-		for(String key: filters.keySet()) {
-			filters.get(key).forEach(value -> tempFilters.add(key + ":" + value));
-		}
+        for(String key: filters.keySet()) {
+            filters.get(key).forEach(value -> {
+                if (value != null) {
+                    tempFilters.add(key + ":" + value);
+                } else {
+                    tempFilters.add(key);
+                }
+            });
+        }
 		String[] filtersArray = tempFilters.toArray(new String[tempFilters.size()]);
 
 
