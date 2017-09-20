@@ -1,12 +1,14 @@
 package uk.ac.ebi.biosamples.migration;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
@@ -42,11 +44,10 @@ public class MigrationRunner implements ApplicationRunner, ExitCodeGenerator {
 	public void run(ApplicationArguments args) throws Exception {
 		log.info("Starting MigrationRunner");
 		
-		String oldUrl = "http://wwwdev.ebi.ac.uk/biosamples/xml/samples";
-		String newUrl = "http://snowy.ebi.ac.uk:9083/biosamples/beta/xml/samples";//"http://wwwdev.ebi.ac.uk/biosamples/beta/xml/samples";
-		
-		
-		
+		String oldUrl = "http://www.ebi.ac.uk/biosamples/xml/samples";
+		//String newUrl = "http://wwwdev.ebi.ac.uk/biosamples/beta/xml/samples";
+		//String newUrl = "http://snowy.ebi.ac.uk:9083/biosamples/beta/xml/samples";
+		String newUrl = "http://localhost:8083/biosamples/beta/xml/samples";
 		
 		
 		try  {
@@ -66,17 +67,17 @@ public class MigrationRunner implements ApplicationRunner, ExitCodeGenerator {
 			
 			AccessionComparisonCallable comparisonCallable = new AccessionComparisonCallable(restTemplate, oldUrl, newUrl, bothQueue, bothFinished);
 			
-			comparisonCallable.compare("SAMEA19131418");
+			//comparisonCallable.compare("SAMEA19131418");
 			
-			//Future<Void> oldFuture = executorService.submit(oldCallable);
-			//Future<Void> newFuture = executorService.submit(newCallable);
-			//Future<Void> bothFuture = executorService.submit(bothCallable);
-			//Future<Void> comparisonFuture = executorService.submit(comparisonCallable);
+			Future<Void> oldFuture = executorService.submit(oldCallable);
+			Future<Void> newFuture = executorService.submit(newCallable);
+			Future<Void> bothFuture = executorService.submit(bothCallable);
+			Future<Void> comparisonFuture = executorService.submit(comparisonCallable);
 					
-			//oldFuture.get();
-			//newFuture.get();
-			//bothFuture.get();
-			//comparisonFuture.get();
+			oldFuture.get();
+			newFuture.get();
+			bothFuture.get();
+			comparisonFuture.get();
 		} finally {
 			executorService.shutdownNow();
 		}
@@ -142,7 +143,24 @@ public class MigrationRunner implements ApplicationRunner, ExitCodeGenerator {
 			Set<String> oldOnly = Sets.difference(oldSet, newSet);
 			log.info("Samples only in new "+newOnly.size());
 			log.info("Samples only in old "+oldOnly.size());
+
+			int i;
+			Iterator<String> accIt;
 			
+			accIt = newOnly.iterator();
+			i = 0;
+			while (accIt.hasNext() && i<25) {
+				log.info("Sample only in new "+accIt.next());
+				i++;
+			}
+			
+			accIt = oldOnly.iterator();
+			i = 0;
+			while (accIt.hasNext() && i<25) {
+				log.info("Sample only in old "+accIt.next());
+				i++;
+			}
+			 
 			
 			bothFlag.set(true);
 			log.info("Finished AccessionQueueBothCallable.call(");

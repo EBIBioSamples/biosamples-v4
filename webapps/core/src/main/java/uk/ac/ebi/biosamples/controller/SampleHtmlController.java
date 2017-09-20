@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -39,9 +40,12 @@ import uk.ac.ebi.biosamples.service.JsonLDService;
 import uk.ac.ebi.biosamples.service.SamplePageService;
 import uk.ac.ebi.biosamples.service.SampleReadService;
 import uk.ac.ebi.biosamples.service.SampleService;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.net.URI;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.*;
 
 /**
  * Primary controller for HTML operations.
@@ -291,7 +295,7 @@ public class SampleHtmlController {
 			this.current = (currentNo == pageNo);
 			this.url = uriBuilder.cloneBuilder()
 					.replaceQueryParam("start", (pageNo-1)*pageSample.getSize())
-					.build(true).toUri().toString();
+					.build().toUriString();
 		}
 	}
 	

@@ -85,6 +85,7 @@ public class SampleRestController {
 		this.entityLinks = entityLinks;
 	}
 
+    @PreAuthorize("isAuthenticated()")
 	@GetMapping(value = "/{accession}", produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
 	public Resource<Sample> getSampleHal(@PathVariable String accession) {
 		log.trace("starting call");
@@ -98,12 +99,14 @@ public class SampleRestController {
 		return sampleResource;
 	}
 
+    @PreAuthorize("isAuthenticated()")
 	@CrossOrigin(methods = RequestMethod.GET)
 	@GetMapping(value = "/{accession}", produces = { MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE })
 	public Sample getSampleXml(@PathVariable String accession) {
 		return this.getSampleHal(accession).getContent();
 	}
 
+    @PreAuthorize("isAuthenticated()")
 	@CrossOrigin(methods = RequestMethod.GET)
     @GetMapping(value = "/{accession}", produces = "application/ld+json")
     public JsonLDSample getJsonLDSample(@PathVariable String accession) {
@@ -133,7 +136,8 @@ public class SampleRestController {
 	public Resource<Sample> put(@PathVariable String accession, 
 			@RequestBody Sample sample,
 			@RequestParam(name = "setupdatedate", required = false, defaultValue="true") boolean setUpdateDate) {
-	if (sample.getAccession() == null || !sample.getAccession().equals(accession)) {
+    	
+    	if (sample.getAccession() == null || !sample.getAccession().equals(accession)) {
 			// if the accession in the body is different to the accession in the
 			// url, throw an error
 			// TODO create proper exception with right http error code
@@ -162,6 +166,7 @@ public class SampleRestController {
 	@PostMapping(consumes = { MediaType.APPLICATION_JSON_VALUE })
 	public ResponseEntity<Resource<Sample>> post(@RequestBody Sample sample,
 			@RequestParam(name = "setupdatedate", required = false, defaultValue="true") boolean setUpdateDate) {
+		
 		log.debug("Recieved POST for "+sample);
 		sample = bioSamplesAapService.handleSampleDomain(sample);
 

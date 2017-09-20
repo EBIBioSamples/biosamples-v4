@@ -39,11 +39,15 @@ public class SampleRetrievalService {
 	
 	public static final DateTimeFormatter solrFormatter = DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss'Z'");
 
+	private static final ParameterizedTypeReference<PagedResources<Resource<Sample>>> parameterizedTypeReferencePagedResourcesSample = new ParameterizedTypeReference<PagedResources<Resource<Sample>>>(){};
+	
 	private final Traverson traverson;
 	private final ExecutorService executor;
 	private final RestOperations restOperations;
 	private final int pageSize;
 
+	
+	
 	public SampleRetrievalService(RestOperations restOperations, Traverson traverson,
 			ExecutorService executor, int pageSize) {
 		this.restOperations = restOperations;
@@ -127,7 +131,7 @@ public class SampleRetrievalService {
 		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();		
 		params.add("size", Integer.toString(pageSize));
 		return new IterableResourceFetchAll<Sample>(executor, traverson, restOperations,
-				new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {}, 
+				parameterizedTypeReferencePagedResourcesSample, 
 				params,	"samples");
 	}
 	
@@ -136,7 +140,7 @@ public class SampleRetrievalService {
 		params.add("text", text);
 		params.add("size", Integer.toString(pageSize));
 		return new IterableResourceFetchAll<Sample>(executor, traverson, restOperations,
-				new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {}, 
+				parameterizedTypeReferencePagedResourcesSample, 
 				params,	"samples");
 	}
 
@@ -145,7 +149,7 @@ public class SampleRetrievalService {
 		params.add("size", Integer.toString(pageSize));
 		params.add("updatedafter", solrFormatter.format(updatedAfter));
 		return new IterableResourceFetchAll<Sample>(executor, traverson, restOperations,
-				new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {}, 
+				parameterizedTypeReferencePagedResourcesSample, 
 				params,	"samples");
 	}
 
@@ -154,7 +158,7 @@ public class SampleRetrievalService {
 		params.add("size", Integer.toString(pageSize));
 		params.add("updatedbefore", solrFormatter.format(updatedBefore));
 		return new IterableResourceFetchAll<Sample>(executor, traverson, restOperations,
-				new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {}, 
+				parameterizedTypeReferencePagedResourcesSample, 
 				params,	"samples");
 	}
 
@@ -164,7 +168,7 @@ public class SampleRetrievalService {
 		params.add("updatedafter", solrFormatter.format(updatedAfter));
 		params.add("updatedbefore", solrFormatter.format(updatedBefore));
 		return new IterableResourceFetchAll<Sample>(executor, traverson, restOperations,
-				new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {}, 
+				parameterizedTypeReferencePagedResourcesSample, 
 				params,	"samples");
 	}
 

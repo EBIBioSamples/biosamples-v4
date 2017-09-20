@@ -11,7 +11,7 @@ while [ "$1" != "" ]; do
 done
 
 #mvn -T 2C -Dmaven.test.skip=true clean package
-mvn -T 2C -P embl-ebi package
+mvn -T 2C -P embl-ebi clean package
 
 #cleanup any previous data
 if [ $clean == 1 ]

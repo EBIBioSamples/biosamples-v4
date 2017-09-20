@@ -14,7 +14,7 @@ services:
     - java
     - -jar
     # - -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000
-    - webapps-core-4.0.0.BSD-777-SNAPSHOT.war
+    - webapps-core-4.0.0-SNAPSHOT.war
     environment:
     #AAP certificate
     - jwt.certificate=public.der
@@ -23,11 +23,6 @@ services:
     - aap.token.url=https://explore.api.aap.tsi.ebi.ac.uk/auth
     #configure other services
     - spring.data.solr.host=http://solr:8983/solr
-    - spring.data.neo4j.uri=bolt://neo4j:7687
-    #- spring.data.neo4j.uri=http://neo4j:7474
-    - spring.data.neo4j.username=neo4j
-    - spring.data.neo4j.indexes.auto=validate
-    #- spring.data.neo4j.indexes.auto=assert
     - spring.data.mongodb.host=mongo
     - spring.rabbitmq.publisher-confirms=true
     - spring.rabbitmq.host=rabbitmq
@@ -39,8 +34,6 @@ services:
     - server.context-path=/biosamples/beta
     #Enable use behind a proxy with original urls
     - server.use-forward-headers=true
-    #REMOVE FOR PRODUCTION
-    - management.security.enabled=false
     #Improve logging
     - LOGGING_FILE=/logs/webapps-core.log
     - server.tomcat.accesslog.enabled=true
@@ -74,7 +67,7 @@ services:
     command:
     - java
     - -jar
-    - webapps-sampletab-4.0.0.BSD-777-SNAPSHOT.war
+    - webapps-sampletab-4.0.0-SNAPSHOT.war
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples/beta
     - SERVER_SERVLET_CONTEXT-PATH=/biosamples/beta/sampletab
@@ -104,7 +97,7 @@ services:
     command:
     - java
     - -jar
-    - webapps-legacyxml-4.0.0.BSD-777-SNAPSHOT.war
+    - webapps-legacyxml-4.0.0-SNAPSHOT.war
     environment:
     - BIOSAMPLES_REDIRECT_CONTEXT=http://localhost:8081/biosamples/beta
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples/beta
@@ -127,7 +120,7 @@ services:
     command:
     - java
     - -jar
-    - agents-solr-4.0.0.BSD-777-SNAPSHOT.jar
+    - agents-solr-4.0.0-SNAPSHOT.jar
     environment:
     - SPRING_RABBITMQ_PUBLISHER-CONFIRMS=true
     - SPRING_RABBITMQ_PUBLISHER-RETURNS=true
@@ -150,7 +143,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-ena-4.0.0.BSD-777-SNAPSHOT.jar
+    - pipelines-ena-4.0.0-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples/beta
     - LOGGING_FILE=/logs/pipelines-ena.log
@@ -177,7 +170,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-accession-4.0.0.BSD-777-SNAPSHOT.jar
+    - pipelines-accession-4.0.0-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples/beta
     - LOGGING_FILE=/logs/pipelines-ena.log      
@@ -191,7 +184,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-sampletab-4.0.0.BSD-777-SNAPSHOT.jar
+    - pipelines-sampletab-4.0.0-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_SAMPLETAB_URI=http://biosamples-webapps-sampletab:8080/biosamples/beta/sampletab/v4
     - LOGGING_FILE=/logs/pipelines-sampletab.log  
@@ -205,7 +198,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-curation-4.0.0.BSD-777-SNAPSHOT.jar
+    - pipelines-curation-4.0.0-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples/beta
     - LOGGING_FILE=/logs/pipelines-curation.log

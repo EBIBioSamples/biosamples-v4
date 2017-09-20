@@ -18,22 +18,8 @@
 <body>
 	<div th:insert="fragments/header :: header"></div>
 	<div layout:fragment="content">
-		<div id="main-content-area" class="row">
-			<div class="small-12 medium-9 columns">
-				<h2>Welcome to BioSamples Database Help</h2>
-				<div class="small-6 columns">
-					<div style="padding: 30px 15px; position: relative; background-color: rgb(249, 243, 238);">
-						<img th:src="@{/images/user.png}" title="user icon" />
-						<a href="help/search">I'd like to browse or search BioSamples Database</a>
-					</div>
-				</div>
-				<div class="small-6 columns">
-					<div style="padding: 30px 15px; position: relative; background-color: rgb(238, 249, 243);">
-						<img th:src="@{/images/submitter.png}" title="submitter icon" />
-						<a href="help/submit">I'd like to submit data to BioSamples Database</a>
-					</div>
-				</div>
-			</div>
+		<div id="main-content-area" class="row" >
+			<div class="small-12 medium-9 columns" th:insert="asciidoc/st :: div"></div>
 			<div th:insert="fragments/help :: sidebar"></div>	
 		</div>
 	</div> 

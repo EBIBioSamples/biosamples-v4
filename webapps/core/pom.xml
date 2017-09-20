@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>4.0.0.BSD-777-SNAPSHOT</version>
+		<version>4.0.0-SNAPSHOT</version>
 		<relativePath>../../</relativePath>
 	</parent>
 
@@ -85,12 +85,12 @@
 		<dependency>
 			<groupId>uk.ac.ebi.tsc.aap.client</groupId>
 			<artifactId>security</artifactId>
-			<version>0.2-SNAPSHOT</version>
+			<version>0.2.2-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.tsc.aap.client</groupId>
 			<artifactId>service</artifactId>
-			<version>0.2-SNAPSHOT</version>
+			<version>0.2.2-SNAPSHOT</version>
 		</dependency>
 		
 		<!-- needed for traverson to work properly -->
@@ -155,9 +155,8 @@
 				<configuration>
 					<sourceDirectory>src/main/asciidoc</sourceDirectory>
 					<outputDirectory>${project.build.directory}/${project.artifactId}-${project.version}/WEB-INF/classes/templates/asciidoc/</outputDirectory>
-<!-- 					<outputDirectory>src/main/resources/templates/fragments/</outputDirectory> -->
 					<backend>html</backend>
-					<doctype>book</doctype>
+<!-- 					<doctype>book</doctype> -->
 					<!-- <attributes> -->
 					<!-- <snippets>${snippetsDirectory}</snippets> -->
 					<!-- </attributes> -->

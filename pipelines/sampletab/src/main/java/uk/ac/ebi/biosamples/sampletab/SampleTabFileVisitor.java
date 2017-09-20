@@ -7,12 +7,15 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.client.RestTemplate;
+
+import uk.ac.ebi.biosamples.utils.ThreadUtils;
 
 
 public class SampleTabFileVisitor extends SimpleFileVisitor<Path> {
@@ -30,10 +33,10 @@ public class SampleTabFileVisitor extends SimpleFileVisitor<Path> {
 		this.restTemplate = restTemplate;
 		this.uri = uri;
 	}
-	
+		
 	@Override
 	public FileVisitResult visitFile(Path path, BasicFileAttributes basicFileAttribute) {
-		if (path.endsWith("sampletab.toload.txt")) {
+		if (path.endsWith("sampletab.txt")) {
 			path = path.toAbsolutePath();
 			
 			log.info("Found "+path);
@@ -41,6 +44,13 @@ public class SampleTabFileVisitor extends SimpleFileVisitor<Path> {
 			Callable<Void> task = new SampleTabCallable(path, restTemplate, uri);
 			
 			futures.put(path.toString(), executorService.submit(task));
+
+			//limit number of pending futures
+			try {
+				ThreadUtils.checkFutures(futures, 1000);
+			} catch (InterruptedException | ExecutionException e) {
+				throw new RuntimeException(e);
+			}
 		}
 		return FileVisitResult.CONTINUE;
 	}

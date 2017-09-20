@@ -27,6 +27,7 @@
 			</TermSourceREF>
 		</QualifiedValue>
 	</Property>
+	
 	<Property class="organism part" characteristic="false"
 		comment="false" type="STRING">
 		<QualifiedValue>
@@ -36,10 +37,11 @@
 			<Value>lung</Value>
 		</QualifiedValue>
 	</Property>
+	
+	<derivedFrom>TEST2</derivedFrom>
+	
 	<Database>
 		<Name>other</Name>
 		<URI>http://www.google.com</URI>
 	</Database>
-
-	<!-- <derivedFrom>TEST2</derivedFrom> -->
 </BioSample>
