@@ -57,30 +57,30 @@ public class RedirectController {
 	@GetMapping(value = {"/samples"}, produces={MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE})
 	public @ResponseBody
 	BioSampleResultQuery getSamples(
-			@RequestParam(required=true) String query,
-			@RequestParam(defaultValue = "25") int size,
-			@RequestParam(defaultValue = "1") int page,
-			@RequestParam(defaultValue = "desc") String sort
+			@RequestParam(name="query", required=true) String query,
+			@RequestParam(name="pagesize", defaultValue = "25") int pagesize,
+			@RequestParam(name="page", defaultValue = "1") int page,
+			@RequestParam(name="sort", defaultValue = "desc") String sort
 	)  {
 	    if (page < 1) {
 	        throw new IllegalArgumentException("Page parameter has to be 1-based");
 		}
-		PagedResources<Resource<Sample>> results = sampleService.getPagedSamples(query, page - 1, size, Sort.forParam(sort));
+		PagedResources<Resource<Sample>> results = sampleService.getPagedSamples(query, page - 1, pagesize, Sort.forParam(sort));
         return BioSampleResultQuery.fromPagedResource(results);
 	}
 
 	@GetMapping(value = {"/groups"}, produces={MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE})
 	public @ResponseBody
 	BioSampleGroupResultQuery getGroups(
-			@RequestParam(required=true) String query,
-			@RequestParam(defaultValue = "25") int size,
-			@RequestParam(defaultValue = "1") int page,
-			@RequestParam(defaultValue = "desc") String sort
+			@RequestParam(name="query", required=true) String query,
+			@RequestParam(name="pagesize", defaultValue = "25") int pagesize,
+			@RequestParam(name="page", defaultValue = "1") int page,
+			@RequestParam(name="sort", defaultValue = "desc") String sort
 	) {
 		if (page < 1) {
 			throw new IllegalArgumentException("Page parameter has to be 1-based");
 		}
-		PagedResources<Resource<Sample>> results = sampleService.getPagedSamples(query, page - 1, size, Sort.forParam(sort));
+		PagedResources<Resource<Sample>> results = sampleService.getPagedSamples(query, page - 1, pagesize, Sort.forParam(sort));
         return BioSampleGroupResultQuery.fromPagedResource(results);
 	}
 
@@ -102,14 +102,6 @@ public class RedirectController {
 		PagedResources<Resource<Sample>> results = sampleService.getPagedSamples(query, page - 1, size, sort);
 		return BioSampleResultQuery.fromPagedResource(results);
 	}
-
-//	private String getTextQuery(String[] queries, String delimiter) {
-//		return queries.length > 1 ? String.join(delimiter, queries) : Optional.of(queries[0]).orElse(null);
-//	}
-
-//	private String getTextQuery(String[] queries) {
-//        return getTextQuery(queries, " OR ");
-//	}
 
 	private Map<String, String> readGroupSamplesQuery(String query) {
         Map<String, String> queryParams = new HashMap<>();

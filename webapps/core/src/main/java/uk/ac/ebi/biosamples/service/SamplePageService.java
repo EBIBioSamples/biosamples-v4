@@ -7,6 +7,7 @@ import java.util.stream.StreamSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -51,16 +52,15 @@ public class SamplePageService {
 	@Autowired
 	private SolrSampleService solrSampleService;
 	
-
+	
 	//@Cacheable(cacheNames=WebappProperties.getSamplesByText, sync=true)
 	public Page<Sample> getSamplesByText(String text, MultiValueMap<String,String> filters, 
 			LocalDateTime after, LocalDateTime before, Pageable pageable) {		
 		Page<SolrSample> pageSolrSample = solrSampleService.fetchSolrSampleByText(text, filters, after, before, pageable);		
 		//for each result fetch the stored version and add e.g. inverse relationships		
-		//stream process each into a sample *in parallel*
-		Page<Sample> pageSample = new PageImpl<>(StreamSupport.stream(pageSolrSample.spliterator(), true)
-					.map(ss->sampleService.fetch(ss.getAccession()).get()).collect(Collectors.toList()), 
-				pageable,pageSolrSample.getTotalElements()); 
+		//stream process each into a sample
+		Page<Sample> pageSample = pageSolrSample.map(ss->sampleService.fetch(ss.getAccession()).get());
+		
 		return pageSample;
 	}	
 

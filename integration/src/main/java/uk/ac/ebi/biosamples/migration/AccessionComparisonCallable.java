@@ -70,7 +70,7 @@ class AccessionComparisonCallable implements Callable<Void> {
 		while (!bothFlag.get() || !bothQueue.isEmpty()) {
 			String accession = bothQueue.poll();
 			if (accession != null) {
-				compare(accession);
+				//compare(accession);
 			}
 		}
 		log.info("Finished AccessionComparisonCallable.call(");

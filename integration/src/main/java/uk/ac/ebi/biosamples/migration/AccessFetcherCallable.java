@@ -55,7 +55,7 @@ public class AccessFetcherCallable implements Callable<Void> {
 			executorService = Executors.newFixedThreadPool(8);
 		
 			UriComponentsBuilder uriComponentBuilder = UriComponentsBuilder.fromUriString(rootUrl);
-			uriComponentBuilder.replaceQueryParam("size", pagesize);
+			uriComponentBuilder.replaceQueryParam("pagesize", pagesize);
 			uriComponentBuilder.replaceQueryParam("query", "");
 			
 			//get the first page to get the number of pages in total
