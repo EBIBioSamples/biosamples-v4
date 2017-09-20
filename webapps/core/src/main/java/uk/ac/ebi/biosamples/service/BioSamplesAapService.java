@@ -138,7 +138,7 @@ public class BioSamplesAapService {
 		} else if (usersDomains.contains(sample.getDomain())) {
 			return sample;
 		} else {
-			log.info("User asked to submit curation to domain "+sample.getDomain()+" but has access to "+usersDomains);
+			log.info("User asked to submit sample to domain "+sample.getDomain()+" but has access to "+usersDomains);
 			throw new SampleNotAccessibleException();
 		}
 	}
