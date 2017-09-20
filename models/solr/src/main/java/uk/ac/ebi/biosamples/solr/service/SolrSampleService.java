@@ -124,7 +124,7 @@ public class SolrSampleService {
 				log.info("Adding "+facetName+" : "+ffe.getValue()+" with count "+ffe.getValueCount());
 				listFacetContent.add(LabelCountEntry.build(ffe.getValue(), ffe.getValueCount()));
 			}
-			StringListFacet facet = FacetFactory.buildStringList(facetType, facetName, facetFieldCountMap.get(field.getName()), listFacetContent);
+			StringListFacet facet = StringListFacet.build(facetType.getFacetId(), facetName, facetFieldCountMap.get(field.getName()), listFacetContent);
 			builder.addFacet(facet);
 		}
 		

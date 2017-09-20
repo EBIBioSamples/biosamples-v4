@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
@@ -128,7 +127,7 @@ public class SampleHtmlController {
 		Pageable pageable = new PageRequest(start/rows, rows);
 		Page<Sample> pageSample = samplePageService.getSamplesByText(text, filtersMap, updatedAfterDate, updatedBeforeDate, pageable);
 		//default to getting 10 values from 10 facets
-		List<Resource<StringListFacet>> sampleFacets = facetService.getFacets(text, filtersMap, 10, 10);
+		List<StringListFacet> sampleFacets = facetService.getFacets(text, filtersMap, 10, 10);
 		// TODO Encode filters using
 //		sampleFacets.stream().map(stringListFacet ->
 //		{

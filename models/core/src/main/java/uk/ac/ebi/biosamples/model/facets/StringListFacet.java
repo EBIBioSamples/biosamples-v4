@@ -35,11 +35,21 @@ public abstract class StringListFacet extends Facet {
 
     @JsonCreator
     public static StringListFacet build(
+            @JsonProperty("type") String facetTypeName,
             @JsonProperty("label") String label,
             @JsonProperty("count") long count,
-            @JsonProperty("content") List content,
-            @JsonProperty("type") String facetTypeName) {
-        return FacetFactory.buildStringList(FacetType.ofFacetName(facetTypeName), label, count, content);
+            @JsonProperty("content") List entries) {
+        FacetType type = FacetType.ofFacetName(facetTypeName);
+        switch (type) {
+            case ATTRIBUTE:
+                return new AttributeFacet(label, count, entries);
+            case INCOMING_RELATIONSHIP:
+                return new InverseRelationFacet(label, count, entries);
+            case OUTGOING_RELATIONSHIP:
+                return new RelationFacet(label, count, entries);
+            default:
+                throw new RuntimeException("Unsupported type " + type);
+        }
     }
 
 }

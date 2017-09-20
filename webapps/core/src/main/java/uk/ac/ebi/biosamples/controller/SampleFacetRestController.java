@@ -39,18 +39,18 @@ public class SampleFacetRestController {
 
     @CrossOrigin
 	@GetMapping(produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
-	public ResponseEntity<Resources<Resource<StringListFacet>>> getFacetsHal(
+	public ResponseEntity<Resources<StringListFacet>> getFacetsHal(
 			@RequestParam(name="text", required=false) String text,
 			@RequestParam(name="filter", required=false) String[] filter) {
     	
     	//TODO support rows and start parameters
 		MultiValueMap<String, String> filters = filterService.getFilters(filter);
-    	List<Resource<StringListFacet>> sampleFacets = facetService.getFacets(text, filterService.getFilters(filter), 10, 10);
+    	List<StringListFacet> sampleFacets = facetService.getFacets(text, filterService.getFilters(filter), 10, 10);
 
 //    	PagedResources<StringListFacet> resources = new PagedResources<>(
 //    			sampleFacets,
 //				new PagedResources.PageMetadata(10, 1, 10, 5));
-        Resources<Resource<StringListFacet>> resources = new Resources<>(sampleFacets);
+        Resources<StringListFacet> resources = new Resources<>(sampleFacets);
     	
 		//Links for the entire page
 		//this is hacky, but no clear way to do this in spring-hateoas currently
