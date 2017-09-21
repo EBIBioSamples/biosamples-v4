@@ -13,6 +13,7 @@ import org.springframework.util.MultiValueMap;
 
 import com.google.common.io.BaseEncoding;
 
+import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.Autocomplete;
 import uk.ac.ebi.biosamples.model.SampleFacet;
 import uk.ac.ebi.biosamples.model.SampleFacetsBuilder;
@@ -32,6 +33,8 @@ public class SolrSampleService {
 	public static final DateTimeFormatter solrFormatter = DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss'Z'");
 
 	private final SolrSampleRepository solrSampleRepository;
+
+	private final BioSamplesProperties bioSamplesProperties;
 	
 	//maximum time allowed for a solr search in s
 	//TODO application.properties this
@@ -39,8 +42,9 @@ public class SolrSampleService {
 	
 	private Logger log = LoggerFactory.getLogger(getClass());
 	
-	public SolrSampleService(SolrSampleRepository solrSampleRepository) {
+	public SolrSampleService(SolrSampleRepository solrSampleRepository, BioSamplesProperties bioSamplesProperties) {
 		this.solrSampleRepository = solrSampleRepository;
+		this.bioSamplesProperties = bioSamplesProperties;
 	}		
 
 	public Page<SolrSample> fetchSolrSampleByText(String searchTerm, MultiValueMap<String,String> filters, 
@@ -60,8 +64,12 @@ public class SolrSampleService {
 		//filter out non-public
 		//filter to update date range
 		FilterQuery filterQuery = new SimpleFilterQuery();
-		filterQuery.addCriteria(new Criteria("release_dt").lessThan("NOW").and("release_dt").isNotNull()
-				.or(new Criteria("domain_s").in(domains)));
+		//check if this is a read superuser
+		if (!domains.contains(bioSamplesProperties.getBiosamplesAapSuperRead())) {
+			//user can only see private samples inside its own domain
+			filterQuery.addCriteria(new Criteria("release_dt").lessThan("NOW").and("release_dt").isNotNull()
+					.or(new Criteria("domain_s").in(domains)));
+		}
 		if (after != null && before != null) {
 			filterQuery.addCriteria(new Criteria("update_dt").between(after.format(solrFormatter), before.format(solrFormatter)));
 		} else if (after == null && before != null) {
