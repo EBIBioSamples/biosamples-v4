@@ -13,7 +13,8 @@ import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.facets.StringListFacet;
+import uk.ac.ebi.biosamples.model.facets.Facet;
+import uk.ac.ebi.biosamples.model.facets.LabelCountEntry;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -51,15 +52,16 @@ public class RestFacetIntegration extends AbstractIntegration {
 		parameters.put("text","TESTrestfacet1");
 		Traverson traverson = new Traverson(integrationProperties.getBiosampleSubmissionUri(), MediaTypes.HAL_JSON);
 		Traverson.TraversalBuilder builder = traverson.follow("samples", "facet").withTemplateParameters(parameters);
-		Resources<StringListFacet> facets = builder.toObject(new TypeReferences.ResourcesType<StringListFacet>(){});
+		Resources<Facet> facets = builder.toObject(new TypeReferences.ResourcesType<Facet>(){});
 
 		log.info("GETting from " + builder.asLink().expand(parameters).getHref());
 
 		if (facets.getContent().size() <= 0) {
 			throw new RuntimeException("No facets found!");
 		}
-		List<StringListFacet> content = new ArrayList<StringListFacet>(facets.getContent());
-		if (content.get(0).getContent().size() <= 0) {
+		List<Facet> content = new ArrayList<>(facets.getContent());
+		List<LabelCountEntry> facetContent = (List<LabelCountEntry>) content.get(0).getContent();
+		if (facetContent.size() <= 0) {
 			throw new RuntimeException("No facet values found!");
 		}
 		
@@ -67,7 +69,7 @@ public class RestFacetIntegration extends AbstractIntegration {
 
 		//TODO reintroduce this part of code
 		boolean facetIsCorrect = false;
-		for (StringListFacet facet : content) {
+		for (Facet facet : content) {
 		    switch (facet.getLabel()) {
 		    	case "organism":
 		    		facetIsCorrect = true;

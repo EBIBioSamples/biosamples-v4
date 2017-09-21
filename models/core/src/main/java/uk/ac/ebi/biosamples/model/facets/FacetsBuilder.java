@@ -6,9 +6,9 @@ import java.util.List;
 
 public class FacetsBuilder {
 
-    private List<StringListFacet> facets = new LinkedList<>();
+    private List<Facet> facets = new LinkedList<>();
 
-    public FacetsBuilder addFacet(StringListFacet facet) {
+    public FacetsBuilder addFacet(Facet facet) {
 
         facets.add(facet);
 
@@ -19,7 +19,7 @@ public class FacetsBuilder {
         return this;
     }
 
-    public List<StringListFacet> build() {
+    public List<Facet> build() {
         return Collections.unmodifiableList(new LinkedList<>(facets));
     }
 }

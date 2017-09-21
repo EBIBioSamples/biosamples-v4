@@ -7,7 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriUtils;
-import uk.ac.ebi.biosamples.model.facets.StringListFacet;
+import uk.ac.ebi.biosamples.model.facets.Facet;
 import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
 
 import java.io.UnsupportedEncodingException;
@@ -25,7 +25,7 @@ public class FacetService {
 	}
 
 
-	public List<StringListFacet> getFacets(String text, MultiValueMap<String,String> filters, int noOfFacets, int noOfFacetValues) {
+	public List<Facet> getFacets(String text, MultiValueMap<String,String> filters, int noOfFacets, int noOfFacetValues) {
 		Pageable facetPageable = new PageRequest(0,noOfFacets);
 		Pageable facetValuePageable = new PageRequest(0,noOfFacetValues);
 		//TODO if a facet is enabled as a filter, then that value will be the only filter displayed

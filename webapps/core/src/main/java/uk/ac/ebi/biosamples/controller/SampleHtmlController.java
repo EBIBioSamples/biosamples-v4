@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.facets.StringListFacet;
+import uk.ac.ebi.biosamples.model.facets.Facet;
 import uk.ac.ebi.biosamples.service.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -127,7 +127,9 @@ public class SampleHtmlController {
 		Pageable pageable = new PageRequest(start/rows, rows);
 		Page<Sample> pageSample = samplePageService.getSamplesByText(text, filtersMap, updatedAfterDate, updatedBeforeDate, pageable);
 		//default to getting 10 values from 10 facets
-		List<StringListFacet> sampleFacets = facetService.getFacets(text, filtersMap, 10, 10);
+		List<Facet> sampleFacets = facetService.getFacets(text, filtersMap, 10, 10);
+
+
 		// TODO Encode filters using
 //		sampleFacets.stream().map(stringListFacet ->
 //		{
@@ -152,36 +154,8 @@ public class SampleHtmlController {
 		}
 		Collections.sort(filtersList);
 		
-		//now actually build the URLs for each facet
 		// TODO sampleFacets is a generic facet, need to make this part compatible with more than List of label facet
-//		URI uri;
-//		for (StringListFacet sampleFacet : sampleFacets) {
-//			//check if the filter all is on
-//			String facetLabel = String.format("%s:%s",sampleFacet.getType().getFacetId(), sampleFacet.getLabel());
-//			if (filtersList.contains(facetLabel)) {
-//				uri = getFilterUri(uriBuilder, filtersList, null, facetLabel);
-//				facetsUri.put(sampleFacet.getLabel(), uri.toString());
-//			} else {
-//				//filter is off, add uri to turn it on
-//				uri = getFilterUri(uriBuilder, filtersList, facetLabel, null);
-//				facetsUri.put(sampleFacet.getLabel(), uri.toString());
-//			}
-//			//check for each facet
-//			for (LabelCountEntry sampleFacetValue : sampleFacet.getContent()) {
-//				//check if the filter for this facet is on
-//				String filter = facetLabel+":"+sampleFacetValue.label;
-//				if (filtersList.contains(filter)) {
-//					//filter is on, add uri to turn it off
-//					uri = getFilterUri(uriBuilder, filtersList, null, filter);
-//					facetsUri.put(filter, uri.toString());
-//				} else {
-//					//filter is off, add uri to turn it on
-//					uri = getFilterUri(uriBuilder, filtersList, filter, null);
-//					facetsUri.put(filter, uri.toString());
-//				}
-//			}
-//		}
-								
+
 		model.addAttribute("text", text);		
 		model.addAttribute("start", start);
 		model.addAttribute("rows", rows);

@@ -23,14 +23,7 @@
                         <div class="lead facet-count text-right" th:text="${facet.count}"></div>
                     </label>
 				</div>
-                <!--<a class="button columns medium-12 margin-top-medium padding-top-small padding-bottom-small facet"-->
-				   <!--th:classappend="${#lists.contains(filters, filterName)} ? 'secondary'">-->
-				<!--</a>-->
-				<!--<a th:each="resource : ${facet.getContent()}"-->
-					 <!--th:with="value=${resource.getContent()}, valueFilterName=${filterName + ':' + value.label}"-->
-					 <!--class="button columns medium-12 padding-top-small padding-bottom-small facet"-->
-				     <!--th:classappend="${#lists.contains(filters, valueFilterName)} ? 'secondary'" >-->
-                <div th:each="value=${facet.getContent()}"
+                <div th:each="value : ${facet.content}"
 					  class="facet-container"
 					  th:with="valueFilterName=${filterName + ':' + value.label}">
                     <input th:form="local-search" th:with="filterName=${facetType + ':' + facet.label}"
@@ -47,17 +40,6 @@
                         <span class="facet-count text-right" th:text="${value.count}"></span>
                     </label>
 				</div>
-				<!--</a>-->
-				<!--<span th:each="resource : ${facet.getContent()}" th:remove="tag"-->
-					  <!--th:with="value=${resource.getContent()}, valueFilterName=${filterName + ':' + value.label}">-->
-				<!--</span>-->
-				<!--<a class="button columns medium-12 margin-top-medium padding-top-small padding-bottom-small" th:text="${facetType}"></a>-->
-				<!--<a class="button columns medium-12 margin-top-medium padding-top-small padding-bottom-small"-->
-				<!--th:classappend="${filters.contains(facetType+':'+facet.label)} ? 'secondary'">-->
-				<!--&lt;!&ndash;th:href="${facetsuri.get(facet.label)}">&ndash;&gt;-->
-				<!--<span class="lead float-left text-left" th:text="${facet.label}"></span>-->
-				<!--<span class="lead float-right text-right" th:text="${facet.count}"></span>-->
-				<!--</a>-->
 			</div>
 		</div>
 	</section>

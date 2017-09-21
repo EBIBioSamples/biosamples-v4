@@ -1,11 +1,5 @@
 package uk.ac.ebi.biosamples.solr.model;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.springframework.data.annotation.Id;
 import org.springframework.data.solr.core.mapping.Dynamic;
 import org.springframework.data.solr.core.mapping.Indexed;
@@ -229,7 +223,7 @@ public class SolrSample {
 		}
 
 		//TODO validate maps
-		sample.facetFields = null;
+		sample.facetFields = new ArrayList<>();
 		if (attributeValues != null && attributeValues.keySet().size() > 0) {
 			List<String> attributeTypes = new ArrayList<>();
 			for (String attributeType : attributeValues.keySet()) {
@@ -237,7 +231,7 @@ public class SolrSample {
 				attributeTypes.add(field);
 			}
 			Collections.sort(attributeTypes);
-			sample.facetFields = attributeTypes;
+			sample.facetFields.addAll(attributeTypes);
 		}
 
 		if (outgoingRelationships != null && outgoingRelationships.keySet().size() > 0) {
@@ -250,9 +244,7 @@ public class SolrSample {
 			}
 
 			Collections.sort(outgoingRelationshipTypes);
-			if (sample.facetFields != null) {
-				sample.facetFields.addAll(outgoingRelationshipTypes);
-			}
+            sample.facetFields.addAll(outgoingRelationshipTypes);
 		}
 
 		if (incomingRelationships != null && incomingRelationships.keySet().size() > 0) {
@@ -265,9 +257,7 @@ public class SolrSample {
 			}
 
 			Collections.sort(incomingRelationshipTypes);
-			if (sample.facetFields != null) {
-				sample.facetFields.addAll(incomingRelationshipTypes);
-			}
+            sample.facetFields.addAll(incomingRelationshipTypes);
 		}
 
 		//copy into the other fields

@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.model.facets.Facet;
-import uk.ac.ebi.biosamples.model.facets.StringListFacet;
+import uk.ac.ebi.biosamples.model.facets.LabelCountEntry;
 import uk.ac.ebi.biosamples.service.FacetService;
 import uk.ac.ebi.biosamples.service.FilterService;
 
@@ -39,18 +39,18 @@ public class SampleFacetRestController {
 
     @CrossOrigin
 	@GetMapping(produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
-	public ResponseEntity<Resources<StringListFacet>> getFacetsHal(
+	public ResponseEntity<Resources<Facet>> getFacetsHal(
 			@RequestParam(name="text", required=false) String text,
 			@RequestParam(name="filter", required=false) String[] filter) {
     	
     	//TODO support rows and start parameters
 		MultiValueMap<String, String> filters = filterService.getFilters(filter);
-    	List<StringListFacet> sampleFacets = facetService.getFacets(text, filterService.getFilters(filter), 10, 10);
+    	List<Facet> sampleFacets = facetService.getFacets(text, filterService.getFilters(filter), 10, 10);
 
 //    	PagedResources<StringListFacet> resources = new PagedResources<>(
 //    			sampleFacets,
 //				new PagedResources.PageMetadata(10, 1, 10, 5));
-        Resources<StringListFacet> resources = new Resources<>(sampleFacets);
+        Resources<Facet> resources = new Resources<>(sampleFacets);
     	
 		//Links for the entire page
 		//this is hacky, but no clear way to do this in spring-hateoas currently

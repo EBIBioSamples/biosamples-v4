@@ -27,9 +27,6 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
-import uk.ac.ebi.biosamples.model.facets.AttributeFacet;
-import uk.ac.ebi.biosamples.model.facets.InverseRelationFacet;
-import uk.ac.ebi.biosamples.model.facets.RelationFacet;
 import uk.ac.ebi.biosamples.service.AttributeValidator;
 import uk.ac.ebi.biosamples.service.SampleValidator;
 
@@ -126,7 +123,7 @@ public class BioSamplesAutoConfiguration {
 				ObjectMapper mapper = new ObjectMapper();
 				mapper.registerModule(new Jackson2HalModule());
 				//TODO check if this is relevant
-				mapper.registerSubtypes(AttributeFacet.class, RelationFacet.class, InverseRelationFacet.class);
+//				mapper.registerSubtypes(AttributeFacet.class, RelationFacet.class, InverseRelationFacet.class);
 				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 				MappingJackson2HttpMessageConverter halConverter = new TypeConstrainedMappingJackson2HttpMessageConverter(ResourceSupport.class);
 				halConverter.setObjectMapper(mapper);

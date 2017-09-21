@@ -12,7 +12,10 @@ import org.springframework.data.solr.core.query.result.FacetPage;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
 import uk.ac.ebi.biosamples.model.Autocomplete;
-import uk.ac.ebi.biosamples.model.facets.*;
+import uk.ac.ebi.biosamples.model.facets.Facet;
+import uk.ac.ebi.biosamples.model.facets.FacetType;
+import uk.ac.ebi.biosamples.model.facets.FacetsBuilder;
+import uk.ac.ebi.biosamples.model.facets.LabelCountEntry;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
 import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
 
@@ -67,13 +70,13 @@ public class SolrSampleService {
 			filterQuery.addCriteria(new Criteria("update_dt").between(after.format(solrFormatter), "NOW+1000YEAR"));
 		}
 		query.addFilterQuery(filterQuery);
-		query.setTimeAllowed(TIMEALLOWED*1000); 
+		query.setTimeAllowed(TIMEALLOWED*1000);
 		
 		// return the samples from solr that match the query
 		return solrSampleRepository.findByQuery(query);
 	}
 
-	public List<StringListFacet> getFacets(String searchTerm, MultiValueMap<String,String> filters,
+	public List<Facet> getFacets(String searchTerm, MultiValueMap<String,String> filters,
 								 String after, String before, Pageable facetPageable, Pageable facetValuePageable) {
 		//default to search all
 		if (searchTerm == null || searchTerm.trim().length() == 0) {
@@ -94,9 +97,9 @@ public class SolrSampleService {
 			filterQuery.addCriteria(new Criteria("update_dt").between(after, before));
 		}
 		query.addFilterQuery(filterQuery);
-		query.setTimeAllowed(TIMEALLOWED*1000); 
-		
-		Page<FacetFieldEntry> facetFields = solrSampleRepository.getFacetFields(query, facetPageable);
+		query.setTimeAllowed(TIMEALLOWED*1000);
+
+		Page<FacetFieldEntry> facetFields = solrSampleRepository.getFacetFields(query,  facetPageable);
 
 		//using the query, get a list of facets and overall counts
 
@@ -124,7 +127,7 @@ public class SolrSampleService {
 				log.info("Adding "+facetName+" : "+ffe.getValue()+" with count "+ffe.getValueCount());
 				listFacetContent.add(LabelCountEntry.build(ffe.getValue(), ffe.getValueCount()));
 			}
-			StringListFacet facet = StringListFacet.build(facetType.getFacetId(), facetName, facetFieldCountMap.get(field.getName()), listFacetContent);
+			Facet facet = Facet.build(facetType, facetName, facetFieldCountMap.get(field.getName()), listFacetContent);
 			builder.addFacet(facet);
 		}
 		
