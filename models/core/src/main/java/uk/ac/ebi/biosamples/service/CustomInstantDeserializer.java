@@ -1,7 +1,7 @@
 package uk.ac.ebi.biosamples.service;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.time.format.DateTimeParseException;
 
 import com.fasterxml.jackson.core.JsonParser;
@@ -9,22 +9,26 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 
-public class CustomLocalDateTimeDeserializer extends StdDeserializer<LocalDateTime> {
+public class CustomInstantDeserializer extends StdDeserializer<Instant> {
 
-	public CustomLocalDateTimeDeserializer() {
+	public CustomInstantDeserializer() {
 		this(null);
 	}
 
-	public CustomLocalDateTimeDeserializer(Class<LocalDateTime> t) {
+	public CustomInstantDeserializer(Class<Instant> t) {
 		super(t);
 	}
 
 	@Override
-	public LocalDateTime deserialize(JsonParser jsonparser, DeserializationContext ctxt)
+	public Instant deserialize(JsonParser jsonparser, DeserializationContext ctxt)
 			throws IOException, JsonProcessingException {
 		String date = jsonparser.getText();
+		//TODO remove this hack
+		if (!date.endsWith("Z")) {
+			date = date+"Z";
+		}
 		try {
-			return LocalDateTime.parse(date);
+			return Instant.parse(date);
 		} catch (DateTimeParseException e) {
 			throw new RuntimeException(e);
 		}

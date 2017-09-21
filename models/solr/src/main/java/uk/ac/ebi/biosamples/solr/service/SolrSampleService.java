@@ -21,7 +21,7 @@ import uk.ac.ebi.biosamples.solr.model.SolrSample;
 import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
 
 import java.io.UnsupportedEncodingException;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,8 +29,6 @@ import java.util.List;
 
 @Service
 public class SolrSampleService {
-	
-	public static final DateTimeFormatter solrFormatter = DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss'Z'");
 
 	private final SolrSampleRepository solrSampleRepository;
 
@@ -48,7 +46,7 @@ public class SolrSampleService {
 	}		
 
 	public Page<SolrSample> fetchSolrSampleByText(String searchTerm, MultiValueMap<String,String> filters, 
-			Collection<String> domains, LocalDateTime after, LocalDateTime before, Pageable pageable) {
+			Collection<String> domains, Instant after, Instant before, Pageable pageable) {
 		//default to search all
 		if (searchTerm == null || searchTerm.trim().length() == 0) {
 			searchTerm = "*:*";
@@ -71,11 +69,11 @@ public class SolrSampleService {
 					.or(new Criteria("domain_s").in(domains)));
 		}
 		if (after != null && before != null) {
-			filterQuery.addCriteria(new Criteria("update_dt").between(after.format(solrFormatter), before.format(solrFormatter)));
+			filterQuery.addCriteria(new Criteria("update_dt").between(DateTimeFormatter.ISO_INSTANT.format(after), DateTimeFormatter.ISO_INSTANT.format(before)));
 		} else if (after == null && before != null) {
-			filterQuery.addCriteria(new Criteria("update_dt").between("NOW-1000YEAR", before.format(solrFormatter)));
+			filterQuery.addCriteria(new Criteria("update_dt").between("NOW-1000YEAR", DateTimeFormatter.ISO_INSTANT.format(before)));
 		} else if (after != null && before == null) {
-			filterQuery.addCriteria(new Criteria("update_dt").between(after.format(solrFormatter), "NOW+1000YEAR"));
+			filterQuery.addCriteria(new Criteria("update_dt").between(DateTimeFormatter.ISO_INSTANT.format(after), "NOW+1000YEAR"));
 		}
 		query.addFilterQuery(filterQuery);
 		query.setTimeAllowed(TIMEALLOWED*1000); 

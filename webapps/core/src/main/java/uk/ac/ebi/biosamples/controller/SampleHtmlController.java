@@ -1,7 +1,7 @@
 package uk.ac.ebi.biosamples.controller;
 
 import java.net.URI;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -43,7 +43,7 @@ import uk.ac.ebi.biosamples.service.SampleService;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.net.URI;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
@@ -129,19 +129,19 @@ public class SampleHtmlController {
 		
 		Collection<String> domains = bioSamplesAapService.getDomains();
 
-		LocalDateTime updatedAfterDate = null;
+		Instant updatedAfterDate = null;
 		if (updatedAfter != null) {
 			try {
-				updatedAfterDate = LocalDateTime.parse(updatedAfter, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+				updatedAfterDate = Instant.parse(updatedAfter);
 			} catch (DateTimeParseException e) {
 				//TODO make an exception
 				throw new RuntimeException("Unable to parse date "+updatedAfter); 
 			}
 		}
-		LocalDateTime updatedBeforeDate = null;
+		Instant updatedBeforeDate = null;
 		if (updatedBefore != null) {
 			try {
-				updatedBeforeDate = LocalDateTime.parse(updatedBefore, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+				updatedBeforeDate = Instant.parse(updatedBefore);
 			} catch (DateTimeParseException e) {
 				//TODO make an exception
 				throw new RuntimeException("Unable to parse date "+updatedBefore);

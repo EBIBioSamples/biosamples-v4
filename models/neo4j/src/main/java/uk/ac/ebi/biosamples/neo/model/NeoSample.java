@@ -1,6 +1,6 @@
 package uk.ac.ebi.biosamples.neo.model;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
@@ -13,7 +13,7 @@ import org.neo4j.ogm.annotation.Property;
 import org.neo4j.ogm.annotation.Relationship;
 import org.neo4j.ogm.annotation.typeconversion.Convert;
 
-import uk.ac.ebi.biosamples.neo.service.LocalDateTimeConverter;
+import uk.ac.ebi.biosamples.neo.service.InstantConverter;
 
 @NodeEntity(label = "Sample")
 public class NeoSample {
@@ -30,12 +30,12 @@ public class NeoSample {
 	@Property
 	private String domain;
 
-	@Convert(LocalDateTimeConverter.class)
+	@Convert(InstantConverter.class)
 	@Property(name="update")
-	private LocalDateTime update;
-	@Convert(LocalDateTimeConverter.class)
+	private Instant update;
+	@Convert(InstantConverter.class)
 	@Property(name="release")
-	private LocalDateTime release;
+	private Instant release;
 	
 	@Relationship(type = "RELATED_TO", direction = Relationship.UNDIRECTED)
 	private Set<NeoRelationship> relationships;
@@ -62,10 +62,10 @@ public class NeoSample {
 	public String getDomain() {
 		return domain;
 	}
-	public LocalDateTime getUpdate() {
+	public Instant getUpdate() {
 		return update;
 	}
-	public LocalDateTime getRelease() {
+	public Instant getRelease() {
 		return release;
 	}
 	
@@ -139,7 +139,7 @@ public class NeoSample {
      * @param externalReferences
      * @return
      */
-	public static NeoSample build(String name, String accession, String domain, LocalDateTime release, LocalDateTime update, 
+	public static NeoSample build(String name, String accession, String domain, Instant release, Instant update, 
 			Collection<NeoAttribute> attributes, Collection<NeoRelationship> relationships, 
 			Collection<NeoExternalReference> externalReferences) {
 		NeoSample neoSample = new NeoSample();

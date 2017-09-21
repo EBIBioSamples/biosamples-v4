@@ -1,6 +1,6 @@
 package uk.ac.ebi.biosamples.mongo.model;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
@@ -18,8 +18,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.service.CustomLocalDateTimeDeserializer;
-import uk.ac.ebi.biosamples.service.CustomLocalDateTimeSerializer;
+import uk.ac.ebi.biosamples.service.CustomInstantDeserializer;
+import uk.ac.ebi.biosamples.service.CustomInstantSerializer;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Document
@@ -36,13 +36,13 @@ public class MongoSample {
 	 */
 	protected String domain;
 	
-	@JsonSerialize(using = CustomLocalDateTimeSerializer.class)
-	@JsonDeserialize(using = CustomLocalDateTimeDeserializer.class)
-	protected LocalDateTime release; 
-	@JsonSerialize(using = CustomLocalDateTimeSerializer.class)
-	@JsonDeserialize(using = CustomLocalDateTimeDeserializer.class)
+	@JsonSerialize(using = CustomInstantSerializer.class)
+	@JsonDeserialize(using = CustomInstantDeserializer.class)
+	protected Instant release; 
+	@JsonSerialize(using = CustomInstantSerializer.class)
+	@JsonDeserialize(using = CustomInstantDeserializer.class)
 	@LastModifiedDate
-	protected LocalDateTime update;
+	protected Instant update;
 
 	protected SortedSet<Attribute> attributes;
 	protected SortedSet<MongoRelationship> relationships;
@@ -69,11 +69,11 @@ public class MongoSample {
 		return domain;
 	}
 
-	public LocalDateTime getRelease() {
+	public Instant getRelease() {
 		return release;
 	}
 
-	public LocalDateTime getUpdate() {
+	public Instant getUpdate() {
 		return update;
 	}
 
@@ -141,8 +141,8 @@ public class MongoSample {
     public static MongoSample build(@JsonProperty("name") String name, 
     		@JsonProperty("accession") String accession, 
 			@JsonProperty("domain") String domain,
-    		@JsonProperty("release") LocalDateTime release, 
-    		@JsonProperty("update") LocalDateTime update, 
+    		@JsonProperty("release") Instant release, 
+    		@JsonProperty("update") Instant update, 
     		@JsonProperty("attributes") Set<Attribute> attributes, 
     		@JsonProperty("relationships") Set<MongoRelationship> relationships, 
     		@JsonProperty("externalReferences") SortedSet<MongoExternalReference> externalReferences) {

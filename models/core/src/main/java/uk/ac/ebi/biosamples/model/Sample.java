@@ -8,10 +8,10 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import uk.ac.ebi.biosamples.service.CharacteristicDeserializer;
 import uk.ac.ebi.biosamples.service.CharacteristicSerializer;
-import uk.ac.ebi.biosamples.service.CustomLocalDateTimeDeserializer;
-import uk.ac.ebi.biosamples.service.CustomLocalDateTimeSerializer;
+import uk.ac.ebi.biosamples.service.CustomInstantDeserializer;
+import uk.ac.ebi.biosamples.service.CustomInstantSerializer;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.Set;
@@ -31,8 +31,8 @@ public class Sample implements Comparable<Sample> {
 	 */
 	protected String domain;
 	
-	protected LocalDateTime release; 
-	protected LocalDateTime update;
+	protected Instant release; 
+	protected Instant update;
 
 	protected SortedSet<Attribute> attributes;
 	protected SortedSet<Relationship> relationships;
@@ -66,14 +66,14 @@ public class Sample implements Comparable<Sample> {
 	}
 
 	//DO NOT specify the JSON property value manually, must be autoinferred or errors
-	@JsonSerialize(using = CustomLocalDateTimeSerializer.class)
-	public LocalDateTime getRelease() {
+	@JsonSerialize(using = CustomInstantSerializer.class)
+	public Instant getRelease() {
 		return release;
 	}
 
 	//DO NOT specify the JSON property value manually, must be autoinferred or errors
-	@JsonSerialize(using = CustomLocalDateTimeSerializer.class)
-	public LocalDateTime getUpdate() {
+	@JsonSerialize(using = CustomInstantSerializer.class)
+	public Instant getUpdate() {
 		return update;
 	}
 
@@ -215,43 +215,30 @@ public class Sample implements Comparable<Sample> {
 	public static Sample build(@JsonProperty("name") String name, 
 			@JsonProperty("accession") String accession,  
 			@JsonProperty("domain") String domain,
-			@JsonProperty("release") @JsonDeserialize(using = CustomLocalDateTimeDeserializer.class) LocalDateTime release, 
-			@JsonProperty("update") @JsonDeserialize(using = CustomLocalDateTimeDeserializer.class) LocalDateTime update,
+			@JsonProperty("release") @JsonDeserialize(using = CustomInstantDeserializer.class) Instant release, 
+			@JsonProperty("update") @JsonDeserialize(using = CustomInstantDeserializer.class) Instant update,
 			@JsonProperty("characteristics") @JsonDeserialize(using = CharacteristicDeserializer.class) Set<Attribute> attributes,
 			@JsonProperty("relationships") Set<Relationship> relationships, 
 			@JsonProperty("externalReferences") Set<ExternalReference> externalReferences) {
     	
 		Sample sample = new Sample();
+		
 		if (accession != null) {
 			sample.accession = accession.trim();
 		}
+		
 		if (name == null ) throw new IllegalArgumentException("Sample name must be provided");
 		sample.name = name.trim();
+		
 		if (domain != null) {
 			sample.domain = domain.trim();
 		}
-
-		//this ensures that all components are present, even if they default to zero
-		if (release != null) {
-			int year = release.getYear();
-			int month = release.getMonthValue();
-			int dayOfMonth = release.getDayOfMonth();
-			int hour = release.getHour();
-			int minute = release.getMinute();
-			int second = release.getSecond();
-			int nano = release.getNano();			
-			sample.release = LocalDateTime.of(year,month,dayOfMonth,hour,minute,second,nano);
-		}
-		if (update != null) {
-			int year = update.getYear();
-			int month = update.getMonthValue();
-			int dayOfMonth = update.getDayOfMonth();
-			int hour = update.getHour();
-			int minute = update.getMinute();
-			int second = update.getSecond();
-			int nano = update.getNano();			
-			sample.update = LocalDateTime.of(year,month,dayOfMonth,hour,minute,second,nano);
-		}		
+		
+		if (update == null ) throw new IllegalArgumentException("Sample update must be provided");
+		sample.update = update;
+		
+		if (release == null ) throw new IllegalArgumentException("Sample release must be provided");
+		sample.release = release;
 
 		sample.attributes = new TreeSet<>();
 		if (attributes != null) {

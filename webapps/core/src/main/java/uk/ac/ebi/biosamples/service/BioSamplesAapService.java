@@ -1,6 +1,6 @@
 package uk.ac.ebi.biosamples.service;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -185,7 +185,7 @@ public class BioSamplesAapService {
 	
 	public void checkAccessible(Sample sample) throws SampleNotAccessibleException {
 		//TODO throw different exceptions in different situations
-		if (sample.getRelease().isBefore(LocalDateTime.now())) {
+		if (sample.getRelease().isBefore(Instant.now())) {
 			//release date in past, accessible
 		} else if (getDomains().contains(bioSamplesProperties.getBiosamplesAapSuperRead())) {
 			//if the current user belongs to a super read domain, accessible

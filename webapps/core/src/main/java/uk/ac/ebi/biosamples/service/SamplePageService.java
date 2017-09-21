@@ -4,7 +4,7 @@ import java.security.Principal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -59,7 +59,7 @@ public class SamplePageService {
 	
 	//@Cacheable(cacheNames=WebappProperties.getSamplesByText, sync=true)
 	public Page<Sample> getSamplesByText(String text, MultiValueMap<String,String> filters, Collection<String> domains,
-			LocalDateTime after, LocalDateTime before, Pageable pageable) {		
+			Instant after, Instant before, Pageable pageable) {		
 		Page<SolrSample> pageSolrSample = solrSampleService.fetchSolrSampleByText(text, filters, domains, after, before, pageable);		
 		//for each result fetch the stored version and add e.g. inverse relationships		
 		//stream process each into a sample

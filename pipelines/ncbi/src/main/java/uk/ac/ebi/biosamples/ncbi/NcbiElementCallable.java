@@ -1,6 +1,6 @@
 package uk.ac.ebi.biosamples.ncbi;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -132,12 +132,10 @@ public class NcbiElementCallable implements Callable<Void> {
 //		attrs.add(Attribute.build("package", XmlPathBuilder.of(sampleElem).path("Package").text(), null, null));
 
 		//handle dates
-		LocalDateTime updateDate = null;
-		updateDate = LocalDateTime.parse(sampleElem.attributeValue("last_update"), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-		LocalDateTime releaseDate = null;
-		releaseDate = LocalDateTime.parse(sampleElem.attributeValue("publication_date"), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+		Instant updateDate = Instant.from(DateTimeFormatter.ISO_LOCAL_DATE_TIME.parse(sampleElem.attributeValue("last_update")));
+		Instant releaseDate = Instant.from(DateTimeFormatter.ISO_LOCAL_DATE_TIME.parse(sampleElem.attributeValue("publication_date")));
 		
-		LocalDateTime latestDate = updateDate;
+		Instant latestDate = updateDate;
 		if (releaseDate.isAfter(latestDate)) {
 			latestDate = releaseDate;
 		}

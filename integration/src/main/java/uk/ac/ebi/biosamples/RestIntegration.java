@@ -18,7 +18,8 @@ import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalTime;
 import java.util.Optional;
 import java.util.SortedSet;
@@ -69,8 +70,9 @@ public class RestIntegration extends AbstractIntegration {
 			throw new RuntimeException("No existing "+sampleTest1.getAccession());
 		}
 		//check the update date
-		if (optional.get().getContent().getUpdate().getYear() == sampleTest1.getUpdate().getYear()) {
-			throw new RuntimeException("Update date was not modified to current year as intended");			
+		if (Duration.between(sampleTest1.getUpdate(), optional.get().getContent().getUpdate())
+				.abs().getSeconds() < 60) {
+			throw new RuntimeException("Update date was not modified to within 60s as intended");			
 		}
 		//disabled because not fully operational
 		//checkIfModifiedSince(optional.get());
@@ -78,7 +80,7 @@ public class RestIntegration extends AbstractIntegration {
 
 		// put a version that is private
 		sampleTest1 = Sample.build(sampleTest1.getName(), sampleTest1.getAccession(), sampleTest1.getDomain(),
-				LocalDateTime.of(LocalDate.of(2116, 4, 1), LocalTime.of(11, 36, 57, 0)), sampleTest1.getUpdate(),
+				Instant.parse("2116-04-01T11:36:57.00Z"), sampleTest1.getUpdate(),
 				sampleTest1.getCharacteristics(), sampleTest1.getRelationships(), sampleTest1.getExternalReferences());
 		Resource<Sample> resource = client.persistSampleResource(sampleTest1);
 		if (!sampleTest1.equals(resource.getContent())) {
@@ -151,12 +153,14 @@ public class RestIntegration extends AbstractIntegration {
 			throw new RuntimeException("Unable to find UTF-8 characters");
 		}
 		//check the update date
-		if (sampleTest2Rest.getUpdate().getYear() != sampleTest2.getUpdate().getYear()) {
+		if (!sampleTest2Rest.getUpdate().equals(sampleTest2.getUpdate())) {
+			log.info("sampleTest2Rest.getUpdate() = "+sampleTest2Rest.getUpdate());
+			log.info("sampleTest2.getUpdate() = "+sampleTest2.getUpdate());
 			throw new RuntimeException("Update date was modified when it shouldn't have been");			
 		}
 		//now do another update to delete the relationship
 		sampleTest1 = Sample.build(sampleTest1.getName(), sampleTest1.getAccession(), sampleTest1.getDomain(),
-				LocalDateTime.of(LocalDate.of(2116, 4, 1), LocalTime.of(11, 36, 57, 0)), sampleTest1.getUpdate(),
+				Instant.parse("2116-04-01T11:36:57.00Z"), sampleTest1.getUpdate(),
 				sampleTest1.getCharacteristics(), new TreeSet<>(), sampleTest1.getExternalReferences());
 		Resource<Sample> resource = client.persistSampleResource(sampleTest1);
 		if (!sampleTest1.equals(resource.getContent())) {
@@ -214,8 +218,8 @@ public class RestIntegration extends AbstractIntegration {
 		String name = "Test Sample";
 		String accession = "TESTrest1";
         String domain = null;// "abcde12345";
-		LocalDateTime update = LocalDateTime.of(LocalDate.of(2016, 5, 5), LocalTime.of(11, 36, 57, 0));
-		LocalDateTime release = LocalDateTime.of(LocalDate.of(2016, 4, 1), LocalTime.of(11, 36, 57, 0));
+		Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
+		Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
 		SortedSet<Attribute> attributes = new TreeSet<>();
 		attributes.add(
@@ -241,8 +245,8 @@ public class RestIntegration extends AbstractIntegration {
 		String name = "Test Sample the second";
 		String accession = "TESTrest2";
         String domain = null;// "abcde12345";
-		LocalDateTime update = LocalDateTime.of(LocalDate.of(2016, 5, 5), LocalTime.of(11, 36, 57, 0));
-		LocalDateTime release = LocalDateTime.of(LocalDate.of(2016, 4, 1), LocalTime.of(11, 36, 57, 0));
+		Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
+		Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
 		SortedSet<Attribute> attributes = new TreeSet<>();
 		attributes.add(

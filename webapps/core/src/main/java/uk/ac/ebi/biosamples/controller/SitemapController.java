@@ -21,7 +21,11 @@ import uk.ac.ebi.biosamples.service.SampleService;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.MalformedURLException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Collections;
+import java.util.Date;
 
 @Controller
 @RequestMapping("/sitemap")
@@ -78,8 +82,11 @@ public class SitemapController {
         XmlUrlSet xmlUrlSet = new XmlUrlSet();
         for(Sample sample: samplePage.getContent()) {
             String location = generateBaseUrl(request) + String.format("/samples/%s", sample.getAccession());
+            
+            LocalDate lastModifiedDate = LocalDateTime.ofInstant(sample.getUpdate(), ZoneOffset.UTC).toLocalDate();
+            
             XmlUrl url = new XmlUrl.XmlUrlBuilder(location)
-                    .lastModified(sample.getUpdate().toLocalDate())
+                    .lastModified(lastModifiedDate)
                     .hasPriority(XmlUrl.Priority.MEDIUM).build();
             xmlUrlSet.addUrl(url);
         }

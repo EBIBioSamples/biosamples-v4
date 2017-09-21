@@ -1,7 +1,7 @@
 package uk.ac.ebi.biosamples.client.service;
 
 import java.net.URI;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -144,7 +144,7 @@ public class SampleRetrievalService {
 				params,	"samples");
 	}
 
-	public Iterable<Resource<Sample>> fetchUpdatedAfter(LocalDateTime updatedAfter) {	
+	public Iterable<Resource<Sample>> fetchUpdatedAfter(Instant updatedAfter) {	
 		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();		
 		params.add("size", Integer.toString(pageSize));
 		params.add("updatedafter", solrFormatter.format(updatedAfter));
@@ -153,7 +153,7 @@ public class SampleRetrievalService {
 				params,	"samples");
 	}
 
-	public Iterable<Resource<Sample>> fetchUpdatedBefore(LocalDateTime updatedBefore) {	
+	public Iterable<Resource<Sample>> fetchUpdatedBefore(Instant updatedBefore) {	
 		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();		
 		params.add("size", Integer.toString(pageSize));
 		params.add("updatedbefore", solrFormatter.format(updatedBefore));
@@ -162,7 +162,7 @@ public class SampleRetrievalService {
 				params,	"samples");
 	}
 
-	public Iterable<Resource<Sample>> fetchUpdatedBetween(LocalDateTime updatedAfter, LocalDateTime updatedBefore) {	
+	public Iterable<Resource<Sample>> fetchUpdatedBetween(Instant updatedAfter, Instant updatedBefore) {	
 		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();	
 		params.add("size", Integer.toString(pageSize));
 		params.add("updatedafter", solrFormatter.format(updatedAfter));

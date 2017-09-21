@@ -1,6 +1,6 @@
 package uk.ac.ebi.biosamples.model;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -10,8 +10,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.hash.Hashing;
 
-import uk.ac.ebi.biosamples.service.CustomLocalDateTimeDeserializer;
-import uk.ac.ebi.biosamples.service.CustomLocalDateTimeSerializer;
+import uk.ac.ebi.biosamples.service.CustomInstantDeserializer;
+import uk.ac.ebi.biosamples.service.CustomInstantSerializer;
 
 public class CurationLink implements Comparable<CurationLink> {
 
@@ -19,9 +19,9 @@ public class CurationLink implements Comparable<CurationLink> {
 	private final String sample;
 	private final String domain;
 	private final String hash;
-	protected final LocalDateTime created;
+	protected final Instant created;
 	
-	private CurationLink(String sample, String domain, Curation curation, String hash, LocalDateTime created) {
+	private CurationLink(String sample, String domain, Curation curation, String hash, Instant created) {
 		this.sample = sample;
 		this.domain = domain;
 		this.curation = curation;
@@ -45,8 +45,8 @@ public class CurationLink implements Comparable<CurationLink> {
 		return hash;
 	}
 
-	@JsonSerialize(using = CustomLocalDateTimeSerializer.class)
-	public LocalDateTime getCreated() {
+	@JsonSerialize(using = CustomInstantSerializer.class)
+	public Instant getCreated() {
 		return created;
 	}
 
@@ -104,7 +104,7 @@ public class CurationLink implements Comparable<CurationLink> {
 	public static CurationLink build(@JsonProperty("sample") String sample, 
 			@JsonProperty("curation") Curation curation,
 			@JsonProperty("domain") String domain, 
-			@JsonProperty("created") @JsonDeserialize(using = CustomLocalDateTimeDeserializer.class) LocalDateTime created) {
+			@JsonProperty("created") @JsonDeserialize(using = CustomInstantDeserializer.class) Instant created) {
    	
     	
     	Hasher hasher = Hashing.sha256().newHasher()

@@ -1,6 +1,6 @@
 package uk.ac.ebi.biosamples.neo.model;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Objects;
 
 import org.neo4j.ogm.annotation.GraphId;
@@ -12,7 +12,7 @@ import org.neo4j.ogm.annotation.typeconversion.Convert;
 
 import com.google.common.hash.Hashing;
 
-import uk.ac.ebi.biosamples.neo.service.LocalDateTimeConverter;
+import uk.ac.ebi.biosamples.neo.service.InstantConverter;
 
 @NodeEntity(label = "CurationLink")
 public class NeoCurationLink implements Comparable<NeoCurationLink> {
@@ -34,9 +34,9 @@ public class NeoCurationLink implements Comparable<NeoCurationLink> {
 	@Index(unique=true, primary=true)	
 	private String hash;
 
-	@Convert(LocalDateTimeConverter.class)
+	@Convert(InstantConverter.class)
 	@Property(name="created")
-	private LocalDateTime created;
+	private Instant created;
 
 	private NeoCurationLink() {
 	};
@@ -57,7 +57,7 @@ public class NeoCurationLink implements Comparable<NeoCurationLink> {
 		return domain;
 	}
 		
-	public LocalDateTime getCreated() {
+	public Instant getCreated() {
 		return created;
 	}
 	
@@ -136,7 +136,7 @@ public class NeoCurationLink implements Comparable<NeoCurationLink> {
 		return 0;
 	}
 	
-	public static NeoCurationLink build(NeoCuration curation, NeoSample sample, String domain, LocalDateTime created) {
+	public static NeoCurationLink build(NeoCuration curation, NeoSample sample, String domain, Instant created) {
 		NeoCurationLink neoCurationLink = new NeoCurationLink();
 		neoCurationLink.curation = curation;
 		neoCurationLink.sample = sample;

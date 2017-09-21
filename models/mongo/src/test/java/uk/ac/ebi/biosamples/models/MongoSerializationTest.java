@@ -3,9 +3,7 @@ package uk.ac.ebi.biosamples.models;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URISyntaxException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.Instant;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -43,8 +41,8 @@ public class MongoSerializationTest {
 	private MongoSample getMongoSample() throws URISyntaxException {
 		String name = "Test Sample";
 		String accession = "TEST1";
-		LocalDateTime update = LocalDateTime.of(LocalDate.of(2016, 5, 5), LocalTime.of(11, 36, 57));
-		LocalDateTime release = LocalDateTime.of(LocalDate.of(2016, 4, 1), LocalTime.of(11, 36, 57));
+		Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
+		Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
 		SortedSet<Attribute> attributes = new TreeSet<>();
 		attributes.add(Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));

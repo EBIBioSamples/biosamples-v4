@@ -2,7 +2,7 @@ package uk.ac.ebi.biosamples.client.service;
 
 import java.net.URI;
 import java.nio.charset.Charset;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Base64;
 import java.util.Date;
 

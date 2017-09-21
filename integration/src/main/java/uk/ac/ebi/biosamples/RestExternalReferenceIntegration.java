@@ -1,7 +1,7 @@
 package uk.ac.ebi.biosamples;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.SortedSet;
@@ -122,8 +122,8 @@ public class RestExternalReferenceIntegration extends AbstractIntegration {
 		String name = "Test Sample";
 		String accession = "TESTExRef1";
         String domain = null;// "abcde12345";
-		LocalDateTime update = LocalDateTime.of(LocalDate.of(2016, 5, 5), LocalTime.of(11, 36, 57, 0));
-		LocalDateTime release = LocalDateTime.of(LocalDate.of(2016, 4, 1), LocalTime.of(11, 36, 57, 0));
+		Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
+		Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
 		SortedSet<Attribute> attributes = new TreeSet<>();
 

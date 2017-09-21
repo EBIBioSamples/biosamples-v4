@@ -1,7 +1,7 @@
 package uk.ac.ebi.biosamples.controller;
 
 import java.util.Collection;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.concurrent.TimeUnit;
 
@@ -36,7 +36,7 @@ import uk.ac.ebi.biosamples.service.SampleReadService;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
@@ -112,19 +112,19 @@ public class SamplesRestController {
 
 		Collection<String> domains = bioSamplesAapService.getDomains();
 		
-		LocalDateTime updatedAfterDate = null;
+		Instant updatedAfterDate = null;
 		if (updatedAfter != null) {
 			try {
-				updatedAfterDate = LocalDateTime.parse(updatedAfter, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+				updatedAfterDate = Instant.parse(updatedAfter);
 			} catch (DateTimeParseException e) {
 				//TODO make an exception
 				return ResponseEntity.badRequest().build();
 			}
 		}
-		LocalDateTime updatedBeforeDate = null;
+		Instant updatedBeforeDate = null;
 		if (updatedBefore != null) {
 			try {
-				updatedBeforeDate = LocalDateTime.parse(updatedBefore, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+				updatedBeforeDate = Instant.parse(updatedBefore);
 			} catch (DateTimeParseException e) {
 				//TODO make an exception
 				return ResponseEntity.badRequest().build();

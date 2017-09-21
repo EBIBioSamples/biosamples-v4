@@ -1,7 +1,7 @@
 package uk.ac.ebi.biosamples.service;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.SortedSet;
@@ -44,8 +44,8 @@ public class SampleTabService {
 			String accession = sampleNode.getSampleAccession();
 			String name = sampleNode.getNodeName();
 			
-			LocalDateTime release = LocalDateTime.ofInstant(Instant.ofEpochMilli(sampleData.msi.submissionReleaseDate.getTime()), ZoneId.of("UTC"));
-			LocalDateTime update = LocalDateTime.ofInstant(Instant.ofEpochMilli(sampleData.msi.submissionUpdateDate.getTime()), ZoneId.of("UTC"));
+			Instant release = Instant.ofEpochMilli(sampleData.msi.submissionReleaseDate.getTime());
+			Instant update = Instant.ofEpochMilli(sampleData.msi.submissionUpdateDate.getTime());
 
 			SortedSet<Attribute> attributes = new TreeSet<>();
 			SortedSet<Relationship> relationships = new TreeSet<>();
@@ -72,8 +72,8 @@ public class SampleTabService {
 		for (GroupNode groupNode : sampleData.scd.getNodes(GroupNode.class)) {
 			String accession = groupNode.getGroupAccession();
 			String name = groupNode.getNodeName();
-			LocalDateTime release = LocalDateTime.ofInstant(Instant.ofEpochMilli(sampleData.msi.submissionReleaseDate.getTime()), ZoneId.systemDefault());
-			LocalDateTime update = LocalDateTime.ofInstant(Instant.ofEpochMilli(sampleData.msi.submissionUpdateDate.getTime()), ZoneId.systemDefault());
+			Instant release = Instant.ofEpochMilli(sampleData.msi.submissionReleaseDate.getTime());
+			Instant update = Instant.ofEpochMilli(sampleData.msi.submissionUpdateDate.getTime());
 
 			SortedSet<Attribute> attributes = new TreeSet<>();
 			SortedSet<Relationship> relationships = new TreeSet<>();

@@ -2,7 +2,7 @@ package uk.ac.ebi.biosamples.ena;
 
 import java.io.StringReader;
 import java.net.URI;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -72,8 +72,8 @@ public class EnaCallable implements Callable<Void> {
 			if (XmlPathBuilder.of(root).path("SAMPLE").exists()) {
 				Sample sample = enaElementConverter.convert(root);
 				// add dates from database
-				LocalDateTime release = eraProDao.getReleaseDateTime(sampleAccession);
-				LocalDateTime update = eraProDao.getUpdateDateTime(sampleAccession);
+				Instant release = eraProDao.getReleaseDateTime(sampleAccession);
+				Instant update = eraProDao.getUpdateDateTime(sampleAccession);
 
 				sample = Sample.build(sample.getName(), sampleAccession, domain, release, update, sample.getCharacteristics(),
 						sample.getRelationships(), sample.getExternalReferences());

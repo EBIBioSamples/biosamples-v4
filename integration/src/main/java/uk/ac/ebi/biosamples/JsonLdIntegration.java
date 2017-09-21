@@ -20,7 +20,7 @@ import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.JsonLDSample;
 import uk.ac.ebi.biosamples.model.Sample;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -95,8 +95,8 @@ public class JsonLdIntegration extends AbstractIntegration {
     private Sample getTestSample() {
         String accession = "SAMEA99332211";
         String name = "Test ld+json";
-        LocalDateTime releaseDate = LocalDateTime.now().minusDays(5);
-        LocalDateTime updateDate  = LocalDateTime.now();
+		Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
+		Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
         SortedSet<Attribute> attributes = new TreeSet<>();
         attributes.add(
@@ -112,7 +112,7 @@ public class JsonLdIntegration extends AbstractIntegration {
         externalReferences.add(
                 ExternalReference.build("www.google.com")
         );
-        return Sample.build(name, accession, null, releaseDate,updateDate,
+        return Sample.build(name, accession, null, release, update,
                 attributes,null,externalReferences);
     }
 

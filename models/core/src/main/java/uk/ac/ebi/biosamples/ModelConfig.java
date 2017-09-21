@@ -13,7 +13,7 @@ public class ModelConfig {
 //            Map<Class<?>, JsonDeserializer<?>> deserializers = new HashMap<>();
 //
 //            serializers.put(Sample.class, new CustomSampleSerializer());
-//            serializers.put(LocalDateTime.class, new CustomLocalDateTimeSerializer());
+//            serializers.put(Instant.class, new CustomInstantSerializer());
 //            deserializers.put(Sample.class, new CustomSampleDeserializer());
 //            deserializers.put(Sample.class, new CustomSampleDeserializer());
 //

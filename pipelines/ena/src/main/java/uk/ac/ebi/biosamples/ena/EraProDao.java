@@ -3,7 +3,8 @@ package uk.ac.ebi.biosamples.ena;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
@@ -113,17 +114,17 @@ select * from cv_status;
 		}	
 	}	
 	
-	public LocalDateTime getUpdateDateTime(String biosampleAccession) {
+	public Instant getUpdateDateTime(String biosampleAccession) {
 		String sql = "SELECT to_char(LAST_UPDATED, 'YYYY-MM-DD') FROM SAMPLE WHERE BIOSAMPLE_ID = ?";
 		String dateString = jdbcTemplate.queryForObject(sql, String.class, biosampleAccession);
-		log.trace("Release date is "+dateString);
-		return LocalDate.parse(dateString, DateTimeFormatter.ISO_LOCAL_DATE).atStartOfDay();
+		log.trace("Release date is "+dateString);	
+		return Instant.from(DateTimeFormatter.ISO_LOCAL_DATE.parse(dateString));
 	}
 	
-	public LocalDateTime getReleaseDateTime(String biosampleAccession) {
+	public Instant getReleaseDateTime(String biosampleAccession) {
 		String sql = "SELECT to_char(FIRST_PUBLIC, 'YYYY-MM-DD') FROM SAMPLE WHERE BIOSAMPLE_ID = ?";
 		String dateString = jdbcTemplate.queryForObject(sql, String.class, biosampleAccession);
 		log.trace("Release date is "+dateString);
-		return LocalDate.parse(dateString, DateTimeFormatter.ISO_LOCAL_DATE).atStartOfDay();
+		return Instant.from(DateTimeFormatter.ISO_LOCAL_DATE.parse(dateString));
 	}
 }
