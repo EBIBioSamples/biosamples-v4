@@ -23,6 +23,7 @@ import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +34,7 @@ public class SolrSampleService {
 	public static final DateTimeFormatter solrFormatter = DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss'Z'");
 
 	private final SolrSampleRepository solrSampleRepository;
-
+	
 	//maximum time allowed for a solr search in s
 	//TODO application.properties this
 	private static final int TIMEALLOWED = 30;
@@ -45,7 +46,7 @@ public class SolrSampleService {
 	}		
 
 	public Page<SolrSample> fetchSolrSampleByText(String searchTerm, MultiValueMap<String,String> filters, 
-			LocalDateTime after, LocalDateTime before, Pageable pageable) {
+			Collection<String> domains, LocalDateTime after, LocalDateTime before, Pageable pageable) {
 		//default to search all
 		if (searchTerm == null || searchTerm.trim().length() == 0) {
 			searchTerm = "*:*";
@@ -61,7 +62,8 @@ public class SolrSampleService {
 		//filter out non-public
 		//filter to update date range
 		FilterQuery filterQuery = new SimpleFilterQuery();
-		filterQuery.addCriteria(new Criteria("release_dt").lessThan("NOW").and("release_dt").isNotNull());
+		filterQuery.addCriteria(new Criteria("release_dt").lessThan("NOW").and("release_dt").isNotNull()
+				.or(new Criteria("domain_s").in(domains)));
 		if (after != null && before != null) {
 			filterQuery.addCriteria(new Criteria("update_dt").between(after.format(solrFormatter), before.format(solrFormatter)));
 		} else if (after == null && before != null) {
@@ -70,7 +72,7 @@ public class SolrSampleService {
 			filterQuery.addCriteria(new Criteria("update_dt").between(after.format(solrFormatter), "NOW+1000YEAR"));
 		}
 		query.addFilterQuery(filterQuery);
-		query.setTimeAllowed(TIMEALLOWED*1000);
+		query.setTimeAllowed(TIMEALLOWED*1000); 
 		
 		// return the samples from solr that match the query
 		return solrSampleRepository.findByQuery(query);
@@ -97,9 +99,9 @@ public class SolrSampleService {
 			filterQuery.addCriteria(new Criteria("update_dt").between(after, before));
 		}
 		query.addFilterQuery(filterQuery);
-		query.setTimeAllowed(TIMEALLOWED*1000);
-
-		Page<FacetFieldEntry> facetFields = solrSampleRepository.getFacetFields(query,  facetPageable);
+		query.setTimeAllowed(TIMEALLOWED*1000); 
+		
+		Page<FacetFieldEntry> facetFields = solrSampleRepository.getFacetFields(query, facetPageable);
 
 		//using the query, get a list of facets and overall counts
 

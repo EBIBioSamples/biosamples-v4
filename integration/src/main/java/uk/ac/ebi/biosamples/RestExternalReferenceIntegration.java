@@ -12,8 +12,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
+
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.*;
+import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.Curation;
+import uk.ac.ebi.biosamples.model.ExternalReference;
+import uk.ac.ebi.biosamples.model.Relationship;
+import uk.ac.ebi.biosamples.model.Sample;
 
 @Component
 @Order(6)
@@ -37,9 +42,10 @@ public class RestExternalReferenceIntegration extends AbstractIntegration {
 		Sample sample = getSampleTest1();
 		
 		testExternalReferences();
-		//testSampleExternalReferences(sample, 10);		
+		//testSampleExternalReferences(sample, 10);
 		client.persistCuration(sample.getAccession(), 
-				Curation.build(null,  null, null, Arrays.asList(ExternalReference.build("http://www.ebi.ac.uk/ena/ERA123456"))));
+				Curation.build(null,  null, null, Arrays.asList(ExternalReference.build("http://www.ebi.ac.uk/ena/ERA123456"))),
+				null);
 		
 	}
 
@@ -115,6 +121,7 @@ public class RestExternalReferenceIntegration extends AbstractIntegration {
 	private Sample getSampleTest1() {
 		String name = "Test Sample";
 		String accession = "TESTExRef1";
+        String domain = null;// "abcde12345";
 		LocalDateTime update = LocalDateTime.of(LocalDate.of(2016, 5, 5), LocalTime.of(11, 36, 57, 0));
 		LocalDateTime release = LocalDateTime.of(LocalDate.of(2016, 4, 1), LocalTime.of(11, 36, 57, 0));
 
@@ -134,7 +141,7 @@ public class RestExternalReferenceIntegration extends AbstractIntegration {
 		externalReferences.add(ExternalReference.build("http://www.test.com/9"));
 		externalReferences.add(ExternalReference.build("http://www.test.com/0"));
 
-		return Sample.build(name, accession, release, update, attributes, relationships, externalReferences);
+		return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences);
 	}
 
 }

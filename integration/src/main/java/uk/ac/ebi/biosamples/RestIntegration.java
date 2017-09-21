@@ -24,18 +24,22 @@ import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import javax.annotation.PreDestroy;
+
 @Component
 @Order(2)
-@Profile({"default", "rest"})
 public class RestIntegration extends AbstractIntegration {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 	private final RestTemplate restTemplate;
+	private final BioSamplesClient annonymousClient;
 	
-	public RestIntegration(BioSamplesClient client, RestTemplateBuilder restTemplateBuilder) {
+	
+	public RestIntegration(BioSamplesClient client, RestTemplateBuilder restTemplateBuilder, BioSamplesProperties clientProperties) {
 		super(client);
 		this.restTemplate = restTemplateBuilder.build();
 		
+		this.annonymousClient = new BioSamplesClient(clientProperties.getBiosamplesClientUri(), restTemplateBuilder, null, null, clientProperties);
 	}
 
 	@Override
@@ -73,7 +77,7 @@ public class RestIntegration extends AbstractIntegration {
 		//checkIfMatch(optional.get());
 
 		// put a version that is private
-		sampleTest1 = Sample.build(sampleTest1.getName(), sampleTest1.getAccession(),
+		sampleTest1 = Sample.build(sampleTest1.getName(), sampleTest1.getAccession(), sampleTest1.getDomain(),
 				LocalDateTime.of(LocalDate.of(2116, 4, 1), LocalTime.of(11, 36, 57, 0)), sampleTest1.getUpdate(),
 				sampleTest1.getCharacteristics(), sampleTest1.getRelationships(), sampleTest1.getExternalReferences());
 		Resource<Sample> resource = client.persistSampleResource(sampleTest1);
@@ -91,15 +95,24 @@ public class RestIntegration extends AbstractIntegration {
 	protected void phaseThree() {
 		Sample sampleTest1 = getSampleTest1();
 		Sample sampleTest2 = getSampleTest2();
-		// check that it is private again
-		Optional<Resource<Sample>> optional = client.fetchSampleResource(sampleTest1.getAccession());
+		Optional<Resource<Sample>> optional;
+		
+		//check that it is private 
+		optional = annonymousClient.fetchSampleResource(sampleTest1.getAccession());
 		if (optional.isPresent()) {
-			throw new RuntimeException("Found existing "+sampleTest1.getAccession());
+			throw new RuntimeException("Can access private "+sampleTest1.getAccession()+" as annonymous");
+		}
+				
+		
+		//check that it is accessible, if authorised
+		optional = client.fetchSampleResource(sampleTest1.getAccession());
+		if (!optional.isPresent()) {
+			throw new RuntimeException("Cannot access private "+sampleTest1.getAccession());
 		}
 		
 		//put the second sample in
 		Resource<Sample> resource = client.persistSampleResource(sampleTest2, false);
-		sampleTest2 = Sample.build(sampleTest2.getName(), sampleTest2.getAccession(),
+		sampleTest2 = Sample.build(sampleTest2.getName(), sampleTest2.getAccession(), null,
 				sampleTest2.getRelease(), sampleTest2.getUpdate(),
 				sampleTest2.getCharacteristics(), sampleTest1.getRelationships(), sampleTest2.getExternalReferences());
 
@@ -115,8 +128,8 @@ public class RestIntegration extends AbstractIntegration {
 		Sample sampleTest1 = getSampleTest1();
 		Sample sampleTest2 = getSampleTest2();
 		//at this point, the inverse relationship should have been added
-
-		sampleTest2 = Sample.build(sampleTest2.getName(), sampleTest2.getAccession(),
+		
+		sampleTest2 = Sample.build(sampleTest2.getName(), sampleTest2.getAccession(), sampleTest2.getDomain(),
 				sampleTest2.getRelease(), sampleTest2.getUpdate(),
 				sampleTest2.getCharacteristics(), sampleTest1.getRelationships(), sampleTest2.getExternalReferences());
 
@@ -142,9 +155,8 @@ public class RestIntegration extends AbstractIntegration {
 			throw new RuntimeException("Update date was modified when it shouldn't have been");			
 		}
 		//now do another update to delete the relationship
-		//might as well make it public now too
-		sampleTest1 = Sample.build(sampleTest1.getName(), sampleTest1.getAccession(),
-				LocalDateTime.of(LocalDate.of(2016, 4, 1), LocalTime.of(11, 36, 57, 0)), sampleTest1.getUpdate(),
+		sampleTest1 = Sample.build(sampleTest1.getName(), sampleTest1.getAccession(), sampleTest1.getDomain(),
+				LocalDateTime.of(LocalDate.of(2116, 4, 1), LocalTime.of(11, 36, 57, 0)), sampleTest1.getUpdate(),
 				sampleTest1.getCharacteristics(), new TreeSet<>(), sampleTest1.getExternalReferences());
 		Resource<Sample> resource = client.persistSampleResource(sampleTest1);
 		if (!sampleTest1.equals(resource.getContent())) {
@@ -201,6 +213,7 @@ public class RestIntegration extends AbstractIntegration {
 	private Sample getSampleTest1() {
 		String name = "Test Sample";
 		String accession = "TESTrest1";
+        String domain = null;// "abcde12345";
 		LocalDateTime update = LocalDateTime.of(LocalDate.of(2016, 5, 5), LocalTime.of(11, 36, 57, 0));
 		LocalDateTime release = LocalDateTime.of(LocalDate.of(2016, 4, 1), LocalTime.of(11, 36, 57, 0));
 
@@ -216,12 +229,18 @@ public class RestIntegration extends AbstractIntegration {
 		SortedSet<ExternalReference> externalReferences = new TreeSet<>();
 		externalReferences.add(ExternalReference.build("http://www.google.com"));
 
-		return Sample.build(name, accession, release, update, attributes, relationships, externalReferences);
+		return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences);
+	}
+	
+	@PreDestroy
+	public void destroy() {
+		annonymousClient.close();
 	}
 
 	private Sample getSampleTest2() {
 		String name = "Test Sample the second";
 		String accession = "TESTrest2";
+        String domain = null;// "abcde12345";
 		LocalDateTime update = LocalDateTime.of(LocalDate.of(2016, 5, 5), LocalTime.of(11, 36, 57, 0));
 		LocalDateTime release = LocalDateTime.of(LocalDate.of(2016, 4, 1), LocalTime.of(11, 36, 57, 0));
 
@@ -230,7 +249,7 @@ public class RestIntegration extends AbstractIntegration {
 				Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
 		attributes.add(Attribute.build("UTF-8 test", "αβ", null, null));
 
-		return Sample.build(name, accession, release, update, attributes, new TreeSet<>(), new TreeSet<>());
+		return Sample.build(name, accession, domain, release, update, attributes, new TreeSet<>(), new TreeSet<>());
 	}
 
 }

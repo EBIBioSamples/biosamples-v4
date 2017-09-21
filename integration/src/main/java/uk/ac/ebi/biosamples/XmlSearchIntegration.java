@@ -98,13 +98,13 @@ public class XmlSearchIntegration extends AbstractIntegration {
         try {
             RequestEntity<?> sampleRequestEntity = RequestEntity.get(uriBuilder.build().toUri()).accept(MediaType.TEXT_XML).build();
             ResponseEntity<Sample> sampleResponseEntity = restTemplate.exchange(sampleRequestEntity, Sample.class);
-            if (!sampleResponseEntity.getStatusCode().equals(HttpStatus.FORBIDDEN)) {
-                throw new RuntimeException(String.format("Sample %s should be forbidden and not available through the legaxy xml api", test2.getAccession()));
+            if (sampleResponseEntity.getStatusCode().equals(HttpStatus.OK)) {
+                throw new RuntimeException(String.format("Sample %s should be not available through the legaxy xml api", test2.getAccession()));
             }
         } catch (HttpClientErrorException e) {
             log.info("e.getStatusCode() = "+e.getStatusCode());
-            if (!e.getStatusCode().equals(HttpStatus.FORBIDDEN)) {
-                throw new RuntimeException(String.format("Sample %s should be forbidden and not available through the legaxy xml api", test2.getAccession()));
+            if (e.getStatusCode().equals(HttpStatus.OK)) {
+                throw new RuntimeException(String.format("Sample %s should be not available through the legaxy xml api", test2.getAccession()));
             }
         }
 
@@ -208,8 +208,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
 		SortedSet<Attribute> attributes = new TreeSet<>();
 		attributes.add(
 			Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
-
-		return Sample.build(name, accession, release, update, attributes, new TreeSet<>(), new TreeSet<>());
+		return Sample.build(name, accession, null, release, update, attributes, new TreeSet<>(), new TreeSet<>());
 	}
 
 	private Sample getPrivateSampleXMLTest2() {
@@ -222,7 +221,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
         attributes.add(
                 Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
 
-        return Sample.build(name, accession, release, update, attributes, new TreeSet<>(), new TreeSet<>());
+        return Sample.build(name, accession, null, release, update, attributes, new TreeSet<>(), new TreeSet<>());
 
     }
 }

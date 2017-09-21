@@ -5,6 +5,7 @@ import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.hash.Hasher;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.hash.Hashing;
@@ -16,12 +17,13 @@ public class CurationLink implements Comparable<CurationLink> {
 
 	private final Curation curation;
 	private final String sample;
+	private final String domain;
 	private final String hash;
 	protected final LocalDateTime created;
 	
-	
-	private CurationLink(String sample, Curation curation, String hash, LocalDateTime created) {
+	private CurationLink(String sample, String domain, Curation curation, String hash, LocalDateTime created) {
 		this.sample = sample;
+		this.domain = domain;
 		this.curation = curation;
 		this.hash = hash;
 		this.created = created;
@@ -29,6 +31,10 @@ public class CurationLink implements Comparable<CurationLink> {
 	
 	public String getSample() {
 		return sample;
+	}
+	
+	public String getDomain() {
+		return domain;
 	}
 	
 	public Curation getCuration() {
@@ -53,12 +59,13 @@ public class CurationLink implements Comparable<CurationLink> {
         }
         CurationLink other = (CurationLink) o;
         return Objects.equals(this.curation, other.curation)
-        		&& Objects.equals(this.sample, other.sample);
+        		&& Objects.equals(this.sample, other.sample)
+        		&& Objects.equals(this.domain, other.domain);
     }
     
     @Override
     public int hashCode() {
-    	return Objects.hash(sample, curation);
+    	return Objects.hash(sample, domain, curation);
     }
 
 	@Override
@@ -66,7 +73,10 @@ public class CurationLink implements Comparable<CurationLink> {
 		if (other == null) {
 			return 1;
 		}
-		
+
+		if (!this.domain.equals(other.domain)) {
+			return this.domain.compareTo(other.domain);
+		}
 		if (!this.sample.equals(other.sample)) {
 			return this.sample.compareTo(other.sample);
 		}
@@ -82,6 +92,8 @@ public class CurationLink implements Comparable<CurationLink> {
     	sb.append("CurationLink(");
     	sb.append(this.sample);
     	sb.append(",");
+    	sb.append(this.domain);
+    	sb.append(",");
     	sb.append(this.curation);
     	sb.append(")");
     	return sb.toString();
@@ -89,14 +101,24 @@ public class CurationLink implements Comparable<CurationLink> {
 
     //Used for deserializtion (JSON -> Java)
     @JsonCreator
-	public static CurationLink build(@JsonProperty("sample") String sample, @JsonProperty("curation") Curation curation,
+	public static CurationLink build(@JsonProperty("sample") String sample, 
+			@JsonProperty("curation") Curation curation,
+			@JsonProperty("domain") String domain, 
 			@JsonProperty("created") @JsonDeserialize(using = CustomLocalDateTimeDeserializer.class) LocalDateTime created) {
-
-    	String hash = Hashing.sha256().newHasher()
-			.putUnencodedChars(curation.getHash())
-			.putUnencodedChars(sample)
-			.hash().toString();
+   	
     	
-		return new CurationLink(sample, curation, hash, created);
+    	Hasher hasher = Hashing.sha256().newHasher()
+        		.putUnencodedChars(sample)
+    			.putUnencodedChars(curation.getHash());
+
+    	if (domain != null) {
+    		hasher.putUnencodedChars(domain);
+    	}
+    			
+    	String hash = hasher.hash().toString();
+    	
+    	
+
+		return new CurationLink(sample, domain, curation, hash, created);
 	}
 }

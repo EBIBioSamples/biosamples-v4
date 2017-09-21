@@ -12,21 +12,18 @@ import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.dom4j.Namespace;
 import org.dom4j.QName;
-import org.springframework.boot.context.properties.ConfigurationPropertiesBinding;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
+import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 
 @Service
-@ConfigurationPropertiesBinding
 public class SampleToXmlConverter implements Converter<Sample, Document> {
-	
-	private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ISO_DATE_TIME;
-	
+		
 	private final Namespace xmlns = Namespace.get("http://www.ebi.ac.uk/biosamples/SampleGroupExport/1.0");
 	private final Namespace xsi = Namespace.get("xsi", "http://www.w3.org/2001/XMLSchema-instance");
 	private final ExternalReferenceNicknameService externalReferenceNicknameService;
@@ -47,8 +44,8 @@ public class SampleToXmlConverter implements Converter<Sample, Document> {
 		bioSample.add(xsi);
 		
 		bioSample.addAttribute("id", source.getAccession());
-		bioSample.addAttribute("submissionUpdateDate", dateTimeFormatter.format(source.getUpdate())+"+00:00");
-		bioSample.addAttribute("submissionReleaseDate", dateTimeFormatter.format(source.getRelease())+"+00:00");
+		bioSample.addAttribute("submissionUpdateDate", DateTimeFormatter.ISO_DATE_TIME.format(source.getUpdate())+"+00:00");
+		bioSample.addAttribute("submissionReleaseDate", DateTimeFormatter.ISO_DATE_TIME.format(source.getRelease())+"+00:00");
 
 		Element e = bioSample.addElement(QName.get("Property", xmlns));
 		//Element e = parent.addElement("Property");
@@ -122,8 +119,30 @@ public class SampleToXmlConverter implements Converter<Sample, Document> {
 				}
 			}
 		}
+		//relationships other than derived from 
+		for (Relationship relationship : source.getRelationships()) {
+			if (!"derived from".equals(relationship.getType().toLowerCase())
+					&& source.getAccession().equals(relationship.getSource())) {
+				Element property = bioSample.addElement(QName.get("Property", xmlns));
+				//Element e = parent.addElement("Property");
+				property.addAttribute("class", relationship.getType());
+				property.addAttribute("characteristic", "false");
+				property.addAttribute("comment", "false");
+				property.addAttribute("type", "STRING");		
+				Element qualifiedValue = property.addElement("QualifiedValue");
+				Element value = qualifiedValue.addElement("Value");
+				value.addText(relationship.getTarget());
+			}
+		}
 		
-		//TODO derivedFrom element
+		//derivedFrom element
+		for (Relationship relationship : source.getRelationships()) {
+			if ("derived from".equals(relationship.getType().toLowerCase())
+					&& source.getAccession().equals(relationship.getSource())) {
+				Element derived = bioSample.addElement(QName.get("derivedFrom", xmlns));
+				derived.setText(relationship.getTarget());
+			}
+		}
 		
 		for (ExternalReference externalReference : source.getExternalReferences()) {
 			/*

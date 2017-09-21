@@ -27,6 +27,8 @@ public class NeoSample {
 
 	@Property
 	private String name;
+	@Property
+	private String domain;
 
 	@Convert(LocalDateTimeConverter.class)
 	@Property(name="update")
@@ -54,9 +56,11 @@ public class NeoSample {
 	public String getAccession() {
 		return accession;
 	}
-
 	public String getName() {
 		return name;
+	}
+	public String getDomain() {
+		return domain;
 	}
 	public LocalDateTime getUpdate() {
 		return update;
@@ -88,6 +92,7 @@ public class NeoSample {
         NeoSample other = (NeoSample) o;
         return Objects.equals(this.name, other.name) 
         		&& Objects.equals(this.accession, other.accession)
+        		&& Objects.equals(this.domain, other.domain)
         		&& Objects.equals(this.release, other.release)
         		&& Objects.equals(this.update, other.update)
         		&& Objects.equals(this.attributes, other.attributes)
@@ -97,7 +102,7 @@ public class NeoSample {
     
     @Override
     public int hashCode() {
-    	return Objects.hash(name, accession, release, update, attributes, relationships, externalReferences);
+    	return Objects.hash(name, accession, domain, release, update, attributes, relationships, externalReferences);
     }
 
     @Override
@@ -107,6 +112,8 @@ public class NeoSample {
     	sb.append(name);
     	sb.append(",");
     	sb.append(accession);
+    	sb.append(",");
+    	sb.append(domain);
     	sb.append(",");
     	sb.append(release);
     	sb.append(",");
@@ -132,12 +139,13 @@ public class NeoSample {
      * @param externalReferences
      * @return
      */
-	public static NeoSample build(String name, String accession, LocalDateTime release, LocalDateTime update, 
+	public static NeoSample build(String name, String accession, String domain, LocalDateTime release, LocalDateTime update, 
 			Collection<NeoAttribute> attributes, Collection<NeoRelationship> relationships, 
 			Collection<NeoExternalReference> externalReferences) {
 		NeoSample neoSample = new NeoSample();
 		neoSample.accession = accession;
 		neoSample.name = name;
+		neoSample.domain = domain;
 		neoSample.release = release;
 		neoSample.update = update;
 

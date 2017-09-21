@@ -13,6 +13,7 @@ import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.client.Traverson;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
@@ -41,6 +42,7 @@ public class SampleSubmissionService {
 	 * accession or by PUT if the sample already has an accession associated
 	 * 
 	 * @param sample
+	 * @param jwt json web token authorizing access to the domain the sample is assigned to
 	 * @return
 	 */
 	public Future<Resource<Sample>> submitAsync(Sample sample, Boolean setUpdateDate) throws RestClientException {
@@ -65,7 +67,8 @@ public class SampleSubmissionService {
 				//don't do all this in traverson because it will get the end and then use the self link
 				//because we might PUT to something that doesn't exist (e.g. migration of data)
 				//this will cause an error. So instead manually de-template the link without getting it.
-				PagedResources<Resource<Sample>> pagedSamples = traverson.follow("samples").toObject(new ParameterizedTypeReference<PagedResources<Resource<Sample>>>(){});			
+				PagedResources<Resource<Sample>> pagedSamples = traverson.follow("samples")
+						.toObject(new ParameterizedTypeReference<PagedResources<Resource<Sample>>>(){});			
 				Link sampleLink = pagedSamples.getLink("sample");
 				if (sampleLink == null) {
 					log.info("Problem handling page "+pagedSamples);

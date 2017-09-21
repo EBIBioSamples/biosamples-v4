@@ -32,6 +32,9 @@ public class EnaCallable implements Callable<Void> {
 	
 	public static final ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<String>();
 
+	//TODO do this properly
+	private final String domain = "DUMMY-DOMAIN";
+	
 	public EnaCallable(String sampleAccession, BioSamplesClient bioSamplesClient, RestTemplate restTemplate,
 			EnaElementConverter enaElementConverter, EraProDao eraProDao) {
 		this.sampleAccession = sampleAccession;
@@ -71,8 +74,8 @@ public class EnaCallable implements Callable<Void> {
 				// add dates from database
 				LocalDateTime release = eraProDao.getReleaseDateTime(sampleAccession);
 				LocalDateTime update = eraProDao.getUpdateDateTime(sampleAccession);
-	
-				sample = Sample.build(sample.getName(), sampleAccession, release, update, sample.getCharacteristics(),
+
+				sample = Sample.build(sample.getName(), sampleAccession, domain, release, update, sample.getCharacteristics(),
 						sample.getRelationships(), sample.getExternalReferences());
 				bioSamplesClient.persistSampleResource(sample);
 			} else {
@@ -85,7 +88,6 @@ public class EnaCallable implements Callable<Void> {
 			log.info("Adding "+sampleAccession+" to fail queue");
 			failedQueue.add(sampleAccession);
 		}
-		
 		log.info("HANDLED " + sampleAccession);
 		return null;
 	}

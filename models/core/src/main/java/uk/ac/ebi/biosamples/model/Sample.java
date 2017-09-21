@@ -25,6 +25,12 @@ public class Sample implements Comparable<Sample> {
 	protected String accession;
 	protected String name; 
 	
+	/**
+	 * This is the unique permanent ID of the AAP domain/team
+	 * that owns this sample.
+	 */
+	protected String domain;
+	
 	protected LocalDateTime release; 
 	protected LocalDateTime update;
 
@@ -52,6 +58,11 @@ public class Sample implements Comparable<Sample> {
 	@JsonProperty("name")
 	public String getName() {
 		return name;
+	}
+
+	@JsonProperty("domain")
+	public String getDomain() {
+		return domain;
 	}
 
 	//DO NOT specify the JSON property value manually, must be autoinferred or errors
@@ -100,6 +111,7 @@ public class Sample implements Comparable<Sample> {
         
         return Objects.equals(this.name, other.name) 
         		&& Objects.equals(this.accession, other.accession)
+        		//&& Objects.equals(this.domain, other.domain)
         		&& Objects.equals(this.release, other.release)
         		&& Objects.equals(this.attributes, other.attributes)
         		&& Objects.equals(this.relationships, other.relationships)
@@ -183,6 +195,8 @@ public class Sample implements Comparable<Sample> {
     	sb.append(",");
     	sb.append(accession);
     	sb.append(",");
+    	sb.append(domain);
+    	sb.append(",");
     	sb.append(release);
     	sb.append(",");
     	sb.append(update);
@@ -199,7 +213,8 @@ public class Sample implements Comparable<Sample> {
     //Used for deserializtion (JSON -> Java)
     @JsonCreator
 	public static Sample build(@JsonProperty("name") String name, 
-			@JsonProperty("accession") String accession, 
+			@JsonProperty("accession") String accession,  
+			@JsonProperty("domain") String domain,
 			@JsonProperty("release") @JsonDeserialize(using = CustomLocalDateTimeDeserializer.class) LocalDateTime release, 
 			@JsonProperty("update") @JsonDeserialize(using = CustomLocalDateTimeDeserializer.class) LocalDateTime update,
 			@JsonProperty("characteristics") @JsonDeserialize(using = CharacteristicDeserializer.class) Set<Attribute> attributes,
@@ -207,8 +222,14 @@ public class Sample implements Comparable<Sample> {
 			@JsonProperty("externalReferences") Set<ExternalReference> externalReferences) {
     	
 		Sample sample = new Sample();
-		sample.accession = accession;
-		sample.name = name;
+		if (accession != null) {
+			sample.accession = accession.trim();
+		}
+		if (name == null ) throw new IllegalArgumentException("Sample name must be provided");
+		sample.name = name.trim();
+		if (domain != null) {
+			sample.domain = domain.trim();
+		}
 
 		//this ensures that all components are present, even if they default to zero
 		if (release != null) {

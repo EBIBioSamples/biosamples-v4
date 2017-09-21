@@ -57,6 +57,7 @@ public class SampleToNeoSampleConverterTest {
 	private Sample getSimpleSample()  {
 		String name = "Test Sample";
 		String accession = "TEST1";
+		String domain = "abcde12345";
 		LocalDateTime update = LocalDateTime.of(LocalDate.of(2016, 5, 5), LocalTime.of(11, 36, 57, 0));
 		LocalDateTime release = LocalDateTime.of(LocalDate.of(2016, 4, 1), LocalTime.of(11, 36, 57, 0));
 
@@ -72,16 +73,17 @@ public class SampleToNeoSampleConverterTest {
 		SortedSet<ExternalReference> externalReferences = new TreeSet<>();
 		externalReferences.add(ExternalReference.build("http://www.google.com"));
 
-		return Sample.build(name, accession, release, update, attributes, relationships, externalReferences);
+		return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences);
 	}
 	
 
 	private NeoSample getNeoSimpleSample() {
 		String name = "Test Sample";
 		String accession = "TEST1";
+		String domain = "abcde12345";
 		LocalDateTime update = LocalDateTime.of(LocalDate.of(2016, 5, 5), LocalTime.of(11, 36, 57, 0));
 		LocalDateTime release = LocalDateTime.of(LocalDate.of(2016, 4, 1), LocalTime.of(11, 36, 57, 0));
-		NeoSample neoSample = NeoSample.build(name, accession, release, update, null, null, null);
+		NeoSample neoSample = NeoSample.build(name, accession, domain, release, update, null, null, null);
 		
 		neoSample.getAttributes().add(NeoAttribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
 		neoSample.getAttributes().add(NeoAttribute.build("age", "3", null, "year"));

@@ -35,7 +35,7 @@ public class SampleToNeoSampleConverter
 			neoExternalReferences.add(NeoExternalReference.build(externalReference.getUrl()));
 		}	
 		
-		NeoSample neoSample = NeoSample.build(sample.getName(), sample.getAccession(), sample.getRelease(), sample.getUpdate(),
+		NeoSample neoSample = NeoSample.build(sample.getName(), sample.getAccession(), sample.getDomain(), sample.getRelease(), sample.getUpdate(),
 				neoAttributes, null, neoExternalReferences);
 
 		for (Relationship relationship : sample.getRelationships()) {

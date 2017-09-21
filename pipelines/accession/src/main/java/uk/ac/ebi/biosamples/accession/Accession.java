@@ -128,7 +128,7 @@ public class Accession implements ApplicationRunner{
 			//attributes.add(Attribute.build("submission accession", submissionAccession));
 			attributes.add(Attribute.build("deleted", Boolean.toString(deleted)));
 			
-			Sample sample = Sample.build(name, accession, release, update, attributes, null, null);
+			Sample sample = Sample.build(name, accession, null, release, update, attributes, null, null);
 			bioSamplesClient.persistSample(sample);
 			return null;
 		}

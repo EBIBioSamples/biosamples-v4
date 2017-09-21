@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -89,7 +90,6 @@ public class SampleService {
 			log.error("Found errors : "+errors);
 			throw new SampleValidationException();
 		}
-
 		// TODO compare to existing version to check if changes
 
 		// TODO validate that relationships have this sample as the source 
@@ -100,6 +100,7 @@ public class SampleService {
 			sample = mongoSampleToSampleConverter.convert(mongoSample);
 		} else {
 			//assign it a new accession
+			//TODO see if there is an existing accession for this user and name
 			sample = mongoAccessionService.generateAccession(sample);
 		}
 

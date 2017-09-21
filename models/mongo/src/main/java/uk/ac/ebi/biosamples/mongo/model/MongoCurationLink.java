@@ -26,14 +26,16 @@ public class MongoCurationLink implements Comparable<MongoCurationLink>{
 	
 	@Indexed
 	private final String sample;
+	private final String domain;
 	
 	@Indexed
 	protected final LocalDateTime created;
 
 	private final Curation curation;
 
-	private MongoCurationLink(String sample, Curation curation, String hash, LocalDateTime created) {
+	private MongoCurationLink(String sample, String domain, Curation curation, String hash, LocalDateTime created) {
 		this.sample = sample;
+		this.domain = domain;
 		this.curation = curation;
 		this.hash = hash;
 		this.created = created;
@@ -45,6 +47,10 @@ public class MongoCurationLink implements Comparable<MongoCurationLink>{
 	
 	public Curation getCuration() {
 		return curation;
+	}
+
+	public String getDomain() {
+		return domain;
 	}
 	
 	public String getHash() {
@@ -100,7 +106,9 @@ public class MongoCurationLink implements Comparable<MongoCurationLink>{
 
     //Used for deserializtion (JSON -> Java)
     @JsonCreator
-	public static MongoCurationLink build(@JsonProperty("sample") String sample, @JsonProperty("curation") Curation curation,
+	public static MongoCurationLink build(@JsonProperty("sample") String sample, 
+			@JsonProperty("curation") Curation curation,
+			@JsonProperty("domain") String domain, 
 			@JsonProperty("created") @JsonDeserialize(using = CustomLocalDateTimeDeserializer.class) LocalDateTime created) {
 
     	String hash = Hashing.sha256().newHasher()
@@ -108,7 +116,7 @@ public class MongoCurationLink implements Comparable<MongoCurationLink>{
 			.putUnencodedChars(sample)
 			.hash().toString();
     	
-		return new MongoCurationLink(sample, curation, hash, created);
+		return new MongoCurationLink(sample, domain, curation, hash, created);
 	}
 
 }

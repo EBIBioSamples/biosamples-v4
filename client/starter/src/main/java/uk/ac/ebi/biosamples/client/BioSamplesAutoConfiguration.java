@@ -1,7 +1,8 @@
 package uk.ac.ebi.biosamples.client;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Arrays;
+import java.util.List;
+
 import org.apache.http.HeaderElement;
 import org.apache.http.HeaderElementIterator;
 import org.apache.http.HttpResponse;
@@ -14,7 +15,9 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicHeaderElementIterator;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.protocol.HttpContext;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.web.WebClientAutoConfiguration;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.boot.web.client.RestTemplateCustomizer;
 import org.springframework.context.annotation.Bean;
@@ -27,17 +30,20 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
+
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import uk.ac.ebi.biosamples.BioSamplesProperties;
+import uk.ac.ebi.biosamples.client.service.AapClientService;
 import uk.ac.ebi.biosamples.service.AttributeValidator;
 import uk.ac.ebi.biosamples.service.SampleValidator;
 
-import java.util.Arrays;
-import java.util.List;
-
 @Configuration
-@ConditionalOnMissingBean(BioSamplesClient.class)
+@AutoConfigureAfter(WebClientAutoConfiguration.class)
 public class BioSamplesAutoConfiguration {
 
-	@Bean
+	@Bean	
 	@ConditionalOnMissingBean(AttributeValidator.class)
 	public AttributeValidator attributeValidator() {
 		return new AttributeValidator();
@@ -50,14 +56,22 @@ public class BioSamplesAutoConfiguration {
 	}
 	
 	@Bean	
-	@ConditionalOnMissingBean(ClientProperties.class)
-	public ClientProperties clientProperties() {
-		return new ClientProperties();
+	@ConditionalOnMissingBean(BioSamplesProperties.class)
+	public BioSamplesProperties bioSamplesProperties() {
+		return new BioSamplesProperties();
 	}
-	
+
 	@Bean
-	public BioSamplesClient bioSamplesClient(ClientProperties clientProperties, 
-			RestTemplateBuilder restTemplateBuilder, SampleValidator sampleValidator) {		
+	@ConditionalOnMissingBean(AapClientService.class)
+	public AapClientService aapClientService(RestTemplateBuilder restTemplateBuilder, BioSamplesProperties bioSamplesProperties) {
+		return new AapClientService(restTemplateBuilder, bioSamplesProperties.getBiosamplesClientAapUri(),
+				bioSamplesProperties.getBiosamplesClientAapUsername(), bioSamplesProperties.getBiosamplesClientAapPassword());
+	}
+
+	@Bean
+	@ConditionalOnMissingBean(BioSamplesClient.class)
+	public BioSamplesClient bioSamplesClient(BioSamplesProperties bioSamplesProperties,
+			RestTemplateBuilder restTemplateBuilder, SampleValidator sampleValidator, AapClientService aapClientService) {
 		restTemplateBuilder = restTemplateBuilder.additionalCustomizers(new RestTemplateCustomizer() {
 			public void customize(RestTemplate restTemplate) {
 				
@@ -122,8 +136,6 @@ public class BioSamplesAutoConfiguration {
 				List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();				
 				ObjectMapper mapper = new ObjectMapper();
 				mapper.registerModule(new Jackson2HalModule());
-				//TODO check if this is relevant
-//				mapper.registerSubtypes(AttributeFacet.class, RelationFacet.class, InverseRelationFacet.class);
 				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 				MappingJackson2HttpMessageConverter halConverter = new TypeConstrainedMappingJackson2HttpMessageConverter(ResourceSupport.class);
 				halConverter.setObjectMapper(mapper);
@@ -133,6 +145,7 @@ public class BioSamplesAutoConfiguration {
 				restTemplate.setMessageConverters(converters);
 			}			
 		});
-		return new BioSamplesClient(clientProperties, restTemplateBuilder, sampleValidator);
+		return new BioSamplesClient(bioSamplesProperties.getBiosamplesClientUri(), restTemplateBuilder,
+				sampleValidator, aapClientService, bioSamplesProperties);
 	}
 }

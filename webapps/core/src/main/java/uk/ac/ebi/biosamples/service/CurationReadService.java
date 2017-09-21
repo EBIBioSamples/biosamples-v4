@@ -106,7 +106,8 @@ public class CurationReadService {
 			externalReferences.add(externalReference);
 		}
 		
-		return Sample.build(sample.getName(), sample.getAccession(), sample.getRelease(), sample.getUpdate(), attributes, sample.getRelationships(), externalReferences);
+		return Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(), 
+				sample.getRelease(), sample.getUpdate(), attributes, sample.getRelationships(), externalReferences);
 	}
 	
 	public Sample applyAllCurationToSample(Sample sample) {

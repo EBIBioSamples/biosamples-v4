@@ -35,7 +35,12 @@ public class SampleToMongoSampleConverter implements Converter<Sample, MongoSamp
 			relationships.add(relationshipToMongoRelationshipConverter.convert(relationship));
 		}
 		
-		return MongoSample.build(sample.getName(), sample.getAccession(), sample.getRelease(), sample.getUpdate(),
+		//when we convert to a MongoSample then the Sample *must* have a domain
+		if (sample.getDomain() == null) {
+			throw new RuntimeException("sample does not have domain "+sample);
+		}
+		
+		return MongoSample.build(sample.getName(), sample.getAccession(), sample.getDomain(), sample.getRelease(), sample.getUpdate(),
 				sample.getCharacteristics(), relationships, externalReferences);
 	}
 }

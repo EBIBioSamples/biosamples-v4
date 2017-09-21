@@ -16,7 +16,6 @@ import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 
 @Service
-@ConfigurationPropertiesBinding
 public class MongoSampleToSampleConverter implements Converter<MongoSample, Sample> {
 
 	@Autowired
@@ -36,9 +35,14 @@ public class MongoSampleToSampleConverter implements Converter<MongoSample, Samp
 		for (MongoRelationship mongoRelationship : sample.getRelationships()) {
 			relationships.add(mongoRelationshipToRelationshipConverter.convert(mongoRelationship));
 		}
+
+		//when we convert to a MongoSample then the Sample *must* have a domain
+		if (sample.getDomain() == null) {
+			throw new RuntimeException("sample does not have domain "+sample);
+		}
 		
 		
-		return Sample.build(sample.getName(), sample.getAccession(), sample.getRelease(), sample.getUpdate(),
+		return Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(), sample.getRelease(), sample.getUpdate(),
 				sample.getAttributes(), relationships, externalReferences);
 	}
 }

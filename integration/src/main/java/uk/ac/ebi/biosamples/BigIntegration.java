@@ -12,6 +12,7 @@ import java.util.TreeSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
+import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
 
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
@@ -87,6 +88,18 @@ public class BigIntegration extends AbstractIntegration {
 		if (elapsedMs > 5000) {
 			throw new RuntimeException("Took more than 5000ms to fetch highly-connected sample ("+elapsedMs+"ms)");			
 		}
+		
+		//time how long it takes to loop over all of them
+
+		startTime = System.nanoTime();
+		for (Resource<Sample> sample : client.fetchSampleResourceAll()) {
+			
+		}
+		endTime = System.nanoTime();
+		elapsedMs = (int) ((endTime-startTime)/1000000l);
+		if (elapsedMs > 5000) {
+			throw new RuntimeException("Took more than 5000ms to fetch all samples ("+elapsedMs+"ms)");			
+		}
 
 	}
 
@@ -112,6 +125,7 @@ public class BigIntegration extends AbstractIntegration {
 
 		LocalDateTime update = LocalDateTime.of(LocalDate.of(2016, 5, 5), LocalTime.of(11, 36, 57, 0));
 		LocalDateTime release = LocalDateTime.of(LocalDate.of(2016, 4, 1), LocalTime.of(11, 36, 57, 0));
+        String domain = null;// "abcde12345";
 		
 		SortedSet<Attribute> attributes = new TreeSet<>();
 		attributes.add(
@@ -125,7 +139,7 @@ public class BigIntegration extends AbstractIntegration {
 			relationships.add(Relationship.build("SAMbig"+i, "derived from", root.getAccession()));
 		}
 		
-		Sample sample = Sample.build("big sample "+i, "SAMbig"+i, release, update, attributes, relationships, null);
+		Sample sample = Sample.build("big sample "+i, "SAMbig"+i, domain, release, update, attributes, relationships, null);
 
 		log.info("built "+sample.getAccession());
 		return sample;

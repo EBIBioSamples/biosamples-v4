@@ -58,7 +58,7 @@ public class MongoSerializationTest {
 		SortedSet<MongoExternalReference> externalReferences = new TreeSet<>();
 		externalReferences.add(MongoExternalReference.build("http://www.google.com"));
 
-		return MongoSample.build(name, accession, release, update, attributes, relationships, externalReferences);
+		return MongoSample.build(name, accession, "foozit", release, update, attributes, relationships, externalReferences);
 	}
 
 	@Test

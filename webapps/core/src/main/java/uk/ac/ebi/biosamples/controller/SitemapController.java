@@ -21,6 +21,7 @@ import uk.ac.ebi.biosamples.service.SampleService;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.MalformedURLException;
+import java.util.Collections;
 
 @Controller
 @RequestMapping("/sitemap")
@@ -73,7 +74,7 @@ public class SitemapController {
     public XmlUrlSet createSampleSitemapPage(@PathVariable("id") int pageNumber, HttpServletRequest request) throws ParseException {
         final long startTime = System.currentTimeMillis();
         Pageable pageRequest = new PageRequest(pageNumber - 1, sitemapPageSize);
-        Page<Sample> samplePage = samplePageService.getSamplesByText("", null, null, null, pageRequest);
+        Page<Sample> samplePage = samplePageService.getSamplesByText("", null, Collections.emptyList(), null, null, pageRequest);
         XmlUrlSet xmlUrlSet = new XmlUrlSet();
         for(Sample sample: samplePage.getContent()) {
             String location = generateBaseUrl(request) + String.format("/samples/%s", sample.getAccession());
@@ -106,7 +107,7 @@ public class SitemapController {
     private long getTotalSamples() {
         Pageable pageable = new PageRequest(0, 1);
         MultiValueMap<String, String> filters = new LinkedMultiValueMap<>();
-        Page<Sample> samplePage = samplePageService.getSamplesByText("", filters, null, null, pageable);
+        Page<Sample> samplePage = samplePageService.getSamplesByText("", filters, Collections.emptyList(), null, null, pageable);
         return samplePage.getTotalElements();
     }
 }

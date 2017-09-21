@@ -112,7 +112,7 @@ public class JsonLdIntegration extends AbstractIntegration {
         externalReferences.add(
                 ExternalReference.build("www.google.com")
         );
-        return Sample.build(name,accession,releaseDate,updateDate,
+        return Sample.build(name, accession, null, releaseDate,updateDate,
                 attributes,null,externalReferences);
     }
 

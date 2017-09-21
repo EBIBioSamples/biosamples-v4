@@ -12,7 +12,7 @@ public class CurationLinkToMongoCurationLinkConverter
 	
 	@Override
 	public MongoCurationLink convert(CurationLink curationLink) {	
-		return MongoCurationLink.build(curationLink.getSample(), curationLink.getCuration(), curationLink.getCreated());
+		return MongoCurationLink.build(curationLink.getSample(), curationLink.getCuration(), curationLink.getDomain(), curationLink.getCreated());
 	}
 
 }

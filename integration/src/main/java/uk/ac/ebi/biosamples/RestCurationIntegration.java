@@ -16,8 +16,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.*;
-
+import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.Curation;
+import uk.ac.ebi.biosamples.model.ExternalReference;
+import uk.ac.ebi.biosamples.model.Relationship;
+import uk.ac.ebi.biosamples.model.Sample;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -38,14 +41,13 @@ public class RestCurationIntegration extends AbstractIntegration {
 
 	private final RestOperations restTemplate;
 	
-	Sample sample = getSampleTest1();
+	private final Sample sample = getSampleTest1();
 	
 	public RestCurationIntegration(RestTemplateBuilder restTemplateBuilder, IntegrationProperties integrationProperties, BioSamplesClient client) {
 		super(client);
 		this.restTemplate = restTemplateBuilder.build();
 		this.integrationProperties = integrationProperties;
 	}
-
 
 	@Override
 	protected void phaseOne() {
@@ -59,14 +61,14 @@ public class RestCurationIntegration extends AbstractIntegration {
 		attributesPre.add(Attribute.build("Organism", "9606"));
 		Set<Attribute> attributesPost = new HashSet<>();
 		attributesPost.add(Attribute.build("Organism", "Homo sapiens"));			
-		client.persistCuration(sample.getAccession(), Curation.build(attributesPre, attributesPost, null, null));
+		client.persistCuration(sample.getAccession(), Curation.build(attributesPre, attributesPost, null, null), null);
 
 
 		attributesPre = new HashSet<>();
 		attributesPre.add(Attribute.build("Organism", "Homo sapiens"));
 		attributesPost = new HashSet<>();
 		attributesPost.add(Attribute.build("Organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));			
-		client.persistCuration(sample.getAccession(), Curation.build(attributesPre, attributesPost, null, null));
+		client.persistCuration(sample.getAccession(), Curation.build(attributesPre, attributesPost, null, null), null);
 		
 	}
 
@@ -96,7 +98,6 @@ public class RestCurationIntegration extends AbstractIntegration {
 	}
 
 	private void testCurations() {
-		
 		/*
 		//TODO use client
 		URI uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUri())
@@ -118,7 +119,6 @@ public class RestCurationIntegration extends AbstractIntegration {
 			throw new RuntimeException("No curations in list");
 		}
 		*/
-		
 		for (Resource<Curation> curationResource : client.fetchCurationResourceAll()) {
 			Link selfLink = curationResource.getLink("self");
 			Link samplesLink = curationResource.getLink("samples");
@@ -179,6 +179,7 @@ public class RestCurationIntegration extends AbstractIntegration {
 	private Sample getSampleTest1() {
 		String name = "Test Sample";
 		String accession = "TESTCur1";
+        String domain = null;// "abcde12345";
 		LocalDateTime update = LocalDateTime.of(LocalDate.of(2016, 5, 5), LocalTime.of(11, 36, 57, 0));
 		LocalDateTime release = LocalDateTime.of(LocalDate.of(2016, 4, 1), LocalTime.of(11, 36, 57, 0));
 
@@ -189,6 +190,6 @@ public class RestCurationIntegration extends AbstractIntegration {
 
 		SortedSet<ExternalReference> externalReferences = new TreeSet<>();
 
-		return Sample.build(name, accession, release, update, attributes, relationships, externalReferences);
+		return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences);
 	}
 }

@@ -87,6 +87,7 @@ public class SampleTabController {
             return ResponseEntity.badRequest().body(sb.toString());
         }
         
+        String jwt = null; //TODO get from request
         //no errors
         
         //set the update date to now
@@ -95,7 +96,10 @@ public class SampleTabController {
         	sampledata.msi.submissionUpdateDate = Date.from(Instant.now());
         }
         
-        sampleTabService.saveSampleTab(sampledata);
+
+        //TODO do AAP domain property
+        sampleTabService.saveSampleTab(sampledata, "aap-users-domain", jwt);
+        
         return ResponseEntity.ok("");
 	}
 }

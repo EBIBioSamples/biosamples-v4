@@ -30,6 +30,12 @@ public class MongoSample {
 
 	protected String name; 
 	
+	/**
+	 * This is the unique permanent ID of the AAP domain/team
+	 * that owns this sample.
+	 */
+	protected String domain;
+	
 	@JsonSerialize(using = CustomLocalDateTimeSerializer.class)
 	@JsonDeserialize(using = CustomLocalDateTimeDeserializer.class)
 	protected LocalDateTime release; 
@@ -57,6 +63,10 @@ public class MongoSample {
 
 	public String getName() {
 		return name;
+	}
+
+	public String getDomain() {
+		return domain;
 	}
 
 	public LocalDateTime getRelease() {
@@ -89,6 +99,7 @@ public class MongoSample {
         MongoSample other = (MongoSample) o;
         return Objects.equals(this.name, other.name) 
         		&& Objects.equals(this.accession, other.accession)
+        		&& Objects.equals(this.domain, other.domain)
         		&& Objects.equals(this.release, other.release)
         		&& Objects.equals(this.update, other.update)
         		&& Objects.equals(this.attributes, other.attributes)
@@ -98,7 +109,7 @@ public class MongoSample {
     
     @Override
     public int hashCode() {
-    	return Objects.hash(name, accession, release, update, attributes, relationships, externalReferences);
+    	return Objects.hash(name, accession, domain, release, update, attributes, relationships, externalReferences);
     }
     
 
@@ -109,6 +120,8 @@ public class MongoSample {
     	sb.append(name);
     	sb.append(",");
     	sb.append(accession);
+    	sb.append(",");
+    	sb.append(domain);
     	sb.append(",");
     	sb.append(release);
     	sb.append(",");
@@ -127,6 +140,7 @@ public class MongoSample {
     @JsonCreator
     public static MongoSample build(@JsonProperty("name") String name, 
     		@JsonProperty("accession") String accession, 
+			@JsonProperty("domain") String domain,
     		@JsonProperty("release") LocalDateTime release, 
     		@JsonProperty("update") LocalDateTime update, 
     		@JsonProperty("attributes") Set<Attribute> attributes, 
@@ -137,6 +151,7 @@ public class MongoSample {
 		
 		sample.accession = accession;		
 		sample.name = name;
+		sample.domain = domain;
 		sample.release = release;
 		sample.update = update;
 

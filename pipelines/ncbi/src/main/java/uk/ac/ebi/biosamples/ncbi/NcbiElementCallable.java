@@ -21,6 +21,10 @@ public class NcbiElementCallable implements Callable<Void> {
 	private Logger log = LoggerFactory.getLogger(getClass());
 
 	private final Element sampleElem;
+
+
+	//TODO do this properly
+	private final String domain = "DUMMY-DOMAIN";
 	
 	private final TaxonomyService taxonomyService;
 	
@@ -138,8 +142,7 @@ public class NcbiElementCallable implements Callable<Void> {
 			latestDate = releaseDate;
 		}
 		
-		//Sample sample = Sample.createFrom(name, accession, updateDate, releaseDate, keyValues, new HashMap<>(), new HashMap<>(),relationships);
-		Sample sample = Sample.build(name, accession, releaseDate, updateDate, attrs, rels, null);
+		Sample sample = Sample.build(name, accession, domain, releaseDate, updateDate, attrs, rels, null);
 		
 		//now pass it along to the actual submission process
 		bioSamplesClient.persistSample(sample);

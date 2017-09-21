@@ -10,6 +10,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import uk.ac.ebi.biosamples.MessageContent;
+import uk.ac.ebi.biosamples.model.Curation;
+import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.neo.model.NeoCuration;
 import uk.ac.ebi.biosamples.neo.model.NeoCurationLink;
@@ -33,20 +35,20 @@ public class NeoMessageBufferTransaction {
 	private final CurationToNeoCurationConverter curationToNeoCurationConverter;
 
 	public NeoMessageBufferTransaction(NeoSampleRepository neoSampleRepository,
-									   SampleToNeoSampleConverter sampleToNeoSampleConverter,
-									   NeoCurationRepository neoCurationRepository,
-									   NeoCurationLinkRepository neoCurationLinkRepository,
-									   CurationToNeoCurationConverter curationToNeoCurationConverter) {
+			SampleToNeoSampleConverter sampleToNeoSampleConverter, NeoCurationRepository neoCurationRepository,
+			NeoCurationLinkRepository neoCurationLinkRepository,
+			CurationToNeoCurationConverter curationToNeoCurationConverter) {
 		this.neoSampleRepository = neoSampleRepository;
 		this.sampleToNeoSampleConverter = sampleToNeoSampleConverter;
 		this.neoCurationRepository = neoCurationRepository;
 		this.neoCurationLinkRepository = neoCurationLinkRepository;
 		this.curationToNeoCurationConverter = curationToNeoCurationConverter;
+
 	}
 
 	@Transactional
-	public void save(Collection<MessageContent> messageContents) {
-		log.info("Starting save");
+	public void save(Collection<MessageContent> messageContents) {		
+		log.trace("Starting save");
 		for (MessageContent messageContent : messageContents) {
 			if (messageContent.delete) {
 				//TODO delete a sample or curationlink
@@ -81,18 +83,17 @@ public class NeoMessageBufferTransaction {
 					neoSample.getRelationships().addAll(newRelationships);
 
 					neoSample = neoSampleRepository.save(neoSample, 1);
-				}
-				else if (messageContent.hasCurationLink()) {
+				} else if (messageContent.hasCurationLink()) {
 					NeoCuration neoCuration = curationToNeoCurationConverter.convert(messageContent.getCurationLink().getCuration());
 					//make sure the neoCuration is saved
-					neoCuration = neoCurationRepository.save(neoCuration);
-
-					NeoSample neoSample = neoSampleRepository.findOneByAccession(messageContent.getCurationLink().getSample(),1);
-					NeoCurationLink neoCurationLink = NeoCurationLink.build(neoCuration, neoSample, messageContent.getCurationLink().getCreated());
+					neoCuration = neoCurationRepository.save(neoCuration);			
+					NeoSample neoSample = neoSampleRepository.findOneByAccession(messageContent.getCurationLink().getSample(), 0);							
+					NeoCurationLink neoCurationLink = NeoCurationLink.build(neoCuration, neoSample, 
+							messageContent.getCurationLink().getDomain(), messageContent.getCurationLink().getCreated());
 					neoCurationLink = neoCurationLinkRepository.save(neoCurationLink);
 				}
-			}
+			}		
 		}
-		log.info("Finishing save");
+		log.trace("Finishing save");
 	}
 }

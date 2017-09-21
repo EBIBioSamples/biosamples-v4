@@ -16,12 +16,13 @@ services:
     # - -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000
     - webapps-core-4.0.0-SNAPSHOT.war
     environment:
+    #AAP certificate
+    - jwt.certificate=public.der
+    - security.basic.path=
+    - aap.domains.url=https://explore.api.aap.tsi.ebi.ac.uk
+    - aap.token.url=https://explore.api.aap.tsi.ebi.ac.uk/auth
+    #configure other services
     - spring.data.solr.host=http://solr:8983/solr
-    - spring.data.neo4j.uri=bolt://neo4j:7687
-    #- spring.data.neo4j.uri=http://neo4j:7474
-    - spring.data.neo4j.username=neo4j
-    - spring.data.neo4j.indexes.auto=validate
-    #- spring.data.neo4j.indexes.auto=assert
     - spring.data.mongodb.host=mongo
     - spring.rabbitmq.publisher-confirms=true
     - spring.rabbitmq.host=rabbitmq
@@ -33,8 +34,6 @@ services:
     - server.context-path=/biosamples/beta
     #Enable use behind a proxy with original urls
     - server.use-forward-headers=true
-    #REMOVE FOR PRODUCTION
-    - management.security.enabled=false
     #Improve logging
     - LOGGING_FILE=/logs/webapps-core.log
     - server.tomcat.accesslog.enabled=true

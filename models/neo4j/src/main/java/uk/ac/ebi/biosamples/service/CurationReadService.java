@@ -2,6 +2,8 @@ package uk.ac.ebi.biosamples.service;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -15,8 +17,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.CurationLink;
+import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.neo.model.NeoCuration;
 import uk.ac.ebi.biosamples.neo.model.NeoCurationLink;
@@ -93,6 +97,42 @@ public class CurationReadService {
 		NeoCurationLink neo = neoCurationLinkRepository.findOneByHash(hash, 1);
 		CurationLink link = neoCurationLinkToCurationLinkConverter.convert(neo);
 		return link;
+	}
+	
+	public Sample applyCurationToSample(Sample sample, Curation curation) {
+		log.info("Applying curation "+curation+" to sample "+sample);
+		
+		SortedSet<Attribute> attributes = new TreeSet<Attribute>(sample.getAttributes());
+		SortedSet<ExternalReference> externalReferences = new TreeSet<ExternalReference>(sample.getExternalReferences());
+		//remove pre-curation things
+		for (Attribute attribute : curation.getAttributesPre()) {
+			if (!attributes.contains(attribute)) {
+				throw new IllegalArgumentException("Attempting to apply curation "+curation+" to sample "+sample);
+			}
+			attributes.remove(attribute);
+		}
+		for (ExternalReference externalReference : curation.getExternalReferencesPre()) {
+			if (!externalReferences.contains(externalReference)) {
+				throw new IllegalArgumentException("Attempting to apply curation "+curation+" to sample "+sample);
+			}
+			externalReferences.remove(externalReference);
+		}
+		//add post-curation things
+		for (Attribute attribute : curation.getAttributesPost()) {
+			if (attributes.contains(attribute)) {
+				throw new IllegalArgumentException("Attempting to apply curation "+curation+" to sample "+sample);
+			}
+			attributes.add(attribute);
+		}
+		for (ExternalReference externalReference : curation.getExternalReferencesPost()) {
+			if (externalReferences.contains(externalReference)) {
+				throw new IllegalArgumentException("Attempting to apply curation "+curation+" to sample "+sample);
+			}
+			externalReferences.add(externalReference);
+		}
+		
+		return Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(), 
+				sample.getRelease(), sample.getUpdate(), attributes, sample.getRelationships(), externalReferences);
 	}
 	
 	public Sample getAndApplyCurationsToSample(Sample sample) {

@@ -25,6 +25,9 @@ public class NeoCurationLink implements Comparable<NeoCurationLink> {
 
     @Relationship(type = "HAS_CURATION_TARGET")
 	private NeoCuration curation;
+    
+    @Property
+    private String domain;
 
 
 	@Property
@@ -50,6 +53,10 @@ public class NeoCurationLink implements Comparable<NeoCurationLink> {
 		return sample;
 	}
 	
+	public String getDomain() {
+		return domain;
+	}
+		
 	public LocalDateTime getCreated() {
 		return created;
 	}
@@ -77,7 +84,8 @@ public class NeoCurationLink implements Comparable<NeoCurationLink> {
         String otherCuration = null;
         if (other.curation != null) otherCuration = other.curation.getHash();
         
-        return Objects.equals(thisSampleAccession, otherSampleAccession) 
+        return Objects.equals(this.getDomain(), other.getDomain())
+        		&& Objects.equals(thisSampleAccession, otherSampleAccession) 
         		&& Objects.equals(thisCuration, otherCuration);
     }
     
@@ -128,20 +136,17 @@ public class NeoCurationLink implements Comparable<NeoCurationLink> {
 		return 0;
 	}
 	
-	public static NeoCurationLink build(NeoCuration curation, NeoSample sample, LocalDateTime created) {
+	public static NeoCurationLink build(NeoCuration curation, NeoSample sample, String domain, LocalDateTime created) {
 		NeoCurationLink neoCurationLink = new NeoCurationLink();
 		neoCurationLink.curation = curation;
 		neoCurationLink.sample = sample;
-		neoCurationLink.created = created;
-		
+		neoCurationLink.created = created;		
 
 		neoCurationLink.hash = Hashing.sha256().newHasher()
-			.putUnencodedChars(curation.getHash())
 			.putUnencodedChars(sample.getAccession())
+			.putUnencodedChars(domain)
+			.putUnencodedChars(curation.getHash())
 			.hash().toString();
-    	
-    	//TODO bake user id into hash
-		
 		return neoCurationLink;
 	}
 }

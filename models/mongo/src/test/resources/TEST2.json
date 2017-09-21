@@ -1,6 +1,7 @@
 {
 	"accession": "TEST2",
 	"name": "Test Sample the second",
+	"domain": "foozit",
 	"update": "2016-05-05T11:36:57",
 	"release": "2016-04-01T11:36:57",
 	"attributes": [

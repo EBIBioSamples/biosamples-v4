@@ -1,5 +1,8 @@
 package uk.ac.ebi.biosamples.controller;
 
+import java.util.Collection;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -7,7 +10,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.*;
+import org.springframework.hateoas.EntityLinks;
+import org.springframework.hateoas.ExposesResourceFor;
+import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
@@ -22,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.service.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.FilterService;
 import uk.ac.ebi.biosamples.service.SamplePageService;
 import uk.ac.ebi.biosamples.service.SampleReadService;
@@ -49,6 +57,8 @@ public class SamplesRestController {
 	private final SampleReadService sampleService;
 	private final SamplePageService samplePageService;
 	private final FilterService filterService;
+	private final BioSamplesAapService bioSamplesAapService;
+
 
 	private final SampleResourceAssembler sampleResourceAssembler;
 
@@ -58,10 +68,12 @@ public class SamplesRestController {
 
 	public SamplesRestController(SampleReadService sampleService,
 			SamplePageService samplePageService,FilterService filterService,
+			BioSamplesAapService bioSamplesAapService,
 			SampleResourceAssembler sampleResourceAssembler, EntityLinks entityLinks) {
 		this.sampleService = sampleService;
 		this.samplePageService = samplePageService;
 		this.filterService = filterService;
+		this.bioSamplesAapService = bioSamplesAapService;
 		this.sampleResourceAssembler = sampleResourceAssembler;
 		this.entityLinks = entityLinks;
 	}
@@ -97,6 +109,8 @@ public class SamplesRestController {
 		
 		
 		MultiValueMap<String, String> filtersMap = filterService.getFilters(filter);
+
+		Collection<String> domains = bioSamplesAapService.getDomains();
 		
 		LocalDateTime updatedAfterDate = null;
 		if (updatedAfter != null) {
@@ -117,8 +131,7 @@ public class SamplesRestController {
 			}
 		}
 		
-		Page<Sample> pageSample = samplePageService.getSamplesByText(text, filtersMap, updatedAfterDate, updatedBeforeDate, page);
-
+		Page<Sample> pageSample = samplePageService.getSamplesByText(text, filtersMap, domains, updatedAfterDate, updatedBeforeDate, page);
 		// add the links to each individual sample on the page
 		// also adds links to first/last/next/prev at the same time
 		PagedResources<Resource<Sample>> pagedResources = pageAssembler.toResource(pageSample, sampleResourceAssembler,

@@ -121,7 +121,7 @@ public class RestFacetIntegration extends AbstractIntegration {
 		//use non alphanumeric characters in type
 		attributes.add(Attribute.build("geographic location (country and/or sea)", "Land of Oz", null, null));
 
-		return Sample.build(name, accession, release, update, attributes, null, null);
+		return Sample.build(name, accession, null, release, update, attributes, null, null);
 	}
 	
 }
