@@ -48,7 +48,7 @@ import uk.ac.ebi.biosamples.service.SampleValidator;
  * @author faulcon
  *
  */
-public class BioSamplesClient {
+public class BioSamplesClient implements AutoCloseable {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 	
