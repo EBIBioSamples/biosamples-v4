@@ -45,10 +45,10 @@ public class BioSamplesProperties {
 	@Value("${biosamples.client.aap.password:#{null}}")
 	private String biosamplesClientAapPassword;
 	
-	@Value("${biosamples.aap.super.read:biosamples.super.read}")
+	@Value("${biosamples.aap.super.read:self.BiosampleSuperUserRead}")
 	private String biosamplesAapSuperRead;
 	
-	@Value("${biosamples.aap.super.write:biosamples.super.write}")
+	@Value("${biosamples.aap.super.write:self.BiosampleSuperUserWrite}")
 	private String biosamplesAapSuperWrite;
 
 	
