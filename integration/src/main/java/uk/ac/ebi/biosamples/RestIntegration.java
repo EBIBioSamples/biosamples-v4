@@ -217,7 +217,7 @@ public class RestIntegration extends AbstractIntegration {
 	private Sample getSampleTest1() {
 		String name = "Test Sample";
 		String accession = "TESTrest1";
-        String domain = null;// "abcde12345";
+        String domain = "self.BiosampleIntegrationTest";
 		Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
 		Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
@@ -244,7 +244,7 @@ public class RestIntegration extends AbstractIntegration {
 	private Sample getSampleTest2() {
 		String name = "Test Sample the second";
 		String accession = "TESTrest2";
-        String domain = null;// "abcde12345";
+        String domain = "self.BiosampleIntegrationTest";
 		Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
 		Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 

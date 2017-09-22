@@ -208,7 +208,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
 		SortedSet<Attribute> attributes = new TreeSet<>();
 		attributes.add(
 			Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
-		return Sample.build(name, accession, null, release, update, attributes, new TreeSet<>(), new TreeSet<>());
+		return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, new TreeSet<>(), new TreeSet<>());
 	}
 
 	private Sample getPrivateSampleXMLTest2() {
@@ -221,7 +221,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
         attributes.add(
                 Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
 
-        return Sample.build(name, accession, null, release, update, attributes, new TreeSet<>(), new TreeSet<>());
+        return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, new TreeSet<>(), new TreeSet<>());
 
     }
 }

@@ -125,7 +125,7 @@ public class BigIntegration extends AbstractIntegration {
 
 		Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
 		Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
-        String domain = null;// "abcde12345";
+        String domain = "self.BiosampleIntegrationTest";
 		
 		SortedSet<Attribute> attributes = new TreeSet<>();
 		attributes.add(

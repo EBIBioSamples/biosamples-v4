@@ -145,7 +145,7 @@ public class RestSearchIntegration extends AbstractIntegration {
 		attributes.add(
 				Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
 
-		return Sample.build(name, accession, null, release, update, attributes, new TreeSet<>(), new TreeSet<>());
+		return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, new TreeSet<>(), new TreeSet<>());
 	}
 
 	private Sample getSampleTest2() {
@@ -161,7 +161,7 @@ public class RestSearchIntegration extends AbstractIntegration {
 		SortedSet<Relationship> relationships = new TreeSet<>();
 		relationships.add(Relationship.build("TESTrestsearch2", "derived from", "TESTrestsearch3"));
 		
-		return Sample.build(name, accession, null, release, update, attributes, relationships, new TreeSet<>());
+		return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, relationships, new TreeSet<>());
 	}
 
 	private Sample getSampleTest4() {
@@ -179,7 +179,7 @@ public class RestSearchIntegration extends AbstractIntegration {
 		relationships.add(Relationship.build("TESTrestsearch4", "derived from", getSampleTest2().getAccession()));
 		relationships.add(Relationship.build("TESTrestsearch4", "derive to", getSampleTest5().getAccession()));
 
-		return Sample.build(name, accession, null, release, update, attributes, relationships, new TreeSet<>());
+		return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, relationships, new TreeSet<>());
 	}
 
 	private Sample getSampleTest5() {
@@ -195,7 +195,7 @@ public class RestSearchIntegration extends AbstractIntegration {
 		// TODO need to add inverse relationships later
 		SortedSet<Relationship> relationships = new TreeSet<>();
 
-		return Sample.build(name, accession, null, release, update, attributes, relationships, new TreeSet<>());
+		return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, relationships, new TreeSet<>());
 	}
 
 }

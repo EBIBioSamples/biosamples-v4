@@ -61,14 +61,14 @@ public class RestCurationIntegration extends AbstractIntegration {
 		attributesPre.add(Attribute.build("Organism", "9606"));
 		Set<Attribute> attributesPost = new HashSet<>();
 		attributesPost.add(Attribute.build("Organism", "Homo sapiens"));			
-		client.persistCuration(sample.getAccession(), Curation.build(attributesPre, attributesPost, null, null), null);
+		client.persistCuration(sample.getAccession(), Curation.build(attributesPre, attributesPost, null, null), "self.BiosampleIntegrationTest");
 
 
 		attributesPre = new HashSet<>();
 		attributesPre.add(Attribute.build("Organism", "Homo sapiens"));
 		attributesPost = new HashSet<>();
 		attributesPost.add(Attribute.build("Organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));			
-		client.persistCuration(sample.getAccession(), Curation.build(attributesPre, attributesPost, null, null), null);
+		client.persistCuration(sample.getAccession(), Curation.build(attributesPre, attributesPost, null, null), "self.BiosampleIntegrationTest");
 		
 	}
 
@@ -179,7 +179,7 @@ public class RestCurationIntegration extends AbstractIntegration {
 	private Sample getSampleTest1() {
 		String name = "Test Sample";
 		String accession = "TESTCur1";
-        String domain = null;// "abcde12345";
+        String domain = "self.BiosampleIntegrationTest";
 		Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
 		Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 

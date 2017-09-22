@@ -44,8 +44,8 @@ public class RestExternalReferenceIntegration extends AbstractIntegration {
 		testExternalReferences();
 		//testSampleExternalReferences(sample, 10);
 		client.persistCuration(sample.getAccession(), 
-				Curation.build(null,  null, null, Arrays.asList(ExternalReference.build("http://www.ebi.ac.uk/ena/ERA123456"))),
-				null);
+				Curation.build(null,  null, null, Arrays.asList(ExternalReference.build("http://www.ebi.ac.uk/ena/ERA123456"))), 
+				"self.BiosampleIntegrationTest");
 		
 	}
 
@@ -121,7 +121,7 @@ public class RestExternalReferenceIntegration extends AbstractIntegration {
 	private Sample getSampleTest1() {
 		String name = "Test Sample";
 		String accession = "TESTExRef1";
-        String domain = null;// "abcde12345";
+        String domain = "self.BiosampleIntegrationTest";
 		Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
 		Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 

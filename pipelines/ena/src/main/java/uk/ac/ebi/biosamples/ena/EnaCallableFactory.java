@@ -6,6 +6,7 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 
 @Service
@@ -17,18 +18,20 @@ public class EnaCallableFactory {
 	private final RestTemplate restTemplate;
 	private final EnaElementConverter enaElementConverter;
 	private final EraProDao eraProDao;
+	private final String domain;
 
 	public EnaCallableFactory(BioSamplesClient bioSamplesClient, RestTemplateBuilder restTemplatebuilder,
-			EnaElementConverter enaElementConverter, EraProDao eraProDao) {
+			EnaElementConverter enaElementConverter, EraProDao eraProDao, PipelinesProperties pipelinesProperties) {
 
 		this.bioSamplesClient = bioSamplesClient;
 		this.restTemplate = restTemplatebuilder.build();
 		this.enaElementConverter = enaElementConverter;
 		this.eraProDao = eraProDao;
+		this.domain = pipelinesProperties.getEnaDomain();
 	}
 	
 	public EnaCallable build(String accession) {
 		return new EnaCallable(accession, bioSamplesClient, restTemplate,
-				enaElementConverter, eraProDao);
+				enaElementConverter, eraProDao, domain);
 	}
 }

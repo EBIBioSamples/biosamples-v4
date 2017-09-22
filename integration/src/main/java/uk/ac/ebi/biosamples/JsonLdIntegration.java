@@ -95,6 +95,7 @@ public class JsonLdIntegration extends AbstractIntegration {
     private Sample getTestSample() {
         String accession = "SAMEA99332211";
         String name = "Test ld+json";
+        String domain = "self.BiosampleIntegrationTest";
 		Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
 		Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
@@ -112,7 +113,7 @@ public class JsonLdIntegration extends AbstractIntegration {
         externalReferences.add(
                 ExternalReference.build("www.google.com")
         );
-        return Sample.build(name, accession, null, release, update,
+        return Sample.build(name, accession, domain, release, update,
                 attributes,null,externalReferences);
     }
 

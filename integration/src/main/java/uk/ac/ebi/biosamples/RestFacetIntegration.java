@@ -105,6 +105,7 @@ public class RestFacetIntegration extends AbstractIntegration {
 	private Sample getSampleTest1() {
 		String name = "Test Sample";
 		String accession = "TESTrestfacet1";
+		String domain = "self.BiosampleIntegrationTest";
 		Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
 		Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
@@ -114,7 +115,7 @@ public class RestFacetIntegration extends AbstractIntegration {
 		//use non alphanumeric characters in type
 		attributes.add(Attribute.build("geographic location (country and/or sea)", "Land of Oz", null, null));
 
-		return Sample.build(name, accession, null, release, update, attributes, null, null);
+		return Sample.build(name, accession, domain, release, update, attributes, null, null);
 	}
 	
 }

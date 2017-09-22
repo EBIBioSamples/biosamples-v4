@@ -22,21 +22,16 @@ import uk.ac.ebi.biosamples.utils.XmlFragmenter.ElementCallback;
 @Component
 public class NcbiFragmentCallback implements ElementCallback {
 	
+	private final NcbiElementCallableFactory ncbiElementCallableFactory;
+	
 	private Logger log = LoggerFactory.getLogger(getClass());
-
-	
-	private final TaxonomyService taxonomyService;
-	
-	private final BioSamplesClient bioSamplesClient;
-	
 	private LocalDate fromDate;
 	private LocalDate toDate;
 	private ExecutorService executorService;
 	private Map<Element, Future<Void>> futures;
 	
-	private NcbiFragmentCallback(TaxonomyService taxonomyService, BioSamplesClient bioSamplesClient){
-		this.taxonomyService = taxonomyService;
-		this.bioSamplesClient = bioSamplesClient;
+	private NcbiFragmentCallback(NcbiElementCallableFactory ncbiElementCallableFactory){
+		this.ncbiElementCallableFactory = ncbiElementCallableFactory;
 	};
 	
 	public LocalDate getFromDate() {
@@ -77,7 +72,7 @@ public class NcbiFragmentCallback implements ElementCallback {
 		
 		log.trace("Handling element");
 		
-		Callable<Void> callable = new NcbiElementCallable(taxonomyService, bioSamplesClient, element);
+		Callable<Void> callable = ncbiElementCallableFactory.build(element);
 		
 		if (executorService == null) {
 			try {

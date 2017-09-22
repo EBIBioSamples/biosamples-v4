@@ -6,12 +6,16 @@ import java.nio.file.Path;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.web.client.RestTemplate;
 
 public class SampleTabCallable implements Callable<Void> {
+
+	private Logger log = LoggerFactory.getLogger(getClass());
 
 	private final Path path;
 	private final RestTemplate restTemplate;
@@ -37,7 +41,12 @@ public class SampleTabCallable implements Callable<Void> {
 			restTemplate.exchange(request, new ParameterizedTypeReference<String>() {
 			});
 		} catch (Exception e) {
+			log.error("Error handling "+path.toString(), e);
 			failedQueue.add(path.toString());
+			if (failedQueue.size() > 100) {
+				log.error("More than 100 failures!");
+				throw e;
+			}
 		}
 
 		return null;

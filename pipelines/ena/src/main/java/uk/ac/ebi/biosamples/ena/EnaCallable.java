@@ -29,19 +29,19 @@ public class EnaCallable implements Callable<Void> {
 	private final RestTemplate restTemplate;
 	private final EnaElementConverter enaElementConverter;
 	private final EraProDao eraProDao;
+	private final String domain;
 	
 	public static final ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<String>();
 
-	//TODO do this properly
-	private final String domain = "DUMMY-DOMAIN";
 	
 	public EnaCallable(String sampleAccession, BioSamplesClient bioSamplesClient, RestTemplate restTemplate,
-			EnaElementConverter enaElementConverter, EraProDao eraProDao) {
+			EnaElementConverter enaElementConverter, EraProDao eraProDao, String domain) {
 		this.sampleAccession = sampleAccession;
 		this.bioSamplesClient = bioSamplesClient;
 		this.restTemplate = restTemplate;
 		this.enaElementConverter = enaElementConverter;
 		this.eraProDao = eraProDao;
+		this.domain = domain;
 	}
 
 	@Override

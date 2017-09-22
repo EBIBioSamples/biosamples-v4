@@ -22,18 +22,17 @@ public class NcbiElementCallable implements Callable<Void> {
 
 	private final Element sampleElem;
 
-
-	//TODO do this properly
-	private final String domain = "DUMMY-DOMAIN";
+	private final String domain;
 	
 	private final TaxonomyService taxonomyService;
 	
 	private final BioSamplesClient bioSamplesClient;
 
-	public NcbiElementCallable(TaxonomyService taxonomyService, BioSamplesClient bioSamplesClient, Element sampleElem) {
+	public NcbiElementCallable(TaxonomyService taxonomyService, BioSamplesClient bioSamplesClient, Element sampleElem, String domain) {
 		this.taxonomyService = taxonomyService;
 		this.bioSamplesClient = bioSamplesClient;
 		this.sampleElem = sampleElem;
+		this.domain = domain;
 	}
 
 	@Override
@@ -132,8 +131,8 @@ public class NcbiElementCallable implements Callable<Void> {
 //		attrs.add(Attribute.build("package", XmlPathBuilder.of(sampleElem).path("Package").text(), null, null));
 
 		//handle dates
-		Instant updateDate = Instant.from(DateTimeFormatter.ISO_LOCAL_DATE_TIME.parse(sampleElem.attributeValue("last_update")));
-		Instant releaseDate = Instant.from(DateTimeFormatter.ISO_LOCAL_DATE_TIME.parse(sampleElem.attributeValue("publication_date")));
+		Instant updateDate = Instant.from(DateTimeFormatter.ISO_DATE_TIME.parse(sampleElem.attributeValue("last_update")+"Z"));
+		Instant releaseDate = Instant.from(DateTimeFormatter.ISO_DATE_TIME.parse(sampleElem.attributeValue("publication_date")+"Z"));
 		
 		Instant latestDate = updateDate;
 		if (releaseDate.isAfter(latestDate)) {
