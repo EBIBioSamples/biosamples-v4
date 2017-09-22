@@ -115,16 +115,16 @@ select * from cv_status;
 	}	
 	
 	public Instant getUpdateDateTime(String biosampleAccession) {
-		String sql = "SELECT to_char(LAST_UPDATED, 'YYYY-MM-DD') FROM SAMPLE WHERE BIOSAMPLE_ID = ?";
+		String sql = "SELECT to_char(LAST_UPDATED, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') FROM SAMPLE WHERE BIOSAMPLE_ID = ?";
 		String dateString = jdbcTemplate.queryForObject(sql, String.class, biosampleAccession);
-		log.trace("Release date is "+dateString);	
-		return Instant.from(DateTimeFormatter.ISO_LOCAL_DATE.parse(dateString));
+		log.trace("Release date is "+dateString);
+		return Instant.parse(dateString);
 	}
 	
 	public Instant getReleaseDateTime(String biosampleAccession) {
-		String sql = "SELECT to_char(FIRST_PUBLIC, 'YYYY-MM-DD') FROM SAMPLE WHERE BIOSAMPLE_ID = ?";
+		String sql = "SELECT to_char(FIRST_PUBLIC, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') FROM SAMPLE WHERE BIOSAMPLE_ID = ?";
 		String dateString = jdbcTemplate.queryForObject(sql, String.class, biosampleAccession);
 		log.trace("Release date is "+dateString);
-		return Instant.from(DateTimeFormatter.ISO_LOCAL_DATE.parse(dateString));
+		return Instant.parse(dateString);
 	}
 }

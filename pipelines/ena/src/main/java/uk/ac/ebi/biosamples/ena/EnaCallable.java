@@ -84,9 +84,18 @@ public class EnaCallable implements Callable<Void> {
 		} catch (HttpServerErrorException e) {
 			log.error("Request failed with : "+e.getResponseBodyAsString());
 			failedQueue.add(sampleAccession);
-		} catch (Exception e) {
-			log.info("Adding "+sampleAccession+" to fail queue");
 			failedQueue.add(sampleAccession);
+			if (failedQueue.size() > 100) {
+				log.error("More than 100 items in failed queue", e);
+				throw e;
+			}
+		} catch (Exception e) {
+			log.warn("Adding "+sampleAccession+" to fail queue");
+			failedQueue.add(sampleAccession);
+			if (failedQueue.size() > 100) {
+				log.error("More than 100 items in failed queue", e);
+				throw e;
+			}
 		}
 		log.info("HANDLED " + sampleAccession);
 		return null;
