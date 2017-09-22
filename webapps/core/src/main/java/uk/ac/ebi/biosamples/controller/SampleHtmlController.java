@@ -2,6 +2,7 @@ package uk.ac.ebi.biosamples.controller;
 
 import java.net.URI;
 import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -358,6 +359,10 @@ public class SampleHtmlController {
 		String jsonLDString = jsonLDService.jsonLDToString(jsonLDService.sampleToJsonLD(sample.get()));
 		model.addAttribute("sample", sample.get());
 		model.addAttribute("jsonLD", jsonLDString);
+		//becuase thymleaf can only work with timezoned temporals, not instant
+		//we need to do the conversion
+		model.addAttribute("update", sample.get().getUpdate().atOffset(ZoneOffset.UTC));
+		model.addAttribute("release", sample.get().getRelease().atOffset(ZoneOffset.UTC));
 
 		return "sample";
 	}
