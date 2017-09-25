@@ -31,7 +31,7 @@ import uk.ac.ebi.arrayexpress2.sampletab.parser.SampleTabParser;
 import uk.ac.ebi.biosamples.service.SampleTabService;
 
 @RestController
-public class SampleTabController {
+public class SampleTabV4Controller {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 	
@@ -89,16 +89,10 @@ public class SampleTabController {
         
         String jwt = null; //TODO get from request
         //no errors
-        
-        //set the update date to now
-		//TODO limit use of this method to write super-users only
-        if (setUpdateDate) {
-        	sampledata.msi.submissionUpdateDate = Date.from(Instant.now());
-        }
-        
+                
 
         //TODO do AAP domain property
-        sampleTabService.saveSampleTab(sampledata, "aap-users-domain", jwt);
+        sampleTabService.saveSampleTab(sampledata, "aap-users-domain", jwt, setUpdateDate);
         
         return ResponseEntity.ok("");
 	}

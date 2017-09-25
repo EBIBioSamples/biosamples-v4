@@ -38,7 +38,7 @@ public class SampleTabService {
 		this.bioSamplesClient = bioSamplesClient;
 	}
 	
-	public SampleData saveSampleTab(SampleData sampleData, String domain, String jwt) {
+	public SampleData saveSampleTab(SampleData sampleData, String domain, String jwt, boolean setUpdateDate) {
 		
 		for (SampleNode sampleNode : sampleData.scd.getNodes(SampleNode.class)) {
 			String accession = sampleNode.getSampleAccession();
@@ -94,7 +94,7 @@ public class SampleTabService {
 			
 			//this must be the last bit to build and save the object
 			Sample sample = Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences);
-			sample = bioSamplesClient.persistSample(sample);
+			sample = bioSamplesClient.persistSampleResource(sample, setUpdateDate).getContent();
 			if (accession == null) {
 				groupNode.setGroupAccession(sample.getAccession());
 			}				
