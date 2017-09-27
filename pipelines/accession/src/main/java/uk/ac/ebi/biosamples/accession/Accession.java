@@ -3,9 +3,10 @@ package uk.ac.ebi.biosamples.accession;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -119,11 +120,11 @@ public class Accession implements ApplicationRunner{
 		@Override
 		public Void call() throws Exception {
 			String name = userAccession;
-			LocalDateTime release = LocalDateTime.now().plusYears(100);
-			LocalDateTime update = LocalDateTime.ofInstant(Instant.ofEpochMilli(dateAssigned.getTime()), ZoneId.systemDefault());
+			Instant release = Instant.now().plus(100, ChronoUnit.YEARS);
+			Instant update = Instant.ofEpochMilli(dateAssigned.getTime());
 
 			SortedSet<Attribute> attributes = new TreeSet<>();
-			attributes.add(Attribute.build("other", "migrated from accession database at "+LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)));
+			attributes.add(Attribute.build("other", "migrated from accession database at "+DateTimeFormatter.ISO_DATE_TIME.format(Instant.now())));
 			//this is the migrated domain in an AAP context
 			//attributes.add(Attribute.build("submission accession", submissionAccession));
 			attributes.add(Attribute.build("deleted", Boolean.toString(deleted)));

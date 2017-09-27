@@ -14,10 +14,11 @@ import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.*;
+import java.time.Instant;
+import java.util.Collections;
+import java.util.Optional;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 @Component
 @Profile({"default"})
@@ -202,26 +203,26 @@ public class XmlSearchIntegration extends AbstractIntegration {
     private Sample getSampleXMLTest1() {
 		String name = "Test XML Sample";
 		String accession = "SAMEAXML123123";
-		LocalDateTime update = LocalDateTime.of(LocalDate.of(2016, 5, 5), LocalTime.of(11, 36, 57, 0));
-		LocalDateTime release = LocalDateTime.of(LocalDate.of(2016, 4, 1), LocalTime.of(11, 36, 57, 0));
+		Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
+		Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
 		SortedSet<Attribute> attributes = new TreeSet<>();
 		attributes.add(
 			Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
-		return Sample.build(name, accession, null, release, update, attributes, new TreeSet<>(), new TreeSet<>());
+		return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, new TreeSet<>(), new TreeSet<>());
 	}
 
 	private Sample getPrivateSampleXMLTest2() {
         String name = "Private XML sample";
         String accession = "TestPrivateXML";
-        LocalDateTime update = LocalDateTime.of(LocalDate.of(2016, 5, 5), LocalTime.of(11, 36, 57, 0));
-        LocalDateTime release = LocalDateTime.of(LocalDate.of(2116, 4, 1), LocalTime.of(11, 36, 57, 0));
+		Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
+		Instant release = Instant.parse("2116-04-01T11:36:57.00Z");
 
         SortedSet<Attribute> attributes = new TreeSet<>();
         attributes.add(
                 Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
 
-        return Sample.build(name, accession, null, release, update, attributes, new TreeSet<>(), new TreeSet<>());
+        return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, new TreeSet<>(), new TreeSet<>());
 
     }
 }

@@ -11,20 +11,19 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import uk.ac.ebi.biosamples.model.BioSampleGroupResultQuery;
-import uk.ac.ebi.biosamples.model.BioSampleResultQuery;
+
+import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.Sort;
-import uk.ac.ebi.biosamples.service.SampleService;
+import uk.ac.ebi.biosamples.model.legacyxml.BioSampleGroup;
+import uk.ac.ebi.biosamples.model.legacyxml.ResultQuery;
+import uk.ac.ebi.biosamples.service.SummaryInfoService;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
-import java.util.HashMap;
-import java.util.Map;
 
 @Controller
-public class RedirectController {
+public class LegacyXmlGroupController {
 
 
 	private Logger log = LoggerFactory.getLogger(getClass());
@@ -33,45 +32,22 @@ public class RedirectController {
 	@Value("${biosamples.redirect.context}")
 	private URI biosamplesRedirectContext;
 
-	private SampleService sampleService;
+	private final BioSamplesClient client;
+	private final SummaryInfoService summaryInfoService;
 
-	public RedirectController(SampleService sampleService) {
-		this.sampleService = sampleService;
-	}
-
-	@GetMapping(value="/samples/{accession}", produces={MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE})
-	public void redirectSample(@PathVariable String accession, HttpServletResponse response) throws IOException {
-		//this is a little hacky, but in order to make sure that XML is returned (and only XML) from the 
-		//content negotiation on the "real" endpoint, we need to use springs extension-based negotiation backdoor
-		//THIS IS NOT W3C standards in any way!
-		String redirectUrl = String.format("%s/samples/%s.xml", biosamplesRedirectContext, accession);
-		response.sendRedirect(redirectUrl);
+	public LegacyXmlGroupController(BioSamplesClient client, SummaryInfoService summaryInfoService) {
+		this.client = client;
+		this.summaryInfoService = summaryInfoService;
 	}
 
 	@GetMapping(value="/groups/{accession:SAMEG\\d+}", produces={MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE})
-	public void  redirectGroups(@PathVariable String accession, HttpServletResponse response) throws IOException {
+	public void redirectGroups(@PathVariable String accession, HttpServletResponse response) throws IOException {
 		String redirectUrl = String.format("%s/samples/%s.xml", biosamplesRedirectContext, accession);
 		response.sendRedirect(redirectUrl);
 	}
 
-	@GetMapping(value = {"/samples"}, produces={MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE})
-	public @ResponseBody
-	BioSampleResultQuery getSamples(
-			@RequestParam(name="query", required=true) String query,
-			@RequestParam(name="pagesize", defaultValue = "25") int pagesize,
-			@RequestParam(name="page", defaultValue = "1") int page,
-			@RequestParam(name="sort", defaultValue = "desc") String sort
-	)  {
-	    if (page < 1) {
-	        throw new IllegalArgumentException("Page parameter has to be 1-based");
-		}
-		PagedResources<Resource<Sample>> results = sampleService.getPagedSamples(query, page - 1, pagesize, Sort.forParam(sort));
-        return BioSampleResultQuery.fromPagedResource(results);
-	}
-
 	@GetMapping(value = {"/groups"}, produces={MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE})
-	public @ResponseBody
-	BioSampleGroupResultQuery getGroups(
+	public @ResponseBody ResultQuery getGroups(
 			@RequestParam(name="query", required=true) String query,
 			@RequestParam(name="pagesize", defaultValue = "25") int pagesize,
 			@RequestParam(name="page", defaultValue = "1") int page,
@@ -80,15 +56,29 @@ public class RedirectController {
 		if (page < 1) {
 			throw new IllegalArgumentException("Page parameter has to be 1-based");
 		}
-		PagedResources<Resource<Sample>> results = sampleService.getPagedSamples(query, page - 1, pagesize, Sort.forParam(sort));
-        return BioSampleGroupResultQuery.fromPagedResource(results);
+		
+		
+		PagedResources<Resource<Sample>> results = client.fetchPagedSamples(query, page - 1, pagesize);
+		
+		ResultQuery resultQuery = new ResultQuery();
+		
+        resultQuery.setSummaryInfo(summaryInfoService.fromPagedGroupResources(results));
+        
+        for (Resource<Sample> resource : results.getContent()) {
+        	BioSampleGroup bioSampleGroup = new BioSampleGroup();
+        	bioSampleGroup.setId(resource.getContent().getAccession());
+        	resultQuery.getBioSampleGroup().add(bioSampleGroup);
+        }
+        
+        return resultQuery;
 	}
-
+	
+/*
 //	// FIXME No groups is provided with the new BioSamples v4, not sure how to handle this
     // TODO Consider group relationships as attribute and solve this as search through attribute query
 	@GetMapping(value = {"/groupsamples/{groupAccession:SAMEG\\d+}/query={values}"},  
 			produces={MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE})
-	public @ResponseBody BioSampleResultQuery getSamplesInGroup(
+	public @ResponseBody ResultQuery getSamplesInGroup(
 			@PathVariable String groupAccession,
             @PathVariable String values
 	) {
@@ -100,7 +90,7 @@ public class RedirectController {
         int page  = Integer.parseInt(queryParams.getOrDefault("page", "1"));
         Sort sort = Sort.forParam(queryParams.getOrDefault("sort","desc"));
 		PagedResources<Resource<Sample>> results = sampleService.getPagedSamples(query, page - 1, size, sort);
-		return BioSampleResultQuery.fromPagedResource(results);
+		return ResultQuery.fromPagedResource(results);
 	}
 
 	private Map<String, String> readGroupSamplesQuery(String query) {
@@ -116,5 +106,5 @@ public class RedirectController {
         }
         return queryParams;
     }
-
+*/
 }

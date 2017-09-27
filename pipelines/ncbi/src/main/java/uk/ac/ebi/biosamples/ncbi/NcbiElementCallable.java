@@ -1,6 +1,6 @@
 package uk.ac.ebi.biosamples.ncbi;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -22,18 +22,17 @@ public class NcbiElementCallable implements Callable<Void> {
 
 	private final Element sampleElem;
 
-
-	//TODO do this properly
-	private final String domain = "DUMMY-DOMAIN";
+	private final String domain;
 	
 	private final TaxonomyService taxonomyService;
 	
 	private final BioSamplesClient bioSamplesClient;
 
-	public NcbiElementCallable(TaxonomyService taxonomyService, BioSamplesClient bioSamplesClient, Element sampleElem) {
+	public NcbiElementCallable(TaxonomyService taxonomyService, BioSamplesClient bioSamplesClient, Element sampleElem, String domain) {
 		this.taxonomyService = taxonomyService;
 		this.bioSamplesClient = bioSamplesClient;
 		this.sampleElem = sampleElem;
+		this.domain = domain;
 	}
 
 	@Override
@@ -132,12 +131,10 @@ public class NcbiElementCallable implements Callable<Void> {
 //		attrs.add(Attribute.build("package", XmlPathBuilder.of(sampleElem).path("Package").text(), null, null));
 
 		//handle dates
-		LocalDateTime updateDate = null;
-		updateDate = LocalDateTime.parse(sampleElem.attributeValue("last_update"), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-		LocalDateTime releaseDate = null;
-		releaseDate = LocalDateTime.parse(sampleElem.attributeValue("publication_date"), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+		Instant updateDate = Instant.from(DateTimeFormatter.ISO_DATE_TIME.parse(sampleElem.attributeValue("last_update")+"Z"));
+		Instant releaseDate = Instant.from(DateTimeFormatter.ISO_DATE_TIME.parse(sampleElem.attributeValue("publication_date")+"Z"));
 		
-		LocalDateTime latestDate = updateDate;
+		Instant latestDate = updateDate;
 		if (releaseDate.isAfter(latestDate)) {
 			latestDate = releaseDate;
 		}

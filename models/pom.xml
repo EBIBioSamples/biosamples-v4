@@ -26,5 +26,6 @@
 		<module>neo4j</module>
 		<module>sitemap</module>
 		<module>jsonld</module>
+		<module>legacyxml</module>
 	</modules>
 </project>

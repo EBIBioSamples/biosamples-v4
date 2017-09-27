@@ -17,7 +17,6 @@ import org.springframework.web.client.RestTemplate;
 
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 
-
 public class SampleTabFileVisitor extends SimpleFileVisitor<Path> {
 
 	private Logger log = LoggerFactory.getLogger(getClass());

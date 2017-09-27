@@ -1,6 +1,6 @@
 package uk.ac.ebi.biosamples.mongo.model;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Objects;
 
 import org.springframework.data.annotation.Id;
@@ -15,8 +15,8 @@ import com.google.common.hash.Hashing;
 
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.CurationLink;
-import uk.ac.ebi.biosamples.service.CustomLocalDateTimeDeserializer;
-import uk.ac.ebi.biosamples.service.CustomLocalDateTimeSerializer;
+import uk.ac.ebi.biosamples.service.CustomInstantDeserializer;
+import uk.ac.ebi.biosamples.service.CustomInstantSerializer;
 
 @Document
 public class MongoCurationLink implements Comparable<MongoCurationLink>{
@@ -29,11 +29,11 @@ public class MongoCurationLink implements Comparable<MongoCurationLink>{
 	private final String domain;
 	
 	@Indexed
-	protected final LocalDateTime created;
+	protected final Instant created;
 
 	private final Curation curation;
 
-	private MongoCurationLink(String sample, String domain, Curation curation, String hash, LocalDateTime created) {
+	private MongoCurationLink(String sample, String domain, Curation curation, String hash, Instant created) {
 		this.sample = sample;
 		this.domain = domain;
 		this.curation = curation;
@@ -57,8 +57,8 @@ public class MongoCurationLink implements Comparable<MongoCurationLink>{
 		return hash;
 	}
 
-	@JsonSerialize(using = CustomLocalDateTimeSerializer.class)
-	public LocalDateTime getCreated() {
+	@JsonSerialize(using = CustomInstantSerializer.class)
+	public Instant getCreated() {
 		return created;
 	}
 
@@ -109,7 +109,7 @@ public class MongoCurationLink implements Comparable<MongoCurationLink>{
 	public static MongoCurationLink build(@JsonProperty("sample") String sample, 
 			@JsonProperty("curation") Curation curation,
 			@JsonProperty("domain") String domain, 
-			@JsonProperty("created") @JsonDeserialize(using = CustomLocalDateTimeDeserializer.class) LocalDateTime created) {
+			@JsonProperty("created") @JsonDeserialize(using = CustomInstantDeserializer.class) Instant created) {
 
     	String hash = Hashing.sha256().newHasher()
 			.putUnencodedChars(curation.getHash())

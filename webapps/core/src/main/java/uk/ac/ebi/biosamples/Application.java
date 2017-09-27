@@ -104,7 +104,7 @@ public class Application extends SpringBootServletInitializer {
     		
 			@Override
 			public void run(ApplicationArguments args) throws Exception {
-				NeoSample sample = NeoSample.build("TestInsert", "foo", LocalDateTime.now(), LocalDateTime.now(), null, null, null);
+				NeoSample sample = NeoSample.build("TestInsert", "foo", Instant.now(), Instant.now(), null, null, null);
 				neoSampleRepository.insertNew(sample);
 				//this should throw an exception?
 				neoSampleRepository.insertNew(sample);

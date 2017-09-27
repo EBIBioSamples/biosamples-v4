@@ -2,7 +2,7 @@ package uk.ac.ebi.biosamples.ena;
 
 import java.io.StringReader;
 import java.net.URI;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -29,19 +29,19 @@ public class EnaCallable implements Callable<Void> {
 	private final RestTemplate restTemplate;
 	private final EnaElementConverter enaElementConverter;
 	private final EraProDao eraProDao;
+	private final String domain;
 	
 	public static final ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<String>();
 
-	//TODO do this properly
-	private final String domain = "DUMMY-DOMAIN";
 	
 	public EnaCallable(String sampleAccession, BioSamplesClient bioSamplesClient, RestTemplate restTemplate,
-			EnaElementConverter enaElementConverter, EraProDao eraProDao) {
+			EnaElementConverter enaElementConverter, EraProDao eraProDao, String domain) {
 		this.sampleAccession = sampleAccession;
 		this.bioSamplesClient = bioSamplesClient;
 		this.restTemplate = restTemplate;
 		this.enaElementConverter = enaElementConverter;
 		this.eraProDao = eraProDao;
+		this.domain = domain;
 	}
 
 	@Override
@@ -72,8 +72,8 @@ public class EnaCallable implements Callable<Void> {
 			if (XmlPathBuilder.of(root).path("SAMPLE").exists()) {
 				Sample sample = enaElementConverter.convert(root);
 				// add dates from database
-				LocalDateTime release = eraProDao.getReleaseDateTime(sampleAccession);
-				LocalDateTime update = eraProDao.getUpdateDateTime(sampleAccession);
+				Instant release = eraProDao.getReleaseDateTime(sampleAccession);
+				Instant update = eraProDao.getUpdateDateTime(sampleAccession);
 
 				sample = Sample.build(sample.getName(), sampleAccession, domain, release, update, sample.getCharacteristics(),
 						sample.getRelationships(), sample.getExternalReferences());
@@ -84,9 +84,18 @@ public class EnaCallable implements Callable<Void> {
 		} catch (HttpServerErrorException e) {
 			log.error("Request failed with : "+e.getResponseBodyAsString());
 			failedQueue.add(sampleAccession);
-		} catch (Exception e) {
-			log.info("Adding "+sampleAccession+" to fail queue");
 			failedQueue.add(sampleAccession);
+			if (failedQueue.size() > 100) {
+				log.error("More than 100 items in failed queue", e);
+				throw e;
+			}
+		} catch (Exception e) {
+			log.warn("Adding "+sampleAccession+" to fail queue");
+			failedQueue.add(sampleAccession);
+			if (failedQueue.size() > 100) {
+				log.error("More than 100 items in failed queue", e);
+				throw e;
+			}
 		}
 		log.info("HANDLED " + sampleAccession);
 		return null;

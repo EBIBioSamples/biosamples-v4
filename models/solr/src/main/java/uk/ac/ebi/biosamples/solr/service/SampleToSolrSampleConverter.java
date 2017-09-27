@@ -10,7 +10,7 @@ import uk.ac.ebi.biosamples.service.ExternalReferenceNicknameService;
 import uk.ac.ebi.biosamples.service.SampleRelationshipUtils;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -19,8 +19,6 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 
 	
 	private final ExternalReferenceNicknameService externalReferenceNicknameService;
-	
-	private final DateTimeFormatter solrDateTimeFormatter = DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss'Z'");
 	
 	public SampleToSolrSampleConverter(ExternalReferenceNicknameService externalReferenceNicknameService) {
 		this.externalReferenceNicknameService = externalReferenceNicknameService;
@@ -113,28 +111,12 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 		}
 
 
-		String releaseSolr = formatDate(sample.getRelease());
-		String updateSolr = formatDate(sample.getUpdate());		
+		String releaseSolr = DateTimeFormatter.ISO_INSTANT.format(sample.getRelease());
+		String updateSolr = DateTimeFormatter.ISO_INSTANT.format(sample.getUpdate());		
 
 		
 		return SolrSample.build(sample.getName(), sample.getAccession(), sample.getDomain(), releaseSolr, updateSolr,
 				attributeValues, attributeIris, attributeUnits, outgoingRelationships, incomingRelationships);
 	}
 	
-	private String formatDate(LocalDateTime d) {
-		//this ensures that all components are present, even if they default to zero
-		int year = d.getYear();
-		int month = d.getMonthValue();
-		int dayOfMonth = d.getDayOfMonth();
-		int hour = d.getHour();
-		int minute = d.getMinute();
-		int second = d.getSecond();
-		int nano = d.getNano();	
-		
-		d = LocalDateTime.of(year,month,dayOfMonth,hour,minute,second,nano);		
-		String solrDate =  solrDateTimeFormatter.format(d);
-		return solrDate;
-	}
-
-
 }

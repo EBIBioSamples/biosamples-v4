@@ -2,9 +2,10 @@ package uk.ac.ebi.biosamples.client.service;
 
 import java.net.URI;
 import java.nio.charset.Charset;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Base64;
 import java.util.Date;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,8 +30,8 @@ public class AapClientService {
 	private final String username;
 	private final String password;
 	
-	private String jwt = null;
-	private Date expiry = null;
+	private Optional<String> jwt = Optional.empty();
+	private Optional<Date> expiry = Optional.empty();
 	
 	public AapClientService(RestTemplateBuilder restTemplateBuilder, URI aapUri, String username, String password) {
 		this.restOperations = restTemplateBuilder.build();
@@ -40,9 +41,9 @@ public class AapClientService {
 	}
 	
 	//TODO put some sort of cache/validation layer over this
-	public String getJwt() {		
+	public synchronized String getJwt() {		
 		
-		if (jwt == null || expiry.before(new Date())) {
+		if (!jwt.isPresent() || (expiry.isPresent() && expiry.get().before(new Date()))) {
 		
 			String auth = username + ":" + password;
 	        byte[] encodedAuth = Base64.getEncoder().encode(auth.getBytes(Charset.forName("US-ASCII")) );
@@ -55,11 +56,11 @@ public class AapClientService {
 	        
 			ResponseEntity<String> response = restOperations.exchange(request, String.class);
 			
-			jwt = response.getBody();
+			jwt = Optional.of(response.getBody());
 			
 			try {
-			    DecodedJWT decodedJwt = JWT.decode(jwt);
-			    expiry = decodedJwt.getExpiresAt();
+			    DecodedJWT decodedJwt = JWT.decode(jwt.get());
+			    expiry = Optional.of(decodedJwt.getExpiresAt());
 			} catch (JWTDecodeException e){
 			    //Invalid token
 				throw new RuntimeException(e);
@@ -68,6 +69,6 @@ public class AapClientService {
 		log.info("jwt = "+jwt);
 		}
 		
-		return jwt;
+		return jwt.get();
 	}
 }

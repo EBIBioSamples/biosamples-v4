@@ -1,6 +1,7 @@
 package uk.ac.ebi.biosamples.service;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -22,8 +23,8 @@ public class XmlToSampleService implements Converter<Document, Sample>  {
 	@Override
 	public Sample convert(Document doc) {
 				
-		LocalDateTime release = LocalDateTime.from(DateTimeFormatter.ISO_DATE_TIME.parse(XmlPathBuilder.of(doc).attribute("submissionReleaseDate")));
-		LocalDateTime update = LocalDateTime.from(DateTimeFormatter.ISO_DATE_TIME.parse(XmlPathBuilder.of(doc).attribute("submissionUpdateDate")));
+		Instant release = Instant.from(DateTimeFormatter.ISO_DATE_TIME.parse(XmlPathBuilder.of(doc).attribute("submissionReleaseDate")));
+		Instant update = Instant.from(DateTimeFormatter.ISO_DATE_TIME.parse(XmlPathBuilder.of(doc).attribute("submissionUpdateDate")));
 		String accession = XmlPathBuilder.of(doc).attribute("id");
 		String name = null;
 		SortedSet<Attribute> attributes = new TreeSet<>();

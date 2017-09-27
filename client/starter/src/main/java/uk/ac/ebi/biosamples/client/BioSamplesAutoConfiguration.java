@@ -60,12 +60,17 @@ public class BioSamplesAutoConfiguration {
 	public BioSamplesProperties bioSamplesProperties() {
 		return new BioSamplesProperties();
 	}
-
+		
 	@Bean
 	@ConditionalOnMissingBean(AapClientService.class)
 	public AapClientService aapClientService(RestTemplateBuilder restTemplateBuilder, BioSamplesProperties bioSamplesProperties) {
-		return new AapClientService(restTemplateBuilder, bioSamplesProperties.getBiosamplesClientAapUri(),
-				bioSamplesProperties.getBiosamplesClientAapUsername(), bioSamplesProperties.getBiosamplesClientAapPassword());
+//		if (bioSamplesProperties.getBiosamplesClientAapUsername() != null
+//				&& bioSamplesProperties.getBiosamplesClientAapPassword() != null) {
+			return new AapClientService(restTemplateBuilder, bioSamplesProperties.getBiosamplesClientAapUri(),
+					bioSamplesProperties.getBiosamplesClientAapUsername(), bioSamplesProperties.getBiosamplesClientAapPassword());
+//		} else {
+//			return null;
+//		}
 	}
 
 	@Bean

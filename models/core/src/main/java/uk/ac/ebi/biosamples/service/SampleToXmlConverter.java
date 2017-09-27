@@ -1,5 +1,9 @@
 package uk.ac.ebi.biosamples.service;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.SortedMap;
@@ -43,9 +47,16 @@ public class SampleToXmlConverter implements Converter<Sample, Document> {
 		bioSample.addAttribute("xsi:schemaLocation", "http://www.ebi.ac.uk/biosamples/SampleGroupExport/1.0 http://www.ebi.ac.uk/biosamples/assets/xsd/v1.0/BioSDSchema.xsd");
 		bioSample.add(xsi);
 		
+		
+		
+		// 2012-04-15T23:00:00+00:00
+		
+		//DateTimeFormatter.ofPattern("yyyy-MM-ddTHH:mm:ss");
+		
+		
 		bioSample.addAttribute("id", source.getAccession());
-		bioSample.addAttribute("submissionUpdateDate", DateTimeFormatter.ISO_DATE_TIME.format(source.getUpdate())+"+00:00");
-		bioSample.addAttribute("submissionReleaseDate", DateTimeFormatter.ISO_DATE_TIME.format(source.getRelease())+"+00:00");
+		bioSample.addAttribute("submissionUpdateDate", DateTimeFormatter.ISO_INSTANT.format(source.getUpdate()).replace("Z", "+00:00"));
+		bioSample.addAttribute("submissionReleaseDate", DateTimeFormatter.ISO_INSTANT.format(source.getRelease()).replace("Z", "+00:00"));
 
 		Element e = bioSample.addElement(QName.get("Property", xmlns));
 		//Element e = parent.addElement("Property");

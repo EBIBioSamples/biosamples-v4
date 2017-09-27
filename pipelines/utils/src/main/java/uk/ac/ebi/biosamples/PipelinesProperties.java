@@ -33,9 +33,20 @@ public class PipelinesProperties {
 	@Value("${biosamples.ols:http://wwwdev.ebi.ac.uk/ols}")
 	private String ols;
 	
+	@Value("${biosamples.ncbi.domain:self.BiosampleImportNCBI}")
+	private String ncbiDomain;
+	
+	@Value("${biosamples.ena.domain:self.BiosampleImportENA}")
+	private String enaDomain;
 	
 	public String getNcbiFile() {
 		return ncbiFile;
+	}
+	public String getNcbiDomain() {
+		return ncbiDomain;
+	}
+	public String getEnaDomain() {
+		return enaDomain;
 	}
 
 	public int getThreadCount() {

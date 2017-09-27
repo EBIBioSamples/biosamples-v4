@@ -17,7 +17,7 @@ import uk.ac.ebi.biosamples.model.facets.Facet;
 import uk.ac.ebi.biosamples.model.facets.LabelCountEntry;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.time.LocalTime;
 import java.util.*;
 
@@ -112,8 +112,9 @@ public class RestFacetIntegration extends AbstractIntegration {
 	private Sample getSampleTest1() {
 		String name = "Test Sample";
 		String accession = "TESTrestfacet1";
-		LocalDateTime update = LocalDateTime.of(LocalDate.of(2016, 5, 5), LocalTime.of(11, 36, 57, 0));
-		LocalDateTime release = LocalDateTime.of(LocalDate.of(2016, 4, 1), LocalTime.of(11, 36, 57, 0));
+		String domain = "self.BiosampleIntegrationTest";
+		Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
+		Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
 		SortedSet<Attribute> attributes = new TreeSet<>();
 		attributes.add(
@@ -121,7 +122,7 @@ public class RestFacetIntegration extends AbstractIntegration {
 		//use non alphanumeric characters in type
 		attributes.add(Attribute.build("geographic location (country and/or sea)", "Land of Oz", null, null));
 
-		return Sample.build(name, accession, null, release, update, attributes, null, null);
+		return Sample.build(name, accession, domain, release, update, attributes, null, null);
 	}
 	
 }

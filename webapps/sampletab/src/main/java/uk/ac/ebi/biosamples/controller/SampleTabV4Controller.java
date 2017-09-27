@@ -1,37 +1,29 @@
 package uk.ac.ebi.biosamples.controller;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.sql.Date;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.mged.magetab.error.ErrorItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.arrayexpress2.magetab.exception.ParseException;
 import uk.ac.ebi.arrayexpress2.magetab.listener.ErrorItemListener;
 import uk.ac.ebi.arrayexpress2.sampletab.datamodel.SampleData;
 import uk.ac.ebi.arrayexpress2.sampletab.parser.SampleTabParser;
 import uk.ac.ebi.biosamples.service.SampleTabService;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+
 @RestController
-public class SampleTabController {
+public class SampleTabV4Controller {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 	
@@ -89,16 +81,10 @@ public class SampleTabController {
         
         String jwt = null; //TODO get from request
         //no errors
-        
-        //set the update date to now
-		//TODO limit use of this method to write super-users only
-        if (setUpdateDate) {
-        	sampledata.msi.submissionUpdateDate = Date.from(Instant.now());
-        }
-        
+                
 
         //TODO do AAP domain property
-        sampleTabService.saveSampleTab(sampledata, "aap-users-domain", jwt);
+        sampleTabService.saveSampleTab(sampledata, "self.BiosampleIntegrationTest", jwt, setUpdateDate);
         
         return ResponseEntity.ok("");
 	}

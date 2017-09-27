@@ -1,6 +1,6 @@
 package uk.ac.ebi.biosamples.mongo.model;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
@@ -14,8 +14,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-import uk.ac.ebi.biosamples.service.CustomLocalDateTimeDeserializer;
-import uk.ac.ebi.biosamples.service.CustomLocalDateTimeSerializer;
+import uk.ac.ebi.biosamples.service.CustomInstantDeserializer;
+import uk.ac.ebi.biosamples.service.CustomInstantSerializer;
 
 @Document
 public class MongoSubmission {
@@ -24,17 +24,17 @@ public class MongoSubmission {
 	@JsonIgnore
 	private String id;
 
-	@JsonSerialize(using = CustomLocalDateTimeSerializer.class)
-	@JsonDeserialize(using = CustomLocalDateTimeDeserializer.class)
+	@JsonSerialize(using = CustomInstantSerializer.class)
+	@JsonDeserialize(using = CustomInstantDeserializer.class)
 	@LastModifiedDate
-	private final LocalDateTime datetime;
+	private final Instant datetime;
 	
 	private final Map<String, List<String>> headers;
 	private final String url;
 	private final String content;
 	private final String method;
 	
-	private MongoSubmission(LocalDateTime datetime, String method, String url, Map<String, List<String>> headers, String content){
+	private MongoSubmission(Instant datetime, String method, String url, Map<String, List<String>> headers, String content){
 		this.headers = headers;
 		this.url = url;
 		this.datetime = datetime;
@@ -42,7 +42,7 @@ public class MongoSubmission {
 		this.content = content;
 	}
 
-	public LocalDateTime getDatetime() {
+	public Instant getDatetime() {
 		return datetime;
 	}
 
@@ -64,7 +64,7 @@ public class MongoSubmission {
 
     @JsonCreator
 	public static MongoSubmission build(
-			@JsonProperty("datetime") LocalDateTime datetime, @JsonProperty("method") String method, @JsonProperty("url") String url, @JsonProperty("headers") Map<String, List<String>> headers, 
+			@JsonProperty("datetime") Instant datetime, @JsonProperty("method") String method, @JsonProperty("url") String url, @JsonProperty("headers") Map<String, List<String>> headers, 
 			 @JsonProperty("content") String content) {
 		return new MongoSubmission(datetime, method, url, headers, content);
 	}

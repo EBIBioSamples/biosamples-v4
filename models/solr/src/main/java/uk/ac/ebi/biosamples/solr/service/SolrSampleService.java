@@ -11,6 +11,10 @@ import org.springframework.data.solr.core.query.result.FacetFieldEntry;
 import org.springframework.data.solr.core.query.result.FacetPage;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
+
+import com.google.common.io.BaseEncoding;
+
+import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.Autocomplete;
 import uk.ac.ebi.biosamples.model.facets.Facet;
 import uk.ac.ebi.biosamples.model.facets.FacetType;
@@ -20,7 +24,7 @@ import uk.ac.ebi.biosamples.solr.model.SolrSample;
 import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
 
 import java.io.UnsupportedEncodingException;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,23 +34,24 @@ import java.util.Map;
 
 @Service
 public class SolrSampleService {
-	
-	public static final DateTimeFormatter solrFormatter = DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss'Z'");
 
 	private final SolrSampleRepository solrSampleRepository;
-	
+
+	private final BioSamplesProperties bioSamplesProperties;
+
 	//maximum time allowed for a solr search in s
 	//TODO application.properties this
 	private static final int TIMEALLOWED = 30;
 	
 	private Logger log = LoggerFactory.getLogger(getClass());
 	
-	public SolrSampleService(SolrSampleRepository solrSampleRepository) {
+	public SolrSampleService(SolrSampleRepository solrSampleRepository, BioSamplesProperties bioSamplesProperties) {
 		this.solrSampleRepository = solrSampleRepository;
-	}		
+		this.bioSamplesProperties = bioSamplesProperties;
+	}
 
 	public Page<SolrSample> fetchSolrSampleByText(String searchTerm, MultiValueMap<String,String> filters, 
-			Collection<String> domains, LocalDateTime after, LocalDateTime before, Pageable pageable) {
+			Collection<String> domains, Instant after, Instant before, Pageable pageable) {
 		//default to search all
 		if (searchTerm == null || searchTerm.trim().length() == 0) {
 			searchTerm = "*:*";
@@ -62,14 +67,18 @@ public class SolrSampleService {
 		//filter out non-public
 		//filter to update date range
 		FilterQuery filterQuery = new SimpleFilterQuery();
-		filterQuery.addCriteria(new Criteria("release_dt").lessThan("NOW").and("release_dt").isNotNull()
-				.or(new Criteria("domain_s").in(domains)));
+		//check if this is a read superuser
+		if (!domains.contains(bioSamplesProperties.getBiosamplesAapSuperRead())) {
+			//user can only see private samples inside its own domain
+			filterQuery.addCriteria(new Criteria("release_dt").lessThan("NOW").and("release_dt").isNotNull()
+					.or(new Criteria("domain_s").in(domains)));
+		}
 		if (after != null && before != null) {
-			filterQuery.addCriteria(new Criteria("update_dt").between(after.format(solrFormatter), before.format(solrFormatter)));
+			filterQuery.addCriteria(new Criteria("update_dt").between(DateTimeFormatter.ISO_INSTANT.format(after), DateTimeFormatter.ISO_INSTANT.format(before)));
 		} else if (after == null && before != null) {
-			filterQuery.addCriteria(new Criteria("update_dt").between("NOW-1000YEAR", before.format(solrFormatter)));
+			filterQuery.addCriteria(new Criteria("update_dt").between("NOW-1000YEAR", DateTimeFormatter.ISO_INSTANT.format(before)));
 		} else if (after != null && before == null) {
-			filterQuery.addCriteria(new Criteria("update_dt").between(after.format(solrFormatter), "NOW+1000YEAR"));
+			filterQuery.addCriteria(new Criteria("update_dt").between(DateTimeFormatter.ISO_INSTANT.format(after), "NOW+1000YEAR"));
 		}
 		query.addFilterQuery(filterQuery);
 		query.setTimeAllowed(TIMEALLOWED*1000); 

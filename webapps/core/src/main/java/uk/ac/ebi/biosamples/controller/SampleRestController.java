@@ -1,7 +1,7 @@
 package uk.ac.ebi.biosamples.controller;
 
 import java.net.URI;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -118,7 +118,7 @@ public class SampleRestController {
 
         // check if the release date is in the future and if so return it as
         // private
-        if (sample.get().getRelease().isAfter(LocalDateTime.now())) {
+        if (sample.get().getRelease().isAfter(Instant.now())) {
 			throw new SampleNotAccessibleException();
         }
 
@@ -149,7 +149,7 @@ public class SampleRestController {
 		
 		//TODO limit use of this method to write super-users only
 		if (setUpdateDate) {
-			sample = Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(), sample.getRelease(), LocalDateTime.now(),
+			sample = Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(), sample.getRelease(), Instant.now(),
 					sample.getCharacteristics(), sample.getRelationships(), sample.getExternalReferences());
 		}
 		
@@ -172,7 +172,7 @@ public class SampleRestController {
 
 		//TODO limit use of this method to write super-users only
 		if (setUpdateDate) {
-			sample = Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(), sample.getRelease(), LocalDateTime.now(),
+			sample = Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(), sample.getRelease(), Instant.now(),
 					sample.getCharacteristics(), sample.getRelationships(), sample.getExternalReferences());
 		}
 		

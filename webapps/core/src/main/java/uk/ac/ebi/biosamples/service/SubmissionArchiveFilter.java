@@ -1,7 +1,7 @@
 package uk.ac.ebi.biosamples.service;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -89,7 +89,7 @@ public class SubmissionArchiveFilter extends OncePerRequestFilter {
 
 				// actually do the saving
 				log.trace("Saving submission");
-				mongoSubmissionRepository.save(MongoSubmission.build(LocalDateTime.now(), request.getMethod(), url, headers, content));
+				mongoSubmissionRepository.save(MongoSubmission.build(Instant.now(), request.getMethod(), url, headers, content));
 				
 			}
 
