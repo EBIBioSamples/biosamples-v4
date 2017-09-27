@@ -76,7 +76,8 @@ public class SampleTabV4Controller {
 				}
         	}
         }
-        
+
+        //no errors
         if (errorItems.size() > 0) {
         	//at least some errors were discovered during parsing
         	StringBuilder sb = new StringBuilder();
@@ -88,7 +89,6 @@ public class SampleTabV4Controller {
         }
         
         String jwt = null; //TODO get from request
-        //no errors
                 
 
         //TODO do AAP domain property

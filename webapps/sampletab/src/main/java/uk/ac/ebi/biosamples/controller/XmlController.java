@@ -35,11 +35,11 @@ import uk.ac.ebi.arrayexpress2.sampletab.renderer.SampleTabWriter;
 
 @Controller
 @RequestMapping("/v2")
-public class SampleTabV2Controller {
+public class XmlController {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 
-	public SampleTabV2Controller() {
+	public XmlController() {
 
 	}
 

@@ -1,8 +1,10 @@
 package uk.ac.ebi.biosamples.service;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -37,15 +39,47 @@ public class SampleTabService {
 	public SampleTabService(BioSamplesClient bioSamplesClient) {
 		this.bioSamplesClient = bioSamplesClient;
 	}
-	
-	public SampleData saveSampleTab(SampleData sampleData, String domain, String jwt, boolean setUpdateDate) {
-		
+	public SampleData accessionSampleTab(SampleData sampleData, String domain, String jwt, boolean setUpdateDate) {
+
+		//release in 100 years time
+		Instant release = Instant.ofEpochMilli(LocalDateTime.now(ZoneOffset.UTC).plusYears(100).toEpochSecond(ZoneOffset.UTC));
+		Instant update = Instant.ofEpochMilli(sampleData.msi.submissionUpdateDate.getTime());
 		for (SampleNode sampleNode : sampleData.scd.getNodes(SampleNode.class)) {
 			String accession = sampleNode.getSampleAccession();
 			String name = sampleNode.getNodeName();
 			
-			Instant release = Instant.ofEpochMilli(sampleData.msi.submissionReleaseDate.getTime());
-			Instant update = Instant.ofEpochMilli(sampleData.msi.submissionUpdateDate.getTime());
+			//only build a sample if there is at least one attribute or it has no "parent" node
+			//otherwise, it is just a group membership tracking dummy
+			if (sampleNode.getAttributes().size() > 0 || sampleNode.getChildNodes().size() == 0) {			
+				Sample sample = Sample.build(name, accession, domain, release, update, new TreeSet<>(), new TreeSet<>(), new TreeSet<>());
+				sample = bioSamplesClient.persistSample(sample);
+				if (accession == null) {
+					sampleNode.setSampleAccession(sample.getAccession());
+				}
+			}
+		}
+		for (GroupNode groupNode : sampleData.scd.getNodes(GroupNode.class)) {
+			String accession = groupNode.getGroupAccession();
+			String name = groupNode.getNodeName();
+							
+			//this must be the last bit to build and save the object
+			Sample sample = Sample.build(name, accession, domain, release, update, new TreeSet<>(), new TreeSet<>(), new TreeSet<>());
+			sample = bioSamplesClient.persistSampleResource(sample, setUpdateDate).getContent();
+			if (accession == null) {
+				groupNode.setGroupAccession(sample.getAccession());
+			}				
+		}
+		return sampleData;
+	}
+	
+	public SampleData saveSampleTab(SampleData sampleData, String domain, String jwt, boolean setUpdateDate) {
+		
+		Instant release = Instant.ofEpochMilli(sampleData.msi.submissionReleaseDate.getTime());
+		Instant update = Instant.ofEpochMilli(sampleData.msi.submissionUpdateDate.getTime());
+		
+		for (SampleNode sampleNode : sampleData.scd.getNodes(SampleNode.class)) {
+			String accession = sampleNode.getSampleAccession();
+			String name = sampleNode.getNodeName();
 
 			SortedSet<Attribute> attributes = new TreeSet<>();
 			SortedSet<Relationship> relationships = new TreeSet<>();
@@ -72,8 +106,6 @@ public class SampleTabService {
 		for (GroupNode groupNode : sampleData.scd.getNodes(GroupNode.class)) {
 			String accession = groupNode.getGroupAccession();
 			String name = groupNode.getNodeName();
-			Instant release = Instant.ofEpochMilli(sampleData.msi.submissionReleaseDate.getTime());
-			Instant update = Instant.ofEpochMilli(sampleData.msi.submissionUpdateDate.getTime());
 
 			SortedSet<Attribute> attributes = new TreeSet<>();
 			SortedSet<Relationship> relationships = new TreeSet<>();
