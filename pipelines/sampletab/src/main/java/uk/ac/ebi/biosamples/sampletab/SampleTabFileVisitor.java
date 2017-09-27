@@ -46,7 +46,7 @@ public class SampleTabFileVisitor extends SimpleFileVisitor<Path> {
 
 			//limit number of pending futures
 			try {
-				ThreadUtils.checkFutures(futures, 1000);
+				ThreadUtils.checkFutures(futures, 100);
 			} catch (InterruptedException | ExecutionException e) {
 				throw new RuntimeException(e);
 			}

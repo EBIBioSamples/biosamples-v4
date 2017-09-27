@@ -7,6 +7,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import org.slf4j.Logger;
@@ -123,6 +124,11 @@ public class EnaRunner implements ApplicationRunner {
 				}
 			} else {
 				futures.put(sampleAccession, executorService.submit(callable));
+				try {
+					ThreadUtils.checkFutures(futures, 100);
+				} catch (InterruptedException | ExecutionException e) {
+					throw new RuntimeException(e);
+				}
 			}
 		}
 		
@@ -155,6 +161,11 @@ public class EnaRunner implements ApplicationRunner {
 				}
 			} else {
 				futures.put(sampleAccession, executorService.submit(callable));
+				try {
+					ThreadUtils.checkFutures(futures, 100);
+				} catch (InterruptedException | ExecutionException e) {
+					throw new RuntimeException(e);
+				}
 			}
 		}
 		
