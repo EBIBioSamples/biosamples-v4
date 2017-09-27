@@ -19,7 +19,7 @@
                     <label th:for="${filterName}" class="button columns medium-12 padding-top-small padding-bottom-small facet"
                        th:classappend="${#lists.contains(filters, filterName)} ? 'secondary'">
                         <i class="icon icon-functional show-if-checked" data-icon="/"></i>
-                        <div class="lead facet-name text-left" th:text="${facet.label}"></div>
+                        <div class="lead facet-name text-left" th:text="${facet.label + ' (' + facetType + ')'}"></div>
                         <div class="lead facet-count text-right" th:text="${facet.count}"></div>
                     </label>
 				</div>
