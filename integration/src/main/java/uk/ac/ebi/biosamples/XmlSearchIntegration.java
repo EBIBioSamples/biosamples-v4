@@ -14,10 +14,11 @@ import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
 
-import java.time.LocalDate;
 import java.time.Instant;
-import java.time.LocalTime;
-import java.util.*;
+import java.util.Collections;
+import java.util.Optional;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 @Component
 @Profile({"default"})

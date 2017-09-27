@@ -1,16 +1,12 @@
 package uk.ac.ebi.biosamples.solr.model;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.springframework.data.annotation.Id;
 import org.springframework.data.solr.core.mapping.Dynamic;
 import org.springframework.data.solr.core.mapping.Indexed;
 import org.springframework.data.solr.core.mapping.SolrDocument;
 import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
+
+import java.util.*;
 
 
 
@@ -228,41 +224,41 @@ public class SolrSample {
 		}
 
 		//TODO validate maps
-		sample.facetFields = null;
+		sample.facetFields = new ArrayList<>();
 		if (attributeValues != null && attributeValues.keySet().size() > 0) {
 			List<String> attributeTypes = new ArrayList<>();
 			for (String attributeType : attributeValues.keySet()) {
-				String field = SolrSampleService.valueToSafeField(attributeType, "_av_ss");
+				String field = SolrSampleService.valueToSafeField(attributeType) + "_av_ss";
 				attributeTypes.add(field);
 			}
 			Collections.sort(attributeTypes);
-			sample.facetFields = attributeTypes;
+			sample.facetFields.addAll(attributeTypes);
 		}
 
 		if (outgoingRelationships != null && outgoingRelationships.keySet().size() > 0) {
 			List<String> outgoingRelationshipTypes = new ArrayList<>();
 			for (String key: outgoingRelationships.keySet()) {
-                String field = SolrSampleService.valueToSafeField(key, "_or_ss");
+//			    String safeKey = getSafeKey(key);
+//			    safeKey = safeKey + "_or_ss";
+                String field = SolrSampleService.valueToSafeField(key) + "_or_ss";
 				outgoingRelationshipTypes.add(field);
 			}
 
 			Collections.sort(outgoingRelationshipTypes);
-			if (sample.facetFields != null) {
-				sample.facetFields.addAll(outgoingRelationshipTypes);
-			}
+            sample.facetFields.addAll(outgoingRelationshipTypes);
 		}
 
 		if (incomingRelationships != null && incomingRelationships.keySet().size() > 0) {
 			List<String> incomingRelationshipTypes = new ArrayList<>();
 			for (String key: incomingRelationships.keySet()) {
-                String field = SolrSampleService.valueToSafeField(key, "_ir_ss");
+//                String safeKey = getSafeKey(key);
+//                safeKey = safeKey + "_ir_ss";
+                String field = SolrSampleService.valueToSafeField(key) +"_ir_ss";
 				incomingRelationshipTypes.add(field);
 			}
 
 			Collections.sort(incomingRelationshipTypes);
-			if (sample.facetFields != null) {
-				sample.facetFields.addAll(incomingRelationshipTypes);
-			}
+            sample.facetFields.addAll(incomingRelationshipTypes);
 		}
 
 		//copy into the other fields

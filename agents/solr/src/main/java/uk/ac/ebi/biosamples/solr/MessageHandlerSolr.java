@@ -29,8 +29,8 @@ public class MessageHandlerSolr {
 			log.warn("Recieved message without sample");
 			return;
 		}
-		
-		Sample sample = messageContent.getSample();		
+
+		Sample sample = messageContent.getSample();
 		SolrSample solrSample = sampleToSolrSampleConverter.convert(sample);
 		
 		//TODO expand this conversion - OLS, related external references, etc

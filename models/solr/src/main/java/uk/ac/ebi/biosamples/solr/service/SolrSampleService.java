@@ -1,5 +1,6 @@
 package uk.ac.ebi.biosamples.solr.service;
 
+import com.google.common.io.BaseEncoding;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -15,8 +16,10 @@ import com.google.common.io.BaseEncoding;
 
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.Autocomplete;
-import uk.ac.ebi.biosamples.model.SampleFacet;
-import uk.ac.ebi.biosamples.model.SampleFacetsBuilder;
+import uk.ac.ebi.biosamples.model.facets.Facet;
+import uk.ac.ebi.biosamples.model.facets.FacetType;
+import uk.ac.ebi.biosamples.model.facets.FacetsBuilder;
+import uk.ac.ebi.biosamples.model.facets.LabelCountEntry;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
 import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
 
@@ -25,7 +28,9 @@ import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class SolrSampleService {
@@ -33,7 +38,7 @@ public class SolrSampleService {
 	private final SolrSampleRepository solrSampleRepository;
 
 	private final BioSamplesProperties bioSamplesProperties;
-	
+
 	//maximum time allowed for a solr search in s
 	//TODO application.properties this
 	private static final int TIMEALLOWED = 30;
@@ -43,7 +48,7 @@ public class SolrSampleService {
 	public SolrSampleService(SolrSampleRepository solrSampleRepository, BioSamplesProperties bioSamplesProperties) {
 		this.solrSampleRepository = solrSampleRepository;
 		this.bioSamplesProperties = bioSamplesProperties;
-	}		
+	}
 
 	public Page<SolrSample> fetchSolrSampleByText(String searchTerm, MultiValueMap<String,String> filters, 
 			Collection<String> domains, Instant after, Instant before, Pageable pageable) {
@@ -82,14 +87,14 @@ public class SolrSampleService {
 		return solrSampleRepository.findByQuery(query);
 	}
 
-	public List<SampleFacet> getFacets(String searchTerm, MultiValueMap<String,String> filters, 
-			String after, String before, Pageable facetPageable, Pageable facetValuePageable) {
+	public List<Facet> getFacets(String searchTerm, MultiValueMap<String,String> filters,
+								 String after, String before, Pageable facetPageable, Pageable facetValuePageable) {
 		//default to search all
 		if (searchTerm == null || searchTerm.trim().length() == 0) {
 			searchTerm = "*:*";
 		}
 		
-		SampleFacetsBuilder builder = new SampleFacetsBuilder();
+		FacetsBuilder builder = new FacetsBuilder();
 
 		//build a query out of the users string and any facets
 		FacetQuery query = new SimpleFacetQuery();
@@ -108,27 +113,33 @@ public class SolrSampleService {
 		Page<FacetFieldEntry> facetFields = solrSampleRepository.getFacetFields(query, facetPageable);
 
 		//using the query, get a list of facets and overall counts
-		List<String> facetFieldList = new ArrayList<>();
+
+		// TODO create content before and facet later
+		Map<String, Long> facetFieldCountMap = new HashMap<>();
 		for (FacetFieldEntry ffe : facetFields) {
 			log.info("Putting "+ffe.getValue()+" with count "+ffe.getValueCount());
-			facetFieldList.add(ffe.getValue());				
-			builder.addFacet(SolrSampleService.safeFieldToValue(ffe.getValue()), ffe.getValueCount());
+			facetFieldCountMap.put(ffe.getValue(), ffe.getValueCount());
+//			builder.addFacet(this.facetNameFromField(ffe.getValue()), ffe.getValueCount());
 		}
 		
 		//if there are no facets available (e.g. no samples)
 		//then cleanly exit here
-		if (facetFieldList.isEmpty()) {
-			return builder.build();
+		if (facetFieldCountMap.isEmpty()) {
+			return new ArrayList<>();
 		}
-
+		List<String> facetFieldList = new ArrayList<>(facetFieldCountMap.keySet());
 		FacetPage<?> facetPage = solrSampleRepository.getFacets(query, facetFieldList, facetValuePageable);
 		for (Field field : facetPage.getFacetFields()) {
-
 			//for each value, put the number of them into this facets map
+			FacetType facetType = FacetType.ofField(field.getName());
+			String facetName = this.facetNameFromField(field.getName());
+			List<LabelCountEntry> listFacetContent = new ArrayList<>();
 			for (FacetFieldEntry ffe : facetPage.getFacetResultPage(field)) {
-				log.info("Adding "+field.getName()+" : "+ffe.getValue()+" with count "+ffe.getValueCount());					
-				builder.addFacetValue(SolrSampleService.safeFieldToValue(field.getName()), ffe.getValue(), ffe.getValueCount());
+				log.info("Adding "+facetName+" : "+ffe.getValue()+" with count "+ffe.getValueCount());
+				listFacetContent.add(LabelCountEntry.build(ffe.getValue(), ffe.getValueCount()));
 			}
+			Facet facet = Facet.build(facetType, facetName, facetFieldCountMap.get(field.getName()), listFacetContent);
+			builder.addFacet(facet);
 		}
 		
 		return builder.build();
@@ -172,6 +183,7 @@ public class SolrSampleService {
 	
 	private <T extends Query> T addFilters(T query, MultiValueMap<String,String> filters) {
 		//if no filters or filters are null, quick exit
+		//TODO Update this part of the code to take into account how filters are handled
 		if (filters == null || filters.size() == 0) {
 			return query;
 		}		
@@ -181,7 +193,7 @@ public class SolrSampleService {
 		for (String facetType : filters.keySet()) {
 			Criteria facetCriteria = null;
 			
-			String facetField = valueToSafeField(facetType, "_av_ss");
+			String facetField = fieldFromFacetName(facetType);
 			for (String facatValue : filters.get(facetType)) {
 				if (facatValue == null) {
 					//no specific value, check if its not null
@@ -207,7 +219,7 @@ public class SolrSampleService {
 	}
 	
 	
-	public static String valueToSafeField(String type, String suffix) {
+	public static String valueToSafeField(String type) {
 		//solr only allows alphanumeric field types
 		try {
 			type = BaseEncoding.base32().encode(type.getBytes("UTF-8"));
@@ -217,39 +229,13 @@ public class SolrSampleService {
 		//although its base32 encoded, that include = which solr doesn't allow
 		type = type.replaceAll("=", "_");
 
-		if (!suffix.isEmpty()) {
-			type = type+suffix;
-		}
+//		if (!suffix.isEmpty()) {
+//			type = type+suffix;
+//		}
 		return type;
 	}
 
-	public static String valueToSafeField(String type) {
-		return valueToSafeField(type, "");
-	}
-
-	public static String safeFieldToValue(String field, String suffix) {
-		boolean inverse = false;
-        if (!suffix.isEmpty()) {
-        	field = field.substring(0, field.length() - suffix.length());
-		} else {
-            // Provide a default functionality
-    		if (field.endsWith("_ss")) {
-    			field = field.substring(0, field.length()-3);
-    		}
-    		if (field.endsWith("_av")) {
-    			field = field.substring(0, field.length()-3);
-    		}
-
-    		if (field.endsWith("_or")) {
-    			field = field.substring(0, field.length()-3);
-			}
-
-			if (field.endsWith("_ir")) {
-    			inverse = true;
-    			field = field.substring(0, field.length() - 3);
-			}
-
-		}
+	public static String safeFieldToValue(String field) {
 
 		//although its base32 encoded, that include = which solr doesn't allow
 		field = field.replace("_", "=");
@@ -258,13 +244,58 @@ public class SolrSampleService {
 		} catch (UnsupportedEncodingException e) {
 			throw new RuntimeException(e);
 		}
-		if (inverse) {
-			field = field+" (inverse)";
-		}
+//		if (inverse) {
+//			field = field+" (inverse)";
+//		}
 		return field;
 	}
 
-	public static String safeFieldToValue(String field) {
-		return safeFieldToValue(field, "");
+	public String facetNameFromField(String encodedFacet) {
+
+		FacetType type = FacetType.ofField(encodedFacet);
+		String baseField = encodedFacet.replace(type.getSolrSuffix(), "");
+		return safeFieldToValue(baseField);
+//		Pattern facetPattern = Pattern.compile("([a-zA-Z0-9_]+)(_(av|ir|or)_ss)");
+//		Matcher matcher = facetPattern.matcher(encodedFacet);
+//		if (matcher.matches()) {
+//			String encodedField = matcher.group(1);
+//			String suffix = matcher.group(2);
+//
+//			String decodedField = safeFieldToValue(encodedField);
+//			switch (suffix) {
+//				case "_ir_ss":
+//					return "(Relation rev.) " + decodedField;
+//				case "_or_ss":
+//					return "(Relation) " + decodedField;
+//				case "_av_ss":
+//					return "(Attribute) " + decodedField;
+//				default:
+//					throw new RuntimeException("Unable to recognize facet " + encodedFacet);
+//			}
+//		} else {
+//			throw new RuntimeException("Unable to recognize facet " + encodedFacet);
+//		}
+
 	}
+
+	public String fieldFromFacetName(String facetname) {
+//		String suffix, field;
+//	    if (facetname.startsWith("(Relation rev.)")) {
+//	    	suffix = "_ir_ss";
+//	    	field = facetname.replace("(Relation rev.) ","");
+//		} else if (facetname.startsWith("(Relation) ")) {
+//	    	suffix = "_or_ss";
+//	    	field = facetname.replace("(Relation) ","");
+//		} else if (facetname.startsWith("(Attribute)")){
+//	    	suffix = "_av_ss";
+//	    	field = facetname.replace("(Attribute) ","");
+//		} else {
+//			throw new RuntimeException("Unexpected facet name " + facetname);
+//		}
+		String[] parts = facetname.split(":",2);
+		FacetType type = FacetType.ofFacetName(parts[0]);
+//		String field = facetname.replace(type.getFacetNamePrefix(), "");
+		return valueToSafeField(parts[1]) + type.getSolrSuffix();
+	}
+
 }

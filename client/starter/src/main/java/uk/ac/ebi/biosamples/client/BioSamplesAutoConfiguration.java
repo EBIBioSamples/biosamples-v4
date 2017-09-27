@@ -64,19 +64,19 @@ public class BioSamplesAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean(AapClientService.class)
 	public AapClientService aapClientService(RestTemplateBuilder restTemplateBuilder, BioSamplesProperties bioSamplesProperties) {
-//		if (bioSamplesProperties.getBiosamplesClientAapUsername() != null 
-//				&& bioSamplesProperties.getBiosamplesClientAapPassword() != null) { 
-			return new AapClientService(restTemplateBuilder, bioSamplesProperties.getBiosamplesClientAapUri(), 
+//		if (bioSamplesProperties.getBiosamplesClientAapUsername() != null
+//				&& bioSamplesProperties.getBiosamplesClientAapPassword() != null) {
+			return new AapClientService(restTemplateBuilder, bioSamplesProperties.getBiosamplesClientAapUri(),
 					bioSamplesProperties.getBiosamplesClientAapUsername(), bioSamplesProperties.getBiosamplesClientAapPassword());
 //		} else {
 //			return null;
 //		}
 	}
-	
+
 	@Bean
 	@ConditionalOnMissingBean(BioSamplesClient.class)
-	public BioSamplesClient bioSamplesClient(BioSamplesProperties bioSamplesProperties, 
-			RestTemplateBuilder restTemplateBuilder, SampleValidator sampleValidator, AapClientService aapClientService) {		
+	public BioSamplesClient bioSamplesClient(BioSamplesProperties bioSamplesProperties,
+			RestTemplateBuilder restTemplateBuilder, SampleValidator sampleValidator, AapClientService aapClientService) {
 		restTemplateBuilder = restTemplateBuilder.additionalCustomizers(new RestTemplateCustomizer() {
 			public void customize(RestTemplate restTemplate) {
 				
@@ -150,7 +150,7 @@ public class BioSamplesAutoConfiguration {
 				restTemplate.setMessageConverters(converters);
 			}			
 		});
-		return new BioSamplesClient(bioSamplesProperties.getBiosamplesClientUri(), restTemplateBuilder, 
+		return new BioSamplesClient(bioSamplesProperties.getBiosamplesClientUri(), restTemplateBuilder,
 				sampleValidator, aapClientService, bioSamplesProperties);
 	}
 }

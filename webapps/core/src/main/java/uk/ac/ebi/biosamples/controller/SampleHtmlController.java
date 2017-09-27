@@ -32,15 +32,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.SampleFacet;
-import uk.ac.ebi.biosamples.model.SampleFacetValue;
-import uk.ac.ebi.biosamples.service.BioSamplesAapService;
-import uk.ac.ebi.biosamples.service.FacetService;
-import uk.ac.ebi.biosamples.service.FilterService;
-import uk.ac.ebi.biosamples.service.JsonLDService;
-import uk.ac.ebi.biosamples.service.SamplePageService;
-import uk.ac.ebi.biosamples.service.SampleReadService;
-import uk.ac.ebi.biosamples.service.SampleService;
+import uk.ac.ebi.biosamples.model.facets.Facet;
+import uk.ac.ebi.biosamples.service.*;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.net.URI;
@@ -69,10 +63,10 @@ public class SampleHtmlController {
 	private final FilterService filterService;
 	private final BioSamplesAapService bioSamplesAapService;
 
-	public SampleHtmlController(SampleService sampleService, 
+	public SampleHtmlController(SampleService sampleService,
 			SamplePageService samplePageService,
 			JsonLDService jsonLDService,
-			FacetService facetService, 
+			FacetService facetService,
 			FilterService filterService,
 			BioSamplesAapService bioSamplesAapService) {
 		this.sampleService = sampleService;
@@ -152,45 +146,35 @@ public class SampleHtmlController {
 		Pageable pageable = new PageRequest(start/rows, rows);
 		Page<Sample> pageSample = samplePageService.getSamplesByText(text, filtersMap, domains, updatedAfterDate, updatedBeforeDate, pageable);
 		//default to getting 10 values from 10 facets
-		List<SampleFacet> sampleFacets = facetService.getFacets(text, filtersMap, 10, 10);
+		List<Facet> sampleFacets = facetService.getFacets(text, filtersMap, 10, 10);
+
+
+		// TODO Encode filters using
+//		sampleFacets.stream().map(stringListFacet ->
+//		{
+//			Map<String, Object> parameters = new HashMap<>();
+//			parameters.put("text", text);
+//			parameters.put("updatedafter", updatedAfter);
+//			parameters.put("updatedbefore", updatedBefore);
+//			List<Resource<LabelCountEntry>> facetEntries = (List<Resource<LabelCountEntry>>) stringListFacet.getContent();
+//			for(Resource<LabelCountEntry> resource: facetEntries) {
+//				resource.getLink("filter").expand(parameters);
+//
+//			}
+//
+//		})
 		
 		//build URLs for the facets depending on if they are enabled or not
-		UriComponentsBuilder uriBuilder = ServletUriComponentsBuilder.fromRequest(request);		
-		Map<String, String> facetsUri = new HashMap<>();		
+		UriComponentsBuilder uriBuilder = ServletUriComponentsBuilder.fromRequest(request);
+		Map<String, String> facetsUri = new HashMap<>();
 		List<String> filtersList = new ArrayList<>();
 		if (filters != null) {
 			filtersList.addAll(Arrays.asList(filters));
 		}
 		Collections.sort(filtersList);
 		
-		//now actually build the URLs for each facet
-		URI uri;
-		for (SampleFacet sampleFacet : sampleFacets) {
-			//check if the filter all is on
-			if (filtersList.contains(sampleFacet.getLabel())) {
-				uri = getFilterUri(uriBuilder, filtersList, null, sampleFacet.getLabel());
-				facetsUri.put(sampleFacet.getLabel(), uri.toString());				
-			} else {
-				//filter is off, add uri to turn it on
-				uri = getFilterUri(uriBuilder, filtersList, sampleFacet.getLabel(), null);
-				facetsUri.put(sampleFacet.getLabel(), uri.toString());
-			}	
-			//check for each facet
-			for (SampleFacetValue sampleFacetValue : sampleFacet.getValues()) {
-				//check if the filter for this facet is on
-				String filter = sampleFacet.getLabel()+":"+sampleFacetValue.label;
-				if (filtersList.contains(filter)) {
-					//filter is on, add uri to turn it off
-					uri = getFilterUri(uriBuilder, filtersList, null, filter);
-					facetsUri.put(filter, uri.toString());
-				} else {
-					//filter is off, add uri to turn it on
-					uri = getFilterUri(uriBuilder, filtersList, filter, null);
-					facetsUri.put(filter, uri.toString());	
-				}
-			}
-		}
-								
+		// TODO sampleFacets is a generic facet, need to make this part compatible with more than List of label facet
+
 		model.addAttribute("text", text);		
 		model.addAttribute("start", start);
 		model.addAttribute("rows", rows);

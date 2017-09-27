@@ -142,7 +142,6 @@ public abstract class MessageBuffer<T,S> {
 	 * This is the method that a specific sub-class should implement. Typically
 	 * this will be some sort of repository.save(samples) call in a transaction
 	 * 	
-	 * @param repository
 	 * @param samples
 	 */
 	public abstract void save(Collection<S> samples);

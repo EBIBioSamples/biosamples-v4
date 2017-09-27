@@ -9,6 +9,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Sample;
 
+import java.util.Collections;
+import java.util.List;
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class MessageContent {
 	
@@ -46,7 +49,7 @@ public class MessageContent {
 	public CurationLink getCurationLink() {
 		return curationLink;
 	}
-	
+
 	public long getCreationTime() {
 		return creationTime;
 	}

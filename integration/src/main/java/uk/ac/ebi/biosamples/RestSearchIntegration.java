@@ -18,7 +18,7 @@ import java.util.*;
 
 @Component
 @Order(1)
-@Profile({"default", "rest", "test"})
+@Profile({"default", "rest"})
 public class RestSearchIntegration extends AbstractIntegration {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());

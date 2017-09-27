@@ -17,20 +17,20 @@
 </head>
 
 <body>
-	<th:block th:include="fragments/header :: header (filters=${filters})"></th:block>
-	<div layout:fragment="content">
-		<div id="main-content-area" class="row">
-			<div class="small-12 columns">
-				<h2>Search results</h2>
-			</div>
-			<div class="small-3 columns">
-				<section th:replace="fragments/samples :: facets (${facets}, ${facetsuri}, ${filters})"></section>
-			</div>
-			<div class="small-9 columns">
-				<section th:replace="fragments/samples :: samples (${page})" ></section>
-			</div>
-		</div>
-	</div>
-	<th:block th:include="fragments/footer :: footer"></th:block>
+    <th:block th:include="fragments/header :: header (filters=${filters})"></th:block>
+    <div layout:fragment="content">
+        <div id="main-content-area" class="row">
+            <div class="small-12 columns">
+                <h2>Search results</h2>
+            </div>
+            <div class="small-3 columns">
+                <section th:replace="fragments/samples :: facets (${facets}, ${facetsuri}, ${filters})"></section>
+            </div>
+            <div class="small-9 columns">
+                <section th:replace="fragments/samples :: samples (${page})" ></section>
+            </div>
+        </div>
+    </div>
+    <th:block th:include="fragments/footer :: footer"></th:block>
 </body>
 </html>
