@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -72,7 +73,7 @@ public class Ncbi implements ApplicationRunner {
 				try {
 					executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, 
 							pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax());
-					Map<Element, Future<Void>> futures = new HashMap<>();
+					Map<Element, Future<Void>> futures = new LinkedHashMap<>();
 
 					callback.setExecutorService(executorService);
 					callback.setFutures(futures);

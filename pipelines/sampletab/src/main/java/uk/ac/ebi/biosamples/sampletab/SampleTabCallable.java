@@ -1,8 +1,12 @@
 package uk.ac.ebi.biosamples.sampletab;
 
+import java.io.IOException;
 import java.net.URI;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -20,26 +24,39 @@ public class SampleTabCallable implements Callable<Void> {
 	private final Path path;
 	private final RestTemplate restTemplate;
 	private final URI uri;
+	private final Instant from;
+	private final Instant until;
 
 	public static final ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<String>();
 
-	public SampleTabCallable(Path path, RestTemplate restTemplate, URI uri) {
+	public SampleTabCallable(Path path, RestTemplate restTemplate, 
+			URI uri, Instant from, Instant until) {
 		this.path = path;
 		this.restTemplate = restTemplate;
 		this.uri = uri;
+		this.from = from;
+		this.until = until;
 	}
 
 	@Override
 	public Void call() throws Exception {
 
 		try {
-
-			String content = new String(Files.readAllBytes(path));
-
-			RequestEntity<?> request = RequestEntity.post(uri).contentType(MediaType.TEXT_PLAIN).body(content);
-
-			restTemplate.exchange(request, new ParameterizedTypeReference<String>() {
-			});
+			//check file modification date
+			Instant lastModified = null;
+			try {
+				lastModified = Files.getLastModifiedTime(path).toInstant();
+			} catch (IOException e) {
+				//can't get the file modification time for some reason
+				log.warn("Unable to get file modification time for "+path);
+				throw e;
+			}
+			if (from.isBefore(lastModified) && until.isAfter(lastModified)) {
+				log.trace("Submitting "+path);
+				String content = new String(Files.readAllBytes(path));
+				RequestEntity<?> request = RequestEntity.post(uri).contentType(MediaType.TEXT_PLAIN).body(content);
+				restTemplate.exchange(request, new ParameterizedTypeReference<String>() {});
+			}
 		} catch (Exception e) {
 			log.error("Error handling "+path.toString(), e);
 			failedQueue.add(path.toString());

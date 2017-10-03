@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -39,7 +40,7 @@ public class EnaRunner implements ApplicationRunner {
 	@Autowired
 	private NcbiCallableFactory ncbiCallableFactory;
 
-	private Map<String, Future<Void>> futures = new HashMap<>();
+	private Map<String, Future<Void>> futures = new LinkedHashMap<>();
 	
 	@Override
 	public void run(ApplicationArguments args) throws Exception {

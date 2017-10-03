@@ -3,7 +3,10 @@ package uk.ac.ebi.biosamples.sampletab;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.Future;
 
@@ -38,14 +41,30 @@ public class SampleTabRunner implements ApplicationRunner {
 	private URI uri;
 	
 	@Override
-	public void run(ApplicationArguments arg0) throws Exception {
+	public void run(ApplicationArguments args) throws Exception {
+
+		// date format is YYYY-mm-dd
+		LocalDate fromDate = null;
+		if (args.getOptionNames().contains("from")) {
+			fromDate = LocalDate.parse(args.getOptionValues("from").iterator().next(),
+					DateTimeFormatter.ISO_LOCAL_DATE);
+		} else {
+			fromDate = LocalDate.parse("1000-01-01", DateTimeFormatter.ISO_LOCAL_DATE);
+		}
+		LocalDate toDate = null;
+		if (args.getOptionNames().contains("until")) {
+			toDate = LocalDate.parse(args.getOptionValues("until").iterator().next(), DateTimeFormatter.ISO_LOCAL_DATE);
+		} else {
+			toDate = LocalDate.parse("3000-01-01", DateTimeFormatter.ISO_LOCAL_DATE);
+		}
 		
 		try (AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, 
 				pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax())) {
 
-			Map<String, Future<Void>> futures = new HashMap<>();
+			Map<String, Future<Void>> futures = new LinkedHashMap<>();
 			
-			SampleTabFileVisitor sampleTabFileVisitor = new SampleTabFileVisitor(executorService, futures, restTemplateBuilder.build(), uri);
+			SampleTabFileVisitor sampleTabFileVisitor = new SampleTabFileVisitor(executorService, futures, 
+					restTemplateBuilder.build(), uri, fromDate, toDate);
 
 		    Files.walkFileTree(Paths.get(path), sampleTabFileVisitor);
 			
