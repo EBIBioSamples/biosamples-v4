@@ -18,7 +18,7 @@ public class IntegrationProperties {
 	@Value("${biosamples.legacyxml.uri:http://localhost:8083}")
 	private URI biosampleLegaxyXmlUri;
 	
-	@Value("${biosamples.legacyapikey}")
+	@Value("${biosamples.legacyapikey:#{null}}")
 	private String legacyApiKey;
 
 	public URI getBiosampleSubmissionUri() {
