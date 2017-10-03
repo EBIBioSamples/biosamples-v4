@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.ExitCodeGenerator;
@@ -28,8 +29,14 @@ public class MigrationRunner implements ApplicationRunner, ExitCodeGenerator {
 
 	private final RestTemplate restTemplate;
 	private ExecutorService executorService;
+	
 	private int exitCode = 1;
 	private final Logger log = LoggerFactory.getLogger(getClass());
+
+	@Value("${biosamples.migration.old:http://www.ebi.ac.uk/biosamples/xml/samples}")
+	private String oldUrl;
+	@Value("${biosamples.migration.new:http://www.ebi.ac.uk/biosamples/xml/samples}")
+	private String newUrl;
 	
 	public MigrationRunner(RestTemplateBuilder restTemplateBuilder) {
 		restTemplate = restTemplateBuilder.build();
@@ -44,10 +51,14 @@ public class MigrationRunner implements ApplicationRunner, ExitCodeGenerator {
 	public void run(ApplicationArguments args) throws Exception {
 		log.info("Starting MigrationRunner");
 		
-		String oldUrl = "http://www.ebi.ac.uk/biosamples/xml/samples";
+		//String oldUrl = "http://www.ebi.ac.uk/biosamples/xml/samples";
+		//String newUrl = "http://localhost:8083/biosamples/beta/xml/samples";
+
+		//String oldUrl = "http://beans.ebi.ac.uk:9480/biosamples/xml/samples";
+		//String newUrl = "http://scooby.ebi.ac.uk:8083/biosamples/beta/xml/samples";
+		
 		//String newUrl = "http://wwwdev.ebi.ac.uk/biosamples/beta/xml/samples";
 		//String newUrl = "http://snowy.ebi.ac.uk:9083/biosamples/beta/xml/samples";
-		String newUrl = "http://localhost:8083/biosamples/beta/xml/samples";
 		
 		
 		try  {

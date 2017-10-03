@@ -11,20 +11,29 @@ public class IntegrationProperties {
 	
 	@Value("${biosamples.client.uri:http://localhost:8081}")
 	private URI biosampleSubmissionUri;
+	
+	@Value("${biosamples.submissionuri.sampletab:http://localhost:8082}")
+	private URI biosampleSubmissionUriSampletab;
+
+	@Value("${biosamples.legacyxml.uri:http://localhost:8083}")
+	private URI biosampleLegaxyXmlUri;
+	
+	@Value("${biosamples.legacyapikey}")
+	private String legacyApiKey;
 
 	public URI getBiosampleSubmissionUri() {
 		return biosampleSubmissionUri;
 	}
-	
-	@Value("${biosamples.submissionuri.sampletab:http://localhost:8082}")
-	private URI biosampleSubmissionUriSampletab;
 
 	public URI getBiosampleSubmissionUriSampleTab() {
 		return biosampleSubmissionUriSampletab;
 	}
 
-	@Value("${biosamples.legacyxml.uri:http://localhost:8083}")
-	private URI biosampleLegaxyXmlUri;
-
-	public URI getBiosampleLegaxyXmlUri() { return biosampleLegaxyXmlUri; }
+	public URI getBiosampleLegaxyXmlUri() { 
+		return biosampleLegaxyXmlUri; 
+	}
+	
+	public String getLegacyApiKey() {
+		return legacyApiKey;
+	}
 }

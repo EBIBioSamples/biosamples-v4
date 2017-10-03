@@ -43,12 +43,16 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 		this.restTemplate = restTemplateBuilder.build();
 		this.integrationProperties = integrationProperties;
 
-		uriSb = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUriSampleTab())
-			.pathSegment("v1", "json", "sb").build().toUri();
 		uriVa = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUriSampleTab())
 				.pathSegment("v1", "json", "va").build().toUri();
 		uriAc = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUriSampleTab())
-				.pathSegment("v1", "json", "ac").build().toUri();
+				.pathSegment("v1", "json", "ac")
+				.queryParam("apikey", integrationProperties.getLegacyApiKey())
+				.build().toUri();
+		uriSb = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUriSampleTab())
+				.pathSegment("v1", "json", "sb")
+				.queryParam("apikey", integrationProperties.getLegacyApiKey())
+				.build().toUri();
 	}
 
 	@Override
@@ -65,7 +69,7 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 		log.info("Testing SampleTab JSON accession");
 		runCallableOnSampleTabResource("/GSB-32_unaccession.json", sampleTabString -> {
 			log.info("POSTing to " + uriAc);
-			RequestEntity<String> request = RequestEntity.post(uriVa).contentType(MediaType.APPLICATION_JSON)
+			RequestEntity<String> request = RequestEntity.post(uriAc).contentType(MediaType.APPLICATION_JSON)
 					.body(sampleTabString);
 			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
 			log.info(""+response.getBody());
@@ -74,7 +78,7 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 		log.info("Testing SampleTab JSON submission");
 		runCallableOnSampleTabResource("/GSB-32.json", sampleTabString -> {
 			log.info("POSTing to " + uriSb);
-			RequestEntity<String> request = RequestEntity.post(uriVa).contentType(MediaType.APPLICATION_JSON)
+			RequestEntity<String> request = RequestEntity.post(uriSb).contentType(MediaType.APPLICATION_JSON)
 					.body(sampleTabString);
 			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
 			log.info(""+response.getBody());
