@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -37,6 +38,7 @@ import uk.ac.ebi.arrayexpress2.magetab.listener.ErrorItemListener;
 import uk.ac.ebi.arrayexpress2.sampletab.datamodel.SampleData;
 import uk.ac.ebi.arrayexpress2.sampletab.parser.SampleTabParser;
 import uk.ac.ebi.arrayexpress2.sampletab.renderer.SampleTabWriter;
+import uk.ac.ebi.biosamples.service.ApiKeyService;
 import uk.ac.ebi.biosamples.service.SampleTabService;
 
 @RestController
@@ -46,6 +48,8 @@ public class SampleTabV1Controller {
 	
 	@Autowired
 	private SampleTabService sampleTabService;
+	@Autowired
+	private ApiKeyService apiKeyService;
 
     @PostMapping(value = "/v1/json/va")
     public @ResponseBody Outcome doValidation(@RequestBody SampleTabRequest request) {
@@ -53,8 +57,17 @@ public class SampleTabV1Controller {
     }
     
     @PostMapping(value = "/v1/json/ac")
-    public @ResponseBody Outcome doAccession(@RequestBody SampleTabRequest request, String apikey) {
-    	//TODO handle APIkey
+    public @ResponseBody Outcome doAccession(@RequestBody SampleTabRequest request, @RequestParam(value="apikey") String apiKey) {
+    	//handle APIkey
+    	if (apiKey == null) {
+    		Outcome outcome = getErrorOutcome("API key not present", "API key not present. Contact biosamples@ebi.ac.uk for more information.");
+    		return outcome;
+    	}
+    	Optional<String> domain = apiKeyService.getDomainForApiKey(apiKey);    	
+    	if (!domain.isPresent()) {
+    		Outcome outcome = getErrorOutcome("API key not recognized", "API key "+apiKey+" was not recognized as a valid API key. Contact biosamples@ebi.ac.uk for more information.");
+    		return outcome;
+    	}
     	
     	Outcome outcome = parse(request);
 
@@ -68,15 +81,24 @@ public class SampleTabV1Controller {
                 outcome.sampledata.msi.submissionIdentifier = "GSB-3";
             }
             //TODO do AAP domain property
-            sampleTabService.accessionSampleTab(outcome.sampledata, "aap-users-domain", null, true);
+            sampleTabService.accessionSampleTab(outcome.sampledata, "self."+domain.get(), null, true);
             return outcome;
         }        
     }
     
     
     @PostMapping(value = "/v1/json/sb")
-    public @ResponseBody Outcome doSubmission(@RequestBody SampleTabRequest request, String apikey) {
-    	//TODO handle APIkey
+    public @ResponseBody Outcome doSubmission(@RequestBody SampleTabRequest request,  @RequestParam(value="apikey") String apiKey) {
+    	//handle APIkey
+    	if (apiKey == null) {
+    		Outcome outcome = getErrorOutcome("API key not present", "API key not present. Contact biosamples@ebi.ac.uk for more information.");
+    		return outcome;
+    	}
+    	Optional<String> domain = apiKeyService.getDomainForApiKey(apiKey);    	
+    	if (!domain.isPresent()) {
+    		Outcome outcome = getErrorOutcome("API key not recognized", "API key "+apiKey+" was not recognized as a valid API key. Contact biosamples@ebi.ac.uk for more information.");
+    		return outcome;
+    	}    	
     	
     	Outcome outcome = parse(request);
 
@@ -90,7 +112,7 @@ public class SampleTabV1Controller {
                 outcome.sampledata.msi.submissionIdentifier = "GSB-3";
             }
             //TODO do AAP domain property
-            sampleTabService.saveSampleTab(outcome.sampledata, "aap-users-domain", null, true);
+            sampleTabService.saveSampleTab(outcome.sampledata, "self."+domain.get(), null, true);
             return outcome;
         }        
     }
