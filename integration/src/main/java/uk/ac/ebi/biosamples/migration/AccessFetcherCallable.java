@@ -130,7 +130,10 @@ public class AccessFetcherCallable implements Callable<Void> {
 				
 				for (Element element : XmlPathBuilder.of(root).elements("BioSample")) {
 					String accession = element.attributeValue("id"); 
-					accessions.add(accession);
+					//only handle sample accessions for now
+					if (!accession.startsWith("SAMEG")) {
+						accessions.add(accession);
+					}
 				}
 				
 				return accessions;
