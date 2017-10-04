@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -95,9 +96,12 @@ public class Accession implements ApplicationRunner{
 			futures.put(accession, future);
 
 			try {
-				ThreadUtils.checkAndRetryFutures(futures, callables, futureMax, executor);
+				//ThreadUtils.checkAndRetryFutures(futures, callables, futureMax, executor);
+				ThreadUtils.checkFutures(futures, futureMax);
 			} catch (InterruptedException e) {
 				log.warn("Interupted while checking for futures", e);
+			} catch (ExecutionException e) {
+				throw new RuntimeException(e);
 			} 
 		}
 	}
