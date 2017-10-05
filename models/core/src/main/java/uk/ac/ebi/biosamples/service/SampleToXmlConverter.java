@@ -87,24 +87,29 @@ public class SampleToXmlConverter implements Converter<Sample, Document> {
 			<Unit>year</Unit>
 		</QualifiedValue>
 	</Property>		
- */
-			if (!attrTypeValue.containsKey(attribute.getType())) {
-				attrTypeValue.put(attribute.getType(), new TreeSet<>());
-				attrIri.put(attribute.getType(), new TreeMap<>());
-				attrUnit.put(attribute.getType(), new TreeMap<>());
+ */		
+			String attributeType = attribute.getType();
+			if ("description".equals(attributeType)) {
+				attributeType = "Sample Description";
 			}
-			attrTypeValue.get(attribute.getType()).add(attribute.getValue());
+			if (!attrTypeValue.containsKey(attributeType)) {
+				attrTypeValue.put(attributeType, new TreeSet<>());
+				attrIri.put(attributeType, new TreeMap<>());
+				attrUnit.put(attributeType, new TreeMap<>());
+			}
+			attrTypeValue.get(attributeType).add(attribute.getValue());
 			
 			if (attribute.getIri() != null && attribute.getIri().toString().length() > 0) {
-				attrIri.get(attribute.getType()).put(attribute.getValue(), attribute.getIri().toString());
+				attrIri.get(attributeType).put(attribute.getValue(), attribute.getIri().toString());
 			}
 
 			if (attribute.getUnit() != null && attribute.getUnit().trim().length() > 0) {
-				attrUnit.get(attribute.getType()).put(attribute.getValue(), attribute.getUnit());
+				attrUnit.get(attributeType).put(attribute.getValue(), attribute.getUnit());
 			}
 		}
 		
-		for (String attributeType : attrTypeValue.keySet()) {
+		for (String attributeType : attrTypeValue.keySet()) {		
+			
 			Element property = bioSample.addElement(QName.get("Property", xmlns));
 			//Element e = parent.addElement("Property");
 			property.addAttribute("class", attributeType);

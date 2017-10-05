@@ -37,6 +37,9 @@ public class XmlToSampleConverter implements Converter<Document, Sample>  {
 		for (Element property : XmlPathBuilder.of(doc).elements("Property")){
 			if ("Sample Name".equals(XmlPathBuilder.of(property).attribute("class"))) {
 				name = XmlPathBuilder.of(property).path("QualifiedValue", "Value").text();
+			} else if ("Sample Description".equals(XmlPathBuilder.of(property).attribute("class"))) {
+				String value = XmlPathBuilder.of(property).path("QualifiedValue", "Value").text();
+				attributes.add(Attribute.build("description", value, null, null));	
 			} else {
 				String type = XmlPathBuilder.of(property).attribute("class");
 				String value = XmlPathBuilder.of(property).path("QualifiedValue", "Value").text();
@@ -55,6 +58,7 @@ public class XmlToSampleConverter implements Converter<Document, Sample>  {
 				
 				attributes.add(Attribute.build(type, value, iri, unit));				
 			}
+			//TODO relationships
 		}
 
 		for (Element database : XmlPathBuilder.of(doc).elements("Database")){
