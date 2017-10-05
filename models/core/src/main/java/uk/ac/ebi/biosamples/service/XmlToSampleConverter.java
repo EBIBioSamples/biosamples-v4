@@ -18,14 +18,17 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
 @Service
-public class XmlToSampleService implements Converter<Document, Sample>  {
+public class XmlToSampleConverter implements Converter<Document, Sample>  {
 
 	@Override
 	public Sample convert(Document doc) {
 				
 		Instant release = Instant.from(DateTimeFormatter.ISO_DATE_TIME.parse(XmlPathBuilder.of(doc).attribute("submissionReleaseDate")));
 		Instant update = Instant.from(DateTimeFormatter.ISO_DATE_TIME.parse(XmlPathBuilder.of(doc).attribute("submissionUpdateDate")));
-		String accession = XmlPathBuilder.of(doc).attribute("id");
+		String accession = null;
+		if (XmlPathBuilder.of(doc).attributeExists("id")) {
+			accession = XmlPathBuilder.of(doc).attribute("id");
+		}
 		String name = null;
 		SortedSet<Attribute> attributes = new TreeSet<>();
 		SortedSet<Relationship> relationships = new TreeSet<>();

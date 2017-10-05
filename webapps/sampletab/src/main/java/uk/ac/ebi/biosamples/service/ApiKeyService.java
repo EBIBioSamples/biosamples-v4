@@ -34,8 +34,42 @@ public class ApiKeyService {
     		return Optional.of(results.get(0));
     	}
 	}
+	
+	public Optional<String> getUsernameForApiKey(String apiKey) throws DataAccessException {
+		log.info("getting domain for apikey "+apiKey);
 
-	protected class SingleStringRowMapper implements RowMapper<String>
+		String stm = "SELECT USERNAME FROM USERS WHERE APIKEY LIKE ?";
+    	List<String> results = jdbcTemplate.query(stm, new SingleStringRowMapper(), apiKey);
+    	if (results.size() == 0) {
+    		return Optional.empty();
+    	} else {
+    		return Optional.of(results.get(0));
+    	}
+	}
+	
+
+    public boolean canKeyOwnerEditSource(String keyOwner, String source) {
+        if (keyOwner == null || keyOwner.trim().length() == 0) {
+            throw new IllegalArgumentException("keyOwner must a sensible string");
+        }
+        if (source == null || source.trim().length() == 0) {
+            throw new IllegalArgumentException("source must be a sensible string");
+        }
+        
+        if ("BioSamples".toLowerCase().equals(keyOwner.toLowerCase())) {
+            //BioSamples key can edit anything
+            return true;
+        } else if (source.toLowerCase().equals(keyOwner.toLowerCase())) {
+            //source key can edit their own samples
+            return true;
+        } else {
+            //deny everyone else
+        	log.info("Keyowner "+keyOwner+" attempted to access "+source);
+            return false;
+        }
+    }
+	
+    protected static class SingleStringRowMapper implements RowMapper<String>
 	{
 		public String mapRow(ResultSet rs, int rowNum) throws SQLException {
 			return rs.getString(1);

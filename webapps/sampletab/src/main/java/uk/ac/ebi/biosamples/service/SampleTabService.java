@@ -34,7 +34,7 @@ public class SampleTabService {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 	
-	private BioSamplesClient bioSamplesClient;
+	private final BioSamplesClient bioSamplesClient;
 
 	public SampleTabService(BioSamplesClient bioSamplesClient) {
 		this.bioSamplesClient = bioSamplesClient;

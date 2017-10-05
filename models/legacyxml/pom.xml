@@ -13,6 +13,61 @@
 	</parent>
 
 	<dependencies>
+		<dependency>
+			<groupId>uk.ac.ebi.biosamples</groupId>
+			<artifactId>models-core</artifactId>
+			<version>${bsd2017.version}</version>
+		</dependency>
 	</dependencies>
 
+	<build>
+		<plugins>
+<!-- 		Dont auto-generate from xsd, elements have duplicate mappings -->
+<!-- 			<plugin> -->
+<!-- 				<groupId>org.codehaus.mojo</groupId> -->
+<!-- 				<artifactId>jaxb2-maven-plugin</artifactId> -->
+<!-- 				<version>2.3.1</version> -->
+<!-- 				<executions> -->
+<!-- 					<execution> -->
+<!-- 						<id>biosd</id> -->
+<!-- 						<goals> -->
+<!-- 							<goal>xjc</goal> -->
+<!-- 						</goals> -->
+<!-- 						<configuration> -->
+<!-- 							<packageName>uk.ac.ebi.biosamples.model.biosd</packageName> -->
+<!-- 							<sources> -->
+<!-- 								<source>src/main/xsd/BioSD</source> -->
+<!-- 							</sources> -->
+<!-- 						</configuration> -->
+<!-- 					</execution> -->
+<!-- 					<execution> -->
+<!-- 						<id>resultquerysample</id> -->
+<!-- 						<goals> -->
+<!-- 							<goal>xjc</goal> -->
+<!-- 						</goals> -->
+<!-- 						<configuration> -->
+<!-- 							<packageName>uk.ac.ebi.biosamples.model.resultquerysample</packageName> -->
+<!-- 							<sources> -->
+<!-- 								<source>src/main/xsd/ResultQuerySample</source> -->
+<!-- 							</sources> -->
+<!-- 							<clearOutputDir>false</clearOutputDir> -->
+<!-- 						</configuration> -->
+<!-- 					</execution> -->
+<!-- 					<execution> -->
+<!-- 						<id>resultquerysamplegroup</id> -->
+<!-- 						<goals> -->
+<!-- 							<goal>xjc</goal> -->
+<!-- 						</goals> -->
+<!-- 						<configuration> -->
+<!-- 							<packageName>uk.ac.ebi.biosamples.model.resultquerysamplegroup</packageName> -->
+<!-- 							<sources> -->
+<!-- 								<source>src/main/xsd/ResultQuerySampleGroup</source> -->
+<!-- 							</sources> -->
+<!-- 							<clearOutputDir>false</clearOutputDir> -->
+<!-- 						</configuration> -->
+<!-- 					</execution> -->
+<!-- 				</executions> -->
+<!-- 			</plugin> -->
+		</plugins>
+	</build>
 </project>

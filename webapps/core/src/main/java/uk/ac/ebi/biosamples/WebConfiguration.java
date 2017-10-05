@@ -11,6 +11,7 @@ public class WebConfiguration extends WebMvcConfigurerAdapter{
     @Override
     public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
         configurer.mediaType("ldjson", new MediaType("application", "ld+json"));
+        
     }
 
 }

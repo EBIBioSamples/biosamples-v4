@@ -19,7 +19,9 @@ import org.thymeleaf.templateresolver.ITemplateResolver;
 import org.thymeleaf.templateresolver.UrlTemplateResolver;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.CacheControlInterceptor;
-import uk.ac.ebi.biosamples.xml.XmlSampleHttpMessageConverter;
+import uk.ac.ebi.biosamples.service.SampleToXmlConverter;
+import uk.ac.ebi.biosamples.service.XmlSampleHttpMessageConverter;
+import uk.ac.ebi.biosamples.service.XmlToSampleConverter;
 
 import java.util.concurrent.Executor;
 
@@ -37,19 +39,14 @@ public class Application extends SpringBootServletInitializer {
 		SpringApplication.run(Application.class, args);
 	}
 
-//	@Bean
-//	public RelProvider customRelProvider() {
-//	    return new MyCustomRelProvider();
-//	}
-
 	@Bean
 	public MappedInterceptor getCacheHeaderMappedInterceptor() {
 	    return new MappedInterceptor(new String[]{"/**"}, new CacheControlInterceptor());
 	}
 	
 	@Bean
-	public HttpMessageConverter<Sample> getXmlSampleHttpMessageConverter() {
-		return new XmlSampleHttpMessageConverter();
+	public HttpMessageConverter<Sample> getXmlSampleHttpMessageConverter(SampleToXmlConverter sampleToXmlConverter, XmlToSampleConverter xmlToSampleConverter) {
+		return new XmlSampleHttpMessageConverter(sampleToXmlConverter, xmlToSampleConverter);
 	}
 
     @Bean(name = "threadPoolTaskExecutor")
@@ -81,37 +78,5 @@ public class Application extends SpringBootServletInitializer {
     	return new UrlTemplateResolver();
     }
     
-    /*
-    @Bean
-    public ITemplateResolver templateResolver() {
-        SpringResourceTemplateResolver resolver = new SpringResourceTemplateResolver();
-        // For Spring Boot
-        resolver.setPrefix("classpath:/templates/asciidoc/");
-        resolver.setSuffix(".html");
-        resolver.setTemplateMode("HTML5");
-        resolver.setCacheable(false);
-        return resolver;
-    } 
-     */
-    
-    /*
-    @Bean
-    public ApplicationRunner appRunner() {
-    	return new ApplicationRunner() {
-
-    		@Autowired
-    		private NeoSampleRepository neoSampleRepository;
-    		
-			@Override
-			public void run(ApplicationArguments args) throws Exception {
-				NeoSample sample = NeoSample.build("TestInsert", "foo", Instant.now(), Instant.now(), null, null, null);
-				neoSampleRepository.insertNew(sample);
-				//this should throw an exception?
-				neoSampleRepository.insertNew(sample);
-			}    		
-    	};
-    }
-    */
-
 
 }
