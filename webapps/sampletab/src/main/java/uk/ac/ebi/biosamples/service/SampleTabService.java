@@ -52,7 +52,7 @@ public class SampleTabService {
 			//otherwise, it is just a group membership tracking dummy
 			if (sampleNode.getAttributes().size() > 0 || sampleNode.getChildNodes().size() == 0) {			
 				Sample sample = Sample.build(name, accession, domain, release, update, new TreeSet<>(), new TreeSet<>(), new TreeSet<>());
-				sample = bioSamplesClient.persistSample(sample);
+				sample = bioSamplesClient.persistSampleResource(sample, setUpdateDate).getContent();
 				if (accession == null) {
 					sampleNode.setSampleAccession(sample.getAccession());
 				}
@@ -97,7 +97,7 @@ public class SampleTabService {
 			//otherwise, it is just a group membership tracking dummy
 			if (attributes.size() > 0 || sampleNode.getChildNodes().size() == 0) {			
 				Sample sample = Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences);
-				sample = bioSamplesClient.persistSample(sample);
+				sample = bioSamplesClient.persistSampleResource(sample, setUpdateDate).getContent();
 				if (accession == null) {
 					sampleNode.setSampleAccession(sample.getAccession());
 				}
