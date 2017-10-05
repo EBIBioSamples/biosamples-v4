@@ -23,6 +23,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import com.google.common.collect.Sets;
 
+import uk.ac.ebi.biosamples.service.XmlToSampleConverter;
+
 @Component
 @Profile({"migration"})
 public class MigrationRunner implements ApplicationRunner, ExitCodeGenerator {
@@ -38,8 +40,11 @@ public class MigrationRunner implements ApplicationRunner, ExitCodeGenerator {
 	@Value("${biosamples.migration.new:http://www.ebi.ac.uk/biosamples/xml/samples}")
 	private String newUrl;
 	
-	public MigrationRunner(RestTemplateBuilder restTemplateBuilder) {
+	private final XmlToSampleConverter xmlToSampleConverter;
+	
+	public MigrationRunner(RestTemplateBuilder restTemplateBuilder, XmlToSampleConverter xmlToSampleConverter) {
 		restTemplate = restTemplateBuilder.build();
+		this.xmlToSampleConverter = xmlToSampleConverter;
 	}
 	
 	@Override
@@ -76,7 +81,7 @@ public class MigrationRunner implements ApplicationRunner, ExitCodeGenerator {
 			
 			AccessionQueueBothCallable bothCallable = new AccessionQueueBothCallable(oldQueue, oldFinished, newQueue, newFinished, bothQueue, bothFinished);
 			
-			AccessionComparisonCallable comparisonCallable = new AccessionComparisonCallable(restTemplate, oldUrl, newUrl, bothQueue, bothFinished);
+			AccessionComparisonCallable comparisonCallable = new AccessionComparisonCallable(restTemplate, oldUrl, newUrl, bothQueue, bothFinished, xmlToSampleConverter);
 			
 			//comparisonCallable.compare("SAMEA19131418");
 			
