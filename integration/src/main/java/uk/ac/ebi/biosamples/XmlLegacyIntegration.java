@@ -54,6 +54,18 @@ public class XmlLegacyIntegration extends AbstractIntegration {
 			// TODO check at the right URLs with GET to make sure all
 			// arrived
 		});
+
+		URI putUri = UriComponentsBuilder.fromUri(uri).pathSegment("SAME12345679").build().toUri();
+		runCallableOnSampleTabResource("/SAMTSTXML1.xml", sampleTabString -> {
+			log.info("PUTing to " + putUri);
+			RequestEntity<String> request = RequestEntity.put(putUri)
+					.contentType(MediaType.APPLICATION_XML)
+					.accept(MediaType.TEXT_PLAIN)					
+					.body(sampleTabString);
+			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+			// TODO check at the right URLs with GET to make sure all
+			// arrived
+		});
 		
 	}
 

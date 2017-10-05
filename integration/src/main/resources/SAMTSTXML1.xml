@@ -1,6 +1,6 @@
 <BioSample
 	xsi:schemaLocation="http://www.ebi.ac.uk/biosamples/SampleGroupExport/1.0 http://www.ebi.ac.uk/biosamples/assets/xsd/v1.0/BioSDSchema.xsd"
-	id="SAMTSTXML1" submissionUpdateDate="2017-10-05T10:41:34.952+00:00"
+	id="SAME12345679" submissionUpdateDate="2017-10-05T10:41:34.952+00:00"
 	submissionReleaseDate="2016-04-01T11:36:57+00:00"
 	xmlns="http://www.ebi.ac.uk/biosamples/SampleGroupExport/1.0"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">

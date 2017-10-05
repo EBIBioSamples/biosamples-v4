@@ -57,7 +57,7 @@ public class XmlController {
 
 	/* sample end points below */
 	@PostMapping(value = "/source/{source}/sample", 
-			produces = {MediaType.TEXT_PLAIN_VALUE}, 
+			produces = MediaType.TEXT_PLAIN_VALUE, 
 			consumes = {MediaType.APPLICATION_XML_VALUE})
 	public ResponseEntity<String> saveSourceSampleNew(@PathVariable String source,
 			@RequestBody(required=false) Sample sample, 
@@ -67,7 +67,7 @@ public class XmlController {
 	}
 	
 	@PostMapping(value = "/source/{source}/sample/{sourceid}", 
-			produces = {MediaType.TEXT_PLAIN_VALUE}, 
+			produces = MediaType.TEXT_PLAIN_VALUE, 
 			consumes = {MediaType.APPLICATION_XML_VALUE})
 	public @ResponseBody ResponseEntity<String> saveSourceSample(@PathVariable String source,
 			@PathVariable String sourceid, 
@@ -118,10 +118,10 @@ public class XmlController {
 
 	@PutMapping(value = "/source/{source}/sample/{sourceid}", 
 			produces = MediaType.TEXT_PLAIN_VALUE, 
-			consumes = MediaType.APPLICATION_XML_VALUE)
+			consumes = {MediaType.APPLICATION_XML_VALUE})
 	public @ResponseBody ResponseEntity<String> saveUpdate(@PathVariable String source, 
 			@PathVariable String sourceid, @RequestParam String apikey, 
-			@RequestBody Sample sample) throws ParseException, IOException {
+			@RequestBody(required=false) Sample sample) throws ParseException, IOException {
 		
 		//reject if not using biosample id
 		if (!sourceid.matches("SAM[NED]A?[0-9]+")) {
