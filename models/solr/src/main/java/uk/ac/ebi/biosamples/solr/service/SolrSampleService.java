@@ -11,15 +11,10 @@ import org.springframework.data.solr.core.query.result.FacetFieldEntry;
 import org.springframework.data.solr.core.query.result.FacetPage;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
-
-import com.google.common.io.BaseEncoding;
-
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.Autocomplete;
 import uk.ac.ebi.biosamples.model.facets.Facet;
 import uk.ac.ebi.biosamples.model.facets.FacetType;
-import uk.ac.ebi.biosamples.model.facets.FacetsBuilder;
-import uk.ac.ebi.biosamples.model.facets.LabelCountEntry;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
 import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
 
@@ -28,9 +23,8 @@ import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class SolrSampleService {
@@ -39,15 +33,19 @@ public class SolrSampleService {
 
 	private final BioSamplesProperties bioSamplesProperties;
 
+	private final SolrFacetService solrFacetService;
 	//maximum time allowed for a solr search in s
 	//TODO application.properties this
 	private static final int TIMEALLOWED = 30;
 	
 	private Logger log = LoggerFactory.getLogger(getClass());
 	
-	public SolrSampleService(SolrSampleRepository solrSampleRepository, BioSamplesProperties bioSamplesProperties) {
+	public SolrSampleService(SolrSampleRepository solrSampleRepository,
+							 BioSamplesProperties bioSamplesProperties,
+							 SolrFacetService solrFacetService) {
 		this.solrSampleRepository = solrSampleRepository;
 		this.bioSamplesProperties = bioSamplesProperties;
+		this.solrFacetService = solrFacetService;
 	}
 
 	public Page<SolrSample> fetchSolrSampleByText(String searchTerm, MultiValueMap<String,String> filters, 
@@ -89,61 +87,63 @@ public class SolrSampleService {
 
 	public List<Facet> getFacets(String searchTerm, MultiValueMap<String,String> filters,
 								 String after, String before, Pageable facetPageable, Pageable facetValuePageable) {
+
+		return solrFacetService.getFacets(searchTerm, Collections.EMPTY_LIST, Collections.EMPTY_LIST);
 		//default to search all
-		if (searchTerm == null || searchTerm.trim().length() == 0) {
-			searchTerm = "*:*";
-		}
-		
-		FacetsBuilder builder = new FacetsBuilder();
+//		if (searchTerm == null || searchTerm.trim().length() == 0) {
+//			searchTerm = "*:*";
+//		}
+//
+//		FacetsBuilder builder = new FacetsBuilder();
+//
+//		//build a query out of the users string and any facets
+//		FacetQuery query = new SimpleFacetQuery();
+//		query.addCriteria(new Criteria().expression(searchTerm));
+//		query = addFilters(query, filters);
+//
+//		//filter out non-public
+//		FilterQuery filterQuery = new SimpleFilterQuery();
+//		filterQuery.addCriteria(new Criteria("release_dt").lessThan("NOW").and("release_dt").isNotNull());
+//		if (after != null && before != null) {
+//			filterQuery.addCriteria(new Criteria("update_dt").between(after, before));
+//		}
+//		query.addFilterQuery(filterQuery);
+//		query.setTimeAllowed(TIMEALLOWED*1000);
+//
+//		Page<FacetFieldEntry> facetFields = solrSampleRepository.getFacetFields(query, facetPageable);
+//
+//		//using the query, get a list of facets and overall counts
+//
+//		// TODO create content before and facet later
+//		Map<String, Long> facetFieldCountMap = new HashMap<>();
+//		for (FacetFieldEntry ffe : facetFields) {
+//			log.info("Putting "+ffe.getValue()+" with count "+ffe.getValueCount());
+//			facetFieldCountMap.put(ffe.getValue(), ffe.getValueCount());
+////			builder.addFacet(this.facetNameFromField(ffe.getValue()), ffe.getValueCount());
+//		}
+//
+//		//if there are no facets available (e.g. no samples)
+//		//then cleanly exit here
+//		if (facetFieldCountMap.isEmpty()) {
+//			return new ArrayList<>();
+//		}
+//		List<String> facetFieldList = new ArrayList<>(facetFieldCountMap.keySet());
+//		FacetPage<?> facetPage = solrSampleRepository.getFacets(query, facetFieldList, facetValuePageable);
+//		for (Field field : facetPage.getFacetFields()) {
+//			//for each value, put the number of them into this facets map
+//			FacetType facetType = FacetType.ofField(field.getName());
+//			String facetName = this.facetNameFromField(field.getName());
+//			List<LabelCountEntry> listFacetContent = new ArrayList<>();
+//			for (FacetFieldEntry ffe : facetPage.getFacetResultPage(field)) {
+//				log.info("Adding "+facetName+" : "+ffe.getValue()+" with count "+ffe.getValueCount());
+//				listFacetContent.add(LabelCountEntry.build(ffe.getValue(), ffe.getValueCount()));
+//			}
+//			Facet facet = Facet.build(facetType, facetName, facetFieldCountMap.get(field.getName()), listFacetContent);
+//			builder.addFacet(facet);
+//		}
+//
+//		return builder.build();
 
-		//build a query out of the users string and any facets
-		FacetQuery query = new SimpleFacetQuery();
-		query.addCriteria(new Criteria().expression(searchTerm));
-		query = addFilters(query, filters);
-		
-		//filter out non-public
-		FilterQuery filterQuery = new SimpleFilterQuery();
-		filterQuery.addCriteria(new Criteria("release_dt").lessThan("NOW").and("release_dt").isNotNull());
-		if (after != null && before != null) {
-			filterQuery.addCriteria(new Criteria("update_dt").between(after, before));
-		}
-		query.addFilterQuery(filterQuery);
-		query.setTimeAllowed(TIMEALLOWED*1000); 
-		
-		Page<FacetFieldEntry> facetFields = solrSampleRepository.getFacetFields(query, facetPageable);
-
-		//using the query, get a list of facets and overall counts
-
-		// TODO create content before and facet later
-		Map<String, Long> facetFieldCountMap = new HashMap<>();
-		for (FacetFieldEntry ffe : facetFields) {
-			log.info("Putting "+ffe.getValue()+" with count "+ffe.getValueCount());
-			facetFieldCountMap.put(ffe.getValue(), ffe.getValueCount());
-//			builder.addFacet(this.facetNameFromField(ffe.getValue()), ffe.getValueCount());
-		}
-		
-		//if there are no facets available (e.g. no samples)
-		//then cleanly exit here
-		if (facetFieldCountMap.isEmpty()) {
-			return new ArrayList<>();
-		}
-		List<String> facetFieldList = new ArrayList<>(facetFieldCountMap.keySet());
-		FacetPage<?> facetPage = solrSampleRepository.getFacets(query, facetFieldList, facetValuePageable);
-		for (Field field : facetPage.getFacetFields()) {
-			//for each value, put the number of them into this facets map
-			FacetType facetType = FacetType.ofField(field.getName());
-			String facetName = this.facetNameFromField(field.getName());
-			List<LabelCountEntry> listFacetContent = new ArrayList<>();
-			for (FacetFieldEntry ffe : facetPage.getFacetResultPage(field)) {
-				log.info("Adding "+facetName+" : "+ffe.getValue()+" with count "+ffe.getValueCount());
-				listFacetContent.add(LabelCountEntry.build(ffe.getValue(), ffe.getValueCount()));
-			}
-			Facet facet = Facet.build(facetType, facetName, facetFieldCountMap.get(field.getName()), listFacetContent);
-			builder.addFacet(facet);
-		}
-		
-		return builder.build();
-		
 	}
 
 	public Autocomplete getAutocomplete(String autocompletePrefix, MultiValueMap<String,String> filters, int maxSuggestions) {

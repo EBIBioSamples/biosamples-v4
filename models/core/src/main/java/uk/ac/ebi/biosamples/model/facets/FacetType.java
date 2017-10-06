@@ -10,7 +10,9 @@ import java.util.Map;
 public enum FacetType {
     ATTRIBUTE("_av_ss","Attribute"),
     INCOMING_RELATIONSHIP("_ir_ss", "Inverse Relation"),
-    OUTGOING_RELATIONSHIP("_or_ss", "Relation");
+    OUTGOING_RELATIONSHIP("_or_ss", "Relation"),
+    DATE("_dt", "Date");
+
     private static Map<String, FacetType> solrSuffixMap = new HashMap<>();
     private static Map<String, FacetType> facetIdMap = new HashMap<>();
 
