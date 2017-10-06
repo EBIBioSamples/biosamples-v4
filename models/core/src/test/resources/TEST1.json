@@ -4,6 +4,8 @@
 	"domain": "abcde12345",
 	"update": "2016-05-05T11:36:57Z",
 	"release": "2016-04-01T11:36:57Z",
+	"updateDate": "2016-05-05",
+	"releaseDate": "2016-04-01",
 	"characteristics": {
 		"age": [
 			{
