@@ -35,15 +35,18 @@ public class JsonLdIntegration extends AbstractIntegration {
     private final RestOperations restTemplate;
 //    private WebDriver chromeDriver;
     private final IntegrationProperties integrationProperties;
+    private final BioSamplesProperties bioSamplesProperties;
 
     public JsonLdIntegration(RestTemplateBuilder templateBuilder,
                              BioSamplesClient client,
-                             IntegrationProperties props,
+                             IntegrationProperties integrationProperties,
+                             BioSamplesProperties bioSamplesProperties,
                              Environment env) {
         super(client);
-        integrationProperties = props;
-        restTemplate = templateBuilder.build();
+        this.integrationProperties = integrationProperties;
+        this.restTemplate = templateBuilder.build();
         this.env = env;
+        this.bioSamplesProperties = bioSamplesProperties;
 
     }
 
@@ -153,7 +156,7 @@ public class JsonLdIntegration extends AbstractIntegration {
     */
 
     private void checkPresenceWithRest(Sample sample) {
-        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(this.integrationProperties.getBiosampleSubmissionUri());
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(bioSamplesProperties.getBiosamplesClientUri());
         uriBuilder.pathSegment("samples", sample.getAccession()+".ldjson");
         ResponseEntity<JsonLDSample> responseEntity = restTemplate.getForEntity(uriBuilder.toUriString(), JsonLDSample.class);
         if (!responseEntity.getStatusCode().is2xxSuccessful()) {

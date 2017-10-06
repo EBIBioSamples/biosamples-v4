@@ -25,13 +25,17 @@ public class RestAutocompleteIntegration extends AbstractIntegration {
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 
 	private final IntegrationProperties integrationProperties;
-
+	private final BioSamplesProperties bioSamplesProperties;
 	private final RestOperations restTemplate;
 	
-	public RestAutocompleteIntegration(RestTemplateBuilder restTemplateBuilder, IntegrationProperties integrationProperties, BioSamplesClient client) {
+	public RestAutocompleteIntegration(RestTemplateBuilder restTemplateBuilder, 
+			IntegrationProperties integrationProperties, 
+			BioSamplesProperties bioSamplesProperties,
+			BioSamplesClient client) {
 		super(client);
 		this.restTemplate = restTemplateBuilder.build();
 		this.integrationProperties = integrationProperties;
+		this.bioSamplesProperties = bioSamplesProperties;
 	}
 	
 	@Override
@@ -41,7 +45,7 @@ public class RestAutocompleteIntegration extends AbstractIntegration {
 	@Override
 	protected void phaseTwo() {
 
-		URI uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUri())
+		URI uri = UriComponentsBuilder.fromUri(bioSamplesProperties.getBiosamplesClientUri())
 				.pathSegment("samples").pathSegment("autocomplete").build().toUri();
 
 		log.info("GETting from "+uri);

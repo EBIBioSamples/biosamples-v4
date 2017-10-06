@@ -83,7 +83,7 @@ public class MigrationRunner implements ApplicationRunner, ExitCodeGenerator {
 			
 			AccessionComparisonCallable comparisonCallable = new AccessionComparisonCallable(restTemplate, oldUrl, newUrl, bothQueue, bothFinished, xmlToSampleConverter);
 			
-			//comparisonCallable.compare("SAMEA19131418");
+//			comparisonCallable.compare("SAMEA3683023");
 			
 			Future<Void> oldFuture = executorService.submit(oldCallable);
 			Future<Void> newFuture = executorService.submit(newCallable);

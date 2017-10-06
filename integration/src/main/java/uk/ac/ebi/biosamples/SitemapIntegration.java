@@ -35,9 +35,9 @@ public class SitemapIntegration extends AbstractIntegration {
 
     public SitemapIntegration(BioSamplesClient client,
                               RestTemplateBuilder restTemplateBuilder,
-                              IntegrationProperties integrationProperties) {
+                              BioSamplesProperties bioSamplesProperties) {
         super(client);
-        this.biosamplesSubmissionUri = integrationProperties.getBiosampleSubmissionUri();
+        this.biosamplesSubmissionUri = bioSamplesProperties.getBiosamplesClientUri();
         this.restTemplate = restTemplateBuilder.build();
 
     }

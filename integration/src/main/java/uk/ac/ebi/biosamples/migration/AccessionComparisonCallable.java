@@ -4,6 +4,9 @@ import java.io.ByteArrayInputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URI;
+import java.time.LocalDateTime;
+import java.time.Period;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -204,10 +207,11 @@ class AccessionComparisonCallable implements Callable<Void> {
 		if (!oldSample.getName().equals(newSample.getName())) {
 			log.warn("Difference on "+accession+" of name between '"+oldSample.getName()+"' and '"+newSample.getName()+"'");
 		}
-		if (!oldSample.getUpdate().equals(newSample.getUpdate())) {
+				
+		if (ChronoUnit.DAYS.between(oldSample.getUpdate(), newSample.getUpdate()) > 1) {
 			log.warn("Difference on "+accession+" of update date between '"+oldSample.getUpdate()+"' and '"+newSample.getUpdate()+"'");
 		}
-		if (!oldSample.getRelease().equals(newSample.getRelease())) {
+		if (ChronoUnit.DAYS.between(oldSample.getRelease(), newSample.getRelease()) > 1) {
 			log.warn("Difference on "+accession+" of release date between '"+oldSample.getRelease()+"' and '"+newSample.getRelease()+"'");
 		}
 		
