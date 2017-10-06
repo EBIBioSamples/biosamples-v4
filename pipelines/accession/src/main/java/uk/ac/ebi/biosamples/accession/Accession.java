@@ -5,6 +5,8 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
@@ -124,7 +126,7 @@ public class Accession implements ApplicationRunner{
 		@Override
 		public Void call() throws Exception {
 			String name = userAccession;
-			Instant release = Instant.now().plus(100, ChronoUnit.YEARS);
+			Instant release = ZonedDateTime.now(ZoneOffset.UTC).plusYears(100).toInstant();
 			Instant update = Instant.ofEpochMilli(dateAssigned.getTime());
 
 			SortedSet<Attribute> attributes = new TreeSet<>();
