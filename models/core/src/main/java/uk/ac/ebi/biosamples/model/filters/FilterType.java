@@ -1,6 +1,7 @@
 package uk.ac.ebi.biosamples.model.filters;
 
 public enum FilterType {
+//    UNKNOWN_FILTER(""),
     ATTRIBUTE_FILTER("fa"),
     RELATION_FILER("fr"),
     INVERSE_RELATION_FILTER("fir"),

@@ -133,8 +133,9 @@ public class SampleHtmlController {
 		}
 						
 		Pageable pageable = new PageRequest(start/rows, rows);
-		Page<Sample> pageSample = samplePageService.getSamplesByText(text, filtersMap, domains, updatedAfterDate, updatedBeforeDate, pageable);
+//		Page<Sample> pageSample = samplePageService.getSamplesByText(text, filtersMap, domains, updatedAfterDate, updatedBeforeDate, pageable);
 		//default to getting 10 values from 10 facets
+		Page<Sample> pageSample = samplePageService.getSamplesByText(text, filterCollection, domains, pageable);
 		List<Facet> sampleFacets = facetService.getFacets(text, filterCollection, domains, 10, 10);
 
 

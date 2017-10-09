@@ -4,7 +4,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.solr.core.mapping.Dynamic;
 import org.springframework.data.solr.core.mapping.Indexed;
 import org.springframework.data.solr.core.mapping.SolrDocument;
-import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
+import uk.ac.ebi.biosamples.solr.service.SolrFieldService;
 
 import java.util.*;
 
@@ -189,37 +189,38 @@ public class SolrSample {
 		sample.attributeUnits = new HashMap<>();
 		sample.incomingRelationships = new HashMap<>();
 		sample.outgoingRelationships = new HashMap<>();
+		SolrFieldService fieldService = new SolrFieldService();
 
 		if (attributeValues != null) {
 			for (String key : attributeValues.keySet()) {
 				//solr only allows alphanumeric field types
-				sample.attributeValues.put(SolrSampleService.valueToSafeField(key), attributeValues.get(key));
+				sample.attributeValues.put(fieldService.encodeFieldName(key), attributeValues.get(key));
 			}
 		}
 
 		if (attributeIris != null) {
 			for (String key : attributeIris.keySet()) {
 				//solr only allows alphanumeric field types
-				sample.attributeIris.put(SolrSampleService.valueToSafeField(key), attributeIris.get(key));
+				sample.attributeIris.put(fieldService.encodeFieldName(key), attributeIris.get(key));
 			}
 		}
 
 		if (attributeUnits != null) {
 			for (String key : attributeUnits.keySet()) {
 				//solr only allows alphanumeric field types
-				sample.attributeUnits.put(SolrSampleService.valueToSafeField(key), attributeUnits.get(key));
+				sample.attributeUnits.put(fieldService.encodeFieldName(key), attributeUnits.get(key));
 			}
 		}
 
 		if (outgoingRelationships != null) {
             for (String key : outgoingRelationships.keySet()) {
-                sample.outgoingRelationships.put(SolrSampleService.valueToSafeField(key), outgoingRelationships.get(key));
+                sample.outgoingRelationships.put(fieldService.encodeFieldName(key), outgoingRelationships.get(key));
             }
 		}
 
 		if (incomingRelationships != null) {
 		    for (String key: incomingRelationships.keySet()) {
-		        sample.incomingRelationships.put(SolrSampleService.valueToSafeField(key), incomingRelationships.get(key));
+		        sample.incomingRelationships.put(fieldService.encodeFieldName(key), incomingRelationships.get(key));
             }
 		}
 
@@ -228,7 +229,7 @@ public class SolrSample {
 		if (attributeValues != null && attributeValues.keySet().size() > 0) {
 			List<String> attributeTypes = new ArrayList<>();
 			for (String attributeType : attributeValues.keySet()) {
-				String field = SolrSampleService.valueToSafeField(attributeType) + "_av_ss";
+				String field = fieldService.encodeFieldName(attributeType) + "_av_ss";
 				attributeTypes.add(field);
 			}
 			Collections.sort(attributeTypes);
@@ -240,7 +241,7 @@ public class SolrSample {
 			for (String key: outgoingRelationships.keySet()) {
 //			    String safeKey = getSafeKey(key);
 //			    safeKey = safeKey + "_or_ss";
-                String field = SolrSampleService.valueToSafeField(key) + "_or_ss";
+                String field = fieldService.encodeFieldName(key) + "_or_ss";
 				outgoingRelationshipTypes.add(field);
 			}
 
@@ -253,7 +254,7 @@ public class SolrSample {
 			for (String key: incomingRelationships.keySet()) {
 //                String safeKey = getSafeKey(key);
 //                safeKey = safeKey + "_ir_ss";
-                String field = SolrSampleService.valueToSafeField(key) +"_ir_ss";
+                String field = fieldService.encodeFieldName(key) +"_ir_ss";
 				incomingRelationshipTypes.add(field);
 			}
 

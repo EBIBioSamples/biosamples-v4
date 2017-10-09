@@ -57,14 +57,14 @@ public class FilterService {
 		 *  3. The value
  		 */
 		//TODO re-enable this
-//		Arrays.sort(filterStrings);
-//		SortedSet<String> filterStringSet = new TreeSet<>(Arrays.asList(filterStrings));
-//		for(String filterString: filterStringSet) {
-//			FilterType filterType = FilterType.ofFilterString(filterString);
-//			String filterValue = filterString.replace(filterType.getKind() + ":","");
-//			Filter filter = getFilter(filterValue, filterType);
-//			outputFilters.add(filter);
-//		}
+		Arrays.sort(filterStrings);
+		SortedSet<String> filterStringSet = new TreeSet<>(Arrays.asList(filterStrings));
+		for(String filterString: filterStringSet) {
+			FilterType filterType = FilterType.ofFilterString(filterString);
+			String filterValue = filterString.replace(filterType.getSerialization() + ":","");
+			Filter filter = getFilter(filterValue, filterType);
+			outputFilters.add(filter);
+		}
 
 		return outputFilters;
 

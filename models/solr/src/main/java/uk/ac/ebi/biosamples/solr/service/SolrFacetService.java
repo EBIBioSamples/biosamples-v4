@@ -1,6 +1,5 @@
 package uk.ac.ebi.biosamples.solr.service;
 
-import com.google.common.io.BaseEncoding;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -18,7 +17,6 @@ import uk.ac.ebi.biosamples.model.facets.LabelCountEntry;
 import uk.ac.ebi.biosamples.model.filters.Filter;
 import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
 
-import java.io.UnsupportedEncodingException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -29,10 +27,12 @@ public class SolrFacetService {
 
     private static final int TIMEALLOWED = 30;
     private final SolrSampleRepository solrSampleRepository;
+    private final SolrFieldService solrFieldService;
     private Logger log = LoggerFactory.getLogger(getClass());
 
-    public SolrFacetService(SolrSampleRepository solrSampleRepository) {
+    public SolrFacetService(SolrSampleRepository solrSampleRepository, SolrFieldService solrFieldService) {
         this.solrSampleRepository = solrSampleRepository;
+        this.solrFieldService = solrFieldService;
     }
 
     public List<Facet> getFacets(String searchTerm,
@@ -154,52 +154,54 @@ public class SolrFacetService {
     private FieldInfo getFieldInfo(Entry<String, Long> facetField) {
         // Read the suffix
         // Read the field
-        FacetType facetType = null;
-        String facetFieldName = facetField.getKey();
+        String encodedFieldName = facetField.getKey();
         Long facetFieldSampleCount = facetField.getValue();
-        for(FacetType type: FacetType.values()) {
-            if (facetFieldName.endsWith(type.getSolrSuffix())) {
-                facetType = type;
-                break;
-            }
-        }
-        // If no type is actually available, throw an error
-        if (facetType == null) {
-            throw new RuntimeException("Unknown type for facet field " + facetFieldName);
-        }
+        Entry<FacetType, String> fieldTypeAndName = solrFieldService.decodeField(encodedFieldName);
+        FacetType fieldType = fieldTypeAndName.getKey();
+        String decodedFieldName = fieldTypeAndName.getValue();
+//        for(FacetType type: FacetType.values()) {
+//            if (facetFieldName.endsWith(type.getSolrSuffix())) {
+//                facetType = type;
+//                break;
+//            }
+//        }
+//        // If no type is actually available, throw an error
+//        if (fieldType == null) {
+//            throw new RuntimeException("Unknown type for facet field " + facetFieldName);
+//        }
+//
+//        // Remove the facet type suffix from the solr facet field
+//        String solrEncodedFieldName = facetFieldName.replaceFirst(
+//                facetType.getSolrSuffix() + "$",
+//                "");
+//        String decodedFieldName = solrFieldService.decodeFieldName(solrEncodedFieldName);
 
-        // Remove the facet type suffix from the solr facet field
-        String solrEncodedFieldName = facetFieldName.replaceFirst(
-                facetType.getSolrSuffix() + "$",
-                "");
-        String decodedFieldName = decodeFacetField(solrEncodedFieldName);
-
-        return new FieldInfo(facetFieldName, decodedFieldName, facetType, facetFieldSampleCount);
+        return new FieldInfo(encodedFieldName, decodedFieldName, fieldType, facetFieldSampleCount);
     }
 
-    private String decodeFacetField(String encodedField) {
+//    private String decodeFacetField(String encodedField) {
+//
+//        String decodedField = encodedField.replace("_", "=");
+//        try {
+//             decodedField = new String(BaseEncoding.base32().decode(decodedField), "UTF-8");
+//        } catch (UnsupportedEncodingException e) {
+//            throw new RuntimeException(e);
+//        }
+//        return decodedField;
+//    }
 
-        String decodedField = encodedField.replace("_", "=");
-        try {
-             decodedField = new String(BaseEncoding.base32().decode(decodedField), "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
-        return decodedField;
-    }
-
-    private String encodeFacetField(String field) {
-
-        String encodedField = field;
-        try {
-            encodedField = BaseEncoding.base32().encode(encodedField.getBytes("UTF-8"));
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
-        //although its base32 encoded, that include = which solr doesn't allow
-        encodedField = encodedField.replaceAll("=", "_");
-        return encodedField;
-    }
+//    private String encodeFacetField(String field) {
+//
+//        String encodedField = field;
+//        try {
+//            encodedField = BaseEncoding.base32().encode(encodedField.getBytes("UTF-8"));
+//        } catch (UnsupportedEncodingException e) {
+//            throw new RuntimeException(e);
+//        }
+//        //although its base32 encoded, that include = which solr doesn't allow
+//        encodedField = encodedField.replaceAll("=", "_");
+//        return encodedField;
+//    }
 
     /*
         FieldInfo is in some way redundant at the moment
