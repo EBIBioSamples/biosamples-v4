@@ -88,6 +88,12 @@ public class SolrSampleRepositoryImpl implements SolrSampleRepositoryCustom  {
 	}
 
 	@Override
+	public FacetPage<?> getRangeFacets(FacetQuery query, List<String> facetFields, Pageable facetPageable) {
+	    //TODO Implement the method
+		return null;
+	}
+
+	@Override
 	public Page<SolrSample> findByQuery(Query query) {
 		return solrOperations.query(query, SolrSample.class);
 	}

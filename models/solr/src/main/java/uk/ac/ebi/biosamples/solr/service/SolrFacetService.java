@@ -4,7 +4,6 @@ import com.google.common.io.BaseEncoding;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.solr.core.query.*;
 import org.springframework.data.solr.core.query.result.FacetFieldEntry;
@@ -16,6 +15,7 @@ import uk.ac.ebi.biosamples.model.facets.Facet;
 import uk.ac.ebi.biosamples.model.facets.FacetType;
 import uk.ac.ebi.biosamples.model.facets.FacetsBuilder;
 import uk.ac.ebi.biosamples.model.facets.LabelCountEntry;
+import uk.ac.ebi.biosamples.model.filters.Filter;
 import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
 
 import java.io.UnsupportedEncodingException;
@@ -35,7 +35,11 @@ public class SolrFacetService {
         this.solrSampleRepository = solrSampleRepository;
     }
 
-    public List<Facet> getFacets(String searchTerm, Collection<String> filters, Collection<String> domains) {
+    public List<Facet> getFacets(String searchTerm,
+                                 Collection<Filter> filters,
+                                 Collection<String> domains,
+                                 Pageable facetFieldPageInfo,
+                                 Pageable facetValuesPageInfo) {
         //default to search all
         if (searchTerm == null || searchTerm.trim().length() == 0) {
             searchTerm = "*:*";
@@ -58,8 +62,7 @@ public class SolrFacetService {
         query.addFilterQuery(filterQuery);
 
         // Generate a facet query to get all the available facets for the samples
-        Pageable facetPageable = new PageRequest(0, 25);
-        Page<FacetFieldEntry> facetFields = solrSampleRepository.getFacetFields(query, facetPageable);
+        Page<FacetFieldEntry> facetFields = solrSampleRepository.getFacetFields(query, facetFieldPageInfo);
 
         // Get the facet fields
         Map<String,Long> allFacetFields = new HashMap<>();
@@ -100,7 +103,7 @@ public class SolrFacetService {
                 case INCOMING_RELATIONSHIP:
                 case OUTGOING_RELATIONSHIP:
                     // TODO get a list of values for the facet field
-                    List<Facet> regularFacets = getRegularFacets(query, entriesByType, facetPageable);
+                    List<Facet> regularFacets = getRegularFacets(query, entriesByType, facetValuesPageInfo);
                     regularFacets.forEach(builder::addFacet);
                     break;
                 // TODO Implement all the other cases
