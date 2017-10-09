@@ -13,6 +13,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -56,6 +58,7 @@ import org.xmlunit.input.WhitespaceNormalizedSource;
 
 import com.google.common.collect.Sets;
 
+import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.XmlToSampleConverter;
 
@@ -208,20 +211,61 @@ class AccessionComparisonCallable implements Callable<Void> {
 			log.warn("Difference on "+accession+" of name between '"+oldSample.getName()+"' and '"+newSample.getName()+"'");
 		}
 				
-		if (ChronoUnit.DAYS.between(oldSample.getUpdate(), newSample.getUpdate()) > 1) {
-			log.warn("Difference on "+accession+" of update date between '"+oldSample.getUpdate()+"' and '"+newSample.getUpdate()+"'");
+		if (Math.abs(ChronoUnit.DAYS.between(oldSample.getUpdate(), newSample.getUpdate())) > 1) {
+			//TODO disabled for moment
+			//log.warn("Difference on "+accession+" of update date between '"+oldSample.getUpdate()+"' and '"+newSample.getUpdate()+"'");
 		}
-		if (ChronoUnit.DAYS.between(oldSample.getRelease(), newSample.getRelease()) > 1) {
+		if (Math.abs(ChronoUnit.DAYS.between(oldSample.getRelease(), newSample.getRelease())) > 1) {
 			log.warn("Difference on "+accession+" of release date between '"+oldSample.getRelease()+"' and '"+newSample.getRelease()+"'");
 		}
 		
 		Set<String> oldAttributeTypes = oldSample.getAttributes().stream().map(a -> a.getType()).collect(Collectors.toSet());
 		Set<String> newAttributeTypes = newSample.getAttributes().stream().map(a -> a.getType()).collect(Collectors.toSet());		
 		for (String attributeType : Sets.difference(oldAttributeTypes, newAttributeTypes)) {
-			log.warn("Difference on "+accession+" of attribute type '"+attributeType+"' in old only");			
+			log.warn("Difference on "+accession+" of attribute '"+attributeType+"' in old only");			
 		}
 		for (String attributeType : Sets.difference(newAttributeTypes, oldAttributeTypes)) {
-			log.warn("Difference on "+accession+" of attribute type '"+attributeType+"' in new only");			
+			log.warn("Difference on "+accession+" of attribute '"+attributeType+"' in new only");			
+		}
+		
+		for (String attributeType : Sets.intersection(oldAttributeTypes, newAttributeTypes)) {
+			List<Attribute> oldAttributes = oldSample.getAttributes().stream()
+					.filter(a -> attributeType.equals(a.getType())).collect(Collectors.toList());
+			Collections.sort(oldAttributes);
+			List<Attribute> newAttributes = newSample.getAttributes().stream()
+					.filter(a -> attributeType.equals(a.getType())).collect(Collectors.toList());
+			Collections.sort(newAttributes);			
+			
+			SortedMap<String,SortedMap<String,String>> oldUnits = new TreeMap<>();
+			SortedMap<String,SortedMap<String,String>> oldIris = new TreeMap<>();
+			SortedMap<String,SortedMap<String,String>> newUnits = new TreeMap<>();
+			SortedMap<String,SortedMap<String,String>> newIris = new TreeMap<>();
+			
+			if (oldAttributes.size() != newAttributes.size()) {
+				log.warn("Difference on "+accession+" of attribute '"+attributeType+"' has "+oldAttributes.size()+" values in old and "+newAttributes.size()+" values in new");		
+			} else {
+				for (int i = 0; i < oldAttributes.size(); i++) {
+					Attribute oldAttribute = oldAttributes.get(i);
+					Attribute newAttribute = newAttributes.get(i);
+					
+					
+					
+					//compare values
+					if (!oldAttribute.getType().equals(newAttribute.getType())) {
+						log.warn("Difference on "+accession+" of attribute '"+attributeType+"' between '"+oldAttribute.getType()+"' and '"+newAttribute.getType()+"'");
+					}
+					//compare units
+					if (oldAttribute.getUnit() != null && newAttribute.getUnit() != null
+							&& !oldAttribute.getUnit().equals(newAttribute.getUnit()) ) {
+						log.warn("Difference on "+accession+" of attribute '"+attributeType+"' between units '"+oldAttribute.getUnit()+"' and '"+newAttribute.getUnit()+"'");
+					}
+					//compare iris
+					if (oldAttribute.getIri() != null && newAttribute.getIri() != null
+							&& !oldAttribute.getIri().equals(newAttribute.getIri()) ) {
+						log.warn("Difference on "+accession+" of attribute '"+attributeType+"' between iris '"+oldAttribute.getIri()+"' and '"+newAttribute.getIri()+"'");
+					}
+				}
+			}
 		}
 		
 	}
