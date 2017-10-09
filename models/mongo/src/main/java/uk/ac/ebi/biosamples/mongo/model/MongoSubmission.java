@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -27,11 +28,16 @@ public class MongoSubmission {
 	@JsonSerialize(using = CustomInstantSerializer.class)
 	@JsonDeserialize(using = CustomInstantDeserializer.class)
 	@LastModifiedDate
+	@Indexed
 	private final Instant datetime;
 	
 	private final Map<String, List<String>> headers;
+
+	@Indexed
 	private final String url;
 	private final String content;
+
+	@Indexed
 	private final String method;
 	
 	private MongoSubmission(Instant datetime, String method, String url, Map<String, List<String>> headers, String content){
