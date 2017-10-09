@@ -39,6 +39,9 @@ public class PipelinesProperties {
 	@Value("${biosamples.ena.domain:self.BiosampleImportENA}")
 	private String enaDomain;
 	
+	@Value("${biosamples.accession.domain:self.BiosampleImportAcccession}")
+	private String accessionDomain;
+	
 	public String getNcbiFile() {
 		return ncbiFile;
 	}
@@ -47,6 +50,9 @@ public class PipelinesProperties {
 	}
 	public String getEnaDomain() {
 		return enaDomain;
+	}
+	public String getAccessionDomain() {
+		return accessionDomain;
 	}
 
 	public int getThreadCount() {

@@ -130,12 +130,12 @@ public class Accession implements ApplicationRunner{
 			Instant update = Instant.ofEpochMilli(dateAssigned.getTime());
 
 			SortedSet<Attribute> attributes = new TreeSet<>();
-			attributes.add(Attribute.build("other", "migrated from accession database at "+DateTimeFormatter.ISO_DATE_TIME.format(Instant.now())));
+			attributes.add(Attribute.build("other", "migrated from accession database at "+DateTimeFormatter.ISO_DATE_TIME.format(ZonedDateTime.now(ZoneOffset.UTC))));
 			//this is the migrated domain in an AAP context
 			//attributes.add(Attribute.build("submission accession", submissionAccession));
 			attributes.add(Attribute.build("deleted", Boolean.toString(deleted)));
 			
-			Sample sample = Sample.build(name, accession, null, release, update, attributes, null, null);
+			Sample sample = Sample.build(name, accession, pipelinesProperties.getAccessionDomain(), release, update, attributes, null, null);
 			bioSamplesClient.persistSample(sample);
 			return null;
 		}
