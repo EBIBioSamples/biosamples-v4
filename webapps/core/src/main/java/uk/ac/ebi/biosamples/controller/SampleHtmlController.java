@@ -1,20 +1,5 @@
 package uk.ac.ebi.biosamples.controller;
 
-import java.net.URI;
-import java.time.Instant;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -33,14 +18,16 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.facets.Facet;
+import uk.ac.ebi.biosamples.model.filters.Filter;
 import uk.ac.ebi.biosamples.service.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.net.URI;
 import java.time.Instant;
-import java.time.format.DateTimeFormatter;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeParseException;
+import java.util.*;
 
 /**
  * Primary controller for HTML operations.
@@ -106,7 +93,7 @@ public class SampleHtmlController {
 	public String samples(Model model, @RequestParam(name="text", required=false) String text,
 			@RequestParam(name = "updatedafter", required = false) String updatedAfter,
 			@RequestParam(name = "updatedbefore", required = false) String updatedBefore,
-			@RequestParam(name="filter", required=false) String[] filters,
+			@RequestParam(name="filter", required=false) String[] filtersArray,
 			@RequestParam(name="start", defaultValue="0") Integer start,
 			@RequestParam(name="rows", defaultValue="10") Integer rows,
 			HttpServletRequest request, HttpServletResponse response) {
@@ -119,8 +106,10 @@ public class SampleHtmlController {
 		if (rows > 1000) {
 			rows = 1000;
 		}
-		
-		MultiValueMap<String, String> filtersMap = filterService.getFilters(filters);
+
+		//TODO filterService need to return a Collection<Filter>
+		MultiValueMap<String, String> filtersMap = filterService.getFilters(filtersArray);
+        Collection<Filter> filterCollection = filterService.getFiltersCollection(filtersArray);
 		
 		Collection<String> domains = bioSamplesAapService.getDomains();
 
@@ -146,7 +135,7 @@ public class SampleHtmlController {
 		Pageable pageable = new PageRequest(start/rows, rows);
 		Page<Sample> pageSample = samplePageService.getSamplesByText(text, filtersMap, domains, updatedAfterDate, updatedBeforeDate, pageable);
 		//default to getting 10 values from 10 facets
-		List<Facet> sampleFacets = facetService.getFacets(text, filtersMap, 10, 10);
+		List<Facet> sampleFacets = facetService.getFacets(text, filterCollection, domains, 10, 10);
 
 
 		// TODO Encode filters using
@@ -168,10 +157,11 @@ public class SampleHtmlController {
 		UriComponentsBuilder uriBuilder = ServletUriComponentsBuilder.fromRequest(request);
 		Map<String, String> facetsUri = new HashMap<>();
 		List<String> filtersList = new ArrayList<>();
-		if (filters != null) {
-			filtersList.addAll(Arrays.asList(filters));
+		if (filtersArray != null) {
+			filtersList.addAll(Arrays.asList(filtersArray));
 		}
 		Collections.sort(filtersList);
+
 		
 		// TODO sampleFacets is a generic facet, need to make this part compatible with more than List of label facet
 

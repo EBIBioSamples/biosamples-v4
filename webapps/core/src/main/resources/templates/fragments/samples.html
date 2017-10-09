@@ -8,16 +8,17 @@
 		<div class="button-grid">
 			<div th:each="facet : ${facets}"
 				 th:with="facetType=${facet.getType().getFacetId()},
-				 		  filterName=${facetType + ':' + facet.label}">
+				 		  filterType=${facet.getType().getAssociatedFilterType()},
+				 		  generalFilterName=${filterType.getSerialization() + ':' + facet.label}">
                 <div class="facet-container">
                     <input th:form="local-search"
                            class="facet-checkbox"
-                           th:id="${filterName}"
+                           th:id="${generalFilterName}"
                            type="checkbox" name="filter"
-                           th:value="${filterName}"
-                           th:checked="${#lists.contains(filters, filterName)}" />
-                    <label th:for="${filterName}" class="button columns medium-12 padding-top-small padding-bottom-small facet"
-                       th:classappend="${#lists.contains(filters, filterName)} ? 'secondary'">
+                           th:value="${generalFilterName}"
+                           th:checked="${#lists.contains(filters, generalFilterName)}" />
+                    <label th:for="${generalFilterName}" class="button columns medium-12 padding-top-small padding-bottom-small facet"
+						   th:classappend="${#lists.contains(filters, generalFilterName)} ? 'secondary'">
                         <i class="icon icon-functional show-if-checked" data-icon="/"></i>
                         <div class="lead facet-name text-left" th:text="${facet.label + ' (' + facetType + ')'}"></div>
                         <div class="lead facet-count text-right" th:text="${facet.count}"></div>
@@ -25,7 +26,7 @@
 				</div>
                 <div th:each="value : ${facet.content}"
 					  class="facet-container"
-					  th:with="valueFilterName=${filterName + ':' + value.label}">
+					  th:with="valueFilterName=${generalFilterName + ':' + value.label}">
                     <input th:form="local-search" th:with="filterName=${facetType + ':' + facet.label}"
                            th:id="${valueFilterName}"
                            class="facet-checkbox"
