@@ -50,7 +50,7 @@ public class SampleTabService {
 			
 			//only build a sample if there is at least one attribute or it has no "parent" node
 			//otherwise, it is just a group membership tracking dummy
-			if (sampleNode.getAttributes().size() > 0 || sampleNode.getChildNodes().size() == 0) {			
+			if (sampleNode.getAttributes().size()+relationships.size()+externalReferences.size() > 0 || sampleNode.getChildNodes().size() == 0) {			
 				Sample sample = Sample.build(name, accession, domain, release, update, new TreeSet<>(), new TreeSet<>(), new TreeSet<>());
 				sample = bioSamplesClient.persistSampleResource(sample, setUpdateDate).getContent();
 				if (accession == null) {
@@ -94,8 +94,9 @@ public class SampleTabService {
 			}			
 			
 			//only build a sample if there is at least one attribute or it has no "parent" node
-			//otherwise, it is just a group membership tracking dummy
-			if (attributes.size() > 0 || sampleNode.getChildNodes().size() == 0) {			
+			//otherwise, it is just a group membership tracking dummy		
+			if (attributes.size()+relationships.size()+externalReferences.size() > 0
+					|| sampleNode.getChildNodes().size() == 0) {
 				Sample sample = Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences);
 				sample = bioSamplesClient.persistSampleResource(sample, setUpdateDate).getContent();
 				if (accession == null) {
