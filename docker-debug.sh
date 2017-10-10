@@ -13,26 +13,15 @@ done
 #mvn -T 2C -Dmaven.test.skip=true clean package
 mvn -T 2C -P embl-ebi clean package
 
-set +e
-docker-compose stop biosamples-webapps-core biosamples-webapps-sampletab biosamples-webapps-legacyxml mongo solr rabbitmq biosamples-agents-solr
-docker-compose rm -f -v biosamples-webapps-core biosamples-webapps-sampletab biosamples-webapps-legacyxml mongo solr rabbitmq biosamples-agents-solr
 #cleanup any previous data
-echo "The clean value is $clean"
 if [ $clean == 1 ]
 then
 	echo "Cleaning existing volumes"
-	docker volume ls -q | grep mongo_data | xargs docker volume rm
-	docker volume ls -q | grep solr_data | xargs docker volume rm
-	docker volume ls -q | grep rabbitmq_data | xargs docker volume rm
-	docker volume ls -q | grep logs | xargs docker volume rm
-
-#        echo "Cleaning logs"
-#        rm -rf docker/logs/*.log docker/logs/*.log.* docker/logs/neo4j/*.log
-
-#remove any images, in case of out-of-date or corrupt images
-#docker images -q | xargs -r docker rmi
-
-
+	#remove any images, in case of out-of-date or corrupt images
+	#docker-compose down --volumes --rmi --remove-orphans
+	docker-compose down --volumes --remove-orphans
+else
+	docker-compose down --remove-orphans
 fi
 set -e
 
