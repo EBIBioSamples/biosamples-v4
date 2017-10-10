@@ -9,7 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -107,12 +106,10 @@ public class SampleHtmlController {
 			rows = 1000;
 		}
 
-		//TODO filterService need to return a Collection<Filter>
-		MultiValueMap<String, String> filtersMap = filterService.getFilters(filtersArray);
         Collection<Filter> filterCollection = filterService.getFiltersCollection(filtersArray);
-		
 		Collection<String> domains = bioSamplesAapService.getDomains();
 
+        // TODO replace this with proper filters on dates
 		Instant updatedAfterDate = null;
 		if (updatedAfter != null) {
 			try {
@@ -131,32 +128,17 @@ public class SampleHtmlController {
 				throw new RuntimeException("Unable to parse date "+updatedBefore);
 			}
 		}
-						
+
 		Pageable pageable = new PageRequest(start/rows, rows);
-//		Page<Sample> pageSample = samplePageService.getSamplesByText(text, filtersMap, domains, updatedAfterDate, updatedBeforeDate, pageable);
-		//default to getting 10 values from 10 facets
 		Page<Sample> pageSample = samplePageService.getSamplesByText(text, filterCollection, domains, pageable);
+
+		//default to getting 10 values from 10 facets
 		List<Facet> sampleFacets = facetService.getFacets(text, filterCollection, domains, 10, 10);
 
 
-		// TODO Encode filters using
-//		sampleFacets.stream().map(stringListFacet ->
-//		{
-//			Map<String, Object> parameters = new HashMap<>();
-//			parameters.put("text", text);
-//			parameters.put("updatedafter", updatedAfter);
-//			parameters.put("updatedbefore", updatedBefore);
-//			List<Resource<LabelCountEntry>> facetEntries = (List<Resource<LabelCountEntry>>) stringListFacet.getContent();
-//			for(Resource<LabelCountEntry> resource: facetEntries) {
-//				resource.getLink("filter").expand(parameters);
-//
-//			}
-//
-//		})
-		
+
 		//build URLs for the facets depending on if they are enabled or not
 		UriComponentsBuilder uriBuilder = ServletUriComponentsBuilder.fromRequest(request);
-		Map<String, String> facetsUri = new HashMap<>();
 		List<String> filtersList = new ArrayList<>();
 		if (filtersArray != null) {
 			filtersList.addAll(Arrays.asList(filtersArray));
@@ -164,14 +146,11 @@ public class SampleHtmlController {
 		Collections.sort(filtersList);
 
 		
-		// TODO sampleFacets is a generic facet, need to make this part compatible with more than List of label facet
-
-		model.addAttribute("text", text);		
+		model.addAttribute("text", text);
 		model.addAttribute("start", start);
 		model.addAttribute("rows", rows);
 		model.addAttribute("page", pageSample);
 		model.addAttribute("facets", sampleFacets);
-		model.addAttribute("facetsuri", facetsUri);
 		model.addAttribute("filters", filtersList);
 		model.addAttribute("paginations", getPaginations(pageSample, uriBuilder));
 				

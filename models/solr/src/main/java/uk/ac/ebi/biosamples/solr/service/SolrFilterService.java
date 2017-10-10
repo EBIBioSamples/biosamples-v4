@@ -58,6 +58,11 @@ public class SolrFilterService {
 
     }
 
+    /**
+     * Produce a filter query based on the provided filters
+     * @param filters a collection of filters
+     * @return the corresponding filter query
+     */
     public Optional<FilterQuery> getFilterQuery(Collection<Filter> filters) {
         if (filters == null || filters.size() == 0) {
             return Optional.empty();
@@ -80,17 +85,23 @@ public class SolrFilterService {
 
     }
 
-    public FilterQuery getPublicFilterQuery(Collection<String> domains) {
+    /**
+     * Return a filter query for public samples (released in the past) or samples
+     * part of the provided domains
+     * @param domains a collection of domains
+     * @return a filter query for public and domain relevant samples
+     */
+    public Optional<FilterQuery> getPublicFilterQuery(Collection<String> domains) {
         //filter out non-public
-        //filter to update date range
-        FilterQuery filterQuery = new SimpleFilterQuery();
         //check if this is a read superuser
         if (!domains.contains(bioSamplesProperties.getBiosamplesAapSuperRead())) {
             //user can only see private samples inside its own domain
+            FilterQuery filterQuery = new SimpleFilterQuery();
             filterQuery.addCriteria(new Criteria("release_dt").lessThan("NOW").and("release_dt").isNotNull()
                     .or(new Criteria("domain_s").in(domains)));
+            return Optional.of(filterQuery);
         }
-        return filterQuery;
+        return Optional.empty();
 
     }
 

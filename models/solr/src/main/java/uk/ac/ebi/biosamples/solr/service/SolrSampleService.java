@@ -89,6 +89,14 @@ public class SolrSampleService {
 		return solrSampleRepository.findByQuery(query);
 	}
 
+	/**
+	 * Fetch the solr samples based on query specification
+	 * @param searchTerm the term to search for in solr
+	 * @param filters a Collection of filters used in the solr query
+	 * @param domains a Collection of domains used in the solr query
+	 * @param pageable pagination information
+	 * @return a page of Samples full-filling the query
+	 */
 	public Page<SolrSample> fetchSolrSampleByText(String searchTerm, Collection<Filter> filters, Collection<String> domains, Pageable pageable) {
 
 		//default to search all
@@ -98,13 +106,13 @@ public class SolrSampleService {
 		//build a query out of the users string and any facets
 		Query query = new SimpleQuery(searchTerm);
 		query.setPageRequest(pageable);
+		query.setTimeAllowed(TIMEALLOWED*1000);
+
+		Optional<FilterQuery> publicFilterQuery = solrFilterService.getPublicFilterQuery(domains);
+		publicFilterQuery.ifPresent(query::addFilterQuery);
 
 		Optional<FilterQuery> optionalFilter = solrFilterService.getFilterQuery(filters);
 		optionalFilter.ifPresent(query::addFilterQuery);
-
-		FilterQuery publicFilterQuery = solrFilterService.getPublicFilterQuery(domains);
-		query.addFilterQuery(publicFilterQuery);
-		query.setTimeAllowed(TIMEALLOWED*1000);
 
 		// return the samples from solr that match the query
 		return solrSampleRepository.findByQuery(query);

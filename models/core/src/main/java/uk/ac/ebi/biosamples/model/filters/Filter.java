@@ -26,6 +26,12 @@ public class Filter<T extends FilterContent> {
         return content;
     }
 
+    /**
+     * Check if two filters are compatible in term of type and label but not content
+     * This method is used to check
+     * @param anotherFilter The filter to check agains
+     * @return
+     */
     public boolean isCompatible(Filter anotherFilter) {
         return this.label.equals(anotherFilter.getLabel()) && this.kind.equals(anotherFilter.getKind());
     }

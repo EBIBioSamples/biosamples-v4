@@ -8,7 +8,7 @@ import uk.ac.ebi.biosamples.model.facets.FacetType;
 
 import java.io.UnsupportedEncodingException;
 import java.util.AbstractMap;
-import java.util.Map;
+import static java.util.Map.Entry;
 
 /**
  * SolrFieldService is the service that should be able to deal with all field matters
@@ -58,7 +58,7 @@ public class SolrFieldService {
      * @param field encoded version of the field with the type suffix
      * @return the field name decoded
      */
-    public Map.Entry<FacetType, String> decodeField(String field) {
+    public Entry<FacetType, String> decodeField(String field) {
         FacetType facetType = FacetType.ofField(field);
         if (facetType == null) {
             throw new RuntimeException("Unknown type for facet field " + field);
@@ -71,4 +71,49 @@ public class SolrFieldService {
         return new AbstractMap.SimpleEntry<>(facetType, this.decodeFieldName(solrEncodedFieldName));
     }
 
+    public FieldInfo getFieldInfo(Entry<String, Long> facetField) {
+        String encodedFieldName = facetField.getKey();
+        Long facetFieldSampleCount = facetField.getValue();
+        Entry<FacetType, String> fieldTypeAndName = decodeField(encodedFieldName);
+        FacetType fieldType = fieldTypeAndName.getKey();
+        String decodedFieldName = fieldTypeAndName.getValue();
+
+        return new FieldInfo(encodedFieldName, decodedFieldName, fieldType, facetFieldSampleCount);
+    }
+
+    public static class FieldInfo {
+
+            private final FacetType type;
+            private final String fieldName;
+            private final String encodedField;
+            private final Long sampleCount;
+
+
+            public FieldInfo(String encodedField,
+                      String fieldName,
+                      FacetType fieldType,
+                      Long sampleCount) {
+                this.type = fieldType;
+                this.fieldName = fieldName;
+                this.encodedField = encodedField;
+                this.sampleCount = sampleCount;
+            }
+
+            public FacetType getType() {
+                return type;
+            }
+
+            public String getFieldName() {
+                return fieldName;
+            }
+
+            public String getEncodedField() {
+                return encodedField;
+            }
+
+            public Long getSampleCount() {
+                return sampleCount;
+            }
+
+    }
 }

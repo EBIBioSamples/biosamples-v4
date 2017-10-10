@@ -44,27 +44,35 @@ public class FilterService {
 		return filters;
 	}
 
+	/**
+	 * Converts an array of serialized filters to the corresponding collection of object
+	 * @param filterStrings an array of serialized filters
+	 * @return
+	 */
 	public Collection<Filter> getFiltersCollection(String[] filterStrings) {
 		List<Filter> outputFilters = new ArrayList<>();
 		if (filterStrings == null) return outputFilters;
 		if (filterStrings.length == 0) return outputFilters;
 
 
-		/**
+		/*
 		 *	For every filter I need to extract:
 		 *	1. The kind of the filter
 		 *  2. Label (which will be used to get the corresponding field in solr, so here is decoded)
 		 *  3. The value
  		 */
-		//TODO re-enable this
 		Arrays.sort(filterStrings);
 		SortedSet<String> filterStringSet = new TreeSet<>(Arrays.asList(filterStrings));
 		for(String filterString: filterStringSet) {
 			FilterType filterType = FilterType.ofFilterString(filterString);
 			String filterValue = filterString.replace(filterType.getSerialization() + ":","");
 			Filter filter = getFilter(filterValue, filterType);
-			// If outputFilter has a similar filter
-			// Instead of adding a new separate filter, merge the two filters
+
+			/*
+			 * If there's already a compatible filter in the list
+			 * merge the two contents
+			 * TODO Improvable?
+             */
 			int compatibleFilterIndex = -1;
 			Filter newFilter = filter;
             for(int i=0; i<outputFilters.size(); i++) {
@@ -87,9 +95,16 @@ public class FilterService {
 
 	}
 
+	/**
+	 * Generate a Filter based on the provided serialized filter content and filter type
+	 * @param serializedValue the content of the filter serialized
+	 * @param filterType the kind of filter
+	 * @return a new Filter
+	 */
 	private Filter getFilter(String serializedValue, FilterType filterType) {
 		String filterLabel = "";
 		FilterContent filterContent = new EmptyFilter();
+		//TODO code smell - Too many switch cases
 		switch(filterType) {
 			case ATTRIBUTE_FILTER:
 			case RELATION_FILER:
