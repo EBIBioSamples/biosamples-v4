@@ -26,4 +26,8 @@ public class Filter<T extends FilterContent> {
         return content;
     }
 
+    public boolean isCompatible(Filter anotherFilter) {
+        return this.label.equals(anotherFilter.getLabel()) && this.kind.equals(anotherFilter.getKind());
+    }
+
 }

@@ -45,7 +45,7 @@ public class FilterService {
 	}
 
 	public Collection<Filter> getFiltersCollection(String[] filterStrings) {
-		Collection<Filter> outputFilters = new ArrayList<>();
+		List<Filter> outputFilters = new ArrayList<>();
 		if (filterStrings == null) return outputFilters;
 		if (filterStrings.length == 0) return outputFilters;
 
@@ -63,7 +63,24 @@ public class FilterService {
 			FilterType filterType = FilterType.ofFilterString(filterString);
 			String filterValue = filterString.replace(filterType.getSerialization() + ":","");
 			Filter filter = getFilter(filterValue, filterType);
-			outputFilters.add(filter);
+			// If outputFilter has a similar filter
+			// Instead of adding a new separate filter, merge the two filters
+			int compatibleFilterIndex = -1;
+			Filter newFilter = filter;
+            for(int i=0; i<outputFilters.size(); i++) {
+            	Filter outputFilter = outputFilters.get(i);
+            	if(outputFilter.isCompatible(filter)) {
+            		outputFilter.getContent().merge(filter.getContent());
+					newFilter = outputFilter;
+					compatibleFilterIndex = i;
+					break;
+				}
+			}
+			if (compatibleFilterIndex < 0) {
+            	outputFilters.add(filter);
+			} else {
+            	outputFilters.set(compatibleFilterIndex, newFilter);
+			}
 		}
 
 		return outputFilters;
@@ -75,10 +92,14 @@ public class FilterService {
 		FilterContent filterContent = new EmptyFilter();
 		switch(filterType) {
 			case ATTRIBUTE_FILTER:
+			case RELATION_FILER:
+			case INVERSE_RELATION_FILTER:
 				String[] valueElements = serializedValue.split(":", 2);
 				filterLabel = valueElements[0];
 				if(valueElements.length > 1) {
-					filterContent = new ValueFilter(valueElements[1]);
+					List<String> listContent = new ArrayList<>();
+					listContent.add(valueElements[1]);
+					filterContent = new ValueFilter(listContent);
 				}
 
 		}

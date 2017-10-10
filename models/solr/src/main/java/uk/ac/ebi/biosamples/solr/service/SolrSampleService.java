@@ -12,10 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.Autocomplete;
-import uk.ac.ebi.biosamples.model.filters.EmptyFilter;
-import uk.ac.ebi.biosamples.model.filters.Filter;
-import uk.ac.ebi.biosamples.model.filters.FilterContent;
-import uk.ac.ebi.biosamples.model.filters.FilterType;
+import uk.ac.ebi.biosamples.model.filters.*;
 import uk.ac.ebi.biosamples.service.FacetToFilterConverter;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
 import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
@@ -242,99 +239,28 @@ public class SolrSampleService {
 	    //TODO implement the method
 		FilterContent content = filter.getContent();
 		FilterType type = filter.getKind();
+		String filterTargetField = solrFieldService.encodedField(filter.getLabel(), facetFilterConverter.convert(type));
 		Criteria filterCriteria = null;
-		if (content instanceof EmptyFilter) {
-			String encodedSolrField = solrFieldService.encodedField(filter.getLabel(), facetFilterConverter.convert(type));
-			filterCriteria = new Criteria(encodedSolrField).isNotNull();
+		if (content == null) {
+			 filterCriteria = new Criteria(filterTargetField).isNotNull();
+		} else {
+			switch(type) {
+				case ATTRIBUTE_FILTER:
+				case RELATION_FILER:
+				case INVERSE_RELATION_FILTER:
+					ValueFilter valueContent = (ValueFilter) content;
+					for(String value: valueContent.getContent()) {
+						if (filterCriteria == null) {
+							filterCriteria = new Criteria(filterTargetField).is(value);
+						} else {
+							filterCriteria = filterCriteria.or(new Criteria(filterTargetField).is(value));
+						}
+					}
+
+			}
+
 		}
-//		else {
-//			switch(type) {
-//				case ATTRIBUTE_FILTER:
-//					ValueFilter valueContent = (ValueFilter) content;
-//
-//			}
-//		}
 		return Optional.ofNullable(filterCriteria);
 
 	}
-
-//	public static String valueToSafeField(String type) {
-//		//solr only allows alphanumeric field types
-//		try {
-//			type = BaseEncoding.base32().encode(type.getBytes("UTF-8"));
-//		} catch (UnsupportedEncodingException e) {
-//			throw new RuntimeException(e);
-//		}
-//		//although its base32 encoded, that include = which solr doesn't allow
-//		type = type.replaceAll("=", "_");
-//
-////		if (!suffix.isEmpty()) {
-////			type = type+suffix;
-////		}
-//		return type;
-//	}
-
-//	public static String safeFieldToValue(String field) {
-//
-//		//although its base32 encoded, that include = which solr doesn't allow
-//		field = field.replace("_", "=");
-//		try {
-//			field = new String(BaseEncoding.base32().decode(field), "UTF-8");
-//		} catch (UnsupportedEncodingException e) {
-//			throw new RuntimeException(e);
-//		}
-////		if (inverse) {
-////			field = field+" (inverse)";
-////		}
-//		return field;
-//	}
-
-//	public String facetNameFromField(String encodedFacet) {
-//
-//		FacetType type = FacetType.ofField(encodedFacet);
-//		String baseField = encodedFacet.replace(type.getSolrSuffix(), "");
-//		return safeFieldToValue(baseField);
-////		Pattern facetPattern = Pattern.compile("([a-zA-Z0-9_]+)(_(av|ir|or)_ss)");
-////		Matcher matcher = facetPattern.matcher(encodedFacet);
-////		if (matcher.matches()) {
-////			String encodedField = matcher.group(1);
-////			String suffix = matcher.group(2);
-////
-////			String decodedField = safeFieldToValue(encodedField);
-////			switch (suffix) {
-////				case "_ir_ss":
-////					return "(Relation rev.) " + decodedField;
-////				case "_or_ss":
-////					return "(Relation) " + decodedField;
-////				case "_av_ss":
-////					return "(Attribute) " + decodedField;
-////				default:
-////					throw new RuntimeException("Unable to recognize facet " + encodedFacet);
-////			}
-////		} else {
-////			throw new RuntimeException("Unable to recognize facet " + encodedFacet);
-////		}
-//
-//	}
-
-//	public String fieldFromFacetName(String facetname) {
-////		String suffix, field;
-////	    if (facetname.startsWith("(Relation rev.)")) {
-////	    	suffix = "_ir_ss";
-////	    	field = facetname.replace("(Relation rev.) ","");
-////		} else if (facetname.startsWith("(Relation) ")) {
-////	    	suffix = "_or_ss";
-////	    	field = facetname.replace("(Relation) ","");
-////		} else if (facetname.startsWith("(Attribute)")){
-////	    	suffix = "_av_ss";
-////	    	field = facetname.replace("(Attribute) ","");
-////		} else {
-////			throw new RuntimeException("Unexpected facet name " + facetname);
-////		}
-//		String[] parts = facetname.split(":",2);
-//		FacetType type = FacetType.ofFacetName(parts[0]);
-////		String field = facetname.replace(type.getFacetNamePrefix(), "");
-//		return valueToSafeField(parts[1]) + type.getSolrSuffix();
-//	}
-
 }

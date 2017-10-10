@@ -159,49 +159,10 @@ public class SolrFacetService {
         Entry<FacetType, String> fieldTypeAndName = solrFieldService.decodeField(encodedFieldName);
         FacetType fieldType = fieldTypeAndName.getKey();
         String decodedFieldName = fieldTypeAndName.getValue();
-//        for(FacetType type: FacetType.values()) {
-//            if (facetFieldName.endsWith(type.getSolrSuffix())) {
-//                facetType = type;
-//                break;
-//            }
-//        }
-//        // If no type is actually available, throw an error
-//        if (fieldType == null) {
-//            throw new RuntimeException("Unknown type for facet field " + facetFieldName);
-//        }
-//
-//        // Remove the facet type suffix from the solr facet field
-//        String solrEncodedFieldName = facetFieldName.replaceFirst(
-//                facetType.getSolrSuffix() + "$",
-//                "");
-//        String decodedFieldName = solrFieldService.decodeFieldName(solrEncodedFieldName);
 
         return new FieldInfo(encodedFieldName, decodedFieldName, fieldType, facetFieldSampleCount);
     }
 
-//    private String decodeFacetField(String encodedField) {
-//
-//        String decodedField = encodedField.replace("_", "=");
-//        try {
-//             decodedField = new String(BaseEncoding.base32().decode(decodedField), "UTF-8");
-//        } catch (UnsupportedEncodingException e) {
-//            throw new RuntimeException(e);
-//        }
-//        return decodedField;
-//    }
-
-//    private String encodeFacetField(String field) {
-//
-//        String encodedField = field;
-//        try {
-//            encodedField = BaseEncoding.base32().encode(encodedField.getBytes("UTF-8"));
-//        } catch (UnsupportedEncodingException e) {
-//            throw new RuntimeException(e);
-//        }
-//        //although its base32 encoded, that include = which solr doesn't allow
-//        encodedField = encodedField.replaceAll("=", "_");
-//        return encodedField;
-//    }
 
     /*
         FieldInfo is in some way redundant at the moment
