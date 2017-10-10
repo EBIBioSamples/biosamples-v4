@@ -1,10 +1,15 @@
 package uk.ac.ebi.biosamples.model.filters;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ValueFilter implements FilterContent {
 
     private final List<String> value;
+
+    public ValueFilter() {
+        this.value = new ArrayList<>();
+    }
 
     public ValueFilter(List<String> value) {
         this.value =value;

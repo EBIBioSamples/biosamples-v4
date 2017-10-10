@@ -10,6 +10,7 @@ import org.springframework.data.solr.core.query.result.FacetPage;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.facets.Facet;
 import uk.ac.ebi.biosamples.model.facets.FacetType;
 import uk.ac.ebi.biosamples.model.facets.FacetsBuilder;
@@ -29,10 +30,14 @@ public class SolrFacetService {
     private final SolrSampleRepository solrSampleRepository;
     private final SolrFieldService solrFieldService;
     private Logger log = LoggerFactory.getLogger(getClass());
+    private final SolrFilterService solrFilterService;
+    private final BioSamplesProperties bioSamplesProperties;
 
-    public SolrFacetService(SolrSampleRepository solrSampleRepository, SolrFieldService solrFieldService) {
+    public SolrFacetService(SolrSampleRepository solrSampleRepository, SolrFieldService solrFieldService, SolrFilterService solrFilterService, BioSamplesProperties bioSamplesProperties) {
         this.solrSampleRepository = solrSampleRepository;
         this.solrFieldService = solrFieldService;
+        this.solrFilterService = solrFilterService;
+        this.bioSamplesProperties = bioSamplesProperties;
     }
 
     public List<Facet> getFacets(String searchTerm,
@@ -50,16 +55,12 @@ public class SolrFacetService {
         //build a query out of the users string and any facets
         FacetQuery query = new SimpleFacetQuery();
         query.addCriteria(new Criteria().expression(searchTerm));
+        query.addFilterQuery(solrFilterService.getPublicFilterQuery(domains));
         query.setTimeAllowed(TIMEALLOWED*1000);
 
+        Optional<FilterQuery> optionalFilter = solrFilterService.getFilterQuery(filters);
+        optionalFilter.ifPresent(query::addFilterQuery);
 
-        FilterQuery filterQuery = new SimpleFilterQuery();
-        /*
-            If there're filters available, those should be also returned as facet, so I need to include
-            the filters in the returned list
-            TODO implement the logic for the filters
-         */
-        query.addFilterQuery(filterQuery);
 
         // Generate a facet query to get all the available facets for the samples
         Page<FacetFieldEntry> facetFields = solrSampleRepository.getFacetFields(query, facetFieldPageInfo);
