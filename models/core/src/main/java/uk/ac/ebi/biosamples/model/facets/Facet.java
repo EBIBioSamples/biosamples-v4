@@ -61,6 +61,7 @@ public class Facet<T> implements Comparable<Facet<T>> {
             @JsonProperty("count") long count,
             @JsonProperty("content") List<LabelCountEntry> content) {
 
+
         switch (facetType) {
             case ATTRIBUTE:
             case INCOMING_RELATIONSHIP:
