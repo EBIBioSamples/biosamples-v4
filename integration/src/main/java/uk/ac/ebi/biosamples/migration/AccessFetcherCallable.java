@@ -44,11 +44,12 @@ public class AccessFetcherCallable implements Callable<Void> {
 	
 	@Override
 	public Void call() throws Exception {
-		log.info("Started AccessFetcherCallable.call(");
+		log.info("Started against "+rootUrl);
 
 		long oldTime = System.nanoTime();		
 		int pagesize = 1000;
-
+		int totalFetched = 0;
+		
 		ExecutorService executorService = null;
 		
 		try {
@@ -89,6 +90,10 @@ public class AccessFetcherCallable implements Callable<Void> {
 			}
 			for (Future<Set<String>> future : futures) {
 				for (String accession : future.get()) {
+					totalFetched +=1;
+					if (totalFetched%1000 == 0) {
+						log.info("Fetched "+totalFetched+" from "+rootUrl);
+					}
 					while (!accessionQueue.offer(accession)) {
 						Thread.sleep(10);
 					}

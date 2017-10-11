@@ -79,9 +79,11 @@ public class MigrationRunner implements ApplicationRunner, ExitCodeGenerator {
 			Queue<String> bothQueue = new ArrayBlockingQueue<>(128);
 			AtomicBoolean bothFinished = new AtomicBoolean(false);
 			
-			AccessionQueueBothCallable bothCallable = new AccessionQueueBothCallable(oldQueue, oldFinished, newQueue, newFinished, bothQueue, bothFinished);
+			AccessionQueueBothCallable bothCallable = new AccessionQueueBothCallable(oldQueue, oldFinished, 
+					newQueue, newFinished, bothQueue, bothFinished);
 			
-			AccessionComparisonCallable comparisonCallable = new AccessionComparisonCallable(restTemplate, oldUrl, newUrl, bothQueue, bothFinished, xmlToSampleConverter);
+			AccessionComparisonCallable comparisonCallable = new AccessionComparisonCallable(restTemplate, 
+					oldUrl, newUrl, bothQueue, bothFinished, xmlToSampleConverter, args.containsOption("--comparison"));
 			
 //			comparisonCallable.compare("SAMEA3683023");
 			
@@ -100,89 +102,5 @@ public class MigrationRunner implements ApplicationRunner, ExitCodeGenerator {
 		
 		exitCode = 0;
 		log.info("Finished MigrationRunner");
-	}
-	
-	private class AccessionQueueBothCallable implements Callable<Void> {
-		
-		private final Queue<String> oldQueue;
-		private final Set<String> oldSet = new HashSet<>();
-		private final AtomicBoolean oldFlag;
-		private final Queue<String> newQueue;
-		private final Set<String> newSet = new HashSet<>();
-		private final AtomicBoolean newFlag;
-		private final Queue<String> bothQueue;
-		private final AtomicBoolean bothFlag;
-
-		public AccessionQueueBothCallable(Queue<String> oldQueue, AtomicBoolean oldFlag, 
-				Queue<String> newQueue, AtomicBoolean newFlag,
-				Queue<String> bothQueue, AtomicBoolean bothFlag) {
-			this.oldQueue = oldQueue;
-			this.oldFlag = oldFlag;
-			this.newQueue = newQueue;
-			this.newFlag = newFlag;
-			this.bothQueue = bothQueue;
-			this.bothFlag = bothFlag;
-		}
-		
-		@Override
-		public Void call() throws Exception {
-			log.info("Started AccessionQueueBothCallable.call(");
-			
-			while (!oldFlag.get() || !oldQueue.isEmpty() || !newFlag.get() || !newQueue.isEmpty()) {
-				if (!oldFlag.get() || !oldQueue.isEmpty()) {
-					String next = oldQueue.poll();
-					if (next != null) {
-						oldSet.add(next);
-						if (newSet.contains(next)) {
-							while (!bothQueue.offer(next)) {
-								Thread.sleep(100);
-							}
-						}
-					}
-				}
-				if (!newFlag.get() || !newQueue.isEmpty()) {
-					String next = newQueue.poll();
-					if (next != null) {
-						newSet.add(next);
-						if (oldSet.contains(next)) {
-							while (!bothQueue.offer(next)) {
-								Thread.sleep(100);
-							}
-						}
-					}
-				}
-			}
-			
-			//at his point we should be able to generate the differences in the sets
-			
-			Set<String> newOnly = Sets.difference(newSet, oldSet);
-			Set<String> oldOnly = Sets.difference(oldSet, newSet);
-			log.info("Samples only in new "+newOnly.size());
-			log.info("Samples only in old "+oldOnly.size());
-
-			int i;
-			Iterator<String> accIt;
-			
-			accIt = newOnly.iterator();
-			i = 0;
-			while (accIt.hasNext() && i<25) {
-				log.info("Sample only in new "+accIt.next());
-				i++;
-			}
-			
-			accIt = oldOnly.iterator();
-			i = 0;
-			while (accIt.hasNext() && i<25) {
-				log.info("Sample only in old "+accIt.next());
-				i++;
-			}
-			 
-			
-			bothFlag.set(true);
-			log.info("Finished AccessionQueueBothCallable.call(");
-			
-			return null;
-		}
-		
 	}
 }

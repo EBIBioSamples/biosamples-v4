@@ -69,27 +69,37 @@ class AccessionComparisonCallable implements Callable<Void> {
 	private final Queue<String> bothQueue;
 	private final AtomicBoolean bothFlag;
 	private final XmlToSampleConverter xmlToSampleConverter;
+	private final boolean compare;
 
 	private final Logger log = LoggerFactory.getLogger(getClass());
 
 	public AccessionComparisonCallable(RestTemplate restTemplate, String oldUrl, String newUrl, Queue<String> bothQueue,
-			AtomicBoolean bothFlag, XmlToSampleConverter xmlToSampleConverter) {
+			AtomicBoolean bothFlag, XmlToSampleConverter xmlToSampleConverter, boolean compare) {
 		this.restTemplate = restTemplate;
 		this.oldUrl = oldUrl;
 		this.newUrl = newUrl;
 		this.bothQueue = bothQueue;
 		this.bothFlag = bothFlag;
 		this.xmlToSampleConverter = xmlToSampleConverter;
+		this.compare = compare;
 	}
 
 	@Override
 	public Void call() throws Exception {
-		log.info("Started AccessionComparisonCallable.call(");
+		log.info("Started");
+		log.info("oldUrl = "+oldUrl);
+		log.info("newUrl = "+newUrl);
+		log.info("compare = "+compare);
 
 		while (!bothFlag.get() || !bothQueue.isEmpty()) {
 			String accession = bothQueue.poll();
 			if (accession != null) {
-				compare(accession);
+				log.trace("Comparing accession "+ accession);
+				if (compare) {
+					compare(accession);
+				}
+			} else {
+				Thread.sleep(100);
 			}
 		}
 		log.info("Finished AccessionComparisonCallable.call(");
