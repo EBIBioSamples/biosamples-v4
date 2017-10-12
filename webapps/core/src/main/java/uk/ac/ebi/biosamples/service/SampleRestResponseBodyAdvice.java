@@ -43,10 +43,10 @@ public class SampleRestResponseBodyAdvice implements ResponseBodyAdvice<Resource
 			return body;
 		}
 		
-		long lastModified = body.getContent().getUpdate().toInstant(ZoneOffset.UTC).toEpochMilli();
-		//String eTag = "W/\""+body.getContent().hashCode()+"\"";
+		long lastModified = body.getValue().getUpdate().toInstant(ZoneOffset.UTC).toEpochMilli();
+		//String eTag = "W/\""+body.getValue().hashCode()+"\"";
 		String eTag =  "\""+Hashing.sha256().newHasher()
-				.putInt(body.getContent().hashCode())
+				.putInt(body.getValue().hashCode())
 				.putString(selectedContentType.toString(), Charset.defaultCharset())
 				.hash().toString()+"\"";
 		
@@ -58,8 +58,8 @@ public class SampleRestResponseBodyAdvice implements ResponseBodyAdvice<Resource
 
 		//the client used a modified cache header that is sufficient to 
 		//allow the clients cached copy to be used
-		lastModified = body.getContent().getUpdate().toInstant(ZoneOffset.UTC).toEpochMilli();
-		eTag = "W/\"" + body.getContent().hashCode() + "\"";
+		lastModified = body.getValue().getUpdate().toInstant(ZoneOffset.UTC).toEpochMilli();
+		eTag = "W/\"" + body.getValue().hashCode() + "\"";
 		
 		//an ETag has to be set even on a 304 response see https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.5
 		//response.getHeaders().setETag(eTag);

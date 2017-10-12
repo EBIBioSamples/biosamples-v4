@@ -1,19 +1,26 @@
 package uk.ac.ebi.biosamples.model.facets;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+
+import java.util.AbstractList;
 import java.util.List;
-import static java.util.Map.Entry;
 
-public class LabelCountListContent implements FacetContent {
+public class LabelCountListContent extends AbstractList<LabelCountEntry> implements FacetContent{
 
-    private List<Entry<String, Long>> labelCountEntryList;
+    private List<LabelCountEntry> labelCountEntryList;
 
-    public LabelCountListContent(List<Entry<String, Long>> labelCountEntryList) {
+    @JsonCreator
+    public LabelCountListContent(List<LabelCountEntry> labelCountEntryList) {
         this.labelCountEntryList = labelCountEntryList;
     }
 
     @Override
-    public List<Entry<String, Long>> getContent() {
-        return labelCountEntryList;
+    public LabelCountEntry get(int index) {
+        return labelCountEntryList.get(index);
     }
 
+    @Override
+    public int size() {
+        return labelCountEntryList.size();
+    }
 }

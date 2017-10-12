@@ -1,7 +1,27 @@
 package uk.ac.ebi.biosamples.model.facets;
 
-public class InverseRelationFacet extends AbstractFacet{
-    protected InverseRelationFacet(String label, FacetType type, long count, LabelCountListContent content) {
-        super(label, FacetType.INCOMING_RELATIONSHIP, count, content);
+import org.springframework.hateoas.core.Relation;
+
+@Relation(collectionRelation = "facets")
+public class InverseRelationFacet extends Facet {
+
+
+    public InverseRelationFacet(String label, long count, LabelCountListContent content) {
+        super(label, count, content);
+    }
+
+//    @Override
+//    protected LabelCountListContent readContent(Object content) {
+//        return (LabelCountListContent) content;
+//    }
+//
+//    @Override
+//    protected Class getCompatibleContent() {
+//        return LabelCountListContent.class;
+//    }
+
+    @Override
+    public FacetType getType() {
+        return FacetType.INCOMING_RELATIONSHIP;
     }
 }

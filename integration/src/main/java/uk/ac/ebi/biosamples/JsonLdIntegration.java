@@ -128,7 +128,7 @@ public class JsonLdIntegration extends AbstractIntegration {
             Optional<Resource<Sample>> optionalSample = client.fetchSampleResource(sample.getAccession());
             if (optionalSample.isPresent()) {
                 Resource<Sample> sampleResource = optionalSample.get();
-                String sampleAccession = sampleResource.getContent().getAccession();
+                String sampleAccession = sampleResource.getValue().getAccession();
                 UriComponents sampleURI = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUri()).pathSegment("samples", sampleAccession).build();
                 chromeDriver.get(sampleURI.toString());
                 WebElement jsonLDScript = chromeDriver.findElement(By.cssSelector("script[type='application/ld+json']"));

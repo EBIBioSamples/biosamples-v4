@@ -16,15 +16,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Curation;
-import uk.ac.ebi.biosamples.model.ExternalReference;
-import uk.ac.ebi.biosamples.model.Relationship;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.*;
+
 import java.net.URI;
-import java.time.LocalDate;
 import java.time.Instant;
-import java.time.LocalTime;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.SortedSet;
@@ -115,7 +110,7 @@ public class RestCurationIntegration extends AbstractIntegration {
 		PagedResources<Resource<Curation>> paged = response.getBody();
 
 		
-		if (paged.getContent().size() == 0) {
+		if (paged.getValue().size() == 0) {
 			throw new RuntimeException("No curations in list");
 		}
 		*/

@@ -14,11 +14,10 @@ import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.facets.Facet;
-import uk.ac.ebi.biosamples.model.facets.LabelCountEntry;
+import uk.ac.ebi.biosamples.model.facets.FacetContent;
+import uk.ac.ebi.biosamples.model.facets.LabelCountListContent;
 
-import java.time.LocalDate;
 import java.time.Instant;
-import java.time.LocalTime;
 import java.util.*;
 
 @Component
@@ -60,11 +59,14 @@ public class RestFacetIntegration extends AbstractIntegration {
 			throw new RuntimeException("No facets found!");
 		}
 		List<Facet> content = new ArrayList<>(facets.getContent());
-		List<LabelCountEntry> facetContent = (List<LabelCountEntry>) content.get(0).getContent();
-		if (facetContent.size() <= 0) {
-			throw new RuntimeException("No facet values found!");
+		FacetContent facetContent = content.get(0).getContent();
+		if (facetContent instanceof LabelCountListContent) {
+			if (((LabelCountListContent) facetContent).size() <= 0) {
+				throw new RuntimeException("No facet values found!");
+			}
+
 		}
-		
+
 		//check that the particular facets we expect are present
 
 		//TODO reintroduce this part of code
@@ -83,10 +85,10 @@ public class RestFacetIntegration extends AbstractIntegration {
 //			if (facet.getLabel().equals("(Attribute) geographic location (country and/or sea)")) {
 //				found = true;
 //				//check that it has one value that is expected
-//				if (facet.getContent().size() != 1) {
+//				if (facet.getValue().size() != 1) {
 //					throw new RuntimeException("More than one facet value for \"geographic location (country and/or sea)\"");
 //				}
-//				if (!facet.getContent().iterator().next().equals("Land of Oz")) {
+//				if (!facet.getValue().iterator().next().equals("Land of Oz")) {
 //					throw new RuntimeException("Facet value for \"geographic location (country and/or sea)\" was not \"Land of Oz\"");
 //				}
 //			}

@@ -55,7 +55,7 @@ public class FacetService {
 //					new FacetResourceAssembler.LabelFilterResourceAssembler(text, null, null, filtersArray, facet);
 //			FacetResourceAssembler.StringListFacetResourceAssembler facetResourceAssembler =
 //					new FacetResourceAssembler.StringListFacetResourceAssembler(text, null, null, filtersArray, facet);
-//			List<LabelCountEntry> content = (List<LabelCountEntry>) facet.getContent();
+//			List<LabelCountEntry> content = (List<LabelCountEntry>) facet.getValue();
 //			List<Resource<LabelCountEntry>> resourceContent =
 //					content.stream().map(resourceAssembler::toResource).collect(Collectors.toList());
 //			StringListFacet newFacet = StringListFacet.build(facet.getType().getFacetId(), facet.getLabel(), facet.getCount(), resourceContent);

@@ -11,10 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
-import uk.ac.ebi.biosamples.model.facets.Facet;
-import uk.ac.ebi.biosamples.model.facets.FacetType;
-import uk.ac.ebi.biosamples.model.facets.FacetsBuilder;
-import uk.ac.ebi.biosamples.model.facets.LabelCountEntry;
+import uk.ac.ebi.biosamples.model.facets.*;
 import uk.ac.ebi.biosamples.model.filters.Filter;
 import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
 
@@ -32,14 +29,13 @@ public class SolrFacetService {
     private final SolrFieldService solrFieldService;
     private Logger log = LoggerFactory.getLogger(getClass());
     private final SolrFilterService solrFilterService;
-    private final BioSamplesProperties bioSamplesProperties;
 
     public SolrFacetService(SolrSampleRepository solrSampleRepository, SolrFieldService solrFieldService, SolrFilterService solrFilterService, BioSamplesProperties bioSamplesProperties) {
         this.solrSampleRepository = solrSampleRepository;
         this.solrFieldService = solrFieldService;
         this.solrFilterService = solrFilterService;
-        this.bioSamplesProperties = bioSamplesProperties;
     }
+
 
     public List<Facet> getFacets(String searchTerm,
                                  Collection<Filter> filters,
@@ -163,12 +159,11 @@ public class SolrFacetService {
             List<LabelCountEntry> listFacetContent = new ArrayList<>();
             for (FacetFieldEntry ffe : facetPage.getFacetResultPage(field)) {
                 log.info("Adding "+ fieldInfo.getFieldName() +" : "+ffe.getValue()+" with count "+ffe.getValueCount());
-
                 listFacetContent.add(LabelCountEntry.build(ffe.getValue(), ffe.getValueCount()));
             }
 
             // Build the facet
-            Facet facet = Facet.build(fieldInfo.getType(), fieldInfo.getFieldName(), fieldInfo.getSampleCount(), listFacetContent);
+            Facet facet = FacetFactory.build(fieldInfo.getType(), fieldInfo.getFieldName(), fieldInfo.getSampleCount(), new LabelCountListContent(listFacetContent));
             textFacets.add(facet);
         }
 

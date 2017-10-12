@@ -252,7 +252,7 @@ public class SolrSampleService {
 //	 */
 //	private Optional<Criteria> buildCriteriaFromFilter(Filter filter) {
 //	    //TODO implement the method
-//		FilterContent content = filter.getContent();
+//		FilterContent content = filter.getValue();
 //		FilterType type = filter.getKind();
 //		String filterTargetField = solrFieldService.encodedField(filter.getLabel(), facetFilterConverter.convert(type));
 //		Criteria filterCriteria = null;
@@ -264,7 +264,7 @@ public class SolrSampleService {
 //				case RELATION_FILER:
 //				case INVERSE_RELATION_FILTER:
 //					ValueFilter valueContent = (ValueFilter) content;
-//					for(String value: valueContent.getContent()) {
+//					for(String value: valueContent.getValue()) {
 //						if (filterCriteria == null) {
 //							filterCriteria = new Criteria(filterTargetField).is(value);
 //						} else {

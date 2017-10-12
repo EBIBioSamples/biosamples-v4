@@ -41,6 +41,6 @@ docker-compose up -d biosamples-webapps-core biosamples-webapps-sampletab biosam
 echo "checking webapps-core is up"
 ./http-status-check -u http://localhost:8081/biosamples/beta/health -t 45
 echo "checking webapps-sampletab is up"
-./http-status-check -u http://localhost:8082/biosamples/beta/sampletab/health -t 30
+./http-status-check -u http://localhost:8082/biosamples/beta/sampletab/health -t 45
 echo "checking webapps-legacyxml is up"
-./http-status-check -u http://localhost:8083/biosamples/beta/xml/health -t 30
+./http-status-check -u http://localhost:8083/biosamples/beta/xml/health -t 45
