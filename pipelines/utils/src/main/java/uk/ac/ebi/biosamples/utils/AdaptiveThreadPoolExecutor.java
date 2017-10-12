@@ -129,7 +129,7 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor implements Au
 				//double score = (((double)doneJobs)*1000000000.0d)/(interval*currentThreads);
 				double score = (((double)doneJobs)*1000000000.0d)/(interval);
 				
-				log.info("Completed "+doneJobs+" in "+interval+"ns using "+currentThreads+" threads : score = "+score);
+				log.trace("Completed "+doneJobs+" in "+interval+"ns using "+currentThreads+" threads : score = "+score);
 				
 								
 				//store the result of this score
@@ -160,11 +160,11 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor implements Au
 						bestThreads = testThreads;
 					}
 				}
-				log.info("Best scoring number of threads is "+bestThreads+" with "+bestScore);
+				log.trace("Best scoring number of threads is "+bestThreads+" with "+bestScore);
 								
 				//if we are more than margin below the best, change to the best
 				if (bestThreads != currentThreads && margin*score < bestScore) {	
-					log.info("Adjusting to use "+(bestThreads)+" threads");
+					log.trace("Adjusting to use "+(bestThreads)+" threads");
 					pool.setCorePoolSize(bestThreads);
 					pool.setMaximumPoolSize(bestThreads);
 				} else {
@@ -172,13 +172,13 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor implements Au
 					if ((!threadsScores.containsKey(currentThreads+1) || threadsScores.get(currentThreads+1) > margin*score) 
 							&& currentThreads < maxThreads ) {
 						//increase the number of threads			
-						log.info("Adjusting to try "+(currentThreads+1)+" threads");
+						log.trace("Adjusting to try "+(currentThreads+1)+" threads");
 						pool.setCorePoolSize(currentThreads+1);
 						pool.setMaximumPoolSize(currentThreads+1);
 					} else if (currentThreads > 1 && (!threadsScores.containsKey(currentThreads-1) || threadsScores.get(currentThreads-1) > margin*score)) {
 						//decrease the number of threads
 						//only decrease threads if there are at least 2 (so we don't drop to zero!)
-						log.info("Adjusting to try "+(currentThreads-1)+" threads");
+						log.trace("Adjusting to try "+(currentThreads-1)+" threads");
 						pool.setCorePoolSize(currentThreads-1);
 						pool.setMaximumPoolSize(currentThreads-1);
 					}
