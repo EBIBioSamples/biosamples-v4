@@ -9,16 +9,6 @@ public class RelationFacet extends Facet {
         super(label, count, content);
     }
 
-//    @Override
-//    protected FacetContent readContent(Object content) {
-//        return (LabelCountListContent) content;
-//    }
-//
-//    @Override
-//    protected Class getCompatibleContent() {
-//        return LabelCountListContent.class;
-//    }
-
     @Override
     public FacetType getType() {
         return FacetType.OUTGOING_RELATIONSHIP;

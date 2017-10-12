@@ -10,16 +10,6 @@ public class InverseRelationFacet extends Facet {
         super(label, count, content);
     }
 
-//    @Override
-//    protected LabelCountListContent readContent(Object content) {
-//        return (LabelCountListContent) content;
-//    }
-//
-//    @Override
-//    protected Class getCompatibleContent() {
-//        return LabelCountListContent.class;
-//    }
-
     @Override
     public FacetType getType() {
         return FacetType.INCOMING_RELATIONSHIP;
