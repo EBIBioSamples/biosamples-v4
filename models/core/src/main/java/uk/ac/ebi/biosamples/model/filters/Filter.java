@@ -1,13 +1,13 @@
 package uk.ac.ebi.biosamples.model.filters;
 
-public class Filter<T extends FilterContent> {
+public class Filter {
 
     private final FilterType kind;
     private final String label;
 
-    private final T content;
+    private final FilterContent content;
 
-    public Filter(FilterType kind, String label, T content) {
+    public Filter(FilterType kind, String label, FilterContent content) {
         this.kind = kind;
         this.label = label;
         this.content = content;
@@ -22,7 +22,7 @@ public class Filter<T extends FilterContent> {
         return label;
     }
 
-    public T getContent() {
+    public FilterContent getContent() {
         return content;
     }
 

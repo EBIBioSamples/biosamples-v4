@@ -1,8 +1,6 @@
 package uk.ac.ebi.biosamples.model.facets;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.*;
 import uk.ac.ebi.biosamples.model.filters.Filter;
 
 @JsonTypeInfo(
@@ -43,6 +41,8 @@ public abstract class Facet implements Comparable<Facet>{
     @JsonProperty("type")
     public abstract FacetType getType();
 
+    @JsonIgnore
+    public abstract Filter getFieldPresenceFilter();
 
 
     @Override
