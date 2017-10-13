@@ -9,19 +9,13 @@ import org.springframework.data.solr.core.query.*;
 import org.springframework.data.solr.core.query.result.FacetFieldEntry;
 import org.springframework.data.solr.core.query.result.FacetPage;
 import org.springframework.stereotype.Service;
-import org.springframework.util.MultiValueMap;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.Autocomplete;
 import uk.ac.ebi.biosamples.model.filters.Filter;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
 import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
 
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class SolrSampleService {
@@ -52,42 +46,42 @@ public class SolrSampleService {
 		this.solrFilterService = solrFilterService;
 	}
 
-	public Page<SolrSample> fetchSolrSampleByText(String searchTerm, MultiValueMap<String,String> filters, 
-			Collection<String> domains, Instant after, Instant before, Pageable pageable) {
-		//default to search all
-		if (searchTerm == null || searchTerm.trim().length() == 0) {
-			searchTerm = "*:*";
-		}
-		//build a query out of the users string and any facets
-		Query query = new SimpleQuery(searchTerm);
-		query.setPageRequest(pageable);
-				
-		if (filters != null) {
-			query = addFilters(query, filters);
-		}		
-
-		//filter out non-public
-		//filter to update date range
-		FilterQuery filterQuery = new SimpleFilterQuery();
-		//check if this is a read superuser
-		if (!domains.contains(bioSamplesProperties.getBiosamplesAapSuperRead())) {
-			//user can only see private samples inside its own domain
-			filterQuery.addCriteria(new Criteria("release_dt").lessThan("NOW").and("release_dt").isNotNull()
-					.or(new Criteria("domain_s").in(domains)));
-		}
-		if (after != null && before != null) {
-			filterQuery.addCriteria(new Criteria("update_dt").between(DateTimeFormatter.ISO_INSTANT.format(after), DateTimeFormatter.ISO_INSTANT.format(before)));
-		} else if (after == null && before != null) {
-			filterQuery.addCriteria(new Criteria("update_dt").between("NOW-1000YEAR", DateTimeFormatter.ISO_INSTANT.format(before)));
-		} else if (after != null && before == null) {
-			filterQuery.addCriteria(new Criteria("update_dt").between(DateTimeFormatter.ISO_INSTANT.format(after), "NOW+1000YEAR"));
-		}
-		query.addFilterQuery(filterQuery);
-		query.setTimeAllowed(TIMEALLOWED*1000); 
-		
-		// return the samples from solr that match the query
-		return solrSampleRepository.findByQuery(query);
-	}
+//	public Page<SolrSample> fetchSolrSampleByText(String searchTerm, MultiValueMap<String,String> filters,
+//			Collection<String> domains, Instant after, Instant before, Pageable pageable) {
+//		//default to search all
+//		if (searchTerm == null || searchTerm.trim().length() == 0) {
+//			searchTerm = "*:*";
+//		}
+//		//build a query out of the users string and any facets
+//		Query query = new SimpleQuery(searchTerm);
+//		query.setPageRequest(pageable);
+//
+//		if (filters != null) {
+//			query = addFilters(query, filters);
+//		}
+//
+//		//filter out non-public
+//		//filter to update date range
+//		FilterQuery filterQuery = new SimpleFilterQuery();
+//		//check if this is a read superuser
+//		if (!domains.contains(bioSamplesProperties.getBiosamplesAapSuperRead())) {
+//			//user can only see private samples inside its own domain
+//			filterQuery.addCriteria(new Criteria("release_dt").lessThan("NOW").and("release_dt").isNotNull()
+//					.or(new Criteria("domain_s").in(domains)));
+//		}
+//		if (after != null && before != null) {
+//			filterQuery.addCriteria(new Criteria("update_dt").between(DateTimeFormatter.ISO_INSTANT.format(after), DateTimeFormatter.ISO_INSTANT.format(before)));
+//		} else if (after == null && before != null) {
+//			filterQuery.addCriteria(new Criteria("update_dt").between("NOW-1000YEAR", DateTimeFormatter.ISO_INSTANT.format(before)));
+//		} else if (after != null && before == null) {
+//			filterQuery.addCriteria(new Criteria("update_dt").between(DateTimeFormatter.ISO_INSTANT.format(after), "NOW+1000YEAR"));
+//		}
+//		query.addFilterQuery(filterQuery);
+//		query.setTimeAllowed(TIMEALLOWED*1000);
+//
+//		// return the samples from solr that match the query
+//		return solrSampleRepository.findByQuery(query);
+//	}
 
 	/**
 	 * Fetch the solr samples based on query specification
@@ -108,6 +102,15 @@ public class SolrSampleService {
 		query.setPageRequest(pageable);
 		query.setTimeAllowed(TIMEALLOWED*1000);
 
+//		TODO Implements Update filtering
+//		if (after != null && before != null) {
+//			filterQuery.addCriteria(new Criteria("update_dt").between(DateTimeFormatter.ISO_INSTANT.format(after), DateTimeFormatter.ISO_INSTANT.format(before)));
+//		} else if (after == null && before != null) {
+//			filterQuery.addCriteria(new Criteria("update_dt").between("NOW-1000YEAR", DateTimeFormatter.ISO_INSTANT.format(before)));
+//		} else if (after != null && before == null) {
+//			filterQuery.addCriteria(new Criteria("update_dt").between(DateTimeFormatter.ISO_INSTANT.format(after), "NOW+1000YEAR"));
+//		}
+
 		Optional<FilterQuery> publicFilterQuery = solrFilterService.getPublicFilterQuery(domains);
 		publicFilterQuery.ifPresent(query::addFilterQuery);
 
@@ -117,54 +120,22 @@ public class SolrSampleService {
 		// return the samples from solr that match the query
 		return solrSampleRepository.findByQuery(query);
 
-/*
-//		query.addFilterQuery(filterQuery);
-//		if (filters != null) {
-//			query = addFilters(query, filters);
-//		}
-
-//		//filter out non-public
-//		//filter to update date range
-//		FilterQuery filterQuery = new SimpleFilterQuery();
-//		//check if this is a read superuser
-//		if (!domains.contains(bioSamplesProperties.getBiosamplesAapSuperRead())) {
-//			//user can only see private samples inside its own domain
-//			filterQuery.addCriteria(new Criteria("release_dt").lessThan("NOW").and("release_dt").isNotNull()
-//					.or(new Criteria("domain_s").in(domains)));
-//		}
-//		TODO this has to be implemented as date filters and not as instants
-//		if (after != null && before != null) {
-//			filterQuery.addCriteria(new Criteria("update_dt").between(DateTimeFormatter.ISO_INSTANT.format(after), DateTimeFormatter.ISO_INSTANT.format(before)));
-//		} else if (after == null && before != null) {
-//			filterQuery.addCriteria(new Criteria("update_dt").between("NOW-1000YEAR", DateTimeFormatter.ISO_INSTANT.format(before)));
-//		} else if (after != null && before == null) {
-//			filterQuery.addCriteria(new Criteria("update_dt").between(DateTimeFormatter.ISO_INSTANT.format(after), "NOW+1000YEAR"));
-//		}
- */
 	}
 
-//	public List<Facet> getFacets(String searchTerm, Collection<String> filters, Collection<String> domains, Pageable facetPageable, Pageable facetValuePageable) {
-//
-//		return solrFacetService.getFacets(searchTerm, filters, domains);
-//
-//	}
-
-	public Autocomplete getAutocomplete(String autocompletePrefix, MultiValueMap<String,String> filters, int maxSuggestions) {
+	public Autocomplete getAutocomplete(String autocompletePrefix, Collection<Filter> filters, int maxSuggestions) {
 		//default to search all
 		String searchTerm = "*:*";
 		//build a query out of the users string and any facets
 		FacetQuery query = new SimpleFacetQuery();
 		query.addCriteria(new Criteria().expression(searchTerm));
 		query.setPageRequest(new PageRequest(0, 1));
-				
-		if (filters != null) {
-			query = addFilters(query, filters);
-		}		
+
+		Optional<FilterQuery> optionalFilter = solrFilterService.getFilterQuery(filters);
+		optionalFilter.ifPresent(query::addFilterQuery);
 
 		//filter out non-public
-		FilterQuery filterQuery = new SimpleFilterQuery();
-		filterQuery.addCriteria(new Criteria("release_dt").lessThan("NOW").and("release_dt").isNotNull());
-		query.addFilterQuery(filterQuery);
+		Optional<FilterQuery> publicSampleFilterQuery = solrFilterService.getPublicFilterQuery(Collections.EMPTY_LIST);
+		publicSampleFilterQuery.ifPresent(query::addFilterQuery);
 
 		FacetOptions facetOptions = new FacetOptions();
 		facetOptions.addFacetOnField("autocomplete_ss");
@@ -184,98 +155,4 @@ public class SolrSampleService {
 		return new Autocomplete(autocompletePrefix, autocompleted);		
 	}
 	
-	private <T extends Query> T addFilters(T query, MultiValueMap<String,String> filters) {
-		//if no filters or filters are null, quick exit
-		//TODO Update this part of the code to take into account how filters are handled
-		if (filters == null || filters.size() == 0) {
-			return query;
-		}
-
-		boolean filter = false;
-		FilterQuery filterQuery = new SimpleFilterQuery();
-		for (String facetType : filters.keySet()) {
-			Criteria facetCriteria = null;
-
-			String facetField = solrFieldService.encodeFieldName(facetType);
-			for (String facatValue : filters.get(facetType)) {
-				if (facatValue == null) {
-					//no specific value, check if its not null
-					facetCriteria = new Criteria(facetField).isNotNull();
-				} else if (facetCriteria == null) {
-					facetCriteria = new Criteria(facetField).is(facatValue);
-				} else {
-					facetCriteria = facetCriteria.or(new Criteria(facetField).is(facatValue));
-				}
-
-				log.info("Filtering on "+facetField+" for value "+facatValue);
-			}
-			if (facetCriteria != null) {
-				filterQuery.addCriteria(facetCriteria);
-				filter = true;
-			}
-		}
-
-		if (filter) {
-			query.addFilterQuery(filterQuery);
-		}
-		return query;
-	}
-
-
-//	private <T extends Query> T addFilters(T query, Collection<Filter> filters) {
-//	    // TODO implement the method
-//		if (filters == null || filters.size() == 0) {
-//			return query;
-//		}
-//
-//		boolean filterActive = false;
-//		FilterQuery filterQuery = new SimpleFilterQuery();
-//		for(Filter filter: filters) {
-//			Optional<Criteria> optionalFilterCriteria = solrFilterService.getFilterCriteria(filter);
-//			if (optionalFilterCriteria.isPresent()) {
-//				filterQuery.addCriteria(optionalFilterCriteria.get());
-//				filterActive = true;
-//			}
-//
-//		}
-//		if (filterActive) {
-//			query.addFilterQuery(filterQuery);
-//		}
-//
-//		return query;
-//	}
-
-//	/**
-//	 * Build a filter criteria based on the filter type and filter content
-//	 * @param filter
-//	 * @return an optional solr criteria for filtering purpose
-//	 */
-//	private Optional<Criteria> buildCriteriaFromFilter(Filter filter) {
-//	    //TODO implement the method
-//		FilterContent content = filter.getValue();
-//		FilterType type = filter.getKind();
-//		String filterTargetField = solrFieldService.encodedField(filter.getLabel(), facetFilterConverter.convert(type));
-//		Criteria filterCriteria = null;
-//		if (content == null) {
-//			 filterCriteria = new Criteria(filterTargetField).isNotNull();
-//		} else {
-//			switch(type) {
-//				case ATTRIBUTE_FILTER:
-//				case RELATION_FILER:
-//				case INVERSE_RELATION_FILTER:
-//					ValueFilter valueContent = (ValueFilter) content;
-//					for(String value: valueContent.getValue()) {
-//						if (filterCriteria == null) {
-//							filterCriteria = new Criteria(filterTargetField).is(value);
-//						} else {
-//							filterCriteria = filterCriteria.or(new Criteria(filterTargetField).is(value));
-//						}
-//					}
-//
-//			}
-//
-//		}
-//		return Optional.ofNullable(filterCriteria);
-//
-//	}
 }

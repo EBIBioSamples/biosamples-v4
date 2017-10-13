@@ -7,7 +7,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.util.MultiValueMap;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filters.Filter;
 import uk.ac.ebi.biosamples.mongo.model.MongoCurationLink;
@@ -18,7 +17,6 @@ import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
 import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
 
-import java.time.Instant;
 import java.util.Collection;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -52,18 +50,6 @@ public class SamplePageService {
 	@Autowired
 	private SolrSampleService solrSampleService;
 	
-	//@Cacheable(cacheNames=WebappProperties.getSamplesByText, sync=true)
-    // TODO To remove
-	public Page<Sample> getSamplesByText(String text, MultiValueMap<String,String> filters, Collection<String> domains,
-			Instant after, Instant before, Pageable pageable) {		
-		Page<SolrSample> pageSolrSample = solrSampleService.fetchSolrSampleByText(text, filters, domains, after, before, pageable);		
-		//for each result fetch the stored version and add e.g. inverse relationships		
-		//stream process each into a sample
-		Page<Sample> pageSample = pageSolrSample.map(ss->sampleService.fetch(ss.getAccession()).get());
-		
-		return pageSample;
-	}
-
 	//@Cacheable(cacheNames=WebappProperties.getSamplesByText, sync=true)
 	public Page<Sample> getSamplesByText(String text, Collection<Filter> filters, Collection<String> domains, Pageable pageable) {
 		Page<SolrSample> pageSolrSample = solrSampleService.fetchSolrSampleByText(text, filters, domains, pageable);

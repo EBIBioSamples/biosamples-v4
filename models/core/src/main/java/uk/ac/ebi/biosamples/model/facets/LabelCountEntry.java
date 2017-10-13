@@ -9,12 +9,20 @@ import java.util.Map;
 
 @JsonDeserialize(using = LabelCountDeserializer.class)
 public class LabelCountEntry implements Comparable<LabelCountEntry>{
-    public final String label;
-    public final long count;
+    private final String label;
+    private final long count;
 
-    LabelCountEntry(String label, long count) {
+    private LabelCountEntry(String label, long count) {
         this.label = label;
         this.count = count;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public long getCount() {
+        return count;
     }
 
     @Override

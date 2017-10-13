@@ -9,13 +9,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.expression.ParseException;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import uk.ac.ebi.biosamples.model.*;
+import uk.ac.ebi.biosamples.model.filters.Filter;
 import uk.ac.ebi.biosamples.service.SamplePageService;
 import uk.ac.ebi.biosamples.service.SampleService;
 
@@ -24,8 +23,8 @@ import java.net.MalformedURLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 
 @Controller
 @RequestMapping("/sitemap")
@@ -78,7 +77,7 @@ public class SitemapController {
     public XmlUrlSet createSampleSitemapPage(@PathVariable("id") int pageNumber, HttpServletRequest request) throws ParseException {
         final long startTime = System.currentTimeMillis();
         Pageable pageRequest = new PageRequest(pageNumber - 1, sitemapPageSize);
-        Page<Sample> samplePage = samplePageService.getSamplesByText("", null, Collections.emptyList(), null, null, pageRequest);
+        Page<Sample> samplePage = samplePageService.getSamplesByText("", Collections.emptyList(), Collections.emptyList(),  pageRequest);
         XmlUrlSet xmlUrlSet = new XmlUrlSet();
         for(Sample sample: samplePage.getContent()) {
             String location = generateBaseUrl(request) + String.format("/samples/%s", sample.getAccession());
@@ -113,8 +112,9 @@ public class SitemapController {
      */
     private long getTotalSamples() {
         Pageable pageable = new PageRequest(0, 1);
-        MultiValueMap<String, String> filters = new LinkedMultiValueMap<>();
-        Page<Sample> samplePage = samplePageService.getSamplesByText("", filters, Collections.emptyList(), null, null, pageable);
+        Collection<Filter> filters = Collections.emptyList();
+        Collection<String> domains = Collections.emptyList();
+        Page<Sample> samplePage = samplePageService.getSamplesByText("", filters, domains, pageable);
         return samplePage.getTotalElements();
     }
 }

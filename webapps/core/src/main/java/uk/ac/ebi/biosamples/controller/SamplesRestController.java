@@ -1,44 +1,25 @@
 package uk.ac.ebi.biosamples.controller;
 
-import java.util.Collection;
-import java.time.Instant;
-import java.time.format.DateTimeParseException;
-import java.util.concurrent.TimeUnit;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.EntityLinks;
-import org.springframework.hateoas.ExposesResourceFor;
-import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.*;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.service.BioSamplesAapService;
-import uk.ac.ebi.biosamples.service.FilterService;
-import uk.ac.ebi.biosamples.service.SamplePageService;
-import uk.ac.ebi.biosamples.service.SampleReadService;
-import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
+import uk.ac.ebi.biosamples.model.filters.Filter;
+import uk.ac.ebi.biosamples.service.*;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
+import java.util.Collection;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Primary controller for REST operations both in JSON and XML and both read and
@@ -108,30 +89,30 @@ public class SamplesRestController {
 		}
 		
 		
-		MultiValueMap<String, String> filtersMap = filterService.getFilters(filter);
-
+		Collection<Filter> filters = filterService.getFiltersCollection(filter);
 		Collection<String> domains = bioSamplesAapService.getDomains();
+
+//		TODO create filters for update date
+//		Instant updatedAfterDate = null;
+//		if (updatedAfter != null) {
+//			try {
+//				updatedAfterDate = Instant.parse(updatedAfter);
+//			} catch (DateTimeParseException e) {
+//				//TODO make an exception
+//				return ResponseEntity.badRequest().build();
+//			}
+//		}
+//		Instant updatedBeforeDate = null;
+//		if (updatedBefore != null) {
+//			try {
+//				updatedBeforeDate = Instant.parse(updatedBefore);
+//			} catch (DateTimeParseException e) {
+//				//TODO make an exception
+//				return ResponseEntity.badRequest().build();
+//			}
+//		}
 		
-		Instant updatedAfterDate = null;
-		if (updatedAfter != null) {
-			try {
-				updatedAfterDate = Instant.parse(updatedAfter);
-			} catch (DateTimeParseException e) {
-				//TODO make an exception
-				return ResponseEntity.badRequest().build();
-			}
-		}
-		Instant updatedBeforeDate = null;
-		if (updatedBefore != null) {
-			try {
-				updatedBeforeDate = Instant.parse(updatedBefore);
-			} catch (DateTimeParseException e) {
-				//TODO make an exception
-				return ResponseEntity.badRequest().build();
-			}
-		}
-		
-		Page<Sample> pageSample = samplePageService.getSamplesByText(text, filtersMap, domains, updatedAfterDate, updatedBeforeDate, page);
+		Page<Sample> pageSample = samplePageService.getSamplesByText(text, filters, domains, page);
 		// add the links to each individual sample on the page
 		// also adds links to first/last/next/prev at the same time
 		PagedResources<Resource<Sample>> pagedResources = pageAssembler.toResource(pageSample, sampleResourceAssembler,

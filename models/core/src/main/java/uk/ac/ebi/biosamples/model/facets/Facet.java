@@ -44,7 +44,6 @@ public abstract class Facet implements Comparable<Facet>{
     @JsonIgnore
     public abstract Filter getFieldPresenceFilter();
 
-
     @Override
     public int compareTo(Facet o) {
         return Long.compare(this.getCount(), o.getCount());

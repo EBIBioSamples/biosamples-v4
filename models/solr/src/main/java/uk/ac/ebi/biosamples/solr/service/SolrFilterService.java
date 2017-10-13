@@ -92,16 +92,23 @@ public class SolrFilterService {
      * @return a filter query for public and domain relevant samples
      */
     public Optional<FilterQuery> getPublicFilterQuery(Collection<String> domains) {
-        //filter out non-public
         //check if this is a read superuser
-        if (!domains.contains(bioSamplesProperties.getBiosamplesAapSuperRead())) {
-            //user can only see private samples inside its own domain
-            FilterQuery filterQuery = new SimpleFilterQuery();
-            filterQuery.addCriteria(new Criteria("release_dt").lessThan("NOW").and("release_dt").isNotNull()
-                    .or(new Criteria("domain_s").in(domains)));
-            return Optional.of(filterQuery);
+        if (domains.contains(bioSamplesProperties.getBiosamplesAapSuperRead())) {
+            return Optional.empty();
         }
-        return Optional.empty();
+
+        //filter out non-public
+        FilterQuery filterQuery = new SimpleFilterQuery();
+        Criteria publicSampleCriteria = new Criteria("release_dt").lessThan("NOW").and("release_dt").isNotNull();
+
+        if (!domains.isEmpty()) {
+            //user can only see private samples inside its own domain
+            publicSampleCriteria.or(new Criteria("domain_s").in(domains));
+        }
+
+        filterQuery.addCriteria(publicSampleCriteria);
+        return Optional.of(filterQuery);
+
 
     }
 

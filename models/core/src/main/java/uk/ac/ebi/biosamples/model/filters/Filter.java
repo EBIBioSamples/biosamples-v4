@@ -26,6 +26,8 @@ public class Filter {
         return content;
     }
 
+
+
     /**
      * Check if two filters are compatible in term of type and label but not content
      * This method is used to check
