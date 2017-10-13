@@ -15,7 +15,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
-			<artifactId>pipelines-utils</artifactId>
+			<artifactId>utils-pipeline</artifactId>
 			<version>${bsd2017.version}</version>
 		</dependency>
 

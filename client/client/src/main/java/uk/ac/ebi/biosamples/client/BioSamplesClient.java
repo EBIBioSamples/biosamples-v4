@@ -38,6 +38,7 @@ import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.SampleValidator;
+import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 
 
 /**
@@ -64,8 +65,9 @@ public class BioSamplesClient implements AutoCloseable {
 	public BioSamplesClient(URI uri, RestTemplateBuilder restTemplateBuilder, 
 			SampleValidator sampleValidator, AapClientService aapClientService, 
 			BioSamplesProperties bioSamplesProperties) {
-		//TODO application.properties this
-		threadPoolExecutor = Executors.newFixedThreadPool(64);
+		
+		threadPoolExecutor = AdaptiveThreadPoolExecutor.create(100, 10000, true, 
+				bioSamplesProperties.getBiosamplesClientThreadCount(),bioSamplesProperties.getBiosamplesClientThreadCountMax());
 		
 		RestTemplate restOperations = restTemplateBuilder.build();
 				
@@ -162,31 +164,37 @@ public class BioSamplesClient implements AutoCloseable {
 			return Optional.empty();
 		}
 	}	
-
-	public Resource<Sample> persistSampleResource(Sample sample) throws RestClientException {
-		return persistSampleResource(sample, null);
+	
+	public Sample persistSample(Sample sample) throws RestClientException {
+		return persistSampleResource(sample).getContent();
 	}
 	
+	public Resource<Sample> persistSampleResource(Sample sample) throws RestClientException {
+		return persistSampleResource(sample, null);
+	}	
 	
 	public Resource<Sample> persistSampleResource(Sample sample, Boolean setUpdateDate) throws RestClientException {
-		//validate client-side before submission
-		Collection<String> errors = sampleValidator.validate(sample);		
-		if (errors.size() > 0) {
-			log.info("Errors : "+errors);
-			throw new IllegalArgumentException("Sample not valid");
-		}
-		
 		try {
-			return sampleSubmissionService.submitAsync(sample, setUpdateDate).get();
+			return persistSampleResourceAsync(sample, setUpdateDate).get();
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		} catch (ExecutionException e) {
 			throw new RuntimeException(e.getCause());
 		}
 	}
+
+	public Future<Resource<Sample>> persistSampleResourceAsync(Sample sample) throws RestClientException {
+		return persistSampleResourceAsync(sample, null);
+	}	
 	
-	public Sample persistSample(Sample sample) throws RestClientException {
-		return persistSampleResource(sample).getContent();
+	public Future<Resource<Sample>> persistSampleResourceAsync(Sample sample, Boolean setUpdateDate) throws RestClientException {
+		//validate client-side before submission
+		Collection<String> errors = sampleValidator.validate(sample);		
+		if (errors.size() > 0) {
+			log.info("Errors : "+errors);
+			throw new IllegalArgumentException("Sample not valid");
+		}
+		return sampleSubmissionService.submitAsync(sample, setUpdateDate);		
 	}
 	
 	public Collection<Resource<Sample>> persistSamples(Collection<Sample> samples) throws RestClientException {
@@ -194,19 +202,15 @@ public class BioSamplesClient implements AutoCloseable {
 	}
 	
 	public Collection<Resource<Sample>> persistSamples(Collection<Sample> samples, Boolean setUpdateDate) throws RestClientException {
-		
-		
-		
 		List<Resource<Sample>> results = new ArrayList<>();
 		List<Future<Resource<Sample>>> futures = new ArrayList<>();
 		
 		for (Sample sample : samples) {
-			futures.add(sampleSubmissionService.submitAsync(sample, setUpdateDate));
+			futures.add(persistSampleResourceAsync(sample, setUpdateDate));
 		}
 		
 		for (Future<Resource<Sample>> future : futures) {
 			Resource<Sample> sample;
-
 			try {
 				sample = future.get();
 			} catch (InterruptedException e) {

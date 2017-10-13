@@ -47,41 +47,7 @@ public class XmlUtils {
     private Logger log = LoggerFactory.getLogger(this.getClass());
     
     private TransformerFactory tf = TransformerFactory.newInstance();
-    
-	private CloseableHttpClient httpClient;  
-	
-	@PostConstruct
-	public void setupConnectionManager() {
-    	PoolingHttpClientConnectionManager conman = new PoolingHttpClientConnectionManager();
-    	conman.setMaxTotal(128);
-    	conman.setDefaultMaxPerRoute(64);
-    	conman.setValidateAfterInactivity(0);
-    	
-    	ConnectionKeepAliveStrategy keepAliveStrategy = new ConnectionKeepAliveStrategy() {
-            @Override
-            public long getKeepAliveDuration(HttpResponse response, HttpContext context) {
-            	//see if the user provides a live time
-                HeaderElementIterator it = new BasicHeaderElementIterator
-                    (response.headerIterator(HTTP.CONN_KEEP_ALIVE));
-                while (it.hasNext()) {
-                    HeaderElement he = it.nextElement();
-                    String param = he.getName();
-                    String value = he.getValue();
-                    if (value != null && param.equalsIgnoreCase
-                       ("timeout")) {
-                        return Long.parseLong(value) * 1000;
-                    }
-                }
-                //default to one second live time 
-                return 1 * 1000;
-            }
-        };
-    	
-    	httpClient = HttpClients.custom()
-    			.setKeepAliveStrategy(keepAliveStrategy)
-    			.setConnectionManager(conman).build();
-    }
-    
+        
     static {
         XMLUnit.setIgnoreAttributeOrder(true);
         XMLUnit.setIgnoreWhitespace(true);
@@ -91,17 +57,6 @@ public class XmlUtils {
         return getDocument(new BufferedReader(new FileReader(xmlFile)));
     }
 
-    public  Document getDocument(URL url) throws DocumentException, IOException {  
-        //can't call SAXReader directly because it ignores proxing
-        Document doc = null;
-        HttpGet get = new HttpGet(url.toString());
-        try (CloseableHttpResponse response = httpClient.execute(get)) {
-	        try (Reader r = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))) {
-	            doc = getDocument(r);
-	        }         
-        }
-        return doc;
-    }
 
     public Document getDocument(String xmlString) throws DocumentException {
         

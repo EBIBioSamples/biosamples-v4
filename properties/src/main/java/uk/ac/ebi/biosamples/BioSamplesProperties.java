@@ -34,6 +34,21 @@ public class BioSamplesProperties {
 	@Value("${biosamples.client.pagesize:1000}")
 	private int biosamplesClientPagesize;
 	
+	@Value("${biosamples.client.timeout:60000}")
+	private int biosamplesClientTimeout;
+
+	@Value("${biosamples.client.connectioncount.max:32}")
+	private int connectionCountMax;
+	
+	@Value("${biosamples.client.connectioncount.default:32}")
+	private int connectionCountDefault;
+
+	@Value("${biosamples.client.threadcount:1}")
+	private int threadCount;
+
+	@Value("${biosamples.client.threadcount.max:32}")
+	private int threadCountMax;
+	
 	@Value("${biosamples.client.aap.uri:https://explore.api.aap.tsi.ebi.ac.uk/auth}")
 	private URI biosamplesClientAapUri;
 	
@@ -58,6 +73,26 @@ public class BioSamplesProperties {
 	
 	public int getBiosamplesClientPagesize() {
 		return biosamplesClientPagesize;
+	}
+	
+	public int getBiosamplesClientTimeout() {
+		return biosamplesClientTimeout;
+	}
+
+	public int getBiosamplesClientConnectionCountMax() {
+		return connectionCountMax;
+	}
+
+	public int getBiosamplesClientThreadCount() {
+		return threadCount;
+	}
+
+	public int getBiosamplesClientThreadCountMax() {
+		return threadCountMax;
+	}
+
+	public int getBiosamplesClientConnectionCountDefault() {
+		return connectionCountDefault;
 	}
 	
 	public URI getBiosamplesClientAapUri() {
