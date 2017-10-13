@@ -1,15 +1,23 @@
 package uk.ac.ebi.biosamples.migration;
 
 import java.io.ByteArrayInputStream;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URI;
+import java.time.LocalDateTime;
+import java.time.Period;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Queue;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -21,10 +29,13 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
 
+import org.dom4j.DocumentException;
+import org.dom4j.io.SAXReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -45,32 +56,50 @@ import org.xmlunit.builder.Input;
 import org.xmlunit.input.CommentLessSource;
 import org.xmlunit.input.WhitespaceNormalizedSource;
 
+import com.google.common.collect.Sets;
+
+import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.service.XmlToSampleConverter;
+
 class AccessionComparisonCallable implements Callable<Void> {
 	private final RestTemplate restTemplate;
 	private final String oldUrl;
 	private final String newUrl;
 	private final Queue<String> bothQueue;
 	private final AtomicBoolean bothFlag;
+	private final XmlToSampleConverter xmlToSampleConverter;
+	private final boolean compare;
 
 	private final Logger log = LoggerFactory.getLogger(getClass());
 
 	public AccessionComparisonCallable(RestTemplate restTemplate, String oldUrl, String newUrl, Queue<String> bothQueue,
-			AtomicBoolean bothFlag) {
+			AtomicBoolean bothFlag, XmlToSampleConverter xmlToSampleConverter, boolean compare) {
 		this.restTemplate = restTemplate;
 		this.oldUrl = oldUrl;
 		this.newUrl = newUrl;
 		this.bothQueue = bothQueue;
 		this.bothFlag = bothFlag;
+		this.xmlToSampleConverter = xmlToSampleConverter;
+		this.compare = compare;
 	}
 
 	@Override
 	public Void call() throws Exception {
-		log.info("Started AccessionComparisonCallable.call(");
+		log.info("Started");
+		log.info("oldUrl = "+oldUrl);
+		log.info("newUrl = "+newUrl);
+		log.info("compare = "+compare);
 
 		while (!bothFlag.get() || !bothQueue.isEmpty()) {
 			String accession = bothQueue.poll();
 			if (accession != null) {
-				//compare(accession);
+				log.trace("Comparing accession "+ accession);
+				if (compare) {
+					compare(accession);
+				}
+			} else {
+				Thread.sleep(100);
 			}
 		}
 		log.info("Finished AccessionComparisonCallable.call(");
@@ -146,7 +175,7 @@ class AccessionComparisonCallable implements Callable<Void> {
 
 */
 		
-		
+		/*
 		Diff diff = DiffBuilder
 				.compare(new WhitespaceNormalizedSource(new CommentLessSource(Input.fromString(oldDocument).build())))
 				.withTest(new WhitespaceNormalizedSource(new CommentLessSource(Input.fromString(newDocument).build())))
@@ -163,16 +192,96 @@ class AccessionComparisonCallable implements Callable<Void> {
 			}
 
 			log.info("Found " + differences.size() + " differences on " + accession);
+			for (Difference difference : differences) {
+				log.info(String.join(" ", "Difference on", accession, comparisonFormatter.getDescription(difference.getComparison())));
+			}
+		}
+		*/
+		
 
-			for (Difference difference : differences.subList(0, Math.min(differences.size(), 500))) {
-				log.info(comparisonFormatter.getDescription(difference.getComparison()));
+		SAXReader saxReader = new SAXReader();
+		org.dom4j.Document doc;
+		try {
+			doc = saxReader.read(new StringReader(oldDocument));
+		} catch (DocumentException e) {
+			throw new HttpMessageNotReadableException("error parsing xml", e);
+		}
+		Sample oldSample = xmlToSampleConverter.convert(doc);
+		try {
+			doc = saxReader.read(new StringReader(newDocument));
+		} catch (DocumentException e) {
+			throw new HttpMessageNotReadableException("error parsing xml", e);
+		}
+		Sample newSample = xmlToSampleConverter.convert(doc);
+		
+		if (!oldSample.getAccession().equals(newSample.getAccession())) {
+			log.warn("Difference on "+accession+" of accession between '"+oldSample.getAccession()+"' and '"+newSample.getAccession()+"'");
+		}
+		if (!oldSample.getName().equals(newSample.getName())) {
+			log.warn("Difference on "+accession+" of name between '"+oldSample.getName()+"' and '"+newSample.getName()+"'");
+		}
+				
+		if (Math.abs(ChronoUnit.DAYS.between(oldSample.getUpdate(), newSample.getUpdate())) > 1) {
+			//TODO disabled for moment
+			//log.warn("Difference on "+accession+" of update date between '"+oldSample.getUpdate()+"' and '"+newSample.getUpdate()+"'");
+		}
+		if (Math.abs(ChronoUnit.DAYS.between(oldSample.getRelease(), newSample.getRelease())) > 1) {
+			log.warn("Difference on "+accession+" of release date between '"+oldSample.getRelease()+"' and '"+newSample.getRelease()+"'");
+		}
+		
+		Set<String> oldAttributeTypes = oldSample.getAttributes().stream().map(a -> a.getType()).collect(Collectors.toSet());
+		Set<String> newAttributeTypes = newSample.getAttributes().stream().map(a -> a.getType()).collect(Collectors.toSet());		
+		for (String attributeType : Sets.difference(oldAttributeTypes, newAttributeTypes)) {
+			log.warn("Difference on "+accession+" of attribute '"+attributeType+"' in old only");			
+		}
+		for (String attributeType : Sets.difference(newAttributeTypes, oldAttributeTypes)) {
+			log.warn("Difference on "+accession+" of attribute '"+attributeType+"' in new only");			
+		}
+		
+		for (String attributeType : Sets.intersection(oldAttributeTypes, newAttributeTypes)) {
+			List<Attribute> oldAttributes = oldSample.getAttributes().stream()
+					.filter(a -> attributeType.equals(a.getType())).collect(Collectors.toList());
+			Collections.sort(oldAttributes);
+			List<Attribute> newAttributes = newSample.getAttributes().stream()
+					.filter(a -> attributeType.equals(a.getType())).collect(Collectors.toList());
+			Collections.sort(newAttributes);			
+			
+			SortedMap<String,SortedMap<String,String>> oldUnits = new TreeMap<>();
+			SortedMap<String,SortedMap<String,String>> oldIris = new TreeMap<>();
+			SortedMap<String,SortedMap<String,String>> newUnits = new TreeMap<>();
+			SortedMap<String,SortedMap<String,String>> newIris = new TreeMap<>();
+			
+			if (oldAttributes.size() != newAttributes.size()) {
+				log.warn("Difference on "+accession+" of attribute '"+attributeType+"' has "+oldAttributes.size()+" values in old and "+newAttributes.size()+" values in new");		
+			} else {
+				for (int i = 0; i < oldAttributes.size(); i++) {
+					Attribute oldAttribute = oldAttributes.get(i);
+					Attribute newAttribute = newAttributes.get(i);
+					
+					
+					
+					//compare values
+					if (!oldAttribute.getType().equals(newAttribute.getType())) {
+						log.warn("Difference on "+accession+" of attribute '"+attributeType+"' between '"+oldAttribute.getType()+"' and '"+newAttribute.getType()+"'");
+					}
+					//compare units
+					if (oldAttribute.getUnit() != null && newAttribute.getUnit() != null
+							&& !oldAttribute.getUnit().equals(newAttribute.getUnit()) ) {
+						log.warn("Difference on "+accession+" of attribute '"+attributeType+"' between units '"+oldAttribute.getUnit()+"' and '"+newAttribute.getUnit()+"'");
+					}
+					//compare iris
+					if (oldAttribute.getIri() != null && newAttribute.getIri() != null
+							&& !oldAttribute.getIri().equals(newAttribute.getIri()) ) {
+						log.warn("Difference on "+accession+" of attribute '"+attributeType+"' between iris '"+oldAttribute.getIri()+"' and '"+newAttribute.getIri()+"'");
+					}
+				}
 			}
 		}
 		
 	}
 
 	public String getDocument(URI uri) {
-		log.info("Getting " + uri);
+		//log.info("Getting " + uri);
 		ResponseEntity<String> response;
 		try {
 			response = restTemplate.getForEntity(uri, String.class);
@@ -182,7 +291,7 @@ class AccessionComparisonCallable implements Callable<Void> {
 		}
 		String xmlString = response.getBody();
 		xmlString = toPrettyString(xmlString, 2);
-		System.out.println(xmlString);
+		//System.out.println(xmlString);
 		// SAXReader reader = new SAXReader();
 		// Document xml = reader.read(new StringReader(xmlString));
 		return xmlString;

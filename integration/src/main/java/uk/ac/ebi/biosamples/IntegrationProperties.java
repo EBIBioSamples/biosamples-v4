@@ -7,10 +7,6 @@ import java.net.URI;
 
 @Component
 public class IntegrationProperties {
-
-	
-	@Value("${biosamples.client.uri:http://localhost:8081}")
-	private URI biosampleSubmissionUri;
 	
 	@Value("${biosamples.submissionuri.sampletab:http://localhost:8082}")
 	private URI biosampleSubmissionUriSampletab;
@@ -20,10 +16,6 @@ public class IntegrationProperties {
 	
 	@Value("${biosamples.legacyapikey:#{null}}")
 	private String legacyApiKey;
-
-	public URI getBiosampleSubmissionUri() {
-		return biosampleSubmissionUri;
-	}
 
 	public URI getBiosampleSubmissionUriSampleTab() {
 		return biosampleSubmissionUriSampletab;

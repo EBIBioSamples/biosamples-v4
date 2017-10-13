@@ -26,15 +26,31 @@
 		</repository>
 	</repositories>
 
-	<dependencies>
+	<dependencies>		
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>biosamples-spring-boot-starter</artifactId>
 			<version>${bsd2017.version}</version>
 		</dependency>
+		
+		<dependency>
+			<groupId>uk.ac.ebi.biosamples</groupId>
+			<artifactId>webapps-utils</artifactId>
+			<version>${bsd2017.version}</version>
+		</dependency>	
+		<dependency>
+			<groupId>uk.ac.ebi.biosamples</groupId>
+			<artifactId>models-legacyxml</artifactId>
+			<version>${bsd2017.version}</version>
+		</dependency>
+		
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-actuator</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-jdbc</artifactId>
 		</dependency>
 
 		<!-- mark tomcat as provided so we can deploy to tomcat -->
@@ -48,11 +64,6 @@
 			<groupId>uk.ac.ebi.arrayexpress2</groupId>
 			<artifactId>limpopo-sampletab</artifactId>
 			<version>1.1.8</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-jdbc</artifactId>
 		</dependency>
 	</dependencies>
 

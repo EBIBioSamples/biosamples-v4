@@ -28,10 +28,13 @@ public class RestFacetIntegration extends AbstractIntegration {
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 	
 	private final IntegrationProperties integrationProperties;
+	private final BioSamplesProperties bioSamplesProperties;
 	
-	public RestFacetIntegration(BioSamplesClient client, IntegrationProperties integrationProperties) {
+	public RestFacetIntegration(BioSamplesClient client, IntegrationProperties integrationProperties,
+			BioSamplesProperties bioSamplesProperties) {
 		super(client);
 		this.integrationProperties = integrationProperties;
+		this.bioSamplesProperties = bioSamplesProperties;
 	}
 
 	@Override
@@ -49,7 +52,7 @@ public class RestFacetIntegration extends AbstractIntegration {
 
 		Map<String, Object> parameters = new HashMap<>();
 		parameters.put("text","TESTrestfacet1");
-		Traverson traverson = new Traverson(integrationProperties.getBiosampleSubmissionUri(), MediaTypes.HAL_JSON);
+		Traverson traverson = new Traverson(bioSamplesProperties.getBiosamplesClientUri(), MediaTypes.HAL_JSON);
 		Traverson.TraversalBuilder builder = traverson.follow("samples", "facet").withTemplateParameters(parameters);
 		Resources<Facet> facets = builder.toObject(new TypeReferences.ResourcesType<Facet>(){});
 

@@ -60,7 +60,7 @@ public class BioSamplesAapService {
 	 */
 	public Set<String> getDomains() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		log.info("authentication = "+authentication);
+		log.trace("authentication = "+authentication);
 
 		//not sure this can ever happen
 		if (authentication == null) {
@@ -72,32 +72,27 @@ public class BioSamplesAapService {
 			
 			UserAuthentication userAuthentication = (UserAuthentication) authentication;
 					
-			log.info("userAuthentication = "+userAuthentication.getName());
-			log.info("userAuthentication = "+userAuthentication.getAuthorities());
-			log.info("userAuthentication = "+userAuthentication.getPrincipal());
-			log.info("userAuthentication = "+userAuthentication.getCredentials());
+			log.trace("userAuthentication = "+userAuthentication.getName());
+			log.trace("userAuthentication = "+userAuthentication.getAuthorities());
+			log.trace("userAuthentication = "+userAuthentication.getPrincipal());
+			log.trace("userAuthentication = "+userAuthentication.getCredentials());
 
-			Set<String> domains = new HashSet<>();
-			
-			//TODO get from AAP API not JWT ?
-			//traverson.follow("users");
-			
-			for (GrantedAuthority authority : authentication.getAuthorities()) {
+			Set<String> domains = new HashSet<>();			
+			for (GrantedAuthority authority : userAuthentication.getAuthorities()) {
 				if (authority instanceof Domain) {
-					log.info("Found domain "+authority);
+					log.trace("Found domain "+authority);
 					Domain domain = (Domain) authority;
 	
-					log.info("domain.getDomainName() = "+domain.getDomainName());
-					log.info("domain.getDomainReference() = "+domain.getDomainReference());
+					log.trace("domain.getDomainName() = "+domain.getDomainName());
+					log.trace("domain.getDomainReference() = "+domain.getDomainReference());
 					
 					//NOTE this should use reference, but that is not populated in the tokens at the moment
 					//domains.add(domain.getDomainReference());
 					domains.add(domain.getDomainName());
 				} else {
-					log.info("Found non-domain "+authority);
+					log.warn("Found non-domain GrantedAuthority "+authority+" for user "+userAuthentication.getName());
 				}
-			}
-			
+			}			
 			return domains;
 		} else {
 			return Collections.emptySet();
@@ -138,7 +133,7 @@ public class BioSamplesAapService {
 		} else if (usersDomains.contains(sample.getDomain())) {
 			return sample;
 		} else {
-			log.info("User asked to submit sample to domain "+sample.getDomain()+" but has access to "+usersDomains);
+			log.warn("User asked to submit sample to domain "+sample.getDomain()+" but has access to "+usersDomains);
 			throw new SampleNotAccessibleException();
 		}
 	}

@@ -38,7 +38,7 @@
 			<artifactId>gson</artifactId>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<!-- use Dom4J for XML conversions -->
 		<dependency>
 			<groupId>dom4j</groupId>
@@ -50,11 +50,11 @@
 			<version>1.4</version>
 			<scope>test</scope>
 		</dependency>
-        <dependency>
-            <groupId>org.springframework.hateoas</groupId>
-            <artifactId>spring-hateoas</artifactId>
-        </dependency>
-    </dependencies>
+		<dependency>
+			<groupId>org.springframework.hateoas</groupId>
+			<artifactId>spring-hateoas</artifactId>
+		</dependency>
+	</dependencies>
 
 	<!-- lock transitive dependency version -->
 	<dependencyManagement>

@@ -1,0 +1,40 @@
+<BioSample
+	xsi:schemaLocation="http://www.ebi.ac.uk/biosamples/SampleGroupExport/1.0 http://www.ebi.ac.uk/biosamples/assets/xsd/v1.0/BioSDSchema.xsd"
+	submissionUpdateDate="2017-10-05T10:41:34.952+00:00"
+	submissionReleaseDate="2016-04-01T11:36:57+00:00"
+	xmlns="http://www.ebi.ac.uk/biosamples/SampleGroupExport/1.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<Property class="Sample Name" characteristic="false" comment="false"
+		type="STRING">
+		<QualifiedValue>
+			<Value>Test legacy xml</Value>
+		</QualifiedValue>
+	</Property>
+	<Property class="Description" characteristic="false" comment="false"
+		type="STRING">
+		<QualifiedValue>
+			<Value>Test description</Value>
+		</QualifiedValue>
+	</Property>
+	<Property class="Organism Part" characteristic="false"
+		comment="false" type="STRING">
+		<QualifiedValue>
+			<Value>Lung</Value>
+			<TermSourceREF>
+				<Name />
+				<TermSourceID>http://purl.obolibrary.org/obo/UBERON_0002048</TermSourceID>
+			</TermSourceREF>
+		</QualifiedValue>
+	</Property>
+	<Property class="test_Type" characteristic="false" comment="false"
+		type="STRING">
+		<QualifiedValue>
+			<Value>test_value</Value>
+		</QualifiedValue>
+	</Property>
+	<Database>
+		<Name>other</Name>
+		<URI>www.google.com</URI>
+		<ID>www.google.com</ID>
+	</Database>
+</BioSample>

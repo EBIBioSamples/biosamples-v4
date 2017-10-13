@@ -33,15 +33,19 @@ public class RestCurationIntegration extends AbstractIntegration {
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 
 	private final IntegrationProperties integrationProperties;
-
+	private final BioSamplesProperties bioSamplesProperties;
 	private final RestOperations restTemplate;
 	
 	private final Sample sample = getSampleTest1();
 	
-	public RestCurationIntegration(RestTemplateBuilder restTemplateBuilder, IntegrationProperties integrationProperties, BioSamplesClient client) {
+	public RestCurationIntegration(RestTemplateBuilder restTemplateBuilder, 
+			IntegrationProperties integrationProperties, 
+			BioSamplesProperties bioSamplesProperties,
+			BioSamplesClient client) {
 		super(client);
 		this.restTemplate = restTemplateBuilder.build();
 		this.integrationProperties = integrationProperties;
+		this.bioSamplesProperties = bioSamplesProperties;
 	}
 
 	@Override
@@ -153,7 +157,7 @@ public class RestCurationIntegration extends AbstractIntegration {
 
 	private void testSampleCurations(Sample sample) {
 		//TODO use client
-		URI uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUri()).pathSegment("samples")
+		URI uri = UriComponentsBuilder.fromUri(bioSamplesProperties.getBiosamplesClientUri()).pathSegment("samples")
 				.pathSegment(sample.getAccession()).pathSegment("curationlinks").build().toUri();
 
 		log.info("GETting from " + uri);

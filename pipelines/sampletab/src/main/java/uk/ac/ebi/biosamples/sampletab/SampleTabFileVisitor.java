@@ -53,7 +53,7 @@ public class SampleTabFileVisitor extends SimpleFileVisitor<Path> {
 		//https://docs.oracle.com/javase/tutorial/essential/io/check.html
 		if (Files.exists(sampleTabFile) && !Files.notExists(sampleTabFile)) {
 
-			log.trace("Found "+path);
+			log.trace("Found "+sampleTabFile+" at "+path);
 			
 			Callable<Void> task = new SampleTabCallable(sampleTabFile, restTemplate, uri, from, until);
 			

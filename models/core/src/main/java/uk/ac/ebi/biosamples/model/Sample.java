@@ -12,6 +12,9 @@ import uk.ac.ebi.biosamples.service.CustomInstantDeserializer;
 import uk.ac.ebi.biosamples.service.CustomInstantSerializer;
 
 import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.Set;
@@ -75,6 +78,16 @@ public class Sample implements Comparable<Sample> {
 	@JsonSerialize(using = CustomInstantSerializer.class)
 	public Instant getUpdate() {
 		return update;
+	}
+
+	@JsonProperty(value="releaseDate", access=JsonProperty.Access.READ_ONLY)
+	public String getReleaseDate() {
+		return ZonedDateTime.ofInstant(release, ZoneOffset.UTC).format(DateTimeFormatter.ISO_LOCAL_DATE);
+	}
+
+	@JsonProperty(value="updateDate", access=JsonProperty.Access.READ_ONLY)
+	public String getUpdateDate() {
+		return ZonedDateTime.ofInstant(update, ZoneOffset.UTC).format(DateTimeFormatter.ISO_LOCAL_DATE);
 	}
 
     @JsonIgnore

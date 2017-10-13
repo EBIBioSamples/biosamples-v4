@@ -18,9 +18,9 @@ public class SummaryInfoService {
 		
 		SummaryInfo summaryInfo = new SummaryInfo();
 		summaryInfo.setTotal(BigInteger.valueOf(metadata.getTotalElements()));
-		summaryInfo.setFrom(BigInteger.valueOf(((metadata.getNumber()-1)*metadata.getSize())+1));
-		summaryInfo.setTo(BigInteger.valueOf(metadata.getNumber()*metadata.getSize()));
-		summaryInfo.setPageNumber(BigInteger.valueOf(metadata.getNumber()));
+		summaryInfo.setFrom(BigInteger.valueOf((metadata.getNumber()*metadata.getSize())+1));
+		summaryInfo.setTo(BigInteger.valueOf((metadata.getNumber()+1)*metadata.getSize()));
+		summaryInfo.setPageNumber(BigInteger.valueOf(metadata.getNumber()+1));
 		summaryInfo.setPageSize(BigInteger.valueOf(metadata.getSize()));
 		
 		return summaryInfo;
@@ -32,9 +32,9 @@ public class SummaryInfoService {
 		
 		SummaryInfo summaryInfo = new SummaryInfo();
 		summaryInfo.setTotal(BigInteger.valueOf(metadata.getTotalElements()));
-		summaryInfo.setFrom(BigInteger.valueOf(((metadata.getNumber()-1)*metadata.getSize())+1));
-		summaryInfo.setTo(BigInteger.valueOf(metadata.getNumber()*metadata.getSize()));
-		summaryInfo.setPageNumber(BigInteger.valueOf(metadata.getNumber()));
+		summaryInfo.setFrom(BigInteger.valueOf((metadata.getNumber()*metadata.getSize())+1));
+		summaryInfo.setTo(BigInteger.valueOf(Math.min(metadata.getTotalElements(),(metadata.getNumber()+1)*metadata.getSize())));
+		summaryInfo.setPageNumber(BigInteger.valueOf(metadata.getNumber()+1));
 		summaryInfo.setPageSize(BigInteger.valueOf(metadata.getSize()));
 		
 		return summaryInfo;

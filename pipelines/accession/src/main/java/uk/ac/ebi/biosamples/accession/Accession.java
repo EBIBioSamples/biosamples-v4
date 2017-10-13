@@ -5,6 +5,8 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
@@ -13,6 +15,7 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -95,9 +98,12 @@ public class Accession implements ApplicationRunner{
 			futures.put(accession, future);
 
 			try {
-				ThreadUtils.checkAndRetryFutures(futures, callables, futureMax, executor);
+				//ThreadUtils.checkAndRetryFutures(futures, callables, futureMax, executor);
+				ThreadUtils.checkFutures(futures, futureMax);
 			} catch (InterruptedException e) {
 				log.warn("Interupted while checking for futures", e);
+			} catch (ExecutionException e) {
+				throw new RuntimeException(e);
 			} 
 		}
 	}
@@ -120,16 +126,16 @@ public class Accession implements ApplicationRunner{
 		@Override
 		public Void call() throws Exception {
 			String name = userAccession;
-			Instant release = Instant.now().plus(100, ChronoUnit.YEARS);
+			Instant release = ZonedDateTime.now(ZoneOffset.UTC).plusYears(100).toInstant();
 			Instant update = Instant.ofEpochMilli(dateAssigned.getTime());
 
 			SortedSet<Attribute> attributes = new TreeSet<>();
-			attributes.add(Attribute.build("other", "migrated from accession database at "+DateTimeFormatter.ISO_DATE_TIME.format(Instant.now())));
+			attributes.add(Attribute.build("other", "migrated from accession database at "+DateTimeFormatter.ISO_DATE_TIME.format(ZonedDateTime.now(ZoneOffset.UTC))));
 			//this is the migrated domain in an AAP context
 			//attributes.add(Attribute.build("submission accession", submissionAccession));
 			attributes.add(Attribute.build("deleted", Boolean.toString(deleted)));
 			
-			Sample sample = Sample.build(name, accession, null, release, update, attributes, null, null);
+			Sample sample = Sample.build(name, accession, pipelinesProperties.getAccessionDomain(), release, update, attributes, null, null);
 			bioSamplesClient.persistSample(sample);
 			return null;
 		}
