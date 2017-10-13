@@ -86,6 +86,14 @@ services:
     - spring.http.encoding.force=true
     - ENDPOINTS_SHUTDOWN_ENABLED=true
     - ENDPOINTS_SHUTDOWN_SENSITIVE=false
+    # Provide information about database
+    - spring.datasource.accession.url=override_in_docker-compose.override.yml
+    - spring.datasource.accession.username=override_in_docker-compose.override.yml
+    - spring.datasource.accession.password=override_in_docker-compose.override.yml
+    - spring.datasource.accession.driver-class-name=override_in_docker-compose.override.yml
+    # Provide AAP infos
+    - BIOSAMPLES_CLIENT_AAP_USERNAME=override_in_docker-compose.override.yml
+    - BIOSAMPLES_CLIENT_AAP_PASSWORD=override_in_docker-compose.override.yml
     ports:
     - 8082:8080
   
@@ -112,6 +120,9 @@ services:
     - SERVER_TOMCAT_ACCESSLOG_PATTERN=%h %l %u %t "%r" %s %b (%D ms)
     - ENDPOINTS_SHUTDOWN_ENABLED=true
     - ENDPOINTS_SHUTDOWN_SENSITIVE=false
+    # Provide AAP infos
+    - BIOSAMPLES_CLIENT_AAP_USERNAME=override_in_docker-compose.override.yml
+    - BIOSAMPLES_CLIENT_AAP_PASSWORD=override_in_docker-compose.override.yml
     ports:
     - 8083:8080
     
@@ -228,7 +239,9 @@ services:
     - BIOSAMPLES_LEGACYXML=http://biosamples-webapps-legacyxml:8080/biosamples/beta/xml
     - BIOSAMPLES_LEGACYXML_URI=http://biosamples-webapps-legacyxml:8080/biosamples/beta/xml
     - LOGGING_FILE=/logs/integration.log
-     
+    # Provide AAP infos
+    - BIOSAMPLES_CLIENT_AAP_USERNAME=override_in_docker-compose.override.yml
+    - BIOSAMPLES_CLIENT_AAP_PASSWORD=override_in_docker-compose.override.yml
        
   mongo:
     image: mongo:3.2
