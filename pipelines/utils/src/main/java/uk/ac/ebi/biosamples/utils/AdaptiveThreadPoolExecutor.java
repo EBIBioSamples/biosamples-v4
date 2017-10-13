@@ -125,8 +125,7 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor implements Au
 				int currentThreads = pool.getMaximumPoolSize();
 				int doneJobs = pool.completedJobs.getAndSet(0);
 				
-				//number of jobs per sec per thread
-				//double score = (((double)doneJobs)*1000000000.0d)/(interval*currentThreads);
+				//number of jobs per sec
 				double score = (((double)doneJobs)*1000000000.0d)/(interval);
 				
 				log.trace("Completed "+doneJobs+" in "+interval+"ns using "+currentThreads+" threads : score = "+score);
@@ -144,7 +143,7 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor implements Au
 					//more than 25 pollings ago?
 					if (testTime + (pollInterval*1000000l*25) < now) {
 						//too old score, remove it
-						log.info("Remove out-of-date score for "+testThreads+" of "+threadsScores.get(testThreads));
+						log.trace("Remove out-of-date score for "+testThreads+" of "+threadsScores.get(testThreads));
 						iterator.remove();
 						threadsScores.remove(testThreads);
 					}
