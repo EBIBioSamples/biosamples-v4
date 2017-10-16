@@ -50,7 +50,9 @@ public class SolrFilterService {
                             filterCriteria = filterCriteria.or(new Criteria(filterTargetField).is(value));
                         }
                     }
-
+                case DATE_FILTER:
+                    DateRangeFilterContent.DateRange dateRangeContent = ((DateRangeFilterContent) content).getContent();
+                    filterCriteria = new Criteria(filterTargetField).between(dateRangeContent.getFrom(), dateRangeContent.getTo());
             }
 
         }
