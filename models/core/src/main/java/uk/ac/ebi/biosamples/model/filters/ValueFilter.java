@@ -28,4 +28,12 @@ public class ValueFilter implements FilterContent {
         }
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof ValueFilter) {
+            ValueFilter other = (ValueFilter) obj;
+            return other.getContent().equals(this.getContent());
+        }
+        return false;
+    }
 }

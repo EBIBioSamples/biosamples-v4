@@ -38,4 +38,14 @@ public class Filter {
         return this.label.equals(anotherFilter.getLabel()) && this.kind.equals(anotherFilter.getKind());
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Filter) {
+            Filter other = (Filter) obj;
+            return other.kind.equals(this.kind) &&
+                    other.label.equals(this.label) &&
+                    other.getContent().equals(this.getContent());
+        }
+        return false;
+    }
 }
