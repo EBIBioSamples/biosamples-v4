@@ -1,5 +1,7 @@
 package uk.ac.ebi.biosamples.model.filters;
 
+import java.util.Objects;
+
 public class Filter {
 
     private final FilterType kind;
@@ -40,12 +42,16 @@ public class Filter {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof Filter) {
-            Filter other = (Filter) obj;
-            return other.kind.equals(this.kind) &&
-                    other.label.equals(this.label) &&
-                    other.getContent().equals(this.getContent());
-        }
-        return false;
+        if (obj == this) return true;
+        if (!(obj instanceof Filter)) return false;
+        Filter other = (Filter) obj;
+        return Objects.equals(this.kind, other.kind) &&
+                Objects.equals(this.label, other.label) &&
+                Objects.equals(this.content, other.getContent());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.kind, this.label, this.content);
     }
 }

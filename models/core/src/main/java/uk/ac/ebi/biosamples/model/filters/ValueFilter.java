@@ -2,6 +2,7 @@ package uk.ac.ebi.biosamples.model.filters;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class ValueFilter implements FilterContent {
 
@@ -30,10 +31,16 @@ public class ValueFilter implements FilterContent {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof ValueFilter) {
-            ValueFilter other = (ValueFilter) obj;
-            return other.getContent().equals(this.getContent());
+        if (obj == this) return true;
+        if (!(obj instanceof ValueFilter)) {
+            return false;
         }
-        return false;
+        ValueFilter other = (ValueFilter) obj;
+        return Objects.deepEquals(this.getContent(), other.getContent());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.getContent());
     }
 }

@@ -1,8 +1,9 @@
 package uk.ac.ebi.biosamples.model.filters;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Objects;
 
 public class DateRangeFilterContent implements FilterContent {
 
@@ -38,8 +39,11 @@ public class DateRangeFilterContent implements FilterContent {
     public static class DateRange {
         private ZonedDateTime from;
         private ZonedDateTime to;
+        private static final ZoneId defaultZoneId = ZoneId.of("UTC");
+        private static final LocalDateTime maxDate = LocalDateTime.MAX;
+        private static final LocalDateTime minDate = LocalDateTime.MIN;
 
-        private DateRange(ZonedDateTime form, ZonedDateTime to) {
+        private DateRange(ZonedDateTime from, ZonedDateTime to) {
             this.from = from;
             this.to = to;
         }
@@ -53,30 +57,38 @@ public class DateRangeFilterContent implements FilterContent {
         }
 
         public static DateRange range(ZonedDateTime from, ZonedDateTime to) {
-            if (to.isAfter(from)) {
+            if (from == null && to == null) {
+                return DateRange.any();
+            } else if (to == null) {
+                return new DateRange(from, ZonedDateTime.of(maxDate, defaultZoneId));
+            } else if (from == null) {
+                return new DateRange(ZonedDateTime.of(minDate, defaultZoneId), to);
+            } else {
                 return new DateRange(from, to);
             }
-            if (from == null && to == null) {
-                return DateRange.to(ZonedDateTime.now());
-            } else if (from == null){
-                return DateRange.to(to);
-            } else {
-                return DateRange.from(from);
-            }
-        }
-
-        public static DateRange from(ZonedDateTime from) {
-            return new DateRange(from, ZonedDateTime.now());
-        }
-
-        public static DateRange to(ZonedDateTime to) {
-            return new DateRange(ZonedDateTime.ofInstant(Instant.MIN, to.getZone()), to);
         }
 
         public static DateRange any() {
             return new DateRange(
-                    ZonedDateTime.ofInstant(Instant.MIN, ZoneId.of("UTC")),
-                    ZonedDateTime.ofInstant(Instant.MAX, ZoneId.of("UTC")));
+                    ZonedDateTime.of(minDate, defaultZoneId),
+                    ZonedDateTime.of(maxDate, defaultZoneId));
         }
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.dateRange.from, this.dateRange.to);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) return true;
+        if (! (obj instanceof DateRangeFilterContent)) {
+            return false;
+        }
+        DateRangeFilterContent other = (DateRangeFilterContent) obj;
+        return Objects.equals(this.dateRange.from, other.dateRange.from) &&
+                Objects.equals(this.dateRange.to, other.dateRange.to);
+
     }
 }
