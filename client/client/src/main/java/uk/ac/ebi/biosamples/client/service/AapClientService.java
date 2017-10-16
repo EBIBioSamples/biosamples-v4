@@ -40,8 +40,12 @@ public class AapClientService {
 		this.password = password;
 	}
 	
-	//TODO put some sort of cache/validation layer over this
-	public synchronized String getJwt() {		
+	public synchronized String getJwt() {	
+		
+		if (username == null || username.trim().length() == 0
+				|| password == null || password.trim().length() == 0) {
+			return null;
+		}
 		
 		//TODO refresh token when less than 5 minutes left, rather than when expired
 		if (!jwt.isPresent() || (expiry.isPresent() && expiry.get().before(new Date()))) {

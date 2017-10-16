@@ -102,7 +102,9 @@ public class BioSamplesClient implements AutoCloseable {
 				throws IOException {			
 			if (aapClientService != null && !request.getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
 				String jwt = aapClientService.getJwt();
-				request.getHeaders().set(HttpHeaders.AUTHORIZATION, "Bearer "+jwt);
+				if (jwt != null) {
+					request.getHeaders().set(HttpHeaders.AUTHORIZATION, "Bearer "+jwt);
+				}
 			}
 
 			//pass along to the next interceptor
