@@ -24,11 +24,11 @@ public class MongoCurationLink implements Comparable<MongoCurationLink>{
 	@Id
 	private final String hash;
 	
-	@Indexed
+	@Indexed(background=true)
 	private final String sample;
 	private final String domain;
 	
-	@Indexed
+	@Indexed(background=true)
 	protected final Instant created;
 
 	private final Curation curation;
