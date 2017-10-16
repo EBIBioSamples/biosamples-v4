@@ -5,40 +5,20 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.filters.*;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.time.temporal.TemporalAccessor;
 import java.util.*;
-
-import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
-import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
 
 
 @Service
 public class FilterService {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
-	private final DateTimeFormatter formatter = new DateTimeFormatterBuilder()
-			.parseCaseInsensitive()
-			.append(ISO_LOCAL_DATE)
-			.optionalStart()           // time made optional
-			.appendLiteral('T')
-			.append(ISO_LOCAL_TIME)
-			.optionalStart()           // zone and offset made optional
-			.appendOffsetId()
-			.optionalStart()
-			.appendLiteral('[')
-			.parseCaseSensitive()
-			.appendZoneRegionId()
-			.appendLiteral(']')
-			.optionalEnd()
-			.optionalEnd()
-			.optionalEnd()
-			.toFormatter();
+
+	private final FilterFactory filterFactory;
+
+	public FilterService(FilterFactory filterFactory) {
+		this.filterFactory = filterFactory;
+	}
+
 
 	/**
 	 * Converts an array of serialized filters to the corresponding collection of object
@@ -60,9 +40,7 @@ public class FilterService {
 		Arrays.sort(filterStrings);
 		SortedSet<String> filterStringSet = new TreeSet<>(Arrays.asList(filterStrings));
 		for(String filterString: filterStringSet) {
-			FilterType filterType = FilterType.ofFilterString(filterString);
-			String filterValue = filterString.replace(filterType.getSerialization() + ":","");
-			Filter filter = getFilter(filterValue, filterType);
+			Filter filter = filterFactory.parseFilterFromString(filterString);
 
 			/*
 			 * If there's already a compatible filter in the list
@@ -91,68 +69,7 @@ public class FilterService {
 
 	}
 
-	/**
-	 * Generate a Filter based on the provided serialized filter content and filter type
-	 * @param serializedValue the content of the filter serialized
-	 * @param filterType the kind of filter
-	 * @return a new Filter
-	 */
-	private Filter getFilter(String serializedValue, FilterType filterType) {
-		String filterLabel = "";
-		FilterContent filterContent = new EmptyFilter();
-		String[] valueElements;
-		//TODO code smell - Too many switch cases
-		switch(filterType) {
-			case ATTRIBUTE_FILTER:
-			case RELATION_FILER:
-			case INVERSE_RELATION_FILTER:
-				valueElements = serializedValue.split(":", 2);
-				filterLabel = valueElements[0];
-				if(valueElements.length > 1) {
-					List<String> listContent = new ArrayList<>();
-					listContent.add(valueElements[1]);
-					filterContent = new ValueFilter(listContent);
-				}
-				break;
-			case DATE_FILTER:
-				// TODO FilterService should know anything about how to do this, should be part of the filter class
-                // TODO the method needs to be refactor
-				valueElements = serializedValue.split(":",  2);
-				filterLabel = valueElements[0];
-				String filterValue = valueElements[1];
-				ZonedDateTime from = null;
-				ZonedDateTime to = null;
-				int fromIndex = filterValue.indexOf("from:");
-				int toIndex = filterValue.indexOf("to:");
-				if (toIndex != -1) {
-					if (fromIndex != -1) {
-						from = parseDateTime(filterValue.substring(fromIndex + 5, toIndex));
-					}
-					to = parseDateTime(filterValue.substring(toIndex + 3));
-				} else {
-					if (fromIndex != -1)
-						from = parseDateTime(filterValue.substring(fromIndex + 5));
-				}
-                filterContent = new DateRangeFilterContent(from, to);
-				break;
 
-		}
-
-		return new Filter(filterType, filterLabel, filterContent);
-	}
-
-	private ZonedDateTime parseDateTime(String datetime) {
-		TemporalAccessor temporalAccessor = formatter.parseBest(datetime,
-				ZonedDateTime::from, LocalDateTime::from, LocalDate::from);
-		if (temporalAccessor instanceof ZonedDateTime) {
-			return (ZonedDateTime) temporalAccessor;
-		} else if (temporalAccessor instanceof LocalDateTime) {
-			return ((LocalDateTime) temporalAccessor).atZone(ZoneId.of("UTC"));
-		} else {
-			return ((LocalDate) temporalAccessor).atStartOfDay(ZoneId.of("UTC"));
-		}
-
-	}
 
 
 }
