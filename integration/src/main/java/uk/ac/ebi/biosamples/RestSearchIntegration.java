@@ -4,19 +4,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
+import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.filters.Filter;
+import uk.ac.ebi.biosamples.model.filters.FilterFactory;
 
 import java.time.Instant;
 import java.util.*;
 
 @Component
 @Order(1)
-@Profile({"default", "rest"})
+@Profile({"default", "rest", "test"})
 public class RestSearchIntegration extends AbstractIntegration {;
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
@@ -32,6 +35,7 @@ public class RestSearchIntegration extends AbstractIntegration {;
 		Sample test2 = getSampleTest2();
 		Sample test4 = getSampleTest4();
 		Sample test5 = getSampleTest5();
+		Sample test6 = getSampleTest6();
 
 		//put a private sample
 		Resource<Sample> resource = client.persistSampleResource(test1);
@@ -58,6 +62,11 @@ public class RestSearchIntegration extends AbstractIntegration {;
 				test5.getCharacteristics(), test5AllRelationships, test5.getExternalReferences());
 		if (!test5.equals(resource.getContent())) {
 			throw new RuntimeException("Expected response to equal submission");
+		}
+
+		resource = client.persistSampleResource(test6);
+		if (!test6.equals(resource.getContent())) {
+			throw new RuntimeException("Expected response ("+resource.getContent()+") to equal submission ("+test6+")");
 		}
 	}
 
@@ -128,7 +137,24 @@ public class RestSearchIntegration extends AbstractIntegration {;
 	}
 
 	@Override
-	protected void phaseFour() { }
+	protected void phaseFour() {
+		Sample test6 = getSampleTest6();
+		String filterSerialized = "fa:MySpecialAttributeType:MySpecialAttributeValue";
+		Filter attributeFilter = new FilterFactory().parseFilterFromString(filterSerialized);
+		PagedResources<Resource<Sample>> samplePage = client.fetchFilteredPagedSamples("",
+				Collections.singletonList(attributeFilter),
+				0, 10);
+		if (samplePage.getMetadata().getTotalElements() != 1) {
+			throw new RuntimeException("Unexpected number of results for attribute filter query: " + samplePage.getMetadata().getTotalElements());
+		}
+		Resource<Sample> sample = samplePage.getContent().iterator().next();
+		if (!sample.getContent().getAccession().equals(test6.getAccession())) {
+			throw new RuntimeException("Returned sample doesn't match the expected sample " + test6.getAccession());
+		}
+
+
+	}
+
 
 	@Override
 	protected void phaseFive() { }
@@ -189,6 +215,22 @@ public class RestSearchIntegration extends AbstractIntegration {;
 		SortedSet<Attribute> attributes = new TreeSet<>();
 		attributes.add(
 				Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
+
+		// TODO need to add inverse relationships later
+		SortedSet<Relationship> relationships = new TreeSet<>();
+
+		return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, relationships, new TreeSet<>());
+	}
+
+	private Sample getSampleTest6() {
+		String name = "Test Sample the sixth";
+		String accession = "TESTrestsearch6";
+		Instant update = Instant.parse("1999-12-23T23:45:57.00Z");
+		Instant release = Instant.parse("1999-12-23T11:36:57.00Z");
+
+		SortedSet<Attribute> attributes = new TreeSet<>();
+		attributes.add(
+				Attribute.build("MySpecialAttributeType", "MySpecialAttributeValue", null, null));
 
 		// TODO need to add inverse relationships later
 		SortedSet<Relationship> relationships = new TreeSet<>();
