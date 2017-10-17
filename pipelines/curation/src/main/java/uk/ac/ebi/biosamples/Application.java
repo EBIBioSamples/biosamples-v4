@@ -32,7 +32,7 @@ public class Application {
 
 	
 	@Bean
-	public RestTemplateCustomizer restTemplateCustomizer(PipelinesProperties piplinesProperties) {
+	public RestTemplateCustomizer restTemplateCustomizer(BioSamplesProperties bioSamplesProperties, PipelinesProperties piplinesProperties) {
 		return new RestTemplateCustomizer() {
 			public void customize(RestTemplate restTemplate) {
 				
@@ -62,7 +62,7 @@ public class Application {
 				poolingHttpClientConnectionManager.setMaxTotal(piplinesProperties.getConnectionCountMax());
 				poolingHttpClientConnectionManager.setDefaultMaxPerRoute(piplinesProperties.getConnectionCountDefault());
 				poolingHttpClientConnectionManager.setMaxPerRoute(new HttpRoute(HttpHost.create(piplinesProperties.getZooma())), piplinesProperties.getConnectionCountZooma());
-				poolingHttpClientConnectionManager.setMaxPerRoute(new HttpRoute(HttpHost.create(piplinesProperties.getOls())), piplinesProperties.getConnectionCountOls());
+				poolingHttpClientConnectionManager.setMaxPerRoute(new HttpRoute(HttpHost.create(bioSamplesProperties.getOls())), piplinesProperties.getConnectionCountOls());
 				
 				
 				//set a local cache for cacheable responses

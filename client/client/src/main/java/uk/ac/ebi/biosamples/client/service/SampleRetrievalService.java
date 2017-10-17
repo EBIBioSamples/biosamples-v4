@@ -66,10 +66,12 @@ public class SampleRetrievalService {
 		return executor.submit(new FetchCallable(accession));
 	}
 
-//	@Deprecated
 	public PagedResources<Resource<Sample>> search(String text, int page, int size) {
+		
+		//TODO make a proper HAL link to do this properly
+		
 		URI uri = UriComponentsBuilder.fromUriString(traverson.follow("samples").asLink().getHref())
-				.queryParam("text", !text.isEmpty() ? text : "*:*").queryParam("page", page).queryParam("size", size)
+				.queryParam("text", text).queryParam("page", page).queryParam("size", size)
 				.build().toUri();
 
 		log.info("GETing " + uri);

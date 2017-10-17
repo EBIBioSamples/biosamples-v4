@@ -87,6 +87,15 @@ public class RestSearchIntegration extends AbstractIntegration {
 				throw new RuntimeException("Found non-public sample TESTrestsearch3 in search samples");
 			}
 		}
+		
+		//TODO check OLS expansion by making sure we can find the submitted samples in results for Eukaryota
+		Set<String> accessions = new HashSet<>();
+		for (Resource<Sample> sample : client.fetchSampleResourceAll("Eukaryota")) {
+			accessions.add(sample.getContent().getAccession());
+		}
+		if (!accessions.contains("TESTrestsearch2")) {
+			throw new RuntimeException("TESTrestsearch2 not found in search results for Eukaryota");
+		}
 	}
 
 	@Override

@@ -1,5 +1,7 @@
 package uk.ac.ebi.biosamples.solr;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -9,6 +11,7 @@ import uk.ac.ebi.biosamples.MessageContent;
 import uk.ac.ebi.biosamples.Messaging;
 import uk.ac.ebi.biosamples.messages.threaded.MessageSampleStatus;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.ols.OlsProcessor;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
 import uk.ac.ebi.biosamples.solr.service.SampleToSolrSampleConverter;
 
@@ -22,6 +25,9 @@ public class MessageHandlerSolr {
 	@Autowired
 	private SampleToSolrSampleConverter sampleToSolrSampleConverter;
 	
+	@Autowired
+	private OlsProcessor olsProcessor;
+	
 	@RabbitListener(queues = Messaging.queueToBeIndexedSolr)
 	public void handle(MessageContent messageContent) throws Exception {
 		
@@ -32,8 +38,13 @@ public class MessageHandlerSolr {
 
 		Sample sample = messageContent.getSample();
 		SolrSample solrSample = sampleToSolrSampleConverter.convert(sample);
+		for (List<String> iris : solrSample.getAttributeIris().values()) {
+			for (String iri : iris) {
+				solrSample.getOntologySynonyms().addAll(olsProcessor.ancestorsAndSynonyms("efo", iri));
+			}
+		}
+		//TODO following relationships
 		
-		//TODO expand this conversion - OLS, related external references, etc
 				
 		MessageSampleStatus<SolrSample> messageSampleStatus;
 		try {
