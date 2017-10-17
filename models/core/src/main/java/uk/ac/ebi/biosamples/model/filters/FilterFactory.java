@@ -122,11 +122,11 @@ public class FilterFactory {
     }
 
     private String getFromFieldPrefix() {
-        return "from:";
+        return "from=";
     }
 
     private String getToFieldPrefix() {
-        return "to:";
+        return "to=";
     }
 
 
