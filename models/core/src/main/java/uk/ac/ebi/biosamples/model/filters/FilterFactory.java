@@ -9,8 +9,6 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.TemporalAccessor;
-import java.util.ArrayList;
-import java.util.List;
 
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
@@ -45,8 +43,6 @@ public class FilterFactory {
             filterContent = readContent(filterType, valueElements[1]);
         }
         return new Filter(filterType, filterLabel, filterContent);
-
-
     }
 
 
@@ -64,9 +60,7 @@ public class FilterFactory {
     }
 
     private FilterContent getValueFilterContent(String serializedValue) {
-        List<String> listContent = new ArrayList<>();
-        listContent.add(serializedValue);
-        return new ValueFilter(listContent);
+        return new ValueFilter(serializedValue);
     }
 
     private FilterContent getDateFilterContent(String serializedValue) {
@@ -128,6 +122,7 @@ public class FilterFactory {
     private String getToFieldPrefix() {
         return "to=";
     }
+
 
 
 }

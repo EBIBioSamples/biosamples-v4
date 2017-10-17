@@ -40,29 +40,7 @@ public class FilterService {
 		Arrays.sort(filterStrings);
 		SortedSet<String> filterStringSet = new TreeSet<>(Arrays.asList(filterStrings));
 		for(String filterString: filterStringSet) {
-			Filter filter = filterFactory.parseFilterFromString(filterString);
-
-			/*
-			 * If there's already a compatible filter in the list
-			 * merge the two contents
-			 * TODO Improvable?
-             */
-			int compatibleFilterIndex = -1;
-			Filter newFilter = filter;
-            for(int i=0; i<outputFilters.size(); i++) {
-            	Filter outputFilter = outputFilters.get(i);
-            	if(outputFilter.isCompatible(filter)) {
-            		outputFilter.getContent().merge(filter.getContent());
-					newFilter = outputFilter;
-					compatibleFilterIndex = i;
-					break;
-				}
-			}
-			if (compatibleFilterIndex < 0) {
-            	outputFilters.add(filter);
-			} else {
-            	outputFilters.set(compatibleFilterIndex, newFilter);
-			}
+			outputFilters.add(filterFactory.parseFilterFromString(filterString));
 		}
 
 		return outputFilters;

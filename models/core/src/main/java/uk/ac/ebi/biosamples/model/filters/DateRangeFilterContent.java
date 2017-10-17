@@ -3,6 +3,7 @@ package uk.ac.ebi.biosamples.model.filters;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 public class DateRangeFilterContent implements FilterContent {
@@ -19,22 +20,34 @@ public class DateRangeFilterContent implements FilterContent {
     }
 
 
-    @Override
-    public void merge(FilterContent otherContent) {
-        if (otherContent instanceof DateRangeFilterContent) {
-            DateRangeFilterContent content = (DateRangeFilterContent) otherContent;
-            DateRange range = content.getContent();
-            ZonedDateTime newFrom = this.dateRange.getFrom();
-            ZonedDateTime newTo = this.dateRange.getTo();
-            if (range.getFrom().isBefore(newFrom)) {
-                newFrom = range.getFrom();
-            }
+//    @Override
+//    public void merge(FilterContent otherContent) {
+//        if (otherContent instanceof DateRangeFilterContent) {
+//            DateRangeFilterContent content = (DateRangeFilterContent) otherContent;
+//            DateRange range = content.getContent();
+//            ZonedDateTime newFrom = this.dateRange.getFrom();
+//            ZonedDateTime newTo = this.dateRange.getTo();
+//            if (range.getFrom().isBefore(newFrom)) {
+//                newFrom = range.getFrom();
+//            }
+//
+//            if (range.getTo().isAfter(newTo)) {
+//                newTo = range.getTo();
+//            }
+//            this.dateRange = DateRange.range(newFrom, newTo);
+//        }
+//    }
 
-            if (range.getTo().isAfter(newTo)) {
-                newTo = range.getTo();
-            }
-            this.dateRange = DateRange.range(newFrom, newTo);
+    @Override
+    public String getSerialization() {
+        StringBuilder builder = new StringBuilder();
+        if (!this.getContent().isFromMinDate()) {
+            builder.append("from=").append(this.getContent().getFrom().format(DateTimeFormatter.ISO_ZONED_DATE_TIME));
         }
+        if (!this.getContent().isToMaxDate()) {
+            builder.append("to=").append(this.getContent().getTo().format(DateTimeFormatter.ISO_ZONED_DATE_TIME));
+        }
+        return builder.toString();
     }
 
     public static class DateRange {

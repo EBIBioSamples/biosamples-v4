@@ -9,8 +9,13 @@ public class EmptyFilter implements FilterContent{
         return Optional.empty();
     }
 
+//    @Override
+//    public void merge(FilterContent otherContent) {
+//        // Don't need to do anything
+//    }
+
     @Override
-    public void merge(FilterContent otherContent) {
-        // Don't need to do anything
+    public String getSerialization() {
+        return "";
     }
 }

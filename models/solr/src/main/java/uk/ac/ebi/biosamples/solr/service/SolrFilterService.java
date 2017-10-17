@@ -11,8 +11,7 @@ import uk.ac.ebi.biosamples.service.FacetToFilterConverter;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Collection;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class SolrFilterService {
@@ -47,13 +46,7 @@ public class SolrFilterService {
                     filterCriteria = new Criteria(filterTargetField).isNotNull();
                 } else {
                     ValueFilter valueContent = (ValueFilter) content;
-                    for (String value : valueContent.getContent()) {
-                        if (filterCriteria == null) {
-                            filterCriteria = new Criteria(filterTargetField).is(value);
-                        } else {
-                            filterCriteria = filterCriteria.or(new Criteria(filterTargetField).is(value));
-                        }
-                    }
+                    filterCriteria = new Criteria(filterTargetField).is(valueContent.getContent());
                 }
                 break;
             case DATE_FILTER:
@@ -82,6 +75,26 @@ public class SolrFilterService {
     }
 
     /**
+     * Return an optional list of criterias based on filters with same type and label of a reference filter
+     * @param availableFilters the list of filters to scan
+     * @param referenceFilter
+     * @return Optional List of criteria
+     */
+    public Optional<List<Filter>> getCompatibleFilters(List<Filter> availableFilters, Filter referenceFilter) {
+        List<Filter> compatibleFilterList = new ArrayList<>();
+        for (Filter nextFilter : availableFilters) {
+            if (nextFilter.getLabel().equals(referenceFilter.getLabel()) && nextFilter.getKind().equals(referenceFilter.getKind())) {
+                compatibleFilterList.add(nextFilter);
+            }
+        }
+        if(compatibleFilterList.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(compatibleFilterList);
+
+    }
+
+    /**
      * Produce a filter query based on the provided filters
      * @param filters a collection of filters
      * @return the corresponding filter query
@@ -93,11 +106,24 @@ public class SolrFilterService {
 
         boolean filterActive = false;
         FilterQuery filterQuery = new SimpleFilterQuery();
-        for(Filter filter: filters) {
-            Optional<Criteria> optionalFilterCriteria = getFilterCriteria(filter);
+        List<Filter> filtersBag = new ArrayList<>(filters);
+        while(!filtersBag.isEmpty()) {
+            Filter currentFilter = filtersBag.remove(0);
+            Optional<Criteria> optionalFilterCriteria = getFilterCriteria(currentFilter);
             if (optionalFilterCriteria.isPresent()) {
-                filterQuery.addCriteria(optionalFilterCriteria.get());
-                filterActive = true;
+                Criteria criteria = optionalFilterCriteria.get();
+                Optional<List<Filter>> optionalCompatibleFilters = getCompatibleFilters(filtersBag, currentFilter);
+                optionalCompatibleFilters.ifPresent(compatibleFilterList -> {
+                    for (Filter filter : compatibleFilterList) {
+                        Optional<Criteria> orCriteria = getFilterCriteria(filter);
+                        orCriteria.ifPresent(criteria::or);
+                    }
+                    filtersBag.removeAll(compatibleFilterList);
+                });
+                filterQuery.addCriteria(criteria);
+                if (!filterActive) {
+                    filterActive = true;
+                }
             }
 
         }

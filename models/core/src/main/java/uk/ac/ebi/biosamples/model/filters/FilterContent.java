@@ -8,9 +8,15 @@ public interface FilterContent {
      */
     public Object getContent();
 
+//    /**
+//     * Merge the current content with the other
+//     * @param otherContent the other content
+//     */
+//    public void merge(FilterContent otherContent);
+
     /**
-     * Merge the current content with the other
-     * @param otherContent the other content
+     * Return the serialization of the content
+     * @return
      */
-    public void merge(FilterContent otherContent);
+    public String getSerialization();
 }

@@ -8,7 +8,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import uk.ac.ebi.biosamples.model.filters.*;
 
 import java.time.*;
-import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
 
@@ -25,7 +24,7 @@ public class FilterTest {
     public void testAttributeFilterDeserialization() {
         String stringToTest = "fa:organism:Homo sapiens";
         Filter expectedFilter = new Filter(FilterType.ATTRIBUTE_FILTER, "organism",
-                new ValueFilter(Collections.singletonList("Homo sapiens")));
+                new ValueFilter("Homo sapiens"));
 
         Filter attributeFilter = filterFactory.parseFilterFromString(stringToTest);
         assertEquals(attributeFilter, expectedFilter);

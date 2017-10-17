@@ -54,4 +54,8 @@ public class Filter {
     public int hashCode() {
         return Objects.hash(this.kind, this.label, this.content);
     }
+
+    public String getSerialization() {
+        return this.getKind().getSerialization() + ":" + this.getLabel() + ":" + this.getContent().getSerialization();
+    }
 }
