@@ -5,12 +5,6 @@
 	<artifactId>webapps</artifactId>
 
 	<packaging>pom</packaging>
-    <dependencies>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
-    </dependencies>
 
     <parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
@@ -22,6 +16,5 @@
 		<module>core</module>
 		<module>sampletab</module>
 		<module>legacyxml</module>
-		<module>utils</module>
 	</modules>
 </project>

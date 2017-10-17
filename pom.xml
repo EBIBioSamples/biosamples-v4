@@ -37,6 +37,7 @@
 		<module>integration</module>
 		<module>client</module>
 		<module>properties</module>
+		<module>utils</module>
 	</modules>
 
 	<dependencies>

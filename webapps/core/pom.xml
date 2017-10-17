@@ -20,7 +20,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
-			<artifactId>webapps-utils</artifactId>
+			<artifactId>utils-webapp</artifactId>
 			<version>${bsd2017.version}</version>
 		</dependency>	
 		<dependency>
