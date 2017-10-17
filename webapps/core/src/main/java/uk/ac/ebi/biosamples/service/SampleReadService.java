@@ -1,6 +1,10 @@
 package uk.ac.ebi.biosamples.service;
 
 import java.util.Optional;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +28,8 @@ public class SampleReadService {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 	
+	//TODO use constructor injection not dependency injection
+	
 	@Autowired
 	private MongoSampleRepository mongoSampleRepository;
 	
@@ -33,7 +39,11 @@ public class SampleReadService {
 	
 	@Autowired
 	private CurationReadService curationReadService;
-
+	
+	//TODO application.properties this
+	
+	private ExecutorService executorService = Executors.newFixedThreadPool(64);
+	
 	/**
 	 * Throws an IllegalArgumentException of no sample with that accession exists
 	 * 
@@ -44,7 +54,6 @@ public class SampleReadService {
 	//can't use a sync cache because we need to use CacheEvict
 	//@Cacheable(cacheNames=WebappProperties.fetch, key="#root.args[0]")
 	public Optional<Sample> fetch(String accession) throws IllegalArgumentException {
-		
 		// return the raw sample from the repository
 		MongoSample mongoSample = mongoSampleRepository.findOne(accession);
 		if (mongoSample == null) {
@@ -61,7 +70,27 @@ public class SampleReadService {
 		
 		
 		return Optional.of(sample);
+		
 	}
 	
+	public Future<Optional<Sample>> fetchAsync(String accession) {
+		return executorService.submit(new FetchCallable(accession, this));
+	}
+	
+	private static class FetchCallable implements Callable<Optional<Sample>> {
+
+		private final SampleReadService sampleReadService;
+		private final String accession;
+		
+		public FetchCallable(String accession, SampleReadService sampleReadService) {
+			this.accession = accession;
+			this.sampleReadService = sampleReadService;
+		}
+		
+		@Override
+		public Optional<Sample> call() throws Exception {
+			return sampleReadService.fetch(accession);
+		}		
+	}
 	
 }

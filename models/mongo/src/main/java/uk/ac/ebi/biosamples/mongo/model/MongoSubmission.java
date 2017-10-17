@@ -28,16 +28,16 @@ public class MongoSubmission {
 	@JsonSerialize(using = CustomInstantSerializer.class)
 	@JsonDeserialize(using = CustomInstantDeserializer.class)
 	@LastModifiedDate
-	@Indexed
+	@Indexed(background=true)
 	private final Instant datetime;
 	
 	private final Map<String, List<String>> headers;
 
-	@Indexed
+	@Indexed(background=true)
 	private final String url;
 	private final String content;
 
-	@Indexed
+	@Indexed(background=true)
 	private final String method;
 	
 	private MongoSubmission(Instant datetime, String method, String url, Map<String, List<String>> headers, String content){

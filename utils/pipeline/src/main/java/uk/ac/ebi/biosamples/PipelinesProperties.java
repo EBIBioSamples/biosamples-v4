@@ -6,40 +6,40 @@ import org.springframework.stereotype.Component;
 @Component
 public class PipelinesProperties {
 	
-	@Value("${biosamples.ncbi.file:biosample_set.xml.gz}")
+	@Value("${biosamples.pipelines.ncbi.file:biosample_set.xml.gz}")
 	private String ncbiFile;
 
-	@Value("${biosamples.threadcount:1}")
+	@Value("${biosamples.pipelines.threadcount:1}")
 	private int threadCount;
 
-	@Value("${biosamples.threadcount.max:32}")
+	@Value("${biosamples.pipelines.threadcount.max:32}")
 	private int threadCountMax;
 
-	@Value("${biosamples.connectioncount.max:32}")
+	@Value("${biosamples.pipelines.connectioncount.max:32}")
 	private int connectionCountMax;
 	
-	@Value("${biosamples.connectioncount.default:32}")
+	@Value("${biosamples.pipelines.connectioncount.default:32}")
 	private int connectionCountDefault;
 	
-	@Value("${biosamples.connectioncount.ols:32}")
+	@Value("${biosamples.pipelines.connectioncount.ols:32}")
 	private int connectionCountOls;
 	
-	@Value("${biosamples.connectioncount.zooma:32}")
+	@Value("${biosamples.pipelines.connectioncount.zooma:32}")
 	private int connectionCountZooma;
 	
-	@Value("${biosamples.zooma:http://wwwdev.ebi.ac.uk/spot/zooma}")
+	@Value("${biosamples.pipelines.zooma:http://wwwdev.ebi.ac.uk/spot/zooma}")
 	private String zooma;
 	
-	@Value("${biosamples.ols:http://wwwdev.ebi.ac.uk/ols}")
+	@Value("${biosamples.pipelines.ols:http://wwwdev.ebi.ac.uk/ols}")
 	private String ols;
 	
-	@Value("${biosamples.ncbi.domain:self.BiosampleImportNCBI}")
+	@Value("${biosamples.pipelines.ncbi.domain:self.BiosampleImportNCBI}")
 	private String ncbiDomain;
 	
-	@Value("${biosamples.ena.domain:self.BiosampleImportENA}")
+	@Value("${biosamples.pipelines.ena.domain:self.BiosampleImportENA}")
 	private String enaDomain;
 	
-	@Value("${biosamples.accession.domain:self.BiosampleImportAcccession}")
+	@Value("${biosamples.pipelines.accession.domain:self.BiosampleImportAcccession}")
 	private String accessionDomain;
 	
 	public String getNcbiFile() {

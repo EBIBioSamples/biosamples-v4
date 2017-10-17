@@ -6,11 +6,16 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Service;
 
 import uk.ac.ebi.arrayexpress2.magetab.datamodel.graph.Node;
@@ -76,7 +81,8 @@ public class SampleTabService {
 		
 		Instant release = Instant.ofEpochMilli(sampleData.msi.submissionReleaseDate.getTime());
 		Instant update = Instant.ofEpochMilli(sampleData.msi.submissionUpdateDate.getTime());
-		
+
+		Map<String, Future<Resource<Sample>>> futureMap = new TreeMap<>();
 		for (SampleNode sampleNode : sampleData.scd.getNodes(SampleNode.class)) {
 			String accession = sampleNode.getSampleAccession();
 			String name = sampleNode.getNodeName();
@@ -93,17 +99,33 @@ public class SampleTabService {
 				attributes.add(Attribute.build("description", sampleNode.getSampleDescription()));
 			}			
 			
+			
+			
 			//only build a sample if there is at least one attribute or it has no "parent" node
 			//otherwise, it is just a group membership tracking dummy		
 			if (attributes.size()+relationships.size()+externalReferences.size() > 0
 					|| sampleNode.getChildNodes().size() == 0) {
 				Sample sample = Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences);
-				sample = bioSamplesClient.persistSampleResource(sample, setUpdateDate).getContent();
-				if (accession == null) {
-					sampleNode.setSampleAccession(sample.getAccession());
-				}
+				futureMap.put(name, bioSamplesClient.persistSampleResourceAsync(sample, setUpdateDate));	
+			}			
+		}
+
+		//resolve futures for submitting samples
+		for (String futureName : futureMap.keySet()) {
+			Sample sample;
+			try {
+				sample = futureMap.get(futureName).get().getContent();
+			} catch (InterruptedException | ExecutionException e) {
+				throw new RuntimeException(e);
+			}
+			SampleNode sampleNode = sampleData.scd.getNode(futureName, SampleNode.class);
+			String accession = sampleNode.getSampleAccession();
+			//if it didn't have an accession before, assign one now
+			if (accession == null) {
+				sampleNode.setSampleAccession(sample.getAccession());
 			}
 		}
+		
 		for (GroupNode groupNode : sampleData.scd.getNodes(GroupNode.class)) {
 			String accession = groupNode.getGroupAccession();
 			String name = groupNode.getNodeName();

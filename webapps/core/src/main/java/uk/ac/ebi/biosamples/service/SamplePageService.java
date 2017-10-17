@@ -18,6 +18,9 @@ import uk.ac.ebi.biosamples.solr.model.SolrSample;
 import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
 
 import java.util.Collection;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -55,11 +58,21 @@ public class SamplePageService {
 		Page<SolrSample> pageSolrSample = solrSampleService.fetchSolrSampleByText(text, filters, domains, pageable);
 		//for each result fetch the stored version and add e.g. inverse relationships
 		//stream process each into a sample
-		Page<Sample> pageSample = pageSolrSample.map(ss->sampleService.fetch(ss.getAccession()).get());
 
+		Page<Future<Optional<Sample>>> pageFutureSample = pageSolrSample.map(ss -> sampleService.fetchAsync(ss.getAccession()));
+		//Page<Sample> pageSample = pageSolrSample.map(ss->sampleService.fetch(ss.getAccession()).get());
+		Page<Sample> pageSample = pageFutureSample.map(ss->{
+			try {
+				return ss.get().get();
+			} catch (InterruptedException e) {
+				throw new RuntimeException(e);
+			} catch (ExecutionException e) {
+				throw new RuntimeException(e);
+			}
+		});
+		
 		return pageSample;
-
-	}
+	}	
 
 	public Page<Sample> getSamplesOfExternalReference(String urlHash, Pageable pageable) {
 		Page<MongoSample> pageMongoSample = mongoSampleRepository.findByExternalReferences_Hash(urlHash, pageable);		

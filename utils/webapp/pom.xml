@@ -2,7 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>pipelines-utils</artifactId>
+	<artifactId>utils-webapp</artifactId>
 	<packaging>jar</packaging>
 
 	<parent>
@@ -15,25 +15,26 @@
 	<dependencies>		
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
-			<artifactId>biosamples-spring-boot-starter</artifactId>
+			<artifactId>models-core</artifactId>
 			<version>${bsd2017.version}</version>
 		</dependency>
-		
 		<dependency>
-			<groupId>org.springframework.hateoas</groupId>
-			<artifactId>spring-hateoas</artifactId>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
-
-		<!-- HTTP POST handling -->
+		<!-- make xml serialization possible -->
 		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient-cache</artifactId>
-			<version>${httpclient.version}</version>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-xml</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>xmlunit</groupId>
-			<artifactId>xmlunit</artifactId>
-			<version>1.4</version>
+			<groupId>org.codehaus.woodstox</groupId>
+			<artifactId>woodstox-core-asl</artifactId>
+			<version>4.1.4</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.module</groupId>
+			<artifactId>jackson-module-jaxb-annotations</artifactId>
 		</dependency>
 	</dependencies>
 </project>
