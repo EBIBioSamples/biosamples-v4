@@ -1,18 +1,5 @@
 package uk.ac.ebi.biosamples.client;
 
-import java.io.IOException;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-
-import javax.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -27,18 +14,26 @@ import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-
 import uk.ac.ebi.biosamples.BioSamplesProperties;
-import uk.ac.ebi.biosamples.client.service.AapClientService;
-import uk.ac.ebi.biosamples.client.service.CurationRetrievalService;
-import uk.ac.ebi.biosamples.client.service.CurationSubmissionService;
-import uk.ac.ebi.biosamples.client.service.SampleRetrievalService;
-import uk.ac.ebi.biosamples.client.service.SampleSubmissionService;
+import uk.ac.ebi.biosamples.client.service.*;
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.filters.Filter;
 import uk.ac.ebi.biosamples.service.SampleValidator;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
+
+import javax.annotation.PreDestroy;
+import java.io.IOException;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -142,6 +137,11 @@ public class BioSamplesClient implements AutoCloseable {
 		return sampleRetrievalService.fetchAll(text);
 	}
 
+	public Iterable<Resource<Sample>> fetchFilteredSampleResourceAll(String text, Collection<Filter> filters) {
+		return sampleRetrievalService.fetchAll(text, filters);
+	}
+
+
 	public Iterable<Optional<Resource<Sample>>> fetchSampleResourceAll(Iterable<String> accessions) throws RestClientException {
 		return sampleRetrievalService.fetchAll(accessions);
 	}
@@ -156,6 +156,10 @@ public class BioSamplesClient implements AutoCloseable {
 	 */
 	public PagedResources<Resource<Sample>> fetchPagedSamples(String text, int page, int size) {
 		return sampleRetrievalService.search(text, page, size);
+	}
+
+	public PagedResources<Resource<Sample>> fetchFilteredPagedSamples(String text, Collection<Filter> filters, int page, int size) {
+		return sampleRetrievalService.search(text,filters, page, size);
 	}
 
 	public Optional<Sample> fetchSample(String accession) throws RestClientException {
