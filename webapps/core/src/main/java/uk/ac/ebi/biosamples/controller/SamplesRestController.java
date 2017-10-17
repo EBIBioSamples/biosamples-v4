@@ -63,8 +63,6 @@ public class SamplesRestController {
 	@GetMapping(produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
 	public ResponseEntity<PagedResources<Resource<Sample>>> searchHal(
 			@RequestParam(name = "text", required = false) String text,
-			@RequestParam(name = "updatedafter", required = false) String updatedAfter,
-			@RequestParam(name = "updatedbefore", required = false) String updatedBefore,
 			@RequestParam(name = "filter", required = false) String[] filter, Pageable page,
 			PagedResourcesAssembler<Sample> pageAssembler) {
 
@@ -92,26 +90,6 @@ public class SamplesRestController {
 		Collection<Filter> filters = filterService.getFiltersCollection(filter);
 		Collection<String> domains = bioSamplesAapService.getDomains();
 
-//		TODO create filters for update date
-//		Instant updatedAfterDate = null;
-//		if (updatedAfter != null) {
-//			try {
-//				updatedAfterDate = Instant.parse(updatedAfter);
-//			} catch (DateTimeParseException e) {
-//				//TODO make an exception
-//				return ResponseEntity.badRequest().build();
-//			}
-//		}
-//		Instant updatedBeforeDate = null;
-//		if (updatedBefore != null) {
-//			try {
-//				updatedBeforeDate = Instant.parse(updatedBefore);
-//			} catch (DateTimeParseException e) {
-//				//TODO make an exception
-//				return ResponseEntity.badRequest().build();
-//			}
-//		}
-		
 		Page<Sample> pageSample = samplePageService.getSamplesByText(text, filters, domains, page);
 		// add the links to each individual sample on the page
 		// also adds links to first/last/next/prev at the same time

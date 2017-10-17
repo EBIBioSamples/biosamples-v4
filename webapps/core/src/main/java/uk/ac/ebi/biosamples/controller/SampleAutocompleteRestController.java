@@ -67,7 +67,7 @@ public class SampleAutocompleteRestController {
 		
     	resource.add(ControllerLinkBuilder.linkTo(
 				ControllerLinkBuilder.methodOn(SamplesRestController.class)
-					.searchHal(text, null, null, filter, null, null))
+					.searchHal(text,  filter, null, null))
                     .withRel("samples"));
 		
 		return ResponseEntity.ok().body(resource);

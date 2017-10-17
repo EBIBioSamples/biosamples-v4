@@ -23,9 +23,7 @@ import uk.ac.ebi.biosamples.service.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.net.URI;
-import java.time.Instant;
 import java.time.ZoneOffset;
-import java.time.format.DateTimeParseException;
 import java.util.*;
 
 /**
@@ -90,8 +88,6 @@ public class SampleHtmlController {
 
 	@GetMapping(value = "/samples")
 	public String samples(Model model, @RequestParam(name="text", required=false) String text,
-			@RequestParam(name = "updatedafter", required = false) String updatedAfter,
-			@RequestParam(name = "updatedbefore", required = false) String updatedBefore,
 			@RequestParam(name="filter", required=false) String[] filtersArray,
 			@RequestParam(name="start", defaultValue="0") Integer start,
 			@RequestParam(name="rows", defaultValue="10") Integer rows,
@@ -108,26 +104,6 @@ public class SampleHtmlController {
 
         Collection<Filter> filterCollection = filterService.getFiltersCollection(filtersArray);
 		Collection<String> domains = bioSamplesAapService.getDomains();
-
-        // TODO replace this with proper filters on dates
-		Instant updatedAfterDate = null;
-		if (updatedAfter != null) {
-			try {
-				updatedAfterDate = Instant.parse(updatedAfter);
-			} catch (DateTimeParseException e) {
-				//TODO make an exception
-				throw new RuntimeException("Unable to parse date "+updatedAfter); 
-			}
-		}
-		Instant updatedBeforeDate = null;
-		if (updatedBefore != null) {
-			try {
-				updatedBeforeDate = Instant.parse(updatedBefore);
-			} catch (DateTimeParseException e) {
-				//TODO make an exception
-				throw new RuntimeException("Unable to parse date "+updatedBefore);
-			}
-		}
 
 		Pageable pageable = new PageRequest(start/rows, rows);
 		Page<Sample> pageSample = samplePageService.getSamplesByText(text, filterCollection, domains, pageable);
