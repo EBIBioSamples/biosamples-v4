@@ -70,25 +70,46 @@ public class FilterFactory {
     }
 
     private FilterContent getDateFilterContent(String serializedValue) {
-        ZonedDateTime from = null;
-        ZonedDateTime to = null;
-        int fromIndex = serializedValue.indexOf("from:");
-        int toIndex = serializedValue.indexOf("to:");
-        if (toIndex != -1) {
-            if (fromIndex != -1) {
-                from = parseDateTime(serializedValue.substring(fromIndex + 5, toIndex));
-            }
-            to = parseDateTime(serializedValue.substring(toIndex + 3));
-        } else {
-            if (fromIndex != -1)
-                from = parseDateTime(serializedValue.substring(fromIndex + 5));
-        }
+        String fromString = extractFromFieldFromString(serializedValue);
+        String toString = extractToFieldFromString(serializedValue);
+
+        ZonedDateTime from = parseDateTime(fromString);
+        ZonedDateTime to = parseDateTime(toString);
         return new DateRangeFilterContent(from, to);
     }
 
+    private String extractFromFieldFromString(String dateRangeString) {
+        int fromIndex = dateRangeString.indexOf(getFromFieldPrefix());
+        int toIndex = dateRangeString.indexOf(getToFieldPrefix());
+        if (fromIndex == -1) {
+            return "";
+        } else {
+            if (toIndex < fromIndex) {
+                return dateRangeString.substring(fromIndex + getFromFieldPrefix().length());
+            } else {
+                return dateRangeString.substring(fromIndex + getFromFieldPrefix().length(), toIndex);
+            }
+        }
 
-    private ZonedDateTime parseDateTime(String datetime) {
-        TemporalAccessor temporalAccessor = formatter.parseBest(datetime,
+    }
+
+    private String extractToFieldFromString(String dateRangeString) {
+        int fromIndex = dateRangeString.indexOf(getFromFieldPrefix());
+        int toIndex = dateRangeString.indexOf(getToFieldPrefix());
+        if (toIndex == -1) {
+            return "";
+        } else {
+            if (toIndex < fromIndex) {
+                return dateRangeString.substring(toIndex + getToFieldPrefix().length(), fromIndex);
+            } else {
+                return dateRangeString.substring(toIndex + getToFieldPrefix().length());
+            }
+        }
+    }
+
+    private ZonedDateTime parseDateTime(String datetimeString) {
+        if (datetimeString.isEmpty()) return null;
+        TemporalAccessor temporalAccessor = formatter.parseBest(datetimeString,
                 ZonedDateTime::from, LocalDateTime::from, LocalDate::from);
         if (temporalAccessor instanceof ZonedDateTime) {
             return (ZonedDateTime) temporalAccessor;
@@ -98,6 +119,14 @@ public class FilterFactory {
             return ((LocalDate) temporalAccessor).atStartOfDay(ZoneId.of("UTC"));
         }
 
+    }
+
+    private String getFromFieldPrefix() {
+        return "from:";
+    }
+
+    private String getToFieldPrefix() {
+        return "to:";
     }
 
 

@@ -11,15 +11,13 @@ import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 
-import java.time.LocalDate;
 import java.time.Instant;
-import java.time.LocalTime;
 import java.util.*;
 
 @Component
 @Order(1)
 @Profile({"default", "rest"})
-public class RestSearchIntegration extends AbstractIntegration {
+public class RestSearchIntegration extends AbstractIntegration {;
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 

@@ -7,9 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import uk.ac.ebi.biosamples.model.filters.*;
 
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
@@ -73,6 +71,17 @@ public class FilterTest {
         Filter expectedFilter = new Filter(FilterType.DATE_FILTER, "update_date", new DateRangeFilterContent(null, to));
         Filter actualFilter = filterFactory.parseFilterFromString(stringToTest);
         assertEquals(actualFilter, expectedFilter);
+    }
+
+
+    @Test
+    public void testInvertedDateRangeFilterDeserialization() {
+       String stringToTest = "fdt:update_date:to:2018-01-01from:2016-01-01";
+       ZonedDateTime from = ZonedDateTime.of(LocalDate.of(2016,1,1), LocalTime.MIDNIGHT, ZoneId.of("UTC"));
+       ZonedDateTime to = ZonedDateTime.of(LocalDate.of(2018,1,1), LocalTime.MIDNIGHT, ZoneId.of("UTC"));
+       Filter expectedFilter = new Filter(FilterType.DATE_FILTER, "update_date", new DateRangeFilterContent(from, to));
+       Filter actualFilter = filterFactory.parseFilterFromString(stringToTest);
+       assertEquals(actualFilter, expectedFilter);
     }
 
 }

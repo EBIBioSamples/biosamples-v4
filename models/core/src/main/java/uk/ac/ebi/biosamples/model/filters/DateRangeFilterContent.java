@@ -18,6 +18,7 @@ public class DateRangeFilterContent implements FilterContent {
         return this.dateRange;
     }
 
+
     @Override
     public void merge(FilterContent otherContent) {
         if (otherContent instanceof DateRangeFilterContent) {
@@ -54,6 +55,14 @@ public class DateRangeFilterContent implements FilterContent {
 
         public ZonedDateTime getTo() {
             return to;
+        }
+
+        public boolean isFromMinDate() {
+            return this.getFrom().equals(minDate.atZone(defaultZoneId));
+        }
+
+        public boolean isToMaxDate() {
+            return this.getTo().equals(maxDate.atZone(defaultZoneId));
         }
 
         public static DateRange range(ZonedDateTime from, ZonedDateTime to) {

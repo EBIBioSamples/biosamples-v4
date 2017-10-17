@@ -8,6 +8,9 @@ import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.filters.*;
 import uk.ac.ebi.biosamples.service.FacetToFilterConverter;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Optional;
 
@@ -33,28 +36,46 @@ public class SolrFilterService {
         //TODO implement the method
         FilterContent content = filter.getContent();
         FilterType type = filter.getKind();
-        String filterTargetField = solrFieldService.encodedField(filter.getLabel(), facetFilterConverter.convert(type));
+//        String filterTargetField = solrFieldService.encodedField(filter.getLabel(), facetFilterConverter.convert(type));
         Criteria filterCriteria = null;
-        if (content instanceof EmptyFilter) {
-            filterCriteria = new Criteria(filterTargetField).isNotNull();
-        } else {
-            switch(type) {
-                case ATTRIBUTE_FILTER:
-                case RELATION_FILER:
-                case INVERSE_RELATION_FILTER:
+        switch(type) {
+            case ATTRIBUTE_FILTER:
+            case RELATION_FILER:
+            case INVERSE_RELATION_FILTER:
+                String filterTargetField = solrFieldService.encodedField(filter.getLabel(), facetFilterConverter.convert(type));
+                if (content instanceof EmptyFilter) {
+                    filterCriteria = new Criteria(filterTargetField).isNotNull();
+                } else {
                     ValueFilter valueContent = (ValueFilter) content;
-                    for(String value: valueContent.getContent()) {
+                    for (String value : valueContent.getContent()) {
                         if (filterCriteria == null) {
                             filterCriteria = new Criteria(filterTargetField).is(value);
                         } else {
                             filterCriteria = filterCriteria.or(new Criteria(filterTargetField).is(value));
                         }
                     }
-                case DATE_FILTER:
-                    DateRangeFilterContent.DateRange dateRangeContent = ((DateRangeFilterContent) content).getContent();
-                    filterCriteria = new Criteria(filterTargetField).between(dateRangeContent.getFrom(), dateRangeContent.getTo());
-            }
-
+                }
+                break;
+            case DATE_FILTER:
+                if (content instanceof EmptyFilter) {
+                    filterCriteria = new Criteria(filter.getLabel()).isNotNull();
+                } else {
+                    // I have to split manually the different queries
+                    DateRangeFilterContent.DateRange dateRange = ((DateRangeFilterContent) content).getContent();
+                    filterCriteria = new Criteria(filter.getLabel());
+                    if (dateRange.isFromMinDate() && dateRange.isToMaxDate()) {
+                        filterCriteria = filterCriteria.isNotNull();
+                    } else if (dateRange.isFromMinDate()) {
+                        filterCriteria = filterCriteria.lessThanEqual(getSolrCompatibleDate(dateRange.getTo()));
+                    } else if (dateRange.isToMaxDate()){
+                        filterCriteria = filterCriteria.greaterThanEqual(getSolrCompatibleDate(dateRange.getFrom()));
+                    } else {
+                        filterCriteria = filterCriteria.between(
+                                dateRange.getFrom().format(DateTimeFormatter.ISO_INSTANT),
+                                dateRange.getTo().format(DateTimeFormatter.ISO_INSTANT));
+                    }
+                }
+                break;
         }
         return Optional.ofNullable(filterCriteria);
 
@@ -112,6 +133,11 @@ public class SolrFilterService {
         return Optional.of(filterQuery);
 
 
+    }
+
+
+    public String getSolrCompatibleDate(ZonedDateTime dateTime) {
+        return dateTime.format(DateTimeFormatter.ISO_INSTANT.withZone(ZoneId.of("UTC")));
     }
 
 }
