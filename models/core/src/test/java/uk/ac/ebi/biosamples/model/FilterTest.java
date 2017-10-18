@@ -13,12 +13,12 @@ import static org.junit.Assert.assertEquals;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = {
-        FilterFactory.class
+        FilterBuilder.class
 })
 public class FilterTest {
 
     @Autowired
-    public FilterFactory filterFactory;
+    public FilterBuilder filterBuilder;
 
     @Test
     public void testAttributeFilterDeserialization() {
@@ -26,7 +26,7 @@ public class FilterTest {
         Filter expectedFilter = new Filter(FilterType.ATTRIBUTE_FILTER, "organism",
                 new ValueFilter("Homo sapiens"));
 
-        Filter attributeFilter = filterFactory.parseFilterFromString(stringToTest);
+        Filter attributeFilter = FilterBuilder.buildFromString(stringToTest);
         assertEquals(attributeFilter, expectedFilter);
     }
 
@@ -38,7 +38,7 @@ public class FilterTest {
         Filter expectedFilter = new Filter(FilterType.DATE_FILTER, "update_date",
                 new DateRangeFilterContent(from, null)
         );
-        Filter dateRangeFilter = filterFactory.parseFilterFromString(stringToTest);
+        Filter dateRangeFilter = FilterBuilder.buildFromString(stringToTest);
         assertEquals(dateRangeFilter, expectedFilter);
     }
 
@@ -51,7 +51,7 @@ public class FilterTest {
         Filter expectedFilter = new Filter(FilterType.DATE_FILTER, "release_date",
                 new DateRangeFilterContent(from, to)
         );
-        assertEquals(filterFactory.parseFilterFromString(stringToTest), expectedFilter);
+        assertEquals(FilterBuilder.buildFromString(stringToTest), expectedFilter);
     }
 
     @Test
@@ -59,7 +59,7 @@ public class FilterTest {
         String stringToTest = "fdt:update_date:to=2016-01-01T23:00:00Z[CET]";
         ZonedDateTime to = ZonedDateTime.of(2016,1,1,23,0,0,0,ZoneId.of("CET"));
         Filter expectedFilter = new Filter(FilterType.DATE_FILTER, "update_date", new DateRangeFilterContent(null, to));
-        Filter actualFilter = filterFactory.parseFilterFromString(stringToTest);
+        Filter actualFilter = FilterBuilder.buildFromString(stringToTest);
         assertEquals(actualFilter, expectedFilter);
     }
 
@@ -68,7 +68,7 @@ public class FilterTest {
         String stringToTest = "fdt:update_date:to=2016-01-01T23:00:00+01:00";
         ZonedDateTime to = ZonedDateTime.of(2016,1,1,23,0,0,0, ZoneOffset.of("+01:00"));
         Filter expectedFilter = new Filter(FilterType.DATE_FILTER, "update_date", new DateRangeFilterContent(null, to));
-        Filter actualFilter = filterFactory.parseFilterFromString(stringToTest);
+        Filter actualFilter = FilterBuilder.buildFromString(stringToTest);
         assertEquals(actualFilter, expectedFilter);
     }
 
@@ -79,7 +79,7 @@ public class FilterTest {
        ZonedDateTime from = ZonedDateTime.of(LocalDate.of(2016,1,1), LocalTime.MIDNIGHT, ZoneId.of("UTC"));
        ZonedDateTime to = ZonedDateTime.of(LocalDate.of(2018,1,1), LocalTime.MIDNIGHT, ZoneId.of("UTC"));
        Filter expectedFilter = new Filter(FilterType.DATE_FILTER, "update_date", new DateRangeFilterContent(from, to));
-       Filter actualFilter = filterFactory.parseFilterFromString(stringToTest);
+       Filter actualFilter = FilterBuilder.buildFromString(stringToTest);
        assertEquals(actualFilter, expectedFilter);
     }
 

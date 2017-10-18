@@ -1,7 +1,5 @@
 package uk.ac.ebi.biosamples.model.filters;
 
-import org.springframework.stereotype.Service;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -13,8 +11,9 @@ import java.time.temporal.TemporalAccessor;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
 
-@Service
-public class FilterFactory {
+public class StringFilterBuilder {
+
+    private String serializedFilter;
     private final DateTimeFormatter formatter = new DateTimeFormatterBuilder()
             .parseCaseInsensitive()
             .append(ISO_LOCAL_DATE)
@@ -32,10 +31,15 @@ public class FilterFactory {
             .optionalEnd()
             .optionalEnd()
             .toFormatter();
+    private final ZoneId defaultZone = ZoneId.of("UTC");
 
-    public Filter parseFilterFromString(String filterString) {
-        FilterType filterType = FilterType.ofFilterString(filterString);
-        String filterValue = filterString.replace(filterType.getSerialization() + ":","");
+    public StringFilterBuilder(String serializedFilter) {
+        this.serializedFilter = serializedFilter;
+    }
+
+    public Filter build() {
+        FilterType filterType = FilterType.ofFilterString(serializedFilter);
+        String filterValue = serializedFilter.replace(filterType.getSerialization() + ":","");
         FilterContent filterContent = new EmptyFilter();
         String[] valueElements = filterValue.split(":", 2);
         String filterLabel = valueElements[0];
@@ -107,9 +111,9 @@ public class FilterFactory {
         if (temporalAccessor instanceof ZonedDateTime) {
             return (ZonedDateTime) temporalAccessor;
         } else if (temporalAccessor instanceof LocalDateTime) {
-            return ((LocalDateTime) temporalAccessor).atZone(ZoneId.of("UTC"));
+            return ((LocalDateTime) temporalAccessor).atZone(defaultZone);
         } else {
-            return ((LocalDate) temporalAccessor).atStartOfDay(ZoneId.of("UTC"));
+            return ((LocalDate) temporalAccessor).atStartOfDay(defaultZone);
         }
 
     }
@@ -121,30 +125,4 @@ public class FilterFactory {
     private String getToFieldPrefix() {
         return "to=";
     }
-
-    public static ValueFilterBuilder getFilterBuilderForAttributeField(String label) {
-        return new ValueFilterBuilder(FilterType.ATTRIBUTE_FILTER, label);
-    }
-
-    public static ValueFilterBuilder getFilterBuilderForRelationField(String label) {
-        return new ValueFilterBuilder(FilterType.RELATION_FILER, label);
-    }
-
-    public static ValueFilterBuilder getFilterBuilderForInverseRelationField(String label) {
-        return new ValueFilterBuilder(FilterType.INVERSE_RELATION_FILTER, label);
-    }
-
-    public static DateRangeFilterBuilder getFilterBuilderForDateRangeField(String fieldLabel) {
-        return new DateRangeFilterBuilder(fieldLabel);
-    }
-
-    public static DateRangeFilterBuilder releaseDateFilterBuilder() {
-        return new DateRangeFilterBuilder("release_dt");
-    }
-
-    public static DateRangeFilterBuilder updateDateFilterBuilder() {
-        return new DateRangeFilterBuilder("update_dt");
-    }
-
-
 }

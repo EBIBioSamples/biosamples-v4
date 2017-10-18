@@ -13,12 +13,6 @@ public class FilterService {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 
-	private final FilterFactory filterFactory;
-
-	public FilterService(FilterFactory filterFactory) {
-		this.filterFactory = filterFactory;
-	}
-
 
 	/**
 	 * Converts an array of serialized filters to the corresponding collection of object
@@ -40,7 +34,7 @@ public class FilterService {
 		Arrays.sort(filterStrings);
 		SortedSet<String> filterStringSet = new TreeSet<>(Arrays.asList(filterStrings));
 		for(String filterString: filterStringSet) {
-			outputFilters.add(filterFactory.parseFilterFromString(filterString));
+			outputFilters.add(FilterBuilder.buildFromString(filterString));
 		}
 
 		return outputFilters;
