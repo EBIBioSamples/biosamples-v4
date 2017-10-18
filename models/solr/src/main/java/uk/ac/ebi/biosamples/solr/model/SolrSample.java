@@ -89,10 +89,10 @@ public class SolrSample {
 	protected List<String> autocompleteTerms;
 
 	/**
-	 * This field is required to store the ontology expansion
+	 * This field is required to store the ontology expansion and attributes from related samples
 	 */
-	@Indexed(name="ontologysynonyms_ss")
-	protected List<String> ontologySynonyms;
+	@Indexed(name="keywords_ss")
+	protected List<String> keywords;
 
 	
 	public SolrSample(){}
@@ -148,8 +148,8 @@ public class SolrSample {
 		return autocompleteTerms;
 	}
 
-	public List<String> getOntologySynonyms() {
-		return ontologySynonyms;
+	public List<String> getKeywords() {
+		return keywords;
 	}
 
 
@@ -280,7 +280,7 @@ public class SolrSample {
 			}
 		}
 		
-		sample.ontologySynonyms = new ArrayList<>();
+		sample.keywords = new ArrayList<>();
 		
 		return sample;
 	}

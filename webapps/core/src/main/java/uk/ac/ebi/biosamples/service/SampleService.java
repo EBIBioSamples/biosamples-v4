@@ -36,6 +36,8 @@ public class SampleService {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 	
+	//TODO use constructor injection
+	
 	@Autowired
 	private MongoAccessionService mongoAccessionService;
 	@Autowired
@@ -51,12 +53,12 @@ public class SampleService {
 	
 	@Autowired
 	private SolrSampleService solrSampleService;
-
-	@Autowired
-	private AmqpTemplate amqpTemplate;
 	
 	@Autowired
 	private SampleReadService sampleReadService;
+	
+	@Autowired
+	private MessagingService messagingSerivce;
 	
 	/**
 	 * Throws an IllegalArgumentException of no sample with that accession exists
@@ -106,21 +108,7 @@ public class SampleService {
 
 
 		// send a message for storage and further processing
-		amqpTemplate.convertAndSend(Messaging.exchangeForIndexingSolr, "", 
-				MessageContent.build(sample, null, Collections.emptyList(), false));
-		//TODO put in eventlistener
-		
-		//for each sample we have a relationship to, update it to index this sample as an inverse relationship	
-		//TODO put in eventlistener	
-		for (Relationship relationship : sample.getRelationships()) {
-			if (relationship.getSource().equals(sample.getAccession())) {
-				Optional<Sample> target = fetch(relationship.getTarget());
-				if (target.isPresent()) {
-					amqpTemplate.convertAndSend(Messaging.exchangeForIndexingSolr, "", 
-							MessageContent.build(target.get(), null, Collections.emptyList(), false));
-				}
-			}
-		}
+		messagingSerivce.sendMessages(sample);
 		
 		//return the sample in case we have modified it i.e accessioned
 		return sample;

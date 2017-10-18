@@ -49,7 +49,6 @@ public class MongoSampleEventListener extends AbstractMongoEventListener<MongoSa
 				externalReference = mongoExternalReferenceRepository.save(externalReference);
 			}
 			loadedExternalReferences.add(externalReference);
-
 		}		
 		//update the source object
 		event.getSource().getExternalReferences().clear();

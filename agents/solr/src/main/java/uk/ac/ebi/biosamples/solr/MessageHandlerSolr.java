@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.MessageContent;
 import uk.ac.ebi.biosamples.Messaging;
 import uk.ac.ebi.biosamples.messages.threaded.MessageSampleStatus;
+import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.ols.OlsProcessor;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
@@ -38,12 +39,30 @@ public class MessageHandlerSolr {
 
 		Sample sample = messageContent.getSample();
 		SolrSample solrSample = sampleToSolrSampleConverter.convert(sample);
+		
+		//expand ontology terms from OLS
 		for (List<String> iris : solrSample.getAttributeIris().values()) {
 			for (String iri : iris) {
-				solrSample.getOntologySynonyms().addAll(olsProcessor.ancestorsAndSynonyms("efo", iri));
+				solrSample.getKeywords().addAll(olsProcessor.ancestorsAndSynonyms("efo", iri));
 			}
 		}
-		//TODO following relationships
+		
+		//expand by following relationships
+		for (Sample relatedSample : messageContent.getRelated()) {
+			solrSample.getKeywords().add(relatedSample.getAccession());
+			solrSample.getKeywords().add(relatedSample.getName());
+			for (Attribute attribute : relatedSample.getAttributes()) {
+				solrSample.getKeywords().add(attribute.getType());
+				solrSample.getKeywords().add(attribute.getValue());
+				if (attribute.getUnit() != null) {
+					solrSample.getKeywords().add(attribute.getUnit());
+				}
+				if (attribute.getIri() != null) {
+					//expand ontology terms of related samples against ols
+					solrSample.getKeywords().addAll(olsProcessor.ancestorsAndSynonyms("efo", attribute.getIri()));
+				}
+			}
+		}
 		
 				
 		MessageSampleStatus<SolrSample> messageSampleStatus;

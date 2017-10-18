@@ -63,6 +63,7 @@ public class OlsProcessor {
 		}
 		
 		//check if the iri is a full iri with all the necessary parts
+		//build has to flag this iri as having already been encoded
 		UriComponents iriComponents = UriComponentsBuilder.fromUriString(iri).build();
 		if (iriComponents.getScheme() == null
 				|| iriComponents.getHost() == null 
@@ -72,10 +73,14 @@ public class OlsProcessor {
 		}
 
 		//TODO do more by hal links, needs OLS to support
+		//build has to flag this iri as having already been encoded
 		UriComponents uriComponents = UriComponentsBuilder.fromUriString(
 				bioSamplesProperties.getOls()+"/api/ontologies/{ontology}/terms/{term}/hierarchicalAncestors").build();
+
+		log.trace("Base uriComponents = "+uriComponents);
 		
-		//have to encode the things we are going to put in the URI
+		//have to *double* encode the things we are going to put in the URI
+		//uriComponents will encode it once, so we only need to encode it one more time manually
 		try {
 			ontology = UriUtils.encodePathSegment(ontology, "UTF-8");
 			iri = UriUtils.encodePathSegment(iri, "UTF-8");
