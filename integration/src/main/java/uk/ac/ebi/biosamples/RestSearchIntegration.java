@@ -15,6 +15,8 @@ import uk.ac.ebi.biosamples.model.filters.Filter;
 import uk.ac.ebi.biosamples.model.filters.FilterFactory;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 
 @Component
@@ -139,8 +141,7 @@ public class RestSearchIntegration extends AbstractIntegration {;
 	@Override
 	protected void phaseFour() {
 		Sample test6 = getSampleTest6();
-		String filterSerialized = "fa:MySpecialAttributeType:MySpecialAttributeValue";
-		Filter attributeFilter = new FilterFactory().parseFilterFromString(filterSerialized);
+		Filter attributeFilter = FilterFactory.getFilterBuilderForAttributeField("MySpecialAttributeType").withValue("MySpecialAttributeValue").build();
 		PagedResources<Resource<Sample>> samplePage = client.fetchFilteredPagedSamples("",
 				Collections.singletonList(attributeFilter),
 				0, 10);
@@ -149,6 +150,19 @@ public class RestSearchIntegration extends AbstractIntegration {;
 		}
 		Resource<Sample> sample = samplePage.getContent().iterator().next();
 		if (!sample.getContent().getAccession().equals(test6.getAccession())) {
+			throw new RuntimeException("Returned sample doesn't match the expected sample " + test6.getAccession());
+		}
+
+		LocalDateTime fromDateTime = LocalDateTime.ofInstant(test6.getRelease(), ZoneId.of("UTC"));
+		Filter dateFilter = FilterFactory.releaseDateFilterBuilder().from(fromDateTime).to(fromDateTime.plusSeconds(2)).build();
+		samplePage = client.fetchFilteredPagedSamples("",
+				Collections.singletonList(dateFilter),
+				0, 10);
+		if (samplePage.getMetadata().getTotalElements() < 1) {
+			throw new RuntimeException("Unexpected number of results for attribute filter query: " + samplePage.getMetadata().getTotalElements());
+		}
+		boolean match = samplePage.getContent().stream().anyMatch(resource -> resource.getContent().getAccession().equals(test6.getAccession()));
+		if (!match) {
 			throw new RuntimeException("Returned sample doesn't match the expected sample " + test6.getAccession());
 		}
 

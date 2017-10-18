@@ -45,7 +45,6 @@ public class FilterFactory {
         return new Filter(filterType, filterLabel, filterContent);
     }
 
-
     private FilterContent readContent(FilterType type, String serializedFilter) {
         switch(type) {
             case ATTRIBUTE_FILTER:
@@ -123,6 +122,29 @@ public class FilterFactory {
         return "to=";
     }
 
+    public static ValueFilterBuilder getFilterBuilderForAttributeField(String label) {
+        return new ValueFilterBuilder(FilterType.ATTRIBUTE_FILTER, label);
+    }
+
+    public static ValueFilterBuilder getFilterBuilderForRelationField(String label) {
+        return new ValueFilterBuilder(FilterType.RELATION_FILER, label);
+    }
+
+    public static ValueFilterBuilder getFilterBuilderForInverseRelationField(String label) {
+        return new ValueFilterBuilder(FilterType.INVERSE_RELATION_FILTER, label);
+    }
+
+    public static DateRangeFilterBuilder getFilterBuilderForDateRangeField(String fieldLabel) {
+        return new DateRangeFilterBuilder(fieldLabel);
+    }
+
+    public static DateRangeFilterBuilder releaseDateFilterBuilder() {
+        return new DateRangeFilterBuilder("release_dt");
+    }
+
+    public static DateRangeFilterBuilder updateDateFilterBuilder() {
+        return new DateRangeFilterBuilder("update_dt");
+    }
 
 
 }
