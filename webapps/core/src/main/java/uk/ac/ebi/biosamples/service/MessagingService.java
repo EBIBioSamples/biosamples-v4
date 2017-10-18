@@ -50,7 +50,8 @@ public class MessagingService {
 		//if this was a derived from relationship, this is a related sample to the original one
 		
 		List<Sample> related = new ArrayList<>();
-		related.addAll(getDerivedFromSamples(sample, related));
+		//related.addAll(getDerivedFromSamples(sample, related));
+		//this is too intensive to do here, will need to move expansion to separate agent
 		
 		
 		//send the original sample with the extras as related samples
