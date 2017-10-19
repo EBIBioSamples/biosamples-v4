@@ -33,7 +33,7 @@ public class FilterBuilder {
         FilterType filterType = FilterType.ofFilterString(serializedFilter);
         String filterLabelAndValueSerialization = serializedFilter.replace(filterType.getSerialization() + ":", "");
 
-        if (!serializedFilter.contains(":")) {
+        if (!filterLabelAndValueSerialization.contains(":")) {
             return filterType.getBuilderForLabel(filterLabelAndValueSerialization).build();
         } else {
             String[] valueElements = filterLabelAndValueSerialization.split(":", 2);
