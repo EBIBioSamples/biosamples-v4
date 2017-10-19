@@ -49,16 +49,12 @@ public class SolrSample {
 	@Dynamic
 	protected Map<String, List<String>> attributeUnits;
 
-
 	/**
 	 * Relationships for which this sample is the source
 	 */
 	@Indexed(name="*_or_ss")
 	@Dynamic
 	protected Map<String, List<String>> outgoingRelationships;
-
-
-
 
 	/**
 	 * Relationships for which this sample is the target
@@ -92,6 +88,11 @@ public class SolrSample {
 	@Indexed(name="autocomplete_ss")
 	protected List<String> autocompleteTerms;
 
+	/**
+	 * This field is required to store the ontology expansion and attributes from related samples
+	 */
+	@Indexed(name="keywords_ss")
+	protected List<String> keywords;
 
 	
 	public SolrSample(){}
@@ -141,6 +142,14 @@ public class SolrSample {
 	}
 	public Map<String, List<String>> getOutgoingRelationships() {
 		return outgoingRelationships;
+	}
+
+	public List<String> getAutocompletes() {
+		return autocompleteTerms;
+	}
+
+	public List<String> getKeywords() {
+		return keywords;
 	}
 
 
@@ -271,6 +280,9 @@ public class SolrSample {
 				sample.autocompleteTerms.addAll(values);
 			}
 		}
+		
+		sample.keywords = new ArrayList<>();
+		
 		return sample;
 	}
 
