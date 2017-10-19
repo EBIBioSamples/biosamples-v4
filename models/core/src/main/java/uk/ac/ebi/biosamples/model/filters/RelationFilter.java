@@ -1,6 +1,7 @@
 package uk.ac.ebi.biosamples.model.filters;
 
 import java.util.Objects;
+import java.util.Optional;
 
 public class RelationFilter implements Filter {
 
@@ -23,13 +24,17 @@ public class RelationFilter implements Filter {
     }
 
     @Override
-    public String getContent() {
-        return this.value;
+    public Optional<String> getContent() {
+        return Optional.ofNullable(this.value);
     }
 
     @Override
     public String getSerialization() {
-        return String.format("%s:%s:%s", this.getKind().getSerialization(), this.getLabel(), this.getContent());
+        StringBuilder serializationBuilder = new StringBuilder(this.getKind().getSerialization())
+                .append(":")
+                .append(this.getLabel());
+        this.getContent().ifPresent(content -> serializationBuilder.append(":").append(content));
+        return serializationBuilder.toString();
     }
 
     @Override
@@ -41,16 +46,16 @@ public class RelationFilter implements Filter {
             return false;
         }
         RelationFilter other = (RelationFilter) obj;
-        return Objects.equals(other.label, this.label) && Objects.equals(other.value, this.value);
+        return Objects.equals(other.getLabel(), this.getLabel()) && Objects.equals(other.getContent().orElse(null), this.getContent().orElse(null));
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.label, this.value);
+        return Objects.hash(this.getLabel(), this.getContent().orElse(null));
     }
 
-    public static class Builder implements FilterBuilder{
-        private String value = "*";
+    public static class Builder implements Filter.Builder{
+        private String value;
         private String label;
 
         public Builder(String label) {
@@ -68,7 +73,7 @@ public class RelationFilter implements Filter {
         }
 
         @Override
-        public Builder parseValue(String filterValue) {
+        public Builder parseContent(String filterValue) {
             return this.withValue(filterValue);
         }
     }

@@ -1,6 +1,7 @@
 package uk.ac.ebi.biosamples.model.filters;
 
 import java.util.Objects;
+import java.util.Optional;
 
 public class AttributeFilter implements Filter{
 
@@ -24,13 +25,15 @@ public class AttributeFilter implements Filter{
     }
 
     @Override
-    public String getContent() {
-        return this.value;
+    public Optional<String> getContent() {
+        return Optional.ofNullable(this.value);
     }
 
     @Override
     public String getSerialization() {
-        return getKind().getSerialization() + ":" + this.label + ":" + this.value;
+        StringBuilder serialization = new StringBuilder(this.getKind().getSerialization()).append(":").append(this.label);
+        this.getContent().ifPresent(value -> serialization.append(":").append(value));
+        return serialization.toString();
     }
 
     @Override
@@ -50,8 +53,8 @@ public class AttributeFilter implements Filter{
         return Objects.hash(this.label, this.value);
     }
 
-    public static class Builder implements FilterBuilder{
-        private String value = "*";
+    public static class Builder implements Filter.Builder{
+        private String value;
         private String label;
 
         public Builder(String label) {
@@ -70,7 +73,7 @@ public class AttributeFilter implements Filter{
         }
 
         @Override
-        public Builder parseValue(String filterValue) {
+        public Builder parseContent(String filterValue) {
             return this.withValue(filterValue);
         }
 

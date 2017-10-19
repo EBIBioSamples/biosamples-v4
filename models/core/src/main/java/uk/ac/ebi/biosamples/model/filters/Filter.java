@@ -1,20 +1,21 @@
 package uk.ac.ebi.biosamples.model.filters;
 
+import java.util.Optional;
+
 public interface Filter {
 
     public FilterType getKind();
 
     public String getLabel();
 
-    public Object getContent();
+    public Optional<?> getContent();
 
     public String getSerialization();
 
-    default FieldPresentFilter getFieldPresenceFilter() {
-        if (this instanceof FieldPresentFilter) {
-            return (FieldPresentFilter) this;
-        }
-        return new FieldPresentFilter(this.getKind(), this.getLabel());
-    }
+    public interface Builder {
+        public Filter build();
 
+        public Filter.Builder parseContent(String filterSerialized);
+
+    }
 }

@@ -12,7 +12,7 @@ import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filters.Filter;
-import uk.ac.ebi.biosamples.service.FilterFactory;
+import uk.ac.ebi.biosamples.service.FilterBuilder;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -141,7 +141,7 @@ public class RestSearchIntegration extends AbstractIntegration {;
 	@Override
 	protected void phaseFour() {
 		Sample test6 = getSampleTest6();
-		Filter attributeFilter = FilterFactory.onAttribute("MySpecialAttributeType").withValue("MySpecialAttributeValue").build();
+		Filter attributeFilter = FilterBuilder.create().onAttribute("MySpecialAttributeType").withValue("MySpecialAttributeValue").build();
 		PagedResources<Resource<Sample>> samplePage = client.fetchFilteredPagedSamples("",
 				Collections.singletonList(attributeFilter),
 				0, 10);
@@ -154,7 +154,7 @@ public class RestSearchIntegration extends AbstractIntegration {;
 		}
 
 		LocalDateTime fromDateTime = LocalDateTime.ofInstant(test6.getRelease(), ZoneId.of("UTC"));
-		Filter dateFilter = FilterFactory.onReleaseDate().from(fromDateTime).until(fromDateTime.plusSeconds(2)).build();
+		Filter dateFilter = FilterBuilder.create().onReleaseDate().from(fromDateTime).until(fromDateTime.plusSeconds(2)).build();
 		samplePage = client.fetchFilteredPagedSamples("",
 				Collections.singletonList(dateFilter),
 				0, 10);

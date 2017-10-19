@@ -6,7 +6,6 @@ import org.springframework.data.solr.core.query.SimpleFilterQuery;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.filters.DateRangeFilter;
-import uk.ac.ebi.biosamples.model.filters.FieldPresentFilter;
 import uk.ac.ebi.biosamples.model.filters.Filter;
 import uk.ac.ebi.biosamples.service.FacetToFilterConverter;
 
@@ -40,17 +39,18 @@ public class SolrFilterService {
      */
     public Optional<Criteria> getFilterCriteria(Filter filter) {
 
-
         //TODO rename to getFilterTargetField
         String filterTargetField = solrFieldService.encodedField(filter.getLabel(), facetFilterConverter.convert(filter.getKind()));
         Criteria filterCriteria;
-        if (filter instanceof FieldPresentFilter) {
-            filterCriteria = new Criteria(filterTargetField).isNotNull();
-        } else if (filter instanceof DateRangeFilter ){
-            DateRangeFilter dateRangeFilter = (DateRangeFilter) filter;
-            filterCriteria = getDateRangeCriteriaOnField(filterTargetField, dateRangeFilter.getContent());
+        if (filter.getContent().isPresent()) {
+            Object content = filter.getContent().get();
+            if (filter instanceof DateRangeFilter) {
+                filterCriteria = getDateRangeCriteriaOnField(filterTargetField, (DateRange) content);
+            } else {
+                filterCriteria = new Criteria(filterTargetField).is(content);
+            }
         } else {
-            filterCriteria = new Criteria(filterTargetField).is(filter.getContent());
+            filterCriteria = new Criteria(filterTargetField).isNotNull();
         }
         return Optional.ofNullable(filterCriteria);
 

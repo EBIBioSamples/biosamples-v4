@@ -68,7 +68,7 @@ public class SampleToXmlConverter implements Converter<Sample, Document> {
 		Element v = qv.addElement("Value");
 		v.addText(source.getName());
 		
-		//first make a temporary collections of information to allow sorting
+		//first create a temporary collections of information to allow sorting
 		SortedMap<String, SortedSet<String>> attrTypeValue = new TreeMap<>();
 		SortedMap<String, SortedMap<String, String>> attrIri = new TreeMap<>();
 		SortedMap<String, SortedMap<String, String>> attrUnit = new TreeMap<>();

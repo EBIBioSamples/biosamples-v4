@@ -24,7 +24,6 @@ public class FilterService {
 		if (filterStrings == null) return outputFilters;
 		if (filterStrings.length == 0) return outputFilters;
 
-
 		/*
 		 *	For every filter I need to extract:
 		 *	1. The kind of the filter
@@ -34,7 +33,7 @@ public class FilterService {
 		Arrays.sort(filterStrings);
 		SortedSet<String> filterStringSet = new TreeSet<>(Arrays.asList(filterStrings));
 		for(String filterString: filterStringSet) {
-			outputFilters.add(FilterFactory.buildFromString(filterString));
+			outputFilters.add(FilterBuilder.create().buildFromString(filterString));
 		}
 
 		return outputFilters;

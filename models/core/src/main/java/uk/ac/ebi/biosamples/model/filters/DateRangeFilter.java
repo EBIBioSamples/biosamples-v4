@@ -8,6 +8,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.TemporalAccessor;
 import java.util.Objects;
+import java.util.Optional;
 
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
@@ -23,11 +24,6 @@ public class DateRangeFilter implements Filter {
     }
 
     @Override
-    protected Object clone() throws CloneNotSupportedException {
-        return super.clone();
-    }
-
-    @Override
     public FilterType getKind() {
         return FilterType.DATE_FILTER;
     }
@@ -38,31 +34,35 @@ public class DateRangeFilter implements Filter {
     }
 
     @Override
-    public DateRange getContent() {
-        return this.dateRange;
+    public Optional<DateRange> getContent() {
+        return Optional.ofNullable(this.dateRange);
     }
 
     @Override
     public String getSerialization() {
-        StringBuilder dateRangeSerializer = new StringBuilder();
-        dateRangeSerializer
-                .append(this.getKind().getSerialization())
+        StringBuilder serializationBuilder = new StringBuilder(this.getKind().getSerialization())
                 .append(":")
-                .append(this.getLabel())
-                .append(":");
+                .append(this.getLabel());
 
-        if (!this.getContent().isFromMinDate()) {
-            dateRangeSerializer.append("from=").append(this.getContent().getFrom().format(DateTimeFormatter.ISO_ZONED_DATE_TIME));
-        }
-        if (!this.getContent().isUntilMaxDate()) {
-            dateRangeSerializer.append("until=").append(this.getContent().getUntil().format(DateTimeFormatter.ISO_ZONED_DATE_TIME));
-        }
-        return dateRangeSerializer.toString();
+        this.getContent().ifPresent(dateRange -> {
+
+            serializationBuilder.append(":");
+
+            if (!dateRange.isFromMinDate()) {
+                serializationBuilder.append("from=").append(dateRange.getFrom().format(DateTimeFormatter.ISO_ZONED_DATE_TIME));
+            }
+
+            if (!dateRange.isUntilMaxDate()) {
+                serializationBuilder.append("until=").append(dateRange.getUntil().format(DateTimeFormatter.ISO_ZONED_DATE_TIME));
+            }
+
+        });
+        return serializationBuilder.toString();
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.dateRange.getFrom(), this.dateRange.getUntil());
+        return Objects.hash(this.getLabel(), this.getContent().orElse(null));
     }
 
     @Override
@@ -72,17 +72,17 @@ public class DateRangeFilter implements Filter {
             return false;
         }
         DateRangeFilter other = (DateRangeFilter) obj;
-        return Objects.equals(this.dateRange.getFrom(), other.getContent().getFrom()) &&
-                Objects.equals(this.dateRange.getUntil(), other.getContent().getUntil());
+        return Objects.equals(this.getLabel(), other.getLabel()) &&
+                Objects.equals(this.getContent().orElse(null), other.getContent().orElse(null));
 
     }
 
-    public static class Builder implements FilterBuilder{
-        private final FilterType type = FilterType.DATE_FILTER;
+    public static class Builder implements Filter.Builder{
         private final ZoneId defaultZoneId = ZoneId.of("UTC");
         private String label;
-        private ZonedDateTime from = LocalDateTime.MIN.atZone(defaultZoneId);
-        private ZonedDateTime to = LocalDateTime.MAX.atZone(defaultZoneId);
+
+        private ZonedDateTime from = null;
+        private ZonedDateTime until = null;
 
         public Builder(String label) {
             this.label = label;
@@ -105,27 +105,31 @@ public class DateRangeFilter implements Filter {
 
 
         public Builder until(ZonedDateTime toZonedDateTime) {
-            this.to = toZonedDateTime;
+            this.until = toZonedDateTime;
             return this;
         }
 
         public Builder until(LocalDateTime toLocalDateTime) {
-            this.to = toLocalDateTime.atZone(defaultZoneId);
+            this.until = toLocalDateTime.atZone(defaultZoneId);
             return this;
         }
 
         public Builder until(LocalDate toLocalDate) {
-            this.to = toLocalDate.atStartOfDay().atZone(defaultZoneId);
+            this.until = toLocalDate.atStartOfDay().atZone(defaultZoneId);
             return this;
         }
 
         @Override
         public DateRangeFilter build() {
-            return new DateRangeFilter(this.label, new DateRange(this.from, this.to));
+            if (this.from == null && this.until == null) {
+                return new DateRangeFilter(this.label, null);
+            }
+            return new DateRangeFilter(this.label,
+                    new DateRange(from, until));
         }
 
         @Override
-        public FilterBuilder parseValue(String filterValue) {
+        public Filter.Builder parseContent(String filterValue) {
 
             String fromString = extractFromFieldFromString(filterValue);
             String toString = extractToFieldFromString(filterValue);
@@ -217,8 +221,8 @@ public class DateRangeFilter implements Filter {
         private static final ZonedDateTime minDate = LocalDateTime.MIN.atZone(defaultZoneId);
 
         private DateRange(ZonedDateTime from, ZonedDateTime until) {
-            this.from = from == null ? minDate : from;
-            this.until = until == null ? maxDate : until;
+            this.from = Optional.ofNullable(from).orElse(minDate);
+            this.until = Optional.ofNullable(until).orElse(maxDate);
         }
 
         public ZonedDateTime getFrom() {
@@ -239,6 +243,24 @@ public class DateRangeFilter implements Filter {
 
         public static DateRange any() {
             return new DateRange(minDate, maxDate);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.from, this.until);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == this) {
+                return true;
+            }
+            if (!(obj instanceof DateRange)) {
+                return false;
+            }
+            DateRange other = (DateRange) obj;
+            return Objects.equals(this.getFrom(), other.getFrom()) && Objects.equals(this.getUntil(), other.getUntil());
+
         }
     }
 

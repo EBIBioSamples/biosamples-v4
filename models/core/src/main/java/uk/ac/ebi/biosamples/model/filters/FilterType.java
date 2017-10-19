@@ -22,9 +22,9 @@ public enum FilterType {
         return this.serialization;
     }
 
-    public FilterBuilder getBuilderForLabel(String label) {
+    public Filter.Builder getBuilderForLabel(String label) {
         try {
-            return (FilterBuilder) this.associatedClass.getConstructor(String.class).newInstance(label);
+            return (Filter.Builder) this.associatedClass.getConstructor(String.class).newInstance(label);
         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
             throw new RuntimeException("FilterType " + this + " does not provide a proper builder");
         }
