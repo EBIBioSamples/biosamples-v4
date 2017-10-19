@@ -53,7 +53,7 @@ public class AccessFetcherCallable implements Callable<Void> {
 		ExecutorService executorService = null;
 		
 		try {
-			executorService = Executors.newFixedThreadPool(8);
+			executorService = Executors.newFixedThreadPool(32);
 		
 			UriComponentsBuilder uriComponentBuilder = UriComponentsBuilder.fromUriString(rootUrl);
 			uriComponentBuilder.replaceQueryParam("pagesize", pagesize);
@@ -117,6 +117,7 @@ public class AccessFetcherCallable implements Callable<Void> {
 
 			@Override
 			public Set<String> call() throws Exception {
+				long startTime = System.nanoTime();
 				ResponseEntity<String> response;
 				RequestEntity<?> request = RequestEntity.get(uri).accept(MediaType.TEXT_XML).build();
 				try {
@@ -126,6 +127,9 @@ public class AccessFetcherCallable implements Callable<Void> {
 					throw e;
 				}
 				String xmlString = response.getBody();
+				long endTime = System.nanoTime();
+				long interval = (endTime-startTime)/1000000l;
+				log.info("Got "+uri+" in "+interval+"ms");
 				
 				SAXReader reader = new SAXReader();
 				Document xml = reader.read(new StringReader(xmlString));

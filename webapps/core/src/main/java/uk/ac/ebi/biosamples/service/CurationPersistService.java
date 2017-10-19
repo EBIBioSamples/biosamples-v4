@@ -21,9 +21,8 @@ import uk.ac.ebi.biosamples.mongo.service.MongoCurationToCurationConverter;
 public class CurationPersistService {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
-
-	@Autowired
-	private AmqpTemplate amqpTemplate;
+	
+	//TODO use constructor injection
 	
 	@Autowired
 	private MongoCurationLinkRepository mongoCurationLinkRepository;
@@ -36,8 +35,9 @@ public class CurationPersistService {
 	private MongoCurationRepository mongoCurationRepository;
 	@Autowired
 	private CurationToMongoCurationConverter curationToMongoCurationConverter;
+	
 	@Autowired
-	private MongoCurationToCurationConverter mongoCurationToCurationConverter;
+	private MessagingService messagingSerivce;
 	
 	public CurationLink store(CurationLink curationLink) {
 
@@ -51,8 +51,8 @@ public class CurationPersistService {
 		if (mongoCurationLinkRepository.findOne(curationLink.getHash()) == null) {
 			curationLink = mongoCurationLinkToCurationLinkConverter.convert(mongoCurationLinkRepository.save(curationLinkToMongoCurationLinkConverter.convert(curationLink)));
 		}
-		
-		amqpTemplate.convertAndSend(Messaging.exchangeForIndexingSolr, "", MessageContent.build(null, curationLink, Collections.emptyList(), false));
+
+		messagingSerivce.sendMessages(curationLink);
 		return curationLink;
 	}
 	

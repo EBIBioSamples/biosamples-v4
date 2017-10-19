@@ -4,6 +4,9 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Objects;
 
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -45,6 +48,15 @@ public class Attribute implements Comparable<Attribute> {
 	public String getIriOls() {
 		//TODO move this to service layer
 		if (iri == null) return null;
+		
+		//check this is a sane iri
+		UriComponents iriComponents = UriComponentsBuilder.fromUriString(iri).build(true);
+		if (iriComponents.getScheme() == null
+				|| iriComponents.getHost() == null 
+				|| iriComponents.getPath() == null) {
+			//incomplete iri (e.g. 9606, EFO_12345) don't bother to check
+			return null;
+		}
 		
 		try {
 			return "http://www.ebi.ac.uk/ols/terms?iri="+URLEncoder.encode(iri.toString(), "UTF-8");

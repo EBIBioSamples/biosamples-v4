@@ -30,9 +30,6 @@ public class PipelinesProperties {
 	@Value("${biosamples.pipelines.zooma:http://wwwdev.ebi.ac.uk/spot/zooma}")
 	private String zooma;
 	
-	@Value("${biosamples.pipelines.ols:http://wwwdev.ebi.ac.uk/ols}")
-	private String ols;
-	
 	@Value("${biosamples.pipelines.ncbi.domain:self.BiosampleImportNCBI}")
 	private String ncbiDomain;
 	
@@ -81,9 +78,5 @@ public class PipelinesProperties {
 	
 	public String getZooma() {
 		return zooma;
-	}
-	
-	public String getOls() {
-		return ols;
 	}
 }
