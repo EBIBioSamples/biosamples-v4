@@ -5,13 +5,20 @@ import org.springframework.data.solr.core.query.FilterQuery;
 import org.springframework.data.solr.core.query.SimpleFilterQuery;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
-import uk.ac.ebi.biosamples.model.filters.*;
+import uk.ac.ebi.biosamples.model.filters.DateRangeFilter;
+import uk.ac.ebi.biosamples.model.filters.FieldPresentFilter;
+import uk.ac.ebi.biosamples.model.filters.Filter;
 import uk.ac.ebi.biosamples.service.FacetToFilterConverter;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+
+import static uk.ac.ebi.biosamples.model.filters.DateRangeFilter.DateRange;
 
 @Service
 public class SolrFilterService {
@@ -32,46 +39,44 @@ public class SolrFilterService {
      * @return an optional solr criteria for filtering purpose
      */
     public Optional<Criteria> getFilterCriteria(Filter filter) {
-        //TODO implement the method
-        FilterContent content = filter.getContent();
-        FilterType type = filter.getKind();
-//        String filterTargetField = solrFieldService.encodedField(filter.getLabel(), facetFilterConverter.convert(type));
-        Criteria filterCriteria = null;
-        switch(type) {
-            case ATTRIBUTE_FILTER:
-            case RELATION_FILER:
-            case INVERSE_RELATION_FILTER:
-                String filterTargetField = solrFieldService.encodedField(filter.getLabel(), facetFilterConverter.convert(type));
-                if (content instanceof EmptyFilter) {
-                    filterCriteria = new Criteria(filterTargetField).isNotNull();
-                } else {
-                    ValueFilter valueContent = (ValueFilter) content;
-                    filterCriteria = new Criteria(filterTargetField).is(valueContent.getContent());
-                }
-                break;
-            case DATE_FILTER:
-                if (content instanceof EmptyFilter) {
-                    filterCriteria = new Criteria(filter.getLabel()).isNotNull();
-                } else {
-                    // I have to split manually the different queries
-                    DateRangeFilterContent.DateRange dateRange = ((DateRangeFilterContent) content).getContent();
-                    filterCriteria = new Criteria(filter.getLabel());
-                    if (dateRange.isFromMinDate() && dateRange.isToMaxDate()) {
-                        filterCriteria = filterCriteria.isNotNull();
-                    } else if (dateRange.isFromMinDate()) {
-                        filterCriteria = filterCriteria.lessThanEqual(getSolrCompatibleDate(dateRange.getTo()));
-                    } else if (dateRange.isToMaxDate()){
-                        filterCriteria = filterCriteria.greaterThanEqual(getSolrCompatibleDate(dateRange.getFrom()));
-                    } else {
-                        filterCriteria = filterCriteria.between(
-                                dateRange.getFrom().format(DateTimeFormatter.ISO_INSTANT),
-                                dateRange.getTo().format(DateTimeFormatter.ISO_INSTANT));
-                    }
-                }
-                break;
+
+
+        //TODO rename to getFilterTargetField
+        String filterTargetField = solrFieldService.encodedField(filter.getLabel(), facetFilterConverter.convert(filter.getKind()));
+        Criteria filterCriteria;
+        if (filter instanceof FieldPresentFilter) {
+            filterCriteria = new Criteria(filterTargetField).isNotNull();
+        } else if (filter instanceof DateRangeFilter ){
+            DateRangeFilter dateRangeFilter = (DateRangeFilter) filter;
+            filterCriteria = getDateRangeCriteriaOnField(filterTargetField, dateRangeFilter.getContent());
+        } else {
+            filterCriteria = new Criteria(filterTargetField).is(filter.getContent());
         }
         return Optional.ofNullable(filterCriteria);
 
+    }
+
+    /**
+     * Create a date range filter criteria on the specified field
+     * @param fieldToFilter the field on which the criteria will be applied
+     * @param dateRange the date range information
+     * @return a new Criteria
+     */
+    private Criteria getDateRangeCriteriaOnField(String fieldToFilter, DateRange dateRange) {
+
+        Criteria filterCriteria = new Criteria(fieldToFilter);
+        if (dateRange.isFromMinDate() && dateRange.isUntilMaxDate()) {
+            filterCriteria = filterCriteria.isNotNull();
+        } else if (dateRange.isFromMinDate()) {
+            filterCriteria = filterCriteria.lessThanEqual(toSolrDateString(dateRange.getUntil()));
+        } else if (dateRange.isUntilMaxDate()){
+            filterCriteria = filterCriteria.greaterThanEqual(toSolrDateString(dateRange.getFrom()));
+        } else {
+            filterCriteria = filterCriteria.between(
+                    dateRange.getFrom().format(DateTimeFormatter.ISO_INSTANT),
+                    dateRange.getUntil().format(DateTimeFormatter.ISO_INSTANT));
+        }
+        return filterCriteria;
     }
 
     /**
@@ -162,7 +167,7 @@ public class SolrFilterService {
     }
 
 
-    public String getSolrCompatibleDate(ZonedDateTime dateTime) {
+    public String toSolrDateString(ZonedDateTime dateTime) {
         return dateTime.format(DateTimeFormatter.ISO_INSTANT.withZone(ZoneId.of("UTC")));
     }
 

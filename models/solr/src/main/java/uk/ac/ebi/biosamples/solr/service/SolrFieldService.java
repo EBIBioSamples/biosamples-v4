@@ -50,6 +50,11 @@ public class SolrFieldService {
      * @return the encoded field with specific type suffix
      */
     public String encodedField(String field, FacetType facetType) {
+
+        // Dates fields (update and release) are not encoded at the moment
+        if (facetType == FacetType.DATE) {
+            return field + facetType.getSolrSuffix();
+        }
         return this.encodeFieldName(field) + facetType.getSolrSuffix();
     }
 
@@ -68,6 +73,10 @@ public class SolrFieldService {
         String solrEncodedFieldName = field.replaceFirst(
                 facetType.getSolrSuffix() + "$",
                 "");
+        // Dates fields (update and release) are not encoded at the moment
+        if (facetType == FacetType.DATE) {
+            return new AbstractMap.SimpleEntry<FacetType, String>(facetType, solrEncodedFieldName);
+        }
         return new AbstractMap.SimpleEntry<>(facetType, this.decodeFieldName(solrEncodedFieldName));
     }
 

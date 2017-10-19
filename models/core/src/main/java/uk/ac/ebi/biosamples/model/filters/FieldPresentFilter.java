@@ -1,8 +1,33 @@
 package uk.ac.ebi.biosamples.model.filters;
 
-public class FieldPresentFilter extends Filter{
+public class FieldPresentFilter implements Filter{
 
-    public FieldPresentFilter(FilterType kind, String label) {
-        super(kind, label, new EmptyFilter());
+    FilterType type;
+    String fieldLabel;
+
+    public FieldPresentFilter(FilterType filterType, String fieldLabel) {
+        this.type = filterType;
+        this.fieldLabel = fieldLabel;
+    }
+
+
+    @Override
+    public FilterType getKind() {
+        return this.type;
+    }
+
+    @Override
+    public String getLabel() {
+        return this.fieldLabel;
+    }
+
+    @Override
+    public Object getContent() {
+        return null;
+    }
+
+    @Override
+    public String getSerialization() {
+        return String.format("%s:%s", this.getKind().getSerialization(), this.getLabel());
     }
 }

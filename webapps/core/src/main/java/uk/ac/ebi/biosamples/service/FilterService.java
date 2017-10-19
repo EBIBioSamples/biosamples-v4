@@ -34,7 +34,7 @@ public class FilterService {
 		Arrays.sort(filterStrings);
 		SortedSet<String> filterStringSet = new TreeSet<>(Arrays.asList(filterStrings));
 		for(String filterString: filterStringSet) {
-			outputFilters.add(FilterBuilder.buildFromString(filterString));
+			outputFilters.add(FilterFactory.buildFromString(filterString));
 		}
 
 		return outputFilters;
