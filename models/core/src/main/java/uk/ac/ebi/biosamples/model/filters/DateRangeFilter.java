@@ -24,7 +24,7 @@ public class DateRangeFilter implements Filter {
     }
 
     @Override
-    public FilterType getKind() {
+    public FilterType getType() {
         return FilterType.DATE_FILTER;
     }
 
@@ -40,7 +40,7 @@ public class DateRangeFilter implements Filter {
 
     @Override
     public String getSerialization() {
-        StringBuilder serializationBuilder = new StringBuilder(this.getKind().getSerialization())
+        StringBuilder serializationBuilder = new StringBuilder(this.getType().getSerialization())
                 .append(":")
                 .append(this.getLabel());
 

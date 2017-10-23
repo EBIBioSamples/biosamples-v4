@@ -1,6 +1,8 @@
 package uk.ac.ebi.biosamples.model.facets;
 
 import org.springframework.hateoas.core.Relation;
+import uk.ac.ebi.biosamples.model.facets.content.LabelCountListContent;
+import uk.ac.ebi.biosamples.model.field.SampleFieldType;
 
 @Relation(collectionRelation = "facets")
 public class RelationFacet extends Facet {
@@ -9,9 +11,9 @@ public class RelationFacet extends Facet {
         super(label, count, content);
     }
 
-    @Override
-    public FacetType getType() {
-        return FacetType.OUTGOING_RELATIONSHIP;
-    }
 
+    @Override
+    public SampleFieldType getFieldType() {
+        return SampleFieldType.RELATION;
+    }
 }

@@ -14,7 +14,7 @@ public class RelationFilter implements Filter {
     }
 
     @Override
-    public FilterType getKind() {
+    public FilterType getType() {
         return FilterType.RELATION_FILER;
     }
 
@@ -30,7 +30,7 @@ public class RelationFilter implements Filter {
 
     @Override
     public String getSerialization() {
-        StringBuilder serializationBuilder = new StringBuilder(this.getKind().getSerialization())
+        StringBuilder serializationBuilder = new StringBuilder(this.getType().getSerialization())
                 .append(":")
                 .append(this.getLabel());
         this.getContent().ifPresent(content -> serializationBuilder.append(":").append(content));

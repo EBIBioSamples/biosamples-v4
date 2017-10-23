@@ -29,6 +29,10 @@ public class FilterBuilder {
         return new DateRangeFilter.Builder("update");
     }
 
+    public DomainFilter.Builder onDomain(String domain) {
+        return new DomainFilter.Builder(domain);
+    }
+
     public  Filter buildFromString(String serializedFilter) {
         FilterType filterType = FilterType.ofFilterString(serializedFilter);
         String filterLabelAndValueSerialization = serializedFilter.replace(filterType.getSerialization() + ":", "");

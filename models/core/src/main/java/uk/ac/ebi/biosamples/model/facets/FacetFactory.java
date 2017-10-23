@@ -1,5 +1,7 @@
 package uk.ac.ebi.biosamples.model.facets;
 
+import uk.ac.ebi.biosamples.model.facets.content.LabelCountListContent;
+
 public class FacetFactory {
 
     public static Facet build( FacetType facetType, String label, long count, FacetContent rawContent) {

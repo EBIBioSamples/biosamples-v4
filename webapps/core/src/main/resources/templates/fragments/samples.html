@@ -4,11 +4,11 @@
 <head>
 </head>
 <body>
-	<section th:fragment="facets (facets, facetsuri, filters)">
+	<section th:fragment="facets (facets, filters)">
 		<div class="button-grid">
 			<div th:each="facet : ${facets}"
 				 th:with="facetType=${facet.getType().getFacetId()},
-				 		  filterType=${facet.getType().getAssociatedFilterType()},
+				 		  filterType=${facet.getAssociatedFilterType()},
 				 		  generalFilterName=${filterType.getSerialization() + ':' + facet.label}">
                 <div class="facet-container">
                     <input th:form="local-search"

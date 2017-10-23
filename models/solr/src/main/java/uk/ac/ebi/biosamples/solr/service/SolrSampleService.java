@@ -102,15 +102,6 @@ public class SolrSampleService {
 		query.setPageRequest(pageable);
 		query.setTimeAllowed(TIMEALLOWED*1000);
 
-//		TODO Implements Update filtering
-//		if (after != null && before != null) {
-//			filterQuery.addCriteria(new Criteria("update_dt").between(DateTimeFormatter.ISO_INSTANT.format(after), DateTimeFormatter.ISO_INSTANT.format(before)));
-//		} else if (after == null && before != null) {
-//			filterQuery.addCriteria(new Criteria("update_dt").between("NOW-1000YEAR", DateTimeFormatter.ISO_INSTANT.format(before)));
-//		} else if (after != null && before == null) {
-//			filterQuery.addCriteria(new Criteria("update_dt").between(DateTimeFormatter.ISO_INSTANT.format(after), "NOW+1000YEAR"));
-//		}
-
 		Optional<FilterQuery> publicFilterQuery = solrFilterService.getPublicFilterQuery(domains);
 		publicFilterQuery.ifPresent(query::addFilterQuery);
 

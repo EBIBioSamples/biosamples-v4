@@ -14,7 +14,7 @@ public class InverseRelationFilter implements Filter {
     }
 
     @Override
-    public FilterType getKind() {
+    public FilterType getType() {
         return FilterType.INVERSE_RELATION_FILTER;
     }
 
@@ -32,7 +32,7 @@ public class InverseRelationFilter implements Filter {
     @Override
     public String getSerialization() {
         StringBuilder serializationBuilder =
-                new StringBuilder(this.getKind().getSerialization())
+                new StringBuilder(this.getType().getSerialization())
                     .append(":")
                     .append(this.getLabel());
         this.getContent().ifPresent(content -> serializationBuilder.append(":").append(content));
