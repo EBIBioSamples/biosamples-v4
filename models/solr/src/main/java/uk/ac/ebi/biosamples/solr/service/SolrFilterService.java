@@ -8,6 +8,7 @@ import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.filters.DateRangeFilter;
 import uk.ac.ebi.biosamples.model.filters.Filter;
 import uk.ac.ebi.biosamples.service.FacetToFilterConverter;
+import uk.ac.ebi.biosamples.solr.model.field.SolrFieldType;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -40,7 +41,7 @@ public class SolrFilterService {
     public Optional<Criteria> getFilterCriteria(Filter filter) {
 
         //TODO rename to getFilterTargetField
-        String filterTargetField = solrFieldService.encodedField(filter.getLabel(), facetFilterConverter.convert(filter.getKind()));
+        String filterTargetField = solrFieldService.encodedField(filter.getLabel(), SolrFieldType.getFromFilterType(filter.getKind()));
         Criteria filterCriteria;
         if (filter.getContent().isPresent()) {
             Object content = filter.getContent().get();
