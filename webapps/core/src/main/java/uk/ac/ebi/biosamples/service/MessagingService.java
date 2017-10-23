@@ -51,7 +51,7 @@ public class MessagingService {
 		
 		List<Sample> related = new ArrayList<>();
 		//related.addAll(getDerivedFromSamples(sample, related));
-		//this is too intensive to do here, will need to move expansion to separate agent
+		//this is too intensive to do here, will need to move expansion to separate agent see BSD-904
 		
 		
 		//send the original sample with the extras as related samples
