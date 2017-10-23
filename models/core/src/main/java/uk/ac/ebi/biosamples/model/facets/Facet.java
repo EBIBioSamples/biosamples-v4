@@ -1,8 +1,8 @@
 package uk.ac.ebi.biosamples.model.facets;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.*;
+import uk.ac.ebi.biosamples.model.field.SampleFieldType;
+import uk.ac.ebi.biosamples.model.filters.FilterType;
 
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
@@ -13,7 +13,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
         @JsonSubTypes.Type(value = RelationFacet.class, name="relation"),
         @JsonSubTypes.Type(value = InverseRelationFacet.class, name="inverse relation")
 })
-//@JsonDeserialize(using = FacetDeserializer.class)
+@JsonPropertyOrder(value = {"type", "label", "count", "content"})
 public abstract class Facet implements Comparable<Facet>{
 
     private String label;
@@ -39,8 +39,19 @@ public abstract class Facet implements Comparable<Facet>{
         return this.content;
     }
 
+    @JsonIgnore
+    public abstract SampleFieldType getFieldType();
+
     @JsonProperty("type")
-    public abstract FacetType getType();
+    public FacetType getType() {
+        return this.getFieldType().getFacetType().get();
+    }
+
+    @JsonIgnore
+    public FilterType getAssociatedFilterType() {
+        return this.getFieldType().getFilterType().get();
+    }
+
 
     @Override
     public int compareTo(Facet o) {
