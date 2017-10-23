@@ -5,29 +5,30 @@ import java.util.Optional;
 public class DomainFilter implements Filter{
 
     private String domain;
+    private String label = "domain";
 
     private DomainFilter(String domain) {
         this.domain = domain;
     }
 
     @Override
-    public FilterType getKind() {
+    public FilterType getType() {
         return FilterType.DOMAIN_FILTER;
     }
 
     @Override
     public String getLabel() {
-        return this.domain;
+        return this.label;
     }
 
     @Override
-    public Optional<?> getContent() {
-        return Optional.empty();
+    public Optional<String> getContent() {
+        return Optional.of(this.domain);
     }
 
     @Override
     public String getSerialization() {
-        return this.getKind().getSerialization() + ":" + this.getLabel();
+        return this.getType().getSerialization() + ":" + this.domain;
     }
 
     public static class Builder implements Filter.Builder {
@@ -45,7 +46,7 @@ public class DomainFilter implements Filter{
 
         @Override
         public Filter.Builder parseContent(String filterSerialized) {
-            return null;
+            return new Builder(filterSerialized);
         }
     }
 }

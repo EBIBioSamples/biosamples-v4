@@ -3,11 +3,10 @@ package uk.ac.ebi.biosamples.model.filters;
 import java.lang.reflect.InvocationTargetException;
 
 public enum FilterType {
-//    UNKNOWN_FILTER(""),
     ATTRIBUTE_FILTER("fa", AttributeFilter.Builder.class),
     RELATION_FILER("fr", RelationFilter.Builder.class),
     INVERSE_RELATION_FILTER("fir", InverseRelationFilter.Builder.class),
-    DOMAIN_FILTER("fdom", null),
+    DOMAIN_FILTER("fdom", DomainFilter.Builder.class),
     DATE_FILTER("fdt", DateRangeFilter.Builder.class);
 
     String serialization;

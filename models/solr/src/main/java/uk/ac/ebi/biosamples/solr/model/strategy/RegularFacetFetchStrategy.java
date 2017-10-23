@@ -8,6 +8,8 @@ import org.springframework.data.solr.core.query.Field;
 import org.springframework.data.solr.core.query.result.FacetFieldEntry;
 import org.springframework.data.solr.core.query.result.FacetPage;
 import uk.ac.ebi.biosamples.model.facets.*;
+import uk.ac.ebi.biosamples.model.facets.content.LabelCountEntry;
+import uk.ac.ebi.biosamples.model.facets.content.LabelCountListContent;
 import uk.ac.ebi.biosamples.solr.model.field.SolrSampleField;
 import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
 

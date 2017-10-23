@@ -16,7 +16,8 @@ public enum SolrFieldType {
     ATTRIBUTE(SampleFieldType.ATTRIBUTE, "_av_ss", ENCODED, SolrSampleAttributeValueField.class),
     RELATION(SampleFieldType.RELATION, "_or_ss", ENCODED, SolrSampleRelationField.class),
     INVERSE_RELATION(SampleFieldType.INVERSE_RELATION, "_ir_ss", ENCODED, SolrSampleInverseRelationField.class),
-    DATE(SampleFieldType.UPDATE_DATE, "_dt", NOT_ENCODED, SolrSampleDateField.class);
+    DATE(SampleFieldType.UPDATE_DATE, "_dt", NOT_ENCODED, SolrSampleDateField.class),
+    DOMAIN(SampleFieldType.DOMAIN, "_s", NOT_ENCODED, SolrSampleDomainField.class);
 
 
     private static EnumMap<FilterType, SolrFieldType> filterToSolrFieldMap = new EnumMap<FilterType, SolrFieldType>(FilterType.class);

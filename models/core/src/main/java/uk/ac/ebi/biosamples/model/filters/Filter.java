@@ -4,7 +4,7 @@ import java.util.Optional;
 
 public interface Filter {
 
-    public FilterType getKind();
+    public FilterType getType();
 
     public String getLabel();
 

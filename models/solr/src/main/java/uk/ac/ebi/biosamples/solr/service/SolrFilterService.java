@@ -41,7 +41,7 @@ public class SolrFilterService {
     public Optional<Criteria> getFilterCriteria(Filter filter) {
 
         //TODO rename to getFilterTargetField
-        String filterTargetField = solrFieldService.encodedField(filter.getLabel(), SolrFieldType.getFromFilterType(filter.getKind()));
+        String filterTargetField = solrFieldService.encodedField(filter.getLabel(), SolrFieldType.getFromFilterType(filter.getType()));
         Criteria filterCriteria;
         if (filter.getContent().isPresent()) {
             Object content = filter.getContent().get();
@@ -89,7 +89,7 @@ public class SolrFilterService {
     public Optional<List<Filter>> getCompatibleFilters(List<Filter> availableFilters, Filter referenceFilter) {
         List<Filter> compatibleFilterList = new ArrayList<>();
         for (Filter nextFilter : availableFilters) {
-            if (nextFilter.getLabel().equals(referenceFilter.getLabel()) && nextFilter.getKind().equals(referenceFilter.getKind())) {
+            if (nextFilter.getLabel().equals(referenceFilter.getLabel()) && nextFilter.getType().equals(referenceFilter.getType())) {
                 compatibleFilterList.add(nextFilter);
             }
         }

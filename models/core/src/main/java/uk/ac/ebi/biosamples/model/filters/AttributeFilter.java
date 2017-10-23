@@ -15,7 +15,7 @@ public class AttributeFilter implements Filter{
     }
 
     @Override
-    public FilterType getKind() {
+    public FilterType getType() {
         return FilterType.ATTRIBUTE_FILTER;
     }
 
@@ -31,7 +31,7 @@ public class AttributeFilter implements Filter{
 
     @Override
     public String getSerialization() {
-        StringBuilder serialization = new StringBuilder(this.getKind().getSerialization()).append(":").append(this.label);
+        StringBuilder serialization = new StringBuilder(this.getType().getSerialization()).append(":").append(this.label);
         this.getContent().ifPresent(value -> serialization.append(":").append(value));
         return serialization.toString();
     }
