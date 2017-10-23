@@ -103,7 +103,7 @@ public class RestFilterIntegration extends AbstractIntegration{
                 Collections.singletonList(dateFilter),
                 0, 10);
         if (samplePage.getMetadata().getTotalElements() < 1) {
-            throw new RuntimeException("Unexpected number of results for attribute filter query: " + samplePage.getMetadata().getTotalElements());
+            throw new RuntimeException("Unexpected number of results for date range filter query: " + samplePage.getMetadata().getTotalElements());
         }
         boolean match = samplePage.getContent().stream().anyMatch(resource -> resource.getContent().getAccession().equals(testSample1.getAccession()));
         if (!match) {
@@ -114,6 +114,27 @@ public class RestFilterIntegration extends AbstractIntegration{
 
     @Override
     protected void phaseFour() {
+        log.info("Getting results filtered by domains");
+//        Sample testSample1 = getTestSample1();
+//        Sample testSample2 = getTestSample2();
+
+        Filter domainFilter = FilterBuilder.create().onDomain("self.BiosampleIntegrationTest").build();
+        PagedResources<Resource<Sample>> samplePage = client.fetchFilteredPagedSamples("",
+                Collections.singletonList(domainFilter),
+                0, 10);
+        if (samplePage.getMetadata().getTotalElements() < 1) {
+            throw new RuntimeException("Unexpected number of results for domain filter query: " + samplePage.getMetadata().getTotalElements());
+        }
+
+//        List<Resource<Sample>> samples = samplePage.getContent().stream().filter(resource -> {
+//            String sampleAccession =resource.getContent().getAccession();
+//            return sampleAccession.equalsIgnoreCase(testSample1.getAccession()) ||
+//                    sampleAccession.equalsIgnoreCase(testSample2.getAccession());
+//        }).collect(Collectors.toList());
+//
+//        if (samples.size() != 2) {
+//            throw new RuntimeException("Results contains a number of samples not matching the test samples");
+//        }
 
     }
 

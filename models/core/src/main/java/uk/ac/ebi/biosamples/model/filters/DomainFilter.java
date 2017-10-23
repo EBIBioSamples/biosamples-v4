@@ -5,7 +5,6 @@ import java.util.Optional;
 public class DomainFilter implements Filter{
 
     private String domain;
-    private String label = "domain";
 
     private DomainFilter(String domain) {
         this.domain = domain;
@@ -18,7 +17,7 @@ public class DomainFilter implements Filter{
 
     @Override
     public String getLabel() {
-        return this.label;
+        return "domain";
     }
 
     @Override
