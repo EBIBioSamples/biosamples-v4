@@ -45,7 +45,7 @@ public class SolrFacetService {
             searchTerm = "*:*";
         }
 
-        FacetsBuilder builder = new FacetsBuilder();
+        List<Facet> facets = new ArrayList<>();
 
         //build a query out of the users string and any facets
         FacetQuery query = new SimpleFacetQuery();
@@ -88,11 +88,14 @@ public class SolrFacetService {
                     query,
                     Collections.singletonList(fieldCountEntry),
                     facetValuesPageInfo);
-            optionalFacets.forEach(opt -> opt.ifPresent(builder::addFacet));
+            optionalFacets.forEach(opt -> opt.ifPresent(facets::add));
         }
 
         // Return the list of facets
-        return builder.build();
+        Collections.sort(facets);
+        Collections.reverse(facets);
+
+        return facets;
 
     }
 

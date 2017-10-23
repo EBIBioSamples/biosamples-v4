@@ -7,12 +7,12 @@ import java.util.EnumMap;
 import java.util.Optional;
 
 public enum SampleFieldType {
-    ATTRIBUTE(FacetType.ATTRIBUTE, FilterType.ATTRIBUTE_FILTER),
-    INVERSE_RELATION(FacetType.INCOMING_RELATIONSHIP, FilterType.INVERSE_RELATION_FILTER),
-    RELATION(FacetType.OUTGOING_RELATIONSHIP, FilterType.RELATION_FILER),
+    ATTRIBUTE(FacetType.ATTRIBUTE_FACET, FilterType.ATTRIBUTE_FILTER),
+    INVERSE_RELATION(FacetType.INVERSE_RELATION_FACET, FilterType.INVERSE_RELATION_FILTER),
+    RELATION(FacetType.RELATION_FACET, FilterType.RELATION_FILER),
     DOMAIN(null, FilterType.DOMAIN_FILTER),
-    UPDATE_DATE(FacetType.DATE, FilterType.DATE_FILTER),
-    RELEASE_DATE(FacetType.DATE, FilterType.DATE_FILTER);
+    UPDATE_DATE(FacetType.DATE_FACET, FilterType.DATE_FILTER),
+    RELEASE_DATE(FacetType.DATE_FACET, FilterType.DATE_FILTER);
 
     private static EnumMap<FacetType, SampleFieldType> facetToField = new EnumMap<>(FacetType.class);
     private static EnumMap<FilterType, SampleFieldType> filterToField = new EnumMap<>(FilterType.class);

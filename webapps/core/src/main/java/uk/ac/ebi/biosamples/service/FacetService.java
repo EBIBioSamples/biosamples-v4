@@ -42,13 +42,13 @@ public class FacetService {
 	 */
 	public static FilterType from(FacetType type) {
 		switch(type) {
-			case INCOMING_RELATIONSHIP:
+			case INVERSE_RELATION_FACET:
 				return FilterType.INVERSE_RELATION_FILTER;
-			case OUTGOING_RELATIONSHIP:
+			case RELATION_FACET:
 				return FilterType.RELATION_FILER;
-			case ATTRIBUTE:
+			case ATTRIBUTE_FACET:
 				return FilterType.ATTRIBUTE_FILTER;
-			case DATE:
+			case DATE_FACET:
 				return FilterType.DATE_FILTER;
 			default:
 				return FilterType.ATTRIBUTE_FILTER;

@@ -7,17 +7,17 @@ public class FacetFactory {
     public static Facet build( FacetType facetType, String label, long count, FacetContent rawContent) {
 
         switch(facetType) {
-            case INCOMING_RELATIONSHIP:
+            case INVERSE_RELATION_FACET:
                 if (!(LabelCountListContent.class.isAssignableFrom(rawContent.getClass()))) {
                     throw new RuntimeException("Content not compatible with " + facetType.name() + " facet type");
                 }
                 return new InverseRelationFacet(label, count, (LabelCountListContent) rawContent);
-            case OUTGOING_RELATIONSHIP:
+            case RELATION_FACET:
                 if (!(LabelCountListContent.class.isAssignableFrom(rawContent.getClass()))) {
                     throw new RuntimeException("Content not compatible with " + facetType.name() + " facet type");
                 }
                 return new RelationFacet(label, count, (LabelCountListContent) rawContent);
-            case ATTRIBUTE:
+            case ATTRIBUTE_FACET:
                 if (!(LabelCountListContent.class.isAssignableFrom(rawContent.getClass()))) {
                     throw new RuntimeException("Content not compatible with " + facetType.name() + " facet type");
                 }
