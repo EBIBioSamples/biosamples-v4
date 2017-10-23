@@ -15,6 +15,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -258,7 +259,25 @@ class AccessionComparisonCallable implements Callable<Void> {
 					Attribute oldAttribute = oldAttributes.get(i);
 					Attribute newAttribute = newAttributes.get(i);
 					
+					//TODO finish me
 					
+					if (!oldUnits.containsKey(oldAttribute.getType())) {
+						oldUnits.put(oldAttribute.getType(), new TreeMap<>());
+					}
+					oldUnits.get(oldAttribute.getType()).put(oldAttribute.getValue(), oldAttribute.getUnit());
+					if (!newUnits.containsKey(newAttribute.getType())) {
+						newUnits.put(newAttribute.getType(), new TreeMap<>());
+					}
+					newUnits.get(newAttribute.getType()).put(newAttribute.getValue(), newAttribute.getUnit());
+					
+					if (!oldIris.containsKey(oldAttribute.getType())) {
+						oldIris.put(oldAttribute.getType(), new TreeMap<>());
+					}
+					oldIris.get(oldAttribute.getType()).put(oldAttribute.getValue(), oldAttribute.getIri());
+					if (!newIris.containsKey(newAttribute.getType())) {
+						newIris.put(newAttribute.getType(), new TreeMap<>());
+					}
+					newIris.get(newAttribute.getType()).put(newAttribute.getValue(), newAttribute.getIri());
 					
 					//compare values
 					if (!oldAttribute.getType().equals(newAttribute.getType())) {
