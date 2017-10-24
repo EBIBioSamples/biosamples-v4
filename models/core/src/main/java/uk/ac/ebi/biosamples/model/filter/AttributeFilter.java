@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.model.filters;
+package uk.ac.ebi.biosamples.model.filter;
 
 import java.util.Objects;
 import java.util.Optional;

@@ -2,9 +2,9 @@ package uk.ac.ebi.biosamples.service;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.model.facets.FacetType;
+import uk.ac.ebi.biosamples.model.facet.FacetType;
 import uk.ac.ebi.biosamples.model.FacetFilterFieldType;
-import uk.ac.ebi.biosamples.model.filters.FilterType;
+import uk.ac.ebi.biosamples.model.filter.FilterType;
 
 @Service
 public class FacetToFilterConverter implements Converter<FilterType, FacetType>  {

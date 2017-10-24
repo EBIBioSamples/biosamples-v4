@@ -1,7 +1,7 @@
 package uk.ac.ebi.biosamples.solr.model.field;
 
 import uk.ac.ebi.biosamples.model.FacetFilterFieldType;
-import uk.ac.ebi.biosamples.model.filters.FilterType;
+import uk.ac.ebi.biosamples.model.filter.FilterType;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -12,6 +12,11 @@ import static uk.ac.ebi.biosamples.solr.model.field.SolrFieldType.FieldEncodingT
 import static uk.ac.ebi.biosamples.solr.model.field.SolrFieldType.FieldEncodingType.NOT_ENCODED;
 
 
+/**
+ * Enum representing the different type of fields available in the Solr document. These fields are linked to
+ * the FacetFilterFieldType so that is possible to retrieve the corresponding Facet and Filters
+ *
+ */
 public enum SolrFieldType {
     ATTRIBUTE(FacetFilterFieldType.ATTRIBUTE, "_av_ss", ENCODED, SolrSampleAttributeValueField.class),
     RELATION(FacetFilterFieldType.RELATION, "_or_ss", ENCODED, SolrSampleRelationField.class),

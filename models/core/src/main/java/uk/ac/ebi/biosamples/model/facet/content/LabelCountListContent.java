@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.model.facets.content;
+package uk.ac.ebi.biosamples.model.facet.content;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 

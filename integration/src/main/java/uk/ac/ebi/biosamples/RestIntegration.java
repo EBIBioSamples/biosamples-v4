@@ -26,7 +26,7 @@ import java.util.TreeSet;
 
 @Component
 @Order(2)
-@Profile({"default", "rest"})
+@Profile({"default", "rest", "test"})
 public class RestIntegration extends AbstractIntegration {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());

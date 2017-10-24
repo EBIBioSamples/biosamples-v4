@@ -19,7 +19,7 @@ import uk.ac.ebi.biosamples.client.service.*;
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.filters.Filter;
+import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.SampleValidator;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 

@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.model.filters;
+package uk.ac.ebi.biosamples.model.filter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

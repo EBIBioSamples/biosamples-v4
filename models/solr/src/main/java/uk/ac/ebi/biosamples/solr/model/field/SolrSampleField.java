@@ -8,7 +8,7 @@ public abstract class SolrSampleField {
     private String solrDocumentLabel;
 
     /**
-     * All subclasses should implement this constructor
+     * All subclasses should implement this constructor.
      * @param readableLabel
      * @param solrDocumentLabel
      */
@@ -22,13 +22,25 @@ public abstract class SolrSampleField {
     }
 
     public abstract SolrFieldType getSolrFieldType();
+
+    /**
+     * For each field a specific strategy to get the facet content need to be implemented
+     * Facet content retrieve will be delegated to the facet fetch strategy
+     * @return a facet fetch strategy
+     */
     public abstract FacetFetchStrategy getFacetCollectionStrategy();
 
 
+    /**
+     * @return the readable label of the field
+     */
     public String getLabel() {
         return this.readableLabel;
     }
 
+    /**
+     * @return the document field, which could be encoded or not encoded based on the SolrFieldType
+     */
     public String getSolrDocumentFieldName() {
         return solrDocumentLabel;
     }

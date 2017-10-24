@@ -3,7 +3,7 @@ package uk.ac.ebi.biosamples.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.model.filters.*;
+import uk.ac.ebi.biosamples.model.filter.*;
 
 import java.util.*;
 

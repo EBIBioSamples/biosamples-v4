@@ -1,9 +1,9 @@
-package uk.ac.ebi.biosamples.model.facets;
+package uk.ac.ebi.biosamples.model.facet;
 
 import com.fasterxml.jackson.annotation.*;
 import uk.ac.ebi.biosamples.model.FacetFilterFieldType;
-import uk.ac.ebi.biosamples.model.facets.content.FacetContent;
-import uk.ac.ebi.biosamples.model.filters.FilterType;
+import uk.ac.ebi.biosamples.model.facet.content.FacetContent;
+import uk.ac.ebi.biosamples.model.filter.FilterType;
 
 import java.util.Optional;
 
@@ -33,6 +33,9 @@ public interface Facet extends Comparable<Facet>{
         return FacetFilterFieldType.getFilterForFacet(this.getType());
     }
 
+    /*
+     * Builder interface to build Facets
+     */
     public interface Builder {
         Facet build();
 

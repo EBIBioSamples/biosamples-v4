@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.model.facets;
+package uk.ac.ebi.biosamples.model.facet;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 

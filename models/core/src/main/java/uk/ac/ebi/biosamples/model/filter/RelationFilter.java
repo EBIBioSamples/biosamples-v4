@@ -1,21 +1,21 @@
-package uk.ac.ebi.biosamples.model.filters;
+package uk.ac.ebi.biosamples.model.filter;
 
 import java.util.Objects;
 import java.util.Optional;
 
-public class InverseRelationFilter implements Filter {
+public class RelationFilter implements Filter {
 
     private String label;
     private String value;
 
-    private InverseRelationFilter(String label, String value) {
+    public RelationFilter(String label, String value) {
         this.label = label;
         this.value = value;
     }
 
     @Override
     public FilterType getType() {
-        return FilterType.INVERSE_RELATION_FILTER;
+        return FilterType.RELATION_FILER;
     }
 
     @Override
@@ -28,13 +28,11 @@ public class InverseRelationFilter implements Filter {
         return Optional.ofNullable(this.value);
     }
 
-
     @Override
     public String getSerialization() {
-        StringBuilder serializationBuilder =
-                new StringBuilder(this.getType().getSerialization())
-                    .append(":")
-                    .append(this.getLabel());
+        StringBuilder serializationBuilder = new StringBuilder(this.getType().getSerialization())
+                .append(":")
+                .append(this.getLabel());
         this.getContent().ifPresent(content -> serializationBuilder.append(":").append(content));
         return serializationBuilder.toString();
     }
@@ -44,10 +42,10 @@ public class InverseRelationFilter implements Filter {
         if (obj == this) {
             return true;
         }
-        if (!(obj instanceof InverseRelationFilter)) {
+        if (!(obj instanceof RelationFilter)) {
             return false;
         }
-        InverseRelationFilter other = (InverseRelationFilter) obj;
+        RelationFilter other = (RelationFilter) obj;
         return Objects.equals(other.getLabel(), this.getLabel()) && Objects.equals(other.getContent().orElse(null), this.getContent().orElse(null));
     }
 
@@ -70,8 +68,8 @@ public class InverseRelationFilter implements Filter {
         }
 
         @Override
-        public InverseRelationFilter build() {
-            return new InverseRelationFilter(this.label, this.value);
+        public RelationFilter build() {
+            return new RelationFilter(this.label, this.value);
         }
 
         @Override
@@ -79,4 +77,6 @@ public class InverseRelationFilter implements Filter {
             return this.withValue(filterValue);
         }
     }
+
+
 }

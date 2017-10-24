@@ -1,13 +1,11 @@
-package uk.ac.ebi.biosamples.model.facets.content;
+package uk.ac.ebi.biosamples.model.facet.content;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import java.util.Arrays;
 import java.util.Map;
 
-@JsonDeserialize(using = LabelCountDeserializer.class)
 public class LabelCountEntry implements Comparable<LabelCountEntry>{
     private final String label;
     private final long count;

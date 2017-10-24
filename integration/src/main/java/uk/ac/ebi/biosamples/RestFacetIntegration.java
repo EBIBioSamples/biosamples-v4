@@ -13,16 +13,16 @@ import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.facets.Facet;
-import uk.ac.ebi.biosamples.model.facets.content.FacetContent;
-import uk.ac.ebi.biosamples.model.facets.content.LabelCountListContent;
+import uk.ac.ebi.biosamples.model.facet.Facet;
+import uk.ac.ebi.biosamples.model.facet.content.FacetContent;
+import uk.ac.ebi.biosamples.model.facet.content.LabelCountListContent;
 
 import java.time.Instant;
 import java.util.*;
 
 @Component
 @Order(3)
-@Profile({"default", "test"})
+@Profile({"default"})
 public class RestFacetIntegration extends AbstractIntegration {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());

@@ -5,8 +5,8 @@ import org.springframework.data.solr.core.query.FilterQuery;
 import org.springframework.data.solr.core.query.SimpleFilterQuery;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
-import uk.ac.ebi.biosamples.model.filters.DateRangeFilter;
-import uk.ac.ebi.biosamples.model.filters.Filter;
+import uk.ac.ebi.biosamples.model.filter.DateRangeFilter;
+import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.FacetToFilterConverter;
 import uk.ac.ebi.biosamples.solr.model.field.SolrFieldType;
 
@@ -18,7 +18,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-import static uk.ac.ebi.biosamples.model.filters.DateRangeFilter.DateRange;
+import static uk.ac.ebi.biosamples.model.filter.DateRangeFilter.DateRange;
 
 @Service
 public class SolrFilterService {

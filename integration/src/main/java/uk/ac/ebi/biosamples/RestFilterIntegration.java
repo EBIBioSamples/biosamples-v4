@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.filters.Filter;
+import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.FilterBuilder;
 
 import java.time.Instant;
@@ -20,7 +20,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 @Component
-@Profile({"default", "rest","test"})
+@Profile({"default", "rest"})
 public class RestFilterIntegration extends AbstractIntegration{
 
     private Logger log = LoggerFactory.getLogger(this.getClass());

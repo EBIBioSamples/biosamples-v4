@@ -1,11 +1,16 @@
 package uk.ac.ebi.biosamples.model;
 
-import uk.ac.ebi.biosamples.model.facets.FacetType;
-import uk.ac.ebi.biosamples.model.filters.FilterType;
+import uk.ac.ebi.biosamples.model.facet.FacetType;
+import uk.ac.ebi.biosamples.model.filter.FilterType;
 
 import java.util.EnumMap;
 import java.util.Optional;
 
+/**
+ * Purpose of this class is to bind Facet and filters together, so is possible to
+ * move from one to the other in a predictable way. Every time a new Filter/Facet is created,
+ * a correspondent value should be added here to bind them together
+ */
 public enum FacetFilterFieldType {
     ATTRIBUTE(FacetType.ATTRIBUTE_FACET, FilterType.ATTRIBUTE_FILTER),
     INVERSE_RELATION(FacetType.INVERSE_RELATION_FACET, FilterType.INVERSE_RELATION_FILTER),
@@ -38,10 +43,18 @@ public enum FacetFilterFieldType {
         this.filterType = filterType;
     }
 
+    /**
+     * Return an optional facet type if any is associated with the provided fieldType
+     * @return Optional facet type
+     */
     public Optional<FacetType> getFacetType() {
         return Optional.ofNullable(facetType);
     }
 
+    /**
+     * Return an optional filter type if any is associated with the provided fieldType
+     * @return Optional filter type
+     */
     public Optional<FilterType> getFilterType() {
         return Optional.ofNullable(filterType);
     }
@@ -63,10 +76,20 @@ public enum FacetFilterFieldType {
 
     }
 
+    /**
+     * Return the filter type associated with the facet type, if is available
+     * @param facetType the type of facet
+     * @return Optional filter type
+     */
     public static Optional<FilterType> getFilterForFacet(FacetType facetType) {
         return getFieldForFacet(facetType).getFilterType();
     }
 
+    /**
+     * Return the facet type associated with the filter type, if is available
+     * @param filterType the type of filter
+     * @return Optional facet type
+     */
     public static Optional<FacetType> getFacetForFilter(FilterType filterType) {
         return getFieldForFilter(filterType).getFacetType();
     }
