@@ -1,6 +1,6 @@
 package uk.ac.ebi.biosamples.solr.model.field;
 
-import uk.ac.ebi.biosamples.model.field.SampleFieldType;
+import uk.ac.ebi.biosamples.model.FacetFilterFieldType;
 import uk.ac.ebi.biosamples.model.filters.FilterType;
 
 import java.lang.reflect.Constructor;
@@ -13,41 +13,41 @@ import static uk.ac.ebi.biosamples.solr.model.field.SolrFieldType.FieldEncodingT
 
 
 public enum SolrFieldType {
-    ATTRIBUTE(SampleFieldType.ATTRIBUTE, "_av_ss", ENCODED, SolrSampleAttributeValueField.class),
-    RELATION(SampleFieldType.RELATION, "_or_ss", ENCODED, SolrSampleRelationField.class),
-    INVERSE_RELATION(SampleFieldType.INVERSE_RELATION, "_ir_ss", ENCODED, SolrSampleInverseRelationField.class),
-    DATE(SampleFieldType.UPDATE_DATE, "_dt", NOT_ENCODED, SolrSampleDateField.class),
-    DOMAIN(SampleFieldType.DOMAIN, "_s", NOT_ENCODED, SolrSampleDomainField.class);
+    ATTRIBUTE(FacetFilterFieldType.ATTRIBUTE, "_av_ss", ENCODED, SolrSampleAttributeValueField.class),
+    RELATION(FacetFilterFieldType.RELATION, "_or_ss", ENCODED, SolrSampleRelationField.class),
+    INVERSE_RELATION(FacetFilterFieldType.INVERSE_RELATION, "_ir_ss", ENCODED, SolrSampleInverseRelationField.class),
+    DATE(FacetFilterFieldType.UPDATE_DATE, "_dt", NOT_ENCODED, SolrSampleDateField.class),
+    DOMAIN(FacetFilterFieldType.DOMAIN, "_s", NOT_ENCODED, SolrSampleDomainField.class);
 
 
     private static EnumMap<FilterType, SolrFieldType> filterToSolrFieldMap = new EnumMap<FilterType, SolrFieldType>(FilterType.class);
 
     static {
         for(SolrFieldType fieldType: values()) {
-            Optional<FilterType> filterAssociatedWithField = fieldType.getSampleFieldType().getFilterType();
+            Optional<FilterType> filterAssociatedWithField = fieldType.getFacetFilterFieldType().getFilterType();
             filterAssociatedWithField.ifPresent(filterType -> filterToSolrFieldMap.put(filterType, fieldType));
         }
     }
 
 
 
-    private final SampleFieldType sampleFieldType;
+    private final FacetFilterFieldType facetFilterFieldType;
     private final String suffix;
     private final FieldEncodingType isEncoded;
     private final Class<? extends SolrSampleField> associatedClass;
 
-    SolrFieldType(SampleFieldType sampleFieldType,
+    SolrFieldType(FacetFilterFieldType facetFilterFieldType,
                   String suffix,
                   FieldEncodingType encoding,
                   Class<? extends SolrSampleField> associatedClass) {
-        this.sampleFieldType =sampleFieldType;
+        this.facetFilterFieldType = facetFilterFieldType;
         this.suffix = suffix;
         this.isEncoded = encoding;
         this.associatedClass = associatedClass;
     }
 
-    public SampleFieldType getSampleFieldType() {
-        return sampleFieldType;
+    public FacetFilterFieldType getFacetFilterFieldType() {
+        return facetFilterFieldType;
     }
 
     public String getSuffix() {

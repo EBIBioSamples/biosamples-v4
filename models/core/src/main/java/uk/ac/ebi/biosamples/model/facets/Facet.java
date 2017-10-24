@@ -1,8 +1,12 @@
 package uk.ac.ebi.biosamples.model.facets;
 
 import com.fasterxml.jackson.annotation.*;
-import uk.ac.ebi.biosamples.model.field.SampleFieldType;
+import uk.ac.ebi.biosamples.model.FacetFilterFieldType;
+import uk.ac.ebi.biosamples.model.facets.content.FacetContent;
+import uk.ac.ebi.biosamples.model.facets.content.LabelCountListContent;
 import uk.ac.ebi.biosamples.model.filters.FilterType;
+
+import java.util.Optional;
 
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
@@ -14,48 +18,31 @@ import uk.ac.ebi.biosamples.model.filters.FilterType;
         @JsonSubTypes.Type(value = InverseRelationFacet.class, name="inverse relation")
 })
 @JsonPropertyOrder(value = {"type", "label", "count", "content"})
-public abstract class Facet implements Comparable<Facet>{
-
-    private String label;
-    private long count;
-    private FacetContent content;
-
-    protected Facet(String label, long count, FacetContent content) {
-        this.label = label;
-        this.count = count;
-        this.content = content;
-    }
-
-    public String getLabel() {
-        return label;
-    }
-
-
-    public long getCount() {
-        return count;
-    }
-
-    public FacetContent getContent() {
-        return this.content;
-    }
-
-    @JsonIgnore
-    public abstract SampleFieldType getFieldType();
+public interface Facet extends Comparable<Facet>{
 
     @JsonProperty("type")
-    public FacetType getType() {
-        return this.getFieldType().getFacetType().get();
-    }
+    public FacetType getType();
+
+    public String getLabel();
+
+    public Long getCount();
+
+    public FacetContent getContent();
 
     @JsonIgnore
-    public FilterType getAssociatedFilterType() {
-        return this.getFieldType().getFilterType().get();
+    public default Optional<FilterType> getAssociatedFilterType() {
+        return FacetFilterFieldType.getFilterForFacet(this.getType());
     }
 
+    public interface Builder {
+        Facet build();
 
-    @Override
-    public int compareTo(Facet o) {
-        return Long.compare(this.getCount(), o.getCount());
+        Builder withContent(LabelCountListContent content);
+
+    }
+
+    default int compareTo(Facet otherFacet) {
+        return Long.compare(this.getCount(),otherFacet.getCount());
     }
 
 }

@@ -6,9 +6,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.facets.Facet;
-import uk.ac.ebi.biosamples.model.facets.FacetType;
 import uk.ac.ebi.biosamples.model.filters.Filter;
-import uk.ac.ebi.biosamples.model.filters.FilterType;
 import uk.ac.ebi.biosamples.solr.service.SolrFacetService;
 
 import java.util.Collection;
@@ -35,23 +33,4 @@ public class FacetService {
 		return solrFacetService.getFacets(text, filters, domains, facetPageable, facetValuePageable);
 	}
 
-	/**
-	 *	TODO: Duplication of code - we should think of something different
-	 *	This could lead to problems where for a FacetType no filter is available
-	 *  The code is duplicated over {@see package uk.ac.ebi.biosamples.service.FilterService#from} class
-	 */
-	public static FilterType from(FacetType type) {
-		switch(type) {
-			case INVERSE_RELATION_FACET:
-				return FilterType.INVERSE_RELATION_FILTER;
-			case RELATION_FACET:
-				return FilterType.RELATION_FILER;
-			case ATTRIBUTE_FACET:
-				return FilterType.ATTRIBUTE_FILTER;
-			case DATE_FACET:
-				return FilterType.DATE_FILTER;
-			default:
-				return FilterType.ATTRIBUTE_FILTER;
-		}
-	}
 }

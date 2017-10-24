@@ -60,13 +60,15 @@ public class RegularFacetFetchStrategy implements FacetFetchStrategy {
 
             // Build the facet
             SolrSampleField solrSampleField = fieldCountEntry.getKey();
-            Optional<FacetType> associatedFacetType = solrSampleField.getSolrFieldType().getSampleFieldType().getFacetType();
+            Optional<FacetType> associatedFacetType = solrSampleField.getSolrFieldType().getFacetFilterFieldType().getFacetType();
             if(associatedFacetType.isPresent()) {
-                Facet facet = FacetFactory.build(
-                        associatedFacetType.get(),
-                        solrSampleField.getLabel(),
-                        fieldCountEntry.getValue(),
-                        new LabelCountListContent(listFacetContent));
+                FacetType facetType = associatedFacetType.get();
+                String facetLabel = solrSampleField.getLabel();
+                Long facetCount = fieldCountEntry.getValue();
+                Facet facet = facetType
+                        .getBuilderForLabelAndCount(facetLabel, facetCount)
+                        .withContent(new LabelCountListContent(listFacetContent))
+                        .build();
                 facetResults.add(Optional.of(facet));
             }
         }

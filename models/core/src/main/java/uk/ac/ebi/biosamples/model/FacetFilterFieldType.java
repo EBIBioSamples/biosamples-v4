@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.model.field;
+package uk.ac.ebi.biosamples.model;
 
 import uk.ac.ebi.biosamples.model.facets.FacetType;
 import uk.ac.ebi.biosamples.model.filters.FilterType;
@@ -6,19 +6,19 @@ import uk.ac.ebi.biosamples.model.filters.FilterType;
 import java.util.EnumMap;
 import java.util.Optional;
 
-public enum SampleFieldType {
+public enum FacetFilterFieldType {
     ATTRIBUTE(FacetType.ATTRIBUTE_FACET, FilterType.ATTRIBUTE_FILTER),
     INVERSE_RELATION(FacetType.INVERSE_RELATION_FACET, FilterType.INVERSE_RELATION_FILTER),
     RELATION(FacetType.RELATION_FACET, FilterType.RELATION_FILER),
     DOMAIN(null, FilterType.DOMAIN_FILTER),
-    UPDATE_DATE(FacetType.DATE_FACET, FilterType.DATE_FILTER),
-    RELEASE_DATE(FacetType.DATE_FACET, FilterType.DATE_FILTER);
+    UPDATE_DATE(null, FilterType.DATE_FILTER),
+    RELEASE_DATE(null, FilterType.DATE_FILTER);
 
-    private static EnumMap<FacetType, SampleFieldType> facetToField = new EnumMap<>(FacetType.class);
-    private static EnumMap<FilterType, SampleFieldType> filterToField = new EnumMap<>(FilterType.class);
+    private static EnumMap<FacetType, FacetFilterFieldType> facetToField = new EnumMap<>(FacetType.class);
+    private static EnumMap<FilterType, FacetFilterFieldType> filterToField = new EnumMap<>(FilterType.class);
 
     static {
-        for(SampleFieldType fieldType: values()) {
+        for(FacetFilterFieldType fieldType: values()) {
             if(fieldType.getFacetType().isPresent()) {
                 facetToField.put(fieldType.getFacetType().get(), fieldType);
             }
@@ -33,7 +33,7 @@ public enum SampleFieldType {
     private FacetType facetType;
     private FilterType filterType;
 
-    SampleFieldType(FacetType facetType, FilterType filterType) {
+    FacetFilterFieldType(FacetType facetType, FilterType filterType) {
         this.facetType = facetType;
         this.filterType = filterType;
     }
@@ -46,16 +46,16 @@ public enum SampleFieldType {
         return Optional.ofNullable(filterType);
     }
 
-    public static SampleFieldType getFieldForFacet(FacetType facetType) {
-        SampleFieldType fieldType = facetToField.get(facetType);
+    public static FacetFilterFieldType getFieldForFacet(FacetType facetType) {
+        FacetFilterFieldType fieldType = facetToField.get(facetType);
         if (fieldType == null) {
             throw new RuntimeException("No field is associated with the facet type " + facetType);
         }
         return fieldType;
     }
 
-    public static SampleFieldType getFieldForFilter(FilterType filterType) {
-        SampleFieldType fieldType = filterToField.get(filterType);
+    public static FacetFilterFieldType getFieldForFilter(FilterType filterType) {
+        FacetFilterFieldType fieldType = filterToField.get(filterType);
         if (fieldType == null) {
             throw new RuntimeException("No field is associated with the filter type " + filterType);
         }

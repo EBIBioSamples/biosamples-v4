@@ -14,7 +14,7 @@ import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.facets.Facet;
-import uk.ac.ebi.biosamples.model.facets.FacetContent;
+import uk.ac.ebi.biosamples.model.facets.content.FacetContent;
 import uk.ac.ebi.biosamples.model.facets.content.LabelCountListContent;
 
 import java.time.Instant;

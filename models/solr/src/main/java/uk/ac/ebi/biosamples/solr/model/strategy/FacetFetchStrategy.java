@@ -13,8 +13,8 @@ import java.util.Optional;
 public interface FacetFetchStrategy {
 
     public List<Optional<Facet>> fetchFacetsUsing(SolrSampleRepository sampleRepository,
-                                      FacetQuery query,
-                                      List<Map.Entry<SolrSampleField, Long>> facetFieldCountEntries,
-                                      Pageable pageable);
+                                                  FacetQuery query,
+                                                  List<Map.Entry<SolrSampleField, Long>> facetFieldCountEntries,
+                                                  Pageable pageable);
 
 }
