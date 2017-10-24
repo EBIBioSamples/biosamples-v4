@@ -17,7 +17,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import static java.util.AbstractMap.SimpleEntry;
 import static uk.ac.ebi.biosamples.model.filter.DateRangeFilter.DateRange;
 
 @Service
@@ -113,25 +115,30 @@ public class SolrFilterService {
         boolean filterActive = false;
         FilterQuery filterQuery = new SimpleFilterQuery();
         List<Filter> filtersBag = new ArrayList<>(filters);
-        while(!filtersBag.isEmpty()) {
-            Filter currentFilter = filtersBag.remove(0);
-            Optional<Criteria> optionalFilterCriteria = getFilterCriteria(currentFilter);
-            if (optionalFilterCriteria.isPresent()) {
-                Criteria criteria = optionalFilterCriteria.get();
-                Optional<List<Filter>> optionalCompatibleFilters = getCompatibleFilters(filtersBag, currentFilter);
-                optionalCompatibleFilters.ifPresent(compatibleFilterList -> {
-                    for (Filter filter : compatibleFilterList) {
-                        Optional<Criteria> orCriteria = getFilterCriteria(filter);
-                        orCriteria.ifPresent(criteria::or);
-                    }
-                    filtersBag.removeAll(compatibleFilterList);
-                });
-                filterQuery.addCriteria(criteria);
-                if (!filterActive) {
-                    filterActive = true;
-                }
-            }
+        Collection<List<Filter>> filterGroups = filters.stream()
+                .collect(Collectors.groupingBy(filter -> new SimpleEntry(filter.getLabel(), filter.getType())
+        )).values();
+        for(List<Filter> group: filterGroups) {
+            // Compose all the or criteria available for the filters, if any available
+            // Reduce will go through all criteria
+            Optional<Criteria> filterCriteria = group.stream().map(this::getFilterCriteria).reduce(Optional.empty(), (composedCriteria, currentCriteria) -> {
+                if (currentCriteria.isPresent()) {
+                    if (composedCriteria.isPresent()) {
+                        // Compose with an OR
+                        return Optional.of(composedCriteria.get().or(currentCriteria.get()));
+                    } else {
 
+                        // Create a new criteria
+                        return Optional.of(currentCriteria.get());
+                    }
+                }
+                return Optional.empty();
+            });
+
+            if (filterCriteria.isPresent()) {
+                filterActive = true;
+                filterQuery.addCriteria(filterCriteria.get());
+            }
         }
         if (filterActive) {
             return Optional.of(filterQuery);
@@ -171,5 +178,7 @@ public class SolrFilterService {
     public String toSolrDateString(ZonedDateTime dateTime) {
         return dateTime.format(DateTimeFormatter.ISO_INSTANT.withZone(ZoneId.of("UTC")));
     }
+
+
 
 }
