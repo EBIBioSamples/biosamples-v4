@@ -3,7 +3,6 @@ package uk.ac.ebi.biosamples.model.facets;
 import com.fasterxml.jackson.annotation.*;
 import uk.ac.ebi.biosamples.model.FacetFilterFieldType;
 import uk.ac.ebi.biosamples.model.facets.content.FacetContent;
-import uk.ac.ebi.biosamples.model.facets.content.LabelCountListContent;
 import uk.ac.ebi.biosamples.model.filters.FilterType;
 
 import java.util.Optional;
@@ -37,7 +36,7 @@ public interface Facet extends Comparable<Facet>{
     public interface Builder {
         Facet build();
 
-        Builder withContent(LabelCountListContent content);
+        Builder withContent(FacetContent content);
 
     }
 

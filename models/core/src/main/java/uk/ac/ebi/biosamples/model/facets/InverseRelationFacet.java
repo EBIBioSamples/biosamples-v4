@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.springframework.hateoas.core.Relation;
+import uk.ac.ebi.biosamples.model.facets.content.FacetContent;
 import uk.ac.ebi.biosamples.model.facets.content.LabelCountListContent;
 
 @Relation(collectionRelation = "facets")
@@ -57,13 +58,13 @@ public class InverseRelationFacet implements Facet {
 
         @JsonProperty
         @Override
-        public Builder withContent(LabelCountListContent content) {
-//            if (!(content instanceof LabelCountListContent)) {
-//                throw new RuntimeException("Content not compatible with the facet");
-//            }
-//
-//            this.content = (LabelCountListContent) content;
-            this.content = content;
+        public Builder withContent(FacetContent content) {
+            if (!(content instanceof LabelCountListContent)) {
+                throw new RuntimeException("Content not compatible with the facet");
+            }
+
+            this.content = (LabelCountListContent) content;
+//            this.content = content;
             return this;
         }
 
