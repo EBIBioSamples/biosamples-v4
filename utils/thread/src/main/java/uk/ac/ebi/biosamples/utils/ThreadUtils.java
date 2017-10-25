@@ -16,7 +16,7 @@ public class ThreadUtils {
 
 	private static Logger log = LoggerFactory.getLogger(ThreadUtils.class);
 	
-	public static void checkFutures(Map<? extends Object, Future<Void>> futures, int maxSize) throws InterruptedException,ExecutionException {
+	public static <T> void checkFutures(Map<? extends Object, Future<T>> futures, int maxSize) throws InterruptedException,ExecutionException {
 		while (futures.size() > maxSize) {
 			for (Iterator<? extends Object> i = futures.keySet().iterator(); i.hasNext(); ) {
 				Object key = i.next();
@@ -26,7 +26,7 @@ public class ThreadUtils {
 		}
 	}
 	
-	public static <T> void checkAndRetryFutures(Map<T, Future<Void>> futures, Map<T, Callable<Void>> callables,
+	public static <T,U> void checkAndRetryFutures(Map<T, Future<U>> futures, Map<T, Callable<U>> callables,
 			int maxSize, ExecutorService executionService) throws InterruptedException{
 		while (futures.size() > maxSize) {
 			List<T> toReRun = new ArrayList<>();
