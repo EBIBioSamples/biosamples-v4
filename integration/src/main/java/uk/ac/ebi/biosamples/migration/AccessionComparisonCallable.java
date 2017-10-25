@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
@@ -91,17 +92,27 @@ class AccessionComparisonCallable implements Callable<Void> {
 		log.info("oldUrl = "+oldUrl);
 		log.info("newUrl = "+newUrl);
 		log.info("compare = "+compare);
+		SortedSet<String> problemAccessions = new TreeSet<>();
 
 		while (!bothFlag.get() || !bothQueue.isEmpty()) {
 			String accession = bothQueue.poll();
 			if (accession != null) {
 				log.trace("Comparing accession "+ accession);
 				if (compare) {
-					compare(accession);
+					try {
+						compare(accession);
+					} catch (RestClientException e) {
+						//there was a rest error, log it and continue
+						problemAccessions.add(accession);
+						log.error("Problem accessing "+accession, e);
+					}
 				}
 			} else {
 				Thread.sleep(100);
 			}
+		}
+		for (String accession : problemAccessions) {
+			log.error("Problem accessing "+accession);
 		}
 		log.info("Finished AccessionComparisonCallable.call(");
 		return null;
