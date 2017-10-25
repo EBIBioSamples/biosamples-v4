@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # This shell script takes a url and an optional timeout period (the default being 30 seconds) and tests to see if the URL is live
 # If there is no response immediately, this script retries every 5 seconds until a response is obtained or until the timeout period is reached.
@@ -49,7 +49,7 @@ httpStatus="`$cmd`";
 response=$?;
 count=0;
 # retry while we get a curl exit code of 7 (couldn't connect) or a non-200 http status, for max number of retries
-while [ $response -eq 7 -o $httpStatus -ne 200 -a $count -lt $retries ]
+while [[ ( $response = 7 || $httpStatus != 200 ) && $count < $retries ]]
 do
  printf ".";
  count=$((count+1));
