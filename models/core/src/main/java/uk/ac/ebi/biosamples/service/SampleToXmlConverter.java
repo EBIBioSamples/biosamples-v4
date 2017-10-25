@@ -1,9 +1,5 @@
 package uk.ac.ebi.biosamples.service;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.SortedMap;
@@ -30,11 +26,11 @@ public class SampleToXmlConverter implements Converter<Sample, Document> {
 		
 	private final Namespace xmlns = Namespace.get("http://www.ebi.ac.uk/biosamples/SampleGroupExport/1.0");
 	private final Namespace xsi = Namespace.get("xsi", "http://www.w3.org/2001/XMLSchema-instance");
-	private final ExternalReferenceNicknameService externalReferenceNicknameService;
+	private final ExternalReferenceService externalReferenceService;
 	
 	
-	public SampleToXmlConverter(ExternalReferenceNicknameService externalReferenceNicknameService) {
-		this.externalReferenceNicknameService = externalReferenceNicknameService;
+	public SampleToXmlConverter(ExternalReferenceService externalReferenceService) {
+		this.externalReferenceService = externalReferenceService;
 	}
 	
 	@Override
@@ -171,7 +167,7 @@ public class SampleToXmlConverter implements Converter<Sample, Document> {
 			Element database = bioSample.addElement(QName.get("Database", xmlns));
 			
 			Element databaseName = database.addElement(QName.get("Name", xmlns));
-			databaseName.setText(externalReferenceNicknameService.getNickname(externalReference));
+			databaseName.setText(externalReferenceService.getNickname(externalReference));
 			
 			Element databaseUri = database.addElement(QName.get("URI", xmlns));
 			databaseUri.setText(externalReference.getUrl());

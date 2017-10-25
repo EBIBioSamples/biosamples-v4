@@ -7,8 +7,6 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.dom4j.Element;
-import org.dom4j.QName;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -23,15 +21,15 @@ import uk.ac.ebi.biosamples.model.legacyxml.GroupIdsType;
 import uk.ac.ebi.biosamples.model.legacyxml.PropertyType;
 import uk.ac.ebi.biosamples.model.legacyxml.QualifiedValueType;
 import uk.ac.ebi.biosamples.model.legacyxml.TermSourceREFType;
-import uk.ac.ebi.biosamples.service.ExternalReferenceNicknameService;
+import uk.ac.ebi.biosamples.service.ExternalReferenceService;
 
 @Service
 public class SampleToBioSampleTypeConverter implements Converter<Sample, BioSampleType> {
 
-	private final ExternalReferenceNicknameService externalReferenceNicknameService;
+	private final ExternalReferenceService externalReferenceService;
 	
-	public SampleToBioSampleTypeConverter(ExternalReferenceNicknameService externalReferenceNicknameService) {
-		this.externalReferenceNicknameService = externalReferenceNicknameService;
+	public SampleToBioSampleTypeConverter(ExternalReferenceService externalReferenceService) {
+		this.externalReferenceService = externalReferenceService;
 	}
 	
 	@Override
@@ -120,7 +118,7 @@ public class SampleToBioSampleTypeConverter implements Converter<Sample, BioSamp
 		
 		for (ExternalReference externalReference : source.getExternalReferences()) {			
 			DatabaseType databaseType = new DatabaseType();		
-			databaseType.setName(externalReferenceNicknameService.getNickname(externalReference));
+			databaseType.setName(externalReferenceService.getNickname(externalReference));
 			databaseType.setURI(externalReference.getUrl());
 			
 			//use the last segment of the URI as the ID

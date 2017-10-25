@@ -14,7 +14,8 @@ import java.util.Optional;
 @JsonSubTypes({
         @JsonSubTypes.Type(value = AttributeFacet.class, name="attribute"),
         @JsonSubTypes.Type(value = RelationFacet.class, name="relation"),
-        @JsonSubTypes.Type(value = InverseRelationFacet.class, name="inverse relation")
+        @JsonSubTypes.Type(value = InverseRelationFacet.class, name="inverse relation"),
+        @JsonSubTypes.Type(value = ExternalReferenceDataFacet.class, name="external reference data")
 })
 @JsonPropertyOrder(value = {"type", "label", "count", "content"})
 public interface Facet extends Comparable<Facet>{

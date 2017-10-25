@@ -7,7 +7,8 @@ public enum FilterType {
     RELATION_FILER("fr", RelationFilter.Builder.class),
     INVERSE_RELATION_FILTER("fir", InverseRelationFilter.Builder.class),
     DOMAIN_FILTER("fdom", DomainFilter.Builder.class),
-    DATE_FILTER("fdt", DateRangeFilter.Builder.class);
+    DATE_FILTER("fdt", DateRangeFilter.Builder.class),
+    EXTERNAL_REFERENCE_DATA_FILTER("ferd", ExternalReferenceDataFilter.class);
 
     String serialization;
     Class associatedClass;

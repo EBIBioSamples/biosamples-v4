@@ -6,11 +6,10 @@ import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.service.ExternalReferenceNicknameService;
+import uk.ac.ebi.biosamples.service.ExternalReferenceService;
 import uk.ac.ebi.biosamples.service.SampleRelationshipUtils;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
 
-import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -18,10 +17,10 @@ import java.util.*;
 public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample> {
 
 	
-	private final ExternalReferenceNicknameService externalReferenceNicknameService;
+	private final ExternalReferenceService externalReferenceService;
 	
-	public SampleToSolrSampleConverter(ExternalReferenceNicknameService externalReferenceNicknameService) {
-		this.externalReferenceNicknameService = externalReferenceNicknameService;
+	public SampleToSolrSampleConverter(ExternalReferenceService externalReferenceService) {
+		this.externalReferenceService = externalReferenceService;
 	}
 	
 	@Override
@@ -31,6 +30,7 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 		Map<String, List<String>> attributeUnits = null;
 		Map<String, List<String>> outgoingRelationships = null;
 		Map<String, List<String>> incomingRelationships = null;
+		Map<String, List<String>> externalReferencesData = null;
 
 		if (sample.getCharacteristics() != null && sample.getCharacteristics().size() > 0) {
 			attributeValues = new HashMap<>();
@@ -80,7 +80,7 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 		}	
 		//turn external reference into additional attributes for facet & filter
 		for (ExternalReference externalReference : sample.getExternalReferences()) {
-			String value = externalReferenceNicknameService.getNickname(externalReference);
+			String externalReferenceNickname = externalReferenceService.getNickname(externalReference);
 			String key = "external reference";
 			
 			if (attributeValues == null) {
@@ -89,8 +89,27 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 			if (!attributeValues.containsKey(key)) {
 				attributeValues.put(key, new ArrayList<>());
 			}
-			attributeValues.get(key).add(value);
+			attributeValues.get(key).add(externalReferenceNickname);
+
+			// Add the external reference data id
+			Optional<String> externalReferenceDataId = externalReferenceService.getDataId(externalReference);
+			if (externalReferenceDataId.isPresent()) {
+
+				if (externalReferencesData == null) {
+					externalReferencesData = new HashMap<>();
+				}
+
+				if (!externalReferencesData.containsKey(externalReferenceNickname)) {
+					externalReferencesData.put(externalReferenceNickname, new ArrayList<>());
+				}
+
+				externalReferencesData.get(externalReferenceNickname).add(externalReferenceDataId.get());
+
+			}
+
+
 		}
+
 
 		// Add relationships owned by sample
 		SortedSet<Relationship> sampleOutgoingRelationships = SampleRelationshipUtils.getOutgoingRelationships(sample);
@@ -116,7 +135,9 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 
 		
 		return SolrSample.build(sample.getName(), sample.getAccession(), sample.getDomain(), releaseSolr, updateSolr,
-				attributeValues, attributeIris, attributeUnits, outgoingRelationships, incomingRelationships);
+				attributeValues, attributeIris, attributeUnits,
+				outgoingRelationships, incomingRelationships,
+				externalReferencesData);
 	}
 	
 }

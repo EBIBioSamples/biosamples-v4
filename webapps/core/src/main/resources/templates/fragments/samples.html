@@ -9,7 +9,8 @@
 			<div th:each="facet : ${facets}"
 				 th:with="facetType=${facet.getType().getFacetName()},
 				 		  filterType=${facet.getAssociatedFilterType().get()},
-				 		  generalFilterName=${filterType.getSerialization() + ':' + facet.label}">
+				 		  generalFilterName=${filterType.getSerialization() + ':' + facet.label},
+						  isInversRelation=${#strings.equals(facetType, 'inverse relation')}">
                 <div class="facet-container">
                     <input th:form="local-search"
                            class="facet-checkbox"
@@ -20,7 +21,12 @@
                     <label th:for="${generalFilterName}" class="button columns medium-12 padding-top-small padding-bottom-small facet"
 						   th:classappend="${#lists.contains(filters, generalFilterName)} ? 'secondary'">
                         <i class="icon icon-functional show-if-checked" data-icon="/"></i>
-                        <div class="lead facet-name text-left" th:text="${facet.label + ' (' + facetType + ')'}"></div>
+                        <div th:if="${isInversRelation}">
+							<div class="lead facet-name text-left" th:text="${facet.label + ' (reverse)'}"></div>
+						</div>
+						<div th:unless="${isInversRelation}">
+							<div class="lead facet-name text-left" th:text="${facet.label}"></div>
+						</div>
                         <div class="lead facet-count text-right" th:text="${facet.count}"></div>
                     </label>
 				</div>

@@ -7,7 +7,8 @@ import java.lang.reflect.InvocationTargetException;
 public enum FacetType {
     ATTRIBUTE_FACET("Attribute", AttributeFacet.Builder.class),
     INVERSE_RELATION_FACET("Inverse relation", InverseRelationFacet.Builder.class),
-    RELATION_FACET("Relation", RelationFacet.Builder.class);
+    RELATION_FACET("Relation", RelationFacet.Builder.class),
+    EXTERNAL_REFERENCE_DATA_FACET("External reference data", ExternalReferenceDataFacet.Builder.class);
 
     private String name;
     private Class<? extends Facet.Builder> associatedClass;
