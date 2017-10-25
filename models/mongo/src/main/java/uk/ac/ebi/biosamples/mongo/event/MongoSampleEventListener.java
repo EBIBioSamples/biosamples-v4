@@ -6,6 +6,9 @@ import org.springframework.data.mongodb.core.mapping.event.AbstractMongoEventLis
 import org.springframework.data.mongodb.core.mapping.event.AfterConvertEvent;
 import org.springframework.data.mongodb.core.mapping.event.AfterSaveEvent;
 import org.springframework.data.mongodb.core.mapping.event.BeforeConvertEvent;
+
+import com.mongodb.DuplicateKeyException;
+
 import uk.ac.ebi.biosamples.mongo.model.MongoExternalReference;
 import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
@@ -46,7 +49,13 @@ public class MongoSampleEventListener extends AbstractMongoEventListener<MongoSa
 		for (MongoExternalReference externalReference : event.getSource().getExternalReferences()) {
 			//if it already exists, no need to save
 			if (mongoExternalReferenceRepository.findOne(externalReference.getHash()) == null) {
-				externalReference = mongoExternalReferenceRepository.save(externalReference);
+				
+				try {
+					externalReference = mongoExternalReferenceRepository.save(externalReference);
+				} catch (DuplicateKeyException e) {
+					//in the very very rare case that another thread has saved between the findOne and save commands
+					//do nothing because it has been persistent, albeit by someone else
+				}
 			}
 			loadedExternalReferences.add(externalReference);
 		}		
@@ -68,7 +77,12 @@ public class MongoSampleEventListener extends AbstractMongoEventListener<MongoSa
 		for (MongoRelationship relationship : event.getSource().getRelationships()) {
 			//if it already exists, no need to save
 			if (mongoRelationshipRepository.findOne(relationship.getHash()) == null) {
-				relationship = mongoRelationshipRepository.save(relationship);
+				try {
+					relationship = mongoRelationshipRepository.save(relationship);
+				} catch (DuplicateKeyException e) {
+					//in the very very rare case that another thread has saved between the findOne and save commands
+					//do nothing because it has been persistent, albeit by someone else
+				}
 			}
 			loadedRelationships.add(relationship);
 		}		
