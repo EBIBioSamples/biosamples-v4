@@ -5,10 +5,10 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.lang.reflect.InvocationTargetException;
 
 public enum FacetType {
-    ATTRIBUTE_FACET("Attribute", AttributeFacet.Builder.class),
-    INVERSE_RELATION_FACET("Inverse relation", InverseRelationFacet.Builder.class),
-    RELATION_FACET("Relation", RelationFacet.Builder.class),
-    EXTERNAL_REFERENCE_DATA_FACET("External reference data", ExternalReferenceDataFacet.Builder.class);
+    ATTRIBUTE_FACET("attribute", AttributeFacet.Builder.class),
+    INVERSE_RELATION_FACET("inverse relation", InverseRelationFacet.Builder.class),
+    RELATION_FACET("relation", RelationFacet.Builder.class),
+    EXTERNAL_REFERENCE_DATA_FACET("external reference data", ExternalReferenceDataFacet.Builder.class);
 
     private String name;
     private Class<? extends Facet.Builder> associatedClass;

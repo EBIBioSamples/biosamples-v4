@@ -7,10 +7,9 @@
 	<section th:fragment="facets (facets, filters)">
 		<div class="button-grid">
 			<div th:each="facet : ${facets}"
-				 th:with="facetType=${facet.getType().getFacetName()},
+				 th:with="facetType = ${facet.getType().getFacetName()},
 				 		  filterType=${facet.getAssociatedFilterType().get()},
-				 		  generalFilterName=${filterType.getSerialization() + ':' + facet.label},
-						  isInversRelation=${#strings.equals(facetType, 'inverse relation')}">
+				 		  generalFilterName=${filterType.getSerialization() + ':' + facet.label}">
                 <div class="facet-container">
                     <input th:form="local-search"
                            class="facet-checkbox"
@@ -21,13 +20,8 @@
                     <label th:for="${generalFilterName}" class="button columns medium-12 padding-top-small padding-bottom-small facet"
 						   th:classappend="${#lists.contains(filters, generalFilterName)} ? 'secondary'">
                         <i class="icon icon-functional show-if-checked" data-icon="/"></i>
-                        <div th:if="${isInversRelation}">
-							<div class="lead facet-name text-left" th:text="${facet.label + ' (reverse)'}"></div>
-						</div>
-						<div th:unless="${isInversRelation}">
-							<div class="lead facet-name text-left" th:text="${facet.label}"></div>
-						</div>
-                        <div class="lead facet-count text-right" th:text="${facet.count}"></div>
+						<th:block th:include="this :: facetTitle (facetLabel=${facet.label}, facetType=${facetType})"></th:block>
+						<div class="lead facet-count text-right" th:text="${facet.count}"></div>
                     </label>
 				</div>
                 <div th:each="value : ${facet.content}"
@@ -49,6 +43,20 @@
 				</div>
 			</div>
 		</div>
+	</section>
+
+	<section th:fragment="facetTitle (facetLabel, facetType)">
+		<th:block th:switch="${facetType}">
+			<div th:case="${'inverse relation'}">
+				<div class="lead facet-name text-left" th:text="${facetLabel + ' (reverse)'}"></div>
+			</div>
+			<div th:case="${'external reference data'}">
+				<div class="lead facet-name text-left" th:text="${facetLabel + ' (external data)'}"></div>
+			</div>
+			<div th:case="*">
+                <div class="lead facet-name text-left" th:text="${facetLabel}"></div>
+			</div>
+		</th:block>
 	</section>
 
 	<section th:fragment="samples (page)" >
