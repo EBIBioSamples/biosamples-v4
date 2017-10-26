@@ -2,17 +2,21 @@ package uk.ac.ebi.biosamples.controller;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.hateoas.*;
+import org.springframework.hateoas.EntityLinks;
+import org.springframework.hateoas.ExposesResourceFor;
+import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.Resources;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
-import uk.ac.ebi.biosamples.model.facets.Facet;
-import uk.ac.ebi.biosamples.model.facets.LabelCountEntry;
+import uk.ac.ebi.biosamples.model.facet.Facet;
+import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.FacetService;
 import uk.ac.ebi.biosamples.service.FilterService;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -44,8 +48,10 @@ public class SampleFacetRestController {
 			@RequestParam(name="filter", required=false) String[] filter) {
     	
     	//TODO support rows and start parameters
-		MultiValueMap<String, String> filters = filterService.getFilters(filter);
-    	List<Facet> sampleFacets = facetService.getFacets(text, filterService.getFilters(filter), 10, 10);
+//		MultiValueMap<String, String> filters = filterService.getFilters(filter);
+        Collection<Filter> filters = filterService.getFiltersCollection(filter);
+        Collection<String> domains = Collections.emptyList();
+		List<Facet> sampleFacets = facetService.getFacets(text, filters, domains, 10, 10);
 
 //    	PagedResources<StringListFacet> resources = new PagedResources<>(
 //    			sampleFacets,
@@ -64,7 +70,7 @@ public class SampleFacetRestController {
 
 		resources.add(ControllerLinkBuilder.linkTo(
 				ControllerLinkBuilder.methodOn(SamplesRestController.class)
-					.searchHal(text, null, null, filter,null, null))
+					.searchHal(text, filter,null, null))
                     .withRel("samples"));
 		
 		

@@ -17,18 +17,16 @@ import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 
-import java.time.LocalDate;
+import javax.annotation.PreDestroy;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalTime;
 import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import javax.annotation.PreDestroy;
-
 @Component
 @Order(2)
+@Profile({"default", "rest"})
 public class RestIntegration extends AbstractIntegration {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());

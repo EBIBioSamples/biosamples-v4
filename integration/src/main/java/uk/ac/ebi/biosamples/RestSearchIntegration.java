@@ -11,15 +11,13 @@ import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 
-import java.time.LocalDate;
 import java.time.Instant;
-import java.time.LocalTime;
 import java.util.*;
 
 @Component
 @Order(1)
-@Profile({"default", "rest"})
-public class RestSearchIntegration extends AbstractIntegration {
+@Profile({"default", "rest", "test"})
+public class RestSearchIntegration extends AbstractIntegration {;
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -61,6 +59,7 @@ public class RestSearchIntegration extends AbstractIntegration {
 		if (!test5.equals(resource.getContent())) {
 			throw new RuntimeException("Expected response to equal submission");
 		}
+
 	}
 
 	@Override
@@ -139,7 +138,9 @@ public class RestSearchIntegration extends AbstractIntegration {
 	}
 
 	@Override
-	protected void phaseFour() { }
+	protected void phaseFour() {
+	}
+
 
 	@Override
 	protected void phaseFive() { }

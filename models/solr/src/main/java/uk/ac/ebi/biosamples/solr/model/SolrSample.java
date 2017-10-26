@@ -4,7 +4,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.solr.core.mapping.Dynamic;
 import org.springframework.data.solr.core.mapping.Indexed;
 import org.springframework.data.solr.core.mapping.SolrDocument;
-import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
+import uk.ac.ebi.biosamples.solr.service.SolrFieldService;
 
 import java.util.*;
 
@@ -69,7 +69,16 @@ public class SolrSample {
 	 */
 	@Indexed(name="ontologyiri_ss")
 	protected List<String> ontologyIris;
-	
+
+
+	/**
+	 * This field is used to store external references only
+	 */
+	@Indexed(name="*_erd_ss", copyTo="facetfields_ss")
+	@Dynamic
+	protected Map<String, List<String>> externalReferencesData;
+
+
 	/**
 	 * This field is required to get a list of attribute to use for faceting.
 	 * It includes attributes and relationships of the sample
@@ -137,16 +146,23 @@ public class SolrSample {
 	}
 
 
+	public Map<String, List<String>> getExternalReferencesData() { return externalReferencesData; }
+
+
 	public Map<String, List<String>> getIncomingRelationships() {
 		return incomingRelationships;
 	}
+
+
 	public Map<String, List<String>> getOutgoingRelationships() {
 		return outgoingRelationships;
 	}
 
+
 	public List<String> getAutocompletes() {
 		return autocompleteTerms;
 	}
+
 
 	public List<String> getKeywords() {
 		return keywords;
@@ -174,6 +190,8 @@ public class SolrSample {
     	sb.append(outgoingRelationships);
     	sb.append(",");
     	sb.append(incomingRelationships);
+    	sb.append(",");
+    	sb.append(externalReferencesData);
     	sb.append(")");
     	return sb.toString();
     }
@@ -183,10 +201,10 @@ public class SolrSample {
 	 * Avoid using this directly, use the SolrSampleToSampleConverter or SampleToSolrSampleConverter instead
 	 * 
 	 */
-	public static SolrSample build(String name, String accession, String domain, String release, String update, 
-			Map<String, List<String>> attributeValues, Map<String, List<String>> attributeIris, 
-			Map<String, List<String>> attributeUnits, Map<String, List<String>> outgoingRelationships,
-            Map<String,List<String>> incomingRelationships) {
+	public static SolrSample build(String name, String accession, String domain, String release, String update,
+			Map<String, List<String>> attributeValues, Map<String, List<String>> attributeIris, Map<String, List<String>> attributeUnits,
+		    Map<String, List<String>> outgoingRelationships, Map<String,List<String>> incomingRelationships,
+			Map<String, List<String>> externalReferencesData) {
 		SolrSample sample = new SolrSample();
 		sample.accession = accession;
 		sample.name = name;
@@ -198,38 +216,49 @@ public class SolrSample {
 		sample.attributeUnits = new HashMap<>();
 		sample.incomingRelationships = new HashMap<>();
 		sample.outgoingRelationships = new HashMap<>();
+		sample.externalReferencesData = new HashMap<>();
+
+		SolrFieldService fieldService = new SolrFieldService();
 
 		if (attributeValues != null) {
 			for (String key : attributeValues.keySet()) {
 				//solr only allows alphanumeric field types
-				sample.attributeValues.put(SolrSampleService.valueToSafeField(key), attributeValues.get(key));
+				sample.attributeValues.put(fieldService.encodeFieldName(key), attributeValues.get(key));
 			}
 		}
 
 		if (attributeIris != null) {
 			for (String key : attributeIris.keySet()) {
 				//solr only allows alphanumeric field types
-				sample.attributeIris.put(SolrSampleService.valueToSafeField(key), attributeIris.get(key));
+				sample.attributeIris.put(fieldService.encodeFieldName(key), attributeIris.get(key));
 			}
 		}
 
 		if (attributeUnits != null) {
 			for (String key : attributeUnits.keySet()) {
 				//solr only allows alphanumeric field types
-				sample.attributeUnits.put(SolrSampleService.valueToSafeField(key), attributeUnits.get(key));
+				sample.attributeUnits.put(fieldService.encodeFieldName(key), attributeUnits.get(key));
 			}
 		}
 
 		if (outgoingRelationships != null) {
             for (String key : outgoingRelationships.keySet()) {
-                sample.outgoingRelationships.put(SolrSampleService.valueToSafeField(key), outgoingRelationships.get(key));
+                sample.outgoingRelationships.put(fieldService.encodeFieldName(key), outgoingRelationships.get(key));
             }
 		}
 
 		if (incomingRelationships != null) {
 		    for (String key: incomingRelationships.keySet()) {
-		        sample.incomingRelationships.put(SolrSampleService.valueToSafeField(key), incomingRelationships.get(key));
+		        sample.incomingRelationships.put(fieldService.encodeFieldName(key), incomingRelationships.get(key));
             }
+		}
+
+		if (externalReferencesData != null) {
+
+			for (String dataSource: externalReferencesData.keySet()) {
+				sample.externalReferencesData.put(fieldService.encodeFieldName(dataSource), externalReferencesData.get(dataSource));
+			}
+
 		}
 
 		//TODO validate maps
@@ -237,7 +266,7 @@ public class SolrSample {
 		if (attributeValues != null && attributeValues.keySet().size() > 0) {
 			List<String> attributeTypes = new ArrayList<>();
 			for (String attributeType : attributeValues.keySet()) {
-				String field = SolrSampleService.valueToSafeField(attributeType) + "_av_ss";
+				String field = fieldService.encodeFieldName(attributeType) + "_av_ss";
 				attributeTypes.add(field);
 			}
 			Collections.sort(attributeTypes);
@@ -247,9 +276,7 @@ public class SolrSample {
 		if (outgoingRelationships != null && outgoingRelationships.keySet().size() > 0) {
 			List<String> outgoingRelationshipTypes = new ArrayList<>();
 			for (String key: outgoingRelationships.keySet()) {
-//			    String safeKey = getSafeKey(key);
-//			    safeKey = safeKey + "_or_ss";
-                String field = SolrSampleService.valueToSafeField(key) + "_or_ss";
+                String field = fieldService.encodeFieldName(key) + "_or_ss";
 				outgoingRelationshipTypes.add(field);
 			}
 
@@ -260,14 +287,27 @@ public class SolrSample {
 		if (incomingRelationships != null && incomingRelationships.keySet().size() > 0) {
 			List<String> incomingRelationshipTypes = new ArrayList<>();
 			for (String key: incomingRelationships.keySet()) {
-//                String safeKey = getSafeKey(key);
-//                safeKey = safeKey + "_ir_ss";
-                String field = SolrSampleService.valueToSafeField(key) +"_ir_ss";
+                String field = fieldService.encodeFieldName(key) +"_ir_ss";
 				incomingRelationshipTypes.add(field);
 			}
 
 			Collections.sort(incomingRelationshipTypes);
             sample.facetFields.addAll(incomingRelationshipTypes);
+		}
+
+		if (externalReferencesData != null && externalReferencesData.keySet().size() > 0) {
+
+			List<String> externalReferencesDataSources = new ArrayList<>();
+
+			for (String dataSourceName: externalReferencesData.keySet()) {
+				String source = fieldService.encodeFieldName(dataSourceName) + "_erd_ss";
+				externalReferencesDataSources.add(source);
+			}
+
+			Collections.sort(externalReferencesDataSources);
+
+            sample.facetFields.addAll(externalReferencesDataSources);
+
 		}
 
 		//copy into the other fields

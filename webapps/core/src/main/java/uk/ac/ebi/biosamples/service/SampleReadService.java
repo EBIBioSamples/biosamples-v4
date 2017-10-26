@@ -52,7 +52,7 @@ public class SampleReadService {
 	 * @throws IllegalArgumentException
 	 */
 	//can't use a sync cache because we need to use CacheEvict
-	//@Cacheable(cacheNames=WebappProperties.fetch, key="#root.args[0]")
+	//@Cacheable(cacheNames=WebappProperties.fetchUsing, key="#root.args[0]")
 	public Optional<Sample> fetch(String accession) throws IllegalArgumentException {
 		// return the raw sample from the repository
 		MongoSample mongoSample = mongoSampleRepository.findOne(accession);

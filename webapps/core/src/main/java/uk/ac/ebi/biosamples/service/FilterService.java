@@ -3,62 +3,44 @@ package uk.ac.ebi.biosamples.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.util.UriUtils;
+import uk.ac.ebi.biosamples.model.filter.*;
 
-import java.io.UnsupportedEncodingException;
-import java.util.Arrays;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 
 
 @Service
 public class FilterService {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
-	
-	public MultiValueMap<String,String> getFilters(String[] filterStrings) {
-		if (filterStrings == null) return new LinkedMultiValueMap<>();
-		if (filterStrings.length == 0) return new LinkedMultiValueMap<>();
-		//sort the array
+
+
+	/**
+	 * Converts an array of serialized filters to the corresponding collection of object
+	 * @param filterStrings an array of serialized filters
+	 * @return
+	 */
+	public Collection<Filter> getFiltersCollection(String[] filterStrings) {
+		List<Filter> outputFilters = new ArrayList<>();
+		if (filterStrings == null) return outputFilters;
+		if (filterStrings.length == 0) return outputFilters;
+
+		/*
+		 *	For every filter I need to extract:
+		 *	1. The kind of the filter
+		 *  2. Label (which will be used to get the corresponding field in solr, so here is decoded)
+		 *  3. The value
+ 		 */
 		Arrays.sort(filterStrings);
 		SortedSet<String> filterStringSet = new TreeSet<>(Arrays.asList(filterStrings));
-		//strip the requestParams down to just the selected facet information
-		MultiValueMap<String, String> filters = new LinkedMultiValueMap<>();
-		for (String filterString : filterStringSet) {
-			log.info("looking at filter string '" + filterString + "'");
-			if (filterString.contains(":")) {
-				// Assume filter format is FacetType:FacetLabel:FacetLabelValue
-
-				String[] filterParts = filterString.split(":", 3);
-				String key = filterParts[0] + ":" + filterParts[1];
-				String value = null;
-				if (filterParts.length > 2) {
-					value = filterParts[2];
-				}
-				filters.add(decodeParam(key), decodeParam(value));
-				log.info("adding filter " + key + " = " + value);
-			}
+		for(String filterString: filterStringSet) {
+			outputFilters.add(FilterBuilder.create().buildFromString(filterString));
 		}
-		return filters;
+
+		return outputFilters;
+
 	}
 
-	private String encodeParam(String queryParam) {
-		try {
-			return UriUtils.encodeQueryParam(queryParam, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException(e);
-		}
-	}
 
-	private String decodeParam(String queryParam) {
-		try {
-			return UriUtils.decode(queryParam, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException(e);
-		}
-	}
 
 
 }

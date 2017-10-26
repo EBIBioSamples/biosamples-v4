@@ -1,18 +1,5 @@
 package uk.ac.ebi.biosamples.client.service;
 
-import java.net.URI;
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.Queue;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
@@ -29,9 +16,17 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
-
 import uk.ac.ebi.biosamples.client.utils.IterableResourceFetchAll;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.filter.Filter;
+
+import java.net.URI;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 public class SampleRetrievalService {
 
@@ -85,6 +80,36 @@ public class SampleRetrievalService {
 			throw new RuntimeException("Problem GETing samples");
 		}
 		
+
+		log.info("GETted " + uri);
+
+		return responseEntity.getBody();
+	}
+
+	public PagedResources<Resource<Sample>> search(String text, Collection<Filter> filters, int page, int size) {
+		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();
+		params.add("page", Integer.toString(page));
+		params.add("size", Integer.toString(size));
+		params.add("text", !text.isEmpty() ? text : "*:*");
+		for (Filter filter: filters) {
+			params.add("filter", filter.getSerialization());
+		}
+
+		URI uri = UriComponentsBuilder.fromUriString(traverson.follow("samples").asLink().getHref())
+				.queryParams(params)
+				.build().toUri();
+
+		log.info("GETing " + uri);
+
+		RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
+		ResponseEntity<PagedResources<Resource<Sample>>> responseEntity = restOperations.exchange(requestEntity,
+				new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {
+				});
+
+		if (!responseEntity.getStatusCode().is2xxSuccessful()) {
+			throw new RuntimeException("Problem GETing samples");
+		}
+
 
 		log.info("GETted " + uri);
 
@@ -146,33 +171,46 @@ public class SampleRetrievalService {
 				params,	"samples");
 	}
 
-	public Iterable<Resource<Sample>> fetchUpdatedAfter(Instant updatedAfter) {	
-		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();		
+	public Iterable<Resource<Sample>> fetchAll(String text, Collection<Filter> filterCollection) {
+		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();
+		params.add("text", text);
+		for (Filter filter: filterCollection) {
+			params.add("filter", filter.getSerialization());
+		}
 		params.add("size", Integer.toString(pageSize));
-		params.add("updatedafter", solrFormatter.format(updatedAfter));
 		return new IterableResourceFetchAll<Sample>(executor, traverson, restOperations,
-				parameterizedTypeReferencePagedResourcesSample, 
+				parameterizedTypeReferencePagedResourcesSample,
 				params,	"samples");
+
 	}
 
-	public Iterable<Resource<Sample>> fetchUpdatedBefore(Instant updatedBefore) {	
-		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();		
-		params.add("size", Integer.toString(pageSize));
-		params.add("updatedbefore", solrFormatter.format(updatedBefore));
-		return new IterableResourceFetchAll<Sample>(executor, traverson, restOperations,
-				parameterizedTypeReferencePagedResourcesSample, 
-				params,	"samples");
-	}
+//	public Iterable<Resource<Sample>> fetchUpdatedAfter(Instant updatedAfter) {
+//		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();
+//		params.add("size", Integer.toString(pageSize));
+//		params.add("updatedafter", solrFormatter.format(updatedAfter));
+//		return new IterableResourceFetchAll<Sample>(executor, traverson, restOperations,
+//				parameterizedTypeReferencePagedResourcesSample,
+//				params,	"samples");
+//	}
 
-	public Iterable<Resource<Sample>> fetchUpdatedBetween(Instant updatedAfter, Instant updatedBefore) {	
-		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();	
-		params.add("size", Integer.toString(pageSize));
-		params.add("updatedafter", solrFormatter.format(updatedAfter));
-		params.add("updatedbefore", solrFormatter.format(updatedBefore));
-		return new IterableResourceFetchAll<Sample>(executor, traverson, restOperations,
-				parameterizedTypeReferencePagedResourcesSample, 
-				params,	"samples");
-	}
+//	public Iterable<Resource<Sample>> fetchUpdatedBefore(Instant updatedBefore) {
+//		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();
+//		params.add("size", Integer.toString(pageSize));
+//		params.add("updatedbefore", solrFormatter.format(updatedBefore));
+//		return new IterableResourceFetchAll<Sample>(executor, traverson, restOperations,
+//				parameterizedTypeReferencePagedResourcesSample,
+//				params,	"samples");
+//	}
+
+//	public Iterable<Resource<Sample>> fetchUpdatedBetween(Instant updatedAfter, Instant updatedBefore) {
+//		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();
+//		params.add("size", Integer.toString(pageSize));
+//		params.add("updatedafter", solrFormatter.format(updatedAfter));
+//		params.add("updatedbefore", solrFormatter.format(updatedBefore));
+//		return new IterableResourceFetchAll<Sample>(executor, traverson, restOperations,
+//				parameterizedTypeReferencePagedResourcesSample,
+//				params,	"samples");
+//	}
 
 	public Iterable<Optional<Resource<Sample>>> fetchAll(Iterable<String> accessions) {
 		return new IterableResourceFetch(accessions);

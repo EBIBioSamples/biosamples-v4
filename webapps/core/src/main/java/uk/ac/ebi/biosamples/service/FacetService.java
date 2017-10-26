@@ -5,12 +5,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.util.UriUtils;
-import uk.ac.ebi.biosamples.model.facets.Facet;
-import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
+import uk.ac.ebi.biosamples.model.facet.Facet;
+import uk.ac.ebi.biosamples.model.filter.Filter;
+import uk.ac.ebi.biosamples.solr.service.SolrFacetService;
 
-import java.io.UnsupportedEncodingException;
+import java.util.Collection;
 import java.util.List;
 
 @Service
@@ -18,55 +17,20 @@ public class FacetService {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 	
-	private final SolrSampleService solrSampleService;
+	private final SolrFacetService solrFacetService;
 
-	public FacetService(SolrSampleService solrSampleService) {
-		this.solrSampleService = solrSampleService;
+	public FacetService(SolrFacetService solrSampleService) {
+		this.solrFacetService = solrSampleService;
 	}
 
 
-	public List<Facet> getFacets(String text, MultiValueMap<String,String> filters, int noOfFacets, int noOfFacetValues) {
-		Pageable facetPageable = new PageRequest(0,noOfFacets);
-		Pageable facetValuePageable = new PageRequest(0,noOfFacetValues);
+	public List<Facet> getFacets(String text, Collection<Filter> filters, Collection<String> domains, int noOfFacets, int noOfFacetValues) {
+		Pageable facetPageable = new PageRequest(0, noOfFacets);
+		Pageable facetValuePageable = new PageRequest(0, noOfFacetValues);
 		//TODO if a facet is enabled as a filter, then that value will be the only filter displayed
 		//TODO allow update date range
-		return solrSampleService.getFacets(text, filters, null, null, facetPageable, facetValuePageable);
 
-
-//		List<String> tempFilters = new ArrayList<>();
-//        for(String key: filters.keySet()) {
-//            filters.get(key).forEach(value -> {
-//                if (value != null) {
-//                    tempFilters.add(key + ":" + value);
-//                } else {
-//                    tempFilters.add(key);
-//                }
-//            });
-//        }
-//		String[] filtersArray = tempFilters.toArray(new String[tempFilters.size()]);
-//
-//
-//		// Need to return a resource for each facet created from solr
-//		List<Resource<StringListFacet>> resourceFacets = new ArrayList<>();
-//		for(StringListFacet facet: solrFacets) {
-//			FacetResourceAssembler.LabelFilterResourceAssembler resourceAssembler =
-//					new FacetResourceAssembler.LabelFilterResourceAssembler(text, null, null, filtersArray, facet);
-//			FacetResourceAssembler.StringListFacetResourceAssembler facetResourceAssembler =
-//					new FacetResourceAssembler.StringListFacetResourceAssembler(text, null, null, filtersArray, facet);
-//			List<LabelCountEntry> content = (List<LabelCountEntry>) facet.getContent();
-//			List<Resource<LabelCountEntry>> resourceContent =
-//					content.stream().map(resourceAssembler::toResource).collect(Collectors.toList());
-//			StringListFacet newFacet = StringListFacet.build(facet.getType().getFacetId(), facet.getLabel(), facet.getCount(), resourceContent);
-//			resourceFacets.add(facetResourceAssembler.toResource(newFacet));
-//		}
-//		return resourceFacets;
+		return solrFacetService.getFacets(text, filters, domains, facetPageable, facetValuePageable);
 	}
 
-	private String encodeParam(String queryParam) {
-		try {
-			return UriUtils.encodeQueryParam(queryParam, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException(e);
-		}
-	}
 }

@@ -29,19 +29,30 @@ public interface SolrSampleRepositoryCustom {
 	 * Return a result of facets over the provided fields with the provided facet paging 
 	 * information (offset and count). 
 	 * 
-	 * @param text
+	 * @param query
 	 * @param facetFields
 	 * @param facetPageable
 	 * @return
 	 */
 	public FacetPage<?> getFacets(FacetQuery query, List<String> facetFields, Pageable facetPageable);
-	
+
+
+	/**
+	 * Return a results of range facets over the provided fields with the provided facet paging
+	 * information (offset and count).
+	 * @param query
+	 * @param facetFields
+	 * @param facetPageable
+	 * @return
+	 */
+
+	public FacetPage<?> getRangeFacets(FacetQuery query, List<String> facetFields, Pageable facetPageable);
 
 	/**
 	 * Use a query object to get a page of results. This allows for more complicated query
 	 * construction compared to a simple string e.g. filtering
 	 * 
-	 * @param text
+	 * @param query
 	 * @return
 	 */
 	public Page<SolrSample> findByQuery(Query query);
@@ -50,7 +61,7 @@ public interface SolrSampleRepositoryCustom {
 	 * Use a query object to get a page of results. This allows for more complicated query
 	 * construction compared to a simple string e.g. filtering
 	 * 
-	 * @param text
+	 * @param query
 	 * @return
 	 */
 	public FacetPage<SolrSample> findByFacetQuery(FacetQuery query);
