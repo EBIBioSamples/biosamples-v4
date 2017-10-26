@@ -1,6 +1,9 @@
 package uk.ac.ebi.biosamples.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
+
 import uk.ac.ebi.biosamples.model.ExternalReference;
 
 import java.net.MalformedURLException;
@@ -9,7 +12,6 @@ import java.util.Optional;
 
 @Service
 public class ExternalReferenceService {
-
 	
 	public String getNickname(ExternalReference externalReference) {
 		//TODO make this more configurable
@@ -23,29 +25,18 @@ public class ExternalReferenceService {
 	}
 
 	public Optional<String> getDataId(ExternalReference externalReference) {
-        try {
-            URL erUrl = new URL(externalReference.getUrl());
-            if (isEbiUrl(erUrl)) {
-                return Optional.of(getEbiExternalReferenceDataId(erUrl));
-            }
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
+		
+		String nickname = getNickname(externalReference);		
+		if ("ENA".equals(nickname)) {
+			UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(externalReference.getUrl()).build();
+			String lastPathSegment = uriComponents.getPathSegments().get(uriComponents.getPathSegments().size()-1);
+			return Optional.of(lastPathSegment);
+		}
+		if ("ArrayExpress".equals(nickname)) {
+			UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(externalReference.getUrl()).build();
+			String lastPathSegment = uriComponents.getPathSegments().get(uriComponents.getPathSegments().size()-1);
+			return Optional.of(lastPathSegment);	
+		}
         return Optional.empty();
 	}
-
-	private boolean isEbiUrl(URL url) {
-        return url.getHost().contains("ebi.ac.uk");
-    }
-
-    private String getEbiServiceName(URL ebiUrl) {
-	    String[] subPaths = ebiUrl.getPath().substring(1).split("/");
-	    return subPaths[0];
-    }
-
-    private String getEbiExternalReferenceDataId(URL externalReferenceDataUrl) {
-        String[] subPaths = externalReferenceDataUrl.getPath().substring(1).split("/");
-        return subPaths[subPaths.length - 1];
-
-    }
 }
