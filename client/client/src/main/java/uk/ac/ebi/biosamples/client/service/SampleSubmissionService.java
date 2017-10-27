@@ -18,6 +18,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -88,13 +89,14 @@ public class SampleSubmissionService {
 						.contentType(MediaType.APPLICATION_JSON)
 						.accept(MediaTypes.HAL_JSON)
 						.body(sample);
-				ResponseEntity<Resource<Sample>> responseEntity = restOperations.exchange(requestEntity,
+				ResponseEntity<Resource<Sample>> responseEntity = null;
+				try {
+				responseEntity = restOperations.exchange(requestEntity,
 						new ParameterizedTypeReference<Resource<Sample>>() {
 						});
-	
-				if (!responseEntity.getStatusCode().is2xxSuccessful()) {
-					log.error("Unable to PUT " + sample.getAccession() + " : " + responseEntity.toString());
-					throw new RuntimeException("Problem PUTing " + sample.getAccession());
+				} catch (RestClientResponseException e) {
+					log.error("Unable to PUT to "+uri+" body "+sample+" got response "+e.getResponseBodyAsString());
+					throw e;
 				}
 				return responseEntity.getBody();
 	
@@ -114,9 +116,15 @@ public class SampleSubmissionService {
 						.contentType(MediaType.APPLICATION_JSON)
 						.accept(MediaTypes.HAL_JSON)
 						.body(sample);
-				ResponseEntity<Resource<Sample>> responseEntity = restOperations.exchange(requestEntity,
+				ResponseEntity<Resource<Sample>> responseEntity = null;
+				try {
+				responseEntity = restOperations.exchange(requestEntity,
 						new ParameterizedTypeReference<Resource<Sample>>() {
 						});
+				} catch (RestClientResponseException e) {
+					log.error("Unable to POST to "+uri+" body "+sample+" got response "+e.getResponseBodyAsString());
+					throw e;
+				}
 	
 				return responseEntity.getBody();
 			}
