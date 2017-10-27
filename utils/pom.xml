@@ -18,5 +18,6 @@
 		<module>thread</module>
 		<module>agent</module>
 		<module>ols</module>
+		<module>xml</module>
 	</modules>
 </project>
