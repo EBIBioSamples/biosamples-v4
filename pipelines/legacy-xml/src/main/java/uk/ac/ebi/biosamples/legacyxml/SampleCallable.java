@@ -9,9 +9,11 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import javax.annotation.PreDestroy;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
@@ -59,14 +61,19 @@ public class SampleCallable implements Callable<Void> {
 
 	public SampleCallable (RestTemplate restTemplate, String xmlUrl, 
 			Queue<String> queue, AtomicBoolean flag, 
-			XmlToSampleConverter xmlToSampleConverter, BioSamplesClient client, ExecutorService executorService) {
+			XmlToSampleConverter xmlToSampleConverter, BioSamplesClient client) {
 		this.restTemplate = restTemplate;
 		this.xmlUrl = xmlUrl;
 		this.queue = queue;
 		this.flag = flag;
 		this.xmlToSampleConverter = xmlToSampleConverter;
 		this.client = client;
-		this.executorService = executorService;
+		this.executorService = Executors.newFixedThreadPool(32);
+	}
+	
+	@PreDestroy
+	public void shutdown() {
+		this.executorService.shutdownNow();
 	}
 	
 	@Override
@@ -139,6 +146,8 @@ public class SampleCallable implements Callable<Void> {
 				}
 			}
 			Sample sample = xmlToSampleConverter.convert(doc);
+			//need to specify domain
+			sample = Sample.build(sample.getName(), sample.getAccession(), "foo", sample.getRelease(), sample.getUpdate(), sample.getAttributes(), sample.getRelationships(), sample.getExternalReferences());
 			
 			log.info("persisting "+sample);
 			client.persistSampleResource(sample, false);

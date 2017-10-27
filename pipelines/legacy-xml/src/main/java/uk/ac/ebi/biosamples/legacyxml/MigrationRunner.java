@@ -55,11 +55,11 @@ public class MigrationRunner implements ApplicationRunner, ExitCodeGenerator {
 	public void run(ApplicationArguments args) throws Exception {
 		log.info("Starting MigrationRunner");
 				
-		ExecutorService executorService = Executors.newFixedThreadPool(128);
+		ExecutorService executorService = Executors.newFixedThreadPool(2);
 		Queue<String> queue = new ArrayBlockingQueue<>(1024);
 		AtomicBoolean finished = new AtomicBoolean(false);
 		AccessFetcherCallable accessFetcherCallable = new AccessFetcherCallable(restTemplate, oldUrl, queue, finished);
-		SampleCallable sampleCallable = new SampleCallable(restTemplate, oldUrl, queue, finished, xmlToSampleConverter, client, executorService);
+		SampleCallable sampleCallable = new SampleCallable(restTemplate, oldUrl, queue, finished, xmlToSampleConverter, client);
 		
 		Future<Void> oldFuture = executorService.submit(accessFetcherCallable);
 		Future<Void> sampleFuture = executorService.submit(sampleCallable);

@@ -66,8 +66,8 @@ public class Application {
 				//set a number of connections to use at once for multiple threads
 				//TODO put this in application.properties
 				PoolingHttpClientConnectionManager poolingHttpClientConnectionManager = new PoolingHttpClientConnectionManager();
-				poolingHttpClientConnectionManager.setDefaultMaxPerRoute(16);
-				poolingHttpClientConnectionManager.setMaxTotal(16);
+				poolingHttpClientConnectionManager.setDefaultMaxPerRoute(64);
+				poolingHttpClientConnectionManager.setMaxTotal(64);
 				
 				//set a local cache for cacheable responses
 				CacheConfig cacheConfig = CacheConfig.custom()
