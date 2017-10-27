@@ -12,7 +12,7 @@
 		<relativePath>../../</relativePath>
 	</parent>
 
-	<dependencies>	
+	<dependencies>
 
 		<!-- use Dom4J for XML conversions -->
 		<dependency>
@@ -23,6 +23,10 @@
 			<groupId>xmlunit</groupId>
 			<artifactId>xmlunit</artifactId>
 			<version>1.4</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-aop</artifactId>
 		</dependency>
 	</dependencies>
 </project>
