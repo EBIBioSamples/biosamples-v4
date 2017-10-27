@@ -11,16 +11,21 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.filter.Filter;
+import uk.ac.ebi.biosamples.model.legacyxml.BioSample;
 import uk.ac.ebi.biosamples.model.legacyxml.BioSampleGroup;
 import uk.ac.ebi.biosamples.model.legacyxml.ResultQuery;
+import uk.ac.ebi.biosamples.service.FilterBuilder;
 import uk.ac.ebi.biosamples.service.SummaryInfoService;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 @Controller
 public class LegacyXmlGroupController {
@@ -35,7 +40,8 @@ public class LegacyXmlGroupController {
 	private final BioSamplesClient client;
 	private final SummaryInfoService summaryInfoService;
 
-	public LegacyXmlGroupController(BioSamplesClient client, SummaryInfoService summaryInfoService) {
+	public LegacyXmlGroupController(BioSamplesClient client,
+									SummaryInfoService summaryInfoService) {
 		this.client = client;
 		this.summaryInfoService = summaryInfoService;
 	}
@@ -73,24 +79,36 @@ public class LegacyXmlGroupController {
         return resultQuery;
 	}
 	
-/*
-//	// FIXME No groups is provided with the new BioSamples v4, not sure how to handle this
-    // TODO Consider group relationships as attribute and solve this as search through attribute query
-	@GetMapping(value = {"/groupsamples/{groupAccession:SAMEG\\d+}/query={values}"},  
+	@GetMapping(value = {"/groupsamples/{groupAccession:SAMEG\\d+}"},
 			produces={MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE})
 	public @ResponseBody ResultQuery getSamplesInGroup(
 			@PathVariable String groupAccession,
-            @PathVariable String values
+			@RequestParam(name="query", required=true) String query,
+			@RequestParam(name="pagesize", defaultValue = "25") int pagesize,
+			@RequestParam(name="page", defaultValue = "1") int page,
+			@RequestParam(name="sort", defaultValue = "desc") String sort
 	) {
-		//TODO replace with a proper handling of arguments
-        Map<String, String> queryParams = readGroupSamplesQuery(values);
-//        String query = String.format("%s AND %s", groupAccession, queryParams.get("text"));
-        String query = queryParams.get("text");
-        int size  = Integer.parseInt(queryParams.getOrDefault("size", "25"));
-        int page  = Integer.parseInt(queryParams.getOrDefault("page", "1"));
-        Sort sort = Sort.forParam(queryParams.getOrDefault("sort","desc"));
-		PagedResources<Resource<Sample>> results = sampleService.getPagedSamples(query, page - 1, size, sort);
-		return ResultQuery.fromPagedResource(results);
+
+        Filter relationFilter = FilterBuilder.create().onInverseRelation("has member").withValue(groupAccession).build();
+//        Sort.Direction sort = Sort.Direction.fromString(queryParams.getOrDefault("sort","desc"));
+
+		PagedResources<Resource<Sample>> results =
+				client.fetchFilteredPagedSamples(query,
+						Collections.singleton(relationFilter),
+						page - 1,
+						pagesize);
+
+		ResultQuery resultQuery = new ResultQuery();
+
+		resultQuery.setSummaryInfo(summaryInfoService.fromPagedGroupResources(results));
+
+		for (Resource<Sample> resource : results.getContent()) {
+			BioSample biosample = new BioSample();
+			biosample.setId(resource.getContent().getAccession());
+			resultQuery.getBioSample().add(biosample);
+		}
+
+		return resultQuery;
 	}
 
 	private Map<String, String> readGroupSamplesQuery(String query) {
@@ -106,5 +124,4 @@ public class LegacyXmlGroupController {
         }
         return queryParams;
     }
-*/
 }

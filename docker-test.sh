@@ -1,9 +1,8 @@
 #!/bin/bash
 set -e
 
-ARGS=
 
-for X in 2 3 4 5
+for X in "$@"
 do
   #java -jar integration/target/integration-4.0.0-SNAPSHOT.jar --phase=$X $ARGS $@
   docker-compose run --rm --service-ports biosamples-integration java -jar integration-4.0.0-SNAPSHOT.jar --phase=$X $ARGS $@

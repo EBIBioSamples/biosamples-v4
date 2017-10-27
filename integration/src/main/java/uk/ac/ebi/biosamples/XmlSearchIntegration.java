@@ -1,5 +1,9 @@
 package uk.ac.ebi.biosamples;
 
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.Element;
+import org.dom4j.io.SAXReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -12,8 +16,13 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.legacyxml.BioSample;
+import uk.ac.ebi.biosamples.model.legacyxml.ResultQuery;
+import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
+import java.io.StringReader;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Optional;
@@ -21,7 +30,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 @Component
-@Profile({"default"})
+@Profile({"default", "test"})
 public class XmlSearchIntegration extends AbstractIntegration {
     
     private final RestTemplate restTemplate;
@@ -42,6 +51,8 @@ public class XmlSearchIntegration extends AbstractIntegration {
     protected void phaseOne() {
         final Sample test1 = getSampleXMLTest1();
         final Sample test2 = getPrivateSampleXMLTest2();
+        final Sample sampleGroup = getSampleGroup();
+        final Sample sampleWithinGroup = getSampleWithinGroup();
 
         Optional<Resource<Sample>> optional = client.fetchSampleResource(test1.getAccession());
         if (optional.isPresent()) {
@@ -60,6 +71,18 @@ public class XmlSearchIntegration extends AbstractIntegration {
 
         Resource<Sample> resourcePrivate = client.persistSampleResource(test2);
         if (!test2.equals(resourcePrivate.getContent())) {
+            throw new RuntimeException("Expected response to equal submission");
+        }
+
+        Resource<Sample> groupResource = client.persistSampleResource(sampleGroup);
+        if (!sampleGroup.equals(groupResource.getContent())) {
+            throw new RuntimeException("Expected response to equal submission");
+        }
+
+
+        Resource<Sample> sampleWithinGroupResource = client.persistSampleResource(sampleWithinGroup);
+        // The result and the submitted will not be equal because of the new inverse relation created automatically
+        if (!sampleWithinGroup.getAccession().equals(sampleWithinGroupResource.getContent().getAccession())) {
             throw new RuntimeException("Expected response to equal submission");
         }
     }
@@ -192,11 +215,78 @@ public class XmlSearchIntegration extends AbstractIntegration {
 
     @Override
     protected void phaseFour() {
+        // Search for sample and group
+        Sample sampleGroup = getSampleGroup();
+        Sample sampleWithinGroup = getSampleWithinGroup();
+
+        HttpHeaders xmlHeaders = new HttpHeaders();
+        xmlHeaders.setAccept(Collections.singletonList(MediaType.TEXT_XML));
+
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleLegaxyXmlUri());
+
+        UriComponentsBuilder testGroupsEndpoint = uriBuilder.cloneBuilder();
+        testGroupsEndpoint.pathSegment("groups", sampleGroup.getAccession());
+
+
+        ResponseEntity<String> response = restTemplate.exchange(testGroupsEndpoint.toUriString(),
+                HttpMethod.GET,
+                new HttpEntity<>(xmlHeaders),
+                String.class);
+
+        if (!response.getStatusCode().is2xxSuccessful()) {
+            throw new RuntimeException("Something went wrong while retrieving group from legacy XML endpoint");
+        }
+
+        if (!xmlMatchesSample(response.getBody(), sampleGroup)) {
+            throw new RuntimeException("The returned group doesn't match the expected characteristics");
+        }
+
+        UriComponentsBuilder testSamplesEndpoint = uriBuilder.cloneBuilder();
+        testSamplesEndpoint.pathSegment("samples", sampleWithinGroup.getAccession());
+
+        response = restTemplate.exchange(testSamplesEndpoint.toUriString(),
+                HttpMethod.GET,
+                new HttpEntity<>(xmlHeaders),
+                String.class);
+
+        if (!response.getStatusCode().is2xxSuccessful()) {
+            throw new RuntimeException("Something went wrong while retrieving sample from legacy XML endpoint");
+        }
+
+        if (!xmlMatchesSample(response.getBody(), sampleWithinGroup)) {
+            throw new RuntimeException("The returned sample doesn't match the expected characteristics");
+        }
 
     }
 
     @Override
     protected void phaseFive() {
+        Sample sampleGroup = getSampleGroup();
+        Sample sampleWithinGroup = getSampleWithinGroup();
+
+        HttpHeaders xmlHeaders = new HttpHeaders();
+        xmlHeaders.setAccept(Collections.singletonList(MediaType.TEXT_XML));
+
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleLegaxyXmlUri());
+        UriComponentsBuilder testGroupsEndpoint= uriBuilder.cloneBuilder();
+        testGroupsEndpoint.pathSegment("groupsamples", sampleGroup.getAccession());
+        testGroupsEndpoint.queryParam("query", "*");
+
+        ResponseEntity<ResultQuery> response = restTemplate.exchange(testGroupsEndpoint.toUriString(),
+                HttpMethod.GET,
+                new HttpEntity<>(xmlHeaders),
+                ResultQuery.class);
+
+        if (!response.getStatusCode().is2xxSuccessful()) {
+            throw new RuntimeException("Something went wrong while retrieving group from legacy XML endpoint");
+        }
+
+        ResultQuery resultQuery = response.getBody();
+        Optional<BioSample> xmlSample = resultQuery.getBioSample().stream()
+                .filter(bioSample -> bioSample.getId().equals(sampleWithinGroup.getAccession()))
+                .findFirst();
+        xmlSample.orElseThrow(() -> new RuntimeException("The legacy XML result query doesn't contain the expected group"));
+
 
     }
 
@@ -224,5 +314,75 @@ public class XmlSearchIntegration extends AbstractIntegration {
 
         return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, new TreeSet<>(), new TreeSet<>());
 
+    }
+
+    private boolean xmlMatchesSampleInGroup(String serializedXml, Sample sampleInGroup) {
+        SAXReader reader = new SAXReader();
+
+        Document xml;
+        try {
+            xml = reader.read(new StringReader(serializedXml));
+        } catch (DocumentException e) {
+            return false;
+        }
+
+        Element root = xml.getRootElement();
+        if (!XmlPathBuilder.of(root).path("ResultQuery").exists()) {
+            return false;
+        }
+
+        String sampleWithinGroupAccession = XmlPathBuilder.of(root).path("ResultQuery", "BioSample").attribute("id");
+
+        return sampleWithinGroupAccession.equals(sampleInGroup.getAccession());
+    }
+
+    private boolean xmlMatchesSample(String serializedXml, Sample referenceSample) {
+
+        SAXReader reader = new SAXReader();
+
+        Document xml;
+        try {
+            xml = reader.read(new StringReader(serializedXml));
+        } catch (DocumentException e) {
+            return false;
+        }
+
+        Element root = xml.getRootElement();
+        if (!XmlPathBuilder.of(root).element().getName().equals("BioSample")) {
+            return false;
+        }
+
+        String sampleAccession = XmlPathBuilder.of(root).attribute("id");
+        Element sampleNameElement = XmlPathBuilder.of(root).path("Property").element();
+        String sampleName = XmlPathBuilder.of(sampleNameElement).path("QualifiedValue", "Value").text();
+
+        return sampleAccession.equals(referenceSample.getAccession()) && sampleName.equals(referenceSample.getName());
+
+    }
+
+
+    private Sample getSampleWithinGroup() {
+        String name = "Sample part of group";
+        String accession = "TestSampleWithinGroup";
+        Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
+        Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
+
+        SortedSet<Attribute> attributes = new TreeSet<>();
+
+
+        return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, new TreeSet<>(), new TreeSet<>());
+
+    }
+
+    private Sample getSampleGroup() {
+        String name = "Test XML sample group";
+        String accession = "SAMEG001122";
+        Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
+        Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
+
+        SortedSet<Relationship> relationships = new TreeSet<>();
+        relationships.add(Relationship.build(accession, "has member", "TestSampleWithinGroup"));
+
+        return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, new TreeSet<>(), relationships, new TreeSet<>());
     }
 }

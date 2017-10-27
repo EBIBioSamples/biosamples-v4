@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 
 @Component
 @Order(3)
-@Profile({"default", "test"})
+@Profile({"default", "rest"})
 public class RestFacetIntegration extends AbstractIntegration {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
