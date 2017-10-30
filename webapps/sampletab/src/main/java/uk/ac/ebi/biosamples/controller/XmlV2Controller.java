@@ -104,12 +104,7 @@ public class XmlV2Controller {
 			sample = Sample.build(sourceid, null, null, ZonedDateTime.now(ZoneOffset.UTC).plusYears(1000).toInstant(), 
 					ZonedDateTime.now(ZoneOffset.UTC).toInstant(), 
 					new TreeSet<>(), new TreeSet<>(), new TreeSet<>());
-		} else {
-			//check provided sample has same name as sourceid
-			if (!sample.getName().equals(sourceid)) {
-				return new ResponseEntity<String>("Sample name mismatch ("+sourceid+" vs "+sample.getName()+")", HttpStatus.BAD_REQUEST);
-			}
-		}
+		} 
 		
 		//update the sample to have the appropriate domain
 		Optional<String> domain = apiKeyService.getDomainForApiKey(apikey);
@@ -125,6 +120,7 @@ public class XmlV2Controller {
 			return new ResponseEntity<String>("POST must be a new submission, use PUT for updates", HttpStatus.BAD_REQUEST);			
 		}		
 		
+		//update the sample object with the domain
 		sample = Sample.build(sample.getName(), sample.getAccession(), domain.get(), 
 					sample.getRelease(), sample.getUpdate(), sample.getAttributes(), sample.getRelationships(), sample.getExternalReferences());
 
@@ -140,7 +136,7 @@ public class XmlV2Controller {
 			consumes = {MediaType.APPLICATION_XML_VALUE})
 	public @ResponseBody ResponseEntity<String> saveUpdate(@PathVariable String source, 
 			@PathVariable String sourceid, @RequestParam String apikey, 
-			@RequestBody(required=false) Sample sample) throws ParseException, IOException {
+			@RequestBody Sample sample) throws ParseException, IOException {
 		
 		//reject if not using biosample id
 		if (!sourceid.matches("SAM[NED]A?[0-9]+")) {
@@ -152,9 +148,6 @@ public class XmlV2Controller {
 			return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body("Cannot PUT a sample without an existing accession, use POST for new samples.");
 		}
 		
-		//TODO try and find any samples that already exist with this sourceid and use their accession
-		//TODO if no existing sample, reject 
-		
 		// ensure source is case insensitive
 		source = source.toLowerCase();
 		Optional<String> keyOwner  = apiKeyService.getUsernameForApiKey(apikey);
@@ -165,19 +158,29 @@ public class XmlV2Controller {
 		if (!apiKeyService.canKeyOwnerEditSource(keyOwner.get(), source)) {
 			return new ResponseEntity<String>("That API key is not permitted for that source", HttpStatus.FORBIDDEN);
 		}
-		
-		//if no sample was provided, create one as a dummy with far future release date
-		if (sample == null) {
-			sample = Sample.build(sourceid, null, null, ZonedDateTime.now(ZoneOffset.UTC).plusYears(1000).toInstant(), 
-					ZonedDateTime.now(ZoneOffset.UTC).toInstant(), 
-					new TreeSet<>(), new TreeSet<>(), new TreeSet<>());
-		}
-		
+				
 		//update the sample to have the appropriate domain
 		Optional<String> domain = apiKeyService.getDomainForApiKey(apikey);
 		if (!domain.isPresent()) {
 			return new ResponseEntity<String>("Invalid API key ("+apikey+")", HttpStatus.FORBIDDEN);
 		}
+		
+
+		
+		//if no accession, try and find any samples that already exist with this sourceid and use their accession
+		if (sample.getAccession() == null) {
+			//if no existing sample, reject 	
+			List<Filter> filterList = new ArrayList<>(2);
+			filterList.add(FilterBuilder.create().onName(sample.getName()).build());
+			filterList.add(FilterBuilder.create().onDomain(domain.get()).build());
+			if (!bioSamplesClient.fetchSampleResourceAll(null, filterList).iterator().hasNext()) {
+				return new ResponseEntity<String>("PUT must be an update, use POST for new submissions", HttpStatus.BAD_REQUEST);			
+			}
+			//TODO check only 1 match
+			//TODO use accession of match
+		}
+
+		//update the sample object with the domain
 		sample = Sample.build(sample.getName(), sample.getAccession(), domain.get(), 
 					sample.getRelease(), sample.getUpdate(), sample.getAttributes(), sample.getRelationships(), sample.getExternalReferences());
 

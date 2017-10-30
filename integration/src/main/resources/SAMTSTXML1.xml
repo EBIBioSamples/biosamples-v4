@@ -7,7 +7,7 @@
 	<Property class="Sample Name" characteristic="false" comment="false"
 		type="STRING">
 		<QualifiedValue>
-			<Value>Test legacy xml</Value>
+			<Value>TestLegacyXml</Value>
 		</QualifiedValue>
 	</Property>
 	<Property class="Description" characteristic="false" comment="false"
