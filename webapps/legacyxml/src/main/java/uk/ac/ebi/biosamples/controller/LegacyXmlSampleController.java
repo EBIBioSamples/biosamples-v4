@@ -59,7 +59,7 @@ public class LegacyXmlSampleController {
 	    if (page < 1) {
 	        throw new IllegalArgumentException("Page parameter has to be 1-based");
 		}
-		PagedResources<Resource<Sample>> results = client.fetchPagedSamples(query, page - 1, pagesize);
+		PagedResources<Resource<Sample>> results = client.fetchPagedSampleResource(query, page - 1, pagesize);
 		
 		ResultQuery resultQuery = new ResultQuery();
 		

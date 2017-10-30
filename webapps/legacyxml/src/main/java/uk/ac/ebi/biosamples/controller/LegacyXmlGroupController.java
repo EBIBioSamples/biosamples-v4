@@ -64,7 +64,7 @@ public class LegacyXmlGroupController {
 		}
 		
 		
-		PagedResources<Resource<Sample>> results = client.fetchPagedSamples(query, page - 1, pagesize);
+		PagedResources<Resource<Sample>> results = client.fetchPagedSampleResource(query, page - 1, pagesize);
 		
 		ResultQuery resultQuery = new ResultQuery();
 		
@@ -93,7 +93,7 @@ public class LegacyXmlGroupController {
 //        Sort.Direction sort = Sort.Direction.fromString(queryParams.getOrDefault("sort","desc"));
 
 		PagedResources<Resource<Sample>> results =
-				client.fetchFilteredPagedSamples(query,
+				client.fetchPagedSampleResource(query,
 						Collections.singleton(relationFilter),
 						page - 1,
 						pagesize);

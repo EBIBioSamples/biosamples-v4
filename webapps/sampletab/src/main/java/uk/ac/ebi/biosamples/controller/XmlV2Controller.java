@@ -6,6 +6,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
@@ -17,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -39,18 +43,20 @@ import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.SampleNode;
 import uk.ac.ebi.arrayexpress2.sampletab.renderer.SampleTabWriter;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.ApiKeyService;
+import uk.ac.ebi.biosamples.service.FilterBuilder;
 
 @RestController
 @RequestMapping("/v2")
-public class XmlController {
+public class XmlV2Controller {
 
 	private final ApiKeyService apiKeyService;
 	private final BioSamplesClient bioSamplesClient;
 	
 	private Logger log = LoggerFactory.getLogger(getClass());
 
-	public XmlController(ApiKeyService apiKeyService, BioSamplesClient bioSamplesClient) {
+	public XmlV2Controller(ApiKeyService apiKeyService, BioSamplesClient bioSamplesClient) {
 		this.apiKeyService = apiKeyService;
 		this.bioSamplesClient = bioSamplesClient;
 	}
@@ -76,7 +82,6 @@ public class XmlController {
 					throws ParseException, IOException {
 		
 		
-		//TODO reject is same name has been submitted before
 		
 		//reject if has accession
 		if (sample != null && sample.getAccession() != null) {
@@ -99,6 +104,11 @@ public class XmlController {
 			sample = Sample.build(sourceid, null, null, ZonedDateTime.now(ZoneOffset.UTC).plusYears(1000).toInstant(), 
 					ZonedDateTime.now(ZoneOffset.UTC).toInstant(), 
 					new TreeSet<>(), new TreeSet<>(), new TreeSet<>());
+		} else {
+			//check provided sample has same name as sourceid
+			if (!sample.getName().equals(sourceid)) {
+				return new ResponseEntity<String>("Sample name mismatch ("+sourceid+" vs "+sample.getName()+")", HttpStatus.BAD_REQUEST);
+			}
 		}
 		
 		//update the sample to have the appropriate domain
@@ -106,6 +116,15 @@ public class XmlController {
 		if (!domain.isPresent()) {
 			return new ResponseEntity<String>("Invalid API key ("+apikey+")", HttpStatus.FORBIDDEN);
 		}
+		
+		//reject if same name has been submitted before		
+		List<Filter> filterList = new ArrayList<>(2);
+		filterList.add(FilterBuilder.create().onName(sourceid).build());
+		filterList.add(FilterBuilder.create().onDomain(domain.get()).build());
+		if (bioSamplesClient.fetchSampleResourceAll(null, filterList).iterator().hasNext()) {
+			return new ResponseEntity<String>("POST must be a new submission, use PUT for updates", HttpStatus.BAD_REQUEST);			
+		}		
+		
 		sample = Sample.build(sample.getName(), sample.getAccession(), domain.get(), 
 					sample.getRelease(), sample.getUpdate(), sample.getAttributes(), sample.getRelationships(), sample.getExternalReferences());
 

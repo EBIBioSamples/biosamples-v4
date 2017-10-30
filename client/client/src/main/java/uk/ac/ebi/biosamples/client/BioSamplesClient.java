@@ -137,7 +137,7 @@ public class BioSamplesClient implements AutoCloseable {
 		return sampleRetrievalService.fetchAll(text);
 	}
 
-	public Iterable<Resource<Sample>> fetchFilteredSampleResourceAll(String text, Collection<Filter> filters) {
+	public Iterable<Resource<Sample>> fetchSampleResourceAll(String text, Collection<Filter> filters) {
 		return sampleRetrievalService.fetchAll(text, filters);
 	}
 
@@ -154,11 +154,11 @@ public class BioSamplesClient implements AutoCloseable {
 	 * @param size
 	 * @return a paginated results of samples relative to the search term
 	 */
-	public PagedResources<Resource<Sample>> fetchPagedSamples(String text, int page, int size) {
+	public PagedResources<Resource<Sample>> fetchPagedSampleResource(String text, int page, int size) {
 		return sampleRetrievalService.search(text, page, size);
 	}
 
-	public PagedResources<Resource<Sample>> fetchFilteredPagedSamples(String text, Collection<Filter> filters, int page, int size) {
+	public PagedResources<Resource<Sample>> fetchPagedSampleResource(String text, Collection<Filter> filters, int page, int size) {
 		return sampleRetrievalService.search(text,filters, page, size);
 	}
 

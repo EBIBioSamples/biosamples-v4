@@ -37,10 +37,31 @@ public class SampleSubmissionService {
 		this.traverson = traverson;
 		this.executor = executor;
 	}
+	/**
+	 * This will send the sample to biosamples, either by POST if it has no
+	 * accession or by PUT if the sample already has an accession associated
+	 * 
+	 * This method will wait for the request to complete before returning
+	 * 
+	 * @param sample
+	 * @param jwt json web token authorizing access to the domain the sample is assigned to
+	 * @return
+	 */
+	public Resource<Sample> submit(Sample sample, Boolean setUpdateDate) throws RestClientException {
+		try {
+			return new SubmitCallable(sample, setUpdateDate).call();
+		} catch (RestClientException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
 	
 	/**
 	 * This will send the sample to biosamples, either by POST if it has no
 	 * accession or by PUT if the sample already has an accession associated
+	 * 
+	 * This will use a thread-pool within the client to do this asyncronously
 	 * 
 	 * @param sample
 	 * @param jwt json web token authorizing access to the domain the sample is assigned to
