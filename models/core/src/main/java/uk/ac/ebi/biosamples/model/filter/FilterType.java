@@ -4,6 +4,7 @@ import java.lang.reflect.InvocationTargetException;
 
 public enum FilterType {
     ATTRIBUTE_FILTER("fa", AttributeFilter.Builder.class),
+    NAME_FILTER("fn", NameFilter.Builder.class),
     RELATION_FILER("fr", RelationFilter.Builder.class),
     INVERSE_RELATION_FILTER("fir", InverseRelationFilter.Builder.class),
     DOMAIN_FILTER("fdom", DomainFilter.Builder.class),
@@ -11,11 +12,11 @@ public enum FilterType {
     EXTERNAL_REFERENCE_DATA_FILTER("ferd", ExternalReferenceDataFilter.Builder.class);
 
     String serialization;
-    Class associatedClass;
+    Class<? extends Filter.Builder> associatedBuilder;
 
-    FilterType(String serialization, Class associatedClass) {
+    FilterType(String serialization, Class<? extends Filter.Builder> associatedBuilder) {
         this.serialization = serialization;
-        this.associatedClass = associatedClass;
+        this.associatedBuilder = associatedBuilder;
     }
 
     public String getSerialization() {
@@ -24,7 +25,7 @@ public enum FilterType {
 
     public Filter.Builder getBuilderForLabel(String label) {
         try {
-            return (Filter.Builder) this.associatedClass.getConstructor(String.class).newInstance(label);
+			return this.associatedBuilder.getConstructor(String.class).newInstance(label);
         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
             throw new RuntimeException("FilterType " + this + " does not provide a proper builder");
         }

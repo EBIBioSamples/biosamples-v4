@@ -65,7 +65,7 @@ public class RestFilterIntegration extends AbstractIntegration{
         log.info("Getting sample 1 using filter on attribute");
         Sample testSample1 = getTestSample1();
         Filter attributeFilter = FilterBuilder.create().onAttribute("TestAttribute").withValue("FilterMe").build();
-        PagedResources<Resource<Sample>> samplePage = client.fetchFilteredPagedSamples("",
+        PagedResources<Resource<Sample>> samplePage = client.fetchPagedSampleResource("",
                 Collections.singletonList(attributeFilter),
                 0, 10);
         if (samplePage.getMetadata().getTotalElements() != 1) {
@@ -80,7 +80,7 @@ public class RestFilterIntegration extends AbstractIntegration{
         log.info("Getting sample 2 using filter on attribute");
         Sample testSample2 = getTestSample2();
         attributeFilter = FilterBuilder.create().onAttribute("testAttribute").withValue("filterMe").build();
-        samplePage = client.fetchFilteredPagedSamples("",
+        samplePage = client.fetchPagedSampleResource("",
                 Collections.singletonList(attributeFilter),
                 0, 10);
         if (samplePage.getMetadata().getTotalElements() != 1) {
@@ -91,6 +91,22 @@ public class RestFilterIntegration extends AbstractIntegration{
             throw new RuntimeException("Unexpected number of results for attribute filter query: " + samplePage.getMetadata().getTotalElements());
         }
 
+
+        log.info("Getting sample 2 using filter on name");
+        attributeFilter = FilterBuilder.create().onName(testSample2.getName()).build();
+        samplePage = client.fetchPagedSampleResource("",
+                Collections.singletonList(attributeFilter),
+                0, 10);
+        if (samplePage.getMetadata().getTotalElements() != 1) {
+            throw new RuntimeException("Unexpected number of results for attribute filter query: " + samplePage.getMetadata().getTotalElements());
+        }
+        restSample = samplePage.getContent().iterator().next();
+        if (!restSample.getContent().equals(testSample2)) {
+            throw new RuntimeException("Unexpected number of results for attribute filter query: " + samplePage.getMetadata().getTotalElements());
+        }
+        
+        
+
     }
 
     @Override
@@ -99,7 +115,7 @@ public class RestFilterIntegration extends AbstractIntegration{
         Sample testSample1 = getTestSample1();
         LocalDateTime fromDateTime = LocalDateTime.ofInstant(testSample1.getRelease(), ZoneId.of("UTC"));
         Filter dateFilter = FilterBuilder.create().onReleaseDate().from(fromDateTime).until(fromDateTime.plusSeconds(2)).build();
-        PagedResources<Resource<Sample>> samplePage = client.fetchFilteredPagedSamples("",
+        PagedResources<Resource<Sample>> samplePage = client.fetchPagedSampleResource("",
                 Collections.singletonList(dateFilter),
                 0, 10);
         if (samplePage.getMetadata().getTotalElements() < 1) {
@@ -119,7 +135,7 @@ public class RestFilterIntegration extends AbstractIntegration{
 //        Sample testSample2 = getTestSample2();
 
         Filter domainFilter = FilterBuilder.create().onDomain("self.BiosampleIntegrationTest").build();
-        PagedResources<Resource<Sample>> samplePage = client.fetchFilteredPagedSamples("",
+        PagedResources<Resource<Sample>> samplePage = client.fetchPagedSampleResource("",
                 Collections.singletonList(domainFilter),
                 0, 10);
         if (samplePage.getMetadata().getTotalElements() < 1) {

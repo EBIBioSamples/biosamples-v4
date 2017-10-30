@@ -33,6 +33,10 @@ public class FilterBuilder {
         return new DomainFilter.Builder(domain);
     }
 
+    public NameFilter.Builder onName(String name) {
+        return new NameFilter.Builder(name);
+    }
+
     public  Filter buildFromString(String serializedFilter) {
         FilterType filterType = FilterType.ofFilterString(serializedFilter);
         String filterLabelAndValueSerialization = serializedFilter.replace(filterType.getSerialization() + ":", "");

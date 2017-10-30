@@ -29,7 +29,8 @@ public class SolrFilterService {
     private final FacetToFilterConverter facetFilterConverter;
     private final BioSamplesProperties bioSamplesProperties;
 
-    public SolrFilterService(SolrFieldService solrFieldService, FacetToFilterConverter facetFilterConverter, BioSamplesProperties bioSamplesProperties) {
+    public SolrFilterService(SolrFieldService solrFieldService, FacetToFilterConverter facetFilterConverter, 
+    		BioSamplesProperties bioSamplesProperties) {
         this.solrFieldService = solrFieldService;
         this.facetFilterConverter = facetFilterConverter;
         this.bioSamplesProperties = bioSamplesProperties;
