@@ -44,7 +44,7 @@ public class XmlLegacyIntegration extends AbstractIntegration {
 	@Override
 	protected void phaseOne() {
 
-		runCallableOnSampleTabResource("/SAMTSTXML1_unaccession.xml", sampleTabString -> {
+		runCallableOnResource("/SAMTSTXML1_unaccession.xml", sampleTabString -> {
 			log.info("POSTing to " + uri);
 			RequestEntity<String> request = RequestEntity.post(uri)
 					.contentType(MediaType.APPLICATION_XML)
@@ -56,7 +56,7 @@ public class XmlLegacyIntegration extends AbstractIntegration {
 		});
 
 		URI putUri = UriComponentsBuilder.fromUri(uri).pathSegment("SAME12345679").build().toUri();
-		runCallableOnSampleTabResource("/SAMTSTXML1.xml", sampleTabString -> {
+		runCallableOnResource("/SAMTSTXML1.xml", sampleTabString -> {
 			log.info("PUTing to " + putUri);
 			RequestEntity<String> request = RequestEntity.put(putUri)
 					.contentType(MediaType.APPLICATION_XML)
@@ -92,11 +92,11 @@ public class XmlLegacyIntegration extends AbstractIntegration {
 	}
 
 
-	private interface SampleTabCallback {
+	private interface Callback {
 		public void callback(String sampleTabString);
 	}
 
-	private void runCallableOnSampleTabResource(String resource, SampleTabCallback callback) {
+	private void runCallableOnResource(String resource, Callback callback) {
 
 		Scanner scanner = null;
 		String xmlString = null;
