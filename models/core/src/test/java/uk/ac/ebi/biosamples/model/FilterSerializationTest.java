@@ -16,7 +16,7 @@ import static org.junit.Assert.assertEquals;
 @SpringBootTest(classes = {
         FilterBuilder.class
 })
-public class FilterTest {
+public class FilterSerializationTest {
 
     @Autowired
     public FilterBuilder filterBuilder;
@@ -77,6 +77,14 @@ public class FilterTest {
        Filter expectedFilter = FilterBuilder.create().onUpdateDate().from(from).until(to).build();
        Filter actualFilter = FilterBuilder.create().buildFromString(stringToTest);
        assertEquals(actualFilter, expectedFilter);
+    }
+
+    @Test
+    public void testAccessionFilterSerialization() {
+        String stringToTest = "facc:SAMEA123123";
+        Filter expectedFilter = FilterBuilder.create().onAccession("SAMEA123123").build();
+        Filter actualFilter = FilterBuilder.create().buildFromString(stringToTest);
+        assertEquals(expectedFilter, actualFilter);
     }
 
 }

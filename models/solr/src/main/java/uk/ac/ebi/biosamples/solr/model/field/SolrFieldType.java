@@ -24,7 +24,8 @@ public enum SolrFieldType {
     DATE(FacetFilterFieldType.UPDATE_DATE, "_dt", NOT_ENCODED, SolrSampleDateField.class),
     DOMAIN(FacetFilterFieldType.DOMAIN, "_s", NOT_ENCODED, SolrSampleDomainField.class),
     EXTERNAL_REFERENCE_DATA(FacetFilterFieldType.EXTERNAL_REFERENCE_DATA, "_erd_ss", ENCODED, SolrSampleExternalReferenceDataField.class),
-    NAME(FacetFilterFieldType.NAME, "_s", NOT_ENCODED, SolrSampleNameField.class),;
+    NAME(FacetFilterFieldType.NAME, "_s", NOT_ENCODED, SolrSampleNameField.class),
+    ACCESSION(FacetFilterFieldType.ACCESSION, "", NOT_ENCODED, SolrSampleAccessionField.class);
 
 
     private static EnumMap<FilterType, SolrFieldType> filterToSolrFieldMap = new EnumMap<FilterType, SolrFieldType>(FilterType.class);

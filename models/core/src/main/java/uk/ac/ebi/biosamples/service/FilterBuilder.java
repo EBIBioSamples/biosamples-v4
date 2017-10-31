@@ -37,6 +37,10 @@ public class FilterBuilder {
         return new NameFilter.Builder(name);
     }
 
+    public AccessionFilter.Builder onAccession(String accession) {
+        return new AccessionFilter.Builder(accession);
+    }
+
     public  Filter buildFromString(String serializedFilter) {
         FilterType filterType = FilterType.ofFilterString(serializedFilter);
         String filterLabelAndValueSerialization = serializedFilter.replace(filterType.getSerialization() + ":", "");

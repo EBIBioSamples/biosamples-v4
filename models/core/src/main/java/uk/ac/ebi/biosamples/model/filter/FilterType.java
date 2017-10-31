@@ -1,6 +1,11 @@
 package uk.ac.ebi.biosamples.model.filter;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public enum FilterType {
     ATTRIBUTE_FILTER("fa", AttributeFilter.Builder.class),
@@ -9,7 +14,18 @@ public enum FilterType {
     INVERSE_RELATION_FILTER("fir", InverseRelationFilter.Builder.class),
     DOMAIN_FILTER("fdom", DomainFilter.Builder.class),
     DATE_FILTER("fdt", DateRangeFilter.Builder.class),
-    EXTERNAL_REFERENCE_DATA_FILTER("ferd", ExternalReferenceDataFilter.Builder.class);
+    EXTERNAL_REFERENCE_DATA_FILTER("ferd", ExternalReferenceDataFilter.Builder.class),
+    ACCESSION_FILTER("facc", AccessionFilter.Builder.class);
+
+    private static List<FilterType> filterTypesByLength = new ArrayList<>();
+
+    static {
+        filterTypesByLength = Stream.of(values())
+                .sorted(
+                    Comparator.comparingInt((FilterType f) -> f.getSerialization().length()).reversed()
+                    .thenComparing((FilterType::getSerialization))
+                ).collect(Collectors.toList());
+    }
 
     String serialization;
     Class<? extends Filter.Builder> associatedBuilder;
@@ -32,7 +48,7 @@ public enum FilterType {
     }
 
     public static FilterType ofFilterString(String filterString) {
-        for(FilterType type: values()) {
+        for(FilterType type: filterTypesByLength) {
             if (filterString.startsWith(type.getSerialization())) {
                 return type;
             }
