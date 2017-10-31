@@ -1,24 +1,17 @@
 package uk.ac.ebi.biosamples;
 
-import java.time.LocalDate;
-import java.time.Instant;
-import java.time.LocalTime;
-import java.util.Arrays;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
-
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Curation;
-import uk.ac.ebi.biosamples.model.ExternalReference;
-import uk.ac.ebi.biosamples.model.Relationship;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.*;
+
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 @Component
 @Order(6)
