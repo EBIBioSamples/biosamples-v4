@@ -24,7 +24,7 @@ public class ExternalReferenceDataFilter implements Filter{
     }
 
     @Override
-    public Optional<?> getContent() {
+    public Optional<String> getContent() {
         return Optional.ofNullable(this.value);
     }
 

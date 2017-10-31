@@ -1,5 +1,8 @@
 package uk.ac.ebi.biosamples.solr.model.field;
 
+import org.springframework.data.solr.core.query.Criteria;
+import uk.ac.ebi.biosamples.model.filter.DomainFilter;
+import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.solr.model.strategy.FacetFetchStrategy;
 
 public class SolrSampleDomainField extends SolrSampleField {
@@ -9,7 +12,7 @@ public class SolrSampleDomainField extends SolrSampleField {
      * @param readableLabel
      * @param solrDocumentLabel
      */
-    protected SolrSampleDomainField(String readableLabel, String solrDocumentLabel) {
+    public SolrSampleDomainField(String readableLabel, String solrDocumentLabel) {
         super(readableLabel, solrDocumentLabel);
     }
 
@@ -21,5 +24,26 @@ public class SolrSampleDomainField extends SolrSampleField {
     @Override
     public FacetFetchStrategy getFacetCollectionStrategy() {
         return null;
+    }
+
+    @Override
+    public Criteria getFilterCriteria(Filter filter) {
+
+        Criteria filterCriteria = null;
+
+        if (filter instanceof DomainFilter) {
+
+            filterCriteria = new Criteria(getSolrDocumentFieldName());
+
+            DomainFilter domainFilter = (DomainFilter) filter;
+            if (domainFilter.getContent().isPresent())
+                filterCriteria = filterCriteria.expression("/" + domainFilter.getContent().get() + "/");
+            else
+                filterCriteria = filterCriteria.isNotNull();
+
+        }
+
+        return filterCriteria;
+
     }
 }

@@ -5,14 +5,11 @@ import org.springframework.data.solr.core.query.FilterQuery;
 import org.springframework.data.solr.core.query.SimpleFilterQuery;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
-import uk.ac.ebi.biosamples.model.filter.DateRangeFilter;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.FacetToFilterConverter;
 import uk.ac.ebi.biosamples.solr.model.field.SolrFieldType;
+import uk.ac.ebi.biosamples.solr.model.field.SolrSampleField;
 
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -20,7 +17,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.util.AbstractMap.SimpleEntry;
-import static uk.ac.ebi.biosamples.model.filter.DateRangeFilter.DateRange;
 
 @Service
 public class SolrFilterService {
@@ -44,43 +40,22 @@ public class SolrFilterService {
     public Optional<Criteria> getFilterCriteria(Filter filter) {
 
         //TODO rename to getFilterTargetField
-        String filterTargetField = solrFieldService.encodedField(filter.getLabel(), SolrFieldType.getFromFilterType(filter.getType()));
-        Criteria filterCriteria;
-        if (filter.getContent().isPresent()) {
-            Object content = filter.getContent().get();
-            if (filter instanceof DateRangeFilter) {
-                filterCriteria = getDateRangeCriteriaOnField(filterTargetField, (DateRange) content);
-            } else {
-                filterCriteria = new Criteria(filterTargetField).is(content);
-            }
-        } else {
-            filterCriteria = new Criteria(filterTargetField).isNotNull();
-        }
+        SolrSampleField solrField = SolrFieldType.buildFromFilter(filter);
+//        String filterTargetField = solrFieldService.encodedField(filter.getLabel(), SolrFieldType.getFromFilterType(filter.getType()));
+//        Criteria filterCriteria;
+//        if (filter.getContent().isPresent()) {
+//            Object content = filter.getContent().get();
+//            if (filter instanceof DateRangeFilter) {
+//                filterCriteria = getDateRangeCriteriaOnField(filterTargetField, (DateRange) content);
+//            } else {
+//                filterCriteria = new Criteria(filterTargetField).is(content);
+//            }
+//        } else {
+//            filterCriteria = new Criteria(filterTargetField).isNotNull();
+//        }
+        Criteria filterCriteria = solrField.getFilterCriteria(filter);
         return Optional.ofNullable(filterCriteria);
 
-    }
-
-    /**
-     * Create a date range filter criteria on the specified field
-     * @param fieldToFilter the field on which the criteria will be applied
-     * @param dateRange the date range information
-     * @return a new Criteria
-     */
-    private Criteria getDateRangeCriteriaOnField(String fieldToFilter, DateRange dateRange) {
-
-        Criteria filterCriteria = new Criteria(fieldToFilter);
-        if (dateRange.isFromMinDate() && dateRange.isUntilMaxDate()) {
-            filterCriteria = filterCriteria.isNotNull();
-        } else if (dateRange.isFromMinDate()) {
-            filterCriteria = filterCriteria.lessThanEqual(toSolrDateString(dateRange.getUntil()));
-        } else if (dateRange.isUntilMaxDate()){
-            filterCriteria = filterCriteria.greaterThanEqual(toSolrDateString(dateRange.getFrom()));
-        } else {
-            filterCriteria = filterCriteria.between(
-                    dateRange.getFrom().format(DateTimeFormatter.ISO_INSTANT),
-                    dateRange.getUntil().format(DateTimeFormatter.ISO_INSTANT));
-        }
-        return filterCriteria;
     }
 
     /**
@@ -115,7 +90,6 @@ public class SolrFilterService {
 
         boolean filterActive = false;
         FilterQuery filterQuery = new SimpleFilterQuery();
-        List<Filter> filtersBag = new ArrayList<>(filters);
         Collection<List<Filter>> filterGroups = filters.stream()
                 .collect(Collectors.groupingBy(filter -> new SimpleEntry(filter.getLabel(), filter.getType())
         )).values();
@@ -176,9 +150,6 @@ public class SolrFilterService {
     }
 
 
-    public String toSolrDateString(ZonedDateTime dateTime) {
-        return dateTime.format(DateTimeFormatter.ISO_INSTANT.withZone(ZoneId.of("UTC")));
-    }
 
 
 

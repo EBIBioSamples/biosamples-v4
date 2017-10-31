@@ -1,6 +1,13 @@
 package uk.ac.ebi.biosamples.solr.model.field;
 
+import org.springframework.data.solr.core.query.Criteria;
+import uk.ac.ebi.biosamples.model.filter.DateRangeFilter;
+import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.solr.model.strategy.FacetFetchStrategy;
+
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class SolrSampleDateField extends SolrSampleField{
     /**
@@ -23,4 +30,39 @@ public class SolrSampleDateField extends SolrSampleField{
         throw new RuntimeException("Method not yet implemented");
     }
 
+    @Override
+    public Criteria getFilterCriteria(Filter filter) {
+        Criteria filterCriteria = null;
+
+        if (filter instanceof DateRangeFilter) {
+
+            DateRangeFilter dateRangeFilter = (DateRangeFilter) filter;
+            filterCriteria = new Criteria(this.getSolrDocumentFieldName());
+
+            if (dateRangeFilter.getContent().isPresent()) {
+                DateRangeFilter.DateRange dateRange = dateRangeFilter.getContent().get();
+                if (dateRange.isFromMinDate() && dateRange.isUntilMaxDate()) {
+                    filterCriteria = filterCriteria.isNotNull();
+                } else if (dateRange.isFromMinDate()) {
+                    filterCriteria = filterCriteria.lessThanEqual(toSolrDateString(dateRange.getUntil()));
+                } else if (dateRange.isUntilMaxDate()){
+                    filterCriteria = filterCriteria.greaterThanEqual(toSolrDateString(dateRange.getFrom()));
+                } else {
+                    filterCriteria = filterCriteria.between(
+                            dateRange.getFrom().format(DateTimeFormatter.ISO_INSTANT),
+                            dateRange.getUntil().format(DateTimeFormatter.ISO_INSTANT));
+                }
+
+            } else {
+                filterCriteria = filterCriteria.isNotNull();
+            }
+        }
+
+        return filterCriteria;
+    }
+
+
+    private String toSolrDateString(ZonedDateTime dateTime) {
+        return dateTime.format(DateTimeFormatter.ISO_INSTANT.withZone(ZoneId.of("UTC")));
+    }
 }

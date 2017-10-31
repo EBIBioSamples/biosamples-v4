@@ -16,7 +16,7 @@ public class SolrFieldService {
 
 //    private Logger log = LoggerFactory.getLogger(getClass());
 
-    public String encodeFieldName(String field) {
+    public static String encodeFieldName(String field) {
         //solr only allows alphanumeric field types
         try {
             field = BaseEncoding.base32().encode(field.getBytes("UTF-8"));
@@ -29,7 +29,7 @@ public class SolrFieldService {
         return field;
     }
 
-    public String decodeFieldName(String encodedField) {
+    public static String decodeFieldName(String encodedField) {
         //although its base32 encoded, that include = which solr doesn't allow
         String decodedField = encodedField.replace("_", "=");
         try {
@@ -46,11 +46,11 @@ public class SolrFieldService {
      * @param solrFieldType the facet type
      * @return the encoded field with specific type suffix
      */
-    public String encodedField(String field, SolrFieldType solrFieldType) {
+    public static String encodedField(String field, SolrFieldType solrFieldType) {
 
         // Dates fields (update and release) are not encoded at the moment
         if (solrFieldType.isEncoded()) {
-            return this.encodeFieldName(field) + solrFieldType.getSuffix();
+            return encodeFieldName(field) + solrFieldType.getSuffix();
         }
         return field + solrFieldType.getSuffix();
     }
@@ -61,7 +61,7 @@ public class SolrFieldService {
      * @param field encoded version of the field with the type suffix
      * @return the field name decoded
      */
-    public SolrSampleField decodeField(String field) {
+    public static SolrSampleField decodeField(String field) {
 
         SolrFieldType fieldType = SolrFieldType.getFromField(field);
         String baseLabel = field.replaceFirst(

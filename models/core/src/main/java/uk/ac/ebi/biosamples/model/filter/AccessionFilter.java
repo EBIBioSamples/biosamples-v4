@@ -23,7 +23,7 @@ public class AccessionFilter implements Filter {
 
     @Override
     public Optional<String> getContent() {
-        return Optional.of(String.format("/%s/",this.accessionPattern));
+        return Optional.of(this.accessionPattern);
     }
 
     @Override

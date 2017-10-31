@@ -1,7 +1,9 @@
 package uk.ac.ebi.biosamples.solr.model.field;
 
 import uk.ac.ebi.biosamples.model.FacetFilterFieldType;
+import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.model.filter.FilterType;
+import uk.ac.ebi.biosamples.solr.service.SolrFieldService;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -73,6 +75,21 @@ public enum SolrFieldType {
         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public SolrSampleField getAssociatedClassInstance(String label) {
+        String solrDocumentLabel = SolrFieldService.encodedField(label, this);
+        try {
+            Constructor<? extends SolrSampleField> constructor = this.associatedClass.getConstructor(String.class, String.class);
+            return constructor.newInstance(label, solrDocumentLabel);
+        } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static SolrSampleField buildFromFilter(Filter filter) {
+        SolrFieldType fieldType = getFromFilterType(filter.getType());
+        return fieldType.getAssociatedClassInstance(filter.getLabel());
     }
 
 
