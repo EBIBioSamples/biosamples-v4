@@ -12,6 +12,7 @@ import uk.ac.ebi.arrayexpress2.magetab.listener.ErrorItemListener;
 import uk.ac.ebi.arrayexpress2.sampletab.datamodel.SampleData;
 import uk.ac.ebi.arrayexpress2.sampletab.parser.SampleTabParser;
 import uk.ac.ebi.biosamples.service.SampleTabService;
+import uk.ac.ebi.biosamples.service.SampleTabService.DuplicateDomainSampleException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -33,6 +34,7 @@ public class SampleTabV4Controller {
 	@RequestMapping(method = RequestMethod.POST, value = "v4", consumes = {MediaType.TEXT_PLAIN_VALUE, "application/text"})
 	public ResponseEntity<String> acceptSampleTab(@RequestBody String sampleTab,
 			@RequestParam(name = "setupdatedate", required = false, defaultValue="true") boolean setUpdateDate,
+			@RequestParam(name = "domain", required = false) String domain,
 			HttpServletRequest request, HttpServletResponse response) {
 
 		log.trace("recieved SampleTab submission \n"+sampleTab);
@@ -83,8 +85,17 @@ public class SampleTabV4Controller {
         String jwt = null; //TODO get from request
                 
 
+        if (domain == null) {
+        	//TODO no explicit domain, read from JWT if only one
+        }
+        
+        
         //TODO do AAP domain property
-        sampleTabService.saveSampleTab(sampledata, "self.BiosampleIntegrationTest", jwt, setUpdateDate);
+        try {
+			sampleTabService.saveSampleTab(sampledata, "self.BiosampleIntegrationTest", jwt, setUpdateDate);
+		} catch (DuplicateDomainSampleException e) {
+			return ResponseEntity.badRequest().body(e.getMessage());
+		}
         
         return ResponseEntity.ok("");
 	}

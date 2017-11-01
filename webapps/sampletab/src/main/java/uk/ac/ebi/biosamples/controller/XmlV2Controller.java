@@ -8,6 +8,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -80,8 +81,6 @@ public class XmlV2Controller {
 			@RequestBody(required=false) Sample sample, 
 			@RequestParam String apikey)
 					throws ParseException, IOException {
-		
-		
 		
 		//reject if has accession
 		if (sample != null && sample.getAccession() != null) {
@@ -165,13 +164,12 @@ public class XmlV2Controller {
 			return new ResponseEntity<String>("Invalid API key ("+apikey+")", HttpStatus.FORBIDDEN);
 		}
 		
-
-		
 		//if no accession, try and find any samples that already exist with this sourceid and use their accession
+		//NB we don't validate that a sample *must* have this sourceid
 		if (sample.getAccession() == null) {
 			//if no existing sample, reject 	
 			List<Filter> filterList = new ArrayList<>(2);
-			filterList.add(FilterBuilder.create().onName(sample.getName()).build());
+			filterList.add(FilterBuilder.create().onName(sourceid).build());
 			filterList.add(FilterBuilder.create().onDomain(domain.get()).build());
 			if (!bioSamplesClient.fetchSampleResourceAll(null, filterList).iterator().hasNext()) {
 				return new ResponseEntity<String>("PUT must be an update, use POST for new submissions", HttpStatus.BAD_REQUEST);			
@@ -191,16 +189,37 @@ public class XmlV2Controller {
 		return ResponseEntity.ok(sample.getAccession());
 	}
 	
-	
-/*
 	@GetMapping(value = "/source/{source}/sample/{sourceid}", 
 			produces = MediaType.TEXT_PLAIN_VALUE)
 	public @ResponseBody ResponseEntity<String> getAccessionOfSample(@PathVariable String source,
 			@PathVariable String sourceid, 
 			@RequestParam String apikey) {
 		
-	}
+		Optional<String> domain = apiKeyService.getDomainForApiKey(apikey);
+		if (!domain.isPresent()) {
+			return new ResponseEntity<String>("Invalid API key ("+apikey+")", HttpStatus.FORBIDDEN);
+		}
 
+		List<Filter> filterList = new ArrayList<>(2);
+		filterList.add(FilterBuilder.create().onName(sourceid).build());
+		filterList.add(FilterBuilder.create().onDomain(domain.get()).build());
+		
+		Iterator<Resource<Sample>> it = bioSamplesClient.fetchSampleResourceAll(null, filterList).iterator();
+		
+		Resource<Sample> first = null;
+		if (it.hasNext()) {
+			first = it.next();
+			if (it.hasNext()) {
+				return new ResponseEntity<String>("Multiple samples with sourceid "+sourceid, HttpStatus.BAD_REQUEST);
+			} else {
+				return new ResponseEntity<String>(first.getContent().getAccession(), HttpStatus.OK);
+			}
+		} else {
+			return new ResponseEntity<String>(sourceid+" not recognized", HttpStatus.NOT_FOUND);
+		}
+	}
+	
+/*
 	@GetMapping(value = "/source/{source}/sample/{sourceid}/submission", 
 			produces = MediaType.TEXT_PLAIN_VALUE)
 	public @ResponseBody ResponseEntity<String> getSubmissionOfSample(@PathVariable String source,
@@ -212,32 +231,21 @@ public class XmlV2Controller {
 	/* sample end points above */
 	/* group end points below */
 /*	
-	@PostMapping(value = "/source/{source}/group", produces = "text/plain")
-	public ResponseEntity<String> accessionSourceGroupNew(@PathVariable String source, 
-			@RequestParam String apikey) {
-		return accessionSourceGroup(source, UUID.randomUUID().toString(), apikey);
-	}
 
 	@PostMapping(value = "/source/{source}/group", produces = "text/plain", consumes = "application/xml")
 	public ResponseEntity<String> saveSourceGroupNew(@PathVariable String source, 
 			@RequestParam String apikey,
-			@RequestBody BioSampleGroupType group) 
+			@RequestBody(required=false) BioSampleGroupType group) 
 					throws ParseException, IOException {
 		return saveSourceGroup(source, UUID.randomUUID().toString(), apikey, group);
 	}
 
-	@PostMapping(value = "/source/{source}/group/{sourceid}", produces = "text/plain")
-	public @ResponseBody ResponseEntity<String> accessionSourceGroup(@PathVariable String source,
-			@PathVariable String sourceid, 
-			@RequestParam String apikey) {
-		
-	}
 
 	@PostMapping(value = "/source/{source}/group/{sourceid}", produces = "text/plain", consumes = "application/xml")
 	public @ResponseBody ResponseEntity<String> saveSourceGroup(@PathVariable String source,
 			@PathVariable String sourceid, 
 			@RequestParam String apikey, 
-			@RequestBody BioSampleGroupType group)
+			@RequestBody(required=false) BioSampleGroupType group)
 					throws ParseException, IOException {
 	}
 
@@ -249,7 +257,8 @@ public class XmlV2Controller {
 					throws ParseException, IOException {
 	}
 	
-	
+*/
+/*
 	@GetMapping(value = "/source/{source}/group/{sourceid}", produces = "text/plain")
 	public @ResponseBody ResponseEntity<String> getAccessionOfGroup(@PathVariable String source,
 			@PathVariable String sourceid, 
