@@ -62,11 +62,12 @@ public class SampleRetrievalService {
 	}
 
 	public PagedResources<Resource<Sample>> search(String text, int page, int size) {
+		//TODO remove duplicate with other search methods
 		
 		//TODO make a proper HAL link to do this properly
 		
 		URI uri = UriComponentsBuilder.fromUriString(traverson.follow("samples").asLink().getHref())
-				.queryParam("text", text).queryParam("page", page).queryParam("size", size)
+				.queryParam("searchTerm", text).queryParam("page", page).queryParam("size", size)
 				.build().toUri();
 
 		log.info("GETing " + uri);
@@ -90,7 +91,7 @@ public class SampleRetrievalService {
 		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();
 		params.add("page", Integer.toString(page));
 		params.add("size", Integer.toString(size));
-		params.add("text", !text.isEmpty() ? text : "*:*");
+		params.add("searchTerm", !text.isEmpty() ? text : "*:*");
 		for (Filter filter: filters) {
 			params.add("filter", filter.getSerialization());
 		}
