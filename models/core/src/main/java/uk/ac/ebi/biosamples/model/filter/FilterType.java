@@ -8,14 +8,14 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public enum FilterType {
-    ATTRIBUTE_FILTER("fa", AttributeFilter.Builder.class),
-    NAME_FILTER("fn", NameFilter.Builder.class),
-    RELATION_FILER("fr", RelationFilter.Builder.class),
-    INVERSE_RELATION_FILTER("fir", InverseRelationFilter.Builder.class),
-    DOMAIN_FILTER("fdom", DomainFilter.Builder.class),
-    DATE_FILTER("fdt", DateRangeFilter.Builder.class),
-    EXTERNAL_REFERENCE_DATA_FILTER("ferd", ExternalReferenceDataFilter.Builder.class),
-    ACCESSION_FILTER("facc", AccessionFilter.Builder.class);
+    ATTRIBUTE_FILTER("attr", AttributeFilter.Builder.class),
+    NAME_FILTER("name", NameFilter.Builder.class),
+    RELATION_FILER("rel", RelationFilter.Builder.class),
+    INVERSE_RELATION_FILTER("rrel", InverseRelationFilter.Builder.class),
+    DOMAIN_FILTER("dom", DomainFilter.Builder.class),
+    DATE_FILTER("dt", DateRangeFilter.Builder.class),
+    EXTERNAL_REFERENCE_DATA_FILTER("extd", ExternalReferenceDataFilter.Builder.class),
+    ACCESSION_FILTER("acc", AccessionFilter.Builder.class);
 
     private static List<FilterType> filterTypesByLength = new ArrayList<>();
 

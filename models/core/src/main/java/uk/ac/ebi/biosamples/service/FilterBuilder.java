@@ -3,6 +3,10 @@ package uk.ac.ebi.biosamples.service;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.filter.*;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 public class FilterBuilder {
     public AttributeFilter.Builder onAttribute(String label) {
@@ -41,18 +45,26 @@ public class FilterBuilder {
         return new AccessionFilter.Builder(accession);
     }
 
+    public ExternalReferenceDataFilter.Builder onDataFromExternalReference(String extReference) {
+        return new ExternalReferenceDataFilter.Builder(extReference);
+    }
+
     public  Filter buildFromString(String serializedFilter) {
         FilterType filterType = FilterType.ofFilterString(serializedFilter);
-        String filterLabelAndValueSerialization = serializedFilter.replace(filterType.getSerialization() + ":", "");
+        List<String> filterParts = filterParts(serializedFilter);
 
-        if (!filterLabelAndValueSerialization.contains(":")) {
-            return filterType.getBuilderForLabel(filterLabelAndValueSerialization).build();
+        if (filterParts.size() > 2) {
+            return filterType.getBuilderForLabel(filterParts.get(1)).parseContent(filterParts.get(2)).build();
         } else {
-            String[] valueElements = filterLabelAndValueSerialization.split(":", 2);
-            String filterLabel = valueElements[0];
-            String filterValue = valueElements[1];
-            return filterType.getBuilderForLabel(filterLabel).parseContent(filterValue).build();
+            return filterType.getBuilderForLabel(filterParts.get(1)).build();
         }
+    }
+
+    private List<String> filterParts(String filterLabelAndValue) {
+        // TODO hack, need to be improved
+        return Arrays.stream(filterLabelAndValue.split("(?<!\\\\):", 3))
+                .map(s -> s.replace("\\:", ":"))
+                .collect(Collectors.toList());
     }
 
     public static FilterBuilder create() {

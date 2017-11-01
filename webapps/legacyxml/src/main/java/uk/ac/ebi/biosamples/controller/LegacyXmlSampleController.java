@@ -11,16 +11,20 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.model.legacyxml.BioSample;
 import uk.ac.ebi.biosamples.model.legacyxml.ResultQuery;
+import uk.ac.ebi.biosamples.service.FilterBuilder;
+import uk.ac.ebi.biosamples.service.LegacyQueryParser;
 import uk.ac.ebi.biosamples.service.SummaryInfoService;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 @Controller
 public class LegacyXmlSampleController {
@@ -34,13 +38,17 @@ public class LegacyXmlSampleController {
 
 	private final BioSamplesClient client;
 	private final SummaryInfoService summaryInfoService;
+	private final LegacyQueryParser legacyQueryParser;
 
-	public LegacyXmlSampleController(BioSamplesClient client, SummaryInfoService summaryInfoService) {
+	public LegacyXmlSampleController(BioSamplesClient client,
+									 SummaryInfoService summaryInfoService,
+									 LegacyQueryParser legacyQueryParser) {
 		this.client = client;
 		this.summaryInfoService = summaryInfoService;
+		this.legacyQueryParser = legacyQueryParser;
 	}
 
-	@GetMapping(value="/samples/{accession}", produces={MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE})
+	@GetMapping(value="/samples/{accession:SAM(?:N|D|EA|E)[0-9]+}", produces={MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE})
 	public void redirectSample(@PathVariable String accession, HttpServletResponse response) throws IOException {
 		//this is a little hacky, but in order to make sure that XML is returned (and only XML) from the 
 		//content negotiation on the "real" endpoint, we need to use springs extension-based negotiation backdoor
@@ -51,7 +59,7 @@ public class LegacyXmlSampleController {
 
 	@GetMapping(value = {"/samples"}, produces={MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE})
 	public @ResponseBody ResultQuery getSamples(
-			@RequestParam(name="query", required=true) String query,
+			@RequestParam(name="query", defaultValue = "*") String query,
 			@RequestParam(name="pagesize", defaultValue = "25") int pagesize,
 			@RequestParam(name="page", defaultValue = "1") int page,
 			@RequestParam(name="sort", defaultValue = "desc") String sort
@@ -59,7 +67,25 @@ public class LegacyXmlSampleController {
 	    if (page < 1) {
 	        throw new IllegalArgumentException("Page parameter has to be 1-based");
 		}
-		PagedResources<Resource<Sample>> results = client.fetchPagedSampleResource(query, page - 1, pagesize);
+
+
+		List<Filter> filterList = new ArrayList<>();
+	    filterList.add(FilterBuilder.create().onAccession("SAM(N|D|EA|E)[0-9]+").build());
+
+	    if (legacyQueryParser.checkQueryContainsDateFilters(query)) {
+
+	    	List<Filter> dateRangeFilters = legacyQueryParser.getDateFiltersFromQuery(query);
+	    	filterList.addAll(dateRangeFilters);
+
+	    	query = legacyQueryParser.cleanQueryFromDateFilters(query);
+		}
+
+		PagedResources<Resource<Sample>> results = client.fetchPagedSampleResource(
+				query,
+				filterList,
+				page - 1,
+				pagesize
+		);
 		
 		ResultQuery resultQuery = new ResultQuery();
 		

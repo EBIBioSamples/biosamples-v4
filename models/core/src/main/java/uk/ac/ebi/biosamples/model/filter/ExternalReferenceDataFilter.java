@@ -45,12 +45,13 @@ public class ExternalReferenceDataFilter implements Filter{
             return false;
         }
         ExternalReferenceDataFilter other = (ExternalReferenceDataFilter) obj;
-        return Objects.equals(other.label, this.label) && Objects.equals(other.value, this.value);
+        return Objects.equals(other.label, this.label) &&
+                Objects.equals(other.getContent().orElse(null), this.getContent().orElse(null));
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.label, this.value);
+        return Objects.hash(this.label, this.getContent().orElse(null));
     }
 
     public static class Builder implements Filter.Builder{

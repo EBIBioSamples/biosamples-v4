@@ -27,6 +27,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 public class SampleRetrievalService {
 
@@ -64,26 +65,8 @@ public class SampleRetrievalService {
 	public PagedResources<Resource<Sample>> search(String text, int page, int size) {
 		
 		//TODO make a proper HAL link to do this properly
-		
-		URI uri = UriComponentsBuilder.fromUriString(traverson.follow("samples").asLink().getHref())
-				.queryParam("text", text).queryParam("page", page).queryParam("size", size)
-				.build().toUri();
+		return this.search(text, Collections.EMPTY_LIST, page, size);
 
-		log.info("GETing " + uri);
-
-		RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
-		ResponseEntity<PagedResources<Resource<Sample>>> responseEntity = restOperations.exchange(requestEntity,
-				new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {
-				});
-
-		if (!responseEntity.getStatusCode().is2xxSuccessful()) {
-			throw new RuntimeException("Problem GETing samples");
-		}
-		
-
-		log.info("GETted " + uri);
-
-		return responseEntity.getBody();
 	}
 
 	public PagedResources<Resource<Sample>> search(String text, Collection<Filter> filters, int page, int size) {
@@ -92,12 +75,15 @@ public class SampleRetrievalService {
 		params.add("size", Integer.toString(size));
 		params.add("text", !text.isEmpty() ? text : "*:*");
 		for (Filter filter: filters) {
-			params.add("filter", filter.getSerialization());
+            params.add("filter", filter.getSerialization());
 		}
+
+		params = encodePlusInQueryParameters(params);
 
 		URI uri = UriComponentsBuilder.fromUriString(traverson.follow("samples").asLink().getHref())
 				.queryParams(params)
-				.build().toUri();
+				.build()
+				.toUri();
 
 		log.info("GETing " + uri);
 
@@ -178,11 +164,27 @@ public class SampleRetrievalService {
 			params.add("filter", filter.getSerialization());
 		}
 		params.add("size", Integer.toString(pageSize));
+
+		params = encodePlusInQueryParameters(params);
+
 		return new IterableResourceFetchAll<Sample>(executor, traverson, restOperations,
 				parameterizedTypeReferencePagedResourcesSample,
 				params,	"samples");
 
 	}
+
+    // FIXME, If you can! The only movie where a plus goes incognito to be actually recognize by the system
+    // Only way to keep the + in a (not encoded) query parameter is to force encoding
+	private MultiValueMap<String, String> encodePlusInQueryParameters(MultiValueMap<String, String> queryParameters) {
+	    MultiValueMap<String,String> encodedQueryParameters = new LinkedMultiValueMap<>();
+	    for (Map.Entry<String, List<String>> param: queryParameters.entrySet()) {
+            encodedQueryParameters.put(
+                    param.getKey(),
+                    param.getValue().stream().map(v->v.replaceAll("\\+","%2B")).collect(Collectors.toList()));
+        }
+        return encodedQueryParameters;
+    }
+
 
 //	public Iterable<Resource<Sample>> fetchUpdatedAfter(Instant updatedAfter) {
 //		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();
@@ -216,6 +218,8 @@ public class SampleRetrievalService {
 		return new IterableResourceFetch(accessions);
 	}
 
+
+
 	private class IterableResourceFetch implements Iterable<Optional<Resource<Sample>>> {
 
 		private final Iterable<String> accessions;
@@ -228,6 +232,8 @@ public class SampleRetrievalService {
 		public Iterator<Optional<Resource<Sample>>> iterator() {
 			return new IteratorResourceFetch(accessions.iterator());
 		}
+
+
 
 		private class IteratorResourceFetch implements Iterator<Optional<Resource<Sample>>> {
 
