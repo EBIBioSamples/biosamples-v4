@@ -179,9 +179,14 @@ public class SampleRetrievalService {
 	private MultiValueMap<String, String> encodePlusInQueryParameters(MultiValueMap<String, String> queryParameters) {
 	    MultiValueMap<String,String> encodedQueryParameters = new LinkedMultiValueMap<>();
 	    for (Map.Entry<String, List<String>> param: queryParameters.entrySet()) {
-            encodedQueryParameters.put(
-                    param.getKey(),
-                    param.getValue().stream().map(v->v.replaceAll("\\+","%2B")).collect(Collectors.toList()));
+	        	String key = param.getKey();
+	        	param.getValue().forEach(v -> {
+					if (v != null) {
+						encodedQueryParameters.add(key, v.replaceAll("\\+", "%2B"));
+					} else {
+						encodedQueryParameters.add(key, "");
+					}
+				});
         }
         return encodedQueryParameters;
     }

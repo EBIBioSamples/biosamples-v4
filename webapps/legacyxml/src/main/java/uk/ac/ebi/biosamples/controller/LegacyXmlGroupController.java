@@ -25,7 +25,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -110,12 +109,21 @@ public class LegacyXmlGroupController {
 			@RequestParam(name="sort", defaultValue = "desc") String sort
 	) {
 
-        Filter relationFilter = FilterBuilder.create().onInverseRelation("has member").withValue(groupAccession).build();
 //        Sort.Direction sort = Sort.Direction.fromString(queryParams.getOrDefault("sort","desc"));
+		List<Filter> filterList = new ArrayList<>();
+		filterList.add(FilterBuilder.create().onInverseRelation("has member").withValue(groupAccession).build());
+
+		if (legacyQueryParser.checkQueryContainsDateFilters(query)) {
+
+			Optional<Filter> dateRangeFilters = legacyQueryParser.getDateFiltersFromQuery(query);
+			dateRangeFilters.ifPresent(filterList::add);
+
+			query = legacyQueryParser.cleanQueryFromDateFilters(query);
+		}
 
 		PagedResources<Resource<Sample>> results =
 				client.fetchPagedSampleResource(query,
-						Collections.singleton(relationFilter),
+						filterList,
 						page - 1,
 						pagesize);
 

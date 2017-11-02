@@ -19,7 +19,7 @@ import java.util.Scanner;
 
 @Component
 @Order(5)
-@Profile({"default"})
+@Profile({"default","test"})
 public class SampleTabIntegration extends AbstractIntegration {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
