@@ -1,5 +1,7 @@
 package uk.ac.ebi.biosamples;
 
+import com.google.common.base.Charsets;
+import com.google.common.io.Resources;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -11,17 +13,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import com.google.common.base.Charsets;
-import com.google.common.io.Resources;
-
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Attribute;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
-import java.util.Scanner;
 
 @Component
 @Order(5)
@@ -38,7 +34,9 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 	private final URI uriVa;
 	private final URI uriAc;
 	
-	public SampleTabLegacyIntegration(RestTemplateBuilder restTemplateBuilder, IntegrationProperties integrationProperties, BioSamplesClient client) {
+	public SampleTabLegacyIntegration(RestTemplateBuilder restTemplateBuilder,
+									  IntegrationProperties integrationProperties,
+									  BioSamplesClient client) {
         super(client);
 		this.restTemplate = restTemplateBuilder.build();
 		this.integrationProperties = integrationProperties;

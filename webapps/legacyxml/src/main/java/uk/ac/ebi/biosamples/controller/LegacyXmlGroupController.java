@@ -17,8 +17,8 @@ import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.model.legacyxml.BioSample;
 import uk.ac.ebi.biosamples.model.legacyxml.BioSampleGroup;
 import uk.ac.ebi.biosamples.model.legacyxml.ResultQuery;
-import uk.ac.ebi.biosamples.service.LegacyQueryParser;
 import uk.ac.ebi.biosamples.service.FilterBuilder;
+import uk.ac.ebi.biosamples.service.LegacyQueryParser;
 import uk.ac.ebi.biosamples.service.SummaryInfoService;
 
 import javax.servlet.http.HttpServletResponse;
@@ -27,6 +27,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Controller
 public class LegacyXmlGroupController {
@@ -71,19 +72,20 @@ public class LegacyXmlGroupController {
 		
 		List<Filter> filterList = new ArrayList<>();
 		filterList.add(groupAccessionFilter);
+
 		if (legacyQueryParser.checkQueryContainsDateFilters(query)) {
 
-			List<Filter> dateRangeFilters = legacyQueryParser.getDateFiltersFromQuery(query);
-			filterList.addAll(dateRangeFilters);
+			Optional<Filter> dateRangeFilters = legacyQueryParser.getDateFiltersFromQuery(query);
+			dateRangeFilters.ifPresent(filterList::add);
 
 			query = legacyQueryParser.cleanQueryFromDateFilters(query);
 		}
+
 		PagedResources<Resource<Sample>> results = client.fetchPagedSampleResource(
 				query,
 				filterList,
 				page -1,
 				pagesize);
-//		PagedResources<Resource<Sample>> results = client.fetchPagedSampleResource(query, page - 1, pagesize);
 
 		ResultQuery resultQuery = new ResultQuery();
 		

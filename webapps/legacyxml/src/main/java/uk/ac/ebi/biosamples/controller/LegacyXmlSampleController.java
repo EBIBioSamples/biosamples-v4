@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Controller
 public class LegacyXmlSampleController {
@@ -39,6 +40,8 @@ public class LegacyXmlSampleController {
 	private final BioSamplesClient client;
 	private final SummaryInfoService summaryInfoService;
 	private final LegacyQueryParser legacyQueryParser;
+
+	private Filter sampleAccessionFilter = FilterBuilder.create().onAccession("SAM(N|D|EA|E)[0-9]+").build();
 
 	public LegacyXmlSampleController(BioSamplesClient client,
 									 SummaryInfoService summaryInfoService,
@@ -70,12 +73,12 @@ public class LegacyXmlSampleController {
 
 
 		List<Filter> filterList = new ArrayList<>();
-	    filterList.add(FilterBuilder.create().onAccession("SAM(N|D|EA|E)[0-9]+").build());
+	    filterList.add(sampleAccessionFilter);
 
 	    if (legacyQueryParser.checkQueryContainsDateFilters(query)) {
 
-	    	List<Filter> dateRangeFilters = legacyQueryParser.getDateFiltersFromQuery(query);
-	    	filterList.addAll(dateRangeFilters);
+	    	Optional<Filter> dateRangeFilters = legacyQueryParser.getDateFiltersFromQuery(query);
+	    	dateRangeFilters.ifPresent(filterList::add);
 
 	    	query = legacyQueryParser.cleanQueryFromDateFilters(query);
 		}

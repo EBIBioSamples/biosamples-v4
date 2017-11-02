@@ -4,8 +4,7 @@ import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.filter.DateRangeFilter;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -13,18 +12,23 @@ import java.util.regex.Pattern;
 public class LegacyQueryParser {
 
     private final String datePattern = "\\d{4}-\\d{2}-\\d{2}";
-    private final String dateRangePattern = "\\[(?<from>" + datePattern + ")\\s+TO\\s+(?<until>" + datePattern + ")]";
+    private final String encodedAndDecodedSpaces = "(?:\\s+|(?:%20)+)";
+    private final String dateRangePattern = "\\[(?<from>" + datePattern + ")"
+            + encodedAndDecodedSpaces
+            + "TO"
+            + encodedAndDecodedSpaces
+            + "(?<until>" + datePattern + ")]";
     private final String typeRangePattern = "(?<type>update|release)date:";
-    private final String finalPattern = "(?:" + typeRangePattern + dateRangePattern + ")+";
+    private final String finalPattern = "^(?:" + typeRangePattern + dateRangePattern + ")$";
 
 
     public boolean checkQueryContainsDateFilters(String query) {
         return Pattern.compile(finalPattern).matcher(query).find();
     }
 
-    public List<Filter> getDateFiltersFromQuery(String query) {
+    public Optional<Filter> getDateFiltersFromQuery(String query) {
 
-        List<Filter> dateRangeFilters = new ArrayList<>();
+        Filter dateRangeFilters = null;
 
         if (checkQueryContainsDateFilters(query)) {
             Matcher rangeMatcher = Pattern.compile(finalPattern).matcher(query);
@@ -39,10 +43,10 @@ public class LegacyQueryParser {
                 else
                     filterBuilder = FilterBuilder.create().onReleaseDate();
 
-                dateRangeFilters.add(filterBuilder.from(from).until(until).build());
+                dateRangeFilters = filterBuilder.from(from).until(until).build();
             }
         }
-        return dateRangeFilters;
+        return Optional.ofNullable(dateRangeFilters);
 
     }
 

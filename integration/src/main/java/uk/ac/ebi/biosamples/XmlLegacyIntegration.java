@@ -8,6 +8,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
@@ -15,7 +16,7 @@ import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import java.net.URI;
 import java.util.Scanner;
 
-//@Component
+@Component
 @Order(5)
 @Profile({"default"})
 public class XmlLegacyIntegration extends AbstractIntegration {
