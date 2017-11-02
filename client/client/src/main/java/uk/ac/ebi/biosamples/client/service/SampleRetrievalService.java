@@ -63,7 +63,8 @@ public class SampleRetrievalService {
 	}
 
 	public PagedResources<Resource<Sample>> search(String text, int page, int size) {
-		
+		//TODO remove duplicate with other search methods
+
 		//TODO make a proper HAL link to do this properly
 		return this.search(text, Collections.EMPTY_LIST, page, size);
 
@@ -73,7 +74,7 @@ public class SampleRetrievalService {
 		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();
 		params.add("page", Integer.toString(page));
 		params.add("size", Integer.toString(size));
-		params.add("text", !text.isEmpty() ? text : "*:*");
+		params.add("searchTerm", !text.isEmpty() ? text : "*:*");
 		for (Filter filter: filters) {
             params.add("filter", filter.getSerialization());
 		}
@@ -218,8 +219,6 @@ public class SampleRetrievalService {
 		return new IterableResourceFetch(accessions);
 	}
 
-
-
 	private class IterableResourceFetch implements Iterable<Optional<Resource<Sample>>> {
 
 		private final Iterable<String> accessions;
@@ -232,8 +231,6 @@ public class SampleRetrievalService {
 		public Iterator<Optional<Resource<Sample>>> iterator() {
 			return new IteratorResourceFetch(accessions.iterator());
 		}
-
-
 
 		private class IteratorResourceFetch implements Iterator<Optional<Resource<Sample>>> {
 

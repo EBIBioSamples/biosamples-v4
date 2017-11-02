@@ -65,12 +65,16 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 		});	
 		
 		log.info("Testing SampleTab JSON accession");
-		runCallableOnSampleTabResource("/GSB-32_unaccession.json", sampleTabString -> {
+		runCallableOnSampleTabResource("/GSB-32.json", sampleTabString -> {
 			log.info("POSTing to " + uriAc);
 			RequestEntity<String> request = RequestEntity.post(uriAc).contentType(MediaType.APPLICATION_JSON)
 					.body(sampleTabString);
 			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
 			log.info(""+response.getBody());
+			
+			if (!response.getBody().contains("SAMEA2186845")) {
+				throw new RuntimeException("Response does not have expected accession SAMEA2186845");
+			}			
 		});	
 		
 		log.info("Testing SampleTab JSON submission");
@@ -80,13 +84,43 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 					.body(sampleTabString);
 			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
 			log.info(""+response.getBody());
-			//TODO check it has same accessions as accession returned
+			
+			if (!response.getBody().contains("SAMEA2186845")) {
+				throw new RuntimeException("Response does not have expected accession SAMEA2186845");
+			}
 		});	
+		
 	}
 
 	@Override
 	protected void phaseTwo() {
+
+		log.info("Testing SampleTab JSON accession unaccessioned");
+		runCallableOnSampleTabResource("/GSB-32_unaccession.json", sampleTabString -> {
+			log.info("POSTing to " + uriAc);
+			RequestEntity<String> request = RequestEntity.post(uriAc).contentType(MediaType.APPLICATION_JSON)
+					.body(sampleTabString);
+			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+			log.info(""+response.getBody());
+			
+			if (!response.getBody().contains("SAMEA2186845")) {
+				throw new RuntimeException("Response does not have expected accession SAMEA2186845");
+			}
+			
+		});	
 		
+		log.info("Testing SampleTab JSON submission unaccessioned");
+		runCallableOnSampleTabResource("/GSB-32_unaccession.json", sampleTabString -> {
+			log.info("POSTing to " + uriSb);
+			RequestEntity<String> request = RequestEntity.post(uriSb).contentType(MediaType.APPLICATION_JSON)
+					.body(sampleTabString);
+			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+			log.info(""+response.getBody());
+			
+			if (!response.getBody().contains("SAMEA2186845")) {
+				throw new RuntimeException("Response does not have expected accession SAMEA2186845");
+			}
+		});	
 	}
 
 	@Override

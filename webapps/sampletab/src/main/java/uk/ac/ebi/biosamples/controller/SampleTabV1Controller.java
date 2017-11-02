@@ -40,6 +40,7 @@ import uk.ac.ebi.arrayexpress2.sampletab.parser.SampleTabParser;
 import uk.ac.ebi.arrayexpress2.sampletab.renderer.SampleTabWriter;
 import uk.ac.ebi.biosamples.service.ApiKeyService;
 import uk.ac.ebi.biosamples.service.SampleTabService;
+import uk.ac.ebi.biosamples.service.SampleTabService.DuplicateDomainSampleException;
 
 @RestController
 public class SampleTabV1Controller {
@@ -80,12 +81,15 @@ public class SampleTabV1Controller {
             if (outcome.sampledata.msi.submissionIdentifier.equals("GCG-HipSci")) {
                 outcome.sampledata.msi.submissionIdentifier = "GSB-3";
             }
-            //TODO do AAP domain property
-            sampleTabService.accessionSampleTab(outcome.sampledata, "self."+domain.get(), null, true);
+            // do AAP domain property
+            try {
+				sampleTabService.accessionSampleTab(outcome.sampledata, "self."+domain.get(), null, true);
+			} catch (DuplicateDomainSampleException e) {
+				return getErrorOutcome("Unable to accession", e.getMessage()+" Contact biosamples@ebi.ac.uk for more information.");
+			}
             return outcome;
         }        
     }
-    
     
     @PostMapping(value = "/v1/json/sb")
     public @ResponseBody Outcome doSubmission(@RequestBody SampleTabRequest request,  @RequestParam(value="apikey") String apiKey) {
@@ -111,8 +115,12 @@ public class SampleTabV1Controller {
             if (outcome.sampledata.msi.submissionIdentifier.equals("GCG-HipSci")) {
                 outcome.sampledata.msi.submissionIdentifier = "GSB-3";
             }
-            //TODO do AAP domain property
-            sampleTabService.saveSampleTab(outcome.sampledata, "self."+domain.get(), null, true);
+            // do AAP domain property
+            try {
+				sampleTabService.saveSampleTab(outcome.sampledata, "self."+domain.get(), null, true);
+			} catch (DuplicateDomainSampleException e) {
+				return getErrorOutcome("Unable to accession", e.getMessage()+" Contact biosamples@ebi.ac.uk for more information.");
+			}
             return outcome;
         }        
     }

@@ -62,7 +62,7 @@ public class SamplesRestController {
 	@CrossOrigin(methods = RequestMethod.GET)
 	@GetMapping(produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
 	public ResponseEntity<PagedResources<Resource<Sample>>> searchHal(
-			@RequestParam(name = "text", required = false) String text,
+			@RequestParam(name = "searchTerm", required = false) String text,
 			@RequestParam(name = "filter", required = false) String[] filter, Pageable page,
 			PagedResourcesAssembler<Sample> pageAssembler) {
 
