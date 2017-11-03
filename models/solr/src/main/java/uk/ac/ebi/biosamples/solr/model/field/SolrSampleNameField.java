@@ -1,5 +1,8 @@
 package uk.ac.ebi.biosamples.solr.model.field;
 
+import org.springframework.data.solr.core.query.Criteria;
+import uk.ac.ebi.biosamples.model.filter.Filter;
+import uk.ac.ebi.biosamples.model.filter.NameFilter;
 import uk.ac.ebi.biosamples.solr.model.strategy.FacetFetchStrategy;
 
 public class SolrSampleNameField extends SolrSampleField {
@@ -9,7 +12,7 @@ public class SolrSampleNameField extends SolrSampleField {
      * @param readableLabel
      * @param solrDocumentLabel
      */
-    protected SolrSampleNameField(String readableLabel, String solrDocumentLabel) {
+    public SolrSampleNameField(String readableLabel, String solrDocumentLabel) {
         super(readableLabel, solrDocumentLabel);
     }
 
@@ -21,5 +24,24 @@ public class SolrSampleNameField extends SolrSampleField {
     @Override
     public FacetFetchStrategy getFacetCollectionStrategy() {
         return null;
+    }
+
+    @Override
+    public Criteria getFilterCriteria(Filter filter) {
+        Criteria filterCriteria = null;
+
+        if (filter instanceof NameFilter) {
+
+            filterCriteria = new Criteria(getSolrDocumentFieldName());
+
+            NameFilter nameFilter = (NameFilter) filter;
+            if (nameFilter.getContent().isPresent()) {
+                filterCriteria = filterCriteria.expression("/" + nameFilter.getContent().get() + "/");
+            } else {
+                filterCriteria = filterCriteria.isNotNull();
+            }
+        }
+
+        return filterCriteria;
     }
 }

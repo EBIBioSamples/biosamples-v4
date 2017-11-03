@@ -3,32 +3,32 @@ package uk.ac.ebi.biosamples.model.filter;
 import java.util.Objects;
 import java.util.Optional;
 
-public class DomainFilter implements Filter{
+public class AccessionFilter implements Filter {
 
-    private String domain;
+    private String accessionPattern;
 
-    private DomainFilter(String domain) {
-        this.domain = domain;
+    private AccessionFilter(String accessionPattern) {
+        this.accessionPattern = accessionPattern;
     }
 
     @Override
     public FilterType getType() {
-        return FilterType.DOMAIN_FILTER;
+        return FilterType.ACCESSION_FILTER;
     }
 
     @Override
     public String getLabel() {
-        return "domain";
+        return "id";
     }
 
     @Override
     public Optional<String> getContent() {
-        return Optional.of(this.domain);
+        return Optional.of(this.accessionPattern);
     }
 
     @Override
     public String getSerialization() {
-        return this.getType().getSerialization() + ":" + this.domain;
+        return this.getType().getSerialization() + ":" + this.accessionPattern;
     }
 
     @Override
@@ -36,10 +36,10 @@ public class DomainFilter implements Filter{
         if (obj == this) {
             return true;
         }
-        if (!(obj instanceof DomainFilter)) {
+        if (!(obj instanceof AccessionFilter)) {
             return false;
         }
-        DomainFilter other = (DomainFilter) obj;
+        AccessionFilter other = (AccessionFilter) obj;
         return Objects.equals(other.getContent().orElse(null), this.getContent().orElse(null));
     }
 
@@ -48,18 +48,17 @@ public class DomainFilter implements Filter{
         return Objects.hash(this.getContent().orElse(null));
     }
 
-
     public static class Builder implements Filter.Builder {
 
-        private String domain;
+        private String pattern;
 
-        public Builder(String domain) {
-            this.domain = domain;
+        public Builder(String pattern) {
+            this.pattern = pattern;
         }
 
         @Override
         public Filter build() {
-            return new DomainFilter(this.domain);
+            return new AccessionFilter(this.pattern);
         }
 
         @Override
@@ -67,4 +66,6 @@ public class DomainFilter implements Filter{
             return new Builder(filterSerialized);
         }
     }
+
 }
+

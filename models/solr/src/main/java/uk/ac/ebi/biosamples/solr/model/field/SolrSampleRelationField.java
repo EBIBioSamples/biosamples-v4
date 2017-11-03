@@ -1,5 +1,8 @@
 package uk.ac.ebi.biosamples.solr.model.field;
 
+import org.springframework.data.solr.core.query.Criteria;
+import uk.ac.ebi.biosamples.model.filter.Filter;
+import uk.ac.ebi.biosamples.model.filter.RelationFilter;
 import uk.ac.ebi.biosamples.solr.model.strategy.FacetFetchStrategy;
 import uk.ac.ebi.biosamples.solr.model.strategy.RegularFacetFetchStrategy;
 
@@ -22,5 +25,24 @@ public class SolrSampleRelationField extends SolrSampleField{
     @Override
     public FacetFetchStrategy getFacetCollectionStrategy() {
         return new RegularFacetFetchStrategy();
+    }
+
+    @Override
+    public Criteria getFilterCriteria(Filter filter) {
+        Criteria filterCriteria = null;
+
+        if (filter instanceof RelationFilter) {
+
+            filterCriteria = new Criteria(getSolrDocumentFieldName());
+
+            RelationFilter relationFilter = (RelationFilter) filter;
+            if (relationFilter.getContent().isPresent()) {
+                filterCriteria = filterCriteria.expression("/" + relationFilter.getContent() + "/");
+            } else {
+                filterCriteria = filterCriteria.isNotNull();
+            }
+        }
+
+        return filterCriteria;
     }
 }

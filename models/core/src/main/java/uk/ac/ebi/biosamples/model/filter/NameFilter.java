@@ -1,5 +1,6 @@
 package uk.ac.ebi.biosamples.model.filter;
 
+import java.util.Objects;
 import java.util.Optional;
 
 public class NameFilter implements Filter {
@@ -28,6 +29,23 @@ public class NameFilter implements Filter {
     @Override
     public String getSerialization() {
         return this.getType().getSerialization() + ":" + this.name;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (!(obj instanceof NameFilter)) {
+            return false;
+        }
+        NameFilter other = (NameFilter) obj;
+        return Objects.equals(other.getContent().orElse(null), this.getContent().orElse(null));
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.getContent().orElse(null));
     }
 
     public static class Builder implements Filter.Builder {

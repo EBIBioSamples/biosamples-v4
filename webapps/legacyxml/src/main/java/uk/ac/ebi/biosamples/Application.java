@@ -54,6 +54,17 @@ public class Application extends SpringBootServletInitializer {
 		return new Jaxb2RootElementHttpMessageConverter();
 	}
 
+//	@Bean
+//	public FilterRegistrationBean filterRegistrationBean() {
+//		CharacterEncodingFilter filter = new CharacterEncodingFilter();
+//		filter.setEncoding("UTF-8");
+//
+//		FilterRegistrationBean registrationBean = new FilterRegistrationBean();
+//		registrationBean.setFilter(filter);
+//		registrationBean.addUrlPatterns("/*");
+//		return registrationBean;
+//	}
+
 
 
 }
