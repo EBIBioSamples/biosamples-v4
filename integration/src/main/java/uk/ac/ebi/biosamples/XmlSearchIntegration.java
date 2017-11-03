@@ -49,7 +49,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
     @Override
     protected void phaseOne() {
 
-        xmlSearchTester.registerSamplesInBioSamples();
+        xmlSearchTester.registerTestSamplesInBioSamples();
 
     }
 
@@ -110,7 +110,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
             this.integrationProperties = integrationProperties;
         }
 
-        public void registerSamplesInBioSamples() {
+        public void registerTestSamplesInBioSamples() {
 
             List<Sample> baseSampleList = Arrays.asList(
                     TestSampleGenerator.getRegularSample(),
