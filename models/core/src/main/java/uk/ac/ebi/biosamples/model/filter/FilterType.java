@@ -1,15 +1,31 @@
 package uk.ac.ebi.biosamples.model.filter;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public enum FilterType {
-    ATTRIBUTE_FILTER("fa", AttributeFilter.Builder.class),
-    NAME_FILTER("fn", NameFilter.Builder.class),
-    RELATION_FILER("fr", RelationFilter.Builder.class),
-    INVERSE_RELATION_FILTER("fir", InverseRelationFilter.Builder.class),
-    DOMAIN_FILTER("fdom", DomainFilter.Builder.class),
-    DATE_FILTER("fdt", DateRangeFilter.Builder.class),
-    EXTERNAL_REFERENCE_DATA_FILTER("ferd", ExternalReferenceDataFilter.Builder.class);
+    ATTRIBUTE_FILTER("attr", AttributeFilter.Builder.class),
+    NAME_FILTER("name", NameFilter.Builder.class),
+    RELATION_FILER("rel", RelationFilter.Builder.class),
+    INVERSE_RELATION_FILTER("rrel", InverseRelationFilter.Builder.class),
+    DOMAIN_FILTER("dom", DomainFilter.Builder.class),
+    DATE_FILTER("dt", DateRangeFilter.Builder.class),
+    EXTERNAL_REFERENCE_DATA_FILTER("extd", ExternalReferenceDataFilter.Builder.class),
+    ACCESSION_FILTER("acc", AccessionFilter.Builder.class);
+
+    private static List<FilterType> filterTypesByLength = new ArrayList<>();
+
+    static {
+        filterTypesByLength = Stream.of(values())
+                .sorted(
+                    Comparator.comparingInt((FilterType f) -> f.getSerialization().length()).reversed()
+                    .thenComparing((FilterType::getSerialization))
+                ).collect(Collectors.toList());
+    }
 
     String serialization;
     Class<? extends Filter.Builder> associatedBuilder;
@@ -32,7 +48,7 @@ public enum FilterType {
     }
 
     public static FilterType ofFilterString(String filterString) {
-        for(FilterType type: values()) {
+        for(FilterType type: filterTypesByLength) {
             if (filterString.startsWith(type.getSerialization())) {
                 return type;
             }

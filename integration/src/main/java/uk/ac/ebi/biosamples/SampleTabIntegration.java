@@ -19,7 +19,7 @@ import java.util.Scanner;
 
 @Component
 @Order(5)
-@Profile({"default"})
+@Profile({"default","test"})
 public class SampleTabIntegration extends AbstractIntegration {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
@@ -42,7 +42,7 @@ public class SampleTabIntegration extends AbstractIntegration {
 	@Override
 	protected void phaseOne() {
 
-		runCallableOnSampleTabResource("/GSB-32_unaccession.txt", sampleTabString -> {
+		runCallableOnSampleTabResource("/GSB-12_unaccession.txt", sampleTabString -> {
 			log.info("POSTing to " + uri);
 			RequestEntity<String> request = RequestEntity.post(uri).contentType(MediaType.TEXT_PLAIN)
 					.body(sampleTabString);
@@ -72,7 +72,7 @@ public class SampleTabIntegration extends AbstractIntegration {
 	@Override
 	protected void phaseTwo() {
 		
-		runCallableOnSampleTabResource("/GSB-32.txt", sampleTabString -> {
+		runCallableOnSampleTabResource("/GSB-12.txt", sampleTabString -> {
 			log.info("POSTing to " + uri);
 			RequestEntity<String> request = RequestEntity.post(uri)
 					.contentType(MediaType.parseMediaType("text/plain;charset=UTF-8")).body(sampleTabString);

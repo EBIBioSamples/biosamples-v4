@@ -103,6 +103,11 @@ public class DateRangeFilter implements Filter {
             return this;
         }
 
+        public Builder from(String stringDate) {
+            this.from  = parseDateTime(stringDate);
+            return this;
+        }
+
 
         public Builder until(ZonedDateTime toZonedDateTime) {
             this.until = toZonedDateTime;
@@ -116,6 +121,11 @@ public class DateRangeFilter implements Filter {
 
         public Builder until(LocalDate toLocalDate) {
             this.until = toLocalDate.atStartOfDay().atZone(defaultZoneId);
+            return this;
+        }
+
+        public Builder until(String date) {
+            this.until = parseDateTime(date);
             return this;
         }
 

@@ -39,8 +39,8 @@ echo "checking mongo is up"
 
 docker-compose up -d biosamples-webapps-core biosamples-webapps-sampletab biosamples-webapps-legacyxml
 echo "checking webapps-core is up"
-./http-status-check -u http://localhost:8081/biosamples/beta/health -t 120
+./http-status-check -u http://localhost:8081/biosamples/beta/health -t 300
 echo "checking webapps-sampletab is up"
-./http-status-check -u http://localhost:8082/biosamples/beta/sampletab/health -t 120
+./http-status-check -u http://localhost:8082/biosamples/beta/sampletab/health -t 30
 echo "checking webapps-legacyxml is up"
-./http-status-check -u http://localhost:8083/biosamples/beta/xml/health -t 120
+./http-status-check -u http://localhost:8083/biosamples/beta/xml/health -t 30

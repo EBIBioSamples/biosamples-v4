@@ -18,3 +18,4 @@ webapps/core/src/main/java/uk/ac/ebi/biosamples/xml/XmlExceptionHttpMessageConve
 env.sh
 .ideavimrc
 test-features
+run_test.py

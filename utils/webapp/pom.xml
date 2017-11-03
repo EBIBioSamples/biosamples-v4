@@ -18,10 +18,6 @@
 			<artifactId>models-core</artifactId>
 			<version>${bsd2017.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-		</dependency>
 		<!-- make xml serialization possible -->
 		<dependency>
 			<groupId>com.fasterxml.jackson.dataformat</groupId>

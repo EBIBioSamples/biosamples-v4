@@ -1,0 +1,104 @@
+{
+	"sampletab": [
+		[
+			"[MSI]"
+		],
+		[
+			"Submission Title",
+			"Test samples"
+		],
+		[
+			"Submission Identifier",
+			"GSB-44"
+		],
+		[
+			"Submission Description",
+			"These are samples to test integration across EBI resources"
+		],
+		[
+			"Submission Version",
+			"1.2"
+		],
+		[
+			"Submission Reference Layer",
+			"false"
+		],
+		[
+			"Submission Release Date",
+			"2013/09/10"
+		],
+		[
+			"Submission Update Date",
+			"2013/09/10"
+		],
+		[
+			"Term Source Name",
+			"NCBI Taxonomy",
+			""
+		],
+		[
+			"Term Source URI",
+			"http://www.ncbi.nlm.nih.gov/taxonomy",
+			""
+		],
+		[
+			"Term Source Version",
+			"",
+			""
+		],
+		[
+			""
+		],
+		[
+			"[SCD]"
+		],
+		[
+			"Sample Name",
+			"Sample Accession",
+			"Sample Description",
+			"Organism",
+			"Term Source REF",
+			"Term Source ID",
+			"Database Name",
+			"Database ID",
+			"Database URI",
+			"Database Name",
+			"Database ID",
+			"Database URI",
+			""
+		],
+		[
+			"qwertyTest 1",
+			"SAMEA2186845",
+			"Test sample α",
+			"Homo sapiens",
+			"NCBI Taxonomy",
+			"9606",
+			"DB",
+			"test1",
+			"http://www.ebi.ac.uk/biosamples/sample/SAMEA2186845",
+			"DB",
+			"test2",
+			"http://www.ebi.ac.uk/biosamples/sample/SAMEA2186844",
+			""
+		],
+		[
+			"qwertyTest 2",
+			"SAMEA2186844",
+			"Test sample β",
+			"Homo sapiens",
+			"NCBI Taxonomy",
+			"9606",
+			"",
+			"",
+			"",
+			"",
+			"",
+			"",
+			""
+		],
+		[
+			""
+		]
+	]
+}

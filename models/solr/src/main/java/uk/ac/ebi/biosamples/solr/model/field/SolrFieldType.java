@@ -1,7 +1,9 @@
 package uk.ac.ebi.biosamples.solr.model.field;
 
 import uk.ac.ebi.biosamples.model.FacetFilterFieldType;
+import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.model.filter.FilterType;
+import uk.ac.ebi.biosamples.solr.service.SolrFieldService;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -24,7 +26,8 @@ public enum SolrFieldType {
     DATE(FacetFilterFieldType.UPDATE_DATE, "_dt", NOT_ENCODED, SolrSampleDateField.class),
     DOMAIN(FacetFilterFieldType.DOMAIN, "_s", NOT_ENCODED, SolrSampleDomainField.class),
     EXTERNAL_REFERENCE_DATA(FacetFilterFieldType.EXTERNAL_REFERENCE_DATA, "_erd_ss", ENCODED, SolrSampleExternalReferenceDataField.class),
-    NAME(FacetFilterFieldType.NAME, "_s", NOT_ENCODED, SolrSampleNameField.class),;
+    NAME(FacetFilterFieldType.NAME, "_s", NOT_ENCODED, SolrSampleNameField.class),
+    ACCESSION(FacetFilterFieldType.ACCESSION, "", NOT_ENCODED, SolrSampleAccessionField.class);
 
 
     private static EnumMap<FilterType, SolrFieldType> filterToSolrFieldMap = new EnumMap<FilterType, SolrFieldType>(FilterType.class);
@@ -72,6 +75,21 @@ public enum SolrFieldType {
         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public SolrSampleField getAssociatedClassInstance(String label) {
+        String solrDocumentLabel = SolrFieldService.encodedField(label, this);
+        try {
+            Constructor<? extends SolrSampleField> constructor = this.associatedClass.getConstructor(String.class, String.class);
+            return constructor.newInstance(label, solrDocumentLabel);
+        } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static SolrSampleField buildFromFilter(Filter filter) {
+        SolrFieldType fieldType = getFromFilterType(filter.getType());
+        return fieldType.getAssociatedClassInstance(filter.getLabel());
     }
 
 

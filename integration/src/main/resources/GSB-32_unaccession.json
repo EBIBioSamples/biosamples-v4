@@ -68,7 +68,7 @@
 			""
 		],
 		[
-			"Test 1",
+			"qwertyTest 1",
 			"",
 			"Test sample α",
 			"Homo sapiens",
@@ -76,14 +76,14 @@
 			"9606",
 			"DB",
 			"test1",
-			"http://www.ebi.ac.uk/biosamples/sample/SAMEA2186845",
+			"http://www.ebi.ac.uk/biosamples/samples/SAMEA1",
 			"DB",
 			"test2",
-			"http://www.ebi.ac.uk/biosamples/sample/SAMEA2186844",
+			"http://www.ebi.ac.uk/biosamples/samples/SAMEA2",
 			""
 		],
 		[
-			"Test 2",
+			"qwertyTest 2",
 			"",
 			"Test sample β",
 			"Homo sapiens",

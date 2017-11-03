@@ -2,7 +2,7 @@ package uk.ac.ebi.biosamples.solr.model.field;
 
 import uk.ac.ebi.biosamples.solr.model.strategy.FacetFetchStrategy;
 
-public abstract class SolrSampleField {
+public abstract class SolrSampleField implements FilterCriteriaBuilder {
 
     private String readableLabel;
     private String solrDocumentLabel;
@@ -14,11 +14,7 @@ public abstract class SolrSampleField {
      */
     protected SolrSampleField(String readableLabel, String solrDocumentLabel) {
         this.readableLabel = readableLabel;
-        if(this.getSolrFieldType().isEncoded()) {
-            this.solrDocumentLabel = solrDocumentLabel;
-        } else {
-            this.solrDocumentLabel = readableLabel;
-        }
+        this.solrDocumentLabel = solrDocumentLabel;
     }
 
     public abstract SolrFieldType getSolrFieldType();

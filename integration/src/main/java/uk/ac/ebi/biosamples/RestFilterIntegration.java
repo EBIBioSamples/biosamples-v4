@@ -21,6 +21,7 @@ import java.util.TreeSet;
 
 @Component
 @Profile({"default", "rest"})
+
 public class RestFilterIntegration extends AbstractIntegration{
 
     private Logger log = LoggerFactory.getLogger(this.getClass());
@@ -93,9 +94,9 @@ public class RestFilterIntegration extends AbstractIntegration{
 
 
         log.info("Getting sample 2 using filter on name");
-        attributeFilter = FilterBuilder.create().onName(testSample2.getName()).build();
+        Filter nameFilter = FilterBuilder.create().onName(testSample2.getName()).build();
         samplePage = client.fetchPagedSampleResource("",
-                Collections.singletonList(attributeFilter),
+                Collections.singletonList(nameFilter),
                 0, 10);
         if (samplePage.getMetadata().getTotalElements() != 1) {
             throw new RuntimeException("Unexpected number of results for attribute filter query: " + samplePage.getMetadata().getTotalElements());
@@ -104,8 +105,19 @@ public class RestFilterIntegration extends AbstractIntegration{
         if (!restSample.getContent().equals(testSample2)) {
             throw new RuntimeException("Unexpected number of results for attribute filter query: " + samplePage.getMetadata().getTotalElements());
         }
-        
-        
+
+        log.info("Getting sample 1 and 2 using filter on accession");
+        Filter accessionFilter = FilterBuilder.create().onAccession("TestFilter[12]").build();
+        samplePage = client.fetchPagedSampleResource("",
+                Collections.singletonList(accessionFilter),
+                0, 10);
+        if (samplePage.getMetadata().getTotalElements() != 2) {
+            throw new RuntimeException("Unexpected number of results for attribute filter query: " + samplePage.getMetadata().getTotalElements());
+        }
+
+        if (!samplePage.getContent().stream().allMatch(r-> r.getContent().equals(testSample1) || r.getContent().equals(testSample2))) {
+            throw new RuntimeException("Unexpected number of results for attribute filter query: " + samplePage.getMetadata().getTotalElements());
+        }
 
     }
 

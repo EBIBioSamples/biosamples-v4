@@ -1,5 +1,6 @@
 package uk.ac.ebi.biosamples.model.filter;
 
+import java.util.Objects;
 import java.util.Optional;
 
 public class DomainFilter implements Filter{
@@ -29,6 +30,24 @@ public class DomainFilter implements Filter{
     public String getSerialization() {
         return this.getType().getSerialization() + ":" + this.domain;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (!(obj instanceof DomainFilter)) {
+            return false;
+        }
+        DomainFilter other = (DomainFilter) obj;
+        return Objects.equals(other.getContent().orElse(null), this.getContent().orElse(null));
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.getContent().orElse(null));
+    }
+
 
     public static class Builder implements Filter.Builder {
 
