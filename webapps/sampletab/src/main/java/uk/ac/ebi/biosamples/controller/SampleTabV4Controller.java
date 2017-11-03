@@ -12,6 +12,7 @@ import uk.ac.ebi.arrayexpress2.magetab.listener.ErrorItemListener;
 import uk.ac.ebi.arrayexpress2.sampletab.datamodel.SampleData;
 import uk.ac.ebi.arrayexpress2.sampletab.parser.SampleTabParser;
 import uk.ac.ebi.biosamples.service.SampleTabService;
+import uk.ac.ebi.biosamples.service.SampleTabService.ConflictingSampleTabOwnershipException;
 import uk.ac.ebi.biosamples.service.SampleTabService.DuplicateDomainSampleException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -93,7 +94,7 @@ public class SampleTabV4Controller {
         //TODO do AAP domain property
         try {
 			sampleTabService.saveSampleTab(sampledata, "self.BiosampleIntegrationTest", jwt, setUpdateDate);
-		} catch (DuplicateDomainSampleException e) {
+		} catch (DuplicateDomainSampleException | ConflictingSampleTabOwnershipException e) {
 			return ResponseEntity.badRequest().body(e.getMessage());
 		}
         

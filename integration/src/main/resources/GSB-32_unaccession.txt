@@ -12,5 +12,5 @@ Term Source Version
 
 [SCD]
 Sample Name	Sample Accession	Sample Description	Organism	Term Source REF	Term Source ID	Database Name	Database ID	Database URI	Database Name	Database ID	Database URI	
-Test 1		Test sample α	Homo sapiens	NCBI Taxonomy	9606	DB	test1	http://www.ebi.ac.uk/biosamples/samples/SAMEA1	DB	test2	http://www.ebi.ac.uk/biosamples/samples/SAMEA2	
-Test 2		Test sample β	Homo sapiens	NCBI Taxonomy	9606							
+qwertyTest 1		Test sample α	Homo sapiens	NCBI Taxonomy	9606	DB	test1	http://www.ebi.ac.uk/biosamples/samples/SAMEA1	DB	test2	http://www.ebi.ac.uk/biosamples/samples/SAMEA2	
+qwertyTest 2		Test sample β	Homo sapiens	NCBI Taxonomy	9606							
