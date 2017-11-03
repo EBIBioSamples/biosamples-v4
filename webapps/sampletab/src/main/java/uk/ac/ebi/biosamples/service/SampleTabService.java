@@ -1,14 +1,18 @@
 package uk.ac.ebi.biosamples.service;
 
+import java.io.IOException;
+import java.io.StringWriter;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.Instant;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -30,12 +34,15 @@ import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.attribute.Characteri
 import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.attribute.CommentAttribute;
 import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.attribute.DatabaseAttribute;
 import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.attribute.SCDNodeAttribute;
+import uk.ac.ebi.arrayexpress2.sampletab.renderer.SampleTabWriter;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
+import uk.ac.ebi.biosamples.mongo.model.MongoSampleTab;
+import uk.ac.ebi.biosamples.mongo.repo.MongoSampleTabRepository;
 
 @Service
 public class SampleTabService {
@@ -43,9 +50,13 @@ public class SampleTabService {
 	private Logger log = LoggerFactory.getLogger(getClass());
 	
 	private final BioSamplesClient bioSamplesClient;
+	private final MongoSampleTabRepository mongoSampleTabRepository;
+	private final SampleTabIdService sampleTabIdSerivce;
 
-	public SampleTabService(BioSamplesClient bioSamplesClient) {
+	public SampleTabService(BioSamplesClient bioSamplesClient, MongoSampleTabRepository mongoSampleTabRepository, SampleTabIdService sampleTabIdService) {
 		this.bioSamplesClient = bioSamplesClient;
+		this.mongoSampleTabRepository = mongoSampleTabRepository;
+		this.sampleTabIdSerivce = sampleTabIdService;
 	}
 	public SampleData accessionSampleTab(SampleData sampleData, String domain, String jwt, boolean setUpdateDate) 
 			throws DuplicateDomainSampleException {
@@ -106,11 +117,12 @@ public class SampleTabService {
 				groupNode.setGroupAccession(sample.getAccession());
 			}				
 		}
+		
 		return sampleData;
 	}
 	
 	public SampleData saveSampleTab(SampleData sampleData, String domain, String jwt, boolean setUpdateDate) 
-			throws DuplicateDomainSampleException {
+			throws DuplicateDomainSampleException, ConflictingSampleTabOwnershipException {
 		
 		Instant release = Instant.ofEpochMilli(sampleData.msi.submissionReleaseDate.getTime());
 		Instant update = Instant.ofEpochMilli(sampleData.msi.submissionUpdateDate.getTime());
@@ -205,6 +217,101 @@ public class SampleTabService {
 				groupNode.setGroupAccession(sample.getAccession());
 			}				
 		}
+		
+		
+		if (sampleData.msi.submissionIdentifier != null) {
+			//this is an update of an existing sampletab
+			//get old sampletab document	
+			MongoSampleTab oldSampleTab = mongoSampleTabRepository.findOne(sampleData.msi.submissionIdentifier);
+			
+			if (oldSampleTab == null) {
+				//no previous submission with this Id
+				//TODO if user is not super-user, abort
+				
+			} else {
+			
+				//delete any samples/groups that were in the old version but no the latest one
+				Set<String> oldAccessions = new HashSet<>(oldSampleTab.getAccessions());
+				Set<String> newAccessions = new HashSet<>();
+				for (SampleNode sampleNode : sampleData.scd.getNodes(SampleNode.class)) {
+					newAccessions.add(sampleNode.getSampleAccession());
+				}
+				for (GroupNode groupNode : sampleData.scd.getNodes(GroupNode.class)) {
+					newAccessions.add(groupNode.getGroupAccession());
+				}
+				oldAccessions.removeAll(newAccessions);
+				for (String toRemove : oldAccessions) {
+					//get the existing version to be deleted
+					Optional<Resource<Sample>> oldSample = bioSamplesClient.fetchSampleResource(toRemove);
+					if (oldSample.isPresent()) {
+						//don't do a hard-delete, instead mark it as public in 100 years
+						Sample sample = Sample.build(oldSample.get().getContent().getName(), toRemove, domain, 
+								ZonedDateTime.now(ZoneOffset.UTC).plusYears(100).toInstant(), update, 
+								new TreeSet<>(), new TreeSet<>(), new TreeSet<>());
+						sample = bioSamplesClient.persistSampleResource(sample, setUpdateDate).getContent();
+					}
+				}
+				
+				//check samples are owned by this sampletab and not any others
+				for (String accession : newAccessions) {
+					MongoSampleTab accessionSampleTab = mongoSampleTabRepository.findOneByAccessionContaining(accession);
+					if (accessionSampleTab != null && !accessionSampleTab.getId().equals(sampleData.msi.submissionIdentifier)) {
+						//TODO this sample is "owned" by a different sampletab file
+						
+						throw new ConflictingSampleTabOwnershipException(accession, accessionSampleTab.getId(), sampleData.msi.submissionIdentifier);
+					}
+				}
+			}
+			
+
+			//persist latest SampleTab
+			//get the accessions in it
+			Set<String> sampletabAccessions = new HashSet<>();
+			for (SampleNode sampleNode : sampleData.scd.getNodes(SampleNode.class)) {
+				sampletabAccessions.add(sampleNode.getSampleAccession());
+			}
+			for (GroupNode groupNode : sampleData.scd.getNodes(GroupNode.class)) {
+				sampletabAccessions.add(groupNode.getGroupAccession());
+			}			
+			//write the sampledata object into a string representation
+			//this might end up being slightly different from what was submitted
+			//so we still need to keep the original POST content
+			SampleTabWriter sampleTabWriter = null;
+			StringWriter stringWriter = null;
+			String sampleTab = null;
+			try {
+				stringWriter = new StringWriter();
+				sampleTabWriter = new SampleTabWriter(stringWriter);
+				sampleTab = stringWriter.toString();
+			} finally {
+				if (sampleTabWriter != null) {
+					try {
+						sampleTabWriter.close();
+					} catch (IOException e) {
+						//do nothing
+					}
+				}
+				if (stringWriter != null) {
+					try {
+						stringWriter.close();
+					} catch (IOException e) {
+						//do nothing
+					}
+				}
+			}
+			//actually persist it
+			mongoSampleTabRepository.save(MongoSampleTab.build(sampleData.msi.submissionIdentifier, domain, sampleTab, sampletabAccessions));
+			
+		} else {
+			//no existing sample tab identifier
+			//submit to generate one, then return it to client
+			//TODO check samples are not owned by other sampletabs
+			//TODO persist latest SampleTab
+		}
+		
+		
+		
+		
 		return sampleData;
 	}
 	
@@ -287,6 +394,7 @@ public class SampleTabService {
 	
 	public static class DuplicateDomainSampleException extends Exception {
 		
+		private static final long serialVersionUID = -3469688972274912777L;
 		public final String domain;
 		public final String name;
 		
@@ -294,6 +402,21 @@ public class SampleTabService {
 			super("Multiple existing accessions of domain '"+domain+"' sample name '"+name+"'");
 			this.domain = domain;
 			this.name = name;
+		}
+	}
+	
+	public static class ConflictingSampleTabOwnershipException extends Exception {
+		
+		private static final long serialVersionUID = -1504945560846665587L;
+		public final String sampleAccession;
+		public final String originalSubmission;
+		public final String newSubmission;
+		
+		public ConflictingSampleTabOwnershipException (String sampleAccession, String originalSubmission, String newSubmission) {
+			super("Accession "+sampleAccession+" was previouly described in "+originalSubmission);
+			this.sampleAccession = sampleAccession;
+			this.originalSubmission = originalSubmission;
+			this.newSubmission = newSubmission;
 		}
 	}
 }

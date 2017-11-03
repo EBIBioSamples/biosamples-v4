@@ -40,6 +40,7 @@ import uk.ac.ebi.arrayexpress2.sampletab.parser.SampleTabParser;
 import uk.ac.ebi.arrayexpress2.sampletab.renderer.SampleTabWriter;
 import uk.ac.ebi.biosamples.service.ApiKeyService;
 import uk.ac.ebi.biosamples.service.SampleTabService;
+import uk.ac.ebi.biosamples.service.SampleTabService.ConflictingSampleTabOwnershipException;
 import uk.ac.ebi.biosamples.service.SampleTabService.DuplicateDomainSampleException;
 
 @RestController
@@ -118,7 +119,7 @@ public class SampleTabV1Controller {
             // do AAP domain property
             try {
 				sampleTabService.saveSampleTab(outcome.sampledata, "self."+domain.get(), null, true);
-			} catch (DuplicateDomainSampleException e) {
+			} catch (DuplicateDomainSampleException | ConflictingSampleTabOwnershipException e) {
 				return getErrorOutcome("Unable to accession", e.getMessage()+" Contact biosamples@ebi.ac.uk for more information.");
 			}
             return outcome;

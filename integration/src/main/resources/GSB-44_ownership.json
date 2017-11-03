@@ -9,7 +9,7 @@
 		],
 		[
 			"Submission Identifier",
-			"GSB-32"
+			"GSB-44"
 		],
 		[
 			"Submission Description",
@@ -69,22 +69,22 @@
 		],
 		[
 			"qwertyTest 1",
-			"",
+			"SAMEA2186845",
 			"Test sample α",
 			"Homo sapiens",
 			"NCBI Taxonomy",
 			"9606",
 			"DB",
 			"test1",
-			"http://www.ebi.ac.uk/biosamples/samples/SAMEA1",
+			"http://www.ebi.ac.uk/biosamples/sample/SAMEA2186845",
 			"DB",
 			"test2",
-			"http://www.ebi.ac.uk/biosamples/samples/SAMEA2",
+			"http://www.ebi.ac.uk/biosamples/sample/SAMEA2186844",
 			""
 		],
 		[
 			"qwertyTest 2",
-			"",
+			"SAMEA2186844",
 			"Test sample β",
 			"Homo sapiens",
 			"NCBI Taxonomy",
