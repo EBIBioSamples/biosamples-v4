@@ -1,30 +1,44 @@
-package uk.ac.ebi.biosamples;
+package uk.ac.ebi.biosamples.controller;
 
 import com.jayway.jsonpath.JsonPath;
 import org.hamcrest.Matchers;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.Resource;
+import org.springframework.http.RequestEntity;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import uk.ac.ebi.biosamples.TestAttribute;
+import uk.ac.ebi.biosamples.TestSample;
+import uk.ac.ebi.biosamples.model.LegacyRelations;
+import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.SampleService;
 
+import java.net.URI;
 import java.time.Instant;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
 @AutoConfigureMockMvc
+@SpringBootTest(webEnvironment= SpringBootTest.WebEnvironment.RANDOM_PORT)
+//@SpringBootTest
 public class LegacySamplesControllerIntegrationTest {
 
 	@MockBean
@@ -32,6 +46,14 @@ public class LegacySamplesControllerIntegrationTest {
 
 	@Autowired
     private MockMvc mockMvc;
+
+    @LocalServerPort
+    private int port;
+
+	@Autowired
+	private TestRestTemplate restTemplate;
+
+	private final static String BASE_PATH = "http://localhost" ;
 
 	@Test
 	public void testReturnSampleByAccession() throws Exception {
@@ -121,7 +143,7 @@ public class LegacySamplesControllerIntegrationTest {
 				        Matchers.allOf(
 				        		Matchers.hasKey("sample"),
 								Matchers.hasKey("self"),
-								Matchers.hasKey("relationships")
+								Matchers.hasKey("relations")
 						)
 				));
 	}
@@ -138,8 +160,31 @@ public class LegacySamplesControllerIntegrationTest {
 					String responseContent = result.getResponse().getContentAsString();
 					String sampleHref = JsonPath.parse(responseContent).read("$._links.sample.href");
 					String selfHref = JsonPath.parse(responseContent).read("$._links.self.href");
-					Assert.assertEquals(sampleHref, selfHref);
+					assertEquals(sampleHref, selfHref);
 				});
+	}
+
+	@Test
+	public void testUsingRelationshipLinkGetsARelationshipsResource() throws Exception {
+		Sample testSample = new TestSample("SAMED666").withRelationship(
+				Relationship.build("SAMED666", "deriveFrom", "SAMED555")
+		).build();
+		when(sampleServiceMock.findByAccession(testSample.getAccession())).thenReturn(testSample);
+
+		MvcResult result = mockMvc.perform(get("/samples/{accession}", testSample.getAccession())
+				.accept(MediaTypes.HAL_JSON))
+				.andExpect(jsonPath("$._links.relations.href").value(
+						BASE_PATH + "/samplesrelations/SAMED666"
+				))
+				.andReturn();
+
+
+        URI relationsLink = new URI(String.format("http://localhost:%d/samples/%s", port, testSample.getAccession()));
+		RequestEntity<Void> requestEntity = RequestEntity.get(relationsLink).accept(MediaTypes.HAL_JSON).build();
+		ResponseEntity<Resource<LegacyRelations>> sampleRelations = restTemplate.exchange(
+		        requestEntity, new ParameterizedTypeReference<Resource<LegacyRelations>>(){});
+		assertTrue(sampleRelations.getStatusCode().is2xxSuccessful());
+		assertEquals(sampleRelations.getBody().getContent().accession(), "SAMED666");
 	}
 
 

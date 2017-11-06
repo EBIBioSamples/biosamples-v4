@@ -1,6 +1,7 @@
 package uk.ac.ebi.biosamples;
 
 import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 
 import java.time.Instant;
@@ -13,6 +14,7 @@ public class TestSample {
     private String name;
     private Instant releaseDate;
     private SortedSet<Attribute> attributes;
+    private SortedSet<Relationship> relationships;
     private final String testDomain = "testDomain";
 
 
@@ -20,6 +22,7 @@ public class TestSample {
         this.accession = accession;
         this.name = "test";
         this.attributes = new TreeSet<>();
+        this.relationships = new TreeSet<>();
         this.releaseDate = Instant.now();
     }
 
@@ -30,6 +33,11 @@ public class TestSample {
 
     public TestSample withAttribute(Attribute attribute) {
         this.attributes.add(attribute);
+        return this;
+    }
+
+    public TestSample withRelationship(Relationship rel) {
+        this.relationships.add(rel);
         return this;
     }
 
