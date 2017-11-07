@@ -91,7 +91,6 @@ public class LegacyGroupsRelationControllerIntegrationTest {
                                 hasKey("self"),
                                 hasKey("details"),
                                 hasKey("groupsrelations"),
-                                hasKey("derivedFrom"),
                                 hasKey("externallinks"),
                                 hasKey("samples")
                         )

@@ -1,6 +1,7 @@
 package uk.ac.ebi.biosamples.service;
 
 import org.springframework.hateoas.EntityLinks;
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceAssembler;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,9 @@ public class LegacyGroupsRelationsResourceAssembler implements ResourceAssembler
         resource.add(entityLinks.linkToSingleResource(LegacyGroupsRelations.class, entity.accession()).withSelfRel());
         resource.add(entityLinks.linkToSingleResource(LegacySample.class, entity.accession()).withRel("details"));
         resource.add(entityLinks.linkToSingleResource(LegacyGroupsRelations.class, entity.accession()).withRel("groupsrelations"));
+        resource.add(new Link("test").withRel("externallinks"));
+        resource.add(new Link("test").withRel("samples"));
+
 
 
         return resource;
