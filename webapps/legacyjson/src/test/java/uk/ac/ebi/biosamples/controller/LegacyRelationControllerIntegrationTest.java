@@ -1,7 +1,9 @@
 package uk.ac.ebi.biosamples.controller;
 
-import org.junit.runner.RunWith;
+import com.jayway.jsonpath.JsonPath;
+import org.hamcrest.Matchers;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,12 +16,11 @@ import uk.ac.ebi.biosamples.TestSample;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.SampleService;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringRunner.class)
 @AutoConfigureMockMvc
@@ -60,4 +61,24 @@ public class LegacyRelationControllerIntegrationTest {
                 .andExpect(jsonPath("$._links.self").exists());
     }
 
+    @Test
+    public void testSampleRelationsLinkExistAndMatchSelfLink() throws Exception {
+        Sample testSample = new TestSample("RELATION").build();
+        when(sampleService.findByAccession(anyString())).thenReturn(testSample);
+
+        getRelationsHAL("anAccession")
+                .andExpect(jsonPath("$._links.samplesrelations").exists())
+                .andExpect(jsonPath("$._links.samplesrelations.href").value(Matchers.endsWith("RELATION")))
+                .andDo(result -> {
+
+                    String responseBody = result.getResponse().getContentAsString();
+                    String sampleRelationsHrefPath ="$._links.samplesrelations.href";
+                    String selfHrefPath ="$._links.self.href";
+
+
+                    assertThat(JsonPath.parse(responseBody).read(selfHrefPath).toString())
+                            .isEqualTo(JsonPath.parse(responseBody).read(sampleRelationsHrefPath).toString());
+                });
+
+    }
 }

@@ -23,6 +23,7 @@ public class LegacyRelationsResourceAssembler implements ResourceAssembler<Legac
 
         resource.add(entityLinks.linkToSingleResource(LegacyRelations.class, entity.accession()).withSelfRel());
         resource.add(entityLinks.linkToSingleResource(LegacySample.class, entity.accession()).withRel("details"));
+        resource.add(entityLinks.linkToSingleResource(LegacyRelations.class, entity.accession()).withRel("samplesrelations"));
 
 
         return resource;
