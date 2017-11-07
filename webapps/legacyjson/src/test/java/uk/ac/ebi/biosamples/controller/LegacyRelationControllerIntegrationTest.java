@@ -21,6 +21,7 @@ import uk.ac.ebi.biosamples.service.SampleService;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.endsWith;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -127,7 +128,11 @@ public class LegacyRelationControllerIntegrationTest {
         mockMvc.perform(get(groupRelationsHref).accept(MediaTypes.HAL_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/hal+json;charset=UTF-8"))
-                .andExpect(jsonPath("$._embedded.groupsrelations[0].accession").value("SAMEG222"));
+                .andExpect(jsonPath("$._embedded.groupsrelations[0].accession").value("SAMEG222"))
+                .andExpect(jsonPath("$._links.self").exists())
+                .andExpect(jsonPath("$._links.self.href").value(
+                        endsWith("samplesrelations/SAMEA111/groups")
+                ));
     }
 
     @Test
@@ -142,7 +147,7 @@ public class LegacyRelationControllerIntegrationTest {
 
         MvcResult result = getRelationsHAL("SAMEA222")
                 .andExpect(jsonPath("$._links.groups.href").value(
-                        Matchers.endsWith("SAMEA222/groups")
+                        endsWith("SAMEA222/groups")
                 ))
                 .andReturn();
 
@@ -151,7 +156,11 @@ public class LegacyRelationControllerIntegrationTest {
         mockMvc.perform(get(groupRelationsHref).accept(MediaTypes.HAL_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/hal+json;charset=UTF-8"))
-                .andExpect(jsonPath("$._embedded.groupsrelations[0].accession").value("SAMEG111"));
+                .andExpect(jsonPath("$._embedded.groupsrelations[0].accession").value("SAMEG111"))
+                .andExpect(jsonPath("$._links.self").exists())
+                .andExpect(jsonPath("$._links.self.href").value(
+                        endsWith("samplesrelations/SAMEA222/groups")
+                ));
     }
 
 }
