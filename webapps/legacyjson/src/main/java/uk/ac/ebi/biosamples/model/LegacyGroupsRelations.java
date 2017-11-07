@@ -6,11 +6,11 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import uk.ac.ebi.biosamples.service.LegacyRelationsDeserializer;
 
 @JsonDeserialize(using = LegacyRelationsDeserializer.class)
-public class LegacyRelations {
+public class LegacyGroupsRelations {
 
     private Sample sample;
 
-    public LegacyRelations(Sample sample) {
+    public LegacyGroupsRelations(Sample sample) {
         this.sample = sample;
     }
 

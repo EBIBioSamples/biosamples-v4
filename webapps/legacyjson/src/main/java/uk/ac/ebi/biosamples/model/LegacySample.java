@@ -32,6 +32,8 @@ public class LegacySample {
     private MultiValueMap<String, LegacyAttribute> characteristics;
     private String description;
 
+
+
     public LegacySample(Sample sample) {
         this.sample = sample;
         hydrateLegacySample(sample);

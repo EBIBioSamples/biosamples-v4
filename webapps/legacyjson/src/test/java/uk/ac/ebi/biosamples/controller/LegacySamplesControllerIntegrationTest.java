@@ -10,14 +10,11 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.Resource;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import uk.ac.ebi.biosamples.TestAttribute;
 import uk.ac.ebi.biosamples.TestSample;
 import uk.ac.ebi.biosamples.model.LegacyRelations;
@@ -28,8 +25,8 @@ import uk.ac.ebi.biosamples.service.SampleService;
 import java.net.URI;
 import java.time.Instant;
 
+import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -38,7 +35,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @AutoConfigureMockMvc
 @SpringBootTest(webEnvironment= SpringBootTest.WebEnvironment.RANDOM_PORT)
-//@SpringBootTest
 public class LegacySamplesControllerIntegrationTest {
 
 	@MockBean
@@ -171,20 +167,18 @@ public class LegacySamplesControllerIntegrationTest {
 		).build();
 		when(sampleServiceMock.findByAccession(testSample.getAccession())).thenReturn(testSample);
 
-		MvcResult result = mockMvc.perform(get("/samples/{accession}", testSample.getAccession())
+		mockMvc.perform(get("/samples/{accession}", testSample.getAccession())
 				.accept(MediaTypes.HAL_JSON))
 				.andExpect(jsonPath("$._links.relations.href").value(
-						BASE_PATH + "/samplesrelations/SAMED666"
-				))
-				.andReturn();
+						Matchers.endsWith("/samplesrelations/SAMED666")
+				));
 
-
-        URI relationsLink = new URI(String.format("http://localhost:%d/samples/%s", port, testSample.getAccession()));
+        URI relationsLink = new URI(String.format("http://localhost:%d/samplesrelations/%s", port, testSample.getAccession()));
 		RequestEntity<Void> requestEntity = RequestEntity.get(relationsLink).accept(MediaTypes.HAL_JSON).build();
-		ResponseEntity<Resource<LegacyRelations>> sampleRelations = restTemplate.exchange(
-		        requestEntity, new ParameterizedTypeReference<Resource<LegacyRelations>>(){});
+		ResponseEntity<LegacyRelations> sampleRelations = restTemplate.exchange(
+				requestEntity, LegacyRelations.class);
 		assertTrue(sampleRelations.getStatusCode().is2xxSuccessful());
-		assertEquals(sampleRelations.getBody().getContent().accession(), "SAMED666");
+		assertEquals(sampleRelations.getBody().accession(), "SAMED666");
 	}
 
 

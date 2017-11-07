@@ -29,6 +29,12 @@ public class LegacyJsonSamplesRelationsController {
     @GetMapping("/{accession}")
     public Resource<LegacyRelations> relationsOfSample(@PathVariable String accession) {
         Sample sample = sampleService.findByAccession(accession);
-        return relationsResourceAssembler.toResource(new LegacyRelations(sample.getAccession()));
+        return relationsResourceAssembler.toResource(new LegacyRelations(sample));
     }
+
+    @GetMapping("/{accession}/groups")
+    public Object getSamplesGroupRelations(@PathVariable String accession) {
+        return "{\"_embedded\": {\"groupsrelations\": [{\"accession\": \"SAMEG222\"}]},\"_links\": {\"self\": {\"href\":\"test\"}}}";
+    }
+
 }

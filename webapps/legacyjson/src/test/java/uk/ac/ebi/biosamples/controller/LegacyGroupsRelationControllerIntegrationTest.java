@@ -11,10 +11,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import uk.ac.ebi.biosamples.TestSample;
-import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.SampleService;
 
@@ -29,7 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @AutoConfigureMockMvc
 @SpringBootTest
-public class LegacyRelationControllerIntegrationTest {
+public class LegacyGroupsRelationControllerIntegrationTest {
 
     @MockBean
     private SampleService sampleService;
@@ -37,8 +35,8 @@ public class LegacyRelationControllerIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
 
-    private ResultActions getRelationsHAL(String accession) throws Exception {
-        return mockMvc.perform(get("/samplesrelations/{accession}", accession).accept(MediaTypes.HAL_JSON_VALUE));
+    private ResultActions getGroupsRelationsHAL(String accession) throws Exception {
+        return mockMvc.perform(get("/groupsrelations/{accession}", accession).accept(MediaTypes.HAL_JSON_VALUE));
     }
 
     @Test
@@ -46,7 +44,7 @@ public class LegacyRelationControllerIntegrationTest {
         Sample testSample = new TestSample("RELATION").build();
         when(sampleService.findByAccession(anyString())).thenReturn(testSample);
 
-        getRelationsHAL("anyAccession")
+        getGroupsRelationsHAL("anyAccession")
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/hal+json;charset=UTF-8"))
                 .andExpect(jsonPath("$.accession").value(testSample.getAccession()));
@@ -57,7 +55,7 @@ public class LegacyRelationControllerIntegrationTest {
         Sample testSample = new TestSample("RELATION").build();
         when(sampleService.findByAccession(anyString())).thenReturn(testSample);
 
-        getRelationsHAL("anyAccession")
+        getGroupsRelationsHAL("anyAccession")
                 .andExpect(jsonPath("$._links.self").exists());
     }
 
@@ -66,13 +64,13 @@ public class LegacyRelationControllerIntegrationTest {
         Sample testSample = new TestSample("RELATION").build();
         when(sampleService.findByAccession(anyString())).thenReturn(testSample);
 
-        getRelationsHAL("anAccession")
-                .andExpect(jsonPath("$._links.samplerelations").exists())
-                .andExpect(jsonPath("$._links.samplerelations.href").value(Matchers.endsWith("RELATION")))
+        getGroupsRelationsHAL("anAccession")
+                .andExpect(jsonPath("$._links.groupsrelations").exists())
+                .andExpect(jsonPath("$._links.groupsrelations.href").value(Matchers.endsWith("RELATION")))
                 .andDo(result -> {
 
                     String responseBody = result.getResponse().getContentAsString();
-                    String sampleRelationsHrefPath ="$._links.samplerelations.href";
+                    String sampleRelationsHrefPath ="$._links.groupsrelations.href";
                     String selfHrefPath ="$._links.self.href";
 
 
@@ -87,44 +85,18 @@ public class LegacyRelationControllerIntegrationTest {
         Sample testSample = new TestSample("SAMED1111").build();
         when(sampleService.findByAccession(anyString())).thenReturn(testSample);
 
-        getRelationsHAL(testSample.getAccession())
+        getGroupsRelationsHAL(testSample.getAccession())
                 .andExpect(jsonPath("$._links").value(
                         allOf(
                                 hasKey("self"),
                                 hasKey("details"),
-                                hasKey("samplerelations"),
-                                hasKey("groups"),
+                                hasKey("groupsrelations"),
                                 hasKey("derivedFrom"),
-                                hasKey("recuratedFrom"),
-                                hasKey("childOf"),
-                                hasKey("sameAs"),
-                                hasKey("parentOf"),
-                                hasKey("derivedTo"),
-                                hasKey("recuratedTo"),
-                                hasKey("externallinks")
+                                hasKey("externallinks"),
+                                hasKey("samples")
                         )
                 ));
     }
 
-    @Test
-    public void testSampleRelationsDeriveFromIsCorrect() throws Exception {
-        Sample testSample = new TestSample("SAMEA111")
-                .withRelationship(Relationship.build("SAMEG222", "has member", "SAMEA111"))
-                .build();
-        when(sampleService.findByAccession(anyString())).thenReturn(testSample);
-
-        MvcResult result = getRelationsHAL("SAMEA111")
-                .andExpect(jsonPath("$._links.groups.href").value(
-                        Matchers.endsWith("SAMEA111/groups")
-                ))
-                .andReturn();
-
-        String groupRelationsHref = JsonPath.parse(result.getResponse().getContentAsString()).read("$._links.groups.href");
-
-        mockMvc.perform(get(groupRelationsHref).accept(MediaTypes.HAL_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType("application/hal+json;charset=UTF-8"))
-                .andExpect(jsonPath("$._embedded.groupsrelations[0].accession").value("SAMEG222"));
-    }
 
 }
