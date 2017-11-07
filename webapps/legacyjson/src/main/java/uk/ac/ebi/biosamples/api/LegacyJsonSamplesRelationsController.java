@@ -3,15 +3,22 @@ package uk.ac.ebi.biosamples.api;
 import org.springframework.hateoas.ExposesResourceFor;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.Resources;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import uk.ac.ebi.biosamples.model.LegacyGroupsRelations;
 import uk.ac.ebi.biosamples.model.LegacyRelations;
+import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.service.LegacyGroupsRelationsResourceAssembler;
 import uk.ac.ebi.biosamples.service.LegacyRelationsResourceAssembler;
 import uk.ac.ebi.biosamples.service.SampleService;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = "/samplesrelations", produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
@@ -20,10 +27,14 @@ public class LegacyJsonSamplesRelationsController {
 
     private final SampleService sampleService;
     private final LegacyRelationsResourceAssembler relationsResourceAssembler;
+    private final LegacyGroupsRelationsResourceAssembler groupsRelationsResourceAssembler;
 
-    public LegacyJsonSamplesRelationsController(SampleService sampleService, LegacyRelationsResourceAssembler relationsResourceAssembler) {
+    public LegacyJsonSamplesRelationsController(SampleService sampleService,
+                                                LegacyRelationsResourceAssembler relationsResourceAssembler,
+                                                LegacyGroupsRelationsResourceAssembler groupsRelationsResourceAssembler) {
         this.sampleService = sampleService;
         this.relationsResourceAssembler = relationsResourceAssembler;
+        this.groupsRelationsResourceAssembler = groupsRelationsResourceAssembler;
     }
 
     @GetMapping("/{accession}")
@@ -33,8 +44,18 @@ public class LegacyJsonSamplesRelationsController {
     }
 
     @GetMapping("/{accession}/groups")
-    public Object getSamplesGroupRelations(@PathVariable String accession) {
-        return "{\"_embedded\": {\"groupsrelations\": [{\"accession\": \"SAMEG222\"}]},\"_links\": {\"self\": {\"href\":\"test\"}}}";
+    public Resources<LegacyGroupsRelations> getSamplesGroupRelations(@PathVariable String accession) {
+        Sample sample = sampleService.findByAccession(accession);
+        List<LegacyGroupsRelations> associatedGroups = sample.getRelationships().stream().filter(r ->
+                    r.getTarget().equalsIgnoreCase(accession) && r.getType().equals("has member")
+                )
+                .map(Relationship::getSource)
+                .map(sampleService::findByAccession)
+                .map(LegacyGroupsRelations::new)
+                .collect(Collectors.toList());
+
+        return new Resources<>(associatedGroups);
+
     }
 
 }

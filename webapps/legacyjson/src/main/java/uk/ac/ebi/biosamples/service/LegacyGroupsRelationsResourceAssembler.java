@@ -28,8 +28,6 @@ public class LegacyGroupsRelationsResourceAssembler implements ResourceAssembler
         resource.add(new Link("test").withRel("externallinks"));
         resource.add(new Link("test").withRel("samples"));
 
-
-
         return resource;
     }
 }

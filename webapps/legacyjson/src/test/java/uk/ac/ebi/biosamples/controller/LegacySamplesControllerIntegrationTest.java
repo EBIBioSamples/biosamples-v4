@@ -161,7 +161,7 @@ public class LegacySamplesControllerIntegrationTest {
 	}
 
 	@Test
-	public void testUsingRelationshipLinkGetsARelationshipsResource() throws Exception {
+	public void testUsingRelationsLinkGetsARelationsResource() throws Exception {
 		Sample testSample = new TestSample("SAMED666").withRelationship(
 				Relationship.build("SAMED666", "deriveFrom", "SAMED555")
 		).build();

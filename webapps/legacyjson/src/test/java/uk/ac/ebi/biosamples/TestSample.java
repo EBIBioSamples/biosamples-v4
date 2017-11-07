@@ -53,7 +53,7 @@ public class TestSample {
                 this.releaseDate,
                 Instant.now(),
                 this.attributes,
-                null,
+                this.relationships,
                 null);
     }
 }

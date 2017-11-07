@@ -107,11 +107,14 @@ public class LegacyRelationControllerIntegrationTest {
     }
 
     @Test
-    public void testSampleRelationsDeriveFromIsCorrect() throws Exception {
+    public void testSamplesRelationsWithGroupIsReturned() throws Exception {
+        Sample testGroup = new TestSample("SAMEG222").build();
         Sample testSample = new TestSample("SAMEA111")
                 .withRelationship(Relationship.build("SAMEG222", "has member", "SAMEA111"))
                 .build();
-        when(sampleService.findByAccession(anyString())).thenReturn(testSample);
+
+        when(sampleService.findByAccession(testSample.getAccession())).thenReturn(testSample);
+        when(sampleService.findByAccession(testGroup.getAccession())).thenReturn(testGroup);
 
         MvcResult result = getRelationsHAL("SAMEA111")
                 .andExpect(jsonPath("$._links.groups.href").value(
@@ -125,6 +128,30 @@ public class LegacyRelationControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/hal+json;charset=UTF-8"))
                 .andExpect(jsonPath("$._embedded.groupsrelations[0].accession").value("SAMEG222"));
+    }
+
+    @Test
+    public void testAnotherSamplesRelationsWithGroupIsReturned() throws Exception {
+        Sample testGroup = new TestSample("SAMEG111").build();
+        Sample testSample = new TestSample("SAMEA222")
+                .withRelationship(Relationship.build("SAMEG111", "has member", "SAMEA222"))
+                .build();
+
+        when(sampleService.findByAccession(testSample.getAccession())).thenReturn(testSample);
+        when(sampleService.findByAccession(testGroup.getAccession())).thenReturn(testGroup);
+
+        MvcResult result = getRelationsHAL("SAMEA222")
+                .andExpect(jsonPath("$._links.groups.href").value(
+                        Matchers.endsWith("SAMEA222/groups")
+                ))
+                .andReturn();
+
+        String groupRelationsHref = JsonPath.parse(result.getResponse().getContentAsString()).read("$._links.groups.href");
+
+        mockMvc.perform(get(groupRelationsHref).accept(MediaTypes.HAL_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/hal+json;charset=UTF-8"))
+                .andExpect(jsonPath("$._embedded.groupsrelations[0].accession").value("SAMEG111"));
     }
 
 }
