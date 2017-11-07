@@ -68,7 +68,7 @@ public class LegacySamplesControllerIntegrationTest {
 	}
 
 	@Test
-	public void testContentTypeOfReponseIsHalJSON() throws Exception {
+	public void testResponseContentTypeIsHalJson() throws Exception {
 		Sample testSample = new TestSample("SAMEA0").build();
 		when(sampleServiceMock.findByAccession(testSample.getAccession())).thenReturn(testSample);
 

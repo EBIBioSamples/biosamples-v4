@@ -9,14 +9,26 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.ac.ebi.biosamples.model.LegacyRelations;
+import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.service.LegacyRelationsResourceAssembler;
+import uk.ac.ebi.biosamples.service.SampleService;
 
 @RestController
 @RequestMapping(value = "/samplesrelations", produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
 @ExposesResourceFor(LegacyRelations.class)
 public class LegacyJsonSamplesRelationsController {
 
+    private final SampleService sampleService;
+    private final LegacyRelationsResourceAssembler relationsResourceAssembler;
+
+    public LegacyJsonSamplesRelationsController(SampleService sampleService, LegacyRelationsResourceAssembler relationsResourceAssembler) {
+        this.sampleService = sampleService;
+        this.relationsResourceAssembler = relationsResourceAssembler;
+    }
+
     @GetMapping("/{accession}")
     public Resource<LegacyRelations> relationsOfSample(@PathVariable String accession) {
-        return new Resource(new LegacyRelations(accession));
+        Sample sample = sampleService.findByAccession(accession);
+        return relationsResourceAssembler.toResource(new LegacyRelations(sample.getAccession()));
     }
 }
