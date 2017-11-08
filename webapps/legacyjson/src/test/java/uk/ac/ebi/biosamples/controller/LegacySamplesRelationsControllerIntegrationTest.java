@@ -188,9 +188,6 @@ public class LegacySamplesRelationsControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$._embedded.samplesrelations[0].accession").value(sample1.getAccession()));
 
-
-
-
     }
 
     @Test
