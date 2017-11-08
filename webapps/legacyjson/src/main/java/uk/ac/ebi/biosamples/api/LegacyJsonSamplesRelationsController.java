@@ -16,7 +16,8 @@ import uk.ac.ebi.biosamples.service.LegacyRelationService;
 import uk.ac.ebi.biosamples.service.LegacySamplesRelationsResourceAssembler;
 import uk.ac.ebi.biosamples.service.SampleService;
 
-import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -52,36 +53,37 @@ public class LegacyJsonSamplesRelationsController {
 
     @GetMapping("/{accession}/groups")
     public Resources<LegacyGroupsRelations> getSamplesGroupRelations(@PathVariable String accession) {
-        List<LegacyGroupsRelations> associatedGroups = relationService.getGroupsRelationships(accession);
+        List<Resource<?>> associatedGroups = relationService
+                .getGroupsRelationships(accession).stream()
+                .map(groupsRelationsResourceAssembler::toResource)
+                .collect(Collectors.toList());
 
         Link selfLink = linkTo(methodOn(this.getClass()).getSamplesGroupRelations(accession)).withSelfRel();
-        if (!associatedGroups.isEmpty()) {
-            return new Resources<>(associatedGroups, selfLink);
-        }
-
-        EmbeddedWrappers wrappers = new EmbeddedWrappers(false);
-        EmbeddedWrapper wrapper = wrappers.emptyCollectionOf(LegacyGroupsRelations.class);
-        return new Resources(Arrays.asList(wrapper), selfLink);
+        return new Resources(wrappedCollection(associatedGroups, LegacyGroupsRelations.class), selfLink);
     }
 
     @GetMapping("/{accession}/{relationType}")
     public Resources getSamplesRelations(
             @PathVariable String accession,
             @PathVariable String relationType) {
-        List<Resource<LegacySamplesRelations>> associatedSamples = relationService
+        List<Resource<?>> associatedSamples = relationService
                 .getSamplesRelations(accession, relationType).stream()
                 .map(relationsResourceAssembler::toResource)
                 .collect(Collectors.toList());
 
         Link selfLink = linkTo(methodOn(this.getClass()).getSamplesRelations(accession, relationType)).withSelfRel();
-        if (!associatedSamples.isEmpty()) {
-            return new Resources<>(associatedSamples, selfLink);
-        }
+        return new Resources(wrappedCollection(associatedSamples, LegacySamplesRelations.class), selfLink);
 
+    }
+
+    private Collection<?> wrappedCollection(List<Resource<?>> resourceCollection, Class collectionClass) {
         EmbeddedWrappers wrappers = new EmbeddedWrappers(false);
-        EmbeddedWrapper wrapper = wrappers.emptyCollectionOf(LegacySamplesRelations.class);
-        return new Resources(Arrays.asList(wrapper), selfLink);
-
+        EmbeddedWrapper wrapper;
+        if (resourceCollection.isEmpty())
+            wrapper = wrappers.emptyCollectionOf(collectionClass);
+        else
+            wrapper = wrappers.wrap(resourceCollection);
+        return Collections.singletonList(wrapper);
     }
 
 }
