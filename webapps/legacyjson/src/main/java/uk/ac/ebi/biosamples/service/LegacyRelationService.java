@@ -79,8 +79,8 @@ public class LegacyRelationService {
     }
 
     private boolean relationshipUsesMappedType(Relationship r, String otherType) {
-        if (this.relationshipMapping.getMappendRelationship(otherType).isPresent())
-            return r.getType().equals(this.relationshipMapping.getMappendRelationship(otherType).get());
+        if (this.relationshipMapping.getMappedRelationship(otherType).isPresent())
+            return r.getType().equals(this.relationshipMapping.getMappedRelationship(otherType).get());
         return false;
     }
 

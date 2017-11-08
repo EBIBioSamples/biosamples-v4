@@ -22,7 +22,7 @@ public final class KnownLegacyRelationshipMapping {
         this.inverseToDirect.put(inverse, direct);
     }
 
-    public Optional<String> getMappendRelationship(String relationship) {
+    public Optional<String> getMappedRelationship(String relationship) {
 
         String mappedRelationship = null;
 
@@ -36,9 +36,4 @@ public final class KnownLegacyRelationshipMapping {
 
     }
 
-    public boolean isInverseRelationship(String relationship) {
-        return this.inverseToDirect.containsKey(relationship);
-    }
-
-    public boolean isDirectRelationship(String relationship) { return this.directToInverse.containsKey(relationship); }
 }
