@@ -3,14 +3,16 @@ package uk.ac.ebi.biosamples.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import uk.ac.ebi.biosamples.service.LegacyRelationsDeserializer;
+import org.springframework.hateoas.core.Relation;
+import uk.ac.ebi.biosamples.service.LegacySamplesRelationsDeserializer;
 
-@JsonDeserialize(using = LegacyRelationsDeserializer.class)
-public class LegacyRelations {
+@JsonDeserialize(using = LegacySamplesRelationsDeserializer.class)
+@Relation(value="samplerelations", collectionRelation = "samplesrelations")
+public class LegacySamplesRelations {
 
     private Sample sample;
 
-    public LegacyRelations(Sample sample) {
+    public LegacySamplesRelations(Sample sample) {
         this.sample = sample;
     }
 

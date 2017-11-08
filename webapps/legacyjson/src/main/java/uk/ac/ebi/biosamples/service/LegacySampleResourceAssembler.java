@@ -4,7 +4,7 @@ import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceAssembler;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.model.LegacyRelations;
+import uk.ac.ebi.biosamples.model.LegacySamplesRelations;
 import uk.ac.ebi.biosamples.model.LegacySample;
 
 @Service
@@ -23,7 +23,7 @@ public class LegacySampleResourceAssembler implements ResourceAssembler<LegacySa
 
         resource.add(entityLinks.linkToSingleResource(LegacySample.class, entity.accession()).withSelfRel());
         resource.add(entityLinks.linkToSingleResource(LegacySample.class, entity.accession()).withRel("sample"));
-        resource.add(entityLinks.linkToSingleResource(LegacyRelations.class, entity.accession()).withRel("relations"));
+        resource.add(entityLinks.linkToSingleResource(LegacySamplesRelations.class, entity.accession()).withRel("relations"));
 
         return resource;
     }

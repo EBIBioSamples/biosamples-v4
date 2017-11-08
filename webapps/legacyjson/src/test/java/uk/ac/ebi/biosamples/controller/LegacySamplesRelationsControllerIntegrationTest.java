@@ -19,9 +19,7 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.SampleService;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.hasKey;
-import static org.hamcrest.Matchers.endsWith;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -30,7 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @AutoConfigureMockMvc
 @SpringBootTest
-public class LegacyRelationControllerIntegrationTest {
+public class LegacySamplesRelationsControllerIntegrationTest {
 
     @MockBean
     private SampleService sampleService;
@@ -161,6 +159,74 @@ public class LegacyRelationControllerIntegrationTest {
                 .andExpect(jsonPath("$._links.self.href").value(
                         endsWith("samplesrelations/SAMEA222/groups")
                 ));
+    }
+
+    @Test
+    public void testDeriveToRelationIsReturned() throws Exception {
+        Sample sample1 = new TestSample("SAMPLE1")
+                .withRelationship(Relationship.build(
+                        "SAMPLE2", "derivedFrom", "SAMPLE1"
+                )).build();
+        Sample sample2 = new TestSample("SAMPLE2")
+                .withRelationship(Relationship.build(
+                        "SAMPLE2", "derivedFrom", "SAMPLE1"
+                )).build();
+
+        when(sampleService.findByAccession(sample1.getAccession())).thenReturn(sample1);
+        when(sampleService.findByAccession(sample2.getAccession())).thenReturn(sample2);
+
+        String responseContent = getRelationsHAL(sample2.getAccession())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$._links.derivedFrom.href").value(
+                        endsWith("SAMPLE2/derivedFrom")
+                ))
+                .andReturn().getResponse().getContentAsString();
+
+        String derivedFromHref = JsonPath.parse(responseContent).read("$._links.derivedFrom.href");
+
+        mockMvc.perform(get(derivedFromHref).accept(MediaTypes.HAL_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$._embedded.samplesrelations[0].accession").value(sample1.getAccession()));
+
+
+
+
+    }
+
+    @Test
+    public void testDerivedFromAndDerivedToAreWorkingAsInverseRelations() throws Exception{
+        Sample sample1 = new TestSample("SAMPLE1")
+                .withRelationship(Relationship.build(
+                        "SAMPLE1", "derivedTo", "SAMPLE2"
+                )).build();
+        Sample sample2 = new TestSample("SAMPLE2")
+                .withRelationship(Relationship.build(
+                        "SAMPLE1", "derivedTo", "SAMPLE2"
+                )).build();
+
+        when(sampleService.findByAccession(sample1.getAccession())).thenReturn(sample1);
+        when(sampleService.findByAccession(sample2.getAccession())).thenReturn(sample2);
+
+
+        String samplesRelationsResponseContent = getRelationsHAL(sample2.getAccession())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$._links.derivedFrom.href").value(endsWith("SAMPLE2/derivedFrom")))
+                .andReturn().getResponse().getContentAsString();
+
+        String derivedFromHref = JsonPath.parse(samplesRelationsResponseContent).read("$._links.derivedFrom.href");
+
+        String derivedToSamplesResponseContent = mockMvc.perform(get(derivedFromHref).accept(MediaTypes.HAL_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$._embedded.samplesrelations[0].accession").value(sample1.getAccession()))
+                .andReturn().getResponse().getContentAsString();
+
+        String derivedToHref = JsonPath
+                .parse(derivedToSamplesResponseContent)
+                .read("$._embedded.samplesrelations[0]._links.derivedTo.href");
+
+        mockMvc.perform(get(derivedToHref).accept(MediaTypes.HAL_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$._embedded.samplesrelations[0].accession").value(sample2.getAccession()));
     }
 
 }

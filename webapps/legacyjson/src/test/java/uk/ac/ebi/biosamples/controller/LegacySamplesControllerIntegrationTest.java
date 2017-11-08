@@ -11,21 +11,17 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.http.RequestEntity;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import uk.ac.ebi.biosamples.TestAttribute;
 import uk.ac.ebi.biosamples.TestSample;
-import uk.ac.ebi.biosamples.model.LegacyRelations;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.SampleService;
 
-import java.net.URI;
 import java.time.Instant;
 
-import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -167,18 +163,25 @@ public class LegacySamplesControllerIntegrationTest {
 		).build();
 		when(sampleServiceMock.findByAccession(testSample.getAccession())).thenReturn(testSample);
 
-		mockMvc.perform(get("/samples/{accession}", testSample.getAccession())
+		MvcResult result = mockMvc.perform(get("/samples/{accession}", testSample.getAccession())
 				.accept(MediaTypes.HAL_JSON))
 				.andExpect(jsonPath("$._links.relations.href").value(
 						Matchers.endsWith("/samplesrelations/SAMED666")
-				));
+				))
+				.andReturn();
 
-        URI relationsLink = new URI(String.format("http://localhost:%d/samplesrelations/%s", port, testSample.getAccession()));
+		String deriveFromLink = JsonPath.parse(result.getResponse().getContentAsString()).read("$._links.relations.href");
+		mockMvc.perform(get(deriveFromLink).accept(MediaTypes.HAL_JSON))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.accession").value("SAMED666"));
+		/* This should be moved to a different test for just rest templates
+		URI relationsLink = String.format("http://localhost:%d/samplesrelations/%s", port, testSample.getAccession()));
 		RequestEntity<Void> requestEntity = RequestEntity.get(relationsLink).accept(MediaTypes.HAL_JSON).build();
 		ResponseEntity<LegacyRelations> sampleRelations = restTemplate.exchange(
 				requestEntity, LegacyRelations.class);
 		assertTrue(sampleRelations.getStatusCode().is2xxSuccessful());
 		assertEquals(sampleRelations.getBody().accession(), "SAMED666");
+		*/
 	}
 
 
