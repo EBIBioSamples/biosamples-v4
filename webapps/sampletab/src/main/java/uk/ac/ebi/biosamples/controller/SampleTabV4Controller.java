@@ -95,6 +95,7 @@ public class SampleTabV4Controller {
         try {
 			sampleTabService.saveSampleTab(sampledata, "self.BiosampleIntegrationTest", jwt, setUpdateDate);
 		} catch (DuplicateDomainSampleException | ConflictingSampleTabOwnershipException e) {
+			log.error("Problem saving sampletab ", e);
 			return ResponseEntity.badRequest().body(e.getMessage());
 		}
         
