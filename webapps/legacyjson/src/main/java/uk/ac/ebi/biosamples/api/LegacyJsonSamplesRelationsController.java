@@ -4,6 +4,7 @@ import org.springframework.hateoas.*;
 import org.springframework.hateoas.core.EmbeddedWrapper;
 import org.springframework.hateoas.core.EmbeddedWrappers;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -52,27 +53,35 @@ public class LegacyJsonSamplesRelationsController {
     }
 
     @GetMapping("/{accession}/groups")
-    public Resources<LegacyGroupsRelations> getSamplesGroupRelations(@PathVariable String accession) {
+    public ResponseEntity<Resources> getSamplesGroupRelations(@PathVariable String accession) {
+
         List<Resource<?>> associatedGroups = relationService
                 .getGroupsRelationships(accession).stream()
                 .map(groupsRelationsResourceAssembler::toResource)
                 .collect(Collectors.toList());
 
         Link selfLink = linkTo(methodOn(this.getClass()).getSamplesGroupRelations(accession)).withSelfRel();
-        return new Resources(wrappedCollection(associatedGroups, LegacyGroupsRelations.class), selfLink);
+        Resources responseBody = new Resources(wrappedCollection(associatedGroups, LegacyGroupsRelations.class), selfLink);
+        return ResponseEntity.ok(responseBody);
     }
 
     @GetMapping("/{accession}/{relationType}")
-    public Resources getSamplesRelations(
+    public ResponseEntity<Resources> getSamplesRelations(
             @PathVariable String accession,
             @PathVariable String relationType) {
+
+        if (!relationService.isSupportedRelation(relationType)) {
+            return ResponseEntity.badRequest().build();
+        }
+
         List<Resource<?>> associatedSamples = relationService
                 .getSamplesRelations(accession, relationType).stream()
                 .map(relationsResourceAssembler::toResource)
                 .collect(Collectors.toList());
 
         Link selfLink = linkTo(methodOn(this.getClass()).getSamplesRelations(accession, relationType)).withSelfRel();
-        return new Resources(wrappedCollection(associatedSamples, LegacySamplesRelations.class), selfLink);
+        Resources responseBody = new Resources(wrappedCollection(associatedSamples, LegacySamplesRelations.class), selfLink);
+        return ResponseEntity.ok(responseBody);
 
     }
 

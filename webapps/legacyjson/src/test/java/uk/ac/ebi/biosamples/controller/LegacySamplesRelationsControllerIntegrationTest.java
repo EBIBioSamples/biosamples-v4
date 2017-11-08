@@ -254,4 +254,14 @@ public class LegacySamplesRelationsControllerIntegrationTest {
 
     }
 
+    @Test
+    public void testRetrieveUnknownSamplesRelationsFromLegacyApiThrowsError() throws Exception {
+        Sample testSample = new TestSample("anyaccession").build();
+        when(sampleService.findByAccession(testSample.getAccession())).thenReturn(testSample);
+
+        mockMvc.perform(get("/samplesrelations/anyaccession/unknownRelation").accept(MediaTypes.HAL_JSON))
+                .andExpect(status().isBadRequest());
+
+    }
+
 }

@@ -174,14 +174,6 @@ public class LegacySamplesControllerIntegrationTest {
 		mockMvc.perform(get(deriveFromLink).accept(MediaTypes.HAL_JSON))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.accession").value("SAMED666"));
-		/* This should be moved to a different test for just rest templates
-		URI relationsLink = String.format("http://localhost:%d/samplesrelations/%s", port, testSample.getAccession()));
-		RequestEntity<Void> requestEntity = RequestEntity.get(relationsLink).accept(MediaTypes.HAL_JSON).build();
-		ResponseEntity<LegacyRelations> sampleRelations = restTemplate.exchange(
-				requestEntity, LegacyRelations.class);
-		assertTrue(sampleRelations.getStatusCode().is2xxSuccessful());
-		assertEquals(sampleRelations.getBody().accession(), "SAMED666");
-		*/
 	}
 
 

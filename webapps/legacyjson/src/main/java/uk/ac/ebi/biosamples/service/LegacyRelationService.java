@@ -85,4 +85,7 @@ public class LegacyRelationService {
     }
 
 
+    public boolean isSupportedRelation(String relationType) {
+        return SupportedSamplesRelationships.getFromName(relationType) != null;
+    }
 }
