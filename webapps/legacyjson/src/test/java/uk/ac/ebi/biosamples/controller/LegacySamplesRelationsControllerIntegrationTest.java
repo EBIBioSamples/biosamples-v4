@@ -226,4 +226,32 @@ public class LegacySamplesRelationsControllerIntegrationTest {
                 .andExpect(jsonPath("$._embedded.samplesrelations[0].accession").value(sample2.getAccession()));
     }
 
+    @Test
+    public void testSamplesWithNoAssociatedRelationReturnEmptyResourcesObject() throws Exception {
+        Sample testSample = new TestSample("SAMEA1").build();
+        when(sampleService.findByAccession(testSample.getAccession())).thenReturn(testSample);
+
+        String samplesRelationsContent = getRelationsHAL(testSample.getAccession()).andReturn().getResponse().getContentAsString();
+
+        String derivedFromHref = JsonPath.parse(samplesRelationsContent).read("$._links.derivedFrom.href");
+        mockMvc.perform(get(derivedFromHref).accept(MediaTypes.HAL_JSON))
+                .andExpect(jsonPath("$._embedded.samplesrelations").exists())
+                .andExpect(jsonPath("$._embedded.samplesrelations").isEmpty());
+
+    }
+
+    @Test
+    public void testSamplesWithNoAssociatedGroupReturnEmptyGroupsRelations() throws Exception {
+        Sample testSample = new TestSample("SAMEA1").build();
+        when(sampleService.findByAccession(testSample.getAccession())).thenReturn(testSample);
+
+        String samplesRelationsContent = getRelationsHAL(testSample.getAccession()).andReturn().getResponse().getContentAsString();
+
+        String derivedFromHref = JsonPath.parse(samplesRelationsContent).read("$._links.groups.href");
+        mockMvc.perform(get(derivedFromHref).accept(MediaTypes.HAL_JSON))
+                .andExpect(jsonPath("$._embedded.groupsrelations").exists())
+                .andExpect(jsonPath("$._embedded.groupsrelations").isEmpty());
+
+    }
+
 }

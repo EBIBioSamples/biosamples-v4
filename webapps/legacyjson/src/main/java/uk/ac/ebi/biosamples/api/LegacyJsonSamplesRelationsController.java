@@ -1,6 +1,8 @@
 package uk.ac.ebi.biosamples.api;
 
 import org.springframework.hateoas.*;
+import org.springframework.hateoas.core.EmbeddedWrapper;
+import org.springframework.hateoas.core.EmbeddedWrappers;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,6 +16,7 @@ import uk.ac.ebi.biosamples.service.LegacyRelationService;
 import uk.ac.ebi.biosamples.service.LegacySamplesRelationsResourceAssembler;
 import uk.ac.ebi.biosamples.service.SampleService;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -52,11 +55,17 @@ public class LegacyJsonSamplesRelationsController {
         List<LegacyGroupsRelations> associatedGroups = relationService.getGroupsRelationships(accession);
 
         Link selfLink = linkTo(methodOn(this.getClass()).getSamplesGroupRelations(accession)).withSelfRel();
-        return new Resources<>(associatedGroups, selfLink);
+        if (!associatedGroups.isEmpty()) {
+            return new Resources<>(associatedGroups, selfLink);
+        }
+
+        EmbeddedWrappers wrappers = new EmbeddedWrappers(false);
+        EmbeddedWrapper wrapper = wrappers.emptyCollectionOf(LegacyGroupsRelations.class);
+        return new Resources(Arrays.asList(wrapper), selfLink);
     }
 
     @GetMapping("/{accession}/{relationType}")
-    public Resources<Resource<LegacySamplesRelations>> getSamplesRelations(
+    public Resources getSamplesRelations(
             @PathVariable String accession,
             @PathVariable String relationType) {
         List<Resource<LegacySamplesRelations>> associatedSamples = relationService
@@ -65,7 +74,14 @@ public class LegacyJsonSamplesRelationsController {
                 .collect(Collectors.toList());
 
         Link selfLink = linkTo(methodOn(this.getClass()).getSamplesRelations(accession, relationType)).withSelfRel();
-        return new Resources<>(associatedSamples, selfLink);
+        if (!associatedSamples.isEmpty()) {
+            return new Resources<>(associatedSamples, selfLink);
+        }
+
+        EmbeddedWrappers wrappers = new EmbeddedWrappers(false);
+        EmbeddedWrapper wrapper = wrappers.emptyCollectionOf(LegacySamplesRelations.class);
+        return new Resources(Arrays.asList(wrapper), selfLink);
+
     }
 
 }
