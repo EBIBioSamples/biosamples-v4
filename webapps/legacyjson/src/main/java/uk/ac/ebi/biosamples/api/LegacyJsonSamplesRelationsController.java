@@ -53,7 +53,7 @@ public class LegacyJsonSamplesRelationsController {
 
     }
 
-    @GetMapping("/")
+    @GetMapping
     public PagedResources<Resource<LegacySamplesRelations>> allSamplesRelations(
             @RequestParam(value = "page", defaultValue = "1") int page,
             @RequestParam(value = "size", defaultValue = "25") int size,

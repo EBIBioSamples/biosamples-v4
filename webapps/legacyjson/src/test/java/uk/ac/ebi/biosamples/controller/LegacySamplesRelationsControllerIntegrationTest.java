@@ -297,13 +297,28 @@ public class LegacySamplesRelationsControllerIntegrationTest {
 //
         when(sampleRepository.getPagedSamples(anyInt(), anyInt())).thenReturn(getTestPagedResourcesSample());
 
-        mockMvc.perform(get("/samplesrelations/").accept(MediaTypes.HAL_JSON))
+        mockMvc.perform(get("/samplesrelations").accept(MediaTypes.HAL_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/hal+json;charset=UTF-8"))
                 .andExpect(jsonPath("$._embedded").isNotEmpty())
                 .andExpect(jsonPath("$._links").isNotEmpty())
                 .andExpect(jsonPath("$.page").isNotEmpty());
 
+
+    }
+
+    @Test
+    public void testRetrieveAllSamplesRelationsOnePerPageEffectivelyReturnOneRelationsPerPage() throws Exception {
+
+        when(sampleRepository.getPagedSamples(anyInt(), anyInt())).thenReturn(getTestPagedResourcesSample());
+
+        mockMvc.perform(get("/samplesrelations?page=0&size=1").accept(MediaTypes.HAL_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$..accession").value(Matchers.arrayWithSize(1)))
+                .andExpect(jsonPath("$.page.size").value(1))
+                .andExpect(jsonPath("$.page.totalElements").value(2))
+                .andExpect(jsonPath("$.page.totalPages").value(2))
+                .andExpect(jsonPath("$.page.number").value(0));
 
     }
 
