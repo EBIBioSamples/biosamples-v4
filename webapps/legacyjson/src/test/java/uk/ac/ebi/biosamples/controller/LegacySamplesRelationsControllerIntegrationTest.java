@@ -2,14 +2,18 @@ package uk.ac.ebi.biosamples.controller;
 
 import com.jayway.jsonpath.JsonPath;
 import org.hamcrest.Matchers;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.hateoas.MediaTypes;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.*;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -19,10 +23,15 @@ import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.SampleRepository;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -39,8 +48,24 @@ public class LegacySamplesRelationsControllerIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    PagedResourcesAssembler<Sample> pagedResourcesAssembler;
+
     private ResultActions getSamplesRelationsHAL(String accession) throws Exception {
         return mockMvc.perform(get("/samplesrelations/{accession}", accession).accept(MediaTypes.HAL_JSON_VALUE));
+    }
+
+    private PagedResources<Resource<Sample>> getTestPagedResourcesSample() {
+        Sample sampleA = new TestSample("A").build();
+        Sample sampleB = new TestSample("B").build();
+        List<Sample> allSamples = Stream.of(sampleA, sampleB)
+//                .map(s -> new Resource(s, new ArrayList<Link>()))
+                .collect(Collectors.toList());
+
+        Pageable pageInfo = new PageRequest(0,25);
+        Page<Sample> samplePage = new PageImpl<>(allSamples, pageInfo, 2);
+        return pagedResourcesAssembler.toResource(samplePage);
+
     }
 
     @Test
@@ -268,13 +293,9 @@ public class LegacySamplesRelationsControllerIntegrationTest {
     }
 
     @Test
-    @Ignore
     public void testRetrieveAllSamplesRelationsReturnPagedResource() throws Exception {
-//        Sample sampleA = new TestSample("A").build();
-//        Sample sampleB = new TestSample("B").build();
-//        List<Sample> allSamples = Arrays.asList(sampleA, sampleB);
 //
-//        when(sampleService.getSamples()).thenReturn(allSamples);
+        when(sampleRepository.getPagedSamples(anyInt(), anyInt())).thenReturn(getTestPagedResourcesSample());
 
         mockMvc.perform(get("/samplesrelations/").accept(MediaTypes.HAL_JSON))
                 .andExpect(status().isOk())
@@ -284,7 +305,6 @@ public class LegacySamplesRelationsControllerIntegrationTest {
                 .andExpect(jsonPath("$.page").isNotEmpty());
 
 
-
-
     }
+
 }

@@ -1,5 +1,11 @@
 package uk.ac.ebi.biosamples.api;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.*;
 import org.springframework.hateoas.core.EmbeddedWrapper;
 import org.springframework.hateoas.core.EmbeddedWrappers;
@@ -14,7 +20,10 @@ import uk.ac.ebi.biosamples.service.LegacyRelationService;
 import uk.ac.ebi.biosamples.service.LegacySamplesRelationsResourceAssembler;
 import uk.ac.ebi.biosamples.service.SampleRepository;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
@@ -30,6 +39,9 @@ public class LegacyJsonSamplesRelationsController {
     private final LegacyGroupsRelationsResourceAssembler groupsRelationsResourceAssembler;
     private final LegacyRelationService relationService;
 
+    @Autowired
+    EntityLinks entityLinks;
+
     public LegacyJsonSamplesRelationsController(SampleRepository sampleRepository,
                                                 LegacyRelationService legacyRelationService,
                                                 LegacySamplesRelationsResourceAssembler relationsResourceAssembler,
@@ -38,15 +50,25 @@ public class LegacyJsonSamplesRelationsController {
         this.relationService = legacyRelationService;
         this.relationsResourceAssembler = relationsResourceAssembler;
         this.groupsRelationsResourceAssembler = groupsRelationsResourceAssembler;
+
     }
 
     @GetMapping("/")
-    public PagedResources<LegacySamplesRelations> allSamplesRelations(
-            @RequestParam(value = "page", defaultValue = "1") int page, @RequestParam(value = "size", defaultValue = "25") int size) {
+    public PagedResources<Resource<LegacySamplesRelations>> allSamplesRelations(
+            @RequestParam(value = "page", defaultValue = "1") int page,
+            @RequestParam(value = "size", defaultValue = "25") int size,
+            PagedResourcesAssembler<LegacySamplesRelations> pagedResourcesAssembler) {
 
 
-        PagedResources.PageMetadata pagination = new PagedResources.PageMetadata(0,0,0,0);
-        return new PagedResources(wrappedCollection(new ArrayList<Resource<?>>(), LegacySamplesRelations.class), pagination);
+        PagedResources<Resource<Sample>> samples = sampleRepository.getPagedSamples(page, size);
+        List<LegacySamplesRelations> legacyRelationsResources = samples.getContent().stream()
+                .map(Resource::getContent)
+                .map(LegacySamplesRelations::new)
+                .collect(Collectors.toList());
+        Pageable pageRequest = new PageRequest(page, size);
+        Page<LegacySamplesRelations> pageResources = new PageImpl<>(legacyRelationsResources, pageRequest, samples.getMetadata().getTotalElements());
+
+        return pagedResourcesAssembler.toResource(pageResources, this.relationsResourceAssembler, entityLinks.linkToCollectionResource(LegacySamplesRelations.class));
     }
 
     @GetMapping("/{accession}")
