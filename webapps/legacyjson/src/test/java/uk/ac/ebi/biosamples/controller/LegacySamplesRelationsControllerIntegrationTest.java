@@ -55,15 +55,12 @@ public class LegacySamplesRelationsControllerIntegrationTest {
         return mockMvc.perform(get("/samplesrelations/{accession}", accession).accept(MediaTypes.HAL_JSON_VALUE));
     }
 
-    private PagedResources<Resource<Sample>> getTestPagedResourcesSample() {
-        Sample sampleA = new TestSample("A").build();
-        Sample sampleB = new TestSample("B").build();
-        List<Sample> allSamples = Stream.of(sampleA, sampleB)
-//                .map(s -> new Resource(s, new ArrayList<Link>()))
+    private PagedResources<Resource<Sample>> getTestPagedResourcesSample(int totalSamples, Sample... samples) {
+        List<Sample> allSamples = Stream.of(samples)
                 .collect(Collectors.toList());
 
-        Pageable pageInfo = new PageRequest(0,25);
-        Page<Sample> samplePage = new PageImpl<>(allSamples, pageInfo, 2);
+        Pageable pageInfo = new PageRequest(0,samples.length);
+        Page<Sample> samplePage = new PageImpl<>(allSamples, pageInfo, totalSamples);
         return pagedResourcesAssembler.toResource(samplePage);
 
     }
@@ -294,8 +291,9 @@ public class LegacySamplesRelationsControllerIntegrationTest {
 
     @Test
     public void testRetrieveAllSamplesRelationsReturnPagedResource() throws Exception {
-//
-        when(sampleRepository.getPagedSamples(anyInt(), anyInt())).thenReturn(getTestPagedResourcesSample());
+        Sample sampleA = new TestSample("A").build();
+        Sample sampleB = new TestSample("B").build();
+        when(sampleRepository.getPagedSamples(anyInt(), anyInt())).thenReturn(getTestPagedResourcesSample(2, sampleA, sampleB));
 
         mockMvc.perform(get("/samplesrelations").accept(MediaTypes.HAL_JSON))
                 .andExpect(status().isOk())
@@ -309,12 +307,13 @@ public class LegacySamplesRelationsControllerIntegrationTest {
 
     @Test
     public void testRetrieveAllSamplesRelationsOnePerPageEffectivelyReturnOneRelationsPerPage() throws Exception {
-
-        when(sampleRepository.getPagedSamples(anyInt(), anyInt())).thenReturn(getTestPagedResourcesSample());
+        Sample sampleA = new TestSample("A").build();
+//        Sample sampleB = new TestSample("B").build();
+        when(sampleRepository.getPagedSamples(0, 1)).thenReturn(getTestPagedResourcesSample(2, sampleA));
 
         mockMvc.perform(get("/samplesrelations?page=0&size=1").accept(MediaTypes.HAL_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$..accession").value(Matchers.arrayWithSize(1)))
+                .andExpect(jsonPath("$..accession").value("A"))
                 .andExpect(jsonPath("$.page.size").value(1))
                 .andExpect(jsonPath("$.page.totalElements").value(2))
                 .andExpect(jsonPath("$.page.totalPages").value(2))
