@@ -5,18 +5,16 @@ import org.springframework.hateoas.core.EmbeddedWrapper;
 import org.springframework.hateoas.core.EmbeddedWrappers;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.model.LegacyGroupsRelations;
 import uk.ac.ebi.biosamples.model.LegacySamplesRelations;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.LegacyGroupsRelationsResourceAssembler;
 import uk.ac.ebi.biosamples.service.LegacyRelationService;
 import uk.ac.ebi.biosamples.service.LegacySamplesRelationsResourceAssembler;
-import uk.ac.ebi.biosamples.service.SampleService;
+import uk.ac.ebi.biosamples.service.SampleRepository;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -30,25 +28,33 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 @ExposesResourceFor(LegacySamplesRelations.class)
 public class LegacyJsonSamplesRelationsController {
 
-    private final SampleService sampleService;
+    private final SampleRepository sampleRepository;
     private final LegacySamplesRelationsResourceAssembler relationsResourceAssembler;
     private final LegacyGroupsRelationsResourceAssembler groupsRelationsResourceAssembler;
     private final LegacyRelationService relationService;
 
-    public LegacyJsonSamplesRelationsController(SampleService sampleService,
+    public LegacyJsonSamplesRelationsController(SampleRepository sampleRepository,
                                                 LegacyRelationService legacyRelationService,
                                                 LegacySamplesRelationsResourceAssembler relationsResourceAssembler,
                                                 LegacyGroupsRelationsResourceAssembler groupsRelationsResourceAssembler) {
-        this.sampleService = sampleService;
+        this.sampleRepository = sampleRepository;
         this.relationService = legacyRelationService;
         this.relationsResourceAssembler = relationsResourceAssembler;
         this.groupsRelationsResourceAssembler = groupsRelationsResourceAssembler;
     }
 
+    @GetMapping("/")
+    public PagedResources<LegacySamplesRelations> allSamplesRelations(
+            @RequestParam(value = "page", defaultValue = "1") int page, @RequestParam(value = "size", defaultValue = "25") int size) {
+
+
+        PagedResources.PageMetadata pagination = new PagedResources.PageMetadata(0,0,0,0);
+        return new PagedResources(wrappedCollection(new ArrayList<Resource<?>>(), LegacySamplesRelations.class), pagination);
+    }
 
     @GetMapping("/{accession}")
     public Resource<LegacySamplesRelations> relationsOfSample(@PathVariable String accession) {
-        Sample sample = sampleService.findByAccession(accession);
+        Sample sample = sampleRepository.findByAccession(accession);
         return relationsResourceAssembler.toResource(new LegacySamplesRelations(sample));
     }
 

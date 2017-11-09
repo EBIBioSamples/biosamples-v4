@@ -12,21 +12,21 @@ import java.util.stream.Collectors;
 public class LegacyRelationService {
 
     private final KnownLegacyRelationshipMapping relationshipMapping;
-    private final SampleService sampleService;
+    private final SampleRepository sampleRepository;
 
-    public LegacyRelationService(SampleService sampleService) {
+    public LegacyRelationService(SampleRepository sampleRepository) {
         this.relationshipMapping = new KnownLegacyRelationshipMapping();
-        this.sampleService = sampleService;
+        this.sampleRepository = sampleRepository;
     }
 
     public List<LegacyGroupsRelations> getGroupsRelationships(String accession) {
-                return groupsRelatedTo(sampleService.findByAccession(accession)).stream()
+                return groupsRelatedTo(sampleRepository.findByAccession(accession)).stream()
                         .map(LegacyGroupsRelations::new)
                         .collect(Collectors.toList());
     }
 
     public List<LegacySamplesRelations> getSamplesRelations(String accession, String relationshipType) {
-        return samplesRelatedTo(sampleService.findByAccession(accession), relationshipType).stream()
+        return samplesRelatedTo(sampleRepository.findByAccession(accession), relationshipType).stream()
                 .map(LegacySamplesRelations::new)
                 .collect(Collectors.toList());
 
@@ -46,7 +46,7 @@ public class LegacyRelationService {
         for (Relationship rel: validRelationships) {
 
             String relatedSampleAccession = rel.getSource().equals(sample.getAccession()) ? rel.getTarget() : rel.getSource();
-            relatedSamples.add(sampleService.findByAccession(relatedSampleAccession));
+            relatedSamples.add(sampleRepository.findByAccession(relatedSampleAccession));
         }
         return relatedSamples;
     }
@@ -56,7 +56,7 @@ public class LegacyRelationService {
         return sample.getRelationships().stream()
                 .filter(groupRelationships())
                 .map(r -> r.getType().equals("groups") ? r.getTarget() : r.getSource())
-                .map(sampleService::findByAccession)
+                .map(sampleRepository::findByAccession)
                 .collect(Collectors.toList());
 
     }

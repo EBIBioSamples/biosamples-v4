@@ -11,17 +11,17 @@ import java.io.IOException;
 
 public class LegacySamplesRelationsDeserializer extends JsonDeserializer<LegacySamplesRelations> {
 
-    private final SampleService sampleService;
+    private final SampleRepository sampleRepository;
 
-    public LegacySamplesRelationsDeserializer(SampleService sampleService) {
-        this.sampleService = sampleService;
+    public LegacySamplesRelationsDeserializer(SampleRepository sampleRepository) {
+        this.sampleRepository = sampleRepository;
     }
 
     @Override
     public LegacySamplesRelations deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
         JsonNode node = p.getCodec().readTree(p);
         String accession = node.get("accession").textValue();
-        Sample sample = sampleService.findByAccession(accession);
+        Sample sample = sampleRepository.findByAccession(accession);
         return new LegacySamplesRelations(sample);
     }
 }

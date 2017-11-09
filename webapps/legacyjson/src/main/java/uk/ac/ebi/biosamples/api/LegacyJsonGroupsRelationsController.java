@@ -11,25 +11,25 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.ac.ebi.biosamples.model.LegacyGroupsRelations;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.LegacyGroupsRelationsResourceAssembler;
-import uk.ac.ebi.biosamples.service.SampleService;
+import uk.ac.ebi.biosamples.service.SampleRepository;
 
 @RestController
 @RequestMapping(value = "/groupsrelations", produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
 @ExposesResourceFor(LegacyGroupsRelations.class)
 public class LegacyJsonGroupsRelationsController {
 
-    private final SampleService sampleService;
+    private final SampleRepository sampleRepository;
     private final LegacyGroupsRelationsResourceAssembler resourceAssembler;
 
-    public LegacyJsonGroupsRelationsController(SampleService sampleService, LegacyGroupsRelationsResourceAssembler resourceAssembler) {
-        this.sampleService = sampleService;
+    public LegacyJsonGroupsRelationsController(SampleRepository sampleRepository, LegacyGroupsRelationsResourceAssembler resourceAssembler) {
+        this.sampleRepository = sampleRepository;
         this.resourceAssembler = resourceAssembler;
     }
 
 
     @GetMapping("/{accession}")
     public Resource<LegacyGroupsRelations> getGroupsRelationsByAccession(@PathVariable String accession) {
-        Sample sample = sampleService.findByAccession(accession);
+        Sample sample = sampleRepository.findByAccession(accession);
         return resourceAssembler.toResource(new LegacyGroupsRelations(sample));
     }
 

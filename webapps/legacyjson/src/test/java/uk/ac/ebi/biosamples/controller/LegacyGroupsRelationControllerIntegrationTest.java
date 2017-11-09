@@ -14,7 +14,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import uk.ac.ebi.biosamples.TestSample;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.service.SampleService;
+import uk.ac.ebi.biosamples.service.SampleRepository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.allOf;
@@ -30,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class LegacyGroupsRelationControllerIntegrationTest {
 
     @MockBean
-    private SampleService sampleService;
+    private SampleRepository sampleRepository;
 
     @Autowired
     private MockMvc mockMvc;
@@ -40,9 +40,9 @@ public class LegacyGroupsRelationControllerIntegrationTest {
     }
 
     @Test
-    public void testReturnRelationByAccession() throws Exception {
+    public void testReturnGroupsRelationByAccession() throws Exception {
         Sample testSample = new TestSample("RELATION").build();
-        when(sampleService.findByAccession(anyString())).thenReturn(testSample);
+        when(sampleRepository.findByAccession(anyString())).thenReturn(testSample);
 
         getGroupsRelationsHAL("anyAccession")
                 .andExpect(status().isOk())
@@ -51,18 +51,18 @@ public class LegacyGroupsRelationControllerIntegrationTest {
     }
 
     @Test
-    public void testRelationsHasSelfLink() throws Exception {
+    public void testGroupsRelationsHasSelfLink() throws Exception {
         Sample testSample = new TestSample("RELATION").build();
-        when(sampleService.findByAccession(anyString())).thenReturn(testSample);
+        when(sampleRepository.findByAccession(anyString())).thenReturn(testSample);
 
         getGroupsRelationsHAL("anyAccession")
                 .andExpect(jsonPath("$._links.self").exists());
     }
 
     @Test
-    public void testSampleRelationsLinkExistAndMatchSelfLink() throws Exception {
+    public void testGroupsRelationsLinkExistAndMatchSelfLink() throws Exception {
         Sample testSample = new TestSample("RELATION").build();
-        when(sampleService.findByAccession(anyString())).thenReturn(testSample);
+        when(sampleRepository.findByAccession(anyString())).thenReturn(testSample);
 
         getGroupsRelationsHAL("anAccession")
                 .andExpect(jsonPath("$._links.groupsrelations").exists())
@@ -81,9 +81,9 @@ public class LegacyGroupsRelationControllerIntegrationTest {
     }
 
     @Test
-    public void testSampleRelationsContainsAllExpectedLinks() throws Exception {
+    public void testGroupsRelationsContainsAllExpectedLinks() throws Exception {
         Sample testSample = new TestSample("SAMED1111").build();
-        when(sampleService.findByAccession(anyString())).thenReturn(testSample);
+        when(sampleRepository.findByAccession(anyString())).thenReturn(testSample);
 
         getGroupsRelationsHAL(testSample.getAccession())
                 .andExpect(jsonPath("$._links").value(

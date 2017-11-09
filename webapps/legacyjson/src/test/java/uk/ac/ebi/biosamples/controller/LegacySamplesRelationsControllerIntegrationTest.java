@@ -2,6 +2,7 @@ package uk.ac.ebi.biosamples.controller;
 
 import com.jayway.jsonpath.JsonPath;
 import org.hamcrest.Matchers;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +17,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import uk.ac.ebi.biosamples.TestSample;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.service.SampleService;
+import uk.ac.ebi.biosamples.service.SampleRepository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -31,41 +32,41 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class LegacySamplesRelationsControllerIntegrationTest {
 
     @MockBean
-    private SampleService sampleService;
+    private SampleRepository sampleRepository;
 
     @Autowired
     private MockMvc mockMvc;
 
-    private ResultActions getRelationsHAL(String accession) throws Exception {
+    private ResultActions getSamplesRelationsHAL(String accession) throws Exception {
         return mockMvc.perform(get("/samplesrelations/{accession}", accession).accept(MediaTypes.HAL_JSON_VALUE));
     }
 
     @Test
-    public void testReturnRelationByAccession() throws Exception {
+    public void testReturnSamplesRelationByAccession() throws Exception {
         Sample testSample = new TestSample("RELATION").build();
-        when(sampleService.findByAccession(anyString())).thenReturn(testSample);
+        when(sampleRepository.findByAccession(anyString())).thenReturn(testSample);
 
-        getRelationsHAL("anyAccession")
+        getSamplesRelationsHAL("anyAccession")
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/hal+json;charset=UTF-8"))
                 .andExpect(jsonPath("$.accession").value(testSample.getAccession()));
     }
 
     @Test
-    public void testRelationsHasSelfLink() throws Exception {
+    public void testSamplesRelationsHasSelfLink() throws Exception {
         Sample testSample = new TestSample("RELATION").build();
-        when(sampleService.findByAccession(anyString())).thenReturn(testSample);
+        when(sampleRepository.findByAccession(anyString())).thenReturn(testSample);
 
-        getRelationsHAL("anyAccession")
+        getSamplesRelationsHAL("anyAccession")
                 .andExpect(jsonPath("$._links.self").exists());
     }
 
     @Test
-    public void testSampleRelationsLinkExistAndMatchSelfLink() throws Exception {
+    public void testSamplesRelationsLinkExistAndMatchSelfLink() throws Exception {
         Sample testSample = new TestSample("RELATION").build();
-        when(sampleService.findByAccession(anyString())).thenReturn(testSample);
+        when(sampleRepository.findByAccession(anyString())).thenReturn(testSample);
 
-        getRelationsHAL("anAccession")
+        getSamplesRelationsHAL("anAccession")
                 .andExpect(jsonPath("$._links.samplerelations").exists())
                 .andExpect(jsonPath("$._links.samplerelations.href").value(Matchers.endsWith("RELATION")))
                 .andDo(result -> {
@@ -82,11 +83,11 @@ public class LegacySamplesRelationsControllerIntegrationTest {
     }
 
     @Test
-    public void testSampleRelationsContainsAllExpectedLinks() throws Exception {
+    public void testSamplesRelationsContainsAllExpectedLinks() throws Exception {
         Sample testSample = new TestSample("SAMED1111").build();
-        when(sampleService.findByAccession(anyString())).thenReturn(testSample);
+        when(sampleRepository.findByAccession(anyString())).thenReturn(testSample);
 
-        getRelationsHAL(testSample.getAccession())
+        getSamplesRelationsHAL(testSample.getAccession())
                 .andExpect(jsonPath("$._links").value(
                         allOf(
                                 hasKey("self"),
@@ -112,10 +113,10 @@ public class LegacySamplesRelationsControllerIntegrationTest {
                 .withRelationship(Relationship.build("SAMEG222", "has member", "SAMEA111"))
                 .build();
 
-        when(sampleService.findByAccession(testSample.getAccession())).thenReturn(testSample);
-        when(sampleService.findByAccession(testGroup.getAccession())).thenReturn(testGroup);
+        when(sampleRepository.findByAccession(testSample.getAccession())).thenReturn(testSample);
+        when(sampleRepository.findByAccession(testGroup.getAccession())).thenReturn(testGroup);
 
-        MvcResult result = getRelationsHAL("SAMEA111")
+        MvcResult result = getSamplesRelationsHAL("SAMEA111")
                 .andExpect(jsonPath("$._links.groups.href").value(
                         Matchers.endsWith("SAMEA111/groups")
                 ))
@@ -140,10 +141,10 @@ public class LegacySamplesRelationsControllerIntegrationTest {
                 .withRelationship(Relationship.build("SAMEG111", "has member", "SAMEA222"))
                 .build();
 
-        when(sampleService.findByAccession(testSample.getAccession())).thenReturn(testSample);
-        when(sampleService.findByAccession(testGroup.getAccession())).thenReturn(testGroup);
+        when(sampleRepository.findByAccession(testSample.getAccession())).thenReturn(testSample);
+        when(sampleRepository.findByAccession(testGroup.getAccession())).thenReturn(testGroup);
 
-        MvcResult result = getRelationsHAL("SAMEA222")
+        MvcResult result = getSamplesRelationsHAL("SAMEA222")
                 .andExpect(jsonPath("$._links.groups.href").value(
                         endsWith("SAMEA222/groups")
                 ))
@@ -162,7 +163,7 @@ public class LegacySamplesRelationsControllerIntegrationTest {
     }
 
     @Test
-    public void testDeriveToRelationIsReturned() throws Exception {
+    public void testDeriveToSamplesRelationIsReturned() throws Exception {
         Sample sample1 = new TestSample("SAMPLE1")
                 .withRelationship(Relationship.build(
                         "SAMPLE2", "derivedFrom", "SAMPLE1"
@@ -172,10 +173,10 @@ public class LegacySamplesRelationsControllerIntegrationTest {
                         "SAMPLE2", "derivedFrom", "SAMPLE1"
                 )).build();
 
-        when(sampleService.findByAccession(sample1.getAccession())).thenReturn(sample1);
-        when(sampleService.findByAccession(sample2.getAccession())).thenReturn(sample2);
+        when(sampleRepository.findByAccession(sample1.getAccession())).thenReturn(sample1);
+        when(sampleRepository.findByAccession(sample2.getAccession())).thenReturn(sample2);
 
-        String responseContent = getRelationsHAL(sample2.getAccession())
+        String responseContent = getSamplesRelationsHAL(sample2.getAccession())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$._links.derivedFrom.href").value(
                         endsWith("SAMPLE2/derivedFrom")
@@ -191,7 +192,7 @@ public class LegacySamplesRelationsControllerIntegrationTest {
     }
 
     @Test
-    public void testDerivedFromAndDerivedToAreWorkingAsInverseRelations() throws Exception{
+    public void testDerivedFromAndDerivedToWorkAsInverseSamplesRelations() throws Exception{
         Sample sample1 = new TestSample("SAMPLE1")
                 .withRelationship(Relationship.build(
                         "SAMPLE1", "derivedTo", "SAMPLE2"
@@ -201,11 +202,11 @@ public class LegacySamplesRelationsControllerIntegrationTest {
                         "SAMPLE1", "derivedTo", "SAMPLE2"
                 )).build();
 
-        when(sampleService.findByAccession(sample1.getAccession())).thenReturn(sample1);
-        when(sampleService.findByAccession(sample2.getAccession())).thenReturn(sample2);
+        when(sampleRepository.findByAccession(sample1.getAccession())).thenReturn(sample1);
+        when(sampleRepository.findByAccession(sample2.getAccession())).thenReturn(sample2);
 
 
-        String samplesRelationsResponseContent = getRelationsHAL(sample2.getAccession())
+        String samplesRelationsResponseContent = getSamplesRelationsHAL(sample2.getAccession())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$._links.derivedFrom.href").value(endsWith("SAMPLE2/derivedFrom")))
                 .andReturn().getResponse().getContentAsString();
@@ -227,11 +228,11 @@ public class LegacySamplesRelationsControllerIntegrationTest {
     }
 
     @Test
-    public void testSamplesWithNoAssociatedRelationReturnEmptyResourcesObject() throws Exception {
+    public void testSamplesWithNoAssociatedSamplesRelationReturnEmptyResourcesObject() throws Exception {
         Sample testSample = new TestSample("SAMEA1").build();
-        when(sampleService.findByAccession(testSample.getAccession())).thenReturn(testSample);
+        when(sampleRepository.findByAccession(testSample.getAccession())).thenReturn(testSample);
 
-        String samplesRelationsContent = getRelationsHAL(testSample.getAccession()).andReturn().getResponse().getContentAsString();
+        String samplesRelationsContent = getSamplesRelationsHAL(testSample.getAccession()).andReturn().getResponse().getContentAsString();
 
         String derivedFromHref = JsonPath.parse(samplesRelationsContent).read("$._links.derivedFrom.href");
         mockMvc.perform(get(derivedFromHref).accept(MediaTypes.HAL_JSON))
@@ -243,9 +244,9 @@ public class LegacySamplesRelationsControllerIntegrationTest {
     @Test
     public void testSamplesWithNoAssociatedGroupReturnEmptyGroupsRelations() throws Exception {
         Sample testSample = new TestSample("SAMEA1").build();
-        when(sampleService.findByAccession(testSample.getAccession())).thenReturn(testSample);
+        when(sampleRepository.findByAccession(testSample.getAccession())).thenReturn(testSample);
 
-        String samplesRelationsContent = getRelationsHAL(testSample.getAccession()).andReturn().getResponse().getContentAsString();
+        String samplesRelationsContent = getSamplesRelationsHAL(testSample.getAccession()).andReturn().getResponse().getContentAsString();
 
         String derivedFromHref = JsonPath.parse(samplesRelationsContent).read("$._links.groups.href");
         mockMvc.perform(get(derivedFromHref).accept(MediaTypes.HAL_JSON))
@@ -257,11 +258,31 @@ public class LegacySamplesRelationsControllerIntegrationTest {
     @Test
     public void testRetrieveUnknownSamplesRelationsFromLegacyApiThrowsError() throws Exception {
         Sample testSample = new TestSample("anyaccession").build();
-        when(sampleService.findByAccession(testSample.getAccession())).thenReturn(testSample);
+        when(sampleRepository.findByAccession(testSample.getAccession())).thenReturn(testSample);
 
         mockMvc.perform(get("/samplesrelations/anyaccession/unknownRelation").accept(MediaTypes.HAL_JSON))
                 .andExpect(status().isBadRequest());
 
     }
 
+    @Test
+    @Ignore
+    public void testRetrieveAllSamplesRelationsReturnPagedResource() throws Exception {
+//        Sample sampleA = new TestSample("A").build();
+//        Sample sampleB = new TestSample("B").build();
+//        List<Sample> allSamples = Arrays.asList(sampleA, sampleB);
+//
+//        when(sampleService.getSamples()).thenReturn(allSamples);
+
+        mockMvc.perform(get("/samplesrelations/").accept(MediaTypes.HAL_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/hal+json;charset=UTF-8"))
+                .andExpect(jsonPath("$._embedded").isNotEmpty())
+                .andExpect(jsonPath("$._links").isNotEmpty())
+                .andExpect(jsonPath("$.page").isNotEmpty());
+
+
+
+
+    }
 }

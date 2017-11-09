@@ -7,7 +7,7 @@ import java.time.Instant;
 import java.util.List;
 
 @Service
-public class SampleService {
+public class SampleRepository {
 
     public Sample findByAccession(String accession) {
 

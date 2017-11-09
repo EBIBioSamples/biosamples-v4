@@ -16,7 +16,7 @@ import uk.ac.ebi.biosamples.TestAttribute;
 import uk.ac.ebi.biosamples.TestSample;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.service.SampleService;
+import uk.ac.ebi.biosamples.service.SampleRepository;
 
 import java.time.Instant;
 
@@ -32,7 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class LegacySamplesControllerIntegrationTest {
 
 	@MockBean
-	private SampleService sampleServiceMock;
+	private SampleRepository sampleRepositoryMock;
 
 	@Autowired
     private MockMvc mockMvc;
@@ -40,7 +40,7 @@ public class LegacySamplesControllerIntegrationTest {
 	@Test
 	public void testReturnSampleByAccession() throws Exception {
 		Sample testSample = new TestSample("SAMEA123123").build();
-		when(sampleServiceMock.findByAccession(testSample.getAccession())).thenReturn(testSample);
+		when(sampleRepositoryMock.findByAccession(testSample.getAccession())).thenReturn(testSample);
 
     	mockMvc.perform(
     			get("/samples/{accession}", testSample.getAccession())
@@ -52,7 +52,7 @@ public class LegacySamplesControllerIntegrationTest {
 	@Test
 	public void testResponseContentTypeIsHalJson() throws Exception {
 		Sample testSample = new TestSample("SAMEA0").build();
-		when(sampleServiceMock.findByAccession(testSample.getAccession())).thenReturn(testSample);
+		when(sampleRepositoryMock.findByAccession(testSample.getAccession())).thenReturn(testSample);
 
 		mockMvc.perform(get("/samples/SAMEA0").accept("application/hal+json;charset=UTF-8"))
 				.andExpect(status().isOk())
@@ -64,7 +64,7 @@ public class LegacySamplesControllerIntegrationTest {
 		Sample testSample = new TestSample("SAMEA1")
 				.withAttribute(new TestAttribute("description", "simple description").build())
 				.build();
-		when(sampleServiceMock.findByAccession(testSample.getAccession())).thenReturn(testSample);
+		when(sampleRepositoryMock.findByAccession(testSample.getAccession())).thenReturn(testSample);
 
 		mockMvc.perform(
 				get("/samples/{accession}", "SAMEA1").accept(MediaTypes.HAL_JSON))
@@ -79,7 +79,7 @@ public class LegacySamplesControllerIntegrationTest {
 		Sample testSample = new TestSample("SAMEA1")
 				.releasedOn(Instant.parse("2016-01-01T00:30:00Z"))
 				.build();
-		when(sampleServiceMock.findByAccession(testSample.getAccession())).thenReturn(testSample);
+		when(sampleRepositoryMock.findByAccession(testSample.getAccession())).thenReturn(testSample);
 
 		mockMvc.perform(get("/samples/SAMEA1"))
 				.andExpect(status().isOk())
@@ -95,7 +95,7 @@ public class LegacySamplesControllerIntegrationTest {
 						new TestAttribute("type", "value").withOntologyUri("test").build())
 				.build();
 
-		when(sampleServiceMock.findByAccession(testSample.getAccession())).thenReturn(testSample);
+		when(sampleRepositoryMock.findByAccession(testSample.getAccession())).thenReturn(testSample);
 
 		mockMvc.perform(get("/samples/SAMEA0").accept(MediaTypes.HAL_JSON))
 				.andExpect(status().isOk())
@@ -106,7 +106,7 @@ public class LegacySamplesControllerIntegrationTest {
 	@Test
 	public void testSampleNameIsExposedAsRootField() throws Exception {
 		Sample testSample = new TestSample("SAMEA2").withName("StrangeName").build();
-		when(sampleServiceMock.findByAccession(testSample.getAccession())).thenReturn(testSample);
+		when(sampleRepositoryMock.findByAccession(testSample.getAccession())).thenReturn(testSample);
 
 		mockMvc.perform(get("/samples/SAMEA2").accept(MediaTypes.HAL_JSON_VALUE))
 				.andExpect(jsonPath("$.name").value("StrangeName"));
@@ -116,7 +116,7 @@ public class LegacySamplesControllerIntegrationTest {
 	@Test
 	public void testSampleResourceHasLinksForSampleSelfAndRelationships() throws Exception {
 		Sample testSample = new TestSample("SAMN12").build();
-		when(sampleServiceMock.findByAccession(testSample.getAccession())).thenReturn(testSample);
+		when(sampleRepositoryMock.findByAccession(testSample.getAccession())).thenReturn(testSample);
 
 		mockMvc.perform(
 				get("/samples/{accession}", testSample.getAccession())
@@ -133,7 +133,7 @@ public class LegacySamplesControllerIntegrationTest {
 	@Test
 	public void testSampleResourceLinkForSampleEqualsLinkForSelf() throws Exception {
 		Sample testSample = new TestSample("SAMEA555").build();
-		when(sampleServiceMock.findByAccession(testSample.getAccession())).thenReturn(testSample);
+		when(sampleRepositoryMock.findByAccession(testSample.getAccession())).thenReturn(testSample);
 
 		mockMvc.perform(
 				get("/samples/{accession}", testSample.getAccession())
@@ -151,7 +151,7 @@ public class LegacySamplesControllerIntegrationTest {
 		Sample testSample = new TestSample("SAMED666").withRelationship(
 				Relationship.build("SAMED666", "deriveFrom", "SAMED555")
 		).build();
-		when(sampleServiceMock.findByAccession(testSample.getAccession())).thenReturn(testSample);
+		when(sampleRepositoryMock.findByAccession(testSample.getAccession())).thenReturn(testSample);
 
 		MvcResult result = mockMvc.perform(get("/samples/{accession}", testSample.getAccession())
 				.accept(MediaTypes.HAL_JSON))
