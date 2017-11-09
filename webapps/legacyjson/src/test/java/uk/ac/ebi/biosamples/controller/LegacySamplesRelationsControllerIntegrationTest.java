@@ -2,6 +2,7 @@ package uk.ac.ebi.biosamples.controller;
 
 import com.jayway.jsonpath.JsonPath;
 import org.hamcrest.Matchers;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +14,9 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.*;
+import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.Resource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -23,7 +26,6 @@ import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.SampleRepository;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -319,6 +321,15 @@ public class LegacySamplesRelationsControllerIntegrationTest {
                 .andExpect(jsonPath("$.page.totalPages").value(2))
                 .andExpect(jsonPath("$.page.number").value(0));
 
+    }
+
+    @Test
+    @Ignore
+    public void shouldReturnOnlySamples() {
+        //TODO implement this inside the general integration test class
+        Sample sampleA = new TestSample("SAMEA1234").build();
+        Sample sampleB = new TestSample("SAMEA5678").build();
+        Sample group   = new TestSample("SAMEG9999").build();
     }
 
 }

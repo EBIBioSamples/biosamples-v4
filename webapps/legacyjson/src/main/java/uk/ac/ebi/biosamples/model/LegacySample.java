@@ -3,6 +3,7 @@ package uk.ac.ebi.biosamples.model;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
 
 @Relation(value="sample", collectionRelation = "samples")
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonPropertyOrder(value = {"accession", "name", "releaseDate", "updateDate", "description", "characteristics"})
 public class LegacySample {
 
     @JsonIgnore
@@ -31,7 +33,6 @@ public class LegacySample {
 
     private MultiValueMap<String, LegacyAttribute> characteristics;
     private String description;
-
 
 
     public LegacySample(Sample sample) {
