@@ -14,10 +14,7 @@ import uk.ac.ebi.biosamples.service.LegacyRelationService;
 import uk.ac.ebi.biosamples.service.LegacySamplesRelationsResourceAssembler;
 import uk.ac.ebi.biosamples.service.SampleRepository;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
@@ -53,9 +50,13 @@ public class LegacyJsonSamplesRelationsController {
     }
 
     @GetMapping("/{accession}")
-    public Resource<LegacySamplesRelations> relationsOfSample(@PathVariable String accession) {
-        Sample sample = sampleRepository.findByAccession(accession);
-        return relationsResourceAssembler.toResource(new LegacySamplesRelations(sample));
+    public ResponseEntity<Resource<LegacySamplesRelations>> relationsOfSample(@PathVariable String accession) {
+        Optional<Sample> sample = sampleRepository.findByAccession(accession);
+        if (!sample.isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(relationsResourceAssembler.toResource(new LegacySamplesRelations(sample.get())));
     }
 
     @GetMapping("/{accession}/groups")

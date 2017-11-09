@@ -15,6 +15,8 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.LegacySampleResourceAssembler;
 import uk.ac.ebi.biosamples.service.SampleRepository;
 
+import java.util.Optional;
+
 @RestController
 @RequestMapping(value = "/samples", produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
 @ExposesResourceFor(LegacySample.class)
@@ -32,12 +34,15 @@ public class LegacyJsonSamplesController {
     }
 
     @GetMapping(value = "/{accession}")
-    public Resource<LegacySample> sampleByAccession(@PathVariable String accession) {
+    public ResponseEntity<Resource<LegacySample>> sampleByAccession(@PathVariable String accession) {
 
-        Sample testSample = sampleRepository.findByAccession(accession);
-        LegacySample v3TestSample = new LegacySample(testSample);
+        Optional<Sample> sample = sampleRepository.findByAccession(accession);
+        if (!sample.isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
 
-        return sampleResourceAssembler.toResource(v3TestSample);
+        LegacySample v3TestSample = new LegacySample(sample.get());
+        return ResponseEntity.ok(sampleResourceAssembler.toResource(v3TestSample));
 
     }
 

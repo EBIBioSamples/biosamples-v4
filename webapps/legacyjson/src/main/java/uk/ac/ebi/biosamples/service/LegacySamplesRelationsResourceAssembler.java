@@ -24,7 +24,6 @@ public class LegacySamplesRelationsResourceAssembler implements ResourceAssemble
     public Resource<LegacySamplesRelations> toResource(LegacySamplesRelations entity) {
 
         Resource<LegacySamplesRelations> resource = new Resource<>(entity);
-
         resource.add(entityLinks.linkToSingleResource(LegacySamplesRelations.class, entity.accession()).withSelfRel());
         resource.add(entityLinks.linkToSingleResource(LegacySample.class, entity.accession()).withRel("details"));
         resource.add(entityLinks.linkToSingleResource(LegacySamplesRelations.class, entity.accession()).withRel("samplerelations"));
@@ -37,7 +36,6 @@ public class LegacySamplesRelationsResourceAssembler implements ResourceAssemble
         resource.add(linkTo(methodOn(LegacyJsonSamplesRelationsController.class).getSamplesRelations(entity.accession(), "parentOf")).withRel("parentOf"));
         resource.add(linkTo(methodOn(LegacyJsonSamplesRelationsController.class).getSamplesRelations(entity.accession(), "recuratedTo")).withRel("recuratedTo"));
         resource.add(linkTo(methodOn(LegacyJsonSamplesRelationsController.class).getSamplesRelations(entity.accession(), "externallinks")).withRel("externallinks"));
-
 
         return resource;
     }

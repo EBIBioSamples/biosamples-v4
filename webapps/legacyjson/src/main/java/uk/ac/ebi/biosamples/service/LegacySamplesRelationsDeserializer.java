@@ -8,6 +8,7 @@ import uk.ac.ebi.biosamples.model.LegacySamplesRelations;
 import uk.ac.ebi.biosamples.model.Sample;
 
 import java.io.IOException;
+import java.util.Optional;
 
 public class LegacySamplesRelationsDeserializer extends JsonDeserializer<LegacySamplesRelations> {
 
@@ -21,7 +22,7 @@ public class LegacySamplesRelationsDeserializer extends JsonDeserializer<LegacyS
     public LegacySamplesRelations deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
         JsonNode node = p.getCodec().readTree(p);
         String accession = node.get("accession").textValue();
-        Sample sample = sampleRepository.findByAccession(accession);
-        return new LegacySamplesRelations(sample);
+        Optional<Sample> sample = sampleRepository.findByAccession(accession);
+        return sample.map(LegacySamplesRelations::new).orElse(null);
     }
 }

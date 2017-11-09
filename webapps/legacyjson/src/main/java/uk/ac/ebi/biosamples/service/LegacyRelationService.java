@@ -4,7 +4,9 @@ import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -19,20 +21,30 @@ public class LegacyRelationService {
         this.sampleRepository = sampleRepository;
     }
 
-    public List<LegacyGroupsRelations> getGroupsRelationships(String accession) {
-                return groupsRelatedTo(sampleRepository.findByAccession(accession)).stream()
-                        .map(LegacyGroupsRelations::new)
-                        .collect(Collectors.toList());
+    public List<LegacyGroupsRelations> getGroupsRelationships(String accession){
+        Optional<Sample> sample = sampleRepository.findByAccession(accession);
+        if (!sample.isPresent()) {
+            return Collections.emptyList();
+        }
+
+        return groupsRelatedTo(sample.get()).stream()
+                    .map(LegacyGroupsRelations::new)
+                    .collect(Collectors.toList());
     }
 
     public List<LegacySamplesRelations> getSamplesRelations(String accession, String relationshipType) {
-        return samplesRelatedTo(sampleRepository.findByAccession(accession), relationshipType).stream()
+        Optional<Sample> sample = sampleRepository.findByAccession(accession);
+        if (!sample.isPresent()) {
+            return Collections.emptyList();
+        }
+
+        return samplesRelatedTo(sample.get(), relationshipType).stream()
                 .map(LegacySamplesRelations::new)
                 .collect(Collectors.toList());
 
     }
 
-    public List<Sample> samplesRelatedTo(Sample sample, String relationType) {
+    private List<Sample> samplesRelatedTo(Sample sample, String relationType) {
 
         List<Relationship> validRelationships = new ArrayList<>();
 
@@ -46,17 +58,19 @@ public class LegacyRelationService {
         for (Relationship rel: validRelationships) {
 
             String relatedSampleAccession = rel.getSource().equals(sample.getAccession()) ? rel.getTarget() : rel.getSource();
-            relatedSamples.add(sampleRepository.findByAccession(relatedSampleAccession));
+            Optional<Sample> relSample = sampleRepository.findByAccession(relatedSampleAccession);
+            relSample.ifPresent(relatedSamples::add);
         }
         return relatedSamples;
     }
 
-    public List<Sample> groupsRelatedTo(Sample sample) {
+    private List<Sample> groupsRelatedTo(Sample sample) {
 
         return sample.getRelationships().stream()
                 .filter(groupRelationships())
                 .map(r -> r.getType().equals("groups") ? r.getTarget() : r.getSource())
                 .map(sampleRepository::findByAccession)
+                .filter(Optional::isPresent).map(Optional::get)
                 .collect(Collectors.toList());
 
     }

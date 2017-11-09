@@ -16,6 +16,8 @@ import uk.ac.ebi.biosamples.TestSample;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.SampleRepository;
 
+import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasKey;
@@ -42,7 +44,7 @@ public class LegacyGroupsRelationControllerIntegrationTest {
     @Test
     public void testReturnGroupsRelationByAccession() throws Exception {
         Sample testSample = new TestSample("RELATION").build();
-        when(sampleRepository.findByAccession(anyString())).thenReturn(testSample);
+        when(sampleRepository.findByAccession(anyString())).thenReturn(Optional.of(testSample));
 
         getGroupsRelationsHAL("anyAccession")
                 .andExpect(status().isOk())
@@ -53,7 +55,7 @@ public class LegacyGroupsRelationControllerIntegrationTest {
     @Test
     public void testGroupsRelationsHasSelfLink() throws Exception {
         Sample testSample = new TestSample("RELATION").build();
-        when(sampleRepository.findByAccession(anyString())).thenReturn(testSample);
+        when(sampleRepository.findByAccession(anyString())).thenReturn(Optional.of(testSample));
 
         getGroupsRelationsHAL("anyAccession")
                 .andExpect(jsonPath("$._links.self").exists());
@@ -62,7 +64,7 @@ public class LegacyGroupsRelationControllerIntegrationTest {
     @Test
     public void testGroupsRelationsLinkExistAndMatchSelfLink() throws Exception {
         Sample testSample = new TestSample("RELATION").build();
-        when(sampleRepository.findByAccession(anyString())).thenReturn(testSample);
+        when(sampleRepository.findByAccession(anyString())).thenReturn(Optional.of(testSample));
 
         getGroupsRelationsHAL("anAccession")
                 .andExpect(jsonPath("$._links.groupsrelations").exists())
@@ -83,7 +85,7 @@ public class LegacyGroupsRelationControllerIntegrationTest {
     @Test
     public void testGroupsRelationsContainsAllExpectedLinks() throws Exception {
         Sample testSample = new TestSample("SAMED1111").build();
-        when(sampleRepository.findByAccession(anyString())).thenReturn(testSample);
+        when(sampleRepository.findByAccession(anyString())).thenReturn(Optional.of(testSample));
 
         getGroupsRelationsHAL(testSample.getAccession())
                 .andExpect(jsonPath("$._links").value(

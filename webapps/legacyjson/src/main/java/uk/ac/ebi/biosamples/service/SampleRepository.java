@@ -1,22 +1,24 @@
 package uk.ac.ebi.biosamples.service;
 
 import org.springframework.stereotype.Service;
+import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
 
-import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class SampleRepository {
 
-    public Sample findByAccession(String accession) {
+    private final BioSamplesClient client;
 
-        return Sample.build("test",
-                "SAMEA1111",
-                "testDomain",
-                Instant.now(),
-                Instant.now(),
-                null, null, null);
+    public SampleRepository(BioSamplesClient client) {
+        this.client = client;
+    }
+
+    public Optional<Sample> findByAccession(String accession) {
+
+        return client.fetchSample(accession);
     }
 
     public List<Sample> getSamples() {
