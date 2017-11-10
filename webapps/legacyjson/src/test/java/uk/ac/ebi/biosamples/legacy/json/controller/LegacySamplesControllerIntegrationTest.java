@@ -8,7 +8,6 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -29,7 +28,9 @@ import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -37,6 +38,7 @@ import java.util.stream.Stream;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -291,7 +293,39 @@ public class LegacySamplesControllerIntegrationTest {
 		mockMvc.perform(get(findFirstByGroupTemplateUrl.expand("groupB")).accept(MediaTypes.HAL_JSON))
 				.andExpect(status().isNotFound());
 
+	}
+	
+	@Test
+	public void testFindByGroupFunctionality() throws Exception {
+		Sample sampleA = new TestSample("A").withRelationship(
+				Relationship.build("groupA", "has member", "A")).build();
+		Sample sampleB = new TestSample("B").withRelationship(
+				Relationship.build("groupA", "has member", "B")).build();
+		Sample groupA = new TestSample("groupA")
+				.withRelationship(Relationship.build("groupA", "has member", "A"))
+				.withRelationship(Relationship.build("groupA", "has member", "B"))
+				.build();
+
+		when(sampleRepository.findByGroup(eq("groupA"), anyInt(), anyInt()))
+				.thenReturn(getTestPagedResourcesSample(2, sampleA, sampleB));
+
+		String searchLinkContent = mockMvc.perform(get("/samples/search").accept(MediaTypes.HAL_JSON))
+				.andExpect(jsonPath("$._links.findByGroups.href").value(endsWith("{?group,size,page,sort}")))
+				.andReturn().getResponse().getContentAsString();
+
+		UriTemplate findFirstByGroupTemplateUrl = new UriTemplate(
+				JsonPath.parse(searchLinkContent).read("$._links.findByGroups.href"));
+		Map<String,String> urlParameters = new HashMap<>();
+		urlParameters.put("group", "groupA");
+		urlParameters.put("page", "0");
+		urlParameters.put("size", "50");
+
+		mockMvc.perform(get(findFirstByGroupTemplateUrl.expand(urlParameters)).accept(MediaTypes.HAL_JSON))
+				.andExpect(status().isOk())
+				.andExpect(content().contentType("application/hal+json;charset=UTF-8"))
+				.andExpect(jsonPath("$._embedded.samples.*.accession").value(containsInAnyOrder("A", "B")));
 
 	}
+	
 	
 }

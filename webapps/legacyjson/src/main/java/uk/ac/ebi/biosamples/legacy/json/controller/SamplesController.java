@@ -32,24 +32,26 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 @ExposesResourceFor(LegacySample.class)
 public class SamplesController {
 
+    private final PagedResourcesAssembler<LegacySample> pagedResourcesAssembler;
     private final SampleResourceAssembler sampleResourceAssembler;
     private final SampleRepository sampleRepository;
     private final EntityLinks entityLinks;
 
     @Autowired
-    public SamplesController(SampleRepository sampleRepository,
+    public SamplesController(PagedResourcesAssembler<LegacySample> pagedResourcesAssembler, SampleRepository sampleRepository,
                              SampleResourceAssembler sampleResourceAssembler, EntityLinks entityLinks) {
 
+        this.pagedResourcesAssembler = pagedResourcesAssembler;
         this.sampleRepository = sampleRepository;
         this.sampleResourceAssembler = sampleResourceAssembler;
         this.entityLinks = entityLinks;
+
     }
 
     @GetMapping
     public PagedResources<Resource<LegacySample>> allSamplesRelations(
             @RequestParam(value = "page", defaultValue = "0") int page,
-            @RequestParam(value = "size", defaultValue = "50") int size,
-            PagedResourcesAssembler<LegacySample> pagedResourcesAssembler) {
+            @RequestParam(value = "size", defaultValue = "50") int size) {
 
         PagedResources<Resource<Sample>> samples = sampleRepository.getPagedSamples(page, size);
         List<LegacySample> legacyRelationsResources = samples.getContent().stream()
@@ -95,20 +97,28 @@ public class SamplesController {
     }
 
     @GetMapping("/search/findByGroups")
-    public PagedResourcesAssembler<LegacySample> findByGroups(
+    public PagedResources<Resource<LegacySample>> findByGroups(
             @RequestParam(value="group", required=false, defaultValue = "") String groupAccession,
             @RequestParam(value="size", required=false, defaultValue = "50") Integer pageSize,
             @RequestParam(value="page", required=false, defaultValue = "0") Integer page,
-            @RequestParam(value="sort", required=false, defaultValue = "asc") String sort
-    ) {
-        return null;
+            @RequestParam(value="sort", required=false, defaultValue = "asc") String sort) {
+
+        PagedResources<Resource<Sample>> samplePagedResources = sampleRepository.findByGroup(groupAccession, page, pageSize);
+        List<LegacySample> legacyRelationsResources = samplePagedResources.getContent().stream()
+                .map(Resource::getContent)
+                .map(LegacySample::new)
+                .collect(Collectors.toList());
+        Pageable pageable = new PageRequest(page, pageSize);
+        Page<LegacySample> pageRequest = new PageImpl<>(legacyRelationsResources, pageable, samplePagedResources.getMetadata().getTotalElements());
+        PagedResources<Resource<LegacySample>> pagedResource = pagedResourcesAssembler.toResource(pageRequest, sampleResourceAssembler);
+        return pagedResource;
     }
 
     @GetMapping("/search/findByAccession")
     public PagedResourcesAssembler<LegacySample> findByAccession(
             @RequestParam(value="accession", required=false, defaultValue = "") String accession,
             @RequestParam(value="size", required=false, defaultValue = "50") Integer pageSize,
-            @RequestParam(value="page", required=false, defaultValue = "0") Integer page,
+            @RequestParam(value="page", required=false, defaultValue = "0") Integer pageRequest,
             @RequestParam(value="sort", required=false, defaultValue = "asc") String sort
     ) {
         return null;
@@ -119,7 +129,7 @@ public class SamplesController {
     public PagedResourcesAssembler<LegacySample> findByText(
             @RequestParam(value="text", required=false, defaultValue = "") String text,
             @RequestParam(value="size", defaultValue = "50") Integer pageSize,
-            @RequestParam(value="page", defaultValue = "0") Integer page,
+            @RequestParam(value="page", defaultValue = "0") Integer pageRequest,
             @RequestParam(value="sort", defaultValue = "asc") String sort
     ) {
         return null;
@@ -129,7 +139,7 @@ public class SamplesController {
             @RequestParam(value="text", required=false, defaultValue = "") String text,
             @RequestParam(value="group", required=false, defaultValue = "") String groupAccession,
             @RequestParam(value="size", defaultValue = "50") Integer pageSize,
-            @RequestParam(value="page", defaultValue = "0") Integer page,
+            @RequestParam(value="page", defaultValue = "0") Integer pageRequest,
             @RequestParam(value="sort", defaultValue = "asc") String sort
     ) {
         return null;
@@ -139,7 +149,7 @@ public class SamplesController {
             @RequestParam(value="accession", required=false, defaultValue = "") String accession,
             @RequestParam(value="group", required=false, defaultValue = "") String groupAccession,
             @RequestParam(value="size", defaultValue = "50") Integer pageSize,
-            @RequestParam(value="page", defaultValue = "0") Integer page,
+            @RequestParam(value="page", defaultValue = "0") Integer pageRequest,
             @RequestParam(value="sort", defaultValue = "asc") String sort
     ) {
         return null;

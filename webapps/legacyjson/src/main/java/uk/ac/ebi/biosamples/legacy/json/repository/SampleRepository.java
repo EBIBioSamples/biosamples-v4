@@ -25,6 +25,11 @@ public class SampleRepository {
         return client.fetchSample(accession);
     }
 
+    /**
+     * Search for an optional sample resource associated with a group
+     * @param groupAccession the group accession
+     * @return Optional sample resource
+     */
     public Optional<Resource<Sample>> findFirstByGroup(String groupAccession) {
 
         Filter memberOfGroupFilter = FilterBuilder.create().onInverseRelation("has member").withValue(groupAccession).build();
@@ -37,6 +42,11 @@ public class SampleRepository {
 
     }
 
+
+    public PagedResources<Resource<Sample>> findByGroup(String groupAccession, int page, int pageSize) {
+        Filter memberOfGroupFilter = FilterBuilder.create().onInverseRelation("has member").withValue(groupAccession).build();
+        return getPagedContent(page, pageSize, memberOfGroupFilter);
+    }
 
     public PagedResources<Resource<Sample>> getPagedSamples(int page, int pageSize) {
 
