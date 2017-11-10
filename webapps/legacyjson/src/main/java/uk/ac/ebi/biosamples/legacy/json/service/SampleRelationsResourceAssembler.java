@@ -6,27 +6,27 @@ import org.springframework.hateoas.ResourceAssembler;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.legacy.json.controller.SampleRelationsController;
 import uk.ac.ebi.biosamples.legacy.json.domain.LegacySample;
-import uk.ac.ebi.biosamples.legacy.json.domain.LegacySamplesRelations;
+import uk.ac.ebi.biosamples.legacy.json.domain.SamplesRelations;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 @Service
-public class LegacySamplesRelationsResourceAssembler implements ResourceAssembler<LegacySamplesRelations, Resource<LegacySamplesRelations>>{
+public class SampleRelationsResourceAssembler implements ResourceAssembler<SamplesRelations, Resource<SamplesRelations>>{
 
     private EntityLinks entityLinks;
 
-    public LegacySamplesRelationsResourceAssembler(EntityLinks entityLinks) {
+    public SampleRelationsResourceAssembler(EntityLinks entityLinks) {
         this.entityLinks = entityLinks;
     }
 
     @Override
-    public Resource<LegacySamplesRelations> toResource(LegacySamplesRelations entity) {
+    public Resource<SamplesRelations> toResource(SamplesRelations entity) {
 
-        Resource<LegacySamplesRelations> resource = new Resource<>(entity);
-        resource.add(entityLinks.linkToSingleResource(LegacySamplesRelations.class, entity.accession()).withSelfRel());
+        Resource<SamplesRelations> resource = new Resource<>(entity);
+        resource.add(entityLinks.linkToSingleResource(SamplesRelations.class, entity.accession()).withSelfRel());
         resource.add(entityLinks.linkToSingleResource(LegacySample.class, entity.accession()).withRel("details"));
-        resource.add(entityLinks.linkToSingleResource(LegacySamplesRelations.class, entity.accession()).withRel("samplerelations"));
+        resource.add(entityLinks.linkToSingleResource(SamplesRelations.class, entity.accession()).withRel("samplerelations"));
         resource.add(linkTo(methodOn(SampleRelationsController.class).getSamplesGroupRelations(entity.accession())).withRel("groups"));
         resource.add(linkTo(methodOn(SampleRelationsController.class).getSamplesRelations(entity.accession(), "derivedFrom")).withRel("derivedFrom"));
         resource.add(linkTo(methodOn(SampleRelationsController.class).getSamplesRelations(entity.accession(), "derivedTo")).withRel("derivedTo"));

@@ -5,12 +5,12 @@ import java.util.Optional;
 
 import static uk.ac.ebi.biosamples.legacy.json.domain.SupportedSamplesRelationships.*;
 
-public final class KnownLegacyRelationshipMapping {
+public final class KnownRelationsMapping {
 
     private final HashMap<SupportedSamplesRelationships, SupportedSamplesRelationships> directToInverse;
     private final HashMap<SupportedSamplesRelationships, SupportedSamplesRelationships> inverseToDirect;
 
-    public KnownLegacyRelationshipMapping() {
+    public KnownRelationsMapping() {
         this.directToInverse = new HashMap<>();
         this.inverseToDirect = new HashMap<>();
 

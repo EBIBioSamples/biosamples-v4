@@ -5,26 +5,26 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceAssembler;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.legacy.json.domain.LegacyGroupsRelations;
+import uk.ac.ebi.biosamples.legacy.json.domain.GroupsRelations;
 import uk.ac.ebi.biosamples.legacy.json.domain.LegacySample;
 
 @Service
-public class LegacyGroupsRelationsResourceAssembler implements ResourceAssembler<LegacyGroupsRelations, Resource<LegacyGroupsRelations>>{
+public class GroupRelationsResourceAssembler implements ResourceAssembler<GroupsRelations, Resource<GroupsRelations>>{
 
     private EntityLinks entityLinks;
 
-    public LegacyGroupsRelationsResourceAssembler(EntityLinks entityLinks) {
+    public GroupRelationsResourceAssembler(EntityLinks entityLinks) {
         this.entityLinks = entityLinks;
     }
 
     @Override
-    public Resource<LegacyGroupsRelations> toResource(LegacyGroupsRelations entity) {
+    public Resource<GroupsRelations> toResource(GroupsRelations entity) {
 
-        Resource<LegacyGroupsRelations> resource = new Resource<>(entity);
+        Resource<GroupsRelations> resource = new Resource<>(entity);
 
-        resource.add(entityLinks.linkToSingleResource(LegacyGroupsRelations.class, entity.accession()).withSelfRel());
+        resource.add(entityLinks.linkToSingleResource(GroupsRelations.class, entity.accession()).withSelfRel());
         resource.add(entityLinks.linkToSingleResource(LegacySample.class, entity.accession()).withRel("details"));
-        resource.add(entityLinks.linkToSingleResource(LegacyGroupsRelations.class, entity.accession()).withRel("groupsrelations"));
+        resource.add(entityLinks.linkToSingleResource(GroupsRelations.class, entity.accession()).withRel("groupsrelations"));
         resource.add(new Link("test").withRel("externallinks"));
         resource.add(new Link("test").withRel("samples"));
 

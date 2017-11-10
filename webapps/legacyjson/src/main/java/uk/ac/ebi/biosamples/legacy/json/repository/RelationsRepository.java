@@ -1,12 +1,12 @@
-package uk.ac.ebi.biosamples.legacy.json.service;
+package uk.ac.ebi.biosamples.legacy.json.repository;
 
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.legacy.json.domain.KnownLegacyRelationshipMapping;
-import uk.ac.ebi.biosamples.legacy.json.domain.LegacyGroupsRelations;
-import uk.ac.ebi.biosamples.legacy.json.domain.LegacySamplesRelations;
+import uk.ac.ebi.biosamples.legacy.json.domain.KnownRelationsMapping;
+import uk.ac.ebi.biosamples.legacy.json.domain.GroupsRelations;
+import uk.ac.ebi.biosamples.legacy.json.domain.SamplesRelations;
 import uk.ac.ebi.biosamples.legacy.json.domain.SupportedSamplesRelationships;
-import uk.ac.ebi.biosamples.legacy.json.repository.SampleRepository;
-import uk.ac.ebi.biosamples.model.*;
+import uk.ac.ebi.biosamples.model.Relationship;
+import uk.ac.ebi.biosamples.model.Sample;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,35 +16,35 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Service
-public class LegacyRelationService {
+public class RelationsRepository {
 
-    private final KnownLegacyRelationshipMapping relationshipMapping;
+    private final KnownRelationsMapping relationshipMapping;
     private final SampleRepository sampleRepository;
 
-    public LegacyRelationService(SampleRepository sampleRepository) {
-        this.relationshipMapping = new KnownLegacyRelationshipMapping();
+    public RelationsRepository(SampleRepository sampleRepository) {
+        this.relationshipMapping = new KnownRelationsMapping();
         this.sampleRepository = sampleRepository;
     }
 
-    public List<LegacyGroupsRelations> getGroupsRelationships(String accession){
+    public List<GroupsRelations> getGroupsRelationships(String accession){
         Optional<Sample> sample = sampleRepository.findByAccession(accession);
         if (!sample.isPresent()) {
             return Collections.emptyList();
         }
 
         return groupsRelatedTo(sample.get()).stream()
-                    .map(LegacyGroupsRelations::new)
+                    .map(GroupsRelations::new)
                     .collect(Collectors.toList());
     }
 
-    public List<LegacySamplesRelations> getSamplesRelations(String accession, String relationshipType) {
+    public List<SamplesRelations> getSamplesRelations(String accession, String relationshipType) {
         Optional<Sample> sample = sampleRepository.findByAccession(accession);
         if (!sample.isPresent()) {
             return Collections.emptyList();
         }
 
         return samplesRelatedTo(sample.get(), relationshipType).stream()
-                .map(LegacySamplesRelations::new)
+                .map(SamplesRelations::new)
                 .collect(Collectors.toList());
 
     }

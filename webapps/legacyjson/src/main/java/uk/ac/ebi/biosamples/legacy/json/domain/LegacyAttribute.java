@@ -10,9 +10,9 @@ import uk.ac.ebi.biosamples.model.Attribute;
 @JsonPropertyOrder({"text", "ontologyTerms"})
 public class LegacyAttribute {
 
-    private Attribute attribute;
+    private uk.ac.ebi.biosamples.model.Attribute attribute;
 
-    public LegacyAttribute(Attribute attribute) {
+    public LegacyAttribute(uk.ac.ebi.biosamples.model.Attribute attribute) {
         this.attribute = attribute;
     }
 

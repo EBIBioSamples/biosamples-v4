@@ -11,8 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.ac.ebi.biosamples.legacy.json.domain.LegacySample;
-import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.legacy.json.service.LegacySampleResourceAssembler;
+import uk.ac.ebi.biosamples.legacy.json.service.SampleResourceAssembler;
 import uk.ac.ebi.biosamples.legacy.json.repository.SampleRepository;
 
 import java.util.Optional;
@@ -20,14 +19,14 @@ import java.util.Optional;
 @RestController
 @RequestMapping(value = "/samples", produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
 @ExposesResourceFor(LegacySample.class)
-public class LegacyJsonSamplesController {
+public class SamplesController {
 
-    private final LegacySampleResourceAssembler sampleResourceAssembler;
+    private final SampleResourceAssembler sampleResourceAssembler;
 
     private final SampleRepository sampleRepository;
 
     @Autowired
-    public LegacyJsonSamplesController(SampleRepository sampleRepository, LegacySampleResourceAssembler sampleResourceAssembler) {
+    public SamplesController(SampleRepository sampleRepository, SampleResourceAssembler sampleResourceAssembler) {
 
         this.sampleRepository = sampleRepository;
         this.sampleResourceAssembler = sampleResourceAssembler;
@@ -36,7 +35,7 @@ public class LegacyJsonSamplesController {
     @GetMapping(value = "/{accession}")
     public ResponseEntity<Resource<LegacySample>> sampleByAccession(@PathVariable String accession) {
 
-        Optional<Sample> sample = sampleRepository.findByAccession(accession);
+        Optional<uk.ac.ebi.biosamples.model.Sample> sample = sampleRepository.findByAccession(accession);
         if (!sample.isPresent()) {
             return ResponseEntity.notFound().build();
         }

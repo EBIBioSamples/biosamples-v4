@@ -9,12 +9,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import uk.ac.ebi.biosamples.legacy.json.domain.LegacyGroupsRelations;
-import uk.ac.ebi.biosamples.legacy.json.domain.LegacySamplesRelations;
+import uk.ac.ebi.biosamples.legacy.json.domain.GroupsRelations;
+import uk.ac.ebi.biosamples.legacy.json.domain.SamplesRelations;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.legacy.json.service.LegacyGroupsRelationsResourceAssembler;
-import uk.ac.ebi.biosamples.legacy.json.service.LegacyRelationService;
-import uk.ac.ebi.biosamples.legacy.json.service.LegacySamplesRelationsResourceAssembler;
+import uk.ac.ebi.biosamples.legacy.json.service.GroupRelationsResourceAssembler;
+import uk.ac.ebi.biosamples.legacy.json.repository.RelationsRepository;
+import uk.ac.ebi.biosamples.legacy.json.service.SampleRelationsResourceAssembler;
 import uk.ac.ebi.biosamples.legacy.json.repository.SampleRepository;
 
 import java.util.Collection;
@@ -28,46 +28,46 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping(value = "/samplesrelations/", produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
-@ExposesResourceFor(LegacySamplesRelations.class)
+@ExposesResourceFor(SamplesRelations.class)
 public class SampleRelationsController {
 
     private final SampleRepository sampleRepository;
-    private final LegacySamplesRelationsResourceAssembler relationsResourceAssembler;
-    private final LegacyGroupsRelationsResourceAssembler groupsRelationsResourceAssembler;
-    private final LegacyRelationService relationService;
+    private final SampleRelationsResourceAssembler relationsResourceAssembler;
+    private final GroupRelationsResourceAssembler groupRelationsResourceAssembler;
+    private final RelationsRepository relationService;
 
     public SampleRelationsController(SampleRepository sampleRepository,
-                                     LegacySamplesRelationsResourceAssembler relationsResourceAssembler,
-                                     LegacyGroupsRelationsResourceAssembler groupsRelationsResourceAssembler,
-                                     LegacyRelationService relationService) {
+                                     SampleRelationsResourceAssembler relationsResourceAssembler,
+                                     GroupRelationsResourceAssembler groupRelationsResourceAssembler,
+                                     RelationsRepository relationService) {
 
         this.sampleRepository = sampleRepository;
         this.relationsResourceAssembler = relationsResourceAssembler;
-        this.groupsRelationsResourceAssembler = groupsRelationsResourceAssembler;
+        this.groupRelationsResourceAssembler = groupRelationsResourceAssembler;
         this.relationService = relationService;
 
     }
 
     @GetMapping("/{accession}")
-    public ResponseEntity<Resource<LegacySamplesRelations>> relationsOfSample(@PathVariable String accession) {
+    public ResponseEntity<Resource<SamplesRelations>> relationsOfSample(@PathVariable String accession) {
         Optional<Sample> sample = sampleRepository.findByAccession(accession);
         if (!sample.isPresent()) {
             return ResponseEntity.notFound().build();
         }
 
-        return ResponseEntity.ok(relationsResourceAssembler.toResource(new LegacySamplesRelations(sample.get())));
+        return ResponseEntity.ok(relationsResourceAssembler.toResource(new SamplesRelations(sample.get())));
     }
 
     @GetMapping("/{accession}/groups")
-    public ResponseEntity<Resources<LegacyGroupsRelations>> getSamplesGroupRelations(@PathVariable String accession) {
+    public ResponseEntity<Resources<GroupsRelations>> getSamplesGroupRelations(@PathVariable String accession) {
 
         List<Resource> associatedGroups = relationService
                 .getGroupsRelationships(accession).stream()
-                .map(groupsRelationsResourceAssembler::toResource)
+                .map(groupRelationsResourceAssembler::toResource)
                 .collect(Collectors.toList());
 
         Link selfLink = linkTo(methodOn(this.getClass()).getSamplesGroupRelations(accession)).withSelfRel();
-        Resources responseBody = new Resources(wrappedCollection(associatedGroups, LegacyGroupsRelations.class), selfLink);
+        Resources responseBody = new Resources(wrappedCollection(associatedGroups, GroupsRelations.class), selfLink);
         return ResponseEntity.ok(responseBody);
     }
 
@@ -86,7 +86,7 @@ public class SampleRelationsController {
                 .collect(Collectors.toList());
 
         Link selfLink = linkTo(methodOn(this.getClass()).getSamplesRelations(accession, relationType)).withSelfRel();
-        Resources responseBody = new Resources(wrappedCollection(associatedSamples, LegacySamplesRelations.class), selfLink);
+        Resources responseBody = new Resources(wrappedCollection(associatedSamples, SamplesRelations.class), selfLink);
         return ResponseEntity.ok(responseBody);
 
     }

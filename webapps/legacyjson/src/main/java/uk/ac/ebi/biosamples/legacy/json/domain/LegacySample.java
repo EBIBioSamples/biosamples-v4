@@ -11,8 +11,6 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.springframework.hateoas.core.Relation;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Sample;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -31,35 +29,35 @@ import java.util.stream.Collectors;
 public class LegacySample {
 
     @JsonIgnore
-    private final Sample sample;
+    private final uk.ac.ebi.biosamples.model.Sample sample;
 
     private MultiValueMap<String, LegacyAttribute> characteristics;
     private String description;
 
 
-    public LegacySample(Sample sample) {
+    public LegacySample(uk.ac.ebi.biosamples.model.Sample sample) {
         this.sample = sample;
         hydrateLegacySample(sample);
     }
 
-    private void hydrateLegacySample(Sample sample) {
+    private void hydrateLegacySample(uk.ac.ebi.biosamples.model.Sample sample) {
 
         this.description = extractSampleDescription(sample).orElse("");
         this.characteristics = extractCharacteristics(sample);
     }
 
-    private Optional<String> extractSampleDescription(Sample sample) {
-        Optional<Attribute> descriptionAttribute = this.sample.getAttributes().stream()
+    private Optional<String> extractSampleDescription(uk.ac.ebi.biosamples.model.Sample sample) {
+        Optional<uk.ac.ebi.biosamples.model.Attribute> descriptionAttribute = this.sample.getAttributes().stream()
                 .filter(a -> a.getType().equalsIgnoreCase("description"))
                 .findAny();
-        return descriptionAttribute.map(Attribute::getValue);
+        return descriptionAttribute.map(uk.ac.ebi.biosamples.model.Attribute::getValue);
     }
 
-    private MultiValueMap<String, LegacyAttribute> extractCharacteristics(Sample sample) {
-        Map<String, List<Attribute>> attributesByType = sample.getAttributes()
+    private MultiValueMap<String, LegacyAttribute> extractCharacteristics(uk.ac.ebi.biosamples.model.Sample sample) {
+        Map<String, List<uk.ac.ebi.biosamples.model.Attribute>> attributesByType = sample.getAttributes()
                 .stream()
-                .filter(((Predicate<Attribute>)this::isDescription).negate())
-                .collect(Collectors.groupingBy(Attribute::getType));
+                .filter(((Predicate<uk.ac.ebi.biosamples.model.Attribute>)this::isDescription).negate())
+                .collect(Collectors.groupingBy(uk.ac.ebi.biosamples.model.Attribute::getType));
 
         MultiValueMap<String, LegacyAttribute> legacyAttributesByType = new LinkedMultiValueMap<>();
         for (String type: attributesByType.keySet()) {
@@ -105,7 +103,7 @@ public class LegacySample {
     }
 
 
-    private boolean isDescription(Attribute attribute) {
+    private boolean isDescription(uk.ac.ebi.biosamples.model.Attribute attribute) {
         return attribute.getType().equalsIgnoreCase("description");
     }
 
