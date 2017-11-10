@@ -76,9 +76,7 @@ public class SamplesRelationsController {
     }
 
     @GetMapping("/search/findOneByAccession") // Replicate v3 way of working
-//    public ResponseEntity<Resource<SamplesRelations>> findByAccession(@PathVariable(required = false) String accessionQuery) {
     public ResponseEntity<Resource<SamplesRelations>> findByAccession(@RequestParam(required = false, defaultValue = "") String accession) {
-//        String accession = accessionQuery.replaceAll("\\?accession=","");
         if (accession == null || accession.isEmpty()) {
             return ResponseEntity.notFound().build(); // Replicate v3 response code
         }
