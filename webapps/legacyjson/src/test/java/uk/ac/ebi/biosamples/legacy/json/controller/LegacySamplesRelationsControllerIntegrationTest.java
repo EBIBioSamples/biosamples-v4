@@ -17,14 +17,15 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.UriTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import uk.ac.ebi.biosamples.legacy.json.domain.TestSample;
+import uk.ac.ebi.biosamples.legacy.json.repository.SampleRepository;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.legacy.json.repository.SampleRepository;
 
 import java.util.List;
 import java.util.Optional;
@@ -324,30 +325,73 @@ public class LegacySamplesRelationsControllerIntegrationTest {
     }
 
     @Test
-    @Ignore
     public void testAllSamplesRelationsHasLinkToSearch() throws Exception {
-        mockMvc.perform(get("/samplesrelations").accept(MediaTypes.HAL_JSON))
+        Sample sampleA = new TestSample("A").build();
+        Sample sampleB = new TestSample("B").build();
+
+        when(sampleRepository.getPagedSamples(anyInt(),anyInt())).thenReturn(
+                getTestPagedResourcesSample(2, sampleA, sampleB));
+
+        String jsonContent = mockMvc.perform(get("/samplesrelations").accept(MediaTypes.HAL_JSON))
                 .andExpect(jsonPath("$._links.search.href").value(
                         endsWith("/samplesrelations/search")
-                ));
+                )).andReturn().getResponse().getContentAsString();
+
+        String searchEndpoint = JsonPath.parse(jsonContent).read("$._links.search.href");
+
+        mockMvc.perform(get(searchEndpoint).accept(MediaTypes.HAL_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/hal+json;charset=UTF-8"))
+                .andExpect(jsonPath("$._links.findOneByAccession").exists())
+                .andExpect(jsonPath("$._links.findOneByAccession.templated").isBoolean())
+                .andExpect(jsonPath("$._links.findOneByAccession.href").value(endsWith("{?accession}")));
+
     }
     
     @Test
-    @Ignore
     public void testSamplesRelationsSearchHasLinkFindOneByAccession() throws Exception {
-        /*TODO */
+        Sample sampleA = new TestSample("A").build();
+        Sample sampleB = new TestSample("B").build();
+
+        when(sampleRepository.getPagedSamples(anyInt(),anyInt())).thenReturn(
+                getTestPagedResourcesSample(2, sampleA, sampleB));
+
+        mockMvc.perform(get("/samplesrelations/search").accept(MediaTypes.HAL_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/hal+json;charset=UTF-8"))
+                .andExpect(jsonPath("$._links.findOneByAccession").exists())
+                .andExpect(jsonPath("$._links.findOneByAccession.templated").isBoolean())
+                .andExpect(jsonPath("$._links.findOneByAccession.href").value(endsWith("{?accession}")));
     }
 
     @Test
-    @Ignore
     public void testSamplesRelationsFindOneByAccessionReturnTheCorrectSample() throws Exception {
-        /*TODO The search by accession of samplesrelations should return the samplesrelations*/
+
+        Sample sampleA = new TestSample("A").build();
+        when(sampleRepository.findByAccession("A")).thenReturn(Optional.of(sampleA));
+
+        String searchLinksContent = mockMvc.perform(get("/samplesrelations/search/").accept(MediaTypes.HAL_JSON))
+                .andReturn().getResponse().getContentAsString();
+        UriTemplate uriTemplate = new UriTemplate(JsonPath.parse(searchLinksContent).read("$._links.findOneByAccession.href"));
+
+        mockMvc.perform(get(uriTemplate.expand("A")).accept(MediaTypes.HAL_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/hal+json;charset=UTF-8"))
+                .andExpect(jsonPath("$.accession").value("A"))
+                .andExpect(jsonPath("$").isMap());
+
     }
 
     @Test
-    @Ignore
     public void testSamplesRelationsFindOneByAccessionReturn404ForNonExistingSample() throws Exception {
-        /*TODO*/
+        when(sampleRepository.findByAccession("B")).thenReturn(Optional.empty());
+
+        String searchLinksContent = mockMvc.perform(get("/samplesrelations/search/").accept(MediaTypes.HAL_JSON))
+                .andReturn().getResponse().getContentAsString();
+        UriTemplate uriTemplate = new UriTemplate(JsonPath.parse(searchLinksContent).read("$._links.findOneByAccession.href"));
+
+        mockMvc.perform(get(uriTemplate.expand("B")).accept(MediaTypes.HAL_JSON))
+                .andExpect(status().isNotFound());
     }
 
     @Test
