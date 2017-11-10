@@ -326,7 +326,10 @@ public class LegacySamplesRelationsControllerIntegrationTest {
     @Test
     @Ignore
     public void testAllSamplesRelationsHasLinkToSearch() throws Exception {
-        /*TODO */
+        mockMvc.perform(get("/samplesrelations").accept(MediaTypes.HAL_JSON))
+                .andExpect(jsonPath("$._links.search.href").value(
+                        endsWith("/samplesrelations/search")
+                ));
     }
     
     @Test

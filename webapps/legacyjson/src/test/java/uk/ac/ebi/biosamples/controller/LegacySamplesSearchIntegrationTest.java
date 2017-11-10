@@ -17,6 +17,8 @@ import uk.ac.ebi.biosamples.service.SampleRepository;
 @SpringBootTest
 public class LegacySamplesSearchIntegrationTest {
 
+	private final String SAMPLE_SEARCH_ENDPOINT = "/samples/search";
+
 	@MockBean
 	private SampleRepository sampleRepositoryMock;
 
