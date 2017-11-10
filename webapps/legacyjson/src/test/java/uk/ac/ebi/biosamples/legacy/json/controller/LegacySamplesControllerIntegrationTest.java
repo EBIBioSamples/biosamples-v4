@@ -8,6 +8,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -17,6 +18,7 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.UriTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -267,5 +269,29 @@ public class LegacySamplesControllerIntegrationTest {
 	}
 
 
+	@Test
+	public void testFindFirstByGroupFunctionality() throws Exception {
+	    Sample sampleA = new TestSample("A").build();
+	    when(sampleRepository.findFirstByGroup("groupA")).thenReturn(Optional.of(new Resource(sampleA)));
+		when(sampleRepository.findFirstByGroup("groupB")).thenReturn(Optional.empty());
+
+		String searchLinkContent = mockMvc.perform(get("/samples/search").accept(MediaTypes.HAL_JSON))
+				.andExpect(jsonPath("$._links.findFirstByGroupsContains.href").value(endsWith("{?group}")))
+				.andReturn().getResponse().getContentAsString();
+
+		UriTemplate findFirstByGroupTemplateUrl = new UriTemplate(
+				JsonPath.parse(searchLinkContent).read("$._links.findFirstByGroupsContains.href"));
+
+
+		mockMvc.perform(get(findFirstByGroupTemplateUrl.expand("groupA")).accept(MediaTypes.HAL_JSON))
+				.andExpect(status().isOk())
+				.andExpect(content().contentType("application/hal+json;charset=UTF-8"))
+				.andExpect(jsonPath("$.accession").value("A"));
+
+		mockMvc.perform(get(findFirstByGroupTemplateUrl.expand("groupB")).accept(MediaTypes.HAL_JSON))
+				.andExpect(status().isNotFound());
+
+
+	}
 	
 }

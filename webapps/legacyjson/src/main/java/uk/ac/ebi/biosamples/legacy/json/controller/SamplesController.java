@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.*;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -20,6 +21,7 @@ import uk.ac.ebi.biosamples.model.Sample;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
@@ -81,9 +83,15 @@ public class SamplesController {
     }
 
     @GetMapping("/search/findFirstByGroupsContains")
-    public Resource<LegacySample> findFirstSampleContainedInAGroup(
-            @RequestParam(value="group", required=false, defaultValue = "") String groupAccession) {
-        return sampleResourceAssembler.toResource(null);
+    public ResponseEntity<Resource<LegacySample>> findFirstSampleContainedInAGroup(
+            @RequestParam(value="group", required=false, defaultValue = "") String group) {
+        Optional<Resource<Sample>> optionalSampleResource = sampleRepository.findFirstByGroup(group);
+
+        if (!optionalSampleResource.isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(sampleResourceAssembler.toResource(new LegacySample(optionalSampleResource.get().getContent())));
     }
 
     @GetMapping("/search/findByGroups")

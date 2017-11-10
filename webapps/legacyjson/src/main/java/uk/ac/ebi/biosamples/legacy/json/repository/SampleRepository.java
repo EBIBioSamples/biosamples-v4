@@ -25,6 +25,19 @@ public class SampleRepository {
         return client.fetchSample(accession);
     }
 
+    public Optional<Resource<Sample>> findFirstByGroup(String groupAccession) {
+
+        Filter memberOfGroupFilter = FilterBuilder.create().onInverseRelation("has member").withValue(groupAccession).build();
+        PagedResources<Resource<Sample>> resourcePage = getPagedContent(0,1,memberOfGroupFilter);
+        if (resourcePage.getContent().isEmpty()) {
+            return Optional.empty();
+        }
+
+        return resourcePage.getContent().stream().findFirst();
+
+    }
+
+
     public PagedResources<Resource<Sample>> getPagedSamples(int page, int pageSize) {
 
         Filter sampleFilter = FilterBuilder.create().onAccession("SAM(N|D|EA|E)[0-9]+").build();
