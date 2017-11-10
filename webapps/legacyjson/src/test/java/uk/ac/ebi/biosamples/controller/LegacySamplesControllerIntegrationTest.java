@@ -2,6 +2,7 @@ package uk.ac.ebi.biosamples.controller;
 
 import com.jayway.jsonpath.JsonPath;
 import org.hamcrest.Matchers;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -167,5 +168,36 @@ public class LegacySamplesControllerIntegrationTest {
 				.andExpect(jsonPath("$.accession").value("SAMED666"));
 	}
 
+	@Test
+	@Ignore
+	public void testContactIsRootField() throws Exception {
+		/*TODO*/
+	}
 
+	@Test
+	@Ignore
+	public void testPublicationIsRootField() throws Exception {
+	    /*TODO */
+	}
+
+	@Test
+	@Ignore
+	public void testOrganizationIsRootField() throws Exception {
+	    /*TODO */
+	}
+	
+	@Test
+	@Ignore
+	public void testRetrieveAllSamplesAsPagedResources() throws Exception {
+	    /*TODO */
+	}
+
+	@Test
+	@Ignore
+	public void testAllSamplesLinksContainsSearch() throws Exception {
+	    /*TODO */
+	}
+
+
+	
 }

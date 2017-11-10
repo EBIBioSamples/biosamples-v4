@@ -325,11 +325,39 @@ public class LegacySamplesRelationsControllerIntegrationTest {
 
     @Test
     @Ignore
+    public void testAllSamplesRelationsHasLinkToSearch() throws Exception {
+        /*TODO */
+    }
+    
+    @Test
+    @Ignore
+    public void testSamplesRelationsSearchHasLinkFindOneByAccession() throws Exception {
+        /*TODO */
+    }
+
+    @Test
+    @Ignore
+    public void testSamplesRelationsFindOneByAccessionReturnTheCorrectSample() throws Exception {
+        /*TODO The search by accession of samplesrelations should return the samplesrelations*/
+    }
+
+    @Test
+    @Ignore
+    public void testSamplesRelationsFindOneByAccessionReturn404ForNonExistingSample() throws Exception {
+        /*TODO*/
+    }
+
+    @Test
+    @Ignore
+    public void testAllSamplesRelationsHasLinkToProfile() throws Exception {
+        /*TODO */
+    }
+    
+
+    @Test
+    @Ignore
     public void shouldReturnOnlySamples() {
-        //TODO implement this inside the general integration test class
-        Sample sampleA = new TestSample("SAMEA1234").build();
-        Sample sampleB = new TestSample("SAMEA5678").build();
-        Sample group   = new TestSample("SAMEG9999").build();
+        //TODO implement this feature in the end-to-end test
     }
 
 }
