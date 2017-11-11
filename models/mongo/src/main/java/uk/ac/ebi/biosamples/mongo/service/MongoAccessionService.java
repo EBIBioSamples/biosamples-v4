@@ -63,7 +63,7 @@ public class MongoAccessionService {
 			// TODO add a timeout here
 			try {
 				sample = MongoSample.build(sample.getName(), accessionCandidateQueue.take(), sample.getDomain(),
-						sample.getRelease(), sample.getUpdate(), sample.getAttributes(), sample.getRelationships(), sample.getExternalReferences());
+						sample.getRelease(), sample.getUpdate(), sample.getAttributes(), sample.getRelationships(), sample.getExternalReferences(), sample.getOrganizations());
 			} catch (InterruptedException e) {
 				throw new RuntimeException(e);
 			}
@@ -75,7 +75,7 @@ public class MongoAccessionService {
 				if (e.getError().getCategory() == ErrorCategory.DUPLICATE_KEY) {
 					success = false;
 					sample = MongoSample.build(sample.getName(), null, sample.getDomain(),
-							sample.getRelease(), sample.getUpdate(), sample.getAttributes(), sample.getRelationships(), sample.getExternalReferences());
+							sample.getRelease(), sample.getUpdate(), sample.getAttributes(), sample.getRelationships(), sample.getExternalReferences(), sample.getOrganizations());
 				} else {
 					throw e;
 				}

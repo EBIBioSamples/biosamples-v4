@@ -134,7 +134,7 @@ public class RestExternalReferenceIntegration extends AbstractIntegration {
 		externalReferences.add(ExternalReference.build("http://www.test.com/9"));
 		externalReferences.add(ExternalReference.build("http://www.test.com/0"));
 
-		return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences);
+		return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences, null);
 	}
 
 }

@@ -35,5 +35,13 @@
 		{
 			"url": "http://www.google.com"
 		}
+	],
+	"organizations": [
+		{
+			"Name": "Joe Bloggs",
+			"Role": "user",
+			"E-mail": "joe@bloggs.com",
+			"URL": "http://www.bloggs.com"
+		}
 	]
 }

@@ -150,7 +150,7 @@ public class SampleRestController {
 		//TODO limit use of this method to write super-users only
 		if (setUpdateDate) {
 			sample = Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(), sample.getRelease(), Instant.now(),
-					sample.getCharacteristics(), sample.getRelationships(), sample.getExternalReferences());
+					sample.getCharacteristics(), sample.getRelationships(), sample.getExternalReferences(), sample.getOrganizations());
 		}
 		
 		sample = sampleService.store(sample);

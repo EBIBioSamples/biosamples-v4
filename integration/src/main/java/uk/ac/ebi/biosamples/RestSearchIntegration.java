@@ -55,7 +55,7 @@ public class RestSearchIntegration extends AbstractIntegration {;
 		SortedSet<Relationship> test5AllRelationships = test5.getRelationships();
 		test5AllRelationships.add(Relationship.build(test4.getAccession(), "derive to", test5.getAccession()));
 		test5 = Sample.build(test5.getName(), test5.getAccession(), test5.getDomain(), test5.getRelease(), test5.getUpdate(),
-				test5.getCharacteristics(), test5AllRelationships, test5.getExternalReferences());
+				test5.getCharacteristics(), test5AllRelationships, test5.getExternalReferences(), null);
 		if (!test5.equals(resource.getContent())) {
 			throw new RuntimeException("Expected response to equal submission");
 		}
@@ -155,7 +155,7 @@ public class RestSearchIntegration extends AbstractIntegration {;
 		attributes.add(
 				Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
 
-		return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, new TreeSet<>(), new TreeSet<>());
+		return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, new TreeSet<>(), new TreeSet<>(), null);
 	}
 
 	private Sample getSampleTest2() {
@@ -171,7 +171,7 @@ public class RestSearchIntegration extends AbstractIntegration {;
 		SortedSet<Relationship> relationships = new TreeSet<>();
 		relationships.add(Relationship.build("TESTrestsearch2", "derived from", "TESTrestsearch3"));
 		
-		return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, relationships, new TreeSet<>());
+		return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, relationships, new TreeSet<>(), null);
 	}
 
 	private Sample getSampleTest4() {
@@ -189,7 +189,7 @@ public class RestSearchIntegration extends AbstractIntegration {;
 		relationships.add(Relationship.build("TESTrestsearch4", "derived from", getSampleTest2().getAccession()));
 		relationships.add(Relationship.build("TESTrestsearch4", "derive to", getSampleTest5().getAccession()));
 
-		return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, relationships, new TreeSet<>());
+		return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, relationships, new TreeSet<>(), null);
 	}
 
 	private Sample getSampleTest5() {
@@ -205,7 +205,7 @@ public class RestSearchIntegration extends AbstractIntegration {;
 		// TODO need to add inverse relationships later
 		SortedSet<Relationship> relationships = new TreeSet<>();
 
-		return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, relationships, new TreeSet<>());
+		return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, relationships, new TreeSet<>(), null);
 	}
 
 }
