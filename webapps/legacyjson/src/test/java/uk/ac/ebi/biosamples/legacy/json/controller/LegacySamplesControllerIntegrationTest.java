@@ -14,30 +14,29 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.UriTemplate;
+import org.springframework.hateoas.*;
+import org.springframework.hateoas.client.Traverson;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import uk.ac.ebi.biosamples.legacy.json.domain.GroupsRelations;
 import uk.ac.ebi.biosamples.legacy.json.domain.TestAttribute;
 import uk.ac.ebi.biosamples.legacy.json.domain.TestSample;
+import uk.ac.ebi.biosamples.legacy.json.repository.RelationsRepository;
 import uk.ac.ebi.biosamples.legacy.json.repository.SampleRepository;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 
+import java.net.URI;
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -51,6 +50,9 @@ public class LegacySamplesControllerIntegrationTest {
 
 	@MockBean
 	private SampleRepository sampleRepository;
+
+	@MockBean
+	private RelationsRepository relationsRepository;
 
 	@Autowired
     private MockMvc mockMvc;
@@ -308,6 +310,8 @@ public class LegacySamplesControllerIntegrationTest {
 
 		when(sampleRepository.findByGroup(eq("groupA"), anyInt(), anyInt()))
 				.thenReturn(getTestPagedResourcesSample(2, sampleA, sampleB));
+		when(relationsRepository.getGroupsRelationships(anyString())).thenReturn(
+				Collections.singletonList(new GroupsRelations(groupA)));
 
 		String searchLinkContent = mockMvc.perform(get("/samples/search").accept(MediaTypes.HAL_JSON))
 				.andExpect(jsonPath("$._links.findByGroups.href").value(endsWith("{?group,size,page,sort}")))
@@ -320,11 +324,18 @@ public class LegacySamplesControllerIntegrationTest {
 		urlParameters.put("page", "0");
 		urlParameters.put("size", "50");
 
-		mockMvc.perform(get(findFirstByGroupTemplateUrl.expand(urlParameters)).accept(MediaTypes.HAL_JSON))
+		String responseContent = mockMvc.perform(get(findFirstByGroupTemplateUrl.expand(urlParameters)).accept(MediaTypes.HAL_JSON))
 				.andExpect(status().isOk())
 				.andExpect(content().contentType("application/hal+json;charset=UTF-8"))
-				.andExpect(jsonPath("$._embedded.samples.*.accession").value(containsInAnyOrder("A", "B")));
+				.andExpect(jsonPath("$._embedded.samples.*.accession").value(containsInAnyOrder("A", "B")))
+				.andReturn().getResponse().getContentAsString();
 
+
+		String groupRelationLink = JsonPath.parse(responseContent).read(
+				"$._embedded.samples[0]._links.relations.href"
+		)+ "/groups";
+		mockMvc.perform(get(groupRelationLink).accept(MediaTypes.HAL_JSON))
+				.andExpect(jsonPath("$._embedded.groupsrelations[0].accession").value(groupA.getAccession()));
 	}
 	
 	
