@@ -11,6 +11,14 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.ac.ebi.biosamples.legacy.json.repository.SampleRepository;
 
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.hasKey;
+import static org.springframework.hateoas.MediaTypes.HAL_JSON;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 
 @RunWith(SpringRunner.class)
 @AutoConfigureMockMvc
@@ -24,6 +32,16 @@ public class LegacyExternalLinksControllerIntegrationTest {
     private MockMvc mockMvc;
 
 	@Test
+	public void testExternalLinksIndexReturnPagedResourcesOfExternalLinks() throws Exception {
+	    mockMvc.perform(get("/externallinksrelations").accept(HAL_JSON))
+				.andExpect(status().isOk())
+				.andExpect(content().contentType("application/hal+json;charset=UTF-8"))
+				.andExpect(jsonPath("$").value(
+						allOf(hasKey("_embedded"), hasKey("_links"), hasKey("page")
+				)));
+	}
+
+	@Test
 	@Ignore
 	public void testReturnExternalLinkByLinkName() throws Exception {
 	    /*TODO */
@@ -35,11 +53,6 @@ public class LegacyExternalLinksControllerIntegrationTest {
 	    /*TODO */
 	}
 
-	@Test
-	@Ignore
-	public void testExternalLinksIndexReturnPagedResourcesOfExternalLinks() throws Exception {
-	    /*TODO */
-	}
 
 	@Test
 	@Ignore

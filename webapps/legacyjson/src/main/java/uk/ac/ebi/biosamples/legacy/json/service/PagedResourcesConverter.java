@@ -7,6 +7,7 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Service;
+import uk.ac.ebi.biosamples.legacy.json.domain.ExternalLinksRelation;
 import uk.ac.ebi.biosamples.legacy.json.domain.LegacyGroup;
 import uk.ac.ebi.biosamples.legacy.json.domain.LegacySample;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -59,6 +60,28 @@ public class PagedResourcesConverter {
                 .collect(Collectors.toList());
         Page<LegacyGroup> pageRequest = buildPageRequest(legacyRelationsResources, samplePagedResources.getMetadata());
         return legacyGroupPagedResourcesAssembler.toResource(pageRequest, legacyGroupResourceAssembler);
+
+    }
+
+
+    public PagedResources<Resource<ExternalLinksRelation>> toExternalLinksRelationPagedResource(PagedResources<Resource<Sample>>
+                                                                                     samplePagedResources) {
+
+//        if (samplePagedResources == null || samplePagedResources.getContent().isEmpty()) {
+            return getEmptyPagedResource(ExternalLinksRelation.class);
+//        }
+//        List<LegacyGroup> legacyRelationsResources = samplePagedResources.getContent().stream()
+//                .map(Resource::getContent)
+//                .map(LegacyGroup::new)
+//                .collect(Collectors.toList());
+//        Page<LegacyGroup> pageRequest = buildPageRequest(legacyRelationsResources, samplePagedResources.getMetadata());
+//        return legacyGroupPagedResourcesAssembler.toResource(pageRequest, legacyGroupResourceAssembler);
+
+    }
+
+
+    private PagedResources getEmptyPagedResource(Class className) {
+        return legacySamplePagedResourcesAssembler.toEmptyResource(new PageImpl<>(new ArrayList<>(), new PageRequest(0, 50), 0), className, null);
 
     }
 
