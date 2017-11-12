@@ -32,7 +32,7 @@ public class SampleRepository {
      * @param groupAccession the group accession
      * @return Optional sample resource
      */
-    public Optional<Resource<Sample>> findFirstByGroup(String groupAccession) {
+    public Optional<Resource<Sample>> findFirstSampleByGroup(String groupAccession) {
 
 
         PagedResources<Resource<Sample>> resourcePage = findSamplesByGroup(groupAccession, 0, 1);
@@ -69,7 +69,7 @@ public class SampleRepository {
 
     }
 
-    public PagedResources<Resource<Sample>> findByText(String text, int page, int size) {
+    public PagedResources<Resource<Sample>> findSamplesByText(String text, int page, int size) {
         return client.fetchPagedSampleResource(text,
                 Collections.singletonList(SAMPLE_FILTER),
                 page,
@@ -77,6 +77,13 @@ public class SampleRepository {
 
     }
 
+    public PagedResources<Resource<Sample>> findGroupsByText(String text, int page, int size) {
+        return client.fetchPagedSampleResource(text,
+                Collections.singletonList(GROUP_FILTER),
+                page,
+                size);
+
+    }
 
     public PagedResources<Resource<Sample>> findSamplesByTextAndGroup(String text,
                                                                       String groupAccession, int page, int size) {

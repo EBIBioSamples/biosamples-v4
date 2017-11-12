@@ -45,7 +45,7 @@ public class SamplesSearchController {
         resources.add(linkTo(methodOn(this.getClass()).findFirstSampleContainedInAGroup(null)).withRel("findFirstByGroupsContains"));
         resources.add(linkTo(methodOn(this.getClass()).findByGroups(null, null, null, null)).withRel("findByGroups"));
         resources.add(linkTo(methodOn(this.getClass()).findByAccession(null, null, null, null)).withRel("findByAccession"));
-        resources.add(linkTo(methodOn(this.getClass()).findByText(null, null, null, null)).withRel("findByText"));
+        resources.add(linkTo(methodOn(this.getClass()).findByText(null, null, null, null)).withRel("findSamplesByText"));
         resources.add(linkTo(methodOn(this.getClass()).findByTextAndGroups(null, null,  null, null, null)).withRel("findByTextAndGroups"));
         resources.add(linkTo(methodOn(this.getClass()).findByAccessionAndGroups(null, null, null, null, null)).withRel("findByAccessionAndGroups"));
 
@@ -55,7 +55,7 @@ public class SamplesSearchController {
     @GetMapping("/findFirstByGroupsContains")
     public ResponseEntity<Resource<LegacySample>> findFirstSampleContainedInAGroup(
             @RequestParam(value="group", required=false, defaultValue = "") String group) {
-        Optional<Resource<Sample>> optionalSampleResource = sampleRepository.findFirstByGroup(group);
+        Optional<Resource<Sample>> optionalSampleResource = sampleRepository.findFirstSampleByGroup(group);
 
         if (!optionalSampleResource.isPresent()) {
             return ResponseEntity.notFound().build();
@@ -83,7 +83,8 @@ public class SamplesSearchController {
             @RequestParam(value="sort", required=false, defaultValue = "asc") String sort
     ) {
         // FIXME This method is always returning empty content in v3
-        return pagedResourcesConverter.toLegacySamplesPagedResource(null);
+        PagedResources<Resource<Sample>> samplesPagedResourcesByAccession = sampleRepository.findSamplesByText(accession, page, size);
+        return pagedResourcesConverter.toLegacySamplesPagedResource(samplesPagedResourcesByAccession);
     }
 
 
@@ -94,7 +95,7 @@ public class SamplesSearchController {
             @RequestParam(value="page", required=false, defaultValue = "0") Integer page,
             @RequestParam(value="sort", defaultValue = "asc") String sort
     ) {
-        PagedResources<Resource<Sample>> samplesPagedResourcesByText = sampleRepository.findByText(text, page, size);
+        PagedResources<Resource<Sample>> samplesPagedResourcesByText = sampleRepository.findSamplesByText(text, page, size);
         return pagedResourcesConverter.toLegacySamplesPagedResource(samplesPagedResourcesByText);
 
     }

@@ -260,7 +260,7 @@ public class LegacySamplesControllerIntegrationTest {
 								hasKey("findFirstByGroupsContains"),
 								hasKey("findByGroups"),
 								hasKey("findByAccession"),
-								hasKey("findByText"),
+								hasKey("findSamplesByText"),
 								hasKey("findByTextAndGroups"),
 								hasKey("findByAccessionAndGroups"),
 								hasKey("self")
@@ -273,8 +273,8 @@ public class LegacySamplesControllerIntegrationTest {
 	@Test
 	public void testFindFirstByGroupFunctionality() throws Exception {
 	    Sample sampleA = new TestSample("A").build();
-	    when(sampleRepository.findFirstByGroup("groupA")).thenReturn(Optional.of(new Resource(sampleA)));
-		when(sampleRepository.findFirstByGroup("groupB")).thenReturn(Optional.empty());
+	    when(sampleRepository.findFirstSampleByGroup("groupA")).thenReturn(Optional.of(new Resource(sampleA)));
+		when(sampleRepository.findFirstSampleByGroup("groupB")).thenReturn(Optional.empty());
 
 		String searchLinkContent = mockMvc.perform(get("/samples/search").accept(MediaTypes.HAL_JSON))
 				.andExpect(jsonPath("$._links.findFirstByGroupsContains.href").value(endsWith("{?group}")))

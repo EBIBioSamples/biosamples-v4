@@ -1,16 +1,17 @@
 package uk.ac.ebi.biosamples.legacy.json.controller;
 
-import org.springframework.hateoas.ExposesResourceFor;
-import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.Resources;
+import org.springframework.hateoas.*;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import uk.ac.ebi.biosamples.legacy.json.domain.LegacyGroup;
 import uk.ac.ebi.biosamples.legacy.json.domain.LegacySample;
 import uk.ac.ebi.biosamples.legacy.json.repository.SampleRepository;
 import uk.ac.ebi.biosamples.legacy.json.service.GroupResourceAssembler;
 import uk.ac.ebi.biosamples.legacy.json.service.PagedResourcesConverter;
+import uk.ac.ebi.biosamples.model.Sample;
 
 import java.util.Collections;
 
@@ -40,88 +41,30 @@ public class GroupsSearchController {
     public Resources searchMethods() {
         Resources resources = Resources.wrap(Collections.emptyList());
         resources.add(linkTo(methodOn(this.getClass()).searchMethods()).withSelfRel());
-//        resources.add(linkTo(methodOn(this.getClass()).findFirstSampleContainedInAGroup(null)).withRel("findFirstByGroupsContains"));
-//        resources.add(linkTo(methodOn(this.getClass()).findByGroups(null, null, null, null)).withRel("findByGroups"));
-//        resources.add(linkTo(methodOn(this.getClass()).findByAccession(null, null, null, null)).withRel("findByAccession"));
-//        resources.add(linkTo(methodOn(this.getClass()).findByText(null, null, null, null)).withRel("findByText"));
-//        resources.add(linkTo(methodOn(this.getClass()).findByTextAndGroups(null, null,  null, null, null)).withRel("findByTextAndGroups"));
-//        resources.add(linkTo(methodOn(this.getClass()).findByAccessionAndGroups(null, null, null, null, null)).withRel("findByAccessionAndGroups"));
+        resources.add(linkTo(methodOn(this.getClass()).findByKeywords(null, null, null, null)).withRel("findByKeywords"));
+        resources.add(linkTo(methodOn(this.getClass()).findByAccession(null, null, null, null)).withRel("findByAccession"));
 
         return resources;
     }
 
-//    @GetMapping("/findFirstByGroupsContains")
-//    public ResponseEntity<Resource<LegacySample>> findFirstSampleContainedInAGroup(
-//            @RequestParam(value="group", required=false, defaultValue = "") String group) {
-//        Optional<Resource<Sample>> optionalSampleResource = sampleRepository.findFirstByGroup(group);
-//
-//        if (!optionalSampleResource.isPresent()) {
-//            return ResponseEntity.notFound().build();
-//        }
-//
-//        return ResponseEntity.ok(sampleResourceAssembler.toResource(new LegacySample(optionalSampleResource.get().getContent())));
-//    }
-//
-//    @GetMapping("/findByGroups")
-//    public PagedResources<Resource<LegacySample>> findByGroups(
-//            @RequestParam(value="group", required=false, defaultValue = "") String groupAccession,
-//            @RequestParam(value="size", required=false, defaultValue = "50") Integer size,
-//            @RequestParam(value="page", required=false, defaultValue = "0") Integer page,
-//            @RequestParam(value="sort", required=false, defaultValue = "asc") String sort) {
-//
-//        PagedResources<Resource<Sample>> samplePagedResources = sampleRepository.findSamplesByGroup(groupAccession, page, size);
-//        return pagedResourcesConverter.toLegacySamplesPagedResource(samplePagedResources);
-//    }
-//
-//    @GetMapping("/findByAccession")
-//    public PagedResources findByAccession(
-//            @RequestParam(value="accession", required=false, defaultValue = "") String accession,
-//            @RequestParam(value="size", required=false, defaultValue = "50") Integer size,
-//            @RequestParam(value="page", required=false, defaultValue = "0") Integer page,
-//            @RequestParam(value="sort", required=false, defaultValue = "asc") String sort
-//    ) {
-//        // FIXME This method is always returning empty content in v3
-//        return pagedResourcesConverter.toLegacySamplesPagedResource(null);
-//    }
-//
-//
-//    @GetMapping("/findByText")
-//    public PagedResources<Resource<LegacySample>> findByText(
-//            @RequestParam(value="text", required=false, defaultValue = "*:*") String text,
-//            @RequestParam(value="size", required=false, defaultValue = "50") Integer size,
-//            @RequestParam(value="page", required=false, defaultValue = "0") Integer page,
-//            @RequestParam(value="sort", defaultValue = "asc") String sort
-//    ) {
-//        PagedResources<Resource<Sample>> samplesPagedResourcesByText = sampleRepository.findByText(text, page, size);
-//        return pagedResourcesConverter.toLegacySamplesPagedResource(samplesPagedResourcesByText);
-//
-//    }
-//    @GetMapping("/findByTextAndGroups")
-//    public PagedResources<Resource<LegacySample>> findByTextAndGroups(
-//            @RequestParam(value="text", required=false, defaultValue = "") String text,
-//            @RequestParam(value="group", required=false, defaultValue = "") String groupAccession,
-//            @RequestParam(value="size", defaultValue = "50") Integer size,
-//            @RequestParam(value="page", defaultValue = "0") Integer page,
-//            @RequestParam(value="sort", defaultValue = "asc") String sort
-//    ) {
-//        PagedResources<Resource<Sample>> samples = sampleRepository.findSamplesByTextAndGroup(
-//                text,
-//                groupAccession,
-//                page,
-//                size);
-//        return pagedResourcesConverter.toLegacySamplesPagedResource(samples);
-//    }
-//
-//    @GetMapping("/findByAccessionAndGroups")
-//    public PagedResources<Resource<LegacySample>> findByAccessionAndGroups(
-//            @RequestParam(value="accession", required=false, defaultValue = "") String accession,
-//            @RequestParam(value="group", required=false, defaultValue = "") String groupAccession,
-//            @RequestParam(value="size", defaultValue = "50") Integer size,
-//            @RequestParam(value="page", defaultValue = "0") Integer page,
-//            @RequestParam(value="sort", defaultValue = "asc") String sort
-//    ) {
-//        PagedResources<Resource<Sample>> sample = sampleRepository.findSampleInGroup(
-//                accession, groupAccession);
-//        return pagedResourcesConverter.toLegacySamplesPagedResource(sample);
-//    }
+    @GetMapping("/findByKeywords")
+    public PagedResources<Resource<LegacyGroup>> findByKeywords(
+            @RequestParam(value="keyword") String keyword,
+            @RequestParam(value="page", required = false, defaultValue = "0") Integer page,
+            @RequestParam(value="size", required = false, defaultValue = "50") Integer size,
+            @RequestParam(value="sort", required = false, defaultValue = "asc") String sort)
+    {
+        PagedResources<Resource<Sample>> groupsByText = sampleRepository.findGroupsByText(keyword, page, size);
+        return pagedResourcesConverter.toLegacyGroupsPagedResource(groupsByText);
+    }
+
+    @GetMapping("/findByAccession")
+    public PagedResources<Resource<LegacyGroup>> findByAccession(
+            @RequestParam(value="accession") String accession,
+            @RequestParam(value="page", required = false, defaultValue = "0") Integer page,
+            @RequestParam(value="size", required = false, defaultValue = "50") Integer size,
+            @RequestParam(value="sort", required = false, defaultValue = "asc") String sort)
+    {
+        return findByKeywords(accession, page, size, sort);
+    }
 }

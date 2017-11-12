@@ -143,21 +143,21 @@ public class LegacyGroupsControllerIntegrationTest {
 	}
 
 	@Test
-	@Ignore
 	public void testGroupsSearchHasExpectedLinks() throws Exception {
-	    /*TODO */
+		mockMvc.perform(get("/groups/search").accept(HAL_JSON))
+				.andExpect(jsonPath("$._links").value(
+								allOf(hasKey("self"), hasKey("findByKeywords"), hasKey("findByAccession"))));
 	}
 
 	@Test
-	@Ignore
 	public void testSearchGroupsByKeyword() throws Exception {
-	    /*TODO */
+	   /*TODO test in end-to-end tests*/
 	}
 
 	@Test
 	@Ignore
 	public void testSearchGroupsByAccession() throws Exception {
-	    /*TODO */
+	    /*TODO test in end-to-end tests*/
 	}
 	
 
