@@ -8,13 +8,15 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.FilterBuilder;
 
-import java.util.Collections;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class SampleRepository {
 
     private final BioSamplesClient client;
+
+    private final Filter GROUP_FILTER = FilterBuilder.create().onAccession("SAMEG[0-9]+").build();
+    private final Filter SAMPLE_FILTER = FilterBuilder.create().onAccession("SAM(N|D|EA|E)[0-9]+").build();
 
     public SampleRepository(BioSamplesClient client) {
         this.client = client;
@@ -33,7 +35,12 @@ public class SampleRepository {
     public Optional<Resource<Sample>> findFirstByGroup(String groupAccession) {
 
         Filter memberOfGroupFilter = FilterBuilder.create().onInverseRelation("has member").withValue(groupAccession).build();
-        PagedResources<Resource<Sample>> resourcePage = getPagedContent(0,1,memberOfGroupFilter);
+
+        PagedResources<Resource<Sample>> resourcePage = client.fetchPagedSampleResource(
+                "*:*",
+                Collections.singletonList(memberOfGroupFilter),
+                0,1);
+
         if (resourcePage.getContent().isEmpty()) {
             return Optional.empty();
         }
@@ -43,27 +50,33 @@ public class SampleRepository {
     }
 
 
-    public PagedResources<Resource<Sample>> findByGroup(String groupAccession, int page, int pageSize) {
+    public PagedResources<Resource<Sample>> findSamplesByGroup(String groupAccession, int page, int size) {
         Filter memberOfGroupFilter = FilterBuilder.create().onInverseRelation("has member").withValue(groupAccession).build();
-        return getPagedContent(page, pageSize, memberOfGroupFilter);
-    }
 
-    public PagedResources<Resource<Sample>> getPagedSamples(int page, int pageSize) {
-
-        Filter sampleFilter = FilterBuilder.create().onAccession("SAM(N|D|EA|E)[0-9]+").build();
-        return getPagedContent(page, pageSize, sampleFilter);
-
-    }
-
-    public PagedResources<Resource<Sample>> getPagedGroups(int page, int pageSize) {
-        Filter groupFilter = FilterBuilder.create().onAccession("SAMEG[0-9]+").build();
-        return getPagedContent(page, pageSize, groupFilter);
-
-    }
-
-    private PagedResources<Resource<Sample>> getPagedContent(int page, int pageSize, Filter filter) {
         return client.fetchPagedSampleResource("*:*",
-                Collections.singletonList(filter), page, pageSize);
+                Collections.singletonList(memberOfGroupFilter),
+                page,
+                size);
     }
+
+
+
+    public PagedResources<Resource<Sample>> findSamples(int page, int size) {
+
+        return client.fetchPagedSampleResource("*:*",
+                Collections.singletonList(SAMPLE_FILTER),
+                page,
+                size);
+
+    }
+
+    public PagedResources<Resource<Sample>> findGroups(int page, int size) {
+        return client.fetchPagedSampleResource("*:*",
+                Collections.singletonList(GROUP_FILTER),
+                page,
+                size);
+
+    }
+
 
 }

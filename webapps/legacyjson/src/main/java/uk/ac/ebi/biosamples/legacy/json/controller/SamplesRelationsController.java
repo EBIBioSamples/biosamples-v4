@@ -48,7 +48,7 @@ public class SamplesRelationsController {
             PagedResourcesAssembler<SamplesRelations> pagedResourcesAssembler) {
 
 
-        PagedResources<Resource<Sample>> samples = sampleRepository.getPagedSamples(page, size);
+        PagedResources<Resource<Sample>> samples = sampleRepository.findSamples(page, size);
         List<SamplesRelations> legacyRelationsResources = samples.getContent().stream()
                 .map(Resource::getContent)
                 .map(SamplesRelations::new)

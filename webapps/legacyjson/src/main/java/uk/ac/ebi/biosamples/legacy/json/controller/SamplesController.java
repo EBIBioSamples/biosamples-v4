@@ -19,6 +19,7 @@ import uk.ac.ebi.biosamples.legacy.json.repository.SampleRepository;
 import uk.ac.ebi.biosamples.legacy.json.service.SampleResourceAssembler;
 import uk.ac.ebi.biosamples.model.Sample;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -41,10 +42,10 @@ public class SamplesController {
     public SamplesController(PagedResourcesAssembler<LegacySample> pagedResourcesAssembler, SampleRepository sampleRepository,
                              SampleResourceAssembler sampleResourceAssembler, EntityLinks entityLinks) {
 
-        this.pagedResourcesAssembler = pagedResourcesAssembler;
-        this.sampleRepository = sampleRepository;
-        this.sampleResourceAssembler = sampleResourceAssembler;
         this.entityLinks = entityLinks;
+        this.sampleRepository = sampleRepository;
+        this.pagedResourcesAssembler = pagedResourcesAssembler;
+        this.sampleResourceAssembler = sampleResourceAssembler;
 
     }
 
@@ -53,7 +54,7 @@ public class SamplesController {
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "50") int size) {
 
-        PagedResources<Resource<Sample>> samples = sampleRepository.getPagedSamples(page, size);
+        PagedResources<Resource<Sample>> samples = sampleRepository.findSamples(page, size);
         List<LegacySample> legacyRelationsResources = samples.getContent().stream()
                 .map(Resource::getContent)
                 .map(LegacySample::new)
@@ -103,7 +104,7 @@ public class SamplesController {
             @RequestParam(value="page", required=false, defaultValue = "0") Integer page,
             @RequestParam(value="sort", required=false, defaultValue = "asc") String sort) {
 
-        PagedResources<Resource<Sample>> samplePagedResources = sampleRepository.findByGroup(groupAccession, page, pageSize);
+        PagedResources<Resource<Sample>> samplePagedResources = sampleRepository.findSamplesByGroup(groupAccession, page, pageSize);
         List<LegacySample> legacyRelationsResources = samplePagedResources.getContent().stream()
                 .map(Resource::getContent)
                 .map(LegacySample::new)
@@ -115,19 +116,20 @@ public class SamplesController {
     }
 
     @GetMapping("/search/findByAccession")
-    public PagedResourcesAssembler<LegacySample> findByAccession(
+    public PagedResources findByAccession(
             @RequestParam(value="accession", required=false, defaultValue = "") String accession,
-            @RequestParam(value="size", required=false, defaultValue = "50") Integer pageSize,
-            @RequestParam(value="page", required=false, defaultValue = "0") Integer pageRequest,
+            @RequestParam(value="size", required=false, defaultValue = "50") Integer size,
+            @RequestParam(value="page", required=false, defaultValue = "0") Integer page,
             @RequestParam(value="sort", required=false, defaultValue = "asc") String sort
     ) {
-        return null;
+        // FIXME This method is always returning empty content in v3
+        return pagedResourcesAssembler.toEmptyResource(new PageImpl<>(new ArrayList<>(), new PageRequest(page,size), 0), LegacySample.class, null);
     }
 
 
     @GetMapping("/search/findByText")
-    public PagedResourcesAssembler<LegacySample> findByText(
-            @RequestParam(value="text", required=false, defaultValue = "") String text,
+    public PagedResources<Resource<LegacySample>> findByText(
+            @RequestParam(value="text", required=false, defaultValue = "*:*") String text,
             @RequestParam(value="size", defaultValue = "50") Integer pageSize,
             @RequestParam(value="page", defaultValue = "0") Integer pageRequest,
             @RequestParam(value="sort", defaultValue = "asc") String sort
@@ -135,7 +137,7 @@ public class SamplesController {
         return null;
     }
     @GetMapping("/search/findByTextAndGroups")
-    public PagedResourcesAssembler<LegacySample> findByTextAndGroups(
+    public PagedResources<Resource<LegacySample>> findByTextAndGroups(
             @RequestParam(value="text", required=false, defaultValue = "") String text,
             @RequestParam(value="group", required=false, defaultValue = "") String groupAccession,
             @RequestParam(value="size", defaultValue = "50") Integer pageSize,
@@ -145,7 +147,7 @@ public class SamplesController {
         return null;
     }
     @GetMapping("/search/findByAccessionAndGroups")
-    public PagedResourcesAssembler<LegacySample> findByAccessionAndGroups(
+    public PagedResources<Resource<LegacySample>> findByAccessionAndGroups(
             @RequestParam(value="accession", required=false, defaultValue = "") String accession,
             @RequestParam(value="group", required=false, defaultValue = "") String groupAccession,
             @RequestParam(value="size", defaultValue = "50") Integer pageSize,
