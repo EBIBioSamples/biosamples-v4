@@ -16,6 +16,9 @@ import uk.ac.ebi.biosamples.model.Sample;
 
 import java.util.Optional;
 
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
+
 @RestController
 @RequestMapping(value = "/groups", produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
 @ExposesResourceFor(LegacyGroup.class)
@@ -54,9 +57,10 @@ public class GroupsController {
             @RequestParam(value = "size", defaultValue = "50") int size) {
 
         PagedResources<Resource<Sample>> groups = sampleRepository.findGroups(page, size);
-        //        pagedResources.add(linkTo(methodOn(th.class).searchMethods()).withRel("search"));
+        PagedResources<Resource<LegacyGroup>> pagedResources = pagedResourcesConverter.toLegacyGroupsPagedResource(groups);
+        pagedResources.add(linkTo(methodOn(GroupsSearchController.class).searchMethods()).withRel("search"));
 
-        return pagedResourcesConverter.toLegacyGroupsPagedResource(groups);
+        return pagedResources;
     }
 
 }

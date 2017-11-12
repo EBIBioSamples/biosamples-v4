@@ -137,9 +137,9 @@ public class LegacyGroupsControllerIntegrationTest {
 	}
 
 	@Test
-	@Ignore
 	public void testGroupsIndexHasSearchLink() throws Exception {
-	    /*TODO */
+	    mockMvc.perform(get("/groups").accept(HAL_JSON))
+				.andExpect(jsonPath("$._links").value(hasKey("search")));
 	}
 
 	@Test
