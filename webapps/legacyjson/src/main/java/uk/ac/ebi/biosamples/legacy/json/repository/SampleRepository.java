@@ -78,5 +78,13 @@ public class SampleRepository {
 
     }
 
+    public PagedResources<Resource<Sample>> findByText(String text, int page, int size) {
+        return client.fetchPagedSampleResource(text,
+                Collections.singletonList(SAMPLE_FILTER),
+                page,
+                size);
+
+    }
+
 
 }

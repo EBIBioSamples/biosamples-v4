@@ -2,7 +2,6 @@ package uk.ac.ebi.biosamples.legacy.json.domain;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
@@ -11,6 +10,8 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.springframework.hateoas.core.Relation;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.Sample;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -24,40 +25,40 @@ import java.util.stream.Collectors;
 
 
 @Relation(value="sample", collectionRelation = "samples")
-@JsonInclude(JsonInclude.Include.NON_NULL)
+//@JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder(value = {"accession", "name", "releaseDate", "updateDate", "description", "characteristics"})
 public class LegacySample {
 
     @JsonIgnore
-    private final uk.ac.ebi.biosamples.model.Sample sample;
+    private final Sample sample;
 
     private MultiValueMap<String, LegacyAttribute> characteristics;
     private String description;
 
 
-    public LegacySample(uk.ac.ebi.biosamples.model.Sample sample) {
+    public LegacySample(Sample sample) {
         this.sample = sample;
         hydrateLegacySample(sample);
     }
 
-    private void hydrateLegacySample(uk.ac.ebi.biosamples.model.Sample sample) {
+    private void hydrateLegacySample(Sample sample) {
 
         this.description = extractSampleDescription(sample).orElse("");
         this.characteristics = extractCharacteristics(sample);
     }
 
-    private Optional<String> extractSampleDescription(uk.ac.ebi.biosamples.model.Sample sample) {
-        Optional<uk.ac.ebi.biosamples.model.Attribute> descriptionAttribute = this.sample.getAttributes().stream()
+    private Optional<String> extractSampleDescription(Sample sample) {
+        Optional<Attribute> descriptionAttribute = this.sample.getAttributes().stream()
                 .filter(a -> a.getType().equalsIgnoreCase("description"))
                 .findAny();
-        return descriptionAttribute.map(uk.ac.ebi.biosamples.model.Attribute::getValue);
+        return descriptionAttribute.map(Attribute::getValue);
     }
 
-    private MultiValueMap<String, LegacyAttribute> extractCharacteristics(uk.ac.ebi.biosamples.model.Sample sample) {
-        Map<String, List<uk.ac.ebi.biosamples.model.Attribute>> attributesByType = sample.getAttributes()
+    private MultiValueMap<String, LegacyAttribute> extractCharacteristics(Sample sample) {
+        Map<String, List<Attribute>> attributesByType = sample.getAttributes()
                 .stream()
-                .filter(((Predicate<uk.ac.ebi.biosamples.model.Attribute>)this::isDescription).negate())
-                .collect(Collectors.groupingBy(uk.ac.ebi.biosamples.model.Attribute::getType));
+                .filter(((Predicate<Attribute>)this::isDescription).negate())
+                .collect(Collectors.groupingBy(Attribute::getType));
 
         MultiValueMap<String, LegacyAttribute> legacyAttributesByType = new LinkedMultiValueMap<>();
         for (String type: attributesByType.keySet()) {

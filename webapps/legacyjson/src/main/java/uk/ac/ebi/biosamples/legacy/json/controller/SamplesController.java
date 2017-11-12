@@ -1,11 +1,6 @@
 package uk.ac.ebi.biosamples.legacy.json.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.*;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -14,16 +9,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.ac.ebi.biosamples.legacy.json.domain.LegacySample;
-import uk.ac.ebi.biosamples.legacy.json.domain.SamplesRelations;
 import uk.ac.ebi.biosamples.legacy.json.repository.SampleRepository;
+import uk.ac.ebi.biosamples.legacy.json.service.PagedResourcesConverter;
 import uk.ac.ebi.biosamples.legacy.json.service.SampleResourceAssembler;
 import uk.ac.ebi.biosamples.model.Sample;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
@@ -33,20 +25,18 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 @ExposesResourceFor(LegacySample.class)
 public class SamplesController {
 
-    private final PagedResourcesAssembler<LegacySample> pagedResourcesAssembler;
-    private final SampleResourceAssembler sampleResourceAssembler;
     private final SampleRepository sampleRepository;
-    private final EntityLinks entityLinks;
+    private final SampleResourceAssembler sampleResourceAssembler;
+    private final PagedResourcesConverter pagedResourcesConverter;
 
     @Autowired
-    public SamplesController(PagedResourcesAssembler<LegacySample> pagedResourcesAssembler, SampleRepository sampleRepository,
-                             SampleResourceAssembler sampleResourceAssembler, EntityLinks entityLinks) {
+    public SamplesController(SampleRepository sampleRepository,
+                             SampleResourceAssembler sampleResourceAssembler,
+                             PagedResourcesConverter pagedResourcesConverter) {
 
-        this.entityLinks = entityLinks;
         this.sampleRepository = sampleRepository;
-        this.pagedResourcesAssembler = pagedResourcesAssembler;
         this.sampleResourceAssembler = sampleResourceAssembler;
-
+        this.pagedResourcesConverter = pagedResourcesConverter;
     }
 
     @GetMapping
@@ -55,16 +45,17 @@ public class SamplesController {
             @RequestParam(value = "size", defaultValue = "50") int size) {
 
         PagedResources<Resource<Sample>> samples = sampleRepository.findSamples(page, size);
-        List<LegacySample> legacyRelationsResources = samples.getContent().stream()
-                .map(Resource::getContent)
-                .map(LegacySample::new)
-                .collect(Collectors.toList());
-        Pageable pageRequest = new PageRequest(page, size);
-        Page<LegacySample> pageResources = new PageImpl<>(legacyRelationsResources, pageRequest, samples.getMetadata().getTotalElements());
-
-        PagedResources<Resource<LegacySample>> pagedResources = pagedResourcesAssembler.toResource(pageResources,
-                this.sampleResourceAssembler,
-                entityLinks.linkToCollectionResource(SamplesRelations.class));
+        PagedResources<Resource<LegacySample>> pagedResources = pagedResourcesConverter.toLegacySamplesPagedResource(samples);
+//        List<LegacySample> legacyRelationsResources = samples.getContent().stream()
+//                .map(Resource::getContent)
+//                .map(LegacySample::new)
+//                .collect(Collectors.toList());
+//        Pageable pageRequest = new PageRequest(page, size);
+//        Page<LegacySample> pageResources = new PageImpl<>(legacyRelationsResources, pageRequest, samples.getMetadata().getTotalElements());
+//
+//        PagedResources<Resource<LegacySample>> pagedResources = pagedResourcesAssembler.toResource(pageResources,
+//                this.sampleResourceAssembler,
+//                entityLinks.linkToCollectionResource(SamplesRelations.class));
 
         pagedResources.add(linkTo(methodOn(SamplesController.class).searchMethods()).withRel("search"));
 
@@ -100,19 +91,12 @@ public class SamplesController {
     @GetMapping("/search/findByGroups")
     public PagedResources<Resource<LegacySample>> findByGroups(
             @RequestParam(value="group", required=false, defaultValue = "") String groupAccession,
-            @RequestParam(value="size", required=false, defaultValue = "50") Integer pageSize,
+            @RequestParam(value="size", required=false, defaultValue = "50") Integer size,
             @RequestParam(value="page", required=false, defaultValue = "0") Integer page,
             @RequestParam(value="sort", required=false, defaultValue = "asc") String sort) {
 
-        PagedResources<Resource<Sample>> samplePagedResources = sampleRepository.findSamplesByGroup(groupAccession, page, pageSize);
-        List<LegacySample> legacyRelationsResources = samplePagedResources.getContent().stream()
-                .map(Resource::getContent)
-                .map(LegacySample::new)
-                .collect(Collectors.toList());
-        Pageable pageable = new PageRequest(page, pageSize);
-        Page<LegacySample> pageRequest = new PageImpl<>(legacyRelationsResources, pageable, samplePagedResources.getMetadata().getTotalElements());
-        PagedResources<Resource<LegacySample>> pagedResource = pagedResourcesAssembler.toResource(pageRequest, sampleResourceAssembler);
-        return pagedResource;
+        PagedResources<Resource<Sample>> samplePagedResources = sampleRepository.findSamplesByGroup(groupAccession, page, size);
+        return pagedResourcesConverter.toLegacySamplesPagedResource(samplePagedResources);
     }
 
     @GetMapping("/search/findByAccession")
@@ -123,18 +107,20 @@ public class SamplesController {
             @RequestParam(value="sort", required=false, defaultValue = "asc") String sort
     ) {
         // FIXME This method is always returning empty content in v3
-        return pagedResourcesAssembler.toEmptyResource(new PageImpl<>(new ArrayList<>(), new PageRequest(page,size), 0), LegacySample.class, null);
+        return pagedResourcesConverter.toLegacySamplesPagedResource(null);
     }
 
 
     @GetMapping("/search/findByText")
     public PagedResources<Resource<LegacySample>> findByText(
             @RequestParam(value="text", required=false, defaultValue = "*:*") String text,
-            @RequestParam(value="size", defaultValue = "50") Integer pageSize,
-            @RequestParam(value="page", defaultValue = "0") Integer pageRequest,
+            @RequestParam(value="size", required=false, defaultValue = "50") Integer size,
+            @RequestParam(value="page", required=false, defaultValue = "0") Integer page,
             @RequestParam(value="sort", defaultValue = "asc") String sort
     ) {
-        return null;
+        PagedResources<Resource<Sample>> samplesPagedResourcesByText = sampleRepository.findByText(text, page, size);
+        return pagedResourcesConverter.toLegacySamplesPagedResource(samplesPagedResourcesByText);
+
     }
     @GetMapping("/search/findByTextAndGroups")
     public PagedResources<Resource<LegacySample>> findByTextAndGroups(
