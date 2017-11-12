@@ -1,6 +1,7 @@
 package uk.ac.ebi.biosamples.legacy.json.domain;
 
 import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 
@@ -15,6 +16,7 @@ public class TestSample {
     private Instant releaseDate;
     private SortedSet<Attribute> attributes;
     private SortedSet<Relationship> relationships;
+    private SortedSet<ExternalReference> externalReferences;
     private final String testDomain = "testDomain";
 
 
@@ -23,6 +25,7 @@ public class TestSample {
         this.name = "test";
         this.attributes = new TreeSet<>();
         this.relationships = new TreeSet<>();
+        this.externalReferences = new TreeSet<>();
         this.releaseDate = Instant.now();
     }
 
@@ -46,6 +49,11 @@ public class TestSample {
         return this;
     }
 
+    public TestSample withExternalReference(ExternalReference ref) {
+        this.externalReferences.add(ref);
+        return this;
+    }
+
     public Sample build() {
         return Sample.build(this.name,
                 this.accession,
@@ -54,6 +62,6 @@ public class TestSample {
                 Instant.now(),
                 this.attributes,
                 this.relationships,
-                null);
+                this.externalReferences);
     }
 }
