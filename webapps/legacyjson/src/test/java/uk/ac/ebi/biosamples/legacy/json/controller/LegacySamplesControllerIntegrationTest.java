@@ -270,7 +270,6 @@ public class LegacySamplesControllerIntegrationTest {
 
 	}
 
-
 	@Test
 	public void testFindFirstByGroupFunctionality() throws Exception {
 	    Sample sampleA = new TestSample("A").build();
