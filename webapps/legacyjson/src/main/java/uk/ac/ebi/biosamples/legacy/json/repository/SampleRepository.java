@@ -34,12 +34,8 @@ public class SampleRepository {
      */
     public Optional<Resource<Sample>> findFirstByGroup(String groupAccession) {
 
-        Filter memberOfGroupFilter = FilterBuilder.create().onInverseRelation("has member").withValue(groupAccession).build();
 
-        PagedResources<Resource<Sample>> resourcePage = client.fetchPagedSampleResource(
-                "*:*",
-                Collections.singletonList(memberOfGroupFilter),
-                0,1);
+        PagedResources<Resource<Sample>> resourcePage = findSamplesByGroup(groupAccession, 0, 1);
 
         if (resourcePage.getContent().isEmpty()) {
             return Optional.empty();
@@ -51,12 +47,7 @@ public class SampleRepository {
 
 
     public PagedResources<Resource<Sample>> findSamplesByGroup(String groupAccession, int page, int size) {
-        Filter memberOfGroupFilter = FilterBuilder.create().onInverseRelation("has member").withValue(groupAccession).build();
-
-        return client.fetchPagedSampleResource("*:*",
-                Collections.singletonList(memberOfGroupFilter),
-                page,
-                size);
+        return this.findSamplesByTextAndGroup("*:*", groupAccession, page, size);
     }
 
 
@@ -86,5 +77,24 @@ public class SampleRepository {
 
     }
 
+
+    public PagedResources<Resource<Sample>> findSamplesByTextAndGroup(String text,
+                                                                      String groupAccession, int page, int size) {
+
+        return client.fetchPagedSampleResource(text,
+                Collections.singletonList(groupMemberFilter(groupAccession)),
+                page,
+                size);
+
+
+    }
+    public PagedResources<Resource<Sample>> findSampleInGroup(String sampleAccession, String groupAccession) {
+        return findSamplesByTextAndGroup(sampleAccession, groupAccession, 0, 1);
+    }
+
+
+    private Filter groupMemberFilter(String groupAccession) {
+        return FilterBuilder.create().onInverseRelation("has member").withValue(groupAccession).build();
+    }
 
 }

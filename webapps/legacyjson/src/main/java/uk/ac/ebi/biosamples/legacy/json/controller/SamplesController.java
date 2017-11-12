@@ -46,17 +46,6 @@ public class SamplesController {
 
         PagedResources<Resource<Sample>> samples = sampleRepository.findSamples(page, size);
         PagedResources<Resource<LegacySample>> pagedResources = pagedResourcesConverter.toLegacySamplesPagedResource(samples);
-//        List<LegacySample> legacyRelationsResources = samples.getContent().stream()
-//                .map(Resource::getContent)
-//                .map(LegacySample::new)
-//                .collect(Collectors.toList());
-//        Pageable pageRequest = new PageRequest(page, size);
-//        Page<LegacySample> pageResources = new PageImpl<>(legacyRelationsResources, pageRequest, samples.getMetadata().getTotalElements());
-//
-//        PagedResources<Resource<LegacySample>> pagedResources = pagedResourcesAssembler.toResource(pageResources,
-//                this.sampleResourceAssembler,
-//                entityLinks.linkToCollectionResource(SamplesRelations.class));
-
         pagedResources.add(linkTo(methodOn(SamplesController.class).searchMethods()).withRel("search"));
 
         return pagedResources;
@@ -126,21 +115,29 @@ public class SamplesController {
     public PagedResources<Resource<LegacySample>> findByTextAndGroups(
             @RequestParam(value="text", required=false, defaultValue = "") String text,
             @RequestParam(value="group", required=false, defaultValue = "") String groupAccession,
-            @RequestParam(value="size", defaultValue = "50") Integer pageSize,
-            @RequestParam(value="page", defaultValue = "0") Integer pageRequest,
+            @RequestParam(value="size", defaultValue = "50") Integer size,
+            @RequestParam(value="page", defaultValue = "0") Integer page,
             @RequestParam(value="sort", defaultValue = "asc") String sort
     ) {
-        return null;
+        PagedResources<Resource<Sample>> samples = sampleRepository.findSamplesByTextAndGroup(
+                text,
+                groupAccession,
+                page,
+                size);
+        return pagedResourcesConverter.toLegacySamplesPagedResource(samples);
     }
+
     @GetMapping("/search/findByAccessionAndGroups")
     public PagedResources<Resource<LegacySample>> findByAccessionAndGroups(
             @RequestParam(value="accession", required=false, defaultValue = "") String accession,
             @RequestParam(value="group", required=false, defaultValue = "") String groupAccession,
-            @RequestParam(value="size", defaultValue = "50") Integer pageSize,
-            @RequestParam(value="page", defaultValue = "0") Integer pageRequest,
+            @RequestParam(value="size", defaultValue = "50") Integer size,
+            @RequestParam(value="page", defaultValue = "0") Integer page,
             @RequestParam(value="sort", defaultValue = "asc") String sort
     ) {
-        return null;
+        PagedResources<Resource<Sample>> sample = sampleRepository.findSampleInGroup(
+                accession, groupAccession);
+        return pagedResourcesConverter.toLegacySamplesPagedResource(sample);
     }
 
 
