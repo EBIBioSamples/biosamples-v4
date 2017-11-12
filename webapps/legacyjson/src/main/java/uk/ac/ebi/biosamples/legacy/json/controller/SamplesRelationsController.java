@@ -6,14 +6,20 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.*;
+import org.springframework.hateoas.core.EmbeddedWrapper;
+import org.springframework.hateoas.core.EmbeddedWrappers;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import uk.ac.ebi.biosamples.legacy.json.domain.GroupsRelations;
 import uk.ac.ebi.biosamples.legacy.json.domain.SamplesRelations;
+import uk.ac.ebi.biosamples.legacy.json.repository.RelationsRepository;
 import uk.ac.ebi.biosamples.legacy.json.repository.SampleRepository;
+import uk.ac.ebi.biosamples.legacy.json.service.GroupRelationsResourceAssembler;
 import uk.ac.ebi.biosamples.legacy.json.service.SampleRelationsResourceAssembler;
 import uk.ac.ebi.biosamples.model.Sample;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -27,18 +33,84 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 @ExposesResourceFor(SamplesRelations.class)
 public class SamplesRelationsController {
 
-    private final SampleRepository sampleRepository;
-    private final SampleRelationsResourceAssembler relationsResourceAssembler;
     private final EntityLinks entityLinks;
+    private final SampleRepository sampleRepository;
+    private final RelationsRepository relationsRepository;
+    private final GroupRelationsResourceAssembler groupRelationsResourceAssembler;
+    private final SampleRelationsResourceAssembler sampleRelationsResourceAssembler;
 
-    public SamplesRelationsController(SampleRepository sampleRepository,
-                                      SampleRelationsResourceAssembler relationsResourceAssembler,
-                                      EntityLinks entityLinks) {
+    public SamplesRelationsController(EntityLinks entityLinks,
+                                      SampleRepository sampleRepository,
+                                      RelationsRepository relationsRepository,
+                                      GroupRelationsResourceAssembler groupRelationsResourceAssembler,
+                                      SampleRelationsResourceAssembler sampleRelationsResourceAssembler) {
 
-        this.sampleRepository = sampleRepository;
-        this.relationsResourceAssembler = relationsResourceAssembler;
         this.entityLinks = entityLinks;
+        this.sampleRepository = sampleRepository;
+        this.relationsRepository = relationsRepository;
+        this.groupRelationsResourceAssembler = groupRelationsResourceAssembler;
+        this.sampleRelationsResourceAssembler = sampleRelationsResourceAssembler;
 
+    }
+
+    @GetMapping("/{accession}")
+    public ResponseEntity<Resource<SamplesRelations>> relationsOfSample(@PathVariable String accession) {
+        Optional<Sample> sample = sampleRepository.findByAccession(accession);
+        if (!sample.isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(sampleRelationsResourceAssembler.toResource(new SamplesRelations(sample.get())));
+    }
+
+    @GetMapping("/{accession}/groups")
+    public ResponseEntity<Resources<GroupsRelations>> getSamplesGroupRelations(@PathVariable String accession) {
+
+        List<Resource> associatedGroups = relationsRepository
+                .getGroupsRelationships(accession).stream()
+                .map(groupRelationsResourceAssembler::toResource)
+                .collect(Collectors.toList());
+
+        Link selfLink = linkTo(methodOn(this.getClass()).getSamplesGroupRelations(accession)).withSelfRel();
+        Resources responseBody = new Resources(wrappedCollection(associatedGroups, GroupsRelations.class), selfLink);
+        return ResponseEntity.ok(responseBody);
+    }
+
+    @GetMapping("/{accession}/{relationType}")
+    public ResponseEntity<Resources> getSamplesRelations(
+            @PathVariable String accession,
+            @PathVariable String relationType) {
+
+        if (!relationsRepository.isSupportedRelation(relationType)) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        List<Resource> associatedSamples = relationsRepository
+                .getSamplesRelations(accession, relationType).stream()
+                .map(sampleRelationsResourceAssembler::toResource)
+                .collect(Collectors.toList());
+
+        Link selfLink = linkTo(methodOn(this.getClass()).getSamplesRelations(accession, relationType)).withSelfRel();
+        Resources responseBody = new Resources(wrappedCollection(associatedSamples, SamplesRelations.class), selfLink);
+        return ResponseEntity.ok(responseBody);
+
+    }
+
+
+    /**
+     * Wrap the collection and return an empty _embedded if provided collection is empty
+     * @param resourceCollection The collection to wrap
+     * @param collectionClass the class to use to create the empty collection wrapper
+     * @return A resource collection
+     */
+    private Collection wrappedCollection(List<Resource> resourceCollection, Class collectionClass) {
+        EmbeddedWrappers wrappers = new EmbeddedWrappers(false);
+        EmbeddedWrapper wrapper;
+        if (resourceCollection.isEmpty())
+            wrapper = wrappers.emptyCollectionOf(collectionClass);
+        else
+            wrapper = wrappers.wrap(resourceCollection);
+        return Collections.singletonList(wrapper);
     }
 
     @GetMapping
@@ -48,7 +120,7 @@ public class SamplesRelationsController {
             PagedResourcesAssembler<SamplesRelations> pagedResourcesAssembler) {
 
 
-        PagedResources<Resource<Sample>> samples = sampleRepository.getPagedSamples(page, size);
+        PagedResources<Resource<Sample>> samples = sampleRepository.findSamples(page, size);
         List<SamplesRelations> legacyRelationsResources = samples.getContent().stream()
                 .map(Resource::getContent)
                 .map(SamplesRelations::new)
@@ -57,7 +129,7 @@ public class SamplesRelationsController {
         Page<SamplesRelations> pageResources = new PageImpl<>(legacyRelationsResources, pageRequest, samples.getMetadata().getTotalElements());
 
         PagedResources<Resource<SamplesRelations>> pagedResources = pagedResourcesAssembler.toResource(pageResources,
-                this.relationsResourceAssembler,
+                this.sampleRelationsResourceAssembler,
                 entityLinks.linkToCollectionResource(SamplesRelations.class));
 
         pagedResources.add(linkTo(methodOn(SamplesRelationsController.class).searchMethods()).withRel("search"));
@@ -76,9 +148,7 @@ public class SamplesRelationsController {
     }
 
     @GetMapping("/search/findOneByAccession") // Replicate v3 way of working
-//    public ResponseEntity<Resource<SamplesRelations>> findByAccession(@PathVariable(required = false) String accessionQuery) {
     public ResponseEntity<Resource<SamplesRelations>> findByAccession(@RequestParam(required = false, defaultValue = "") String accession) {
-//        String accession = accessionQuery.replaceAll("\\?accession=","");
         if (accession == null || accession.isEmpty()) {
             return ResponseEntity.notFound().build(); // Replicate v3 response code
         }
@@ -87,7 +157,7 @@ public class SamplesRelationsController {
             return ResponseEntity.notFound().build();
         }
 
-        return ResponseEntity.ok(relationsResourceAssembler.toResource(new SamplesRelations(sample.get())));
+        return ResponseEntity.ok(sampleRelationsResourceAssembler.toResource(new SamplesRelations(sample.get())));
 
     }
 

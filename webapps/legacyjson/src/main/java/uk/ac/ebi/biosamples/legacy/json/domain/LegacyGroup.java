@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
@@ -11,6 +12,8 @@ import org.springframework.hateoas.core.Relation;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.ExternalReference;
+import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 
 import java.io.IOException;
@@ -24,27 +27,34 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 
-@Relation(value="sample", collectionRelation = "samples")
+@Relation(value="group", collectionRelation = "groups")
 //@JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder(value = {"accession", "name", "releaseDate", "updateDate", "description", "characteristics"})
-public class LegacySample {
+public class LegacyGroup {
 
     @JsonIgnore
     private final Sample sample;
+
+    private ObjectMapper objectMapper;
 
     private MultiValueMap<String, LegacyAttribute> characteristics;
     private String description;
 
 
-    public LegacySample(Sample sample) {
+    public LegacyGroup(Sample sample) {
+        if (!sample.getAccession().matches("SAMEG\\d+")) {
+            throw new RuntimeException("The provided sample " + sample + " is not a group");
+        }
         this.sample = sample;
+        this.objectMapper = new ObjectMapper();
         hydrateLegacySample(sample);
     }
 
     private void hydrateLegacySample(Sample sample) {
 
         this.description = extractSampleDescription(sample).orElse("");
-        this.characteristics = extractCharacteristics(sample);
+//        this.characteristics = extractCharacteristics(sample);
+        this.characteristics = null; // FIXME BioSamples v3 group characteristics were all null
     }
 
     private Optional<String> extractSampleDescription(Sample sample) {
@@ -98,13 +108,30 @@ public class LegacySample {
         return this.sample.getRelease();
     }
 
-    @JsonGetter
+//    @JsonIgnore
     public MultiValueMap<String, LegacyAttribute> characteristics() {
         return this.characteristics;
     }
 
+    @JsonGetter
+    public String externalReferences() {
+        String serializedObject = this.sample.getExternalReferences().stream()
+                .map(ExternalReference::getUrl)
+                .map(url->"{\"URL\":\""+url+"\"}")
+                .collect(Collectors.joining(","));
+        return String.format("[%s]",serializedObject);
 
-    private boolean isDescription(uk.ac.ebi.biosamples.model.Attribute attribute) {
+    }
+
+    @JsonGetter
+    public List<String> samples() {
+        return this.sample.getRelationships().stream()
+                .filter(rel -> rel.getType().equals("has member"))
+                .map(Relationship::getTarget)
+                .collect(Collectors.toList());
+    }
+
+    private boolean isDescription(Attribute attribute) {
         return attribute.getType().equalsIgnoreCase("description");
     }
 

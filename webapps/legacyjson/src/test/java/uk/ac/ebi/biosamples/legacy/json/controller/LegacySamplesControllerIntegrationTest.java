@@ -9,20 +9,33 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.hateoas.MediaTypes;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.*;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import uk.ac.ebi.biosamples.legacy.json.domain.GroupsRelations;
 import uk.ac.ebi.biosamples.legacy.json.domain.TestAttribute;
 import uk.ac.ebi.biosamples.legacy.json.domain.TestSample;
+import uk.ac.ebi.biosamples.legacy.json.repository.RelationsRepository;
+import uk.ac.ebi.biosamples.legacy.json.repository.SampleRepository;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.legacy.json.repository.SampleRepository;
 
 import java.time.Instant;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -34,15 +47,31 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class LegacySamplesControllerIntegrationTest {
 
 	@MockBean
-	private SampleRepository sampleRepositoryMock;
+	private SampleRepository sampleRepository;
+
+	@MockBean
+	private RelationsRepository relationsRepository;
 
 	@Autowired
     private MockMvc mockMvc;
 
+	@Autowired
+	PagedResourcesAssembler<Sample> pagedResourcesAssembler;
+
+	private PagedResources<Resource<Sample>> getTestPagedResourcesSample(int totalSamples, Sample... samples) {
+		List<Sample> allSamples = Stream.of(samples)
+				.collect(Collectors.toList());
+
+		Pageable pageInfo = new PageRequest(0,samples.length);
+		Page<Sample> samplePage = new PageImpl<>(allSamples, pageInfo, totalSamples);
+		return pagedResourcesAssembler.toResource(samplePage);
+
+	}
+
 	@Test
 	public void testReturnSampleByAccession() throws Exception {
 		Sample testSample = new TestSample("SAMEA123123").build();
-		when(sampleRepositoryMock.findByAccession(testSample.getAccession())).thenReturn(Optional.of(testSample));
+		when(sampleRepository.findByAccession(testSample.getAccession())).thenReturn(Optional.of(testSample));
 
     	mockMvc.perform(
     			get("/samples/{accession}", testSample.getAccession())
@@ -54,7 +83,7 @@ public class LegacySamplesControllerIntegrationTest {
 	@Test
 	public void testResponseContentTypeIsHalJson() throws Exception {
 		Sample testSample = new TestSample("SAMEA0").build();
-		when(sampleRepositoryMock.findByAccession(testSample.getAccession())).thenReturn(Optional.of(testSample));
+		when(sampleRepository.findByAccession(testSample.getAccession())).thenReturn(Optional.of(testSample));
 
 		mockMvc.perform(get("/samples/SAMEA0").accept("application/hal+json;charset=UTF-8"))
 				.andExpect(status().isOk())
@@ -66,7 +95,7 @@ public class LegacySamplesControllerIntegrationTest {
 		Sample testSample = new TestSample("SAMEA1")
 				.withAttribute(new TestAttribute("description", "simple description").build())
 				.build();
-		when(sampleRepositoryMock.findByAccession(testSample.getAccession())).thenReturn(Optional.of(testSample));
+		when(sampleRepository.findByAccession(testSample.getAccession())).thenReturn(Optional.of(testSample));
 
 		mockMvc.perform(
 				get("/samples/{accession}", "SAMEA1").accept(MediaTypes.HAL_JSON))
@@ -81,7 +110,7 @@ public class LegacySamplesControllerIntegrationTest {
 		Sample testSample = new TestSample("SAMEA1")
 				.releasedOn(Instant.parse("2016-01-01T00:30:00Z"))
 				.build();
-		when(sampleRepositoryMock.findByAccession(testSample.getAccession())).thenReturn(Optional.of(testSample));
+		when(sampleRepository.findByAccession(testSample.getAccession())).thenReturn(Optional.of(testSample));
 
 		mockMvc.perform(get("/samples/SAMEA1"))
 				.andExpect(status().isOk())
@@ -97,7 +126,7 @@ public class LegacySamplesControllerIntegrationTest {
 						new TestAttribute("type", "value").withOntologyUri("test").build())
 				.build();
 
-		when(sampleRepositoryMock.findByAccession(testSample.getAccession())).thenReturn(Optional.of(testSample));
+		when(sampleRepository.findByAccession(testSample.getAccession())).thenReturn(Optional.of(testSample));
 
 		mockMvc.perform(get("/samples/SAMEA0").accept(MediaTypes.HAL_JSON))
 				.andExpect(status().isOk())
@@ -108,7 +137,7 @@ public class LegacySamplesControllerIntegrationTest {
 	@Test
 	public void testSampleNameIsExposedAsRootField() throws Exception {
 		Sample testSample = new TestSample("SAMEA2").withName("StrangeName").build();
-		when(sampleRepositoryMock.findByAccession(testSample.getAccession())).thenReturn(Optional.of(testSample));
+		when(sampleRepository.findByAccession(testSample.getAccession())).thenReturn(Optional.of(testSample));
 
 		mockMvc.perform(get("/samples/SAMEA2").accept(MediaTypes.HAL_JSON_VALUE))
 				.andExpect(jsonPath("$.name").value("StrangeName"));
@@ -118,13 +147,13 @@ public class LegacySamplesControllerIntegrationTest {
 	@Test
 	public void testSampleResourceHasLinksForSampleSelfAndRelationships() throws Exception {
 		Sample testSample = new TestSample("SAMN12").build();
-		when(sampleRepositoryMock.findByAccession(testSample.getAccession())).thenReturn(Optional.of(testSample));
+		when(sampleRepository.findByAccession(testSample.getAccession())).thenReturn(Optional.of(testSample));
 
 		mockMvc.perform(
 				get("/samples/{accession}", testSample.getAccession())
 						.accept(MediaTypes.HAL_JSON))
 				.andExpect(jsonPath("$._links").value(
-				        Matchers.allOf(
+				        allOf(
 				        		Matchers.hasKey("sample"),
 								Matchers.hasKey("self"),
 								Matchers.hasKey("relations")
@@ -135,7 +164,7 @@ public class LegacySamplesControllerIntegrationTest {
 	@Test
 	public void testSampleResourceLinkForSampleEqualsLinkForSelf() throws Exception {
 		Sample testSample = new TestSample("SAMEA555").build();
-		when(sampleRepositoryMock.findByAccession(testSample.getAccession())).thenReturn(Optional.of(testSample));
+		when(sampleRepository.findByAccession(testSample.getAccession())).thenReturn(Optional.of(testSample));
 
 		mockMvc.perform(
 				get("/samples/{accession}", testSample.getAccession())
@@ -153,7 +182,7 @@ public class LegacySamplesControllerIntegrationTest {
 		Sample testSample = new TestSample("SAMED666").withRelationship(
 				Relationship.build("SAMED666", "deriveFrom", "SAMED555")
 		).build();
-		when(sampleRepositoryMock.findByAccession(testSample.getAccession())).thenReturn(Optional.of(testSample));
+		when(sampleRepository.findByAccession(testSample.getAccession())).thenReturn(Optional.of(testSample));
 
 		MvcResult result = mockMvc.perform(get("/samples/{accession}", testSample.getAccession())
 				.accept(MediaTypes.HAL_JSON))
@@ -187,17 +216,153 @@ public class LegacySamplesControllerIntegrationTest {
 	}
 	
 	@Test
-	@Ignore
 	public void testRetrieveAllSamplesAsPagedResources() throws Exception {
-	    /*TODO */
+		Sample sampleA = new TestSample("A").build();
+		Sample sampleB = new TestSample("B")
+				.withAttribute(new TestAttribute("Organism", "Homo sapiens").build())
+				.build();
+		when(sampleRepository.findSamples(anyInt(), anyInt())).thenReturn(getTestPagedResourcesSample(10, sampleA, sampleB));
+
+		mockMvc.perform(get("/samples").accept(MediaTypes.HAL_JSON))
+				.andExpect(status().isOk())
+				.andExpect(content().contentType("application/hal+json;charset=UTF-8"))
+				.andExpect(jsonPath("$").isMap())
+				.andExpect(jsonPath("$..accession").value(
+						containsInAnyOrder("A","B")
+				))
+				.andExpect(jsonPath("$._embedded.samples[?(@.accession=='B')].characteristics.Organism.*.text").value("Homo sapiens"));
+
 	}
 
 	@Test
-	@Ignore
 	public void testAllSamplesLinksContainsSearch() throws Exception {
-	    /*TODO */
+
+		Sample sampleA = new TestSample("A").build();
+		Sample sampleB = new TestSample("B")
+				.withAttribute(new TestAttribute("Organism", "Homo sapiens").build())
+				.build();
+		when(sampleRepository.findSamples(anyInt(), anyInt())).thenReturn(getTestPagedResourcesSample(10, sampleA, sampleB));
+
+		String responseContent = mockMvc.perform(get("/samples").accept(MediaTypes.HAL_JSON))
+				.andExpect(jsonPath("$._links.search").exists())
+				.andReturn().getResponse().getContentAsString();
+
+		String searchEndpoint = JsonPath.parse(responseContent)
+							.read("$._links.search.href");
+
+		mockMvc.perform(get(searchEndpoint).accept(MediaTypes.HAL_JSON))
+				.andExpect(status().isOk())
+				.andExpect(content().contentType("application/hal+json;charset=UTF-8"))
+				.andExpect(jsonPath("$._embedded").doesNotExist())
+				.andExpect(jsonPath("$._links").isNotEmpty())
+				.andExpect(jsonPath("$._links").value(
+						allOf(
+								hasKey("findFirstByGroupsContains"),
+								hasKey("findByGroups"),
+								hasKey("findByAccession"),
+								hasKey("findSamplesByText"),
+								hasKey("findByTextAndGroups"),
+								hasKey("findByAccessionAndGroups"),
+								hasKey("self")
+						)
+				));
+
+
 	}
 
+	@Test
+	public void testFindFirstByGroupFunctionality() throws Exception {
+	    Sample sampleA = new TestSample("A").build();
+	    when(sampleRepository.findFirstSampleByGroup("groupA")).thenReturn(Optional.of(new Resource(sampleA)));
+		when(sampleRepository.findFirstSampleByGroup("groupB")).thenReturn(Optional.empty());
 
+		String searchLinkContent = mockMvc.perform(get("/samples/search").accept(MediaTypes.HAL_JSON))
+				.andExpect(jsonPath("$._links.findFirstByGroupsContains.href").value(endsWith("{?group}")))
+				.andReturn().getResponse().getContentAsString();
+
+		UriTemplate findFirstByGroupTemplateUrl = new UriTemplate(
+				JsonPath.parse(searchLinkContent).read("$._links.findFirstByGroupsContains.href"));
+
+
+		mockMvc.perform(get(findFirstByGroupTemplateUrl.expand("groupA")).accept(MediaTypes.HAL_JSON))
+				.andExpect(status().isOk())
+				.andExpect(content().contentType("application/hal+json;charset=UTF-8"))
+				.andExpect(jsonPath("$.accession").value("A"));
+
+		mockMvc.perform(get(findFirstByGroupTemplateUrl.expand("groupB")).accept(MediaTypes.HAL_JSON))
+				.andExpect(status().isNotFound());
+
+	}
+	
+	@Test
+	public void testFindByGroupFunctionality() throws Exception {
+		Sample sampleA = new TestSample("A").withRelationship(
+				Relationship.build("groupA", "has member", "A")).build();
+		Sample sampleB = new TestSample("B").withRelationship(
+				Relationship.build("groupA", "has member", "B")).build();
+		Sample groupA = new TestSample("groupA")
+				.withRelationship(Relationship.build("groupA", "has member", "A"))
+				.withRelationship(Relationship.build("groupA", "has member", "B"))
+				.build();
+
+		when(sampleRepository.findSamplesByGroup(eq("groupA"), anyInt(), anyInt()))
+				.thenReturn(getTestPagedResourcesSample(2, sampleA, sampleB));
+		when(relationsRepository.getGroupsRelationships(anyString())).thenReturn(
+				Collections.singletonList(new GroupsRelations(groupA)));
+
+		String searchLinkContent = mockMvc.perform(get("/samples/search").accept(MediaTypes.HAL_JSON))
+				.andExpect(jsonPath("$._links.findByGroups.href").value(endsWith("{?group,size,page,sort}")))
+				.andReturn().getResponse().getContentAsString();
+
+		UriTemplate findFirstByGroupTemplateUrl = new UriTemplate(
+				JsonPath.parse(searchLinkContent).read("$._links.findByGroups.href"));
+		Map<String,String> urlParameters = new HashMap<>();
+		urlParameters.put("group", "groupA");
+		urlParameters.put("page", "0");
+		urlParameters.put("size", "50");
+
+		String responseContent = mockMvc.perform(get(findFirstByGroupTemplateUrl.expand(urlParameters)).accept(MediaTypes.HAL_JSON))
+				.andExpect(status().isOk())
+				.andExpect(content().contentType("application/hal+json;charset=UTF-8"))
+				.andExpect(jsonPath("$._embedded.samples.*.accession").value(containsInAnyOrder("A", "B")))
+				.andReturn().getResponse().getContentAsString();
+
+
+		String groupRelationLink = JsonPath.parse(responseContent).read(
+				"$._embedded.samples[0]._links.relations.href"
+		)+ "/groups";
+		mockMvc.perform(get(groupRelationLink).accept(MediaTypes.HAL_JSON))
+				.andExpect(jsonPath("$._embedded.groupsrelations[0].accession").value(groupA.getAccession()));
+	}
+	
+	@Test
+	public void testFindByAccessionFunctionality() throws Exception {
+	    /*TODO testFindByAccessionFunctionality*/
+		Sample sampleA = new TestSample("A").build();
+		when(sampleRepository.findByAccession("A")).thenReturn(Optional.of(sampleA));
+
+		String searchLinkContent = mockMvc.perform(get("/samples/search").accept(MediaTypes.HAL_JSON))
+				.andExpect(jsonPath("$._links.findByAccession.href").value(
+						endsWith("{?accession,size,page,sort}")))
+				.andReturn().getResponse().getContentAsString();
+
+		UriTemplate findByAccessionUrlTemplate = new UriTemplate(
+				JsonPath.parse(searchLinkContent).read("$._links.findByAccession.href"));
+		Map<String,String> urlParameters = new HashMap<>();
+		urlParameters.put("accession", "A");
+		urlParameters.put("page", "0");
+		urlParameters.put("size", "50");
+
+		mockMvc.perform(get(findByAccessionUrlTemplate.expand(urlParameters)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$").value(
+						allOf(
+								hasKey("_embedded"),
+								hasKey("_links"),
+								hasKey("page")
+						)
+				))
+				.andExpect(jsonPath("$._embedded.samples").exists());
+	}
 	
 }
