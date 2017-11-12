@@ -9,16 +9,12 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.legacy.json.domain.LegacyGroup;
-import uk.ac.ebi.biosamples.legacy.json.domain.LegacySample;
 import uk.ac.ebi.biosamples.legacy.json.repository.SampleRepository;
 import uk.ac.ebi.biosamples.legacy.json.service.GroupResourceAssembler;
 import uk.ac.ebi.biosamples.legacy.json.service.PagedResourcesConverter;
 import uk.ac.ebi.biosamples.model.Sample;
 
 import java.util.Optional;
-
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping(value = "/groups", produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
@@ -53,15 +49,14 @@ public class GroupsController {
     }
 
     @GetMapping
-    public PagedResources<Resource<LegacySample>> allSamplesRelations(
+    public PagedResources<Resource<LegacyGroup>> allGroups(
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "50") int size) {
 
-        PagedResources<Resource<Sample>> samples = sampleRepository.findSamples(page, size);
-        PagedResources<Resource<LegacySample>> pagedResources = pagedResourcesConverter.toLegacySamplesPagedResource(samples);
-        pagedResources.add(linkTo(methodOn(SamplesSearchController.class).searchMethods()).withRel("search"));
+        PagedResources<Resource<Sample>> groups = sampleRepository.findGroups(page, size);
+        //        pagedResources.add(linkTo(methodOn(th.class).searchMethods()).withRel("search"));
 
-        return pagedResources;
+        return pagedResourcesConverter.toLegacyGroupsPagedResource(groups);
     }
 
 }

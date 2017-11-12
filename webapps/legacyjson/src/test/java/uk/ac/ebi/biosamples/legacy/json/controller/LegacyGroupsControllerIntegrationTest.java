@@ -7,6 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.Resource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.ac.ebi.biosamples.legacy.json.domain.TestSample;
@@ -15,15 +22,17 @@ import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.*;
+import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.when;
+import static org.springframework.hateoas.MediaTypes.HAL_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.springframework.hateoas.MediaTypes.HAL_JSON;
 
 
 @RunWith(SpringRunner.class)
@@ -36,6 +45,19 @@ public class LegacyGroupsControllerIntegrationTest {
 
 	@Autowired
     private MockMvc mockMvc;
+
+	@Autowired
+	PagedResourcesAssembler<Sample> pagedResourcesAssembler;
+
+	private PagedResources<Resource<Sample>> getTestPagedResourcesGroups(int totalSamples, Sample... samples) {
+		List<Sample> allSamples = Stream.of(samples)
+				.collect(Collectors.toList());
+
+		Pageable pageInfo = new PageRequest(0,samples.length);
+		Page<Sample> samplePage = new PageImpl<>(allSamples, pageInfo, totalSamples);
+		return pagedResourcesAssembler.toResource(samplePage);
+
+	}
 
 	@Test
 	public void testRetrieveOfGroupByAccession() throws Exception {
@@ -91,9 +113,27 @@ public class LegacyGroupsControllerIntegrationTest {
 	}
 
 	@Test
-	@Ignore
 	public void testGroupsIndexReturnPagedResources() throws Exception {
-	    /*TODO */
+	    Sample group1 = new TestSample("SAMEG1").build();
+	    Sample group2 = new TestSample("SAMEG2").build();
+	    when(sampleRepository.findGroups(anyInt(), anyInt())).thenReturn(
+	    		getTestPagedResourcesGroups(10, group1, group2));
+
+	    mockMvc.perform(get("/groups").accept(HAL_JSON))
+				.andExpect(status().isOk())
+				.andExpect(content().contentType("application/hal+json;charset=UTF-8"))
+				.andExpect(jsonPath("$").value(
+						allOf(
+								hasKey("_embedded"),
+								hasKey("_links"),
+								hasKey("page")
+						)
+				))
+				.andExpect(jsonPath("$._embedded.groups.*.accession").value(
+						containsInAnyOrder("SAMEG1", "SAMEG2")
+				));
+
+
 	}
 
 	@Test

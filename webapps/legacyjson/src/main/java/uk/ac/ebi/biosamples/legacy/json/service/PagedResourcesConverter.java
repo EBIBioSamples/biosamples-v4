@@ -7,6 +7,7 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Service;
+import uk.ac.ebi.biosamples.legacy.json.domain.LegacyGroup;
 import uk.ac.ebi.biosamples.legacy.json.domain.LegacySample;
 import uk.ac.ebi.biosamples.model.Sample;
 
@@ -18,11 +19,18 @@ import java.util.stream.Collectors;
 public class PagedResourcesConverter {
 
     private final PagedResourcesAssembler<LegacySample> legacySamplePagedResourcesAssembler;
+    private final PagedResourcesAssembler<LegacyGroup> legacyGroupPagedResourcesAssembler;
     private final SampleResourceAssembler legacySampleResourceAssembler;
+    private final GroupResourceAssembler legacyGroupResourceAssembler;
 
-    public PagedResourcesConverter(PagedResourcesAssembler<LegacySample> legacySamplePagedResourcesAssembler, SampleResourceAssembler legacySampleResourceAssembler) {
+    public PagedResourcesConverter(PagedResourcesAssembler<LegacySample> legacySamplePagedResourcesAssembler,
+                                   PagedResourcesAssembler<LegacyGroup> legacyGroupPagedResourcesAssembler,
+                                   SampleResourceAssembler legacySampleResourceAssembler,
+                                   GroupResourceAssembler legacyGroupResourceAssembler) {
         this.legacySamplePagedResourcesAssembler = legacySamplePagedResourcesAssembler;
+        this.legacyGroupPagedResourcesAssembler = legacyGroupPagedResourcesAssembler;
         this.legacySampleResourceAssembler = legacySampleResourceAssembler;
+        this.legacyGroupResourceAssembler = legacyGroupResourceAssembler;
     }
 
     public PagedResources<Resource<LegacySample>> toLegacySamplesPagedResource(PagedResources<Resource<Sample>>
@@ -39,10 +47,28 @@ public class PagedResourcesConverter {
 
     }
 
+    public PagedResources<Resource<LegacyGroup>> toLegacyGroupsPagedResource(PagedResources<Resource<Sample>>
+                                                                              samplePagedResources) {
+
+        if (samplePagedResources == null || samplePagedResources.getContent().isEmpty()) {
+            return getGroupsEmptyPagedResource();
+        }
+        List<LegacyGroup> legacyRelationsResources = samplePagedResources.getContent().stream()
+                .map(Resource::getContent)
+                .map(LegacyGroup::new)
+                .collect(Collectors.toList());
+        Page<LegacyGroup> pageRequest = buildPageRequest(legacyRelationsResources, samplePagedResources.getMetadata());
+        return legacyGroupPagedResourcesAssembler.toResource(pageRequest, legacyGroupResourceAssembler);
+
+    }
+
     private PagedResources getSamplesEmptyPagedResource() {
         return legacySamplePagedResourcesAssembler.toEmptyResource(new PageImpl<>(new ArrayList<>(), new PageRequest(0, 50), 0), LegacySample.class, null);
     }
 
+    private PagedResources getGroupsEmptyPagedResource() {
+        return legacySamplePagedResourcesAssembler.toEmptyResource(new PageImpl<>(new ArrayList<>(), new PageRequest(0, 50), 0), LegacyGroup.class, null);
+    }
     private <T> Page<T> buildPageRequest(List<T> samples, PagedResources.PageMetadata pageMetadata) {
         int page = (int) pageMetadata.getNumber();
         int size = (int) pageMetadata.getSize();

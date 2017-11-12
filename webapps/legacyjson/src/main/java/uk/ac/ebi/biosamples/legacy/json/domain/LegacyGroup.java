@@ -41,9 +41,9 @@ public class LegacyGroup {
     private String description;
 
 
-    public LegacyGroup(Sample sample) throws InstantiationException {
+    public LegacyGroup(Sample sample) {
         if (!sample.getAccession().matches("SAMEG\\d+")) {
-            throw new InstantiationException("The provided sample " + sample + " is not a group");
+            throw new RuntimeException("The provided sample " + sample + " is not a group");
         }
         this.sample = sample;
         this.objectMapper = new ObjectMapper();

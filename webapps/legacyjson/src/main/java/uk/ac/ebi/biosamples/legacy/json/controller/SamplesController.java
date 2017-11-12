@@ -52,7 +52,7 @@ public class SamplesController {
     }
 
     @GetMapping
-    public PagedResources<Resource<LegacySample>> allSamplesRelations(
+    public PagedResources<Resource<LegacySample>> allSamples(
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "50") int size) {
 
