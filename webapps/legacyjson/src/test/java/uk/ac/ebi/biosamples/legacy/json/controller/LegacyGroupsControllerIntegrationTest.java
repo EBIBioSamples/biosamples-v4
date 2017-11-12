@@ -12,11 +12,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import uk.ac.ebi.biosamples.legacy.json.domain.TestSample;
 import uk.ac.ebi.biosamples.legacy.json.repository.SampleRepository;
 import uk.ac.ebi.biosamples.model.ExternalReference;
+import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 
 import java.util.Optional;
 
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasKey;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -63,9 +65,14 @@ public class LegacyGroupsControllerIntegrationTest {
 	}
 
 	@Test
-	@Ignore
 	public void testGroupContainsListOfAssociatedSamples() throws Exception {
-	    /*TODO */
+		Sample group = new TestSample("SAMEG1")
+				.withRelationship(Relationship.build("SAMEG1", "has member", "SAMEA1"))
+				.withRelationship(Relationship.build("SAMEG1", "has member", "SAMEA2"))
+				.build();
+		when(sampleRepository.findByAccession(group.getAccession())).thenReturn(Optional.of(group));
+		mockMvc.perform(get("/groups/{accession}",group.getAccession()).accept(HAL_JSON))
+				.andExpect(jsonPath("$.samples").value( containsInAnyOrder("SAMEA1","SAMEA2") ));
 	}
 
 	@Test

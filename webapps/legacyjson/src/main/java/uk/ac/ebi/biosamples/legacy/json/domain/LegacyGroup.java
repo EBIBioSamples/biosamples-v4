@@ -13,6 +13,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
+import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 
 import java.io.IOException;
@@ -120,6 +121,14 @@ public class LegacyGroup {
                 .collect(Collectors.joining(","));
         return String.format("[%s]",serializedObject);
 
+    }
+
+    @JsonGetter
+    public List<String> samples() {
+        return this.sample.getRelationships().stream()
+                .filter(rel -> rel.getType().equals("has member"))
+                .map(Relationship::getTarget)
+                .collect(Collectors.toList());
     }
 
     private boolean isDescription(Attribute attribute) {
