@@ -1,8 +1,6 @@
 package uk.ac.ebi.biosamples.legacy.json.controller;
 
 import org.springframework.hateoas.*;
-import org.springframework.hateoas.core.EmbeddedWrapper;
-import org.springframework.hateoas.core.EmbeddedWrappers;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,9 +12,10 @@ import uk.ac.ebi.biosamples.legacy.json.repository.SampleRepository;
 import uk.ac.ebi.biosamples.legacy.json.service.ExternalLinksResourceAssembler;
 import uk.ac.ebi.biosamples.legacy.json.service.PagedResourcesConverter;
 
-import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
+
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping(value = "/externallinksrelations", produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
@@ -48,39 +47,18 @@ public class ExternalLinksRelationsController {
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "50") int size) {
 
-
-//        PagedResources<Resource<Sample>> samples = sampleRepository.findSamples(page, size);
-//        List<SamplesRelations> legacyRelationsResources = samples.getContent().stream()
-//                .map(Resource::getContent)
-//                .map(SamplesRelations::new)
-//                .collect(Collectors.toList());
-//        Pageable pageRequest = new PageRequest(page, size);
-//        Page<SamplesRelations> pageResources = new PageImpl<>(legacyRelationsResources, pageRequest, samples.getMetadata().getTotalElements());
-//        PagedResources<Resource<ExternalLinksRelation>> pagedResources = pagedResourcesAssembler.toResource(pageResources,
-//                this.externalLinksResourceAssembler,
-//                entityLinks.linkToCollectionResource(ExternalLinksRelation.class));
-//        pagedResources.add(linkTo(methodOn(ExternalLinksRelationsController.class).searchMethods()).withRel("search"));
-
-        return pagedResourcesConverter.toExternalLinksRelationPagedResource(null);
+        PagedResources pagedResources = pagedResourcesConverter.toExternalLinksRelationPagedResource(null);
+        pagedResources.add(linkTo(methodOn(ExternalLinksRelationsController.class).searchMethods()).withRel("search"));
+        return pagedResources;
 
     }
 
-    /**
-     * Wrap the collection and return an empty _embedded if provided collection is empty
-     * @param resourceCollection The collection to wrap
-     * @param collectionClass the class to use to create the empty collection wrapper
-     * @return A resource collection
-     */
-    private Collection wrappedCollection(List<Resource> resourceCollection, Class collectionClass) {
-        EmbeddedWrappers wrappers = new EmbeddedWrappers(false);
-        EmbeddedWrapper wrapper;
-        if (resourceCollection.isEmpty())
-            wrapper = wrappers.emptyCollectionOf(collectionClass);
-        else
-            wrapper = wrappers.wrap(resourceCollection);
-        return Collections.singletonList(wrapper);
-    }
+    public Resources searchMethods() {
+        Resources resources = Resources.wrap(Collections.emptyList());
+        resources.add(linkTo(methodOn(this.getClass()).searchMethods()).withSelfRel());
 
+        return resources;
+    }
 
 
 

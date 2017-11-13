@@ -15,9 +15,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasKey;
 import static org.springframework.hateoas.MediaTypes.HAL_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
 @RunWith(SpringRunner.class)
@@ -50,14 +48,14 @@ public class LegacyExternalLinksControllerIntegrationTest {
 	@Test
 	@Ignore
 	public void textExternalLinksContainsExpectedLinks() throws Exception {
-	    /*TODO */
+	/* TODO */
 	}
 
-
 	@Test
-	@Ignore
 	public void testExternalLinksIndexContainsSearchLink() throws Exception {
-	    /*TODO */
+	    mockMvc.perform(get("/externallinksrelations").accept(HAL_JSON))
+				.andExpect(jsonPath("$._links").value(hasKey("search")));
+
 	}
 
 	@Test

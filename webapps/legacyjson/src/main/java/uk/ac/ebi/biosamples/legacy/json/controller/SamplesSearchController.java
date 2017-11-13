@@ -82,7 +82,6 @@ public class SamplesSearchController {
             @RequestParam(value="page", required=false, defaultValue = "0") Integer page,
             @RequestParam(value="sort", required=false, defaultValue = "asc") String sort
     ) {
-        // FIXME This method is always returning empty content in v3
         PagedResources<Resource<Sample>> samplesPagedResourcesByAccession = sampleRepository.findSamplesByText(accession, page, size);
         return pagedResourcesConverter.toLegacySamplesPagedResource(samplesPagedResourcesByAccession);
     }
