@@ -143,15 +143,17 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 		
 		log.info("Testing SampleTab JSON accession in multiple samples");
 		runCallableOnSampleTabResource("/GSB-44_ownership.json", sampleTabString -> {
+			log.info(sampleTabString);
 			log.info("POSTing to " + uriSb);
 			RequestEntity<String> request = RequestEntity.post(uriSb).contentType(MediaType.APPLICATION_JSON)
 					.body(sampleTabString);
 			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+			log.info(response.getBody());
 			//response is a JSON object of stuff
 			//just try to match the error message for now - messy but quick
 			if (!response.getBody().contains("was previouly described in")) {
 				//TODO do this properly once it is all fixed up
-				//throw new RuntimeException("Unable to recognize duplicate sample");
+				throw new RuntimeException("Unable to recognize duplicate sample");
 			}
 			log.info(""+response.getBody());
 		});	

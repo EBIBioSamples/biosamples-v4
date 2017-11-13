@@ -17,6 +17,11 @@ import org.springframework.web.servlet.handler.MappedInterceptor;
 import org.thymeleaf.templateresolver.ITemplateResolver;
 import org.thymeleaf.templateresolver.UrlTemplateResolver;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.mongo.MongoProperties;
+import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
+import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
+import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
+import uk.ac.ebi.biosamples.mongo.service.MongoAccessionService;
 import uk.ac.ebi.biosamples.service.CacheControlInterceptor;
 import uk.ac.ebi.biosamples.service.SampleToXmlConverter;
 import uk.ac.ebi.biosamples.service.XmlSampleHttpMessageConverter;
@@ -77,4 +82,11 @@ public class Application extends SpringBootServletInitializer {
     	return new UrlTemplateResolver();
     }
 
+    @Bean
+    public MongoAccessionService mongoSampleAccessionService(MongoSampleRepository mongoSampleRepository, SampleToMongoSampleConverter sampleToMongoSampleConverter,
+			MongoSampleToSampleConverter mongoSampleToSampleConverter, MongoProperties mongoProperties) {
+    	return new MongoAccessionService(mongoSampleRepository, sampleToMongoSampleConverter,
+    			mongoSampleToSampleConverter, mongoProperties.getAccessionPrefix(), 
+    			mongoProperties.getAccessionMinimum(), mongoProperties.getAcessionQueueSize());
+    }
 }

@@ -20,32 +20,28 @@ import uk.ac.ebi.biosamples.mongo.MongoProperties;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 
-@Service
+
 public class MongoAccessionService {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 
-	@Autowired
-	private MongoSampleRepository mongoSampleRepository;
-	
-	@Autowired
-	private SampleToMongoSampleConverter sampleToMongoSampleConverter;
-	@Autowired
-	private MongoSampleToSampleConverter mongoSampleToSampleConverter;
-
-	private BlockingQueue<String> accessionCandidateQueue;;
+	private final MongoSampleRepository mongoSampleRepository;
+	private final SampleToMongoSampleConverter sampleToMongoSampleConverter;
+	private final MongoSampleToSampleConverter mongoSampleToSampleConverter;
+	private final String prefix;
+	private final BlockingQueue<String> accessionCandidateQueue;;
 	private long accessionCandidateCounter;
 	
-	@Autowired
-	private MongoProperties mongoProperties;
-
-	@PostConstruct
-	public void doSetup() {
-		accessionCandidateQueue = new LinkedBlockingQueue<>(mongoProperties.getAcessionQueueSize());
-		accessionCandidateCounter = mongoProperties.getAccessionMinimum();
+	
+	public MongoAccessionService(MongoSampleRepository mongoSampleRepository, SampleToMongoSampleConverter sampleToMongoSampleConverter,
+			MongoSampleToSampleConverter mongoSampleToSampleConverter, String prefix, long minimumAccession, int queueSize) {
+		this.mongoSampleRepository = mongoSampleRepository;
+		this.sampleToMongoSampleConverter = sampleToMongoSampleConverter;
+		this.mongoSampleToSampleConverter = mongoSampleToSampleConverter;
+		this.prefix = prefix;	
+		this.accessionCandidateCounter = minimumAccession;
+		this.accessionCandidateQueue = new LinkedBlockingQueue<>(queueSize);
 	}
-
-
 
 	public Sample generateAccession(Sample sample) {
 		MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);
@@ -101,7 +97,7 @@ public class MongoAccessionService {
 		
 		while (accessionCandidateQueue.remainingCapacity() > 0) {
 			log.debug("Adding more accessions to queue");
-			String accessionCandidate = mongoProperties.getAccessionPrefix() + accessionCandidateCounter;
+			String accessionCandidate = prefix + accessionCandidateCounter;
 			// if the accession already exists, skip it
 			if (mongoSampleRepository.exists(accessionCandidate)) {
 				accessionCandidateCounter += 1;

@@ -40,6 +40,7 @@ import uk.ac.ebi.arrayexpress2.sampletab.parser.SampleTabParser;
 import uk.ac.ebi.arrayexpress2.sampletab.renderer.SampleTabWriter;
 import uk.ac.ebi.biosamples.service.ApiKeyService;
 import uk.ac.ebi.biosamples.service.SampleTabService;
+import uk.ac.ebi.biosamples.service.SampleTabService.AssertingSampleTabOwnershipException;
 import uk.ac.ebi.biosamples.service.SampleTabService.ConflictingSampleTabOwnershipException;
 import uk.ac.ebi.biosamples.service.SampleTabService.DuplicateDomainSampleException;
 
@@ -113,13 +114,16 @@ public class SampleTabV1Controller {
         }  else {
         	//no errors, proceed
             //some corrections for hipsci
-            if (outcome.sampledata.msi.submissionIdentifier.equals("GCG-HipSci")) {
+            if (outcome.sampledata.msi.submissionIdentifier != null
+            		&& outcome.sampledata.msi.submissionIdentifier.equals("GCG-HipSci")) {
                 outcome.sampledata.msi.submissionIdentifier = "GSB-3";
             }
-            // do AAP domain property
+            //TODO do AAP domain property
+            boolean isSuperuser = apiKeyService.getUsernameForApiKey(apiKey).get().equals(ApiKeyService.BIOSAMPLES);
             try {
-				sampleTabService.saveSampleTab(outcome.sampledata, "self."+domain.get(), null, true);
-			} catch (DuplicateDomainSampleException | ConflictingSampleTabOwnershipException e) {
+				sampleTabService.saveSampleTab(outcome.sampledata, "self."+domain.get(), isSuperuser, true);
+			} catch (DuplicateDomainSampleException | ConflictingSampleTabOwnershipException | AssertingSampleTabOwnershipException e) {
+				log.error("Caught exception "+e.getMessage(), e);
 				return getErrorOutcome("Unable to accession", e.getMessage()+" Contact biosamples@ebi.ac.uk for more information.");
 			}
             return outcome;

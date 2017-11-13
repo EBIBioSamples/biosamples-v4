@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 public class ApiKeyService {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
+	
+	public final static String BIOSAMPLES="BioSamples";
 
 	@Autowired
 	@Qualifier("accessionJdbcTemplate")
