@@ -53,7 +53,7 @@ import uk.ac.ebi.biosamples.service.FilterBuilder;
 import uk.ac.ebi.biosamples.service.SampleTabService.DuplicateDomainSampleException;
 
 @RestController
-@RequestMapping("/v2")
+@RequestMapping("/api/v2")
 public class XmlV2Controller {
 
 	private final ApiKeyService apiKeyService;
