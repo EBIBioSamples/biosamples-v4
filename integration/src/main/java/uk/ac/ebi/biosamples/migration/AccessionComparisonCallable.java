@@ -62,7 +62,7 @@ import com.google.common.collect.Sets;
 
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.service.XmlToSampleConverter;
+import uk.ac.ebi.biosamples.service.XmlSampleToSampleConverter;
 
 class AccessionComparisonCallable implements Callable<Void> {
 	private final RestTemplate restTemplate;
@@ -70,13 +70,13 @@ class AccessionComparisonCallable implements Callable<Void> {
 	private final String newUrl;
 	private final Queue<String> bothQueue;
 	private final AtomicBoolean bothFlag;
-	private final XmlToSampleConverter xmlToSampleConverter;
+	private final XmlSampleToSampleConverter xmlToSampleConverter;
 	private final boolean compare;
 
 	private final Logger log = LoggerFactory.getLogger(getClass());
 
 	public AccessionComparisonCallable(RestTemplate restTemplate, String oldUrl, String newUrl, Queue<String> bothQueue,
-			AtomicBoolean bothFlag, XmlToSampleConverter xmlToSampleConverter, boolean compare) {
+			AtomicBoolean bothFlag, XmlSampleToSampleConverter xmlToSampleConverter, boolean compare) {
 		this.restTemplate = restTemplate;
 		this.oldUrl = oldUrl;
 		this.newUrl = newUrl;

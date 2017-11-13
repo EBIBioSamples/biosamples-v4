@@ -21,8 +21,9 @@ import uk.ac.ebi.biosamples.mongo.service.MongoAccessionService;
 import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
 import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
 import uk.ac.ebi.biosamples.service.SampleToXmlConverter;
-import uk.ac.ebi.biosamples.service.XmlSampleHttpMessageConverter;
-import uk.ac.ebi.biosamples.service.XmlToSampleConverter;
+import uk.ac.ebi.biosamples.service.XmlGroupToSampleConverter;
+import uk.ac.ebi.biosamples.service.XmlAsSampleHttpMessageConverter;
+import uk.ac.ebi.biosamples.service.XmlSampleToSampleConverter;
 
 @SpringBootApplication
 public class Application extends SpringBootServletInitializer {
@@ -32,8 +33,9 @@ public class Application extends SpringBootServletInitializer {
 	}
 	
 	@Bean
-	public HttpMessageConverter<Sample> getXmlSampleHttpMessageConverter(SampleToXmlConverter sampleToXmlConverter, XmlToSampleConverter xmlToSampleConverter) {
-		return new XmlSampleHttpMessageConverter(sampleToXmlConverter, xmlToSampleConverter);
+	public HttpMessageConverter<Sample> getXmlSampleHttpMessageConverter(XmlSampleToSampleConverter xmlSampleToSampleConverter,
+			XmlGroupToSampleConverter xmlGroupToSampleConverter) {
+		return new XmlAsSampleHttpMessageConverter(xmlSampleToSampleConverter, xmlGroupToSampleConverter);
 	}
 
 	@Bean("accessionDataSource")

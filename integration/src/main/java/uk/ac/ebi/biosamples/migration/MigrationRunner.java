@@ -23,7 +23,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import com.google.common.collect.Sets;
 
-import uk.ac.ebi.biosamples.service.XmlToSampleConverter;
+import uk.ac.ebi.biosamples.service.XmlSampleToSampleConverter;
 
 @Component
 @Profile({"migration"})
@@ -40,9 +40,9 @@ public class MigrationRunner implements ApplicationRunner, ExitCodeGenerator {
 	@Value("${biosamples.migration.new:http://www.ebi.ac.uk/biosamples/xml/samples}")
 	private String newUrl;
 	
-	private final XmlToSampleConverter xmlToSampleConverter;
+	private final XmlSampleToSampleConverter xmlToSampleConverter;
 	
-	public MigrationRunner(RestTemplateBuilder restTemplateBuilder, XmlToSampleConverter xmlToSampleConverter) {
+	public MigrationRunner(RestTemplateBuilder restTemplateBuilder, XmlSampleToSampleConverter xmlToSampleConverter) {
 		restTemplate = restTemplateBuilder.build();
 		this.xmlToSampleConverter = xmlToSampleConverter;
 	}

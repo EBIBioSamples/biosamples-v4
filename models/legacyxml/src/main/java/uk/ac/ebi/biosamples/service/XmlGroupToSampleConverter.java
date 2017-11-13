@@ -8,6 +8,8 @@ import java.util.TreeSet;
 
 import org.dom4j.Document;
 import org.dom4j.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
 
@@ -18,13 +20,15 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
 @Service
-public class XmlToSampleConverter implements Converter<Document, Sample>  {
+public class XmlGroupToSampleConverter implements Converter<Document, Sample>  {
 
+	private Logger log = LoggerFactory.getLogger(getClass());
+	
 	@Override
 	public Sample convert(Document doc) {
-				
-		Instant release = Instant.from(DateTimeFormatter.ISO_DATE_TIME.parse(XmlPathBuilder.of(doc).attribute("submissionReleaseDate")));
-		Instant update = Instant.from(DateTimeFormatter.ISO_DATE_TIME.parse(XmlPathBuilder.of(doc).attribute("submissionUpdateDate")));
+		
+		Instant release = null;
+		Instant update = null;
 		String accession = null;
 		if (XmlPathBuilder.of(doc).attributeExists("id")) {
 			accession = XmlPathBuilder.of(doc).attribute("id");
@@ -35,11 +39,15 @@ public class XmlToSampleConverter implements Converter<Document, Sample>  {
 		SortedSet<ExternalReference> externalReferences = new TreeSet<>();
 		
 		for (Element property : XmlPathBuilder.of(doc).elements("Property")){
-			if ("Sample Name".equals(XmlPathBuilder.of(property).attribute("class"))) {
+			if ("Group Name".equals(XmlPathBuilder.of(property).attribute("class"))) {
 				name = XmlPathBuilder.of(property).path("QualifiedValue", "Value").text();
-			} else if ("Sample Description".equals(XmlPathBuilder.of(property).attribute("class"))) {
+			} else if ("Group Description".equals(XmlPathBuilder.of(property).attribute("class"))) {
 				String value = XmlPathBuilder.of(property).path("QualifiedValue", "Value").text();
 				attributes.add(Attribute.build("description", value, null, null));	
+			} else if ("Submission Release Date".equals(XmlPathBuilder.of(property).attribute("class"))) {
+				release = Instant.from(DateTimeFormatter.ISO_DATE_TIME.parse(XmlPathBuilder.of(property).path("QualifiedValue", "Value").text()));
+			} else if ("Submission Update Date".equals(XmlPathBuilder.of(property).attribute("class"))) {
+				update = Instant.from(DateTimeFormatter.ISO_DATE_TIME.parse(XmlPathBuilder.of(property).path("QualifiedValue", "Value").text()));
 			} else {
 				String type = XmlPathBuilder.of(property).attribute("class");
 				String value = XmlPathBuilder.of(property).path("QualifiedValue", "Value").text();
@@ -59,6 +67,8 @@ public class XmlToSampleConverter implements Converter<Document, Sample>  {
 				attributes.add(Attribute.build(type, value, iri, unit));				
 			}
 			//TODO relationships
+			//TODO contacts
+			//TODO organisations
 		}
 
 		for (Element database : XmlPathBuilder.of(doc).elements("Database")){
@@ -67,6 +77,13 @@ public class XmlToSampleConverter implements Converter<Document, Sample>  {
 			}
 		}
 		
+		log.info("name = "+name);
+		log.info("accession = "+accession);
+		log.info("release = "+release);
+		log.info("update = "+update);
+		log.info("attributes = "+attributes);
+		log.info("relationships = "+relationships);
+		log.info("relationships = "+relationships);
 		
 		return Sample.build(name, accession, null, release, update, attributes, relationships, externalReferences);
 	}
