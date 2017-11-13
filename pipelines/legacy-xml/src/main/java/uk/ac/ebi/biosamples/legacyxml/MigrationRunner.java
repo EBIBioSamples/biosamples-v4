@@ -24,7 +24,7 @@ import org.springframework.web.client.RestTemplate;
 import com.google.common.collect.Sets;
 
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.service.XmlToSampleConverter;
+import uk.ac.ebi.biosamples.service.XmlSampleToSampleConverter;
 
 @Component
 public class MigrationRunner implements ApplicationRunner, ExitCodeGenerator {
@@ -37,10 +37,10 @@ public class MigrationRunner implements ApplicationRunner, ExitCodeGenerator {
 	@Value("${biosamples.pipelines.legacyxml.url:http://www.ebi.ac.uk/biosamples/xml/samples}")
 	private String oldUrl;
 	
-	private final XmlToSampleConverter xmlToSampleConverter;
+	private final XmlSampleToSampleConverter xmlToSampleConverter;
 	private final BioSamplesClient client;
 	
-	public MigrationRunner(RestTemplateBuilder restTemplateBuilder, XmlToSampleConverter xmlToSampleConverter, BioSamplesClient client) {
+	public MigrationRunner(RestTemplateBuilder restTemplateBuilder, XmlSampleToSampleConverter xmlToSampleConverter, BioSamplesClient client) {
 		this.restTemplate = restTemplateBuilder.build();
 		this.xmlToSampleConverter = xmlToSampleConverter;
 		this.client = client;

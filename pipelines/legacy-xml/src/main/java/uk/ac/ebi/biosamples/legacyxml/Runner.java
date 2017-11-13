@@ -24,7 +24,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.service.XmlToSampleConverter;
+import uk.ac.ebi.biosamples.service.XmlSampleToSampleConverter;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
 //@Component
@@ -38,12 +38,12 @@ public class Runner implements ApplicationRunner {
 	
 	private final Logger log = LoggerFactory.getLogger(getClass());
 
-	private final XmlToSampleConverter xmlToSampleConverter;
+	private final XmlSampleToSampleConverter xmlToSampleConverter;
 
 	private final BioSamplesClient client;
 	
 	
-	public Runner(RestTemplateBuilder restTemplateBuilder, XmlToSampleConverter xmlToSampleConverter, BioSamplesClient client) {
+	public Runner(RestTemplateBuilder restTemplateBuilder, XmlSampleToSampleConverter xmlToSampleConverter, BioSamplesClient client) {
 		this.restTemplate = restTemplateBuilder.build();
 		this.xmlToSampleConverter = xmlToSampleConverter;
 		this.client = client;
