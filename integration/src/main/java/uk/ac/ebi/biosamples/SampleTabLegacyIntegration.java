@@ -43,13 +43,13 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 		this.integrationProperties = integrationProperties;
 
 		uriVa = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUriSampleTab())
-				.pathSegment("v1", "json", "va").build().toUri();
+				.pathSegment("api", "v1", "json", "va").build().toUri();
 		uriAc = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUriSampleTab())
-				.pathSegment("v1", "json", "ac")
+				.pathSegment("api", "v1", "json", "ac")
 				.queryParam("apikey", integrationProperties.getLegacyApiKey())
 				.build().toUri();
 		uriSb = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUriSampleTab())
-				.pathSegment("v1", "json", "sb")
+				.pathSegment("api", "v1", "json", "sb")
 				.queryParam("apikey", integrationProperties.getLegacyApiKey())
 				.build().toUri();
 	}

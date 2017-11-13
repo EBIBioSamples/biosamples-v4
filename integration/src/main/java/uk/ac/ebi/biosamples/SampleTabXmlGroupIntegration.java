@@ -36,7 +36,7 @@ public class SampleTabXmlGroupIntegration extends AbstractIntegration {
 		this.integrationProperties = integrationProperties;
 
 		uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUriSampleTab())
-			.pathSegment("v2","source","biosamples","group")
+			.pathSegment("api", "v2","source","biosamples","group")
 			.queryParam("apikey", integrationProperties.getLegacyApiKey())
 			.build().toUri();
 	}

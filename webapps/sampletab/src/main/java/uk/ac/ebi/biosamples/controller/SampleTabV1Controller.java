@@ -3,7 +3,9 @@ package uk.ac.ebi.biosamples.controller;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.time.Instant;
@@ -44,7 +46,7 @@ import uk.ac.ebi.biosamples.service.SampleTabService.AssertingSampleTabOwnership
 import uk.ac.ebi.biosamples.service.SampleTabService.ConflictingSampleTabOwnershipException;
 import uk.ac.ebi.biosamples.service.SampleTabService.DuplicateDomainSampleException;
 
-@RestController
+@RestController()
 public class SampleTabV1Controller {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
@@ -54,12 +56,12 @@ public class SampleTabV1Controller {
 	@Autowired
 	private ApiKeyService apiKeyService;
 
-    @PostMapping(value = "/v1/json/va")
+    @PostMapping(value = "/api/v1/json/va")
     public @ResponseBody Outcome doValidation(@RequestBody SampleTabRequest request) {
     	return parse(request);        
     }
     
-    @PostMapping(value = "/v1/json/ac")
+    @PostMapping(value = "/api/v1/json/ac")
     public @ResponseBody Outcome doAccession(@RequestBody SampleTabRequest request, @RequestParam(value="apikey") String apiKey) {
     	//handle APIkey
     	if (apiKey == null) {
@@ -93,7 +95,7 @@ public class SampleTabV1Controller {
         }        
     }
     
-    @PostMapping(value = "/v1/json/sb")
+    @PostMapping(value = "/api/v1/json/sb")
     public @ResponseBody Outcome doSubmission(@RequestBody SampleTabRequest request,  @RequestParam(value="apikey") String apiKey) {
     	//handle APIkey
     	if (apiKey == null) {
@@ -128,6 +130,39 @@ public class SampleTabV1Controller {
 			}
             return outcome;
         }        
+    }
+    
+    /*
+     * Echoing function. Used for triggering download of javascript
+     * processed sampletab files. No way to download a javascript string
+     * directly from memory, so it is bounced back off the server through
+     * this method.
+     */
+    @RequestMapping(value = "/api/echo", method = RequestMethod.POST)
+    public void echo(String input, HttpServletResponse response) throws IOException {
+        //set it to be marked as a download file
+        response.setContentType("application/force-download; charset=UTF-8");
+        //set the filename to download it as
+        response.addHeader("Content-Disposition","attachment; filename=\"sampletab.txt\"");
+        response.setHeader("Content-Transfer-Encoding", "binary");
+
+        //writer to the output stream
+        //let springs default error handling take over and redirect on error.
+        Writer out = null; 
+        try {
+            out = new OutputStreamWriter(response.getOutputStream(), "UTF-8");
+            out.write(input);
+        } finally {
+            if (out != null){
+                try {
+                    out.close();
+                    response.flushBuffer();
+                } catch (IOException e) {
+                    //do nothing
+                }
+            }
+        }
+        
     }
     
     private Outcome parse(SampleTabRequest request) {
