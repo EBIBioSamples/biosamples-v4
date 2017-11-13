@@ -112,6 +112,7 @@ public class LegacyGroup {
     }
 
 //    @JsonIgnore
+    @JsonGetter
     public MultiValueMap<String, LegacyAttribute> characteristics() {
         return this.characteristics;
     }
@@ -128,6 +129,8 @@ public class LegacyGroup {
                 .map(Relationship::getTarget)
                 .collect(Collectors.toList());
     }
+
+
 
     private boolean isDescription(Attribute attribute) {
         return attribute.getType().equalsIgnoreCase("description");
