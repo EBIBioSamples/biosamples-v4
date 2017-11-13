@@ -33,6 +33,7 @@ public class LegacySample {
     private final Sample sample;
 
     private MultiValueMap<String, LegacyAttribute> characteristics;
+    private List<LegacyExternalReference> externalReferences;
     private String description;
 
 
@@ -45,6 +46,14 @@ public class LegacySample {
 
         this.description = extractSampleDescription(sample).orElse("");
         this.characteristics = extractCharacteristics(sample);
+        this.externalReferences = extractExternalReferences(sample);
+    }
+
+    private List<LegacyExternalReference> extractExternalReferences(Sample sample) {
+
+        return this.sample.getExternalReferences().stream()
+                .map(LegacyExternalReference::new)
+                .collect(Collectors.toList());
     }
 
     private Optional<String> extractSampleDescription(Sample sample) {
@@ -103,6 +112,10 @@ public class LegacySample {
         return this.characteristics;
     }
 
+    @JsonGetter
+    public List<LegacyExternalReference> externalReferences() {
+        return externalReferences;
+    }
 
     private boolean isDescription(uk.ac.ebi.biosamples.model.Attribute attribute) {
         return attribute.getType().equalsIgnoreCase("description");

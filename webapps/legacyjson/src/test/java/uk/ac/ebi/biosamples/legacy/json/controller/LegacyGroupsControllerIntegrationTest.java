@@ -74,14 +74,17 @@ public class LegacyGroupsControllerIntegrationTest {
 	public void testExternalLinksIsRootField() throws Exception {
 	    Sample group = new TestSample("SAMEG1")
 				.withExternalReference(ExternalReference.build("http://test.com/1"))
-				.withExternalReference(ExternalReference.build("http://test.com/2"))
+				.withExternalReference(ExternalReference.build("http://hpscreg.eu/cell-lines/PZIF-002"))
 				.build();
 
 	    when(sampleRepository.findByAccession(group.getAccession())).thenReturn(Optional.of(group));
 
 	    mockMvc.perform(get("/groups/{accession}", group.getAccession()).accept(HAL_JSON))
-				.andExpect(jsonPath("$.externalReferences")
-						.value("[{\"URL\":\"http://test.com/1\"},{\"URL\":\"http://test.com/2\"}]"));
+				.andExpect(jsonPath("$.externalReferences.*.name").value(
+						containsInAnyOrder("other", "hPSCreg"))
+				)
+				.andExpect(jsonPath("$.externalReferences[?(@.name=='hPSCreg')].acc").value("PZIF-002"));
+
 
 
 	}

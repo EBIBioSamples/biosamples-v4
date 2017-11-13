@@ -38,6 +38,18 @@ public class GroupsController {
         this.groupResourceAssembler = groupResourceAssembler;
     }
 
+    @GetMapping
+    public PagedResources<Resource<LegacyGroup>> allGroups(
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "50") int size) {
+
+        PagedResources<Resource<Sample>> groups = sampleRepository.findGroups(page, size);
+        PagedResources<Resource<LegacyGroup>> pagedResources = pagedResourcesConverter.toLegacyGroupsPagedResource(groups);
+        pagedResources.add(linkTo(methodOn(GroupsSearchController.class).searchMethods()).withRel("search"));
+
+        return pagedResources;
+    }
+
     @GetMapping(value = "/{accession:SAMEG\\d+}")
     public ResponseEntity<Resource<LegacyGroup>> sampleByAccession(@PathVariable String accession) throws InstantiationException {
 
@@ -51,16 +63,5 @@ public class GroupsController {
 
     }
 
-    @GetMapping
-    public PagedResources<Resource<LegacyGroup>> allGroups(
-            @RequestParam(value = "page", defaultValue = "0") int page,
-            @RequestParam(value = "size", defaultValue = "50") int size) {
-
-        PagedResources<Resource<Sample>> groups = sampleRepository.findGroups(page, size);
-        PagedResources<Resource<LegacyGroup>> pagedResources = pagedResourcesConverter.toLegacyGroupsPagedResource(groups);
-        pagedResources.add(linkTo(methodOn(GroupsSearchController.class).searchMethods()).withRel("search"));
-
-        return pagedResources;
-    }
 
 }
