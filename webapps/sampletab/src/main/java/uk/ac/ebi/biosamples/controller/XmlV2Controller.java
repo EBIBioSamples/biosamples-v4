@@ -50,6 +50,7 @@ import uk.ac.ebi.biosamples.model.legacyxml.BioSampleGroupType;
 import uk.ac.ebi.biosamples.mongo.service.MongoAccessionService;
 import uk.ac.ebi.biosamples.service.ApiKeyService;
 import uk.ac.ebi.biosamples.service.FilterBuilder;
+import uk.ac.ebi.biosamples.service.SampleTabService.DuplicateDomainSampleException;
 
 @RestController
 @RequestMapping("/v2")
@@ -178,11 +179,20 @@ public class XmlV2Controller {
 			List<Filter> filterList = new ArrayList<>(2);
 			filterList.add(FilterBuilder.create().onName(sourceid).build());
 			filterList.add(FilterBuilder.create().onDomain(domain.get()).build());
-			if (!bioSamplesClient.fetchSampleResourceAll(null, filterList).iterator().hasNext()) {
+			Iterator<Resource<Sample>> it = bioSamplesClient.fetchSampleResourceAll(null, filterList).iterator();
+			if (!it.hasNext()) {
 				return new ResponseEntity<String>("PUT must be an update, use POST for new submissions", HttpStatus.BAD_REQUEST);			
+			} else {
+				Resource<Sample> first = it.next();
+				if (it.hasNext()) {
+					//error multiple accessions
+					return new ResponseEntity<String>("Multiple samples with name "+sourceid+" in domain "+domain.get(), HttpStatus.BAD_REQUEST);	
+				} else {
+					sample = Sample.build(sample.getName(), first.getContent().getAccession(), null,
+							 first.getContent().getRelease(),  first.getContent().getUpdate(), 
+							 first.getContent().getAttributes(), first.getContent().getRelationships(), first.getContent().getExternalReferences());
+				}
 			}
-			//TODO check only 1 match
-			//TODO use accession of match
 		}
 
 		//update the sample object with the domain
@@ -309,16 +319,67 @@ public class XmlV2Controller {
 		return ResponseEntity.ok(group.getAccession());
 		
 	}
-/*
+
 	@PutMapping(value = "/source/{source}/group/{sourceid}", produces = "text/plain", consumes = "application/xml")
 	public @ResponseBody ResponseEntity<String> saveGroupUpdate(@PathVariable String source, 
 			@PathVariable String sourceid,
 			@RequestParam String apikey, 
-			@RequestBody BioSampleGroupType group) 
+			@RequestBody Sample group) 
 					throws ParseException, IOException {
+		
+		//reject if not using biosample id
+		if (!sourceid.matches("SAMEG[0-9]+")) {
+			return new ResponseEntity<String>("Only implemented for BioSample accessions", HttpStatus.FORBIDDEN);
+		}
+
+		//reject if has no accession
+		if (group != null && group.getAccession() == null) {
+			return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body("Cannot PUT a group without an existing accession, use POST for new samples.");
+		}
+		
+		// ensure source is case insensitive
+		source = source.toLowerCase();
+		Optional<String> keyOwner  = apiKeyService.getUsernameForApiKey(apikey);
+		if (!keyOwner.isPresent()) {
+			return new ResponseEntity<String>("Invalid API key ("+apikey+")", HttpStatus.FORBIDDEN);
+		}
+
+		if (!apiKeyService.canKeyOwnerEditSource(keyOwner.get(), source)) {
+			return new ResponseEntity<String>("That API key is not permitted for that source", HttpStatus.FORBIDDEN);
+		}
+				
+		//update the sample to have the appropriate domain
+		Optional<String> domain = apiKeyService.getDomainForApiKey(apikey);
+		if (!domain.isPresent()) {
+			return new ResponseEntity<String>("Invalid API key ("+apikey+")", HttpStatus.FORBIDDEN);
+		}
+		
+		//if no accession, try and find any samples that already exist with this sourceid and use their accession
+		//NB we don't validate that a sample *must* have this sourceid
+		if (group.getAccession() == null) {
+			//if no existing sample, reject 	
+			List<Filter> filterList = new ArrayList<>(2);
+			filterList.add(FilterBuilder.create().onName(sourceid).build());
+			filterList.add(FilterBuilder.create().onDomain(domain.get()).build());
+			if (!bioSamplesClient.fetchSampleResourceAll(null, filterList).iterator().hasNext()) {
+				return new ResponseEntity<String>("PUT must be an update, use POST for new submissions", HttpStatus.BAD_REQUEST);			
+			}
+			//TODO check only 1 match
+			//TODO use accession of match
+		}
+
+		//update the sample object with the domain
+		group = Sample.build(group.getName(), group.getAccession(), domain.get(), 
+				group.getRelease(), group.getUpdate(), group.getAttributes(), group.getRelationships(), group.getExternalReferences());
+
+		//now actually do the submission
+		group = bioSamplesClient.persistSample(group);
+		
+		//return the new accession
+		return ResponseEntity.ok(group.getAccession());
 	}
 	
-*/
+
 /*
 	@GetMapping(value = "/source/{source}/group/{sourceid}", produces = "text/plain")
 	public @ResponseBody ResponseEntity<String> getAccessionOfGroup(@PathVariable String source,

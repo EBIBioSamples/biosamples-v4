@@ -1,0 +1,34 @@
+<BioSampleGroup id="SAMEG123"
+	xsi:schemaLocation="http://www.ebi.ac.uk/biosamples/SampleGroupExport/1.0 http://www.ebi.ac.uk/biosamples/assets/xsd/v1.0/BioSDSchema.xsd"
+	xmlns="http://www.ebi.ac.uk/biosamples/SampleGroupExport/1.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<Property class="Submission Release Date" characteristic="false"
+		type="DATETIME" comment="false">
+		<QualifiedValue>
+			<Value>2017-03-29T23:00:00+00:00</Value>
+		</QualifiedValue>
+	</Property>
+	<Property class="Submission Update Date" characteristic="false"
+		type="DATETIME" comment="false">
+		<QualifiedValue>
+			<Value>2017-04-22T21:24:51+00:00</Value>
+		</QualifiedValue>
+	</Property>
+	<Property class="Submission Identifier" characteristic="false"
+		type="STRING" comment="false">
+		<QualifiedValue>
+			<Value>TestLegacyXmlGroup</Value>
+		</QualifiedValue>
+	</Property>
+	<Property class="Group Name" characteristic="true" type="STRING"
+		comment="false">
+		<QualifiedValue>
+			<Value>SAMTSTXMLG1</Value>
+		</QualifiedValue>
+	</Property>
+	<Database>
+		<Name>other</Name>
+		<URI>www.google.com</URI>
+		<ID>www.google.com</ID>
+	</Database>
+</BioSampleGroup>

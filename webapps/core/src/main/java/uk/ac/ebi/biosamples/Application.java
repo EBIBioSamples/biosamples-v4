@@ -24,8 +24,7 @@ import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
 import uk.ac.ebi.biosamples.mongo.service.MongoAccessionService;
 import uk.ac.ebi.biosamples.service.CacheControlInterceptor;
 import uk.ac.ebi.biosamples.service.SampleToXmlConverter;
-import uk.ac.ebi.biosamples.service.XmlSampleHttpMessageConverter;
-import uk.ac.ebi.biosamples.service.XmlToSampleConverter;
+import uk.ac.ebi.biosamples.service.SampleAsXMLHttpMessageConverter;
 
 import java.util.concurrent.Executor;
 
@@ -49,8 +48,8 @@ public class Application extends SpringBootServletInitializer {
 	}
 	
 	@Bean
-	public HttpMessageConverter<Sample> getXmlSampleHttpMessageConverter(SampleToXmlConverter sampleToXmlConverter, XmlToSampleConverter xmlToSampleConverter) {
-		return new XmlSampleHttpMessageConverter(sampleToXmlConverter, xmlToSampleConverter);
+	public HttpMessageConverter<Sample> getXmlSampleHttpMessageConverter(SampleToXmlConverter sampleToXmlConverter) {
+		return new SampleAsXMLHttpMessageConverter(sampleToXmlConverter);
 	}
 
     @Bean(name = "threadPoolTaskExecutor")

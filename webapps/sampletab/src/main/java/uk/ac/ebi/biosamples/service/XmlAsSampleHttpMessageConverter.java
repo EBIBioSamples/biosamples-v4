@@ -20,27 +20,25 @@ import org.xml.sax.XMLReader;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.service.SampleToXmlConverter;
-import uk.ac.ebi.biosamples.service.XmlToSampleConverter;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-@Service
-public class XmlSampleHttpMessageConverter extends AbstractHttpMessageConverter<Sample> {
+public class XmlAsSampleHttpMessageConverter extends AbstractHttpMessageConverter<Sample> {
 	
-	private final SampleToXmlConverter sampleToXmlConverter;
-	private final XmlToSampleConverter xmlToSampleConverter;
+	private final XmlSampleToSampleConverter xmlSampleToSampleConverter;
+	private final XmlGroupToSampleConverter xmlGroupToSampleConverter;
 	
 	private final List<MediaType> DEFAULT_SUPPORTED_MEDIA_TYPES = Arrays.asList(MediaType.APPLICATION_XML, MediaType.TEXT_XML);
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 
-	public XmlSampleHttpMessageConverter(SampleToXmlConverter sampleToXmlConverter, XmlToSampleConverter xmlToSampleConverter) {
+	public XmlAsSampleHttpMessageConverter(XmlSampleToSampleConverter xmlSampleToSampleConverter, 
+			XmlGroupToSampleConverter xmlGroupToSampleConverter) {
 		this.setSupportedMediaTypes(this.DEFAULT_SUPPORTED_MEDIA_TYPES);
-		this.sampleToXmlConverter = sampleToXmlConverter;
-		this.xmlToSampleConverter = xmlToSampleConverter;
+		this.xmlSampleToSampleConverter = xmlSampleToSampleConverter;
+		this.xmlGroupToSampleConverter = xmlGroupToSampleConverter;
 	}
 
 	@Override
@@ -61,17 +59,23 @@ public class XmlSampleHttpMessageConverter extends AbstractHttpMessageConverter<
 		} catch (DocumentException e) {
 			throw new HttpMessageNotReadableException("error parsing xml", e);
 		}
-		Sample sample = xmlToSampleConverter.convert(doc);
-		return sample;
+		
+		if (doc.getRootElement().getName().equals("BioSample")) {
+			log.info("converting BioSample");
+			return xmlSampleToSampleConverter.convert(doc);
+		} else if (doc.getRootElement().getName().equals("BioSampleGroup")) {
+			log.info("converting BioSampleGroup");
+			return xmlGroupToSampleConverter.convert(doc);
+		} else {
+			log.error("Unable to read message with root element "+doc.getRootElement().getName());
+			throw new HttpMessageNotReadableException("Cannot recognize xml"); 
+		}
 	}
 
 	@Override
 	protected void writeInternal(Sample sample, HttpOutputMessage outputMessage)
 			throws IOException, HttpMessageNotWritableException {
-		Document doc = sampleToXmlConverter.convert(sample);
-		OutputFormat format = OutputFormat.createCompactFormat();
-		XMLWriter writer = new XMLWriter(outputMessage.getBody(), format);
-		writer.write(doc);
+		throw new HttpMessageNotReadableException("Cannot write xml"); 
 	}
 
 }

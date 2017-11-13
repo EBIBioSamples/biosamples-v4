@@ -18,7 +18,7 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
 @Service
-public class XmlToSampleConverter implements Converter<Document, Sample>  {
+public class XmlSampleToSampleConverter implements Converter<Document, Sample>  {
 
 	@Override
 	public Sample convert(Document doc) {
