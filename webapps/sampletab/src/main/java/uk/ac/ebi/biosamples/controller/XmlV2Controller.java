@@ -20,6 +20,7 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
@@ -45,6 +46,8 @@ import uk.ac.ebi.arrayexpress2.sampletab.renderer.SampleTabWriter;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
+import uk.ac.ebi.biosamples.model.legacyxml.BioSampleGroupType;
+import uk.ac.ebi.biosamples.mongo.service.MongoAccessionService;
 import uk.ac.ebi.biosamples.service.ApiKeyService;
 import uk.ac.ebi.biosamples.service.FilterBuilder;
 
@@ -55,11 +58,15 @@ public class XmlV2Controller {
 	private final ApiKeyService apiKeyService;
 	private final BioSamplesClient bioSamplesClient;
 	
+	private final MongoAccessionService mongoGroupAccessionService;
+	
 	private Logger log = LoggerFactory.getLogger(getClass());
 
-	public XmlV2Controller(ApiKeyService apiKeyService, BioSamplesClient bioSamplesClient) {
+	public XmlV2Controller(ApiKeyService apiKeyService, BioSamplesClient bioSamplesClient, 
+			@Qualifier("mongoGroupAccessionService") MongoAccessionService mongoGroupAccessionService) {
 		this.apiKeyService = apiKeyService;
 		this.bioSamplesClient = bioSamplesClient;
+		this.mongoGroupAccessionService = mongoGroupAccessionService;
 	}
 
 	/* sample end points below */
@@ -230,12 +237,12 @@ public class XmlV2Controller {
 */
 	/* sample end points above */
 	/* group end points below */
-/*	
+	
 
 	@PostMapping(value = "/source/{source}/group", produces = "text/plain", consumes = "application/xml")
 	public ResponseEntity<String> saveSourceGroupNew(@PathVariable String source, 
 			@RequestParam String apikey,
-			@RequestBody(required=false) BioSampleGroupType group) 
+			@RequestBody(required=false) Sample group) 
 					throws ParseException, IOException {
 		return saveSourceGroup(source, UUID.randomUUID().toString(), apikey, group);
 	}
@@ -245,10 +252,64 @@ public class XmlV2Controller {
 	public @ResponseBody ResponseEntity<String> saveSourceGroup(@PathVariable String source,
 			@PathVariable String sourceid, 
 			@RequestParam String apikey, 
-			@RequestBody(required=false) BioSampleGroupType group)
+			@RequestBody(required=false) Sample group)
 					throws ParseException, IOException {
-	}
+		
 
+		//reject if has accession
+		if (group != null && group.getAccession() != null) {
+			return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body("Cannot POST a group with an existing accession, use PUT for updates.");
+		}
+		
+		// ensure source is case insensitive
+		source = source.toLowerCase();
+		Optional<String> keyOwner  = apiKeyService.getUsernameForApiKey(apikey);
+		if (!keyOwner.isPresent()) {
+			return new ResponseEntity<String>("Invalid API key ("+apikey+")", HttpStatus.FORBIDDEN);
+		}
+
+		if (!apiKeyService.canKeyOwnerEditSource(keyOwner.get(), source)) {
+			return new ResponseEntity<String>("That API key is not permitted for that source", HttpStatus.FORBIDDEN);
+		}
+		
+		//if no sample was provided, create one as a dummy with far future release date
+		if (group == null) {
+			group = Sample.build(sourceid, null, null, ZonedDateTime.now(ZoneOffset.UTC).plusYears(1000).toInstant(), 
+					ZonedDateTime.now(ZoneOffset.UTC).toInstant(), 
+					new TreeSet<>(), new TreeSet<>(), new TreeSet<>());
+		} 
+		
+		//update the sample to have the appropriate domain
+		Optional<String> domain = apiKeyService.getDomainForApiKey(apikey);
+		if (!domain.isPresent()) {
+			return new ResponseEntity<String>("Invalid API key ("+apikey+")", HttpStatus.FORBIDDEN);
+		}
+		
+		//reject if same name has been submitted before		
+		List<Filter> filterList = new ArrayList<>(2);
+		filterList.add(FilterBuilder.create().onName(sourceid).build());
+		filterList.add(FilterBuilder.create().onDomain(domain.get()).build());
+		if (bioSamplesClient.fetchSampleResourceAll(null, filterList).iterator().hasNext()) {
+			return new ResponseEntity<String>("POST must be a new submission, use PUT for updates", HttpStatus.BAD_REQUEST);			
+		}		
+		
+		//update the sample object with the domain
+		group = Sample.build(group.getName(), group.getAccession(), domain.get(), 
+				group.getRelease(), group.getUpdate(), group.getAttributes(), group.getRelationships(), group.getExternalReferences());
+		
+		//if accession is null, assign a new group accession		
+		if (group.getAccession() == null) {
+			group = mongoGroupAccessionService.generateAccession(group);
+		}
+
+		//now actually do the submission
+		group = bioSamplesClient.persistSample(group);
+		
+		//return the new accession
+		return ResponseEntity.ok(group.getAccession());
+		
+	}
+/*
 	@PutMapping(value = "/source/{source}/group/{sourceid}", produces = "text/plain", consumes = "application/xml")
 	public @ResponseBody ResponseEntity<String> saveGroupUpdate(@PathVariable String source, 
 			@PathVariable String sourceid,

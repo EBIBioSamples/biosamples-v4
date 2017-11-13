@@ -18,13 +18,11 @@ public class MongoSampleTab {
 	private String domain;	
 	private String sampleTab;
 	private Collection<String> accessions;
-	private String accession;
 
 	private MongoSampleTab(String id, String domain, String sampleTab, Collection<String> accessions) {
 		this.id = id;
 		this.sampleTab = sampleTab;
 		this.accessions = accessions;
-		this.accession = String.join(" ", accessions);
 	}
 	
 	public String getId() {
@@ -41,10 +39,6 @@ public class MongoSampleTab {
 	
 	public Collection<String> getAccessions() {
 		return Collections.unmodifiableCollection(accessions);
-	}
-	
-	public String getAccession() {
-		return accession;
 	}
 
     @JsonCreator

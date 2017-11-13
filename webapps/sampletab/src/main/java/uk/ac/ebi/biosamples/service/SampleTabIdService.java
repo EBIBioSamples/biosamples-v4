@@ -40,7 +40,7 @@ public class SampleTabIdService {
 		accessionCandidateCounter = mongoProperties.getAccessionMinimum();
 	}
 	
-	public MongoSampleTab accessionAndInsert(MongoSampleTab sample) {
+	public MongoSampleTab accessionAndInsert(MongoSampleTab mongoSampleTab) {
 		log.trace("generating an accession");
 		// inspired by Optimistic Loops of
 		// https://docs.mongodb.com/v3.0/tutorial/create-an-auto-incrementing-field/
@@ -49,25 +49,25 @@ public class SampleTabIdService {
 		while (!success) {
 			// TODO add a timeout here
 			try {
-				sample = MongoSampleTab.build(accessionCandidateQueue.take(), sample.getDomain(), sample.getSampleTab(), sample.getAccessions());
+				mongoSampleTab = MongoSampleTab.build(accessionCandidateQueue.take(), mongoSampleTab.getDomain(), mongoSampleTab.getSampleTab(), mongoSampleTab.getAccessions());
 			} catch (InterruptedException e) {
 				throw new RuntimeException(e);
 			}
 
 			try {
-				sample = mongoSampleRepository.insertNew(sample);
+				mongoSampleTab = mongoSampleRepository.insertNew(mongoSampleTab);
 				success = true;
 			} catch (MongoWriteException e) {
 				if (e.getError().getCategory() == ErrorCategory.DUPLICATE_KEY) {
 					success = false;
-					sample = MongoSampleTab.build(null, sample.getDomain(), sample.getSampleTab(), sample.getAccessions());
+					mongoSampleTab = MongoSampleTab.build(null, mongoSampleTab.getDomain(), mongoSampleTab.getSampleTab(), mongoSampleTab.getAccessions());
 				} else {
 					throw e;
 				}
 			}
 		}
-		log.debug("generated accession "+sample);
-		return sample;
+		log.debug("generated id "+mongoSampleTab.getId());
+		return mongoSampleTab;
 	}
 	
 	@Scheduled(fixedDelay = 1000)
