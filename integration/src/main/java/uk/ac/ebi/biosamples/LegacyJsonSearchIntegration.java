@@ -62,18 +62,24 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
         jsonSearchTester.itShoudlFindAllSampleDetailsInTheJSON();
         jsonSearchTester.itShouldFindAllGroupDetailsInTheJSON();
 
-
-
     }
 
     @Override
     protected void phaseThree() {
-
+        // jsonSearchTester.itShouldFindGroupFollowingGroupRelationsInSample();
+        // jsonSearchTester.itShouldFindSampleFollowingSamplesRelationsInGroup();
     }
 
     @Override
     protected void phaseFour() {
-
+        // jsonSearchTester.itShouldFindSampleSearchingByAccession()
+        // jsonSearchTester.itShouldFindSampleSearchingByFirstSampleInGroup();
+        // jsonSearchTester.itShouldFindSampleSearchingByText();
+        // jsomSearchTester.itShouldFindOnlySamplesWhenSearchingForSamples();
+        // jsonSearchTester.itShouldFindSampleSearchingByAccessionAndGroup();
+        // jsonSearchTester.itShouldFindGroupSearchingByAccession();
+        // jsonSearchTester.itShouldFindGroupSearchingByText();
+        // jsonSearchTester.itShouldFindOnlyGroupWhenSearchingForGroups();
     }
 
     @Override
@@ -127,7 +133,6 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
 
 
         }
-
 
         public void itShouldFindTheSampleByAccessionUsingLegacyEndpoint() {
 
