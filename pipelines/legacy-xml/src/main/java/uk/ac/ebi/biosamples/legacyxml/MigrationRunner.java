@@ -26,7 +26,7 @@ import com.google.common.collect.Sets;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.service.XmlSampleToSampleConverter;
 
-@Component
+//@Component
 public class MigrationRunner implements ApplicationRunner, ExitCodeGenerator {
 
 	private final RestTemplate restTemplate;
