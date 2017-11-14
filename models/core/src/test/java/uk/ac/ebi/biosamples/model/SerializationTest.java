@@ -67,7 +67,10 @@ public class SerializationTest {
 		SortedSet<Contact> contacts = new TreeSet<>();
 		contacts.add(Contact.build("Joe Bloggs","Jo Bloggs Inc", "http://www.jobloggs.com/joe"));
 
-		return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences, organizations, contacts);
+		SortedSet<Publication> publications = new TreeSet<>();
+		publications.add(Publication.build("10.1093/nar/gkt1081", "24265224"));
+		
+		return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences, organizations, contacts, publications);
 	}
 
 	@Test

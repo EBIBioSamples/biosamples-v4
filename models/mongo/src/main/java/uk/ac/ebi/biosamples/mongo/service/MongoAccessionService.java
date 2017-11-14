@@ -65,7 +65,7 @@ public class MongoAccessionService {
 				sample = MongoSample.build(sample.getName(), accessionCandidateQueue.take(), sample.getDomain(),
 						sample.getRelease(), sample.getUpdate(), 
 						sample.getAttributes(), sample.getRelationships(), sample.getExternalReferences(), 
-						sample.getOrganizations(), sample.getContacts());
+						sample.getOrganizations(), sample.getContacts(), sample.getPublications());
 			} catch (InterruptedException e) {
 				throw new RuntimeException(e);
 			}
@@ -79,7 +79,7 @@ public class MongoAccessionService {
 					sample = MongoSample.build(sample.getName(), null, sample.getDomain(),
 							sample.getRelease(), sample.getUpdate(), 
 							sample.getAttributes(), sample.getRelationships(), sample.getExternalReferences(), 
-							sample.getOrganizations(), sample.getContacts());
+							sample.getOrganizations(), sample.getContacts(), sample.getPublications());
 				} else {
 					throw e;
 				}

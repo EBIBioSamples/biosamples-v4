@@ -79,7 +79,7 @@ public class Application {
 				
 				//set a timeout limit
 				//TODO put this in application.properties
-				int timeout = 30; //in seconds
+				int timeout = 600; //in seconds
 				RequestConfig config = RequestConfig.custom()
 				  .setConnectTimeout(timeout * 1000) //time to establish the connection with the remote host
 				  .setConnectionRequestTimeout(timeout * 1000) //maximum time of inactivity between two data packets

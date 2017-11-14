@@ -117,7 +117,7 @@ public class JsonLdIntegration extends AbstractIntegration {
                 ExternalReference.build("www.google.com")
         );
         return Sample.build(name, accession, domain, release, update,
-                attributes,null,externalReferences, null, null);
+                attributes,null,externalReferences, null, null, null);
     }
 
     private boolean jsonLDHasAccession(String jsonLDContent, String accession) {

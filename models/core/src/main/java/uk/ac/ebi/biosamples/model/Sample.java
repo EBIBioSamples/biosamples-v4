@@ -44,6 +44,7 @@ public class Sample implements Comparable<Sample> {
 
 	protected SortedSet<Organization> organizations;
 	protected SortedSet<Contact> contacts;
+	protected SortedSet<Publication> publications;
 
 	protected Sample() {
 		
@@ -124,6 +125,11 @@ public class Sample implements Comparable<Sample> {
 	public SortedSet<Contact> getContacts() {
 		return contacts;
 	}
+
+	@JsonProperty("publications")
+	public SortedSet<Publication> getPublications() {
+		return publications;
+	}
 	
 
 	@Override
@@ -144,7 +150,9 @@ public class Sample implements Comparable<Sample> {
         		&& Objects.equals(this.attributes, other.attributes)
         		&& Objects.equals(this.relationships, other.relationships)
         		&& Objects.equals(this.externalReferences, other.externalReferences)
-        		&& Objects.equals(this.organizations, other.organizations);
+        		&& Objects.equals(this.organizations, other.organizations)
+        		&& Objects.equals(this.contacts, other.contacts)
+        		&& Objects.equals(this.publications, other.publications);
     }
 
 	@Override
@@ -235,13 +243,27 @@ public class Sample implements Comparable<Sample> {
 				}
 			}
 		}
+		if (!this.publications.equals(other.publications)) {
+			if (this.publications.size() < other.publications.size()) {
+				return -1;
+			} else if (this.publications.size() > other.publications.size()) {
+				return 1;
+			} else {
+				Iterator<Publication> thisIt = this.publications.iterator();
+				Iterator<Publication> otherIt = other.publications.iterator();
+				while (thisIt.hasNext() && otherIt.hasNext()) {
+					int val = thisIt.next().compareTo(otherIt.next());
+					if (val != 0) return val;
+				}
+			}
+		}
 		return 0;
 	}
     
     @Override
     public int hashCode() {
     	//dont put update date in the hash because its not in comparison
-    	return Objects.hash(name, accession, release, attributes, relationships, externalReferences, organizations);
+    	return Objects.hash(name, accession, release, attributes, relationships, externalReferences, organizations, publications);
     }
     
     @Override
@@ -265,6 +287,10 @@ public class Sample implements Comparable<Sample> {
     	sb.append(externalReferences);
     	sb.append(",");
     	sb.append(organizations);
+    	sb.append(",");
+    	sb.append(contacts);
+    	sb.append(",");
+    	sb.append(publications);
     	sb.append(")");
     	return sb.toString();
     }
@@ -278,7 +304,7 @@ public class Sample implements Comparable<Sample> {
 			Set<Attribute> attributes,
 			Set<Relationship> relationships, 
 			Set<ExternalReference> externalReferences) {
-    	return build(name, accession, domain, release, update, attributes, relationships, externalReferences, null, null);
+    	return build(name, accession, domain, release, update, attributes, relationships, externalReferences, null, null, null);
     }
 
     //Used for deserializtion (JSON -> Java)
@@ -292,7 +318,8 @@ public class Sample implements Comparable<Sample> {
 			@JsonProperty("relationships") Collection<Relationship> relationships, 
 			@JsonProperty("externalReferences") Collection<ExternalReference> externalReferences,
 			@JsonProperty("organization") Collection<Organization> organizations, 
-			@JsonProperty("contact") Collection<Contact> contacts) {
+			@JsonProperty("contact") Collection<Contact> contacts, 
+			@JsonProperty("publications") Collection<Publication> publications) {
     	
 		Sample sample = new Sample();
 		
@@ -337,6 +364,11 @@ public class Sample implements Comparable<Sample> {
 		if (contacts != null) {
 			sample.contacts.addAll(contacts);
 		}	
+
+		sample.publications = new TreeSet<>();
+		if (publications != null) {
+			sample.publications.addAll(publications);
+		}
 		
 		return sample;
 	}

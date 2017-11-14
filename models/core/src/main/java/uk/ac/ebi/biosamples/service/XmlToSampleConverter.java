@@ -68,7 +68,7 @@ public class XmlToSampleConverter implements Converter<Document, Sample>  {
 		}
 		
 		
-		return Sample.build(name, accession, null, release, update, attributes, relationships, externalReferences, null, null);
+		return Sample.build(name, accession, null, release, update, attributes, relationships, externalReferences, null, null, null);
 	}
 
 }

@@ -153,7 +153,7 @@ public class SampleRestController {
 			sample = Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(), 
 					sample.getRelease(), Instant.now(),
 					sample.getCharacteristics(), sample.getRelationships(), sample.getExternalReferences(), 
-					sample.getOrganizations(), sample.getContacts());
+					sample.getOrganizations(), sample.getContacts(), sample.getPublications());
 		}
 		
 		sample = sampleService.store(sample);
@@ -178,7 +178,7 @@ public class SampleRestController {
 			sample = Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(), 
 					sample.getRelease(), Instant.now(),
 					sample.getCharacteristics(), sample.getRelationships(), sample.getExternalReferences(), 
-					sample.getOrganizations(), sample.getContacts());
+					sample.getOrganizations(), sample.getContacts(), sample.getPublications());
 		}
 		
 		sample = sampleService.store(sample);
