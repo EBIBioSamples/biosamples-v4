@@ -19,6 +19,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import uk.ac.ebi.biosamples.legacy.json.domain.TestSample;
 import uk.ac.ebi.biosamples.legacy.json.repository.SampleRepository;
 import uk.ac.ebi.biosamples.model.ExternalReference;
+import uk.ac.ebi.biosamples.model.Organization;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 
@@ -74,14 +75,17 @@ public class LegacyGroupsControllerIntegrationTest {
 	public void testExternalLinksIsRootField() throws Exception {
 	    Sample group = new TestSample("SAMEG1")
 				.withExternalReference(ExternalReference.build("http://test.com/1"))
-				.withExternalReference(ExternalReference.build("http://test.com/2"))
+				.withExternalReference(ExternalReference.build("http://hpscreg.eu/cell-lines/PZIF-002"))
 				.build();
 
 	    when(sampleRepository.findByAccession(group.getAccession())).thenReturn(Optional.of(group));
 
 	    mockMvc.perform(get("/groups/{accession}", group.getAccession()).accept(HAL_JSON))
-				.andExpect(jsonPath("$.externalReferences")
-						.value("[{\"URL\":\"http://test.com/1\"},{\"URL\":\"http://test.com/2\"}]"));
+				.andExpect(jsonPath("$.externalReferences.*.name").value(
+						containsInAnyOrder("other", "hPSCreg"))
+				)
+				.andExpect(jsonPath("$.externalReferences[?(@.name=='hPSCreg')].acc").value("PZIF-002"));
+
 
 
 	}
@@ -174,9 +178,18 @@ public class LegacyGroupsControllerIntegrationTest {
 	}
 
 	@Test
-	@Ignore
 	public void testOrganizationIsRootField() throws Exception {
-	    /*TODO */
+		Sample testGroup = new TestSample("SAMEG1")
+				.withOrganization(Organization.build("Stanford Microarray Database (SMD)", "submitter", null, null))
+				.build();
+		when(sampleRepository.findByAccession(testGroup.getAccession())).thenReturn(Optional.of(testGroup));
+
+		mockMvc.perform(get("/samples/{accession}", testGroup.getAccession()).accept(HAL_JSON))
+				.andExpect(jsonPath("$.organization").isArray())
+				.andExpect(jsonPath("$.organization[0]").value(
+						allOf(hasEntry("Name", "Stanford Microarray Database (SMD)"), hasEntry("Role", "submitter"))
+				));
+
 	}
 	
 }

@@ -17,10 +17,14 @@ import org.springframework.web.servlet.handler.MappedInterceptor;
 import org.thymeleaf.templateresolver.ITemplateResolver;
 import org.thymeleaf.templateresolver.UrlTemplateResolver;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.mongo.MongoProperties;
+import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
+import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
+import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
+import uk.ac.ebi.biosamples.mongo.service.MongoAccessionService;
 import uk.ac.ebi.biosamples.service.CacheControlInterceptor;
 import uk.ac.ebi.biosamples.service.SampleToXmlConverter;
-import uk.ac.ebi.biosamples.service.XmlSampleHttpMessageConverter;
-import uk.ac.ebi.biosamples.service.XmlToSampleConverter;
+import uk.ac.ebi.biosamples.service.SampleAsXMLHttpMessageConverter;
 
 import java.util.concurrent.Executor;
 
@@ -44,8 +48,8 @@ public class Application extends SpringBootServletInitializer {
 	}
 	
 	@Bean
-	public HttpMessageConverter<Sample> getXmlSampleHttpMessageConverter(SampleToXmlConverter sampleToXmlConverter, XmlToSampleConverter xmlToSampleConverter) {
-		return new XmlSampleHttpMessageConverter(sampleToXmlConverter, xmlToSampleConverter);
+	public HttpMessageConverter<Sample> getXmlSampleHttpMessageConverter(SampleToXmlConverter sampleToXmlConverter) {
+		return new SampleAsXMLHttpMessageConverter(sampleToXmlConverter);
 	}
 
     @Bean(name = "threadPoolTaskExecutor")
@@ -77,4 +81,11 @@ public class Application extends SpringBootServletInitializer {
     	return new UrlTemplateResolver();
     }
 
+    @Bean
+    public MongoAccessionService mongoSampleAccessionService(MongoSampleRepository mongoSampleRepository, SampleToMongoSampleConverter sampleToMongoSampleConverter,
+			MongoSampleToSampleConverter mongoSampleToSampleConverter, MongoProperties mongoProperties) {
+    	return new MongoAccessionService(mongoSampleRepository, sampleToMongoSampleConverter,
+    			mongoSampleToSampleConverter, mongoProperties.getAccessionPrefix(), 
+    			mongoProperties.getAccessionMinimum(), mongoProperties.getAcessionQueueSize());
+    }
 }

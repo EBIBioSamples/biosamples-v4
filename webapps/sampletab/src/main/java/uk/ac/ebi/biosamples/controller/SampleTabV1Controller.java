@@ -3,7 +3,9 @@ package uk.ac.ebi.biosamples.controller;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.time.Instant;
@@ -40,10 +42,11 @@ import uk.ac.ebi.arrayexpress2.sampletab.parser.SampleTabParser;
 import uk.ac.ebi.arrayexpress2.sampletab.renderer.SampleTabWriter;
 import uk.ac.ebi.biosamples.service.ApiKeyService;
 import uk.ac.ebi.biosamples.service.SampleTabService;
+import uk.ac.ebi.biosamples.service.SampleTabService.AssertingSampleTabOwnershipException;
 import uk.ac.ebi.biosamples.service.SampleTabService.ConflictingSampleTabOwnershipException;
 import uk.ac.ebi.biosamples.service.SampleTabService.DuplicateDomainSampleException;
 
-@RestController
+@RestController()
 public class SampleTabV1Controller {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
@@ -53,12 +56,12 @@ public class SampleTabV1Controller {
 	@Autowired
 	private ApiKeyService apiKeyService;
 
-    @PostMapping(value = "/v1/json/va")
+    @PostMapping(value = "/api/v1/json/va")
     public @ResponseBody Outcome doValidation(@RequestBody SampleTabRequest request) {
     	return parse(request);        
     }
     
-    @PostMapping(value = "/v1/json/ac")
+    @PostMapping(value = "/api/v1/json/ac")
     public @ResponseBody Outcome doAccession(@RequestBody SampleTabRequest request, @RequestParam(value="apikey") String apiKey) {
     	//handle APIkey
     	if (apiKey == null) {
@@ -92,7 +95,7 @@ public class SampleTabV1Controller {
         }        
     }
     
-    @PostMapping(value = "/v1/json/sb")
+    @PostMapping(value = "/api/v1/json/sb")
     public @ResponseBody Outcome doSubmission(@RequestBody SampleTabRequest request,  @RequestParam(value="apikey") String apiKey) {
     	//handle APIkey
     	if (apiKey == null) {
@@ -113,17 +116,53 @@ public class SampleTabV1Controller {
         }  else {
         	//no errors, proceed
             //some corrections for hipsci
-            if (outcome.sampledata.msi.submissionIdentifier.equals("GCG-HipSci")) {
+            if (outcome.sampledata.msi.submissionIdentifier != null
+            		&& outcome.sampledata.msi.submissionIdentifier.equals("GCG-HipSci")) {
                 outcome.sampledata.msi.submissionIdentifier = "GSB-3";
             }
-            // do AAP domain property
+            //TODO do AAP domain property
+            boolean isSuperuser = apiKeyService.getUsernameForApiKey(apiKey).get().equals(ApiKeyService.BIOSAMPLES);
             try {
-				sampleTabService.saveSampleTab(outcome.sampledata, "self."+domain.get(), null, true);
-			} catch (DuplicateDomainSampleException | ConflictingSampleTabOwnershipException e) {
+				sampleTabService.saveSampleTab(outcome.sampledata, "self."+domain.get(), isSuperuser, true);
+			} catch (DuplicateDomainSampleException | ConflictingSampleTabOwnershipException | AssertingSampleTabOwnershipException e) {
+				log.error("Caught exception "+e.getMessage(), e);
 				return getErrorOutcome("Unable to accession", e.getMessage()+" Contact biosamples@ebi.ac.uk for more information.");
 			}
             return outcome;
         }        
+    }
+    
+    /*
+     * Echoing function. Used for triggering download of javascript
+     * processed sampletab files. No way to download a javascript string
+     * directly from memory, so it is bounced back off the server through
+     * this method.
+     */
+    @RequestMapping(value = "/api/echo", method = RequestMethod.POST)
+    public void echo(String input, HttpServletResponse response) throws IOException {
+        //set it to be marked as a download file
+        response.setContentType("application/force-download; charset=UTF-8");
+        //set the filename to download it as
+        response.addHeader("Content-Disposition","attachment; filename=\"sampletab.txt\"");
+        response.setHeader("Content-Transfer-Encoding", "binary");
+
+        //writer to the output stream
+        //let springs default error handling take over and redirect on error.
+        Writer out = null; 
+        try {
+            out = new OutputStreamWriter(response.getOutputStream(), "UTF-8");
+            out.write(input);
+        } finally {
+            if (out != null){
+                try {
+                    out.close();
+                    response.flushBuffer();
+                } catch (IOException e) {
+                    //do nothing
+                }
+            }
+        }
+        
     }
     
     private Outcome parse(SampleTabRequest request) {

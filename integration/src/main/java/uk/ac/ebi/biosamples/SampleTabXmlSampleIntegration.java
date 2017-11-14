@@ -9,6 +9,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
@@ -19,7 +21,7 @@ import java.util.Scanner;
 @Component
 @Order(5)
 @Profile({"default"})
-public class XmlLegacyIntegration extends AbstractIntegration {
+public class SampleTabXmlSampleIntegration extends AbstractIntegration {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -29,13 +31,13 @@ public class XmlLegacyIntegration extends AbstractIntegration {
 
 	private final URI uri;
 	
-	public XmlLegacyIntegration(RestTemplateBuilder restTemplateBuilder, IntegrationProperties integrationProperties, BioSamplesClient client) {
+	public SampleTabXmlSampleIntegration(RestTemplateBuilder restTemplateBuilder, IntegrationProperties integrationProperties, BioSamplesClient client) {
         super(client);
 		this.restTemplate = restTemplateBuilder.build();
 		this.integrationProperties = integrationProperties;
 
 		uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUriSampleTab())
-			.pathSegment("v2","source","biosamples","sample")
+			.pathSegment("api", "v2","source","biosamples","sample")
 			.queryParam("apikey", integrationProperties.getLegacyApiKey())
 			.build().toUri();
 	}
@@ -61,7 +63,13 @@ public class XmlLegacyIntegration extends AbstractIntegration {
 					.contentType(MediaType.APPLICATION_XML)
 					.accept(MediaType.TEXT_PLAIN)					
 					.body(sampleTabString);
-			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+			ResponseEntity<String> response = null;
+			try {
+				response = restTemplate.exchange(request, String.class);
+			} catch (HttpStatusCodeException e) {
+				log.info("error response = "+response);
+				throw e;
+			}
 			// TODO check at the right URLs with GET to make sure all
 			// arrived
 		});

@@ -1,9 +1,6 @@
 package uk.ac.ebi.biosamples.legacy.json.domain;
 
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.ExternalReference;
-import uk.ac.ebi.biosamples.model.Relationship;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.*;
 
 import java.time.Instant;
 import java.util.SortedSet;
@@ -18,6 +15,7 @@ public class TestSample {
     private SortedSet<Relationship> relationships;
     private SortedSet<ExternalReference> externalReferences;
     private final String testDomain = "testDomain";
+    private SortedSet<Organization> organizations;
 
 
     public TestSample(String accession) {
@@ -26,6 +24,7 @@ public class TestSample {
         this.attributes = new TreeSet<>();
         this.relationships = new TreeSet<>();
         this.externalReferences = new TreeSet<>();
+        this.organizations = new TreeSet<>();
         this.releaseDate = Instant.now();
     }
 
@@ -54,6 +53,11 @@ public class TestSample {
         return this;
     }
 
+    public TestSample withOrganization(Organization org) {
+        this.organizations.add(org);
+        return this;
+    }
+
     public Sample build() {
         return Sample.build(this.name,
                 this.accession,
@@ -62,6 +66,7 @@ public class TestSample {
                 Instant.now(),
                 this.attributes,
                 this.relationships,
-                this.externalReferences);
+                this.externalReferences,
+                this.organizations);
     }
 }

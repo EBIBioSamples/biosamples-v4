@@ -35,7 +35,7 @@ public class SampleRelationsResourceAssembler implements ResourceAssembler<Sampl
         resource.add(linkTo(methodOn(SamplesRelationsController.class).getSamplesRelations(entity.accession(), "sameAs")).withRel("sameAs"));
         resource.add(linkTo(methodOn(SamplesRelationsController.class).getSamplesRelations(entity.accession(), "parentOf")).withRel("parentOf"));
         resource.add(linkTo(methodOn(SamplesRelationsController.class).getSamplesRelations(entity.accession(), "recuratedTo")).withRel("recuratedTo"));
-        resource.add(linkTo(methodOn(SamplesRelationsController.class).getSamplesRelations(entity.accession(), "externallinks")).withRel("externallinks"));
+        resource.add(linkTo(methodOn(SamplesRelationsController.class).getSamplesRelations(entity.accession(), "externalLinks")).withRel("externalLinks"));
 
         return resource;
     }

@@ -41,7 +41,7 @@ import org.xml.sax.InputSource;
 
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.service.XmlToSampleConverter;
+import uk.ac.ebi.biosamples.service.XmlSampleToSampleConverter;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 
 public class SampleCallable implements Callable<Void> {	
@@ -50,7 +50,7 @@ public class SampleCallable implements Callable<Void> {
 	private final String xmlUrl;
 	private final Queue<String> queue;
 	private final AtomicBoolean flag;
-	private final XmlToSampleConverter xmlToSampleConverter;
+	private final XmlSampleToSampleConverter xmlToSampleConverter;
 	private final BioSamplesClient client;
 	private final ExecutorService executorService;
 	
@@ -61,7 +61,7 @@ public class SampleCallable implements Callable<Void> {
 
 	public SampleCallable (RestTemplate restTemplate, String xmlUrl, 
 			Queue<String> queue, AtomicBoolean flag, 
-			XmlToSampleConverter xmlToSampleConverter, BioSamplesClient client) {
+			XmlSampleToSampleConverter xmlToSampleConverter, BioSamplesClient client) {
 		this.restTemplate = restTemplate;
 		this.xmlUrl = xmlUrl;
 		this.queue = queue;
@@ -110,12 +110,12 @@ public class SampleCallable implements Callable<Void> {
 		private final String accession;
 		private final RestTemplate restTemplate;
 		private final String xmlUrl;
-		private final XmlToSampleConverter xmlToSampleConverter;
+		private final XmlSampleToSampleConverter xmlToSampleConverter;
 		private final BioSamplesClient client;
 		
 		private final Logger log = LoggerFactory.getLogger(getClass());
 		
-		public AccessionCallable(String accession, RestTemplate restTemplate, String xmlUrl, XmlToSampleConverter xmlToSampleConverter, BioSamplesClient client) {
+		public AccessionCallable(String accession, RestTemplate restTemplate, String xmlUrl, XmlSampleToSampleConverter xmlToSampleConverter, BioSamplesClient client) {
 			this.accession = accession;
 			this.restTemplate = restTemplate;
 			this.xmlUrl = xmlUrl;

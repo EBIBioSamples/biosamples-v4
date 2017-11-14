@@ -14,7 +14,10 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.*;
+import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.UriTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -23,6 +26,8 @@ import uk.ac.ebi.biosamples.legacy.json.domain.TestAttribute;
 import uk.ac.ebi.biosamples.legacy.json.domain.TestSample;
 import uk.ac.ebi.biosamples.legacy.json.repository.RelationsRepository;
 import uk.ac.ebi.biosamples.legacy.json.repository.SampleRepository;
+import uk.ac.ebi.biosamples.model.ExternalReference;
+import uk.ac.ebi.biosamples.model.Organization;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 
@@ -32,11 +37,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.endsWith;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.when;
+import static org.springframework.hateoas.MediaTypes.HAL_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -98,7 +103,7 @@ public class LegacySamplesControllerIntegrationTest {
 		when(sampleRepository.findByAccession(testSample.getAccession())).thenReturn(Optional.of(testSample));
 
 		mockMvc.perform(
-				get("/samples/{accession}", "SAMEA1").accept(MediaTypes.HAL_JSON))
+				get("/samples/{accession}", "SAMEA1").accept(HAL_JSON))
                 .andExpect(status().isOk())
 				.andExpect(jsonPath("$.description").value("simple description"));
 
@@ -128,7 +133,7 @@ public class LegacySamplesControllerIntegrationTest {
 
 		when(sampleRepository.findByAccession(testSample.getAccession())).thenReturn(Optional.of(testSample));
 
-		mockMvc.perform(get("/samples/SAMEA0").accept(MediaTypes.HAL_JSON))
+		mockMvc.perform(get("/samples/SAMEA0").accept(HAL_JSON))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.characteristics.type[0].ontologyTerms").isArray())
 				.andExpect(jsonPath("$.characteristics.type[0].ontologyTerms[0]").value("test"));
@@ -151,7 +156,7 @@ public class LegacySamplesControllerIntegrationTest {
 
 		mockMvc.perform(
 				get("/samples/{accession}", testSample.getAccession())
-						.accept(MediaTypes.HAL_JSON))
+						.accept(HAL_JSON))
 				.andExpect(jsonPath("$._links").value(
 				        allOf(
 				        		Matchers.hasKey("sample"),
@@ -168,7 +173,7 @@ public class LegacySamplesControllerIntegrationTest {
 
 		mockMvc.perform(
 				get("/samples/{accession}", testSample.getAccession())
-				.accept(MediaTypes.HAL_JSON))
+				.accept(HAL_JSON))
 				.andDo(result-> {
 					String responseContent = result.getResponse().getContentAsString();
 					String sampleHref = JsonPath.parse(responseContent).read("$._links.sample.href");
@@ -185,14 +190,14 @@ public class LegacySamplesControllerIntegrationTest {
 		when(sampleRepository.findByAccession(testSample.getAccession())).thenReturn(Optional.of(testSample));
 
 		MvcResult result = mockMvc.perform(get("/samples/{accession}", testSample.getAccession())
-				.accept(MediaTypes.HAL_JSON))
+				.accept(HAL_JSON))
 				.andExpect(jsonPath("$._links.relations.href").value(
 						Matchers.endsWith("/samplesrelations/SAMED666")
 				))
 				.andReturn();
 
 		String deriveFromLink = JsonPath.parse(result.getResponse().getContentAsString()).read("$._links.relations.href");
-		mockMvc.perform(get(deriveFromLink).accept(MediaTypes.HAL_JSON))
+		mockMvc.perform(get(deriveFromLink).accept(HAL_JSON))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.accession").value("SAMED666"));
 	}
@@ -210,9 +215,19 @@ public class LegacySamplesControllerIntegrationTest {
 	}
 
 	@Test
-	@Ignore
 	public void testOrganizationIsRootField() throws Exception {
-	    /*TODO */
+
+		Sample testSample = new TestSample("SAMEA1")
+				.withOrganization(Organization.build("Stanford Microarray Database (SMD)", "submitter", null, null))
+				.build();
+		when(sampleRepository.findByAccession(testSample.getAccession())).thenReturn(Optional.of(testSample));
+
+		mockMvc.perform(get("/samples/{accession}", testSample.getAccession()).accept(HAL_JSON))
+				.andExpect(jsonPath("$.organization").isArray())
+				.andExpect(jsonPath("$.organization[0]").value(
+						allOf(hasEntry("Name", "Stanford Microarray Database (SMD)"), hasEntry("Role", "submitter"))
+				));
+
 	}
 	
 	@Test
@@ -223,7 +238,7 @@ public class LegacySamplesControllerIntegrationTest {
 				.build();
 		when(sampleRepository.findSamples(anyInt(), anyInt())).thenReturn(getTestPagedResourcesSample(10, sampleA, sampleB));
 
-		mockMvc.perform(get("/samples").accept(MediaTypes.HAL_JSON))
+		mockMvc.perform(get("/samples").accept(HAL_JSON))
 				.andExpect(status().isOk())
 				.andExpect(content().contentType("application/hal+json;charset=UTF-8"))
 				.andExpect(jsonPath("$").isMap())
@@ -235,6 +250,21 @@ public class LegacySamplesControllerIntegrationTest {
 	}
 
 	@Test
+	public void testSampleHasExternalReferencesAsRootField() throws Exception {
+		Sample sample = new TestSample("SAMEA1")
+				.withExternalReference(ExternalReference.build("http://hpscreg.eu/cell-lines/PZIF-002"))
+				.build();
+
+		when(sampleRepository.findByAccession( sample.getAccession())).thenReturn(Optional.of( sample));
+
+		mockMvc.perform(get("/samples/{accession}",  sample.getAccession()).accept(HAL_JSON))
+				.andExpect(jsonPath("$.externalReferences.*.name").value(
+						containsInAnyOrder("hPSCreg"))
+				)
+				.andExpect(jsonPath("$.externalReferences[?(@.name=='hPSCreg')].acc").value("PZIF-002"));
+	}
+
+	@Test
 	public void testAllSamplesLinksContainsSearch() throws Exception {
 
 		Sample sampleA = new TestSample("A").build();
@@ -243,14 +273,14 @@ public class LegacySamplesControllerIntegrationTest {
 				.build();
 		when(sampleRepository.findSamples(anyInt(), anyInt())).thenReturn(getTestPagedResourcesSample(10, sampleA, sampleB));
 
-		String responseContent = mockMvc.perform(get("/samples").accept(MediaTypes.HAL_JSON))
+		String responseContent = mockMvc.perform(get("/samples").accept(HAL_JSON))
 				.andExpect(jsonPath("$._links.search").exists())
 				.andReturn().getResponse().getContentAsString();
 
 		String searchEndpoint = JsonPath.parse(responseContent)
 							.read("$._links.search.href");
 
-		mockMvc.perform(get(searchEndpoint).accept(MediaTypes.HAL_JSON))
+		mockMvc.perform(get(searchEndpoint).accept(HAL_JSON))
 				.andExpect(status().isOk())
 				.andExpect(content().contentType("application/hal+json;charset=UTF-8"))
 				.andExpect(jsonPath("$._embedded").doesNotExist())
@@ -276,7 +306,7 @@ public class LegacySamplesControllerIntegrationTest {
 	    when(sampleRepository.findFirstSampleByGroup("groupA")).thenReturn(Optional.of(new Resource(sampleA)));
 		when(sampleRepository.findFirstSampleByGroup("groupB")).thenReturn(Optional.empty());
 
-		String searchLinkContent = mockMvc.perform(get("/samples/search").accept(MediaTypes.HAL_JSON))
+		String searchLinkContent = mockMvc.perform(get("/samples/search").accept(HAL_JSON))
 				.andExpect(jsonPath("$._links.findFirstByGroupsContains.href").value(endsWith("{?group}")))
 				.andReturn().getResponse().getContentAsString();
 
@@ -284,12 +314,12 @@ public class LegacySamplesControllerIntegrationTest {
 				JsonPath.parse(searchLinkContent).read("$._links.findFirstByGroupsContains.href"));
 
 
-		mockMvc.perform(get(findFirstByGroupTemplateUrl.expand("groupA")).accept(MediaTypes.HAL_JSON))
+		mockMvc.perform(get(findFirstByGroupTemplateUrl.expand("groupA")).accept(HAL_JSON))
 				.andExpect(status().isOk())
 				.andExpect(content().contentType("application/hal+json;charset=UTF-8"))
 				.andExpect(jsonPath("$.accession").value("A"));
 
-		mockMvc.perform(get(findFirstByGroupTemplateUrl.expand("groupB")).accept(MediaTypes.HAL_JSON))
+		mockMvc.perform(get(findFirstByGroupTemplateUrl.expand("groupB")).accept(HAL_JSON))
 				.andExpect(status().isNotFound());
 
 	}
@@ -310,7 +340,7 @@ public class LegacySamplesControllerIntegrationTest {
 		when(relationsRepository.getGroupsRelationships(anyString())).thenReturn(
 				Collections.singletonList(new GroupsRelations(groupA)));
 
-		String searchLinkContent = mockMvc.perform(get("/samples/search").accept(MediaTypes.HAL_JSON))
+		String searchLinkContent = mockMvc.perform(get("/samples/search").accept(HAL_JSON))
 				.andExpect(jsonPath("$._links.findByGroups.href").value(endsWith("{?group,size,page,sort}")))
 				.andReturn().getResponse().getContentAsString();
 
@@ -321,7 +351,7 @@ public class LegacySamplesControllerIntegrationTest {
 		urlParameters.put("page", "0");
 		urlParameters.put("size", "50");
 
-		String responseContent = mockMvc.perform(get(findFirstByGroupTemplateUrl.expand(urlParameters)).accept(MediaTypes.HAL_JSON))
+		String responseContent = mockMvc.perform(get(findFirstByGroupTemplateUrl.expand(urlParameters)).accept(HAL_JSON))
 				.andExpect(status().isOk())
 				.andExpect(content().contentType("application/hal+json;charset=UTF-8"))
 				.andExpect(jsonPath("$._embedded.samples.*.accession").value(containsInAnyOrder("A", "B")))
@@ -331,7 +361,7 @@ public class LegacySamplesControllerIntegrationTest {
 		String groupRelationLink = JsonPath.parse(responseContent).read(
 				"$._embedded.samples[0]._links.relations.href"
 		)+ "/groups";
-		mockMvc.perform(get(groupRelationLink).accept(MediaTypes.HAL_JSON))
+		mockMvc.perform(get(groupRelationLink).accept(HAL_JSON))
 				.andExpect(jsonPath("$._embedded.groupsrelations[0].accession").value(groupA.getAccession()));
 	}
 	
@@ -341,7 +371,7 @@ public class LegacySamplesControllerIntegrationTest {
 		Sample sampleA = new TestSample("A").build();
 		when(sampleRepository.findByAccession("A")).thenReturn(Optional.of(sampleA));
 
-		String searchLinkContent = mockMvc.perform(get("/samples/search").accept(MediaTypes.HAL_JSON))
+		String searchLinkContent = mockMvc.perform(get("/samples/search").accept(HAL_JSON))
 				.andExpect(jsonPath("$._links.findByAccession.href").value(
 						endsWith("{?accession,size,page,sort}")))
 				.andReturn().getResponse().getContentAsString();

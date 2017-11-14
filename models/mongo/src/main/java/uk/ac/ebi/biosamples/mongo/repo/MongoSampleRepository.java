@@ -10,4 +10,5 @@ public interface MongoSampleRepository extends MongoRepository<MongoSample, Stri
 
 	Page<MongoSample> findByExternalReferences_Hash(String urlHash, Pageable pageable);
 
+	Page<MongoSample> findByDomainAndName(String domain, String name, Pageable pageable);
 }

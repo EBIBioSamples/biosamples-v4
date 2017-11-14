@@ -11,12 +11,14 @@ import org.springframework.hateoas.core.Relation;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.Organization;
 import uk.ac.ebi.biosamples.model.Sample;
 
 import java.io.IOException;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -33,6 +35,7 @@ public class LegacySample {
     private final Sample sample;
 
     private MultiValueMap<String, LegacyAttribute> characteristics;
+    private List<LegacyExternalReference> externalReferences;
     private String description;
 
 
@@ -45,6 +48,14 @@ public class LegacySample {
 
         this.description = extractSampleDescription(sample).orElse("");
         this.characteristics = extractCharacteristics(sample);
+        this.externalReferences = extractExternalReferences(sample);
+    }
+
+    private List<LegacyExternalReference> extractExternalReferences(Sample sample) {
+
+        return this.sample.getExternalReferences().stream()
+                .map(LegacyExternalReference::new)
+                .collect(Collectors.toList());
     }
 
     private Optional<String> extractSampleDescription(Sample sample) {
@@ -103,9 +114,18 @@ public class LegacySample {
         return this.characteristics;
     }
 
+    @JsonGetter
+    public List<LegacyExternalReference> externalReferences() {
+        return externalReferences;
+    }
 
     private boolean isDescription(uk.ac.ebi.biosamples.model.Attribute attribute) {
         return attribute.getType().equalsIgnoreCase("description");
+    }
+
+    @JsonGetter("organization")
+    public List<Organization> organization() {
+        return new ArrayList<>(this.sample.getOrganizations());
     }
 
 
