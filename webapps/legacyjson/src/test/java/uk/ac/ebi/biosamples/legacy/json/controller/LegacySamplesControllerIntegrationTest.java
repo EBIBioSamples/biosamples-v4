@@ -290,7 +290,7 @@ public class LegacySamplesControllerIntegrationTest {
 								hasKey("findFirstByGroupsContains"),
 								hasKey("findByGroups"),
 								hasKey("findByAccession"),
-								hasKey("findSamplesByText"),
+								hasKey("findByText"),
 								hasKey("findByTextAndGroups"),
 								hasKey("findByAccessionAndGroups"),
 								hasKey("self")
