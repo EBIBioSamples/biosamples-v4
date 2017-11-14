@@ -26,6 +26,23 @@ public class ThreadUtils {
 		}
 	}
 	
+	
+	
+
+	public static <T> void checkAndCallbackFutures(Map<? extends Object, Future<T>> futures, int maxSize, Callback<T> callback) throws InterruptedException,ExecutionException {
+		while (futures.size() > maxSize) {
+			for (Iterator<? extends Object> i = futures.keySet().iterator(); i.hasNext(); ) {
+				Object key = i.next();
+				callback.call(futures.get(key).get());
+				i.remove();
+			}
+		}
+	}
+	
+	public static interface Callback<T> {
+		public void call(T t);
+	}
+	
 	public static <T,U> void checkAndRetryFutures(Map<T, Future<U>> futures, Map<T, Callable<U>> callables,
 			int maxSize, ExecutorService executionService) throws InterruptedException{
 		while (futures.size() > maxSize) {
