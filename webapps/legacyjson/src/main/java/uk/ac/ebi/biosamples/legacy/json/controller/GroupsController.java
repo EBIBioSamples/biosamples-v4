@@ -40,8 +40,9 @@ public class GroupsController {
 
     @GetMapping
     public PagedResources<Resource<LegacyGroup>> allGroups(
-            @RequestParam(value = "page", defaultValue = "0") int page,
-            @RequestParam(value = "size", defaultValue = "50") int size) {
+            @RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
+            @RequestParam(value = "size", required = false, defaultValue = "50") Integer size,
+            @RequestParam(value = "sort", required = false, defaultValue = "asc") String sort) {
 
         PagedResources<Resource<Sample>> groups = sampleRepository.findGroups(page, size);
         PagedResources<Resource<LegacyGroup>> pagedResources = pagedResourcesConverter.toLegacyGroupsPagedResource(groups);

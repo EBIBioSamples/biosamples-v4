@@ -75,7 +75,6 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
     @Override
     protected void phaseThree() {
          jsonSearchTester.itShouldBeAbleToMoveUsingLinks();
-        // jsonSearchTester.itShouldFindSampleFollowingSamplesRelationsInGroup();
     }
 
     @Override
@@ -251,10 +250,6 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
                     JsonPath.parse(externalLinkJson).read("$._embedded.externallinksrelations[0].url"),
                     testSample.getExternalReferences().first().getUrl());
 
-
-
-
-
         }
 
         public void itShouldFindSampleSearchingByAccession() {
@@ -263,10 +258,9 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
 
             log.info("Search sample by accession in the legacy JSON");
             UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosamplesLegacyJSONUri());
-            uriBuilder.pathSegment("samples");
 
             Traverson.TraversalBuilder traversalBuilder = new Traverson(uriBuilder.build().toUri(), HAL_JSON)
-                    .follow("search").follow(Hop.rel("findByAccession").withParameter("accession", testSample.getAccession()));
+                    .follow("samples","search").follow(Hop.rel("findByAccession").withParameter("accession", testSample.getAccession()));
 
             assertEquals(traversalBuilder.toObject("$._embedded.samples[0].accession"), testSample.getAccession());
             assertEquals((int) traversalBuilder.toObject("$.page.totalElements"), 1);
@@ -278,11 +272,9 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
             Sample testGroup = TestSampleGenerator.getGroupContainegSAMEA911();
 
             log.info("Search first sample in a group in legacy JSON");
-            UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosamplesLegacyJSONUri());
-            uriBuilder.pathSegment("samples");
 
-            Traverson.TraversalBuilder traversalBuilder = new Traverson(uriBuilder.build().toUri(), HAL_JSON)
-                    .follow("search").follow(Hop.rel("findFirstByGroupsContains").withParameter("group", testGroup.getAccession()));
+            Traverson.TraversalBuilder traversalBuilder = new Traverson(integrationProperties.getBiosamplesLegacyJSONUri(), HAL_JSON)
+                    .follow("samples", "search").follow(Hop.rel("findFirstByGroupsContains").withParameter("group", testGroup.getAccession()));
 
             assertEquals(traversalBuilder.toObject("$.accession"), testSample.getAccession());
 
@@ -292,11 +284,9 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
             Sample testSample = TestSampleGenerator.getSampleMemberOfGroupWithExternalRelations();
 
             log.info("Search sample by text in the legacy JSON");
-            UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosamplesLegacyJSONUri());
-            uriBuilder.pathSegment("samples");
 
-            Traverson.TraversalBuilder traversalBuilder = new Traverson(uriBuilder.build().toUri(), HAL_JSON)
-                    .follow("search")
+            Traverson.TraversalBuilder traversalBuilder = new Traverson(integrationProperties.getBiosamplesLegacyJSONUri(), HAL_JSON)
+                    .follow("samples", "search")
                     .follow(Hop.rel("findByText")
                             .withParameter("text", "Homo sapiens")
                             .withParameter("size", 100)
@@ -309,11 +299,9 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
         public void itShouldFindOnlySamplesWhenSearchingForSamples() {
 
             log.info("Check sample search only returns samples legacy JSON");
-            UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosamplesLegacyJSONUri());
-            uriBuilder.pathSegment("samples");
 
-            Traverson.TraversalBuilder traversalBuilder = new Traverson(uriBuilder.build().toUri(), HAL_JSON)
-                    .follow("search")
+            Traverson.TraversalBuilder traversalBuilder = new Traverson(integrationProperties.getBiosamplesLegacyJSONUri(), HAL_JSON)
+                    .follow("samples", "search")
                     .follow(Hop.rel("findByText")
                             .withParameter("text", "SAMEG.*")
                             .withParameter("size", 100)
@@ -329,11 +317,9 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
             Sample testGroup = TestSampleGenerator.getGroupContainegSAMEA911();
 
             log.info("Search sample by accession and group in the legacy JSON");
-            UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosamplesLegacyJSONUri());
-            uriBuilder.pathSegment("samples");
 
-            Traverson.TraversalBuilder traversalBuilder = new Traverson(uriBuilder.build().toUri(), HAL_JSON)
-                    .follow("search")
+            Traverson.TraversalBuilder traversalBuilder = new Traverson(integrationProperties.getBiosamplesLegacyJSONUri(), HAL_JSON)
+                    .follow("samples", "search")
                     .follow(Hop.rel("findByAccessionAndGroups")
                             .withParameter("accession", testSample.getAccession())
                             .withParameter("group", testGroup.getAccession())
@@ -347,11 +333,9 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
             Sample testGroup = TestSampleGenerator.getGroupContainegSAMEA911();
 
             log.info("Search group by accession and in the legacy JSON");
-            UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosamplesLegacyJSONUri());
-            uriBuilder.pathSegment("groups");
 
-            Traverson.TraversalBuilder traversalBuilder = new Traverson(uriBuilder.build().toUri(), HAL_JSON)
-                    .follow("search")
+            Traverson.TraversalBuilder traversalBuilder = new Traverson(integrationProperties.getBiosamplesLegacyJSONUri(), HAL_JSON)
+                    .follow("groups", "search")
                     .follow(Hop.rel("findByAccession")
                             .withParameter("accession", testGroup.getAccession())
                             .withParameter("size", 100)
@@ -366,11 +350,9 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
             Sample testGroup = TestSampleGenerator.getGroupContainegSAMEA911();
 
             log.info("Search group by text and in the legacy JSON");
-            UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosamplesLegacyJSONUri());
-            uriBuilder.pathSegment("groups");
 
-            Traverson.TraversalBuilder traversalBuilder = new Traverson(uriBuilder.build().toUri(), HAL_JSON)
-                    .follow("search")
+            Traverson.TraversalBuilder traversalBuilder = new Traverson(integrationProperties.getBiosamplesLegacyJSONUri(), HAL_JSON)
+                    .follow("groups", "search")
                     .follow(Hop.rel("findByKeywords")
                             .withParameter("keyword", "Some donor")
                             .withParameter("size", 100)
@@ -383,11 +365,9 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
         public void itShouldFindOnlyGroupWhenSearchingForGroups() {
 
             log.info("Search group by text should return only groups in the legacy JSON");
-            UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosamplesLegacyJSONUri());
-            uriBuilder.pathSegment("groups");
 
-            Traverson.TraversalBuilder traversalBuilder = new Traverson(uriBuilder.build().toUri(), HAL_JSON)
-                    .follow("search")
+            Traverson.TraversalBuilder traversalBuilder = new Traverson(integrationProperties.getBiosamplesLegacyJSONUri(), HAL_JSON)
+                    .follow("groups", "search")
                     .follow(Hop.rel("findByKeywords")
                             .withParameter("keyword", "*:*")
                             .withParameter("size", 100)

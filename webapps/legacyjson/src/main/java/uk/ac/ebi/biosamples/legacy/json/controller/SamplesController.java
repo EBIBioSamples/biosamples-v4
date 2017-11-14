@@ -53,8 +53,9 @@ public class SamplesController {
 
     @GetMapping
     public PagedResources<Resource<LegacySample>> allSamples(
-            @RequestParam(value = "page", defaultValue = "0") int page,
-            @RequestParam(value = "size", defaultValue = "50") int size) {
+            @RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
+            @RequestParam(value = "size", required = false, defaultValue = "50") Integer size,
+            @RequestParam(value = "sort", required = false, defaultValue = "asc") String sort) {
 
         PagedResources<Resource<Sample>> samples = sampleRepository.findSamples(page, size);
         PagedResources<Resource<LegacySample>> pagedResources = pagedResourcesConverter.toLegacySamplesPagedResource(samples);
