@@ -114,7 +114,7 @@ public class Sample implements Comparable<Sample> {
 		return externalReferences;
 	}
 
-	@JsonProperty("Organization")
+	@JsonProperty("organization")
 	public SortedSet<Organization> getOrganizations() {
 		return organizations;
 	}

@@ -42,7 +42,7 @@
 			"url": "http://www.google.com"
 		}
 	],
-	"Organization": [
+	"organization": [
 		{
 			"Name": "Joe Bloggs",
 			"Role": "user",
