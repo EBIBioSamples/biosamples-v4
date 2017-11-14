@@ -11,12 +11,15 @@ import org.springframework.hateoas.core.EmbeddedWrappers;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import uk.ac.ebi.biosamples.legacy.json.domain.ExternalLinksRelation;
 import uk.ac.ebi.biosamples.legacy.json.domain.GroupsRelations;
 import uk.ac.ebi.biosamples.legacy.json.domain.SamplesRelations;
 import uk.ac.ebi.biosamples.legacy.json.repository.RelationsRepository;
 import uk.ac.ebi.biosamples.legacy.json.repository.SampleRepository;
+import uk.ac.ebi.biosamples.legacy.json.service.ExternalLinksResourceAssembler;
 import uk.ac.ebi.biosamples.legacy.json.service.GroupRelationsResourceAssembler;
 import uk.ac.ebi.biosamples.legacy.json.service.SampleRelationsResourceAssembler;
+import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Sample;
 
 import java.util.Collection;
@@ -38,19 +41,20 @@ public class SamplesRelationsController {
     private final RelationsRepository relationsRepository;
     private final GroupRelationsResourceAssembler groupRelationsResourceAssembler;
     private final SampleRelationsResourceAssembler sampleRelationsResourceAssembler;
+    private final ExternalLinksResourceAssembler externalLinksResourceAssembler;
 
     public SamplesRelationsController(EntityLinks entityLinks,
                                       SampleRepository sampleRepository,
                                       RelationsRepository relationsRepository,
                                       GroupRelationsResourceAssembler groupRelationsResourceAssembler,
-                                      SampleRelationsResourceAssembler sampleRelationsResourceAssembler) {
+                                      SampleRelationsResourceAssembler sampleRelationsResourceAssembler, ExternalLinksResourceAssembler externalLinksResourceAssembler) {
 
         this.entityLinks = entityLinks;
         this.sampleRepository = sampleRepository;
         this.relationsRepository = relationsRepository;
+        this.externalLinksResourceAssembler = externalLinksResourceAssembler;
         this.groupRelationsResourceAssembler = groupRelationsResourceAssembler;
         this.sampleRelationsResourceAssembler = sampleRelationsResourceAssembler;
-
     }
 
     @GetMapping("/{accession}")
@@ -92,6 +96,27 @@ public class SamplesRelationsController {
 
         Link selfLink = linkTo(methodOn(this.getClass()).getSamplesRelations(accession, relationType)).withSelfRel();
         Resources responseBody = new Resources(wrappedCollection(associatedSamples, SamplesRelations.class), selfLink);
+        return ResponseEntity.ok(responseBody);
+
+    }
+
+    @GetMapping("/{accession}/externalLinks")
+    public ResponseEntity<Resources> getSamplesExternalLinks(
+            @PathVariable String accession) {
+
+        Optional<Sample> sample = sampleRepository.findByAccession(accession);
+        if (!sample.isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        List<Resource> exteranlLinksResources = sample.get().getExternalReferences().stream()
+                .map(ExternalReference::getUrl)
+                .map(ExternalLinksRelation::new)
+                .map(externalLinksResourceAssembler::toResource)
+                .collect(Collectors.toList());
+
+        Link selfLink = linkTo(methodOn(this.getClass()).getSamplesExternalLinks(accession)).withSelfRel();
+        Resources responseBody = new Resources(wrappedCollection(exteranlLinksResources, ExternalLinksRelation.class), selfLink);
         return ResponseEntity.ok(responseBody);
 
     }

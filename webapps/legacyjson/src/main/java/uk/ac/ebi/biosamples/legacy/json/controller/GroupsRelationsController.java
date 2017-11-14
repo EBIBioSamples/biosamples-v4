@@ -57,10 +57,26 @@ public class GroupsRelationsController {
             @RequestParam(value="sort", required=false, defaultValue = "asc") String sort ) {
 
         PagedResources<Resource<Sample>> groups = sampleRepository.findGroups(page, size);
-        return this.pagedResourcesConverter.toGroupsRelationsPagedResource(groups);
+        PagedResources<Resource<GroupsRelations>> groupsRelations = this.pagedResourcesConverter.toGroupsRelationsPagedResource(groups);
+        groupsRelations.add(linkTo(methodOn(this.getClass()).search()).withRel("search"));
+        return groupsRelations;
 
     }
 
+    @GetMapping("/search")
+    public Resources search() {
+
+        Resources searchResources = Resources.wrap(Collections.emptyList());
+        searchResources.add(linkTo(methodOn(this.getClass()).search()).withSelfRel());
+        searchResources.add(linkTo(methodOn(this.getClass()).findOneByAccession(null)).withRel("findOneByAccession"));
+        return searchResources;
+
+    }
+
+    @GetMapping("/search/findOneByAccession")
+    public ResponseEntity<Resource<GroupsRelations>> findOneByAccession(@RequestParam(value = "accession") String accession) {
+        return this.getGroupsRelationsByAccession(accession);
+    }
 
     @GetMapping("/{accession:SAMEG\\d+}")
     public ResponseEntity<Resource<GroupsRelations>> getGroupsRelationsByAccession(@PathVariable String accession) {

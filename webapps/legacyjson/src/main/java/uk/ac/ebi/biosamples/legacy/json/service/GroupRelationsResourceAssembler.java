@@ -5,9 +5,12 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceAssembler;
 import org.springframework.stereotype.Service;
+import uk.ac.ebi.biosamples.legacy.json.controller.GroupsRelationsController;
 import uk.ac.ebi.biosamples.legacy.json.domain.GroupsRelations;
 import uk.ac.ebi.biosamples.legacy.json.domain.LegacyGroup;
-import uk.ac.ebi.biosamples.legacy.json.domain.SamplesRelations;
+
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 @Service
 public class GroupRelationsResourceAssembler implements ResourceAssembler<GroupsRelations, Resource<GroupsRelations>>{
@@ -28,7 +31,7 @@ public class GroupRelationsResourceAssembler implements ResourceAssembler<Groups
         resource.add(entityLinks.linkToSingleResource(GroupsRelations.class, entity.accession()).withRel("groupsrelations"));
         resource.add(new Link("test").withRel("externallinks"));
 //        resource.add(entityLinks.linkToCollectionResource(LegacyExternalReference.class).withRel("externallinks"));
-        resource.add(entityLinks.linkToCollectionResource(SamplesRelations.class).withRel("samples"));
+        resource.add(linkTo(methodOn(GroupsRelationsController.class).getGroupSamplesRelations(entity.accession())).withRel("samples"));
 
         return resource;
     }

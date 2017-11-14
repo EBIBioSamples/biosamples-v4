@@ -128,7 +128,7 @@ public class LegacySamplesRelationsControllerIntegrationTest {
                                 hasKey("parentOf"),
                                 hasKey("derivedTo"),
                                 hasKey("recuratedTo"),
-                                hasKey("externallinks")
+                                hasKey("externalLinks")
                         )
                 ));
     }
@@ -394,12 +394,6 @@ public class LegacySamplesRelationsControllerIntegrationTest {
                 .andExpect(status().isNotFound());
     }
 
-    @Test
-    @Ignore
-    public void testAllSamplesRelationsHasLinkToProfile() throws Exception {
-        /*TODO */
-    }
-    
 
     @Test
     @Ignore

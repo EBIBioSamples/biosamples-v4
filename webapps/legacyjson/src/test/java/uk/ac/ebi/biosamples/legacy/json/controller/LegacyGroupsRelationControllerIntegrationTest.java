@@ -71,10 +71,10 @@ public class LegacyGroupsRelationControllerIntegrationTest {
 
     @Test
     public void testReturnGroupsRelationByAccession() throws Exception {
-        Sample testSample = new TestSample("RELATION").build();
+        Sample testSample = new TestSample("SAMEG1111").build();
         when(sampleRepository.findByAccession(anyString())).thenReturn(Optional.of(testSample));
 
-        getGroupsRelationsHAL("anyAccession")
+        getGroupsRelationsHAL(testSample.getAccession())
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/hal+json;charset=UTF-8"))
                 .andExpect(jsonPath("$.accession").value(testSample.getAccession()));
@@ -82,21 +82,21 @@ public class LegacyGroupsRelationControllerIntegrationTest {
 
     @Test
     public void testGroupsRelationsHasSelfLink() throws Exception {
-        Sample testSample = new TestSample("RELATION").build();
+        Sample testSample = new TestSample("SAMEG1111").build();
         when(sampleRepository.findByAccession(anyString())).thenReturn(Optional.of(testSample));
 
-        getGroupsRelationsHAL("anyAccession")
+        getGroupsRelationsHAL(testSample.getAccession())
                 .andExpect(jsonPath("$._links.self").exists());
     }
 
     @Test
     public void testGroupsRelationsLinkExistAndMatchSelfLink() throws Exception {
-        Sample testSample = new TestSample("RELATION").build();
+        Sample testSample = new TestSample("SAMEG1111").build();
         when(sampleRepository.findByAccession(anyString())).thenReturn(Optional.of(testSample));
 
-        getGroupsRelationsHAL("anAccession")
+        getGroupsRelationsHAL(testSample.getAccession())
                 .andExpect(jsonPath("$._links.groupsrelations").exists())
-                .andExpect(jsonPath("$._links.groupsrelations.href").value(Matchers.endsWith("RELATION")))
+                .andExpect(jsonPath("$._links.groupsrelations.href").value(Matchers.endsWith(testSample.getAccession())))
                 .andDo(result -> {
 
                     String responseBody = result.getResponse().getContentAsString();
@@ -112,7 +112,7 @@ public class LegacyGroupsRelationControllerIntegrationTest {
 
     @Test
     public void testGroupsRelationsContainsAllExpectedLinks() throws Exception {
-        Sample testSample = new TestSample("SAMED1111").build();
+        Sample testSample = new TestSample("SAMEG1111").build();
         when(sampleRepository.findByAccession(anyString())).thenReturn(Optional.of(testSample));
 
         getGroupsRelationsHAL(testSample.getAccession())
@@ -130,15 +130,13 @@ public class LegacyGroupsRelationControllerIntegrationTest {
     @Test
     @Ignore
     public void testGoingFromGroupToSampleBackToGroupReturnOriginalGroup() throws Exception {
-        //TODO
+        //TODO in end-to-end test
     }
 
     @Test
     public void testRequestForUnsupportedRelationThrowsError() throws Exception {
-        Sample group = new TestSample("SAMEG1").build();
         mockMvc.perform(get("/groupsrealtions/SAMEG1/test").accept(HAL_JSON))
                 .andExpect(status().isNotFound());
-
     }
 
     @Test

@@ -70,7 +70,7 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
 
     @Override
     protected void phaseThree() {
-         jsonSearchTester.itShouldFindGroupFollowingGroupRelationsInSample();
+         jsonSearchTester.itShouldBeAbleToMoveUsingLinks();
         // jsonSearchTester.itShouldFindSampleFollowingSamplesRelationsInGroup();
     }
 
@@ -220,7 +220,7 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
 
         }
 
-        public void itShouldFindGroupFollowingGroupRelationsInSample() {
+        public void itShouldBeAbleToMoveUsingLinks() {
 
             Sample testSample = TestSampleGenerator.getSampleMemberOfGroupWithExternalRelations();
             Sample testGroup = TestSampleGenerator.getGroupContainegSAMEA911();
@@ -229,35 +229,26 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
             UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosamplesLegacyJSONUri());
             uriBuilder.pathSegment("samples", testSample.getAccession());
 
-            Traverson.TraversalBuilder groupApiEndpoint = new Traverson(uriBuilder.build().toUri(), HAL_JSON)
+            Traverson.TraversalBuilder traversalBuilder = new Traverson(uriBuilder.build().toUri(), HAL_JSON)
                     .follow("relations", "groups");
-            String groupJson = groupApiEndpoint.toObject(String.class);
-            Assert.assertEquals(JsonPath.parse(groupJson).read("$._embedded.groupsrelations[0].accession"), testGroup.getAccession());
 
-            String samplesJson = groupApiEndpoint.follow("samples").toString();
-            Assert.assertEquals(JsonPath.parse(samplesJson).read("$._embedded.samplesrelations[0].accession"), testSample.getAccession());
+            String groupJson = traversalBuilder.toObject(String.class);
+            Assert.assertEquals(
+                    JsonPath.parse(groupJson).read("$._embedded.groupsrelations[0].accession"),
+                    testGroup.getAccession());
+
+            String sampleJson = traversalBuilder.follow("$._embedded.groupsrelations[0]._links.samples.href").toObject(String.class);
+            Assert.assertEquals(
+                    JsonPath.parse(sampleJson).read("$._embedded.samplesrelations[0].accession"),
+                    testSample.getAccession());
+
+            String externalLinkJson = traversalBuilder.follow("$._embedded.samplesrelations[0]._links.externalLinks.href").toObject(String.class);
+            Assert.assertEquals(
+                    JsonPath.parse(externalLinkJson).read("$._embedded.externallinksrelations[0].url"),
+                    testSample.getExternalReferences().first().getUrl());
 
 
 
-
-//            final JsonApiClient apiClient = new JsonApiClient();
-//            Assert.assertEquals(
-//                    apiClient.discovery().rel("relations").get().rel("groups").get().getJsonPath().getString("accession"),
-//                    testGroup.getAccession());
-
-//            given().accept("application/hal+json")
-//                    .when()
-//                    .get(uriBuilder.toUriString())
-//                    .then()
-//                    .statusCode(200)
-//                    .body("$", allOf(
-//                            hasKey("accession"),
-//                            hasKey("characteristics"),
-//                            hasKey("samples"),
-//                            hasKey("_links")))
-//                    .body("characteristics", allOf(hasKey("origin donor"), hasKey("origin cell-line")));
-
-//            log.info("Sample " + testGroup.getAccession() + " has all expected fields");
 
 
         }
