@@ -79,7 +79,7 @@ public class RestIntegration extends AbstractIntegration {
 		// put a version that is private
 		sampleTest1 = Sample.build(sampleTest1.getName(), sampleTest1.getAccession(), sampleTest1.getDomain(),
 				Instant.parse("2116-04-01T11:36:57.00Z"), sampleTest1.getUpdate(),
-				sampleTest1.getCharacteristics(), sampleTest1.getRelationships(), sampleTest1.getExternalReferences(), null);
+				sampleTest1.getCharacteristics(), sampleTest1.getRelationships(), sampleTest1.getExternalReferences(), null, null);
 		Resource<Sample> resource = client.persistSampleResource(sampleTest1);
 		if (!sampleTest1.equals(resource.getContent())) {
 			log.warn("expected: "+sampleTest1);
@@ -114,7 +114,7 @@ public class RestIntegration extends AbstractIntegration {
 		Resource<Sample> resource = client.persistSampleResource(sampleTest2, false);
 		sampleTest2 = Sample.build(sampleTest2.getName(), sampleTest2.getAccession(), null,
 				sampleTest2.getRelease(), sampleTest2.getUpdate(),
-				sampleTest2.getCharacteristics(), sampleTest1.getRelationships(), sampleTest2.getExternalReferences(), null);
+				sampleTest2.getCharacteristics(), sampleTest1.getRelationships(), sampleTest2.getExternalReferences(), null, null);
 
 		if (!sampleTest2.equals(resource.getContent())) {
 			log.warn("expected: "+sampleTest2);
@@ -131,7 +131,7 @@ public class RestIntegration extends AbstractIntegration {
 		
 		sampleTest2 = Sample.build(sampleTest2.getName(), sampleTest2.getAccession(), sampleTest2.getDomain(),
 				sampleTest2.getRelease(), sampleTest2.getUpdate(),
-				sampleTest2.getCharacteristics(), sampleTest1.getRelationships(), sampleTest2.getExternalReferences(), null);
+				sampleTest2.getCharacteristics(), sampleTest1.getRelationships(), sampleTest2.getExternalReferences(), null, null);
 
 		//check that it has the additional relationship added
 		// get to check it worked
@@ -159,7 +159,7 @@ public class RestIntegration extends AbstractIntegration {
 		//now do another update to delete the relationship
 		sampleTest1 = Sample.build(sampleTest1.getName(), sampleTest1.getAccession(), sampleTest1.getDomain(),
 				Instant.parse("2116-04-01T11:36:57.00Z"), sampleTest1.getUpdate(),
-				sampleTest1.getCharacteristics(), new TreeSet<>(), sampleTest1.getExternalReferences(), null);
+				sampleTest1.getCharacteristics(), new TreeSet<>(), sampleTest1.getExternalReferences(), null, null);
 		Resource<Sample> resource = client.persistSampleResource(sampleTest1);
 		if (!sampleTest1.equals(resource.getContent())) {
 			log.warn("expected: "+sampleTest1);
@@ -231,7 +231,7 @@ public class RestIntegration extends AbstractIntegration {
 		SortedSet<ExternalReference> externalReferences = new TreeSet<>();
 		externalReferences.add(ExternalReference.build("http://www.google.com"));
 
-		return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences, null);
+		return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences, null, null);
 	}
 	
 	@PreDestroy
@@ -251,7 +251,7 @@ public class RestIntegration extends AbstractIntegration {
 				Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
 		attributes.add(Attribute.build("UTF-8 test", "αβ", null, null));
 
-		return Sample.build(name, accession, domain, release, update, attributes, new TreeSet<>(), new TreeSet<>(), null);
+		return Sample.build(name, accession, domain, release, update, attributes, new TreeSet<>(), new TreeSet<>(), null, null);
 	}
 
 }

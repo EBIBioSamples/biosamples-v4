@@ -120,7 +120,7 @@ public class BioSamplesAapService {
 			if (usersDomains.size() == 1) {
 				sample = Sample.build(sample.getName(), sample.getAccession(), 
 						usersDomains.iterator().next(), sample.getRelease(), sample.getUpdate(), 
-						sample.getAttributes(), sample.getRelationships(), sample.getExternalReferences(), sample.getOrganizations());
+						sample.getAttributes(), sample.getRelationships(), sample.getExternalReferences(), sample.getOrganizations(), sample.getContacts());
 			} else {			
 				//if the sample doesn't have a domain, and we can't guess one, then end
 				throw new DomainMissingException();

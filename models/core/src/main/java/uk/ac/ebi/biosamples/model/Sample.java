@@ -43,6 +43,7 @@ public class Sample implements Comparable<Sample> {
 	protected SortedSet<ExternalReference> externalReferences;
 
 	protected SortedSet<Organization> organizations;
+	protected SortedSet<Contact> contacts;
 
 	protected Sample() {
 		
@@ -117,6 +118,11 @@ public class Sample implements Comparable<Sample> {
 	@JsonProperty("organization")
 	public SortedSet<Organization> getOrganizations() {
 		return organizations;
+	}
+
+	@JsonProperty("contact")
+	public SortedSet<Contact> getContacts() {
+		return contacts;
 	}
 	
 
@@ -215,6 +221,20 @@ public class Sample implements Comparable<Sample> {
 				}
 			}
 		}
+		if (!this.contacts.equals(other.contacts)) {
+			if (this.contacts.size() < other.contacts.size()) {
+				return -1;
+			} else if (this.contacts.size() > other.contacts.size()) {
+				return 1;
+			} else {
+				Iterator<Contact> thisIt = this.contacts.iterator();
+				Iterator<Contact> otherIt = other.contacts.iterator();
+				while (thisIt.hasNext() && otherIt.hasNext()) {
+					int val = thisIt.next().compareTo(otherIt.next());
+					if (val != 0) return val;
+				}
+			}
+		}
 		return 0;
 	}
     
@@ -258,7 +278,7 @@ public class Sample implements Comparable<Sample> {
 			Set<Attribute> attributes,
 			Set<Relationship> relationships, 
 			Set<ExternalReference> externalReferences) {
-    	return build(name, accession, domain, release, update, attributes, relationships, externalReferences, null);
+    	return build(name, accession, domain, release, update, attributes, relationships, externalReferences, null, null);
     }
 
     //Used for deserializtion (JSON -> Java)
@@ -271,7 +291,8 @@ public class Sample implements Comparable<Sample> {
 			@JsonProperty("characteristics") @JsonDeserialize(using = CharacteristicDeserializer.class) Collection<Attribute> attributes,
 			@JsonProperty("relationships") Collection<Relationship> relationships, 
 			@JsonProperty("externalReferences") Collection<ExternalReference> externalReferences,
-			@JsonProperty("organization") Collection<Organization> organizations) {
+			@JsonProperty("organization") Collection<Organization> organizations, 
+			@JsonProperty("contact") Collection<Contact> contacts) {
     	
 		Sample sample = new Sample();
 		
@@ -311,7 +332,11 @@ public class Sample implements Comparable<Sample> {
 		if (organizations != null) {
 			sample.organizations.addAll(organizations);
 		}	
-		
+
+		sample.contacts = new TreeSet<>();
+		if (contacts != null) {
+			sample.contacts.addAll(contacts);
+		}	
 		
 		return sample;
 	}

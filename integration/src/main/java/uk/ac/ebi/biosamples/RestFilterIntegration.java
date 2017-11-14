@@ -181,7 +181,7 @@ public class RestFilterIntegration extends AbstractIntegration{
         SortedSet<Attribute> attributes = new TreeSet<>();
         attributes.add(Attribute.build("TestAttribute", "FilterMe", null, null));
 
-        return Sample.build(name, accession, domain, release, update, attributes, new TreeSet<>(), new TreeSet<>(), null);
+        return Sample.build(name, accession, domain, release, update, attributes, new TreeSet<>(), new TreeSet<>(), null, null);
     }
 
     public Sample getTestSample2() {
@@ -195,7 +195,7 @@ public class RestFilterIntegration extends AbstractIntegration{
         attributes.add(
                 Attribute.build("testAttribute", "filterMe", "http://www.ebi.ac.uk/efo/EFO_0001071", null));
 
-        return Sample.build(name, accession, domain, release, update, attributes, new TreeSet<>(), new TreeSet<>(), null);
+        return Sample.build(name, accession, domain, release, update, attributes, new TreeSet<>(), new TreeSet<>(), null, null);
     }
 
 }

@@ -40,7 +40,9 @@ public class SampleToMongoSampleConverter implements Converter<Sample, MongoSamp
 			throw new RuntimeException("sample does not have domain "+sample);
 		}
 		
-		return MongoSample.build(sample.getName(), sample.getAccession(), sample.getDomain(), sample.getRelease(), sample.getUpdate(),
-				sample.getCharacteristics(), relationships, externalReferences, sample.getOrganizations());
+		return MongoSample.build(sample.getName(), sample.getAccession(), sample.getDomain(), 
+				sample.getRelease(), sample.getUpdate(),
+				sample.getCharacteristics(), relationships, externalReferences, 
+				sample.getOrganizations(), sample.getContacts());
 	}
 }

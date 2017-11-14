@@ -429,7 +429,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
             SortedSet<Attribute> attributes = new TreeSet<>();
             attributes.add(
                     Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
-            return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, new TreeSet<>(), new TreeSet<>(), null);
+            return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, new TreeSet<>(), new TreeSet<>(), null, null);
         }
 
         public static Sample getPrivateSample() {
@@ -442,7 +442,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
             attributes.add(
                     Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
 
-            return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, new TreeSet<>(), new TreeSet<>(), null);
+            return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, new TreeSet<>(), new TreeSet<>(), null, null);
 
         }
 
@@ -455,7 +455,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
             SortedSet<Attribute> attributes = new TreeSet<>();
 
 
-            return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, new TreeSet<>(), new TreeSet<>(), null);
+            return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, new TreeSet<>(), new TreeSet<>(), null, null);
 
         }
 
@@ -468,7 +468,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
             SortedSet<Relationship> relationships = new TreeSet<>();
             relationships.add(Relationship.build(accession, "has member", getSampleWithinGroup().getAccession()));
 
-            return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, new TreeSet<>(), relationships, new TreeSet<>(), null);
+            return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, new TreeSet<>(), relationships, new TreeSet<>(), null, null);
         }
 
         public static Sample getSampleWithSpecificUpdateDate() {
@@ -477,7 +477,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
             Instant update = Instant.now();
             Instant release = Instant.parse("1980-08-02T00:30:00Z");
 
-            return Sample.build(name, accession, submissionDomain, release, update, null, null, null, null);
+            return Sample.build(name, accession, submissionDomain, release, update, null, null, null, null, null);
 
         }
 

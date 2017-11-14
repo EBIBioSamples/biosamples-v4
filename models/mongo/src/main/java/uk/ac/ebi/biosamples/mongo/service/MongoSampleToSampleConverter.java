@@ -43,6 +43,6 @@ public class MongoSampleToSampleConverter implements Converter<MongoSample, Samp
 		
 		
 		return Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(), sample.getRelease(), sample.getUpdate(),
-				sample.getAttributes(), relationships, externalReferences, sample.getOrganizations());
+				sample.getAttributes(), relationships, externalReferences, sample.getOrganizations(), sample.getContacts());
 	}
 }

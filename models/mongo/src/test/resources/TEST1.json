@@ -38,10 +38,17 @@
 	],
 	"organizations": [
 		{
-			"Name": "Joe Bloggs",
+			"Name": "Jo Bloggs Inc",
 			"Role": "user",
-			"E-mail": "joe@bloggs.com",
-			"URL": "http://www.bloggs.com"
+			"E-mail": "help@jobloggs.com",
+			"URL": "http://www.jobloggs.com"
+		}
+	],
+	"contacts": [
+		{
+			"Name": "Joe Bloggs",
+			"Affiliation": "Jo Bloggs Inc",
+			"URL": "http://www.jobloggs.com/joe"
 		}
 	]
 }
