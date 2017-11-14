@@ -14,4 +14,13 @@ public enum SupportedGroupsRelationships {
     public String getRelationshipName() {
         return this.relationshipName;
     }
+
+    public static SupportedGroupsRelationships getFromName(String name) {
+        for (SupportedGroupsRelationships rel: values()) {
+            if (rel.getRelationshipName().equals(name))
+                return rel;
+        }
+
+        return null;
+    }
 }

@@ -1,10 +1,13 @@
 package uk.ac.ebi.biosamples;
 
+import com.jayway.jsonpath.JsonPath;
+import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Profile;
 import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.client.Traverson;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -23,6 +26,7 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasKey;
+import static org.springframework.hateoas.MediaTypes.HAL_JSON;
 
 @Component
 @Profile({"default", "test"})
@@ -66,7 +70,7 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
 
     @Override
     protected void phaseThree() {
-        // jsonSearchTester.itShouldFindGroupFollowingGroupRelationsInSample();
+         jsonSearchTester.itShouldFindGroupFollowingGroupRelationsInSample();
         // jsonSearchTester.itShouldFindSampleFollowingSamplesRelationsInGroup();
     }
 
@@ -213,6 +217,48 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
                     .body("characteristics", allOf(hasKey("origin donor"), hasKey("origin cell-line")));
 
             log.info("Sample " + testGroup.getAccession() + " has all expected fields");
+
+        }
+
+        public void itShouldFindGroupFollowingGroupRelationsInSample() {
+
+            Sample testSample = TestSampleGenerator.getSampleMemberOfGroupWithExternalRelations();
+            Sample testGroup = TestSampleGenerator.getGroupContainegSAMEA911();
+
+            log.info("Verifying is possible to navigate from sample to group and back to sample");
+            UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosamplesLegacyJSONUri());
+            uriBuilder.pathSegment("samples", testSample.getAccession());
+
+            Traverson.TraversalBuilder groupApiEndpoint = new Traverson(uriBuilder.build().toUri(), HAL_JSON)
+                    .follow("relations", "groups");
+            String groupJson = groupApiEndpoint.toObject(String.class);
+            Assert.assertEquals(JsonPath.parse(groupJson).read("$._embedded.groupsrelations[0].accession"), testGroup.getAccession());
+
+            String samplesJson = groupApiEndpoint.follow("samples").toString();
+            Assert.assertEquals(JsonPath.parse(samplesJson).read("$._embedded.samplesrelations[0].accession"), testSample.getAccession());
+
+
+
+
+//            final JsonApiClient apiClient = new JsonApiClient();
+//            Assert.assertEquals(
+//                    apiClient.discovery().rel("relations").get().rel("groups").get().getJsonPath().getString("accession"),
+//                    testGroup.getAccession());
+
+//            given().accept("application/hal+json")
+//                    .when()
+//                    .get(uriBuilder.toUriString())
+//                    .then()
+//                    .statusCode(200)
+//                    .body("$", allOf(
+//                            hasKey("accession"),
+//                            hasKey("characteristics"),
+//                            hasKey("samples"),
+//                            hasKey("_links")))
+//                    .body("characteristics", allOf(hasKey("origin donor"), hasKey("origin cell-line")));
+
+//            log.info("Sample " + testGroup.getAccession() + " has all expected fields");
+
 
         }
     }

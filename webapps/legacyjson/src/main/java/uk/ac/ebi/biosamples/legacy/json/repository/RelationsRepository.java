@@ -1,10 +1,7 @@
 package uk.ac.ebi.biosamples.legacy.json.repository;
 
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.legacy.json.domain.KnownRelationsMapping;
-import uk.ac.ebi.biosamples.legacy.json.domain.GroupsRelations;
-import uk.ac.ebi.biosamples.legacy.json.domain.SamplesRelations;
-import uk.ac.ebi.biosamples.legacy.json.domain.SupportedSamplesRelationships;
+import uk.ac.ebi.biosamples.legacy.json.domain.*;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 
@@ -104,7 +101,11 @@ public class RelationsRepository {
     }
 
 
-    public boolean isSupportedRelation(String relationType) {
+    public boolean isSupportedSamplesRelation(String relationType) {
         return SupportedSamplesRelationships.getFromName(relationType) != null;
+    }
+
+    public boolean isSupportedGroupsRelations(String relationType) {
+        return SupportedGroupsRelationships.getFromName(relationType) != null;
     }
 }

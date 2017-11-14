@@ -81,7 +81,7 @@ public class SamplesRelationsController {
             @PathVariable String accession,
             @PathVariable String relationType) {
 
-        if (!relationsRepository.isSupportedRelation(relationType)) {
+        if (!relationsRepository.isSupportedSamplesRelation(relationType)) {
             return ResponseEntity.badRequest().build();
         }
 

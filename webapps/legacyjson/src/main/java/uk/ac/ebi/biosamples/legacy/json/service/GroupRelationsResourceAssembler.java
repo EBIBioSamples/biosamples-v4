@@ -6,7 +6,8 @@ import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceAssembler;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.legacy.json.domain.GroupsRelations;
-import uk.ac.ebi.biosamples.legacy.json.domain.LegacySample;
+import uk.ac.ebi.biosamples.legacy.json.domain.LegacyGroup;
+import uk.ac.ebi.biosamples.legacy.json.domain.SamplesRelations;
 
 @Service
 public class GroupRelationsResourceAssembler implements ResourceAssembler<GroupsRelations, Resource<GroupsRelations>>{
@@ -23,10 +24,11 @@ public class GroupRelationsResourceAssembler implements ResourceAssembler<Groups
         Resource<GroupsRelations> resource = new Resource<>(entity);
 
         resource.add(entityLinks.linkToSingleResource(GroupsRelations.class, entity.accession()).withSelfRel());
-        resource.add(entityLinks.linkToSingleResource(LegacySample.class, entity.accession()).withRel("details"));
+        resource.add(entityLinks.linkToSingleResource(LegacyGroup.class, entity.accession()).withRel("details"));
         resource.add(entityLinks.linkToSingleResource(GroupsRelations.class, entity.accession()).withRel("groupsrelations"));
         resource.add(new Link("test").withRel("externallinks"));
-        resource.add(new Link("test").withRel("samples"));
+//        resource.add(entityLinks.linkToCollectionResource(LegacyExternalReference.class).withRel("externallinks"));
+        resource.add(entityLinks.linkToCollectionResource(SamplesRelations.class).withRel("samples"));
 
         return resource;
     }

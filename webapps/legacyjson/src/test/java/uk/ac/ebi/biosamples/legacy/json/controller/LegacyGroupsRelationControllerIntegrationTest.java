@@ -9,21 +9,35 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.Resource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import uk.ac.ebi.biosamples.legacy.json.domain.TestSample;
-import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.legacy.json.repository.SampleRepository;
+import uk.ac.ebi.biosamples.model.ExternalReference;
+import uk.ac.ebi.biosamples.model.Relationship;
+import uk.ac.ebi.biosamples.model.Sample;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasKey;
+import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
+import static org.springframework.hateoas.MediaTypes.HAL_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -38,8 +52,21 @@ public class LegacyGroupsRelationControllerIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    PagedResourcesAssembler<Sample> pagedResourcesAssembler;
+
     private ResultActions getGroupsRelationsHAL(String accession) throws Exception {
         return mockMvc.perform(get("/groupsrelations/{accession}", accession).accept(MediaTypes.HAL_JSON_VALUE));
+    }
+
+    private PagedResources<Resource<Sample>> getTestPagedResourcesSample(int totalSamples, Sample... samples) {
+        List<Sample> allSamples = Stream.of(samples)
+                .collect(Collectors.toList());
+
+        Pageable pageInfo = new PageRequest(0,samples.length);
+        Page<Sample> samplePage = new PageImpl<>(allSamples, pageInfo, totalSamples);
+        return pagedResourcesAssembler.toResource(samplePage);
+
     }
 
     @Test
@@ -107,15 +134,54 @@ public class LegacyGroupsRelationControllerIntegrationTest {
     }
 
     @Test
-    @Ignore
     public void testRequestForUnsupportedRelationThrowsError() throws Exception {
-        //TODO
+        Sample group = new TestSample("SAMEG1").build();
+        mockMvc.perform(get("/groupsrealtions/SAMEG1/test").accept(HAL_JSON))
+                .andExpect(status().isNotFound());
+
     }
 
     @Test
-    @Ignore
+    public void testRequestForSampleRelationReturnResourcesOfSampleRelations() throws Exception {
+        Sample group = new TestSample("SAMEG1")
+                .withRelationship(Relationship.build("SAMEG1", "has member", "SAMEA1"))
+                .build();
+        Sample sample = new TestSample("SAMEA1")
+                .withRelationship(Relationship.build("SAMEG1", "has member", "SAMEA1"))
+                .build();
+        when(sampleRepository.findByAccession(group.getAccession())).thenReturn(Optional.of(group));
+        when(sampleRepository.findByAccession(sample.getAccession())).thenReturn(Optional.of(sample));
+
+
+        mockMvc.perform(get("/groupsrelations/SAMEG1/samples").accept(HAL_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$._embedded.samplesrelations[0].accession").value("SAMEA1"));
+    }
+
+    @Test
+    public void testRequestForExternalLinksReturnsExternalLinkResources() throws Exception {
+        Sample group = new TestSample("SAMEG1")
+                .withExternalReference(ExternalReference.build("http://test/1"))
+                .build();
+        when(sampleRepository.findByAccession(group.getAccession())).thenReturn(Optional.of(group));
+
+
+        mockMvc.perform(get("/groupsrelations/SAMEG1/externalLinks").accept(HAL_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$._embedded.externallinksrelations[0].url").value("http://test/1"));
+    }
+
+    @Test
     public void testRetrieveAllGroupsRelationsReturnPagedResources() throws Exception {
-        //TODO
+        Sample group1 = new TestSample("SAMEG1").build();
+        Sample group2 = new TestSample("SAMEG2").build();
+        when(sampleRepository.findGroups(anyInt(), anyInt())).thenReturn(getTestPagedResourcesSample(10, group1, group2));
+
+
+        mockMvc.perform(get("/groupsrelations").accept(HAL_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/hal+json;charset=UTF-8"));
+
     }
 
     @Test
