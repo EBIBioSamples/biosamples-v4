@@ -19,6 +19,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import uk.ac.ebi.biosamples.legacy.json.domain.TestSample;
 import uk.ac.ebi.biosamples.legacy.json.repository.SampleRepository;
 import uk.ac.ebi.biosamples.model.ExternalReference;
+import uk.ac.ebi.biosamples.model.Organization;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 
@@ -177,9 +178,18 @@ public class LegacyGroupsControllerIntegrationTest {
 	}
 
 	@Test
-	@Ignore
 	public void testOrganizationIsRootField() throws Exception {
-	    /*TODO */
+		Sample testGroup = new TestSample("SAMEG1")
+				.withOrganization(Organization.build("Stanford Microarray Database (SMD)", "submitter", null, null))
+				.build();
+		when(sampleRepository.findByAccession(testGroup.getAccession())).thenReturn(Optional.of(testGroup));
+
+		mockMvc.perform(get("/samples/{accession}", testGroup.getAccession()).accept(HAL_JSON))
+				.andExpect(jsonPath("$.organization").isArray())
+				.andExpect(jsonPath("$.organization[0]").value(
+						allOf(hasEntry("Name", "Stanford Microarray Database (SMD)"), hasEntry("Role", "submitter"))
+				));
+
 	}
 	
 }

@@ -11,6 +11,7 @@ import org.springframework.hateoas.core.Relation;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.Organization;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 
@@ -18,6 +19,7 @@ import java.io.IOException;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -130,6 +132,10 @@ public class LegacyGroup {
                 .collect(Collectors.toList());
     }
 
+    @JsonGetter("organization")
+    public List<Organization> organizations() {
+        return new ArrayList(this.sample.getOrganizations());
+    }
 
 
     private boolean isDescription(Attribute attribute) {
