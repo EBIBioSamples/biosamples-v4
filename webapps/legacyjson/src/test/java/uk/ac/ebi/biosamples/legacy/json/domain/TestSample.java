@@ -62,6 +62,16 @@ public class TestSample {
         return this;
     }
 
+    public TestSample withContact(Contact contact) {
+        this.contacts.add(contact);
+        return this;
+    }
+
+    public TestSample withPublication(Publication publication) {
+        this.publications.add(publication);
+        return this;
+    }
+
     public Sample build() {
         return Sample.build(this.name,
                 this.accession,
@@ -75,4 +85,5 @@ public class TestSample {
                 this.contacts,
                 this.publications);
     }
+
 }

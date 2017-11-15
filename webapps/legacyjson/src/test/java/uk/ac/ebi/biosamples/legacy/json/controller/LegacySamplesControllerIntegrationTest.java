@@ -26,10 +26,7 @@ import uk.ac.ebi.biosamples.legacy.json.domain.TestAttribute;
 import uk.ac.ebi.biosamples.legacy.json.domain.TestSample;
 import uk.ac.ebi.biosamples.legacy.json.repository.RelationsRepository;
 import uk.ac.ebi.biosamples.legacy.json.repository.SampleRepository;
-import uk.ac.ebi.biosamples.model.ExternalReference;
-import uk.ac.ebi.biosamples.model.Organization;
-import uk.ac.ebi.biosamples.model.Relationship;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.*;
 
 import java.time.Instant;
 import java.util.*;
@@ -203,15 +200,27 @@ public class LegacySamplesControllerIntegrationTest {
 	}
 
 	@Test
-	@Ignore
 	public void testContactIsRootField() throws Exception {
-		/*TODO*/
+	    Sample sample = new TestSample("SAMEA1")
+				.withContact(Contact.build("Name", "Affiliation", "url"))
+				.build();
+	    when(sampleRepository.findByAccession(sample.getAccession())).thenReturn(Optional.of(sample));
+
+	    mockMvc.perform(get("/samples/{accession}", sample.getAccession()).accept(HAL_JSON))
+				.andExpect(jsonPath("$.contact").isArray())
+				.andExpect(jsonPath("$.contact[0]").value(allOf(hasKey("Name"), hasKey("Affiliation"), hasKey("URL"))));
 	}
 
 	@Test
-	@Ignore
 	public void testPublicationIsRootField() throws Exception {
-	    /*TODO */
+		Sample sample = new TestSample("SAMEA1")
+				.withPublication(Publication.build("doi", "pubmedID"))
+				.build();
+		when(sampleRepository.findByAccession(sample.getAccession())).thenReturn(Optional.of(sample));
+
+		mockMvc.perform(get("/samples/{accession}", sample.getAccession()).accept(HAL_JSON))
+				.andExpect(jsonPath("$.publications").isArray())
+				.andExpect(jsonPath("$.publications[0]").value(allOf(hasKey("doi"), hasKey("pubmed_id"))));
 	}
 
 	@Test

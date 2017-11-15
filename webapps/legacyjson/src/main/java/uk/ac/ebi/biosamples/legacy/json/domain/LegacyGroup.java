@@ -11,10 +11,7 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.springframework.hateoas.core.Relation;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Organization;
-import uk.ac.ebi.biosamples.model.Relationship;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.*;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -138,6 +135,15 @@ public class LegacyGroup {
         return new ArrayList(this.sample.getOrganizations());
     }
 
+    @JsonGetter("contact")
+    public List<Contact> contacts() {
+        return new ArrayList(this.sample.getContacts());
+    }
+
+    @JsonGetter("publications")
+    public List<Publication> publications() {
+        return new ArrayList(this.sample.getPublications());
+    }
 
     private boolean isDescription(Attribute attribute) {
         return attribute.getType().equalsIgnoreCase("description");

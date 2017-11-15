@@ -18,10 +18,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.ac.ebi.biosamples.legacy.json.domain.TestSample;
 import uk.ac.ebi.biosamples.legacy.json.repository.SampleRepository;
-import uk.ac.ebi.biosamples.model.ExternalReference;
-import uk.ac.ebi.biosamples.model.Organization;
-import uk.ac.ebi.biosamples.model.Relationship;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -163,20 +160,31 @@ public class LegacyGroupsControllerIntegrationTest {
 	public void testSearchGroupsByAccession() throws Exception {
 	    /*TODO test in end-to-end tests*/
 	}
-	
 
-	@Test
-	@Ignore
+
+
 	public void testContactIsRootField() throws Exception {
-		/*TODO*/
+		Sample group = new TestSample("SAMEG1")
+				.withContact(Contact.build("Name", "Affiliation", "url"))
+				.build();
+		when(sampleRepository.findByAccession(group.getAccession())).thenReturn(Optional.of(group));
+
+		mockMvc.perform(get("/samples/{accession}", group.getAccession()).accept(HAL_JSON))
+				.andExpect(jsonPath("$.contact").isArray())
+				.andExpect(jsonPath("$.contact[0]").value(allOf(hasKey("Name"), hasKey("Affiliation"), hasKey("URL"))));
 	}
 
 	@Test
-	@Ignore
 	public void testPublicationIsRootField() throws Exception {
-	    /*TODO */
-	}
+		Sample group = new TestSample("SAMEG1")
+				.withPublication(Publication.build("doi", "pubmedID"))
+				.build();
+		when(sampleRepository.findByAccession(group.getAccession())).thenReturn(Optional.of(group));
 
+		mockMvc.perform(get("/samples/{accession}", group.getAccession()).accept(HAL_JSON))
+				.andExpect(jsonPath("$.publications").isArray())
+				.andExpect(jsonPath("$.publications[0]").value(allOf(hasKey("doi"), hasKey("pubmed_id"))));
+	}
 	@Test
 	public void testOrganizationIsRootField() throws Exception {
 		Sample testGroup = new TestSample("SAMEG1")
