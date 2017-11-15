@@ -41,5 +41,26 @@
 		{
 			"url": "http://www.google.com"
 		}
+	],
+	"organization": [
+		{
+			"Name": "Jo Bloggs Inc",
+			"Role": "user",
+			"E-mail": "help@jobloggs.com",
+			"URL": "http://www.jobloggs.com"
+		}
+	],
+	"contact": [
+		{
+			"Name": "Joe Bloggs",
+			"Affiliation": "Jo Bloggs Inc",
+			"URL": "http://www.jobloggs.com/joe"
+		}
+	],
+	"publications": [
+		{
+			"doi": "10.1093/nar/gkt1081",
+			"pubmed_id": "24265224"
+		}
 	]
 }

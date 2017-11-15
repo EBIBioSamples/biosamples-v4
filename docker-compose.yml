@@ -126,7 +126,35 @@ services:
     - BIOSAMPLES_CLIENT_AAP_PASSWORD=override_in_docker-compose.override.yml
     ports:
     - 8083:8080
-    
+
+  biosamples-webapps-legacyjson:
+    image: biosamples:latest
+    links:
+      - biosamples-webapps-core
+    volumes:
+      - logs:/logs
+    command:
+      - java
+      - -jar
+      - webapps-legacyjson-4.0.0-SNAPSHOT.war
+    environment:
+      - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples/beta
+      - SERVER_SERVLET_CONTEXT-PATH=/biosamples/beta/api
+      - SERVER_CONTEXT-PATH=/biosamples/beta/api
+      - SPRING_JACKSON_SERIALIZATION_INDENT_OUTPUT=true
+      - LOGGING_FILE=/logs/webapps-legacyjson.log
+      - SERVER_TOMCAT_ACCESSLOG_ENABLED=true
+      - SERVER_TOMCAT_ACCESSLOG_DIRECTORY=/logs
+      - SERVER_TOMCAT_ACCESSLOG_PREFIX=webapps-legacyjson.access
+      - SERVER_TOMCAT_ACCESSLOG_PATTERN=%h %l %u %t "%r" %s %b (%D ms)
+      - ENDPOINTS_SHUTDOWN_ENABLED=true
+      - ENDPOINTS_SHUTDOWN_SENSITIVE=false
+      # Provide AAP infos
+      - BIOSAMPLES_CLIENT_AAP_USERNAME=override_in_docker-compose.override.yml
+      - BIOSAMPLES_CLIENT_AAP_PASSWORD=override_in_docker-compose.override.yml
+    ports:
+      - 8084:8080
+
   biosamples-agents-solr:
     image: biosamples:latest
     links:
@@ -229,6 +257,7 @@ services:
     - biosamples-webapps-core
     - biosamples-webapps-sampletab
     - biosamples-webapps-legacyxml
+    - biosamples-webapps-legacyjson
     command:
     - java
     - -jar
@@ -239,6 +268,7 @@ services:
     - BIOSAMPLES_SUBMISSIONURI_SAMPLETAB=http://biosamples-webapps-sampletab:8080/biosamples/beta/sampletab
     - BIOSAMPLES_LEGACYXML=http://biosamples-webapps-legacyxml:8080/biosamples/beta/xml
     - BIOSAMPLES_LEGACYXML_URI=http://biosamples-webapps-legacyxml:8080/biosamples/beta/xml
+    - BIOSAMPLES_LEGACYJSON_URI=http://biosamples-webapps-legacyjson:8080/biosamples/beta/api
     - LOGGING_FILE=/logs/integration.log
     # Provide AAP infos
     - BIOSAMPLES_CLIENT_AAP_USERNAME=override_in_docker-compose.override.yml
@@ -270,7 +300,7 @@ services:
     - solr_data:/opt/solr/server/solr/mycores
     environment:
     - VERBOSE=yes
-    - SOLR_HEAP=8g
+    - SOLR_HEAP=2g
     entrypoint:
     - docker-entrypoint.sh
     - solr-precreate

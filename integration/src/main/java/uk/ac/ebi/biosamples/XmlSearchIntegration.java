@@ -93,7 +93,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
 
     }
 
-    private static class XmlSearchTester {
+    private class XmlSearchTester {
 
         private final IntegrationProperties integrationProperties;
         private final Logger log;
@@ -164,7 +164,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
             Sample test1 = TestSampleGenerator.getRegularSample();
 
             log.info(String.format("Searching sample %s using legacy xml api", test1.getAccession()));
-            UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleLegaxyXmlUri());
+            UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosamplesLegacyXMLUri());
             uriBuilder.pathSegment("samples", test1.getAccession());
 
             RequestEntity<?> request = RequestEntity
@@ -189,7 +189,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
 
             log.info(String.format("Searching private sample %s using legacy xml api", privateSample.getAccession()));
 
-            UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleLegaxyXmlUri());
+            UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosamplesLegacyXMLUri());
             uriBuilder.pathSegment("samples", privateSample.getAccession());
 
             try {
@@ -218,7 +218,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
             HttpHeaders xmlHeaders = new HttpHeaders();
             xmlHeaders.setAccept(Collections.singletonList(MediaType.TEXT_XML));
 
-            UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleLegaxyXmlUri());
+            UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosamplesLegacyXMLUri());
 
             UriComponentsBuilder testGroupsEndpoint = uriBuilder.cloneBuilder();
             testGroupsEndpoint.pathSegment("groups", sampleGroup.getAccession());
@@ -247,7 +247,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
             HttpHeaders xmlHeaders = new HttpHeaders();
             xmlHeaders.setAccept(Collections.singletonList(MediaType.TEXT_XML));
 
-            UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleLegaxyXmlUri());
+            UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosamplesLegacyXMLUri());
 
             UriComponentsBuilder testSamplesEndpoint = uriBuilder.cloneBuilder();
             testSamplesEndpoint.pathSegment("groupsamples", groupSample.getAccession());
@@ -267,7 +267,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
         }
 
         public void failsToAccessLegacyEndpointUsingJsonHeader() {
-            UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleLegaxyXmlUri());
+            UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosamplesLegacyXMLUri());
 
             UriComponentsBuilder testBadRequest= uriBuilder.cloneBuilder();
             testBadRequest.pathSegment("samples");
@@ -300,7 +300,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
         }
 
         public void failsToQueryLegacyEndpointWithoutRequiredQueryParameter() {
-            UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleLegaxyXmlUri());
+            UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosamplesLegacyXMLUri());
 
             UriComponentsBuilder testBadRequest= uriBuilder.cloneBuilder();
             testBadRequest.pathSegment("samples");
@@ -335,7 +335,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
         }
 
         public void searchesForSamplesUsingQueryParametersOnLegacyEndpoint() {
-            UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleLegaxyXmlUri());
+            UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosamplesLegacyXMLUri());
 
             UriComponentsBuilder testBadRequest= uriBuilder.cloneBuilder();
             testBadRequest.pathSegment("samples");
@@ -367,7 +367,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
             HttpHeaders xmlHeaders = new HttpHeaders();
             xmlHeaders.setAccept(Collections.singletonList(MediaType.TEXT_XML));
 
-            UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleLegaxyXmlUri());
+            UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosamplesLegacyXMLUri());
             UriComponentsBuilder testGroupsEndpoint= uriBuilder.cloneBuilder();
             testGroupsEndpoint.pathSegment("groupsamples", sampleGroup.getAccession());
             testGroupsEndpoint.queryParam("query", "*");
@@ -394,7 +394,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
             HttpHeaders xmlHeaders = new HttpHeaders();
             xmlHeaders.setAccept(Collections.singletonList(MediaType.TEXT_XML));
 
-            UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleLegaxyXmlUri());
+            UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosamplesLegacyXMLUri());
             UriComponentsBuilder legacyXmlSampleSearchEndpoint= uriBuilder.cloneBuilder();
             legacyXmlSampleSearchEndpoint.pathSegment("samples")
                     .queryParam("query", "releasedate:[1980-08-01 TO 1980-08-03]");
@@ -429,7 +429,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
             SortedSet<Attribute> attributes = new TreeSet<>();
             attributes.add(
                     Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
-            return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, new TreeSet<>(), new TreeSet<>());
+            return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
         }
 
         public static Sample getPrivateSample() {
@@ -442,7 +442,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
             attributes.add(
                     Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
 
-            return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, new TreeSet<>(), new TreeSet<>());
+            return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
 
         }
 
@@ -455,7 +455,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
             SortedSet<Attribute> attributes = new TreeSet<>();
 
 
-            return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, new TreeSet<>(), new TreeSet<>());
+            return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
 
         }
 
@@ -468,7 +468,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
             SortedSet<Relationship> relationships = new TreeSet<>();
             relationships.add(Relationship.build(accession, "has member", getSampleWithinGroup().getAccession()));
 
-            return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, new TreeSet<>(), relationships, new TreeSet<>());
+            return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, new TreeSet<>(), relationships, new TreeSet<>(), null, null, null);
         }
 
         public static Sample getSampleWithSpecificUpdateDate() {
@@ -477,7 +477,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
             Instant update = Instant.now();
             Instant release = Instant.parse("1980-08-02T00:30:00Z");
 
-            return Sample.build(name, accession, submissionDomain, release, update, null, null, null);
+            return Sample.build(name, accession, submissionDomain, release, update, null, null, null, null, null, null);
 
         }
 

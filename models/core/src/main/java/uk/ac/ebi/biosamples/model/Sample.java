@@ -15,6 +15,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.Set;
@@ -40,6 +41,10 @@ public class Sample implements Comparable<Sample> {
 	protected SortedSet<Attribute> attributes;
 	protected SortedSet<Relationship> relationships;
 	protected SortedSet<ExternalReference> externalReferences;
+
+	protected SortedSet<Organization> organizations;
+	protected SortedSet<Contact> contacts;
+	protected SortedSet<Publication> publications;
 
 	protected Sample() {
 		
@@ -111,6 +116,22 @@ public class Sample implements Comparable<Sample> {
 		return externalReferences;
 	}
 
+	@JsonProperty("organization")
+	public SortedSet<Organization> getOrganizations() {
+		return organizations;
+	}
+
+	@JsonProperty("contact")
+	public SortedSet<Contact> getContacts() {
+		return contacts;
+	}
+
+	@JsonProperty("publications")
+	public SortedSet<Publication> getPublications() {
+		return publications;
+	}
+	
+
 	@Override
     public boolean equals(Object o) {
 
@@ -128,7 +149,10 @@ public class Sample implements Comparable<Sample> {
         		&& Objects.equals(this.release, other.release)
         		&& Objects.equals(this.attributes, other.attributes)
         		&& Objects.equals(this.relationships, other.relationships)
-        		&& Objects.equals(this.externalReferences, other.externalReferences);
+        		&& Objects.equals(this.externalReferences, other.externalReferences)
+        		&& Objects.equals(this.organizations, other.organizations)
+        		&& Objects.equals(this.contacts, other.contacts)
+        		&& Objects.equals(this.publications, other.publications);
     }
 
 	@Override
@@ -191,13 +215,55 @@ public class Sample implements Comparable<Sample> {
 				}
 			}
 		}
+		if (!this.organizations.equals(other.organizations)) {
+			if (this.organizations.size() < other.organizations.size()) {
+				return -1;
+			} else if (this.organizations.size() > other.organizations.size()) {
+				return 1;
+			} else {
+				Iterator<Organization> thisIt = this.organizations.iterator();
+				Iterator<Organization> otherIt = other.organizations.iterator();
+				while (thisIt.hasNext() && otherIt.hasNext()) {
+					int val = thisIt.next().compareTo(otherIt.next());
+					if (val != 0) return val;
+				}
+			}
+		}
+		if (!this.contacts.equals(other.contacts)) {
+			if (this.contacts.size() < other.contacts.size()) {
+				return -1;
+			} else if (this.contacts.size() > other.contacts.size()) {
+				return 1;
+			} else {
+				Iterator<Contact> thisIt = this.contacts.iterator();
+				Iterator<Contact> otherIt = other.contacts.iterator();
+				while (thisIt.hasNext() && otherIt.hasNext()) {
+					int val = thisIt.next().compareTo(otherIt.next());
+					if (val != 0) return val;
+				}
+			}
+		}
+		if (!this.publications.equals(other.publications)) {
+			if (this.publications.size() < other.publications.size()) {
+				return -1;
+			} else if (this.publications.size() > other.publications.size()) {
+				return 1;
+			} else {
+				Iterator<Publication> thisIt = this.publications.iterator();
+				Iterator<Publication> otherIt = other.publications.iterator();
+				while (thisIt.hasNext() && otherIt.hasNext()) {
+					int val = thisIt.next().compareTo(otherIt.next());
+					if (val != 0) return val;
+				}
+			}
+		}
 		return 0;
 	}
     
     @Override
     public int hashCode() {
     	//dont put update date in the hash because its not in comparison
-    	return Objects.hash(name, accession, release, attributes, relationships, externalReferences);
+    	return Objects.hash(name, accession, release, attributes, relationships, externalReferences, organizations, publications);
     }
     
     @Override
@@ -219,8 +285,26 @@ public class Sample implements Comparable<Sample> {
     	sb.append(relationships);
     	sb.append(",");
     	sb.append(externalReferences);
+    	sb.append(",");
+    	sb.append(organizations);
+    	sb.append(",");
+    	sb.append(contacts);
+    	sb.append(",");
+    	sb.append(publications);
     	sb.append(")");
     	return sb.toString();
+    }
+    
+    @Deprecated
+	public static Sample build( String name, 
+			 String accession,  
+			String domain,
+			Instant release, 
+			Instant update,
+			Set<Attribute> attributes,
+			Set<Relationship> relationships, 
+			Set<ExternalReference> externalReferences) {
+    	return build(name, accession, domain, release, update, attributes, relationships, externalReferences, null, null, null);
     }
 
     //Used for deserializtion (JSON -> Java)
@@ -230,9 +314,12 @@ public class Sample implements Comparable<Sample> {
 			@JsonProperty("domain") String domain,
 			@JsonProperty("release") @JsonDeserialize(using = CustomInstantDeserializer.class) Instant release, 
 			@JsonProperty("update") @JsonDeserialize(using = CustomInstantDeserializer.class) Instant update,
-			@JsonProperty("characteristics") @JsonDeserialize(using = CharacteristicDeserializer.class) Set<Attribute> attributes,
-			@JsonProperty("relationships") Set<Relationship> relationships, 
-			@JsonProperty("externalReferences") Set<ExternalReference> externalReferences) {
+			@JsonProperty("characteristics") @JsonDeserialize(using = CharacteristicDeserializer.class) Collection<Attribute> attributes,
+			@JsonProperty("relationships") Collection<Relationship> relationships, 
+			@JsonProperty("externalReferences") Collection<ExternalReference> externalReferences,
+			@JsonProperty("organization") Collection<Organization> organizations, 
+			@JsonProperty("contact") Collection<Contact> contacts, 
+			@JsonProperty("publications") Collection<Publication> publications) {
     	
 		Sample sample = new Sample();
 		
@@ -267,6 +354,21 @@ public class Sample implements Comparable<Sample> {
 		if (externalReferences != null) {
 			sample.externalReferences.addAll(externalReferences);
 		}	
+
+		sample.organizations = new TreeSet<>();
+		if (organizations != null) {
+			sample.organizations.addAll(organizations);
+		}	
+
+		sample.contacts = new TreeSet<>();
+		if (contacts != null) {
+			sample.contacts.addAll(contacts);
+		}	
+
+		sample.publications = new TreeSet<>();
+		if (publications != null) {
+			sample.publications.addAll(publications);
+		}
 		
 		return sample;
 	}

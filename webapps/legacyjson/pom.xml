@@ -4,10 +4,8 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>webapps-legacyjson</artifactId>
-	<packaging>jar</packaging>
 
-	<name>legacyjson</name>
-	<description>Porting of v3 api to v4</description>
+	<packaging>war</packaging>
 
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
@@ -24,36 +22,32 @@
 
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
-			<artifactId>client</artifactId>
+			<artifactId>biosamples-spring-boot-starter</artifactId>
 			<version>${bsd2017.version}</version>
 		</dependency>
-
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-devtools</artifactId>
-			<scope>runtime</scope>
+			<artifactId>spring-boot-actuator</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-rest</artifactId>
+			<artifactId>spring-boot-starter-tomcat</artifactId>
+			<scope>provided</scope>
 		</dependency>
-
-        <!--<dependency>-->
-            <!--<groupId>org.springframework.boot</groupId>-->
-            <!--<artifactId>spring-boot-starter-tomcat</artifactId>-->
-            <!--<scope>provided</scope>-->
-        <!--</dependency>-->
-
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
+			<artifactId>spring-boot-test</artifactId>
+			<version>1.4.8.BUILD-SNAPSHOT</version>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-commons</artifactId>
+			<version>1.12.2.RELEASE</version>
 		</dependency>
 	</dependencies>
 
