@@ -43,7 +43,7 @@ public class LegacyXmlGroupController {
 	private final SummaryInfoService summaryInfoService;
 	private final LegacyQueryParser legacyQueryParser;
 
-	private final Filter groupAccessionFilter = FilterBuilder.create().onAccession("SAMEG.*").build();
+	private final Filter groupAccessionFilter = FilterBuilder.create().onAccession("SAMEG[0-9]+").build();
 
 	public LegacyXmlGroupController(BioSamplesClient client,
 									SummaryInfoService summaryInfoService, LegacyQueryParser legacyQueryParser) {

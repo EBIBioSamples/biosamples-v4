@@ -148,9 +148,12 @@ public class SampleRestController {
 		sample = bioSamplesAapService.handleSampleDomain(sample);		
 		
 		//TODO limit use of this method to write super-users only
+		//if (bioSamplesAapService.isWriteSuperUser() && setUpdateDate) {
 		if (setUpdateDate) {
-			sample = Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(), sample.getRelease(), Instant.now(),
-					sample.getCharacteristics(), sample.getRelationships(), sample.getExternalReferences());
+			sample = Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(), 
+					sample.getRelease(), Instant.now(),
+					sample.getCharacteristics(), sample.getRelationships(), sample.getExternalReferences(), 
+					sample.getOrganizations(), sample.getContacts(), sample.getPublications());
 		}
 		
 		sample = sampleService.store(sample);
@@ -170,10 +173,12 @@ public class SampleRestController {
 		log.debug("Recieved POST for "+sample);
 		sample = bioSamplesAapService.handleSampleDomain(sample);
 
-		//TODO limit use of this method to write super-users only
-		if (setUpdateDate) {
-			sample = Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(), sample.getRelease(), Instant.now(),
-					sample.getCharacteristics(), sample.getRelationships(), sample.getExternalReferences());
+		//limit use of this method to write super-users only
+		if (bioSamplesAapService.isWriteSuperUser() && setUpdateDate) {
+			sample = Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(), 
+					sample.getRelease(), Instant.now(),
+					sample.getCharacteristics(), sample.getRelationships(), sample.getExternalReferences(), 
+					sample.getOrganizations(), sample.getContacts(), sample.getPublications());
 		}
 		
 		sample = sampleService.store(sample);

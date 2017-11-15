@@ -120,7 +120,8 @@ public class BioSamplesAapService {
 			if (usersDomains.size() == 1) {
 				sample = Sample.build(sample.getName(), sample.getAccession(), 
 						usersDomains.iterator().next(), sample.getRelease(), sample.getUpdate(), 
-						sample.getAttributes(), sample.getRelationships(), sample.getExternalReferences());
+						sample.getAttributes(), sample.getRelationships(), sample.getExternalReferences(), 
+						sample.getOrganizations(), sample.getContacts(), sample.getPublications());
 			} else {			
 				//if the sample doesn't have a domain, and we can't guess one, then end
 				throw new DomainMissingException();
@@ -177,6 +178,13 @@ public class BioSamplesAapService {
 		
 	}
 	
+	public boolean isReadSuperUser() {
+		return getDomains().contains(bioSamplesProperties.getBiosamplesAapSuperRead());
+	}
+
+	public boolean isWriteSuperUser() {
+		return getDomains().contains(bioSamplesProperties.getBiosamplesAapSuperWrite());
+	}
 	
 	public void checkAccessible(Sample sample) throws SampleNotAccessibleException {
 		//TODO throw different exceptions in different situations

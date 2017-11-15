@@ -20,6 +20,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.Contact;
+import uk.ac.ebi.biosamples.model.Organization;
+import uk.ac.ebi.biosamples.model.Publication;
 import uk.ac.ebi.biosamples.mongo.model.MongoExternalReference;
 import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
@@ -56,7 +59,18 @@ public class MongoSerializationTest {
 		SortedSet<MongoExternalReference> externalReferences = new TreeSet<>();
 		externalReferences.add(MongoExternalReference.build("http://www.google.com"));
 
-		return MongoSample.build(name, accession, "foozit", release, update, attributes, relationships, externalReferences);
+		SortedSet<Organization> organizations = new TreeSet<>();
+		organizations.add(Organization.build("Jo Bloggs Inc", "user", "help@jobloggs.com", "http://www.jobloggs.com"));
+
+		SortedSet<Contact> contacts = new TreeSet<>();
+		contacts.add(Contact.build("Joe Bloggs","Jo Bloggs Inc", "http://www.jobloggs.com/joe"));
+
+		SortedSet<Publication> publications = new TreeSet<>();
+		publications.add(Publication.build("10.1093/nar/gkt1081", "24265224"));
+
+		return MongoSample.build(name, accession, "foozit", release, update, 
+				attributes, relationships, externalReferences, 
+				organizations, contacts, publications);
 	}
 
 	@Test

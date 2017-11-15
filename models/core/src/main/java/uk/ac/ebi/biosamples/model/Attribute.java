@@ -115,7 +115,6 @@ public class Attribute implements Comparable<Attribute> {
 				&& !this.iri.equals(other.iri)) {
 			return this.iri.compareTo(other.iri);
 		}
-
 		
 		if (this.unit == null && other.unit != null) {
 			return -1;

@@ -18,6 +18,9 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.Contact;
+import uk.ac.ebi.biosamples.model.Organization;
+import uk.ac.ebi.biosamples.model.Publication;
 import uk.ac.ebi.biosamples.service.CustomInstantDeserializer;
 import uk.ac.ebi.biosamples.service.CustomInstantSerializer;
 
@@ -48,6 +51,10 @@ public class MongoSample {
 	protected SortedSet<MongoRelationship> relationships;
 	protected SortedSet<MongoExternalReference> externalReferences;
 
+	protected SortedSet<Organization> organizations;
+	protected SortedSet<Contact> contacts;
+	protected SortedSet<Publication> publications;
+	
 	@JsonIgnore
 	public boolean hasAccession() {
 		if ( accession != null && accession.trim().length() != 0) {
@@ -89,6 +96,18 @@ public class MongoSample {
 		return externalReferences;
 	}
 
+	public SortedSet<Organization> getOrganizations() {
+		return organizations;
+	}
+
+	public SortedSet<Contact> getContacts() {
+		return contacts;
+	}
+
+	public SortedSet<Publication> getPublications() {
+		return publications;
+	}
+
 	@Override
     public boolean equals(Object o) {
 
@@ -104,12 +123,15 @@ public class MongoSample {
         		&& Objects.equals(this.update, other.update)
         		&& Objects.equals(this.attributes, other.attributes)
         		&& Objects.equals(this.relationships, other.relationships)
-        		&& Objects.equals(this.externalReferences, other.externalReferences);
+        		&& Objects.equals(this.externalReferences, other.externalReferences)
+        		&& Objects.equals(this.organizations,  other.organizations)
+        		&& Objects.equals(this.contacts,  other.contacts)
+        		&& Objects.equals(this.publications,  other.publications);
     }
     
     @Override
     public int hashCode() {
-    	return Objects.hash(name, accession, domain, release, update, attributes, relationships, externalReferences);
+    	return Objects.hash(name, accession, domain, release, update, attributes, relationships, externalReferences, organizations, contacts, publications);
     }
     
 
@@ -132,6 +154,12 @@ public class MongoSample {
     	sb.append(relationships);
     	sb.append(",");
     	sb.append(externalReferences);
+    	sb.append(",");
+    	sb.append(organizations);
+    	sb.append(",");
+    	sb.append(contacts);
+    	sb.append(",");
+    	sb.append(publications);
     	sb.append(")");
     	return sb.toString();
     }
@@ -145,7 +173,10 @@ public class MongoSample {
     		@JsonProperty("update") Instant update, 
     		@JsonProperty("attributes") Set<Attribute> attributes, 
     		@JsonProperty("relationships") Set<MongoRelationship> relationships, 
-    		@JsonProperty("externalReferences") SortedSet<MongoExternalReference> externalReferences) {
+    		@JsonProperty("externalReferences") SortedSet<MongoExternalReference> externalReferences, 
+    		@JsonProperty("organizations") SortedSet<Organization> organizations, 
+    		@JsonProperty("contacts") SortedSet<Contact> contacts,
+    		@JsonProperty("publications") SortedSet<Publication> publications) {
 		
 		MongoSample sample = new MongoSample();
 		
@@ -168,7 +199,22 @@ public class MongoSample {
 		sample.externalReferences = new TreeSet<>();
 		if (externalReferences != null && externalReferences.size() > 0) {
 			sample.externalReferences.addAll(externalReferences);
-		}	
+		}
+
+		sample.organizations = new TreeSet<>();
+		if (organizations != null && organizations.size() > 0) {
+			sample.organizations.addAll(organizations);
+		}
+
+		sample.contacts = new TreeSet<>();
+		if (contacts != null && contacts.size() > 0) {
+			sample.contacts.addAll(contacts);
+		}
+
+		sample.publications = new TreeSet<>();
+		if (publications != null && publications.size() > 0) {
+			sample.publications.addAll(publications);
+		}
 		
 		return sample;
 	}

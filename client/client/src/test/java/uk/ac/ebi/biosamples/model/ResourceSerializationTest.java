@@ -64,7 +64,7 @@ public class ResourceSerializationTest {
 		SortedSet<ExternalReference> externalReferences = new TreeSet<>();
 		externalReferences.add(ExternalReference.build("http://www.google.com"));
 
-		return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences);
+		return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences, null, null, null);
 	}
 
 	@Test

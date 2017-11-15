@@ -61,7 +61,16 @@ public class SerializationTest {
 		SortedSet<ExternalReference> externalReferences = new TreeSet<>();
 		externalReferences.add(ExternalReference.build("http://www.google.com"));
 
-		return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences);
+		SortedSet<Organization> organizations = new TreeSet<>();
+		organizations.add(Organization.build("Jo Bloggs Inc", "user", "help@jobloggs.com", "http://www.jobloggs.com"));
+
+		SortedSet<Contact> contacts = new TreeSet<>();
+		contacts.add(Contact.build("Joe Bloggs","Jo Bloggs Inc", "http://www.jobloggs.com/joe"));
+
+		SortedSet<Publication> publications = new TreeSet<>();
+		publications.add(Publication.build("10.1093/nar/gkt1081", "24265224"));
+		
+		return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences, organizations, contacts, publications);
 	}
 
 	@Test

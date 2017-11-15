@@ -168,7 +168,7 @@ public class RestFacetIntegration extends AbstractIntegration {
 		//use non alphanumeric characters in type
 		attributes.add(Attribute.build("geographic location (country and/or sea)", "Land of Oz", null, null));
 
-		return Sample.build(name, accession, domain, release, update, attributes, null, null);
+		return Sample.build(name, accession, domain, release, update, attributes, null, null, null, null, null);
 	}
 
 	private Sample getEnaSampleTest() {
@@ -182,7 +182,7 @@ public class RestFacetIntegration extends AbstractIntegration {
 		externalReferences.add(ExternalReference.build("https://www.ebi.ac.uk/ena/ERA123123"));
 		externalReferences.add(ExternalReference.build("http://www.ebi.ac.uk/arrayexpress/experiments/E-MTAB-09123"));
 
-		return Sample.build(name, accession, domain, release, update, null, null, externalReferences);
+		return Sample.build(name, accession, domain, release, update, null, null, externalReferences, null, null, null);
 
 	}
 
@@ -196,7 +196,7 @@ public class RestFacetIntegration extends AbstractIntegration {
 		SortedSet<ExternalReference> externalReferences = new TreeSet<>();
 		externalReferences.add(ExternalReference.build("http://www.ebi.ac.uk/arrayexpress/experiments/E-MTAB-5277"));
 
-		return Sample.build(name, accession, domain, release, update, null, null, externalReferences);
+		return Sample.build(name, accession, domain, release, update, null, null, externalReferences, null, null, null);
 
 	}
 

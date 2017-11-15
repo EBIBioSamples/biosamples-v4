@@ -13,7 +13,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.Contact;
 import uk.ac.ebi.biosamples.model.ExternalReference;
+import uk.ac.ebi.biosamples.model.Organization;
+import uk.ac.ebi.biosamples.model.Publication;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 
@@ -79,7 +82,7 @@ public class RestIntegration extends AbstractIntegration {
 		// put a version that is private
 		sampleTest1 = Sample.build(sampleTest1.getName(), sampleTest1.getAccession(), sampleTest1.getDomain(),
 				Instant.parse("2116-04-01T11:36:57.00Z"), sampleTest1.getUpdate(),
-				sampleTest1.getCharacteristics(), sampleTest1.getRelationships(), sampleTest1.getExternalReferences());
+				sampleTest1.getCharacteristics(), sampleTest1.getRelationships(), sampleTest1.getExternalReferences(), null, null, null);
 		Resource<Sample> resource = client.persistSampleResource(sampleTest1);
 		if (!sampleTest1.equals(resource.getContent())) {
 			log.warn("expected: "+sampleTest1);
@@ -114,7 +117,7 @@ public class RestIntegration extends AbstractIntegration {
 		Resource<Sample> resource = client.persistSampleResource(sampleTest2, false);
 		sampleTest2 = Sample.build(sampleTest2.getName(), sampleTest2.getAccession(), null,
 				sampleTest2.getRelease(), sampleTest2.getUpdate(),
-				sampleTest2.getCharacteristics(), sampleTest1.getRelationships(), sampleTest2.getExternalReferences());
+				sampleTest2.getCharacteristics(), sampleTest1.getRelationships(), sampleTest2.getExternalReferences(), null, null, null);
 
 		if (!sampleTest2.equals(resource.getContent())) {
 			log.warn("expected: "+sampleTest2);
@@ -131,7 +134,7 @@ public class RestIntegration extends AbstractIntegration {
 		
 		sampleTest2 = Sample.build(sampleTest2.getName(), sampleTest2.getAccession(), sampleTest2.getDomain(),
 				sampleTest2.getRelease(), sampleTest2.getUpdate(),
-				sampleTest2.getCharacteristics(), sampleTest1.getRelationships(), sampleTest2.getExternalReferences());
+				sampleTest2.getCharacteristics(), sampleTest1.getRelationships(), sampleTest2.getExternalReferences(), null, null, null);
 
 		//check that it has the additional relationship added
 		// get to check it worked
@@ -159,7 +162,7 @@ public class RestIntegration extends AbstractIntegration {
 		//now do another update to delete the relationship
 		sampleTest1 = Sample.build(sampleTest1.getName(), sampleTest1.getAccession(), sampleTest1.getDomain(),
 				Instant.parse("2116-04-01T11:36:57.00Z"), sampleTest1.getUpdate(),
-				sampleTest1.getCharacteristics(), new TreeSet<>(), sampleTest1.getExternalReferences());
+				sampleTest1.getCharacteristics(), new TreeSet<>(), sampleTest1.getExternalReferences(), null, null, null);
 		Resource<Sample> resource = client.persistSampleResource(sampleTest1);
 		if (!sampleTest1.equals(resource.getContent())) {
 			log.warn("expected: "+sampleTest1);
@@ -231,7 +234,16 @@ public class RestIntegration extends AbstractIntegration {
 		SortedSet<ExternalReference> externalReferences = new TreeSet<>();
 		externalReferences.add(ExternalReference.build("http://www.google.com"));
 
-		return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences);
+		SortedSet<Organization> organizations = new TreeSet<>();
+		organizations.add(Organization.build("Jo Bloggs Inc", "user", "help@jobloggs.com", "http://www.jobloggs.com"));
+
+		SortedSet<Contact> contacts = new TreeSet<>();
+		contacts.add(Contact.build("Joe Bloggs","Jo Bloggs Inc", "http://www.jobloggs.com/joe"));
+
+		SortedSet<Publication> publications = new TreeSet<>();
+		publications.add(Publication.build("10.1093/nar/gkt1081", "24265224"));
+
+		return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences, organizations, contacts, publications);
 	}
 	
 	@PreDestroy
@@ -251,7 +263,7 @@ public class RestIntegration extends AbstractIntegration {
 				Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
 		attributes.add(Attribute.build("UTF-8 test", "αβ", null, null));
 
-		return Sample.build(name, accession, domain, release, update, attributes, new TreeSet<>(), new TreeSet<>());
+		return Sample.build(name, accession, domain, release, update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
 	}
 
 }
