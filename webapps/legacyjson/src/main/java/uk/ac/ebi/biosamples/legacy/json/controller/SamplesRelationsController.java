@@ -42,12 +42,13 @@ public class SamplesRelationsController {
     private final GroupRelationsResourceAssembler groupRelationsResourceAssembler;
     private final SampleRelationsResourceAssembler sampleRelationsResourceAssembler;
     private final ExternalLinksResourceAssembler externalLinksResourceAssembler;
+    private final PagedResourcesAssembler<SamplesRelations> pagedResourcesAssembler;
 
     public SamplesRelationsController(EntityLinks entityLinks,
                                       SampleRepository sampleRepository,
                                       RelationsRepository relationsRepository,
                                       GroupRelationsResourceAssembler groupRelationsResourceAssembler,
-                                      SampleRelationsResourceAssembler sampleRelationsResourceAssembler, ExternalLinksResourceAssembler externalLinksResourceAssembler) {
+                                      SampleRelationsResourceAssembler sampleRelationsResourceAssembler, ExternalLinksResourceAssembler externalLinksResourceAssembler, PagedResourcesAssembler<SamplesRelations> pagedResourcesAssembler) {
 
         this.entityLinks = entityLinks;
         this.sampleRepository = sampleRepository;
@@ -55,6 +56,7 @@ public class SamplesRelationsController {
         this.externalLinksResourceAssembler = externalLinksResourceAssembler;
         this.groupRelationsResourceAssembler = groupRelationsResourceAssembler;
         this.sampleRelationsResourceAssembler = sampleRelationsResourceAssembler;
+        this.pagedResourcesAssembler = pagedResourcesAssembler;
     }
 
     @GetMapping("/{accession}")
@@ -140,10 +142,9 @@ public class SamplesRelationsController {
 
     @GetMapping
     public PagedResources<Resource<SamplesRelations>> allSamplesRelations(
-            @RequestParam(value = "page", defaultValue = "0") int page,
-            @RequestParam(value = "size", defaultValue = "50") int size,
-            PagedResourcesAssembler<SamplesRelations> pagedResourcesAssembler) {
-
+            @RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
+            @RequestParam(value = "size", required = false, defaultValue = "50") Integer size,
+            @RequestParam(value = "sort", required = false, defaultValue = "asc") String sort) {
 
         PagedResources<Resource<Sample>> samples = sampleRepository.findSamples(page, size);
         List<SamplesRelations> legacyRelationsResources = samples.getContent().stream()

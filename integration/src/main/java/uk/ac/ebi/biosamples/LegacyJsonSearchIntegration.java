@@ -1,12 +1,12 @@
 package uk.ac.ebi.biosamples;
 
 import com.jayway.jsonpath.JsonPath;
-import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Profile;
 import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.client.Hop;
 import org.springframework.hateoas.client.Traverson;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -18,14 +18,18 @@ import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.springframework.hateoas.MediaTypes.HAL_JSON;
 
 @Component
@@ -71,19 +75,18 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
     @Override
     protected void phaseThree() {
          jsonSearchTester.itShouldBeAbleToMoveUsingLinks();
-        // jsonSearchTester.itShouldFindSampleFollowingSamplesRelationsInGroup();
     }
 
     @Override
     protected void phaseFour() {
-        // jsonSearchTester.itShouldFindSampleSearchingByAccession()
-        // jsonSearchTester.itShouldFindSampleSearchingByFirstSampleInGroup();
-        // jsonSearchTester.itShouldFindSampleSearchingByText();
-        // jsomSearchTester.itShouldFindOnlySamplesWhenSearchingForSamples();
-        // jsonSearchTester.itShouldFindSampleSearchingByAccessionAndGroup();
-        // jsonSearchTester.itShouldFindGroupSearchingByAccession();
-        // jsonSearchTester.itShouldFindGroupSearchingByText();
-        // jsonSearchTester.itShouldFindOnlyGroupWhenSearchingForGroups();
+         jsonSearchTester.itShouldFindSampleSearchingByAccession();
+         jsonSearchTester.itShouldFindSampleSearchingByFirstSampleInGroup();
+         jsonSearchTester.itShouldFindSampleSearchingByText();
+         jsonSearchTester.itShouldFindOnlySamplesWhenSearchingForSamples();
+         jsonSearchTester.itShouldFindSampleSearchingByAccessionAndGroup();
+         jsonSearchTester.itShouldFindGroupSearchingByAccession();
+         jsonSearchTester.itShouldFindGroupSearchingByText();
+         jsonSearchTester.itShouldFindOnlyGroupWhenSearchingForGroups();
     }
 
     @Override
@@ -233,23 +236,145 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
                     .follow("relations", "groups");
 
             String groupJson = traversalBuilder.toObject(String.class);
-            Assert.assertEquals(
+            assertEquals(
                     JsonPath.parse(groupJson).read("$._embedded.groupsrelations[0].accession"),
                     testGroup.getAccession());
 
             String sampleJson = traversalBuilder.follow("$._embedded.groupsrelations[0]._links.samples.href").toObject(String.class);
-            Assert.assertEquals(
+            assertEquals(
                     JsonPath.parse(sampleJson).read("$._embedded.samplesrelations[0].accession"),
                     testSample.getAccession());
 
             String externalLinkJson = traversalBuilder.follow("$._embedded.samplesrelations[0]._links.externalLinks.href").toObject(String.class);
-            Assert.assertEquals(
+            assertEquals(
                     JsonPath.parse(externalLinkJson).read("$._embedded.externallinksrelations[0].url"),
                     testSample.getExternalReferences().first().getUrl());
 
+        }
 
+        public void itShouldFindSampleSearchingByAccession() {
 
+            Sample testSample = TestSampleGenerator.getSampleMemberOfGroupWithExternalRelations();
 
+            log.info("Search sample by accession in the legacy JSON");
+            UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosamplesLegacyJSONUri());
+
+            Traverson.TraversalBuilder traversalBuilder = new Traverson(uriBuilder.build().toUri(), HAL_JSON)
+                    .follow("samples","search").follow(Hop.rel("findByAccession").withParameter("accession", testSample.getAccession()));
+
+            assertEquals(traversalBuilder.toObject("$._embedded.samples[0].accession"), testSample.getAccession());
+            assertEquals((int) traversalBuilder.toObject("$.page.totalElements"), 1);
+
+        }
+
+        public void itShouldFindSampleSearchingByFirstSampleInGroup() {
+            Sample testSample = TestSampleGenerator.getSampleMemberOfGroupWithExternalRelations();
+            Sample testGroup = TestSampleGenerator.getGroupContainegSAMEA911();
+
+            log.info("Search first sample in a group in legacy JSON");
+
+            Traverson.TraversalBuilder traversalBuilder = new Traverson(integrationProperties.getBiosamplesLegacyJSONUri(), HAL_JSON)
+                    .follow("samples", "search").follow(Hop.rel("findFirstByGroupsContains").withParameter("group", testGroup.getAccession()));
+
+            assertEquals(traversalBuilder.toObject("$.accession"), testSample.getAccession());
+
+        }
+
+        public void itShouldFindSampleSearchingByText() {
+            Sample testSample = TestSampleGenerator.getSampleMemberOfGroupWithExternalRelations();
+
+            log.info("Search sample by text in the legacy JSON");
+
+            Traverson.TraversalBuilder traversalBuilder = new Traverson(integrationProperties.getBiosamplesLegacyJSONUri(), HAL_JSON)
+                    .follow("samples", "search")
+                    .follow(Hop.rel("findByText")
+                            .withParameter("text", "Homo sapiens")
+                            .withParameter("size", 100)
+                    );
+
+            assertThat(traversalBuilder.toObject("$._embedded.samples[?(@.accession=='"+ testSample.getAccession() +"')].accession"), contains(testSample.getAccession()));
+
+        }
+
+        public void itShouldFindOnlySamplesWhenSearchingForSamples() {
+
+            log.info("Check sample search only returns samples legacy JSON");
+
+            Traverson.TraversalBuilder traversalBuilder = new Traverson(integrationProperties.getBiosamplesLegacyJSONUri(), HAL_JSON)
+                    .follow("samples", "search")
+                    .follow(Hop.rel("findByText")
+                            .withParameter("text", "SAMEG.*")
+                            .withParameter("size", 100)
+                    );
+
+            List<String> accessions = traversalBuilder.toObject("$._embedded.samples.*.accession");
+            assertFalse(accessions.stream().anyMatch(a -> a.startsWith("SAMEG")));
+
+        }
+
+        public void itShouldFindSampleSearchingByAccessionAndGroup() {
+            Sample testSample = TestSampleGenerator.getSampleMemberOfGroupWithExternalRelations();
+            Sample testGroup = TestSampleGenerator.getGroupContainegSAMEA911();
+
+            log.info("Search sample by accession and group in the legacy JSON");
+
+            Traverson.TraversalBuilder traversalBuilder = new Traverson(integrationProperties.getBiosamplesLegacyJSONUri(), HAL_JSON)
+                    .follow("samples", "search")
+                    .follow(Hop.rel("findByAccessionAndGroups")
+                            .withParameter("accession", testSample.getAccession())
+                            .withParameter("group", testGroup.getAccession())
+                            .withParameter("size", 100)
+                    );
+
+            assertEquals(traversalBuilder.toObject("$._embedded.samples[0].accession"), testSample.getAccession());
+        }
+
+        public void itShouldFindGroupSearchingByAccession() {
+            Sample testGroup = TestSampleGenerator.getGroupContainegSAMEA911();
+
+            log.info("Search group by accession and in the legacy JSON");
+
+            Traverson.TraversalBuilder traversalBuilder = new Traverson(integrationProperties.getBiosamplesLegacyJSONUri(), HAL_JSON)
+                    .follow("groups", "search")
+                    .follow(Hop.rel("findByAccession")
+                            .withParameter("accession", testGroup.getAccession())
+                            .withParameter("size", 100)
+                    );
+
+            assertEquals(traversalBuilder.toObject("$._embedded.groups[0].accession"), testGroup.getAccession());
+            assertEquals((int) traversalBuilder.toObject("$.page.size"), 100);
+        }
+
+        public void itShouldFindGroupSearchingByText() {
+
+            Sample testGroup = TestSampleGenerator.getGroupContainegSAMEA911();
+
+            log.info("Search group by text and in the legacy JSON");
+
+            Traverson.TraversalBuilder traversalBuilder = new Traverson(integrationProperties.getBiosamplesLegacyJSONUri(), HAL_JSON)
+                    .follow("groups", "search")
+                    .follow(Hop.rel("findByKeywords")
+                            .withParameter("keyword", "Some donor")
+                            .withParameter("size", 100)
+                    );
+
+            assertEquals(traversalBuilder.toObject("$._embedded.groups[0].accession"), testGroup.getAccession());
+            assertEquals((int) traversalBuilder.toObject("$.page.size"), 100);
+        }
+
+        public void itShouldFindOnlyGroupWhenSearchingForGroups() {
+
+            log.info("Search group by text should return only groups in the legacy JSON");
+
+            Traverson.TraversalBuilder traversalBuilder = new Traverson(integrationProperties.getBiosamplesLegacyJSONUri(), HAL_JSON)
+                    .follow("groups", "search")
+                    .follow(Hop.rel("findByKeywords")
+                            .withParameter("keyword", "*:*")
+                            .withParameter("size", 100)
+                    );
+
+            List<String> accessions = traversalBuilder.toObject("$._embedded.groups.*.accession");
+            assertTrue(accessions.stream().allMatch(acc -> acc.startsWith("SAMEG")));
 
         }
     }
@@ -290,7 +415,7 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
             SortedSet<Relationship> relationships = new TreeSet<>();
             relationships.add(Relationship.build("SAMEG199", "has member", "SAMEA911"));
 
-            return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, relationships, new TreeSet<>());
+            return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, relationships, new TreeSet<>(), null);
 
         }
 

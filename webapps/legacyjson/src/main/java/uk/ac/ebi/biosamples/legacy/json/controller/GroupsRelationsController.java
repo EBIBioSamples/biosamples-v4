@@ -52,9 +52,9 @@ public class GroupsRelationsController {
 
     @GetMapping
     public PagedResources<Resource<GroupsRelations>> getIndex(
-            @RequestParam(value="page", required = false, defaultValue = "0") int page,
-            @RequestParam(value="size", required=false, defaultValue = "50") int size,
-            @RequestParam(value="sort", required=false, defaultValue = "asc") String sort ) {
+            @RequestParam(value="page", required = false, defaultValue = "0") Integer page,
+            @RequestParam(value="size", required = false, defaultValue = "50") Integer size,
+            @RequestParam(value="sort", required = false, defaultValue = "asc") String sort ) {
 
         PagedResources<Resource<Sample>> groups = sampleRepository.findGroups(page, size);
         PagedResources<Resource<GroupsRelations>> groupsRelations = this.pagedResourcesConverter.toGroupsRelationsPagedResource(groups);
