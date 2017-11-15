@@ -94,9 +94,10 @@ public class ImportRunner implements ApplicationRunner {
 			//need to specify domain
 			sample = Sample.build(sample.getName(), sample.getAccession(), DOMAIN, 
 					sample.getRelease(), sample.getUpdate(), 
-					sample.getAttributes(), sample.getRelationships(), sample.getExternalReferences());
+					sample.getAttributes(), sample.getRelationships(), sample.getExternalReferences(),
+					sample.getOrganizations(), sample.getContacts(), sample.getPublications());
 			
-			futures.put(e, client.persistSampleResourceAsync(sample));
+			futures.put(e, client.persistSampleResourceAsync(sample, false));
 
 			//make sure we don't have too many futures
 			ThreadUtils.checkFutures(futures, 100);
