@@ -51,7 +51,7 @@ public class GroupsRelationsController {
     }
 
     @GetMapping
-    public PagedResources<Resource<GroupsRelations>> getIndex(
+    public PagedResources<Resource<GroupsRelations>> allGroupsRelations(
             @RequestParam(value="page", required = false, defaultValue = "0") Integer page,
             @RequestParam(value="size", required = false, defaultValue = "50") Integer size,
             @RequestParam(value="sort", required = false, defaultValue = "asc") String sort ) {

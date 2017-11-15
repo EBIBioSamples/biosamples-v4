@@ -25,9 +25,9 @@ public class IndexController {
         Resources resources = Resources.wrap(Collections.emptyList());
         resources.add(linkTo(methodOn(SamplesController.class).allSamples(null, null, null)).withRel("samples"));
         resources.add(linkTo(methodOn(GroupsController.class).allGroups(null, null, null)).withRel("groups"));
-        resources.add(linkTo(methodOn(SamplesRelationsController.class).allSamplesRelations(null, null,null)).withRel("samples"));
-        resources.add(linkTo(methodOn(SamplesController.class).allSamples(null, null, null)).withRel("samples"));
-        resources.add(linkTo(methodOn(SamplesController.class).allSamples(null, null, null)).withRel("samples"));
+        resources.add(linkTo(methodOn(SamplesRelationsController.class).allSamplesRelations(null, null,null)).withRel("samplesrelations"));
+        resources.add(linkTo(methodOn(GroupsRelationsController.class).allGroupsRelations(null, null, null)).withRel("groupsrelations"));
+//        resources.add(linkTo(methodOn(ExternalLinksRelationsController.class).allSamplesRelations(null, null).withRel("externallinksrelations"));
 
         return resources;
     }
