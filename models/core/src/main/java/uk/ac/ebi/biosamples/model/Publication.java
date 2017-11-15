@@ -10,11 +10,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class Publication implements Comparable<Publication> {
 
 	private String doi;
-	private String pubmed;
+	private String pubmed_id;
 	
-	private Publication(String name, String affiliation) {
-		this.doi = name;
-		this.pubmed = affiliation;
+	private Publication(String doi, String pubmed_id) {
+		this.doi = doi;
+		this.pubmed_id = pubmed_id;
 	}
 
 	@JsonProperty("doi") 
@@ -24,8 +24,8 @@ public class Publication implements Comparable<Publication> {
 	
 
 	@JsonProperty("pubmed_id") 
-	public String getPubMed() {
-		return this.pubmed;
+	public String getPubMedId() {
+		return this.pubmed_id;
 	}
 		
 
@@ -38,12 +38,12 @@ public class Publication implements Comparable<Publication> {
         }
         Publication other = (Publication) o;
         return Objects.equals(this.doi, other.doi) 
-        		&& Objects.equals(this.pubmed, other.pubmed);
+        		&& Objects.equals(this.pubmed_id, other.pubmed_id);
     }
     
     @Override
     public int hashCode() {
-    	return Objects.hash(doi, pubmed);
+    	return Objects.hash(doi, pubmed_id);
     }
 
 	@Override
@@ -63,15 +63,15 @@ public class Publication implements Comparable<Publication> {
 			return this.doi.compareTo(other.doi);
 		}
 
-		if (this.pubmed == null && other.pubmed != null) {
+		if (this.pubmed_id == null && other.pubmed_id != null) {
 			return -1;
 		}
-		if (this.pubmed != null && other.pubmed == null) {
+		if (this.pubmed_id != null && other.pubmed_id == null) {
 			return 1;
 		}
-		if (this.pubmed != null && other.pubmed != null 
-				&& !this.pubmed.equals(other.pubmed)) {
-			return this.pubmed.compareTo(other.pubmed);
+		if (this.pubmed_id != null && other.pubmed_id != null 
+				&& !this.pubmed_id.equals(other.pubmed_id)) {
+			return this.pubmed_id.compareTo(other.pubmed_id);
 		}
 		//no differences, must be the same
 		return 0;
@@ -80,8 +80,8 @@ public class Publication implements Comparable<Publication> {
 		
 	@JsonCreator
 	public static Publication build(@JsonProperty("doi") String doi, 
-			@JsonProperty("pubmed_id") String pubmed) {
-		return new Publication(doi, pubmed);
+			@JsonProperty("pubmed_id") String pubmedId) {
+		return new Publication(doi, pubmedId);
 	}
 }
 

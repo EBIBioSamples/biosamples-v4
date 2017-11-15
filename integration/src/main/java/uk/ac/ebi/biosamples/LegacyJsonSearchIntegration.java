@@ -415,7 +415,9 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
             SortedSet<Relationship> relationships = new TreeSet<>();
             relationships.add(Relationship.build("SAMEG199", "has member", "SAMEA911"));
 
-            return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, relationships, new TreeSet<>(), null);
+            return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, 
+            		attributes, relationships, null, 
+            		null, null, null);
 
         }
 
