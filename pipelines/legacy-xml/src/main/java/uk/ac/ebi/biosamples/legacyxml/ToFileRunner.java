@@ -77,6 +77,9 @@ public class ToFileRunner implements ApplicationRunner, ExitCodeGenerator {
 			accessionExecutorService = Executors.newFixedThreadPool(12);
 			try (FileWriter fileWriter = new FileWriter(new File(outputFilename))) {
 				
+				fileWriter.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+				fileWriter.write("<BioSamples>\n");
+				
 				accessionCallback = new AccessionCallback(fileWriter);			
 				pageCallback = new PageCallback(accessionExecutorService, rootUrl, restTemplate, accessionCallback);
 			
@@ -95,6 +98,8 @@ public class ToFileRunner implements ApplicationRunner, ExitCodeGenerator {
 					ThreadUtils.checkAndCallbackFutures(pageFutures, 100, pageCallback);
 				}
 				ThreadUtils.checkAndCallbackFutures(pageFutures, 0, pageCallback);
+
+				fileWriter.write("</BioSamples>\n");
 			}
 
 		} finally {
