@@ -257,6 +257,7 @@ services:
     - biosamples-webapps-core
     - biosamples-webapps-sampletab
     - biosamples-webapps-legacyxml
+    - biosamples-webapps-legacyjson
     command:
     - java
     - -jar
