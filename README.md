@@ -1,7 +1,7 @@
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/c2acf39bb65d4793ae3420c70ab51388)](https://www.codacy.com/app/afaulconbridge/biosamples-v4?utm_source=github.com&utm_medium=referral&utm_content=EBIBioSamples/biosamples-v4&utm_campaign=badger)
+
 Quickstart
 ==========
-
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/c2acf39bb65d4793ae3420c70ab51388)](https://www.codacy.com/app/afaulconbridge/biosamples-v4?utm_source=github.com&utm_medium=referral&utm_content=EBIBioSamples/biosamples-v4&utm_campaign=badger)
 
 Install Maven and JDK 8
 Install docker-compose https://docs.docker.com/compose/
