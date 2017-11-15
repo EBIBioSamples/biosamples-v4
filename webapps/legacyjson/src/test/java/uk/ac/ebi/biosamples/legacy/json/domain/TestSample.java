@@ -16,6 +16,8 @@ public class TestSample {
     private SortedSet<ExternalReference> externalReferences;
     private final String testDomain = "testDomain";
     private SortedSet<Organization> organizations;
+    private SortedSet<Contact> contacts;
+    private SortedSet<Publication> publications;
 
 
     public TestSample(String accession) {
@@ -25,6 +27,8 @@ public class TestSample {
         this.relationships = new TreeSet<>();
         this.externalReferences = new TreeSet<>();
         this.organizations = new TreeSet<>();
+        this.contacts = new TreeSet<>();
+        this.publications = new TreeSet<>();
         this.releaseDate = Instant.now();
     }
 
@@ -67,6 +71,8 @@ public class TestSample {
                 this.attributes,
                 this.relationships,
                 this.externalReferences,
-                this.organizations);
+                this.organizations,
+                this.contacts,
+                this.publications);
     }
 }
