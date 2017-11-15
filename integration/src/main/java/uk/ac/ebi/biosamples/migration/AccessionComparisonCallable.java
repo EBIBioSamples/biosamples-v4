@@ -218,13 +218,13 @@ class AccessionComparisonCallable implements Callable<Void> {
 		} catch (DocumentException e) {
 			throw new HttpMessageNotReadableException("error parsing xml", e);
 		}
-		Sample oldSample = xmlToSampleConverter.convert(doc);
+		Sample oldSample = xmlToSampleConverter.convert(doc.getRootElement());
 		try {
 			doc = saxReader.read(new StringReader(newDocument));
 		} catch (DocumentException e) {
 			throw new HttpMessageNotReadableException("error parsing xml", e);
 		}
-		Sample newSample = xmlToSampleConverter.convert(doc);
+		Sample newSample = xmlToSampleConverter.convert(doc.getRootElement());
 		
 		if (!oldSample.getAccession().equals(newSample.getAccession())) {
 			log.warn("Difference on "+accession+" of accession between '"+oldSample.getAccession()+"' and '"+newSample.getAccession()+"'");

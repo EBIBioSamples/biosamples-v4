@@ -62,10 +62,10 @@ public class XmlAsSampleHttpMessageConverter extends AbstractHttpMessageConverte
 		
 		if (doc.getRootElement().getName().equals("BioSample")) {
 			log.info("converting BioSample");
-			return xmlSampleToSampleConverter.convert(doc);
+			return xmlSampleToSampleConverter.convert(doc.getRootElement());
 		} else if (doc.getRootElement().getName().equals("BioSampleGroup")) {
 			log.info("converting BioSampleGroup");
-			return xmlGroupToSampleConverter.convert(doc);
+			return xmlGroupToSampleConverter.convert(doc.getRootElement());
 		} else {
 			log.error("Unable to read message with root element "+doc.getRootElement().getName());
 			throw new HttpMessageNotReadableException("Cannot recognize xml"); 

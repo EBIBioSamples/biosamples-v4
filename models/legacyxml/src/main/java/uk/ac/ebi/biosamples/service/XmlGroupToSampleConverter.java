@@ -20,12 +20,12 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
 @Service
-public class XmlGroupToSampleConverter implements Converter<Document, Sample>  {
+public class XmlGroupToSampleConverter implements Converter<Element, Sample>  {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 	
 	@Override
-	public Sample convert(Document doc) {
+	public Sample convert(Element doc) {
 		
 		Instant release = null;
 		Instant update = null;

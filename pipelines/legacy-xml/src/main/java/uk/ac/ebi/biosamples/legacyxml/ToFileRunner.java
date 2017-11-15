@@ -36,11 +36,12 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
 @Component
-public class ToFileRunner implements ApplicationRunner, ExitCodeGenerator {
+public class ToFileRunner implements ApplicationRunner {
 
 	private final RestTemplate restTemplate;
 	private final Logger log = LoggerFactory.getLogger(getClass());
@@ -56,16 +57,14 @@ public class ToFileRunner implements ApplicationRunner, ExitCodeGenerator {
 	}
 
 	@Override
-	public int getExitCode() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
 	public void run(ApplicationArguments args) throws Exception {
 		
-		String rootUrl = args.getNonOptionArgs().get(0);
-		String outputFilename = args.getNonOptionArgs().get(1);
+		if (!"export".equals(args.getNonOptionArgs().get(0))) {
+			return;
+		}
+		
+		String rootUrl = args.getNonOptionArgs().get(1);
+		String outputFilename = args.getNonOptionArgs().get(2);
 
 		long oldTime = System.nanoTime();		
 		
@@ -73,8 +72,8 @@ public class ToFileRunner implements ApplicationRunner, ExitCodeGenerator {
 		ExecutorService accessionExecutorService = null;
 		
 		try {
-			pageExecutorService = Executors.newFixedThreadPool(8);			
-			accessionExecutorService = Executors.newFixedThreadPool(12);
+			pageExecutorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, 1, 32);		
+			accessionExecutorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, 1, 32);
 			try (FileWriter fileWriter = new FileWriter(new File(outputFilename))) {
 				
 				fileWriter.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
