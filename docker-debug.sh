@@ -37,7 +37,7 @@ echo "checking rabbitmq is up"
 echo "checking mongo is up"
 ./http-status-check -u http://localhost:27017 -t 30
 
-docker-compose -f docker-compose.yml -f docker-compose.debug.override.yml up -d biosamples-webapps-core biosamples-webapps-sampletab biosamples-webapps-legacyxml
+docker-compose -f docker-compose.yml -f docker-compose.debug.override.yml -f docker-compose.override.yml up -d biosamples-webapps-core biosamples-webapps-sampletab biosamples-webapps-legacyxml
 echo "checking webapps-core is up"
 ./http-status-check -u http://localhost:8081/biosamples/beta/health -t 45
 echo "checking webapps-sampletab is up"

@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.service;
+package uk.ac.ebi.biosamples.legacy.xml.service;
 
 import java.math.BigInteger;
 

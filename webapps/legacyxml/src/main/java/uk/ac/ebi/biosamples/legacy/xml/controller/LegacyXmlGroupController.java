@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.controller;
+package uk.ac.ebi.biosamples.legacy.xml.controller;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,8 +18,8 @@ import uk.ac.ebi.biosamples.model.legacyxml.BioSample;
 import uk.ac.ebi.biosamples.model.legacyxml.BioSampleGroup;
 import uk.ac.ebi.biosamples.model.legacyxml.ResultQuery;
 import uk.ac.ebi.biosamples.service.FilterBuilder;
-import uk.ac.ebi.biosamples.service.LegacyQueryParser;
-import uk.ac.ebi.biosamples.service.SummaryInfoService;
+import uk.ac.ebi.biosamples.legacy.xml.service.LegacyQueryParser;
+import uk.ac.ebi.biosamples.legacy.xml.service.SummaryInfoService;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -72,13 +72,21 @@ public class LegacyXmlGroupController {
 		List<Filter> filterList = new ArrayList<>();
 		filterList.add(groupAccessionFilter);
 
-		if (legacyQueryParser.checkQueryContainsDateFilters(query)) {
+		if (legacyQueryParser.queryContainsDateRangeFilter(query)) {
 
-			Optional<Filter> dateRangeFilters = legacyQueryParser.getDateFiltersFromQuery(query);
+			Optional<Filter> dateRangeFilters = legacyQueryParser.extractDateFilterFromQuery(query);
 			dateRangeFilters.ifPresent(filterList::add);
 
-			query = legacyQueryParser.cleanQueryFromDateFilters(query);
 		}
+
+		if (legacyQueryParser.queryContainsSampleFilter(query)) {
+			Optional<Filter> accessionFilter = legacyQueryParser.extractAccessionFilterFromQuery(query);
+			accessionFilter.ifPresent(filterList::add);
+
+		}
+
+		query = legacyQueryParser.cleanQueryFromKnownFilters(query);
+
 
 		PagedResources<Resource<Sample>> results = client.fetchPagedSampleResource(
 				query,
@@ -113,13 +121,20 @@ public class LegacyXmlGroupController {
 		List<Filter> filterList = new ArrayList<>();
 		filterList.add(FilterBuilder.create().onInverseRelation("has member").withValue(groupAccession).build());
 
-		if (legacyQueryParser.checkQueryContainsDateFilters(query)) {
+		if (legacyQueryParser.queryContainsDateRangeFilter(query)) {
 
-			Optional<Filter> dateRangeFilters = legacyQueryParser.getDateFiltersFromQuery(query);
+			Optional<Filter> dateRangeFilters = legacyQueryParser.extractDateFilterFromQuery(query);
 			dateRangeFilters.ifPresent(filterList::add);
 
-			query = legacyQueryParser.cleanQueryFromDateFilters(query);
 		}
+
+		if (legacyQueryParser.queryContainsSampleFilter(query)) {
+			Optional<Filter> accessionFilter = legacyQueryParser.extractAccessionFilterFromQuery(query);
+			accessionFilter.ifPresent(filterList::add);
+
+		}
+
+		query = legacyQueryParser.cleanQueryFromKnownFilters(query);
 
 		PagedResources<Resource<Sample>> results =
 				client.fetchPagedSampleResource(query,
