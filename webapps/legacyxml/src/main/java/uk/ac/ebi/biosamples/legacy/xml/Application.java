@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples;
+package uk.ac.ebi.biosamples.legacy.xml;
 
 
 import org.springframework.boot.SpringApplication;

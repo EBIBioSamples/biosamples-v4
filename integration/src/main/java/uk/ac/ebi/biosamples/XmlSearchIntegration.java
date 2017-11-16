@@ -27,7 +27,7 @@ import java.time.Instant;
 import java.util.*;
 
 @Component
-@Profile({"default"})
+@Profile({"default", "test"})
 public class XmlSearchIntegration extends AbstractIntegration {
     
     private final RestTemplate restTemplate;
@@ -84,6 +84,8 @@ public class XmlSearchIntegration extends AbstractIntegration {
         xmlSearchTester.searchesForSamplesUsingQueryParametersOnLegacyEndpoint();
 
         xmlSearchTester.searchesForSamplesUsingDateRangesOnLegacyEndpoint();
+
+        xmlSearchTester.findSamplesUsingNCBIQueryStyle();
     }
 
     @Override
@@ -240,6 +242,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
         }
 
         public void triesToFindSamplePartOfGroupUsingLegacyEndpoint() {
+            log.info("Find samples part of a group using legacy xml endpoint");
 
             Sample sampleWithinGroup = TestSampleGenerator.getSampleWithinGroup();
             Sample groupSample = TestSampleGenerator.getSampleGroup();
@@ -267,6 +270,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
         }
 
         public void failsToAccessLegacyEndpointUsingJsonHeader() {
+            log.info("Try to generate a NOT ACCEPTABLE error using legacy xml samples end-point with application/json accept header");
             UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosamplesLegacyXMLUri());
 
             UriComponentsBuilder testBadRequest= uriBuilder.cloneBuilder();
@@ -276,7 +280,6 @@ public class XmlSearchIntegration extends AbstractIntegration {
             HttpHeaders jsonHeaders = new HttpHeaders();
             jsonHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 
-            log.info("Try to generate a NOT ACCEPTABLE error using legacy xml samples end-point with application/json accept header");
 
             try {
                 restTemplate.exchange(testBadRequest.toUriString(),
@@ -300,6 +303,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
         }
 
         public void failsToQueryLegacyEndpointWithoutRequiredQueryParameter() {
+            log.info("Try to generate a BAD REQUEST using legacy xml samples end-point without required parameter");
             UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosamplesLegacyXMLUri());
 
             UriComponentsBuilder testBadRequest= uriBuilder.cloneBuilder();
@@ -309,7 +313,6 @@ public class XmlSearchIntegration extends AbstractIntegration {
             HttpHeaders xmlHeaders = new HttpHeaders();
             xmlHeaders.setAccept(Collections.singletonList(MediaType.TEXT_XML));
 
-            log.info("Try to generate a BAD REQUEST using legacy xml samples end-point without required parameter");
             try {
                 restTemplate.exchange(testBadRequest.toUriString(),
                         HttpMethod.GET,
@@ -335,6 +338,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
         }
 
         public void searchesForSamplesUsingQueryParametersOnLegacyEndpoint() {
+            log.info("Search for samples in legacy xml using query parameter");
             UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosamplesLegacyXMLUri());
 
             UriComponentsBuilder testBadRequest= uriBuilder.cloneBuilder();
@@ -361,6 +365,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
         }
 
         public void getsResultSummaryAsResultOfSearchingSampleInGroup() {
+            log.info("Get result summary of searching a sample in a group");
             Sample sampleGroup = TestSampleGenerator.getSampleGroup();
             Sample sampleWithinGroup = TestSampleGenerator.getSampleWithinGroup();
 
@@ -389,6 +394,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
         }
 
         public void searchesForSamplesUsingDateRangesOnLegacyEndpoint() {
+            log.info("Search legacy XML using date range query");
             Sample testSample = TestSampleGenerator.getSampleWithSpecificUpdateDate();
 
             HttpHeaders xmlHeaders = new HttpHeaders();
@@ -412,7 +418,39 @@ public class XmlSearchIntegration extends AbstractIntegration {
             Optional<BioSample> xmlSample = resultQuery.getBioSample().stream()
                     .filter(bioSample -> bioSample.getId().equals(testSample.getAccession()))
                     .findFirst();
-            xmlSample.orElseThrow(() -> new RuntimeException("The legacy XML result query doesn't contain the expected sample"));
+            if (!xmlSample.isPresent()) {
+                throw new RuntimeException("The legacy XML result query doesn't contain the expected sample");
+            }
+        }
+
+        public void findSamplesUsingNCBIQueryStyle() {
+            log.info("Search legacy XML using NCBI style query");
+            Sample testSample = TestSampleGenerator.getSampleWithSpecificUpdateDate();
+
+            HttpHeaders xmlHeaders = new HttpHeaders();
+            xmlHeaders.setAccept(Collections.singletonList(MediaType.TEXT_XML));
+
+            UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosamplesLegacyXMLUri());
+            UriComponentsBuilder legacyXmlSampleSearchEndpoint= uriBuilder.cloneBuilder();
+            legacyXmlSampleSearchEndpoint.pathSegment("samples")
+                    .queryParam("query", "SAME* AND releasedate:[1980-08-01 TO 2018-08-03]");
+
+            ResponseEntity<ResultQuery> response = restTemplate.exchange(legacyXmlSampleSearchEndpoint.build().toUri().toString(),
+                    HttpMethod.GET,
+                    new HttpEntity<>(xmlHeaders),
+                    ResultQuery.class);
+
+            if (!response.getStatusCode().is2xxSuccessful()) {
+                throw new RuntimeException("Something went wrong while retrieving results from legacy XML endpoint");
+            }
+
+//            ResultQuery resultQuery = response.getBody();
+//            Optional<BioSample> xmlSample = resultQuery.getBioSample().stream()
+//                    .filter(bioSample -> bioSample.getId().equals(testSample.getAccession()))
+//                    .findFirst();
+//            if (!xmlSample.isPresent()) {
+//                throw new RuntimeException("The legacy XML result query doesn't contain the expected sample");
+//            }
         }
     }
 
