@@ -48,6 +48,7 @@ public class ToFileRunner implements ApplicationRunner {
 
 	int pagesize = 1000;
 	private final Map<String, Future<Collection<String>>> pageFutures = new HashMap<>();
+	private final Map<String, Future<String>> accessionFutures = new HashMap<>();
 
 	private PageCallback pageCallback = null;
 	private AccessionCallback accessionCallback = null;
@@ -80,13 +81,19 @@ public class ToFileRunner implements ApplicationRunner {
 				fileWriter.write("<BioSamples>\n");
 				
 				accessionCallback = new AccessionCallback(fileWriter);			
-				pageCallback = new PageCallback(accessionExecutorService, rootUrl, restTemplate, accessionCallback);
-			
-				UriComponentsBuilder pageUriComponentBuilder = UriComponentsBuilder.fromUriString(rootUrl);
+				pageCallback = new PageCallback(accessionExecutorService, rootUrl, restTemplate, 
+						accessionCallback, accessionFutures);
+
+				UriComponentsBuilder pageUriComponentBuilder;
+				int pageCount;
+				
+				//handle samples
+				pageUriComponentBuilder = UriComponentsBuilder.fromUriString(rootUrl);
+				pageUriComponentBuilder.pathSegment("samples");
 				pageUriComponentBuilder.replaceQueryParam("pagesize", pagesize);
 				pageUriComponentBuilder.replaceQueryParam("query", "");
 				
-				int pageCount = getPageCount(pageUriComponentBuilder, pagesize);
+				pageCount = getPageCount(pageUriComponentBuilder, pagesize);
 				
 				//multi-thread the pages via futures
 				for (int i = 1; i <= pageCount; i++) {
@@ -96,7 +103,26 @@ public class ToFileRunner implements ApplicationRunner {
 					pageFutures.put(pageUri.toString(), future);
 					ThreadUtils.checkAndCallbackFutures(pageFutures, 100, pageCallback);
 				}
+				
+				//handle groups
+				pageUriComponentBuilder = UriComponentsBuilder.fromUriString(rootUrl);
+				pageUriComponentBuilder.pathSegment("groups");
+				pageUriComponentBuilder.replaceQueryParam("pagesize", pagesize);
+				pageUriComponentBuilder.replaceQueryParam("query", "group");
+				
+				pageCount = getPageCount(pageUriComponentBuilder, pagesize);
+				
+				//multi-thread the pages via futures
+				for (int i = 1; i <= pageCount; i++) {
+					pageUriComponentBuilder.replaceQueryParam("page", i);			
+					URI pageUri = pageUriComponentBuilder.build().toUri();
+					Future<Collection<String>> future = pageExecutorService.submit(getPageCallable(pageUri));
+					pageFutures.put(pageUri.toString(), future);
+					ThreadUtils.checkAndCallbackFutures(pageFutures, 100, pageCallback);
+				}
+				
 				ThreadUtils.checkAndCallbackFutures(pageFutures, 0, pageCallback);
+				ThreadUtils.checkAndCallbackFutures(accessionFutures, 0, accessionCallback);
 
 				fileWriter.write("</BioSamples>\n");
 			}
@@ -166,6 +192,10 @@ public class ToFileRunner implements ApplicationRunner {
 					String accession = element.attributeValue("id");
 					accessions.add(accession);
 				}
+				for (Element element : XmlPathBuilder.of(root).elements("BioSampleGroup")) {
+					String accession = element.attributeValue("id");
+					accessions.add(accession);
+				}
 				
 				return accessions;
 			}
@@ -180,14 +210,16 @@ public class ToFileRunner implements ApplicationRunner {
 		private final RestTemplate restTemplate;
 		private final AccessionCallback accessionCallback;
 		
-		private final Map<String, Future<String>> accessionFutures = new HashMap<>();
+		private final Map<String, Future<String>> accessionFutures;
 		private final Logger log = LoggerFactory.getLogger(getClass());
 		
-		public PageCallback(ExecutorService accessionExecutorService, String rootUrl, RestTemplate restTemplate, AccessionCallback accessionCallback) {
+		public PageCallback(ExecutorService accessionExecutorService, String rootUrl, RestTemplate restTemplate, AccessionCallback accessionCallback, 
+				Map<String, Future<String>> accessionFutures) {
 			this.accessionExecutorService = accessionExecutorService;			
 			this.rootUrl = rootUrl;
 			this.restTemplate = restTemplate;
 			this.accessionCallback = accessionCallback;
+			this.accessionFutures = accessionFutures;
 		}
 		
 		
@@ -195,7 +227,11 @@ public class ToFileRunner implements ApplicationRunner {
 		public void call(Collection<String> accessions) {
 			for (String accession : accessions) {
 				UriComponentsBuilder accessionUriComponentBuilder = UriComponentsBuilder.fromUriString(rootUrl);
-				accessionUriComponentBuilder.pathSegment(accession);		
+				if (accession.startsWith("SAMEG")) {
+					accessionUriComponentBuilder.pathSegment("groups", accession);
+				} else {
+					accessionUriComponentBuilder.pathSegment("samples", accession);
+				}
 				URI accessionUri = accessionUriComponentBuilder.build().toUri();
 				accessionFutures.put(accession, accessionExecutorService.submit(getAccessionCallable(accessionUri)));
 				try {
@@ -203,11 +239,6 @@ public class ToFileRunner implements ApplicationRunner {
 				} catch (InterruptedException | ExecutionException e) {
 					throw new RuntimeException(e);
 				}
-			}
-			try {
-				ThreadUtils.checkAndCallbackFutures(accessionFutures, 0, accessionCallback);
-			} catch (InterruptedException | ExecutionException e) {
-				throw new RuntimeException(e);
 			}
 		}
 		

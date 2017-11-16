@@ -23,6 +23,7 @@ import org.xml.sax.Attributes;
 
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.service.XmlGroupToSampleConverter;
 import uk.ac.ebi.biosamples.service.XmlSampleToSampleConverter;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
@@ -37,13 +38,16 @@ public class ImportRunner implements ApplicationRunner {
 	private final BioSamplesClient client;
 	private final XmlFragmenter xmlFragmenter;
 	private final XmlSampleToSampleConverter xmlSampleToSampleConverter;
+	private final XmlGroupToSampleConverter xmlGroupToSampleConverter;
 	
 	private static final String DOMAIN="self.BioSamplesMigration";
 	
-	public ImportRunner(BioSamplesClient client, XmlFragmenter xmlFragmenter, XmlSampleToSampleConverter xmlSampleToSampleConverter) {
+	public ImportRunner(BioSamplesClient client, XmlFragmenter xmlFragmenter, 
+			XmlSampleToSampleConverter xmlSampleToSampleConverter, XmlGroupToSampleConverter xmlGroupToSampleConverter) {
 		this.client = client;
 		this.xmlFragmenter = xmlFragmenter;
 		this.xmlSampleToSampleConverter = xmlSampleToSampleConverter;
+		this.xmlGroupToSampleConverter = xmlGroupToSampleConverter;
 	}
 	
 	@Override
@@ -60,7 +64,7 @@ public class ImportRunner implements ApplicationRunner {
 			Map<Element, Future<Resource<Sample>>> futures = new LinkedHashMap<>();
 
 			ElementCallback callback = new ImportElementCallback(futures, 
-					client, xmlSampleToSampleConverter);
+					client, xmlSampleToSampleConverter, xmlGroupToSampleConverter);
 
 			// this does the actual processing
 			xmlFragmenter.handleStream(is, "UTF-8", callback);
@@ -78,18 +82,27 @@ public class ImportRunner implements ApplicationRunner {
 		private final Map<Element, Future<Resource<Sample>>> futures;
 		private final BioSamplesClient client;
 		private final XmlSampleToSampleConverter xmlSampleToSampleConverter;
+		private final XmlGroupToSampleConverter xmlGroupToSampleConverter;
 		
-		public ImportElementCallback(Map<Element, Future<Resource<Sample>>> futures, 
-				BioSamplesClient client, XmlSampleToSampleConverter xmlSampleToSampleConverter) {
+		public ImportElementCallback(Map<Element, Future<Resource<Sample>>> futures, BioSamplesClient client, 
+				XmlSampleToSampleConverter xmlSampleToSampleConverter, XmlGroupToSampleConverter xmlGroupToSampleConverter) {
 			this.futures = futures;
 			this.client = client;
 			this.xmlSampleToSampleConverter = xmlSampleToSampleConverter;
+			this.xmlGroupToSampleConverter = xmlGroupToSampleConverter;
 		}
 		
 		@Override
 		public void handleElement(Element e) throws Exception {
 			
-			Sample sample = xmlSampleToSampleConverter.convert(e);
+			Sample sample;
+			if (e.getName().equals("BioSample")) {
+				sample = xmlSampleToSampleConverter.convert(e);
+			} else if (e.getName().equals("BioSampleGroup")) {
+				sample = xmlGroupToSampleConverter.convert(e);
+			} else {
+				return;
+			}
 
 			//need to specify domain
 			sample = Sample.build(sample.getName(), sample.getAccession(), DOMAIN, 
