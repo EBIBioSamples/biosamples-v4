@@ -24,18 +24,20 @@ public class SampleCurationCallable implements Callable<Void> {
 	private final ZoomaProcessor zoomaProcessor;
 	private final OlsProcessor olsProcessor;
 	private final CurationApplicationService curationApplicationService;
+	private final String domain;
 
 	public static final ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<String>();
 
 	public SampleCurationCallable(BioSamplesClient bioSamplesClient, Sample sample, 
 			ZoomaProcessor zoomaProcessor, 
 			OlsProcessor olsProcessor, 
-			CurationApplicationService curationApplicationService) {
+			CurationApplicationService curationApplicationService, String domain) {
 		this.bioSamplesClient = bioSamplesClient;
 		this.sample = sample;
 		this.zoomaProcessor = zoomaProcessor;
 		this.olsProcessor = olsProcessor;
 		this.curationApplicationService = curationApplicationService;
+		this.domain = domain;
 	}
 
 	@Override
@@ -76,7 +78,7 @@ public class SampleCurationCallable implements Callable<Void> {
 				Attribute newAttribute = Attribute.build(newType, newValue, attribute.getIri(),
 						attribute.getUnit());
 				Curation curation = Curation.build(attribute, newAttribute);
-				bioSamplesClient.persistCuration(sample.getAccession(), curation, null);
+				bioSamplesClient.persistCuration(sample.getAccession(), curation, domain);
 				sample = curationApplicationService.applyCurationToSample(sample, curation);
 				return sample;
 
@@ -85,7 +87,7 @@ public class SampleCurationCallable implements Callable<Void> {
 			// if no information content, remove
 			if (isEqualToNotApplicable(attribute.getValue())) {
 				Curation curation = Curation.build(attribute, null);
-				bioSamplesClient.persistCuration(sample.getAccession(), curation, null);
+				bioSamplesClient.persistCuration(sample.getAccession(), curation, domain);
 				sample = curationApplicationService.applyCurationToSample(sample, curation);
 				return sample;
 			}
@@ -98,7 +100,7 @@ public class SampleCurationCallable implements Callable<Void> {
 							attribute.getIri(), newUnit);
 					Curation curation = Curation.build(attribute, newAttribute); 
 					bioSamplesClient.persistCuration(sample.getAccession(),
-							curation, null);
+							curation, domain);
 					sample = curationApplicationService.applyCurationToSample(sample, curation);
 					return sample;
 				}
@@ -323,7 +325,7 @@ public class SampleCurationCallable implements Callable<Void> {
 					Curation curation = Curation.build(Collections.singleton(attribute), Collections.singleton(mapped), null, null);
 				
 					//save the curation back in biosamples
-					bioSamplesClient.persistCuration(sample.getAccession(), curation, null);
+					bioSamplesClient.persistCuration(sample.getAccession(), curation, domain);
 					sample = curationApplicationService.applyCurationToSample(sample, curation);
 					return sample;
 				}
@@ -343,7 +345,7 @@ public class SampleCurationCallable implements Callable<Void> {
 					Curation curation = Curation.build(Collections.singleton(attribute), Collections.singleton(mapped), null, null);
 				
 					//save the curation back in biosamples
-					bioSamplesClient.persistCuration(sample.getAccession(), curation, null);
+					bioSamplesClient.persistCuration(sample.getAccession(), curation, domain);
 					sample = curationApplicationService.applyCurationToSample(sample, curation);
 					return sample;
 				}

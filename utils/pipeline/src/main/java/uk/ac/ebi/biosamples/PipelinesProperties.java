@@ -39,6 +39,9 @@ public class PipelinesProperties {
 	@Value("${biosamples.pipelines.accession.domain:self.BiosampleImportAcccession}")
 	private String accessionDomain;
 	
+	@Value("${biosamples.pipelines.curation.domain:self.BiosampleCuration}")
+	private String curationDomain;
+	
 	public String getNcbiFile() {
 		return ncbiFile;
 	}
@@ -50,6 +53,9 @@ public class PipelinesProperties {
 	}
 	public String getAccessionDomain() {
 		return accessionDomain;
+	}
+	public String getCurationDomain() {
+		return curationDomain;
 	}
 
 	public int getThreadCount() {
