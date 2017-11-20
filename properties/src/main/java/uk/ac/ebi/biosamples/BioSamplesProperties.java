@@ -26,16 +26,16 @@ public class BioSamplesProperties {
 	@Value("${biosamples.client.timeout:60000}")
 	private int biosamplesClientTimeout;
 
-	@Value("${biosamples.client.connectioncount.max:32}")
+	@Value("${biosamples.client.connectioncount.max:8}")
 	private int connectionCountMax;
 	
-	@Value("${biosamples.client.connectioncount.default:32}")
+	@Value("${biosamples.client.connectioncount.default:8}")
 	private int connectionCountDefault;
 
 	@Value("${biosamples.client.threadcount:1}")
 	private int threadCount;
 
-	@Value("${biosamples.client.threadcount.max:32}")
+	@Value("${biosamples.client.threadcount.max:8}")
 	private int threadCountMax;
 	
 	@Value("${biosamples.client.aap.uri:https://explore.api.aap.tsi.ebi.ac.uk/auth}")
