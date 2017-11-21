@@ -302,7 +302,7 @@ public class Sample implements Comparable<Sample> {
 			Instant release, 
 			Instant update,
 			Set<Attribute> attributes,
-			Set<Relationship> relationships, 
+			Set<Relationship> relationships,
 			Set<ExternalReference> externalReferences) {
     	return build(name, accession, domain, release, update, attributes, relationships, externalReferences, null, null, null);
     }

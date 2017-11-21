@@ -235,13 +235,29 @@ public class RestIntegration extends AbstractIntegration {
 		externalReferences.add(ExternalReference.build("http://www.google.com"));
 
 		SortedSet<Organization> organizations = new TreeSet<>();
-		organizations.add(Organization.build("Jo Bloggs Inc", "user", "help@jobloggs.com", "http://www.jobloggs.com"));
+//		organizations.add(Organization.build("Jo Bloggs Inc", "user", "help@jobloggs.com", "http://www.jobloggs.com"));
+		organizations.add(new Organization.Builder()
+				.name("Jo Bloggs Inc")
+				.role("user")
+				.email("help@jobloggs.com")
+				.url("http://www.jobloggs.com")
+				.build());
 
 		SortedSet<Contact> contacts = new TreeSet<>();
-		contacts.add(Contact.build("Joe Bloggs","Jo Bloggs Inc", "http://www.jobloggs.com/joe"));
+//		contacts.add(Contact.build("Joe Bloggs","Jo Bloggs Inc", "http://www.jobloggs.com/joe"));
+		contacts.add(new Contact.Builder()
+				.firstName("Jo")
+				.lastName("Bloggs")
+				.role("Submitter")
+				.email("jobloggs@joblogs.com")
+				.build());
 
 		SortedSet<Publication> publications = new TreeSet<>();
-		publications.add(Publication.build("10.1093/nar/gkt1081", "24265224"));
+//		publications.add(Publication.build("10.1093/nar/gkt1081", "24265224"));
+		publications.add(new Publication.Builder()
+				.doi("10.1093/nar/gkt1081")
+				.pubmed_id("24265224")
+				.build());
 
 		return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences, organizations, contacts, publications);
 	}

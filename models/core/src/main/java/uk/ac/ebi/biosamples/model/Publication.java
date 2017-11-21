@@ -1,12 +1,14 @@
 package uk.ac.ebi.biosamples.model;
 
-import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
+import java.util.Objects;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonDeserialize(builder = Publication.Builder.class)
 public class Publication implements Comparable<Publication> {
 
 	private String doi;
@@ -52,36 +54,52 @@ public class Publication implements Comparable<Publication> {
 			return 1;
 		}
 
-		if (this.doi == null && other.doi != null) {
-			return -1;
-		}
-		if (this.doi != null && other.doi == null) {
-			return 1;
-		}
-		if (this.doi != null && other.doi != null 
-				&& !this.doi.equals(other.doi)) {
-			return this.doi.compareTo(other.doi);
+		int comparisonResult = nullSafeStringComparison(this.doi, other.doi);
+		if (comparisonResult != 0) {
+			return comparisonResult;
 		}
 
-		if (this.pubmed_id == null && other.pubmed_id != null) {
-			return -1;
-		}
-		if (this.pubmed_id != null && other.pubmed_id == null) {
-			return 1;
-		}
-		if (this.pubmed_id != null && other.pubmed_id != null 
-				&& !this.pubmed_id.equals(other.pubmed_id)) {
-			return this.pubmed_id.compareTo(other.pubmed_id);
-		}
-		//no differences, must be the same
-		return 0;
+		return nullSafeStringComparison(this.pubmed_id, other.pubmed_id);
 	}
-		
-		
-	@JsonCreator
-	public static Publication build(@JsonProperty("doi") String doi, 
-			@JsonProperty("pubmed_id") String pubmedId) {
-		return new Publication(doi, pubmedId);
+
+	private int nullSafeStringComparison(String first, String other) {
+		if (first == null && other == null) return 0;
+		if (first == null) return -1;
+		if (other == null) return 1;
+		return first.compareTo(other);
+	}
+
+//	@JsonCreator
+//	public static Publication build(@JsonProperty("doi") String doi,
+//			@JsonProperty("pubmed_id") String pubmedId) {
+//		return new Publication(doi, pubmedId);
+//	}
+	
+	public static class Builder {
+		private String doi;
+		private String pubmed_id;
+
+		@JsonCreator
+		public Builder() {}
+
+		@JsonProperty("doi")
+		public Builder doi(String doi) {
+			this.doi = doi;
+			return this;
+		}
+
+		@JsonProperty("pubmed_id")
+		public Builder pubmed_id(String pubmed_id) {
+			this.pubmed_id = pubmed_id;
+			return this;
+		}
+
+
+		public Publication build(){
+		    return new Publication(doi, pubmed_id);
+
+		}
+
 	}
 }
 

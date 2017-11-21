@@ -165,19 +165,19 @@ public class LegacyGroupsControllerIntegrationTest {
 
 	public void testContactIsRootField() throws Exception {
 		Sample group = new TestSample("SAMEG1")
-				.withContact(Contact.build("Name", "Affiliation", "url"))
+				.withContact(new Contact.Builder().firstName("Name").role("Submitter").email("name@email.com").build())
 				.build();
 		when(sampleRepository.findByAccession(group.getAccession())).thenReturn(Optional.of(group));
 
 		mockMvc.perform(get("/samples/{accession}", group.getAccession()).accept(HAL_JSON))
 				.andExpect(jsonPath("$.contact").isArray())
-				.andExpect(jsonPath("$.contact[0]").value(allOf(hasKey("Name"), hasKey("Affiliation"), hasKey("URL"))));
+				.andExpect(jsonPath("$.contact[0]").value(allOf(hasKey("FirstName"), hasKey("Submitter"), hasKey("Email"))));
 	}
 
 	@Test
 	public void testPublicationIsRootField() throws Exception {
 		Sample group = new TestSample("SAMEG1")
-				.withPublication(Publication.build("doi", "pubmedID"))
+				.withPublication(new Publication.Builder().doi("doi").pubmed_id("pubmedID").build())
 				.build();
 		when(sampleRepository.findByAccession(group.getAccession())).thenReturn(Optional.of(group));
 
@@ -188,7 +188,9 @@ public class LegacyGroupsControllerIntegrationTest {
 	@Test
 	public void testOrganizationIsRootField() throws Exception {
 		Sample testGroup = new TestSample("SAMEG1")
-				.withOrganization(Organization.build("Stanford Microarray Database (SMD)", "submitter", null, null))
+				.withOrganization(new Organization.Builder()
+						.name("Stanford Microarray Database (SMD)")
+						.role("submitter").build())
 				.build();
 		when(sampleRepository.findByAccession(testGroup.getAccession())).thenReturn(Optional.of(testGroup));
 

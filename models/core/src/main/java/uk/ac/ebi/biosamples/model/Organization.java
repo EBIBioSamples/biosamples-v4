@@ -1,24 +1,28 @@
 package uk.ac.ebi.biosamples.model;
 
-import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
+import java.util.Objects;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonDeserialize(builder = Organization.Builder.class)
 public class Organization implements Comparable<Organization> {
 
 	private String name;
 	private String role;
+	private String address;
 	private String email;
 	private String url;
 	
-	private Organization(String name, String role, String email, String url) {
+	private Organization(String name, String role, String email, String url, String address) {
 		this.name = name;
 		this.role = role;
 		this.email = email;
 		this.url = url;
+		this.address = address;
 	}
 
 	@JsonProperty("Name") 
@@ -42,7 +46,12 @@ public class Organization implements Comparable<Organization> {
 	public String getUrl() {
 		return this.url;
 	}
-	
+
+	@JsonProperty("Address")
+	public String getAddress() {
+		return this.address;
+	}
+
 
 	@Override
     public boolean equals(Object o) {
@@ -55,12 +64,13 @@ public class Organization implements Comparable<Organization> {
         return Objects.equals(this.name, other.name) 
         		&& Objects.equals(this.role, other.role)
         		&& Objects.equals(this.email, other.email)
-        		&& Objects.equals(this.url, other.url);
+        		&& Objects.equals(this.url, other.url)
+				&& Objects.equals(this.address, other.address);
     }
     
     @Override
     public int hashCode() {
-    	return Objects.hash(name, role, email, url);
+    	return Objects.hash(name, role, email, url, address);
     }
 
 	@Override
@@ -69,60 +79,87 @@ public class Organization implements Comparable<Organization> {
 			return 1;
 		}
 
-		if (this.name == null && other.name != null) {
-			return -1;
-		}
-		if (this.name != null && other.name == null) {
-			return 1;
-		}
-		if (this.name != null && other.name != null 
-				&& !this.name.equals(other.name)) {
-			return this.name.compareTo(other.name);
+		int comparisonResult  = nullSafeStringComparison(this.name, other.name);
+		if (comparisonResult != 0) {
+			return comparisonResult;
 		}
 
-		if (this.role == null && other.role != null) {
-			return -1;
-		}
-		if (this.role != null && other.role == null) {
-			return 1;
-		}
-		if (this.role != null && other.role != null 
-				&& !this.role.equals(other.role)) {
-			return this.role.compareTo(other.role);
+		comparisonResult = nullSafeStringComparison(this.address, other.address);
+		if (comparisonResult != 0) {
+			return comparisonResult;
 		}
 
-		if (this.email == null && other.email != null) {
-			return -1;
-		}
-		if (this.email != null && other.email == null) {
-			return 1;
-		}
-		if (this.email != null && other.email != null 
-				&& !this.email.equals(other.email)) {
-			return this.email.compareTo(other.email);
+		comparisonResult = nullSafeStringComparison(this.role, other.role);
+		if (comparisonResult != 0) {
+			return comparisonResult;
 		}
 
-		if (this.url == null && other.url != null) {
-			return -1;
+		comparisonResult = nullSafeStringComparison(this.email, other.email);
+		if (comparisonResult != 0) {
+			return comparisonResult;
 		}
-		if (this.url != null && other.url == null) {
-			return 1;
-		}
-		if (this.url != null && other.url != null 
-				&& !this.url.equals(other.url)) {
-			return this.url.compareTo(other.url);
-		}
-		//no differences, must be the same
-		return 0;
+
+		return nullSafeStringComparison(this.url, other.url);
+
 	}
-		
-		
-	@JsonCreator
-	public static Organization build(@JsonProperty("Name") String name, 
-			@JsonProperty("Role") String role, 
-			@JsonProperty("E-mail") String email, 
-			@JsonProperty("URL") String url) {
-		return new Organization(name, role,email,url);
+
+	private int nullSafeStringComparison(String first, String other) {
+		if (first == null && other == null) return 0;
+		if (first == null) return -1;
+		if (other == null) return 1;
+		return first.compareTo(other);
 	}
+
+//	@JsonCreator
+//	public static Organization build(@JsonProperty("Name") String name, 
+//			@JsonProperty("Role") String role, 
+//			@JsonProperty("E-mail") String email, 
+//			@JsonProperty("URL") String url) {
+//		return new Organization(name, role,email,url);
+//	}
+    public static class Builder {
+	    private String name;
+	    private String url;
+	    private String email;
+	    private String address;
+	    private String role;
+
+		@JsonCreator
+        public Builder() {}
+
+        @JsonProperty("Name")
+        public Builder name(String name) {
+            this.name = name;
+            return this;
+        }
+
+        @JsonProperty("URL")
+        public Builder url(String url) {
+            this.url = url;
+            return this;
+        }
+
+        @JsonProperty("E-mail")
+        public Builder email(String email) {
+            this.email = email;
+            return this;
+        }
+
+        @JsonProperty("Address")
+        public Builder address(String address) {
+            this.address = address;
+            return this;
+        }
+
+        @JsonProperty("Role")
+        public Builder role(String role) {
+            this.role = role;
+            return this;
+        }
+
+        public Organization build() {
+			return new Organization(name, role, email, url, address);
+		}
+    }
 }
 
