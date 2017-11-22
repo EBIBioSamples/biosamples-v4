@@ -52,10 +52,12 @@ public class Attribute implements Comparable<Attribute> {
 	@JsonIgnore
 	public String getIriOls() {
 		//TODO move this to service layer
-		if (iri == null) return null;
+		if (iri == null || iri.size() == 0) return null;
+		
+		String displayIri = iri.first();
 		
 		//check this is a sane iri
-		UriComponents iriComponents = UriComponentsBuilder.fromUriString(iri).build(true);
+		UriComponents iriComponents = UriComponentsBuilder.fromUriString(displayIri).build(true);
 		if (iriComponents.getScheme() == null
 				|| iriComponents.getHost() == null 
 				|| iriComponents.getPath() == null) {
@@ -64,7 +66,7 @@ public class Attribute implements Comparable<Attribute> {
 		}
 		
 		try {
-			return "http://www.ebi.ac.uk/ols/terms?iri="+URLEncoder.encode(iri.toString(), "UTF-8");
+			return "http://www.ebi.ac.uk/ols/terms?iri="+URLEncoder.encode(displayIri.toString(), "UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			//should never get here
 			throw new RuntimeException(e);
