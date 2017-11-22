@@ -202,15 +202,34 @@ public class LegacySamplesControllerIntegrationTest {
 	@Test
 	public void testContactIsRootField() throws Exception {
 	    Sample sample = new TestSample("SAMEA1")
-				.withContact(new Contact.Builder().firstName("Name")
-						.role("Submitter")
-						.email("name@email.com").build())
+				.withContact(new Contact.Builder().name("Name").build())
 				.build();
 	    when(sampleRepository.findByAccession(sample.getAccession())).thenReturn(Optional.of(sample));
 
 	    mockMvc.perform(get("/samples/{accession}", sample.getAccession()).accept(HAL_JSON))
 				.andExpect(jsonPath("$.contact").isArray())
-				.andExpect(jsonPath("$.contact[0]").value(allOf(hasKey("FirstName"), hasKey("Role"), hasKey("E-mail"))));
+				.andExpect(jsonPath("$.contact[0]").value(hasKey("Name")));
+	}
+
+	@Test
+	public void testContactMixinHidesUnwantedFields() throws Exception {
+		Sample sample = new TestSample("SAMEA1")
+				.withContact(new Contact.Builder()
+						.firstName("first")
+						.midInitials("mi")
+						.lastName("last")
+						.name("real name")
+						.email("me@you.com")
+						.affiliation("nobody inc.")
+						.role("screamer").build()
+				).build();
+		when(sampleRepository.findByAccession(sample.getAccession())).thenReturn(Optional.of(sample));
+
+		mockMvc.perform(get("/samples/{accession}", sample.getAccession()).accept(HAL_JSON))
+				.andExpect(jsonPath("$.contact").isArray())
+				.andExpect(jsonPath("$.contact[0]").value(not(anyOf(
+						hasKey("FirstName"), hasKey("LastName"), hasKey("MidInitials"), hasKey("Role"),
+						hasKey("URL"), hasKey("E-mail")))));
 	}
 
 	@Test

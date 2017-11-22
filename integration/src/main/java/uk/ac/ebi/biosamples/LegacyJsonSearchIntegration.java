@@ -12,10 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.ExternalReference;
-import uk.ac.ebi.biosamples.model.Relationship;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.*;
 
 import java.time.Instant;
 import java.util.List;
@@ -27,9 +24,7 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.springframework.hateoas.MediaTypes.HAL_JSON;
 
 @Component
@@ -135,6 +130,31 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
             Resource<Sample> sampleWithinGroupResource = this.client.persistSampleResource(sampleWithinGroup);
             // The result and the submitted will not be equal because of the new inverse relation created automatically
             if (!sampleWithinGroup.getAccession().equals(sampleWithinGroupResource.getContent().getAccession())) {
+                throw new RuntimeException("Expected response to equal submission");
+            }
+
+
+            Sample sampleWithFullDetails  = TestSampleGenerator.getSampleFullOfDetails();
+            optional = this.client.fetchSampleResource(sampleWithFullDetails.getAccession());
+            if (optional.isPresent()) {
+                throw new RuntimeException("Found existing "+sampleWithFullDetails.getAccession());
+            }
+
+            Resource<Sample> sampleWithFullDetailsResource = this.client.persistSampleResource(sampleWithFullDetails);
+            // The result and the submitted will not be equal because of the new inverse relation created automatically
+            if (!sampleWithFullDetails.getAccession().equals(sampleWithFullDetailsResource.getContent().getAccession())) {
+                throw new RuntimeException("Expected response to equal submission");
+            }
+
+            Sample groupWithFullDetails  = TestSampleGenerator.getGroupFullOfDetails();
+            optional = this.client.fetchSampleResource(groupWithFullDetails.getAccession());
+            if (optional.isPresent()) {
+                throw new RuntimeException("Found existing "+groupWithFullDetails.getAccession());
+            }
+
+            Resource<Sample> groupWithFullDetailsResource = this.client.persistSampleResource(groupWithFullDetails);
+            // The result and the submitted will not be equal because of the new inverse relation created automatically
+            if (!groupWithFullDetails.getAccession().equals(groupWithFullDetailsResource.getContent().getAccession())) {
                 throw new RuntimeException("Expected response to equal submission");
             }
 
@@ -421,7 +441,88 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
 
         }
 
+        public static Sample getSampleFullOfDetails() {
+            String name = "TestLegacyJsonSampleFullOfDetails";
+            String accession = "SAMN1234567890";
+            String domain = "self.BiosampleIntegrationTest";
+            Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
+            Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
+            SortedSet<Attribute> attributes = new TreeSet<>();
+            SortedSet<Relationship> relationships = new TreeSet<>();
+            SortedSet<ExternalReference> externalReferences = new TreeSet<>();
+
+            SortedSet<Organization> organizations = new TreeSet<>();
+            organizations.add(new Organization.Builder()
+                    .name("Jo Bloggs Inc")
+                    .role("user")
+                    .address("some address")
+                    .role("submitter")
+                    .email("help@jobloggs.com")
+                    .url("http://www.jobloggs.com")
+                    .build());
+
+            SortedSet<Contact> contacts = new TreeSet<>();
+            contacts.add(new Contact.Builder()
+                    .firstName("Jo")
+                    .lastName("Bloggs")
+                    .name("Joe Bloggs")
+                    .role("Submitter")
+                    .email("jobloggs@joblogs.com")
+                    .affiliation("test affiliation")
+                    .midInitials("JB")
+                    .build());
+
+            SortedSet<Publication> publications = new TreeSet<>();
+            publications.add(new Publication.Builder()
+                    .doi("10.1093/nar/gkt1081")
+                    .pubmed_id("24265224")
+                    .build());
+
+            return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences, organizations, contacts, publications);
+        }
+
+
+        public static Sample getGroupFullOfDetails() {
+            String name = "TestLegacyJsonGroupFullOfDetails";
+            String accession = "SAMEG0987654321";
+            String domain = "self.BiosampleIntegrationTest";
+            Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
+            Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
+
+            SortedSet<Attribute> attributes = new TreeSet<>();
+            SortedSet<Relationship> relationships = new TreeSet<>();
+            SortedSet<ExternalReference> externalReferences = new TreeSet<>();
+
+            SortedSet<Organization> organizations = new TreeSet<>();
+            organizations.add(new Organization.Builder()
+                    .name("Jo Bloggs Inc")
+                    .role("user")
+                    .address("some address")
+                    .role("submitter")
+                    .email("help@jobloggs.com")
+                    .url("http://www.jobloggs.com")
+                    .build());
+
+            SortedSet<Contact> contacts = new TreeSet<>();
+            contacts.add(new Contact.Builder()
+                    .firstName("Jo")
+                    .lastName("Bloggs")
+                    .name("Joe Bloggs")
+                    .role("Submitter")
+                    .email("jobloggs@joblogs.com")
+                    .affiliation("test affiliation")
+                    .midInitials("JB")
+                    .build());
+
+            SortedSet<Publication> publications = new TreeSet<>();
+            publications.add(new Publication.Builder()
+                    .doi("10.1093/nar/gkt1081")
+                    .pubmed_id("24265224")
+                    .build());
+
+            return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences, organizations, contacts, publications);
+        }
     }
 
 }

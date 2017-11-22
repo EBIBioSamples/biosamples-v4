@@ -50,9 +50,7 @@
 			"LastName": "Bloggs",
 			"Name": "Joe Bloggs",
 			"E-mail": "jobloggs@joblogs.com",
-			"Role": "Submitter",
-			"Affiliation": "Jo Bloggs Inc",
-			"URL": "http://www.jobloggs.com/joe"
+			"Role": "Submitter"
 		}
 	],
 	"publications": [

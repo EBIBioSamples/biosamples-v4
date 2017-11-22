@@ -105,7 +105,7 @@ public class SamplesRestController {
 				.linkTo(ControllerLinkBuilder.methodOn(SampleFacetRestController.class).getFacetsHal(text, filter))
 				.withRel("facet"));
 		pagedResources.add(ControllerLinkBuilder
-				.linkTo(ControllerLinkBuilder.methodOn(SampleRestController.class).getSampleHal(null))
+				.linkTo(ControllerLinkBuilder.methodOn(SampleRestController.class).getSampleHal(null, false))
 				.withRel("sample"));
 		//TODO add search link
 

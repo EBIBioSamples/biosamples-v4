@@ -52,13 +52,12 @@
 	],
 	"contact": [
 		{
-			"FirstName": "Joe",
-			"LastName": "Bloggs",
 			"Name": "Joe Bloggs",
+			"FirstName": "Joe",
+          	"LastName": "Bloggs",
 			"Role": "Submitter",
-			"E-mail": "jobloggs@joblogs.com",
-			"Affiliation": "Jo Bloggs Inc",
-			"URL": "http://www.jobloggs.com/joe"
+			"E-mail": "jobloggs@joblogs.com"
+
 		}
 	],
 	"publications": [

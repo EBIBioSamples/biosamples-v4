@@ -95,7 +95,11 @@ public class SampleTabV4Controller {
         //TODO do AAP domain property
         //TODO do JWT properly
         try {
-			sampleTabService.saveSampleTab(sampledata, "self.BiosampleIntegrationTest", false, setUpdateDate);
+			sampleTabService.saveSampleTab(sampledata,
+					"self.BiosampleIntegrationTest",
+					false,
+					setUpdateDate,
+					false);
 		} catch (DuplicateDomainSampleException | ConflictingSampleTabOwnershipException | AssertingSampleTabOwnershipException e) {
 			log.error("Problem saving sampletab ", e);
 			return ResponseEntity.badRequest().body(e.getMessage());

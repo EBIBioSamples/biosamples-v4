@@ -1,40 +1,10 @@
 package uk.ac.ebi.biosamples.controller;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.nio.charset.StandardCharsets;
-import java.sql.Date;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.mged.magetab.error.ErrorItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
+import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.arrayexpress2.magetab.exception.ParseException;
 import uk.ac.ebi.arrayexpress2.magetab.listener.ErrorItemListener;
 import uk.ac.ebi.arrayexpress2.sampletab.datamodel.SampleData;
@@ -45,6 +15,11 @@ import uk.ac.ebi.biosamples.service.SampleTabService;
 import uk.ac.ebi.biosamples.service.SampleTabService.AssertingSampleTabOwnershipException;
 import uk.ac.ebi.biosamples.service.SampleTabService.ConflictingSampleTabOwnershipException;
 import uk.ac.ebi.biosamples.service.SampleTabService.DuplicateDomainSampleException;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 
 @RestController()
 public class SampleTabV1Controller {
@@ -123,7 +98,7 @@ public class SampleTabV1Controller {
             //TODO do AAP domain property
             boolean isSuperuser = apiKeyService.getUsernameForApiKey(apiKey).get().equals(ApiKeyService.BIOSAMPLES);
             try {
-				sampleTabService.saveSampleTab(outcome.sampledata, "self."+domain.get(), isSuperuser, true);
+				sampleTabService.saveSampleTab(outcome.sampledata, "self."+domain.get(), isSuperuser, true, true);
 			} catch (DuplicateDomainSampleException | ConflictingSampleTabOwnershipException | AssertingSampleTabOwnershipException e) {
 				log.error("Caught exception "+e.getMessage(), e);
 				return getErrorOutcome("Unable to accession", e.getMessage()+" Contact biosamples@ebi.ac.uk for more information.");

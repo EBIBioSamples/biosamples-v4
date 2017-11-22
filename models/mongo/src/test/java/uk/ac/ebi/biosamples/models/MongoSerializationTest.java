@@ -71,10 +71,11 @@ public class MongoSerializationTest {
 		contacts.add(new Contact.Builder()
 				.firstName("Joe")
 				.lastName("Bloggs")
+                .name("Joe Bloggs")
 				.role("Submitter")
 				.email("jobloggs@joblogs.com")
-				.affiliation("Jo Bloggs Inc")
-				.url("http://www.jobloggs.com/joe")
+//				.affiliation("Jo Bloggs Inc")
+//				.url("http://www.jobloggs.com/joe")
 				.build());
 
 		SortedSet<Publication> publications = new TreeSet<>();

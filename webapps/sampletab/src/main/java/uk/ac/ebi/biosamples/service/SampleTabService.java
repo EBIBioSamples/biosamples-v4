@@ -1,48 +1,31 @@
 package uk.ac.ebi.biosamples.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.hateoas.Resource;
+import org.springframework.stereotype.Service;
+import uk.ac.ebi.arrayexpress2.sampletab.datamodel.MSI;
+import uk.ac.ebi.arrayexpress2.sampletab.datamodel.SampleData;
+import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.GroupNode;
+import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.SampleNode;
+import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.attribute.*;
+import uk.ac.ebi.arrayexpress2.sampletab.renderer.SampleTabWriter;
+import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.model.*;
+import uk.ac.ebi.biosamples.model.filter.Filter;
+import uk.ac.ebi.biosamples.mongo.model.MongoSampleTab;
+import uk.ac.ebi.biosamples.mongo.repo.MongoSampleTabRepository;
+
 import java.io.IOException;
 import java.io.StringWriter;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.hateoas.Resource;
-import org.springframework.stereotype.Service;
-
-import uk.ac.ebi.arrayexpress2.magetab.datamodel.graph.Node;
-import uk.ac.ebi.arrayexpress2.sampletab.datamodel.SampleData;
-import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.GroupNode;
-import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.SampleNode;
-import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.attribute.AbstractNamedAttribute;
-import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.attribute.AbstractRelationshipAttribute;
-import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.attribute.CharacteristicAttribute;
-import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.attribute.CommentAttribute;
-import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.attribute.DatabaseAttribute;
-import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.attribute.SCDNodeAttribute;
-import uk.ac.ebi.arrayexpress2.sampletab.renderer.SampleTabWriter;
-import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.ExternalReference;
-import uk.ac.ebi.biosamples.model.Relationship;
-import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.filter.Filter;
-import uk.ac.ebi.biosamples.mongo.model.MongoSampleTab;
-import uk.ac.ebi.biosamples.mongo.repo.MongoSampleTabRepository;
+import java.util.stream.Collectors;
 
 @Service
 public class SampleTabService {
@@ -82,7 +65,7 @@ public class SampleTabService {
 		return sampleData;
 	}
 	
-	public SampleData saveSampleTab(SampleData sampleData, String domain, boolean superUser, boolean setUpdateDate) 
+	public SampleData saveSampleTab(SampleData sampleData, String domain, boolean superUser, boolean setUpdateDate, boolean setFullDetails)
 			throws DuplicateDomainSampleException, ConflictingSampleTabOwnershipException, AssertingSampleTabOwnershipException {
 		
 		log.trace("Saving sampletab "+sampleData.msi.submissionIdentifier);
@@ -188,7 +171,7 @@ public class SampleTabService {
 						Sample sample = Sample.build(oldSample.get().getContent().getName(), toRemove, domain, 
 								ZonedDateTime.now(ZoneOffset.UTC).plusYears(100).toInstant(), update, 
 								new TreeSet<>(), new TreeSet<>(), new TreeSet<>());
-						sample = bioSamplesClient.persistSampleResource(sample, setUpdateDate).getContent();
+						sample = bioSamplesClient.persistSampleResource(sample, setUpdateDate,true ).getContent();
 					}
 				}
 				
@@ -271,8 +254,8 @@ public class SampleTabService {
 		Map<String, Future<Resource<Sample>>> futureMap = new TreeMap<>();
 		for (SampleNode sampleNode : sampleData.scd.getNodes(SampleNode.class)) {
 			if (!isDummy(sampleNode)) {			
-				Sample sample = sampleNodeToSample(sampleNode, domain, release, update);		
-				futureMap.put(sample.getName(), bioSamplesClient.persistSampleResourceAsync(sample, setUpdateDate));	
+				Sample sample = sampleNodeToSample(sampleNode, sampleData.msi, domain, release, update);
+				futureMap.put(sample.getName(), bioSamplesClient.persistSampleResourceAsync(sample, setUpdateDate, true));
 			}			
 		}
 
@@ -293,8 +276,8 @@ public class SampleTabService {
 		
 		for (GroupNode groupNode : sampleData.scd.getNodes(GroupNode.class)) {
 			
-			Sample sample = groupNodeToSample(groupNode, domain, release, update);			
-			sample = bioSamplesClient.persistSampleResource(sample, setUpdateDate).getContent();
+			Sample sample = groupNodeToSample(groupNode, sampleData.msi, domain, release, update);
+			sample = bioSamplesClient.persistSampleResource(sample, setUpdateDate, true).getContent();
 			if (groupNode.getGroupAccession() == null) {
 				groupNode.setGroupAccession(sample.getAccession());
 			}				
@@ -315,7 +298,7 @@ public class SampleTabService {
 	
 	
 	
-	private Sample groupNodeToSample(GroupNode groupNode, String domain, Instant release, Instant update) {
+	private Sample groupNodeToSample(GroupNode groupNode, MSI msi, String domain, Instant release, Instant update) {
 
 		String accession = groupNode.getGroupAccession();
 		String name = groupNode.getNodeName();
@@ -323,6 +306,10 @@ public class SampleTabService {
 		SortedSet<Attribute> attributes = new TreeSet<>();
 		SortedSet<Relationship> relationships = new TreeSet<>();
 		SortedSet<ExternalReference> externalReferences = new TreeSet<>();
+		SortedSet<Organization> organizations = getOrganizationsFromMSI(msi);
+		SortedSet<Contact> contacts = getContactsFromMSI(msi);
+		SortedSet<Publication> publications = getPublicationsFromMSI(msi);
+
 		
 		//beware, works by side-effect
 		populateAttributes(accession, groupNode.getAttributes(), attributes, relationships, externalReferences);
@@ -331,11 +318,13 @@ public class SampleTabService {
 				groupNode.getGroupDescription().trim().length() > 0) {
 			attributes.add(Attribute.build("description", groupNode.getGroupDescription()));
 		}			
-		Sample sample = Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences);
+		Sample sample = Sample.build(name, accession, domain, release, update,
+				attributes, relationships, externalReferences,
+				organizations, contacts, publications);
 		return sample;
 	}
 	
-	private Sample sampleNodeToSample(SampleNode sampleNode, String domain, Instant release, Instant update) {
+	private Sample sampleNodeToSample(SampleNode sampleNode, MSI msi, String domain, Instant release, Instant update) {
 
 		String accession = sampleNode.getSampleAccession();
 		String name = sampleNode.getNodeName();
@@ -343,16 +332,55 @@ public class SampleTabService {
 		SortedSet<Attribute> attributes = new TreeSet<>();
 		SortedSet<Relationship> relationships = new TreeSet<>();
 		SortedSet<ExternalReference> externalReferences = new TreeSet<>();
-		
+		SortedSet<Organization> organizations = getOrganizationsFromMSI(msi);
+		SortedSet<Contact> contacts = getContactsFromMSI(msi);
+		SortedSet<Publication> publications = getPublicationsFromMSI(msi);
+
 		//beware, works by side-effect
 		populateAttributes(accession, sampleNode.getAttributes(), attributes, relationships, externalReferences);
 		
 		if (sampleNode.getSampleDescription() != null && 
 				sampleNode.getSampleDescription().trim().length() > 0) {
 			attributes.add(Attribute.build("description", sampleNode.getSampleDescription()));
-		}			
-		Sample sample = Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences);
+		}
+
+		Sample sample = Sample.build(name, accession, domain, release, update,
+				attributes, relationships, externalReferences,
+				organizations, contacts, publications);
 		return sample;
+	}
+
+	private SortedSet<Organization> getOrganizationsFromMSI(MSI msi) {
+		return msi.organizations.stream()
+				.map(o -> new Organization.Builder()
+						.name(o.getName())
+						.address(o.getAddress())
+						.email(o.getEmail())
+						.url(o.getURI())
+						.role(o.getRole())
+						.build()).collect(Collectors.toCollection(TreeSet::new));
+
+	}
+
+	private SortedSet<Contact> getContactsFromMSI(MSI msi) {
+		return msi.persons.stream()
+				.map(p -> new Contact.Builder()
+						.firstName(p.getFirstName())
+						.midInitials(p.getInitials())
+						.lastName(p.getLastName())
+						.email(p.getEmail())
+						.role(p.getRole())
+						.build())
+				.collect(Collectors.toCollection(TreeSet::new));
+	}
+
+
+
+    private SortedSet<Publication> getPublicationsFromMSI(MSI msi) {
+        return msi.publications.stream()
+                .map(pub -> new Publication.Builder()
+                .doi(pub.getDOI())
+                .pubmed_id(pub.getPubMedID()).build()).collect(Collectors.toCollection(TreeSet::new));
 	}
 
 	/**
@@ -360,7 +388,6 @@ public class SampleTabService {
 	 * 
 	 * Takes the sampleData and looks up existing sample within that domain   
 	 * 
-	 * @param scdNodeAttributes
 	 */
 	private void populateExistingAccessions(SampleData sampleData, String domain, Instant release, Instant update) throws DuplicateDomainSampleException {
 		
@@ -391,7 +418,7 @@ public class SampleTabService {
 		
 		for (GroupNode groupNode : sampleData.scd.getNodes(GroupNode.class)) {
 			
-			Sample sample = groupNodeToSample(groupNode, domain, release, update);
+			Sample sample = groupNodeToSample(groupNode, sampleData.msi, domain, release, update);
 			if (groupNode.getGroupAccession() == null) {
 
 				//if there was no accession provided, try to find an existing accession by name and domain

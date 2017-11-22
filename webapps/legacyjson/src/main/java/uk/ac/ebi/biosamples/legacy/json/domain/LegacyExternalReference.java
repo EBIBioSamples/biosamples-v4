@@ -7,7 +7,7 @@ import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.service.ExternalReferenceService;
 
 @JsonPropertyOrder(value = {"name", "acc", "url"})
-@JsonInclude()
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class LegacyExternalReference {
 
     private String name;

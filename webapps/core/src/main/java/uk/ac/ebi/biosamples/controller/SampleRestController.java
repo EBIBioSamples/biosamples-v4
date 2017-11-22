@@ -1,16 +1,7 @@
 package uk.ac.ebi.biosamples.controller;
 
-import java.net.URI;
-import java.time.Instant;
-import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.mvc.ControllerLinkBuilder;
-import org.springframework.util.MultiValueMap;
-import uk.ac.ebi.biosamples.model.JsonLDSample;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.ExposesResourceFor;
 import org.springframework.hateoas.MediaTypes;
@@ -19,28 +10,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.controller.exception.SampleNotAccessibleException;
 import uk.ac.ebi.biosamples.controller.exception.SampleNotFoundException;
+import uk.ac.ebi.biosamples.model.JsonLDSample;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.service.BioSamplesAapService;
-import uk.ac.ebi.biosamples.service.FilterService;
-import uk.ac.ebi.biosamples.service.JsonLDService;
-import uk.ac.ebi.biosamples.service.SamplePageService;
-import uk.ac.ebi.biosamples.service.SampleReadService;
-import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
-import uk.ac.ebi.biosamples.service.SampleService;
-import java.time.ZoneOffset;
+import uk.ac.ebi.biosamples.service.*;
+
+import java.net.URI;
+import java.time.Instant;
 import java.util.Optional;
 
 /**
@@ -61,6 +39,7 @@ public class SampleRestController {
 	private final SamplePageService samplePageService;
 	private final FilterService filterService;
 	private final BioSamplesAapService bioSamplesAapService;
+	private final SampleManipulationService sampleManipulationService;
 
 	private final SampleResourceAssembler sampleResourceAssembler;
 
@@ -70,16 +49,18 @@ public class SampleRestController {
 
     private Logger log = LoggerFactory.getLogger(getClass());
 
-	public SampleRestController(SampleService sampleService, 
-			SamplePageService samplePageService,FilterService filterService, 
-			BioSamplesAapService bioSamplesAapService,
-			SampleResourceAssembler sampleResourceAssembler, 
-			EntityLinks entityLinks,
-            JsonLDService jsonLDService) {
+	public SampleRestController(SampleService sampleService,
+								SamplePageService samplePageService, FilterService filterService,
+								BioSamplesAapService bioSamplesAapService,
+								SampleManipulationService sampleManipulationService,
+								SampleResourceAssembler sampleResourceAssembler,
+								EntityLinks entityLinks,
+								JsonLDService jsonLDService) {
 		this.sampleService = sampleService;
 		this.samplePageService = samplePageService;
 		this.bioSamplesAapService = bioSamplesAapService;
 		this.filterService = filterService;
+		this.sampleManipulationService = sampleManipulationService;
 		this.sampleResourceAssembler = sampleResourceAssembler;
 		this.jsonLDService = jsonLDService;
 		this.entityLinks = entityLinks;
@@ -87,7 +68,8 @@ public class SampleRestController {
 
     @PreAuthorize("isAuthenticated()")
 	@GetMapping(value = "/{accession}", produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
-	public Resource<Sample> getSampleHal(@PathVariable String accession) {
+	public Resource<Sample> getSampleHal(@PathVariable String accession,
+			 @RequestParam(name = "fulldetails", required = false, defaultValue="false") boolean sampleFullDetails) {
 		log.trace("starting call");
 		// convert it into the format to return
 		Optional<Sample> sample = sampleService.fetch(accession);
@@ -95,6 +77,12 @@ public class SampleRestController {
 			throw new SampleNotFoundException();
 		}
 		bioSamplesAapService.checkAccessible(sample.get());
+
+		// If user is not Read super user, reduce the fields to show
+		if (!sampleFullDetails) {
+			sample = Optional.of(sampleManipulationService.removeContactLegacyFields(sample.get()));
+		}
+
 		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample.get());
 		return sampleResource;
 	}
@@ -103,7 +91,8 @@ public class SampleRestController {
 	@CrossOrigin(methods = RequestMethod.GET)
 	@GetMapping(value = "/{accession}", produces = { MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE })
 	public Sample getSampleXml(@PathVariable String accession) {
-		return this.getSampleHal(accession).getContent();
+		boolean getFullDetails = accession.matches("SAMEG\\d+");
+		return this.getSampleHal(accession, getFullDetails).getContent();
 	}
 
     @PreAuthorize("isAuthenticated()")
@@ -135,7 +124,8 @@ public class SampleRestController {
 	@PutMapping(value = "/{accession}", consumes = { MediaType.APPLICATION_JSON_VALUE })
 	public Resource<Sample> put(@PathVariable String accession, 
 			@RequestBody Sample sample,
-			@RequestParam(name = "setupdatedate", required = false, defaultValue="true") boolean setUpdateDate) {
+			@RequestParam(name = "setupdatedate", required = false, defaultValue="true") boolean setUpdateDate,
+			@RequestParam(name = "setfulldetails", required = false, defaultValue="false") boolean setFullDetails) {
     	
     	if (sample.getAccession() == null || !sample.getAccession().equals(accession)) {
 			// if the accession in the body is different to the accession in the
@@ -155,6 +145,11 @@ public class SampleRestController {
 					sample.getCharacteristics(), sample.getRelationships(), sample.getExternalReferences(), 
 					sample.getOrganizations(), sample.getContacts(), sample.getPublications());
 		}
+
+		if (!setFullDetails) {
+			log.info("Removing contact legacy fields for " + accession);
+			sample = sampleManipulationService.removeContactLegacyFields(sample);
+		}
 		
 		sample = sampleService.store(sample);
 
@@ -168,7 +163,8 @@ public class SampleRestController {
 	@PreAuthorize("isAuthenticated()")
 	@PostMapping(consumes = { MediaType.APPLICATION_JSON_VALUE })
 	public ResponseEntity<Resource<Sample>> post(@RequestBody Sample sample,
-			@RequestParam(name = "setupdatedate", required = false, defaultValue="true") boolean setUpdateDate) {
+			@RequestParam(name = "setupdatedate", required = false, defaultValue="true") boolean setUpdateDate,
+            @RequestParam(name = "setfulldetails", required = false, defaultValue = "false") boolean setFullDetails) {
 		
 		log.debug("Recieved POST for "+sample);
 		sample = bioSamplesAapService.handleSampleDomain(sample);
@@ -180,6 +176,10 @@ public class SampleRestController {
 					sample.getCharacteristics(), sample.getRelationships(), sample.getExternalReferences(), 
 					sample.getOrganizations(), sample.getContacts(), sample.getPublications());
 		}
+
+		if (!setFullDetails) {
+			sample = sampleManipulationService.removeContactLegacyFields(sample);
+		}
 		
 		sample = sampleService.store(sample);
 		
@@ -190,5 +190,6 @@ public class SampleRestController {
 		//TODO work out how to avoid using ResponseEntity but also set location header
 		return ResponseEntity.created(URI.create(sampleResource.getLink("self").getHref())).body(sampleResource);
 	}
+
 
 }

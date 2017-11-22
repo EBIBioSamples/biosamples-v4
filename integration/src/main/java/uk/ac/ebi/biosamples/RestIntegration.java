@@ -29,7 +29,7 @@ import java.util.TreeSet;
 
 @Component
 @Order(2)
-@Profile({"default", "rest"})
+@Profile({"default", "rest", "test"})
 public class RestIntegration extends AbstractIntegration {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
@@ -54,7 +54,7 @@ public class RestIntegration extends AbstractIntegration {
 		}
 
 		// put a sample
-		Resource<Sample> resource = client.persistSampleResource(sampleTest1, true);
+		Resource<Sample> resource = client.persistSampleResource(sampleTest1, true, true);
 		if (!sampleTest1.equals(resource.getContent())) {
 			log.warn("expected: "+sampleTest1);
 			log.warn("found: "+resource.getContent());
@@ -114,10 +114,11 @@ public class RestIntegration extends AbstractIntegration {
 		}
 		
 		//put the second sample in
-		Resource<Sample> resource = client.persistSampleResource(sampleTest2, false);
+		Resource<Sample> resource = client.persistSampleResource(sampleTest2, false, true);
 		sampleTest2 = Sample.build(sampleTest2.getName(), sampleTest2.getAccession(), null,
 				sampleTest2.getRelease(), sampleTest2.getUpdate(),
-				sampleTest2.getCharacteristics(), sampleTest1.getRelationships(), sampleTest2.getExternalReferences(), null, null, null);
+				sampleTest2.getCharacteristics(), sampleTest1.getRelationships(), sampleTest2.getExternalReferences(),
+				null, null, null);
 
 		if (!sampleTest2.equals(resource.getContent())) {
 			log.warn("expected: "+sampleTest2);
@@ -246,8 +247,9 @@ public class RestIntegration extends AbstractIntegration {
 		SortedSet<Contact> contacts = new TreeSet<>();
 //		contacts.add(Contact.build("Joe Bloggs","Jo Bloggs Inc", "http://www.jobloggs.com/joe"));
 		contacts.add(new Contact.Builder()
-				.firstName("Jo")
-				.lastName("Bloggs")
+//				.firstName("Jo")
+//				.lastName("Bloggs")
+                .name("Joe Bloggs")
 				.role("Submitter")
 				.email("jobloggs@joblogs.com")
 				.build());

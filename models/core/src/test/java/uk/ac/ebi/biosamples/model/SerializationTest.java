@@ -74,8 +74,9 @@ public class SerializationTest {
 		contacts.add(new Contact.Builder()
 				.firstName("Joe")
 				.lastName("Bloggs")
-                .affiliation("Jo Bloggs Inc")
-				.url("http://www.jobloggs.com/joe")
+//                .affiliation("Jo Bloggs Inc")
+//				.url("http://www.jobloggs.com/joe")
+				.name("Joe Bloggs")
 				.role("Submitter")
 				.email("jobloggs@joblogs.com")
 				.build());
