@@ -183,8 +183,8 @@ public class Curation implements Comparable<Curation> {
     		if (a.getUnit() != null) {
     			hasher.putUnencodedChars(a.getUnit());
     		}
-    		if (a.getIri() != null) {
-    			hasher.putUnencodedChars(a.getIri());
+    		for(String iri : a.getIri()) {
+    			hasher.putUnencodedChars(iri);
     		}
     	}
     	for (Attribute a : sortedPostAttributes) {
@@ -193,8 +193,8 @@ public class Curation implements Comparable<Curation> {
     		if (a.getUnit() != null) {
     			hasher.putUnencodedChars(a.getUnit());
     		}
-    		if (a.getIri() != null) {
-    			hasher.putUnencodedChars(a.getIri());
+    		for(String iri : a.getIri()) {
+    			hasher.putUnencodedChars(iri);
     		}
     	}
     	for (ExternalReference a : sortedPreExternal) {

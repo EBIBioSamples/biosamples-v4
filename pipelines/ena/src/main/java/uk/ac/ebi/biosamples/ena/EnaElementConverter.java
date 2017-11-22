@@ -1,6 +1,7 @@
 package uk.ac.ebi.biosamples.ena;
 
 import java.time.Instant;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.SortedSet;
@@ -137,10 +138,10 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 				//TODO handle relationships
 
 				if (value != null) {
-					attributes.add(Attribute.build(tag, value, null, unit));
+					attributes.add(Attribute.build(tag, value, Collections.emptyList(), unit));
 				} else {
 					// no value supplied
-					attributes.add(Attribute.build("unknown", tag, null, unit));
+					attributes.add(Attribute.build("unknown", tag, Collections.emptyList(), unit));
 				}
 			}
 		}

@@ -12,6 +12,7 @@ import java.time.Instant;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -51,9 +52,9 @@ public class SerializationTest {
 
 		SortedSet<Attribute> attributes = new TreeSet<>();
 		attributes.add(Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
-		attributes.add(Attribute.build("age", "3", null, "year"));
-		attributes.add(Attribute.build("organism part", "lung", null, null));
-		attributes.add(Attribute.build("organism part", "heart", null, null));
+		attributes.add(Attribute.build("age", "3", Lists.emptyList(), "year"));
+		attributes.add(Attribute.build("organism part", "lung"));
+		attributes.add(Attribute.build("organism part", "heart"));
 		
 		SortedSet<Relationship> relationships = new TreeSet<>();
 		relationships.add(Relationship.build("TEST1", "derived from", "TEST2"));
@@ -100,7 +101,7 @@ public class SerializationTest {
 		assertThat(fileSample).isEqualTo(simpleSample);
 		
 		//check that a specific attribute exists
-		assertThat(fileSample.getCharacteristics().contains(Attribute.build("organism part", "heart", null, null)));
+		assertThat(fileSample.getCharacteristics().contains(Attribute.build("organism part", "heart")));
 	}
 
 	@Test

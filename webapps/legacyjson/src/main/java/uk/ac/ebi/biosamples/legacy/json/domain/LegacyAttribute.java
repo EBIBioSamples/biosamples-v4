@@ -1,9 +1,13 @@
 package uk.ac.ebi.biosamples.legacy.json.domain;
 
+import java.util.ArrayList;
+
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.google.common.collect.Lists;
+
 import uk.ac.ebi.biosamples.model.Attribute;
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -28,7 +32,7 @@ public class LegacyAttribute {
     @JsonGetter
     public String[] ontologyTerms() {
         if (hasOntologyTerm()) {
-            return new String[]{attribute.getIri()};
+        	return attribute.getIri().toArray(new String[attribute.getIri().size()]);
         } else {
             return null;
         }
@@ -36,7 +40,7 @@ public class LegacyAttribute {
 
     @JsonIgnore
     private boolean hasOntologyTerm() {
-        return attribute.getIri() != null && !attribute.getIri().isEmpty();
+        return attribute.getIri().size() > 0;
     }
 }
 

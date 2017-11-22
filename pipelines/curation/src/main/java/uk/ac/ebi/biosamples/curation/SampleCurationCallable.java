@@ -278,7 +278,8 @@ public class SampleCurationCallable implements Callable<Void> {
 		
 		for (Attribute attribute : sample.getAttributes()) {
 			
-			if (attribute.getIri() != null) {
+			//if there are any iris already, skip zoomafying it and curate elsewhere
+			if (attribute.getIri().size() > 0) {
 				continue;
 			} 
 			if (attribute.getUnit() != null) {
@@ -317,7 +318,7 @@ public class SampleCurationCallable implements Callable<Void> {
 			}
 			
 			
-			if (attribute.getIri() == null && attribute.getType().length() < 64 && attribute.getValue().length() < 128) {
+			if (attribute.getType().length() < 64 && attribute.getValue().length() < 128) {
 				Optional<String> iri = zoomaProcessor.queryZooma(attribute.getType(), attribute.getValue());
 				if (iri.isPresent()) {
 					log.trace("Mapped "+attribute+" to "+iri.get());
@@ -337,17 +338,19 @@ public class SampleCurationCallable implements Callable<Void> {
 	private Sample ols(Sample sample) {
 		
 		for (Attribute attribute : sample.getAttributes()) {
-			if (attribute.getIri() != null && attribute.getIri().matches("^[A-Za-z]+[_:\\-][0-9]+$")) {
-				Optional<String> iri = olsProcessor.queryOlsForShortcode(attribute.getIri());
-				if (iri.isPresent()) {
-					log.trace("Mapped "+attribute+" to "+iri.get());
-					Attribute mapped = Attribute.build(attribute.getType(), attribute.getValue(), iri.get(), null);
-					Curation curation = Curation.build(Collections.singleton(attribute), Collections.singleton(mapped), null, null);
-				
-					//save the curation back in biosamples
-					bioSamplesClient.persistCuration(sample.getAccession(), curation, domain);
-					sample = curationApplicationService.applyCurationToSample(sample, curation);
-					return sample;
+			for (String iri : attribute.getIri()) {				
+				if (iri.matches("^[A-Za-z]+[_:\\-][0-9]+$")) {
+					Optional<String> iriResult = olsProcessor.queryOlsForShortcode(iri);
+					if (iriResult.isPresent()) {
+						log.trace("Mapped "+iri+" to "+iriResult.get());
+						Attribute mapped = Attribute.build(attribute.getType(), attribute.getValue(), iriResult.get(), null);
+						Curation curation = Curation.build(Collections.singleton(attribute), Collections.singleton(mapped), null, null);
+					
+						//save the curation back in biosamples
+						bioSamplesClient.persistCuration(sample.getAccession(), curation, domain);
+						sample = curationApplicationService.applyCurationToSample(sample, curation);
+						return sample;
+					}
 				}
 			}
 		}

@@ -70,9 +70,11 @@ public class CharacteristicSerializer extends StdSerializer<SortedSet> {
 	            for (String value : attributeMap.get(type).keySet()) {
 	            	gen.writeStartObject();
 	                gen.writeStringField("text", value);
-	            	if (attributeMap.get(type).get(value).getIri() != null) {
+	            	if (attributeMap.get(type).get(value).getIri() != null && attributeMap.get(type).get(value).getIri().size() > 0) {
 		                gen.writeArrayFieldStart("ontologyTerms");
-		                gen.writeString(attributeMap.get(type).get(value).getIri().toString());
+		                for (String iri : attributeMap.get(type).get(value).getIri()) {
+		                	gen.writeString(iri);
+		                }
 		                gen.writeEndArray();
 	            	}
 	            	if (attributeMap.get(type).get(value).getUnit() != null) {

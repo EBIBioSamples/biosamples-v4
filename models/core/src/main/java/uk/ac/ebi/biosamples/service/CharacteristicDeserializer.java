@@ -1,6 +1,8 @@
 package uk.ac.ebi.biosamples.service;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
@@ -57,12 +59,12 @@ public class CharacteristicDeserializer extends StdDeserializer<SortedSet> {
 		Map<String, List<LegacyAttribute>> characteristics = p.readValueAs(new TypeReference<Map<String, List<LegacyAttribute>>>(){});
 		for (String type : characteristics.keySet()) {
 			for (LegacyAttribute legacy : characteristics.get(type)) {				
-				String iri = null;
+				Collection<String> iri = new ArrayList<>();
 				if (legacy.ontologyTerms != null) {
 					if (legacy.ontologyTerms.size() > 1) {
 						throw new JsonMappingException(p,"Must have only one ontology term per attribute");
 					} else {
-						iri = legacy.ontologyTerms.get(0).trim();
+						iri.add(legacy.ontologyTerms.get(0).trim());
 					}
 				}
 				String unit = legacy.unit;

@@ -66,8 +66,9 @@ public class SampleToBioSampleTypeConverter implements Converter<Sample, BioSamp
 			}
 			attrTypeValue.get(attribute.getType()).add(attribute.getValue());
 			
-			if (attribute.getIri() != null && attribute.getIri().toString().length() > 0) {
-				attrIri.get(attribute.getType()).put(attribute.getValue(), attribute.getIri().toString());
+			if (attribute.getIri().size() > 0) {
+				String iri = attribute.getIri().first();
+				attrIri.get(attribute.getType()).put(attribute.getValue(), iri);
 			}
 
 			if (attribute.getUnit() != null && attribute.getUnit().trim().length() > 0) {

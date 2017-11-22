@@ -43,9 +43,10 @@ public class SampleToJsonLDSampleConverter implements Converter<Sample, JsonLDSa
             JsonLDPropertyValue pv = new JsonLDPropertyValue();
             pv.setPropertyId(attr.getType());
             pv.setValue(attr.getValue());
-            if(attr.getIri() != null && !attr.getIri().isEmpty()) {
+            if(attr.getIri().size() > 0) {
+            	//this only puts the first IRI in
                 JsonLDMedicalCode medicalCode = new JsonLDMedicalCode();
-                medicalCode.setCodeValue(attr.getIri());
+                medicalCode.setCodeValue(attr.getIri().iterator().next());
                 pv.setCode(medicalCode);
             }
             jsonLDAttributeList.add(pv);

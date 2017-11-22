@@ -4,9 +4,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URISyntaxException;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -48,10 +50,10 @@ public class MongoSerializationTest {
 		Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
 		SortedSet<Attribute> attributes = new TreeSet<>();
-		attributes.add(Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
-		attributes.add(Attribute.build("age", "3", null, "year"));
-		attributes.add(Attribute.build("organism part", "lung", null, null));
-		attributes.add(Attribute.build("organism part", "heart", null, null));
+		attributes.add(Attribute.build("organism", "Homo sapiens", Lists.newArrayList("http://purl.obolibrary.org/obo/NCBITaxon_9606"), null));
+		attributes.add(Attribute.build("age", "3", Collections.emptyList(), "year"));
+		attributes.add(Attribute.build("organism part", "lung"));
+		attributes.add(Attribute.build("organism part", "heart"));
 		
 		SortedSet<MongoRelationship> relationships = new TreeSet<>();
 		relationships.add(MongoRelationship.build("TEST1", "derived from", "TEST2"));
