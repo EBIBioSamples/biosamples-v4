@@ -25,6 +25,7 @@ import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Service;
 
 import uk.ac.ebi.arrayexpress2.magetab.datamodel.graph.Node;
+import uk.ac.ebi.arrayexpress2.magetab.exception.ParseException;
 import uk.ac.ebi.arrayexpress2.sampletab.datamodel.SampleData;
 import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.GroupNode;
 import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.SampleNode;
@@ -33,6 +34,7 @@ import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.attribute.AbstractRe
 import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.attribute.CharacteristicAttribute;
 import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.attribute.CommentAttribute;
 import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.attribute.DatabaseAttribute;
+import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.attribute.DerivedFromAttribute;
 import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.attribute.SCDNodeAttribute;
 import uk.ac.ebi.arrayexpress2.sampletab.renderer.SampleTabWriter;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
@@ -93,7 +95,58 @@ public class SampleTabService {
 		//put any existing accessions into the samplenode and groupnode objects
 		populateExistingAccessions(sampleData, domain, release, update);	
 
-		MongoSampleTab oldSampleTab = null;
+		MongoSampleTab oldSampleTab = null;		
+
+        //replace implicit derived from with explicit derived from relationships
+        for (SampleNode sample : sampleData.scd.getNodes(SampleNode.class)) {
+            if (sample.getParentNodes().size() > 0) {
+                for (Node parent : new HashSet<Node>(sample.getParentNodes())) {
+                    if (SampleNode.class.isInstance(parent)) {
+                        SampleNode parentsample = (SampleNode) parent;
+                        DerivedFromAttribute attr = new DerivedFromAttribute(parentsample.getSampleAccession());
+                        sample.addAttribute(attr);
+                        sample.removeParentNode(parentsample);
+                        parentsample.removeChildNode(sample);
+                    }
+                }
+            }
+        }
+
+        if (sampleData.scd.getNodes(GroupNode.class).size() == 0) {
+            GroupNode othergroup = new GroupNode("Submission "+sampleData.msi.submissionIdentifier);
+            for (SampleNode sample : sampleData.scd.getNodes(SampleNode.class)) {
+                // check there is not an existing group first...
+                boolean sampleInGroup = false;
+                //even if it has child nodes, both parent and child must be in a group
+                //this will lead to some weird looking row duplications, but since this is an internal 
+                //intermediate file it is not important
+                //Follow up: since implicit derived from relationships are made explicit above, 
+                //this is not an issue any more
+                for (Node n : sample.getChildNodes()) {
+                   if (GroupNode.class.isInstance(n)) {
+                        sampleInGroup = true;
+                    }
+                }
+                
+                if (!sampleInGroup){
+                    log.debug("Adding sample " + sample.getNodeName() + " to group " + othergroup.getNodeName());
+                    othergroup.addSample(sample);
+                }
+            }
+            //only add the new group if it has any samples
+            if (othergroup.getParentNodes().size() > 0){
+            	try {
+					sampleData.scd.addNode(othergroup);
+				} catch (ParseException e) {
+					//this should never happen
+					throw new RuntimeException(e);
+				}
+                log.info("Added group node \""+othergroup.getNodeName()+"\"");
+                // also need to accession the new node
+            }
+        }
+		
+		
 		
 		if (sampleData.msi.submissionIdentifier != null) {
 			//this is an update of an existing sampletab
@@ -194,6 +247,7 @@ public class SampleTabService {
 				
 			}
 		} 
+		
 			
 
 		//persist the samples and groups
