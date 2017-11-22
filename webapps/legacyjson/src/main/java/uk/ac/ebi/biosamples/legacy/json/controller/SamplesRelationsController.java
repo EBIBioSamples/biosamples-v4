@@ -59,7 +59,7 @@ public class SamplesRelationsController {
         this.pagedResourcesAssembler = pagedResourcesAssembler;
     }
 
-    @GetMapping("/{accession}")
+    @GetMapping("/{accession:SAM[END]A?\\d+}")
     public ResponseEntity<Resource<SamplesRelations>> relationsOfSample(@PathVariable String accession) {
         Optional<Sample> sample = sampleRepository.findByAccession(accession);
         if (!sample.isPresent()) {
@@ -69,7 +69,7 @@ public class SamplesRelationsController {
         return ResponseEntity.ok(sampleRelationsResourceAssembler.toResource(new SamplesRelations(sample.get())));
     }
 
-    @GetMapping("/{accession}/groups")
+    @GetMapping("/{accession:SAM[END]A?\\d+}/groups")
     public ResponseEntity<Resources<GroupsRelations>> getSamplesGroupRelations(@PathVariable String accession) {
 
         List<Resource> associatedGroups = relationsRepository
@@ -82,7 +82,7 @@ public class SamplesRelationsController {
         return ResponseEntity.ok(responseBody);
     }
 
-    @GetMapping("/{accession}/{relationType}")
+    @GetMapping("/{accession:SAM[END]A?\\d+}/{relationType}")
     public ResponseEntity<Resources> getSamplesRelations(
             @PathVariable String accession,
             @PathVariable String relationType) {
@@ -102,7 +102,7 @@ public class SamplesRelationsController {
 
     }
 
-    @GetMapping("/{accession}/externalLinks")
+    @GetMapping("/{accession:SAM[END]A?\\d+}/externalLinks")
     public ResponseEntity<Resources> getSamplesExternalLinks(
             @PathVariable String accession) {
 

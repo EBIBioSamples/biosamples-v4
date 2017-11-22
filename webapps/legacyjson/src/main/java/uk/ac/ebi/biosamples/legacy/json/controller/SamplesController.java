@@ -38,7 +38,7 @@ public class SamplesController {
         this.sampleResourceAssembler = sampleResourceAssembler;
     }
 
-    @GetMapping(value = "/{accession}")
+    @GetMapping(value = "/{accession:SAM[END]A?\\d+}")
     public ResponseEntity<Resource<LegacySample>> sampleByAccession(@PathVariable String accession) {
 
         Optional<Sample> sample = sampleRepository.findByAccession(accession);

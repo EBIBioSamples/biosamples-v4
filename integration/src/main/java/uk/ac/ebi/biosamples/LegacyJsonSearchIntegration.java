@@ -140,7 +140,7 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
                 throw new RuntimeException("Found existing "+sampleWithFullDetails.getAccession());
             }
 
-            Resource<Sample> sampleWithFullDetailsResource = this.client.persistSampleResource(sampleWithFullDetails);
+            Resource<Sample> sampleWithFullDetailsResource = this.client.persistSampleResource(sampleWithFullDetails, false, true);
             // The result and the submitted will not be equal because of the new inverse relation created automatically
             if (!sampleWithFullDetails.getAccession().equals(sampleWithFullDetailsResource.getContent().getAccession())) {
                 throw new RuntimeException("Expected response to equal submission");
@@ -152,7 +152,7 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
                 throw new RuntimeException("Found existing "+groupWithFullDetails.getAccession());
             }
 
-            Resource<Sample> groupWithFullDetailsResource = this.client.persistSampleResource(groupWithFullDetails);
+            Resource<Sample> groupWithFullDetailsResource = this.client.persistSampleResource(groupWithFullDetails,false,true);
             // The result and the submitted will not be equal because of the new inverse relation created automatically
             if (!groupWithFullDetails.getAccession().equals(groupWithFullDetailsResource.getContent().getAccession())) {
                 throw new RuntimeException("Expected response to equal submission");
