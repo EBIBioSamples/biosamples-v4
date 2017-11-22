@@ -19,19 +19,19 @@ public class Curation implements Comparable<Curation> {
 	private final SortedSet<Attribute> attributesPost;
 
 	private final SortedSet<ExternalReference> externalPre;
-	private final SortedSet<ExternalReference> externaPost;
+	private final SortedSet<ExternalReference> externalPost;
 	
 	private String hash;
 	
 	private Curation(Collection<Attribute> attributesPre, 
 			Collection<Attribute> attributesPost,
 			Collection<ExternalReference> externalPre, 
-			Collection<ExternalReference> externaPost,
+			Collection<ExternalReference> externalPost,
 			String hash) {
 		this.attributesPre = Collections.unmodifiableSortedSet(new TreeSet<>(attributesPre));
 		this.attributesPost = Collections.unmodifiableSortedSet(new TreeSet<>(attributesPost));
 		this.externalPre = Collections.unmodifiableSortedSet(new TreeSet<>(externalPre));
-		this.externaPost = Collections.unmodifiableSortedSet(new TreeSet<>(externaPost));
+		this.externalPost = Collections.unmodifiableSortedSet(new TreeSet<>(externalPost));
 		this.hash = hash;
 	}
 	@JsonProperty("attributesPre")
@@ -48,7 +48,7 @@ public class Curation implements Comparable<Curation> {
 	}
 	@JsonProperty("externalReferencesPost")
 	public SortedSet<ExternalReference> getExternalReferencesPost() {
-		return externaPost;
+		return externalPost;
 	}
 	
 	public String getHash() {
@@ -58,6 +58,20 @@ public class Curation implements Comparable<Curation> {
     @Override
     public int hashCode() {
     	return Objects.hash(hash);
+    }
+
+	@Override
+    public boolean equals(Object o) {
+
+        if (o == this) return true;
+        if (!(o instanceof Curation)) {
+            return false;
+        }
+        Curation other = (Curation) o;
+        return Objects.equals(this.attributesPre, other.attributesPre) 
+        		&& Objects.equals(this.attributesPost, other.attributesPost)
+        		&& Objects.equals(this.externalPre, other.externalPre)
+        		&& Objects.equals(this.externalPost, other.externalPost);
     }
 
 	@Override
@@ -109,14 +123,14 @@ public class Curation implements Comparable<Curation> {
 				}
 			}
 		}
-		if (!this.externaPost.equals(other.externaPost)) {
-			if (this.externaPost.size() < other.externaPost.size()) {
+		if (!this.externalPost.equals(other.externalPost)) {
+			if (this.externalPost.size() < other.externalPost.size()) {
 				return -1;
-			} else if (this.externaPost.size() > other.externaPost.size()) {
+			} else if (this.externalPost.size() > other.externalPost.size()) {
 				return 1;
 			} else {
-				Iterator<ExternalReference> thisIt = this.externaPost.iterator();
-				Iterator<ExternalReference> otherIt = other.externaPost.iterator();
+				Iterator<ExternalReference> thisIt = this.externalPost.iterator();
+				Iterator<ExternalReference> otherIt = other.externalPost.iterator();
 				while (thisIt.hasNext() && otherIt.hasNext()) {
 					int val = thisIt.next().compareTo(otherIt.next());
 					if (val != 0) return val;
@@ -136,7 +150,7 @@ public class Curation implements Comparable<Curation> {
     	sb.append(",");
     	sb.append(externalPre);
     	sb.append(",");
-    	sb.append(externaPost);
+    	sb.append(externalPost);
     	sb.append(")");
     	return sb.toString();
     }
@@ -145,7 +159,7 @@ public class Curation implements Comparable<Curation> {
     public static Curation build(@JsonProperty("attributesPre") Collection<Attribute> attributesPre, 
 			@JsonProperty("attributesPost") Collection<Attribute> attributesPost,
 			@JsonProperty("externalReferencesPre") Collection<ExternalReference> externalPre, 
-			@JsonProperty("externalReferencesPost") Collection<ExternalReference> externaPost) {
+			@JsonProperty("externalReferencesPost") Collection<ExternalReference> externalPost) {
     	
 		SortedSet<Attribute> sortedPreAttributes = new TreeSet<>();
 		SortedSet<Attribute> sortedPostAttributes = new TreeSet<>();    	
@@ -155,7 +169,7 @@ public class Curation implements Comparable<Curation> {
 		if (attributesPre != null) sortedPreAttributes.addAll(attributesPre);
 		if (attributesPost != null) sortedPostAttributes.addAll(attributesPost);		
 		if (externalPre != null) sortedPreExternal.addAll(externalPre);
-		if (externaPost != null) sortedPostExternal.addAll(externaPost);
+		if (externalPost != null) sortedPostExternal.addAll(externalPost);
 
 		sortedPreAttributes = Collections.unmodifiableSortedSet(sortedPreAttributes);
 		sortedPostAttributes = Collections.unmodifiableSortedSet(sortedPostAttributes);
