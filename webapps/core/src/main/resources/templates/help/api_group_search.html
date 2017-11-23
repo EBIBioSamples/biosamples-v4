@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>API &lt; Help &lt; BioSamples &lt; EMBL-EBI</title>
+</head>
+<body>
+    <div id="content" role="main" class="grid_24 clearfix">
+        <section id="ae-help" class="grid_18 alpha">
+            <h2 id="GroupSearch">
+                Group Search
+            </h2>
+            <p></p>
+            <ul>
+                <li>It returns all the groups that match the query (e.g. <a
+                    class="ext-link" href="/biosamples/xml/group/query=cancer"><span
+                        class="icon">&nbsp;</span>/biosamples/xml/group/query=cancer</a>);
+                </li>
+                <li>It is possible to use paging and sorting (e.g. <a
+                    class="ext-link"
+                    href="/biosamples/xml/group/query=cancer&amp;sortby=relevance&amp;sortorder=descending&amp;page=2&amp;pagesize=50"><span
+                        class="icon">&nbsp;</span>/biosamples/xml/group/query=cancer&amp;sortby=relevance&amp;sortorder=descending&amp;page=2&amp;pagesize=50</a>);
+                </li>
+                <li>Always return a result summary information;</li>
+            </ul>
+            <p></p>
+            <p>
+                <br>
+            </p>
+            <h4 id="Authentication">Authentication</h4>
+            <p>N/A</p>
+            <p>
+                <br> <br>
+            </p>
+            <h4 id="Arguments">Arguments</h4>
+            <p>
+                query (required) <br> sortby (optional - default
+                    value=relevance) <br> sortorder (optional - default
+                        value=descending; maximum value=500) <br> page (optional -
+                            default value=50) <br> pagesize (optional - default value=1)
+                        
+            </p>
+            <p>
+                <br> <br>
+            </p>
+            <h4 id="ExampleRequest">Example Request</h4>
+            <pre class="wiki">Get /xml/group/query=cancer&amp;page=2
+</pre>
+            <p>
+                <br> <br>
+            </p>
+            <h4 id="ExampleResponse">Example Response</h4>
+            <pre class="wiki">&lt;ResultQuery&gt;
+&lt;SummaryInfo&gt;
+&lt;Total&gt;7766&lt;/Total&gt;
+&lt;From&gt;51&lt;/From&gt;
+&lt;To&gt;100&lt;/To&gt;
+&lt;PageNumber&gt;2&lt;/PageNumber&gt;
+&lt;PageSize&gt;50&lt;/PageSize&gt;
+&lt;/SummaryInfo&gt;
+&lt;BioSampleGroup id="SAMEG72185"/&gt;
+&lt;BioSampleGroup id="SAMEG126084"/&gt;
+&lt;BioSampleGroup id="SAMEG26066"/&gt;
+&lt;BioSampleGroup id="SAMEG30979"/&gt;
+&lt;BioSampleGroup id="SAMEG111269"/&gt;
+&lt;BioSampleGroup id="SAMEG84909"/&gt;
+&lt;BioSampleGroup id="SAMEG22505"/&gt;
+&lt;BioSampleGroup id="SAMEG11875"/&gt;
+&lt;BioSampleGroup id="SAMEG217684"/&gt;
+&lt;BioSampleGroup id="SAMEG22699"/&gt;
+&lt;BioSampleGroup id="SAMEG116335"/&gt;
+&lt;BioSampleGroup id="SAMEG116301"/&gt;
+&lt;BioSampleGroup id="SAMEG19523"/&gt;
+&lt;BioSampleGroup id="SAMEG25405"/&gt;
+&lt;BioSampleGroup id="SAMEG33471"/&gt;
+&lt;BioSampleGroup id="SAMEG84908"/&gt;
+&lt;BioSampleGroup id="SAMEG93782"/&gt;
+&lt;BioSampleGroup id="SAMEG70977"/&gt;
+&lt;BioSampleGroup id="SAMEG84907"/&gt;
+&lt;BioSampleGroup id="SAMEG38854"/&gt;
+&lt;BioSampleGroup id="SAMEG66921"/&gt;
+&lt;BioSampleGroup id="SAMEG23469"/&gt;
+&lt;BioSampleGroup id="SAMEG19471"/&gt;
+&lt;BioSampleGroup id="SAMEG124645"/&gt;
+&lt;BioSampleGroup id="SAMEG38161"/&gt;
+&lt;BioSampleGroup id="SAMEG18111"/&gt;
+&lt;BioSampleGroup id="SAMEG34830"/&gt;
+&lt;BioSampleGroup id="SAMEG17951"/&gt;
+&lt;BioSampleGroup id="SAMEG31467"/&gt;
+&lt;BioSampleGroup id="SAMEG16620"/&gt;
+&lt;BioSampleGroup id="SAMEG37856"/&gt;
+&lt;BioSampleGroup id="SAMEG97324"/&gt;
+&lt;BioSampleGroup id="SAMEG15694"/&gt;
+&lt;BioSampleGroup id="SAMEG208783"/&gt;
+&lt;BioSampleGroup id="SAMEG33072"/&gt;
+&lt;BioSampleGroup id="SAMEG13770"/&gt;
+&lt;BioSampleGroup id="SAMEG123440"/&gt;
+&lt;BioSampleGroup id="SAMEG26737"/&gt;
+&lt;BioSampleGroup id="SAMEG38312"/&gt;
+&lt;BioSampleGroup id="SAMEG39551"/&gt;
+&lt;BioSampleGroup id="SAMEG72226"/&gt;
+&lt;BioSampleGroup id="SAMEG34909"/&gt;
+&lt;BioSampleGroup id="SAMEG83993"/&gt;
+&lt;BioSampleGroup id="SAMEG83990"/&gt;
+&lt;BioSampleGroup id="SAMEG22369"/&gt;
+&lt;BioSampleGroup id="SAMEG16634"/&gt;
+&lt;BioSampleGroup id="SAMEG14334"/&gt;
+&lt;BioSampleGroup id="SAMEG72055"/&gt;
+&lt;BioSampleGroup id="SAMEG72227"/&gt;
+&lt;BioSampleGroup id="SAMEG14002"/&gt;
+&lt;/ResultQuery&gt;
+  
+</pre>
+            <p>
+                <br> <br>
+            </p>
+            <h4 id="ErrorCodes">Error Codes</h4>
+            <p>N/A</p>
+            <p>
+                <br> <br>
+            </p>
+            <h4 id="XSD-XmlSchemaDefinition">XSD - Xml Schema Definition</h4>
+            <ul>
+                <li><a class="ext-link"
+                    href="/biosamples/assets/xsd/ResultQuerySampleGroupSchema.xsd"><span
+                        class="icon">&nbsp;</span>/biosamples/assets/xsd/ResultQuerySampleGroupSchema.xsd</a>
+                </li>
+            </ul>
+            <p>
+                <img src="../api/ResultQuerySampleGroup_schema.png"
+                    alt="BioSamples Search Groups XSD"
+                    title="BioSamples Search Groups XSD">
+            </p>
+        </section>
+            <aside class="grid_6 omega">
+                <h3>Help</h3>
+                <ul id="secondary-nav">
+                    <li><a href="index.html">Help home</a></li>
+                    <li><a href="search.html">Searching</a></li>
+                    <li><a href="submit.html">Submitting</a></li>
+                    <li class="active"><a href="api.html">Programatic interface</a></li>
+                    <li><a href="faq.html">FAQ</a></li>
+                    <li><a href="news.html">News</a></li>
+                    <li><a href="contact_us.html">Contact us</a></li>
+                </ul>
+            </aside>
+    </div>
+
+</body>
+</html>

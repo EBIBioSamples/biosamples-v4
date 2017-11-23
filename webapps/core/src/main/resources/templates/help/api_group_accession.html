@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>API &lt; Help &lt; BioSamples &lt; EMBL-EBI</title>
+</head>
+<body>
+    <div id="content" role="main" class="grid_24 clearfix">
+        <section id="ae-help" class="grid_18 alpha">
+            <h2 id="GroupAccession">
+                Group Accession
+            </h2>
+            <p></p>
+            <ul>
+                <li>It returns all information about a SampleGroup;</li>
+                <li>If you specify the sampleslist argument with true value, it
+                    will also return a list with the Samples Accessions;</li>
+                <li>E.g. <a class="ext-link"
+                    href="/biosamples/xml/group/SAMEG82620"><span class="icon">&nbsp;</span>/biosamples/xml/group/SAMEG82620</a>;
+                </li>
+            </ul>
+            <p>
+                <br>
+            </p>
+            <h4 id="Authentication">Authentication</h4>
+            <p>N/A</p>
+            <p>
+                <br> <br>
+            </p>
+            <h4 id="Arguments">Arguments</h4>
+            <p>groupAccession (required) 
+            <br/>sampleslist (optional - default=false)</p>
+            <p>
+                <br> <br>
+            </p>
+            <h4 id="ExampleRequest">Example Request</h4>
+            <pre class="wiki">Get /xml/group/SAMEG82620
+</pre>
+            <p>
+                <br> <br>
+            </p>
+            <h4 id="ExampleResponse">Example Response</h4>
+            <pre class="wiki">&lt;BioSampleGroup xmlns="http://www.ebi.ac.uk/biosamples/SampleGroupExport" id="SAMEG82620"&gt;
+&lt;Property class="Submission Release Date" characteristic="false" comment="false" type="DATETIME"&gt;
+&lt;QualifiedValue&gt;
+&lt;Value&gt;2011-11-10T00:00:00+00:00&lt;/Value&gt;
+&lt;/QualifiedValue&gt;
+&lt;/Property&gt;
+&lt;Property class="Submission Update Date" characteristic="false" comment="false" type="DATETIME"&gt;
+&lt;QualifiedValue&gt;
+&lt;Value&gt;2013-11-20T10:55:58+00:00&lt;/Value&gt;
+&lt;/QualifiedValue&gt;
+&lt;/Property&gt;
+&lt;Property class="Submission Identifier" characteristic="false" comment="false" type="STRING"&gt;
+&lt;QualifiedValue&gt;
+&lt;Value&gt;GMS-EM&lt;/Value&gt;
+&lt;/QualifiedValue&gt;
+&lt;/Property&gt;
+&lt;Property class="Submission Title" characteristic="false" comment="false" type="STRING"&gt;
+&lt;QualifiedValue&gt;
+&lt;Value&gt;
+International Mouse Strain Resource - European Mouse Mutant Archive
+&lt;/Value&gt;
+&lt;/QualifiedValue&gt;
+&lt;/Property&gt;
+&lt;Property class="Submission Description" characteristic="false" comment="false" type="STRING"&gt;
+&lt;QualifiedValue&gt;
+&lt;Value&gt;
+The IMSR is a searchable online database of mouse strains and stocks available worldwide, including inbred, mutant, and genetically engineered mice. The goal of the IMSR is to assist the international scientific community in locating and obtaining mouse resources for research. These samples are held by European Mouse Mutant Archive
+&lt;/Value&gt;
+&lt;/QualifiedValue&gt;
+&lt;/Property&gt;
+&lt;Property class="Group Name" characteristic="true" comment="false" type="STRING"&gt;
+&lt;QualifiedValue&gt;
+&lt;Value&gt;Other Group&lt;/Value&gt;
+&lt;/QualifiedValue&gt;
+&lt;/Property&gt;
+&lt;Organization&gt;
+&lt;Name&gt;International Mouse Strain Resource&lt;/Name&gt;
+&lt;Address/&gt;
+&lt;URI&gt;http://www.findmice.org/&lt;/URI&gt;
+&lt;Email/&gt;
+&lt;Role/&gt;
+&lt;/Organization&gt;
+&lt;Organization&gt;
+&lt;Name&gt;European Mouse Mutant Archive&lt;/Name&gt;
+&lt;Address/&gt;
+&lt;URI&gt;http://www.findmice.org/&lt;/URI&gt;
+&lt;Email/&gt;
+&lt;Role&gt;Biomaterial Provider&lt;/Role&gt;
+&lt;/Organization&gt;
+&lt;Database&gt;
+&lt;Name&gt;IMSR EM&lt;/Name&gt;
+&lt;ID&gt;EM&lt;/ID&gt;
+&lt;URI&gt;
+http://www.findmice.org/summary?query=&amp;repositories=EM
+&lt;/URI&gt;
+&lt;/Database&gt;
+&lt;/BioSampleGroup&gt;
+</pre>
+            <p>
+                <br> <br>
+            </p>
+            <h4 id="ErrorCodes">Error Codes</h4>
+            <p>N/A</p>
+            <p>
+                <br> <br>
+            </p>
+            <h4 id="XSD-XmlSchemaDefinition">XSD - Xml Schema Definition</h4>
+            <ul>
+                <li><a class="ext-link"
+                    href="/biosamples/assets/xsd/BioSDSchema.xsd"><span
+                        class="icon">&nbsp;</span>/biosamples/assets/xsd/BioSDSchema.xsd</a></li>
+            </ul>
+            <p>
+                <img src="../api/BioSDSchema_BioSampleGroup.png"
+                    alt="BioSamplesGroup Expanded XSD"
+                    title="BioSamplesGroup Expanded XSD">
+            </p>
+
+        </section>
+            <aside class="grid_6 omega">
+                <h3>Help</h3>
+                <ul id="secondary-nav">
+                    <li><a href="index.html">Help home</a></li>
+                    <li><a href="search.html">Searching</a></li>
+                    <li><a href="submit.html">Submitting</a></li>
+                    <li class="active"><a href="api.html">Programatic interface</a></li>
+                    <li><a href="faq.html">FAQ</a></li>
+                    <li><a href="news.html">News</a></li>
+                    <li><a href="contact_us.html">Contact us</a></li>
+                </ul>
+            </aside>
+    </div>
+
+</body>
+</html>
