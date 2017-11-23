@@ -111,7 +111,13 @@ public class Attribute implements Comparable<Attribute> {
 		if (!this.value.equals(other.value)) {
 			return this.value.compareTo(other.value);
 		}
-		
+
+		if (this.iri == null && other.iri != null) {
+			return -1;
+		}
+		if (this.iri != null && other.iri == null) {
+			return 1;
+		}
 		if (!this.iri.equals(other.iri)) {
 			if (this.iri.size() < other.iri.size()) {
 				return -1;
@@ -177,7 +183,11 @@ public class Attribute implements Comparable<Attribute> {
 		attr.value = value;
 		attr.iri = new TreeSet<>();
 		if (iri != null) {
-			attr.iri.addAll(iri);
+			for (String iriOne : iri) {
+				if (iriOne != null) {
+					attr.iri.add(iriOne);
+				}
+			}
 		}
 		attr.unit = unit;
 		return attr;
