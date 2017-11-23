@@ -1,23 +1,18 @@
 package uk.ac.ebi.biosamples.model;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Objects;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
-import org.springframework.web.util.UriComponents;
-import org.springframework.web.util.UriComponentsBuilder;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.*;
+
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class Attribute implements Comparable<Attribute> {
 
 	private String type;
@@ -53,7 +48,7 @@ public class Attribute implements Comparable<Attribute> {
 	public String getIriOls() {
 		//TODO move this to service layer
 		if (iri == null || iri.size() == 0) return null;
-		
+
 		String displayIri = iri.first();
 		
 		//check this is a sane iri
@@ -167,6 +162,7 @@ public class Attribute implements Comparable<Attribute> {
 	}
 
 	public static Attribute build(String type, String value, String iri, String unit) {
+		if (iri == null) iri = "";
 		return build(type,value, Lists.newArrayList(iri), unit);
 	}
 	

@@ -1,0 +1,105 @@
+{
+  "sampletab": [
+    [
+      "[MSI]"
+    ],
+    [
+      "Submission Title",
+      "Test sample with MSI information"
+    ],
+    [
+      "Submission Description",
+      "These are sample which contains contact, publication and organization informations"
+    ],
+    [
+      "Submission Version",
+      "1.2"
+    ],
+    [
+      "Submission Reference Layer",
+      "false"
+    ],
+    [
+      "Submission Release Date",
+      "2016/10/17"
+    ],
+    [
+      "Submission Update Date",
+      "2016/10/17"
+    ],
+    [
+      "Person Last Name",
+      "Doe",
+      "Doe"
+    ],
+    [
+      "Person Initials",
+      "J",
+      "J"
+    ],
+    [
+      "Person First Name",
+      "John",
+      "Jane"
+    ],
+    [
+      "Person Role",
+      "Submitter",
+      "Supervisor"
+    ],
+    [
+      "Person Email",
+      "jdoe@email.com",
+      "janedoe@email.com"
+    ],
+    [
+      "Organization Name",
+      "JJDoe Corp.",
+      "EMBL-EBI"
+    ],
+    [
+      "Organization Address",
+      "Addr1",
+      "The Wellcome Trust Genome Campus, Hinxton, Cambridge"
+    ],
+    [
+      "Organization URI",
+      "jjdoe.com",
+      "http://www.ebi.ac.uk"
+    ],
+    [
+      "Organization Role",
+      "Submitter",
+      "Receiver"
+    ],
+    [
+      "Publication PubMed ID",
+      "24265225",
+      "45864752"
+    ],
+    [
+      "Publication DOI",
+      "10.1093/nar/gkt1081",
+      "20.0513/nor/gka7732"
+    ],
+    [
+      ""
+    ],
+    [
+      "[SCD]"
+    ],
+    [
+      "Sample Name",
+      "Sample Accession",
+      "Organism"
+    ],
+    [
+      "JJSample",
+      "",
+      "Mus musculus"
+    ],
+    [
+      ""
+    ]
+  ]
+}

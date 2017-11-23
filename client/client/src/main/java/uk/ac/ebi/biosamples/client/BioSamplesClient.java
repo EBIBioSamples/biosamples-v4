@@ -176,12 +176,12 @@ public class BioSamplesClient implements AutoCloseable {
 	}
 	
 	public Resource<Sample> persistSampleResource(Sample sample) throws RestClientException {
-		return persistSampleResource(sample, null);
+		return persistSampleResource(sample, null, null);
 	}	
 	
-	public Resource<Sample> persistSampleResource(Sample sample, Boolean setUpdateDate) throws RestClientException {
+	public Resource<Sample> persistSampleResource(Sample sample, Boolean setUpdateDate, Boolean setFullDetails) throws RestClientException {
 		try {
-			return persistSampleResourceAsync(sample, setUpdateDate).get();
+			return persistSampleResourceAsync(sample, setUpdateDate, setFullDetails).get();
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		} catch (ExecutionException e) {
@@ -190,29 +190,29 @@ public class BioSamplesClient implements AutoCloseable {
 	}
 
 	public Future<Resource<Sample>> persistSampleResourceAsync(Sample sample) throws RestClientException {
-		return persistSampleResourceAsync(sample, null);
+		return persistSampleResourceAsync(sample, null, null);
 	}	
 	
-	public Future<Resource<Sample>> persistSampleResourceAsync(Sample sample, Boolean setUpdateDate) throws RestClientException {
+	public Future<Resource<Sample>> persistSampleResourceAsync(Sample sample, Boolean setUpdateDate, Boolean setFullDetails) throws RestClientException {
 		//validate client-side before submission
 		Collection<String> errors = sampleValidator.validate(sample);		
 		if (errors.size() > 0) {
 			log.info("Errors : "+errors);
 			throw new IllegalArgumentException("Sample not valid");
 		}
-		return sampleSubmissionService.submitAsync(sample, setUpdateDate);		
+		return sampleSubmissionService.submitAsync(sample, setUpdateDate, setFullDetails);
 	}
 	
 	public Collection<Resource<Sample>> persistSamples(Collection<Sample> samples) throws RestClientException {
-		return persistSamples(samples, null);
+		return persistSamples(samples, null, null);
 	}
 	
-	public Collection<Resource<Sample>> persistSamples(Collection<Sample> samples, Boolean setUpdateDate) throws RestClientException {
+	public Collection<Resource<Sample>> persistSamples(Collection<Sample> samples, Boolean setUpdateDate, Boolean setFullDetails) throws RestClientException {
 		List<Resource<Sample>> results = new ArrayList<>();
 		List<Future<Resource<Sample>>> futures = new ArrayList<>();
 		
 		for (Sample sample : samples) {
-			futures.add(persistSampleResourceAsync(sample, setUpdateDate));
+			futures.add(persistSampleResourceAsync(sample, setUpdateDate, setFullDetails));
 		}
 		
 		for (Future<Resource<Sample>> future : futures) {

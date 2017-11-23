@@ -1,25 +1,16 @@
 package uk.ac.ebi.biosamples.service;
 
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.SortedMap;
-import java.util.SortedSet;
-import java.util.TreeMap;
-import java.util.TreeSet;
-
-import org.dom4j.Document;
-import org.dom4j.DocumentHelper;
-import org.dom4j.Element;
-import org.dom4j.Namespace;
-import org.dom4j.QName;
+import com.google.common.base.Strings;
+import org.dom4j.*;
+import org.dom4j.tree.BaseElement;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
-
 import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.ExternalReference;
-import uk.ac.ebi.biosamples.model.Relationship;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.*;
+
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 @Service
 public class SampleToXmlConverter implements Converter<Sample, Document> {
@@ -157,6 +148,7 @@ public class SampleToXmlConverter implements Converter<Sample, Document> {
 		}
 		
 		for (ExternalReference externalReference : source.getExternalReferences()) {
+
 			/*
 			  <Database>
 			    <Name>ENA</Name>
@@ -179,6 +171,94 @@ public class SampleToXmlConverter implements Converter<Sample, Document> {
 				databaseId.setText(pathSegments.get(pathSegments.size()-1));
 			}
 		}
+
+		for (Contact contact: source.getContacts()) {
+			Element person = new BaseElement(QName.get("Person", xmlns));
+
+			if (!Strings.isNullOrEmpty(contact.getFirstName())) {
+				Element personFirstName = person.addElement(QName.get("FirstName", xmlns));
+				personFirstName.setText(contact.getFirstName());
+			}
+
+			if (!Strings.isNullOrEmpty(contact.getLastName())) {
+				Element personLastName = person.addElement(QName.get("LastName", xmlns));
+				personLastName.setText(contact.getLastName());
+
+			}
+
+			if (!Strings.isNullOrEmpty(contact.getMidInitials())) {
+				Element personMidInitials = person.addElement(QName.get("MidInitials", xmlns));
+				personMidInitials.setText(contact.getMidInitials());
+			}
+
+			if (!Strings.isNullOrEmpty(contact.getRole())) {
+				Element personRole = person.addElement(QName.get("Role", xmlns));
+				personRole.setText(contact.getRole());
+			}
+
+			if (!Strings.isNullOrEmpty(contact.getEmail())) {
+				Element personEmail = person.addElement(QName.get("Email", xmlns));
+				personEmail.setText(contact.getEmail());
+			}
+
+			if(person.hasContent()) {
+				bioSample.add(person);
+			}
+
+		}
+
+		for (Organization organization: source.getOrganizations()) {
+			Element organizationElement = new BaseElement(QName.get("Organization", xmlns));
+
+			if (!Strings.isNullOrEmpty(organization.getName())) {
+				Element organizationName = organizationElement.addElement(QName.get("Name", xmlns));
+				organizationName.setText(organization.getName());
+			}
+
+			if (!Strings.isNullOrEmpty(organization.getAddress())) {
+				Element organizationAddress = organizationElement.addElement(QName.get("Address", xmlns));
+				organizationAddress.setText(organization.getAddress());
+
+			}
+
+			if (!Strings.isNullOrEmpty(organization.getUrl())) {
+				Element organizationURI = organizationElement.addElement(QName.get("URI", xmlns));
+				organizationURI.setText(organization.getUrl());
+			}
+
+			if (!Strings.isNullOrEmpty(organization.getRole())) {
+				Element organizationRole = organizationElement.addElement(QName.get("Role", xmlns));
+				organizationRole.setText(organization.getRole());
+			}
+
+			if (!Strings.isNullOrEmpty(organization.getEmail())) {
+				Element organizationEmail = organizationElement.addElement(QName.get("E-mail", xmlns));
+				organizationEmail.setText(organization.getEmail());
+			}
+
+			if (organizationElement.hasContent()) {
+				bioSample.add(organizationElement);
+			}
+		}
+
+		for (Publication publication: source.getPublications()) {
+			Element publicationElement = new BaseElement(QName.get("Publication", xmlns));
+
+			if (!Strings.isNullOrEmpty(publication.getDoi())) {
+				Element publicationDOI = publicationElement.addElement(QName.get("DOI", xmlns));
+				publicationDOI.setText(publication.getDoi());
+			}
+
+			if (!Strings.isNullOrEmpty(publication.getPubMedId())) {
+				Element publicationPubMedID = publicationElement.addElement(QName.get("PubMedID", xmlns));
+				publicationPubMedID.setText(publication.getPubMedId());
+			}
+
+			if (publicationElement.hasContent()) {
+				bioSample.add(publicationElement);
+			}
+		}
+
 		return doc;
 	}
 

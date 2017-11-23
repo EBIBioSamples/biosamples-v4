@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<!-- saved from url=(0053)http://bar:8080/trac/wiki/ESD/NewGUI/API/SampleSearch -->
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>API &lt; Help &lt; BioSamples &lt; EMBL-EBI</title>
+</head>
+<body>
+    <div id="content" role="main" class="grid_24 clearfix">
+  <section id="ae-help" class="grid_18 alpha">
+        <h2 id="SampleSearchinsideaSampleGroup">
+            Sample Search inside a SampleGroup 
+        </h2>
+        <p></p>
+        <ul>
+            <li>It returns all the samples that are inside the SampleGroup parameter and that also match the
+                query(e.g. <a class="ext-link"
+                href="/biosamples/xml/groupsamples/SAMEG23004/query=cancer"><span
+                    class="icon">&nbsp;</span>/biosamples/xml/groupsamples/SAMEG23004/query=cancer</a>);
+            </li>
+            <li>It is possible to use paging ( <a class="ext-link"
+                href="/biosamples/xml/groupsamples/SAMEG23004/query=cancer&amp;page=3&amp;pagesize=10"><span
+                    class="icon">&nbsp;</span>e.g./biosamples/xml/groupsamples/SAMEG23004/query=cancer&amp;page=3&amp;pagesize=10</a>);
+            </li>
+            <li>Always return a result summary information;</li>
+        </ul>
+        <p></p>
+        <p>
+            <br>
+        </p>
+        <h4 id="Authentication">Authentication</h4>
+        <p>N/A</p>
+        <p>
+            <br> <br>
+        </p>
+        <h4 id="Arguments">Arguments</h4>
+        <p>
+            query (required) <br> sortby (optional - default
+                value=relevance) <br> sortorder (optional - default
+                    value=descending) <br> page (optional - default value=10; maximum value=500) <br>
+                            pagesize (optional - default value=1) 
+        </p>
+        <p>
+            <br> <br>
+        </p>
+        <h4 id="ExampleRequest">Example Request</h4>
+        <pre class="wiki">Get xml/groupsamples/SAMEG23004/query=cancer&amp;page=2&amp;pagesize=20
+</pre>
+        <p>
+            <br> <br>
+        </p>
+        <h4 id="ExampleResponse">Example Response</h4>
+        <pre class="wiki">&lt;ResultQuery&gt;
+&lt;SummaryInfo&gt;
+&lt;Total&gt;3316&lt;/Total&gt; 
+&lt;From&gt;21&lt;/From&gt;
+&lt;To&gt;40&lt;/To&gt;
+&lt;PageNumber&gt;2&lt;/PageNumber&gt;
+&lt;PageSize&gt;20&lt;/PageSize&gt;
+&lt;/SummaryInfo&gt;
+&lt;BioSample id="SAMEA477370"/&gt;
+&lt;BioSample id="SAMEA507158"/&gt;
+&lt;BioSample id="SAMEA474309"/&gt;
+&lt;BioSample id="SAMEA473529"/&gt;
+&lt;BioSample id="SAMEA520534"/&gt;
+&lt;BioSample id="SAMEA462287"/&gt;
+&lt;BioSample id="SAMEA503715"/&gt;
+&lt;BioSample id="SAMEA503545"/&gt;
+&lt;BioSample id="SAMEA478168"/&gt;
+&lt;BioSample id="SAMEA514716"/&gt;
+&lt;BioSample id="SAMEA503921"/&gt;
+&lt;BioSample id="SAMEA491195"/&gt;
+&lt;BioSample id="SAMEA506242"/&gt;
+&lt;BioSample id="SAMEA521878"/&gt;
+&lt;BioSample id="SAMEA471300"/&gt;
+&lt;BioSample id="SAMEA501587"/&gt;
+&lt;BioSample id="SAMEA462391"/&gt;
+&lt;BioSample id="SAMEA503906"/&gt;
+&lt;BioSample id="SAMEA517593"/&gt;
+&lt;BioSample id="SAMEA470841"/&gt;
+&lt;/ResultQuery&gt;
+</pre>
+        <p>
+            <br> <br>
+        </p>
+        <h4 id="ErrorCodes">Error Codes</h4>
+        <p>N/A</p>
+        <p>
+            <br> <br>
+        </p>
+        <h4 id="XSD-XmlSchemaDefinition">XSD - Xml Schema Definition</h4>
+        <ul>
+            <li><a class="ext-link"
+                href="/biosamples/assets/xsd/ResultQuerySampleSchema.xsd"><span
+                    class="icon">&nbsp;</span>/biosamples/assets/xsd/ResultQuerySampleSchema.xsd</a>
+            </li>
+        </ul>
+        <p>
+            <img src="../api/ResultQuerySample_schema.png"
+                alt="BioSamples Search Samples XSD"
+                title="BioSamples Search Samples XSD">
+        </p>
+    </section>
+            <aside class="grid_6 omega">
+                <h3>Help</h3>
+                <ul id="secondary-nav">
+                    <li><a href="index.html">Help home</a></li>
+                    <li><a href="search.html">Searching</a></li>
+                    <li><a href="submit.html">Submitting</a></li>
+                    <li class="active"><a href="api.html">Programatic interface</a></li>
+                    <li><a href="faq.html">FAQ</a></li>
+                    <li><a href="news.html">News</a></li>
+                    <li><a href="contact_us.html">Contact us</a></li>
+                </ul>
+            </aside>
+    </div>
+</body>
+</html>

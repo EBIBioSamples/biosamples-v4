@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>API &lt; Help &lt; BioSamples &lt; EMBL-EBI</title>
+</head>
+<body>
+    <div id="content" role="main" class="grid_24 clearfix">
+        <section id="ae-help" class="grid_18 alpha">
+            <h2 id="SampleAccession">
+                Sample Accession
+            </h2>
+            <p></p>
+            <ul>
+                <li>It returns all information about a Sample;</li>
+                <li>E.g. <a class="ext-link"
+                    href="/biosamples/xml/sample/SAME546131"><span class="icon">&nbsp;</span>/biosamples/xml/sample/SAME546131</a>;
+                </li>
+            </ul>
+            <p>
+                <br>
+            </p>
+            <h4 id="Authentication">Authentication</h4>
+            <p>N/A</p>
+            <p>
+                <br> <br>
+            </p>
+            <h4 id="Arguments">Arguments</h4>
+            <p>sampleAccession (required) 
+            <br/>groupslist (optional - default=false)
+                <br> <br>
+            </p>
+            <h4 id="ExampleRequest">Example Request</h4>
+            <pre class="wiki">Get /xml/sample/SAME546131
+</pre>
+            <p>
+                <br> <br>
+            </p>
+            <h4 id="ExampleResponse">Example Response</h4>
+<pre class="wiki">&lt;BioSample xmlns="http://www.ebi.ac.uk/biosamples/SampleGroupExport" id="SAME315173"&gt;
+&lt;Property class="Sample Name" characteristic="true" comment="false" type="STRING"&gt;
+&lt;QualifiedValue&gt;
+&lt;Value&gt;STOCK Dbp&lt;tm1Schb&gt; Hlf&lt;tm1Schb&gt; Tef&lt;tm1Schb&gt;/Cnrm&lt;/Value&gt;
+&lt;/QualifiedValue&gt;
+&lt;/Property&gt;
+&lt;Property class="comment[Synonym]" characteristic="true" comment="false" type="STRING"&gt;
+&lt;QualifiedValue&gt;
+&lt;Value&gt;
+HLF-KO/DBP-KO/TEF-heterozygous, STOCK Dbp&lt;tm1Schb&gt; Hlf&lt;tm1Schb&gt; Tef&lt;tm1Schb&gt;/Ibmc
+&lt;/Value&gt;
+&lt;/QualifiedValue&gt;
+&lt;/Property&gt;
+&lt;Property class="comment[Nomenclature]" characteristic="true" comment="false" type="STRING"&gt;
+&lt;QualifiedValue&gt;
+&lt;Value&gt;+&lt;/Value&gt;
+&lt;/QualifiedValue&gt;
+&lt;/Property&gt;
+&lt;Property class="comment[Strain ID]" characteristic="true" comment="false" type="STRING"&gt;
+&lt;QualifiedValue&gt;
+&lt;Value&gt;EM:02489&lt;/Value&gt;
+&lt;/QualifiedValue&gt;
+&lt;/Property&gt;
+&lt;Property class="Material" characteristic="true" comment="false" type="STRING"&gt;
+&lt;QualifiedValue&gt;
+&lt;Value&gt;embryo&lt;/Value&gt;
+&lt;/QualifiedValue&gt;
+&lt;/Property&gt;
+&lt;Property class="Organism" characteristic="true" comment="false" type="STRING"&gt;
+&lt;QualifiedValue&gt;
+&lt;Value&gt;Mus musculus&lt;/Value&gt;
+&lt;TermSourceREF&gt;
+&lt;Name/&gt;
+&lt;Description/&gt;
+&lt;URI&gt;http://www.ncbi.nlm.nih.gov/taxonomy/&lt;/URI&gt;
+&lt;Version/&gt;
+&lt;TermSourceID&gt;10090&lt;/TermSourceID&gt;
+&lt;/TermSourceREF&gt;
+&lt;/QualifiedValue&gt;
+&lt;/Property&gt;
+&lt;Property class="characteristic[Allele ID]" characteristic="true" comment="false" type="STRING"&gt;
+&lt;QualifiedValue&gt;
+&lt;Value&gt;MGI:2183196&lt;/Value&gt;
+&lt;/QualifiedValue&gt;
+&lt;QualifiedValue&gt;
+&lt;Value&gt;MGI:3045494&lt;/Value&gt;
+&lt;/QualifiedValue&gt;
+&lt;QualifiedValue&gt;
+&lt;Value&gt;MGI:3045480&lt;/Value&gt;
+&lt;/QualifiedValue&gt;
+&lt;/Property&gt;
+&lt;Property class="characteristic[Allele Symbol]" characteristic="true" comment="false" type="STRING"&gt;
+&lt;QualifiedValue&gt;
+&lt;Value&gt;Dbp&lt;tm1Schb&gt;&lt;/Value&gt;
+&lt;/QualifiedValue&gt;
+&lt;QualifiedValue&gt;
+&lt;Value&gt;Tef&lt;tm1Schb&gt;&lt;/Value&gt;
+&lt;/QualifiedValue&gt;
+&lt;QualifiedValue&gt;
+&lt;Value&gt;Hlf&lt;tm1Schb&gt;&lt;/Value&gt;
+&lt;/QualifiedValue&gt;
+&lt;/Property&gt;
+&lt;Property class="characteristic[Allele Name]" characteristic="true" comment="false" type="STRING"&gt;
+&lt;QualifiedValue&gt;
+&lt;Value&gt;targeted mutation 1, Ueli Schibler&lt;/Value&gt;
+&lt;/QualifiedValue&gt;
+&lt;/Property&gt;
+&lt;Property class="characteristic[Gene ID]" characteristic="true" comment="false" type="STRING"&gt;
+&lt;QualifiedValue&gt;
+&lt;Value&gt;MGI:94866&lt;/Value&gt;
+&lt;/QualifiedValue&gt;
+&lt;QualifiedValue&gt;
+&lt;Value&gt;MGI:98663&lt;/Value&gt;
+&lt;/QualifiedValue&gt;
+&lt;QualifiedValue&gt;
+&lt;Value&gt;MGI:96108&lt;/Value&gt;
+&lt;/QualifiedValue&gt;
+&lt;/Property&gt;
+&lt;Property class="characteristic[Gene Symbol]" characteristic="true" comment="false" type="STRING"&gt;
+&lt;QualifiedValue&gt;
+&lt;Value&gt;Dbp&lt;/Value&gt;
+&lt;/QualifiedValue&gt;
+&lt;QualifiedValue&gt;
+&lt;Value&gt;Tef&lt;/Value&gt;
+&lt;/QualifiedValue&gt;
+&lt;QualifiedValue&gt;
+&lt;Value&gt;Hlf&lt;/Value&gt;
+&lt;/QualifiedValue&gt;
+&lt;/Property&gt;
+&lt;Property class="characteristic[Gene Name]" characteristic="true" comment="false" type="STRING"&gt;
+&lt;QualifiedValue&gt;
+&lt;Value&gt;D site albumin promoter binding protein&lt;/Value&gt;
+&lt;/QualifiedValue&gt;
+&lt;QualifiedValue&gt;
+&lt;Value&gt;thyrotroph embryonic factor&lt;/Value&gt;
+&lt;/QualifiedValue&gt;
+&lt;QualifiedValue&gt;
+&lt;Value&gt;hepatic leukemia factor&lt;/Value&gt;
+&lt;/QualifiedValue&gt;
+&lt;/Property&gt;
+&lt;Database&gt;
+&lt;Name&gt;EM&lt;/Name&gt;
+&lt;ID&gt;STOCK Dbp&lt;tm1Schb&gt; Hlf&lt;tm1Schb&gt; Tef&lt;tm1Schb&gt;/Cnrm&lt;/ID&gt;
+&lt;URI&gt;
+http://www.findmice.org/summary?query=STOCK+Dbp%3Ctm1Schb%3E+Hlf%3Ctm1Schb%3E+Tef%3Ctm1Schb%3E%2FCnrm&amp;repositories=EM
+&lt;/URI&gt;
+&lt;/Database&gt;
+&lt;/BioSample&gt;
+</pre>
+
+            <p>
+                <br> <br>
+            </p>
+            <h4 id="ErrorCodes">Error Codes</h4>
+            <p>N/A</p>
+            <p>
+                <br> <br>
+            </p>
+            <h4 id="XSD-XmlSchemaDefinition">XSD - Xml Schema Definition</h4>
+            <ul>
+                <li><a class="ext-link"
+                    href="/biosamples/assets/xsd/BioSDSchema.xsd"><span
+                        class="icon">&nbsp;</span>/biosamples/assets/xsd/BioSDSchema.xsd</a></li>
+            </ul>
+            <p>
+                <img src="../api/BioSDSchema_BioSample.png"
+                    alt="BioSamplesSample XSD" title="BioSamplesSample XSD">
+            </p>
+
+
+        </section>
+            <aside class="grid_6 omega">
+                <h3>Help</h3>
+                <ul id="secondary-nav">
+                    <li><a href="index.html">Help home</a></li>
+                    <li><a href="search.html">Searching</a></li>
+                    <li><a href="submit.html">Submitting</a></li>
+                    <li class="active"><a href="api.html">Programatic interface</a></li>
+                    <li><a href="faq.html">FAQ</a></li>
+                    <li><a href="news.html">News</a></li>
+                    <li><a href="contact_us.html">Contact us</a></li>
+                </ul>
+            </aside>
+    </div>
+
+</body>
+</html>

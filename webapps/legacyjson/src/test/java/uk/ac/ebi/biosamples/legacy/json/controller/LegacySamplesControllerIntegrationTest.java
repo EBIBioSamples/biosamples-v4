@@ -8,6 +8,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -181,40 +182,81 @@ public class LegacySamplesControllerIntegrationTest {
 
 	@Test
 	public void testUsingRelationsLinkGetsARelationsResource() throws Exception {
-		Sample testSample = new TestSample("SAMED666").withRelationship(
-				Relationship.build("SAMED666", "deriveFrom", "SAMED555")
+		Sample testSample = new TestSample("SAMD666").withRelationship(
+				Relationship.build("SAMD666", "deriveFrom", "SAMD555")
 		).build();
 		when(sampleRepository.findByAccession(testSample.getAccession())).thenReturn(Optional.of(testSample));
 
 		MvcResult result = mockMvc.perform(get("/samples/{accession}", testSample.getAccession())
 				.accept(HAL_JSON))
 				.andExpect(jsonPath("$._links.relations.href").value(
-						Matchers.endsWith("/samplesrelations/SAMED666")
+						Matchers.endsWith("/samplesrelations/SAMD666")
 				))
 				.andReturn();
 
 		String deriveFromLink = JsonPath.parse(result.getResponse().getContentAsString()).read("$._links.relations.href");
 		mockMvc.perform(get(deriveFromLink).accept(HAL_JSON))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.accession").value("SAMED666"));
+				.andExpect(jsonPath("$.accession").value("SAMD666"));
 	}
 
 	@Test
-	public void testContactIsRootField() throws Exception {
+	@Ignore("Not valid for legacy json")
+	public void testMsiInfoShouldNotBeVisibleInTheSample() throws Exception {
+		Sample sample = new TestSample("SAMEA1")
+				.withContact(new Contact.Builder().name("Name").build())
+				.withOrganization(new Organization.Builder().role("submitter").name("org").build())
+				.withPublication(new Publication.Builder().doi("someDOI").pubmed_id("someID").build())
+				.build();
+		when(sampleRepository.findByAccession(sample.getAccession())).thenReturn(Optional.of(sample));
+		mockMvc.perform(get("/samples/{accession}", sample.getAccession()).accept(HAL_JSON))
+				.andExpect(jsonPath("$").value(not(anyOf(
+						hasKey("contacts"),hasKey("organizations"), hasKey("publications")
+				))));
+
+	}
+
+
+	@Test
+//	@Ignore("Invalid test for legacy purposes")
+	public void testContactShouldNotBeVisibleInSample() throws Exception {
 	    Sample sample = new TestSample("SAMEA1")
-				.withContact(Contact.build("Name", "Affiliation", "url"))
+				.withContact(new Contact.Builder().name("Name").build())
 				.build();
 	    when(sampleRepository.findByAccession(sample.getAccession())).thenReturn(Optional.of(sample));
 
 	    mockMvc.perform(get("/samples/{accession}", sample.getAccession()).accept(HAL_JSON))
 				.andExpect(jsonPath("$.contact").isArray())
-				.andExpect(jsonPath("$.contact[0]").value(allOf(hasKey("Name"), hasKey("Affiliation"), hasKey("URL"))));
+				.andExpect(jsonPath("$.contact[0]").value(hasKey("Name")));
 	}
 
 	@Test
-	public void testPublicationIsRootField() throws Exception {
+//	@Ignore("Invalid test for legacy purposes")
+	public void testContactMixinHidesUnwantedFields() throws Exception {
 		Sample sample = new TestSample("SAMEA1")
-				.withPublication(Publication.build("doi", "pubmedID"))
+				.withContact(new Contact.Builder()
+						.firstName("first")
+						.midInitials("mi")
+						.lastName("last")
+						.name("real name")
+						.email("me@you.com")
+						.affiliation("nobody inc.")
+						.role("screamer").build()
+				).build();
+		when(sampleRepository.findByAccession(sample.getAccession())).thenReturn(Optional.of(sample));
+
+		mockMvc.perform(get("/samples/{accession}", sample.getAccession()).accept(HAL_JSON))
+				.andExpect(jsonPath("$.contact").isArray())
+				.andExpect(jsonPath("$.contact[0]").value(not(anyOf(
+						hasKey("FirstName"), hasKey("LastName"), hasKey("MidInitials"), hasKey("Role"),
+						hasKey("URL"), hasKey("E-mail")))));
+	}
+
+	@Test
+//	@Ignore("Invalid test for legacy purposes")
+	public void testPublicationIsNotAvailableInSample() throws Exception {
+		Sample sample = new TestSample("SAMEA1")
+				.withPublication(new Publication.Builder().doi("doi").pubmed_id("pubmedID").build())
 				.build();
 		when(sampleRepository.findByAccession(sample.getAccession())).thenReturn(Optional.of(sample));
 
@@ -224,10 +266,13 @@ public class LegacySamplesControllerIntegrationTest {
 	}
 
 	@Test
-	public void testOrganizationIsRootField() throws Exception {
+	@Ignore("Invalid test for legacy purposes")
+	public void testOrganizationNotAvailableInSample() throws Exception {
 
 		Sample testSample = new TestSample("SAMEA1")
-				.withOrganization(Organization.build("Stanford Microarray Database (SMD)", "submitter", null, null))
+				.withOrganization(new Organization.Builder()
+						.name("Stanford Microarray Database (SMD)")
+						.role("submitter").build())
 				.build();
 		when(sampleRepository.findByAccession(testSample.getAccession())).thenReturn(Optional.of(testSample));
 
@@ -335,16 +380,16 @@ public class LegacySamplesControllerIntegrationTest {
 	
 	@Test
 	public void testFindByGroupFunctionality() throws Exception {
-		Sample sampleA = new TestSample("A").withRelationship(
-				Relationship.build("groupA", "has member", "A")).build();
-		Sample sampleB = new TestSample("B").withRelationship(
-				Relationship.build("groupA", "has member", "B")).build();
-		Sample groupA = new TestSample("groupA")
-				.withRelationship(Relationship.build("groupA", "has member", "A"))
-				.withRelationship(Relationship.build("groupA", "has member", "B"))
+		Sample sampleA = new TestSample("SAME2").withRelationship(
+				Relationship.build("SAMEG1", "has member", "SAME2")).build();
+		Sample sampleB = new TestSample("SAMN3").withRelationship(
+				Relationship.build("SAMEG1", "has member", "SMAN3")).build();
+		Sample groupA = new TestSample("SAMEG1")
+				.withRelationship(Relationship.build("groupA", "has member", "SAME2"))
+				.withRelationship(Relationship.build("groupA", "has member", "SAMN3"))
 				.build();
 
-		when(sampleRepository.findSamplesByGroup(eq("groupA"), anyInt(), anyInt()))
+		when(sampleRepository.findSamplesByGroup(eq("SAMEG1"), anyInt(), anyInt()))
 				.thenReturn(getTestPagedResourcesSample(2, sampleA, sampleB));
 		when(relationsRepository.getGroupsRelationships(anyString())).thenReturn(
 				Collections.singletonList(new GroupsRelations(groupA)));
@@ -356,14 +401,14 @@ public class LegacySamplesControllerIntegrationTest {
 		UriTemplate findFirstByGroupTemplateUrl = new UriTemplate(
 				JsonPath.parse(searchLinkContent).read("$._links.findByGroups.href"));
 		Map<String,String> urlParameters = new HashMap<>();
-		urlParameters.put("group", "groupA");
+		urlParameters.put("group", "SAMEG1");
 		urlParameters.put("page", "0");
 		urlParameters.put("size", "50");
 
 		String responseContent = mockMvc.perform(get(findFirstByGroupTemplateUrl.expand(urlParameters)).accept(HAL_JSON))
 				.andExpect(status().isOk())
 				.andExpect(content().contentType("application/hal+json;charset=UTF-8"))
-				.andExpect(jsonPath("$._embedded.samples.*.accession").value(containsInAnyOrder("A", "B")))
+				.andExpect(jsonPath("$._embedded.samples.*.accession").value(containsInAnyOrder("SAME2", "SAMN3")))
 				.andReturn().getResponse().getContentAsString();
 
 

@@ -29,6 +29,13 @@ import uk.ac.ebi.biosamples.mongo.model.MongoExternalReference;
 import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 
+import java.net.URISyntaxException;
+import java.time.Instant;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
 @RunWith(SpringRunner.class)
 @JsonTest
 public class MongoSerializationTest {
@@ -62,13 +69,32 @@ public class MongoSerializationTest {
 		externalReferences.add(MongoExternalReference.build("http://www.google.com"));
 
 		SortedSet<Organization> organizations = new TreeSet<>();
-		organizations.add(Organization.build("Jo Bloggs Inc", "user", "help@jobloggs.com", "http://www.jobloggs.com"));
+//		organizations.add(Organization.build("Jo Bloggs Inc", "user", "help@jobloggs.com", "http://www.jobloggs.com"));
+		organizations.add(new Organization.Builder()
+				.name("Jo Bloggs Inc")
+				.role("user")
+				.email("help@jobloggs.com")
+				.url("http://www.jobloggs.com")
+				.build());
 
 		SortedSet<Contact> contacts = new TreeSet<>();
-		contacts.add(Contact.build("Joe Bloggs","Jo Bloggs Inc", "http://www.jobloggs.com/joe"));
+//		contacts.add(Contact.build("Joe Bloggs","Jo Bloggs Inc", "http://www.jobloggs.com/joe"));
+		contacts.add(new Contact.Builder()
+				.firstName("Joe")
+				.lastName("Bloggs")
+                .name("Joe Bloggs")
+				.role("Submitter")
+				.email("jobloggs@joblogs.com")
+//				.affiliation("Jo Bloggs Inc")
+//				.url("http://www.jobloggs.com/joe")
+				.build());
 
 		SortedSet<Publication> publications = new TreeSet<>();
-		publications.add(Publication.build("10.1093/nar/gkt1081", "24265224"));
+//		publications.add(Publication.build("10.1093/nar/gkt1081", "24265224"));
+		publications.add(new Publication.Builder()
+				.doi("10.1093/nar/gkt1081")
+				.pubmed_id("24265224")
+				.build());
 
 		return MongoSample.build(name, accession, "foozit", release, update, 
 				attributes, relationships, externalReferences, 

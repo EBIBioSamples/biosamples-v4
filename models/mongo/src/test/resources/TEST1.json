@@ -46,9 +46,11 @@
 	],
 	"contacts": [
 		{
+			"FirstName": "Joe",
+			"LastName": "Bloggs",
 			"Name": "Joe Bloggs",
-			"Affiliation": "Jo Bloggs Inc",
-			"URL": "http://www.jobloggs.com/joe"
+			"E-mail": "jobloggs@joblogs.com",
+			"Role": "Submitter"
 		}
 	],
 	"publications": [

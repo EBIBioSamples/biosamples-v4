@@ -41,7 +41,7 @@ public class ZoomaProcessor {
 	public Optional<String> queryZooma(String type, String value) {
 		log.trace("Zooma getting : "+type+" : "+value);
 		URI uri = uriBuilder.expand(value, type).encode().toUri();
-		//log.info("Zooma uri : "+uri);
+		//log.info("Zooma uri : "+url);
 		
 		RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
 		ResponseEntity<List<JsonNode>> responseEntity = restOperations.exchange(requestEntity,

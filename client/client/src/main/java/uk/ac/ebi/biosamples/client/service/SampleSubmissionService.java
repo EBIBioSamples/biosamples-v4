@@ -47,9 +47,9 @@ public class SampleSubmissionService {
 	 * @param jwt json web token authorizing access to the domain the sample is assigned to
 	 * @return
 	 */
-	public Resource<Sample> submit(Sample sample, Boolean setUpdateDate) throws RestClientException {
+	public Resource<Sample> submit(Sample sample, Boolean setUpdateDate, Boolean setFullDetails) throws RestClientException {
 		try {
-			return new SubmitCallable(sample, setUpdateDate).call();
+			return new SubmitCallable(sample, setUpdateDate, setFullDetails).call();
 		} catch (RestClientException e) {
 			throw e;
 		} catch (Exception e) {
@@ -67,17 +67,19 @@ public class SampleSubmissionService {
 	 * @param jwt json web token authorizing access to the domain the sample is assigned to
 	 * @return
 	 */
-	public Future<Resource<Sample>> submitAsync(Sample sample, Boolean setUpdateDate) throws RestClientException {
-		return executor.submit(new SubmitCallable(sample, setUpdateDate));
+	public Future<Resource<Sample>> submitAsync(Sample sample, Boolean setUpdateDate, Boolean setFullDetails) throws RestClientException {
+		return executor.submit(new SubmitCallable(sample, setUpdateDate, setFullDetails));
 	}
 
 	private class SubmitCallable implements Callable<Resource<Sample>> {
 		private final Sample sample;
 		private final Boolean setUpdateDate;
+		private final Boolean setFullDetails;
 
-		public SubmitCallable(Sample sample, Boolean setUpdateDate) {
+		public SubmitCallable(Sample sample, Boolean setUpdateDate, Boolean setFullDetails) {
 			this.sample = sample;
 			this.setUpdateDate = setUpdateDate;
+			this.setFullDetails = setFullDetails;
 		}
 
 		@Override
@@ -101,6 +103,9 @@ public class SampleSubmissionService {
 				UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromUriString(sampleLink.getHref());
 				if (setUpdateDate != null) {
 					uriComponentsBuilder.queryParam("setupdatedate", setUpdateDate);
+				}
+				if (setFullDetails != null) {
+					uriComponentsBuilder.queryParam("setfulldetails", setFullDetails);
 				}
 				URI uri = uriComponentsBuilder.build(true).toUri();
 				
@@ -128,6 +133,9 @@ public class SampleSubmissionService {
 				UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromUriString(sampleLink.getHref());
 				if (setUpdateDate != null) {
 					uriComponentsBuilder.queryParam("setupdatedate", setUpdateDate);
+				}
+				if (setFullDetails != null) {
+					uriComponentsBuilder.queryParam("setfulldetails", setUpdateDate);
 				}
 				URI uri = uriComponentsBuilder.build(true).toUri();
 				

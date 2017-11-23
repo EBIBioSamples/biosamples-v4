@@ -44,4 +44,23 @@
 		<Name>other</Name>
 		<URI>http://www.google.com</URI>
 	</Database>
+
+	<Person>
+		<FirstName>Joe</FirstName>
+		<LastName>Bloggs</LastName>
+		<Role>Submitter</Role>
+		<Email>jobloggs@joblogs.com</Email>
+	</Person>
+
+    <Organization>
+        <Name>Jo Bloggs Inc</Name>
+        <URI>http://www.jobloggs.com</URI>
+        <Role>user</Role>
+        <E-mail>help@jobloggs.com</E-mail>
+    </Organization>
+
+    <Publication>
+        <DOI>10.1093/nar/gkt1081</DOI>
+        <PubMedID>24265224</PubMedID>
+    </Publication>
 </BioSample>

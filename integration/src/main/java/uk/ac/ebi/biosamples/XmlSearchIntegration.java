@@ -15,9 +15,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Relationship;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.model.legacyxml.BioSample;
 import uk.ac.ebi.biosamples.model.legacyxml.ResultQuery;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
@@ -27,7 +25,7 @@ import java.time.Instant;
 import java.util.*;
 
 @Component
-@Profile({"default", "test"})
+@Profile({"default"})
 public class XmlSearchIntegration extends AbstractIntegration {
     
     private final RestTemplate restTemplate;
@@ -93,6 +91,10 @@ public class XmlSearchIntegration extends AbstractIntegration {
 
         xmlSearchTester.getsResultSummaryAsResultOfSearchingSampleInGroup();
 
+        xmlSearchTester.doesNotFindContactInformationInSample();
+
+        xmlSearchTester.findsAllFieldsInLegacyGroup();
+
     }
 
     private class XmlSearchTester {
@@ -145,6 +147,34 @@ public class XmlSearchIntegration extends AbstractIntegration {
             if (!sampleWithinGroup.getAccession().equals(sampleWithinGroupResource.getContent().getAccession())) {
                 throw new RuntimeException("Expected response to equal submission");
             }
+
+            Sample sampleWithContactInformations = TestSampleGenerator.getSampleWithContactInformations();
+            log.info(String.format("Persisting %s", sampleWithContactInformations.getAccession()));
+            optional = client.fetchSampleResource(sampleWithContactInformations.getAccession());
+            if (optional.isPresent()) {
+                throw new RuntimeException("Found existing "+sampleWithContactInformations.getAccession());
+            }
+
+            Resource<Sample> sampleWithContactResource = client.persistSampleResource(sampleWithContactInformations, false, true);
+            // The result and the submitted will not be equal because of the new inverse relation created automatically
+            if (!sampleWithContactInformations.getAccession().equals(sampleWithContactResource.getContent().getAccession())) {
+                throw new RuntimeException("Expected response to equal submission");
+            }
+            log.info(String.format("Successfully persisted %s", sampleWithContactInformations.getAccession()));
+
+            Sample groupWithMsiData = TestSampleGenerator.getGroupWithFullMsiDetails();
+            log.info(String.format("Persisting %s", groupWithMsiData.getAccession()));
+            optional = client.fetchSampleResource(groupWithMsiData.getAccession());
+            if (optional.isPresent()) {
+                throw new RuntimeException("Found existing "+groupWithMsiData.getAccession());
+            }
+
+            Resource<Sample> groupWithMsiDetailsResource = client.persistSampleResource(groupWithMsiData, false, true);
+            // The result and the submitted will not be equal because of the new inverse relation created automatically
+            if (!groupWithMsiData.getAccession().equals(groupWithMsiDetailsResource.getContent().getAccession())) {
+                throw new RuntimeException("Expected response to equal submission");
+            }
+            log.info(String.format("Successfully persisted %s", groupWithMsiData.getAccession()));
 
 
         }
@@ -452,7 +482,64 @@ public class XmlSearchIntegration extends AbstractIntegration {
 //                throw new RuntimeException("The legacy XML result query doesn't contain the expected sample");
 //            }
         }
+
+        public void doesNotFindContactInformationInSample() {
+            Sample testSample = TestSampleGenerator.getSampleWithContactInformations();
+
+            log.info(String.format("Searching sample %s using legacy xml api", testSample.getAccession()));
+            UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosamplesLegacyXMLUri());
+            uriBuilder.pathSegment("samples", testSample.getAccession());
+
+            RequestEntity<?> request = RequestEntity
+                    .get(uriBuilder.build().toUri())
+                    .accept(MediaType.TEXT_XML)
+                    .build();
+
+            ResponseEntity<String> responseEntity = restTemplate.exchange(request, String.class);
+
+
+            if (!responseEntity.getBody().contains(String.format("id=\"%s\"",testSample.getAccession()))) {
+                throw new RuntimeException("Response body doesn't match expected sample");
+            }
+
+            assert(!responseEntity.getBody().contains("<Person>"));
+            log.info(String.format("Sample %s does not contains Person element in legacy XML api as expected",
+                    testSample.getAccession()));
+        }
+
+        public void findsAllFieldsInLegacyGroup() {
+            Sample testSample = TestSampleGenerator.getGroupWithFullMsiDetails();
+
+            log.info(String.format("Searching group %s using legacy xml api", testSample.getAccession()));
+            UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosamplesLegacyXMLUri());
+            uriBuilder.pathSegment("groups", testSample.getAccession());
+
+            RequestEntity<?> request = RequestEntity
+                    .get(uriBuilder.build().toUri())
+                    .accept(MediaType.TEXT_XML)
+                    .build();
+
+            ResponseEntity<String> responseEntity = restTemplate.exchange(request, String.class);
+
+
+            if (!responseEntity.getBody().contains(String.format("id=\"%s\"",testSample.getAccession()))) {
+                throw new RuntimeException("Response body doesn't match expected sample");
+            }
+
+            assert(responseEntity.getBody().contains("<Person>"));
+            assert(responseEntity.getBody().contains("<FirstName>"));
+            assert(responseEntity.getBody().contains("<LastName>"));
+            assert(responseEntity.getBody().contains("<Organization>"));
+            assert(responseEntity.getBody().contains("<Address>"));
+            assert(responseEntity.getBody().contains("<Publication>"));
+            assert(responseEntity.getBody().contains("<DOI>"));
+            assert(responseEntity.getBody().contains("<PubMedID>"));
+            log.info(String.format("Sample %s does not contains Person element in legacy XML api as expected",
+                    testSample.getAccession()));
+        }
     }
+
+
 
     private static class TestSampleGenerator {
 
@@ -515,10 +602,47 @@ public class XmlSearchIntegration extends AbstractIntegration {
             Instant update = Instant.now();
             Instant release = Instant.parse("1980-08-02T00:30:00Z");
 
-            return Sample.build(name, accession, submissionDomain, release, update, null, null, null, null, null, null);
+            return Sample.build(name, accession, submissionDomain, release, update, null,
+                    null, null, null, null,
+                    null);
 
         }
 
+        public static Sample getSampleWithContactInformations() {
+            String name = "Test XML sample with contact information";
+            String accession = "SAME114477";
+            Instant update = Instant.now();
+            Instant release = Instant.parse("1980-08-02T00:30:00Z");
+
+            SortedSet<Contact> contacts = new TreeSet<>();
+            contacts.add(new Contact.Builder().firstName("Loca").lastName("Lol").build());
+
+
+            return Sample.build(name, accession, submissionDomain, release, update,
+                    null, null, null,
+                    null, contacts, null);
+        }
+
+        public static Sample getGroupWithFullMsiDetails() {
+            String name = "Test XML group with contact information and other";
+            String accession = "SAMEG114477";
+            Instant update = Instant.now();
+            Instant release = Instant.parse("1980-08-02T00:30:00Z");
+
+            SortedSet<Contact> contacts = new TreeSet<>();
+            contacts.add(new Contact.Builder().firstName("Loca").lastName("Lol").build());
+
+            SortedSet<Organization> organizations = new TreeSet<>();
+            organizations.add(new Organization.Builder().name("testOrg").role("submitter")
+            .email("test@org.com").address("rue de german").url("www.google.com").build());
+
+            SortedSet<Publication> publications = new TreeSet<>();
+            publications.add(new Publication.Builder().doi("123123").pubmed_id("someID").build());
+
+            return Sample.build(name, accession, submissionDomain, release, update,
+                    null, null, null,
+                    organizations, contacts, publications);
+        }
     }
 
     private static class XmlMatcher {

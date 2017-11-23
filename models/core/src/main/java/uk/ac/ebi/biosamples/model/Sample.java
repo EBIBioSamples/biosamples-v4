@@ -23,7 +23,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class Sample implements Comparable<Sample> {
 	
 	protected String accession;
@@ -301,7 +301,7 @@ public class Sample implements Comparable<Sample> {
 			Instant release, 
 			Instant update,
 			Set<Attribute> attributes,
-			Set<Relationship> relationships, 
+			Set<Relationship> relationships,
 			Set<ExternalReference> externalReferences) {
     	return build(name, accession, domain, release, update, attributes, relationships, externalReferences, null, null, null);
     }

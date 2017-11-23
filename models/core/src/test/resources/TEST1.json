@@ -53,8 +53,11 @@
 	"contact": [
 		{
 			"Name": "Joe Bloggs",
-			"Affiliation": "Jo Bloggs Inc",
-			"URL": "http://www.jobloggs.com/joe"
+			"FirstName": "Joe",
+          	"LastName": "Bloggs",
+			"Role": "Submitter",
+			"E-mail": "jobloggs@joblogs.com"
+
 		}
 	],
 	"publications": [
