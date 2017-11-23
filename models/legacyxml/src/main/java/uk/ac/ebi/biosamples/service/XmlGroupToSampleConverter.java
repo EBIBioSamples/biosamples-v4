@@ -1,34 +1,17 @@
 package uk.ac.ebi.biosamples.service;
 
-import java.time.Instant;
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
-import java.util.Collection;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
-import org.dom4j.Document;
+import com.google.common.collect.Lists;
 import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.*;
-
-import com.google.common.collect.Lists;
-
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.ExternalReference;
-import uk.ac.ebi.biosamples.model.Relationship;
-import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 
 @Service
 public class XmlGroupToSampleConverter implements Converter<Element, Sample>  {
@@ -100,7 +83,9 @@ public class XmlGroupToSampleConverter implements Converter<Element, Sample>  {
 		log.info("relationships = "+relationships);
 		log.info("relationships = "+relationships);
 		
-		return Sample.build(name, accession, null, release, update, attributes, relationships, externalReferences);
+		return Sample.build(name, accession, null, release, update,
+				attributes, relationships, externalReferences,
+				organizations, contacts, publications);
 	}
 
 	private SortedSet<Contact> extractContacts(Element doc) {

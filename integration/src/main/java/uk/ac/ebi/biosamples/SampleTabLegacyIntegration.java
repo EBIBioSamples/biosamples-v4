@@ -72,8 +72,8 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 					.body(sampleTabString);
 			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
 			log.info(""+response.getBody());
-		});	
-		
+		});
+
 		log.info("Testing SampleTab JSON accession");
 		runCallableOnSampleTabResource("/GSB-32.json", sampleTabString -> {
 			log.info("POSTing to " + uriAc);
@@ -81,12 +81,12 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 					.body(sampleTabString);
 			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
 			log.info(""+response.getBody());
-			
+
 			if (!response.getBody().contains("SAMEA2186845")) {
 				throw new RuntimeException("Response does not have expected accession SAMEA2186845");
-			}			
-		});	
-		
+			}
+		});
+
 		log.info("Testing SampleTab JSON submission");
 		runCallableOnSampleTabResource("/GSB-32.json", sampleTabString -> {
 			log.info("POSTing to " + uriSb);
@@ -94,7 +94,7 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 					.body(sampleTabString);
 			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
 			log.info(""+response.getBody());
-			
+
 			if (!response.getBody().contains("SAMEA2186845")) {
 				throw new RuntimeException("Response does not have expected accession SAMEA2186845");
 			}

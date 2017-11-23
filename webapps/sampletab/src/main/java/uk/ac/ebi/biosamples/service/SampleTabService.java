@@ -1,55 +1,26 @@
 package uk.ac.ebi.biosamples.service;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.arrayexpress2.sampletab.datamodel.MSI;
-
-import com.google.common.collect.Collections2;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-
 import uk.ac.ebi.arrayexpress2.magetab.datamodel.graph.Node;
 import uk.ac.ebi.arrayexpress2.magetab.exception.ParseException;
+import uk.ac.ebi.arrayexpress2.sampletab.datamodel.MSI;
 import uk.ac.ebi.arrayexpress2.sampletab.datamodel.SampleData;
 import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.GroupNode;
 import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.SampleNode;
 import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.attribute.*;
-import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.attribute.AbstractNamedAttribute;
-import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.attribute.AbstractRelationshipAttribute;
-import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.attribute.CharacteristicAttribute;
-import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.attribute.CommentAttribute;
-import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.attribute.DatabaseAttribute;
-import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.attribute.DerivedFromAttribute;
-import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.attribute.SCDNodeAttribute;
 import uk.ac.ebi.arrayexpress2.sampletab.renderer.SampleTabWriter;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.mongo.model.MongoSampleTab;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleTabRepository;
+import uk.ac.ebi.biosamples.mongo.service.MongoAccessionService;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -384,9 +355,6 @@ public class SampleTabService {
 					sample.getRelease(), sample.getUpdate(), sample.getAttributes(), relationships, sample.getExternalReferences(),
 					sample.getOrganizations(), sample.getContacts(), sample.getPublications());
 
-			sample = bioSamplesClient.persistSampleResource(sample, setUpdateDate).getContent();
-
-			Sample sample = groupNodeToSample(groupNode, sampleData.msi, domain, release, update);
 			sample = bioSamplesClient.persistSampleResource(sample, setUpdateDate, true).getContent();
 			if (groupNode.getGroupAccession() == null) {
 				groupNode.setGroupAccession(sample.getAccession());
@@ -431,7 +399,6 @@ public class SampleTabService {
 		Sample sample = Sample.build(name, accession, domain, release, update,
 				attributes, relationships, externalReferences,
 				organizations, contacts, publications);
-		}
 
 		return sample;
 	}

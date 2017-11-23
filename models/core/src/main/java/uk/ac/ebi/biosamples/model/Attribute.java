@@ -162,6 +162,7 @@ public class Attribute implements Comparable<Attribute> {
 	}
 
 	public static Attribute build(String type, String value, String iri, String unit) {
+		if (iri == null) iri = "";
 		return build(type,value, Lists.newArrayList(iri), unit);
 	}
 	

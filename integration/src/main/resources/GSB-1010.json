@@ -8,10 +8,6 @@
       "Test sample with MSI information"
     ],
     [
-      "Submission Identifier",
-      "GSB-1010"
-    ],
-    [
       "Submission Description",
       "These are sample which contains contact, publication and organization informations"
     ],
@@ -94,10 +90,15 @@
     ],
     [
       "Sample Name",
-      "Sample Accession"
+      "Sample Accession",
+      "Organism"
     ],
     [
       "JJSample",
+      "",
+      "Mus musculus"
+    ],
+    [
       ""
     ]
   ]
