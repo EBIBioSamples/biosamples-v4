@@ -91,8 +91,13 @@ public class SampleRestController {
 	@CrossOrigin(methods = RequestMethod.GET)
 	@GetMapping(value = "/{accession}", produces = { MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE })
 	public Sample getSampleXml(@PathVariable String accession) {
-		boolean getFullDetails = accession.matches("SAMEG\\d+");
-		return this.getSampleHal(accession, getFullDetails).getContent();
+		Sample sample = this.getSampleHal(accession, true).getContent();
+		if (!sample.getAccession().matches("SAMEG\\d+")) {
+			sample = Sample.build(sample.getName(),sample.getAccession(), sample.getDomain(),
+					sample.getRelease(), sample.getUpdate(), sample.getCharacteristics(), sample.getRelationships(),
+					sample.getExternalReferences(), null, null, null);
+		}
+		return sample;
 	}
 
     @PreAuthorize("isAuthenticated()")

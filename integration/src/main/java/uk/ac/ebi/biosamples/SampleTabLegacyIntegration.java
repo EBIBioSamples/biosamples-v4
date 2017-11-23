@@ -26,8 +26,9 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.Optional;
 
-import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+import static org.hamcrest.core.IsNull.notNullValue;
 
 @Component
 @Order(5)
@@ -178,6 +179,7 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 
 	@Override
 	protected void phaseFour() {
+		// Find Sample
 		Filter nameFilter = FilterBuilder.create().onName("JJSample").build();
 		PagedResources<Resource<Sample>> samplePage = client.fetchPagedSampleResource("*:*",
 				Collections.singleton(nameFilter), 0, 1);
@@ -187,6 +189,21 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 		assertThat(jjSample.getContacts(), hasSize(2));
 		assertThat(jjSample.getOrganizations(), hasSize(2));
 		assertThat(jjSample.getPublications(), hasSize(2));
+
+		assertThat(jjSample.getPublications().first().getPubMedId(), notNullValue());
+
+		// Find Group
+//		nameFilter  = FilterBuilder.create().onName("JJGroup").build();
+//		samplePage = client.fetchPagedSampleResource("*:*",
+//				Collections.singleton(nameFilter), 0, 1);
+//		assert samplePage.getMetadata().getTotalElements() == 1;
+//
+//		Sample jjGroup = samplePage.getContent().iterator().next().getContent();
+//		assertThat(jjGroup.getContacts(), hasSize(2));
+//		assertThat(jjGroup.getOrganizations(), hasSize(2));
+//		assertThat(jjGroup.getPublications(), hasSize(2));
+//
+//		assertThat(jjGroup.getPublications().first().getPubMedId(), notNullValue());
 	}
 
 	@Override
