@@ -58,7 +58,7 @@ Download the XML dump (~400Mb) to the current directory:
 
 Run the pipeline to send the data to the submission API via REST
 
-`java -jar pipelines/ncbi/target/pipelines-ncbi-4.0.0-SNAPSHOT.jar --ncbi`
+`java -jar pipelines/ncbi/target/pipelines-ncbi-4.0.0-RC1.jar --ncbi`
 
 
 Developing
@@ -98,7 +98,7 @@ To run an executable file in a docker container, and start its dependencies firs
 If you want to add command line arguments note that these will entirely replace the executable in the 
 docker-compose.yml file. So you need to do something like:
 
-`docker-compose run --service-ports biosamples-pipelines java -jar pipelines-4.0.0-SNAPSHOT.jar --debug`
+`docker-compose run --service-ports biosamples-pipelines java -jar pipelines-4.0.0-RC1.jar --debug`
 
 If you want to connect debugging tools to the java applications running inside docker containers, 
 see instructions at http://www.jamasoftware.com/blog/monitoring-java-applications/
