@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
+import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
@@ -16,15 +17,21 @@ import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.filter.Filter;
+import uk.ac.ebi.biosamples.service.FilterBuilder;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
+import java.util.Collections;
 import java.util.Optional;
+
+import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 
 @Component
 @Order(5)
-@Profile({"default"})
+@Profile({"default", "test"})
 public class SampleTabLegacyIntegration extends AbstractIntegration {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
@@ -89,7 +96,17 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 			if (!response.getBody().contains("SAMEA2186845")) {
 				throw new RuntimeException("Response does not have expected accession SAMEA2186845");
 			}
-		});	
+		});
+
+		log.info("Testing SampleTab JSON submission with MSI contact, publication and organization");
+		runCallableOnSampleTabResource("/GSB-1010.json", sampleTabString -> {
+			log.info("POSTing to " + uriSb);
+			RequestEntity<String> request = RequestEntity.post(uriSb).contentType(MediaType.APPLICATION_JSON)
+					.body(sampleTabString);
+			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+			log.info(""+response.getBody());
+		});
+
 		
 	}
 
@@ -161,7 +178,15 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 
 	@Override
 	protected void phaseFour() {
-		
+		Filter nameFilter = FilterBuilder.create().onName("JJSample").build();
+		PagedResources<Resource<Sample>> samplePage = client.fetchPagedSampleResource("*:*",
+				Collections.singleton(nameFilter), 0, 1);
+		assert samplePage.getMetadata().getTotalElements() == 1;
+
+		Sample jjSample = samplePage.getContent().iterator().next().getContent();
+		assertThat(jjSample.getContacts(), hasSize(2));
+		assertThat(jjSample.getOrganizations(), hasSize(2));
+		assertThat(jjSample.getPublications(), hasSize(2));
 	}
 
 	@Override

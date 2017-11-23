@@ -86,6 +86,7 @@ public class Contact implements Comparable<Contact> {
         return Objects.equals(this.firstName, other.firstName)
                 && Objects.equals(this.lastName, other.lastName)
                 && Objects.equals(this.midInitials, other.midInitials)
+                && Objects.equals(this.name, other.name)
                 && Objects.equals(this.role, other.role)
                 && Objects.equals(this.email, other.email)
                 && Objects.equals(this.url, other.url)
@@ -94,7 +95,7 @@ public class Contact implements Comparable<Contact> {
 
     @Override
     public int hashCode() {
-        return Objects.hash(firstName, lastName, midInitials, role, email, affiliation, url);
+        return Objects.hash(firstName, lastName, midInitials, name, role, email, affiliation, url);
     }
 
     @Override
@@ -114,6 +115,11 @@ public class Contact implements Comparable<Contact> {
         }
 
         comparisonResult = nullSafeStringComparison(this.midInitials, other.midInitials);
+        if (comparisonResult != 0) {
+            return comparisonResult;
+        }
+
+        comparisonResult = nullSafeStringComparison(this.name, other.name);
         if (comparisonResult != 0) {
             return comparisonResult;
         }

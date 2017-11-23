@@ -25,7 +25,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-@RestController
+//TODO this need to be updated to use jwt and aap
+//@RestController
 public class SampleTabV4Controller {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
@@ -99,7 +100,7 @@ public class SampleTabV4Controller {
 					"self.BiosampleIntegrationTest",
 					false,
 					setUpdateDate,
-					false);
+					true);
 		} catch (DuplicateDomainSampleException | ConflictingSampleTabOwnershipException | AssertingSampleTabOwnershipException e) {
 			log.error("Problem saving sampletab ", e);
 			return ResponseEntity.badRequest().body(e.getMessage());
