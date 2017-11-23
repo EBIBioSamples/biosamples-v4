@@ -295,7 +295,6 @@ public class Sample implements Comparable<Sample> {
     	return sb.toString();
     }
     
-    @Deprecated
 	public static Sample build( String name, 
 			 String accession,  
 			String domain,
