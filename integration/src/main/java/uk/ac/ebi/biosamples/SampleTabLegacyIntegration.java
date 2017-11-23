@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.FilterBuilder;
@@ -113,6 +114,28 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 
 	@Override
 	protected void phaseTwo() {
+		
+		//check that previous submitted GSB-32 samples have been put into a group
+		
+		Optional<Sample> SAMEA2186845 = client.fetchSample("SAMEA2186845");
+		if (!SAMEA2186845.isPresent()) {
+			throw new RuntimeException("Unable to fetch SAMEA2186845");
+		} else if (SAMEA2186845.get().getRelationships().size() == 0) {
+			throw new RuntimeException("SAMEA2186845 has no relationships");	
+		} else {
+			boolean inGroup = false;
+			for (Relationship r : SAMEA2186845.get().getRelationships()) {
+				if (r.getTarget().equals("SAMEA2186845") && r.getType().equals("has member")) {
+					inGroup = true;
+					if (!r.getSource().startsWith("SAMEG")) {
+						throw new RuntimeException("SAMEA2186845 has 'has member' relationship to something not SAMEG");
+					}
+				}
+			}
+			if (!inGroup) {
+				throw new RuntimeException("SAMEA2186845 has no 'has member' relationship to it");
+			}
+		}
 
 		log.info("Testing SampleTab JSON accession unaccessioned");
 		runCallableOnSampleTabResource("/GSB-32_unaccession.json", sampleTabString -> {

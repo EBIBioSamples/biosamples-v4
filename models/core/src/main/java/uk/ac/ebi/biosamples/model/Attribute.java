@@ -1,25 +1,16 @@
 package uk.ac.ebi.biosamples.model;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Objects;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
-import org.springframework.web.util.UriComponents;
-import org.springframework.web.util.UriComponentsBuilder;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.Objects;
+import java.util.*;
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class Attribute implements Comparable<Attribute> {
@@ -115,7 +106,13 @@ public class Attribute implements Comparable<Attribute> {
 		if (!this.value.equals(other.value)) {
 			return this.value.compareTo(other.value);
 		}
-		
+
+		if (this.iri == null && other.iri != null) {
+			return -1;
+		}
+		if (this.iri != null && other.iri == null) {
+			return 1;
+		}
 		if (!this.iri.equals(other.iri)) {
 			if (this.iri.size() < other.iri.size()) {
 				return -1;
@@ -181,7 +178,11 @@ public class Attribute implements Comparable<Attribute> {
 		attr.value = value;
 		attr.iri = new TreeSet<>();
 		if (iri != null) {
-			attr.iri.addAll(iri);
+			for (String iriOne : iri) {
+				if (iriOne != null) {
+					attr.iri.add(iriOne);
+				}
+			}
 		}
 		attr.unit = unit;
 		return attr;

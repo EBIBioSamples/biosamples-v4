@@ -1,10 +1,35 @@
 package uk.ac.ebi.biosamples.service;
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.arrayexpress2.sampletab.datamodel.MSI;
+
+import com.google.common.collect.Collections2;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 import uk.ac.ebi.arrayexpress2.magetab.datamodel.graph.Node;
 import uk.ac.ebi.arrayexpress2.magetab.exception.ParseException;
@@ -45,11 +70,14 @@ public class SampleTabService {
 	private final BioSamplesClient bioSamplesClient;
 	private final MongoSampleTabRepository mongoSampleTabRepository;
 	private final SampleTabIdService sampleTabIdSerivce;
+	private final MongoAccessionService mongoGroupAccessionService;
 
-	public SampleTabService(BioSamplesClient bioSamplesClient, MongoSampleTabRepository mongoSampleTabRepository, SampleTabIdService sampleTabIdService) {
+	public SampleTabService(BioSamplesClient bioSamplesClient, MongoSampleTabRepository mongoSampleTabRepository,
+			SampleTabIdService sampleTabIdService, @Qualifier("mongoGroupAccessionService") MongoAccessionService mongoGroupAccessionService) {
 		this.bioSamplesClient = bioSamplesClient;
 		this.mongoSampleTabRepository = mongoSampleTabRepository;
 		this.sampleTabIdSerivce = sampleTabIdService;
+		this.mongoGroupAccessionService = mongoGroupAccessionService;
 	}
 	
 	public SampleData accessionSampleTab(SampleData sampleData, String domain, String jwt, boolean setUpdateDate) 
@@ -120,7 +148,7 @@ public class SampleTabService {
                 }
 
                 if (!sampleInGroup){
-                    log.debug("Adding sample " + sample.getNodeName() + " to group " + othergroup.getNodeName());
+                    log.info("Adding sample " + sample.getNodeName() + " to group " + othergroup.getNodeName());
                     othergroup.addSample(sample);
                 }
             }
@@ -337,7 +365,27 @@ public class SampleTabService {
 		}
 		
 		for (GroupNode groupNode : sampleData.scd.getNodes(GroupNode.class)) {
-			
+			Sample sample = groupNodeToSample(groupNode, sampleData.msi, domain, release, update);
+			//assign this fake sample a group accession *before* it is actually persisted
+			//and make sure it is a group accession
+			if (sample.getAccession() == null || sample.getAccession().trim().length() == 0) {
+				sample = mongoGroupAccessionService.generateAccession(sample);
+			}
+
+			//add "has member" relationship to "parent" nodes on the left in the MSI
+			Collection<Relationship> relationships = Sets.newCopyOnWriteArraySet(sample.getRelationships());
+			for (Node parent : groupNode.getParentNodes()) {
+				if (SampleNode.class.isInstance(parent)) {
+					SampleNode sampleNode = (SampleNode) parent;
+					relationships.add(Relationship.build(sample.getAccession(), "has member", sampleNode.getSampleAccession()));
+				}
+			}
+			sample = Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(),
+					sample.getRelease(), sample.getUpdate(), sample.getAttributes(), relationships, sample.getExternalReferences(),
+					sample.getOrganizations(), sample.getContacts(), sample.getPublications());
+
+			sample = bioSamplesClient.persistSampleResource(sample, setUpdateDate).getContent();
+
 			Sample sample = groupNodeToSample(groupNode, sampleData.msi, domain, release, update);
 			sample = bioSamplesClient.persistSampleResource(sample, setUpdateDate, true).getContent();
 			if (groupNode.getGroupAccession() == null) {
@@ -383,6 +431,8 @@ public class SampleTabService {
 		Sample sample = Sample.build(name, accession, domain, release, update,
 				attributes, relationships, externalReferences,
 				organizations, contacts, publications);
+		}
+
 		return sample;
 	}
 	
@@ -564,20 +614,11 @@ public class SampleTabService {
 	}
 	
 	private Attribute makeAttribute(String type, String value, String termSourceId, String unit) {
-		String uri = null;
+		Collection<String> iris = Lists.newArrayList();
 		if (termSourceId != null && termSourceId.trim().length() > 0) {
-			//if we're given a full uri, use it
-			try {
-				uri = termSourceId;
-			} catch (IllegalArgumentException e) {
-				//do nothing
-			}
-			if (uri == null) {
-				//provided termSourceId wasn't a uri
-				//TODO query OLS to get the URI for a short form http://www.ebi.ac.uk/ols/api/terms?id=EFO_0000001
-			}
-		}		
-		return Attribute.build(type, value, uri, unit);
+			iris.add(termSourceId);
+		}
+		return Attribute.build(type, value, iris, unit);
 	}
 	
 	public static class DuplicateDomainSampleException extends Exception {
