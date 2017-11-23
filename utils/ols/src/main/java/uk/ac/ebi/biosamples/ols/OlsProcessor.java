@@ -75,7 +75,7 @@ public class OlsProcessor {
 		//TODO do more by hal links, needs OLS to support
 		//build has to flag this iri as having already been encoded
 		UriComponents uriComponents = UriComponentsBuilder.fromUriString(
-				bioSamplesProperties.getOls()+"/api/ontologies/{ontology}/terms/{term}/hierarchicalAncestors").build();
+				bioSamplesProperties.getOls()+"/api/ontologies/{ontology}/terms/{term}/hierarchicalAncestors?size=1000").build();
 
 		log.trace("Base uriComponents = "+uriComponents);
 		
