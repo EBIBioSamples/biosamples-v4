@@ -86,8 +86,8 @@ public class SampleToXmlConverter implements Converter<Sample, Document> {
 			}
 			attrTypeValue.get(attributeType).add(attribute.getValue());
 			
-			if (attribute.getIri() != null && attribute.getIri().toString().length() > 0) {
-				attrIri.get(attributeType).put(attribute.getValue(), attribute.getIri().toString());
+			if (attribute.getIri() != null && attribute.getIri().size() > 0) {
+				attrIri.get(attributeType).put(attribute.getValue(), attribute.getIri().first().toString());
 			}
 
 			if (attribute.getUnit() != null && attribute.getUnit().trim().length() > 0) {

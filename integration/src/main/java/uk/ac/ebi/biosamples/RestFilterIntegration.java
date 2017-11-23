@@ -179,7 +179,7 @@ public class RestFilterIntegration extends AbstractIntegration{
         Instant release = Instant.parse("1999-12-25T11:36:57.00Z");
 
         SortedSet<Attribute> attributes = new TreeSet<>();
-        attributes.add(Attribute.build("TestAttribute", "FilterMe", null, null));
+        attributes.add(Attribute.build("TestAttribute", "FilterMe"));
 
         return Sample.build(name, accession, domain, release, update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
     }

@@ -15,6 +15,8 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
 
+import com.google.common.collect.Lists;
+
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Relationship;
@@ -129,7 +131,7 @@ public class BigIntegration extends AbstractIntegration {
 		
 		SortedSet<Attribute> attributes = new TreeSet<>();
 		attributes.add(
-			Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
+			Attribute.build("organism", "Homo sapiens", Lists.newArrayList("http://purl.obolibrary.org/obo/NCBITaxon_9606"), null));
 
 		SortedSet<Relationship> relationships = new TreeSet<>();
 		for (Sample other : samples) {

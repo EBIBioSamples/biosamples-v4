@@ -57,9 +57,11 @@ public class MessageHandlerSolr {
 				if (attribute.getUnit() != null) {
 					solrSample.getKeywords().add(attribute.getUnit());
 				}
-				if (attribute.getIri() != null) {
-					//expand ontology terms of related samples against ols
-					solrSample.getKeywords().addAll(olsProcessor.ancestorsAndSynonyms("efo", attribute.getIri()));
+				if (attribute.getIri().size() > 0) {
+					for (String iri : attribute.getIri()) {
+						//expand ontology terms of related samples against ols
+						solrSample.getKeywords().addAll(olsProcessor.ancestorsAndSynonyms("efo", iri));
+					}
 				}
 			}
 		}

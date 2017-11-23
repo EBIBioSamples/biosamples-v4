@@ -59,7 +59,9 @@ public class CurationApplicationRunner implements ApplicationRunner {
 					throw new RuntimeException("Sample should not be null");
 				}
 
-				Callable<Void> task = new SampleCurationCallable(bioSamplesClient, sample, zoomaProcessor, olsProcessor, curationApplicationService);
+				Callable<Void> task = new SampleCurationCallable(bioSamplesClient, sample, 
+						zoomaProcessor, olsProcessor, 
+						curationApplicationService, pipelinesProperties.getCurationDomain());
 				
 				futures.put(sample.getAccession(), executorService.submit(task));
 			}

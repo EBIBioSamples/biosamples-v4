@@ -429,8 +429,8 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
             Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
             SortedSet<Attribute> attributes = new TreeSet<>();
-            attributes.add( Attribute.build("origin donor", "Some donor", null, null) );
-            attributes.add( Attribute.build("origin cell-line", "Some cell line", null, null) );
+            attributes.add( Attribute.build("origin donor", "Some donor") );
+            attributes.add( Attribute.build("origin cell-line", "Some cell line") );
 
             SortedSet<Relationship> relationships = new TreeSet<>();
             relationships.add(Relationship.build("SAMEG199", "has member", "SAMEA911"));

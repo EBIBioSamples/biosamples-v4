@@ -64,7 +64,7 @@ public class NcbiElementCallable implements Callable<Void> {
 		for (Element idElem : XmlPathBuilder.of(sampleElem).path("Ids").elements("Id")) {
 			String id = idElem.getTextTrim();
 			if (!accession.equals(id) && !name.equals(id)) {
-				attrs.add(Attribute.build("synonym",  id,  null,  null));
+				attrs.add(Attribute.build("synonym",  id));
 			}
 		}
 
@@ -78,7 +78,7 @@ public class NcbiElementCallable implements Callable<Void> {
 				value = value.substring(0, 252)+"...";
 			}
 			*/
-			attrs.add(Attribute.build(key, value,  null,  null));
+			attrs.add(Attribute.build(key, value));
 		}
 
 		// handle the organism		
@@ -119,7 +119,7 @@ public class NcbiElementCallable implements Callable<Void> {
 				}				
 			} else {
 				//its an attribute
-				attrs.add(Attribute.build(key, value, null, null));
+				attrs.add(Attribute.build(key, value));
 			}
 		}
 

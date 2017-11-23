@@ -59,13 +59,17 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 				}
 				attributeValues.get(key).add(value);
 
+				//technically, this can't differentiate which iris go with which attribute if there
+				//are multiple attributes with the same type
 				if (!attributeIris.containsKey(key)) {
 					attributeIris.put(key, new ArrayList<>());
 				}
-				if (attr.getIri() == null) {
+				if (attr.getIri().size() == 0) {
 					attributeIris.get(key).add("");
 				} else {
-					attributeIris.get(key).add(attr.getIri().toString());
+					for (String iri : attr.getIri()) {
+						attributeIris.get(key).add(iri);
+					}
 				}
 
 				if (!attributeUnits.containsKey(key)) {

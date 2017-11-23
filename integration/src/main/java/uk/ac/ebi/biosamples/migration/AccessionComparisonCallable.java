@@ -10,6 +10,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
@@ -259,9 +260,9 @@ class AccessionComparisonCallable implements Callable<Void> {
 			Collections.sort(newAttributes);			
 			
 			SortedMap<String,SortedMap<String,String>> oldUnits = new TreeMap<>();
-			SortedMap<String,SortedMap<String,String>> oldIris = new TreeMap<>();
+			SortedMap<String,SortedMap<String,SortedSet<String>>> oldIris = new TreeMap<>();
 			SortedMap<String,SortedMap<String,String>> newUnits = new TreeMap<>();
-			SortedMap<String,SortedMap<String,String>> newIris = new TreeMap<>();
+			SortedMap<String,SortedMap<String,SortedSet<String>>> newIris = new TreeMap<>();
 			
 			if (oldAttributes.size() != newAttributes.size()) {
 				log.warn("Difference on "+accession+" of attribute '"+attributeType+"' has "+oldAttributes.size()+" values in old and "+newAttributes.size()+" values in new");		
@@ -300,9 +301,21 @@ class AccessionComparisonCallable implements Callable<Void> {
 						log.warn("Difference on "+accession+" of attribute '"+attributeType+"' between units '"+oldAttribute.getUnit()+"' and '"+newAttribute.getUnit()+"'");
 					}
 					//compare iris
-					if (oldAttribute.getIri() != null && newAttribute.getIri() != null
-							&& !oldAttribute.getIri().equals(newAttribute.getIri()) ) {
-						log.warn("Difference on "+accession+" of attribute '"+attributeType+"' between iris '"+oldAttribute.getIri()+"' and '"+newAttribute.getIri()+"'");
+					if (!oldAttribute.getIri().equals(newAttribute.getIri())) {
+						if (oldAttribute.getIri().size() < newAttribute.getIri().size()) {
+							log.warn("Difference on "+accession+" of attribute '"+attributeType+"' between iris '"+oldAttribute.getIri()+"' and '"+newAttribute.getIri()+"'");
+						} else if (oldAttribute.getIri().size() > newAttribute.getIri().size()) {
+							log.warn("Difference on "+accession+" of attribute '"+attributeType+"' between iris '"+oldAttribute.getIri()+"' and '"+newAttribute.getIri()+"'");
+						} else {
+							Iterator<String> thisIt = oldAttribute.getIri().iterator();
+							Iterator<String> otherIt = newAttribute.getIri().iterator();
+							while (thisIt.hasNext() && otherIt.hasNext()) {
+								int val = thisIt.next().compareTo(otherIt.next());
+								if (val != 0) {
+									log.warn("Difference on "+accession+" of attribute '"+attributeType+"' between iris '"+oldAttribute.getIri()+"' and '"+newAttribute.getIri()+"'");
+								}
+							}
+						}
 					}
 				}
 			}

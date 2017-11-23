@@ -3,6 +3,7 @@ package uk.ac.ebi.biosamples.service;
 import java.time.Instant;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+import java.util.Collection;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -10,6 +11,8 @@ import org.dom4j.Document;
 import org.dom4j.Element;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
+
+import com.google.common.collect.Lists;
 
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
@@ -39,16 +42,16 @@ public class XmlSampleToSampleConverter implements Converter<Element, Sample>  {
 				name = XmlPathBuilder.of(property).path("QualifiedValue", "Value").text();
 			} else if ("Sample Description".equals(XmlPathBuilder.of(property).attribute("class"))) {
 				String value = XmlPathBuilder.of(property).path("QualifiedValue", "Value").text();
-				attributes.add(Attribute.build("description", value, null, null));	
+				attributes.add(Attribute.build("description", value));	
 			} else {
 				String type = XmlPathBuilder.of(property).attribute("class");
 				String value = XmlPathBuilder.of(property).path("QualifiedValue", "Value").text();
-				String iri = null;
+				Collection<String> iri = Lists.newArrayList();
 				String unit = null;
 				
 				if (XmlPathBuilder.of(property).path("QualifiedValue", "TermSourceREF").exists()
 						&& XmlPathBuilder.of(property).path("QualifiedValue", "TermSourceREF", "TermSourceID").exists()) {
-					iri = XmlPathBuilder.of(property).path("QualifiedValue", "TermSourceREF", "TermSourceID").text();
+					iri.add(XmlPathBuilder.of(property).path("QualifiedValue", "TermSourceREF", "TermSourceID").text());
 				}
 				
 				if (XmlPathBuilder.of(property).path("QualifiedValue", "TermSourceREF").exists()

@@ -23,6 +23,7 @@ import uk.ac.ebi.biosamples.model.Sample;
 import javax.annotation.PreDestroy;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -151,7 +152,7 @@ public class RestIntegration extends AbstractIntegration {
 			throw new RuntimeException("No matching "+sampleTest2.getAccession());
 		}
 		//check utf -8
-		if (!sampleTest2Rest.getCharacteristics().contains(Attribute.build("UTF-8 test", "αβ", null, null))) {
+		if (!sampleTest2Rest.getCharacteristics().contains(Attribute.build("UTF-8 test", "αβ"))) {
 			throw new RuntimeException("Unable to find UTF-8 characters");
 		}
 		//check the update date
@@ -226,9 +227,9 @@ public class RestIntegration extends AbstractIntegration {
 		SortedSet<Attribute> attributes = new TreeSet<>();
 		attributes.add(
 				Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
-		attributes.add(Attribute.build("age", "3", null, "year"));
-		attributes.add(Attribute.build("organism part", "lung", null, null));
-		attributes.add(Attribute.build("organism part", "heart", null, null));
+		attributes.add(Attribute.build("age", "3", Collections.emptyList(), "year"));
+		attributes.add(Attribute.build("organism part", "lung"));
+		attributes.add(Attribute.build("organism part", "heart"));
 
 		SortedSet<Relationship> relationships = new TreeSet<>();
 		relationships.add(Relationship.build("TESTrest1", "derived from", "TESTrest2"));
@@ -279,7 +280,7 @@ public class RestIntegration extends AbstractIntegration {
 		SortedSet<Attribute> attributes = new TreeSet<>();
 		attributes.add(
 				Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
-		attributes.add(Attribute.build("UTF-8 test", "αβ", null, null));
+		attributes.add(Attribute.build("UTF-8 test", "αβ"));
 
 		return Sample.build(name, accession, domain, release, update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
 	}

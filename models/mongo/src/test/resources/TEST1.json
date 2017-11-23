@@ -8,7 +8,7 @@
 		{
 			"type": "organism",
 			"value": "Homo sapiens",
-			"iri": "http://purl.obolibrary.org/obo/NCBITaxon_9606"
+			"iri": ["http://purl.obolibrary.org/obo/NCBITaxon_9606"]
 		},
 		{
 			"type": "age",

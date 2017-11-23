@@ -177,7 +177,9 @@ public class MongoCuration implements Comparable<MongoCuration>{
     			hasher.putUnencodedChars(a.getUnit());
     		}
     		if (a.getIri() != null) {
-    			hasher.putUnencodedChars(a.getIri());
+    			for (String iri : a.getIri()) {
+    				hasher.putUnencodedChars(iri);
+    			}
     		}
     	}
     	for (Attribute a : sortedPostAttributes) {
@@ -187,7 +189,9 @@ public class MongoCuration implements Comparable<MongoCuration>{
     			hasher.putUnencodedChars(a.getUnit());
     		}
     		if (a.getIri() != null) {
-    			hasher.putUnencodedChars(a.getIri());
+    			for (String iri : a.getIri()) {
+    				hasher.putUnencodedChars(iri);
+    			}
     		}
     	}
     	for (ExternalReference a : sortedPreExternal) {

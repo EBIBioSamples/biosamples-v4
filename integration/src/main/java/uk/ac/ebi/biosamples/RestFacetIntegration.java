@@ -166,7 +166,7 @@ public class RestFacetIntegration extends AbstractIntegration {
 		attributes.add(
 			Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
 		//use non alphanumeric characters in type
-		attributes.add(Attribute.build("geographic location (country and/or sea)", "Land of Oz", null, null));
+		attributes.add(Attribute.build("geographic location (country and/or sea)", "Land of Oz"));
 
 		return Sample.build(name, accession, domain, release, update, attributes, null, null, null, null, null);
 	}
