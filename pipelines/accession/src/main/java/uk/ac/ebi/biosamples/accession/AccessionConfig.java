@@ -24,7 +24,10 @@ public class AccessionConfig {
 	
 	@Bean("accessionJdbcTemplate")
 	public JdbcTemplate getAccessionJdbcTemplate(@Qualifier("accessionDataSource") DataSource accessionDataSource) {
-	    return new JdbcTemplate(accessionDataSource);
+		JdbcTemplate jdbc =  new JdbcTemplate(accessionDataSource);
+		//oracle driver defaults to 10
+		jdbc.setFetchSize(1000);
+		return jdbc;
 	}
 	
 }

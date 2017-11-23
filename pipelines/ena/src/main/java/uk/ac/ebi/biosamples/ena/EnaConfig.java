@@ -24,6 +24,9 @@ public class EnaConfig {
 	
 	@Bean("eraJdbcTemplate")
 	public JdbcTemplate getEraJdbcTemplate(@Qualifier("eraDataSource") DataSource eraDataSource) {
-	    return new JdbcTemplate(eraDataSource);
+	    JdbcTemplate jdbc = new JdbcTemplate(eraDataSource);
+		//oracle driver defaults to 10
+		jdbc.setFetchSize(1000);
+		return jdbc;
 	}
 }
