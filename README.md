@@ -6,6 +6,8 @@ Quickstart
 Install Maven and JDK 8
 Install docker-compose https://docs.docker.com/compose/
 
+MacOS: Install Docker for Mac from https://www.docker.com/docker-mac
+
 `mvn package`
 
 `docker-compose build`
@@ -21,6 +23,10 @@ internal Neo4J interface at http://localhost:7474/
 internal Solr interface at http://localhost:8983/
 
 An example of the JSON format that can be sent by POST to http://localhost:8081/biosamples/beta/samples is https://github.com/EBIBioSamples/biosamples-v4/blob/master/models/core/src/test/resources/TEST1.json
+
+
+
+
 
 Development getting started
 ===========================
