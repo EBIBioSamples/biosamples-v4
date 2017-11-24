@@ -14,7 +14,7 @@ services:
     - java
     - -jar
     # - -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000
-    - webapps-core-4.0.0-RC1.war
+    - webapps-core-4.0.0-SNAPSHOT.war
     environment:
     #AAP certificate
     - jwt.certificate=public.der
@@ -67,7 +67,7 @@ services:
     command:
     - java
     - -jar
-    - webapps-sampletab-4.0.0-RC1.war
+    - webapps-sampletab-4.0.0-SNAPSHOT.war
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples/beta
     - SERVER_SERVLET_CONTEXT-PATH=/biosamples/beta/sampletab
@@ -107,7 +107,7 @@ services:
     command:
     - java
     - -jar
-    - webapps-legacyxml-4.0.0-RC1.war
+    - webapps-legacyxml-4.0.0-SNAPSHOT.war
     environment:
     - BIOSAMPLES_REDIRECT_CONTEXT=http://biosamples-webapps-core:8080/biosamples/beta
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples/beta
@@ -136,7 +136,7 @@ services:
     command:
       - java
       - -jar
-      - webapps-legacyjson-4.0.0-RC1.war
+      - webapps-legacyjson-4.0.0-SNAPSHOT.war
     environment:
       - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples/beta
       - SERVER_SERVLET_CONTEXT-PATH=/biosamples/beta/api
@@ -165,7 +165,7 @@ services:
     command:
     - java
     - -jar
-    - agents-solr-4.0.0-RC1.jar
+    - agents-solr-4.0.0-SNAPSHOT.jar
     environment:
     - SPRING_RABBITMQ_PUBLISHER-CONFIRMS=true
     - SPRING_RABBITMQ_PUBLISHER-RETURNS=true
@@ -188,7 +188,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-ena-4.0.0-RC1.jar
+    - pipelines-ena-4.0.0-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples/beta
     - LOGGING_FILE=/logs/pipelines-ena.log
@@ -215,7 +215,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-accession-4.0.0-RC1.jar
+    - pipelines-accession-4.0.0-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples/beta
     - LOGGING_FILE=/logs/pipelines-ena.log      
@@ -229,7 +229,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-sampletab-4.0.0-RC1.jar
+    - pipelines-sampletab-4.0.0-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_SAMPLETAB_URI=http://biosamples-webapps-sampletab:8080/biosamples/beta/sampletab/v4
     - LOGGING_FILE=/logs/pipelines-sampletab.log  
@@ -243,7 +243,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-curation-4.0.0-RC1.jar
+    - pipelines-curation-4.0.0-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples/beta
     - LOGGING_FILE=/logs/pipelines-curation.log
@@ -261,7 +261,7 @@ services:
     command:
     - java
     - -jar
-    - integration-4.0.0-RC1.jar
+    - integration-4.0.0-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples/beta
     - BIOSAMPLES_SUBMISSIONURI=http://biosamples-webapps-sampletab:8080/biosamples/beta/sampletab
