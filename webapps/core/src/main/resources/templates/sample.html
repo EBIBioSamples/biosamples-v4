@@ -60,21 +60,21 @@
 						<td th:text="${attribute.type}">Attribute Type</td>
 
 						<td
-							th:if="${not #strings.isEmpty(attribute.iri) and #strings.isEmpty(attribute.unit)}"><a
+							th:if="${not #strings.isEmpty(attribute.getIriOls()) and #strings.isEmpty(attribute.unit)}"><a
 							th:href="${attribute.getIriOls()}" th:text="${attribute.value}"
 							target="_blank">attribute value<i class="icon icon-generic"
 								data-icon="x"></i></a></td>
 						<td
-							th:if="${#strings.isEmpty(attribute.iri) and #strings.isEmpty(attribute.unit)}"
+							th:if="${#strings.isEmpty(attribute.getIriOls()) and #strings.isEmpty(attribute.unit)}"
 							th:text="${attribute.value}">attribute value</td>
 						<td
-							th:if="${not #strings.isEmpty(attribute.iri) and not #strings.isEmpty(attribute.unit)}"><th:span
+							th:if="${not #strings.isEmpty(attribute.getIriOls()) and not #strings.isEmpty(attribute.unit)}"><th:span
 								th:text="${attribute.value}" th:remove="tag"></th:span> (<a
 							th:href="${attribute.getIriOls()}" th:text="${attribute.unit}"
 							target="_blank">unit<i class="icon icon-generic"
 								data-icon="x"></i></a>)</td>
 						<td
-							th:if="${#strings.isEmpty(attribute.iri) and not #strings.isEmpty(attribute.unit)}"
+							th:if="${#strings.isEmpty(attribute.getIriOls()) and not #strings.isEmpty(attribute.unit)}"
 							th:text="${attribute.value}+' ('+${attribute.unit}+')'">attribute
 							value (unit)</td>
 					</tr>
