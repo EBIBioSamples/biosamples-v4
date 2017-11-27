@@ -102,7 +102,6 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
 				try {
 					page = nextPageFuture.get();
 					nextPageFuture = null;
-					log.info("got next page from future "+page);
 				} catch (InterruptedException e) {
 					throw new RuntimeException(e);
 				} catch (ExecutionException e) {
