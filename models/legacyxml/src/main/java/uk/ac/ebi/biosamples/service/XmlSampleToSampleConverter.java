@@ -61,10 +61,13 @@ public class XmlSampleToSampleConverter implements Converter<Element, Sample>  {
 				
 				attributes.add(Attribute.build(type, value, iri, unit));				
 			}
-			//TODO relationships
+			//TODO relationships?
+		}
+		for (Element derivedFrom : XmlPathBuilder.of(doc).elements("derivedFrom")) {
+			relationships.add(Relationship.build(accession, "derived from", derivedFrom.getTextTrim()));
 		}
 
-		for (Element database : XmlPathBuilder.of(doc).elements("Database")){
+		for (Element database : XmlPathBuilder.of(doc).elements("Database")) {
 			if (XmlPathBuilder.of(database).path("URI").exists()) {
 				externalReferences.add(ExternalReference.build(XmlPathBuilder.of(database).path("URI").text()));
 			}
