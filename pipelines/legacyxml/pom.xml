@@ -28,21 +28,26 @@
 			<artifactId>utils-thread</artifactId>
 			<version>${bsd2017.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>com.opencsv</groupId>
+			<artifactId>opencsv</artifactId>
+			<version>4.1</version>
+		</dependency>
 	</dependencies>
-	
- 	<build>
- 		<plugins>
- 			<plugin>
- 				<groupId>org.springframework.boot</groupId>
- 				<artifactId>spring-boot-maven-plugin</artifactId>
-	            <executions>
-	                <execution>
-	                    <goals>
-	                        <goal>build-info</goal>
-	                    </goals>
-	                </execution>
-	            </executions>
- 			</plugin>
- 		</plugins>
- 	</build>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>build-info</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
 </project>

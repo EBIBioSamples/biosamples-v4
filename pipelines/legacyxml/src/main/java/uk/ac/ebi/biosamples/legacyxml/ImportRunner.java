@@ -8,7 +8,11 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
 import org.xml.sax.Attributes;
+
+import com.opencsv.CSVReader;
+
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.XmlGroupToSampleConverter;
 import uk.ac.ebi.biosamples.service.XmlSampleToSampleConverter;
@@ -17,12 +21,16 @@ import uk.ac.ebi.biosamples.utils.XmlFragmenter;
 import uk.ac.ebi.biosamples.utils.XmlFragmenter.ElementCallback;
 
 import java.io.BufferedInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.zip.GZIPInputStream;
 
@@ -53,14 +61,17 @@ public class ImportRunner implements ApplicationRunner {
 			return;
 		}
 		
-		Path inputPath = Paths.get(args.getNonOptionArgs().get(1));
+		Path inputXmlPath = Paths.get(args.getNonOptionArgs().get(1));
+		Path inputCsvFilename = Paths.get(args.getNonOptionArgs().get(2));
 		
-		try (InputStream is = new GZIPInputStream(new BufferedInputStream(Files.newInputStream(inputPath)))) {
+		Map<String, Set<String>> groupMembership = readCsv(inputCsvFilename);
+		
+		try (InputStream is = new GZIPInputStream(new BufferedInputStream(Files.newInputStream(inputXmlPath)))) {
 
 			Map<Element, Future<Resource<Sample>>> futures = new LinkedHashMap<>();
 
 			ElementCallback callback = new ImportElementCallback(futures, 
-					client, xmlSampleToSampleConverter, xmlGroupToSampleConverter);
+					client, xmlSampleToSampleConverter, xmlGroupToSampleConverter, groupMembership);
 
 			// this does the actual processing
 			xmlFragmenter.handleStream(is, "UTF-8", callback);
@@ -72,6 +83,23 @@ public class ImportRunner implements ApplicationRunner {
 		}
 	}
 	
+	
+	private Map<String,Set<String>> readCsv(Path path) throws IOException {
+		Map<String, Set<String>> groupMembership = new HashMap<>();
+		try (CSVReader csvReader = new CSVReader(Files.newBufferedReader(path))) {
+			String[] nextRecord;
+            while ((nextRecord = csvReader.readNext()) != null) {
+            	String group = nextRecord[0];
+            	for (int i = 1; i < nextRecord.length; i++) {
+            		if (!groupMembership.containsKey(group)) {
+            			groupMembership.put(group, new HashSet<>());
+            		}
+            	}
+            }
+		}
+		return groupMembership;
+	}
+	
 	public static class ImportElementCallback implements ElementCallback {
 
 		
@@ -79,13 +107,16 @@ public class ImportRunner implements ApplicationRunner {
 		private final BioSamplesClient client;
 		private final XmlSampleToSampleConverter xmlSampleToSampleConverter;
 		private final XmlGroupToSampleConverter xmlGroupToSampleConverter;
+		private final Map<String, Set<String>> groupMembership;
 		
 		public ImportElementCallback(Map<Element, Future<Resource<Sample>>> futures, BioSamplesClient client, 
-				XmlSampleToSampleConverter xmlSampleToSampleConverter, XmlGroupToSampleConverter xmlGroupToSampleConverter) {
+				XmlSampleToSampleConverter xmlSampleToSampleConverter, XmlGroupToSampleConverter xmlGroupToSampleConverter,
+				Map<String, Set<String>> groupMembership) {
 			this.futures = futures;
 			this.client = client;
 			this.xmlSampleToSampleConverter = xmlSampleToSampleConverter;
 			this.xmlGroupToSampleConverter = xmlGroupToSampleConverter;
+			this.groupMembership = groupMembership;
 		}
 		
 		@Override
@@ -105,6 +136,15 @@ public class ImportRunner implements ApplicationRunner {
 					sample.getRelease(), sample.getUpdate(), 
 					sample.getAttributes(), sample.getRelationships(), sample.getExternalReferences(),
 					sample.getOrganizations(), sample.getContacts(), sample.getPublications());
+			
+			//TODO need to add "has member" relationships
+			if (groupMembership.containsKey(sample.getAccession())) {
+				for (String target : groupMembership.get(sample.getAccession())) {
+					Relationship r = Relationship.build(sample.getAccession(), "has member", target);
+					//TODO access this in an immutable manner
+					sample.getRelationships().add(r);
+				}
+			}
 			
 			futures.put(e, client.persistSampleResourceAsync(sample, false, true));
 

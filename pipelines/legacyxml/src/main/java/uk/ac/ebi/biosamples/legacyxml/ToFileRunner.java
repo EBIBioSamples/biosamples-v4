@@ -5,9 +5,13 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.Callable;
@@ -36,6 +40,8 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.opencsv.CSVWriter;
+
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
@@ -49,9 +55,11 @@ public class ToFileRunner implements ApplicationRunner {
 	int pagesize = 1000;
 	private final Map<String, Future<Collection<String>>> pageFutures = new HashMap<>();
 	private final Map<String, Future<String>> accessionFutures = new HashMap<>();
+	private final Map<String, Future<List<String>>> pageMembershipFutures = new HashMap<>();
 
 	private PageCallback pageCallback = null;
 	private AccessionCallback accessionCallback = null;
+	private PageMembershipCallback pageMembershipCallback = null;
 	
 	public ToFileRunner(RestTemplateBuilder restTemplate) {
 		this.restTemplate = restTemplate.build();
@@ -65,66 +73,75 @@ public class ToFileRunner implements ApplicationRunner {
 		}
 		
 		String rootUrl = args.getNonOptionArgs().get(1);
-		String outputFilename = args.getNonOptionArgs().get(2);
+		String outputXmlFilename = args.getNonOptionArgs().get(2);
+		String outputCsvFilename = args.getNonOptionArgs().get(3);
 
 		long oldTime = System.nanoTime();		
 		
 		ExecutorService pageExecutorService = null;
 		ExecutorService accessionExecutorService = null;
+		ExecutorService pageMembershipExecutorService = null;
 		
 		try {
 			pageExecutorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, 1, 32);		
 			accessionExecutorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, 1, 32);
-			try (FileWriter fileWriter = new FileWriter(new File(outputFilename))) {
-				
-				fileWriter.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-				fileWriter.write("<BioSamples>\n");
-				
-				accessionCallback = new AccessionCallback(fileWriter);			
-				pageCallback = new PageCallback(accessionExecutorService, rootUrl, restTemplate, 
-						accessionCallback, accessionFutures);
-
-				UriComponentsBuilder pageUriComponentBuilder;
-				int pageCount;
-				
-				//handle samples
-				pageUriComponentBuilder = UriComponentsBuilder.fromUriString(rootUrl);
-				pageUriComponentBuilder.pathSegment("samples");
-				pageUriComponentBuilder.replaceQueryParam("pagesize", pagesize);
-				pageUriComponentBuilder.replaceQueryParam("query", "");
-				
-				pageCount = getPageCount(pageUriComponentBuilder, pagesize);
-				
-				//multi-thread the pages via futures
-				for (int i = 1; i <= pageCount; i++) {
-					pageUriComponentBuilder.replaceQueryParam("page", i);			
-					URI pageUri = pageUriComponentBuilder.build().toUri();
-					Future<Collection<String>> future = pageExecutorService.submit(getPageCallable(pageUri));
-					pageFutures.put(pageUri.toString(), future);
-					ThreadUtils.checkAndCallbackFutures(pageFutures, 100, pageCallback);
+			pageMembershipExecutorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, 1, 32);
+			try (FileWriter fileXmlWriter = new FileWriter(new File(outputXmlFilename))) {
+				try (CSVWriter fileCsvWriter = new CSVWriter(Files.newBufferedWriter(Paths.get(outputCsvFilename)))) {
+					
+					fileXmlWriter.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+					fileXmlWriter.write("<BioSamples>\n");
+					
+					accessionCallback = new AccessionCallback(fileXmlWriter);		
+					pageMembershipCallback = new PageMembershipCallback(fileCsvWriter);	
+					pageCallback = new PageCallback(accessionExecutorService, pageMembershipExecutorService,
+							rootUrl, restTemplate, 
+							accessionCallback, pageMembershipCallback,
+							accessionFutures, pageMembershipFutures);
+	
+					UriComponentsBuilder pageUriComponentBuilder;
+					int pageCount;
+					
+					//handle samples
+					pageUriComponentBuilder = UriComponentsBuilder.fromUriString(rootUrl);
+					pageUriComponentBuilder.pathSegment("samples");
+					pageUriComponentBuilder.replaceQueryParam("pagesize", pagesize);
+					pageUriComponentBuilder.replaceQueryParam("query", "");
+					
+					pageCount = getPageCount(pageUriComponentBuilder, pagesize);
+					
+					//multi-thread the pages via futures
+					for (int i = 1; i <= pageCount; i++) {
+						pageUriComponentBuilder.replaceQueryParam("page", i);			
+						URI pageUri = pageUriComponentBuilder.build().toUri();
+						Future<Collection<String>> future = pageExecutorService.submit(getPageCallable(pageUri));
+						pageFutures.put(pageUri.toString(), future);
+						ThreadUtils.checkAndCallbackFutures(pageFutures, 100, pageCallback);
+					}
+					
+					//handle groups
+					pageUriComponentBuilder = UriComponentsBuilder.fromUriString(rootUrl);
+					pageUriComponentBuilder.pathSegment("groups");
+					pageUriComponentBuilder.replaceQueryParam("pagesize", pagesize);
+					pageUriComponentBuilder.replaceQueryParam("query", "group");
+					
+					pageCount = getPageCount(pageUriComponentBuilder, pagesize);
+					
+					//multi-thread the pages via futures
+					for (int i = 1; i <= pageCount; i++) {
+						pageUriComponentBuilder.replaceQueryParam("page", i);			
+						URI pageUri = pageUriComponentBuilder.build().toUri();
+						Future<Collection<String>> future = pageExecutorService.submit(getPageCallable(pageUri));
+						pageFutures.put(pageUri.toString(), future);
+						ThreadUtils.checkAndCallbackFutures(pageFutures, 100, pageCallback);
+					}
+					
+					ThreadUtils.checkAndCallbackFutures(pageFutures, 0, pageCallback);
+					ThreadUtils.checkAndCallbackFutures(accessionFutures, 0, accessionCallback);
+					ThreadUtils.checkAndCallbackFutures(pageMembershipFutures, 0, pageMembershipCallback);
+	
+					fileXmlWriter.write("</BioSamples>\n");
 				}
-				
-				//handle groups
-				pageUriComponentBuilder = UriComponentsBuilder.fromUriString(rootUrl);
-				pageUriComponentBuilder.pathSegment("groups");
-				pageUriComponentBuilder.replaceQueryParam("pagesize", pagesize);
-				pageUriComponentBuilder.replaceQueryParam("query", "group");
-				
-				pageCount = getPageCount(pageUriComponentBuilder, pagesize);
-				
-				//multi-thread the pages via futures
-				for (int i = 1; i <= pageCount; i++) {
-					pageUriComponentBuilder.replaceQueryParam("page", i);			
-					URI pageUri = pageUriComponentBuilder.build().toUri();
-					Future<Collection<String>> future = pageExecutorService.submit(getPageCallable(pageUri));
-					pageFutures.put(pageUri.toString(), future);
-					ThreadUtils.checkAndCallbackFutures(pageFutures, 100, pageCallback);
-				}
-				
-				ThreadUtils.checkAndCallbackFutures(pageFutures, 0, pageCallback);
-				ThreadUtils.checkAndCallbackFutures(accessionFutures, 0, accessionCallback);
-
-				fileWriter.write("</BioSamples>\n");
 			}
 
 		} finally {
@@ -206,20 +223,28 @@ public class ToFileRunner implements ApplicationRunner {
 	public static class PageCallback implements ThreadUtils.Callback<Collection<String>> {
 
 		private final ExecutorService accessionExecutorService;
+		private final ExecutorService pageMembershipExecutorService;
 		private final String rootUrl;
 		private final RestTemplate restTemplate;
 		private final AccessionCallback accessionCallback;
+		private final PageMembershipCallback pageMembershipCallback;
 		
 		private final Map<String, Future<String>> accessionFutures;
+		private final Map<String, Future<List<String>>> pageMembershipFutures;
 		private final Logger log = LoggerFactory.getLogger(getClass());
 		
-		public PageCallback(ExecutorService accessionExecutorService, String rootUrl, RestTemplate restTemplate, AccessionCallback accessionCallback, 
-				Map<String, Future<String>> accessionFutures) {
-			this.accessionExecutorService = accessionExecutorService;			
+		public PageCallback(ExecutorService accessionExecutorService, ExecutorService pageMembershipExecutorService, 
+				String rootUrl, RestTemplate restTemplate, 
+				AccessionCallback accessionCallback, PageMembershipCallback pageMembershipCallback, 
+				Map<String, Future<String>> accessionFutures, Map<String, Future<List<String>>> pageMembershipFutures) {
+			this.accessionExecutorService = accessionExecutorService;		
+			this.pageMembershipExecutorService = pageMembershipExecutorService;
 			this.rootUrl = rootUrl;
 			this.restTemplate = restTemplate;
 			this.accessionCallback = accessionCallback;
+			this.pageMembershipCallback = pageMembershipCallback;
 			this.accessionFutures = accessionFutures;
+			this.pageMembershipFutures = pageMembershipFutures;
 		}
 		
 		
@@ -229,6 +254,29 @@ public class ToFileRunner implements ApplicationRunner {
 				UriComponentsBuilder accessionUriComponentBuilder = UriComponentsBuilder.fromUriString(rootUrl);
 				if (accession.startsWith("SAMEG")) {
 					accessionUriComponentBuilder.pathSegment("groups", accession);
+					
+					//also handle the membership of that group
+					int pageCount = 0;
+					UriComponentsBuilder pageUriComponentsBuilder = UriComponentsBuilder.fromUriString(rootUrl).pathSegment("groupsamples", accession);
+					try {
+						pageCount = getPageCount(pageUriComponentsBuilder, 1000);
+					} catch (IllegalArgumentException | DocumentException e) {
+						throw new RuntimeException(e);
+					}
+
+					//multi-thread the pages via futures
+					for (int i = 1; i <= pageCount; i++) {
+						pageUriComponentsBuilder.replaceQueryParam("page", i);			
+						URI pageUri = pageUriComponentsBuilder.build().toUri();
+						pageMembershipFutures.put(pageUri.toString(), 
+								pageMembershipExecutorService.submit(getPageMembershipCallable(pageUri)));
+						try {
+							ThreadUtils.checkAndCallbackFutures(pageMembershipFutures, 100, pageMembershipCallback);
+						} catch (InterruptedException | ExecutionException e) {
+							throw new RuntimeException(e);
+						}
+					}
+					
 				} else {
 					accessionUriComponentBuilder.pathSegment("samples", accession);
 				}
@@ -240,6 +288,30 @@ public class ToFileRunner implements ApplicationRunner {
 					throw new RuntimeException(e);
 				}
 			}
+		}
+		
+		public int getPageCount(UriComponentsBuilder uriComponentBuilder, int pagesize) throws DocumentException {
+			uriComponentBuilder.replaceQueryParam("page", 1);			
+			URI uri = uriComponentBuilder.build().toUri();
+
+			ResponseEntity<String> response;
+			RequestEntity<?> request = RequestEntity.get(uri).accept(MediaType.TEXT_XML).build();
+			try {
+				response = restTemplate.exchange(request, String.class);
+			} catch (RestClientException e) {
+				log.error("Problem accessing "+uri, e);
+				throw e;
+			}
+			String xmlString = response.getBody();
+			
+			SAXReader reader = new SAXReader();
+			Document xml = reader.read(new StringReader(xmlString));
+			Element root = xml.getRootElement();		
+			
+			int pageCount = (Integer.parseInt(XmlPathBuilder.of(root).path("SummaryInfo", "Total").text())/pagesize)+1;
+			
+			return pageCount;
+			
 		}
 		
 		public Callable<String> getAccessionCallable(URI uri) {
@@ -268,7 +340,47 @@ public class ToFileRunner implements ApplicationRunner {
 				}
 			};
 		}
+
+		public Callable<List<String>> getPageMembershipCallable(URI uri) {
+			return new Callable<List<String>>() {
+				@Override 
+				public List<String> call() throws Exception {
+					long startTime = System.nanoTime();
+					ResponseEntity<String> response;
+					RequestEntity<?> request = RequestEntity.get(uri).accept(MediaType.TEXT_XML).build();
+					try {
+						response = restTemplate.exchange(request, String.class);
+					} catch (RestClientException e) {
+						log.error("Problem accessing "+uri, e);
+						throw e;
+					}
+					String xmlString = response.getBody();
+					long endTime = System.nanoTime();
+					long interval = (endTime-startTime)/1000000l;
+					log.info("Got "+uri+" in "+interval+"ms");
+					
+					SAXReader reader = new SAXReader();
+					Document xml = reader.read(new StringReader(xmlString));
+					Element root = xml.getRootElement();
+					
+					List<String> accessions = new ArrayList<>();
+					
+					List<String> path = UriComponentsBuilder.fromUri(uri).build().getPathSegments();
+					accessions.add(path.get(path.size()-1));
+					
+					
+					for (Element element : XmlPathBuilder.of(root).elements("BioSample")) {
+						String accession = element.attributeValue("id");
+						accessions.add(accession);
+					}
+					
+					return accessions;
+					
+				}
+			};
+		}
 	}
+	
 
 	public static class AccessionCallback implements ThreadUtils.Callback<String> {
 		private final FileWriter fileWriter;
@@ -284,6 +396,24 @@ public class ToFileRunner implements ApplicationRunner {
 				fileWriter.write("\n");
 			} catch (IOException e) {
 				throw new RuntimeException(e);
+			}
+		}
+		
+	}
+	
+	private static class PageMembershipCallback implements ThreadUtils.Callback<List<String>> {
+
+		private final CSVWriter fileCsvWriter;
+		
+		public PageMembershipCallback(CSVWriter fileCsvWriter ) {
+			this.fileCsvWriter = fileCsvWriter;
+		}
+		
+		@Override
+		public void call(List<String> accessions) {
+			if (accessions != null && accessions.size() > 1) {
+				String[] toWrite = new String[accessions.size()];
+				fileCsvWriter.writeNext(accessions.toArray(toWrite));
 			}
 		}
 		
