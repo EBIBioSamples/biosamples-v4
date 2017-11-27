@@ -103,6 +103,7 @@ public class SampleTabService {
         }
 
         if (sampleData.scd.getNodes(GroupNode.class).size() == 0) {
+        	// TODO need to check submissionIdentifier is popualted correctly
             GroupNode othergroup = new GroupNode("Submission "+sampleData.msi.submissionIdentifier);
             for (SampleNode sample : sampleData.scd.getNodes(SampleNode.class)) {
                 // check there is not an existing group first...
