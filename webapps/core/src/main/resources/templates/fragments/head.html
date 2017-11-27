@@ -59,7 +59,8 @@
 
 
   <!-- All JavaScript at the bottom, except for Modernizr -->
-  <script src="https://www.ebi.ac.uk/web_guidelines/EBI-Framework/v1.1/libraries/modernizr/modernizr.custom.49274.js"></script>
+  <script src="https://www.ebi.ac.uk/web_guidelines/EBI-Framework/v1.1/libraries/modernizr/modernizr.custom.49274.js"
+  type="application/javascript"></script>
   <script th:unless="${#strings.isEmpty(jsonLD)}" type="application/ld+json" th:utext="${jsonLD}"></script>
 </head>
 <body>

@@ -26,3 +26,21 @@ label.facet > .show-if-checked {
 .facet-container .facet-checkbox:not(:checked) ~ .facet > .show-if-checked {
     visibility:hidden
 }
+
+.facet-container [type='checkbox'] + label, [type='radio'] + label {
+    margin: 0;
+}
+
+#filter-apply {
+    display:none;
+}
+
+/*
+#local-masthead.is-stuck .menu>li.sticky-search {
+    display: inherit;
+}
+
+#local-masthead .menu>li.sticky-search {
+    display:none;
+}
+*/
