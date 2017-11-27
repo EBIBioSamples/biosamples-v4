@@ -31,8 +31,8 @@ label.facet > .show-if-checked {
     margin: 0;
 }
 
-#filter-apply {
-    display:none;
+#filter-apply:disabled {
+    background-color: #999;
 }
 
 /*

@@ -7,7 +7,7 @@
 	<section th:fragment="facets (facets, filters)">
 		<div class="button-grid">
             <div>
-				<input id="filter-apply" type="submit" th:form="local-search" class="button columns medium-12" value="Apply filter"/>
+				<input id="filter-apply" type="submit" th:form="local-search" class="button columns medium-12" value="Apply filters" disabled/>
 			</div>
 			<div th:each="facet : ${facets}"
 				 th:with="facetType = ${facet.getType().getFacetName()},

@@ -68,9 +68,9 @@
                 $(elem).on("click", function(){
 					$changeState[index] = !$changeState[index];
 					if (!equals($originalState, $changeState)) {
-					    $filterApplyButton.show();
+					    $filterApplyButton.prop('disabled', false);
 					} else {
-					    $filterApplyButton.hide();
+					    $filterApplyButton.prop('disabled', true);
 					}
                 })
             });
