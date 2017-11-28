@@ -106,6 +106,19 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 			log.info(""+response.getBody());
 		});
 
+		log.info("Testing unaccessioned SampleTab JSON submission ");
+		runCallableOnSampleTabResource("/GSB-new.json", sampleTabString -> {
+			log.info("POSTing to " + uriSb);
+			RequestEntity<String> request = RequestEntity.post(uriSb).contentType(MediaType.APPLICATION_JSON)
+					.body(sampleTabString);
+			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+			//TODO do this check better
+			if (!response.getBody().contains("GSB-")) {
+				throw new RuntimeException("Response does not have expected submission identifier");
+			}
+			log.info(""+response.getBody());
+		});
+
 		
 	}
 
