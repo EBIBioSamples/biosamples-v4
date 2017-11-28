@@ -137,7 +137,7 @@ public class ImportRunner implements ApplicationRunner {
 					sample.getAttributes(), sample.getRelationships(), sample.getExternalReferences(),
 					sample.getOrganizations(), sample.getContacts(), sample.getPublications());
 			
-			//TODO need to add "has member" relationships
+			//need to add "has member" relationships
 			if (groupMembership.containsKey(sample.getAccession())) {
 				for (String target : groupMembership.get(sample.getAccession())) {
 					Relationship r = Relationship.build(sample.getAccession(), "has member", target);
