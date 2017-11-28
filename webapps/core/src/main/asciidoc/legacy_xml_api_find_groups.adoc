@@ -1,0 +1,96 @@
+== Search Groups
+
+- It returns all the groups that match the query (e.g. link:/biosamples/xml/group?query=cancer[]);
+- It is possible to use paging and sorting (e.g. link:/biosamples/xml/group?query=cancer&sortby=relevance&sortorder=descending&page=2&pagesize=50[]);
+- Always return a result summary information;
+
+
+==== Authentication
+N/A
+
+==== Arguments
+[options="header"]
+|===
+| Parameter | Notes
+| query | *Required*
+| sortby | Optional (Default=relevance)
+| sortorder | Optional (Default=descending)
+| page | Optional (Default=50; Maximum=500)
+| pagesize | Optional (Default=1)
+|===
+
+==== Example Request
+`Get /xml/group?query=cancer&page=2`
+
+==== Example Response
+[source, xml]
+----
+<ResultQuery>
+<SummaryInfo>
+<Total>7766</Total>
+<From>51</From>
+<To>100</To>
+<PageNumber>2</PageNumber>
+<PageSize>50</PageSize>
+</SummaryInfo>
+<BioSampleGroup id="SAMEG72185"/>
+<BioSampleGroup id="SAMEG126084"/>
+<BioSampleGroup id="SAMEG26066"/>
+<BioSampleGroup id="SAMEG30979"/>
+<BioSampleGroup id="SAMEG111269"/>
+<BioSampleGroup id="SAMEG84909"/>
+<BioSampleGroup id="SAMEG22505"/>
+<BioSampleGroup id="SAMEG11875"/>
+<BioSampleGroup id="SAMEG217684"/>
+<BioSampleGroup id="SAMEG22699"/>
+<BioSampleGroup id="SAMEG116335"/>
+<BioSampleGroup id="SAMEG116301"/>
+<BioSampleGroup id="SAMEG19523"/>
+<BioSampleGroup id="SAMEG25405"/>
+<BioSampleGroup id="SAMEG33471"/>
+<BioSampleGroup id="SAMEG84908"/>
+<BioSampleGroup id="SAMEG93782"/>
+<BioSampleGroup id="SAMEG70977"/>
+<BioSampleGroup id="SAMEG84907"/>
+<BioSampleGroup id="SAMEG38854"/>
+<BioSampleGroup id="SAMEG66921"/>
+<BioSampleGroup id="SAMEG23469"/>
+<BioSampleGroup id="SAMEG19471"/>
+<BioSampleGroup id="SAMEG124645"/>
+<BioSampleGroup id="SAMEG38161"/>
+<BioSampleGroup id="SAMEG18111"/>
+<BioSampleGroup id="SAMEG34830"/>
+<BioSampleGroup id="SAMEG17951"/>
+<BioSampleGroup id="SAMEG31467"/>
+<BioSampleGroup id="SAMEG16620"/>
+<BioSampleGroup id="SAMEG37856"/>
+<BioSampleGroup id="SAMEG97324"/>
+<BioSampleGroup id="SAMEG15694"/>
+<BioSampleGroup id="SAMEG208783"/>
+<BioSampleGroup id="SAMEG33072"/>
+<BioSampleGroup id="SAMEG13770"/>
+<BioSampleGroup id="SAMEG123440"/>
+<BioSampleGroup id="SAMEG26737"/>
+<BioSampleGroup id="SAMEG38312"/>
+<BioSampleGroup id="SAMEG39551"/>
+<BioSampleGroup id="SAMEG72226"/>
+<BioSampleGroup id="SAMEG34909"/>
+<BioSampleGroup id="SAMEG83993"/>
+<BioSampleGroup id="SAMEG83990"/>
+<BioSampleGroup id="SAMEG22369"/>
+<BioSampleGroup id="SAMEG16634"/>
+<BioSampleGroup id="SAMEG14334"/>
+<BioSampleGroup id="SAMEG72055"/>
+<BioSampleGroup id="SAMEG72227"/>
+<BioSampleGroup id="SAMEG14002"/>
+</ResultQuery>
+----
+
+
+==== Error Codes
+N/A
+
+
+==== XSD - Xml Schema Definition
++++<a th:href="@{/assets/xsd/v1.0/BioSDSchema.xsd}" th:text="@{/assets/xsd/v1.0/BioSDSchema.xsd}">/assets/xsd/v1.0/BioSDSchema.xsd</a>+++
++++<img th:src="@{/images/xml_schemas/ResultQuerySampleGroup_schema.png}"/>+++

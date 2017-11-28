@@ -3,7 +3,7 @@ The BioSamples Database uses the SampleTab file format for submissions. This is 
 
 The SampleTab format has a number of advanced features for power users, such as ontology mappings, anonymous groups, and UTF-8 character encoding.
 
-SampleTab files are composed of two sections - link:st_msi.html[MSI] and link:st_scd.html[SCD]. In general, the following rules apply to SampleTab files:
+SampleTab files are composed of two sections - link:st_msi[MSI] and link:st_scd[SCD]. In general, the following rules apply to SampleTab files:
 
 * Dates and times should be in ISO 8601 format to an appropriate level of accuracy i.e. YYYY-MM-DD HH:MM:SS.ss
 * US English spellings should be used, and abbreviations are discouraged.

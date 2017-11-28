@@ -27,7 +27,7 @@ Samples that do not have associated data in other EBI databases may also be suit
 When submitting to other EBI databases (e.g. ENA or ArrayExpress), please note that these share sample information with BioSamples Database. Therefore sample information may be present in BioSamples Database even if the information was not submitted directly to BioSamples Database.
 
 == How to submit BioSamples Database?
-Submissions to BioSamples Database should be in SampleTab file format. This is a tab-separated spreadsheet-like text format compatible with popular office tools.
+Submissions to BioSamples Database should be in link:st[SampleTab file format]. This is a tab-separated spreadsheet-like text format compatible with popular office tools.
 
 Once you have a SampleTab file, you can use the online validation service to ensure it is correct. This will also apply common corrections and ontology mappings that are used to standardise the data.
 

@@ -1,0 +1,92 @@
+== Group Accession
+
+- It returns all information about a SampleGroup;
+- If you specify the sampleslist argument with true value, it will also return a list with the Samples Accessions;
+- E.g. link:/biosamples/xml/group/SAMEG82620[]
+
+
+==== Authentication
+N/A
+
+==== Arguments
+[options="header"]
+|===
+| Parameter | Notes
+| groupAccession | *Required*
+| sampleslist | Optional (Default=false)
+|===
+
+==== Example Request
+`Get /xml/group/SAMEG82620`
+
+==== Example Response
+[source, xml]
+----
+<BioSampleGroup xmlns="http://www.ebi.ac.uk/biosamples/SampleGroupExport" id="SAMEG82620">
+<Property class="Submission Release Date" characteristic="false" comment="false" type="DATETIME">
+<QualifiedValue>
+<Value>2011-11-10T00:00:00+00:00</Value>
+</QualifiedValue>
+</Property>
+<Property class="Submission Update Date" characteristic="false" comment="false" type="DATETIME">
+<QualifiedValue>
+<Value>2013-11-20T10:55:58+00:00</Value>
+</QualifiedValue>
+</Property>
+<Property class="Submission Identifier" characteristic="false" comment="false" type="STRING">
+<QualifiedValue>
+<Value>GMS-EM</Value>
+</QualifiedValue>
+</Property>
+<Property class="Submission Title" characteristic="false" comment="false" type="STRING">
+<QualifiedValue>
+<Value>
+International Mouse Strain Resource - European Mouse Mutant Archive
+</Value>
+</QualifiedValue>
+</Property>
+<Property class="Submission Description" characteristic="false" comment="false" type="STRING">
+<QualifiedValue>
+<Value>
+The IMSR is a searchable online database of mouse strains and stocks available worldwide, including inbred, mutant, and genetically engineered mice. The goal of the IMSR is to assist the international scientific community in locating and obtaining mouse resources for research. These samples are held by European Mouse Mutant Archive
+</Value>
+</QualifiedValue>
+</Property>
+<Property class="Group Name" characteristic="true" comment="false" type="STRING">
+<QualifiedValue>
+<Value>Other Group</Value>
+</QualifiedValue>
+</Property>
+<Organization>
+<Name>International Mouse Strain Resource</Name>
+<Address/>
+<URI>http://www.findmice.org/</URI>
+<Email/>
+<Role/>
+</Organization>
+<Organization>
+<Name>European Mouse Mutant Archive</Name>
+<Address/>
+<URI>http://www.findmice.org/</URI>
+<Email/>
+<Role>Biomaterial Provider</Role>
+</Organization>
+<Database>
+<Name>IMSR EM</Name>
+<ID>EM</ID>
+<URI>
+http://www.findmice.org/summary?query=&repositories=EM
+</URI>
+</Database>
+</BioSampleGroup>
+----
+
+
+==== Error Codes
+N/A
+
+
+==== XSD - Xml Schema Definition
++++<a th:href="@{/assets/xsd/v1.0/BioSDSchema.xsd}" th:text="@{/assets/xsd/v1.0/BioSDSchema.xsd}">/assets/xsd/v1.0/BioSDSchema.xsd</a>+++
++++<img th:src="@{/images/xml_schemas/BioSDSchema_BioSampleGroup.png}"/>+++
+
