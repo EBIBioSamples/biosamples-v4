@@ -77,7 +77,7 @@ public class SampleTabService {
 	public SampleData saveSampleTab(SampleData sampleData, String domain, boolean superUser, boolean setUpdateDate, boolean setFullDetails)
 			throws DuplicateDomainSampleException, ConflictingSampleTabOwnershipException, AssertingSampleTabOwnershipException {
 		
-		log.trace("Saving sampletab "+sampleData.msi.submissionIdentifier);
+		log.info("Saving sampletab "+sampleData.msi.submissionIdentifier);
 		
 		Instant release = Instant.ofEpochMilli(sampleData.msi.submissionReleaseDate.getTime());
 		Instant update = Instant.ofEpochMilli(sampleData.msi.submissionUpdateDate.getTime());
@@ -102,61 +102,30 @@ public class SampleTabService {
             }
         }
 
-        if (sampleData.scd.getNodes(GroupNode.class).size() == 0) {
-        	// TODO need to check submissionIdentifier is popualted correctly
-            GroupNode othergroup = new GroupNode("Submission "+sampleData.msi.submissionIdentifier);
-            for (SampleNode sample : sampleData.scd.getNodes(SampleNode.class)) {
-                // check there is not an existing group first...
-                boolean sampleInGroup = false;
-                //even if it has child nodes, both parent and child must be in a group
-                //this will lead to some weird looking row duplications, but since this is an internal
-                //intermediate file it is not important
-                //Follow up: since implicit derived from relationships are made explicit above,
-                //this is not an issue any more
-                for (Node n : sample.getChildNodes()) {
-                   if (GroupNode.class.isInstance(n)) {
-                        sampleInGroup = true;
-                    }
-                }
-
-                if (!sampleInGroup){
-                    log.info("Adding sample " + sample.getNodeName() + " to group " + othergroup.getNodeName());
-                    othergroup.addSample(sample);
-                }
-            }
-            //only add the new group if it has any samples
-            if (othergroup.getParentNodes().size() > 0){
-            	try {
-					sampleData.scd.addNode(othergroup);
-				} catch (ParseException e) {
-					//this should never happen
-					throw new RuntimeException(e);
+		Set<String> newAccessions = new HashSet<>();
+		for (SampleNode sampleNode : sampleData.scd.getNodes(SampleNode.class)) {
+			if (!isDummy(sampleNode)) {
+				if (sampleNode.getSampleAccession() != null && sampleNode.getSampleAccession().trim().length() > 0) {
+					newAccessions.add(sampleNode.getSampleAccession());
 				}
-                log.info("Added group node \""+othergroup.getNodeName()+"\"");
-                // also need to accession the new node
-            }
-        }
+			}
+		}
+		for (GroupNode groupNode : sampleData.scd.getNodes(GroupNode.class)) {
+			if (groupNode.getGroupAccession() != null && groupNode.getGroupAccession().trim().length() > 0) {
+				newAccessions.add(groupNode.getGroupAccession());
+			}
+		}
 		
-
-
-		if (sampleData.msi.submissionIdentifier != null) {
+		if (sampleData.msi.submissionIdentifier != null 
+				&& sampleData.msi.submissionIdentifier.trim().length() > 0) {
 			//this is an update of an existing sampletab
 			//get old sampletab document	
 			oldSampleTab = mongoSampleTabRepository.findOne(sampleData.msi.submissionIdentifier);
 
-			Set<String> newAccessions = new HashSet<>();
-			for (SampleNode sampleNode : sampleData.scd.getNodes(SampleNode.class)) {
-				if (!isDummy(sampleNode)) {
-					newAccessions.add(sampleNode.getSampleAccession());
-				}
-			}
-			for (GroupNode groupNode : sampleData.scd.getNodes(GroupNode.class)) {
-				newAccessions.add(groupNode.getGroupAccession());
-			}
 			
 			if (oldSampleTab == null) {
 				//no previous submission with this Id
-				//TODO if user is not super-user, abort
+				//if user is not super-user, abort
 				if (!superUser) {					
 					throw new AssertingSampleTabOwnershipException(sampleData.msi.submissionIdentifier); 					
 				}
@@ -236,17 +205,89 @@ public class SampleTabService {
 					}
 				}
 				
-			}
-		} 
+			}			
+		} else {
+			//no previous sampletab submission id
+			//persist latest SampleTab so it gets a submission id
+			persistSampleTab(sampleData, domain);
+			
+			//check samples are not owned by any others
+			for (String accession : newAccessions) {
+				List<MongoSampleTab> accessionSampleTabs = mongoSampleTabRepository.findOneByAccessionContaining(accession);
 
+				String newId = sampleData.msi.submissionIdentifier.trim();
+				
+				if (accessionSampleTabs == null) {
+					log.info("Null accession sample tabs for accession "+accession);
+				} else if (accessionSampleTabs.size() == 0) {
+					log.info("No accession sample tabs for accession "+accession);
+				} else if (accessionSampleTabs.size() > 1) {
+					log.info("Multiple accession sample tabs for accession "+accession);	
+					MongoSampleTab accessionSampleTab = accessionSampleTabs.get(0);
+					String existingId = accessionSampleTab.getId().trim();			
+					throw new ConflictingSampleTabOwnershipException(accession, existingId, newId);
+				} else if (accessionSampleTabs.size() == 1) {
+					log.info("One accession sample tabs for accession "+accession);
+					MongoSampleTab accessionSampleTab = accessionSampleTabs.get(0);
+					String existingId = accessionSampleTab.getId().trim();
+					log.info("existingId = "+existingId);
+					log.info("newId = "+newId);
+					if (!existingId.equals(newId)) {
+						//this sample is "owned" by a different sampletab file						
+						throw new ConflictingSampleTabOwnershipException(accession, 
+								existingId, newId);
+					}
+				}
+			}
+			
+		}
+		
+		//at this point, sampleData must have a sane submissionIdentifier
+		if (sampleData.msi.submissionIdentifier == null || sampleData.msi.submissionIdentifier.trim().length() == 0) {
+			throw new RuntimeException("Failed to find submission identifier");
+		}
+
+        if (sampleData.scd.getNodes(GroupNode.class).size() == 0) {
+        	// TODO need to check submissionIdentifier is popualted correctly
+            GroupNode othergroup = new GroupNode("Submission "+sampleData.msi.submissionIdentifier);
+            for (SampleNode sample : sampleData.scd.getNodes(SampleNode.class)) {
+                // check there is not an existing group first...
+                boolean sampleInGroup = false;
+                //even if it has child nodes, both parent and child must be in a group
+                //this will lead to some weird looking row duplications, but since this is an internal
+                //intermediate file it is not important
+                //Follow up: since implicit derived from relationships are made explicit above,
+                //this is not an issue any more
+                for (Node n : sample.getChildNodes()) {
+                   if (GroupNode.class.isInstance(n)) {
+                        sampleInGroup = true;
+                    }
+                }
+
+                if (!sampleInGroup){
+                    log.info("Adding sample " + sample.getNodeName() + " to group " + othergroup.getNodeName());
+                    othergroup.addSample(sample);
+                }
+            }
+            //only add the new group if it has any samples
+            if (othergroup.getParentNodes().size() > 0){
+            	try {
+					sampleData.scd.addNode(othergroup);
+				} catch (ParseException e) {
+					//this should never happen
+					throw new RuntimeException(e);
+				}
+                log.info("Added group node \""+othergroup.getNodeName()+"\"");
+                // also need to accession the new node
+            }
+        }
 
 
 		//persist the samples and groups
 		persistSamplesAndGroups(sampleData, domain, release, update, setUpdateDate);
 
-		//persist latest SampleTab
+		//persist updated SampleTab so has all the associated accessions added
 		persistSampleTab(sampleData, domain);
-		
 		
 		return sampleData;
 	}
@@ -272,7 +313,10 @@ public class SampleTabService {
 		try {
 			stringWriter = new StringWriter();
 			sampleTabWriter = new SampleTabWriter(stringWriter);
+			sampleTabWriter.write(sampleData);
 			sampleTab = stringWriter.toString();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
 		} finally {
 			if (sampleTabWriter != null) {
 				try {
@@ -292,11 +336,14 @@ public class SampleTabService {
 		//actually persist it
 		//this will assign a new submission identifier if needed
 		MongoSampleTab mongoSampleTab = MongoSampleTab.build(sampleData.msi.submissionIdentifier, domain, sampleTab, sampletabAccessions);
-		if (mongoSampleTab.getId() == null) {
+		if (mongoSampleTab.getId() == null || mongoSampleTab.getId().length()==0) {
+			log.info("Generating new sampletab identifier");
 			mongoSampleTab = sampleTabIdSerivce.accessionAndInsert(mongoSampleTab);
 			sampleData.msi.submissionIdentifier = mongoSampleTab.getId();
-		} else {				
-			mongoSampleTabRepository.save(mongoSampleTab);
+			log.info("Generated new sampletab identifier "+mongoSampleTab.getId());
+		} else {			
+			log.info("Saving submission "+sampleData.msi.submissionIdentifier);
+			mongoSampleTab = mongoSampleTabRepository.save(mongoSampleTab);
 		}
 		
 	}
@@ -397,6 +444,14 @@ public class SampleTabService {
 				groupNode.getGroupDescription().trim().length() > 0) {
 			attributes.add(Attribute.build("description", groupNode.getGroupDescription()));
 		}			
+		//add submission information
+		attributes.add(Attribute.build("Submission identifier", msi.submissionIdentifier));
+		if (msi.submissionDescription != null && msi.submissionDescription.trim().length() > 0) {
+			attributes.add(Attribute.build("Submission description", msi.submissionDescription));			
+		}
+		if (msi.submissionTitle != null && msi.submissionTitle.trim().length() > 0) {
+			attributes.add(Attribute.build("Submission title", msi.submissionTitle));			
+		}
 		Sample sample = Sample.build(name, accession, domain, release, update,
 				attributes, relationships, externalReferences,
 				organizations, contacts, publications);
@@ -419,9 +474,18 @@ public class SampleTabService {
 		//beware, works by side-effect
 		populateAttributes(accession, sampleNode.getAttributes(), attributes, relationships, externalReferences);
 		
+		//add description
 		if (sampleNode.getSampleDescription() != null && 
 				sampleNode.getSampleDescription().trim().length() > 0) {
 			attributes.add(Attribute.build("description", sampleNode.getSampleDescription()));
+		}
+		//add submission information
+		attributes.add(Attribute.build("Submission identifier", msi.submissionIdentifier));
+		if (msi.submissionDescription != null && msi.submissionDescription.trim().length() > 0) {
+			attributes.add(Attribute.build("Submission description", msi.submissionDescription));			
+		}
+		if (msi.submissionTitle != null && msi.submissionTitle.trim().length() > 0) {
+			attributes.add(Attribute.build("Submission title", msi.submissionTitle));			
 		}
 
 		Sample sample = Sample.build(name, accession, domain, release, update,

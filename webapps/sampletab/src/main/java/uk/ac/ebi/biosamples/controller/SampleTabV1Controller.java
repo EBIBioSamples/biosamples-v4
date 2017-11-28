@@ -97,7 +97,7 @@ public class SampleTabV1Controller {
             }
             boolean isSuperuser = apiKeyService.getUsernameForApiKey(apiKey).get().equals(ApiKeyService.BIOSAMPLES);
             try {
-				sampleTabService.saveSampleTab(outcome.sampledata, "self."+domain.get(), isSuperuser, true, true);
+            	outcome.sampledata = sampleTabService.saveSampleTab(outcome.sampledata, "self."+domain.get(), isSuperuser, true, true);
 			} catch (DuplicateDomainSampleException | ConflictingSampleTabOwnershipException | AssertingSampleTabOwnershipException e) {
 				log.error("Caught exception "+e.getMessage(), e);
 				return getErrorOutcome("Unable to accession", e.getMessage()+" Contact biosamples@ebi.ac.uk for more information.");

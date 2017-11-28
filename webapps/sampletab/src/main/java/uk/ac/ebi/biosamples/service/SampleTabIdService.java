@@ -26,7 +26,7 @@ public class SampleTabIdService {
 	private Logger log = LoggerFactory.getLogger(getClass());
 
 	@Autowired
-	private MongoSampleTabRepository mongoSampleRepository;
+	private MongoSampleTabRepository mongoSampleTabRepository;
 
 	private BlockingQueue<String> accessionCandidateQueue;;
 	private long accessionCandidateCounter;
@@ -37,7 +37,7 @@ public class SampleTabIdService {
 	@PostConstruct
 	public void doSetup() {
 		accessionCandidateQueue = new LinkedBlockingQueue<>(mongoProperties.getAcessionQueueSize());
-		accessionCandidateCounter = mongoProperties.getAccessionMinimum();
+		accessionCandidateCounter = 1;
 	}
 	
 	public MongoSampleTab accessionAndInsert(MongoSampleTab mongoSampleTab) {
@@ -55,7 +55,7 @@ public class SampleTabIdService {
 			}
 
 			try {
-				mongoSampleTab = mongoSampleRepository.insertNew(mongoSampleTab);
+				mongoSampleTab = mongoSampleTabRepository.insertNew(mongoSampleTab);
 				success = true;
 			} catch (MongoWriteException e) {
 				if (e.getError().getCategory() == ErrorCategory.DUPLICATE_KEY) {
@@ -76,7 +76,7 @@ public class SampleTabIdService {
 		Iterator<String> it = accessionCandidateQueue.iterator();
 		while (it.hasNext()) {
 			String accessionCandidate = it.next();
-			MongoSampleTab sample = mongoSampleRepository.findOne(accessionCandidate);
+			MongoSampleTab sample = mongoSampleTabRepository.findOne(accessionCandidate);
 			if (sample != null) {
 				log.warn("Removing accession "+accessionCandidate+" from queue because now assigned");
 				it.remove();
@@ -85,9 +85,9 @@ public class SampleTabIdService {
 		
 		while (accessionCandidateQueue.remainingCapacity() > 0) {
 			log.debug("Adding more accessions to queue");
-			String accessionCandidate = mongoProperties.getAccessionPrefix() + accessionCandidateCounter;
+			String accessionCandidate = "GSB-" + accessionCandidateCounter;
 			// if the accession already exists, skip it
-			if (mongoSampleRepository.exists(accessionCandidate)) {
+			if (mongoSampleTabRepository.exists(accessionCandidate)) {
 				accessionCandidateCounter += 1;
 				// if the accession can't be put in the queue at this time
 				// (queue full), stop

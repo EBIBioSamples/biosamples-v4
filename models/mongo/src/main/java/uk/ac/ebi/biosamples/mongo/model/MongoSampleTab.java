@@ -2,6 +2,8 @@ package uk.ac.ebi.biosamples.mongo.model;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -43,6 +45,14 @@ public class MongoSampleTab {
 
     @JsonCreator
 	public static MongoSampleTab build(String id, String domain, String sampleTab, Collection<String> accessions) {
-		return new MongoSampleTab(id, domain, sampleTab, Collections.unmodifiableCollection(accessions));
+    	//mongo won't allow a new line character in a string, so escape them
+    	sampleTab = sampleTab.replace("\n", "\\n");
+    	SortedSet<String> sortedAccessions = new TreeSet<>();
+    	for (String accession : accessions) {
+    		if (accession != null) {
+    			sortedAccessions.add(accession);
+    		}
+    	}
+		return new MongoSampleTab(id, domain, sampleTab, Collections.unmodifiableCollection(sortedAccessions));
 	}
 }
