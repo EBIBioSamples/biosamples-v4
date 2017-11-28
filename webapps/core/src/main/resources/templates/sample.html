@@ -45,8 +45,16 @@
 					<td	th:text="${#temporals.format(update, 'yyyy / MM / dd HH:mm:ss','UTC')+' UTC'}">2001 / 02 / 02 12:00:00</td>
 				</tr>
 			</table>
-			
 
+			<th:block th:include="fragments/sample :: contacts (${sample.contacts})"></th:block>
+			<th:block th:include="fragments/sample :: organizations (${sample.organizations})"></th:block>
+			<th:block th:include="fragments/sample :: publications (${sample.publications})"></th:block>
+
+			<th:block th:include="fragments/sample :: attributes (${sample.attributes})"></th:block>
+			<th:block th:include="fragments/sample :: relationships (${sample.relationships})"></th:block>
+			<th:block th:include="fragments/sample :: externalReferences (${sample.externalReferences})"></th:block>
+
+			<!--
 			<th:section
 				th:if="${sample.attributes != null and #arrays.length(sample.attributes) > 0}"
 				th:remove="tag">
@@ -109,7 +117,8 @@
 					<h3 class="icon icon-generic white-color" data-icon="L"></h3>
 				</a>
 				</th:section>
-			</div>   			        
+			</div>
+			-->
 
 		</div>
 	</div>

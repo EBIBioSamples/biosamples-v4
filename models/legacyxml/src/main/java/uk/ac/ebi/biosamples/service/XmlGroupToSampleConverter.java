@@ -60,9 +60,6 @@ public class XmlGroupToSampleConverter implements Converter<Element, Sample>  {
 				
 				attributes.add(Attribute.build(type, value, iri, unit));				
 			}
-			//TODO relationships
-			//TODO contacts
-			//TODO organisations
 		}
 
 		SortedSet<Contact> contacts = extractContacts(doc);

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+</head>
+<body>
+	<section th:fragment="contacts (contacts)">
+		<th:section
+				th:unless="${#arrays.isEmpty(contacts)}"
+				th:remove="tag">
+			<h3>Contacts</h3>
+			<table th:each = "contact : ${contacts}">
+				<thead>
+                    <tr>
+                        <th th:colspan="2" th:text="${#strings.defaultString(contact.name, 'No name provided')}">Contact name</th>
+                    </tr>
+				</thead>
+				<tbody>
+                    <tr th:unless="${#strings.isEmpty(contact.role)}">
+                        <td th:width="200">Role</td>
+                        <td th:text="${contact.name}"></td>
+                    </tr>
+                    <tr th:unless="${#strings.isEmpty(contact.email)}">
+                        <td th:width="200">E-mail</td>
+                        <td th:text="${contact.email}"></td>
+                    </tr>
+				</tbody>
+			</table>
+		</th:section>
+	</section>
+
+	<section th:fragment="organizations (organizations)" >
+		<th:section
+				th:unless="${#arrays.isEmpty(organizations)}"
+				th:remove="tag">
+			<h3>Organizations</h3>
+			<table th:each = "organization : ${organizations}">
+				<thead>
+                    <tr>
+                        <th th:colspan="2" th:text="${#strings.defaultString(organization.name, 'No name provided')}">Organization name</th>
+                    </tr>
+				</thead>
+				<tbody>
+                    <tr th:unless="${#strings.isEmpty(organization.role)}">
+                        <td th:width="200">Role</td>
+                        <td th:text="${organization.role}"></td>
+                    </tr>
+                    <tr th:unless="${#strings.isEmpty(organization.email)}">
+                        <td th:width="200">E-mail</td>
+                        <td th:text="${organization.email}"></td>
+                    </tr>
+                    <tr th:unless="${#strings.isEmpty(organization.address)}">
+                        <td th:width="200">Address</td>
+                        <td th:text="${organization.address}"></td>
+                    </tr>
+                    <tr th:unless="${#strings.isEmpty(organization.url)}">
+                        <td th:width="200">Url</td>
+                        <td th:text="${organization.url}"></td>
+                    </tr>
+				</tbody>
+			</table>
+		</th:section>
+	</section>
+
+    <section th:fragment="publications (publications)">
+		<th:section
+				th:unless="${#arrays.isEmpty(publications)}"
+				th:remove="tag">
+			<h3>Publications</h3>
+			<table>
+				<thead>
+				<tr>
+					<th>DOI</th>
+					<th>PubMedId</th>
+				</tr>
+				</thead>
+				<tbody>
+                	<tr th:each = "publication : ${publications}">
+						<td th:text="${#strings.defaultString(publication.doi, 'No DOI available')}"></td>
+						<td th:text="${#strings.defaultString(publication.pubMedId, 'No Pubmed ID available')}"></td>
+					</tr>
+				</tbody>
+			</table>
+		</th:section>
+	</section>
+
+	<section th:fragment="attributes (attributes)">
+		<th:section
+				th:unless="${#arrays.isEmpty(attributes)}"
+				th:remove="tag">
+			<h3>Attributes</h3>
+			<table class="hover">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Value</th>
+                    </tr>
+				</thead>
+                <tbody>
+                    <tr th:each="attribute : ${attributes}">
+                        <td th:text="${attribute.type}">Attribute Type</td>
+
+                        <td
+                                th:if="${not #strings.isEmpty(attribute.iri) and #strings.isEmpty(attribute.unit)}"><a
+                                th:href="${attribute.getIriOls()}" th:text="${attribute.value}"
+                                target="_blank">attribute value<i class="icon icon-generic"
+                                                                  data-icon="x"></i></a></td>
+                        <td
+                                th:if="${#strings.isEmpty(attribute.iri) and #strings.isEmpty(attribute.unit)}"
+                                th:text="${attribute.value}">attribute value</td>
+                        <td
+                                th:if="${not #strings.isEmpty(attribute.iri) and not #strings.isEmpty(attribute.unit)}"><th:span
+                                th:text="${attribute.value}" th:remove="tag"></th:span> (<a
+                                th:href="${attribute.getIriOls()}" th:text="${attribute.unit}"
+                                target="_blank">unit<i class="icon icon-generic"
+                                                       data-icon="x"></i></a>)</td>
+                        <td
+                                th:if="${#strings.isEmpty(attribute.iri) and not #strings.isEmpty(attribute.unit)}"
+                                th:text="${attribute.value}+' ('+${attribute.unit}+')'">attribute
+                            value (unit)</td>
+                    </tr>
+				</tbody>
+			</table>
+		</th:section>
+	</section>
+
+	<section th:fragment="relationships (relationships)">
+		<th:section
+				th:unless="${#arrays.isEmpty(relationships)}"
+				th:remove="tag">
+			<h3>Relationships</h3>
+			<table>
+				<thead>
+                    <tr>
+                        <th>Source</th>
+                        <th>Type</th>
+                        <th>Target</th>
+                    </tr>
+				</thead>
+				<tbody>
+                    <tr th:each="relationship : ${relationships}">
+                        <td><a th:href="${relationship.source}"
+                               th:text="${relationship.source}">source</a></td>
+                        <td th:text="${relationship.type}">type</td>
+                        <td><a th:href="${relationship.target}"
+                               th:text="${relationship.target}">target</a></td>
+                    </tr>
+				</tbody>
+			</table>
+		</th:section>
+	</section>
+
+	<section th:fragment="externalReferences (externalReferences)">
+		<div th:unless="${#arrays.isEmpty(externalReferences)}"
+			 th:remove="tag">
+			<h3>External Links</h3>
+			<th:section th:each="externalReference : ${externalReferences}" >
+				<a th:href="${externalReference.url}" class="button">
+					<h3 class="icon icon-generic white-color" data-icon="L"></h3>
+				</a>
+			</th:section>
+		</div>
+
+	</section>
+</body>
+</html>
