@@ -110,6 +110,10 @@ public class AccessFetcherCallable implements Callable<Void> {
 		log.info("Finished AccessFetcherCallable.call(");
 		
 		return null;
+		
+		//TODO groups
+		//TODO group membership
+		
 	}
 	
 	public Callable<Set<String>> getPageCallable(URI uri) {
