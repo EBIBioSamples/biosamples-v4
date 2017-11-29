@@ -51,6 +51,7 @@ import org.xml.sax.InputSource;
 import com.google.common.collect.Sets;
 
 import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.XmlGroupToSampleConverter;
 import uk.ac.ebi.biosamples.service.XmlSampleToSampleConverter;
@@ -325,6 +326,13 @@ class AccessionComparisonCallable implements Callable<Void> {
 					}
 				}
 			}
+		}
+		//relationships
+		for (Relationship relationship : Sets.difference(oldSample.getRelationships(), newSample.getRelationships())) {
+			log.warn("Difference on "+accession+" of relationship '"+relationship+"' in old only");			
+		}
+		for (Relationship relationship : Sets.difference(newSample.getRelationships(), oldSample.getRelationships())) {
+			log.warn("Difference on "+accession+" of relationship '"+relationship+"' in new only");			
 		}
 		
 		//if it is a group, get the samples within each environment, and compare them

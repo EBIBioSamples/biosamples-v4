@@ -66,11 +66,7 @@ public class AccessFetcherCallable implements Callable<Void> {
 		
 		log.info("Finished AccessFetcherCallable.call(");
 		
-		return null;
-		
-		//TODO groups
-		//TODO group membership
-		
+		return null;		
 	}
 	
 	private void getPages(String pathSegment, int pagesize, ExecutorService executorService) throws DocumentException, InterruptedException, ExecutionException {
