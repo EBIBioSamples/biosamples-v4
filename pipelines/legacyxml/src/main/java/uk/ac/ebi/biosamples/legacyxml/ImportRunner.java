@@ -62,16 +62,32 @@ public class ImportRunner implements ApplicationRunner {
 		}
 		
 		Path inputXmlPath = Paths.get(args.getNonOptionArgs().get(1));
-		Path inputCsvFilename = Paths.get(args.getNonOptionArgs().get(2));
+		Path inputCsvPath = Paths.get(args.getNonOptionArgs().get(2));
 		
-		Map<String, Set<String>> groupMembership = readCsv(inputCsvFilename);
+		Path membershipCsv = Paths.get(inputCsvPath.toString(), "membership.csv");
+		log.info("Reading membership from "+membershipCsv);
+		
+		Path sameAsCsv = Paths.get(inputCsvPath.toString(), "sameas.csv");
+		log.info("Reading same as from "+sameAsCsv);
+		
+		Path childOfCsv = Paths.get(inputCsvPath.toString(), "childof.csv");
+		log.info("Reading child of from "+childOfCsv);
+		
+		Path recuratedFromCsv = Paths.get(inputCsvPath.toString(), "recuratedfrom.csv");
+		log.info("Reading recurated from from "+recuratedFromCsv);
+		
+		
+		Map<String, Set<String>> groupMembership = reverse(readCsv(membershipCsv));
+		Map<String, Set<String>> sameAs = readCsv(sameAsCsv);
+		Map<String, Set<String>> childOf = readCsv(childOfCsv);
+		Map<String, Set<String>> recuratedFrom = readCsv(recuratedFromCsv);
 		
 		try (InputStream is = new GZIPInputStream(new BufferedInputStream(Files.newInputStream(inputXmlPath)))) {
 
 			Map<Element, Future<Resource<Sample>>> futures = new LinkedHashMap<>();
 
 			ElementCallback callback = new ImportElementCallback(futures, 
-					client, xmlSampleToSampleConverter, xmlGroupToSampleConverter, groupMembership);
+					client, xmlSampleToSampleConverter, xmlGroupToSampleConverter, groupMembership, sameAs, childOf, recuratedFrom);
 
 			// this does the actual processing
 			xmlFragmenter.handleStream(is, "UTF-8", callback);
@@ -94,10 +110,24 @@ public class ImportRunner implements ApplicationRunner {
             		if (!groupMembership.containsKey(group)) {
             			groupMembership.put(group, new HashSet<>());
             		}
+            		groupMembership.get(group).add(nextRecord[i]);
             	}
             }
 		}
 		return groupMembership;
+	}
+	
+	private Map<String, Set<String>> reverse(Map<String, Set<String>> input) {
+		Map<String, Set<String>> output = new HashMap<>();
+		for (String key : input.keySet()) {
+			for (String value : input.get(key)) {
+				if (!output.containsKey(value)) {
+					output.put(value, new HashSet<>());
+				}
+				output.get(value).add(key);
+			}
+		}
+		return output;
 	}
 	
 	public static class ImportElementCallback implements ElementCallback {
@@ -108,15 +138,22 @@ public class ImportRunner implements ApplicationRunner {
 		private final XmlSampleToSampleConverter xmlSampleToSampleConverter;
 		private final XmlGroupToSampleConverter xmlGroupToSampleConverter;
 		private final Map<String, Set<String>> groupMembership;
+		private final Map<String, Set<String>> sameAs;
+		private final Map<String, Set<String>> childOf;
+		private final Map<String, Set<String>> recuratedFrom;
 		
 		public ImportElementCallback(Map<Element, Future<Resource<Sample>>> futures, BioSamplesClient client, 
 				XmlSampleToSampleConverter xmlSampleToSampleConverter, XmlGroupToSampleConverter xmlGroupToSampleConverter,
-				Map<String, Set<String>> groupMembership) {
+				Map<String, Set<String>> groupMembership, Map<String, Set<String>> sameAs, Map<String, Set<String>> childOf,
+				Map<String, Set<String>> recuratedFrom) {
 			this.futures = futures;
 			this.client = client;
 			this.xmlSampleToSampleConverter = xmlSampleToSampleConverter;
 			this.xmlGroupToSampleConverter = xmlGroupToSampleConverter;
 			this.groupMembership = groupMembership;
+			this.sameAs = sameAs;
+			this.childOf = childOf;
+			this.recuratedFrom = recuratedFrom;
 		}
 		
 		@Override
@@ -141,6 +178,27 @@ public class ImportRunner implements ApplicationRunner {
 			if (groupMembership.containsKey(sample.getAccession())) {
 				for (String target : groupMembership.get(sample.getAccession())) {
 					Relationship r = Relationship.build(sample.getAccession(), "has member", target);
+					//TODO access this in an immutable manner
+					sample.getRelationships().add(r);
+				}
+			}
+			if (sameAs.containsKey(sample.getAccession())) {
+				for (String target : sameAs.get(sample.getAccession())) {
+					Relationship r = Relationship.build(sample.getAccession(), "same as", target);
+					//TODO access this in an immutable manner
+					sample.getRelationships().add(r);
+				}
+			}
+			if (childOf.containsKey(sample.getAccession())) {
+				for (String target : childOf.get(sample.getAccession())) {
+					Relationship r = Relationship.build(sample.getAccession(), "child of", target);
+					//TODO access this in an immutable manner
+					sample.getRelationships().add(r);
+				}
+			}
+			if (recuratedFrom.containsKey(sample.getAccession())) {
+				for (String target : recuratedFrom.get(sample.getAccession())) {
+					Relationship r = Relationship.build(sample.getAccession(), "recurated from", target);
 					//TODO access this in an immutable manner
 					sample.getRelationships().add(r);
 				}
