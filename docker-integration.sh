@@ -22,4 +22,7 @@ do
   docker-compose run --rm --service-ports biosamples-agents-solr java -jar agents-solr-4.0.0-SNAPSHOT.jar --biosamples.agent.solr.stayalive=false --biosamples.agent.solr.queuetime=500
 done
 
+#leave the agent up at the end
+docker-compose up -d biosamples-agents-solr
+
 echo "Successfully completed"
