@@ -99,6 +99,20 @@ public class Contact implements Comparable<Contact> {
     }
 
     @Override
+    public String toString() {
+        return "Contact{" +
+                "firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", midInitials='" + midInitials + '\'' +
+                ", role='" + role + '\'' +
+                ", email='" + email + '\'' +
+                ", affiliation='" + affiliation + '\'' +
+                ", name='" + name + '\'' +
+                ", url='" + url + '\'' +
+                '}';
+    }
+
+    @Override
     public int compareTo(Contact other) {
         if (other == null) {
             return 1;

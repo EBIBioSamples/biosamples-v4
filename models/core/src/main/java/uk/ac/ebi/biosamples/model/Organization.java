@@ -103,6 +103,17 @@ public class Organization implements Comparable<Organization> {
 
 	}
 
+	@Override
+	public String toString() {
+		return "Organization{" +
+				"name='" + name + '\'' +
+				", role='" + role + '\'' +
+				", address='" + address + '\'' +
+				", email='" + email + '\'' +
+				", url='" + url + '\'' +
+				'}';
+	}
+
 	private int nullSafeStringComparison(String first, String other) {
 		if (first == null && other == null) return 0;
 		if (first == null) return -1;
