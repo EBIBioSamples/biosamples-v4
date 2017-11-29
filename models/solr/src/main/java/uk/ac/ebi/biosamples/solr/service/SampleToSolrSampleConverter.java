@@ -31,6 +31,7 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 		Map<String, List<String>> outgoingRelationships = null;
 		Map<String, List<String>> incomingRelationships = null;
 		Map<String, List<String>> externalReferencesData = null;
+		List<String> keywords = new ArrayList<>();
 
 		if (sample.getCharacteristics() != null && sample.getCharacteristics().size() > 0) {
 			attributeValues = new HashMap<>();
@@ -135,13 +136,24 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 
 
 		String releaseSolr = DateTimeFormatter.ISO_INSTANT.format(sample.getRelease());
-		String updateSolr = DateTimeFormatter.ISO_INSTANT.format(sample.getUpdate());		
+		String updateSolr = DateTimeFormatter.ISO_INSTANT.format(sample.getUpdate());
 
+		sample.getOrganizations().forEach(org -> {
+			keywords.addAll(Arrays.asList(org.getName(), org.getEmail(), org.getRole(), org.getUrl()));
+		});
+
+		sample.getContacts().forEach(contact -> {
+			keywords.addAll(Arrays.asList(contact.getName(), contact.getAffiliation(), contact.getUrl()));
+		});
+
+		sample.getPublications().forEach(pub -> {
+			keywords.addAll(Arrays.asList(pub.getDoi(), pub.getDoi()));
+		});
 		
 		return SolrSample.build(sample.getName(), sample.getAccession(), sample.getDomain(), releaseSolr, updateSolr,
 				attributeValues, attributeIris, attributeUnits,
 				outgoingRelationships, incomingRelationships,
-				externalReferencesData);
+				externalReferencesData, keywords);
 	}
 	
 }

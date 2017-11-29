@@ -24,6 +24,7 @@ public class SolrSample {
 	@Indexed(name="domain_s", required=true)
 	protected String domain; 
 
+	//TODO
 	/**
 	 * Store the release date as a string so that it can be used easily by solr
 	 * Use a TrieDate type for better range query performance
@@ -204,7 +205,7 @@ public class SolrSample {
 	public static SolrSample build(String name, String accession, String domain, String release, String update,
 			Map<String, List<String>> attributeValues, Map<String, List<String>> attributeIris, Map<String, List<String>> attributeUnits,
 		    Map<String, List<String>> outgoingRelationships, Map<String,List<String>> incomingRelationships,
-			Map<String, List<String>> externalReferencesData) {
+			Map<String, List<String>> externalReferencesData, List<String> keywords) {
 		SolrSample sample = new SolrSample();
 		sample.accession = accession;
 		sample.name = name;
@@ -319,9 +320,10 @@ public class SolrSample {
 				sample.autocompleteTerms.addAll(values);
 			}
 		}
-		
+
 		sample.keywords = new ArrayList<>();
-		
+		sample.keywords.addAll(keywords);
+
 		return sample;
 	}
 
