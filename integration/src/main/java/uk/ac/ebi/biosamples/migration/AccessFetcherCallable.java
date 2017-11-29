@@ -8,12 +8,14 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.dom4j.Document;
+import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import org.slf4j.Logger;
@@ -48,58 +50,13 @@ public class AccessFetcherCallable implements Callable<Void> {
 
 		long oldTime = System.nanoTime();		
 		int pagesize = 1000;
-		int totalFetched = 0;
 		
 		ExecutorService executorService = null;
 		
 		try {
-			executorService = Executors.newFixedThreadPool(32);
-		
-			UriComponentsBuilder uriComponentBuilder = UriComponentsBuilder.fromUriString(rootUrl);
-			uriComponentBuilder.replaceQueryParam("pagesize", pagesize);
-			uriComponentBuilder.replaceQueryParam("query", "");
-			
-			//get the first page to get the number of pages in total
-			uriComponentBuilder.replaceQueryParam("page", 1);			
-			URI uri = uriComponentBuilder.build().toUri();
-	
-			ResponseEntity<String> response;
-			RequestEntity<?> request = RequestEntity.get(uri).accept(MediaType.TEXT_XML).build();
-			try {
-				response = restTemplate.exchange(request, String.class);
-			} catch (RestClientException e) {
-				log.error("Problem accessing "+uri, e);
-				throw e;
-			}
-			String xmlString = response.getBody();
-			
-			SAXReader reader = new SAXReader();
-			Document xml = reader.read(new StringReader(xmlString));
-			Element root = xml.getRootElement();		
-			
-			int pageCount = (Integer.parseInt(XmlPathBuilder.of(root).path("SummaryInfo", "Total").text())/pagesize)+1;
-			
-			
-			//multi-thread all the other pages via futures
-			List<Future<Set<String>>> futures = new ArrayList<>();
-			for (int i = 1; i <= pageCount; i++) {
-				uriComponentBuilder.replaceQueryParam("page", i);			
-				URI pageUri = uriComponentBuilder.build().toUri();
-				Callable<Set<String>> callable =  getPageCallable(pageUri);
-				futures.add(executorService.submit(callable));
-			}
-			for (Future<Set<String>> future : futures) {
-				for (String accession : future.get()) {
-					totalFetched +=1;
-					if (totalFetched%1000 == 0) {
-						log.info("Fetched "+totalFetched+" from "+rootUrl);
-					}
-					while (!accessionQueue.offer(accession)) {
-						Thread.sleep(10);
-					}
-				}
-			}
-
+			executorService = Executors.newFixedThreadPool(32);		
+			getPages("samples", pagesize, executorService);
+			getPages("groups", pagesize, executorService);			
 		} finally {
 			executorService.shutdownNow();
 		}
@@ -114,6 +71,51 @@ public class AccessFetcherCallable implements Callable<Void> {
 		//TODO groups
 		//TODO group membership
 		
+	}
+	
+	private void getPages(String pathSegment, int pagesize, ExecutorService executorService) throws DocumentException, InterruptedException, ExecutionException {
+
+		UriComponentsBuilder uriComponentBuilder = UriComponentsBuilder.fromUriString(rootUrl)
+				.pathSegment(pathSegment);
+			uriComponentBuilder.replaceQueryParam("pagesize", pagesize);
+			uriComponentBuilder.replaceQueryParam("query", "");
+		
+		//get the first page to get the number of pages in total
+		uriComponentBuilder.replaceQueryParam("page", 1);			
+		URI uri = uriComponentBuilder.build().toUri();
+
+		ResponseEntity<String> response;
+		RequestEntity<?> request = RequestEntity.get(uri).accept(MediaType.TEXT_XML).build();
+		try {
+			response = restTemplate.exchange(request, String.class);
+		} catch (RestClientException e) {
+			log.error("Problem accessing "+uri, e);
+			throw e;
+		}
+		String xmlString = response.getBody();
+		
+		SAXReader reader = new SAXReader();
+		Document xml = reader.read(new StringReader(xmlString));
+		Element root = xml.getRootElement();		
+		
+		int pageCount = (Integer.parseInt(XmlPathBuilder.of(root).path("SummaryInfo", "Total").text())/pagesize)+1;
+		
+		
+		//multi-thread all the other pages via futures
+		List<Future<Set<String>>> futures = new ArrayList<>();
+		for (int i = 1; i <= pageCount; i++) {
+			uriComponentBuilder.replaceQueryParam("page", i);			
+			URI pageUri = uriComponentBuilder.build().toUri();
+			Callable<Set<String>> callable =  getPageCallable(pageUri);
+			futures.add(executorService.submit(callable));
+		}
+		for (Future<Set<String>> future : futures) {
+			for (String accession : future.get()) {
+				while (!accessionQueue.offer(accession)) {
+					Thread.sleep(10);
+				}
+			}
+		}
 	}
 	
 	public Callable<Set<String>> getPageCallable(URI uri) {
