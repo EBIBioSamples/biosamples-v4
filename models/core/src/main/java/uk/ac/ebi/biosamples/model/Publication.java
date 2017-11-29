@@ -62,6 +62,14 @@ public class Publication implements Comparable<Publication> {
 		return nullSafeStringComparison(this.pubmed_id, other.pubmed_id);
 	}
 
+	@Override
+	public String toString() {
+		return "Publication{" +
+				"doi='" + doi + '\'' +
+				", pubmed_id='" + pubmed_id + '\'' +
+				'}';
+	}
+
 	private int nullSafeStringComparison(String first, String other) {
 		if (first == null && other == null) return 0;
 		if (first == null) return -1;

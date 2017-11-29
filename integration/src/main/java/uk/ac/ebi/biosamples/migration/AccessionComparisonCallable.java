@@ -1,35 +1,6 @@
 package uk.ac.ebi.biosamples.migration;
 
-import java.io.ByteArrayInputStream;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.net.URI;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Queue;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.SortedSet;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.concurrent.Callable;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
-
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathFactory;
-
+import com.google.common.collect.Sets;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
@@ -48,14 +19,34 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
-import com.google.common.collect.Sets;
-
 import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.Contact;
+import uk.ac.ebi.biosamples.model.Organization;
+import uk.ac.ebi.biosamples.model.Publication;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.XmlGroupToSampleConverter;
 import uk.ac.ebi.biosamples.service.XmlSampleToSampleConverter;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
+
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathFactory;
+import java.io.ByteArrayInputStream;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.net.URI;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 class AccessionComparisonCallable implements Callable<Void> {
 	private final RestTemplate restTemplate;
@@ -350,7 +341,14 @@ class AccessionComparisonCallable implements Callable<Void> {
 				}
 			}
 		}
+
+		compareOrganizations(oldSample, newSample);
+
+		compareContacts(oldSample, newSample);
+
+		comparePublications(oldSample, newSample);
 	}
+
 
 	public String getDocument(URI uri) {
 		//log.info("Getting " + uri);
@@ -454,7 +452,7 @@ class AccessionComparisonCallable implements Callable<Void> {
 			}
 		}
 	}
-	
+
 	private static class NodeComparator implements Comparator<Node> {
 		
 		private NamedNodeMapComparator namedNodeMapComparator = new NamedNodeMapComparator();
@@ -543,5 +541,45 @@ class AccessionComparisonCallable implements Callable<Void> {
 		}
 		
 		return members;
+	}
+
+	public void compareOrganizations(Sample oldSample, Sample newSample) {
+		SortedSet<Organization> oldOrganizations = oldSample.getOrganizations();
+		SortedSet<Organization> newOrganizations = newSample.getOrganizations();
+
+		for (Organization oldOrganization: Sets.difference(oldOrganizations, newOrganizations)) {
+			log.warn("Difference on "+oldSample.getAccession()+" organization: only old sample has " + oldOrganization.toString());
+		}
+
+		for (Organization newOrganization: Sets.difference(newOrganizations, oldOrganizations)) {
+			log.warn("Difference on "+oldSample.getAccession()+" organization: only new sample has " + newOrganization.toString());
+		}
+
+	}
+
+	public void compareContacts(Sample oldSample, Sample newSample) {
+		SortedSet<Contact> oldContacts = oldSample.getContacts();
+		SortedSet<Contact> newContacts = newSample.getContacts();
+
+		for (Contact oldContact: Sets.difference(oldContacts, newContacts)) {
+			log.warn("Difference on "+oldSample.getAccession()+" contact: only old sample has " + oldContact.toString());
+		}
+
+		for (Contact newContact: Sets.difference(newContacts, oldContacts)) {
+			log.warn("Difference on "+oldSample.getAccession()+" contact: only new sample has " + newContact.toString());
+		}
+	}
+
+	private void comparePublications(Sample oldSample, Sample newSample) {
+		SortedSet<Publication> oldPublications = oldSample.getPublications();
+		SortedSet<Publication> newPublications = newSample.getPublications();
+
+		for(Publication oldPublication: Sets.difference(oldPublications, newPublications)) {
+			log.warn("Difference on "+oldSample.getAccession()+" pulication: only old sample has " + oldPublication.toString());
+		}
+
+		for(Publication newPublication: Sets.difference(newPublications, oldPublications)) {
+			log.warn("Difference on "+oldSample.getAccession()+" pulication: only new sample has " + newPublication.toString());
+		}
 	}
 }
