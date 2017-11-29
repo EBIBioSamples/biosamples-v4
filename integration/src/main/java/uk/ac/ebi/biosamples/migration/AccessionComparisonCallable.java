@@ -1,35 +1,6 @@
 package uk.ac.ebi.biosamples.migration;
 
-import java.io.ByteArrayInputStream;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.net.URI;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Queue;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.SortedSet;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.concurrent.Callable;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
-
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathFactory;
-
+import com.google.common.collect.Sets;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
@@ -47,14 +18,29 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
-
-import com.google.common.collect.Sets;
-
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.service.XmlGroupToSampleConverter;
 import uk.ac.ebi.biosamples.service.XmlSampleToSampleConverter;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
+
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathFactory;
+import java.io.ByteArrayInputStream;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.net.URI;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 class AccessionComparisonCallable implements Callable<Void> {
 	private final RestTemplate restTemplate;
@@ -326,7 +312,7 @@ class AccessionComparisonCallable implements Callable<Void> {
 				}
 			}
 		}
-		
+
 		//if it is a group, get the samples within each environment, and compare them
 		if (accession.startsWith("SAMEG")) {
 			SortedSet<String> oldGroupMembers = getGroupMembership(oldUriComponentBuilder, accession);
@@ -342,7 +328,14 @@ class AccessionComparisonCallable implements Callable<Void> {
 				}
 			}
 		}
+
+		compareOrganizations(oldSample, newSample);
+
+		compareContacts(oldSample, newSample);
+
+		comparePublications(oldSample, newSample);
 	}
+
 
 	public String getDocument(URI uri) {
 		//log.info("Getting " + uri);
@@ -446,7 +439,7 @@ class AccessionComparisonCallable implements Callable<Void> {
 			}
 		}
 	}
-	
+
 	private static class NodeComparator implements Comparator<Node> {
 		
 		private NamedNodeMapComparator namedNodeMapComparator = new NamedNodeMapComparator();
@@ -535,5 +528,140 @@ class AccessionComparisonCallable implements Callable<Void> {
 		}
 		
 		return members;
+	}
+
+	public void compareOrganizations(Sample oldSample, Sample newSample) {
+		SortedSet<Organization> oldOrganizations = oldSample.getOrganizations();
+		SortedSet<Organization> newOrganizations = newSample.getOrganizations();
+
+		if (oldOrganizations.size() != newOrganizations.size()) {
+			log.warn("Difference on "+oldSample.getAccession()+" old samples has " + oldOrganizations.size() +
+					" organization elements while the new sample has " + newOrganizations.size() + " organizations");
+		}
+
+		for(Organization oldOrg: oldOrganizations) {
+			Optional<Organization> optionalOrganzation = newOrganizations.stream()
+					.filter(org -> org.getName().equalsIgnoreCase(oldOrg.getName()))
+					.findFirst();
+			if (!optionalOrganzation.isPresent()) {
+				log.warn("Difference on " + oldSample.getAccession() + " old organization " + oldOrg.getName() +
+						" not present in the new sample");
+			} else {
+				Organization newOrg = optionalOrganzation.get();
+				if (!Objects.equals(oldOrg.getAddress(), newOrg.getAddress())) {
+					log.warn("Difference on " + oldSample.getAccession() + " old organization address" + oldOrg.getAddress() +
+							" differs from new organization address " + newOrg.getAddress());
+				}
+
+				if (!Objects.equals(oldOrg.getEmail(), newOrg.getEmail())) {
+					log.warn("Difference on " + oldSample.getAccession() + " old organization email" + oldOrg.getEmail() +
+							" differs from new organization email " + newOrg.getEmail());
+				}
+
+				if (!Objects.equals(oldOrg.getRole(), newOrg.getRole())) {
+					log.warn("Difference on " + oldSample.getAccession() + " old organization role" + oldOrg.getRole() +
+							" differs from new organization role " + newOrg.getRole());
+				}
+
+				if (!Objects.equals(oldOrg.getUrl(), newOrg.getUrl())) {
+					log.warn("Difference on " + oldSample.getAccession() + " old organization url" + oldOrg.getUrl() +
+							" differs from new organization url " + newOrg.getUrl());
+
+				}
+			}
+		}
+	}
+
+	public void compareContacts(Sample oldSample, Sample newSample) {
+		SortedSet<Contact> oldContacts = oldSample.getContacts();
+		SortedSet<Contact> newContacts = newSample.getContacts();
+
+		if (oldContacts.size() != newContacts.size()) {
+			log.warn("Difference on "+oldSample.getAccession()+" old samples has " + oldContacts.size() +
+					" contact elements while the new sample has " + newContacts.size() + " contacts");
+		}
+
+		for(Contact oldContact: oldContacts) {
+			Optional<Contact> optionalContact = newContacts.stream()
+					.filter(contact -> contact.getName().equalsIgnoreCase(oldContact.getName()))
+					.findFirst();
+			if (!optionalContact.isPresent()) {
+				log.warn("Difference on " + oldSample.getAccession() + " old contact " + oldContact.getName() +
+						" not present in the new sample");
+			} else {
+				Contact newContact = optionalContact.get();
+				if(!Objects.equals(oldContact.getFirstName(), newContact.getFirstName())) {
+				    log.warn("Difference on " + oldSample.getAccession() + " old contact first name " + oldContact.getFirstName()
+							+ " differs from new contact first name " + newContact.getFirstName());
+				}
+
+				if(!Objects.equals(oldContact.getName(), newContact.getName())) {
+					log.warn("Difference on " + oldSample.getAccession() + " old contact name " + oldContact.getName()
+							+ " differs from new contact name " + newContact.getName());
+				}
+
+				if(!Objects.equals(oldContact.getMidInitials(), newContact.getMidInitials())) {
+					log.warn("Difference on " + oldSample.getAccession() + " old contact mid initials " + oldContact.getMidInitials()
+							+ " differs from new contact mid initials " + newContact.getMidInitials());
+				}
+
+				if(!Objects.equals(oldContact.getLastName(), newContact.getLastName())) {
+					log.warn("Difference on " + oldSample.getAccession() + " old contact last name " + oldContact.getLastName()
+							+ " differs from new contact last name " + newContact.getLastName());
+				}
+
+				if(!Objects.equals(oldContact.getEmail(), newContact.getEmail())) {
+					log.warn("Difference on " + oldSample.getAccession() + " old contact email " + oldContact.getEmail()
+							+ " differs from new contact email " + newContact.getEmail());
+				}
+
+				if(!Objects.equals(oldContact.getRole(), newContact.getFirstName())) {
+					log.warn("Difference on " + oldSample.getAccession() + " old contact role " + oldContact.getFirstName()
+							+ " differs from new contact role " + newContact.getFirstName());
+				}
+
+				if(!Objects.equals(oldContact.getAffiliation(), newContact.getAffiliation())) {
+					log.warn("Difference on " + oldSample.getAccession() + " old contact affiliation " + oldContact.getAffiliation()
+							+ " differs from new contact affiliation " + newContact.getAffiliation());
+				}
+
+				if(!Objects.equals(oldContact.getUrl(), newContact.getUrl())) {
+					log.warn("Difference on " + oldSample.getAccession() + " old contact url " + oldContact.getUrl()
+							+ " differs from new contact url " + newContact.getUrl());
+
+				}
+			}
+		}
+	}
+
+	private void comparePublications(Sample oldSample, Sample newSample) {
+		SortedSet<Publication> oldPublications = oldSample.getPublications();
+		SortedSet<Publication> newPublications = newSample.getPublications();
+
+		if (oldPublications.size() != newPublications.size()) {
+			log.warn("Difference on "+oldSample.getAccession()+" old samples has " + oldPublications.size() +
+					" publication elements while the new sample has " + newPublications.size() + " publications");
+		}
+
+		for(Publication oldPublication: oldPublications) {
+			Optional<Publication> optionalPublication = newPublications.stream()
+					.filter(publication -> publication.getDoi().equals(oldPublication.getDoi()))
+					.findFirst();
+			if (!optionalPublication.isPresent()) {
+				log.warn("Difference on " + oldSample.getAccession() + " old publication " + oldPublication.getDoi() +
+						" not present in the new sample");
+			} else {
+				Publication newPublication = optionalPublication.get();
+				if(!Objects.equals(oldPublication.getDoi(), newPublication.getDoi())) {
+					log.warn("Difference on " + oldSample.getAccession() + " old publication doi " + oldPublication.getDoi()
+							+ " differs from new publication doi" + newPublication.getDoi());
+				}
+
+				if(!Objects.equals(oldPublication.getPubMedId(), newPublication.getPubMedId())) {
+					log.warn("Difference on " + oldSample.getAccession() + " old publication pubmed id " + oldPublication.getPubMedId()
+							+ " differs from new publication pubmed id" + newPublication.getPubMedId());
+				}
+			}
+		}
 	}
 }
