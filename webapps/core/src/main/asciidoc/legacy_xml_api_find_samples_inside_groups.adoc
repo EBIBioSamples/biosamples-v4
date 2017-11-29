@@ -1,0 +1,68 @@
+:last-update-label!:
+== Search Samples inside a Sample Group
+
+- It returns all the samples that are inside the SampleGroup parameter and that also match the query(e.g. link:/biosamples/xml/groupsamples/SAMEG23004?query=cancer[]);
+- It is possible to use paging (e.g. link:/biosamples/xml/groupsamples/SAMEG23004?query=cancer&page=3&pagesize=10[]);
+- Always return a result summary information;
+
+
+
+==== Authentication
+N/A
+
+==== Arguments
+[options="header"]
+|===
+| Parameter | Notes
+| query | *Required*
+| sortby | Optional (Default=relevance)
+| sortorder | Optional (Default=descending)
+| page | Optional (Default=10; Maximum=500)
+| pagesize | Optional (Default=1)
+|===
+
+==== Example Request
+`Get xml/groupsamples/SAMEG23004?query=cancer&page=2&pagesize=20`
+
+==== Example Response
+[source, xml]
+----
+<ResultQuery>
+<SummaryInfo>
+<Total>3316</Total>
+<From>21</From>
+<To>40</To>
+<PageNumber>2</PageNumber>
+<PageSize>20</PageSize>
+</SummaryInfo>
+<BioSample id="SAMEA477370"/>
+<BioSample id="SAMEA507158"/>
+<BioSample id="SAMEA474309"/>
+<BioSample id="SAMEA473529"/>
+<BioSample id="SAMEA520534"/>
+<BioSample id="SAMEA462287"/>
+<BioSample id="SAMEA503715"/>
+<BioSample id="SAMEA503545"/>
+<BioSample id="SAMEA478168"/>
+<BioSample id="SAMEA514716"/>
+<BioSample id="SAMEA503921"/>
+<BioSample id="SAMEA491195"/>
+<BioSample id="SAMEA506242"/>
+<BioSample id="SAMEA521878"/>
+<BioSample id="SAMEA471300"/>
+<BioSample id="SAMEA501587"/>
+<BioSample id="SAMEA462391"/>
+<BioSample id="SAMEA503906"/>
+<BioSample id="SAMEA517593"/>
+<BioSample id="SAMEA470841"/>
+</ResultQuery>
+----
+
+
+==== Error Codes
+N/A
+
+
+==== XSD - Xml Schema Definition
++++<a th:href="@{/assets/xsd/v1.0/BioSDSchema.xsd}" th:text="@{/assets/xsd/v1.0/BioSDSchema.xsd}">/assets/xsd/v1.0/BioSDSchema.xsd</a>+++
++++<img th:src="@{/images/xml_schemas/ResultQuerySample_schema.png}"/>+++

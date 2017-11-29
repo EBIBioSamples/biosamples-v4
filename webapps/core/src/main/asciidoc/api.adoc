@@ -1,0 +1,156 @@
+:last-update-label!:
+== Programmatic Interface
+
+=== General information
+The new BioSamples is now providing even more ways to discover data and find what is relevant for you.
+
+We built a completely new JSON rest api to support your query.
+We still provide support for the legacy XML api but we encourage developers to switch to the brand new JSON rest api.
+
+=== JSON
+
+The new JSON rest api is now the recommended way to code against the BioSamples database.
+
+==== Overview
+===== HTTP Verbs
+The JSON api supports `GET` requests to retrieve resources
+
+===== Hypermedia: the _link object
+
+All resources in the new BioSamples api implement the HAL specification.
+
+HAL is a simple format that gives a consistent and easy way to hyperlink between resources in your API. From the consumer point of view this mean any time you reach an API endpoint you will be able to navigate through the api using the _links object.
+Here an example of the _links object you can see at www.ebi.ac.uk/biosamples/api/
+[source, json]
+----
+{
+  "_links" : {
+    "samples" : {
+      "href" : "/biosamples/beta/api/samples{?page,size,sort}",
+      "templated" : true
+    },
+    "groups" : {
+      "href" : "/biosamples/beta/api/groups{?page,size,sort}",
+      "templated" : true
+    },
+    "samplesrelations" : {
+      "href" : "/biosamples/beta/api/samplesrelations{?page,size,sort}",
+      "templated" : true
+    },
+    "groupsrelations" : {
+      "href" : "/biosamples/beta/api/groupsrelations{?page,size,sort}",
+      "templated" : true
+    }
+  }
+}
+----
+
+===== Pagination: the page object
+
+Requests that return multiple items will be paginated to 50 items by default.
+You can specify further pages using the `?page` parameter.
+For some resources you can also set a custom page size up to 500 with the `?size` parameter
+and the order of the results with the `?sort` parameter, deciding between `asc` or `desc`
+
+Here an example from link:www.ebi.ac.uk/biosamples/api/groups/
+[source, bash]
+----
+$ curl -H Content-Type:application/json http://www.ebi.ac.uk/biosamples/api/groups/
+----
+
+[source, json]
+----
+{
+  "_embedded" : {
+    "groups" : [...]
+  },
+  "_links" : {
+    "self" : {
+      "href" : "/biosamples/beta/api/groups"
+    },
+    "search" : {
+      "href" : "/biosamples/beta/api/groups/search"
+    }
+  },
+  "page" : {
+    "size" : 50,
+    "totalElements" : 8,
+    "totalPages" : 1,
+    "number" : 0
+  }
+}
+----
+
+==== Resources
+
+===== API - Root Endpoint
+The `API` endpoint provides the entry point into the service. A GET request returns all the resources available in BioSamples
+Example in terminal:
+
+[source, bash]
+----
+$ curl -H Content-Type:application/json https://www.ebi.ac.uk/biosamples/api/
+----
+
+[source, json]
+----
+{
+  "_links" : {
+    "samples" : {
+      "href" : "/biosamples/beta/api/samples{?page,size,sort}",
+      "templated" : true
+    },
+    "groups" : {
+      "href" : "/biosamples/beta/api/groups{?page,size,sort}",
+      "templated" : true
+    },
+    "samplesrelations" : {
+      "href" : "/biosamples/beta/api/samplesrelations{?page,size,sort}",
+      "templated" : true
+    },
+    "groupsrelations" : {
+      "href" : "/biosamples/beta/api/groupsrelations{?page,size,sort}",
+      "templated" : true
+    }
+  }
+}
+----
+
+Here the description of the main resources in the BioSamples database
+[options="header"]
+|===
+| Resource name |Resource link|Description
+| Samples | http://www.ebi.ac.uk/biosamples/api/samples/ |	Link to the samples in BioSamples
+| Groups | http://www.ebi.ac.uk/biosamples/api/groups/ | Link to the groups in BioSamples
+| External link relations | http://www.ebi.ac.uk/biosamples/api/externallinksrelations/ | Link to the external links in BioSamples
+| Samples relations | http://www.ebi.ac.uk/biosamples/api/samplesrelations/ 	Link to the samples relations in BioSamples
+Groups relations 	http://www.ebi.ac.uk/biosamples/api/grouprelations/ 	Link to the group relations in BioSamples
+|===
+
+===== Search functionality
+
+Both samples and groups resources provide a search functionality reachable from the _link resources. The search endpoint exposes links you can use for specific search needs
+Example in terminal:
+
+[source, bash]
+----
+$ curl -H Content-Type:application/json https://www.ebi.ac.uk/biosamples/api/samples/search
+----
+
+Here a description of the search end points for the sample resource:
+[options="header"]
+|===
+| Link | Description
+| findByAccessionAndGroup | Search for a specific sample accession in a group
+| findByTextAndGroup | Search for a sample with specific text in a group
+| findByGroup | Search samples in a group
+| findByAccession | Search sample with specific accession
+| findFirstByGroupContains 	| Search for one sample in a group
+| findByText | Search all samples having specific text
+|===
+
+=== XML - Legacy api
+
+BioSamples will still support the legacy XML api, but no further development will be done to improve it. New features and functionalities will be developed solely on the JSON REST api.
+
+For the specifications of the XML API please refer to the link:legacy_xml_api[old documentation available here]

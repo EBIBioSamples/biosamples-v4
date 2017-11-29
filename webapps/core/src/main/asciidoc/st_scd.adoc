@@ -1,4 +1,5 @@
-==SampleTab SCD section
+:last-update-label!:
+== SampleTab SCD section
 
 The Sample Characteristics Description is the section that describes the samples as a series of key : value attributes.
 
@@ -17,7 +18,7 @@ The SCD section of a SampleTab file contains definitions BioSamples. These are d
 
 Object names should be alphanumeric without punctuation. Furthermore, names should be different by more than just capitalization (e.g. the use of both "Subject A" and "Subject a" is discouraged). Names should be descriptive where possible, but also should not be more than about 25 characters long.
 
-===Attributes
+=== Attributes
 
 BioSamples are described by attributes, which are a pair of a tag and a value. Values are expected to be generally be in lowercase and use American English spellings; abbreviations should be avoided.
 
@@ -25,7 +26,7 @@ BioSamples cannot have multiple copies of the same attribute, but multiple attri
 
 BioSamples that do not have a value in a column are not considered to have the attribute that that column is associated with.
 
-====Named Attributes
+==== Named Attributes
 
 There are a number of specific attributes that can be used to describe BioSamples, as well as more free-form attribute. The specific attributes are:
 
@@ -35,9 +36,9 @@ There are a number of specific attributes that can be used to describe BioSample
 |Organism|Value should be scientific name and have NCBI Taxonomy as a Term Source REF with associated Term Source ID.
 |Material|
 |Sex|Prefer "male" or "female" over synonyms. May have other values in some cases e.g. yeast mating types.
+|=========
 
-
-====Free-form Attributes
+==== Free-form Attributes
 
 As well as named attributes, free-form attributes can be used. There are currently two types - Characteristic[ ] and Comment[ ] - and both allow free-form text in both the attribute key and value. It is expected that both key and value are lowercase American English without abbreviations.
 
@@ -54,11 +55,12 @@ Characteristic attributes are used to represent common attributes that are not s
 |Characteristic[genotype]|	
 |Characteristic[developmental stage]|	
 |Characteristic[genetic modification]|May have multiple characteristics if multiple genetic modifications have been made.
-|Characteristic[clinical history]|	
+|Characteristic[clinical history]|
+|=========
 
 Comment attributes should be used for information that is important to record, but is of a type that is specific to those BioSamples. For example, internal identifiers, operative names, batch identifiers, etc.
 
-====Attribute Modifiers
+==== Attribute Modifiers
 
 There are currently two possible attribute modifiers, Term Source and Unit. These are mutually exclusive; an attribute may have zero or one modifiers, but not two. These modifiers can be used on any Name Attribute, Characteristic Attribute, or Comment Attribute.
 
@@ -81,15 +83,22 @@ A Unit modifier is used to specify the units used for a numeric value. For examp
 |milimole|use instead of "mm"
 |micromole|use instead of "um or "µm"
 |practical salinity unit|use instead of "PSU"
+|=========
 
-===Relationships
+=== Relationships
 
 Connections between BioSamples are indicated through relationships. These are named attributes where the value is either the name of another sample in the submission, or the accession of a sample in the BioSamples Database. The following relationships are currently recognized:
 
+
+
+
 [options="header"]
 |=========
+
 |Relationship Key|Notes
+
 |Same as|The same physical sample has multiple BioSample records e.g. from different source databases.
+
 |Derived from|Where one BioSample was derived from another e.g. blood sample from an individual, genetic modification of a cell line.
 |Child of|Indicates parentage. Only applicable to sexual organisms; for bacteria see Derived from.
 

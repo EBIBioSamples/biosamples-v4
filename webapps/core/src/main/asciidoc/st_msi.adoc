@@ -1,8 +1,9 @@
-==SampleTab MSI section
+:last-update-label!:
+== SampleTab MSI section
 
 The MSI (Meta-submission information) is based on rows. The first column specifies a key and subsequent columns the values. There are 6 sections, described below. All MSI sections are block based; entries in the same column within the same section are related, but the order of the rows is not important. The start of the MSI section is denoted by "[MSI]" on a line by itself.
 
-===Submission
+=== Submission
 
 The submission block describes overall features of the submission and its associated samples.
 
@@ -17,7 +18,7 @@ The submission block describes overall features of the submission and its associ
 |Submission Update Date|x1 optional|Date this submission was last modified. Must be in a YYYY-MM-DD format.
 |Submission Release Date|x1 optional|Date to be made public on. If blank, it will be public immediately. Must be in a YYYY-MM-DD format.Screenshot of MSI Submission section
 
-===Person
+=== Person
 
 The Person section contains information describing who supplied the sample information. Note that the Organization section also supplies this information on a per-organization basis.
 
@@ -32,7 +33,7 @@ Although there are both Organization and Person sections, the entries do not cor
 |Person Email|
 |Person Role|Should be a child of role in EFO
 
-===Organization
+=== Organization
 
 The Organization section contains information describing who supplied the sample information. Note that the Person section also supplies this information on a per-individual basis.
 
@@ -46,7 +47,7 @@ Although there are both Organization and Person sections, the entries do not cor
 |Organization URI|Web site.
 |Organization Role|Should be a child of role in EFOScreenshot of MSI Organization section
 
-===Publication
+=== Publication
 
 Publication section links to papers and other published materials describing these samples, in particular how they were created and treated.
 
@@ -56,7 +57,7 @@ Publication section links to papers and other published materials describing the
 |Publication PubMed ID|Valid PubMed ID, numeric only
 |Publication DOI|Valid Digital Object Identifier
 
-===Database
+=== Database
 
 The database section provides links to other databases that have data associated with this submission. Note that where per-sample links are possible they should be provided in the SCD section. Every combination of Database Name and Database ID must be unique to each entry in the database section.
 
@@ -67,7 +68,7 @@ The database section provides links to other databases that have data associated
 |Database ID|The identifier of this record within the database
 |Database URI|Database URI for this entry, typically a web page.
 
-===Term Source
+=== Term Source
 
 The Term Source section is used to specify ontologies or controlled vocabularies (i.e. NCBI Taxonomy) that are used in the SCD section. Each Term Source Name must be referenced by at least one Term Source REF attribute modifier in the SCD section (see Term Source) and every Term Source REF attribute modifier must reference a valid Term Source Name in the MSI section.
 

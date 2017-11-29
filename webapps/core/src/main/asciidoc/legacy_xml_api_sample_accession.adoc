@@ -1,0 +1,143 @@
+:last-update-label!:
+== Sample Accession
+
+- It returns all information about a Sample;
+- E.g.   link:/biosamples/xml/sample/SAME546131[];
+
+
+==== Authentication
+N/A
+
+==== Arguments
+[options="header"]
+|===
+| Parameter | Notes
+|sampleAccession|Required
+|groupslist| Optional (Default=false)
+|===
+
+==== Example Request
+`Get /xml/sample/SAME546131`
+
+==== Example Response
+[source, xml]
+------
+<BioSample xmlns="http://www.ebi.ac.uk/biosamples/SampleGroupExport" id="SAME315173">
+<Property class="Sample Name" characteristic="true" comment="false" type="STRING">
+<QualifiedValue>
+<Value>STOCK Dbp<tm1Schb> Hlf<tm1Schb> Tef<tm1Schb>/Cnrm</Value>
+</QualifiedValue>
+</Property>
+<Property class="comment[Synonym]" characteristic="true" comment="false" type="STRING">
+<QualifiedValue>
+<Value>
+HLF-KO/DBP-KO/TEF-heterozygous, STOCK Dbp<tm1Schb> Hlf<tm1Schb> Tef<tm1Schb>/Ibmc
+</Value>
+</QualifiedValue>
+</Property>
+<Property class="comment[Nomenclature]" characteristic="true" comment="false" type="STRING">
+<QualifiedValue>
+<Value>+</Value>
+</QualifiedValue>
+</Property>
+<Property class="comment[Strain ID]" characteristic="true" comment="false" type="STRING">
+<QualifiedValue>
+<Value>EM:02489</Value>
+</QualifiedValue>
+</Property>
+<Property class="Material" characteristic="true" comment="false" type="STRING">
+<QualifiedValue>
+<Value>embryo</Value>
+</QualifiedValue>
+</Property>
+<Property class="Organism" characteristic="true" comment="false" type="STRING">
+<QualifiedValue>
+<Value>Mus musculus</Value>
+<TermSourceREF>
+<Name/>
+<Description/>
+<URI>http://www.ncbi.nlm.nih.gov/taxonomy/</URI>
+<Version/>
+<TermSourceID>10090</TermSourceID>
+</TermSourceREF>
+</QualifiedValue>
+</Property>
+<Property class="characteristic[Allele ID]" characteristic="true" comment="false" type="STRING">
+<QualifiedValue>
+<Value>MGI:2183196</Value>
+</QualifiedValue>
+<QualifiedValue>
+<Value>MGI:3045494</Value>
+</QualifiedValue>
+<QualifiedValue>
+<Value>MGI:3045480</Value>
+</QualifiedValue>
+</Property>
+<Property class="characteristic[Allele Symbol]" characteristic="true" comment="false" type="STRING">
+<QualifiedValue>
+<Value>Dbp<tm1Schb></Value>
+</QualifiedValue>
+<QualifiedValue>
+<Value>Tef<tm1Schb></Value>
+</QualifiedValue>
+<QualifiedValue>
+<Value>Hlf<tm1Schb></Value>
+</QualifiedValue>
+</Property>
+<Property class="characteristic[Allele Name]" characteristic="true" comment="false" type="STRING">
+<QualifiedValue>
+<Value>targeted mutation 1, Ueli Schibler</Value>
+</QualifiedValue>
+</Property>
+<Property class="characteristic[Gene ID]" characteristic="true" comment="false" type="STRING">
+<QualifiedValue>
+<Value>MGI:94866</Value>
+</QualifiedValue>
+<QualifiedValue>
+<Value>MGI:98663</Value>
+</QualifiedValue>
+<QualifiedValue>
+<Value>MGI:96108</Value>
+</QualifiedValue>
+</Property>
+<Property class="characteristic[Gene Symbol]" characteristic="true" comment="false" type="STRING">
+<QualifiedValue>
+<Value>Dbp</Value>
+</QualifiedValue>
+<QualifiedValue>
+<Value>Tef</Value>
+</QualifiedValue>
+<QualifiedValue>
+<Value>Hlf</Value>
+</QualifiedValue>
+</Property>
+<Property class="characteristic[Gene Name]" characteristic="true" comment="false" type="STRING">
+<QualifiedValue>
+<Value>D site albumin promoter binding protein</Value>
+</QualifiedValue>
+<QualifiedValue>
+<Value>thyrotroph embryonic factor</Value>
+</QualifiedValue>
+<QualifiedValue>
+<Value>hepatic leukemia factor</Value>
+</QualifiedValue>
+</Property>
+<Database>
+<Name>EM</Name>
+<ID>STOCK Dbp<tm1Schb> Hlf<tm1Schb> Tef<tm1Schb>/Cnrm</ID>
+<URI>
+http://www.findmice.org/summary?query=STOCK+Dbp%3Ctm1Schb%3E+Hlf%3Ctm1Schb%3E+Tef%3Ctm1Schb%3E%2FCnrm&repositories=EM
+</URI>
+</Database>
+</BioSample>
+------
+
+==== Error Codes
+N/A
+
+==== XSD - Xml Schema Definition
++++<a th:href="@{/assets/xsd/v1.0/BioSDSchema.xsd}" th:text="@{/assets/xsd/v1.0/BioSDSchema.xsd}">/assets/xsd/v1.0/BioSDSchema.xsd</a>+++
+
+
+
+

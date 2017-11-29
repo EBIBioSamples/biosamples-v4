@@ -1,3 +1,4 @@
+:last-update-label!:
 == How to search BioSamples
 In the top right corner of every page (including this one!) is a search box. 
 You can enter any words that you want describe your samples of interest here. Once a query has been entered, press return or click on adjacent button to view the results.

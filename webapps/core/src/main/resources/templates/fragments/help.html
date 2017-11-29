@@ -5,13 +5,21 @@
 </head>
 <body>
 	<section th:fragment="sidebar ()">
-		<div class="small-12 medium-3 columns sidebar" data-sticky-container>
-			<div class="sticky" data-sticky data-anchor="main-content-area"
-				data-options="marginTop:4;">
-				<ul class="menu vertical">
-					<li><a th:href="@{/help/search}">searching</a></li>
-					<li><a th:href="@{/help/submit}">submitting</a></li>
+		<!--<div class="small-12 medium-3 columns sidebar" data-sticky-container>-->
+			<!--<div class="sticky" data-sticky data-anchor="main-content-area"-->
+				<!--data-options="marginTop:4;">-->
+        <div class="small-12 medium-3 columns sidebar">
+            <div data-options="marginTop:4;">
+				<ul class="menu vertical accordion=menu">
+					<li><a th:href="@{/help/}">Home</a></li>
+					<li><a th:href="@{/help/search}">Searching</a></li>
+					<li><a th:href="@{/help/submit}">Submitting</a></li>
+					<li><a th:href="@{/help/api}">Programmatic interface</a></li>
+					<ul class="menu vertical nested">
+						<li><a th:href="@{/help/legacy_xml_api}">Legacy XML API</a></li>
+					</ul>
 					<li><a th:href="@{/help/faq}">FAQ</a></li>
+					<li><a th:href="@{/help/contacts}">Contact us</a></li>
 				</ul>
 			</div>
 		</div>

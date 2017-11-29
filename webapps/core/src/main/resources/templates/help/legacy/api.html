@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>API &lt; Help &lt; BioSamples &lt; EMBL-EBI</title>
+    </head>
+
+    <body>
+        <div id="content" role="main" class="grid_24 clearfix">
+            <section id="bsd-help" class="grid_18 alpha">
+                <h2>Programmatic Interface</h2>
+                
+                <p>BioSamples Database provides an interface that is suitable for programmatic queries. This consists of four entry point URLs ( descibed below), each of which returns an XML response.</p>
+                                
+                <p>If you have any problems or suggestions please <a href="mailto:biosamples@ebi.ac.uk" class="icon icon-generic" data-icon="E">contact us</a>.</p>
+                
+                
+                <h3>Sample Accession</h3>
+                <ul>
+                    <li>Returns information about a single specified sample.</li>
+                    <li><code>/biosamples/xml/sample/ACCESSION</code> where ACCESSION is the BioSample Database accession of the sample of interest.</li>
+                    <li>e.g. <a href="/biosamples/xml/sample/SAME315173">/biosamples/xml/sample/SAME315173</a></li>
+                    <li><a class="wiki" href="api_sample_accession.html">more information</a></li>
+                </ul>
+                
+                <h3>Group Accession</h3>
+                <ul>
+                    <li>Returns information about a specified group.</li>
+                    <li><code>/biosamples/xml/group/ACCESSION</code> where ACCESSION is the BioSample Database accession of the group of interest.</li>
+                    <li>e.g. <a href="/biosamples/xml/group/SAMEG82620">/biosamples/xml/group/SAMEG82620</a></li>
+                    <li><a class="wiki" href="api_group_accession.html">more information</a></li>
+                </ul>
+                
+                <h3>Find Groups</h3>
+                <ul>
+                    <li>Returns group accessions that match the specified search query.</li>
+                    <li><code>/biosamples/xml/group/query=QUERY</code> where QUERY is the term to query for</li>
+                    <li>e.g. <a href="/biosamples/xml/group/query=leukemia">/biosamples/xml/group/query=leukemia</a></li>
+                    <li>Results are returned in one or more pages and will always return result summary information.</li>
+                    <li>Can use <a href="search.html#advanced">advanced query features</a>.</li>
+                    <li><a class="wiki" href="api_group_search.html">more information</a></li>
+                </ul>
+                
+                <h3>Find Samples Within a Group</h3>
+                <ul>
+                    <li>Returns sample accessions that match the specified search query and are in the specified group.</li>
+                    <li><code>/biosamples/xml/groupsamples/ACCESSION/query=QUERY</code> where ACCESSION is the group to query within and QUERY is the term to query for.</li>
+                    <li>e.g. <a href="/biosamples/xml/groupsamples/SAMEG82620/query=leukemia">/biosamples/xml/groupsamples/SAMEG82620/query=leukemia</a></li>
+                    <li>Results are returned in one or more pages and will always return result summary information.</li>
+                    <li>Can use <a href="search.html#advanced">advanced query features</a>.</li>
+                    <li>If query is blank, all samples within that group are matched.</li>
+                    <li><a class="wiki" href="api_sample_search_insidegroup.html">more information</a></li>
+                </ul>
+                
+                <h3>Find Samples</h3>
+                <ul>
+                    <li>Returns sample accessions that match the specified search query.</li>
+                    <li><code>/biosamples/xml/sample/query=QUERY</code> where QUERY is the term to query for.</li>
+                    <li>e.g. <a href="/biosamples/xml/sample/query=leukemia">/biosamples/xml/sample/query=leukemia</a></li>
+                    <li>Results are returned in one or more pages and will always return result summary information.</li>
+                    <li>Can use <a href="search.html#advanced">advanced query features</a>.</li>
+                    <li>If query is blank, all samples within that group are matched.</li>
+                    <li><a class="wiki" href="api_sample_search.html">more information</a></li>
+                </ul>
+                
+            </section>
+            
+            <aside class="grid_6 omega">
+                <h3>Help</h3>
+                <ul id="secondary-nav">
+                    <li><a href="index.html">Help home</a></li>
+                    <li><a href="search.html">Searching</a></li>
+                    <li><a href="submit.html">Submitting</a></li>
+                    <li class="active"><a href="api.html">Programmatic interface</a></li>
+                    <li><a href="faq.html">FAQ</a></li>
+                    <li><a href="news.html">News</a></li>
+                    <li><a href="contact_us.html">Contact us</a></li>                
+                </ul>
+            </aside>
+        </div>
+    </body>
+</html>
