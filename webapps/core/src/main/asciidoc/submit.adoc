@@ -37,10 +37,10 @@ You can send the validated and corrected SampleTab file by email to mailto:biosa
 == Web Services
 There are several services provided for programmatically sending sample information to the BioSamples Database. These are:
 
-Submission service for submitting SampleTab files. Please note that they will not be immediately visible in the web interface, but the assigned accession will be returned immediately as a SampleTab file after the submission.
++++<a th:href="@{/sampletab/submission}">Submission service</a>+++ for submitting SampleTab files. Please note that they will not be immediately visible in the web interface, but the assigned accession will be returned immediately as a SampleTab file after the submission.
 
-Validation service for validating SampleTab files without submitting them.
++++<a th:href="@{/sampletab/validation}">Validation Service</a>+++ for validating SampleTab files without submitting them.
 
-Accessioning service for assigning accessions to samples and groups. Please note that this does not submit any sample information to the database, but will return the assigned accessions immediately.
++++<a th:href="@{/sampletab/accession}">Accessioning service</a>+++ for assigning accessions to samples and groups. Please note that this does not submit any sample information to the database, but will return the assigned accessions immediately.
 
 If you have any questions about these services or would like more information, please contact us at mailto:biosamples@ebi.ac.uk[biosamples@ebi.ac.uk].
