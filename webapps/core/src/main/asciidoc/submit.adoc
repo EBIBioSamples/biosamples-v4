@@ -1,3 +1,4 @@
+:last-update-label!:
 == What is a BioSample?
 The definition of a BioSample is deliberately flexible in order to accommodate a wide range of uses. Typically each BioSample corresponds to a discrete physical object that is composed of live biological material.
 

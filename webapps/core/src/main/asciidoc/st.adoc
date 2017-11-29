@@ -1,3 +1,4 @@
+:last-update-label!:
 == SampleTab file format
 The BioSamples Database uses the SampleTab file format for submissions. This is a tab-delimited file that can be created in many spreadsheet editing software packages (e.g. Microsoft Excel). Although SampleTab files can have some advanced features, they can be written by users from a wide range of backgrounds using tools they are already familiar with.
 

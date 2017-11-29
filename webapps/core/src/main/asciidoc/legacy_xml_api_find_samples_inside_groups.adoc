@@ -1,3 +1,4 @@
+:last-update-label!:
 == Search Samples inside a Sample Group
 
 - It returns all the samples that are inside the SampleGroup parameter and that also match the query(e.g. link:/biosamples/xml/groupsamples/SAMEG23004?query=cancer[]);

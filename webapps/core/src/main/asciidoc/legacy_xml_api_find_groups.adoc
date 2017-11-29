@@ -1,3 +1,4 @@
+:last-update-label!:
 == Search Groups
 
 - It returns all the groups that match the query (e.g. link:/biosamples/xml/group?query=cancer[]);

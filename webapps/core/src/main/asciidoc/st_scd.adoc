@@ -1,3 +1,4 @@
+:last-update-label!:
 == SampleTab SCD section
 
 The Sample Characteristics Description is the section that describes the samples as a series of key : value attributes.
