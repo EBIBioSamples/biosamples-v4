@@ -164,6 +164,18 @@ public class RestFilterIntegration extends AbstractIntegration{
             throw new RuntimeException("Returned sample doesn't match the expected sample " + testSample3.getAccession());
         }
 
+
+        log.info("Getting sample 2 using filter on inverse relation");
+        Filter invRelFilter = FilterBuilder.create().onInverseRelation("parent of").withValue(getTestSample3().getAccession()).build();
+        samplePage = client.fetchPagedSampleResource("", Collections.singletonList(invRelFilter), 0, 10);
+
+        if (samplePage.getMetadata().getTotalElements() < 1) {
+            throw new RuntimeException("Unexpected number of results for relation filter query: " + samplePage.getMetadata().getTotalElements());
+        }
+        match = samplePage.getContent().stream().anyMatch(resource -> resource.getContent().getAccession().equals(getTestSample2().getAccession()));
+        if (!match) {
+            throw new RuntimeException("Returned sample doesn't match the expected sample " + testSample3.getAccession());
+        }
     }
 
     @Override
