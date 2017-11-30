@@ -37,7 +37,7 @@ public class SolrSampleRelationField extends SolrSampleField{
 
             RelationFilter relationFilter = (RelationFilter) filter;
             if (relationFilter.getContent().isPresent()) {
-                filterCriteria = filterCriteria.expression("/" + relationFilter.getContent() + "/");
+                filterCriteria = filterCriteria.expression("/" + relationFilter.getContent().get() + "/");
             } else {
                 filterCriteria = filterCriteria.isNotNull();
             }

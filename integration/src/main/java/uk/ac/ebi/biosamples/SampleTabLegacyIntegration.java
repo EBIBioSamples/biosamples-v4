@@ -30,7 +30,7 @@ import java.util.Optional;
 
 @Component
 @Order(5)
-@Profile({"default", "test"})
+@Profile({"default"})
 public class SampleTabLegacyIntegration extends AbstractIntegration {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
