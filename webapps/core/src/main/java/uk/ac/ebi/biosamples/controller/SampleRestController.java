@@ -139,7 +139,7 @@ public class SampleRestController {
 			throw new SampleAccessionMismatchException();
 		}		
 		
-		log.info("Recieved PUT for " + accession);
+		log.debug("Recieved PUT for " + accession);
 		sample = bioSamplesAapService.handleSampleDomain(sample);		
 		
 		//TODO limit use of this method to write super-users only
@@ -152,7 +152,7 @@ public class SampleRestController {
 		}
 
 		if (!setFullDetails) {
-			log.info("Removing contact legacy fields for " + accession);
+			log.trace("Removing contact legacy fields for " + accession);
 			sample = sampleManipulationService.removeContactLegacyFields(sample);
 		}
 		
