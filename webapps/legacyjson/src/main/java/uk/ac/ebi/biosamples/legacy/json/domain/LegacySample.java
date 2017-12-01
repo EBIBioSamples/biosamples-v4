@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.springframework.hateoas.core.Relation;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.util.StringUtils;
 import uk.ac.ebi.biosamples.model.*;
 
 import java.io.IOException;
@@ -23,6 +24,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 @Relation(value="sample", collectionRelation = "samples")
@@ -72,7 +74,7 @@ public class LegacySample {
 
         MultiValueMap<String, LegacyAttribute> legacyAttributesByType = new LinkedMultiValueMap<>();
         for (String type: attributesByType.keySet()) {
-            legacyAttributesByType.put(type,
+            legacyAttributesByType.put(camelizer(type),
                     attributesByType.get(type)
                             .stream()
                             .map(LegacyAttribute::new)
@@ -150,5 +152,20 @@ public class LegacySample {
         public void serialize(Instant value, JsonGenerator gen, SerializerProvider provider) throws IOException {
             gen.writeString(value.atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ISO_LOCAL_DATE));
         }
+    }
+
+
+    private String camelizer(String value) {
+        StringBuilder finalString = new StringBuilder();
+        for(String part: value.split(" ")) {
+            part = part.replaceAll("[^A-Za-z0-9]","");
+            part = StringUtils.capitalize(part.toLowerCase());
+            if (finalString.length() == 0) {
+                finalString.append(part.toLowerCase());
+                continue;
+            }
+            finalString.append(part);
+        }
+        return finalString.toString();
     }
 }

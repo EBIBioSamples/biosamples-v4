@@ -138,6 +138,22 @@ public class LegacySamplesControllerIntegrationTest {
 	}
 
 	@Test
+	public void testSampleAttributesAreCamelCasedAndPurified() throws Exception {
+		Sample testSample = new TestSample("SAME0")
+				.withAttribute(
+						new TestAttribute("This is a Strange type (indeed!!!)", "Value").build()
+				).build();
+
+		when(sampleRepository.findByAccession(testSample.getAccession())).thenReturn(Optional.of(testSample));
+
+		mockMvc.perform(get("/samples/SAME0").accept(HAL_JSON))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.characteristics").value(
+						hasKey("thisIsAStrangeTypeIndeed")
+				));
+	}
+
+	@Test
 	public void testSampleNameIsExposedAsRootField() throws Exception {
 		Sample testSample = new TestSample("SAMEA2").withName("StrangeName").build();
 		when(sampleRepository.findByAccession(testSample.getAccession())).thenReturn(Optional.of(testSample));
