@@ -54,7 +54,7 @@ public class RegularFacetFetchStrategy implements FacetFetchStrategy {
             // Create the list of facet value-count for the returned field
             List<LabelCountEntry> listFacetContent = new ArrayList<>();
             for (FacetFieldEntry ffe : facetPage.getFacetResultPage(field)) {
-                log.info("Adding "+ fieldCountEntry.getKey().getLabel() +" : "+ffe.getValue()+" with count "+ffe.getValueCount());
+                log.trace("Adding "+ fieldCountEntry.getKey().getLabel() +" : "+ffe.getValue()+" with count "+ffe.getValueCount());
                 listFacetContent.add(LabelCountEntry.build(ffe.getValue(), ffe.getValueCount()));
             }
 
