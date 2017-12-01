@@ -1,33 +1,33 @@
 {
-  "accession" : "SAMEG316628",
-  "name" : "E-MTAB-2672",
-  "description" : "We performed RNA-sequencing of normal haematopoietic stem cells and progenitor populations and of Leukemic Stem Cells in CD34- Acute Myeloid Leukaemia.",
-  "updateDate" : "2017-11-10",
-  "releaseDate" : "2017-02-18",
-  "characteristics" : null,
-  "externalReferences" : "[{\"Name\":\"ENA\",\"URL\":\"http://www.ebi.ac.uk/ena/data/view/ERP006121\",\"Acc\":\"ERP006121\"},{\"Name\":\"ArrayExpress\",\"URL\":\"http://www.ebi.ac.uk/arrayexpress/experiments/E-MTAB-2672\",\"Acc\":\"E-MTAB-2672\"},{\"Name\":\"ArrayExpress\",\"URL\":\"http://www.ebi.ac.uk/arrayexpress/experiments/E-MTAB-2672\",\"Acc\":\"E-MTAB-2672\"},{\"Name\":\"ENA\",\"URL\":\"http://www.ebi.ac.uk/ena/data/view/ERP006121\",\"Acc\":\"ERP006121\"}]",
+  "accession" : "SAMEA104493031",
+  "name" : "source Dex1_Etop10_CM_11",
+  "description" : "This is a simple description",
+  "updateDate" : "2017-11-19",
+  "releaseDate" : "2017-08-30",
+  "characteristics" : {
+    "organism" : [ {
+      "text" : "Homo sapiens",
+      "ontologyTerms" : [ "http://purl.obolibrary.org/obo/NCBITaxon_9606" ]
+    } ],
+    "diseaseState" : [ {
+      "text" : "acute lymphoblastic leukaemia"
+    } ],
+    "cellLine" : [ {
+      "text" : "CEM-C7-14"
+    } ]
+  },
   "contact" : [ {
-    "Name" : "Georg Otto"
-  }, {
-    "Name" : "Paresh Vyas"
+    "Name" : "Leo Zeef"
   } ],
-  "organization" : [ {
-    "Name" : "Molecular haematology Unit, The Weatherall Institute of Molecular Medicine",
-    "Role" : "investigator "
-  }, {
-    "Name" : "Paresh Vyas group, Molecular haematology Unit, The Weatherall Institute of Molecular Medicine",
-    "Role" : "submitter "
-  } ],
-  "samples" : [ "SAMEA4562408", "SAMEA4562409", "SAMEA4562404", "SAMEA4562448", "SAMEA4562405", "SAMEA4562449", "SAMEA4562406", "SAMEA4562407", "SAMEA4562450", "SAMEA4562411", "SAMEA4562412", "SAMEA4562413", "SAMEA4562414", "SAMEA4562451", "SAMEA4562452", "SAMEA4562453", "SAMEA4562410", "SAMEA4562437", "SAMEA4562438", "SAMEA4562439", "SAMEA4562400", "SAMEA4562444", "SAMEA4562401", "SAMEA4562445", "SAMEA4562446", "SAMEA4562402", "SAMEA4562403", "SAMEA4562447", "SAMEA4562440", "SAMEA4562441", "SAMEA4562442", "SAMEA4562443", "SAMEA4562426", "SAMEA4562427", "SAMEA4562428", "SAMEA4562429", "SAMEA4562433", "SAMEA4562434", "SAMEA4562435", "SAMEA4562436", "SAMEA4562430", "SAMEA4562398", "SAMEA4562431", "SAMEA4562399", "SAMEA4562432", "SAMEA4562419", "SAMEA4562415", "SAMEA4562416", "SAMEA4562417", "SAMEA4562418", "SAMEA4562422", "SAMEA4562423", "SAMEA4562424", "SAMEA4562425", "SAMEA4562420", "SAMEA4562421" ],
   "_links" : {
     "self" : {
-      "href" : "https://www.ebi.ac.uk/biosamples/api/groups/SAMEG316628"
+      "href" : "https://www.ebi.ac.uk/biosamples/api/samples/SAMEA104493031"
     },
-    "group" : {
-      "href" : "https://www.ebi.ac.uk/biosamples/api/groups/SAMEG316628"
+    "sample" : {
+      "href" : "https://www.ebi.ac.uk/biosamples/api/samples/SAMEA104493031"
     },
     "relations" : {
-      "href" : "https://www.ebi.ac.uk/biosamples/api/groupsrelations/SAMEG316628"
+      "href" : "https://www.ebi.ac.uk/biosamples/api/samplesrelations/SAMEA104493031"
     }
   }
 }

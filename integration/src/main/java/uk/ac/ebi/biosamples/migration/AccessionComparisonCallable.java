@@ -18,14 +18,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
-
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Contact;
-import uk.ac.ebi.biosamples.model.ExternalReference;
-import uk.ac.ebi.biosamples.model.Organization;
-import uk.ac.ebi.biosamples.model.Publication;
-import uk.ac.ebi.biosamples.model.Relationship;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.service.XmlGroupToSampleConverter;
 import uk.ac.ebi.biosamples.service.XmlSampleToSampleConverter;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
@@ -120,6 +113,8 @@ class AccessionComparisonCallable implements Callable<Void> {
 		String oldDocument = getDocument(oldUri);
 		String newDocument = getDocument(newUri);
 
+
+
 /*		
 		<BioSample xmlns="http://www.ebi.ac.uk/biosamples/SampleGroupExport/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="SAMEA19131418" submissionReleaseDate="2017-03-29T23:00:00+00:00" submissionUpdateDate="2017-03-30T20:59:36+00:00" xsi:schemaLocation="http://www.ebi.ac.uk/biosamples/SampleGroupExport/1.0 http://www.ebi.ac.uk/biosamples/assets/xsd/v1.0/BioSDSchema.xsd">
 		  <Property characteristic="true" class="Sample Name" comment="false" type="STRING">
@@ -210,7 +205,7 @@ class AccessionComparisonCallable implements Callable<Void> {
 		Sample oldSample = null;
 		if (accession.startsWith("SAMEG")) {
 			oldSample = xmlGroupToSampleConverter.convert(doc.getRootElement());
-			
+
 		} else {
 			oldSample = xmlSampleToSampleConverter.convert(doc.getRootElement());
 		}
@@ -222,7 +217,7 @@ class AccessionComparisonCallable implements Callable<Void> {
 		Sample newSample = null;
 		if (accession.startsWith("SAMEG")) {
 			newSample = xmlGroupToSampleConverter.convert(doc.getRootElement());
-			
+
 		} else {
 			newSample = xmlSampleToSampleConverter.convert(doc.getRootElement());
 		}
