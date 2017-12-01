@@ -43,6 +43,17 @@ public class XmlSampleToSampleConverter implements Converter<Element, Sample>  {
 			} else if ("Sample Description".equals(XmlPathBuilder.of(property).attribute("class"))) {
 				String value = XmlPathBuilder.of(property).path("QualifiedValue", "Value").text();
 				attributes.add(Attribute.build("description", value));	
+			//relationships
+			} else if ("Child Of".equals(XmlPathBuilder.of(property).attribute("class"))) {
+				String value = XmlPathBuilder.of(property).path("QualifiedValue", "Value").text();
+				relationships.add(Relationship.build(accession, "child of", value));
+			} else if ("recurated from".equals(XmlPathBuilder.of(property).attribute("class"))) {
+				String value = XmlPathBuilder.of(property).path("QualifiedValue", "Value").text();
+				relationships.add(Relationship.build(accession, "recurated from", value));
+			} else if ("Same As".equals(XmlPathBuilder.of(property).attribute("class"))) {
+				String value = XmlPathBuilder.of(property).path("QualifiedValue", "Value").text();
+				relationships.add(Relationship.build(accession, "same as", value));
+			//everything else
 			} else {
 				String type = XmlPathBuilder.of(property).attribute("class");
 				String value = XmlPathBuilder.of(property).path("QualifiedValue", "Value").text();

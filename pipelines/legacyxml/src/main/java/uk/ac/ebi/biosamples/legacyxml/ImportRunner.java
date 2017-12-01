@@ -182,6 +182,7 @@ public class ImportRunner implements ApplicationRunner {
 					sample.getRelationships().add(r);
 				}
 			}
+			/*
 			if (sameAs.containsKey(sample.getAccession())) {
 				for (String target : sameAs.get(sample.getAccession())) {
 					Relationship r = Relationship.build(sample.getAccession(), "same as", target);
@@ -203,6 +204,7 @@ public class ImportRunner implements ApplicationRunner {
 					sample.getRelationships().add(r);
 				}
 			}
+			*/
 			
 			futures.put(e, client.persistSampleResourceAsync(sample, false, true));
 
