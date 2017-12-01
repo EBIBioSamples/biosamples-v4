@@ -55,8 +55,8 @@ public class AccessFetcherCallable implements Callable<Void> {
 		
 		try {
 			executorService = Executors.newFixedThreadPool(32);		
-			getPages("samples", pagesize, executorService);
-			getPages("groups", pagesize, executorService);			
+			getPages("samples", pagesize, executorService, "");
+			getPages("groups", pagesize, executorService, "groups");			
 		} finally {
 			executorService.shutdownNow();
 		}
@@ -69,12 +69,12 @@ public class AccessFetcherCallable implements Callable<Void> {
 		return null;		
 	}
 	
-	private void getPages(String pathSegment, int pagesize, ExecutorService executorService) throws DocumentException, InterruptedException, ExecutionException {
+	private void getPages(String pathSegment, int pagesize, ExecutorService executorService, String query) throws DocumentException, InterruptedException, ExecutionException {
 
 		UriComponentsBuilder uriComponentBuilder = UriComponentsBuilder.fromUriString(rootUrl)
 				.pathSegment(pathSegment);
 			uriComponentBuilder.replaceQueryParam("pagesize", pagesize);
-			uriComponentBuilder.replaceQueryParam("query", "");
+			uriComponentBuilder.replaceQueryParam("query", query);
 		
 		//get the first page to get the number of pages in total
 		uriComponentBuilder.replaceQueryParam("page", 1);			
