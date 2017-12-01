@@ -11,7 +11,7 @@ import uk.ac.ebi.biosamples.mongo.repo.MongoExternalReferenceRepository;
 import uk.ac.ebi.biosamples.mongo.service.MongoExternalReferenceToExternalReferenceConverter;
 
 @Service
-public class ExternalReferenceService {
+public class MongoExternalReferenceService {
 
 	@Autowired
 	private MongoExternalReferenceRepository mongoExternalReferenceRepository;

@@ -24,6 +24,7 @@ import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.ExternalReferenceResourceAssembler;
 import uk.ac.ebi.biosamples.service.ExternalReferenceService;
+import uk.ac.ebi.biosamples.service.MongoExternalReferenceService;
 import uk.ac.ebi.biosamples.service.SamplePageService;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 import uk.ac.ebi.biosamples.service.SampleReadService;
@@ -35,7 +36,7 @@ public class ExternalReferenceRestController {
 
 	private final SampleReadService sampleService;
 	private final SamplePageService samplePageService;
-	private final ExternalReferenceService externalReferenceService;
+	private final MongoExternalReferenceService mongoExternalReferenceService;
 	
 	private final SampleResourceAssembler sampleResourceAssembler;
 	private final ExternalReferenceResourceAssembler externalReferenceResourceAssembler;
@@ -46,7 +47,7 @@ public class ExternalReferenceRestController {
 
 	public ExternalReferenceRestController(SampleReadService sampleService, 
 			SamplePageService samplePageService,
-			ExternalReferenceService externalReferenceService,
+			MongoExternalReferenceService mongoExternalReferenceService,
 			SampleResourceAssembler sampleResourceAssembler,
 			ExternalReferenceResourceAssembler externalReferenceResourceAssembler,
 			EntityLinks entityLinks) {
@@ -54,7 +55,7 @@ public class ExternalReferenceRestController {
 		this.samplePageService = samplePageService;
 		this.entityLinks = entityLinks;
 		this.sampleResourceAssembler = sampleResourceAssembler;
-		this.externalReferenceService = externalReferenceService;
+		this.mongoExternalReferenceService = mongoExternalReferenceService;
 		this.externalReferenceResourceAssembler = externalReferenceResourceAssembler;
 	}
 	
@@ -63,7 +64,7 @@ public class ExternalReferenceRestController {
 	public ResponseEntity<PagedResources<Resource<ExternalReference>>> getPagedHal(
 			Pageable page,
 			PagedResourcesAssembler<ExternalReference> pageAssembler) {
-    	Page<ExternalReference> pageExternalReference = externalReferenceService.getPage(page);
+    	Page<ExternalReference> pageExternalReference = mongoExternalReferenceService.getPage(page);
 		PagedResources<Resource<ExternalReference>> pagedResources = pageAssembler.toResource(pageExternalReference, 
 				externalReferenceResourceAssembler,
 				entityLinks.linkToCollectionResource(ExternalReference.class));
@@ -75,7 +76,7 @@ public class ExternalReferenceRestController {
     @CrossOrigin(methods = RequestMethod.GET)
 	@GetMapping(value="/{urlhash}", produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
 	public ResponseEntity<Resource<ExternalReference>> getExternalReferenceHal(@PathVariable String urlhash) {
-    	ExternalReference externalReference = externalReferenceService.getExternalReference(urlhash);
+    	ExternalReference externalReference = mongoExternalReferenceService.getExternalReference(urlhash);
     	if (externalReference == null) {
     		return ResponseEntity.notFound().build();
     	}
