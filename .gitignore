@@ -19,3 +19,4 @@ env.sh
 .ideavimrc
 test-features
 run_test.py
+!/models/legacyjson/src/test/resources/testLegacySample.json
