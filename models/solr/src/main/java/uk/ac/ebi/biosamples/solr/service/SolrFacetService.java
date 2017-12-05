@@ -82,6 +82,9 @@ public class SolrFacetService {
             2. _av_ss => regular facet
             3. _dt => range facet
          */
+        
+        //TODO do this to properly account for different strategies - this is a dirty hack for performance!
+        /*
         for (Entry<SolrSampleField, Long> fieldCountEntry: allFacetFields) {
             FacetFetchStrategy strategy = fieldCountEntry.getKey().getFacetCollectionStrategy();
             List<Optional<Facet>> optionalFacets = strategy.fetchFacetsUsing(solrSampleRepository,
@@ -90,7 +93,13 @@ public class SolrFacetService {
                     facetValuesPageInfo);
             optionalFacets.forEach(opt -> opt.ifPresent(facets::add));
         }
-
+		*/
+        
+        allFacetFields.get(0).getKey().getFacetCollectionStrategy()
+        	.fetchFacetsUsing(solrSampleRepository, query, allFacetFields, facetValuesPageInfo)
+        	.forEach(opt -> opt.ifPresent(facets::add));
+        
+        
         // Return the list of facets
         Collections.sort(facets);
         Collections.reverse(facets);
