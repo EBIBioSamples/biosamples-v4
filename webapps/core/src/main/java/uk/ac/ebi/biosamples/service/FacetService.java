@@ -30,7 +30,12 @@ public class FacetService {
 		//TODO if a facet is enabled as a filter, then that value will be the only filter displayed
 		//TODO allow update date range
 
-		return solrFacetService.getFacets(text, filters, domains, facetPageable, facetValuePageable);
+		long startTime = System.nanoTime();
+		List<Facet> facets = solrFacetService.getFacets(text, filters, domains, facetPageable, facetValuePageable);
+		long endTime = System.nanoTime();
+		log.trace("Got solr facets in "+((endTime-startTime)/1000000)+"ms");
+		
+		return facets;
 	}
 
 }
