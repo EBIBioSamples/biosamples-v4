@@ -46,7 +46,7 @@ public class RegularFacetFetchStrategy implements FacetFetchStrategy {
                 .findFirst();
 
             if (!optionalFieldInfo.isPresent()) {
-                throw new RuntimeException("Unexpected field returned when getting facets");
+                throw new RuntimeException("Unexpected field returned when getting facets for "+facetFieldCountEntries);
             }
 
             Entry<SolrSampleField, Long> fieldCountEntry = optionalFieldInfo.get();
