@@ -54,7 +54,7 @@ public class AccessFetcherCallable implements Callable<Void> {
 		ExecutorService executorService = null;
 		
 		try {
-			executorService = Executors.newFixedThreadPool(32);		
+			executorService = Executors.newFixedThreadPool(4);		
 			getPages("samples", pagesize, executorService, "");
 			getPages("groups", pagesize, executorService, "groups");			
 		} finally {

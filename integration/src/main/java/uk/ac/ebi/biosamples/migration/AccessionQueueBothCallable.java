@@ -109,14 +109,14 @@ public class AccessionQueueBothCallable implements Callable<Void> {
 		accIt = newOnlyList.iterator();
 		i = 0;
 		while (accIt.hasNext()) {
-			log.info("Sample only in new "+accIt.next());
+			log.warn("Sample only in new "+accIt.next());
 			i++;
 		}
 		
 		accIt = oldOnlyList.iterator();
 		i = 0;
 		while (accIt.hasNext()) {
-			log.info("Sample only in old "+accIt.next());
+			log.warn("Sample only in old "+accIt.next());
 			i++;
 		}
 		 

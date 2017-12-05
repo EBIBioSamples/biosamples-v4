@@ -1,7 +1,9 @@
 package uk.ac.ebi.biosamples.migration;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -11,6 +13,16 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.http.HeaderElement;
+import org.apache.http.HeaderElementIterator;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.conn.ConnectionKeepAliveStrategy;
+import org.apache.http.impl.client.cache.CachingHttpClientBuilder;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.message.BasicHeaderElementIterator;
+import org.apache.http.protocol.HTTP;
+import org.apache.http.protocol.HttpContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,8 +31,18 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Profile;
+import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.ResourceSupport;
+import org.springframework.hateoas.hal.Jackson2HalModule;
+import org.springframework.hateoas.mvc.TypeConstrainedMappingJackson2HttpMessageConverter;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
 
 import uk.ac.ebi.biosamples.service.XmlGroupToSampleConverter;
@@ -70,8 +92,63 @@ public class MigrationRunner implements ApplicationRunner, ExitCodeGenerator {
 		//String newUrl = "http://snowy.ebi.ac.uk:9083/biosamples/beta/xml/samples";
 		
 		
+
+		
+		//use a keep alive strategy to try to make it easier to maintain connections for reuse
+		ConnectionKeepAliveStrategy keepAliveStrategy = new ConnectionKeepAliveStrategy() {
+		    public long getKeepAliveDuration(HttpResponse response, HttpContext context) {
+		    	
+		    	//check if there is a non-standard keep alive header present
+		        HeaderElementIterator it = new BasicHeaderElementIterator
+		            (response.headerIterator(HTTP.CONN_KEEP_ALIVE));
+		        while (it.hasNext()) {
+		            HeaderElement he = it.nextElement();
+		            String param = he.getName();
+		            String value = he.getValue();
+		            if (value != null && param.equalsIgnoreCase("timeout")) {
+		                return Long.parseLong(value) * 1000;
+		            }
+		        }
+		        //default to 15s if no header
+		        return 15 * 1000;
+		    }
+		};
+		
+		//set a number of connections to use at once for multiple threads
+		PoolingHttpClientConnectionManager poolingHttpClientConnectionManager = new PoolingHttpClientConnectionManager();
+		poolingHttpClientConnectionManager.setMaxTotal(32);
+		poolingHttpClientConnectionManager.setDefaultMaxPerRoute(16);
+		
+
+		//make the actual client
+		HttpClient httpClient = CachingHttpClientBuilder.create()
+				.useSystemProperties()
+				.setConnectionManager(poolingHttpClientConnectionManager)
+				.setKeepAliveStrategy(keepAliveStrategy)
+				.build();
+		
+		//and wire it into the resttemplate
+        restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory(httpClient));
+
+		//make sure there is a application/hal+json converter		
+		//traverson will make its own but not if we want to customize the resttemplate in any way (e.g. caching)
+		List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();				
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.registerModule(new Jackson2HalModule());
+		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		MappingJackson2HttpMessageConverter halConverter = new TypeConstrainedMappingJackson2HttpMessageConverter(ResourceSupport.class);
+		halConverter.setObjectMapper(mapper);
+		halConverter.setSupportedMediaTypes(Arrays.asList(MediaTypes.HAL_JSON));
+		//make sure this is inserted first
+		converters.add(0, halConverter);				
+		restTemplate.setMessageConverters(converters);
+		
+		
+		
+		
+		
 		try  {
-			executorService = Executors.newFixedThreadPool(64);
+			executorService = Executors.newFixedThreadPool(4);
 			Queue<String> oldQueue = new ArrayBlockingQueue<>(128);
 			AtomicBoolean oldFinished = new AtomicBoolean(false);
 			AccessFetcherCallable oldCallable = new AccessFetcherCallable(restTemplate, oldUrl, oldQueue, oldFinished);
