@@ -165,7 +165,7 @@ public class MigrationRunner implements ApplicationRunner, ExitCodeGenerator {
 			
 			AccessionComparisonCallable comparisonCallable = new AccessionComparisonCallable(restTemplate, 
 					oldUrl, newUrl, bothQueue, bothFinished
-					, xmlSampleToSampleConverter, xmlGroupToSampleConverter, args.containsOption("--comparison"));
+					, xmlSampleToSampleConverter, xmlGroupToSampleConverter, args.containsOption("comparison"));
 			
 //			comparisonCallable.compare("SAMEA3683023");
 			

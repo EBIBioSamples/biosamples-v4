@@ -91,93 +91,19 @@ public class CompareCallable implements Callable<Void> {
 
 		UriComponentsBuilder oldUriComponentBuilder = UriComponentsBuilder.fromUriString(oldUrl);
 		UriComponentsBuilder newUriComponentBuilder = UriComponentsBuilder.fromUriString(newUrl);
-
-		//ComparisonFormatter comparisonFormatter = new DefaultComparisonFormatter();
-
-		URI oldUri = oldUriComponentBuilder.cloneBuilder().pathSegment(accession).build().toUri();
-		URI newUri = newUriComponentBuilder.cloneBuilder().pathSegment(accession).build().toUri();
+		if (accession.startsWith("SAMEG")) {
+			oldUriComponentBuilder = oldUriComponentBuilder.pathSegment("groups");
+			newUriComponentBuilder = newUriComponentBuilder.pathSegment("groups");
+		} else {
+			oldUriComponentBuilder = oldUriComponentBuilder.pathSegment("samples");	
+			newUriComponentBuilder = newUriComponentBuilder.pathSegment("samples");			
+		}
+		
+		URI oldUri = oldUriComponentBuilder.pathSegment(accession).build().toUri();
+		URI newUri = newUriComponentBuilder.pathSegment(accession).build().toUri();
 		String oldDocument = getDocument(oldUri);
 		String newDocument = getDocument(newUri);
 
-/*		
-		<BioSample xmlns="http://www.ebi.ac.uk/biosamples/SampleGroupExport/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="SAMEA19131418" submissionReleaseDate="2017-03-29T23:00:00+00:00" submissionUpdateDate="2017-03-30T20:59:36+00:00" xsi:schemaLocation="http://www.ebi.ac.uk/biosamples/SampleGroupExport/1.0 http://www.ebi.ac.uk/biosamples/assets/xsd/v1.0/BioSDSchema.xsd">
-		  <Property characteristic="true" class="Sample Name" comment="false" type="STRING">
-		    <QualifiedValue>
-		      <Value>ERS1463623</Value>
-		    </QualifiedValue>
-		  </Property>
-		  <Property characteristic="false" class="synonym" comment="true" type="STRING">
-		    <QualifiedValue>
-		      <Value>7d9ac5c0-b6e5-11e6-b226-68b599768938</Value>
-		    </QualifiedValue>
-		    <QualifiedValue>
-		      <Value>MUS MUSCULUS</Value>
-		    </QualifiedValue>
-		  </Property>
-		  <Property characteristic="false" class="Organism" comment="false" type="STRING">
-		    <QualifiedValue>
-		      <Value>Mus musculus</Value>
-		      <TermSourceREF>
-		        <Name>NCBI Taxonomy</Name>
-		        <Description/>
-		        <URI>http://www.ncbi.nlm.nih.gov/taxonomy/</URI>
-		        <Version/>
-		        <TermSourceID>10090</TermSourceID>
-		      </TermSourceREF>
-		    </QualifiedValue>
-		  </Property>
-		  <Property characteristic="true" class="unknown" comment="false" type="STRING">
-		    <QualifiedValue>
-		      <Value>strain</Value>
-		    </QualifiedValue>
-		  </Property>
-		  <Property characteristic="false" class="secondary description" comment="true" type="STRING">
-		    <QualifiedValue>
-		      <Value>BLOOD CELLS</Value>
-		    </QualifiedValue>
-		  </Property>
-		  <Property characteristic="true" class="Species" comment="false" type="STRING">
-		    <QualifiedValue>
-		      <Value>Mus musculus</Value>
-		    </QualifiedValue>
-		  </Property>
-		  <Database>
-		    <Name>ENA</Name>
-		    <ID>ERS1463623</ID>
-		    <URI>http://www.ebi.ac.uk/ena/data/view/ERS1463623</URI>
-		  </Database>
-		  <Database>
-		    <Name>ENA</Name>
-		    <ID>SAMEA19131418</ID>
-		    <URI>http://www.ebi.ac.uk/ena/data/view/SAMEA19131418</URI>
-		  </Database>
-		</BioSample>
-
-*/
-		
-		/*
-		Diff diff = DiffBuilder
-				.compare(new WhitespaceNormalizedSource(new CommentLessSource(Input.fromString(oldDocument).build())))
-				.withTest(new WhitespaceNormalizedSource(new CommentLessSource(Input.fromString(newDocument).build())))
-		        .withNodeMatcher(new DefaultNodeMatcher(ElementSelectors.byNameAndText))
-				.checkForSimilar()
-				.build();
-		
-		if (diff.hasDifferences()) {
-			List<Difference> differences = new ArrayList<>();
-			for (Difference difference : diff.getDifferences()) {
-				if (difference.getResult() == ComparisonResult.DIFFERENT) {
-					differences.add(difference);
-				}
-			}
-
-			log.info("Found " + differences.size() + " differences on " + accession);
-			for (Difference difference : differences) {
-				log.info(String.join(" ", "Difference on", accession, comparisonFormatter.getDescription(difference.getComparison())));
-			}
-		}
-		*/
-		
 
 		SAXReader saxReader = new SAXReader();
 		org.dom4j.Document doc;
