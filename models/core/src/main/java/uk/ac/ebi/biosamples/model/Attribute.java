@@ -188,4 +188,30 @@ public class Attribute implements Comparable<Attribute> {
 		attr.unit = unit;
 		return attr;
 	}
+
+	public static class Builder {
+		private final String type;
+		private final String value;
+		private List<String> iris = new ArrayList<>();
+		private String unit;
+
+		public Builder(String type, String value) {
+			this.type = type;
+			this.value = value;
+		}
+
+		public Builder withIri(String iri) {
+			iris.add(iri);
+			return this;
+		}
+
+		public Builder withUnit(String unit) {
+			this.unit = unit;
+			return this;
+		}
+
+		public Attribute build() {
+			return Attribute.build(this.type, this.value, this.iris, this.unit);
+		}
+	}
 }

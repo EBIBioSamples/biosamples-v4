@@ -26,5 +26,6 @@
 		<module>sitemap</module>
 		<module>jsonld</module>
 		<module>legacyxml</module>
+		<module>legacyjson</module>
 	</modules>
 </project>

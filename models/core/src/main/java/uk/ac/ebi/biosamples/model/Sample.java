@@ -11,16 +11,19 @@ import uk.ac.ebi.biosamples.service.CharacteristicSerializer;
 import uk.ac.ebi.biosamples.service.CustomInstantDeserializer;
 import uk.ac.ebi.biosamples.service.CustomInstantSerializer;
 
-import java.time.Instant;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.TemporalAccessor;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+
+import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
+import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
 
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -87,12 +90,12 @@ public class Sample implements Comparable<Sample> {
 
 	@JsonProperty(value="releaseDate", access=JsonProperty.Access.READ_ONLY)
 	public String getReleaseDate() {
-		return ZonedDateTime.ofInstant(release, ZoneOffset.UTC).format(DateTimeFormatter.ISO_LOCAL_DATE);
+		return ZonedDateTime.ofInstant(release, ZoneOffset.UTC).format(ISO_LOCAL_DATE);
 	}
 
 	@JsonProperty(value="updateDate", access=JsonProperty.Access.READ_ONLY)
 	public String getUpdateDate() {
-		return ZonedDateTime.ofInstant(update, ZoneOffset.UTC).format(DateTimeFormatter.ISO_LOCAL_DATE);
+		return ZonedDateTime.ofInstant(update, ZoneOffset.UTC).format(ISO_LOCAL_DATE);
 	}
 
     @JsonIgnore
@@ -370,6 +373,124 @@ public class Sample implements Comparable<Sample> {
 		}
 		
 		return sample;
+	}
+
+	public static class Builder {
+
+		protected String accession;
+		protected String name;
+		protected String domain;
+
+		protected Instant release = Instant.now();
+		protected Instant update = Instant.now();
+
+		protected SortedSet<Attribute> attributes = new TreeSet<>();
+		protected SortedSet<Relationship> relationships = new TreeSet<>();
+		protected SortedSet<ExternalReference> externalReferences = new TreeSet<>();
+		protected SortedSet<Organization> organizations = new TreeSet<>();
+		protected SortedSet<Contact> contacts = new TreeSet<>();
+		protected SortedSet<Publication> publications = new TreeSet<>();
+
+		public Builder(String accession, String name) {
+			this.name = name;
+			this.accession = accession;
+		}
+
+		public Builder withDomain(String domain) {
+			this.domain = domain;
+			return this;
+		}
+
+		public Builder withReleaseDate(String release) {
+			this.release = parseDateTime(release).toInstant();
+			return this;
+		}
+
+		public Builder withReleaseDate(Instant release) {
+			this.release = release;
+			return this;
+		}
+
+		public Builder withUpdateDate(Instant update) {
+			this.update = update;
+			return this;
+		}
+
+		public Builder withUpdateDate(String update) {
+			this.update = parseDateTime(update).toInstant();
+			return this;
+		}
+
+		public Builder withAttribute(Attribute attribute) {
+			this.attributes.add(attribute);
+			return this;
+		}
+
+		public Builder withRelationship(Relationship relationship) {
+			this.relationships.add(relationship);
+			return this;
+		}
+
+		public Builder withExternalReference(ExternalReference externalReference) {
+			this.externalReferences.add(externalReference);
+			return this;
+		}
+
+		public Builder withOrganization(Organization organization) {
+			this.organizations.add(organization);
+			return this;
+		}
+
+		public Builder withContact(Contact contact) {
+			this.contacts.add(contact);
+			return this;
+		}
+
+		public Builder withPublication(Publication publication) {
+			this.publications.add(publication);
+			return this;
+		}
+
+		public Sample build() {
+			return Sample.build(name, accession, domain, release, update,
+					attributes, relationships, externalReferences,
+					organizations, contacts, publications);
+		}
+
+		private ZonedDateTime parseDateTime(String datetimeString) {
+			if (datetimeString.isEmpty()) return null;
+			TemporalAccessor temporalAccessor = getFormatter().parseBest(datetimeString,
+					ZonedDateTime::from, LocalDateTime::from, LocalDate::from);
+			if (temporalAccessor instanceof ZonedDateTime) {
+				return (ZonedDateTime) temporalAccessor;
+			} else if (temporalAccessor instanceof LocalDateTime) {
+				return ((LocalDateTime) temporalAccessor).atZone(ZoneId.of("UTC"));
+			} else {
+				return ((LocalDate) temporalAccessor).atStartOfDay(ZoneId.of("UTC"));
+			}
+
+		}
+
+
+		private DateTimeFormatter getFormatter() {
+			return new DateTimeFormatterBuilder()
+					.parseCaseInsensitive()
+					.append(ISO_LOCAL_DATE)
+					.optionalStart()           // time made optional
+					.appendLiteral('T')
+					.append(ISO_LOCAL_TIME)
+					.optionalStart()           // zone and offset made optional
+					.appendOffsetId()
+					.optionalStart()
+					.appendLiteral('[')
+					.parseCaseSensitive()
+					.appendZoneRegionId()
+					.appendLiteral(']')
+					.optionalEnd()
+					.optionalEnd()
+					.optionalEnd()
+					.toFormatter();
+		}
 	}
 
 

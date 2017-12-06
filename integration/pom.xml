@@ -51,7 +51,17 @@
             <artifactId>models-legacyxml</artifactId>
             <version>4.0.0-SNAPSHOT</version>
         </dependency>
-<!-- 		<dependency> -->
+        <dependency>
+            <groupId>uk.ac.ebi.biosamples</groupId>
+            <artifactId>models-legacyjson</artifactId>
+            <version>4.0.0-SNAPSHOT</version>
+        </dependency>
+		<dependency>
+			<groupId>uk.ac.ebi.biosamples</groupId>
+			<artifactId>models-legacyjson</artifactId>
+			<version>4.0.0-SNAPSHOT</version>
+		</dependency>
+		<!-- 		<dependency> -->
 <!-- 			<groupId>io.rest-assured</groupId> -->
 <!-- 			<artifactId>rest-assured</artifactId> -->
 <!-- 			<version>LATEST</version> -->
