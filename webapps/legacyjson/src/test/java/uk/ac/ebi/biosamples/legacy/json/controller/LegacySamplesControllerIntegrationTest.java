@@ -315,7 +315,7 @@ public class LegacySamplesControllerIntegrationTest {
 				.andExpect(jsonPath("$..accession").value(
 						containsInAnyOrder("A","B")
 				))
-				.andExpect(jsonPath("$._embedded.samples[?(@.accession=='B')].characteristics.Organism.*.text").value("Homo sapiens"));
+				.andExpect(jsonPath("$._embedded.samples[?(@.accession=='B')].characteristics.organism.*.text").value("Homo sapiens"));
 
 	}
 

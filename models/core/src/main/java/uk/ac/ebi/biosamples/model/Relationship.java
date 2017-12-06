@@ -91,4 +91,35 @@ public class Relationship implements Comparable<Relationship> {
     	Relationship rel = new Relationship(type, target, source);
     	return rel;
     }
+
+    public static class Builder {
+		private String source;
+		private String target;
+		private String type;
+
+		public Builder() {}
+
+		public Builder withSource(String source) {
+			this.source = source;
+			return this;
+		}
+
+		public Builder withTarget(String target) {
+			this.target = target;
+			return this;
+		}
+
+		public Builder withType(String type) {
+			this.type = type;
+			return this;
+		}
+
+		public Relationship build() {
+			if (type == null || type.trim().length() == 0) throw new IllegalArgumentException("type cannot be empty");
+			if (target == null || target.trim().length() == 0) throw new IllegalArgumentException("target cannot be empty");
+			if (source == null || source.trim().length() == 0) throw new IllegalArgumentException("source cannot be empty");
+			return Relationship.build(source, type, target);
+		}
+
+	}
 }

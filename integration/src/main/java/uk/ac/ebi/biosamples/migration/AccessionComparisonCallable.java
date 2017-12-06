@@ -306,9 +306,9 @@ class AccessionComparisonCallable implements Callable<Void> {
 				Node node = nodeList.item(i);
 				node.getParentNode().removeChild(node);
 			}
-			
+
 			cleanChildNodes(document.getDocumentElement());
-			sortChildNodes(document.getDocumentElement());			
+			sortChildNodes(document.getDocumentElement());
 
 			// Setup pretty print options
 			TransformerFactory transformerFactory = TransformerFactory.newInstance();
@@ -329,17 +329,17 @@ class AccessionComparisonCallable implements Callable<Void> {
 
 	public void cleanChildNodes(Node node) {
 		//no child nodes, no need to sort it
-		if (node.getChildNodes().getLength() > 0) {			
+		if (node.getChildNodes().getLength() > 0) {
 			//to clean it, have to put all the children nodes into a list and clean the list
 			List<Node> nodes = new ArrayList<>();
 			for (int i = 0; i < node.getChildNodes().getLength(); i++) {
 				Node child = node.getChildNodes().item(i);
 				//Recursively ensure all grandchildren are cleaned
 				cleanChildNodes(child);
-				
+
 				nodes.add(child);
-			}			
-			Collections.sort(nodes, new NodeComparator());			
+			}
+			Collections.sort(nodes, new NodeComparator());
 			for (Node child : nodes) {
 				node.removeChild(child);
 				node.appendChild(child);
@@ -358,17 +358,17 @@ class AccessionComparisonCallable implements Callable<Void> {
 
 	private void sortChildNodes(Node node) {
 		//no child nodes, no need to sort it
-		if (node.getChildNodes().getLength() > 0) {			
+		if (node.getChildNodes().getLength() > 0) {
 			//to sort it, have to put all the children nodes into a list and sort the list
 			List<Node> nodes = new ArrayList<>();
 			for (int i = 0; i < node.getChildNodes().getLength(); i++) {
 				Node child = node.getChildNodes().item(i);
 				//Recursively ensure all grandchildren are sorted
 				sortChildNodes(child);
-				
+
 				nodes.add(child);
-			}			
-			Collections.sort(nodes, new NodeComparator());			
+			}
+			Collections.sort(nodes, new NodeComparator());
 			for (Node child : nodes) {
 				node.removeChild(child);
 				node.appendChild(child);
@@ -377,41 +377,41 @@ class AccessionComparisonCallable implements Callable<Void> {
 	}
 
 	private static class NodeComparator implements Comparator<Node> {
-		
+
 		private NamedNodeMapComparator namedNodeMapComparator = new NamedNodeMapComparator();
-		
+
 		@Override
-		public int compare(Node a, Node b) {					
+		public int compare(Node a, Node b) {
 			if (a.getNodeName().equals(b.getNodeName())) {
 				return namedNodeMapComparator.compare(a.getAttributes(), b.getAttributes());
-			} else {					
+			} else {
 				return a.getNodeName().compareTo(b.getNodeName());
 			}
-		}		
+		}
 	}
-	
+
 	private static class NamedNodeMapComparator implements Comparator<NamedNodeMap> {
 
 		private final Logger log = LoggerFactory.getLogger(getClass());
-		
+
 		@Override
 		public int compare(NamedNodeMap a, NamedNodeMap b) {
 			if (a.getLength() == b.getLength()) {
 				for (int i = 0; i < a.getLength(); i++) {
 					String aName = a.item(i).getNodeName();
 					String bName = b.item(i).getNodeName();
-					log.trace("Comparing "+aName+" with "+bName);					
+					log.trace("Comparing "+aName+" with "+bName);
 					if (!aName.equals(bName)) {
 						return aName.compareTo(bName);
 					}
 
 					String aValue = a.item(i).getNodeValue();
-					String bValue = b.item(i).getNodeValue();	
+					String bValue = b.item(i).getNodeValue();
 					log.trace("Comparing "+aValue+" with "+bValue);
 					if (!aValue.equals(bValue)) {
 						return aValue.compareTo(bValue);
 					}
-					
+
 				}
 				//all the same, return same
 				return 0;
@@ -420,20 +420,20 @@ class AccessionComparisonCallable implements Callable<Void> {
 			}
 		}
 	}
-	
+
 	private SortedSet<String> getGroupMembership(UriComponentsBuilder uriComponentsBuilder, String accession) {
 		int total = -1;
 		int to = -1;
 		int page = 1;
-		
+
 		SortedSet<String> members = new TreeSet<>();
-		
+
 		while (total < 0 || to < total) {
 			URI uri = uriComponentsBuilder.cloneBuilder().pathSegment("groupsamples", accession)
 					.replaceQueryParam("pagesize", 1000)
 					.replaceQueryParam("page", page)
 					.replaceQueryParam("query", "")
-					.build().toUri();	
+					.build().toUri();
 
 			ResponseEntity<String> response;
 			RequestEntity<?> request = RequestEntity.get(uri).accept(MediaType.TEXT_XML).build();
@@ -444,7 +444,7 @@ class AccessionComparisonCallable implements Callable<Void> {
 				throw e;
 			}
 			String xmlString = response.getBody();
-			
+
 			SAXReader reader = new SAXReader();
 			org.dom4j.Document xml = null;
 			try {
@@ -462,7 +462,7 @@ class AccessionComparisonCallable implements Callable<Void> {
 			total = Integer.valueOf(XmlPathBuilder.of(root).path("SummaryInfo", "Total").text());
 			to = Integer.valueOf(XmlPathBuilder.of(root).path("SummaryInfo", "To").text());
 		}
-		
+
 		return members;
 	}
 
@@ -506,12 +506,16 @@ class AccessionComparisonCallable implements Callable<Void> {
 					if (!oldUnits.containsKey(oldAttribute.getType())) {
 						oldUnits.put(oldAttribute.getType(), new TreeMap<>());
 					}
-					oldUnits.get(oldAttribute.getType()).put(oldAttribute.getValue(), oldAttribute.getUnit());
+					if (oldAttribute.getUnit() != null) {
+						oldUnits.get(oldAttribute.getType()).put(oldAttribute.getValue(), oldAttribute.getUnit());
+					}
 
 					if (!newUnits.containsKey(newAttribute.getType())) {
 						newUnits.put(newAttribute.getType(), new TreeMap<>());
 					}
-					newUnits.get(newAttribute.getType()).put(newAttribute.getValue(), newAttribute.getUnit());
+					if (newAttribute.getUnit() != null) {
+						newUnits.get(newAttribute.getType()).put(newAttribute.getValue(), newAttribute.getUnit());
+					}
 
 					if (!oldIris.containsKey(oldAttribute.getType())) {
 						oldIris.put(oldAttribute.getType(), new TreeMap<>());
