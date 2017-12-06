@@ -11,6 +11,7 @@ import org.springframework.data.solr.core.convert.SolrConverter;
 import org.springframework.data.solr.core.query.FacetOptions;
 import org.springframework.data.solr.core.query.FacetQuery;
 import org.springframework.data.solr.core.query.Query;
+import org.springframework.data.solr.core.query.SimpleField;
 import org.springframework.data.solr.core.query.result.FacetFieldEntry;
 import org.springframework.data.solr.core.query.result.FacetPage;
 import org.springframework.stereotype.Component;
@@ -95,12 +96,14 @@ public class SolrSampleRepositoryImpl implements SolrSampleRepositoryCustom  {
 
 	@Override
 	public Page<SolrSample> findByQuery(Query query) {
+		query.addProjectionOnField(new SimpleField("id"));
 		return solrOperations.query(query, SolrSample.class);
 	}
 
 
 	@Override
 	public FacetPage<SolrSample> findByFacetQuery(FacetQuery query) {
+		query.addProjectionOnField(new SimpleField("id"));
 		return solrOperations.queryForFacetPage(query, SolrSample.class);
 	}
 	
