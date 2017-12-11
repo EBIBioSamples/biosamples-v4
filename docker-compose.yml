@@ -218,7 +218,7 @@ services:
     - pipelines-accession-4.0.0-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples/beta
-    - LOGGING_FILE=/logs/pipelines-ena.log      
+    - LOGGING_FILE=/logs/pipelines-accession.log      
     
   biosamples-pipelines-sampletab:
     image: biosamples:latest
