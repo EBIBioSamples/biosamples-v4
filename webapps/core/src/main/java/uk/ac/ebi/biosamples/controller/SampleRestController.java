@@ -78,7 +78,7 @@ public class SampleRestController {
 		}
 		bioSamplesAapService.checkAccessible(sample.get());
 
-		// If user is not Read super user, reduce the fields to show
+		// TODO If user is not Read super user, reduce the fields to show
 		if (!sampleFullDetails) {
 			sample = Optional.of(sampleManipulationService.removeContactLegacyFields(sample.get()));
 		}

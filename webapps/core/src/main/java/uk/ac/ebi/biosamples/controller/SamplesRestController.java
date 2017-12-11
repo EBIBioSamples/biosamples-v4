@@ -61,7 +61,7 @@ public class SamplesRestController {
 
 	@CrossOrigin(methods = RequestMethod.GET)
 	@GetMapping(produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
-	public ResponseEntity<PagedResources<Resource<Sample>>> searchHal(
+	public PagedResources<Resource<Sample>> searchHal(
 			@RequestParam(name = "searchTerm", required = false) String text,
 			@RequestParam(name = "filter", required = false) String[] filter, Pageable page,
 			PagedResourcesAssembler<Sample> pageAssembler) {
@@ -109,9 +109,10 @@ public class SamplesRestController {
 				.withRel("sample"));
 		//TODO add search link
 
-		return ResponseEntity.ok()
-				.header(HttpHeaders.CACHE_CONTROL, CacheControl.maxAge(1, TimeUnit.MINUTES).cachePublic().getHeaderValue())
-				.body(pagedResources);
+//		return ResponseEntity.ok()
+//				.header(HttpHeaders.CACHE_CONTROL, CacheControl.maxAge(1, TimeUnit.MINUTES).cachePublic().getHeaderValue())
+//				.body(pagedResources);
+		return pagedResources;
 	}
 
 }

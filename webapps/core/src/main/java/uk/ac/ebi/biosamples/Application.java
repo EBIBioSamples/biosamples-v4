@@ -2,18 +2,15 @@ package uk.ac.ebi.biosamples;
 
 import com.github.benmanes.caffeine.cache.CaffeineSpec;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.xml.Jaxb2RootElementHttpMessageConverter;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.web.servlet.handler.MappedInterceptor;
 import org.thymeleaf.templateresolver.ITemplateResolver;
 import org.thymeleaf.templateresolver.UrlTemplateResolver;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -22,7 +19,6 @@ import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
 import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
 import uk.ac.ebi.biosamples.mongo.service.MongoAccessionService;
-import uk.ac.ebi.biosamples.service.CacheControlInterceptor;
 import uk.ac.ebi.biosamples.service.SampleToXmlConverter;
 import uk.ac.ebi.biosamples.service.SampleAsXMLHttpMessageConverter;
 
@@ -30,10 +26,7 @@ import java.util.concurrent.Executor;
 
 //import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 
-//@SpringBootApplication
-@Configuration
-@EnableAutoConfiguration
-@ComponentScan(lazyInit = true)
+@SpringBootApplication
 @EnableAsync
 @EnableCaching
 public class Application extends SpringBootServletInitializer {
@@ -42,11 +35,6 @@ public class Application extends SpringBootServletInitializer {
 		SpringApplication.run(Application.class, args);
 	}
 
-	@Bean
-	public MappedInterceptor getCacheHeaderMappedInterceptor() {
-	    return new MappedInterceptor(new String[]{"/**"}, new CacheControlInterceptor());
-	}
-	
 	@Bean
 	public HttpMessageConverter<Sample> getXmlSampleHttpMessageConverter(SampleToXmlConverter sampleToXmlConverter) {
 		return new SampleAsXMLHttpMessageConverter(sampleToXmlConverter);

@@ -15,7 +15,7 @@ import uk.ac.ebi.tsc.aap.client.security.AAPWebSecurityAutoConfiguration.AAPWebS
 @Component
 @Order(99)
 public class BioSamplesAAPWebSecurityConfig extends AAPWebSecurityConfig {
-    private Logger log = LoggerFactory.getLogger(AAPWebSecurityConfig.class);
+    private Logger log = LoggerFactory.getLogger(this.getClass());
 
     private final StatelessAuthenticationEntryPoint unauthorizedHandler;
 
@@ -27,7 +27,6 @@ public class BioSamplesAAPWebSecurityConfig extends AAPWebSecurityConfig {
     }
     
     private StatelessAuthenticationFilter statelessAuthenticationFilterBean() throws Exception {
-        log.info("this.tokenAuthenticationService: " + this.tokenAuthenticationService);
         return new StatelessAuthenticationFilter(this.tokenAuthenticationService);
     }
     
@@ -43,8 +42,8 @@ public class BioSamplesAAPWebSecurityConfig extends AAPWebSecurityConfig {
         httpSecurity.addFilterBefore(statelessAuthenticationFilterBean(),
                 UsernamePasswordAuthenticationFilter.class);
         
-        // disable page caching
-        //httpSecurity.headers().cacheControl();
+        //disable the no-cache header injectection, we'll manage this ourselves
+        httpSecurity.headers().cacheControl().disable();
     }
 
     @Autowired
