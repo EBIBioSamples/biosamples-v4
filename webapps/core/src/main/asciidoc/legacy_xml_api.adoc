@@ -9,14 +9,14 @@ If you have any problems or suggestions please mailto:biosamples@ebi.ac.uk[conta
 
 - Returns information about a single specified sample.
 - `/biosamples/xml/samples/ACCESSION` where `ACCESSION` is the BioSample Database accession of the sample of interest.
-- e.g. +++<a th:href="@{/xml/samples/SAME315173}" th:text="@{/xml/samples/SAME315173}">/xml/samples/SAME315173</a>+++
+- e.g. +++<a th:href="@{/xml/samples/SAMEA104381047}" th:text="@{/xml/samples/SAMEA104381047}">/xml/samples/SAMEA104381047</a>+++
 - +++<a th:href="@{/help/legacy_xml_api_sample_accession}">more information</a>+++
 
 === Group Accession
 
 - Returns information about a specified group.
 - `/biosamples/xml/groups/ACCESSION` where `ACCESSION` is the BioSample Database accession of the group of interest.
-- e.g. +++<a th:href="@{/xml/groups/SAMEG82620}" th:text="@{/xml/groups/SAMEG82620}">/biosamples/xml/groups/SAMEG82620</a>+++
+- e.g. +++<a th:href="@{/xml/groups/SAMEG326384}" th:text="@{/xml/groups/SAMEG326384}">/biosamples/xml/groups/SAMEG326384</a>+++
 - +++<a th:href="@{/help/legacy_xml_api_group_accession}">more information</a>+++
 
 === Find Samples
@@ -42,7 +42,7 @@ If you have any problems or suggestions please mailto:biosamples@ebi.ac.uk[conta
 
 - Returns sample accessions that match the specified search query and are in the specified group.
 - `/biosamples/xml/groupsamples/ACCESSION?query=QUERY` where `ACCESSION` is the group to query within and `QUERY` is the term to query for.
-- e.g. +++<a th:href="@{/xml/groupsamples/SAMEG82620(query='leukemia')}" th:text="@{/xml/groupsamples/SAMEG82620(query='leukemia')}">/biosamples/xml/groupsamples/SAMEG82620?query=leukemia</a>+++
+- e.g. +++<a th:href="@{/xml/groupsamples/SAMEG326384(query='milk')}" th:text="@{/xml/groupsamples/SAMEG326384(query='milk')}">/biosamples/xml/groupsamples/SAMEG326384?query=milk</a>+++
 - Results are returned in one or more pages and will always return result summary information.
 - Can use +++<a th:href="@{/help/search}">advanced query features</a>+++.
 - If query is blank, all samples within that group are matched.
