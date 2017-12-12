@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.controller.exception;
+package uk.ac.ebi.biosamples.exception;
 
 //@ResponseStatus(value = HttpStatus.FORBIDDEN, reason = "Sample not accessible") // 403
 public class SampleNotAccessibleException extends RuntimeException {

@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.controller.exception;
+package uk.ac.ebi.biosamples.exception;
 
 //@ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "No such Sample") // 404
 public class SampleNotFoundException extends RuntimeException {

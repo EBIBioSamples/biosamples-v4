@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.exception.SampleNotFoundException;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.model.legacyxml.BioSample;
@@ -57,7 +58,7 @@ public class LegacyXmlGroupController {
 		if (sample.isPresent()) {
 			return sample.get();
 		} else {
-			return null;
+			throw new SampleNotFoundException();
 		}
 	}
 
