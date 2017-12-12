@@ -1,13 +1,18 @@
-package uk.ac.ebi.biosamples.legacy.xml;
+package uk.ac.ebi.biosamples;
 
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.xml.Jaxb2RootElementHttpMessageConverter;
 import org.springframework.http.converter.xml.MarshallingHttpMessageConverter;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
+
+import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.service.SampleAsXMLHttpMessageConverter;
+import uk.ac.ebi.biosamples.service.SampleToXmlConverter;
 
 import javax.xml.bind.Marshaller;
 import java.util.HashMap;
@@ -20,6 +25,11 @@ public class Application extends SpringBootServletInitializer {
 
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);
+	}
+	
+	@Bean
+	public HttpMessageConverter<Sample> getXmlSampleHttpMessageConverter(SampleToXmlConverter sampleToXmlConverter) {
+		return new SampleAsXMLHttpMessageConverter(sampleToXmlConverter);
 	}
 
 

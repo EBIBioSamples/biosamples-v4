@@ -11,12 +11,15 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
+
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.model.legacyxml.BioSample;
 import uk.ac.ebi.biosamples.model.legacyxml.ResultQuery;
 import uk.ac.ebi.biosamples.service.FilterBuilder;
+import uk.ac.ebi.biosamples.service.SampleToXmlConverter;
 import uk.ac.ebi.biosamples.legacy.xml.service.LegacyQueryParser;
 import uk.ac.ebi.biosamples.legacy.xml.service.SummaryInfoService;
 
@@ -27,41 +30,44 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-@Controller
+@RestController
 public class LegacyXmlSampleController {
 
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 
-	//TODO remove this in favour of using biosamples-client
-	@Value("${biosamples.redirect.context}")
-	private URI biosamplesRedirectContext;
-
 	private final BioSamplesClient client;
 	private final SummaryInfoService summaryInfoService;
 	private final LegacyQueryParser legacyQueryParser;
+	private final SampleToXmlConverter sampleToXmlConverter;
 
 	private Filter sampleAccessionFilter = FilterBuilder.create().onAccession("SAM(N|D|EA|E)[0-9]+").build();
 
 	public LegacyXmlSampleController(BioSamplesClient client,
 									 SummaryInfoService summaryInfoService,
-									 LegacyQueryParser legacyQueryParser) {
+									 LegacyQueryParser legacyQueryParser,
+									 SampleToXmlConverter sampleToXmlConverter) {
 		this.client = client;
 		this.summaryInfoService = summaryInfoService;
 		this.legacyQueryParser = legacyQueryParser;
+		this.sampleToXmlConverter = sampleToXmlConverter;
 	}
 
 	@GetMapping(value="/samples/{accession:SAM(?:N|D|EA|E)[0-9]+}", produces={MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE})
-	public void redirectSample(@PathVariable String accession, HttpServletResponse response) throws IOException {
-		//this is a little hacky, but in order to make sure that XML is returned (and only XML) from the 
-		//content negotiation on the "real" endpoint, we need to use springs extension-based negotiation backdoor
-		//THIS IS NOT W3C standards in any way!
-		String redirectUrl = String.format("%s/samples/%s.xml", biosamplesRedirectContext, accession);
-		response.sendRedirect(redirectUrl);
+	public Sample getSample(@PathVariable String accession) throws IOException {
+		Optional<Sample> sample = client.fetchSample(accession);
+		
+		if (sample.isPresent()) {
+			log.trace("Found sample "+accession+" as "+sample.get());
+			return sample.get();
+		} else {
+			log.trace("Did not find sample "+accession);
+			return null;
+		}
 	}
 
 	@GetMapping(value = {"/samples"}, produces={MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE})
-	public @ResponseBody ResultQuery getSamples(
+	public ResultQuery getSamples(
 			@RequestParam(name="query", defaultValue = "*") String query,
 			@RequestParam(name="pagesize", defaultValue = "25") int pagesize,
 			@RequestParam(name="page", defaultValue = "1") int page,

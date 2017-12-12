@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
+
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
@@ -28,16 +30,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-@Controller
+@RestController
 public class LegacyXmlGroupController {
 
 
 	private Logger log = LoggerFactory.getLogger(getClass());
-
-
-	//TODO remove this in favour of using biosamples-client
-	@Value("${biosamples.redirect.context}")
-	private URI biosamplesRedirectContext;
 
 	private final BioSamplesClient client;
 	private final SummaryInfoService summaryInfoService;
@@ -46,20 +43,26 @@ public class LegacyXmlGroupController {
 	private final Filter groupAccessionFilter = FilterBuilder.create().onAccession("SAMEG[0-9]+").build();
 
 	public LegacyXmlGroupController(BioSamplesClient client,
-									SummaryInfoService summaryInfoService, LegacyQueryParser legacyQueryParser) {
+									SummaryInfoService summaryInfoService, 
+									LegacyQueryParser legacyQueryParser) {
 		this.client = client;
 		this.summaryInfoService = summaryInfoService;
 		this.legacyQueryParser = legacyQueryParser;
 	}
 
 	@GetMapping(value="/groups/{accession:SAMEG\\d+}", produces={MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE})
-	public void redirectGroups(@PathVariable String accession, HttpServletResponse response) throws IOException {
-		String redirectUrl = String.format("%s/samples/%s.xml", biosamplesRedirectContext, accession);
-		response.sendRedirect(redirectUrl);
+	public Sample getGroup(@PathVariable String accession) throws IOException {
+		Optional<Sample> sample = client.fetchSample(accession);
+		
+		if (sample.isPresent()) {
+			return sample.get();
+		} else {
+			return null;
+		}
 	}
 
 	@GetMapping(value = {"/groups"}, produces={MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE})
-	public @ResponseBody ResultQuery getGroups(
+	public ResultQuery getGroups(
 			@RequestParam(name="query", defaultValue="*") String query,
 			@RequestParam(name="pagesize", defaultValue = "25") int pagesize,
 			@RequestParam(name="page", defaultValue = "1") int page,
