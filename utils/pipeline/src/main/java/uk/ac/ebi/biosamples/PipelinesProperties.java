@@ -24,7 +24,7 @@ public class PipelinesProperties {
 	@Value("${biosamples.pipelines.connectioncount.ols:32}")
 	private int connectionCountOls;
 	
-	@Value("${biosamples.pipelines.connectioncount.zooma:32}")
+	@Value("${biosamples.pipelines.connectioncount.zooma:4}")
 	private int connectionCountZooma;
 	
 	@Value("${biosamples.pipelines.zooma:http://wwwdev.ebi.ac.uk/spot/zooma}")
