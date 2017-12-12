@@ -14,7 +14,8 @@ public class BioSamplesProperties {
 	@Value("${biosamples.agent.solr.queuesize:1000}")
 	private int agentSolrQueueSize;
 
-	@Value("${biosamples.agent.solr.queuetime:1000}")
+	//15 seconds
+	@Value("${biosamples.agent.solr.queuetime:15000}")
 	private int agentSolrQueueTime;
 	
 	@Value("${biosamples.client.uri:http://localhost:8081}")
