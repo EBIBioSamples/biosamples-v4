@@ -22,6 +22,7 @@ import java.util.List;
 public class SampleAsXMLHttpMessageConverter extends AbstractHttpMessageConverter<Sample> {
 	
 	private final SampleToXmlConverter sampleToXmlConverter;
+	private final OutputFormat format = OutputFormat.createCompactFormat();
 	
 	private final List<MediaType> DEFAULT_SUPPORTED_MEDIA_TYPES = Arrays.asList(MediaType.APPLICATION_XML, MediaType.TEXT_XML);
 
@@ -46,10 +47,12 @@ public class SampleAsXMLHttpMessageConverter extends AbstractHttpMessageConverte
 	@Override
 	protected void writeInternal(Sample sample, HttpOutputMessage outputMessage)
 			throws IOException, HttpMessageNotWritableException {
+		log.trace("Writing message");
 		Document doc = sampleToXmlConverter.convert(sample);
-		OutputFormat format = OutputFormat.createCompactFormat();
 		XMLWriter writer = new XMLWriter(outputMessage.getBody(), format);
 		writer.write(doc);
+		//don't close the writer, underlying outputstream will be closed elsewhere
+		//writer.close();
 	}
 
 }
