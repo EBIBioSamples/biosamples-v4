@@ -60,14 +60,12 @@ public class XmlSampleToSampleConverter implements Converter<Element, Sample>  {
 				Collection<String> iri = Lists.newArrayList();
 				String unit = null;
 				
-				if (XmlPathBuilder.of(property).path("QualifiedValue", "TermSourceREF").exists()
-						&& XmlPathBuilder.of(property).path("QualifiedValue", "TermSourceREF", "TermSourceID").exists()) {
+				if (XmlPathBuilder.of(property).path("QualifiedValue", "TermSourceREF", "TermSourceID").exists()) {
 					iri.add(XmlPathBuilder.of(property).path("QualifiedValue", "TermSourceREF", "TermSourceID").text());
 				}
 				
-				if (XmlPathBuilder.of(property).path("QualifiedValue", "TermSourceREF").exists()
-						&& XmlPathBuilder.of(property).path("QualifiedValue", "TermSourceREF", "Unit").exists()) {
-					unit = XmlPathBuilder.of(property).path("QualifiedValue", "TermSourceREF", "Unit").text();
+				if (XmlPathBuilder.of(property).path("QualifiedValue", "Unit").exists()) {
+					unit = XmlPathBuilder.of(property).path("QualifiedValue", "Unit").text();
 				}
 				
 				attributes.add(Attribute.build(type, value, iri, unit));				
