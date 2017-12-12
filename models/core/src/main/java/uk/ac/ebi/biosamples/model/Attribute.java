@@ -98,13 +98,21 @@ public class Attribute implements Comparable<Attribute> {
 		if (other == null) {
 			return 1;
 		}
-		
-		if (!this.type.equals(other.type)) {
-			return this.type.compareTo(other.type);
+
+//		if (!this.type.equals(other.type)) {
+//			return this.type.compareTo(other.type);
+//		}
+        int comparison = nullSafeStringComparison(this.type, other.type);
+		if (comparison != 0) {
+			return comparison;
 		}
 
-		if (!this.value.equals(other.value)) {
-			return this.value.compareTo(other.value);
+//		if (!this.value.equals(other.value)) {
+//			return this.value.compareTo(other.value);
+//		}
+        comparison = nullSafeStringComparison(this.value, other.value);
+		if (comparison != 0) {
+			return comparison;
 		}
 
 		if (this.iri == null && other.iri != null) {
@@ -128,17 +136,33 @@ public class Attribute implements Comparable<Attribute> {
 			}
 		}
 		
-		if (this.unit == null && other.unit != null) {
+//		if (this.unit == null && other.unit != null) {
+//			return -1;
+//		}
+//		if (this.unit != null && other.unit == null) {
+//			return 1;
+//		}
+//		if (this.unit != null && other.unit != null
+//				&& !this.unit.equals(other.unit)) {
+//			return this.unit.compareTo(other.unit);
+//		}
+//
+//		return 0;
+        return nullSafeStringComparison(this.unit, other.unit);
+	}
+
+	public int nullSafeStringComparison(String one, String two) {
+
+		if (one == null && two != null) {
 			return -1;
 		}
-		if (this.unit != null && other.unit == null) {
+		if (one != null && two == null) {
 			return 1;
 		}
-		if (this.unit != null && other.unit != null 
-				&& !this.unit.equals(other.unit)) {
-			return this.unit.compareTo(other.unit);
+		if (one != null && !one.equals(two)) {
+			return one.compareTo(two);
 		}
-		
+
 		return 0;
 	}
 

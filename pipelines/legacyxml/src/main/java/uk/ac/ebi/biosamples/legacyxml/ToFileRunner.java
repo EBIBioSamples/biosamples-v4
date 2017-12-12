@@ -5,21 +5,16 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -29,9 +24,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.http.HttpHeaders;
+import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
@@ -54,10 +48,12 @@ public class ToFileRunner implements ApplicationRunner {
 
 	int pagesize = 1000;
 	private final Map<String, Future<Collection<String>>> pageFutures = new HashMap<>();
-	private final Map<String, Future<String>> accessionFutures = new HashMap<>();
+	private final Map<String, Future<LegacyApiContent>> accessionFutures = new HashMap<>();
 
 	private PageCallback pageCallback = null;
-	private AccessionCallback accessionCallback = null;
+//	private AccessionCallback xmlAccessionCallback = null;
+//	private AccessionCallback jsonAccessionCallback = null;
+    private LegacyAccessionCallback legacyAccessionCallback = null;
 	
 	public ToFileRunner(RestTemplateBuilder restTemplate) {
 		this.restTemplate = restTemplate.build();
@@ -72,6 +68,7 @@ public class ToFileRunner implements ApplicationRunner {
 		
 		String rootUrl = args.getNonOptionArgs().get(1);
 		String outputXmlFilename = args.getNonOptionArgs().get(2);
+		String outputJsonFilename = args.getNonOptionArgs().get(3);
 
 		long oldTime = System.nanoTime();		
 		
@@ -81,25 +78,33 @@ public class ToFileRunner implements ApplicationRunner {
 		try {
 			pageExecutorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, 1, 32);		
 			accessionExecutorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, 1, 32);
-			try (FileWriter fileXmlWriter = new FileWriter(new File(outputXmlFilename))) {
+			try (
+					FileWriter fileXmlWriter = new FileWriter(new File(outputXmlFilename));
+					FileWriter fileJsonWriter = new FileWriter(new File(outputJsonFilename));
+			) {
 					
 					fileXmlWriter.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
 					fileXmlWriter.write("<BioSamples>\n");
-					
-					accessionCallback = new AccessionCallback(fileXmlWriter);		
+					fileJsonWriter.write("[");
+
+//					xmlAccessionCallback = new AccessionCallback(fileXmlWriter);
+//					jsonAccessionCallback = new AccessionCallback(fileJsonWriter);
+					legacyAccessionCallback = new LegacyAccessionCallback(fileXmlWriter, fileJsonWriter);
+
 					pageCallback = new PageCallback(accessionExecutorService, rootUrl, 
-							restTemplate, accessionCallback, accessionFutures);
+							restTemplate, legacyAccessionCallback, accessionFutures);
 	
 					UriComponentsBuilder pageUriComponentBuilder;
-					int pageCount;
+					int pageCount = 2;
 					
 					//handle samples
 					pageUriComponentBuilder = UriComponentsBuilder.fromUriString(rootUrl);
+                    pageUriComponentBuilder.pathSegment("xml");
 					pageUriComponentBuilder.pathSegment("samples");
 					pageUriComponentBuilder.replaceQueryParam("pagesize", pagesize);
 					pageUriComponentBuilder.replaceQueryParam("query", "");
-					
-					pageCount = getPageCount(pageUriComponentBuilder, pagesize);
+//
+//					pageCount = getPageCount(pageUriComponentBuilder, pagesize);
 					
 					//multi-thread the pages via futures
 					for (int i = 1; i <= pageCount; i++) {
@@ -112,6 +117,7 @@ public class ToFileRunner implements ApplicationRunner {
 					
 					//handle groups
 					pageUriComponentBuilder = UriComponentsBuilder.fromUriString(rootUrl);
+                    pageUriComponentBuilder.pathSegment("xml");
 					pageUriComponentBuilder.pathSegment("groups");
 					pageUriComponentBuilder.replaceQueryParam("pagesize", pagesize);
 					pageUriComponentBuilder.replaceQueryParam("query", "group");
@@ -126,10 +132,11 @@ public class ToFileRunner implements ApplicationRunner {
 						pageFutures.put(pageUri.toString(), future);
 						ThreadUtils.checkAndCallbackFutures(pageFutures, 100, pageCallback);
 					}
-					
+
 					ThreadUtils.checkAndCallbackFutures(pageFutures, 0, pageCallback);
-					ThreadUtils.checkAndCallbackFutures(accessionFutures, 0, accessionCallback);
-	
+					ThreadUtils.checkAndCallbackFutures(accessionFutures, 0, legacyAccessionCallback);
+
+                    fileJsonWriter.write("]");
 					fileXmlWriter.write("</BioSamples>\n");
 				}
 
@@ -214,15 +221,15 @@ public class ToFileRunner implements ApplicationRunner {
 		private final ExecutorService accessionExecutorService;
 		private final String rootUrl;
 		private final RestTemplate restTemplate;
-		private final AccessionCallback accessionCallback;
+		private final LegacyAccessionCallback accessionCallback;
 		
-		private final Map<String, Future<String>> accessionFutures;
+		private final Map<String, Future<LegacyApiContent>> accessionFutures;
 		private final Logger log = LoggerFactory.getLogger(getClass());
 		
-		public PageCallback(ExecutorService accessionExecutorService, 
-				String rootUrl, RestTemplate restTemplate, 
-				AccessionCallback accessionCallback, 
-				Map<String, Future<String>> accessionFutures) {
+		public PageCallback(ExecutorService accessionExecutorService,
+				String rootUrl, RestTemplate restTemplate,
+				LegacyAccessionCallback accessionCallback,
+				Map<String, Future<LegacyApiContent>> accessionFutures) {
 			this.accessionExecutorService = accessionExecutorService;		
 			this.rootUrl = rootUrl;
 			this.restTemplate = restTemplate;
@@ -234,14 +241,18 @@ public class ToFileRunner implements ApplicationRunner {
 		@Override
 		public void call(Collection<String> accessions) {
 			for (String accession : accessions) {
-				UriComponentsBuilder accessionUriComponentBuilder = UriComponentsBuilder.fromUriString(rootUrl);
+				UriComponentsBuilder xmlAccessionUriComponentBuilder = UriComponentsBuilder.fromUriString(rootUrl);
+				UriComponentsBuilder jsonAccessionUriComponentBuilder = UriComponentsBuilder.fromUriString(rootUrl);
 				if (accession.startsWith("SAMEG")) {
-					accessionUriComponentBuilder.pathSegment("groups", accession);
+					xmlAccessionUriComponentBuilder.pathSegment("xml", "groups", accession);
+					jsonAccessionUriComponentBuilder.pathSegment("api", "groups", accession);
 				} else {
-					accessionUriComponentBuilder.pathSegment("samples", accession);
+					xmlAccessionUriComponentBuilder.pathSegment("xml", "samples", accession);
+					jsonAccessionUriComponentBuilder.pathSegment("api", "samples", accession);
 				}
-				URI accessionUri = accessionUriComponentBuilder.build().toUri();
-				accessionFutures.put(accession, accessionExecutorService.submit(getAccessionCallable(accessionUri)));
+				URI xmlAccessionUri = xmlAccessionUriComponentBuilder.build().toUri();
+				URI jsonAccessionUri = jsonAccessionUriComponentBuilder.build().toUri();
+				accessionFutures.put(accession, accessionExecutorService.submit(getLegacyApiContent(xmlAccessionUri, jsonAccessionUri)));
 				try {
 					ThreadUtils.checkAndCallbackFutures(accessionFutures, 100, accessionCallback);
 				} catch (InterruptedException | ExecutionException e) {
@@ -274,29 +285,43 @@ public class ToFileRunner implements ApplicationRunner {
 			
 		}
 		
-		public Callable<String> getAccessionCallable(URI uri) {
-			return new Callable<String>(){
+		public Callable<LegacyApiContent> getLegacyApiContent(URI xmlUri, URI jsonUri) {
+			return new Callable<LegacyApiContent>(){
 				@Override
-				public String call() throws Exception {
+				public LegacyApiContent call() throws Exception {
 					long startTime = System.nanoTime();
 					ResponseEntity<String> response;
-					RequestEntity<?> request = RequestEntity.get(uri).accept(MediaType.TEXT_XML).build();
+					RequestEntity<?> request = RequestEntity.get(xmlUri).accept(MediaType.TEXT_XML).build();
 					try {
 						response = restTemplate.exchange(request, String.class);
 					} catch (RestClientException e) {
-						log.error("Problem accessing "+uri, e);
+						log.error("Problem accessing " + xmlUri, e);
 						throw e;
 					}
 					String xmlString = response.getBody();
 					long endTime = System.nanoTime();
 					long interval = (endTime-startTime)/1000000l;
-					log.info("Got "+uri+" in "+interval+"ms");
-					
+					log.info("Got "+xmlUri+" in "+interval+"ms");
+
 					//strip the first two lines
 					xmlString = xmlString.substring(xmlString.indexOf('\n')+1);
 					xmlString = xmlString.substring(xmlString.indexOf('\n')+1);
-					
-					return xmlString;
+
+					startTime = System.nanoTime();
+					request = RequestEntity.get(jsonUri).accept(MediaTypes.HAL_JSON).build();
+					try {
+						response = restTemplate.exchange(request, String.class);
+					} catch (RestClientException e ) {
+						log.error("Problem accession " + jsonUri, e);
+						throw e;
+					}
+
+					String jsonString = response.getBody();
+				 	endTime = System.nanoTime();
+					interval = (endTime-startTime)/1000000l;
+					log.info("Got "+jsonUri+" in "+interval+"ms");
+
+					return new LegacyApiContent(xmlString, jsonString);
 				}
 			};
 		}
@@ -350,15 +375,38 @@ public class ToFileRunner implements ApplicationRunner {
 		}
 
 		@Override
-		public void call(String xml) {
+		public void call(String content) {
 			try {
-				fileWriter.write(xml);
+				fileWriter.write(content);
 				fileWriter.write("\n");
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
 		}
-		
+	}
+
+	public static class LegacyAccessionCallback implements ThreadUtils.Callback<LegacyApiContent> {
+		private final FileWriter xmlFileWriter;
+		private final FileWriter jsonFileWriter;
+
+		public LegacyAccessionCallback(FileWriter xmlFileWriter, FileWriter jsonFileWriter) {
+			this.xmlFileWriter = xmlFileWriter;
+			this.jsonFileWriter = jsonFileWriter;
+		}
+
+
+		@Override
+		public void call(LegacyApiContent legacyApiContent) {
+			try {
+				xmlFileWriter.write(legacyApiContent.xmlContent);
+				xmlFileWriter.write("\n");
+
+				jsonFileWriter.write(legacyApiContent.jsonContent);
+				jsonFileWriter.write("\n");
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
 	}
 	
 	private static class PageMembershipCallback implements ThreadUtils.Callback<List<String>> {
@@ -377,5 +425,15 @@ public class ToFileRunner implements ApplicationRunner {
 			}
 		}
 		
+	}
+
+	public static class LegacyApiContent {
+		public final String xmlContent;
+		public final String jsonContent;
+
+		public LegacyApiContent(String xmlContent, String jsonContent) {
+			this.xmlContent = xmlContent;
+			this.jsonContent = jsonContent;
+		}
 	}
 }

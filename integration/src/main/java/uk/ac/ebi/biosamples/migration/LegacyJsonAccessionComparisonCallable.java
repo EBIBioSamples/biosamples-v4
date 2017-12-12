@@ -155,6 +155,8 @@ class LegacyJsonAccessionComparisonCallable implements Callable<Void> {
 		compareContacts(oldSample, newSample);
 
 		comparePublications(oldSample, newSample);
+
+		log.info("Finished comparing " + oldSample.getAccession());
 	}
 
 

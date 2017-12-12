@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.*;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.*;
 
 import java.io.IOException;
@@ -14,6 +15,7 @@ import java.util.stream.Stream;
 import static java.util.Map.Entry;
 
 
+@Service
 public class JSONSampleToSampleConverter implements Converter<String, Sample> {
 
     private final ObjectMapper mapper;
@@ -120,7 +122,9 @@ public class JSONSampleToSampleConverter implements Converter<String, Sample> {
         SortedSet<Contact> contacts = new TreeSet<>();
         if (contactList != null) {
             for(Map<String, String> contact: contactList) {
-                contacts.add(new Contact.Builder().name(contact.get("Name")).build());
+                if (contact.containsKey("Name")) {
+                    contacts.add(new Contact.Builder().name(contact.get("Name")).build());
+                }
             }
         }
         return contacts;
@@ -194,17 +198,25 @@ public class JSONSampleToSampleConverter implements Converter<String, Sample> {
      */
     private SortedSet<ExternalReference> getEmbeddedExternalReferences(DocumentContext json) {
         SortedSet<ExternalReference> embeddedExternalReferences = new TreeSet<>();
-        String serializedEmbeddedReferences = json.read("$.externalReferences");
-        if (serializedEmbeddedReferences != null) {
-            List<String> embeddedReferences = JsonPath.read(serializedEmbeddedReferences, "$..URL");
-            if (embeddedReferences != null) {
-                for (String url : embeddedReferences) {
-                    embeddedExternalReferences.add(ExternalReference.build(url));
+        Object testValue = json.read("$.externalReferences");
+        if (testValue != null) {
+            if (testValue instanceof String) {
+                String serializedEmbeddedReferences = (String) testValue;
+                List<String> embeddedReferences = JsonPath.read(serializedEmbeddedReferences, "$..URL");
+                if (embeddedReferences != null) {
+                    for (String url : embeddedReferences) {
+                        embeddedExternalReferences.add(ExternalReference.build(url));
+                    }
                 }
+            } else {
+                List<Map<String, String>> externalReferences = (List<Map<String, String>>) testValue;
+                for (Map<String, String> externalRef : externalReferences) {
+                    embeddedExternalReferences.add(ExternalReference.build(externalRef.get("url")));
+                }
+
             }
         }
         return embeddedExternalReferences;
-
     }
 
     private SortedSet<ExternalReference> getExternalReferences(String json) {

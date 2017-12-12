@@ -43,8 +43,8 @@ public class LegacyJsonAccessFetcherCallable implements Callable<Void> {
 		try {
 			executorService = Executors.newFixedThreadPool(32);
 //			executorService = Executors.newFixedThreadPool(1);
-			getPages("samples", pagesize, executorService);
-			getPages("groups", pagesize, executorService);			
+//			getPages("samples", pagesize, executorService);
+			getPages("groups", pagesize, executorService);
 		} finally {
 			executorService.shutdownNow();
 		}
@@ -78,6 +78,8 @@ public class LegacyJsonAccessFetcherCallable implements Callable<Void> {
 		String jsonString = response.getBody();
 
 		int pageCount = JsonPath.read(jsonString, "$.page.totalPages");
+		//TODO Remove this line
+        pageCount = pageCount > 1000 ? 1000 : pageCount;
 		
 		//multi-thread all the other pages via futures
 		List<Future<Set<String>>> futures = new ArrayList<>();
@@ -115,10 +117,15 @@ public class LegacyJsonAccessFetcherCallable implements Callable<Void> {
 				long interval = (endTime-startTime)/1000000l;
 				log.info("Got "+uri+" in "+interval+"ms");
 
-				List<String> accessions = JsonPath.read(jsonString, "$._embedded.samples.*.accession");
+				String jsonPathType = "samples";
+				if (uri.getPath().contains("groups")) {
+					jsonPathType = "groups";
+				}
+
+				List<String> accessions = JsonPath.read(jsonString, "$._embedded." + jsonPathType + ".*.accession");
 				return new HashSet<>(accessions);
 			}
 		};
 	}
-	
+
 }

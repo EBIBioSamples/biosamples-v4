@@ -30,6 +30,7 @@ public class LegacyJSONDeserializationTest {
 
     private Logger log = LoggerFactory.getLogger(getClass());
     String sampleJson;
+    String newSampleJson;
     String groupJson;
     Sample legacySample;
     Sample legacyGroup;
@@ -41,6 +42,7 @@ public class LegacyJSONDeserializationTest {
     public void setup() throws IOException {
         sampleJson = Resources.toString(Resources.getResource("testSample.json"), Charsets.UTF_8);
         groupJson = Resources.toString(Resources.getResource("testGroup.json"), Charsets.UTF_8);
+        newSampleJson = Resources.toString(Resources.getResource("testSample1.json"), Charsets.UTF_8);
 
         legacySample = sampleConverter.convert(sampleJson);
     }
@@ -138,5 +140,10 @@ public class LegacyJSONDeserializationTest {
         assertThat(legacyGroup.getRelationships()).contains(
                 Relationship.build("SAMEG316628", "has member", "SAMEA4562408")
         );
+    }
+
+    @Test
+    public void testConvertNewSampleExternalReferences() {
+        Sample newSample = sampleConverter.convert(newSampleJson);
     }
 }
