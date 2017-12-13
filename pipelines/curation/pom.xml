@@ -32,6 +32,10 @@
 			<artifactId>utils-ols</artifactId>
 			<version>${bsd2017.version}</version>
 		</dependency>
+		<dependency>
+		    <groupId>com.github.ben-manes.caffeine</groupId>
+		    <artifactId>caffeine</artifactId>
+	    </dependency>
 	</dependencies>
 
 
