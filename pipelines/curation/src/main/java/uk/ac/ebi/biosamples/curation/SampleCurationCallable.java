@@ -287,33 +287,33 @@ public class SampleCurationCallable implements Callable<Void> {
 			} 
 			
 			if (attribute.getType().equals("synonym")) {
-				log.info("Skipping synonym "+attribute.getValue());
+				log.trace("Skipping synonym "+attribute.getValue());
 				continue;
 			} 
 			if (attribute.getType().equals("label")) {
-				log.info("Skipping label "+attribute.getValue());
+				log.trace("Skipping label "+attribute.getValue());
 				continue;
 			}
 			if (attribute.getType().equals("host_subject_id")) {
-				log.info("Skipping host_subject_id "+attribute.getValue());
+				log.trace("Skipping host_subject_id "+attribute.getValue());
 				continue;
 			}
 
 			
 			if (attribute.getValue().matches("^[0-9.-]+$")) {
-				log.info("Skipping number "+attribute.getValue());
+				log.trace("Skipping number "+attribute.getValue());
 				continue;
 			}
 			if (attribute.getValue().matches("^[ESD]R[SRX][0-9]+$")) {
-				log.info("Skipping SRA/ENA/DDBJ identifier "+attribute.getValue());
+				log.trace("Skipping SRA/ENA/DDBJ identifier "+attribute.getValue());
 				continue;
 			} 
 			if (attribute.getValue().matches("^GSM[0-9]+$")) {
-				log.info("Skipping GEO identifier "+attribute.getValue());
+				log.trace("Skipping GEO identifier "+attribute.getValue());
 				continue;
 			} 
 			if (attribute.getValue().matches("^SAM[END]A?[0-9]+$")) {
-				log.info("Skipping BioSample identifier "+attribute.getValue());
+				log.trace("Skipping BioSample identifier "+attribute.getValue());
 				continue;
 			}
 			
