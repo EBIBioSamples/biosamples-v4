@@ -34,7 +34,7 @@ import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.zip.GZIPInputStream;
 
-//@Component
+@Component
 public class ImportRunner implements ApplicationRunner {
 
 	private final Logger log = LoggerFactory.getLogger(getClass());

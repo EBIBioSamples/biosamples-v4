@@ -43,7 +43,7 @@ public class LegacyJsonAccessFetcherCallable implements Callable<Void> {
 		try {
 			executorService = Executors.newFixedThreadPool(32);
 //			executorService = Executors.newFixedThreadPool(1);
-//			getPages("samples", pagesize, executorService);
+			getPages("samples", pagesize, executorService);
 			getPages("groups", pagesize, executorService);
 		} finally {
 			executorService.shutdownNow();
@@ -78,9 +78,7 @@ public class LegacyJsonAccessFetcherCallable implements Callable<Void> {
 		String jsonString = response.getBody();
 
 		int pageCount = JsonPath.read(jsonString, "$.page.totalPages");
-		//TODO Remove this line
-        pageCount = pageCount > 1000 ? 1000 : pageCount;
-		
+
 		//multi-thread all the other pages via futures
 		List<Future<Set<String>>> futures = new ArrayList<>();
 		for (int i = 0; i <= pageCount; i++) {

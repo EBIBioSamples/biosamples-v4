@@ -47,14 +47,14 @@ public class LegacyJsonMigrationRunner implements ApplicationRunner, ExitCodeGen
 	public void run(ApplicationArguments args) throws Exception {
 		log.info("Starting MigrationRunner");
 
-		if (args.containsOption("test")) {
-			Queue<String> testAccession = new ArrayBlockingQueue<String>(1);
-			testAccession.add("SAMEA4341168");
-			AtomicBoolean bothQueues = new AtomicBoolean(true);
-			LegacyJsonAccessionComparisonCallable callable = new LegacyJsonAccessionComparisonCallable(restTemplate,
-					oldUrl, newUrl, testAccession, bothQueues, legacyJSONConverter, args.containsOption("comparison"));
-			callable.call();
-		} else {
+//		if (args.containsOption("test")) {
+//			Queue<String> testAccession = new ArrayBlockingQueue<String>(1);
+//			testAccession.add("SAMEA4341168");
+//			AtomicBoolean bothQueues = new AtomicBoolean(true);
+//			LegacyJsonAccessionComparisonCallable callable = new LegacyJsonAccessionComparisonCallable(restTemplate,
+//					oldUrl, newUrl, testAccession, bothQueues, legacyJSONConverter, args.containsOption("comparison"));
+//			callable.call();
+//		} else {
 
 			try {
 				executorService = Executors.newFixedThreadPool(64);
@@ -93,7 +93,7 @@ public class LegacyJsonMigrationRunner implements ApplicationRunner, ExitCodeGen
 			} finally {
 				executorService.shutdownNow();
 			}
-		}
+//		}
 
 		exitCode = 0;
 		log.info("Finished MigrationRunner");
