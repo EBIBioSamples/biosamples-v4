@@ -109,7 +109,6 @@ services:
     - -jar
     - webapps-legacyxml-4.0.0-SNAPSHOT.war
     environment:
-    - BIOSAMPLES_REDIRECT_CONTEXT=http://biosamples-webapps-core:8080/biosamples/beta
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples/beta
     - SERVER_SERVLET_CONTEXT-PATH=/biosamples/beta/xml
     - SERVER_CONTEXT-PATH=/biosamples/beta/xml
@@ -177,6 +176,8 @@ services:
     - SPRING_RABBITMQ_HOST=rabbitmq
     - BIOSAMPLES_AGENT_SOLR_STAYALIVE=true
     - LOGGING_FILE=/logs/agents-solr.log
+    - spring.cache.cache-names=ols_ancestors_synonyms
+    - spring.cache.caffeine.spec=maximumSize=500,expireAfterAccess=600s
        
 
   biosamples-pipelines-ena:
@@ -247,6 +248,8 @@ services:
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples/beta
     - LOGGING_FILE=/logs/pipelines-curation.log
+    - spring.cache.cache-names=zooma,ols_short
+    - spring.cache.caffeine.spec=maximumSize=500,expireAfterAccess=600s
        
     
   biosamples-integration:
