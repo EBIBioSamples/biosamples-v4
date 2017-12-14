@@ -58,18 +58,8 @@ public class CharacteristicDeserializer extends StdDeserializer<SortedSet> {
 		SortedSet<Attribute> attributes = new TreeSet<>();
 		Map<String, List<LegacyAttribute>> characteristics = p.readValueAs(new TypeReference<Map<String, List<LegacyAttribute>>>(){});
 		for (String type : characteristics.keySet()) {
-			for (LegacyAttribute legacy : characteristics.get(type)) {				
-				Collection<String> iri = new ArrayList<>();
-				if (legacy.ontologyTerms != null) {
-					if (legacy.ontologyTerms.size() > 1) {
-						throw new JsonMappingException(p,"Must have only one ontology term per attribute");
-					} else {
-						iri.add(legacy.ontologyTerms.get(0).trim());
-					}
-				}
-				String unit = legacy.unit;
-				
-				attributes.add(Attribute.build(type, legacy.text, iri, unit));
+			for (LegacyAttribute legacy : characteristics.get(type)) {	
+				attributes.add(Attribute.build(type, legacy.text, legacy.ontologyTerms, legacy.unit));
 			}
 		}
 		

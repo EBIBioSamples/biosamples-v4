@@ -11,6 +11,10 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+
+import com.google.common.collect.Collections2;
+import com.google.common.collect.Sets;
+
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Contact;
@@ -230,6 +234,7 @@ public class RestIntegration extends AbstractIntegration {
 		attributes.add(Attribute.build("age", "3", Collections.emptyList(), "year"));
 		attributes.add(Attribute.build("organism part", "lung"));
 		attributes.add(Attribute.build("organism part", "heart"));
+		attributes.add(Attribute.build("sex", "female", Sets.newHashSet("http://purl.obolibrary.org/obo/PATO_0000383","http://www.ebi.ac.uk/efo/EFO_0001265"), null));
 
 		SortedSet<Relationship> relationships = new TreeSet<>();
 		relationships.add(Relationship.build("TESTrest1", "derived from", "TESTrest2"));

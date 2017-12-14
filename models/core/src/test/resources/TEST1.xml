@@ -27,7 +27,6 @@
 			</TermSourceREF>
 		</QualifiedValue>
 	</Property>
-	
 	<Property class="organism part" characteristic="false"
 		comment="false" type="STRING">
 		<QualifiedValue>
@@ -37,9 +36,20 @@
 			<Value>lung</Value>
 		</QualifiedValue>
 	</Property>
-	
+	<Property class="sex" characteristic="false" comment="false"
+		type="STRING">
+		<QualifiedValue>
+			<Value>female</Value>
+			<TermSourceREF>
+				<Name />
+				<TermSourceID>http://purl.obolibrary.org/obo/PATO_0000383</TermSourceID>
+			</TermSourceREF>
+		</QualifiedValue>
+	</Property>
+
+
 	<derivedFrom>TEST2</derivedFrom>
-	
+
 	<Database>
 		<Name>other</Name>
 		<URI>http://www.google.com</URI>
@@ -52,15 +62,15 @@
 		<Email>jobloggs@joblogs.com</Email>
 	</Person>
 
-    <Organization>
-        <Name>Jo Bloggs Inc</Name>
-        <URI>http://www.jobloggs.com</URI>
-        <Role>user</Role>
-        <E-mail>help@jobloggs.com</E-mail>
-    </Organization>
+	<Organization>
+		<Name>Jo Bloggs Inc</Name>
+		<URI>http://www.jobloggs.com</URI>
+		<Role>user</Role>
+		<E-mail>help@jobloggs.com</E-mail>
+	</Organization>
 
-    <Publication>
-        <DOI>10.1093/nar/gkt1081</DOI>
-        <PubMedID>24265224</PubMedID>
-    </Publication>
+	<Publication>
+		<DOI>10.1093/nar/gkt1081</DOI>
+		<PubMedID>24265224</PubMedID>
+	</Publication>
 </BioSample>

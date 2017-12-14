@@ -28,7 +28,16 @@
 			{
 				"text": "lung"
 			}
-		]
+		],
+		"sex": [
+            {
+                "text": "female",
+                "ontologyTerms": [
+                    "http://purl.obolibrary.org/obo/PATO_0000383",
+                    "http://www.ebi.ac.uk/efo/EFO_0001265"
+                ]
+            }
+        ]
 	},
 	"relationships": [
 		{

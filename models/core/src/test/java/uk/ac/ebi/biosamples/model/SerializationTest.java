@@ -1,6 +1,8 @@
 package uk.ac.ebi.biosamples.model;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Sets;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.BufferedReader;
@@ -66,7 +68,8 @@ public class SerializationTest {
 		attributes.add(Attribute.build("age", "3", Lists.emptyList(), "year"));
 		attributes.add(Attribute.build("organism part", "lung"));
 		attributes.add(Attribute.build("organism part", "heart"));
-		
+		attributes.add(Attribute.build("sex", "female", Sets.newHashSet("http://purl.obolibrary.org/obo/PATO_0000383","http://www.ebi.ac.uk/efo/EFO_0001265"), null));
+
 		SortedSet<Relationship> relationships = new TreeSet<>();
 		relationships.add(Relationship.build("TEST1", "derived from", "TEST2"));
 		
