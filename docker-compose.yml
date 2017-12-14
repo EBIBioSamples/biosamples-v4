@@ -17,7 +17,7 @@ services:
     - webapps-core-4.0.0-SNAPSHOT.war
     environment:
     #AAP certificate
-    - jwt.certificate=public.der
+    - jwt.certificate=public.explore.der
     - security.basic.path=
     - aap.domains.url=https://explore.api.aap.tsi.ebi.ac.uk
     - aap.token.url=https://explore.api.aap.tsi.ebi.ac.uk/auth
