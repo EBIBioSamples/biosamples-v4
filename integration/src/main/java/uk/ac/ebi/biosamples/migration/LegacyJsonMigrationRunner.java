@@ -78,9 +78,9 @@ public class LegacyJsonMigrationRunner implements ApplicationRunner, ExitCodeGen
 
 //			comparisonCallable.compare("SAMEA3683023");
 
-				CompletableFuture<Void> retriveAccessionFuture = new CompletableFuture.allOf(
-						CompletableFuture.run(oldCallable, executorService), executorService.submit(newCallable)
-				);
+//				CompletableFuture<Void> retriveAccessionFuture = new CompletableFuture.allOf(
+//						CompletableFuture.run(oldCallable, executorService), executorService.submit(newCallable)
+//				);
 				Future<Void> oldFuture = executorService.submit(oldCallable);
 				Future<Void> newFuture = executorService.submit(newCallable);
 				Future<Void> bothFuture = executorService.submit(bothCallable);

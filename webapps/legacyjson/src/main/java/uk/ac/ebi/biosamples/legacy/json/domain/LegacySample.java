@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 
 @Relation(value="sample", collectionRelation = "samples")
@@ -74,7 +73,7 @@ public class LegacySample {
 
         MultiValueMap<String, LegacyAttribute> legacyAttributesByType = new LinkedMultiValueMap<>();
         for (String type: attributesByType.keySet()) {
-            legacyAttributesByType.put(camelizer(type),
+            legacyAttributesByType.put(camelcaser(type),
                     attributesByType.get(type)
                             .stream()
                             .map(LegacyAttribute::new)
@@ -155,7 +154,7 @@ public class LegacySample {
     }
 
 
-    private String camelizer(String value) {
+    private String camelcaser(String value) {
         StringBuilder finalString = new StringBuilder();
         for(String part: value.split(" ")) {
             part = part.replaceAll("[^A-Za-z0-9]","");

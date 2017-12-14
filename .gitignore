@@ -20,3 +20,6 @@ env.sh
 test-features
 run_test.py
 !/models/legacyjson/src/test/resources/testLegacySample.json
+
+jsonExport.json
+xmlExport.xml

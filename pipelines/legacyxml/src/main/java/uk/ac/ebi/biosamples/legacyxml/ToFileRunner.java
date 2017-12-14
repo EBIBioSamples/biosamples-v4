@@ -95,7 +95,7 @@ public class ToFileRunner implements ApplicationRunner {
 							restTemplate, legacyAccessionCallback, accessionFutures);
 	
 					UriComponentsBuilder pageUriComponentBuilder;
-					int pageCount = 2;
+					int pageCount;
 					
 					//handle samples
 					pageUriComponentBuilder = UriComponentsBuilder.fromUriString(rootUrl);
@@ -104,7 +104,7 @@ public class ToFileRunner implements ApplicationRunner {
 					pageUriComponentBuilder.replaceQueryParam("pagesize", pagesize);
 					pageUriComponentBuilder.replaceQueryParam("query", "");
 //
-//					pageCount = getPageCount(pageUriComponentBuilder, pagesize);
+					pageCount = getPageCount(pageUriComponentBuilder, pagesize);
 					
 					//multi-thread the pages via futures
 					for (int i = 1; i <= pageCount; i++) {
@@ -136,7 +136,7 @@ public class ToFileRunner implements ApplicationRunner {
 					ThreadUtils.checkAndCallbackFutures(pageFutures, 0, pageCallback);
 					ThreadUtils.checkAndCallbackFutures(accessionFutures, 0, legacyAccessionCallback);
 
-                    fileJsonWriter.write("]");
+					fileJsonWriter.write("{}]");
 					fileXmlWriter.write("</BioSamples>\n");
 				}
 
@@ -402,7 +402,7 @@ public class ToFileRunner implements ApplicationRunner {
 				xmlFileWriter.write("\n");
 
 				jsonFileWriter.write(legacyApiContent.jsonContent);
-				jsonFileWriter.write("\n");
+				jsonFileWriter.write(",\n");
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}

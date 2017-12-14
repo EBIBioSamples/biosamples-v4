@@ -49,8 +49,11 @@ public class JSONSampleToSampleConverter implements Converter<String, Sample> {
 
         Sample.Builder sampleBuilder = new Sample.Builder(accession, sampleName)
                 .withUpdateDate(updateDate)
-                .withReleaseDate(releaseDate)
-                .withAttribute(Attribute.build("description", description));
+                .withReleaseDate(releaseDate);
+
+        if (description != null && description.trim().length() > 0) {
+            sampleBuilder.withAttribute(Attribute.build("description", description));
+        }
 
         attributes.forEach(sampleBuilder::withAttribute);
         submissionInfo.forEach(sampleBuilder::withAttribute);
@@ -76,6 +79,7 @@ public class JSONSampleToSampleConverter implements Converter<String, Sample> {
         SortedSet<Relationship> groupRelationships = new TreeSet<>();
         String groupAccession = json.read( "$.accession");
         List<String> groupMembers = json.read( "$.samples");
+        groupMembers = groupMembers == null ? new ArrayList<>() : groupMembers;
         for(String member: groupMembers) {
             groupRelationships.add(Relationship.build(groupAccession, "has member", member));
         }
@@ -136,14 +140,35 @@ public class JSONSampleToSampleConverter implements Converter<String, Sample> {
      * @return a set of Publications found in the JSON
      */
     private SortedSet<Publication> getPublications(DocumentContext json) {
-        List<Map<String, String>> publicationList = json.read("$.publications");
+        Object testValue = json.read("$.publications");
         SortedSet<Publication> publications = new TreeSet<>();
-        if (publicationList != null) {
-            for (Map<String, String> pub : publicationList) {
-                publications.add(new Publication.Builder()
-                        .doi(pub.get("doi"))
-                        .pubmed_id(pub.get("pubmed_id"))
-                        .build());
+        if (testValue != null) {
+            if (testValue instanceof String) {
+                String serializedPublications = (String) testValue;
+                List<String> dois = JsonPath.read(serializedPublications, "$..doi");
+                List<String> pubmed_ids = JsonPath.read(serializedPublications, "$..pubmed_id");
+                if (dois != null && pubmed_ids != null) {
+                    int maxSize = Math.max(dois.size(), pubmed_ids.size());
+                    for (int i=0; i < maxSize; i++) {
+                        Publication.Builder publicationBuilder = new Publication.Builder();
+                        if (dois.size() > i) {
+                            publicationBuilder.doi(dois.get(i));
+                        }
+                        if (pubmed_ids.size() > i) {
+                            publicationBuilder.pubmed_id(pubmed_ids.get(i));
+                        }
+                        publications.add(publicationBuilder.build());
+
+                    }
+                } else {
+                    throw new RuntimeException("Unexpected format for publications " + serializedPublications);
+                }
+            } else {
+                List<Map<String, String>> jsonObjets = (List<Map<String, String>>) testValue;
+                for (Map<String, String> pub : jsonObjets) {
+                    publications.add(new Publication.Builder().doi(pub.get("doi")).pubmed_id(pub.get("pubmed_id")).build());
+                }
+
             }
         }
         return publications;
