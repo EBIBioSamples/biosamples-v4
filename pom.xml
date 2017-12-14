@@ -93,6 +93,13 @@
 				<enabled>true</enabled>
 			</snapshots>
 		</repository>
+		<repository>
+			<id>spotnexus</id>
+			<url>https://www.ebi.ac.uk/spot/nexus/repository/maven-releases/</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
 	</repositories>
 
 	<pluginRepositories>
@@ -108,13 +115,21 @@
 	</pluginRepositories>
 
 	<distributionManagement>
-		<repository>
+		<!-- <repository>
 			<id>ossrh</id>
 			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
 		</repository>
 		<snapshotRepository>
 			<id>ossrh</id>
 			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository> -->
+		<repository>
+			<id>spotnexus</id>
+			<url>https://www.ebi.ac.uk/spot/nexus/repository/maven-releases/</url>
+		</repository>
+		<snapshotRepository>
+			<id>spotnexus</id>
+			<url>https://www.ebi.ac.uk/spot/nexus/repository/maven-snapshots/</url>
 		</snapshotRepository>
 	</distributionManagement>
 
@@ -127,7 +142,7 @@
 					<compilerArgument>-parameters</compilerArgument>
 				</configuration>
 			</plugin>
-			<plugin>
+			<!-- <plugin>
 				<groupId>org.sonatype.plugins</groupId>
 				<artifactId>nexus-staging-maven-plugin</artifactId>
 				<version>1.6.7</version>
@@ -137,7 +152,7 @@
 					<nexusUrl>https://oss.sonatype.org/</nexusUrl>
 					<autoReleaseAfterClose>true</autoReleaseAfterClose>
 				</configuration>
-			</plugin>
+			</plugin> -->
 			<plugin>
 				<groupId>pl.project13.maven</groupId>
 				<artifactId>git-commit-id-plugin</artifactId>
