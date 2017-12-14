@@ -58,8 +58,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
 
         xmlSearchTester.triesToFindSampleUsingLegacyEndpoint();
 
-        //TODO Reintroduce
-//        xmlSearchTester.triesAndFailToFindPrivateSampleUsingLegacyEndpoint();
+        xmlSearchTester.triesAndFailToFindPrivateSampleUsingLegacyEndpoint();
 
     }
 

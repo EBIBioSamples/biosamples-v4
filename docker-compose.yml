@@ -121,8 +121,8 @@ services:
     - ENDPOINTS_SHUTDOWN_ENABLED=true
     - ENDPOINTS_SHUTDOWN_SENSITIVE=false
     # Provide AAP infos
-    - BIOSAMPLES_CLIENT_AAP_USERNAME=override_in_docker-compose.override.yml
-    - BIOSAMPLES_CLIENT_AAP_PASSWORD=override_in_docker-compose.override.yml
+    # - BIOSAMPLES_CLIENT_AAP_USERNAME=override_in_docker-compose.override.yml
+    # - BIOSAMPLES_CLIENT_AAP_PASSWORD=override_in_docker-compose.override.yml
     ports:
     - 8083:8080
 
@@ -149,8 +149,8 @@ services:
       - ENDPOINTS_SHUTDOWN_ENABLED=true
       - ENDPOINTS_SHUTDOWN_SENSITIVE=false
       # Provide AAP infos
-      - BIOSAMPLES_CLIENT_AAP_USERNAME=override_in_docker-compose.override.yml
-      - BIOSAMPLES_CLIENT_AAP_PASSWORD=override_in_docker-compose.override.yml
+      # - BIOSAMPLES_CLIENT_AAP_USERNAME=override_in_docker-compose.override.yml
+      # - BIOSAMPLES_CLIENT_AAP_PASSWORD=override_in_docker-compose.override.yml
     ports:
       - 8084:8080
 
