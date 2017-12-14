@@ -26,6 +26,7 @@ import java.util.*;
 import java.util.concurrent.Future;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.zip.GZIPInputStream;
 
 import static uk.ac.ebi.biosamples.utils.JsonFragmenter.JsonCallback;
 
@@ -56,7 +57,7 @@ public class ImportJsonRunner implements ApplicationRunner {
 		
 		Path inputJsonPath = Paths.get(args.getNonOptionArgs().get(1));
 
-		try (InputStream is = new BufferedInputStream(Files.newInputStream(inputJsonPath))) {
+		try (InputStream is = new GZIPInputStream(new BufferedInputStream(Files.newInputStream(inputJsonPath)))) {
 
 			Map<String, Future<Resource<Sample>>> futures = new LinkedHashMap<>();
 
