@@ -86,6 +86,8 @@ public class XmlSearchIntegration extends AbstractIntegration {
         xmlSearchTester.findSamplesUsingNCBIQueryStyle();
 
         xmlSearchTester.findOnlySamplesStartingWithSAMEA();
+
+        xmlSearchTester.findSamplesReleasedWithinSpecificDate();
     }
 
     @Override
@@ -122,7 +124,9 @@ public class XmlSearchIntegration extends AbstractIntegration {
                     TestSampleGenerator.getRegularSample(),
                     TestSampleGenerator.getPrivateSample(),
                     TestSampleGenerator.getSampleGroup(),
-                    TestSampleGenerator.getSampleWithSpecificUpdateDate()
+                    TestSampleGenerator.getSampleWithSpecificUpdateDate(),
+                    TestSampleGenerator.getSampleReleasedAtTheEndOfTheDay(),
+                    TestSampleGenerator.getSampleReleasedExaclyTheDayAfterSAMD0912312()
             );
 
             for (Sample sample: baseSampleList) {
@@ -563,6 +567,46 @@ public class XmlSearchIntegration extends AbstractIntegration {
             }
 
         }
+
+        public void findSamplesReleasedWithinSpecificDate() {
+            Sample testSample = TestSampleGenerator.getSampleReleasedAtTheEndOfTheDay();
+            Sample testSampleShouldNotBeReturned = TestSampleGenerator.getSampleReleasedExaclyTheDayAfterSAMD0912312();
+
+            HttpHeaders xmlHeaders = new HttpHeaders();
+            xmlHeaders.setAccept(Collections.singletonList(MediaType.TEXT_XML));
+
+            UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosamplesLegacyXMLUri());
+            UriComponentsBuilder legacyXmlSampleSearchEndpoint= uriBuilder.cloneBuilder();
+            legacyXmlSampleSearchEndpoint.pathSegment("samples")
+                    .queryParam("query", "releasedate:[2016-08-02 TO 2016-08-02]")
+                    .queryParam("pagesize", 100);
+
+            ResponseEntity<ResultQuery> response = restTemplate.exchange(
+                    legacyXmlSampleSearchEndpoint.build().toUri().toString(),
+                    HttpMethod.GET,
+                    new HttpEntity<>(xmlHeaders),
+                    ResultQuery.class);
+
+            if (!response.getStatusCode().is2xxSuccessful()) {
+                throw new RuntimeException("Something went wrong while retrieving results from legacy XML endpoint");
+            }
+
+            ResultQuery result = response.getBody();
+            Optional<BioSample> expectedSample = result.getBioSample().stream()
+                    .filter(sample -> sample.getId().equals(testSample.getAccession()))
+                    .findFirst();
+            if (!expectedSample.isPresent()) {
+                throw new RuntimeException("Sample " + testSample.getAccession() + " not found when searching within a single specific date");
+            }
+
+            Optional<BioSample> unexpectedSample = result.getBioSample().stream()
+                    .filter(sample -> sample.getId().equals(testSampleShouldNotBeReturned.getAccession()))
+                    .findFirst();
+            if (unexpectedSample.isPresent()) {
+                throw new RuntimeException("Sample " + testSampleShouldNotBeReturned.getAccession() + " should not be found because not part of the daterange");
+            }
+
+        }
     }
 
 
@@ -668,6 +712,34 @@ public class XmlSearchIntegration extends AbstractIntegration {
             return Sample.build(name, accession, submissionDomain, release, update,
                     null, null, null,
                     organizations, contacts, publications);
+        }
+
+        public static Sample getSampleReleasedAtTheEndOfTheDay() {
+            String name = "Test XML Sample with release date almost at the end of the day";
+            String accession = "SAMD0912312";
+            Instant update = Instant.now();
+            Instant release = Instant.parse("2016-08-02T23:59:59Z");
+
+            return Sample.build(name, accession, submissionDomain, release, update,
+                    null, null, null,
+                    null, null, null);
+
+        }
+
+        public static Sample getSampleReleasedExaclyTheDayAfterSAMD0912312() {
+            String name = "Test XML Sample SAMD0912313";
+            String accession = "SAMD0912313";
+            Instant update = Instant.now();
+            Instant release = Instant.parse("2016-08-03T00:00:00Z");
+
+            SortedSet<Attribute> attributes = new TreeSet<>();
+            attributes.add(new Attribute.Builder("description",
+                    "Sample released exactly at midnight of the day after another sample was released").build());
+
+            return Sample.build(name, accession, submissionDomain, release, update,
+                    attributes, null, null,
+                    null, null, null);
+
         }
     }
 
