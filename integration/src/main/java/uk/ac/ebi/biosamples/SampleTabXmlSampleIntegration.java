@@ -73,6 +73,24 @@ public class SampleTabXmlSampleIntegration extends AbstractIntegration {
 			// TODO check at the right URLs with GET to make sure all
 			// arrived
 		});
+
+		URI putUriNcbi = UriComponentsBuilder.fromUri(uri).pathSegment("SAMD00046940").build().toUri();
+		runCallableOnResource("/SAMD00046940.xml", sampleTabString -> {
+			log.info("PUTing to " + putUriNcbi);
+			RequestEntity<String> request = RequestEntity.put(putUriNcbi)
+					.contentType(MediaType.APPLICATION_XML)
+					.accept(MediaType.TEXT_PLAIN)					
+					.body(sampleTabString);
+			ResponseEntity<String> response = null;
+			try {
+				response = restTemplate.exchange(request, String.class);
+			} catch (HttpStatusCodeException e) {
+				log.info("error response = "+response);
+				throw e;
+			}
+			// TODO check at the right URLs with GET to make sure all
+			// arrived
+		});
 		
 	}
 

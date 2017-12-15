@@ -1,0 +1,76 @@
+<BioSample
+	xsi:schemaLocation="http://www.ebi.ac.uk/biosamples/SampleGroupExport/1.0 http://www.ebi.ac.uk/biosamples/assets/xsd/v1.0/BioSDSchema.xsd"
+	id="SAMD00046940" submissionUpdateDate="2017-04-07T21:57:22+00:00"
+	submissionReleaseDate="2017-04-06T23:00:00+00:00"
+	xmlns="http://www.ebi.ac.uk/biosamples/SampleGroupExport/1.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<Property class="Sample Name" characteristic="false" comment="false"
+		type="STRING">
+		<QualifiedValue>
+			<Value>MiSeq, Diospyros lotus L8 male flower 23 Apr MeGI promoter
+			</Value>
+		</QualifiedValue>
+	</Property>
+	<Property class="Organism" characteristic="false" comment="false"
+		type="STRING">
+		<QualifiedValue>
+			<Value>Diospyros lotus</Value>
+			<TermSourceREF>
+				<Name />
+				<TermSourceID>55363</TermSourceID>
+			</TermSourceREF>
+		</QualifiedValue>
+	</Property>
+	<Property class="Sex" characteristic="false" comment="false"
+		type="STRING">
+		<QualifiedValue>
+			<Value>male</Value>
+			<TermSourceREF>
+				<Name />
+				<TermSourceID>http://purl.obolibrary.org/obo/PATO_0000384
+				</TermSourceID>
+			</TermSourceREF>
+		</QualifiedValue>
+	</Property>
+	<Property class="colection date" characteristic="false"
+		comment="false" type="STRING">
+		<QualifiedValue>
+			<Value>2014-04-23</Value>
+		</QualifiedValue>
+	</Property>
+	<Property class="cultivar" characteristic="false" comment="false"
+		type="STRING">
+		<QualifiedValue>
+			<Value>KK-L8</Value>
+		</QualifiedValue>
+	</Property>
+	<Property class="model" characteristic="false" comment="false"
+		type="STRING">
+		<QualifiedValue>
+			<Value>Generic</Value>
+		</QualifiedValue>
+	</Property>
+	<Property class="organism part" characteristic="false"
+		comment="false" type="STRING">
+		<QualifiedValue>
+			<Value>whole flower</Value>
+		</QualifiedValue>
+	</Property>
+	<Property class="package" characteristic="false" comment="false"
+		type="STRING">
+		<QualifiedValue>
+			<Value>Generic.1.0</Value>
+		</QualifiedValue>
+	</Property>
+	<Property class="synonym" characteristic="false" comment="false"
+		type="STRING">
+		<QualifiedValue>
+			<Value>TA_Meth-2</Value>
+		</QualifiedValue>
+	</Property>
+	<Database>
+		<Name>ENA</Name>
+		<URI>http://www.ebi.ac.uk/ena/data/view/SAMD00046940</URI>
+		<ID>SAMD00046940</ID>
+	</Database>
+</BioSample>
