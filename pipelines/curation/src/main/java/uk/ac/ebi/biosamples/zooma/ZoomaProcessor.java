@@ -40,7 +40,10 @@ public class ZoomaProcessor {
 	@Cacheable("zooma")
 	public Optional<String> queryZooma(String type, String value) {
 		log.trace("Zooma getting : "+type+" : "+value);
+		long startTime = System.nanoTime();
 		URI uri = uriBuilder.expand(value, type).encode().toUri();
+		long endTime = System.nanoTime();
+		log.trace("Got zooma response in "+((endTime-startTime)/1000000)+"ms");
 		//log.info("Zooma uri : "+url);
 		
 		RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
