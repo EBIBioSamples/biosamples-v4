@@ -5,6 +5,7 @@ import org.springframework.data.solr.core.query.FilterQuery;
 import org.springframework.data.solr.core.query.SimpleFilterQuery;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
+import uk.ac.ebi.biosamples.model.filter.AccessionFilter;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.FacetToFilterConverter;
 import uk.ac.ebi.biosamples.solr.model.field.SolrFieldType;
@@ -96,13 +97,17 @@ public class SolrFilterService {
         for(List<Filter> group: filterGroups) {
             // Compose all the or criteria available for the filters, if any available
             // Reduce will go through all criteria
+            boolean isAccessionFilter = group.stream().findFirst().get() instanceof AccessionFilter;
             Optional<Criteria> filterCriteria = group.stream().map(this::getFilterCriteria).reduce(Optional.empty(), (composedCriteria, currentCriteria) -> {
                 if (currentCriteria.isPresent()) {
                     if (composedCriteria.isPresent()) {
                         // Compose with an OR
-                        return Optional.of(composedCriteria.get().or(currentCriteria.get()));
+                        if (isAccessionFilter) {
+                            return Optional.of(composedCriteria.get().and(currentCriteria.get()));
+                        } else {
+                            return Optional.of(composedCriteria.get().or(currentCriteria.get()));
+                        }
                     } else {
-
                         // Create a new criteria
                         return Optional.of(currentCriteria.get());
                     }

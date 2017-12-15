@@ -84,6 +84,8 @@ public class XmlSearchIntegration extends AbstractIntegration {
         xmlSearchTester.searchesForSamplesUsingDateRangesOnLegacyEndpoint();
 
         xmlSearchTester.findSamplesUsingNCBIQueryStyle();
+
+        xmlSearchTester.findOnlySamplesStartingWithSAMEA();
     }
 
     @Override
@@ -534,8 +536,32 @@ public class XmlSearchIntegration extends AbstractIntegration {
             assert(responseEntity.getBody().contains("<Publication>"));
             assert(responseEntity.getBody().contains("<DOI>"));
             assert(responseEntity.getBody().contains("<PubMedID>"));
-            log.info(String.format("Sample %s does not contains Person element in legacy XML api as expected",
-                    testSample.getAccession()));
+//            log.info(String.format("Sample %s does not contains Person element in legacy XML api as expected",
+//                    testSample.getAccession()));
+        }
+
+        public void findOnlySamplesStartingWithSAMEA() {
+            log.info("Searching for samples starting with SAMEA using `SAMEA*` query");
+            UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosamplesLegacyXMLUri());
+            uriBuilder.pathSegment("samples");
+            uriBuilder.queryParam("query", "SAMEA*");
+            uriBuilder.queryParam("pagesize", 100);
+
+
+            RequestEntity<?> request = RequestEntity
+                    .get(uriBuilder.build().toUri())
+                    .accept(MediaType.TEXT_XML)
+                    .build();
+
+            ResponseEntity<ResultQuery> responseEntity = restTemplate.exchange(request, ResultQuery.class);
+            assert(responseEntity.getStatusCode().is2xxSuccessful());
+            ResultQuery results = responseEntity.getBody();
+            Optional<BioSample> notExpectedBiosamples = results.getBioSample().stream().filter(bioSample -> !bioSample.getId().startsWith("SAMEA")).findAny();
+            if (notExpectedBiosamples.isPresent()) {
+                throw new RuntimeException("An unexpected sample with accession " + notExpectedBiosamples.get().getId() + " " +
+                        "has been returned when querying just for SAMEA*");
+            }
+
         }
     }
 
