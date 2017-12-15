@@ -26,8 +26,14 @@ public class XmlSampleToSampleConverter implements Converter<Element, Sample>  {
 	@Override
 	public Sample convert(Element doc) {
 				
-		Instant release = Instant.from(DateTimeFormatter.ISO_DATE_TIME.parse(XmlPathBuilder.of(doc).attribute("submissionReleaseDate")));
-		Instant update = Instant.from(DateTimeFormatter.ISO_DATE_TIME.parse(XmlPathBuilder.of(doc).attribute("submissionUpdateDate")));
+		Instant release = Instant.now();
+		if (XmlPathBuilder.of(doc).attributeExists("submissionReleaseDate")) {
+			release = Instant.from(DateTimeFormatter.ISO_DATE_TIME.parse(XmlPathBuilder.of(doc).attribute("submissionReleaseDate")));
+		}
+		Instant update = Instant.now();
+		if (XmlPathBuilder.of(doc).attributeExists("submissionUpdateDate")) {
+				update = Instant.from(DateTimeFormatter.ISO_DATE_TIME.parse(XmlPathBuilder.of(doc).attribute("submissionUpdateDate")));
+		}				
 		String accession = null;
 		if (XmlPathBuilder.of(doc).attributeExists("id")) {
 			accession = XmlPathBuilder.of(doc).attribute("id");
