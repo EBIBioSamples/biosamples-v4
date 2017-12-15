@@ -45,7 +45,7 @@ public class FilterSerializationTest {
     public void testDateRangeFromLocalDateTimeToLocalDateFilterDeserialization() {
         String stringToTest = "dt:release:from=2014-01-01T20:30:00until=2015-01-01";
         ZonedDateTime from = ZonedDateTime.of( 2014, 1, 1, 20, 30, 0, 0, ZoneId.of("UTC"));
-        ZonedDateTime to = ZonedDateTime.of( 2015, 1, 1, 0, 0, 0, 0, ZoneId.of("UTC"));
+        ZonedDateTime to = ZonedDateTime.of( 2015, 1, 1, 0, 0, 0, 0, ZoneId.of("UTC")).plusDays(1).minusNanos(1);
 
         Filter expectedFilter = FilterBuilder.create().onReleaseDate().from(from).until(to).build();
         assertEquals(FilterBuilder.create().buildFromString(stringToTest), expectedFilter);
@@ -74,7 +74,7 @@ public class FilterSerializationTest {
     public void testInvertedDateRangeFilterDeserialization() {
        String stringToTest = "dt:update:until=2018-01-01from=2016-01-01";
        ZonedDateTime from = ZonedDateTime.of(LocalDate.of(2016,1,1), LocalTime.MIDNIGHT, ZoneId.of("UTC"));
-       ZonedDateTime to = ZonedDateTime.of(LocalDate.of(2018,1,1), LocalTime.MIDNIGHT, ZoneId.of("UTC"));
+       ZonedDateTime to = ZonedDateTime.of(LocalDate.of(2018,1,1), LocalTime.MIDNIGHT, ZoneId.of("UTC")).plusDays(1).minusNanos(1);
        Filter expectedFilter = FilterBuilder.create().onUpdateDate().from(from).until(to).build();
        Filter actualFilter = FilterBuilder.create().buildFromString(stringToTest);
        assertEquals(actualFilter, expectedFilter);

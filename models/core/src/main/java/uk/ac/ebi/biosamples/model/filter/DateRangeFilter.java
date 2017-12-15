@@ -104,7 +104,7 @@ public class DateRangeFilter implements Filter {
         }
 
         public Builder from(String stringDate) {
-            this.from  = parseDateTime(stringDate);
+            this.from  = parseDateTime(stringDate, "from");
             return this;
         }
 
@@ -120,12 +120,12 @@ public class DateRangeFilter implements Filter {
         }
 
         public Builder until(LocalDate toLocalDate) {
-            this.until = toLocalDate.atStartOfDay().atZone(defaultZoneId);
+            this.until = toLocalDate.plusDays(1).atStartOfDay().atZone(defaultZoneId);
             return this;
         }
 
         public Builder until(String date) {
-            this.until = parseDateTime(date);
+            this.until = parseDateTime(date, "until");
             return this;
         }
 
@@ -144,9 +144,9 @@ public class DateRangeFilter implements Filter {
             String fromString = extractFromFieldFromString(filterValue);
             String toString = extractToFieldFromString(filterValue);
 
-            ZonedDateTime from = parseDateTime(fromString);
-            ZonedDateTime to = parseDateTime(toString);
-            return this.from(from).until(to);
+            ZonedDateTime from = parseDateTime(fromString, "from");
+            ZonedDateTime until = parseDateTime(toString, "until");
+            return this.from(from).until(until);
 
         }
 
@@ -187,7 +187,7 @@ public class DateRangeFilter implements Filter {
             return "until=";
         }
 
-        private ZonedDateTime parseDateTime(String datetimeString) {
+        private ZonedDateTime parseDateTime(String datetimeString, String field) {
             if (datetimeString.isEmpty()) return null;
             TemporalAccessor temporalAccessor = getFormatter().parseBest(datetimeString,
                     ZonedDateTime::from, LocalDateTime::from, LocalDate::from);
@@ -196,7 +196,12 @@ public class DateRangeFilter implements Filter {
             } else if (temporalAccessor instanceof LocalDateTime) {
                 return ((LocalDateTime) temporalAccessor).atZone(defaultZoneId);
             } else {
-                return ((LocalDate) temporalAccessor).atStartOfDay(defaultZoneId);
+                LocalDate localDate = (LocalDate) temporalAccessor;
+                if (field.equalsIgnoreCase("from")) {
+                    return localDate.atStartOfDay(defaultZoneId);
+                } else {
+                    return localDate.plusDays(1).atStartOfDay(defaultZoneId).minusNanos(1);
+                }
             }
 
         }
