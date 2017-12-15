@@ -14,6 +14,7 @@ import org.springframework.web.client.HttpStatusCodeException;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.legacy.json.service.JSONSampleToSampleConverter;
 import uk.ac.ebi.biosamples.model.*;
+import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.JsonFragmenter;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 
@@ -23,6 +24,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -59,17 +62,26 @@ public class ImportJsonRunner implements ApplicationRunner {
 
 		try (InputStream is = new GZIPInputStream(new BufferedInputStream(Files.newInputStream(inputJsonPath)))) {
 
-			Map<String, Future<Resource<Sample>>> futures = new LinkedHashMap<>();
+			Map<String, Future<Void>> futures = new LinkedHashMap<>();
+			ExecutorService executorService = null;
+			try  {
+				executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, 1, 32);
+				JsonCallback callback = new ImportJsonCallback(futures, 
+						client, jsonSampleToSampleConverter, executorService);
 
-			JsonCallback callback = new ImportJsonCallback(futures, client, jsonSampleToSampleConverter);
+				// this does the actual processing
+				jsonFragmenter.handleStream(is, "UTF-8", callback);
 
-			// this does the actual processing
-			jsonFragmenter.handleStream(is, "UTF-8", callback);
+				log.info("waiting for futures");
 
-			log.info("waiting for futures");
+				// wait for anything to finish
+				ThreadUtils.checkFutures(futures, 0);
+			} finally {
+				if (executorService != null) {
+					executorService.shutdownNow();
+				}
+			}
 
-			// wait for anything to finish
-			ThreadUtils.checkFutures(futures, 0);
 		}
 	}
 	
@@ -79,20 +91,54 @@ public class ImportJsonRunner implements ApplicationRunner {
 		Logger log = LoggerFactory.getLogger(getClass());
 
 
-		private final Map<String, Future<Resource<Sample>>> futures;
+		private final Map<String, Future<Void>> futures;
 		private final BioSamplesClient client;
 		private final JSONSampleToSampleConverter jsonSampleToSampleConverter;
+		private final ExecutorService executorService;
 
-		public ImportJsonCallback(Map<String, Future<Resource<Sample>>> futures, BioSamplesClient client, JSONSampleToSampleConverter jsonSampleToSampleConverter) {
+		public ImportJsonCallback(Map<String, Future<Void>> futures, BioSamplesClient client, 
+				JSONSampleToSampleConverter jsonSampleToSampleConverter, ExecutorService executorService) {
 			this.futures = futures;
 			this.client = client;
 			this.jsonSampleToSampleConverter = jsonSampleToSampleConverter;
+			this.executorService = executorService;
 		}
 		
 		@Override
-		public void handleJson(String json) throws Exception {
+		public void handleJson(String json) throws Exception {	
+
 			
+			futures.put(json, executorService.submit(new JsonCallable(client, jsonSampleToSampleConverter, json)));
+			//make sure we don't have too many futures
+			ThreadUtils.checkFutures(futures, 100);
+		}
+
+	}
+	
+	private static class JsonCallable implements Callable<Void> {
+		private final BioSamplesClient client;
+		private final JSONSampleToSampleConverter jsonSampleToSampleConverter;
+		private final String json;
+
+		public JsonCallable(BioSamplesClient client, 
+				JSONSampleToSampleConverter jsonSampleToSampleConverter, 
+				String json) {
+			this.client = client;
+			this.jsonSampleToSampleConverter = jsonSampleToSampleConverter;
+			this.json = json;
+		}
+		
+		@Override
+		public Void call() throws Exception {
 			Sample sample = jsonSampleToSampleConverter.convert(json);
+			
+			if (sample.getRelationships().size() == 0 &&
+					sample.getOrganizations().size() == 0 &&
+					sample.getContacts().size() == 0 &&
+					sample.getPublications().size() == 0) {
+				//nothing in the json we want to keep, skip
+				return null;
+			}
 
 			Optional<Resource<Sample>> optionalSampleResource = client.fetchSampleResource(sample.getAccession());
 			if (optionalSampleResource.isPresent()) {
@@ -122,18 +168,15 @@ public class ImportJsonRunner implements ApplicationRunner {
                             new TreeSet<>(), sample.getRelationships(), new TreeSet<>(),
                             sample.getOrganizations(), sample.getContacts(), sample.getPublications());
 			}
+			
+			client.persistSampleResource(sample, false, true);
+			return null;
+		}
 
-			futures.put(json, client.persistSampleResourceAsync(sample, false, true));
-//            try {
-//				log.info("Submitting sample " + objectMapper.writeValueAsString(sample));
-//				client.persistSampleResource(sample, false, true);
-//			} catch (Exception e) {
-//				log.error("An exception occured while submitting sample " + sample.getAccession(), e);
-//				throw e;
-//			}
-
-			//make sure we don't have too many futures
-			ThreadUtils.checkFutures(futures, 100);
+		private <T> SortedSet<T> merge(SortedSet<T> first, SortedSet<T> second) {
+			SortedSet<T> completeSet = new TreeSet<>(first);
+			completeSet.addAll(second);
+			return completeSet;
 		}
 
 
@@ -150,44 +193,7 @@ public class ImportJsonRunner implements ApplicationRunner {
 			}
 			return finalString.toString();
 		}
-
-		private SortedSet<Attribute> mergeAttributes(SortedSet<Attribute> original, SortedSet<Attribute> json) {
-			SortedSet<Attribute> completeSet = new TreeSet<>(original);
-			List<String> orginalAttributeTypesCamelCased = original.stream()
-					.map(a ->camelcaser(a.getType())).collect(Collectors.toList());
-
-			completeSet.addAll(
-					json.stream()
-							.filter(a -> !orginalAttributeTypesCamelCased.contains(a.getType()))
-							.collect(Collectors.toList())
-			);
-
-			return completeSet;
-		}
-
-		private <T> SortedSet<T> merge(SortedSet<T> first, SortedSet<T> second) {
-			SortedSet<T> completeSet = new TreeSet<>(first);
-			completeSet.addAll(second);
-			return completeSet;
-		}
-
+		
 	}
-
-	private static class BioSampleAsyncFetcher implements Supplier<Optional<Resource<Sample>>> {
-
-		private final String sampleAccession;
-		private final BioSamplesClient client;
-
-		private BioSampleAsyncFetcher(String sampleAccession, BioSamplesClient client) {
-			this.sampleAccession = sampleAccession;
-			this.client = client;
-		}
-
-		@Override
-		public Optional<Resource<Sample>> get() {
-			return client.fetchSampleResource(sampleAccession);
-		}
-	}
-
 
 }
