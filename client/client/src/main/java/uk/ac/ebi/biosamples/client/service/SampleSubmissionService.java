@@ -95,7 +95,7 @@ public class SampleSubmissionService {
 						.toObject(new ParameterizedTypeReference<PagedResources<Resource<Sample>>>(){});			
 				Link sampleLink = pagedSamples.getLink("sample");
 				if (sampleLink == null) {
-					log.info("Problem handling page "+pagedSamples);
+					log.warn("Problem handling page "+pagedSamples);
 					throw new NullPointerException("Unable to find sample link");
 				}
 				sampleLink = sampleLink.expand(sample.getAccession());

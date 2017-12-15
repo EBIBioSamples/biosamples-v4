@@ -41,7 +41,7 @@ public class CurationSubmissionService {
 				.follow("curationLinks")
 				.asLink().getHref());
 
-		log.info("POSTing to " + target + " " + curationLink);
+		log.trace("POSTing to " + target + " " + curationLink);
 		
 		RequestEntity<CurationLink> requestEntity = RequestEntity.post(target)
 				.contentType(MediaType.APPLICATION_JSON).accept(MediaTypes.HAL_JSON).body(curationLink);

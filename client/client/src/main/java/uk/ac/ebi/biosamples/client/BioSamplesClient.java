@@ -67,10 +67,10 @@ public class BioSamplesClient implements AutoCloseable {
 		RestTemplate restOperations = restTemplateBuilder.build();
 				
 		if (aapClientService != null) {		
-			log.info("Adding AapClientHttpRequestInterceptor");
+			log.trace("Adding AapClientHttpRequestInterceptor");
 			restOperations.getInterceptors().add(new AapClientHttpRequestInterceptor(aapClientService));
 		} else {
-			log.info("No AapClientService avaliable");
+			log.trace("No AapClientService avaliable");
 		}
 		
 		Traverson traverson = new Traverson(uri, MediaTypes.HAL_JSON);
@@ -110,7 +110,6 @@ public class BioSamplesClient implements AutoCloseable {
     
     @PreDestroy
     public void close() {
-    	log.info("Closing thread pool");
 		threadPoolExecutor.shutdownNow();
 		try {
 			threadPoolExecutor.awaitTermination(1, TimeUnit.MINUTES);
@@ -198,7 +197,7 @@ public class BioSamplesClient implements AutoCloseable {
 		//validate client-side before submission
 		Collection<String> errors = sampleValidator.validate(sample);		
 		if (errors.size() > 0) {
-			log.info("Errors : "+errors);
+			log.error("Errors : "+errors);
 			throw new IllegalArgumentException("Sample not valid");
 		}
 		return sampleSubmissionService.submitAsync(sample, setUpdateDate, setFullDetails);

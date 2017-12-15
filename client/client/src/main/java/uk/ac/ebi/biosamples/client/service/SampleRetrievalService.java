@@ -86,7 +86,7 @@ public class SampleRetrievalService {
 				.build()
 				.toUri();
 
-		log.info("GETing " + uri);
+		log.trace("GETing " + uri);
 
 		RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
 		ResponseEntity<PagedResources<Resource<Sample>>> responseEntity = restOperations.exchange(requestEntity,
@@ -98,7 +98,7 @@ public class SampleRetrievalService {
 		}
 
 
-		log.info("GETted " + uri);
+		log.trace("GETted " + uri);
 
 		return responseEntity.getBody();
 	}
@@ -118,7 +118,7 @@ public class SampleRetrievalService {
 					.follow(Hop.rel("sample").withParameter("accession", accession))
 					.asLink().getHref());
 			
-			log.info("GETing " + uri);
+			log.trace("GETing " + uri);
 
 			RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
 			
@@ -135,7 +135,7 @@ public class SampleRetrievalService {
 					throw e;
 				}
 			}
-			log.info("GETted " + uri);
+			log.trace("GETted " + uri);
 
 			return Optional.of(responseEntity.getBody());
 		}
@@ -266,7 +266,7 @@ public class SampleRetrievalService {
 
 				// fill up the queue if possible
 				while (queue.size() < queueMaxSize && accessions.hasNext()) {
-					log.info("Queue size is " + queue.size());
+					log.trace("Queue size is " + queue.size());
 					String nextAccession = accessions.next();
 					queue.add(fetch(nextAccession));
 				}
