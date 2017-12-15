@@ -2,7 +2,8 @@ models/
 messaging/
 client/
 properties/
-ncbi.xml.gz
+utils/
+*.gz
 **/.settings/
 **/.classpath
 **/.project
