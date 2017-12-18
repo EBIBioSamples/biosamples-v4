@@ -49,8 +49,8 @@ import uk.ac.ebi.biosamples.service.XmlGroupToSampleConverter;
 import uk.ac.ebi.biosamples.service.XmlSampleToSampleConverter;
 
 @Component
-@Profile({"migration"})
-public class MigrationRunner implements ApplicationRunner, ExitCodeGenerator {
+@Profile({"migration-xml"})
+public class XmlMigrationRunner implements ApplicationRunner, ExitCodeGenerator {
 
 	private final RestTemplate restTemplate;
 	private ExecutorService executorService;
@@ -66,7 +66,7 @@ public class MigrationRunner implements ApplicationRunner, ExitCodeGenerator {
 	private final XmlSampleToSampleConverter xmlSampleToSampleConverter;
 	private final XmlGroupToSampleConverter xmlGroupToSampleConverter;
 	
-	public MigrationRunner(RestTemplateBuilder restTemplateBuilder, XmlSampleToSampleConverter xmlSampleToSampleConverter, 
+	public XmlMigrationRunner(RestTemplateBuilder restTemplateBuilder, XmlSampleToSampleConverter xmlSampleToSampleConverter, 
 			XmlGroupToSampleConverter xmlGroupToSampleConverter) {
 		restTemplate = restTemplateBuilder.build();
 		this.xmlSampleToSampleConverter = xmlSampleToSampleConverter;
@@ -151,11 +151,11 @@ public class MigrationRunner implements ApplicationRunner, ExitCodeGenerator {
 			executorService = Executors.newFixedThreadPool(4);
 			Queue<String> oldQueue = new ArrayBlockingQueue<>(128);
 			AtomicBoolean oldFinished = new AtomicBoolean(false);
-			AccessFetcherCallable oldCallable = new AccessFetcherCallable(restTemplate, oldUrl, oldQueue, oldFinished);
+			XmlAccessFetcherCallable oldCallable = new XmlAccessFetcherCallable(restTemplate, oldUrl, oldQueue, oldFinished);
 	
 			Queue<String> newQueue = new ArrayBlockingQueue<>(128);
 			AtomicBoolean newFinished = new AtomicBoolean(false);
-			AccessFetcherCallable newCallable = new AccessFetcherCallable(restTemplate, newUrl, newQueue, newFinished);
+			XmlAccessFetcherCallable newCallable = new XmlAccessFetcherCallable(restTemplate, newUrl, newQueue, newFinished);
 	
 			Queue<String> bothQueue = new ArrayBlockingQueue<>(128);
 			AtomicBoolean bothFinished = new AtomicBoolean(false);
@@ -163,7 +163,7 @@ public class MigrationRunner implements ApplicationRunner, ExitCodeGenerator {
 			AccessionQueueBothCallable bothCallable = new AccessionQueueBothCallable(oldQueue, oldFinished, 
 					newQueue, newFinished, bothQueue, bothFinished);
 			
-			AccessionComparisonCallable comparisonCallable = new AccessionComparisonCallable(restTemplate, 
+			XmlAccessionComparisonCallable comparisonCallable = new XmlAccessionComparisonCallable(restTemplate, 
 					oldUrl, newUrl, bothQueue, bothFinished
 					, xmlSampleToSampleConverter, xmlGroupToSampleConverter, args.containsOption("comparison"));
 			

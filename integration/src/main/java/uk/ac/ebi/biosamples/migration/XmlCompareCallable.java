@@ -59,7 +59,7 @@ import uk.ac.ebi.biosamples.service.XmlGroupToSampleConverter;
 import uk.ac.ebi.biosamples.service.XmlSampleToSampleConverter;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
-public class CompareCallable implements Callable<Void> {
+public class XmlCompareCallable implements Callable<Void> {
 	
 	private final String accession;
 	private final String oldUrl;
@@ -69,7 +69,7 @@ public class CompareCallable implements Callable<Void> {
 	private final RestTemplate restTemplate;
 	private final Logger log = LoggerFactory.getLogger(getClass());
 	
-	public CompareCallable(String accession, String oldUrl, String newUrl, 
+	public XmlCompareCallable(String accession, String oldUrl, String newUrl, 
 			XmlSampleToSampleConverter xmlSampleToSampleConverter, XmlGroupToSampleConverter xmlGroupToSampleConverter,
 			RestTemplate restTemplate) {
 		this.accession = accession;
@@ -293,7 +293,7 @@ public class CompareCallable implements Callable<Void> {
 
 	private static class NodeComparator implements Comparator<Node> {
 		
-		private CompareCallable.NamedNodeMapComparator namedNodeMapComparator = new NamedNodeMapComparator();
+		private XmlCompareCallable.NamedNodeMapComparator namedNodeMapComparator = new NamedNodeMapComparator();
 		
 		@Override
 		public int compare(Node a, Node b) {					

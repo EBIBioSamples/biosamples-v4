@@ -29,7 +29,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
-public class AccessFetcherCallable implements Callable<Void> {
+public class XmlAccessFetcherCallable implements Callable<Void> {
 
 	private final RestTemplate restTemplate;
 	private final String rootUrl;
@@ -37,7 +37,7 @@ public class AccessFetcherCallable implements Callable<Void> {
 	private final AtomicBoolean finishFlag;
 	private final Logger log = LoggerFactory.getLogger(getClass());
 	
-	public AccessFetcherCallable(RestTemplate restTemplate, String rootUrl, Queue<String> accessionQueue, AtomicBoolean finishFlag) {
+	public XmlAccessFetcherCallable(RestTemplate restTemplate, String rootUrl, Queue<String> accessionQueue, AtomicBoolean finishFlag) {
 		this.restTemplate = restTemplate;
 		this.rootUrl = rootUrl;
 		this.accessionQueue = accessionQueue;

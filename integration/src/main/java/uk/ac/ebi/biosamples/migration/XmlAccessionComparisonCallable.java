@@ -42,7 +42,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
-class AccessionComparisonCallable implements Callable<Void> {
+class XmlAccessionComparisonCallable implements Callable<Void> {
 	private final RestTemplate restTemplate;
 	private final String oldUrl;
 	private final String newUrl;
@@ -54,7 +54,7 @@ class AccessionComparisonCallable implements Callable<Void> {
 
 	private final Logger log = LoggerFactory.getLogger(getClass());
 
-	public AccessionComparisonCallable(RestTemplate restTemplate, String oldUrl, String newUrl, Queue<String> bothQueue,
+	public XmlAccessionComparisonCallable(RestTemplate restTemplate, String oldUrl, String newUrl, Queue<String> bothQueue,
 			AtomicBoolean bothFlag, 
 			XmlSampleToSampleConverter xmlSampleToSampleConverter, XmlGroupToSampleConverter xmlGroupToSampleConverter, 
 			boolean compare) {
@@ -106,10 +106,10 @@ class AccessionComparisonCallable implements Callable<Void> {
 		UriComponentsBuilder oldUriComponentBuilder = UriComponentsBuilder.fromUriString(oldUrl);
 		UriComponentsBuilder newUriComponentBuilder = UriComponentsBuilder.fromUriString(newUrl);
 
-		//ComparisonFormatter comparisonFormatter = new DefaultComparisonFormatter();
+		String endpoint = accession.startsWith("SAMEG") ? "groups" : "samples";
 
-		URI oldUri = oldUriComponentBuilder.cloneBuilder().pathSegment(accession).build().toUri();
-		URI newUri = newUriComponentBuilder.cloneBuilder().pathSegment(accession).build().toUri();
+		URI oldUri = oldUriComponentBuilder.cloneBuilder().pathSegment(endpoint, accession).build().toUri();
+		URI newUri = newUriComponentBuilder.cloneBuilder().pathSegment(endpoint, accession).build().toUri();
 		String oldDocument = getDocument(oldUri);
 		String newDocument = getDocument(newUri);
 
@@ -170,30 +170,7 @@ class AccessionComparisonCallable implements Callable<Void> {
 		</BioSample>
 
 */
-		
-		/*
-		Diff diff = DiffBuilder
-				.compare(new WhitespaceNormalizedSource(new CommentLessSource(Input.fromString(oldDocument).build())))
-				.withTest(new WhitespaceNormalizedSource(new CommentLessSource(Input.fromString(newDocument).build())))
-		        .withNodeMatcher(new DefaultNodeMatcher(ElementSelectors.byNameAndText))
-				.checkForSimilar()
-				.build();
-		
-		if (diff.hasDifferences()) {
-			List<Difference> differences = new ArrayList<>();
-			for (Difference difference : diff.getDifferences()) {
-				if (difference.getResult() == ComparisonResult.DIFFERENT) {
-					differences.add(difference);
-				}
-			}
-
-			log.info("Found " + differences.size() + " differences on " + accession);
-			for (Difference difference : differences) {
-				log.info(String.join(" ", "Difference on", accession, comparisonFormatter.getDescription(difference.getComparison())));
-			}
-		}
-		*/
-		
+				
 
 		SAXReader saxReader = new SAXReader();
 		org.dom4j.Document doc;

@@ -108,7 +108,7 @@ class LegacyJsonAccessionComparisonCallable implements Callable<Void> {
 		UriComponentsBuilder newUriComponentBuilder = UriComponentsBuilder.fromUriString(newUrl);
 
 		String endpoint = accession.startsWith("SAMEG") ? "groups" : "samples";
-		//ComparisonFormatter comparisonFormatter = new DefaultComparisonFormatter();
+		
         URI oldUri = oldUriComponentBuilder.cloneBuilder().pathSegment(endpoint, accession).build().toUri();
         URI newUri = newUriComponentBuilder.cloneBuilder().pathSegment(endpoint, accession).build().toUri();
         String oldDocument = getDocument(oldUri);
