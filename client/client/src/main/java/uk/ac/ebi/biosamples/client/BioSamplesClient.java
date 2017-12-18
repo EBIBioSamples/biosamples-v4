@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -62,7 +63,8 @@ public class BioSamplesClient implements AutoCloseable {
 			BioSamplesProperties bioSamplesProperties) {
 		
 		threadPoolExecutor = AdaptiveThreadPoolExecutor.create(100, 10000, true, 
-				bioSamplesProperties.getBiosamplesClientThreadCount(),bioSamplesProperties.getBiosamplesClientThreadCountMax());
+				bioSamplesProperties.getBiosamplesClientThreadCount(),
+				bioSamplesProperties.getBiosamplesClientThreadCountMax());
 		
 		RestTemplate restOperations = restTemplateBuilder.build();
 				
@@ -129,11 +131,11 @@ public class BioSamplesClient implements AutoCloseable {
 	}
 
 	public Iterable<Resource<Sample>> fetchSampleResourceAll() throws RestClientException {
-		return sampleRetrievalService.fetchAll();
+		return sampleRetrievalService.fetchAll("", Collections.emptyList());
 	}
 
 	public Iterable<Resource<Sample>> fetchSampleResourceAll(String text) throws RestClientException {
-		return sampleRetrievalService.fetchAll(text);
+		return sampleRetrievalService.fetchAll(text, Collections.emptyList());
 	}
 
 	public Iterable<Resource<Sample>> fetchSampleResourceAll(String text, Collection<Filter> filters) {
@@ -153,11 +155,11 @@ public class BioSamplesClient implements AutoCloseable {
 	 * @return a paginated results of samples relative to the search term
 	 */
 	public PagedResources<Resource<Sample>> fetchPagedSampleResource(String text, int page, int size) {
-		return sampleRetrievalService.search(text, page, size);
+		return sampleRetrievalService.search(text, Collections.emptyList(), page, size);
 	}
 
 	public PagedResources<Resource<Sample>> fetchPagedSampleResource(String text, Collection<Filter> filters, int page, int size) {
-		return sampleRetrievalService.search(text,filters, page, size);
+		return sampleRetrievalService.search(text, filters, page, size);
 	}
 
 	@Deprecated
@@ -171,15 +173,15 @@ public class BioSamplesClient implements AutoCloseable {
 	}	
 
 	@Deprecated
-	public Sample persistSample(Sample sample) throws RestClientException {
+	public Sample persistSample(Sample sample) {
 		return persistSampleResource(sample).getContent();
 	}
 	
-	public Resource<Sample> persistSampleResource(Sample sample) throws RestClientException {
+	public Resource<Sample> persistSampleResource(Sample sample) {
 		return persistSampleResource(sample, null, null);
 	}	
 	
-	public Resource<Sample> persistSampleResource(Sample sample, Boolean setUpdateDate, Boolean setFullDetails) throws RestClientException {
+	public Resource<Sample> persistSampleResource(Sample sample, Boolean setUpdateDate, Boolean setFullDetails)  {
 		try {
 			return persistSampleResourceAsync(sample, setUpdateDate, setFullDetails).get();
 		} catch (InterruptedException e) {
@@ -189,11 +191,11 @@ public class BioSamplesClient implements AutoCloseable {
 		}
 	}
 
-	public Future<Resource<Sample>> persistSampleResourceAsync(Sample sample) throws RestClientException {
+	public Future<Resource<Sample>> persistSampleResourceAsync(Sample sample) {
 		return persistSampleResourceAsync(sample, null, null);
 	}	
 	
-	public Future<Resource<Sample>> persistSampleResourceAsync(Sample sample, Boolean setUpdateDate, Boolean setFullDetails) throws RestClientException {
+	public Future<Resource<Sample>> persistSampleResourceAsync(Sample sample, Boolean setUpdateDate, Boolean setFullDetails) {
 		//validate client-side before submission
 		Collection<String> errors = sampleValidator.validate(sample);		
 		if (errors.size() > 0) {
@@ -203,11 +205,11 @@ public class BioSamplesClient implements AutoCloseable {
 		return sampleSubmissionService.submitAsync(sample, setUpdateDate, setFullDetails);
 	}
 	
-	public Collection<Resource<Sample>> persistSamples(Collection<Sample> samples) throws RestClientException {
+	public Collection<Resource<Sample>> persistSamples(Collection<Sample> samples) {
 		return persistSamples(samples, null, null);
 	}
 	
-	public Collection<Resource<Sample>> persistSamples(Collection<Sample> samples, Boolean setUpdateDate, Boolean setFullDetails) throws RestClientException {
+	public Collection<Resource<Sample>> persistSamples(Collection<Sample> samples, Boolean setUpdateDate, Boolean setFullDetails) {
 		List<Resource<Sample>> results = new ArrayList<>();
 		List<Future<Resource<Sample>>> futures = new ArrayList<>();
 		
@@ -229,11 +231,11 @@ public class BioSamplesClient implements AutoCloseable {
 		return results;
 	}
 	
-	public Iterable<Resource<Curation>> fetchCurationResourceAll() throws RestClientException {
+	public Iterable<Resource<Curation>> fetchCurationResourceAll() {
 		return curationRetrievalService.fetchAll();
 	}
 
-	public Resource<CurationLink> persistCuration(String accession, Curation curation, String domain) throws RestClientException {
+	public Resource<CurationLink> persistCuration(String accession, Curation curation, String domain) {
 		return curationSubmissionService.submit(CurationLink.build(accession, curation, domain, null));
 	}
 }

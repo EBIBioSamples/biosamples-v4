@@ -61,15 +61,7 @@ public class SampleRetrievalService {
 	public Future<Optional<Resource<Sample>>> fetch(String accession) {
 		return executor.submit(new FetchCallable(accession));
 	}
-
-	public PagedResources<Resource<Sample>> search(String text, int page, int size) {
-		//TODO remove duplicate with other search methods
-
-		//TODO make a proper HAL link to do this properly
-		return this.search(text, Collections.EMPTY_LIST, page, size);
-
-	}
-
+	
 	public PagedResources<Resource<Sample>> search(String text, Collection<Filter> filters, int page, int size) {
 		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();
 		params.add("page", Integer.toString(page));
@@ -140,23 +132,6 @@ public class SampleRetrievalService {
 			return Optional.of(responseEntity.getBody());
 		}
 	}
-	
-	public Iterable<Resource<Sample>> fetchAll() {
-		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();		
-		params.add("size", Integer.toString(pageSize));
-		return new IterableResourceFetchAll<Sample>(executor, traverson, restOperations,
-				parameterizedTypeReferencePagedResourcesSample, 
-				params,	"samples");
-	}
-	
-	public Iterable<Resource<Sample>> fetchAll(String text) {
-		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();		
-		params.add("text", text);
-		params.add("size", Integer.toString(pageSize));
-		return new IterableResourceFetchAll<Sample>(executor, traverson, restOperations,
-				parameterizedTypeReferencePagedResourcesSample, 
-				params,	"samples");
-	}
 
 	public Iterable<Resource<Sample>> fetchAll(String text, Collection<Filter> filterCollection) {
 		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();
@@ -174,8 +149,7 @@ public class SampleRetrievalService {
 
 	}
 
-    // FIXME, If you can! The only movie where a plus goes incognito to be actually recognize by the system
-    // Only way to keep the + in a (not encoded) query parameter is to force encoding
+    // TODO to keep the + in a (not encoded) query parameter is to force encoding
 	private MultiValueMap<String, String> encodePlusInQueryParameters(MultiValueMap<String, String> queryParameters) {
 	    MultiValueMap<String,String> encodedQueryParameters = new LinkedMultiValueMap<>();
 	    for (Map.Entry<String, List<String>> param: queryParameters.entrySet()) {
@@ -191,34 +165,6 @@ public class SampleRetrievalService {
         return encodedQueryParameters;
     }
 
-
-//	public Iterable<Resource<Sample>> fetchUpdatedAfter(Instant updatedAfter) {
-//		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();
-//		params.add("size", Integer.toString(pageSize));
-//		params.add("updatedafter", solrFormatter.format(updatedAfter));
-//		return new IterableResourceFetchAll<Sample>(executor, traverson, restOperations,
-//				parameterizedTypeReferencePagedResourcesSample,
-//				params,	"samples");
-//	}
-
-//	public Iterable<Resource<Sample>> fetchUpdatedBefore(Instant updatedBefore) {
-//		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();
-//		params.add("size", Integer.toString(pageSize));
-//		params.add("updatedbefore", solrFormatter.format(updatedBefore));
-//		return new IterableResourceFetchAll<Sample>(executor, traverson, restOperations,
-//				parameterizedTypeReferencePagedResourcesSample,
-//				params,	"samples");
-//	}
-
-//	public Iterable<Resource<Sample>> fetchUpdatedBetween(Instant updatedAfter, Instant updatedBefore) {
-//		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();
-//		params.add("size", Integer.toString(pageSize));
-//		params.add("updatedafter", solrFormatter.format(updatedAfter));
-//		params.add("updatedbefore", solrFormatter.format(updatedBefore));
-//		return new IterableResourceFetchAll<Sample>(executor, traverson, restOperations,
-//				parameterizedTypeReferencePagedResourcesSample,
-//				params,	"samples");
-//	}
 
 	public Iterable<Optional<Resource<Sample>>> fetchAll(Iterable<String> accessions) {
 		return new IterableResourceFetch(accessions);
