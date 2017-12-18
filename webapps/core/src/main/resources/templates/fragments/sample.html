@@ -4,85 +4,6 @@
 <head>
 </head>
 <body>
-	<section th:fragment="contacts (contacts)">
-		<th:section
-				th:unless="${#arrays.isEmpty(contacts)}"
-				th:remove="tag">
-			<h3>Contacts</h3>
-			<table th:each = "contact : ${contacts}">
-				<thead>
-                    <tr>
-                        <th th:colspan="2" th:text="${#strings.defaultString(contact.name, 'No name provided')}">Contact name</th>
-                    </tr>
-				</thead>
-				<tbody>
-                    <tr th:unless="${#strings.isEmpty(contact.role)}">
-                        <td th:width="200">Role</td>
-                        <td th:text="${contact.name}"></td>
-                    </tr>
-                    <tr th:unless="${#strings.isEmpty(contact.email)}">
-                        <td th:width="200">E-mail</td>
-                        <td th:text="${contact.email}"></td>
-                    </tr>
-				</tbody>
-			</table>
-		</th:section>
-	</section>
-
-	<section th:fragment="organizations (organizations)" >
-		<th:section
-				th:unless="${#arrays.isEmpty(organizations)}"
-				th:remove="tag">
-			<h3>Organizations</h3>
-			<table th:each = "organization : ${organizations}">
-				<thead>
-                    <tr>
-                        <th th:colspan="2" th:text="${#strings.defaultString(organization.name, 'No name provided')}">Organization name</th>
-                    </tr>
-				</thead>
-				<tbody>
-                    <tr th:unless="${#strings.isEmpty(organization.role)}">
-                        <td th:width="200">Role</td>
-                        <td th:text="${organization.role}"></td>
-                    </tr>
-                    <tr th:unless="${#strings.isEmpty(organization.email)}">
-                        <td th:width="200">E-mail</td>
-                        <td th:text="${organization.email}"></td>
-                    </tr>
-                    <tr th:unless="${#strings.isEmpty(organization.address)}">
-                        <td th:width="200">Address</td>
-                        <td th:text="${organization.address}"></td>
-                    </tr>
-                    <tr th:unless="${#strings.isEmpty(organization.url)}">
-                        <td th:width="200">Url</td>
-                        <td th:text="${organization.url}"></td>
-                    </tr>
-				</tbody>
-			</table>
-		</th:section>
-	</section>
-
-    <section th:fragment="publications (publications)">
-		<th:section
-				th:unless="${#arrays.isEmpty(publications)}"
-				th:remove="tag">
-			<h3>Publications</h3>
-			<table>
-				<thead>
-				<tr>
-					<th>DOI</th>
-					<th>PubMedId</th>
-				</tr>
-				</thead>
-				<tbody>
-                	<tr th:each = "publication : ${publications}">
-						<td th:text="${#strings.defaultString(publication.doi, 'No DOI available')}"></td>
-						<td th:text="${#strings.defaultString(publication.pubMedId, 'No Pubmed ID available')}"></td>
-					</tr>
-				</tbody>
-			</table>
-		</th:section>
-	</section>
 
 	<section th:fragment="attributes (attributes)">
 		<th:section
@@ -160,7 +81,87 @@
 				</a>
 			</th:section>
 		</div>
+	</section>
+	
 
+    <section th:fragment="publications (publications)">
+		<th:section
+				th:unless="${#arrays.isEmpty(publications)}"
+				th:remove="tag">
+			<h3>Publications</h3>
+			<table>
+				<thead>
+				<tr>
+					<th>DOI</th>
+					<th>PubMedId</th>
+				</tr>
+				</thead>
+				<tbody>
+                	<tr th:each = "publication : ${publications}">
+						<td th:text="${#strings.defaultString(publication.doi, 'No DOI available')}"></td>
+						<td th:text="${#strings.defaultString(publication.pubMedId, 'No Pubmed ID available')}"></td>
+					</tr>
+				</tbody>
+			</table>
+		</th:section>
+	</section>
+	
+	<section th:fragment="contacts (contacts)">
+		<th:section
+				th:unless="${#arrays.isEmpty(contacts)}"
+				th:remove="tag">
+			<h3>Contacts</h3>
+			<table th:each = "contact : ${contacts}">
+				<thead>
+                    <tr>
+                        <th th:colspan="2" th:text="${#strings.defaultString(contact.name, 'No name provided')}">Contact name</th>
+                    </tr>
+				</thead>
+				<tbody>
+                    <tr th:unless="${#strings.isEmpty(contact.role)}">
+                        <td th:width="200">Role</td>
+                        <td th:text="${contact.name}"></td>
+                    </tr>
+                    <tr th:unless="${#strings.isEmpty(contact.email)}">
+                        <td th:width="200">E-mail</td>
+                        <td th:text="${contact.email}"></td>
+                    </tr>
+				</tbody>
+			</table>
+		</th:section>
+	</section>
+
+	<section th:fragment="organizations (organizations)" >
+		<th:section
+				th:unless="${#arrays.isEmpty(organizations)}"
+				th:remove="tag">
+			<h3>Organizations</h3>
+			<table th:each = "organization : ${organizations}">
+				<thead>
+                    <tr>
+                        <th th:colspan="2" th:text="${#strings.defaultString(organization.name, 'No name provided')}">Organization name</th>
+                    </tr>
+				</thead>
+				<tbody>
+                    <tr th:unless="${#strings.isEmpty(organization.role)}">
+                        <td th:width="200">Role</td>
+                        <td th:text="${organization.role}"></td>
+                    </tr>
+                    <tr th:unless="${#strings.isEmpty(organization.email)}">
+                        <td th:width="200">E-mail</td>
+                        <td th:text="${organization.email}"></td>
+                    </tr>
+                    <tr th:unless="${#strings.isEmpty(organization.address)}">
+                        <td th:width="200">Address</td>
+                        <td th:text="${organization.address}"></td>
+                    </tr>
+                    <tr th:unless="${#strings.isEmpty(organization.url)}">
+                        <td th:width="200">Url</td>
+                        <td th:text="${organization.url}"></td>
+                    </tr>
+				</tbody>
+			</table>
+		</th:section>
 	</section>
 </body>
 </html>
