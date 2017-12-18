@@ -2,24 +2,20 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>utils</artifactId>
+	<artifactId>utils-client</artifactId>
+	<packaging>jar</packaging>
 
-	<packaging>pom</packaging>
-
-    <parent>
+	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
 		<version>4.0.0-SNAPSHOT</version>
+		<relativePath>../../</relativePath>
 	</parent>
 
-	<modules>
-		<module>webapp</module>
-		<module>pipeline</module>
-		<module>thread</module>
-		<module>agent</module>
-		<module>ols</module>
-		<module>json</module>
-		<module>xml</module>
-		<module>client</module>
-	</modules>
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-web</artifactId>
+		</dependency>
+	</dependencies>
 </project>

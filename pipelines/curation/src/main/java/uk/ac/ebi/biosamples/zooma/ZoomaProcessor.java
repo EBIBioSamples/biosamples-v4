@@ -20,6 +20,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import uk.ac.ebi.biosamples.PipelinesProperties;
+import uk.ac.ebi.biosamples.utils.ClientUtils;
 
 @Service
 public class ZoomaProcessor {
@@ -47,7 +48,7 @@ public class ZoomaProcessor {
 		//log.info("Zooma uri : "+url);
 		
 		RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
-		ResponseEntity<List<JsonNode>> responseEntity = restOperations.exchange(requestEntity,
+		ResponseEntity<List<JsonNode>> responseEntity = ClientUtils.doRetryQuery(requestEntity, restOperations, 5, 
 				new ParameterizedTypeReference<List<JsonNode>>(){});
 		
 		//if zero or more than one result found, abort

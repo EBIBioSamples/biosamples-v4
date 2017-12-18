@@ -2,8 +2,13 @@ package uk.ac.ebi.biosamples.ols;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -15,6 +20,7 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.hateoas.MediaTypes;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
@@ -30,6 +36,7 @@ import org.springframework.web.util.UriUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import uk.ac.ebi.biosamples.BioSamplesProperties;
+import uk.ac.ebi.biosamples.utils.ClientUtils;
 
 @Service
 public class OlsProcessor {
@@ -93,17 +100,16 @@ public class OlsProcessor {
 		
 		log.debug("Contacting "+uri);
 
-		//TODO OLS won't accept hal+json on that endpoint
+		//Note: OLS won't accept hal+json on that endpoint
 		RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaType.APPLICATION_JSON).build();
 		ResponseEntity<JsonNode> responseEntity = null;
 		try {
-			responseEntity = restOperations.exchange(requestEntity, new ParameterizedTypeReference<JsonNode>(){});
+			responseEntity = ClientUtils.<Void,JsonNode>doRetryQuery(requestEntity, restOperations, 5, 
+					new ParameterizedTypeReference<JsonNode>(){});
 		} catch (HttpStatusCodeException e) {
 			//if we get a 404, return an empty list
 			if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
-				return synonyms;
-			} else {
-				throw e;
+				return Collections.emptyList();
 			}
 		}
 		
@@ -134,6 +140,7 @@ public class OlsProcessor {
 		
 		return synonyms;
 	}
+	
 	
 	@Cacheable("ols_short")
 	public Optional<String> queryOlsForShortcode(String shortcode) {
