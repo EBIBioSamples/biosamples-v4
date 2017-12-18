@@ -82,29 +82,37 @@ public class SampleService {
 		// TODO check if there is an existing copy and if there are any changes
 
 		//do validation
+		// TODO validate that relationships have this sample as the source 
 		Collection<String> errors = sampleValidator.validate(sample);
 		if (errors.size() > 0) {
 			//TODO no validation information is provided to users
 			log.error("Found errors : "+errors);
 			throw new SampleValidationException();
 		}
-		// TODO compare to existing version to check if changes
-
-		// TODO validate that relationships have this sample as the source 
 
 		if (sample.hasAccession()) {
-			MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);
-			mongoSample = mongoSampleRepository.save(mongoSample);
-			sample = mongoSampleToSampleConverter.convert(mongoSample);
+
+			// TODO compare to existing version to check if changes
+			Optional<Sample> existingSample = sampleReadService.fetch(sample.getAccession());
+			if (existingSample.isPresent() && existingSample.get().equals(sample)) {
+				
+				//nothing changes, no need to send a message
+				
+			} else {
+				MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);
+				mongoSample = mongoSampleRepository.save(mongoSample);
+				sample = mongoSampleToSampleConverter.convert(mongoSample);
+
+				// send a message for storage and further processing
+				messagingSerivce.sendMessages(sample);
+			}
 		} else {
 			//assign it a new accession
-			//TODO see if there is an existing accession for this user and name
 			sample = mongoAccessionService.generateAccession(sample);
+
+			// send a message for storage and further processing
+			messagingSerivce.sendMessages(sample);
 		}
-
-
-		// send a message for storage and further processing
-		messagingSerivce.sendMessages(sample);
 		
 		//return the sample in case we have modified it i.e accessioned
 		return sample;
