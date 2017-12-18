@@ -12,6 +12,7 @@ import org.springframework.hateoas.core.Relation;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
+import uk.ac.ebi.biosamples.legacy.json.service.LegacyJsonUtilities;
 import uk.ac.ebi.biosamples.model.*;
 
 import java.io.IOException;
@@ -73,7 +74,7 @@ public class LegacySample {
 
         MultiValueMap<String, LegacyAttribute> legacyAttributesByType = new LinkedMultiValueMap<>();
         for (String type: attributesByType.keySet()) {
-            legacyAttributesByType.put(camelcaser(type),
+            legacyAttributesByType.put(LegacyJsonUtilities.camelCaser(type),
                     attributesByType.get(type)
                             .stream()
                             .map(LegacyAttribute::new)
@@ -154,17 +155,18 @@ public class LegacySample {
     }
 
 
-    private String camelcaser(String value) {
-        StringBuilder finalString = new StringBuilder();
-        for(String part: value.split(" ")) {
-            part = part.replaceAll("[^A-Za-z0-9]","");
-            part = StringUtils.capitalize(part.toLowerCase());
-            if (finalString.length() == 0) {
-                finalString.append(part.toLowerCase());
-                continue;
-            }
-            finalString.append(part);
-        }
-        return finalString.toString();
-    }
+//    private String camelcaser(String value) {
+//        StringBuilder finalString = new StringBuilder();
+//        value = value.replaceAll("[^A-Za-z0-9]"," ").replace("\\s+"," ");
+//        for(String part: value.split(" ")) {
+////            part = part.replaceAll("[^A-Za-z0-9]","");
+//            part = StringUtils.capitalize(part.toLowerCase());
+//            if (finalString.length() == 0) {
+//                finalString.append(part.toLowerCase());
+//                continue;
+//            }
+//            finalString.append(part);
+//        }
+//        return finalString.toString();
+//    }
 }

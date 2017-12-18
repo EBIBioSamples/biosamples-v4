@@ -84,6 +84,22 @@ public class LegacySamplesControllerIntegrationTest {
 	}
 
 	@Test
+	public void testSampleAttributeArCamelcased() throws Exception {
+		Sample testSample = new TestSample("SAMEA123123").withAttribute(
+				Attribute.build("Organism Part", "Homo sapiens")
+		).withAttribute(Attribute.build("Sample_source_name", "Generic 1.0")).build();
+
+		when(sampleRepository.findByAccession(testSample.getAccession())).thenReturn(Optional.of(testSample));
+
+		mockMvc.perform(
+				get("/samples/{accession}", testSample.getAccession())
+						.accept("application/hal+json;charset=UTF-8"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.characteristics.organismPart[0].text").value("Homo sapiens"))
+				.andExpect(jsonPath("$.characteristics.sampleSourceName[0].text").value("Generic 1.0"));
+	}
+
+	@Test
 	public void testResponseContentTypeIsHalJson() throws Exception {
 		Sample testSample = new TestSample("SAMEA0").build();
 		when(sampleRepository.findByAccession(testSample.getAccession())).thenReturn(Optional.of(testSample));

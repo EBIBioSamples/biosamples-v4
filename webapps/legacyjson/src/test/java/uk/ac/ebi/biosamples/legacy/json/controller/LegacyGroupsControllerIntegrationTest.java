@@ -68,6 +68,19 @@ public class LegacyGroupsControllerIntegrationTest {
 				.andExpect(jsonPath("$.accession").value("SAMEG1"));
 	}
 
+	@Test
+	public void testCamelcaseingOfCharacteristics() throws Exception {
+		Sample group = new TestSample("SAMEG1")
+				.withAttribute(Attribute.build("Organism Part", "Homo sapiens"))
+				.withAttribute(Attribute.build("Sample_resource_Test", "Test")).build();
+		when(sampleRepository.findByAccession("SAMEG1")).thenReturn(Optional.of(group));
+
+		mockMvc.perform(get("/groups/SAMEG1").accept(HAL_JSON))
+				.andExpect(status().isOk())
+				.andExpect(content().contentType("application/hal+json;charset=UTF-8"))
+				.andExpect(jsonPath("$.characteristics.organismPart[0].text").value("Homo sapiens")).andExpect(jsonPath("$.characteristics.sampleResourceTest[0].text").value("Test"));
+	}
+
 	@Test //FIXME BioSamples v3 had Name,Url and Accession as property of external reference
 	public void testExternalLinksIsRootField() throws Exception {
 	    Sample group = new TestSample("SAMEG1")

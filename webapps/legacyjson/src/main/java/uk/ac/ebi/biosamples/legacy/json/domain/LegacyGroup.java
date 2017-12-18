@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.springframework.hateoas.core.Relation;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import uk.ac.ebi.biosamples.legacy.json.service.LegacyJsonUtilities;
 import uk.ac.ebi.biosamples.model.*;
 
 import java.io.IOException;
@@ -75,7 +76,7 @@ public class LegacyGroup {
 
         MultiValueMap<String, LegacyAttribute> legacyAttributesByType = new LinkedMultiValueMap<>();
         for (String type: attributesByType.keySet()) {
-            legacyAttributesByType.put(type,
+            legacyAttributesByType.put(LegacyJsonUtilities.camelCaser(type),
                     attributesByType.get(type)
                             .stream()
                             .map(LegacyAttribute::new)
