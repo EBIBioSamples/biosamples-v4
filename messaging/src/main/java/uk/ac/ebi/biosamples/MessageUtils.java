@@ -25,7 +25,7 @@ public class MessageUtils {
 				return channel.messageCount(queue);
 			}			
 		});
-		log.info("Number of messages in "+queue+" = "+count);
+		log.trace("Number of messages in "+queue+" = "+count);
 		return count;
 	}
 }
