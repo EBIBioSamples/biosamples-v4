@@ -76,7 +76,7 @@
 			 th:remove="tag">
 			<h3>External Links</h3>
 			<th:section th:each="externalReference : ${externalReferences}" >
-				<a th:href="${externalReference.url}" class="button">
+				<a th:href="${externalReference.url}" class="button" th:title="${externalReference.url}">
 					<h3 class="icon icon-generic white-color" data-icon="L"></h3>
 				</a>
 			</th:section>

@@ -9,7 +9,7 @@
             <div>
 				<input id="filter-apply" type="submit" th:form="local-search" class="button columns medium-12" value="Apply filters" disabled/>
 			</div>
-			<div th:each="facet : ${facets}"
+			<div th:each="facet: ${facets}"
 				 th:with="facetType = ${facet.getType().getFacetName()},
 				 		  filterType=${facet.getAssociatedFilterType().get()},
 				 		  generalFilterName=${filterType.getSerialization() + ':' + facet.label}">
@@ -85,8 +85,8 @@
 			<span class="lead float-right text-right" th:text="${sample.accession}">ACC1</span>
 		</span> 
 		<span class="columns medium-12"> 
-			<span th:each="attribute : ${sample.attributes}" th:remove="tag"> 
-				<span th:replace=":: shield (${attribute.type}, ( ${attribute.unit} ? (${attribute.value}+' ('+${attribute.unit})+')' : ${attribute.value} ) )"></span>
+			<span th:each="attribute,iterStat  : ${sample.attributes}" th:remove="tag"> 
+				<span th:if="${iterstat &lt; 25}" th:replace=":: shield (${attribute.type}, ( ${attribute.unit} ? (${attribute.value}+' ('+${attribute.unit})+')' : ${attribute.value} ) )"></span>
 			</span>
 			<span th:each="relationship : ${sample.relationships}" th:remove="tag"> 
 				<span th:if="${#strings.equals(relationship.source,sample.accession)}" th:remove="tag" >
