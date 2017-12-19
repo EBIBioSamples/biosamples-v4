@@ -146,7 +146,7 @@ public class ImportXmlRunner implements ApplicationRunner {
 
 		@Override
 		public boolean isBlockStart(String uri, String localName, String qName, Attributes attributes) {
-			return qName.equals("BioSample");
+			return qName.equals("BioSample") || qName.equals("BioSampleGroup");
 		}
 		
 	}
