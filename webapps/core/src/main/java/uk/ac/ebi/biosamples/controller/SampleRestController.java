@@ -70,7 +70,7 @@ public class SampleRestController {
     @PreAuthorize("isAuthenticated()")
 	@GetMapping(value = "/{accession}", produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
 	public Resource<Sample> getSampleHal(@PathVariable String accession,
-			 @RequestParam(name = "fulldetails", required = false, defaultValue="false") boolean sampleFullDetails) {
+			 @RequestParam(name = "legacydetails", required = false, defaultValue="false") boolean legacydetails) {
 		log.trace("starting call");
 		// convert it into the format to return
 		Optional<Sample> sample = sampleService.fetch(accession);
@@ -80,8 +80,8 @@ public class SampleRestController {
 		bioSamplesAapService.checkAccessible(sample.get());
 
 		// TODO If user is not Read super user, reduce the fields to show
-		if (!sampleFullDetails) {
-			sample = Optional.of(sampleManipulationService.removeContactLegacyFields(sample.get()));
+		if (!legacydetails) {
+			sample = Optional.of(sampleManipulationService.removeLegacyFields(sample.get()));
 		}
 
 		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample.get());
@@ -154,7 +154,7 @@ public class SampleRestController {
 
 		if (!setFullDetails) {
 			log.trace("Removing contact legacy fields for " + accession);
-			sample = sampleManipulationService.removeContactLegacyFields(sample);
+			sample = sampleManipulationService.removeLegacyFields(sample);
 		}
 		
 		sample = sampleService.store(sample);
@@ -184,7 +184,7 @@ public class SampleRestController {
 		}
 
 		if (!setFullDetails) {
-			sample = sampleManipulationService.removeContactLegacyFields(sample);
+			sample = sampleManipulationService.removeLegacyFields(sample);
 		}
 		
 		sample = sampleService.store(sample);

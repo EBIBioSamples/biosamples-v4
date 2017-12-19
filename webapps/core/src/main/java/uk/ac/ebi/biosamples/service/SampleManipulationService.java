@@ -18,7 +18,7 @@ public class SampleManipulationService {
      * @param sample
      * @return a sample which contacts has only name field
      */
-    public Sample removeContactLegacyFields(Sample sample) {
+    public Sample removeLegacyFields(Sample sample) {
         SortedSet<Contact> contacts = sample.getContacts().stream()
                 .map(this::removeContactLegacyFields)
                 .collect(Collectors.toCollection(TreeSet::new));
