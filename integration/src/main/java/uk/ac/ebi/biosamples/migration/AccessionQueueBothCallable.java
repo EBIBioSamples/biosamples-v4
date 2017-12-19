@@ -47,24 +47,8 @@ public class AccessionQueueBothCallable implements Callable<Void> {
 	
 	@Override
 	public Void call() throws Exception {
-		log.info("Started AccessionQueueBothCallable.call()");
-		
-		//first, pre-load those we already know are problematic
-		
+		log.info("Started AccessionQueueBothCallable.call()");		
 		Set<String> toIgnore = new HashSet<>();
-		/*
-		try (BufferedReader br = new BufferedReader(new InputStreamReader(this.getClass().getResourceAsStream("/accession_ignore.txt")))) {
-			String line = null;
-			while ((line=br.readLine()) != null) {
-				String next = line.trim();
-				//lines with # are comments
-				if (!next.startsWith("#")) {
-					toIgnore.add(next);
-					log.trace("ignoring "+next);
-				}
-			}
-		}
-		*/
 		log.info("read accessions to ignore");
 
 		while (!oldFlag.get() || !oldQueue.isEmpty() || !newFlag.get() || !newQueue.isEmpty()) {

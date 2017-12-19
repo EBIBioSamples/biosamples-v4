@@ -41,12 +41,12 @@ public class LegacyJsonAccessFetcherCallable implements Callable<Void> {
 		ExecutorService executorService = null;
 		
 		try {
-			executorService = Executors.newFixedThreadPool(32);
-//			executorService = Executors.newFixedThreadPool(1);
+			executorService = Executors.newFixedThreadPool(4);
 			getPages("samples", pagesize, executorService);
 			getPages("groups", pagesize, executorService);
 		} finally {
-			executorService.shutdownNow();
+			executorService.shutdown();
+			executorService.awaitTermination(1, TimeUnit.DAYS);
 		}
 		finishFlag.set(true);
 		long elapsed = System.nanoTime()-oldTime;

@@ -57,16 +57,16 @@ public class LegacyJsonMigrationRunner implements ApplicationRunner, ExitCodeGen
 //		} else {
 
 			try {
-				executorService = Executors.newFixedThreadPool(64);
-				Queue<String> oldQueue = new ArrayBlockingQueue<>(128);
+				executorService = Executors.newFixedThreadPool(4);
+				Queue<String> oldQueue = new ArrayBlockingQueue<>(1024);
 				AtomicBoolean oldFinished = new AtomicBoolean(false);
 				LegacyJsonAccessFetcherCallable oldCallable = new LegacyJsonAccessFetcherCallable(restTemplate, oldUrl, oldQueue, oldFinished);
 
-				Queue<String> newQueue = new ArrayBlockingQueue<>(128);
+				Queue<String> newQueue = new ArrayBlockingQueue<>(1024);
 				AtomicBoolean newFinished = new AtomicBoolean(false);
 				LegacyJsonAccessFetcherCallable newCallable = new LegacyJsonAccessFetcherCallable(restTemplate, newUrl, newQueue, newFinished);
 
-				Queue<String> bothQueue = new ArrayBlockingQueue<>(128);
+				Queue<String> bothQueue = new ArrayBlockingQueue<>(1024);
 				AtomicBoolean bothFinished = new AtomicBoolean(false);
 
 				AccessionQueueBothCallable bothCallable = new AccessionQueueBothCallable(oldQueue, oldFinished,
@@ -91,7 +91,8 @@ public class LegacyJsonMigrationRunner implements ApplicationRunner, ExitCodeGen
 				bothFuture.get();
 				comparisonFuture.get();
 			} finally {
-				executorService.shutdownNow();
+				executorService.shutdown();
+				executorService.awaitTermination(1, TimeUnit.MINUTES);
 			}
 //		}
 
