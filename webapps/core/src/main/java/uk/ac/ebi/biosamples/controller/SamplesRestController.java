@@ -109,9 +109,6 @@ public class SamplesRestController {
 				.withRel("sample"));
 		//TODO add search link
 
-//		return ResponseEntity.ok()
-//				.header(HttpHeaders.CACHE_CONTROL, CacheControl.maxAge(1, TimeUnit.MINUTES).cachePublic().getHeaderValue())
-//				.body(pagedResources);
 		return pagedResources;
 	}
 
