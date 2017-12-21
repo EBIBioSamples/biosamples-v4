@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+</head>
+<body>
+	<div th:fragment="footer" >
+	    <footer>
+	      <!-- Optional local footer (insert citation / project-specific copyright / etc here -->
+	<!--
+	      <div id="local-footer">
+	        <div class="row">
+	          <span class="reference">How to reference this page: ...</span>
+	        </div>
+	      </div>
+	 -->
+	      <!-- End optional local footer -->
+	
+	      <div id="global-footer">
+	
+	        <nav id="global-nav-expanded" class="row">
+	          <!-- Footer will be automatically inserted by footer.js -->
+	        </nav>
+	
+	        <section id="ebi-footer-meta" class="row">
+	          <!-- Footer meta will be automatically inserted by footer.js -->
+	        </section>
+	
+	      </div>
+	
+	    </footer>
+	
+	
+	  <!-- JavaScript -->
+	
+	  <!-- Grab Google CDN's jQuery, with a protocol relative URL; fall back to local if offline -->
+	  <!--
+	  <script>window.jQuery || document.write('<script src="../js/libs/jquery-1.10.2.min.js"><\/script>')</script>
+	  -->
+	  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+	  <!-- Your custom JavaScript file scan go here... change names accordingly -->
+	  <!--
+	  <script defer="defer" src="//www.ebi.ac.uk/web_guidelines/js/plugins.js"></script>
+	  <script defer="defer" src="//www.ebi.ac.uk/web_guidelines/js/script.js"></script>
+	  -->
+	  <script defer="defer" th:src="@{/js/jquery.autocomplete.min.js}" ></script>
+	  <script th:inline="javascript">
+	    $(document).ready(function() {
+            $('#local-searchbox').autocomplete({
+                serviceUrl: '[(@{/samples/autocomplete})]',
+                paramName: 'text',
+                onSelect: function (suggestion) {
+                    //alert('You selected: ' + suggestion.value + ', ' + suggestion.data);
+                    //location.href = '[(@{/samples})]?'+$.param({text:suggestion.value});
+                }
+            });
+            let $filterApplyButton = $("#filter-apply");
+            let $filtersCheckboxes = $(".facet-checkbox");
+            let $originalState = [];
+            let $changeState = [];
+
+            $(".facet").each(function(index, elem) {
+            	$originalState[index] = $(elem).hasClass("secondary");
+            	$changeState[index] = $originalState[index];
+			});
+
+            $filtersCheckboxes.each(function(index,elem){
+                $(elem).on("click", function(){
+					$changeState[index] = !$changeState[index];
+					if (!equals($originalState, $changeState)) {
+					    $filterApplyButton.prop('disabled', false);
+					} else {
+					    $filterApplyButton.prop('disabled', true);
+					}
+                })
+            });
+
+			function equals(array1, array2) {
+                    return array1.toString() === array2.toString();
+            }
+
+	    });
+      </script>
+	  
+	  
+	  <script defer="defer" src="https://www.ebi.ac.uk/web_guidelines/EBI-Framework/v1.1/js/cookiebanner.js"></script>
+	  <script defer="defer" src="https://www.ebi.ac.uk/web_guidelines/EBI-Framework/v1.1/js/foot.js"></script>
+	  <script defer="defer" src="https://www.ebi.ac.uk/web_guidelines/EBI-Framework/v1.1/js/script.js"></script>
+	
+	  <!-- The Foundation theme JavaScript -->
+	  <script src="https://www.ebi.ac.uk/web_guidelines/EBI-Framework/v1.1/libraries/foundation-6/js/foundation.js"></script>
+	  <script src="https://www.ebi.ac.uk/web_guidelines/EBI-Framework/v1.1/js/foundationExtendEBI.js"></script>
+	  <script type="text/JavaScript">$(document).foundation();</script>
+	  <script type="text/JavaScript">$(document).foundationExtendEBI();</script>
+	  <script defer="defer" th:src="@{js/webaccession.js}" src="../../static/js/webaccession.js"></script>
+	</div>
+</body>
+</html>
