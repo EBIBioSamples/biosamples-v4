@@ -11,6 +11,7 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.xml.Jaxb2RootElementHttpMessageConverter;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.thymeleaf.extras.java8time.dialect.Java8TimeDialect;
 import org.thymeleaf.templateresolver.ITemplateResolver;
 import org.thymeleaf.templateresolver.UrlTemplateResolver;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -64,6 +65,7 @@ public class Application extends SpringBootServletInitializer {
     public CaffeineSpec CaffeineSpec() {
     	return CaffeineSpec.parse("maximumSize=500,expireAfterWrite=60s");
     }
+
     @Bean
     public ITemplateResolver templateResolver() {
     	return new UrlTemplateResolver();
@@ -76,4 +78,5 @@ public class Application extends SpringBootServletInitializer {
     			mongoSampleToSampleConverter, mongoProperties.getAccessionPrefix(), 
     			mongoProperties.getAccessionMinimum(), mongoProperties.getAcessionQueueSize());
     }
+
 }
