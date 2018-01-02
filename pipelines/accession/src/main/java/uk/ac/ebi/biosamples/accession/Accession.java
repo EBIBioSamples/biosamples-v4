@@ -35,7 +35,7 @@ import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 
 @Component
-public class Accession implements ApplicationRunner{
+public class Accession implements ApplicationRunner {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 
