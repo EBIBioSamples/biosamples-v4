@@ -10,9 +10,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
+
+import uk.ac.ebi.biosamples.mongo.model.MongoSampleTabApiKey;
+import uk.ac.ebi.biosamples.mongo.repo.MongoSampleTabApiKeyRepository;
 
 @Service
 public class ApiKeyService {
@@ -21,32 +22,22 @@ public class ApiKeyService {
 	
 	public final static String BIOSAMPLES="BioSamples";
 
-	@Autowired
-	@Qualifier("accessionJdbcTemplate")
-    protected JdbcTemplate jdbcTemplate;
+	private final MongoSampleTabApiKeyRepository mongoSampleTabApiKeyRepository;
+	
+	public ApiKeyService(MongoSampleTabApiKeyRepository mongoSampleTabApiKeyRepository) {
+		this.mongoSampleTabApiKeyRepository = mongoSampleTabApiKeyRepository;
+	}
 	
 	public Optional<String> getDomainForApiKey(String apiKey) throws DataAccessException {
 		log.info("getting domain for apikey "+apiKey);
-
-		String stm = "SELECT AAPDOMAIN FROM USERS WHERE APIKEY LIKE ?";
-    	List<String> results = jdbcTemplate.query(stm, new SingleStringRowMapper(), apiKey);
-    	if (results.size() == 0) {
-    		return Optional.empty();
-    	} else {
-    		return Optional.of(results.get(0));
-    	}
+		MongoSampleTabApiKey mongoSampleTabApiKey = mongoSampleTabApiKeyRepository.findOne(apiKey);
+		return Optional.ofNullable(mongoSampleTabApiKey.getAapDomain());
 	}
 	
 	public Optional<String> getUsernameForApiKey(String apiKey) throws DataAccessException {
 		log.info("getting domain for apikey "+apiKey);
-
-		String stm = "SELECT USERNAME FROM USERS WHERE APIKEY LIKE ?";
-    	List<String> results = jdbcTemplate.query(stm, new SingleStringRowMapper(), apiKey);
-    	if (results.size() == 0) {
-    		return Optional.empty();
-    	} else {
-    		return Optional.of(results.get(0));
-    	}
+		MongoSampleTabApiKey mongoSampleTabApiKey = mongoSampleTabApiKeyRepository.findOne(apiKey);
+		return Optional.ofNullable(mongoSampleTabApiKey.getUserName());
 	}
 	
 
@@ -71,11 +62,5 @@ public class ApiKeyService {
         }
     }
 	
-    protected static class SingleStringRowMapper implements RowMapper<String>
-	{
-		public String mapRow(ResultSet rs, int rowNum) throws SQLException {
-			return rs.getString(1);
-		}
-	}
 
 }

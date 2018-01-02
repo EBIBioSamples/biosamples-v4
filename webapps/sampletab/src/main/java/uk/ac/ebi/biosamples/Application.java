@@ -12,7 +12,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.mongo.MongoProperties;
@@ -38,17 +37,6 @@ public class Application extends SpringBootServletInitializer {
 		return new XmlAsSampleHttpMessageConverter(xmlSampleToSampleConverter, xmlGroupToSampleConverter);
 	}
 
-	@Bean("accessionDataSource")
-	@ConfigurationProperties(prefix="spring.datasource.accession")
-	public DataSource getAccessionDataSource() {
-	    return DataSourceBuilder.create().build();
-	}
-	
-	@Bean("accessionJdbcTemplate")
-	public JdbcTemplate getAccessionJdbcTemplate(@Qualifier("accessionDataSource") DataSource accessionDataSource) {
-	    return new JdbcTemplate(accessionDataSource);
-	}
-	
     @Bean
     public MongoAccessionService mongoGroupAccessionService(MongoSampleRepository mongoSampleRepository, SampleToMongoSampleConverter sampleToMongoSampleConverter,
 			MongoSampleToSampleConverter mongoSampleToSampleConverter, MongoProperties mongoProperties) {
