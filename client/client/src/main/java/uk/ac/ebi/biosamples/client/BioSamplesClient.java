@@ -39,9 +39,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * This is the primary class for interacting with BioSamples.
- * 
- * It has Spring annotations for autowiring into spring applications
- * 
+ *  
  * @author faulcon
  *
  */
