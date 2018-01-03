@@ -1,1 +1,3 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=uk.ac.ebi.biosamples.client.BioSamplesAutoConfiguration
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+uk.ac.ebi.biosamples.client.BioSamplesAutoConfiguration,\
+uk.ac.ebi.biosamples.client.BioSamplesHealthIndicatorConfiguration
