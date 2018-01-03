@@ -1,10 +1,10 @@
 package uk.ac.ebi.biosamples.model;
 
-import uk.ac.ebi.biosamples.model.facet.FacetType;
-import uk.ac.ebi.biosamples.model.filter.FilterType;
-
 import java.util.EnumMap;
 import java.util.Optional;
+
+import uk.ac.ebi.biosamples.model.facet.FacetType;
+import uk.ac.ebi.biosamples.model.filter.FilterType;
 
 /**
  * Purpose of this class is to bind Facet and filters together, so is possible to

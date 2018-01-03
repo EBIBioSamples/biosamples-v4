@@ -1,15 +1,16 @@
 package uk.ac.ebi.biosamples.legacy.json.service;
 
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
+
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceAssembler;
 import org.springframework.stereotype.Service;
+
 import uk.ac.ebi.biosamples.legacy.json.controller.SamplesRelationsController;
 import uk.ac.ebi.biosamples.legacy.json.domain.LegacySample;
 import uk.ac.ebi.biosamples.legacy.json.domain.SamplesRelations;
-
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 @Service
 public class SampleRelationsResourceAssembler implements ResourceAssembler<SamplesRelations, Resource<SamplesRelations>>{

@@ -1,5 +1,8 @@
 package uk.ac.ebi.biosamples.legacy.json.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -8,12 +11,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
+
 import uk.ac.ebi.biosamples.legacy.json.domain.SamplesRelations;
 import uk.ac.ebi.biosamples.legacy.json.domain.TestSample;
 import uk.ac.ebi.biosamples.model.Sample;
-
-import java.util.ArrayList;
-import java.util.List;
 
 //@RunWith(SpringRunner.class)
 //@SpringBootTest

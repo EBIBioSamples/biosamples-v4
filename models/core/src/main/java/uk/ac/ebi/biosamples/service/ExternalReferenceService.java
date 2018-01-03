@@ -1,11 +1,12 @@
 package uk.ac.ebi.biosamples.service;
 
+import java.util.Optional;
+
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
-import uk.ac.ebi.biosamples.model.ExternalReference;
 
-import java.util.Optional;
+import uk.ac.ebi.biosamples.model.ExternalReference;
 
 @Service
 public class ExternalReferenceService {

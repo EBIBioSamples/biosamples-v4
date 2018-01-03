@@ -1,6 +1,19 @@
 package uk.ac.ebi.biosamples.legacyxml;
 
-import com.opencsv.CSVReader;
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Future;
+import java.util.zip.GZIPInputStream;
+
 import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,6 +22,9 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
 import org.xml.sax.Attributes;
+
+import com.opencsv.CSVReader;
+
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.XmlGroupToSampleConverter;
@@ -16,16 +32,6 @@ import uk.ac.ebi.biosamples.service.XmlSampleToSampleConverter;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 import uk.ac.ebi.biosamples.utils.XmlFragmenter;
 import uk.ac.ebi.biosamples.utils.XmlFragmenter.ElementCallback;
-
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.*;
-import java.util.concurrent.Future;
-import java.util.zip.GZIPInputStream;
 
 @Component
 public class ImportXmlRunner implements ApplicationRunner {

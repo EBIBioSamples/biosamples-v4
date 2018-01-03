@@ -1,16 +1,31 @@
 package uk.ac.ebi.biosamples.service;
 
-import com.google.common.base.Strings;
-import org.dom4j.*;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
+import org.dom4j.Document;
+import org.dom4j.DocumentHelper;
+import org.dom4j.Element;
+import org.dom4j.Namespace;
+import org.dom4j.QName;
 import org.dom4j.tree.BaseElement;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.*;
 
-import java.time.format.DateTimeFormatter;
-import java.util.*;
+import com.google.common.base.Strings;
+
+import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.Contact;
+import uk.ac.ebi.biosamples.model.ExternalReference;
+import uk.ac.ebi.biosamples.model.Organization;
+import uk.ac.ebi.biosamples.model.Publication;
+import uk.ac.ebi.biosamples.model.Relationship;
+import uk.ac.ebi.biosamples.model.Sample;
 
 @Service
 public class SampleToXmlConverter implements Converter<Sample, Document> {

@@ -1,11 +1,11 @@
 package uk.ac.ebi.biosamples.service;
 
-import uk.ac.ebi.biosamples.model.Relationship;
-import uk.ac.ebi.biosamples.model.Sample;
-
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
+
+import uk.ac.ebi.biosamples.model.Relationship;
+import uk.ac.ebi.biosamples.model.Sample;
 
 public class SampleRelationshipUtils {
 

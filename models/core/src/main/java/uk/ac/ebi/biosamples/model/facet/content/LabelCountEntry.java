@@ -1,10 +1,10 @@
 package uk.ac.ebi.biosamples.model.facet.content;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.Arrays;
 import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class LabelCountEntry implements Comparable<LabelCountEntry>{
     private final String label;

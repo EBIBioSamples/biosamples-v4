@@ -1,12 +1,18 @@
 package uk.ac.ebi.biosamples.service;
 
-import org.springframework.core.convert.converter.Converter;
-import uk.ac.ebi.biosamples.model.*;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.core.convert.converter.Converter;
+
+import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.ExternalReference;
+import uk.ac.ebi.biosamples.model.JsonLDMedicalCode;
+import uk.ac.ebi.biosamples.model.JsonLDPropertyValue;
+import uk.ac.ebi.biosamples.model.JsonLDSample;
+import uk.ac.ebi.biosamples.model.Sample;
 
 public class SampleToJsonLDSampleConverter implements Converter<Sample, JsonLDSample> {
     @Override

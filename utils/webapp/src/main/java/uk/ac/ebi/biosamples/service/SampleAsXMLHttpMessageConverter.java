@@ -1,5 +1,9 @@
 package uk.ac.ebi.biosamples.service;
 
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+
 import org.dom4j.Document;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
@@ -13,11 +17,6 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
 
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.service.SampleToXmlConverter;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
 
 public class SampleAsXMLHttpMessageConverter extends AbstractHttpMessageConverter<Sample> {
 	

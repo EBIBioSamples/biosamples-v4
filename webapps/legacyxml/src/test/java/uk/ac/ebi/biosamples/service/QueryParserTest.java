@@ -1,15 +1,16 @@
 package uk.ac.ebi.biosamples.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.Optional;
+
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
 import uk.ac.ebi.biosamples.legacy.xml.service.LegacyQueryParser;
 import uk.ac.ebi.biosamples.model.filter.Filter;
-
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 public class QueryParserTest {

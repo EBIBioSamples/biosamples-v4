@@ -3,6 +3,7 @@ package uk.ac.ebi.biosamples.service;
 import java.util.Collection;
 
 import org.springframework.stereotype.Service;
+
 import uk.ac.ebi.biosamples.model.Attribute;
 
 @Service

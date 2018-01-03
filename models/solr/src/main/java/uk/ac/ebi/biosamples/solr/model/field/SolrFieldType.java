@@ -1,17 +1,17 @@
 package uk.ac.ebi.biosamples.solr.model.field;
 
-import uk.ac.ebi.biosamples.model.FacetFilterFieldType;
-import uk.ac.ebi.biosamples.model.filter.Filter;
-import uk.ac.ebi.biosamples.model.filter.FilterType;
-import uk.ac.ebi.biosamples.solr.service.SolrFieldService;
+import static uk.ac.ebi.biosamples.solr.model.field.SolrFieldType.FieldEncodingType.ENCODED;
+import static uk.ac.ebi.biosamples.solr.model.field.SolrFieldType.FieldEncodingType.NOT_ENCODED;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.EnumMap;
 import java.util.Optional;
 
-import static uk.ac.ebi.biosamples.solr.model.field.SolrFieldType.FieldEncodingType.ENCODED;
-import static uk.ac.ebi.biosamples.solr.model.field.SolrFieldType.FieldEncodingType.NOT_ENCODED;
+import uk.ac.ebi.biosamples.model.FacetFilterFieldType;
+import uk.ac.ebi.biosamples.model.filter.Filter;
+import uk.ac.ebi.biosamples.model.filter.FilterType;
+import uk.ac.ebi.biosamples.solr.service.SolrFieldService;
 
 
 /**

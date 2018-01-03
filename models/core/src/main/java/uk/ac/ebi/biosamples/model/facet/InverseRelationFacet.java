@@ -1,9 +1,11 @@
 package uk.ac.ebi.biosamples.model.facet;
 
+import org.springframework.hateoas.core.Relation;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import org.springframework.hateoas.core.Relation;
+
 import uk.ac.ebi.biosamples.model.facet.content.FacetContent;
 import uk.ac.ebi.biosamples.model.facet.content.LabelCountListContent;
 

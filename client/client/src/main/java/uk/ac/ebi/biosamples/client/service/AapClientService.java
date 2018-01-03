@@ -2,7 +2,6 @@ package uk.ac.ebi.biosamples.client.service;
 
 import java.net.URI;
 import java.nio.charset.Charset;
-import java.time.Instant;
 import java.util.Base64;
 import java.util.Date;
 import java.util.Optional;
@@ -11,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestOperations;

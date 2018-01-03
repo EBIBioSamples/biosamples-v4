@@ -1,13 +1,14 @@
 package uk.ac.ebi.biosamples.solr.model.field;
 
-import org.springframework.data.solr.core.query.Criteria;
-import uk.ac.ebi.biosamples.model.filter.DateRangeFilter;
-import uk.ac.ebi.biosamples.model.filter.Filter;
-import uk.ac.ebi.biosamples.solr.model.strategy.FacetFetchStrategy;
-
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+
+import org.springframework.data.solr.core.query.Criteria;
+
+import uk.ac.ebi.biosamples.model.filter.DateRangeFilter;
+import uk.ac.ebi.biosamples.model.filter.Filter;
+import uk.ac.ebi.biosamples.solr.model.strategy.FacetFetchStrategy;
 
 public class SolrSampleDateField extends SolrSampleField{
     /**

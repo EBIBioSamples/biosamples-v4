@@ -1,17 +1,14 @@
 package uk.ac.ebi.biosamples.model;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import uk.ac.ebi.biosamples.service.CharacteristicDeserializer;
-import uk.ac.ebi.biosamples.service.CharacteristicSerializer;
-import uk.ac.ebi.biosamples.service.CustomInstantDeserializer;
-import uk.ac.ebi.biosamples.service.CustomInstantSerializer;
+import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
+import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
 
-import java.time.*;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.TemporalAccessor;
@@ -22,8 +19,17 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
-import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+import uk.ac.ebi.biosamples.service.CharacteristicDeserializer;
+import uk.ac.ebi.biosamples.service.CharacteristicSerializer;
+import uk.ac.ebi.biosamples.service.CustomInstantDeserializer;
+import uk.ac.ebi.biosamples.service.CustomInstantSerializer;
 
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)

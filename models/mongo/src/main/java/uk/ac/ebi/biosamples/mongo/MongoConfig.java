@@ -8,10 +8,10 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.convert.MongoConverter;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
+import uk.ac.ebi.biosamples.mongo.event.MongoSampleEventListener;
 import uk.ac.ebi.biosamples.mongo.repo.MongoExternalReferenceRepository;
 import uk.ac.ebi.biosamples.mongo.repo.MongoRelationshipRepository;
 import uk.ac.ebi.biosamples.mongo.service.CustomWriteConcernResolver;
-import uk.ac.ebi.biosamples.mongo.event.MongoSampleEventListener;
 
 @Configuration
 @EnableMongoRepositories(basePackageClasses=MongoConfig.class)

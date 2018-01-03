@@ -1,5 +1,13 @@
 package uk.ac.ebi.biosamples.migration;
 
+import java.util.Queue;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,11 +18,8 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
-import uk.ac.ebi.biosamples.legacy.json.service.JSONSampleToSampleConverter;
 
-import java.util.Queue;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
+import uk.ac.ebi.biosamples.legacy.json.service.JSONSampleToSampleConverter;
 
 @Component
 @Profile({"migration-json"})

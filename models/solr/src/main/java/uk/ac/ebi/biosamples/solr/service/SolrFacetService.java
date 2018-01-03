@@ -1,23 +1,29 @@
 package uk.ac.ebi.biosamples.solr.service;
 
+import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.solr.core.query.*;
+import org.springframework.data.solr.core.query.Criteria;
+import org.springframework.data.solr.core.query.FacetQuery;
+import org.springframework.data.solr.core.query.FilterQuery;
+import org.springframework.data.solr.core.query.SimpleFacetQuery;
 import org.springframework.data.solr.core.query.result.FacetFieldEntry;
 import org.springframework.stereotype.Service;
+
 import uk.ac.ebi.biosamples.BioSamplesProperties;
-import uk.ac.ebi.biosamples.model.facet.*;
+import uk.ac.ebi.biosamples.model.facet.Facet;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.solr.model.field.SolrSampleField;
-import uk.ac.ebi.biosamples.solr.model.strategy.FacetFetchStrategy;
 import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
-
-import java.util.*;
-
-import static java.util.Map.Entry;
-import static java.util.AbstractMap.SimpleEntry;
 
 @Service
 public class SolrFacetService {

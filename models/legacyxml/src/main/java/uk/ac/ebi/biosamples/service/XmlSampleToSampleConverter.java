@@ -1,13 +1,11 @@
 package uk.ac.ebi.biosamples.service;
 
 import java.time.Instant;
-import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.dom4j.Document;
 import org.dom4j.Element;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;

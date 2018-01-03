@@ -1,16 +1,9 @@
 package uk.ac.ebi.biosamples.legacy.json.domain;
 
-import java.util.ArrayList;
-import java.util.stream.Stream;
-
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.google.common.collect.Lists;
-
-import org.springframework.util.StringUtils;
-import uk.ac.ebi.biosamples.model.Attribute;
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonPropertyOrder({"text", "ontologyTerms"})

@@ -1,10 +1,5 @@
 package uk.ac.ebi.biosamples.messages.threaded;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.amqp.AmqpRejectAndDontRequeueException;
-import org.springframework.scheduling.annotation.Scheduled;
-
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,6 +8,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.amqp.AmqpRejectAndDontRequeueException;
+import org.springframework.scheduling.annotation.Scheduled;
 
 public abstract class MessageBuffer<T,S> {
 	private Logger log = LoggerFactory.getLogger(this.getClass());

@@ -16,16 +16,17 @@
 
 package uk.ac.ebi.biosamples.model;
 
-import com.redfin.sitemapgenerator.W3CDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Date;
+import java.util.TimeZone;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.Date;
-import java.util.TimeZone;
+
+import com.redfin.sitemapgenerator.W3CDateFormat;
 
 /**
  *

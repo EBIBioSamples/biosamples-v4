@@ -1,25 +1,36 @@
 package uk.ac.ebi.biosamples.controller;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.util.Collection;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.*;
+import org.springframework.hateoas.EntityLinks;
+import org.springframework.hateoas.ExposesResourceFor;
+import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
-import org.springframework.http.CacheControl;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
-import uk.ac.ebi.biosamples.service.*;
-
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.util.Collection;
-import java.util.concurrent.TimeUnit;
+import uk.ac.ebi.biosamples.model.filter.FilterType;
+import uk.ac.ebi.biosamples.service.BioSamplesAapService;
+import uk.ac.ebi.biosamples.service.FilterService;
+import uk.ac.ebi.biosamples.service.SamplePageService;
+import uk.ac.ebi.biosamples.service.SampleReadService;
+import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 
 /**
  * Primary controller for REST operations both in JSON and XML and both read and
@@ -107,6 +118,17 @@ public class SamplesRestController {
 		pagedResources.add(ControllerLinkBuilder
 				.linkTo(ControllerLinkBuilder.methodOn(SampleRestController.class).getSampleHal(null, false))
 				.withRel("sample"));
+		
+		if (filters.stream().allMatch(f -> !f.getType().equals(FilterType.DATE_FILTER))) {
+
+			String[] templatedFilters = new String[1];
+			templatedFilters[0] = FilterType.DATE_FILTER.getSerialization()+":update:from={ISO-8601from}until{ISO-8601until}";
+			pagedResources.add(ControllerLinkBuilder
+					.linkTo(ControllerLinkBuilder.methodOn(SamplesRestController.class)
+							.searchHal(null, templatedFilters, null, null))
+					.withRel("samplesbyUpdateDate"));
+		}
+		
 		//TODO add search link
 
 		return pagedResources;

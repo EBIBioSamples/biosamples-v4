@@ -1,9 +1,9 @@
 package uk.ac.ebi.biosamples.model.facet.content;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-
 import java.util.AbstractList;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
 
 public class LabelCountListContent extends AbstractList<LabelCountEntry> implements FacetContent{
 

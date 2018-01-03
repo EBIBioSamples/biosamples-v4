@@ -4,6 +4,7 @@ import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceAssembler;
 import org.springframework.stereotype.Service;
+
 import uk.ac.ebi.biosamples.legacy.json.domain.GroupsRelations;
 import uk.ac.ebi.biosamples.legacy.json.domain.LegacyGroup;
 

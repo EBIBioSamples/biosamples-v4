@@ -1,9 +1,9 @@
 package uk.ac.ebi.biosamples.model.filter;
 
+import java.util.Optional;
+
 import uk.ac.ebi.biosamples.model.FacetFilterFieldType;
 import uk.ac.ebi.biosamples.model.facet.FacetType;
-
-import java.util.Optional;
 
 public interface Filter {
 

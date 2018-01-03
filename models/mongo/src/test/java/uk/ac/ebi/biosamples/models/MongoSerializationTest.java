@@ -29,13 +29,6 @@ import uk.ac.ebi.biosamples.mongo.model.MongoExternalReference;
 import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 
-import java.net.URISyntaxException;
-import java.time.Instant;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 @RunWith(SpringRunner.class)
 @JsonTest
 public class MongoSerializationTest {

@@ -1,5 +1,9 @@
 package uk.ac.ebi.biosamples.legacy.json.service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -7,15 +11,12 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Service;
+
 import uk.ac.ebi.biosamples.legacy.json.domain.ExternalLinksRelation;
 import uk.ac.ebi.biosamples.legacy.json.domain.GroupsRelations;
 import uk.ac.ebi.biosamples.legacy.json.domain.LegacyGroup;
 import uk.ac.ebi.biosamples.legacy.json.domain.LegacySample;
 import uk.ac.ebi.biosamples.model.Sample;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class PagedResourcesConverter {

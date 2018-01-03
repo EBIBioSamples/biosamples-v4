@@ -1,9 +1,9 @@
 package uk.ac.ebi.biosamples;
 
+import java.net.URI;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
-import java.net.URI;
 
 @Component
 public class IntegrationProperties {

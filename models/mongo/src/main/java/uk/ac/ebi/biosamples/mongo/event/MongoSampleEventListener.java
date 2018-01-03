@@ -1,23 +1,22 @@
 package uk.ac.ebi.biosamples.mongo.event;
 
+import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.mongodb.core.mapping.event.AbstractMongoEventListener;
 import org.springframework.data.mongodb.core.mapping.event.AfterConvertEvent;
 import org.springframework.data.mongodb.core.mapping.event.AfterSaveEvent;
 import org.springframework.data.mongodb.core.mapping.event.BeforeConvertEvent;
-
-import org.springframework.dao.DuplicateKeyException;
 
 import uk.ac.ebi.biosamples.mongo.model.MongoExternalReference;
 import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.repo.MongoExternalReferenceRepository;
 import uk.ac.ebi.biosamples.mongo.repo.MongoRelationshipRepository;
-
-import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 public class MongoSampleEventListener extends AbstractMongoEventListener<MongoSample> {
 

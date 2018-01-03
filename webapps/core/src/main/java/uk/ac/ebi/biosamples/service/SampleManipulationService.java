@@ -1,14 +1,16 @@
 package uk.ac.ebi.biosamples.service;
 
-import com.google.common.base.Strings;
-import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.model.Contact;
-import uk.ac.ebi.biosamples.model.Sample;
-
 import java.time.Instant;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+
+import com.google.common.base.Strings;
+
+import uk.ac.ebi.biosamples.model.Contact;
+import uk.ac.ebi.biosamples.model.Sample;
 
 @Service
 public class SampleManipulationService {

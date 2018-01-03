@@ -1,5 +1,8 @@
 package uk.ac.ebi.biosamples.migration.utilities;
 
+import java.io.StringReader;
+import java.net.URI;
+
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
@@ -10,12 +13,10 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.XmlGroupToSampleConverter;
 import uk.ac.ebi.biosamples.service.XmlSampleToSampleConverter;
-
-import java.io.StringReader;
-import java.net.URI;
 
 public class XMLParser implements BioSampleApiParser{
 

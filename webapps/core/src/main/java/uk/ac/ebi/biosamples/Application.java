@@ -1,6 +1,7 @@
 package uk.ac.ebi.biosamples;
 
-import com.github.benmanes.caffeine.cache.CaffeineSpec;
+import java.util.concurrent.Executor;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
@@ -11,19 +12,19 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.xml.Jaxb2RootElementHttpMessageConverter;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.thymeleaf.extras.java8time.dialect.Java8TimeDialect;
 import org.thymeleaf.templateresolver.ITemplateResolver;
 import org.thymeleaf.templateresolver.UrlTemplateResolver;
+
+import com.github.benmanes.caffeine.cache.CaffeineSpec;
+
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.mongo.MongoProperties;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
+import uk.ac.ebi.biosamples.mongo.service.MongoAccessionService;
 import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
 import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
-import uk.ac.ebi.biosamples.mongo.service.MongoAccessionService;
-import uk.ac.ebi.biosamples.service.SampleToXmlConverter;
 import uk.ac.ebi.biosamples.service.SampleAsXMLHttpMessageConverter;
-
-import java.util.concurrent.Executor;
+import uk.ac.ebi.biosamples.service.SampleToXmlConverter;
 
 //import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 

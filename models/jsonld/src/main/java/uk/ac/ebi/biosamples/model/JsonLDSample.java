@@ -1,9 +1,9 @@
 package uk.ac.ebi.biosamples.model;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.util.List;
 
 /**
  * Object representing BioSchema Sample entity

@@ -1,5 +1,14 @@
 package uk.ac.ebi.biosamples.controller;
 
+import java.net.MalformedURLException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.Collection;
+import java.util.Collections;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,18 +22,15 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import uk.ac.ebi.biosamples.model.*;
+
+import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.XmlSitemap;
+import uk.ac.ebi.biosamples.model.XmlSitemapIndex;
+import uk.ac.ebi.biosamples.model.XmlUrl;
+import uk.ac.ebi.biosamples.model.XmlUrlSet;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.SamplePageService;
 import uk.ac.ebi.biosamples.service.SampleService;
-
-import javax.servlet.http.HttpServletRequest;
-import java.net.MalformedURLException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.Collection;
-import java.util.Collections;
 
 @Controller
 @RequestMapping("/sitemap")

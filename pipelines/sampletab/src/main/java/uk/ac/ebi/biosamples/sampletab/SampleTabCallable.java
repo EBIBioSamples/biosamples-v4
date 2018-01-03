@@ -2,11 +2,9 @@ package uk.ac.ebi.biosamples.sampletab;
 
 import java.io.IOException;
 import java.net.URI;
-import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 

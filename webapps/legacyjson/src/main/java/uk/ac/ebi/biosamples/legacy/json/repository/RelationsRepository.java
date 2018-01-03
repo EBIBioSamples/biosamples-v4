@@ -1,16 +1,21 @@
 package uk.ac.ebi.biosamples.legacy.json.repository;
 
-import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.legacy.json.domain.*;
-import uk.ac.ebi.biosamples.model.Relationship;
-import uk.ac.ebi.biosamples.model.Sample;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+
+import uk.ac.ebi.biosamples.legacy.json.domain.GroupsRelations;
+import uk.ac.ebi.biosamples.legacy.json.domain.KnownRelationsMapping;
+import uk.ac.ebi.biosamples.legacy.json.domain.SamplesRelations;
+import uk.ac.ebi.biosamples.legacy.json.domain.SupportedGroupsRelationships;
+import uk.ac.ebi.biosamples.legacy.json.domain.SupportedSamplesRelationships;
+import uk.ac.ebi.biosamples.model.Relationship;
+import uk.ac.ebi.biosamples.model.Sample;
 
 @Service
 public class RelationsRepository {

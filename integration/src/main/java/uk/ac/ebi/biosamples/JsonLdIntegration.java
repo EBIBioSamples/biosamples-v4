@@ -1,5 +1,12 @@
 package uk.ac.ebi.biosamples;
 
+import java.time.Instant;
+import java.util.Optional;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
+
 //import org.openqa.selenium.By;
 //import org.openqa.selenium.WebDriver;
 //import org.openqa.selenium.WebElement;
@@ -14,18 +21,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
+
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.JsonLDSample;
 import uk.ac.ebi.biosamples.model.Sample;
-
-import java.time.Instant;
-import java.util.Optional;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)

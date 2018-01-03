@@ -1,23 +1,23 @@
 package uk.ac.ebi.biosamples.solr.service;
 
-import org.springframework.data.solr.core.query.Criteria;
-import org.springframework.data.solr.core.query.FilterQuery;
-import org.springframework.data.solr.core.query.SimpleFilterQuery;
-import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.BioSamplesProperties;
-import uk.ac.ebi.biosamples.model.filter.AccessionFilter;
-import uk.ac.ebi.biosamples.model.filter.Filter;
-import uk.ac.ebi.biosamples.service.FacetToFilterConverter;
-import uk.ac.ebi.biosamples.solr.model.field.SolrFieldType;
-import uk.ac.ebi.biosamples.solr.model.field.SolrSampleField;
-
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static java.util.AbstractMap.SimpleEntry;
+import org.springframework.data.solr.core.query.Criteria;
+import org.springframework.data.solr.core.query.FilterQuery;
+import org.springframework.data.solr.core.query.SimpleFilterQuery;
+import org.springframework.stereotype.Service;
+
+import uk.ac.ebi.biosamples.BioSamplesProperties;
+import uk.ac.ebi.biosamples.model.filter.AccessionFilter;
+import uk.ac.ebi.biosamples.model.filter.Filter;
+import uk.ac.ebi.biosamples.service.FacetToFilterConverter;
+import uk.ac.ebi.biosamples.solr.model.field.SolrFieldType;
+import uk.ac.ebi.biosamples.solr.model.field.SolrSampleField;
 
 @Service
 public class SolrFilterService {

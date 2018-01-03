@@ -5,9 +5,9 @@ import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.hash.Hasher;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
 
 import uk.ac.ebi.biosamples.service.CustomInstantDeserializer;

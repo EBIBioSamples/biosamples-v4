@@ -1,15 +1,16 @@
 package uk.ac.ebi.biosamples.legacy.json.service;
 
+import java.io.IOException;
+import java.util.Optional;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
+
 import uk.ac.ebi.biosamples.legacy.json.domain.SamplesRelations;
 import uk.ac.ebi.biosamples.legacy.json.repository.SampleRepository;
 import uk.ac.ebi.biosamples.model.Sample;
-
-import java.io.IOException;
-import java.util.Optional;
 
 public class SampleRelationsDeserializer extends JsonDeserializer<SamplesRelations> {
 

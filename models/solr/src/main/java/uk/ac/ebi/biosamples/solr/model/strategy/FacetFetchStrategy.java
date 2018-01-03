@@ -1,14 +1,15 @@
 package uk.ac.ebi.biosamples.solr.model.strategy;
 
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.solr.core.query.FacetQuery;
-import uk.ac.ebi.biosamples.model.facet.Facet;
-import uk.ac.ebi.biosamples.solr.model.field.SolrSampleField;
-import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.solr.core.query.FacetQuery;
+
+import uk.ac.ebi.biosamples.model.facet.Facet;
+import uk.ac.ebi.biosamples.solr.model.field.SolrSampleField;
+import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
 
 public interface FacetFetchStrategy {
 

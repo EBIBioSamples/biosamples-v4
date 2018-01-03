@@ -1,11 +1,21 @@
 package uk.ac.ebi.biosamples.service;
 
-import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.model.filter.*;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+
+import uk.ac.ebi.biosamples.model.filter.AccessionFilter;
+import uk.ac.ebi.biosamples.model.filter.AttributeFilter;
+import uk.ac.ebi.biosamples.model.filter.DateRangeFilter;
+import uk.ac.ebi.biosamples.model.filter.DomainFilter;
+import uk.ac.ebi.biosamples.model.filter.ExternalReferenceDataFilter;
+import uk.ac.ebi.biosamples.model.filter.Filter;
+import uk.ac.ebi.biosamples.model.filter.FilterType;
+import uk.ac.ebi.biosamples.model.filter.InverseRelationFilter;
+import uk.ac.ebi.biosamples.model.filter.NameFilter;
+import uk.ac.ebi.biosamples.model.filter.RelationFilter;
 
 @Service
 public class FilterBuilder {

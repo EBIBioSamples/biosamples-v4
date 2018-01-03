@@ -1,9 +1,15 @@
 package uk.ac.ebi.biosamples.legacy.json.domain;
 
+import static uk.ac.ebi.biosamples.legacy.json.domain.SupportedSamplesRelationships.CHILD_OF;
+import static uk.ac.ebi.biosamples.legacy.json.domain.SupportedSamplesRelationships.DERIVE_FROM;
+import static uk.ac.ebi.biosamples.legacy.json.domain.SupportedSamplesRelationships.DERIVE_TO;
+import static uk.ac.ebi.biosamples.legacy.json.domain.SupportedSamplesRelationships.PARENT_OF;
+import static uk.ac.ebi.biosamples.legacy.json.domain.SupportedSamplesRelationships.RECURATED_FROM;
+import static uk.ac.ebi.biosamples.legacy.json.domain.SupportedSamplesRelationships.RECURATED_TO;
+import static uk.ac.ebi.biosamples.legacy.json.domain.SupportedSamplesRelationships.getFromName;
+
 import java.util.HashMap;
 import java.util.Optional;
-
-import static uk.ac.ebi.biosamples.legacy.json.domain.SupportedSamplesRelationships.*;
 
 public final class KnownRelationsMapping {
 

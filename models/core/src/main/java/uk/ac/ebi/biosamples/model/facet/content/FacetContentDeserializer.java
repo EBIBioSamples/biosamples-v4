@@ -1,14 +1,14 @@
 package uk.ac.ebi.biosamples.model.facet.content;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class FacetContentDeserializer extends JsonDeserializer<FacetContent> {
 

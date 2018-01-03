@@ -1,16 +1,17 @@
 package uk.ac.ebi.biosamples.service;
 
+import java.util.Collection;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
 import uk.ac.ebi.biosamples.model.facet.Facet;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.solr.service.SolrFacetService;
-
-import java.util.Collection;
-import java.util.List;
 
 @Service
 public class FacetService {

@@ -1,11 +1,13 @@
 package uk.ac.ebi.biosamples.solr.service;
 
-import com.google.common.io.BaseEncoding;
+import java.io.UnsupportedEncodingException;
+
 import org.springframework.stereotype.Service;
+
+import com.google.common.io.BaseEncoding;
+
 import uk.ac.ebi.biosamples.solr.model.field.SolrFieldType;
 import uk.ac.ebi.biosamples.solr.model.field.SolrSampleField;
-
-import java.io.UnsupportedEncodingException;
 
 /**
  * SolrFieldService is the service that should be able to deal with all field matters

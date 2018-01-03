@@ -4,8 +4,9 @@ import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceAssembler;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.legacy.json.domain.SamplesRelations;
+
 import uk.ac.ebi.biosamples.legacy.json.domain.LegacySample;
+import uk.ac.ebi.biosamples.legacy.json.domain.SamplesRelations;
 
 @Service
 public class SampleResourceAssembler implements ResourceAssembler<LegacySample, Resource<LegacySample>> {

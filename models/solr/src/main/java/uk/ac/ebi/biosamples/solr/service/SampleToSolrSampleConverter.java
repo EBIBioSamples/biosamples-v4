@@ -1,7 +1,17 @@
 package uk.ac.ebi.biosamples.solr.service;
 
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.SortedSet;
+
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
+
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
@@ -9,9 +19,6 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.ExternalReferenceService;
 import uk.ac.ebi.biosamples.service.SampleRelationshipUtils;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
-
-import java.time.format.DateTimeFormatter;
-import java.util.*;
 
 @Service
 public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample> {

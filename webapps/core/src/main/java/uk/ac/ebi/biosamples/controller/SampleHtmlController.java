@@ -1,5 +1,18 @@
 package uk.ac.ebi.biosamples.controller;
 
+import java.net.URI;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -15,16 +28,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
+
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.facet.Facet;
 import uk.ac.ebi.biosamples.model.filter.Filter;
-import uk.ac.ebi.biosamples.service.*;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.net.URI;
-import java.time.ZoneOffset;
-import java.util.*;
+import uk.ac.ebi.biosamples.service.BioSamplesAapService;
+import uk.ac.ebi.biosamples.service.FacetService;
+import uk.ac.ebi.biosamples.service.FilterService;
+import uk.ac.ebi.biosamples.service.JsonLDService;
+import uk.ac.ebi.biosamples.service.SamplePageService;
+import uk.ac.ebi.biosamples.service.SampleService;
 
 /**
  * Primary controller for HTML operations.

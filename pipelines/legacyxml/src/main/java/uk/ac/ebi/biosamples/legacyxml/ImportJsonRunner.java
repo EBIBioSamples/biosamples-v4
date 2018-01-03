@@ -1,37 +1,39 @@
 package uk.ac.ebi.biosamples.legacyxml;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
-import org.springframework.hateoas.Resource;
-import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpStatusCodeException;
-import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.legacy.json.service.JSONSampleToSampleConverter;
-import uk.ac.ebi.biosamples.model.*;
-import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
-import uk.ac.ebi.biosamples.utils.JsonFragmenter;
-import uk.ac.ebi.biosamples.utils.ThreadUtils;
-
 import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
-import static uk.ac.ebi.biosamples.utils.JsonFragmenter.JsonCallback;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.hateoas.Resource;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+
+import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.legacy.json.service.JSONSampleToSampleConverter;
+import uk.ac.ebi.biosamples.model.Contact;
+import uk.ac.ebi.biosamples.model.Organization;
+import uk.ac.ebi.biosamples.model.Publication;
+import uk.ac.ebi.biosamples.model.Relationship;
+import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
+import uk.ac.ebi.biosamples.utils.JsonFragmenter;
+import uk.ac.ebi.biosamples.utils.JsonFragmenter.JsonCallback;
+import uk.ac.ebi.biosamples.utils.ThreadUtils;
 
 @Component
 public class ImportJsonRunner implements ApplicationRunner {

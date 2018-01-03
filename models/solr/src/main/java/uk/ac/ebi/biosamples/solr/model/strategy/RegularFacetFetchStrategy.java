@@ -1,5 +1,11 @@
 package uk.ac.ebi.biosamples.solr.model.strategy;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
@@ -7,18 +13,13 @@ import org.springframework.data.solr.core.query.FacetQuery;
 import org.springframework.data.solr.core.query.Field;
 import org.springframework.data.solr.core.query.result.FacetFieldEntry;
 import org.springframework.data.solr.core.query.result.FacetPage;
-import uk.ac.ebi.biosamples.model.facet.*;
+
+import uk.ac.ebi.biosamples.model.facet.Facet;
+import uk.ac.ebi.biosamples.model.facet.FacetType;
 import uk.ac.ebi.biosamples.model.facet.content.LabelCountEntry;
 import uk.ac.ebi.biosamples.model.facet.content.LabelCountListContent;
 import uk.ac.ebi.biosamples.solr.model.field.SolrSampleField;
 import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import static java.util.Map.Entry;
 
 public class RegularFacetFetchStrategy implements FacetFetchStrategy {
 

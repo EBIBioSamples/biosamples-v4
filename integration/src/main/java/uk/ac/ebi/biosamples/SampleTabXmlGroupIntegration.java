@@ -1,5 +1,8 @@
 package uk.ac.ebi.biosamples;
 
+import java.net.URI;
+import java.util.Scanner;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -12,10 +15,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
-import uk.ac.ebi.biosamples.client.BioSamplesClient;
 
-import java.net.URI;
-import java.util.Scanner;
+import uk.ac.ebi.biosamples.client.BioSamplesClient;
 
 @Component
 @Order(6)

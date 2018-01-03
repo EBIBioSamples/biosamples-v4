@@ -1,12 +1,14 @@
 package uk.ac.ebi.biosamples.legacy.json.domain;
 
+import org.springframework.hateoas.core.Relation;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import org.springframework.hateoas.core.Relation;
-import uk.ac.ebi.biosamples.model.Sample;
+
 import uk.ac.ebi.biosamples.legacy.json.service.SampleRelationsDeserializer;
+import uk.ac.ebi.biosamples.model.Sample;
 
 @JsonDeserialize(using = SampleRelationsDeserializer.class)
 @JsonInclude(JsonInclude.Include.ALWAYS)

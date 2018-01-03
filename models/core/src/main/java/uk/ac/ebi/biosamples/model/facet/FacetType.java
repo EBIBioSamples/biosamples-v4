@@ -1,8 +1,8 @@
 package uk.ac.ebi.biosamples.model.facet;
 
-import com.fasterxml.jackson.annotation.JsonValue;
-
 import java.lang.reflect.InvocationTargetException;
+
+import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum FacetType {
     ATTRIBUTE_FACET("attribute", AttributeFacet.Builder.class),

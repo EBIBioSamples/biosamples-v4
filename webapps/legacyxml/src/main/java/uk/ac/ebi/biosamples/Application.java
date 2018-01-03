@@ -1,6 +1,11 @@
 package uk.ac.ebi.biosamples;
 
 
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.xml.bind.Marshaller;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
@@ -13,10 +18,6 @@ import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.SampleAsXMLHttpMessageConverter;
 import uk.ac.ebi.biosamples.service.SampleToXmlConverter;
-
-import javax.xml.bind.Marshaller;
-import java.util.HashMap;
-import java.util.Map;
 
 @SpringBootApplication
 public class Application extends SpringBootServletInitializer {

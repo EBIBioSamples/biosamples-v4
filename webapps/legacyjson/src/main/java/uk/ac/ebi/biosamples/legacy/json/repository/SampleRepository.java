@@ -1,14 +1,16 @@
 package uk.ac.ebi.biosamples.legacy.json.repository;
 
+import java.util.Collections;
+import java.util.Optional;
+
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Service;
+
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.FilterBuilder;
-
-import java.util.*;
 
 @Service
 public class SampleRepository {

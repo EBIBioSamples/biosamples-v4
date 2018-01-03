@@ -1,5 +1,7 @@
 package uk.ac.ebi.biosamples.client.service;
 
+import java.util.concurrent.ExecutorService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
@@ -12,8 +14,6 @@ import org.springframework.web.client.RestOperations;
 
 import uk.ac.ebi.biosamples.client.utils.IterableResourceFetchAll;
 import uk.ac.ebi.biosamples.model.Curation;
-
-import java.util.concurrent.ExecutorService;
 
 public class CurationRetrievalService {
 

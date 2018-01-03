@@ -1,17 +1,18 @@
 package uk.ac.ebi.biosamples.legacy.xml.service;
 
-import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.model.filter.DateRangeFilter;
-import uk.ac.ebi.biosamples.model.filter.Filter;
-import uk.ac.ebi.biosamples.service.FilterBuilder;
+import static uk.ac.ebi.biosamples.legacy.xml.model.LegacyQueryRegularExpressions.AND;
+import static uk.ac.ebi.biosamples.legacy.xml.model.LegacyQueryRegularExpressions.DATE_RANGE_FILTER_QUERY;
+import static uk.ac.ebi.biosamples.legacy.xml.model.LegacyQueryRegularExpressions.SAMPLE_ACCESSION_FILTER_QUERY;
 
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static uk.ac.ebi.biosamples.legacy.xml.model.LegacyQueryRegularExpressions.AND;
-import static uk.ac.ebi.biosamples.legacy.xml.model.LegacyQueryRegularExpressions.DATE_RANGE_FILTER_QUERY;
-import static uk.ac.ebi.biosamples.legacy.xml.model.LegacyQueryRegularExpressions.SAMPLE_ACCESSION_FILTER_QUERY;
+import org.springframework.stereotype.Service;
+
+import uk.ac.ebi.biosamples.model.filter.DateRangeFilter;
+import uk.ac.ebi.biosamples.model.filter.Filter;
+import uk.ac.ebi.biosamples.service.FilterBuilder;
 
 @Service
 public class LegacyQueryParser {

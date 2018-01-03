@@ -1,12 +1,15 @@
 package uk.ac.ebi.biosamples.legacy.xml.controller;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -15,21 +18,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.exception.SampleNotFoundException;
+import uk.ac.ebi.biosamples.legacy.xml.service.LegacyQueryParser;
+import uk.ac.ebi.biosamples.legacy.xml.service.SummaryInfoService;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.model.legacyxml.BioSample;
 import uk.ac.ebi.biosamples.model.legacyxml.BioSampleGroup;
 import uk.ac.ebi.biosamples.model.legacyxml.ResultQuery;
 import uk.ac.ebi.biosamples.service.FilterBuilder;
-import uk.ac.ebi.biosamples.legacy.xml.service.LegacyQueryParser;
-import uk.ac.ebi.biosamples.legacy.xml.service.SummaryInfoService;
-
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 
 @RestController
 public class LegacyXmlGroupController {

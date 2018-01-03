@@ -23,11 +23,10 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.ExternalReferenceResourceAssembler;
-import uk.ac.ebi.biosamples.service.ExternalReferenceService;
 import uk.ac.ebi.biosamples.service.MongoExternalReferenceService;
 import uk.ac.ebi.biosamples.service.SamplePageService;
-import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 import uk.ac.ebi.biosamples.service.SampleReadService;
+import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 
 @RestController
 @ExposesResourceFor(ExternalReference.class)

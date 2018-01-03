@@ -1,10 +1,16 @@
 package uk.ac.ebi.biosamples.legacy.json.domain;
 
-import uk.ac.ebi.biosamples.model.*;
-
 import java.time.Instant;
 import java.util.SortedSet;
 import java.util.TreeSet;
+
+import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.Contact;
+import uk.ac.ebi.biosamples.model.ExternalReference;
+import uk.ac.ebi.biosamples.model.Organization;
+import uk.ac.ebi.biosamples.model.Publication;
+import uk.ac.ebi.biosamples.model.Relationship;
+import uk.ac.ebi.biosamples.model.Sample;
 
 public class TestSample {
 
