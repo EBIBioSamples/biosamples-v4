@@ -8,3 +8,12 @@ utils/
 **/.classpath
 **/.project
 **/bin/
+**/src/
+**/*.class
+**/*.java
+
+*.*
+#!agents/*/target/*.jar
+#!pipelines/*/target/*.jar
+#!webapps/*/target/*.war
+#!integration/target/*.jar
