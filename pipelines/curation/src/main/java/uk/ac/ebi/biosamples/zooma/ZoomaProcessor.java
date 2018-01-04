@@ -67,7 +67,7 @@ public class ZoomaProcessor {
 			return null;
 		}
 		String iri = n.get("semanticTags").get(0).asText();
-		log.info("Zooma mapped "+value+" ("+value+") to "+iri);
+		log.info("Zooma mapped "+value+" ("+type+") to "+iri);
 		return Optional.of(iri);		
 	}
 	
