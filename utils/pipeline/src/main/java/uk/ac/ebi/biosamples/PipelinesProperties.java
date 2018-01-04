@@ -24,10 +24,10 @@ public class PipelinesProperties {
 	@Value("${biosamples.pipelines.connectioncount.ols:32}")
 	private int connectionCountOls;
 	
-	@Value("${biosamples.pipelines.connectioncount.zooma:4}")
+	@Value("${biosamples.pipelines.connectioncount.zooma:1}")
 	private int connectionCountZooma;
 	
-	@Value("${biosamples.pipelines.zooma:http://wwwdev.ebi.ac.uk/spot/zooma}")
+	@Value("${biosamples.pipelines.zooma:https://wwwdev.ebi.ac.uk/spot/zooma}")
 	private String zooma;
 	
 	@Value("${biosamples.pipelines.ncbi.domain:self.BiosampleImportNCBI}")
