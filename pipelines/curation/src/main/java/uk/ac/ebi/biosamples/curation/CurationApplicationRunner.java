@@ -1,6 +1,8 @@
 package uk.ac.ebi.biosamples.curation;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -73,7 +75,13 @@ public class CurationApplicationRunner implements ApplicationRunner {
 		} finally {
 			//now print a list of things that failed
 			if (SampleCurationCallable.failedQueue.size() > 0) {
-				log.info("Failed files: "+String.join(" , ", SampleCurationCallable.failedQueue));
+				//put the first ones on the queue into a list
+				//limit the size of list to avoid overload
+				List<String> fails = new LinkedList<>();
+				while (fails.size() < 100 && SampleCurationCallable.failedQueue.peek() != null) {
+					fails.add(SampleCurationCallable.failedQueue.poll());
+				}
+				log.info("Failed files ("+SampleCurationCallable.failedQueue.size()+") "+String.join(" , ", fails));
 			}
 		}
 	}
