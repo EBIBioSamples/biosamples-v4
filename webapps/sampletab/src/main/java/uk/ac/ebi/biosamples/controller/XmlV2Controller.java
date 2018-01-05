@@ -64,6 +64,60 @@ public class XmlV2Controller {
 		return saveSourceSample(source, UUID.randomUUID().toString(), sample, apikey);
 	}
 	
+	
+	//for some clients, the are incapable of sending a null body with a content header
+	//so we have to have this method as an alternative for them
+	//not idea, but functional?
+	@PostMapping(value = "/source/{source}/sample/{sourceid}", 
+			produces = MediaType.TEXT_PLAIN_VALUE)
+	public @ResponseBody ResponseEntity<String> saveSourceSample(@PathVariable String source,
+			@PathVariable String sourceid,
+			@RequestParam String apikey) {
+		
+		// ensure source is case insensitive
+		source = source.toLowerCase();
+		Optional<String> keyOwner  = apiKeyService.getUsernameForApiKey(apikey);
+		if (!keyOwner.isPresent()) {
+			return new ResponseEntity<String>("Invalid API key ("+apikey+")", HttpStatus.FORBIDDEN);
+		}
+
+		if (!apiKeyService.canKeyOwnerEditSource(keyOwner.get(), source)) {
+			return new ResponseEntity<String>("That API key is not permitted for that source", HttpStatus.FORBIDDEN);
+		}
+		
+		//if no sample was provided, create one as a dummy with far future release date
+		Sample sample = Sample.build(sourceid, null, null, ZonedDateTime.now(ZoneOffset.UTC).plusYears(1000).toInstant(), 
+				ZonedDateTime.now(ZoneOffset.UTC).toInstant(), 
+				new TreeSet<>(), new TreeSet<>(), new TreeSet<>());
+
+		//update the sample to have the appropriate domain
+		Optional<String> domain = apiKeyService.getDomainForApiKey(apikey);
+		if (!domain.isPresent()) {
+			return new ResponseEntity<String>("Invalid API key ("+apikey+")", HttpStatus.FORBIDDEN);
+		}
+		
+		//reject if same name has been submitted before		
+		List<Filter> filterList = new ArrayList<>(2);
+		filterList.add(FilterBuilder.create().onName(sourceid).build());
+		filterList.add(FilterBuilder.create().onDomain(domain.get()).build());
+		if (bioSamplesClient.fetchSampleResourceAll(null, filterList).iterator().hasNext()) {
+			return new ResponseEntity<String>("POST must be a new submission, use PUT for updates", HttpStatus.BAD_REQUEST);			
+		}		
+		
+		//update the sample object with the domain
+		//TODO support contact/publication/organization
+		sample = Sample.build(sample.getName(), sample.getAccession(), domain.get(), 
+					sample.getRelease(), sample.getUpdate(), sample.getAttributes(), sample.getRelationships(), sample.getExternalReferences());
+
+		//now actually do the submission
+		sample = bioSamplesClient.persistSample(sample);
+		
+		//return the new accession
+		return ResponseEntity.ok(sample.getAccession());
+		
+	}
+	
+	
 	@PostMapping(value = "/source/{source}/sample/{sourceid}", 
 			produces = MediaType.TEXT_PLAIN_VALUE, 
 			consumes = {MediaType.APPLICATION_XML_VALUE})
@@ -72,7 +126,7 @@ public class XmlV2Controller {
 			@RequestBody(required=false) Sample sample, 
 			@RequestParam String apikey)
 					throws ParseException, IOException {
-		
+				
 		//reject if has accession
 		if (sample != null && sample.getAccession() != null) {
 			return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body("Cannot POST a sample with an existing accession, use PUT for updates.");

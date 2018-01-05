@@ -91,7 +91,22 @@ public class SampleTabXmlSampleIntegration extends AbstractIntegration {
 			// TODO check at the right URLs with GET to make sure all
 			// arrived
 		});
+
 		
+		//test ENA getting accession for null body with local name
+		URI uriPostFoosiz =  UriComponentsBuilder.fromUri(uri).pathSegment("foosiz").build().toUri();
+		log.info("POSTing to " + putUriNcbi);
+		RequestEntity<Void> request = RequestEntity.post(uriPostFoosiz)
+				//.contentType(MediaType.APPLICATION_XML)
+				.accept(MediaType.TEXT_PLAIN)					
+				.build();
+		ResponseEntity<String> response = null;
+		try {
+			response = restTemplate.exchange(request, String.class);
+		} catch (HttpStatusCodeException e) {
+			log.info("error response = "+response);
+			throw e;
+		}
 	}
 
 	@Override
