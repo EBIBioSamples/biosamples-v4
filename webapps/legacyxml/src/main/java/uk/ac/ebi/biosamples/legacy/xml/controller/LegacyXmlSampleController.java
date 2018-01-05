@@ -51,11 +51,11 @@ public class LegacyXmlSampleController {
 
 	@GetMapping(value="/samples/{accession:SAM(?:N|D|EA|E)[0-9]+}", produces={MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE})
 	public Sample getSample(@PathVariable String accession) throws IOException {
-		Optional<Sample> sample = client.fetchSample(accession);
+		Optional<Resource<Sample>> sample = client.fetchSampleResource(accession);
 		
 		if (sample.isPresent()) {
 			log.trace("Found sample "+accession+" as "+sample.get());
-			return sample.get();
+			return sample.get().getContent();
 		} else {
 			log.trace("Did not find sample "+accession);
 			throw new SampleNotFoundException();
