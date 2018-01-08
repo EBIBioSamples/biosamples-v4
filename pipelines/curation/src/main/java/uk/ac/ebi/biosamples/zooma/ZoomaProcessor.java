@@ -64,7 +64,7 @@ public class ZoomaProcessor {
 		
 		//if result has anything other than 1 semantic tag, abort
 		if (!n.has("semanticTags") || n.get("semanticTags").size() != 1) {
-			return null;
+			return Optional.empty();
 		}
 		String iri = n.get("semanticTags").get(0).asText();
 		log.info("Zooma mapped "+value+" ("+type+") to "+iri);
