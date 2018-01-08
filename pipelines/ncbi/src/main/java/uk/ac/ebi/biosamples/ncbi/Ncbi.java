@@ -59,6 +59,8 @@ public class Ncbi implements ApplicationRunner {
 			toDate = LocalDate.parse("3000-01-01", DateTimeFormatter.ISO_LOCAL_DATE);
 		}
 
+		log.info("Processing samples from "+DateTimeFormatter.ISO_LOCAL_DATE.format(fromDate));
+		log.info("Processing samples to "+DateTimeFormatter.ISO_LOCAL_DATE.format(toDate));
 		callback.setFromDate(fromDate);
 		callback.setToDate(toDate);
 
