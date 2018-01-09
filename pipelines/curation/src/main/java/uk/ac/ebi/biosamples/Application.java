@@ -23,7 +23,7 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
 @SpringBootApplication
-@EnableCaching(proxyTargetClass=true)
+@EnableCaching
 public class Application {
 
 	public static void main(String[] args) {

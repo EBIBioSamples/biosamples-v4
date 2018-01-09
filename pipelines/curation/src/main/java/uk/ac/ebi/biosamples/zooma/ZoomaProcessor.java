@@ -38,36 +38,39 @@ public class ZoomaProcessor {
 	}
 	
 	
-	@Cacheable("zooma")
+	@Cacheable(value="zooma", sync=true)
 	public Optional<String> queryZooma(String type, String value) {
 		log.trace("Zooma getting : "+type+" : "+value);
-		long startTime = System.nanoTime();
 		URI uri = uriBuilder.expand(value, type).encode().toUri();
-		long endTime = System.nanoTime();
-		log.trace("Got zooma response in "+((endTime-startTime)/1000000)+"ms");
 		//log.info("Zooma uri : "+url);
 		
 		RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
+		long startTime = System.nanoTime();
 		ResponseEntity<List<JsonNode>> responseEntity = ClientUtils.doRetryQuery(requestEntity, restOperations, 5, 
-				new ParameterizedTypeReference<List<JsonNode>>(){});
+				new ParameterizedTypeReference<List<JsonNode>>(){});		
+		long endTime = System.nanoTime();
+		log.trace("Got zooma response in "+((endTime-startTime)/1000000)+"ms");
 		
 		//if zero or more than one result found, abort
 		if (responseEntity.getBody().size() != 1) {
+			log.info("Zooma failed to map "+value+" ("+type+") in "+((endTime-startTime)/1000000)+"ms");
 			return Optional.empty();
 		}
 		JsonNode n = responseEntity.getBody().get(0);
 		
 		//if result is anything other than "high" confidence, abort
 		if (!n.has("confidence") || !n.get("confidence").asText().equals("HIGH")) {
+			log.info("Zooma did not map "+value+" ("+type+") in "+((endTime-startTime)/1000000)+"ms");
 			return Optional.empty();
 		}
 		
 		//if result has anything other than 1 semantic tag, abort
 		if (!n.has("semanticTags") || n.get("semanticTags").size() != 1) {
+			log.info("Zooma multi-mapped "+value+" ("+type+") in "+((endTime-startTime)/1000000)+"ms");
 			return Optional.empty();
 		}
 		String iri = n.get("semanticTags").get(0).asText();
-		log.info("Zooma mapped "+value+" ("+type+") to "+iri);
+		log.info("Zooma mapped "+value+" ("+type+") to "+iri+" in "+((endTime-startTime)/1000000)+"ms");
 		return Optional.of(iri);		
 	}
 	

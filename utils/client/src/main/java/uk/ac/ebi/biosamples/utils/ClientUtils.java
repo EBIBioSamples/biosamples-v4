@@ -32,38 +32,44 @@ public class ClientUtils {
 				if (e.getStatusCode() == HttpStatus.TOO_MANY_REQUESTS
 						|| e.getStatusCode() == HttpStatus.SERVICE_UNAVAILABLE) {
 					//need to wait and retry
+					String retryString = "";
+					//may include a header for how long to wait till retry
 					if (responseEntity.getHeaders().keySet().contains(HttpHeaders.RETRY_AFTER)) {
-						String retryString = responseEntity.getHeaders().get(HttpHeaders.RETRY_AFTER).get(0);
-						//retry after could be an integer number of seconds, or a date
-						ZonedDateTime retryTime = null;
-						try {
-							retryTime = ZonedDateTime.parse(retryString, 
-									DateTimeFormatter.RFC_1123_DATE_TIME);
-						} catch (DateTimeParseException e2){
+						retryString = responseEntity.getHeaders().get(HttpHeaders.RETRY_AFTER).get(0);
+					}
+					//retry header after could be an integer number of seconds, or a date
+					ZonedDateTime retryTime = null;
+					try {
+						retryTime = ZonedDateTime.parse(retryString, 
+								DateTimeFormatter.RFC_1123_DATE_TIME);
+					} catch (DateTimeParseException e2){
+						//do nothing
+					}
+					if (retryTime == null) {
+						int delaySeconds = 10*retries; //default to waiting 10 seconds per retry before trying again
+						try { 
+							delaySeconds = Integer.parseInt(retryString);
+						} catch (NumberFormatException e2) {
 							//do nothing
 						}
-						if (retryTime == null) {
-							int delaySeconds = 10*retries; //default to waiting 10 seconds per retry before trying again
-							try { 
-								delaySeconds = Integer.parseInt(retryString);
-							} catch (NumberFormatException e2) {
-								//do nothing
-							}
-							retryTime = ZonedDateTime.now(ZoneOffset.UTC).plusSeconds(delaySeconds);
-						}
-						//at this point, we will have a time after which we can retry
-						//sleep until after that time
-						while (ZonedDateTime.now(ZoneOffset.UTC).isBefore(retryTime)) {
-							try {
-								Thread.sleep(1000);
-							} catch (InterruptedException e2) {
-								throw new RuntimeException(e2);
-							}
-						}
-						//now we can retry and hope it works
-						retries += 1;
-						responseEntity = null;
+						//TODO use the date/time from the response, instead of now?
+						retryTime = ZonedDateTime.now(ZoneOffset.UTC).plusSeconds(delaySeconds);
 					}
+					
+					//at this point, we will have a time after which we can retry
+					//sleep until after that time
+					while (ZonedDateTime.now(ZoneOffset.UTC).isBefore(retryTime)) {
+						try {
+							Thread.sleep(1000);
+						} catch (InterruptedException e2) {
+							throw new RuntimeException(e2);
+						}
+					}
+					
+					//now we can retry and hope it works
+					retries += 1;
+					responseEntity = null;
+					
 				} else {
 					throw e;
 				}

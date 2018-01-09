@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class PipelinesProperties {
 	
-	@Value("${biosamples.pipelines.ncbi.file:biosample_set.xml.gz}")
+	@Value("${biosamples.pipelines.ncbi.file:/ncbi/biosamples_set.xml.gz}")
 	private String ncbiFile;
 
 	@Value("${biosamples.pipelines.threadcount:1}")

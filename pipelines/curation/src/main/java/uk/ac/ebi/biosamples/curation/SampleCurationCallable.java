@@ -148,7 +148,8 @@ public class SampleCurationCallable implements Callable<Void> {
 													// parenthesis
 
 		// replace underscores with spaces
-		string = string.replaceAll("_", " ");
+		// string = string.replaceAll("_", " ");
+		//this is a significant change, so leave it undone for the moment....
 
 		// trim extra whitespace at start and end
 		string = string.trim();
