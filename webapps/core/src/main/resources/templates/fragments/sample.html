@@ -76,9 +76,12 @@
 			 th:remove="tag">
 			<h3>External Links</h3>
 			<th:section th:each="externalReference : ${externalReferences}" >
-				<a th:href="${externalReference.url}" class="button" th:title="${externalReference.url}">
-					<h3 class="icon icon-generic white-color" data-icon="L"></h3>
-				</a>
+				<div class="small-1 columns">
+					<a th:href="${externalReference.url}" class="button" th:title="${externalReference.url}">
+						<h3 class="icon icon-generic white-color" data-icon="L"></h3>
+					</a>
+					<a th:href="${externalReference.url}" th:text="${@externalReferenceService.getNickname(externalReference)}"></a>
+				</div>
 			</th:section>
 		</div>
 	</section>
