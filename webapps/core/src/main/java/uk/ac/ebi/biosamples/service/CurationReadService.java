@@ -1,5 +1,6 @@
 package uk.ac.ebi.biosamples.service;
 
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -74,8 +75,9 @@ public class CurationReadService {
 		return link;
 	}
 	
-	public Sample applyCurationToSample(Sample sample, Curation curation) {
-		log.trace("Applying curation "+curation+" to sample "+sample.getAccession());
+	public Sample applyCurationLinkToSample(Sample sample, CurationLink curationLink) {
+		log.trace("Applying curation "+curationLink+" to sample "+sample.getAccession());
+		Curation curation = curationLink.getCuration();
 		
 		SortedSet<Attribute> attributes = new TreeSet<Attribute>(sample.getAttributes());
 		SortedSet<ExternalReference> externalReferences = new TreeSet<ExternalReference>(sample.getExternalReferences());
@@ -106,34 +108,40 @@ public class CurationReadService {
 			externalReferences.add(externalReference);
 		}
 		
+		//update the sample's update date
+		Instant update = sample.getUpdate();
+		if (curationLink.getCreated().isAfter(update)) {
+			update = curationLink.getCreated();
+		}
+		
 		return Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(), 
-				sample.getRelease(), sample.getUpdate(), attributes, sample.getRelationships(), externalReferences, 
+				sample.getRelease(), update, attributes, sample.getRelationships(), externalReferences, 
 				sample.getOrganizations(), sample.getContacts(), sample.getPublications());
 	}
 	
 	public Sample applyAllCurationToSample(Sample sample) {
 
-		Set<Curation> curations = new HashSet<>();
+		Set<CurationLink> curationLinks = new HashSet<>();
 		int pageNo = 0;
-		Page<Curation> page;
+		Page<CurationLink> page;
 		do {
 			Pageable pageable = new PageRequest(pageNo, 1000);
-			page = getCurationsForSample(sample.getAccession(), pageable);
-			for (Curation curation : page) {
-				curations.add(curation);
+			page = getCurationLinksForSample(sample.getAccession(), pageable);
+			for (CurationLink curationLink : page) {
+				curationLinks.add(curationLink);
 			}
 			pageNo += 1;
 		} while(pageNo < page.getTotalPages());
 		
 
 		boolean curationApplied = true;
-		while (curationApplied && curations.size() > 0) {
-			Iterator<Curation> it = curations.iterator();
+		while (curationApplied && curationLinks.size() > 0) {
+			Iterator<CurationLink> it = curationLinks.iterator();
 			curationApplied = false;
 			while (it.hasNext()) {
-				Curation curation = it.next();
+				CurationLink curationLink = it.next();
 				try {
-					sample = applyCurationToSample(sample, curation);
+					sample = applyCurationLinkToSample(sample, curationLink);
 					it.remove();
 					curationApplied = true;
 				} catch (IllegalArgumentException e) {
