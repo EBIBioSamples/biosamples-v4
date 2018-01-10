@@ -45,6 +45,7 @@ public class MessageHandlerSolr {
 		for (List<String> iris : solrSample.getAttributeIris().values()) {
 			for (String iri : iris) {
 				solrSample.getKeywords().addAll(olsProcessor.ancestorsAndSynonyms("efo", iri));
+				solrSample.getKeywords().addAll(olsProcessor.ancestorsAndSynonyms("NCBITaxon", iri));
 			}
 		}
 		
