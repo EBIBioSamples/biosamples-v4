@@ -67,7 +67,7 @@ public class ImportJsonRunner implements ApplicationRunner {
 			Map<String, Future<Void>> futures = new LinkedHashMap<>();
 			ExecutorService executorService = null;
 			try  {
-				executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, 1, 32);
+				executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, 1, 8);
 				JsonCallback callback = new ImportJsonCallback(futures, 
 						client, jsonSampleToSampleConverter, executorService);
 
