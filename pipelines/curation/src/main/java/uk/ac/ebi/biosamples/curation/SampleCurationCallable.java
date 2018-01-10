@@ -2,11 +2,15 @@ package uk.ac.ebi.biosamples.curation;
 
 import java.util.Collections;
 import java.util.Optional;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
@@ -106,15 +110,34 @@ public class SampleCurationCallable implements Callable<Void> {
 					return sample;
 				}
 			}
+			
+			//if it is an organism with a single numeric IRI, assume NCBI taxon
+			if (attribute.getType().toLowerCase().equals("organism") && attribute.getIri().size()==1) {
+				Integer taxId = null;
+				try {
+				taxId = Integer.parseInt(attribute.getIri().first());
+				} catch (NumberFormatException e) {
+					taxId = null;
+				}
+				if (taxId != null) {
+					SortedSet<String> iris = new TreeSet<>();
+					iris.add("http://purl.obolibrary.org/obo/NCBITaxon_+taxId");
+					//TODO check this IRI exists via OLS
+					
+					Attribute newAttribute = Attribute.build(attribute.getType(), attribute.getValue(),
+							iris, attribute.getUnit());
+					Curation curation = Curation.build(attribute, newAttribute); 
+					bioSamplesClient.persistCuration(sample.getAccession(),
+							curation, domain);
+					sample = curationApplicationService.applyCurationToSample(sample, curation);
+				}
+			}
 		}
 
 		// TODO write me
-
-		// query un-mapped attributes against Zooma
-	
 		
 		// TODO validate existing ontology terms against OLS
-		// expand short-version ontology terms using OLS
+		// TODO expand short-version ontology terms using OLS
 
 		// TODO turn attributes with biosample accessions into relationships
 
@@ -284,6 +307,32 @@ public class SampleCurationCallable implements Callable<Void> {
 			if (attribute.getIri().size() > 0) {
 				continue;
 			} 
+
+			//if it has at least one sensible iri, skip it
+			boolean hasSaneIri = false;
+			for (String iri : attribute.getIri()) {
+				UriComponents iriComponents = null; 
+				try {
+					iriComponents = UriComponentsBuilder.fromUriString(iri).build();
+				} catch (Exception e) {
+					//TODO do this sensibly
+					//do nothing
+					
+				}
+				if (iriComponents != null) {
+					if (iriComponents.getScheme() != null
+							&& iriComponents.getHost() != null 
+							&& iriComponents.getPath() != null) {
+						hasSaneIri = true;
+					}
+				}
+			}
+			if (hasSaneIri) {
+				continue;
+			}
+			
+			
+			//if it has units, skip it
 			if (attribute.getUnit() != null) {
 				continue;
 			} 
@@ -294,6 +343,14 @@ public class SampleCurationCallable implements Callable<Void> {
 			} 
 			if (attribute.getType().equals("label")) {
 				log.trace("Skipping label "+attribute.getValue());
+				continue;
+			}
+			if (attribute.getType().equals("model")) {
+				log.trace("Skipping model "+attribute.getValue());
+				continue;
+			}
+			if (attribute.getType().equals("package")) {
+				log.trace("Skipping package "+attribute.getValue());
 				continue;
 			}
 			if (attribute.getType().equals("host_subject_id")) {
@@ -314,7 +371,7 @@ public class SampleCurationCallable implements Callable<Void> {
 				log.trace("Skipping GEO identifier "+attribute.getValue());
 				continue;
 			} 
-			if (attribute.getValue().matches("^SAM[END]A?[0-9]+$")) {
+			if (attribute.getValue().matches("^SAM[END]A?G?[0-9]+$")) {
 				log.trace("Skipping BioSample identifier "+attribute.getValue());
 				continue;
 			}
