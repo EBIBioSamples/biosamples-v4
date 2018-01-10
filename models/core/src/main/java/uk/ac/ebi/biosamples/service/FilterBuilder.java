@@ -31,16 +31,16 @@ public class FilterBuilder {
         return new InverseRelationFilter.Builder(label);
     }
 
-    public DateRangeFilter.Builder onDate(String fieldLabel) {
-        return new DateRangeFilter.Builder(fieldLabel);
+    public DateRangeFilter.DateRangeFilterBuilder onDate(String fieldLabel) {
+        return new DateRangeFilter.DateRangeFilterBuilder(fieldLabel);
     }
 
-    public DateRangeFilter.Builder onReleaseDate() {
-        return new DateRangeFilter.Builder("release");
+    public DateRangeFilter.DateRangeFilterBuilder onReleaseDate() {
+        return new DateRangeFilter.DateRangeFilterBuilder("release");
     }
 
-    public DateRangeFilter.Builder onUpdateDate() {
-        return new DateRangeFilter.Builder("update");
+    public DateRangeFilter.DateRangeFilterBuilder onUpdateDate() {
+        return new DateRangeFilter.DateRangeFilterBuilder("update");
     }
 
     public DomainFilter.Builder onDomain(String domain) {

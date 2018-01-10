@@ -138,8 +138,10 @@ public class RestFilterIntegration extends AbstractIntegration{
     protected void phaseThree() {
         log.info("Getting sample 1 using filter on date range");
         Sample testSample1 = getTestSample1();
-        LocalDateTime fromDateTime = LocalDateTime.ofInstant(testSample1.getRelease(), ZoneId.of("UTC"));
-        Filter dateFilter = FilterBuilder.create().onReleaseDate().from(fromDateTime).until(fromDateTime.plusSeconds(2)).build();
+        Filter dateFilter = FilterBuilder.create().onReleaseDate()
+        		.from(testSample1.getRelease().minusSeconds(2))
+        		.until(testSample1.getRelease().plusSeconds(2))
+        		.build();
         PagedResources<Resource<Sample>> samplePage = client.fetchPagedSampleResource("",
                 Collections.singletonList(dateFilter),
                 0, 10);

@@ -38,7 +38,7 @@ public class LegacyQueryParser {
                 String from = rangeMatcher.group("from");
                 String until = rangeMatcher.group("until");
 
-                DateRangeFilter.Builder filterBuilder;
+                DateRangeFilter.DateRangeFilterBuilder filterBuilder;
                 if (type.equals("update"))
                     filterBuilder = FilterBuilder.create().onUpdateDate();
                 else

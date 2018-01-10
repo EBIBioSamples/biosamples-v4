@@ -3,6 +3,7 @@ package uk.ac.ebi.biosamples.solr.model.field;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAccessor;
 
 import org.springframework.data.solr.core.query.Criteria;
 
@@ -50,8 +51,9 @@ public class SolrSampleDateField extends SolrSampleField{
                     filterCriteria = filterCriteria.greaterThanEqual(toSolrDateString(dateRange.getFrom()));
                 } else {
                     filterCriteria = filterCriteria.between(
-                            dateRange.getFrom().format(DateTimeFormatter.ISO_INSTANT),
-                            dateRange.getUntil().format(DateTimeFormatter.ISO_INSTANT));
+                    		toSolrDateString(dateRange.getFrom()),
+                    		toSolrDateString(dateRange.getUntil()),
+                    		true, false);
                 }
 
             } else {
@@ -63,7 +65,7 @@ public class SolrSampleDateField extends SolrSampleField{
     }
 
 
-    private String toSolrDateString(ZonedDateTime dateTime) {
-        return dateTime.format(DateTimeFormatter.ISO_INSTANT.withZone(ZoneId.of("UTC")));
+    private String toSolrDateString(TemporalAccessor temporal) {
+        return DateTimeFormatter.ISO_INSTANT.withZone(ZoneId.of("UTC")).format(temporal);
     }
 }

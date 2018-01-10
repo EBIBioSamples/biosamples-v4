@@ -13,7 +13,7 @@ public enum FilterType {
     RELATION_FILER("rel", RelationFilter.Builder.class),
     INVERSE_RELATION_FILTER("rrel", InverseRelationFilter.Builder.class),
     DOMAIN_FILTER("dom", DomainFilter.Builder.class),
-    DATE_FILTER("dt", DateRangeFilter.Builder.class),
+    DATE_FILTER("dt", DateRangeFilter.DateRangeFilterBuilder.class),
     EXTERNAL_REFERENCE_DATA_FILTER("extd", ExternalReferenceDataFilter.Builder.class),
     ACCESSION_FILTER("acc", AccessionFilter.Builder.class);
 
