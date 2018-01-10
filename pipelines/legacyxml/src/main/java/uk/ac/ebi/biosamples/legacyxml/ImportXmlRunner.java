@@ -78,38 +78,7 @@ public class ImportXmlRunner implements ApplicationRunner {
 			ThreadUtils.checkFutures(futures, 0);
 		}
 	}
-	
-	
-	private Map<String,Set<String>> readCsv(Path path) throws IOException {
-		Map<String, Set<String>> groupMembership = new HashMap<>();
-		try (CSVReader csvReader = new CSVReader(Files.newBufferedReader(path))) {
-			String[] nextRecord;
-            while ((nextRecord = csvReader.readNext()) != null) {
-            	String group = nextRecord[0];
-            	for (int i = 1; i < nextRecord.length; i++) {
-            		if (!groupMembership.containsKey(group)) {
-            			groupMembership.put(group, new HashSet<>());
-            		}
-            		groupMembership.get(group).add(nextRecord[i]);
-            	}
-            }
-		}
-		return groupMembership;
-	}
-	
-	private Map<String, Set<String>> reverse(Map<String, Set<String>> input) {
-		Map<String, Set<String>> output = new HashMap<>();
-		for (String key : input.keySet()) {
-			for (String value : input.get(key)) {
-				if (!output.containsKey(value)) {
-					output.put(value, new HashSet<>());
-				}
-				output.get(value).add(key);
-			}
-		}
-		return output;
-	}
-	
+		
 	public static class ImportElementCallback implements ElementCallback {
 
 		
