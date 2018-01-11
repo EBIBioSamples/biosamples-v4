@@ -794,7 +794,8 @@ public class XmlSearchIntegration extends AbstractIntegration {
             }
 
             Element root = xml.getRootElement();
-            if (!XmlPathBuilder.of(root).element().getName().equals("BioSample")) {
+            if (!XmlPathBuilder.of(root).element().getName().equals("BioSample")
+            		&& !XmlPathBuilder.of(root).element().getName().equals("BioSampleGroup")) {
                 return false;
             }
 
