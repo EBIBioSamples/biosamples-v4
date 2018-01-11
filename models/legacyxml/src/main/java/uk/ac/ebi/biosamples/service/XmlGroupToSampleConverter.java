@@ -56,21 +56,25 @@ public class XmlGroupToSampleConverter implements Converter<Element, Sample>  {
 				update = Instant.from(DateTimeFormatter.ISO_DATE_TIME.parse(XmlPathBuilder.of(property).path("QualifiedValue", "Value").text()));
 			} else {
 				String type = XmlPathBuilder.of(property).attribute("class");
-				String value = XmlPathBuilder.of(property).path("QualifiedValue", "Value").text();
-				Collection<String> iri = Lists.newArrayList();
-				String unit = null;
 				
-				if (XmlPathBuilder.of(property).path("QualifiedValue", "TermSourceREF").exists()
-						&& XmlPathBuilder.of(property).path("QualifiedValue", "TermSourceREF", "TermSourceID").exists()) {
-					iri.add(XmlPathBuilder.of(property).path("QualifiedValue", "TermSourceREF", "TermSourceID").text());
+				for (Element qualifiedValue : XmlPathBuilder.of(property).elements("QualifiedValue")) {
+				
+					String value = XmlPathBuilder.of(qualifiedValue).path("Value").text();
+					Collection<String> iri = Lists.newArrayList();
+					String unit = null;
+					
+					if (XmlPathBuilder.of(qualifiedValue).path("TermSourceREF").exists()
+							&& XmlPathBuilder.of(qualifiedValue).path("TermSourceREF", "TermSourceID").exists()) {
+						iri.add(XmlPathBuilder.of(qualifiedValue).path("TermSourceREF", "TermSourceID").text());
+					}
+					
+					if (XmlPathBuilder.of(qualifiedValue).path("TermSourceREF").exists()
+							&& XmlPathBuilder.of(qualifiedValue).path("TermSourceREF", "Unit").exists()) {
+						unit = XmlPathBuilder.of(qualifiedValue).path("TermSourceREF", "Unit").text();
+					}
+					
+					attributes.add(Attribute.build(type, value, iri, unit));		
 				}
-				
-				if (XmlPathBuilder.of(property).path("QualifiedValue", "TermSourceREF").exists()
-						&& XmlPathBuilder.of(property).path("QualifiedValue", "TermSourceREF", "Unit").exists()) {
-					unit = XmlPathBuilder.of(property).path("QualifiedValue", "TermSourceREF", "Unit").text();
-				}
-				
-				attributes.add(Attribute.build(type, value, iri, unit));				
 			}
 		}
 
@@ -84,13 +88,12 @@ public class XmlGroupToSampleConverter implements Converter<Element, Sample>  {
 			}
 		}
 		
-		log.info("name = "+name);
-		log.info("accession = "+accession);
-		log.info("release = "+release);
-		log.info("update = "+update);
-		log.info("attributes = "+attributes);
-		log.info("relationships = "+relationships);
-		log.info("relationships = "+relationships);
+		log.trace("name = "+name);
+		log.trace("accession = "+accession);
+		log.trace("release = "+release);
+		log.trace("update = "+update);
+		log.trace("attributes = "+attributes);
+		log.trace("relationships = "+relationships);
 		
 		return Sample.build(name, accession, null, release, update,
 				attributes, relationships, externalReferences,
