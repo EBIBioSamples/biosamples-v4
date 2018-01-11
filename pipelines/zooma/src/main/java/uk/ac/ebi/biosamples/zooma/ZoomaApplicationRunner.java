@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.curation;
+package uk.ac.ebi.biosamples.zooma;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -23,22 +23,22 @@ import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 
 @Component
-public class CurationApplicationRunner implements ApplicationRunner {
+public class ZoomaApplicationRunner implements ApplicationRunner {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 
 	private final BioSamplesClient bioSamplesClient;	
 	private final PipelinesProperties pipelinesProperties;
-	private final OlsProcessor olsProcessor;
+	private final ZoomaProcessor zoomaProcessor;
 	private final CurationApplicationService curationApplicationService;
 	
-	public CurationApplicationRunner(BioSamplesClient bioSamplesClient, 
+	public ZoomaApplicationRunner(BioSamplesClient bioSamplesClient, 
 			PipelinesProperties pipelinesProperties, 
-			OlsProcessor olsProcessor, 
+			ZoomaProcessor zoomaProcessor, 
 			CurationApplicationService curationApplicationService) {
 		this.bioSamplesClient = bioSamplesClient;
 		this.pipelinesProperties = pipelinesProperties;
-		this.olsProcessor = olsProcessor;
+		this.zoomaProcessor = zoomaProcessor;
 		this.curationApplicationService = curationApplicationService;
 	}
 	
@@ -58,8 +58,8 @@ public class CurationApplicationRunner implements ApplicationRunner {
 					throw new RuntimeException("Sample should not be null");
 				}
 
-				Callable<Void> task = new SampleCurationCallable(bioSamplesClient, sample, olsProcessor, 
-						curationApplicationService, pipelinesProperties.getCurationDomain());
+				Callable<Void> task = new SampleZoomaCallable(bioSamplesClient, sample, 
+						zoomaProcessor, curationApplicationService, pipelinesProperties.getCurationDomain());
 				
 				futures.put(sample.getAccession(), executorService.submit(task));
 			}
@@ -69,14 +69,14 @@ public class CurationApplicationRunner implements ApplicationRunner {
 			ThreadUtils.checkFutures(futures, 0);
 		} finally {
 			//now print a list of things that failed
-			if (SampleCurationCallable.failedQueue.size() > 0) {
+			if (SampleZoomaCallable.failedQueue.size() > 0) {
 				//put the first ones on the queue into a list
 				//limit the size of list to avoid overload
 				List<String> fails = new LinkedList<>();
-				while (fails.size() < 100 && SampleCurationCallable.failedQueue.peek() != null) {
-					fails.add(SampleCurationCallable.failedQueue.poll());
+				while (fails.size() < 100 && SampleZoomaCallable.failedQueue.peek() != null) {
+					fails.add(SampleZoomaCallable.failedQueue.poll());
 				}
-				log.info("Failed files ("+SampleCurationCallable.failedQueue.size()+") "+String.join(" , ", fails));
+				log.info("Failed files ("+SampleZoomaCallable.failedQueue.size()+") "+String.join(" , ", fails));
 			}
 		}
 	}
