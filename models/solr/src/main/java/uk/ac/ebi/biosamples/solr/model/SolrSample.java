@@ -224,47 +224,44 @@ public class SolrSample {
 		sample.outgoingRelationships = new HashMap<>();
 		sample.externalReferencesData = new HashMap<>();
 
-		SolrFieldService fieldService = new SolrFieldService();
-
 		if (attributeValues != null) {
 			for (String key : attributeValues.keySet()) {
 				//solr only allows alphanumeric field types
-				sample.attributeValues.put(fieldService.encodeFieldName(key), attributeValues.get(key));
+				sample.attributeValues.put(SolrFieldService.encodeFieldName(key), attributeValues.get(key));
 			}
 		}
 
 		if (attributeIris != null) {
 			for (String key : attributeIris.keySet()) {
 				//solr only allows alphanumeric field types
-				sample.attributeIris.put(fieldService.encodeFieldName(key), attributeIris.get(key));
+				sample.attributeIris.put(SolrFieldService.encodeFieldName(key), attributeIris.get(key));
 			}
 		}
 
 		if (attributeUnits != null) {
 			for (String key : attributeUnits.keySet()) {
 				//solr only allows alphanumeric field types
-				sample.attributeUnits.put(fieldService.encodeFieldName(key), attributeUnits.get(key));
+				sample.attributeUnits.put(SolrFieldService.encodeFieldName(key), attributeUnits.get(key));
 			}
 		}
 
 		if (outgoingRelationships != null) {
             for (String key : outgoingRelationships.keySet()) {
-                sample.outgoingRelationships.put(fieldService.encodeFieldName(key), outgoingRelationships.get(key));
+                sample.outgoingRelationships.put(SolrFieldService.encodeFieldName(key), outgoingRelationships.get(key));
             }
 		}
 
 		if (incomingRelationships != null) {
 		    for (String key: incomingRelationships.keySet()) {
-		        sample.incomingRelationships.put(fieldService.encodeFieldName(key), incomingRelationships.get(key));
+		        sample.incomingRelationships.put(SolrFieldService.encodeFieldName(key), incomingRelationships.get(key));
             }
 		}
 
 		if (externalReferencesData != null) {
 
 			for (String dataSource: externalReferencesData.keySet()) {
-				sample.externalReferencesData.put(fieldService.encodeFieldName(dataSource), externalReferencesData.get(dataSource));
+				sample.externalReferencesData.put(SolrFieldService.encodeFieldName(dataSource), externalReferencesData.get(dataSource));
 			}
-
 		}
 
 		//TODO validate maps
@@ -272,7 +269,7 @@ public class SolrSample {
 		if (attributeValues != null && attributeValues.keySet().size() > 0) {
 			List<String> attributeTypes = new ArrayList<>();
 			for (String attributeType : attributeValues.keySet()) {
-				String field = fieldService.encodeFieldName(attributeType) + "_av_ss";
+				String field = SolrFieldService.encodeFieldName(attributeType) + "_av_ss";
 				attributeTypes.add(field);
 			}
 			Collections.sort(attributeTypes);
@@ -282,7 +279,7 @@ public class SolrSample {
 		if (outgoingRelationships != null && outgoingRelationships.keySet().size() > 0) {
 			List<String> outgoingRelationshipTypes = new ArrayList<>();
 			for (String key: outgoingRelationships.keySet()) {
-                String field = fieldService.encodeFieldName(key) + "_or_ss";
+                String field = SolrFieldService.encodeFieldName(key) + "_or_ss";
 				outgoingRelationshipTypes.add(field);
 			}
 
@@ -293,7 +290,7 @@ public class SolrSample {
 		if (incomingRelationships != null && incomingRelationships.keySet().size() > 0) {
 			List<String> incomingRelationshipTypes = new ArrayList<>();
 			for (String key: incomingRelationships.keySet()) {
-                String field = fieldService.encodeFieldName(key) +"_ir_ss";
+                String field = SolrFieldService.encodeFieldName(key) +"_ir_ss";
 				incomingRelationshipTypes.add(field);
 			}
 
@@ -306,7 +303,7 @@ public class SolrSample {
 			List<String> externalReferencesDataSources = new ArrayList<>();
 
 			for (String dataSourceName: externalReferencesData.keySet()) {
-				String source = fieldService.encodeFieldName(dataSourceName) + "_erd_ss";
+				String source = SolrFieldService.encodeFieldName(dataSourceName) + "_erd_ss";
 				externalReferencesDataSources.add(source);
 			}
 
