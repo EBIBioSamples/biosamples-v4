@@ -146,11 +146,11 @@ public class XmlMigrationRunner implements ApplicationRunner, ExitCodeGenerator 
 			executorService = Executors.newFixedThreadPool(4);
 			Queue<String> oldQueue = new ArrayBlockingQueue<>(1024);
 			AtomicBoolean oldFinished = new AtomicBoolean(false);
-			XmlAccessFetcherCallable oldCallable = new XmlAccessFetcherCallable(restTemplate, oldUrl, oldQueue, oldFinished);
+			XmlAccessFetcherCallable oldCallable = new XmlAccessFetcherCallable(restTemplate, oldUrl, oldQueue, oldFinished, true);
 	
 			Queue<String> newQueue = new ArrayBlockingQueue<>(1024);
 			AtomicBoolean newFinished = new AtomicBoolean(false);
-			XmlAccessFetcherCallable newCallable = new XmlAccessFetcherCallable(restTemplate, newUrl, newQueue, newFinished);
+			XmlAccessFetcherCallable newCallable = new XmlAccessFetcherCallable(restTemplate, newUrl, newQueue, newFinished, false);
 	
 			Queue<String> bothQueue = new ArrayBlockingQueue<>(1024);
 			AtomicBoolean bothFinished = new AtomicBoolean(false);

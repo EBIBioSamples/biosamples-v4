@@ -35,13 +35,15 @@ public class XmlAccessFetcherCallable implements Callable<Void> {
 	private final String rootUrl;
 	private final Queue<String> accessionQueue;
 	private final AtomicBoolean finishFlag;
+	private final boolean old;
 	private final Logger log = LoggerFactory.getLogger(getClass());
 	
-	public XmlAccessFetcherCallable(RestTemplate restTemplate, String rootUrl, Queue<String> accessionQueue, AtomicBoolean finishFlag) {
+	public XmlAccessFetcherCallable(RestTemplate restTemplate, String rootUrl, Queue<String> accessionQueue, AtomicBoolean finishFlag, boolean old) {
 		this.restTemplate = restTemplate;
 		this.rootUrl = rootUrl;
 		this.accessionQueue = accessionQueue;
 		this.finishFlag = finishFlag;
+		this.old = old;
 	}
 	
 	@Override
@@ -56,7 +58,11 @@ public class XmlAccessFetcherCallable implements Callable<Void> {
 		try {
 			executorService = Executors.newFixedThreadPool(4);		
 			getPages("samples", pagesize, executorService, "");
-			getPages("groups", pagesize, executorService, "groups");			
+			if (old) {
+				getPages("groups", pagesize, executorService, "group");
+			} else {
+				getPages("groups", pagesize, executorService, "");
+			}
 		} finally {
 			executorService.shutdownNow();
 		}
