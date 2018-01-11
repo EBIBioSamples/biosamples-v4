@@ -11,7 +11,7 @@ while [ "$1" != "" ]; do
 done
 
 #mvn -T 2C -Dmaven.test.skip=true clean package
-mvn -T 2C -P embl-ebi clean package
+mvn -T 2C -P embl-ebi package
 
 #cleanup any previous data
 if [ $clean == 1 ]
@@ -42,8 +42,8 @@ sleep 30
 echo "checking webapps-core is up"
 ./http-status-check -u http://localhost:8081/biosamples/beta/health -t 300
 echo "checking webapps-sampletab is up"
-./http-status-check -u http://localhost:8082/biosamples/beta/sampletab/health -t 30
+./http-status-check -u http://localhost:8082/biosamples/beta/sampletab/health -t 60
 echo "checking webapps-legacyxml is up"
-./http-status-check -u http://localhost:8083/biosamples/beta/xml/health -t 30
+./http-status-check -u http://localhost:8083/biosamples/beta/xml/health -t 60
 echo "checking webapps-legacyjson is up"
-./http-status-check -u http://localhost:8084/biosamples/beta/api/health -t 30
+./http-status-check -u http://localhost:8084/biosamples/beta/api/health -t 60
