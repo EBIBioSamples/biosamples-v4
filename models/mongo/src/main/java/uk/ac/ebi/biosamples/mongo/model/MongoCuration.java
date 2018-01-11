@@ -68,6 +68,20 @@ public class MongoCuration implements Comparable<MongoCuration>{
     }
 
 	@Override
+    public boolean equals(Object o) {
+        if (o == this) return true;
+        if (!(o instanceof MongoCuration)) {
+            return false;
+        }
+        MongoCuration other = (MongoCuration) o;
+        return Objects.equals(this.hash, other.hash)
+        		&& Objects.equals(this.attributesPre, other.attributesPre)
+        		&& Objects.equals(this.attributesPost, other.attributesPost)
+        		&& Objects.equals(this.externalPre, other.externalPre)
+        		&& Objects.equals(this.externaPost, other.externaPost);
+    }
+
+	@Override
 	public int compareTo(MongoCuration other) {
 		if (other == null) {
 			return 1;
