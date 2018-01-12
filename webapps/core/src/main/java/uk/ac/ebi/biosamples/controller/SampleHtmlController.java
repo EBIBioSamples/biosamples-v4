@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
@@ -285,8 +286,9 @@ public class SampleHtmlController {
 			// did not exist, throw 404
 			//TODO do as an exception
 			log.info("Returning a 404 for " + request.getRequestURL());
-			response.setStatus(HttpStatus.NOT_FOUND.value());
-			return "error/404";
+//			response.setStatus(HttpStatus.NOT_FOUND.value());
+//			return "error/4xx";
+            throw new ResourceNotFoundException();
 		}
 
 		if (sample == null || !sample.isPresent()) {
