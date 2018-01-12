@@ -18,15 +18,31 @@ Note: this will download around 1GB of docker containers
 
 public interface at http://localhost:8081/biosamples/beta
 
-internal RabbitMQ interface at http://localhost:15672/
-internal Neo4J interface at http://localhost:7474/
-internal Solr interface at http://localhost:8983/
+An example of the JSON format that can be sent by POST to http://localhost:8081/biosamples/beta/samples is at https://github.com/EBIBioSamples/biosamples-v4/blob/master/models/core/src/test/resources/TEST1.json
 
-An example of the JSON format that can be sent by POST to http://localhost:8081/biosamples/beta/samples is https://github.com/EBIBioSamples/biosamples-v4/blob/master/models/core/src/test/resources/TEST1.json
+Client useage
+=============
 
+There is a spring client, and a spring-boot starter module, for use with BioSamples. To use these in a maven project, add the following to the appropriate sections:
 
+	<dependencies>		
+		<dependency>
+			<groupId>uk.ac.ebi.biosamples</groupId>
+			<artifactId>biosamples-spring-boot-starter</artifactId>
+			<version>4.0.0</version>
+		</dependency>
+	</dependencies>
 
-
+	
+    <repositories>
+	    <repository>
+	      <id>spotnexus</id>
+	      <url>https://www.ebi.ac.uk/spot/nexus/repository/maven-releases/</url>
+	    </repository>
+    </repositories>
+    
+This can then be configured by several spring application.properties including biosamples.client.uri to specify the base URI of the BioSamples instance to use.
+    
 
 Development getting started
 ===========================
@@ -49,9 +65,7 @@ At that point, you will have a local compiled version of all the biosamples tool
 To start a copy running on the local machine (e.g. to test any changes you have made) you can 
 use Docker and Docker-compose. https://docs.docker.com/compose/
 
-You can use `docker-compose up` to start all the services, or you can bring them up and down at 
-will individually. See docker-compose.yml file for more information on service names and dependencies.
-
+You can use `docker-compose up` to start all the services, or you can bring them up individually. See docker-compose.yml file for more information on service names and dependencies.
 
 By default, the pipelines will not be run. They can be manually triggered as follows:
 
@@ -64,7 +78,10 @@ Download the XML dump (~400Mb) to the current directory:
 
 Run the pipeline to send the data to the submission API via REST
 
-`java -jar pipelines/ncbi/target/pipelines-ncbi-4.0.0-SNAPSHOT.jar --ncbi`
+`docker-compose up biosamples-pipelines-ncbi`
+
+Note: You will need to mount the location that the XML dump was downloaded
+to within the docker container. A docker-compose.override.yml file is the easiest way to do that.
 
 
 Developing
