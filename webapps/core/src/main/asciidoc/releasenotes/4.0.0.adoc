@@ -2,12 +2,12 @@
 4.0.0
 -----
 
-Version 4.0.0 represents a re-architecture and re-engineering of the
+Version v4.0.0 represents a re-architecture and re-engineering of the
 BioSamples software stack. It is now based on the Java
 https://projects.spring.io/spring-boot[Spring-Boot] framework, utilising
 https://www.mongodb.com[MongoDB] for storage and
-https://lucene.apache.org/solr[Solr] for indexing and search. Version 4.0.0 
-follows modern web standards and conventions, while remaining
+https://lucene.apache.org/solr[Solr] for indexing and search. It tries
+to follow up-to-date web standards and conventions, while remaining
 backwards compatible. This will also give us a strong and stable
 foundation to build more features and improvements from, more reliably
 and more rapidly.
@@ -27,8 +27,7 @@ information, including the ability for 3rd party (re-)curation of
 samples. Please contact us if you would be interested in more
 information and/or to supply curation information.
 * Improved handling of non-alphanumeric characters in attribute types
-e.g. "geographic location (country and/or sea)". Previous versions 
-stripped these characters e.g. "geographic location country and or sea". 
+e.g. "geographic location (country and/or sea)"
 * Improved faceting allowing selection of multiple values within same
 facet, fixed re-use and re-distribution of search URLs. This will be
 expanded in future with additional facet types where appropriate.
@@ -53,7 +52,7 @@ Data content
 * Ontology terms Numeric tax IDs (e.g. 9606) and short ontology terms
 (e.g. PATO:0000384) are being replaced with full IRIs (e.g.
 http://purl.obolibrary.org/obo/NCBITaxon_9606 and http://purl.obolibrary.org/obo/PATO_0000384 )
-in many places and eventually everywhere.
+in many places, eventually everywhere.
 * Groups will continue to exist for backwards compatibility purposes.
 However, we are investigating future development to reduce or remove
 many of these in favour of alternatives such as filtering samples by
@@ -72,7 +71,7 @@ as the engine of application state (HATEOS) API] and therefore we
 recommend users do not use specific URLs but rather follow relationships
 between API endpoints, much like a user would use links between HTML
 pages. It is similar to the `/biosamples/api` JSON format, with a few
-critical differences to improve on various issues users have raised:
+critical differences:
 
 * added __release__ in full ISO 8601 format including time. The
 backwards-compatible __releaseDate__ exists but should be considered
@@ -101,13 +100,10 @@ XML `/biosamples/xml`
 ~~~~~~~~~~~~~~~~~~~~~
 
 We are maintaining this for backwards compatibility. Later in 2018 we
-will be consulting about future development of this API, with a view to
-removing it. This is in the context of the improved JSON `/biosamples` API 
-using content negotiation and several long-standing issues with limitations arising
-from the XML schema in use. We strongly recommend users switch to the 
-new JSON `/biosamples` API but nevertheless will be maintaining 
-`/biosamples/xml` for backwards compatibility, although please note the 
-following differences:
+will be consulting about future development of this API, particularly in
+the context of the improved JSON `/biosamples` API using content
+negotiation and several long-standing issues with limitations arising
+from the XML schema in use.
 
 * XML element *TermSourceREF* element *Name* and element *URI* are
 removed.
