@@ -76,8 +76,8 @@ public class ToFileRunner implements ApplicationRunner {
 		ExecutorService accessionExecutorService = null;
 		
 		try {
-			pageExecutorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, 1, 32);		
-			accessionExecutorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, 1, 32);
+			pageExecutorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, 1, 1);		
+			accessionExecutorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, 1, 4);
 			try (
 					FileWriter fileXmlWriter = new FileWriter(new File(outputXmlFilename));
 					FileWriter fileJsonWriter = new FileWriter(new File(outputJsonFilename));
