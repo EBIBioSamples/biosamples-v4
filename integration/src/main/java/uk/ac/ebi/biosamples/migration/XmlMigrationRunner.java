@@ -76,19 +76,7 @@ public class XmlMigrationRunner implements ApplicationRunner, ExitCodeGenerator 
 	@Override
 	public void run(ApplicationArguments args) throws Exception {
 		log.info("Starting MigrationRunner");
-		
-		//String oldUrl = "http://www.ebi.ac.uk/biosamples/xml/samples";
-		//String newUrl = "http://localhost:8083/biosamples/beta/xml/samples";
-
-		//String oldUrl = "http://beans.ebi.ac.uk:9480/biosamples/xml/samples";
-		//String newUrl = "http://scooby.ebi.ac.uk:8083/biosamples/beta/xml/samples";
-		
-		//String newUrl = "http://wwwdev.ebi.ac.uk/biosamples/beta/xml/samples";
-		//String newUrl = "http://snowy.ebi.ac.uk:9083/biosamples/beta/xml/samples";
-		
-		
-
-		
+			
 		//use a keep alive strategy to try to make it easier to maintain connections for reuse
 		ConnectionKeepAliveStrategy keepAliveStrategy = new ConnectionKeepAliveStrategy() {
 		    public long getKeepAliveDuration(HttpResponse response, HttpContext context) {
