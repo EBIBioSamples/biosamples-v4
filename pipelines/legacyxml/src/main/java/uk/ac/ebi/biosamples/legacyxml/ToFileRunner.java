@@ -301,7 +301,7 @@ public class ToFileRunner implements ApplicationRunner {
 					String xmlString = response.getBody();
 					long endTime = System.nanoTime();
 					long interval = (endTime-startTime)/1000000l;
-					log.info("Got "+xmlUri+" in "+interval+"ms");
+					log.trace("Got "+xmlUri+" in "+interval+"ms");
 
 					//strip the first two lines
 					xmlString = xmlString.substring(xmlString.indexOf('\n')+1);
@@ -309,18 +309,23 @@ public class ToFileRunner implements ApplicationRunner {
 
 					startTime = System.nanoTime();
 					request = RequestEntity.get(jsonUri).accept(MediaTypes.HAL_JSON).build();
+					response = null;
 					try {
 						response = restTemplate.exchange(request, String.class);
 					} catch (RestClientException e ) {
 						log.error("Problem accession " + jsonUri, e);
-						throw e;
+						response = null;
 					}
-
-					String jsonString = response.getBody();
 				 	endTime = System.nanoTime();
 					interval = (endTime-startTime)/1000000l;
-					log.info("Got "+jsonUri+" in "+interval+"ms");
+					log.trace("Got "+jsonUri+" in "+interval+"ms");
 
+
+					String jsonString = null;
+					if (response != null) {
+						jsonString = response.getBody();
+					}
+					
 					return new LegacyApiContent(xmlString, jsonString);
 				}
 			};
@@ -398,11 +403,15 @@ public class ToFileRunner implements ApplicationRunner {
 		@Override
 		public void call(LegacyApiContent legacyApiContent) {
 			try {
-				xmlFileWriter.write(legacyApiContent.xmlContent);
-				xmlFileWriter.write("\n");
+				if (legacyApiContent.xmlContent != null) {
+					xmlFileWriter.write(legacyApiContent.xmlContent);
+					xmlFileWriter.write("\n");
+				}
 
-				jsonFileWriter.write(legacyApiContent.jsonContent);
-				jsonFileWriter.write(",\n");
+				if (legacyApiContent.jsonContent != null) {
+					jsonFileWriter.write(legacyApiContent.jsonContent);
+					jsonFileWriter.write(",\n");
+				}
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
