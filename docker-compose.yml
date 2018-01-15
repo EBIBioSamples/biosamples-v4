@@ -203,7 +203,6 @@ services:
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples/beta
     - LOGGING_FILE=/logs/pipelines-ncbi.log
-    - SPRING_CACHE_GUAVA_SPEC=maximumSize=500,expireAfterAccess=60s,recordStats=true
     
   biosamples-pipelines-accession:
     image: biosamples:latest
