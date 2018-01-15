@@ -29,8 +29,8 @@ services:
     - spring.jackson.serialization.WRITE_NULL_MAP_VALUES=false
     - spring.jackson.serialization.indent_output=true
     #Configure root path to server from
-    - server.servlet.context-path=/biosamples/beta
-    - server.context-path=/biosamples/beta
+    - server.servlet.context-path=/biosamples
+    - server.context-path=/biosamples
     #Enable use behind a proxy with original urls
     - server.use-forward-headers=true
     #Improve logging
@@ -38,7 +38,7 @@ services:
     - server.tomcat.accesslog.enabled=true
     - server.tomcat.accesslog.directory=/logs
     - server.tomcat.accesslog.prefix=webapps-core.access
-    - server.tomcat.accesslog.pattern=%h %l %u %t "%r" %s %b (%D ms)
+    - server.tomcat.accesslog.pattern=%h %l %u %t \"%r\" %s %b %D %{Content-Type}o
     #Enable gzip compression of responses
     - server.compression.enabled=true
     - server.compression.mime-types=application/json,application/hal+json,application/xml,text/html,application/javascript,text/css
@@ -66,15 +66,15 @@ services:
     - -jar
     - webapps-sampletab-4.0.0-SNAPSHOT.war
     environment:
-    - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples/beta
-    - SERVER_SERVLET_CONTEXT-PATH=/biosamples/beta/sampletab
-    - SERVER_CONTEXT-PATH=/biosamples/beta/sampletab
+    - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
+    - SERVER_SERVLET_CONTEXT-PATH=/biosamples/sampletab
+    - SERVER_CONTEXT-PATH=/biosamples/sampletab
     - MANAGEMENT_SECURITY_ENABLED=false
     - LOGGING_FILE=/logs/webapps-sampletab.log
     - SERVER_TOMCAT_ACCESSLOG_ENABLED=true
     - SERVER_TOMCAT_ACCESSLOG_DIRECTORY=/logs
     - SERVER_TOMCAT_ACCESSLOG_PREFIX=webapps-sampletab.access
-    - SERVER_TOMCAT_ACCESSLOG_PATTERN=%h %l %u %t "%r" %s %b (%D ms)
+    - server.tomcat.accesslog.pattern=%h %l %u %t \"%r\" %s %b %D %{Content-Type}o
     # Charset of HTTP requests and responses. Added to the "Content-Type" header if not set explicitly.
     - SPRING_HTTP_ENCODING_CHARSET=UTF-8
     # Enable http encoding support.
@@ -106,15 +106,15 @@ services:
     - -jar
     - webapps-legacyxml-4.0.0-SNAPSHOT.war
     environment:
-    - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples/beta
-    - SERVER_SERVLET_CONTEXT-PATH=/biosamples/beta/xml
-    - SERVER_CONTEXT-PATH=/biosamples/beta/xml
+    - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
+    - SERVER_SERVLET_CONTEXT-PATH=/biosamples/xml
+    - SERVER_CONTEXT-PATH=/biosamples/xml
     - SPRING_JACKSON_SERIALIZATION_INDENT_OUTPUT=true
     - LOGGING_FILE=/logs/webapps-legacyxml.log
     - SERVER_TOMCAT_ACCESSLOG_ENABLED=true
     - SERVER_TOMCAT_ACCESSLOG_DIRECTORY=/logs
     - SERVER_TOMCAT_ACCESSLOG_PREFIX=webapps-legacyxml.access
-    - SERVER_TOMCAT_ACCESSLOG_PATTERN=%h %l %u %t "%r" %s %b (%D ms)
+    - server.tomcat.accesslog.pattern=%h %l %u %t \"%r\" %s %b %D %{Content-Type}o
     - ENDPOINTS_SHUTDOWN_ENABLED=true
     - ENDPOINTS_SHUTDOWN_SENSITIVE=false
     # Provide AAP infos
@@ -134,15 +134,15 @@ services:
       - -jar
       - webapps-legacyjson-4.0.0-SNAPSHOT.war
     environment:
-      - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples/beta
-      - SERVER_SERVLET_CONTEXT-PATH=/biosamples/beta/api
-      - SERVER_CONTEXT-PATH=/biosamples/beta/api
+      - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
+      - SERVER_SERVLET_CONTEXT-PATH=/biosamples/api
+      - SERVER_CONTEXT-PATH=/biosamples/api
       - SPRING_JACKSON_SERIALIZATION_INDENT_OUTPUT=true
       - LOGGING_FILE=/logs/webapps-legacyjson.log
       - SERVER_TOMCAT_ACCESSLOG_ENABLED=true
       - SERVER_TOMCAT_ACCESSLOG_DIRECTORY=/logs
       - SERVER_TOMCAT_ACCESSLOG_PREFIX=webapps-legacyjson.access
-      - SERVER_TOMCAT_ACCESSLOG_PATTERN=%h %l %u %t "%r" %s %b (%D ms)
+      - server.tomcat.accesslog.pattern=%h %l %u %t \"%r\" %s %b %D %{Content-Type}o
       - ENDPOINTS_SHUTDOWN_ENABLED=true
       - ENDPOINTS_SHUTDOWN_SENSITIVE=false
       # Provide AAP infos
@@ -187,7 +187,7 @@ services:
     - -jar
     - pipelines-ena-4.0.0-SNAPSHOT.jar
     environment:
-    - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples/beta
+    - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-ena.log
     
   biosamples-pipelines-ncbi:
@@ -201,7 +201,7 @@ services:
     - -jar
     - pipelines-ncbi-4.0.0-SNAPSHOT.jar
     environment:
-    - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples/beta
+    - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-ncbi.log
     
   biosamples-pipelines-accession:
@@ -215,7 +215,7 @@ services:
     - -jar
     - pipelines-accession-4.0.0-SNAPSHOT.jar
     environment:
-    - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples/beta
+    - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-accession.log      
     
   biosamples-pipelines-sampletab:
@@ -229,7 +229,7 @@ services:
     - -jar
     - pipelines-sampletab-4.0.0-SNAPSHOT.jar
     environment:
-    - BIOSAMPLES_SAMPLETAB_URI=http://biosamples-webapps-sampletab:8080/biosamples/beta/sampletab/v4
+    - BIOSAMPLES_SAMPLETAB_URI=http://biosamples-webapps-sampletab:8080/biosamples/sampletab/v4
     - LOGGING_FILE=/logs/pipelines-sampletab.log  
     
   biosamples-pipelines-curation:
@@ -243,7 +243,7 @@ services:
     - -jar
     - pipelines-curation-4.0.0-SNAPSHOT.jar
     environment:
-    - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples/beta
+    - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-curation.log
     - spring.cache.cache-names=ols_short
     - spring.cache.caffeine.spec=maximumSize=50000
@@ -259,7 +259,7 @@ services:
     - -jar
     - pipelines-zooma-4.0.0-SNAPSHOT.jar
     environment:
-    - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples/beta
+    - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-zooma.log
     - spring.cache.cache-names=zooma,ols_short
     - spring.cache.caffeine.spec=maximumSize=50000
@@ -278,12 +278,12 @@ services:
     - -jar
     - integration-4.0.0-SNAPSHOT.jar
     environment:
-    - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples/beta
-    - BIOSAMPLES_SUBMISSIONURI=http://biosamples-webapps-sampletab:8080/biosamples/beta/sampletab
-    - BIOSAMPLES_SUBMISSIONURI_SAMPLETAB=http://biosamples-webapps-sampletab:8080/biosamples/beta/sampletab
-    - BIOSAMPLES_LEGACYXML=http://biosamples-webapps-legacyxml:8080/biosamples/beta/xml
-    - BIOSAMPLES_LEGACYXML_URI=http://biosamples-webapps-legacyxml:8080/biosamples/beta/xml
-    - BIOSAMPLES_LEGACYJSON_URI=http://biosamples-webapps-legacyjson:8080/biosamples/beta/api
+    - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
+    - BIOSAMPLES_SUBMISSIONURI=http://biosamples-webapps-sampletab:8080/biosamples/sampletab
+    - BIOSAMPLES_SUBMISSIONURI_SAMPLETAB=http://biosamples-webapps-sampletab:8080/biosamples/sampletab
+    - BIOSAMPLES_LEGACYXML=http://biosamples-webapps-legacyxml:8080/biosamples/xml
+    - BIOSAMPLES_LEGACYXML_URI=http://biosamples-webapps-legacyxml:8080/biosamples/xml
+    - BIOSAMPLES_LEGACYJSON_URI=http://biosamples-webapps-legacyjson:8080/biosamples/api
     - LOGGING_FILE=/logs/integration.log
     # Provide AAP infos
     #- BIOSAMPLES_CLIENT_AAP_USERNAME=override_in_docker-compose.override.yml
