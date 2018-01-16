@@ -145,10 +145,11 @@ Acknowledgements
 ~~~~~~~~~~~~~~~~
 
 This release has been made possible with the support of our funders:
-EMBL-EBI Core Funds
-EC -ELIXIR-EXCELERATE 
-WT- HIPSCI
-IMI - EBiSC
-ELIXIR – Meta Data Implementation Study 
-WT-GA4GH
+
+* EMBL-EBI Core Funds
+* EC -ELIXIR-EXCELERATE 
+* WT- HIPSCI
+* IMI - EBiSC
+* ELIXIR – Meta Data Implementation Study 
+* WT-GA4GH
 
