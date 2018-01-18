@@ -9,6 +9,7 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
+import org.springframework.http.MediaTypeEditor;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -49,9 +50,16 @@ public class SampleTabXmlSampleIntegration extends AbstractIntegration {
 			log.info("POSTing to " + uri);
 			RequestEntity<String> request = RequestEntity.post(uri)
 					.contentType(MediaType.APPLICATION_XML)
-					.accept(MediaType.TEXT_PLAIN)					
+					.accept(MediaType.TEXT_PLAIN)
+					//.header("Accept","text/plain;q=0.9, */*;q=0.1")
 					.body(sampleTabString);
-			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+			ResponseEntity<String> response = null;
+			try {
+				response = restTemplate.exchange(request, String.class);
+			} catch (HttpStatusCodeException e) {
+				log.info("error response = "+response);
+				throw e;
+			}
 			// TODO check at the right URLs with GET to make sure all
 			// arrived
 		});

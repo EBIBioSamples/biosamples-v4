@@ -32,6 +32,7 @@
 			<Value>test_value</Value>
 		</QualifiedValue>
 	</Property>
+    <derivedFrom>SAMEA654195</derivedFrom>
 	<Database>
 		<Name>other</Name>
 		<URI>www.google.com</URI>

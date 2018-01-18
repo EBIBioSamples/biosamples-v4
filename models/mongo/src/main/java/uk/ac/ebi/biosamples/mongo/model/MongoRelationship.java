@@ -8,6 +8,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
 
 @Document
@@ -69,16 +70,22 @@ public class MongoRelationship implements Comparable<MongoRelationship> {
 			return 1;
 		}
 		
-		if (!this.type.equals(other.type)) {
+		if (!Objects.equals(this.type, other.type)) {
 			return this.type.compareTo(other.type);
 		}
 
-		if (!this.target.equals(other.target)) {
+		if (!Objects.equals(this.target, other.target)) {
 			return this.target.compareTo(other.target);
 		}
 
-		if (!this.source.equals(other.source)) {
-			return this.source.compareTo(other.source);
+		if (!Objects.equals(this.source, other.source)) {
+			if (this.source == null && other.source != null) {
+				return 1;
+			} else if (this.source != null && other.source == null) {
+				return -1;
+			} else {
+				return this.source.compareTo(other.source);
+			}
 		}
 		return 0;
 	}
@@ -102,14 +109,15 @@ public class MongoRelationship implements Comparable<MongoRelationship> {
     		@JsonProperty("target") String target) {
     	if (type == null || type.trim().length() == 0) throw new IllegalArgumentException("type cannot be empty");
     	if (target == null || target.trim().length() == 0) throw new IllegalArgumentException("target cannot be empty");
-    	if (source == null || source.trim().length() == 0) throw new IllegalArgumentException("source cannot be empty");
 
-    	String hash = Hashing.sha256().newHasher()
-			.putUnencodedChars(type)
-			.putUnencodedChars(target)
-			.putUnencodedChars(source)
-			.hash().toString();
+    	Hasher hasher = Hashing.sha256().newHasher();
+    	hasher.putUnencodedChars(type);
+    	hasher.putUnencodedChars(target);
+    	if (source != null) {
+    		hasher.putUnencodedChars(source);
+    	}
     	
+    	String hash = hasher.hash().toString();     	
     	
     	MongoRelationship rel = new MongoRelationship(type, target, source, hash);
     	return rel;

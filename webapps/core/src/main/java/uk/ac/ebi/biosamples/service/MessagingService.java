@@ -37,7 +37,7 @@ public class MessagingService {
 		
 		//for each sample we have a relationship to, update it to index this sample as an inverse relationship	
 		for (Relationship relationship : sample.getRelationships()) {
-			if (relationship.getSource().equals(sample.getAccession())) {
+			if (relationship.getSource() != null && relationship.getSource().equals(sample.getAccession())) {
 				Optional<Sample> target = sampleService.fetch(relationship.getTarget());
 				if (target.isPresent()) {
 					amqpTemplate.convertAndSend(Messaging.exchangeForIndexingSolr, "", 

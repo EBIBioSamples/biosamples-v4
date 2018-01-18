@@ -53,17 +53,22 @@ public class Relationship implements Comparable<Relationship> {
 		if (other == null) {
 			return 1;
 		}
-		
-		if (!this.type.equals(other.type)) {
+		if (!Objects.equals(this.type, other.type)) {
 			return this.type.compareTo(other.type);
 		}
 
-		if (!this.target.equals(other.target)) {
+		if (!Objects.equals(this.target, other.target)) {
 			return this.target.compareTo(other.target);
 		}
 
-		if (!this.source.equals(other.source)) {
-			return this.source.compareTo(other.source);
+		if (!Objects.equals(this.source, other.source)) {
+			if (this.source == null && other.source != null) {
+				return 1;
+			} else if (this.source != null && other.source == null) {
+				return -1;
+			} else {
+				return this.source.compareTo(other.source);
+			}
 		}
 		return 0;
 	}
@@ -87,15 +92,14 @@ public class Relationship implements Comparable<Relationship> {
     		@JsonProperty("target") String target) {
     	if (type == null || type.trim().length() == 0) throw new IllegalArgumentException("type cannot be empty");
     	if (target == null || target.trim().length() == 0) throw new IllegalArgumentException("target cannot be empty");
-    	if (source == null || source.trim().length() == 0) throw new IllegalArgumentException("source cannot be empty");
     	Relationship rel = new Relationship(type, target, source);
     	return rel;
     }
 
     public static class Builder {
-		private String source;
-		private String target;
-		private String type;
+		private String source = null;
+		private String target = null;
+		private String type = null;
 
 		public Builder() {}
 
@@ -115,9 +119,6 @@ public class Relationship implements Comparable<Relationship> {
 		}
 
 		public Relationship build() {
-			if (type == null || type.trim().length() == 0) throw new IllegalArgumentException("type cannot be empty");
-			if (target == null || target.trim().length() == 0) throw new IllegalArgumentException("target cannot be empty");
-			if (source == null || source.trim().length() == 0) throw new IllegalArgumentException("source cannot be empty");
 			return Relationship.build(source, type, target);
 		}
 
