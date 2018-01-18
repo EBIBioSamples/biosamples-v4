@@ -106,13 +106,13 @@ public class SampleCurationCallable implements Callable<Void> {
 			if (attribute.getType().toLowerCase().equals("organism") && attribute.getIri().size()==1) {
 				Integer taxId = null;
 				try {
-				taxId = Integer.parseInt(attribute.getIri().first());
+					taxId = Integer.parseInt(attribute.getIri().first());
 				} catch (NumberFormatException e) {
 					taxId = null;
 				}
 				if (taxId != null) {
 					SortedSet<String> iris = new TreeSet<>();
-					iris.add("http://purl.obolibrary.org/obo/NCBITaxon_+taxId");
+					iris.add("http://purl.obolibrary.org/obo/NCBITaxon_"+taxId);
 					//TODO check this IRI exists via OLS
 					
 					Attribute newAttribute = Attribute.build(attribute.getType(), attribute.getValue(),
@@ -121,6 +121,7 @@ public class SampleCurationCallable implements Callable<Void> {
 					bioSamplesClient.persistCuration(sample.getAccession(),
 							curation, domain);
 					sample = curationApplicationService.applyCurationToSample(sample, curation);
+					return sample;
 				}
 			}
 		}
