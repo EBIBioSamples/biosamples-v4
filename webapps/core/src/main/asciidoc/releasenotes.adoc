@@ -2,4 +2,5 @@
 
 This pages contains links to release notes for BioSamples for version 4.0.0 and higher. This release represents a comprehensive overhaul and therefore previous release notes are no longer applicable.
 
-* link:releasenotes/4.0.0[4.0.0]
+* link:releasenotes_4.0.0[4.0.0]
+* link:releasenotes_4.0.1[4.0.1]

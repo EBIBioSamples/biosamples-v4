@@ -1,4 +1,16 @@
 [[section]]
+4.0.1
+-----
+
+This is a bugfix release that addresses the following issues:
+
+* Fix submission of new unaccessioned samples with relationships by inserting an assigned accession into the source of any relationships that are missing it. 
+* Fix curation pipeline of numeric organism iri to "http://purl.obolibrary.org/obo/NCBITaxon_+taxId" when it should be "http://purl.obolibrary.org/obo/NCBITaxon_"+taxId e.g. http://purl.obolibrary.org/obo/NCBITaxon_9606
+* Allow CORS requests for legacy XML APIs.
+* Updated homepage project sample links to use a filter search rather than a text search.
+ 
+
+[[section]]
 4.0.0
 -----
 
