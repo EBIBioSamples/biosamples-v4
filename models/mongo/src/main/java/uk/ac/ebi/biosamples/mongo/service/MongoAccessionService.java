@@ -86,14 +86,14 @@ public class MongoAccessionService {
 			//this relationship could not specify a source because the sample is unaccessioned
 			//now we are assigning an accession, set the source to the accession
 			if (relationship.getSource() == null || relationship.getSource().trim().length() == 0) {
-				relationship = MongoRelationship.build(accession, relationship.getType(), relationship.getTarget());
+				newRelationships.add(MongoRelationship.build(accession, relationship.getType(), relationship.getTarget()));
 			} else {
 				newRelationships.add(relationship);
 			}
 		}
 		sample = MongoSample.build(sample.getName(), accession, sample.getDomain(),
 				sample.getRelease(), sample.getUpdate(), 
-				sample.getAttributes(), relationships, sample.getExternalReferences(), 
+				sample.getAttributes(), newRelationships, sample.getExternalReferences(), 
 				sample.getOrganizations(), sample.getContacts(), sample.getPublications());
 		return sample;
 	}
