@@ -19,6 +19,7 @@ import org.springframework.hateoas.core.EmbeddedWrapper;
 import org.springframework.hateoas.core.EmbeddedWrappers;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -60,6 +61,7 @@ public class GroupsRelationsController {
         this.pagedResourcesConverter = pagedResourcesConverter;
     }
 
+	@CrossOrigin
     @GetMapping
     public PagedResources<Resource<GroupsRelations>> allGroupsRelations(
             @RequestParam(value="page", required = false, defaultValue = "0") Integer page,
@@ -73,6 +75,7 @@ public class GroupsRelationsController {
 
     }
 
+	@CrossOrigin
     @GetMapping("/search")
     public Resources search() {
 
@@ -83,11 +86,13 @@ public class GroupsRelationsController {
 
     }
 
+	@CrossOrigin
     @GetMapping("/search/findOneByAccession")
     public ResponseEntity<Resource<GroupsRelations>> findOneByAccession(@RequestParam(value = "accession") String accession) {
         return this.getGroupsRelationsByAccession(accession);
     }
 
+	@CrossOrigin
     @GetMapping("/{accession:SAMEG\\d+}")
     public ResponseEntity<Resource<GroupsRelations>> getGroupsRelationsByAccession(@PathVariable String accession) {
         Optional<Sample> sample = sampleRepository.findByAccession(accession);
@@ -98,6 +103,7 @@ public class GroupsRelationsController {
     }
 
 
+	@CrossOrigin
     @GetMapping("/{accession:SAMEG\\d+}/samples")
     public ResponseEntity<Resources<SamplesRelations>> getGroupSamplesRelations(@PathVariable String accession) {
         Optional<Sample> group = sampleRepository.findByAccession(accession);
@@ -119,6 +125,7 @@ public class GroupsRelationsController {
         return ResponseEntity.ok(responseBody);
     }
 
+	@CrossOrigin
     @GetMapping("/{accession:SAMEG\\d+}/externalLinks")
     public ResponseEntity<Resources<ExternalLinksRelation>> getGroupExternalLinks(@PathVariable String accession) {
         Optional<Sample> group = sampleRepository.findByAccession(accession);

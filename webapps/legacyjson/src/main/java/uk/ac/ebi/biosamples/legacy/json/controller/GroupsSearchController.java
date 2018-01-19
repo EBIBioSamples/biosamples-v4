@@ -11,6 +11,7 @@ import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.Resources;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -42,6 +43,7 @@ public class GroupsSearchController {
     }
 
 
+	@CrossOrigin
     @GetMapping
     public Resources searchMethods() {
         Resources resources = Resources.wrap(Collections.emptyList());
@@ -52,6 +54,7 @@ public class GroupsSearchController {
         return resources;
     }
 
+	@CrossOrigin
     @GetMapping("/findByKeywords")
     public PagedResources<Resource<LegacyGroup>> findByKeywords(
             @RequestParam(value="keyword") String keyword,
@@ -63,6 +66,7 @@ public class GroupsSearchController {
         return pagedResourcesConverter.toLegacyGroupsPagedResource(groupsByText);
     }
 
+	@CrossOrigin
     @GetMapping("/findByAccession")
     public PagedResources<Resource<LegacyGroup>> findByAccession(
             @RequestParam(value="accession") String accession,

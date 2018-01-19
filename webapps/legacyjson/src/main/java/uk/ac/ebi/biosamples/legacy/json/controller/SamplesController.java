@@ -12,6 +12,7 @@ import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -43,6 +44,7 @@ public class SamplesController {
         this.sampleResourceAssembler = sampleResourceAssembler;
     }
 
+	@CrossOrigin
     @GetMapping(value = "/{accession:SAM[END]A?\\d+}")
     public ResponseEntity<Resource<LegacySample>> sampleByAccession(@PathVariable String accession) {
 
@@ -56,6 +58,7 @@ public class SamplesController {
 
     }
 
+	@CrossOrigin
     @GetMapping
     public PagedResources<Resource<LegacySample>> allSamples(
             @RequestParam(value = "page", required = false, defaultValue = "0") Integer page,

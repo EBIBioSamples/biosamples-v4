@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -49,6 +50,7 @@ public class LegacyXmlSampleController {
 		this.sampleToXmlConverter = sampleToXmlConverter;
 	}
 
+	@CrossOrigin
 	@GetMapping(value="/samples/{accession:SAM(?:N|D|EA|E)[0-9]+}", produces={MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE})
 	public Sample getSample(@PathVariable String accession) throws IOException {
 		Optional<Resource<Sample>> sample = client.fetchSampleResource(accession);
@@ -62,6 +64,7 @@ public class LegacyXmlSampleController {
 		}
 	}
 
+	@CrossOrigin
 	@GetMapping(value = {"/samples"}, produces={MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE})
 	public ResultQuery getSamples(
 			@RequestParam(name="query", defaultValue = "*") String query,

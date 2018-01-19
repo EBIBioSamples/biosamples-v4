@@ -25,6 +25,7 @@ import org.springframework.hateoas.core.EmbeddedWrapper;
 import org.springframework.hateoas.core.EmbeddedWrappers;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -70,6 +71,7 @@ public class SamplesRelationsController {
         this.pagedResourcesAssembler = pagedResourcesAssembler;
     }
 
+	@CrossOrigin
     @GetMapping("/{accession:SAM[END]A?\\d+}")
     public ResponseEntity<Resource<SamplesRelations>> relationsOfSample(@PathVariable String accession) {
         Optional<Sample> sample = sampleRepository.findByAccession(accession);
@@ -80,6 +82,7 @@ public class SamplesRelationsController {
         return ResponseEntity.ok(sampleRelationsResourceAssembler.toResource(new SamplesRelations(sample.get())));
     }
 
+	@CrossOrigin
     @GetMapping("/{accession:SAM[END]A?\\d+}/groups")
     public ResponseEntity<Resources<GroupsRelations>> getSamplesGroupRelations(@PathVariable String accession) {
 
@@ -93,6 +96,7 @@ public class SamplesRelationsController {
         return ResponseEntity.ok(responseBody);
     }
 
+	@CrossOrigin
     @GetMapping("/{accession:SAM[END]A?\\d+}/{relationType}")
     public ResponseEntity<Resources> getSamplesRelations(
             @PathVariable String accession,
@@ -113,6 +117,7 @@ public class SamplesRelationsController {
 
     }
 
+	@CrossOrigin
     @GetMapping("/{accession:SAM[END]A?\\d+}/externalLinks")
     public ResponseEntity<Resources> getSamplesExternalLinks(
             @PathVariable String accession) {
@@ -151,6 +156,7 @@ public class SamplesRelationsController {
         return Collections.singletonList(wrapper);
     }
 
+	@CrossOrigin
     @GetMapping
     public PagedResources<Resource<SamplesRelations>> allSamplesRelations(
             @RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
@@ -175,6 +181,7 @@ public class SamplesRelationsController {
 
     }
 
+	@CrossOrigin
     @GetMapping("/search")
     public Resources searchMethods() {
         Resources resources = Resources.wrap(Collections.emptyList());
@@ -184,6 +191,7 @@ public class SamplesRelationsController {
         return resources;
     }
 
+	@CrossOrigin
     @GetMapping("/search/findOneByAccession") // Replicate v3 way of working
     public ResponseEntity<Resource<SamplesRelations>> findByAccession(@RequestParam(required = false, defaultValue = "") String accession) {
         if (accession == null || accession.isEmpty()) {

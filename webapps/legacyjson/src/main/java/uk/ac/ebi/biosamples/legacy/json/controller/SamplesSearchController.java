@@ -13,6 +13,7 @@ import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.Resources;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -43,6 +44,7 @@ public class SamplesSearchController {
     }
 
 
+	@CrossOrigin
     @GetMapping
     public Resources searchMethods() {
         Resources resources = Resources.wrap(Collections.emptyList());
@@ -57,6 +59,7 @@ public class SamplesSearchController {
         return resources;
     }
 
+	@CrossOrigin
     @GetMapping("/findFirstByGroupsContains")
     public ResponseEntity<Resource<LegacySample>> findFirstSampleContainedInAGroup(
             @RequestParam(value="group", required=false, defaultValue = "") String group) {
@@ -69,6 +72,7 @@ public class SamplesSearchController {
         return ResponseEntity.ok(sampleResourceAssembler.toResource(new LegacySample(optionalSampleResource.get().getContent())));
     }
 
+	@CrossOrigin
     @GetMapping("/findByGroups")
     public PagedResources<Resource<LegacySample>> findByGroups(
             @RequestParam(value="group", required=false, defaultValue = "") String groupAccession,
@@ -80,6 +84,7 @@ public class SamplesSearchController {
         return pagedResourcesConverter.toLegacySamplesPagedResource(samplePagedResources);
     }
 
+	@CrossOrigin
     @GetMapping("/findByAccession")
     public PagedResources findByAccession(
             @RequestParam(value="accession", required=false, defaultValue = "") String accession,
@@ -92,6 +97,7 @@ public class SamplesSearchController {
     }
 
 
+	@CrossOrigin
     @GetMapping("/findByText")
     public PagedResources<Resource<LegacySample>> findByText(
             @RequestParam(value="text", required=false, defaultValue = "*:*") String text,
@@ -103,6 +109,8 @@ public class SamplesSearchController {
         return pagedResourcesConverter.toLegacySamplesPagedResource(samplesPagedResourcesByText);
 
     }
+	
+	@CrossOrigin
     @GetMapping("/findByTextAndGroups")
     public PagedResources<Resource<LegacySample>> findByTextAndGroups(
             @RequestParam(value="text", required=false, defaultValue = "") String text,
@@ -119,6 +127,7 @@ public class SamplesSearchController {
         return pagedResourcesConverter.toLegacySamplesPagedResource(samples);
     }
 
+	@CrossOrigin
     @GetMapping("/findByAccessionAndGroups")
     public PagedResources<Resource<LegacySample>> findByAccessionAndGroups(
             @RequestParam(value="accession", required=false, defaultValue = "") String accession,

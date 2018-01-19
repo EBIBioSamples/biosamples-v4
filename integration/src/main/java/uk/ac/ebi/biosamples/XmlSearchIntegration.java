@@ -225,6 +225,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
             RequestEntity<?> request = RequestEntity
                     .get(uriBuilder.build().toUri())
                     .accept(MediaType.TEXT_XML)
+                    .header("origin", "foo.com")
                     .build();
 
             ResponseEntity<String> responseEntity = restTemplate.exchange(request, String.class);
@@ -233,6 +234,12 @@ public class XmlSearchIntegration extends AbstractIntegration {
             if (!responseEntity.getBody().contains(String.format("id=\"%s\"",test1.getAccession()))) {
                 throw new RuntimeException("Response body doesn't match expected sample");
             }
+            
+            if (!responseEntity.getHeaders().containsKey("Access-Control-Allow-Origin")
+            		|| !responseEntity.getHeaders().getAccessControlAllowOrigin().equals("foo.com")) {
+                throw new RuntimeException("Response doens't support CORS");
+            }
+            
 
             assert responseEntity.getBody().equals(test1);
             log.info(String.format("Sample %s found using legacy xml api", test1.getAccession()));

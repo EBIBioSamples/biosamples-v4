@@ -12,6 +12,7 @@ import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.Resources;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -48,6 +49,7 @@ public class ExternalLinksRelationsController {
     }
 
 
+	@CrossOrigin
     @GetMapping
     public PagedResources<Resource<ExternalLinksRelation>> allSamplesRelations(
             @RequestParam(value = "page", defaultValue = "0") int page,

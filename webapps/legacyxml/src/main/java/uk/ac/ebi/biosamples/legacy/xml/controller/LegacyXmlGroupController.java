@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -46,6 +47,8 @@ public class LegacyXmlGroupController {
 		this.summaryInfoService = summaryInfoService;
 		this.legacyQueryParser = legacyQueryParser;
 	}
+
+	@CrossOrigin
 	@GetMapping(value="/v1.0/groups/{accession:SAMEG\\d+}", produces={MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE})
 	public Sample getGroupv1p0(@PathVariable String accession) throws IOException {
 		Optional<Resource<Sample>> sample = client.fetchSampleResource(accession);
@@ -60,11 +63,13 @@ public class LegacyXmlGroupController {
 	}
 
 
+	@CrossOrigin
 	@GetMapping(value="/groups/{accession:SAMEG\\d+}", produces={MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE})
 	public Sample getGroup(@PathVariable String accession) throws IOException {
 		return getGroupv1p0(accession);
 	}
 
+	@CrossOrigin
 	@GetMapping(value = {"/v1.0/groups"}, produces={MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE})
 	public ResultQuery getv1p0Groups(
 			@RequestParam(name="query", defaultValue="*") String query,
@@ -114,6 +119,7 @@ public class LegacyXmlGroupController {
         return resultQuery;
 	}
 
+	@CrossOrigin
 	@GetMapping(value = {"/groups"}, produces={MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE})
 	public ResultQuery getGroups(
 			@RequestParam(name="query", defaultValue="*") String query,
@@ -125,7 +131,8 @@ public class LegacyXmlGroupController {
 	}
 	
 	
-	
+
+	@CrossOrigin
 	@GetMapping(value = {"/v1.0/groupsamples/{groupAccession:SAMEG\\d+}"},
 			produces={MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE})
 	public @ResponseBody ResultQuery getv1p0SamplesInGroup(
@@ -174,6 +181,7 @@ public class LegacyXmlGroupController {
 		return resultQuery;
 	}
 
+	@CrossOrigin
 	@GetMapping(value = {"/groupsamples/{groupAccession:SAMEG\\d+}"},
 			produces={MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE})
 	public @ResponseBody ResultQuery getSamplesInGroup(
