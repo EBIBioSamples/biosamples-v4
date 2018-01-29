@@ -17,16 +17,16 @@ import uk.ac.ebi.biosamples.model.Sample;
 @Service
 public class MessagingService {
 
-	private final SampleService sampleService;
+	private final SampleReadService sampleReadService;
 	private final AmqpTemplate amqpTemplate;
 	
-	public MessagingService(SampleService sampleService, AmqpTemplate amqpTemplate) {
-		this.sampleService = sampleService;
+	public MessagingService(SampleReadService sampleReadService, AmqpTemplate amqpTemplate) {
+		this.sampleReadService = sampleReadService;
 		this.amqpTemplate = amqpTemplate;
 	}
 	
 	public void sendMessages(CurationLink curationLink) {
-		Optional<Sample> target = sampleService.fetch(curationLink.getSample());
+		Optional<Sample> target = sampleReadService.fetch(curationLink.getSample());
 		if (target.isPresent()) {
 			sendMessages(target.get());
 		}
@@ -38,7 +38,7 @@ public class MessagingService {
 		//for each sample we have a relationship to, update it to index this sample as an inverse relationship	
 		for (Relationship relationship : sample.getRelationships()) {
 			if (relationship.getSource() != null && relationship.getSource().equals(sample.getAccession())) {
-				Optional<Sample> target = sampleService.fetch(relationship.getTarget());
+				Optional<Sample> target = sampleReadService.fetch(relationship.getTarget());
 				if (target.isPresent()) {
 					amqpTemplate.convertAndSend(Messaging.exchangeForIndexingSolr, "", 
 							MessageContent.build(target.get(), null, Collections.emptyList(), false));
@@ -65,7 +65,7 @@ public class MessagingService {
 		for (Relationship relationship : sample.getRelationships()) {
 			if (relationship.getSource().equals(sample.getAccession())) {
 				if (relationship.getType().toLowerCase().equals("derived from")) {
-					Optional<Sample> target = sampleService.fetch(relationship.getTarget());
+					Optional<Sample> target = sampleReadService.fetch(relationship.getTarget());
 					if (target.isPresent()) {
 						if (!related.contains(target.get())) {
 							related.add(target.get());
