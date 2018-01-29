@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>4.0.2-SNAPSHOT</version>
+		<version>4.0.2</version>
 		<relativePath>../</relativePath>
 	</parent>
 
@@ -49,17 +49,17 @@
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>models-legacyxml</artifactId>
-			<version>4.0.2-SNAPSHOT</version>
+			<version>${bsd2017.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>models-legacyjson</artifactId>
-			<version>4.0.2-SNAPSHOT</version>
+			<version>${bsd2017.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>models-legacyjson</artifactId>
-			<version>4.0.2-SNAPSHOT</version>
+			<version>${bsd2017.version}</version>
 		</dependency>
 		<!-- 		<dependency> -->
 		<!-- 			<groupId>io.rest-assured</groupId> -->
