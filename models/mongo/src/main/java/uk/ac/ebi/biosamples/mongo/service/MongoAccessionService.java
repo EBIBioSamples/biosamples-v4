@@ -10,10 +10,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 
-import com.mongodb.ErrorCategory;
-import com.mongodb.MongoWriteException;
+//this needs to be the spring exception, not the mongo one
+import org.springframework.dao.DuplicateKeyException;
 
-import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
@@ -66,14 +65,10 @@ public class MongoAccessionService {
 			try {
 				sample = mongoSampleRepository.insertNew(sample);
 				success = true;
-			} catch (MongoWriteException e) {
-				if (e.getError().getCategory() == ErrorCategory.DUPLICATE_KEY) {
-					success = false;
-					sample = originalSample;
-				} else {
-					throw e;
-				}
-			}
+			} catch (DuplicateKeyException e) {
+				success = false;
+				sample = originalSample;
+			} 
 		}
 		log.debug("generated accession "+sample);
 		return sample;

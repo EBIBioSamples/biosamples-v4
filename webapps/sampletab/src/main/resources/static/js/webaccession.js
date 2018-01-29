@@ -195,7 +195,7 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
         var errorsDiv = document.getElementById("errorsdiv");
         var filereader = new FileReader();
         if (apiKey) {
-            submissionURL = submissionURL + "apikey=" + apiKey;
+            submissionURL = submissionURL + "?apikey=" + apiKey;
         }
 
         //TODO some fancy loader swirly
