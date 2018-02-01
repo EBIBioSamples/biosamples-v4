@@ -10,13 +10,6 @@ public class BioSamplesProperties {
 
 	@Value("${biosamples.agent.solr.stayalive:false}")
 	private Boolean agentSolrStayalive;
-
-	@Value("${biosamples.agent.solr.queuesize:1000}")
-	private int agentSolrQueueSize;
-
-	//15 seconds
-	@Value("${biosamples.agent.solr.queuetime:15000}")
-	private int agentSolrQueueTime;
 	
 	@Value("${biosamples.client.uri:http://localhost:8081}")
 	private URI biosamplesClientUri;
@@ -107,15 +100,7 @@ public class BioSamplesProperties {
 	public String getBiosamplesAapSuperWrite() {
 		return biosamplesAapSuperWrite;
 	}
-	
-	public int getAgentSolrQueueSize() {
-		return agentSolrQueueSize;
-	}
-	
-	public int getAgentSolrQueueTime() {
-		return agentSolrQueueTime;
-	}
-	
+		
 	public boolean getAgentSolrStayalive() {
 		return agentSolrStayalive;
 	}

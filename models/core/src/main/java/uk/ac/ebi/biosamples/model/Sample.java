@@ -154,7 +154,7 @@ public class Sample implements Comparable<Sample> {
         
         return Objects.equals(this.name, other.name) 
         		&& Objects.equals(this.accession, other.accession)
-        		//&& Objects.equals(this.domain, other.domain)
+        		&& Objects.equals(this.domain, other.domain)
         		&& Objects.equals(this.release, other.release)
         		&& Objects.equals(this.attributes, other.attributes)
         		&& Objects.equals(this.relationships, other.relationships)

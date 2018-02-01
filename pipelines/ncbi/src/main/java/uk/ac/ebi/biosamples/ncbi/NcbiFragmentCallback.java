@@ -103,9 +103,19 @@ public class NcbiFragmentCallback implements ElementCallback {
 		}
 		//check the date compared to window
 		LocalDate updateDate = null;
-		updateDate = LocalDate.parse(attributes.getValue("", "last_update"), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+		if (attributes.getValue("", "last_update") != null) {
+			updateDate = LocalDate.parse(attributes.getValue("", "last_update"), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+		} else {
+			//no update date, abort
+			return false;
+		}
 		LocalDate releaseDate = null;
-		releaseDate = LocalDate.parse(attributes.getValue("", "publication_date"), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+		if (attributes.getValue("", "publication_date") != null) {
+			releaseDate = LocalDate.parse(attributes.getValue("", "publication_date"), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+		}  else {
+			//no release date, abort
+			return false;
+		}
 		
 		LocalDate latestDate = updateDate;
 		if (releaseDate.isAfter(latestDate)) {

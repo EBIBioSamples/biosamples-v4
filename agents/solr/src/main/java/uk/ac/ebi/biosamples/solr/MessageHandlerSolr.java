@@ -10,11 +10,11 @@ import org.springframework.stereotype.Service;
 
 import uk.ac.ebi.biosamples.MessageContent;
 import uk.ac.ebi.biosamples.Messaging;
-import uk.ac.ebi.biosamples.messages.threaded.MessageSampleStatus;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.ols.OlsProcessor;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
+import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
 import uk.ac.ebi.biosamples.solr.service.SampleToSolrSampleConverter;
 
 @Service
@@ -22,7 +22,7 @@ public class MessageHandlerSolr {
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 	
 	@Autowired
-	private SolrMessageBuffer messageBuffer;
+	private SolrSampleRepository repository;
 	
 	@Autowired
 	private SampleToSolrSampleConverter sampleToSolrSampleConverter;
@@ -68,27 +68,7 @@ public class MessageHandlerSolr {
 			}
 		}
 		
-				
-		MessageSampleStatus<SolrSample> messageSampleStatus;
-		try {
-			messageSampleStatus = messageBuffer.recieve(solrSample.getAccession(), solrSample, messageContent.getCreationTime());
-		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
-		}
-		
-		while (!messageSampleStatus.storedInRepository.get()
-				&& messageSampleStatus.hadProblem.get() == null) {			
-			//wait a little bit
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				throw new RuntimeException(e);
-			}
-		}
-		
-		if (messageSampleStatus.hadProblem.get() != null) {
-			throw messageSampleStatus.hadProblem.get();
-		}
+		solrSample = repository.save(solrSample);
 
 		log.info("Handed "+sample.getAccession());
 		

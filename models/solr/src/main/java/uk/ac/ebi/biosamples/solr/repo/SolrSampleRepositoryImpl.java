@@ -15,6 +15,7 @@ import org.springframework.data.solr.core.query.SimpleField;
 import org.springframework.data.solr.core.query.result.FacetFieldEntry;
 import org.springframework.data.solr.core.query.result.FacetPage;
 import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
 
@@ -106,5 +107,11 @@ public class SolrSampleRepositoryImpl implements SolrSampleRepositoryCustom  {
 		query.addProjectionOnField(new SimpleField("id"));
 		return solrOperations.queryForFacetPage(query, SolrSample.class);
 	}
-	
+
+	@Override
+	public SolrSample save(SolrSample entity) {
+		Assert.notNull(entity, "Cannot save 'null' entity.");
+		this.solrOperations.saveBean(entity);
+		return entity;
+	}
 }
