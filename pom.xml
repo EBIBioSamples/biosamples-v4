@@ -4,7 +4,7 @@
 
 	<groupId>uk.ac.ebi.biosamples</groupId>
 	<artifactId>biosamples</artifactId>
-	<version>4.0.3-SNAPSHOT</version>
+	<version>4.0.3</version>
 
 	<packaging>pom</packaging>
 
@@ -15,7 +15,7 @@
 	</parent>
 
 	<properties>
-		<bsd2017.version>4.0.3-SNAPSHOT</bsd2017.version>
+		<bsd2017.version>4.0.3</bsd2017.version>
 		<java.version>1.8</java.version>
 		<thymeleaf.version>3.0.2.RELEASE</thymeleaf.version>
 		<thymeleaf-layout-dialect.version>2.1.2</thymeleaf-layout-dialect.version>

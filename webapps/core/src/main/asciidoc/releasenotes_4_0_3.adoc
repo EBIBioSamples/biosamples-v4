@@ -1,0 +1,10 @@
+[[section]]
+4.0.3
+-----
+
+This is a bugfix release that addresses the following issues:
+
+* Forward legacy group URLs /biosamples/groups/SAMEGxxxx to /biosamples/samples/SAMEGxxxxx
+* Missing or malformed update and release date on legacy XML group submission will default to current datetime. It is not recommended that users intentionally rely on this.
+* Index legacy XML group submissions, which was not happening due to an unexpected consequence of the interaction of components. 
+* Redirect /biosamples/sample and /biosamples/group URLs in case of typo 
