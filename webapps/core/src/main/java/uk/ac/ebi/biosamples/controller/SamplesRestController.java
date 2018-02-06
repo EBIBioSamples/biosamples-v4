@@ -14,6 +14,7 @@ import org.springframework.hateoas.ExposesResourceFor;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.core.LinkBuilderSupport;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -73,7 +74,7 @@ public class SamplesRestController {
 	@CrossOrigin(methods = RequestMethod.GET)
 	@GetMapping(produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
 	public PagedResources<Resource<Sample>> searchHal(
-			@RequestParam(name = "searchTerm", required = false) String text,
+			@RequestParam(name = "text", required = false) String text,
 			@RequestParam(name = "filter", required = false) String[] filter, Pageable page,
 			PagedResourcesAssembler<Sample> pageAssembler) {
 
@@ -105,7 +106,12 @@ public class SamplesRestController {
 		// add the links to each individual sample on the page
 		// also adds links to first/last/next/prev at the same time
 		PagedResources<Resource<Sample>> pagedResources = pageAssembler.toResource(pageSample, sampleResourceAssembler,
-				entityLinks.linkToCollectionResource(Sample.class));
+				ControllerLinkBuilder.linkTo(ControllerLinkBuilder.methodOn(SamplesRestController.class)
+						.searchHal(text, filter, page, pageAssembler))
+					.withSelfRel());
+		
+		
+		
 
 		// to generate the HAL template correctly, the parameter name must match
 		// the requestparam name
@@ -122,10 +128,10 @@ public class SamplesRestController {
 		if (filters.stream().allMatch(f -> !f.getType().equals(FilterType.DATE_FILTER))) {
 
 			String[] templatedFilters = new String[1];
-			templatedFilters[0] = FilterType.DATE_FILTER.getSerialization()+":update:from={ISO-8601from}until{ISO-8601until}";
+			templatedFilters[0] = FilterType.DATE_FILTER.getSerialization()+":update:from{ISO-8601from}until{ISO-8601until}";
 			pagedResources.add(ControllerLinkBuilder
 					.linkTo(ControllerLinkBuilder.methodOn(SamplesRestController.class)
-							.searchHal(null, templatedFilters, null, null))
+							.searchHal(text, templatedFilters, null, null))
 					.withRel("samplesbyUpdateDate"));
 		}
 		
