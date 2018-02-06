@@ -1,0 +1,46 @@
+.autocomplete-suggestions { border: 1px solid #999; background: #FFF; overflow: auto; }
+.autocomplete-suggestion { padding: 2px 5px; white-space: nowrap; overflow: hidden; }
+.autocomplete-selected { background: #F0F0F0; }
+.autocomplete-suggestions strong { font-weight: normal; color: #3399FF; }
+.autocomplete-group { padding: 2px 5px; }
+.autocomplete-group strong { display: block; border-bottom: 1px solid #000; }
+
+/* CARDS */
+.card { background-color:#999; color:#f8f8f8; }
+
+/* FACETS */
+.facet-checkbox {
+    display: none;
+}
+
+label.facet { display: flex; align-items: baseline; }
+
+div div.facet-container:first-child label.facet{ margin-top: .5rem }
+
+div div.facet-container label.facet { margin-top: 1px; }
+
+label.facet > .show-if-checked { margin-right: 5px; }
+
+.facet-container label.facet > *:nth-last-child(1) { flex-grow: 1; }
+
+.facet-container .facet-checkbox:not(:checked) ~ .facet > .show-if-checked { visibility:hidden }
+
+.facet-container [type='checkbox'] + label, [type='radio'] + label { margin: 0; }
+
+#filter-apply:disabled { background-color: #999; }
+
+/*
+#local-masthead.is-stuck .menu>li.sticky-search { display: inherit; }
+#local-masthead .menu>li.sticky-search { display:none; }
+*/
+
+/* GENERAL */
+#main-content-area { margin-bottom: 3rem; }
+div#elixir-banner-info { color: white; }
+
+/* SHIELDS - FILTER BADGES */
+.shield { color: white; display: inline-block; margin: 0.2rem 0.0em; font-size: 0.9em; }
+/* This means a span element within an element with class shield */
+.shield span { padding: 0.1rem 0.2rem; }
+.shield .shield__key { background-color: #444; margin: 0 0 0 2px; }
+.shield .shield__value { background-color: #f27e3f; margin: 0 2px 0 0; }
