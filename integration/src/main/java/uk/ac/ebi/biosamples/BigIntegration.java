@@ -214,7 +214,7 @@ public class BigIntegration extends AbstractIntegration {
 		
 		Sample sample = Sample.build("big sample "+i, "SAMbig"+i, domain, release, update, attributes, relationships, null, null, null, null);
 
-		log.info("built "+sample.getAccession());
+		log.trace("built "+sample.getAccession());
 		return sample;
 	}
 
