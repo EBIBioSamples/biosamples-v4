@@ -57,43 +57,6 @@ public class SolrSampleService {
 		this.solrFilterService = solrFilterService;
 	}
 
-//	public Page<SolrSample> fetchSolrSampleByText(String searchTerm, MultiValueMap<String,String> filters,
-//			Collection<String> domains, Instant after, Instant before, Pageable pageable) {
-//		//default to search all
-//		if (searchTerm == null || searchTerm.trim().length() == 0) {
-//			searchTerm = "*:*";
-//		}
-//		//build a query out of the users string and any facets
-//		Query query = new SimpleQuery(searchTerm);
-//		query.setPageRequest(pageable);
-//
-//		if (filters != null) {
-//			query = addFilters(query, filters);
-//		}
-//
-//		//filter out non-public
-//		//filter to update date range
-//		FilterQuery filterQuery = new SimpleFilterQuery();
-//		//check if this is a read superuser
-//		if (!domains.contains(bioSamplesProperties.getBiosamplesAapSuperRead())) {
-//			//user can only see private samples inside its own domain
-//			filterQuery.addCriteria(new Criteria("release_dt").lessThan("NOW").and("release_dt").isNotNull()
-//					.or(new Criteria("domain_s").in(domains)));
-//		}
-//		if (after != null && before != null) {
-//			filterQuery.addCriteria(new Criteria("update_dt").between(DateTimeFormatter.ISO_INSTANT.format(after), DateTimeFormatter.ISO_INSTANT.format(before)));
-//		} else if (after == null && before != null) {
-//			filterQuery.addCriteria(new Criteria("update_dt").between("NOW-1000YEAR", DateTimeFormatter.ISO_INSTANT.format(before)));
-//		} else if (after != null && before == null) {
-//			filterQuery.addCriteria(new Criteria("update_dt").between(DateTimeFormatter.ISO_INSTANT.format(after), "NOW+1000YEAR"));
-//		}
-//		query.addFilterQuery(filterQuery);
-//		query.setTimeAllowed(TIMEALLOWED*1000);
-//
-//		// return the samples from solr that match the query
-//		return solrSampleRepository.findByQuery(query);
-//	}
-
 	/**
 	 * Fetch the solr samples based on query specification
 	 * @param searchTerm the term to search for in solr

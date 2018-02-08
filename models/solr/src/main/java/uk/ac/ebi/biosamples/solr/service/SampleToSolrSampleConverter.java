@@ -32,22 +32,19 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 	
 	@Override
 	public SolrSample convert(Sample sample) {
-		Map<String, List<String>> attributeValues = null;
-		Map<String, List<String>> attributeIris = null;
-		Map<String, List<String>> attributeUnits = null;
-		Map<String, List<String>> outgoingRelationships = null;
-		Map<String, List<String>> incomingRelationships = null;
-		Map<String, List<String>> externalReferencesData = null;
+		Map<String, List<String>> attributeValues = new HashMap<>();
+		Map<String, List<String>> attributeIris = new HashMap<>();
+		Map<String, List<String>> attributeUnits = new HashMap<>();
+		Map<String, List<String>> outgoingRelationships = new HashMap<>();
+		Map<String, List<String>> incomingRelationships = new HashMap<>();
+		Map<String, List<String>> externalReferencesData = new HashMap<>();
 		List<String> keywords = new ArrayList<>();
 
 		if (sample.getCharacteristics() != null && sample.getCharacteristics().size() > 0) {
-			attributeValues = new HashMap<>();
-			attributeIris = new HashMap<>();
-			attributeUnits = new HashMap<>();
 
 			for (Attribute attr : sample.getCharacteristics()) {
 				
-				String key = attr.getType();
+				final String key = SolrFieldService.encodeFieldName(attr.getType());
 				//key = SolrSampleService.attributeTypeToField(key);
 				
 				String value = attr.getValue();
@@ -67,7 +64,7 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 				}
 				attributeValues.get(key).add(value);
 
-				//technically, this can't differentiate which iris go with which attribute if there
+				//TODO this can't differentiate which iris go with which attribute if there
 				//are multiple attributes with the same type
 				if (!attributeIris.containsKey(key)) {
 					attributeIris.put(key, new ArrayList<>());
@@ -75,9 +72,7 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 				if (attr.getIri().size() == 0) {
 					attributeIris.get(key).add("");
 				} else {
-					for (String iri : attr.getIri()) {
-						attributeIris.get(key).add(iri);
-					}
+					attributeIris.get(key).addAll(attr.getIri());
 				}
 
 				if (!attributeUnits.containsKey(key)) {
@@ -93,11 +88,9 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 		//turn external reference into additional attributes for facet & filter
 		for (ExternalReference externalReference : sample.getExternalReferences()) {
 			String externalReferenceNickname = externalReferenceService.getNickname(externalReference);
-			String key = "external reference";
-			
-			if (attributeValues == null) {
-				attributeValues = new HashMap<>();
-			}			
+			String externalReferenceNicknameKey = SolrFieldService.encodeFieldName(externalReferenceNickname);
+			String key = SolrFieldService.encodeFieldName("external reference");
+					
 			if (!attributeValues.containsKey(key)) {
 				attributeValues.put(key, new ArrayList<>());
 			}
@@ -106,20 +99,14 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 			// Add the external reference data id
 			Optional<String> externalReferenceDataId = externalReferenceService.getDataId(externalReference);
 			if (externalReferenceDataId.isPresent()) {
-
 				if (externalReferencesData == null) {
 					externalReferencesData = new HashMap<>();
 				}
-
-				if (!externalReferencesData.containsKey(externalReferenceNickname)) {
-					externalReferencesData.put(externalReferenceNickname, new ArrayList<>());
+				if (!externalReferencesData.containsKey(externalReferenceNicknameKey)) {
+					externalReferencesData.put(externalReferenceNicknameKey, new ArrayList<>());
 				}
-
-				externalReferencesData.get(externalReferenceNickname).add(externalReferenceDataId.get());
-
+				externalReferencesData.get(externalReferenceNicknameKey).add(externalReferenceDataId.get());
 			}
-
-
 		}
 
 
@@ -128,19 +115,27 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 		if ( sampleOutgoingRelationships != null && !sampleOutgoingRelationships.isEmpty()) {
 			outgoingRelationships = new HashMap<>();
 			for (Relationship rel : sampleOutgoingRelationships) {
-				outgoingRelationships.computeIfAbsent(rel.getType(), type -> new ArrayList<>()).add(rel.getTarget());
+				String key = SolrFieldService.encodeFieldName(rel.getType());
+				if (!outgoingRelationships.containsKey(key)) {
+					outgoingRelationships.put(key, new ArrayList<>());
+				}
+				outgoingRelationships.get(key).add(rel.getTarget());
 			}
 		}
 
+		
 		// Add relationships for which sample is the target
 		SortedSet<Relationship> sampleIngoingRelationships = SampleRelationshipUtils.getIncomingRelationships(sample);
 		if ( sampleIngoingRelationships != null && !sampleIngoingRelationships.isEmpty()) {
 			incomingRelationships = new HashMap<>();
-			for (Relationship rel: sampleIngoingRelationships) {
-				incomingRelationships.computeIfAbsent(rel.getType(), type -> new ArrayList<>()).add(rel.getSource());
-            }
+			for (Relationship rel : sampleIngoingRelationships) {
+				String key = SolrFieldService.encodeFieldName(rel.getType());
+				if (!incomingRelationships.containsKey(key)) {
+					incomingRelationships.put(key, new ArrayList<>());
+				}
+				incomingRelationships.get(key).add(rel.getSource());
+			}
 		}
-
 
 		String releaseSolr = DateTimeFormatter.ISO_INSTANT.format(sample.getRelease());
 		String updateSolr = DateTimeFormatter.ISO_INSTANT.format(sample.getUpdate());
@@ -156,8 +151,10 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 		sample.getPublications().forEach(pub -> {
 			keywords.addAll(Arrays.asList(pub.getDoi(), pub.getDoi()));
 		});
-		
-		return SolrSample.build(sample.getName(), sample.getAccession(), sample.getDomain(), releaseSolr, updateSolr,
+				
+		return SolrSample.build(sample.getName(), sample.getAccession(), sample.getDomain(), 
+				releaseSolr, updateSolr,
+				null, null,
 				attributeValues, attributeIris, attributeUnits,
 				outgoingRelationships, incomingRelationships,
 				externalReferencesData, keywords);

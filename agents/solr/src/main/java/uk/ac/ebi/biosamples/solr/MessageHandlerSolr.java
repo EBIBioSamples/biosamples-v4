@@ -1,9 +1,13 @@
 package uk.ac.ebi.biosamples.solr;
 
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,7 +33,7 @@ public class MessageHandlerSolr {
 	
 	@Autowired
 	private OlsProcessor olsProcessor;
-	
+		
 	@RabbitListener(queues = Messaging.queueToBeIndexedSolr)
 	public void handle(MessageContent messageContent) throws Exception {
 		
@@ -40,6 +44,26 @@ public class MessageHandlerSolr {
 
 		Sample sample = messageContent.getSample();
 		SolrSample solrSample = sampleToSolrSampleConverter.convert(sample);
+		//add the modified time to the solrSample
+		String modifiedTime = messageContent.getCreationTime();
+		String indexedTime = ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT);
+		
+		SolrSample oldSolrSample = repository.findOne(sample.getAccession());
+		if (oldSolrSample != null) {
+			//there was an old sample
+			//check it was modified before us
+			if (ZonedDateTime.parse(oldSolrSample.getModified(), DateTimeFormatter.ISO_INSTANT)
+					.isBefore(ZonedDateTime.parse(oldSolrSample.getModified(), DateTimeFormatter.ISO_INSTANT))) {
+				throw new AmqpRejectAndDontRequeueException("Replaced by newer message");
+			}
+		}
+				
+		solrSample = SolrSample.build(solrSample.getName(), solrSample.getAccession(), solrSample.getDomain(), 
+				solrSample.getRelease(), solrSample.getUpdate(),
+				modifiedTime, indexedTime, 
+				solrSample.getAttributeValues(), solrSample.getAttributeIris(), solrSample.getAttributeUnits(), 
+				solrSample.getOutgoingRelationships(), solrSample.getIncomingRelationships(), 
+				solrSample.getExternalReferencesData(), solrSample.getKeywords());
 		
 		//expand ontology terms from OLS
 		for (List<String> iris : solrSample.getAttributeIris().values()) {

@@ -1,5 +1,8 @@
 package uk.ac.ebi.biosamples;
 
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -16,15 +19,15 @@ public class MessageContent {
 	private final CurationLink curationLink;
 	private final List<Sample> related;
 	public final boolean delete;
-	private final long creationTime;
-	
+	private final String creationTime;
+		
 
-	private MessageContent(Sample sample, CurationLink curationLink, List<Sample> related, boolean delete, long creationTime) {
+	private MessageContent(Sample sample, CurationLink curationLink, List<Sample> related, boolean delete) {
 		this.sample = sample;
 		this.curationLink = curationLink;
 		this.related = related;
 		this.delete = delete;
-		this.creationTime = creationTime;
+		this.creationTime = ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT);
 	}
 	
 	public boolean hasSample() {
@@ -47,7 +50,7 @@ public class MessageContent {
 		return curationLink;
 	}
 
-	public long getCreationTime() {
+	public String getCreationTime() {
 		return creationTime;
 	}
 	
@@ -70,7 +73,6 @@ public class MessageContent {
 	public static MessageContent build(@JsonProperty("sample") Sample sample, 
 			@JsonProperty("curationLink") CurationLink curationLink, 
 			@JsonProperty("related") List<Sample> related, @JsonProperty("delete") boolean delete) {
-		long creationTime = System.nanoTime();
-		return new MessageContent(sample, curationLink, related, delete, creationTime);
+		return new MessageContent(sample, curationLink, related, delete);
 	}
 }

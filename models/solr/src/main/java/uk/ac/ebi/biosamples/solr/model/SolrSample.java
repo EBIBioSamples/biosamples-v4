@@ -3,14 +3,19 @@ package uk.ac.ebi.biosamples.solr.model;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.solr.core.mapping.Dynamic;
 import org.springframework.data.solr.core.mapping.Indexed;
 import org.springframework.data.solr.core.mapping.SolrDocument;
 
+import uk.ac.ebi.biosamples.solr.model.field.SolrFieldType;
 import uk.ac.ebi.biosamples.solr.service.SolrFieldService;
 
 
@@ -42,6 +47,13 @@ public class SolrSample {
 	 */
 	@Indexed(name="update_dt", required=true, type="date") //TODO why type=date ?
 	protected String update;
+	
+	@Indexed(name="modified_dt", required=true, type="date") //TODO why type=date ?
+	protected String modified;
+	
+	@Indexed(name="indexed_dt", required=true, type="date") //TODO why type=date ?
+	protected String indexed;
+
 
 	@Indexed(name="*_av_ss", copyTo="autocomplete")
 	@Dynamic
@@ -122,13 +134,21 @@ public class SolrSample {
 	}
 
 
+	public String getDomain() {
+		return domain;
+	}
+
 	public String getRelease() {
 		return release;
 	}
-
-
 	public String getUpdate() {
 		return update;
+	}
+	public String getModified() {
+		return modified;
+	}
+	public String getIndexed() {
+		return indexed;
 	}
 
 
@@ -207,119 +227,79 @@ public class SolrSample {
 	 * Avoid using this directly, use the SolrSampleToSampleConverter or SampleToSolrSampleConverter instead
 	 * 
 	 */
-	public static SolrSample build(String name, String accession, String domain, String release, String update,
-			Map<String, List<String>> attributeValues, Map<String, List<String>> attributeIris, Map<String, List<String>> attributeUnits,
-		    Map<String, List<String>> outgoingRelationships, Map<String,List<String>> incomingRelationships,
-			Map<String, List<String>> externalReferencesData, List<String> keywords) {
+	public static SolrSample build(String name, String accession, String domain, 
+			String release, String update, 
+			String modified, String indexed,
+			Map<String, List<String>> attributeValues, 
+			Map<String, List<String>> attributeIris, 
+			Map<String, List<String>> attributeUnits,
+		    Map<String, List<String>> outgoingRelationships, 
+		    Map<String, List<String>> incomingRelationships,
+			Map<String, List<String>> externalReferencesData, 
+			List<String> keywords) {
+
+		//TODO validate maps
+		if (attributeValues == null) {
+			attributeValues = new HashMap<>();
+		}
+		if (attributeIris == null) {
+			attributeIris = new HashMap<>();
+		}
+		if (attributeUnits == null) {
+			attributeUnits = new HashMap<>();
+		}
+		
 		SolrSample sample = new SolrSample();
 		sample.accession = accession;
 		sample.name = name;
 		sample.release =  release;
 		sample.update = update;
 		sample.domain = domain;
-		sample.attributeValues = new HashMap<>();
-		sample.attributeIris = new HashMap<>();
-		sample.attributeUnits = new HashMap<>();
-		sample.incomingRelationships = new HashMap<>();
-		sample.outgoingRelationships = new HashMap<>();
-		sample.externalReferencesData = new HashMap<>();
+		sample.modified = modified;
+		sample.indexed = indexed;
+		sample.attributeValues = attributeValues;
+		sample.attributeIris = attributeIris;
+		sample.attributeUnits = attributeUnits;
+		sample.incomingRelationships = incomingRelationships;
+		sample.outgoingRelationships = outgoingRelationships;
+		sample.externalReferencesData = externalReferencesData;
 
-		if (attributeValues != null) {
-			for (String key : attributeValues.keySet()) {
-				//solr only allows alphanumeric field types
-				sample.attributeValues.put(SolrFieldService.encodeFieldName(key), attributeValues.get(key));
-			}
-		}
+		
 
-		if (attributeIris != null) {
-			for (String key : attributeIris.keySet()) {
-				//solr only allows alphanumeric field types
-				sample.attributeIris.put(SolrFieldService.encodeFieldName(key), attributeIris.get(key));
-			}
-		}
-
-		if (attributeUnits != null) {
-			for (String key : attributeUnits.keySet()) {
-				//solr only allows alphanumeric field types
-				sample.attributeUnits.put(SolrFieldService.encodeFieldName(key), attributeUnits.get(key));
-			}
-		}
-
-		if (outgoingRelationships != null) {
-            for (String key : outgoingRelationships.keySet()) {
-                sample.outgoingRelationships.put(SolrFieldService.encodeFieldName(key), outgoingRelationships.get(key));
-            }
-		}
-
-		if (incomingRelationships != null) {
-		    for (String key: incomingRelationships.keySet()) {
-		        sample.incomingRelationships.put(SolrFieldService.encodeFieldName(key), incomingRelationships.get(key));
-            }
-		}
-
-		if (externalReferencesData != null) {
-
-			for (String dataSource: externalReferencesData.keySet()) {
-				sample.externalReferencesData.put(SolrFieldService.encodeFieldName(dataSource), externalReferencesData.get(dataSource));
-			}
-		}
-
-		//TODO validate maps
-		sample.facetFields = new ArrayList<>();
+		SortedSet<String> facetFieldSet = new TreeSet<>();
 		if (attributeValues != null && attributeValues.keySet().size() > 0) {
-			List<String> attributeTypes = new ArrayList<>();
-			for (String attributeType : attributeValues.keySet()) {
-				String field = SolrFieldService.encodeFieldName(attributeType) + "_av_ss";
-				attributeTypes.add(field);
+			for (String attributeValueKey : attributeValues.keySet()) {
+				facetFieldSet.add(attributeValueKey+SolrFieldType.ATTRIBUTE.getSuffix());
 			}
-			Collections.sort(attributeTypes);
-			sample.facetFields.addAll(attributeTypes);
 		}
 
 		if (outgoingRelationships != null && outgoingRelationships.keySet().size() > 0) {
-			List<String> outgoingRelationshipTypes = new ArrayList<>();
-			for (String key: outgoingRelationships.keySet()) {
-                String field = SolrFieldService.encodeFieldName(key) + "_or_ss";
-				outgoingRelationshipTypes.add(field);
+			for (String outgoingRelationshipsKey : outgoingRelationships.keySet()) {
+				facetFieldSet.add(outgoingRelationshipsKey+SolrFieldType.RELATION.getSuffix());
 			}
-
-			Collections.sort(outgoingRelationshipTypes);
-            sample.facetFields.addAll(outgoingRelationshipTypes);
 		}
 
 		if (incomingRelationships != null && incomingRelationships.keySet().size() > 0) {
-			List<String> incomingRelationshipTypes = new ArrayList<>();
-			for (String key: incomingRelationships.keySet()) {
-                String field = SolrFieldService.encodeFieldName(key) +"_ir_ss";
-				incomingRelationshipTypes.add(field);
+			for (String incomingRelationshipsKey : incomingRelationships.keySet()) {
+				facetFieldSet.add(incomingRelationshipsKey+SolrFieldType.INVERSE_RELATION.getSuffix());
 			}
-
-			Collections.sort(incomingRelationshipTypes);
-            sample.facetFields.addAll(incomingRelationshipTypes);
 		}
 
 		if (externalReferencesData != null && externalReferencesData.keySet().size() > 0) {
-
-			List<String> externalReferencesDataSources = new ArrayList<>();
-
-			for (String dataSourceName: externalReferencesData.keySet()) {
-				String source = SolrFieldService.encodeFieldName(dataSourceName) + "_erd_ss";
-				externalReferencesDataSources.add(source);
+			for (String externalReferencesDataKey : externalReferencesData.keySet()) {
+				facetFieldSet.add(externalReferencesDataKey+SolrFieldType.EXTERNAL_REFERENCE_DATA.getSuffix());
 			}
-
-			Collections.sort(externalReferencesDataSources);
-
-            sample.facetFields.addAll(externalReferencesDataSources);
-
 		}
-
+		sample.facetFields = new ArrayList<>(facetFieldSet);
+		
+		
 		//copy into the other fields
 		//this should be done in a copyfield but that doesn't work for some reason?
 		sample.autocompleteTerms = new ArrayList<>();
 		if (attributeValues != null) {
-			sample.autocompleteTerms.addAll(attributeValues.keySet());
-			for (List<String> values : attributeValues.values()) {
-				sample.autocompleteTerms.addAll(values);
+			for (String key : attributeValues.keySet()) {
+				sample.autocompleteTerms.add(SolrFieldService.decodeFieldName(key));
+				sample.autocompleteTerms.addAll(attributeValues.get(key));
 			}
 		}
 
