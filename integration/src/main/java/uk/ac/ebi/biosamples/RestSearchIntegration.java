@@ -111,7 +111,7 @@ public class RestSearchIntegration extends AbstractIntegration {;
 		Sample sample5 = getSampleTest5();
 
         List<String> sample2ExpectedSearchResults = Arrays.asList(sample2.getAccession(), sample4.getAccession());
-        List<String> sample4ExpectedSearchResults = Arrays.asList(sample4.getAccession(), sample5.getAccession(), sample2.getAccession());
+        List<String> sample4ExpectedSearchResults = Arrays.asList(sample2.getAccession(), sample4.getAccession(), sample5.getAccession());
 
 		// Get results for sample2
 		List<String> sample2EffectiveSearchResults = new ArrayList<>();
