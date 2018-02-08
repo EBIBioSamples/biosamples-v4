@@ -124,7 +124,7 @@ public class RestIntegration extends AbstractIntegration {
 		
 		//put the second sample in
 		Resource<Sample> resource = client.persistSampleResource(sampleTest2, false, true);
-		sampleTest2 = Sample.build(sampleTest2.getName(), sampleTest2.getAccession(), null,
+		sampleTest2 = Sample.build(sampleTest2.getName(), sampleTest2.getAccession(), "self.BiosampleIntegrationTest",
 				sampleTest2.getRelease(), sampleTest2.getUpdate(),
 				sampleTest2.getCharacteristics(), sampleTest1.getRelationships(), sampleTest2.getExternalReferences(),
 				null, null, null);

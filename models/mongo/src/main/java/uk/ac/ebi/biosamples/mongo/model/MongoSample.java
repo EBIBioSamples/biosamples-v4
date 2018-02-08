@@ -8,6 +8,7 @@ import java.util.TreeSet;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -37,14 +38,17 @@ public class MongoSample {
 	 * This is the unique permanent ID of the AAP domain/team
 	 * that owns this sample.
 	 */
+	@Indexed(background=true)
 	protected String domain;
 	
 	@JsonSerialize(using = CustomInstantSerializer.class)
 	@JsonDeserialize(using = CustomInstantDeserializer.class)
+	@Indexed(background=true)
 	protected Instant release; 
 	@JsonSerialize(using = CustomInstantSerializer.class)
 	@JsonDeserialize(using = CustomInstantDeserializer.class)
 	@LastModifiedDate
+	@Indexed(background=true)
 	protected Instant update;
 
 	protected SortedSet<Attribute> attributes;

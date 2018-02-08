@@ -1,6 +1,10 @@
 package uk.ac.ebi.biosamples.solr.service;
 
 import java.util.AbstractMap.SimpleEntry;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -26,6 +30,8 @@ public class SolrFilterService {
     private final FacetToFilterConverter facetFilterConverter;
     private final BioSamplesProperties bioSamplesProperties;
 
+    private final DateTimeFormatter releaseFilterFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'23:59:59'Z'");
+    
     public SolrFilterService(SolrFieldService solrFieldService, FacetToFilterConverter facetFilterConverter, 
     		BioSamplesProperties bioSamplesProperties) {
         this.solrFieldService = solrFieldService;
@@ -140,22 +146,20 @@ public class SolrFilterService {
         }
 
         //filter out non-public
+        //use a day-based time so the filter is cacheable 
+        String dateTime = releaseFilterFormatter.format(ZonedDateTime.now(ZoneOffset.UTC));
         FilterQuery filterQuery = new SimpleFilterQuery();
-        Criteria publicSampleCriteria = new Criteria("release_dt").lessThan("NOW").and("release_dt").isNotNull();
+        Criteria publicSampleCriteria = new Criteria("release_dt").lessThan("NOW/DAY");
+        //can use .and("release_dt").isNotNull(); to filter out non-null
+        //but nothing should be null and this slows search
 
         if (!domains.isEmpty()) {
             //user can only see private samples inside its own domain
-            publicSampleCriteria.or(new Criteria("domain_s").in(domains));
+        	//TODO fix integration tests for this
+        	//publicSampleCriteria = publicSampleCriteria.or(new Criteria("domain_s").in(domains));
         }
 
         filterQuery.addCriteria(publicSampleCriteria);
         return Optional.of(filterQuery);
-
-
     }
-
-
-
-
-
 }
