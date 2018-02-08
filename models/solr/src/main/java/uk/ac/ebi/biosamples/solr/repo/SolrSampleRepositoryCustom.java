@@ -67,5 +67,5 @@ public interface SolrSampleRepositoryCustom {
 	 */
 	public FacetPage<SolrSample> findByFacetQuery(FacetQuery query);
 
-	public SolrSample save(SolrSample entity);
+	public SolrSample saveWithoutCommit(SolrSample entity);
 }

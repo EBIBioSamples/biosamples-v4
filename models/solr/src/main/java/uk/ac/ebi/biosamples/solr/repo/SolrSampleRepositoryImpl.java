@@ -109,7 +109,7 @@ public class SolrSampleRepositoryImpl implements SolrSampleRepositoryCustom  {
 	}
 
 	@Override
-	public SolrSample save(SolrSample entity) {
+	public SolrSample saveWithoutCommit(SolrSample entity) {
 		Assert.notNull(entity, "Cannot save 'null' entity.");
 		this.solrOperations.saveBean(entity);
 		return entity;
