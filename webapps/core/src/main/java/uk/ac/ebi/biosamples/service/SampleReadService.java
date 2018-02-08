@@ -3,18 +3,18 @@ package uk.ac.ebi.biosamples.service;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
+import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 
 /**
  * Service layer business logic for centralising repository access and
@@ -29,21 +29,27 @@ public class SampleReadService {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 	
-	//TODO use constructor injection not dependency injection
-	
-	@Autowired
-	private MongoSampleRepository mongoSampleRepository;
+	private final MongoSampleRepository mongoSampleRepository;
 	
 	//TODO use a ConversionService to manage all these
-	@Autowired
-	private MongoSampleToSampleConverter mongoSampleToSampleConverter;
+	private final MongoSampleToSampleConverter mongoSampleToSampleConverter;
 	
-	@Autowired
-	private CurationReadService curationReadService;
+	private final CurationReadService curationReadService;
 	
 	//TODO application.properties this
+	private final ExecutorService executorService;
 	
-	private ExecutorService executorService = Executors.newFixedThreadPool(64);
+	public SampleReadService(MongoSampleRepository mongoSampleRepository,
+			MongoSampleToSampleConverter mongoSampleToSampleConverter,
+			CurationReadService curationReadService,
+			BioSamplesProperties bioSamplesProperties) {
+		this.mongoSampleRepository = mongoSampleRepository;
+		this.mongoSampleToSampleConverter = mongoSampleToSampleConverter;
+		this.curationReadService = curationReadService;
+		executorService = AdaptiveThreadPoolExecutor.create(10000, 1000, false, 
+				bioSamplesProperties.getBiosamplesCorePageThreadCount(), 
+				bioSamplesProperties.getBiosamplesCorePageThreadCountMax());
+	}
 	
 	/**
 	 * Throws an IllegalArgumentException of no sample with that accession exists

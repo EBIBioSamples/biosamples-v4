@@ -52,6 +52,12 @@ public class BioSamplesProperties {
 	@Value("${biosamples.ols:http://wwwdev.ebi.ac.uk/ols}")
 	private String ols;
 
+	@Value("${biosamples.webapp.core.page.threadcount:64}")
+	private int webappCorePageThreadCount;
+
+	@Value("${biosamples.webapp.core.page.threadcount.max:128}")
+	private int webappCorePageThreadCountMax;
+
 	
 	public URI getBiosamplesClientUri() {
 		return biosamplesClientUri;
@@ -108,4 +114,13 @@ public class BioSamplesProperties {
 	public String getOls() {
 		return ols;
 	}
+
+	public int getBiosamplesCorePageThreadCount() {
+		return webappCorePageThreadCount;
+	}
+
+	public int getBiosamplesCorePageThreadCountMax() {
+		return webappCorePageThreadCountMax;
+	}
+	
 }

@@ -315,6 +315,26 @@ public class SampleHtmlController {
 	}
 	
 
+    @GetMapping("/sample/{accession}")
+    public String sampleAccession(@PathVariable String accession) {
+        return "redirect:/samples/"+accession;
+    }
+    
+    @GetMapping("/sample")
+    public String sample() {
+        return "redirect:/samples";
+    }	
+
+    @GetMapping("/group/{accession}")
+    public String groupAccession(@PathVariable String accession) {
+        return "redirect:/samples/"+accession;
+    }
+    
+    @GetMapping("/group")
+    public String group() {
+        return "redirect:/samples";
+    }	
+
     @GetMapping("/groups/{accession}")
     public String groupsAccession(@PathVariable String accession) {
         return "redirect:/samples/"+accession;

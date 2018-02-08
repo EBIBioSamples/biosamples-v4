@@ -113,7 +113,11 @@ public class SampleTabV1Controller {
             		&& outcome.sampledata.msi.submissionIdentifier.equals("GCG-HipSci")) {
                 outcome.sampledata.msi.submissionIdentifier = "GSB-3";
             }
-            boolean isSuperuser = apiKeyService.getUsernameForApiKey(apiKey).get().equals(ApiKeyService.BIOSAMPLES);
+            boolean isSuperuser = false;
+            Optional<String> username = apiKeyService.getUsernameForApiKey(apiKey);
+            if (username.isPresent() && username.get().equals(ApiKeyService.BIOSAMPLES)) {
+            	isSuperuser = true;
+            }
             try {
             	outcome.sampledata = sampleTabService.saveSampleTab(outcome.sampledata, "self."+domain.get(), isSuperuser, true, true);
 			} catch (DuplicateDomainSampleException | ConflictingSampleTabOwnershipException | AssertingSampleTabOwnershipException e) {
