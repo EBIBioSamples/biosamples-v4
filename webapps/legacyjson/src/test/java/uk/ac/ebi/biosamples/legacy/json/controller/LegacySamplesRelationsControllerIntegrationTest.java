@@ -422,7 +422,6 @@ public class LegacySamplesRelationsControllerIntegrationTest {
     @Test
     public void allProvidedRelationsLinksShouldReturn200Status() throws Exception {
         Sample testSample = new TestSample("SAME1").build();
-        List<SamplesRelations> relations = new ArrayList<>();
         when(sampleRepository.findByAccession(testSample.getAccession())).thenReturn(Optional.of(testSample));
 
         String contentAsString = mockMvc.perform(get("/samplesrelations/" + testSample.getAccession()).accept(MediaTypes.HAL_JSON))
@@ -433,6 +432,23 @@ public class LegacySamplesRelationsControllerIntegrationTest {
         for (String href: hrefs) {
             mockMvc.perform(get(href).accept(MediaTypes.HAL_JSON)).andExpect(status().isOk());
         }
+    }
+
+    @Test
+    public void detailsLinkPointToSamplePage() throws Exception {
+        Sample testSample = new TestSample("SAME1").build();
+        when(sampleRepository.findByAccession(testSample.getAccession())).thenReturn(Optional.of(testSample));
+
+        String contentAsString = mockMvc.perform(get("/samplesrelations/" + testSample.getAccession()).accept(MediaTypes.HAL_JSON))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        String detailHref = JsonPath.parse(contentAsString).read("$._links.details.href");
+
+        mockMvc.perform(get(detailHref).accept(MediaTypes.HAL_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accession").value(testSample.getAccession()));
+
     }
 
 
