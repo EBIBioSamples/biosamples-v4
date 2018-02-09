@@ -1,5 +1,6 @@
 package uk.ac.ebi.biosamples.solr;
 
+import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -46,14 +47,28 @@ public class MessageHandlerSolr {
 		SolrSample solrSample = sampleToSolrSampleConverter.convert(sample);
 		//add the modified time to the solrSample
 		String modifiedTime = messageContent.getCreationTime();
-		String indexedTime = ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT);
+		String indexedTime = ZonedDateTime.now(ZoneOffset.UTC)
+				//.format(DateTimeFormatter.ofPattern("yyyy-mm-dd'T'HH:mm:ss.SSSX"));
+				.format(DateTimeFormatter.ISO_INSTANT);
 		
 		SolrSample oldSolrSample = repository.findOne(sample.getAccession());
 		if (oldSolrSample != null) {
 			//there was an old sample
 			//check it was modified before us
-			if (ZonedDateTime.parse(oldSolrSample.getModified(), DateTimeFormatter.ISO_INSTANT)
-					.isBefore(ZonedDateTime.parse(oldSolrSample.getModified(), DateTimeFormatter.ISO_INSTANT))) {
+			
+			String oldModified = oldSolrSample.getModified();
+			//this comes out like  Thu Feb 08 16:22:57 GMT 2018 
+			String mesageModified = messageContent.getCreationTime();
+			//this looks like 2018-02-08T16:23:16.848Z
+			log.trace("oldModified = "+oldModified);
+			log.trace("messageModified = "+mesageModified);
+			
+			Instant oldModifiedZonedDateTime = ZonedDateTime.parse(oldModified, 
+					DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss zzz yyyy").withZone(ZoneOffset.UTC)).toInstant();
+			
+			Instant messageModifiedZonedDateTime = Instant.parse(mesageModified);
+			
+			if (!oldModifiedZonedDateTime.isBefore(messageModifiedZonedDateTime)) {
 				throw new AmqpRejectAndDontRequeueException("Replaced by newer message");
 			}
 		}
