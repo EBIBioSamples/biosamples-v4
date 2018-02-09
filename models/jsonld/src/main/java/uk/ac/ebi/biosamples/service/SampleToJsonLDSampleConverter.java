@@ -48,9 +48,20 @@ public class SampleToJsonLDSampleConverter implements Converter<Sample, JsonLDSa
             	//this only puts the first IRI in
 //                JsonLDMedicalCode medicalCode = new JsonLDMedicalCode();
 //                medicalCode.setCodeValue(attr.getIri().iterator().next());
-                JsonLDCategoryCode valueReference = new JsonLDCategoryCode();
-                valueReference.setUrl(attr.getIri().iterator().next());
-                pv.setValueReference(valueReference);
+
+                // Assuming that if the iri is not starting with a http[s] is
+                // probably a CURIE
+                List<JsonLDCategoryCode> valueReferences = new ArrayList<>();
+                for (String iri: attr.getIri()) {
+                    JsonLDCategoryCode valueReference = new JsonLDCategoryCode();
+                    if (iri.matches("^https?://.*")) {
+                        valueReference.setUrl(iri);
+                    } else {
+                        valueReference.setCodeValue(iri);
+                    }
+                    valueReferences.add(valueReference);
+                }
+                pv.setValueReference(valueReferences);
             }
             jsonLDAttributeList.add(pv);
         }
