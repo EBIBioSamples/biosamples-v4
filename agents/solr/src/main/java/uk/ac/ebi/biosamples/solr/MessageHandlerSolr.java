@@ -109,7 +109,7 @@ public class MessageHandlerSolr {
 		
 		solrSample = repository.saveWithoutCommit(solrSample);
 
-		log.info("Handed "+sample.getAccession());
+		log.trace("Handed "+sample.getAccession());
 		
 	}
 }
