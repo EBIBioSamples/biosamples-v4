@@ -7,7 +7,7 @@ public enum SupportedSamplesRelationships {
     PARENT_OF("parentOf"),
     RECURATED_FROM("recuratedFrom"),
     RECURATED_TO("recuratedTo"),
-    SAME_AS("same_as"),
+    SAME_AS("sameAs"),
     GROUPS("groups"),
     EXTERNAL_LINKS("externalLinks");
 

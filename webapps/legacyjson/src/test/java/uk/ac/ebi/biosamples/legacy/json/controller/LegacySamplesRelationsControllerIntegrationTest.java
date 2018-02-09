@@ -1,9 +1,7 @@
 package uk.ac.ebi.biosamples.legacy.json.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.endsWith;
-import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
@@ -12,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -34,6 +33,7 @@ import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.UriTemplate;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -41,7 +41,10 @@ import org.springframework.test.web.servlet.ResultActions;
 
 import com.jayway.jsonpath.JsonPath;
 
+import uk.ac.ebi.biosamples.legacy.json.domain.SamplesRelations;
+import uk.ac.ebi.biosamples.legacy.json.domain.SupportedSamplesRelationships;
 import uk.ac.ebi.biosamples.legacy.json.domain.TestSample;
+import uk.ac.ebi.biosamples.legacy.json.repository.RelationsRepository;
 import uk.ac.ebi.biosamples.legacy.json.repository.SampleRepository;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -410,6 +413,26 @@ public class LegacySamplesRelationsControllerIntegrationTest {
 
         mockMvc.perform(get(uriTemplate.expand("SAMD2")).accept(MediaTypes.HAL_JSON))
                 .andExpect(status().isNotFound());
+    }
+
+    /**
+     * Check that all the relations' href exposed by the sample relations endpoint are returning a 200 code
+     * @throws Exception
+     */
+    @Test
+    public void allProvidedRelationsLinksShouldReturn200Status() throws Exception {
+        Sample testSample = new TestSample("SAME1").build();
+        List<SamplesRelations> relations = new ArrayList<>();
+        when(sampleRepository.findByAccession(testSample.getAccession())).thenReturn(Optional.of(testSample));
+
+        String contentAsString = mockMvc.perform(get("/samplesrelations/" + testSample.getAccession()).accept(MediaTypes.HAL_JSON))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        List<String> hrefs = JsonPath.parse(contentAsString).read("$._links.*.href");
+
+        for (String href: hrefs) {
+            mockMvc.perform(get(href).accept(MediaTypes.HAL_JSON)).andExpect(status().isOk());
+        }
     }
 
 
