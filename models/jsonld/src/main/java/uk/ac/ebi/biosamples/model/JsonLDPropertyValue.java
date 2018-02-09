@@ -22,12 +22,14 @@ public class JsonLDPropertyValue {
 
     private String name;
     private String value;
+    private String unitText;
+    private String unitCode;
 
 
 //    @JsonProperty("valueReference")
 //    private List<JsonLDStructuredValue> valueReference;
 
-    private JsonLDCategoryCode valueReference;
+    private List<JsonLDCategoryCode> valueReference;
 
     public String getType() {
         return type;
@@ -47,11 +49,29 @@ public class JsonLDPropertyValue {
         this.value = value;
     }
 
-    public JsonLDCategoryCode getValueReference() {
+    public List<JsonLDCategoryCode> getValueReference() {
         return valueReference;
     }
 
-    public void setValueReference(JsonLDCategoryCode valueReference) {
+    public void setValueReference(List<JsonLDCategoryCode> valueReference) {
         this.valueReference = valueReference;
+    }
+
+    public String getUnitCode() {
+        return unitCode;
+    }
+
+    public JsonLDPropertyValue unitCode(String unitCode) {
+        this.unitCode = unitCode;
+        return this;
+    }
+
+    public String getUnitText() {
+        return unitText;
+    }
+
+    public JsonLDPropertyValue unitText(String unitText) {
+        this.unitText = unitText;
+        return this;
     }
 }
