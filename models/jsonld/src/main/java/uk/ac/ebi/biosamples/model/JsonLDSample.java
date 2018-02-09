@@ -2,36 +2,41 @@ package uk.ac.ebi.biosamples.model;
 
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.annotation.*;
 
 /**
  * Object representing BioSchema Sample entity
  */
+@JsonPropertyOrder({ "@context", "@type", "identifier", "name", "description", "url", "dataset", "additionalProperty"})
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class JsonLDSample {
 
     @JsonProperty("@context")
     private final String context = "http://schema.org";
 
     @JsonProperty("@type")
-    private final String type = "Sample";
-
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final String[] type = {"BioChemEntity", "Sample"};
 
     private String identifier;
     private String name;
     private String description;
     private String url;
-    private List<String> datasetUrl;
 
     @JsonProperty("additionalProperty")
     private List<JsonLDPropertyValue> additionalProperties;
+
+
+
+    private List<String> dataset;
+
+//    @JsonProperty("additionalProperty")
+//    private List<JsonLDPropertyValue> additionalProperties;
 
     public String getContext() {
         return context;
     }
 
-    public String getType() {
+    public String[] getType() {
         return type;
     }
 
@@ -67,12 +72,12 @@ public class JsonLDSample {
         this.url = url;
     }
 
-    public List<String> getDatasetUrl() {
-        return datasetUrl;
+    public List<String> getDataset() {
+        return dataset;
     }
 
-    public void setDatasetUrl(List<String> datasetUrl) {
-        this.datasetUrl = datasetUrl;
+    public void setDataset(List<String> dataset) {
+        this.dataset = dataset;
     }
 
     public List<JsonLDPropertyValue> getAdditionalProperties() {
@@ -82,4 +87,6 @@ public class JsonLDSample {
     public void setAdditionalProperties(List<JsonLDPropertyValue> additionalProperties) {
         this.additionalProperties = additionalProperties;
     }
+
+
 }

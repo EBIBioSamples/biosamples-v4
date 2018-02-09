@@ -30,7 +30,7 @@ import uk.ac.ebi.biosamples.model.Sample;
 
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
-@Profile({"default", "selenium"})
+@Profile({"default", "selenium", "test"})
 public class JsonLdIntegration extends AbstractIntegration {
     private final Environment env;
     private final RestOperations restTemplate;
