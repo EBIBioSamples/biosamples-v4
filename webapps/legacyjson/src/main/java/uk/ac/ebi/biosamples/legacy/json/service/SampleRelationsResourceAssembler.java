@@ -8,6 +8,7 @@ import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceAssembler;
 import org.springframework.stereotype.Service;
 
+import uk.ac.ebi.biosamples.legacy.json.controller.SamplesController;
 import uk.ac.ebi.biosamples.legacy.json.controller.SamplesRelationsController;
 import uk.ac.ebi.biosamples.legacy.json.domain.LegacySample;
 import uk.ac.ebi.biosamples.legacy.json.domain.SamplesRelations;
@@ -26,8 +27,9 @@ public class SampleRelationsResourceAssembler implements ResourceAssembler<Sampl
 
         Resource<SamplesRelations> resource = new Resource<>(entity);
         resource.add(entityLinks.linkToSingleResource(SamplesRelations.class, entity.accession()).withSelfRel());
-        resource.add(entityLinks.linkToSingleResource(LegacySample.class, entity.accession()).withRel("details"));
+        resource.add(linkTo(methodOn(SamplesController.class).sampleByAccession(entity.accession())).withRel("details"));
         resource.add(entityLinks.linkToSingleResource(SamplesRelations.class, entity.accession()).withRel("samplerelations"));
+
         resource.add(linkTo(methodOn(SamplesRelationsController.class).getSamplesGroupRelations(entity.accession())).withRel("groups"));
         resource.add(linkTo(methodOn(SamplesRelationsController.class).getSamplesRelations(entity.accession(), "derivedFrom")).withRel("derivedFrom"));
         resource.add(linkTo(methodOn(SamplesRelationsController.class).getSamplesRelations(entity.accession(), "derivedTo")).withRel("derivedTo"));

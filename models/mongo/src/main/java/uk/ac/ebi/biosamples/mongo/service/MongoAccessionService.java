@@ -6,6 +6,8 @@ import java.util.TreeSet;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -93,8 +95,9 @@ public class MongoAccessionService {
 		return sample;
 	}
 
+	@PostConstruct
 	@Scheduled(fixedDelay = 1000)
-	public void prepareAccessions() {	
+	public synchronized void prepareAccessions() {	
 		//check that all accessions are still available		
 		Iterator<String> it = accessionCandidateQueue.iterator();
 		while (it.hasNext()) {

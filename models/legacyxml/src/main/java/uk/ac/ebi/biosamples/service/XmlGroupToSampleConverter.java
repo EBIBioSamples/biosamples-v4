@@ -33,8 +33,8 @@ public class XmlGroupToSampleConverter implements Converter<Element, Sample>  {
 	@Override
 	public Sample convert(Element doc) {
 		
-		Instant release = null;
-		Instant update = null;
+		Instant release = Instant.now();
+		Instant update = Instant.now();
 		String accession = null;
 		if (XmlPathBuilder.of(doc).attributeExists("id")) {
 			accession = XmlPathBuilder.of(doc).attribute("id");

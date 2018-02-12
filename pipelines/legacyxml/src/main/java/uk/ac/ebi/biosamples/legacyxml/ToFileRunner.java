@@ -58,6 +58,19 @@ public class ToFileRunner implements ApplicationRunner {
 	public ToFileRunner(RestTemplateBuilder restTemplate) {
 		this.restTemplate = restTemplate.build();
 	}
+	
+	private ResponseEntity<String> exchangeRetry(RequestEntity<?> request) {
+		ResponseEntity<String> response = null;
+		while (response == null) {
+			try {
+				response = restTemplate.exchange(request, String.class);
+			} catch (RestClientException e) {
+				response = null;
+				log.error("Problem accessing "+request.getUrl(), e);
+			}
+		}
+		return response;
+	}
 
 	@Override
 	public void run(ApplicationArguments args) throws Exception {
@@ -75,71 +88,72 @@ public class ToFileRunner implements ApplicationRunner {
 		ExecutorService pageExecutorService = null;
 		ExecutorService accessionExecutorService = null;
 		
+		int maxPageQueue = 10;
+		
 		try {
-			pageExecutorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, 1, 1);		
-			accessionExecutorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, 1, 4);
+			pageExecutorService = AdaptiveThreadPoolExecutor.create(maxPageQueue, 10000, true, 4, 4);		
+			accessionExecutorService = AdaptiveThreadPoolExecutor.create(10000, 10000, true, 16, 16);
 			try (
-					FileWriter fileXmlWriter = new FileWriter(new File(outputXmlFilename));
-					FileWriter fileJsonWriter = new FileWriter(new File(outputJsonFilename));
+				FileWriter fileXmlWriter = new FileWriter(new File(outputXmlFilename));
+				FileWriter fileJsonWriter = new FileWriter(new File(outputJsonFilename));
 			) {
 					
-					fileXmlWriter.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-					fileXmlWriter.write("<BioSamples>\n");
-					fileJsonWriter.write("[");
+				fileXmlWriter.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+				fileXmlWriter.write("<BioSamples>\n");
+				fileJsonWriter.write("[");
 
 //					xmlAccessionCallback = new AccessionCallback(fileXmlWriter);
 //					jsonAccessionCallback = new AccessionCallback(fileJsonWriter);
-					legacyAccessionCallback = new LegacyAccessionCallback(fileXmlWriter, fileJsonWriter);
+				legacyAccessionCallback = new LegacyAccessionCallback(fileXmlWriter, fileJsonWriter);
 
-					pageCallback = new PageCallback(accessionExecutorService, rootUrl, 
-							restTemplate, legacyAccessionCallback, accessionFutures);
-	
-					UriComponentsBuilder pageUriComponentBuilder;
-					int pageCount;
-					
-					//handle samples
-					pageUriComponentBuilder = UriComponentsBuilder.fromUriString(rootUrl);
-                    pageUriComponentBuilder.pathSegment("xml");
-					pageUriComponentBuilder.pathSegment("samples");
-					pageUriComponentBuilder.replaceQueryParam("pagesize", pagesize);
-					pageUriComponentBuilder.replaceQueryParam("query", "");
+				pageCallback = new PageCallback(accessionExecutorService, rootUrl, 
+						restTemplate, legacyAccessionCallback, accessionFutures);
+
+				UriComponentsBuilder pageUriComponentBuilder;
+				int pageCount;
+				
+				//handle samples
+				pageUriComponentBuilder = UriComponentsBuilder.fromUriString(rootUrl);
+                pageUriComponentBuilder.pathSegment("xml");
+				pageUriComponentBuilder.pathSegment("samples");
+				pageUriComponentBuilder.replaceQueryParam("pagesize", pagesize);
+				pageUriComponentBuilder.replaceQueryParam("query", "");
 //
-					pageCount = getPageCount(pageUriComponentBuilder, pagesize);
-					
-					//multi-thread the pages via futures
-					for (int i = 1; i <= pageCount; i++) {
-						pageUriComponentBuilder.replaceQueryParam("page", i);			
-						URI pageUri = pageUriComponentBuilder.build().toUri();
-						Future<Collection<String>> future = pageExecutorService.submit(getPageCallable(pageUri));
-						pageFutures.put(pageUri.toString(), future);
-						ThreadUtils.checkAndCallbackFutures(pageFutures, 100, pageCallback);
-					}
-					
-					//handle groups
-					pageUriComponentBuilder = UriComponentsBuilder.fromUriString(rootUrl);
-                    pageUriComponentBuilder.pathSegment("xml");
-					pageUriComponentBuilder.pathSegment("groups");
-					pageUriComponentBuilder.replaceQueryParam("pagesize", pagesize);
-					pageUriComponentBuilder.replaceQueryParam("query", "group");
-					
-					pageCount = getPageCount(pageUriComponentBuilder, pagesize);
-					
-					//multi-thread the pages via futures
-					for (int i = 1; i <= pageCount; i++) {
-						pageUriComponentBuilder.replaceQueryParam("page", i);			
-						URI pageUri = pageUriComponentBuilder.build().toUri();
-						Future<Collection<String>> future = pageExecutorService.submit(getPageCallable(pageUri));
-						pageFutures.put(pageUri.toString(), future);
-						ThreadUtils.checkAndCallbackFutures(pageFutures, 100, pageCallback);
-					}
-
-					ThreadUtils.checkAndCallbackFutures(pageFutures, 0, pageCallback);
-					ThreadUtils.checkAndCallbackFutures(accessionFutures, 0, legacyAccessionCallback);
-
-					fileJsonWriter.write("{}]");
-					fileXmlWriter.write("</BioSamples>\n");
+				pageCount = getPageCount(pageUriComponentBuilder, pagesize);
+				
+				//multi-thread the pages via futures
+				for (int i = 1; i <= pageCount; i++) {
+					pageUriComponentBuilder.replaceQueryParam("page", i);			
+					URI pageUri = pageUriComponentBuilder.build().toUri();
+					Future<Collection<String>> future = pageExecutorService.submit(getPageCallable(pageUri));
+					pageFutures.put(pageUri.toString(), future);
+					ThreadUtils.checkAndCallbackFutures(pageFutures, 100, pageCallback);
+				}
+				
+				//handle groups
+				pageUriComponentBuilder = UriComponentsBuilder.fromUriString(rootUrl);
+                pageUriComponentBuilder.pathSegment("xml");
+				pageUriComponentBuilder.pathSegment("groups");
+				pageUriComponentBuilder.replaceQueryParam("pagesize", pagesize);
+				pageUriComponentBuilder.replaceQueryParam("query", "group");
+				
+				pageCount = getPageCount(pageUriComponentBuilder, pagesize);
+				
+				//multi-thread the pages via futures
+				for (int i = 1; i <= pageCount; i++) {
+					pageUriComponentBuilder.replaceQueryParam("page", i);			
+					URI pageUri = pageUriComponentBuilder.build().toUri();
+					Future<Collection<String>> future = pageExecutorService.submit(getPageCallable(pageUri));
+					pageFutures.put(pageUri.toString(), future);
+					ThreadUtils.checkAndCallbackFutures(pageFutures, 100, pageCallback);
 				}
 
+				ThreadUtils.checkAndCallbackFutures(pageFutures, 0, pageCallback);
+				ThreadUtils.checkAndCallbackFutures(accessionFutures, 0, legacyAccessionCallback);
+
+				fileJsonWriter.write("{}]");
+				fileXmlWriter.write("</BioSamples>\n");
+			}
 		} finally {
 			if (pageExecutorService != null) {
 				pageExecutorService.shutdownNow();
@@ -158,12 +172,15 @@ public class ToFileRunner implements ApplicationRunner {
 
 		ResponseEntity<String> response;
 		RequestEntity<?> request = RequestEntity.get(uri).accept(MediaType.TEXT_XML).build();
+		/*
 		try {
 			response = restTemplate.exchange(request, String.class);
 		} catch (RestClientException e) {
 			log.error("Problem accessing "+uri, e);
 			throw e;
 		}
+		*/
+		response = exchangeRetry(request);
 		String xmlString = response.getBody();
 		
 		SAXReader reader = new SAXReader();
@@ -184,12 +201,15 @@ public class ToFileRunner implements ApplicationRunner {
 				long startTime = System.nanoTime();
 				ResponseEntity<String> response;
 				RequestEntity<?> request = RequestEntity.get(uri).accept(MediaType.TEXT_XML).build();
+				/*
 				try {
 					response = restTemplate.exchange(request, String.class);
 				} catch (RestClientException e) {
 					log.error("Problem accessing "+uri, e);
 					throw e;
 				}
+				*/
+				response = exchangeRetry(request);
 				String xmlString = response.getBody();
 				long endTime = System.nanoTime();
 				long interval = (endTime-startTime)/1000000l;
@@ -216,7 +236,7 @@ public class ToFileRunner implements ApplicationRunner {
 	}
 	
 
-	public static class PageCallback implements ThreadUtils.Callback<Collection<String>> {
+	public class PageCallback implements ThreadUtils.Callback<Collection<String>> {
 
 		private final ExecutorService accessionExecutorService;
 		private final String rootUrl;
@@ -236,7 +256,7 @@ public class ToFileRunner implements ApplicationRunner {
 			this.accessionCallback = accessionCallback;
 			this.accessionFutures = accessionFutures;
 		}
-		
+				
 		
 		@Override
 		public void call(Collection<String> accessions) {
@@ -267,12 +287,15 @@ public class ToFileRunner implements ApplicationRunner {
 
 			ResponseEntity<String> response;
 			RequestEntity<?> request = RequestEntity.get(uri).accept(MediaType.TEXT_XML).build();
+			/*
 			try {
 				response = restTemplate.exchange(request, String.class);
 			} catch (RestClientException e) {
 				log.error("Problem accessing "+uri, e);
 				throw e;
 			}
+			*/
+			response = exchangeRetry(request);
 			String xmlString = response.getBody();
 			
 			SAXReader reader = new SAXReader();
@@ -292,21 +315,24 @@ public class ToFileRunner implements ApplicationRunner {
 					long startTime = System.nanoTime();
 					ResponseEntity<String> response;
 					RequestEntity<?> request = RequestEntity.get(xmlUri).accept(MediaType.TEXT_XML).build();
+					/*
 					try {
 						response = restTemplate.exchange(request, String.class);
 					} catch (RestClientException e) {
 						log.error("Problem accessing " + xmlUri, e);
 						throw e;
 					}
+					*/
+					response = exchangeRetry(request);
 					String xmlString = response.getBody();
 					long endTime = System.nanoTime();
 					long interval = (endTime-startTime)/1000000l;
-					log.trace("Got "+xmlUri+" in "+interval+"ms");
+					log.info("Got "+xmlUri+" in "+interval+"ms");
 
 					//strip the first two lines
 					xmlString = xmlString.substring(xmlString.indexOf('\n')+1);
 					xmlString = xmlString.substring(xmlString.indexOf('\n')+1);
-
+/*
 					startTime = System.nanoTime();
 					request = RequestEntity.get(jsonUri).accept(MediaTypes.HAL_JSON).build();
 					response = null;
@@ -318,14 +344,15 @@ public class ToFileRunner implements ApplicationRunner {
 					}
 				 	endTime = System.nanoTime();
 					interval = (endTime-startTime)/1000000l;
-					log.trace("Got "+jsonUri+" in "+interval+"ms");
+					log.info("Got "+jsonUri+" in "+interval+"ms");
 
-
-					String jsonString = null;
+*/
+					String jsonString = "";
+/*
 					if (response != null) {
 						jsonString = response.getBody();
 					}
-					
+*/
 					return new LegacyApiContent(xmlString, jsonString);
 				}
 			};
@@ -338,12 +365,15 @@ public class ToFileRunner implements ApplicationRunner {
 					long startTime = System.nanoTime();
 					ResponseEntity<String> response;
 					RequestEntity<?> request = RequestEntity.get(uri).accept(MediaType.TEXT_XML).build();
+					/*
 					try {
 						response = restTemplate.exchange(request, String.class);
 					} catch (RestClientException e) {
 						log.error("Problem accessing "+uri, e);
 						throw e;
 					}
+					*/
+					response = exchangeRetry(request);
 					String xmlString = response.getBody();
 					long endTime = System.nanoTime();
 					long interval = (endTime-startTime)/1000000l;
@@ -433,7 +463,6 @@ public class ToFileRunner implements ApplicationRunner {
 				fileCsvWriter.writeNext(accessions.toArray(toWrite));
 			}
 		}
-		
 	}
 
 	public static class LegacyApiContent {

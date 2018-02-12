@@ -2,6 +2,198 @@
 
 This pages contains links to release notes for BioSamples for version 4.0.0 and higher. This release represents a comprehensive overhaul and therefore previous release notes are no longer applicable.
 
-* link:releasenotes_4_0_2[4.0.2]
-* link:releasenotes_4_0_1[4.0.1]
-* link:releasenotes_4_0_0[4.0.0]
+[[section]]
+4.0.4
+-----
+
+This is a bugfix release that addresses the following issues:
+
+* Persistence of search terms and filters when using HAL paging links
+* SameAs relation in the legacy JSON API works as intended
+* Removed residual test endpoints from legacy JSON API
+* Details relation in legacy JSON API now correctly resolves
+* Added informative and specific title to webpages
+* Added https://www.elixir-europe.org/platforms/data/elixir-deposition-databases[Elixir Deposition Database] banner 
+
+[[section]]
+4.0.3
+-----
+
+This is a bugfix release that addresses the following issues:
+
+* Forward legacy group URLs /biosamples/groups/SAMEGxxxx to /biosamples/samples/SAMEGxxxxx
+* Missing or malformed update and release date on legacy XML group submission will default to current datetime. It is not recommended that users intentionally rely on this.
+* Index legacy XML group submissions, which was not happening due to an unexpected consequence of the interaction of components. 
+* Redirect /biosamples/sample and /biosamples/group URLs in case of typo 
+
+[[section]]
+4.0.2
+-----
+
+This is a bugfix release that addresses the following issues:
+
+* Fix javascript on SampleTab submission and accession
+* Handle load-balanced accessioning
+* Fix for storage of relationships source on new samples
+
+[[section]]
+4.0.1
+-----
+
+This is a bugfix release that addresses the following issues:
+
+* Fix submission of new unaccessioned samples with relationships by inserting an assigned accession into the source of any relationships that are missing it. 
+* Fix curation pipeline of numeric organism iri to "http://purl.obolibrary.org/obo/NCBITaxon_+taxId" when it should be "http://purl.obolibrary.org/obo/NCBITaxon_"+taxId e.g. http://purl.obolibrary.org/obo/NCBITaxon_9606
+* Allow CORS requests for legacy XML APIs.
+* Updated homepage project sample links to use a filter search rather than a text search.
+
+[[section]]
+4.0.0
+-----
+
+Version v4.0.0 represents a re-architecture and re-engineering of the
+BioSamples software stack. It is now based on the Java
+https://projects.spring.io/spring-boot[Spring-Boot] framework, utilising
+https://www.mongodb.com[MongoDB] for storage and
+https://lucene.apache.org/solr[Solr] for indexing and search. It tries
+to follow up-to-date web standards and conventions, while remaining
+backwards compatible. This will also give us a strong and stable
+foundation to build more features and improvements from, more reliably
+and more rapidly.
+
+Highlights include:
+
+* Submissions and updates will be available immediately via accession,
+and will be available via search within a few minutes or less. There is
+also improved handling of submissions and updates, with fewer errors and
+better feedback about any problems.
+* Integration with https://aap.tsi.ebi.ac.uk[EBI AAP] for login
+management and access to pre-publication samples, including use of
+https://www.elixir-europe.org/services/compute/aai[ELIXIR AAI] single
+sign-on accounts.
+* Separation of submitted sample information from curation of that
+information, including the ability for 3rd party (re-)curation of
+samples. Please contact us if you would be interested in more
+information and/or to supply curation information.
+* Improved handling of non-alphanumeric characters in attribute types
+e.g. "geographic location (country and/or sea)"
+* Improved faceting allowing selection of multiple values within same
+facet, fixed re-use and re-distribution of search URLs. This will be
+expanded in future with additional facet types where appropriate.
+* Support and recommend the use
+of https://developer.mozilla.org/en-US/docs/Web/HTTP/Content_negotiation[content
+negotiation] to accessing multiple formats at the same URIs. In addition
+to the content (HTML vs XML vs JSON) this also supports
+https://developer.mozilla.org/en-US/docs/Web/HTTP/Compression[compression]
+and https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching[caching]
+through standard mechanisms.
+* Java client using Spring, and a Spring-Boot starter module for easy
+use. This is used by BioSamples internally and other teams at EMBL-EBI,
+so is high performance and battle tested.
+* Containerisation using Docker and Docker-Compose, which makes it
+easier to run a local version for client development or for local
+storage of sample information.
+
+[[data-content]]
+Data content
+~~~~~~~~~~~~
+
+* Ontology terms Numeric tax IDs (e.g. 9606) and short ontology terms
+(e.g. PATO:0000384) are being replaced with full IRIs (e.g.
+http://purl.obolibrary.org/obo/NCBITaxon_9606 and http://purl.obolibrary.org/obo/PATO_0000384 )
+in many places, eventually everywhere.
+* Groups will continue to exist for backwards compatibility purposes.
+However, we are investigating future development to reduce or remove
+many of these in favour of alternatives such as filtering samples by
+external link, or delegating grouping of samples to other EMBL-EBI
+archives such as https://www.ebi.ac.uk/biostudies[BioStudies].
+
+[[jsonbiosamples]]
+JSON `/biosamples`
+~~~~~~~~~~~~~~~~~~
+
+This is the preferred API for use, and uses the same URIs as the HTML
+pages, and utilising content negotiation to provide a JSON response.
+This is designed as
+a https://en.wikipedia.org/wiki/Hypertext_Application_Language[hypermedia
+as the engine of application state (HATEOS) API] and therefore we
+recommend users do not use specific URLs but rather follow relationships
+between API endpoints, much like a user would use links between HTML
+pages. It is similar to the `/biosamples/api` JSON format, with a few
+critical differences:
+
+* added __release__ in full ISO 8601 format including time. The
+backwards-compatible __releaseDate__ exists but should be considered
+deprecated and will be removed in a future release.
+* added __update__ in full ISO 8601 format including time.
+The backwards-compatible __updateDate__ exists but should be considered
+deprecated and will be removed in a future release.
+* removed __description__ as a separate field, is now available as
+a __characteristic__. 
+* remove **relations** rel link; equivalent information is now embedded
+in sample in __relationships__ and __externalReferences__ lists.
+* remove **sample** rel link; with relations now embedded, this link
+serves no purpose.
+* added **curationLinks** rel link.
+* ordering may be different.
+* fields are not displayed if empty or null.
+* characteristic names accurately reflect what was submitted and may now
+be multiple words and may include non alphanumeric characters (e.g
+brackets, greek letters, etc). In the `/biosamples/api` responses
+characteristic names were always camelCased and with non-alphanumeric
+characters removed.
+* external references directly embedded in the samples and the groups.
+
+[[xmlbiosamplesxml]]
+XML `/biosamples/xml`
+~~~~~~~~~~~~~~~~~~~~~
+
+We are maintaining this for backwards compatibility. Later in 2018 we
+will be consulting about future development of this API, particularly in
+the context of the improved JSON `/biosamples` API using content
+negotiation and several long-standing issues with limitations arising
+from the XML schema in use.
+
+* XML element *TermSourceREF* element *Name* and element *URI* are
+removed.
+* XML element *Property* attributes characteristic and comment always
+false.
+* elements and attributes may be in different order.
+* allows only one IRI on attributes, so in rare cases of multiple IRIs
+will not be complete.
+* Query parameter `query` has now a default value of * if none is
+provided.
+* Query parameter `sort` is ignored for the search, due to undefined
+behaviour and lack of usage.
+
+[[json-biosamplesapi]]
+JSON `/biosamples/api`
+~~~~~~~~~~~~~~~~~~~~~~
+
+This API should be considered **deprecated** and we will aim to remove
+it by 2019. Any users of this should move to using the `/biosamples`
+URIs to retrieve JSON representations with an improved schema via
+content negotiation. Further announcements will be made in future for
+specific updates and deadlines.
+
+* ordering may be different from previous versions, and is not
+guaranteed for future versions.
+* fields are not displayed if empty or null.
+* `/api/externallinksrelations/{id}/sample` and
+`/api/externallinksrelations/{id}/group` are removed due to lack of
+usage.
+* fixed _externalReferences_ and _publications_ to be nested objects and
+not JSON strings.
+
+[[acknowledgements]]
+Acknowledgements
+~~~~~~~~~~~~~~~~
+
+This release has been made possible with the support of our funders:
+
+* EMBL-EBI Core Funds
+* EC -ELIXIR-EXCELERATE 
+* WT- HIPSCI
+* IMI - EBiSC
+* ELIXIR – Meta Data Implementation Study 
+* WT-GA4GH

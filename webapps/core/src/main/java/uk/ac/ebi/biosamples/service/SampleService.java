@@ -94,19 +94,12 @@ public class SampleService {
 		if (sample.hasAccession()) {
 
 			// TODO compare to existing version to check if changes
-			Optional<Sample> existingSample = sampleReadService.fetch(sample.getAccession());
-			if (existingSample.isPresent() && existingSample.get().equals(sample)) {
-				
-				//nothing changes, no need to send a message
-				
-			} else {
-				MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);
-				mongoSample = mongoSampleRepository.save(mongoSample);
-				sample = mongoSampleToSampleConverter.convert(mongoSample);
+			MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);
+			mongoSample = mongoSampleRepository.save(mongoSample);
+			sample = mongoSampleToSampleConverter.convert(mongoSample);
 
-				// send a message for storage and further processing
-				messagingSerivce.sendMessages(sample);
-			}
+			// send a message for storage and further processing
+			messagingSerivce.sendMessages(sample);
 		} else {
 			//assign it a new accession
 			sample = mongoAccessionService.generateAccession(sample);

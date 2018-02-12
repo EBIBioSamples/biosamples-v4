@@ -1,9 +1,0 @@
-[[section]]
-4.0.2
------
-
-This is a bugfix release that addresses the following issues:
-
-* Fix javascript on SampleTab submission and accession
-* Handle load-balanced accessioning
-* Fix for storage of relationships source on new samples

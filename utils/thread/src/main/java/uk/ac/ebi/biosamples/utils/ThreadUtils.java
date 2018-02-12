@@ -26,9 +26,6 @@ public class ThreadUtils {
 		}
 	}
 	
-	
-	
-
 	public static <T> void checkAndCallbackFutures(Map<? extends Object, Future<T>> futures, int maxSize, Callback<T> callback) throws InterruptedException,ExecutionException {
 		while (futures.size() > maxSize) {
 			for (Iterator<? extends Object> i = futures.keySet().iterator(); i.hasNext(); ) {

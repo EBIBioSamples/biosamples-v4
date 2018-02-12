@@ -85,7 +85,7 @@ public class RestSearchIntegration extends AbstractIntegration {;
 		//check that the private sample is not in search results
 		//check that the referenced non-existing sample not in search result
 		for (Resource<Sample> resource : client.fetchSampleResourceAll()) {
-			log.info(""+resource);
+			log.trace(""+resource);
 			if (resource.getContent().getAccession().equals(test1.getAccession())) {
 				throw new RuntimeException("Found non-public sample "+test1.getAccession()+" in search samples");
 			}
@@ -111,7 +111,7 @@ public class RestSearchIntegration extends AbstractIntegration {;
 		Sample sample5 = getSampleTest5();
 
         List<String> sample2ExpectedSearchResults = Arrays.asList(sample2.getAccession(), sample4.getAccession());
-        List<String> sample4ExpectedSearchResults = Arrays.asList(sample4.getAccession(), sample5.getAccession(), sample2.getAccession());
+        List<String> sample4ExpectedSearchResults = Arrays.asList(sample2.getAccession(), sample4.getAccession(), sample5.getAccession());
 
 		// Get results for sample2
 		List<String> sample2EffectiveSearchResults = new ArrayList<>();

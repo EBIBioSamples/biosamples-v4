@@ -1,18 +1,9 @@
-.biosamples-button-row {
-    margin-bottom: 1em;
-}
+.biosamples-button-row { margin-bottom: 1em; }
 
-.biosamples-card {
-    text-align: center;
-    border: 1px solid #007c82 /*EBI Color*/ ;
-    min-height: 150px;
-    padding: 1em;
-}
+.biosamples-card { text-align: center; border: 1px solid #007c82 /*EBI Color*/ ; min-height: 150px; padding: 1em; }
 
-.biosamples-card:hover {
-    background-color: #007c82;
-}
+.biosamples-card:hover { background-color: #007c82; }
 
-.biosamples-card:hover * {
-    color: white;
-}
+.biosamples-card:hover * { color: white; }
+
+div#elixir-banner-info { color: white; }

@@ -26,12 +26,14 @@ public class ApiKeyService {
 	public Optional<String> getDomainForApiKey(String apiKey) throws DataAccessException {
 		log.info("getting domain for apikey "+apiKey);
 		MongoSampleTabApiKey mongoSampleTabApiKey = mongoSampleTabApiKeyRepository.findOne(apiKey);
+		if (mongoSampleTabApiKey == null) return Optional.empty();
 		return Optional.ofNullable(mongoSampleTabApiKey.getAapDomain());
 	}
 	
 	public Optional<String> getUsernameForApiKey(String apiKey) throws DataAccessException {
 		log.info("getting domain for apikey "+apiKey);
 		MongoSampleTabApiKey mongoSampleTabApiKey = mongoSampleTabApiKeyRepository.findOne(apiKey);
+		if (mongoSampleTabApiKey == null) return Optional.empty();
 		return Optional.ofNullable(mongoSampleTabApiKey.getUserName());
 	}
 	
