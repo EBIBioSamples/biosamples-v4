@@ -22,15 +22,10 @@ public class JsonLDSample {
     private String description;
     private String url;
 
-    @JsonProperty("additionalProperty")
-    private List<JsonLDPropertyValue> additionalProperties;
-
-
-
     private List<String> dataset;
 
-//    @JsonProperty("additionalProperty")
-//    private List<JsonLDPropertyValue> additionalProperties;
+    @JsonProperty("additionalProperty")
+    private List<JsonLDPropertyValue> additionalProperties;
 
     public String getContext() {
         return context;
