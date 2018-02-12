@@ -36,23 +36,15 @@ public class MessagingService {
 	public void sendMessages(Sample sample) {
 		
 		//for each sample we have a relationship to, update it to index this sample as an inverse relationship	
+		List<Sample> related = new ArrayList<>();
 		for (Relationship relationship : sample.getRelationships()) {
 			if (relationship.getSource() != null && relationship.getSource().equals(sample.getAccession())) {
 				Optional<Sample> target = sampleReadService.fetch(relationship.getTarget());
 				if (target.isPresent()) {
-					amqpTemplate.convertAndSend(Messaging.exchangeForIndexingSolr, "", 
-							MessageContent.build(target.get(), null, Collections.emptyList(), false));
+					related.add(target.get());
 				}
 			}
-		}
-		
-		//repeatedly walk up the derived from tree and store as related
-		//if this was a derived from relationship, this is a related sample to the original one
-		
-		List<Sample> related = new ArrayList<>();
-		//related.addAll(getDerivedFromSamples(sample, related));
-		//this is too intensive to do here, will need to move expansion to separate agent see BSD-904
-		
+		}	
 		
 		//send the original sample with the extras as related samples
 		amqpTemplate.convertAndSend(Messaging.exchangeForIndexingSolr, "", 
