@@ -173,7 +173,7 @@ public class RestFilterIntegration extends AbstractIntegration{
         samplePage = client.fetchPagedSampleResource("", Collections.singletonList(invRelFilter), 0, 10);
 
         if (samplePage.getMetadata().getTotalElements() < 1) {
-            throw new RuntimeException("Unexpected number of results for relation filter query: " + samplePage.getMetadata().getTotalElements());
+            throw new RuntimeException("Unexpected number of results for relation filter query. Expected more than zero but got " + samplePage.getMetadata().getTotalElements());
         }
         match = samplePage.getContent().stream().anyMatch(resource -> resource.getContent().getAccession().equals(getTestSample2().getAccession()));
         if (!match) {
