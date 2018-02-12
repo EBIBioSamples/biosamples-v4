@@ -68,6 +68,8 @@ public class Attribute implements Comparable<Attribute> {
 		}
 		
 		try {
+			//TODO application.properties this
+			//TODO use https
 			return "http://www.ebi.ac.uk/ols/terms?iri="+URLEncoder.encode(displayIri.toString(), "UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			//should never get here

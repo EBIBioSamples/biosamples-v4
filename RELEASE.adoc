@@ -1,4 +1,17 @@
 [[section]]
+4.0.4
+-----
+
+This is a bugfix release that addresses the following issues:
+
+* Persistence of search terms and filters when using HAL paging links
+* SameAs relation in the legacy JSON API works as intended
+* Removed residual test endpoints from legacy JSON API
+* Details relation in legacy JSON API now correctly resolves
+* Added informative and specific title to webpages
+* Added https://www.elixir-europe.org/platforms/data/elixir-deposition-databases[Elixir Deposition Database] banner 
+
+[[section]]
 4.0.3
 -----
 
@@ -9,7 +22,6 @@ This is a bugfix release that addresses the following issues:
 * Index legacy XML group submissions, which was not happening due to an unexpected consequence of the interaction of components. 
 * Redirect /biosamples/sample and /biosamples/group URLs in case of typo 
 
-
 [[section]]
 4.0.2
 -----
@@ -19,7 +31,6 @@ This is a bugfix release that addresses the following issues:
 * Fix javascript on SampleTab submission and accession
 * Handle load-balanced accessioning
 * Fix for storage of relationships source on new samples
-
 
 [[section]]
 4.0.1
@@ -32,7 +43,6 @@ This is a bugfix release that addresses the following issues:
 * Allow CORS requests for legacy XML APIs.
 * Updated homepage project sample links to use a filter search rather than a text search.
  
-
 [[section]]
 4.0.0
 -----

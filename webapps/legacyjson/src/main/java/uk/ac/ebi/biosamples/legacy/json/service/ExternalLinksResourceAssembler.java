@@ -23,8 +23,8 @@ public class ExternalLinksResourceAssembler implements ResourceAssembler<Externa
         Resource resource = new Resource(entity);
         resource.add(entityLinks.linkToSingleResource(ExternalLinksRelation.class, entity.url()).withSelfRel());
         resource.add(entityLinks.linkToSingleResource(ExternalLinksRelation.class, entity.url()).withRel("externallinkrelations"));
-        resource.add(new Link("test").withRel("samples"));
-        resource.add(new Link("test").withRel("groups"));
+//        resource.add(new Link("test").withRel("samples"));
+//        resource.add(new Link("test").withRel("groups"));
         return resource;
     }
 }

@@ -3,6 +3,19 @@
 This pages contains links to release notes for BioSamples for version 4.0.0 and higher. This release represents a comprehensive overhaul and therefore previous release notes are no longer applicable.
 
 [[section]]
+4.0.4
+-----
+
+This is a bugfix release that addresses the following issues:
+
+* Persistence of search terms and filters when using HAL paging links
+* SameAs relation in the legacy JSON API works as intended
+* Removed residual test endpoints from legacy JSON API
+* Details relation in legacy JSON API now correctly resolves
+* Added informative and specific title to webpages
+* Added https://www.elixir-europe.org/platforms/data/elixir-deposition-databases[Elixir Deposition Database] banner 
+
+[[section]]
 4.0.3
 -----
 
