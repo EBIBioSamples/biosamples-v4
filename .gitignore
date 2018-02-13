@@ -24,3 +24,6 @@ run_test.py
 jsonExport.json
 xmlExport.xml
 docker-integration.local.sh
+
+*.iml
+**/.idea

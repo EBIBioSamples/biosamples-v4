@@ -1,6 +1,7 @@
 package uk.ac.ebi.biosamples;
 
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -30,7 +31,7 @@ import uk.ac.ebi.biosamples.model.Sample;
 
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
-@Profile({"default", "selenium"})
+//@Profile({"default", "selenium", "test"})
 public class JsonLdIntegration extends AbstractIntegration {
     private final Environment env;
     private final RestOperations restTemplate;
@@ -113,6 +114,18 @@ public class JsonLdIntegration extends AbstractIntegration {
         attributes.add(
                 Attribute.build("Description", "Test description")
         );
+        attributes.add(
+                Attribute.build(
+                        "MultiCategoryCodeField",
+                        "heart and lung",
+                        Arrays.asList(
+                                "http://purl.obolibrary.org/obo/UBERON_0002048",
+                                "http://purl.obolibrary.org/obo/UBERON_0002045",
+                                "UBERON:0002045"),
+                        null
+                )
+        );
+
         SortedSet<ExternalReference> externalReferences = new TreeSet<>();
         externalReferences.add(
                 ExternalReference.build("www.google.com")
@@ -171,5 +184,6 @@ public class JsonLdIntegration extends AbstractIntegration {
     private boolean isSeleniumTestRequired(Environment env) {
         return Stream.of(env.getActiveProfiles()).anyMatch(value -> value.matches("selenium"));
     }
+
 
 }
