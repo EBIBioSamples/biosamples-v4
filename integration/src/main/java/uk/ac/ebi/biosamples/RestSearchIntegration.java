@@ -45,13 +45,13 @@ public class RestSearchIntegration extends AbstractIntegration {;
 		if (!test1.equals(resource.getContent())) {
 			throw new RuntimeException("Expected response ("+resource.getContent()+") to equal submission ("+test1+")");
 		}
-
+		
 		//put a sample that refers to a non-existing sample
 		resource = client.persistSampleResource(test2);
 		if (!test2.equals(resource.getContent())) {
 			throw new RuntimeException("Expected response ("+resource.getContent()+") to equal submission ("+test2+")");
 		}
-
+		
 		resource = client.persistSampleResource(test4);
 		if (!test4.equals(resource.getContent())) {
 			throw new RuntimeException("Expected response ("+resource.getContent()+") to equal submission ("+test4+")");
@@ -138,8 +138,10 @@ public class RestSearchIntegration extends AbstractIntegration {;
 		}
 
 
-        if (!sample4EffectiveSearchResults.containsAll(sample4ExpectedSearchResults)) {
-			throw new RuntimeException("Search results for " + sample4.getAccession() + " does not contains all expected samples");
+		for (String expectedAccession : sample4ExpectedSearchResults) {
+	        if (!sample4EffectiveSearchResults.contains(expectedAccession)) {
+				throw new RuntimeException("Search results for " + sample4.getAccession() + " does not contains expected sample "+expectedAccession);
+			}
 		}
 
 	}
