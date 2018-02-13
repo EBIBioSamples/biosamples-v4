@@ -31,7 +31,7 @@ import uk.ac.ebi.biosamples.model.Sample;
 
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
-@Profile({"default", "selenium", "test"})
+//@Profile({"default", "selenium", "test"})
 public class JsonLdIntegration extends AbstractIntegration {
     private final Environment env;
     private final RestOperations restTemplate;
@@ -121,7 +121,7 @@ public class JsonLdIntegration extends AbstractIntegration {
                         Arrays.asList(
                                 "http://purl.obolibrary.org/obo/UBERON_0002048",
                                 "http://purl.obolibrary.org/obo/UBERON_0002045",
-                                "Something else"),
+                                "UBERON:0002045"),
                         null
                 )
         );
