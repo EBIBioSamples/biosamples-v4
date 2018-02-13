@@ -13,7 +13,7 @@ import uk.ac.ebi.biosamples.MessageUtils;
 import uk.ac.ebi.biosamples.Messaging;
 
 @Component
-public class SolrRunner implements ApplicationRunner, ExitCodeGenerator {
+public class SolrRunner implements ApplicationRunner {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -23,33 +23,16 @@ public class SolrRunner implements ApplicationRunner, ExitCodeGenerator {
 	@Autowired
 	private BioSamplesProperties biosamplesProperties;	
 
-	//wire in the message buffer so we can return a non-zero exit code if there are any problems
-	@Autowired
-	private SolrMessageBuffer messageBuffer;
-
 	@Override
 	public void run(ApplicationArguments args) throws Exception {
 		// as long as there are messages to read, keep this thread alive
 		// that will also keep the async message client alive too?
 		Long messageCount = null;
 		while (biosamplesProperties.getAgentSolrStayalive()
-				|| messageCount == null || messageCount > 0
-				||!messageBuffer.areAllStored()) {
+				|| messageCount == null || messageCount > 0) {
 			Thread.sleep(1000);
 			messageCount = messageUtils.getQueueCount(Messaging.queueToBeIndexedSolr);
 			log.trace("Messages remaining in "+Messaging.queueToBeIndexedSolr+" "+messageCount);
 		}
 	}
-
-	@Override
-	public int getExitCode() {
-		//exit code depends on message buffer
-		boolean hadProblem = messageBuffer.hadProblem.get();
-		if (hadProblem) {
-			return 1;
-		} else {
-			return 0;
-		}
-	}
-
 }

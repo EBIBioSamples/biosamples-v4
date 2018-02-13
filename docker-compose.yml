@@ -23,8 +23,11 @@ services:
     #configure other services
     - spring.data.solr.host=http://solr:8983/solr
     - spring.data.mongodb.host=mongo
-    - spring.rabbitmq.publisher-confirms=true
-    - spring.rabbitmq.host=rabbitmq
+    - SPRING_RABBITMQ_HOST=rabbitmq
+    - SPRING_RABBITMQ_PUBLISHER-CONFIRMS=true
+    - SPRING_RABBITMQ_PUBLISHER-RETURNS=true
+    - SPRING_RABBITMQ_LISTENER_SIMPLE_PREFETCH=100
+    - SPRING_RABBITMQ_LISTENER_SIMPLE_TRANSACTION-SIZE=25
     - spring.jackson.serialization-inclusion=non_null
     - spring.jackson.serialization.WRITE_NULL_MAP_VALUES=false
     - spring.jackson.serialization.indent_output=true
@@ -158,14 +161,14 @@ services:
     - -jar
     - agents-solr-4.0.5-SNAPSHOT.jar
     environment:
+    - SPRING_RABBITMQ_HOST=rabbitmq
     - SPRING_RABBITMQ_PUBLISHER-CONFIRMS=true
     - SPRING_RABBITMQ_PUBLISHER-RETURNS=true
-    - SPRING_RABBITMQ_LISTENER_CONCURRENCY=1000
-    - SPRING_RABBITMQ_LISTENER_MAX-CONCURRENCY=1000
-    - BIOSAMPLES_AGENT_SOLR_QUEUESIZE=1000
-    - BIOSAMPLES_AGENT_SOLR_QUEUETIME=10000
+    - SPRING_RABBITMQ_LISTENER_CONCURRENCY=1
+    - SPRING_RABBITMQ_LISTENER_MAX-CONCURRENCY=16
+    - SPRING_RABBITMQ_LISTENER_SIMPLE_PREFETCH=100
+    - SPRING_RABBITMQ_LISTENER_SIMPLE_TRANSACTION-SIZE=25
     - SPRING_DATA_SOLR_HOST=http://solr:8983/solr
-    - SPRING_RABBITMQ_HOST=rabbitmq
     - BIOSAMPLES_AGENT_SOLR_STAYALIVE=true
     - LOGGING_FILE=/logs/agents-solr.log
     - spring.cache.cache-names=ols_ancestors_synonyms

@@ -8,6 +8,7 @@ import org.springframework.data.solr.core.query.FacetQuery;
 import org.springframework.data.solr.core.query.Query;
 import org.springframework.data.solr.core.query.result.FacetFieldEntry;
 import org.springframework.data.solr.core.query.result.FacetPage;
+import org.springframework.util.Assert;
 
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
 
@@ -65,5 +66,6 @@ public interface SolrSampleRepositoryCustom {
 	 * @return
 	 */
 	public FacetPage<SolrSample> findByFacetQuery(FacetQuery query);
-	
+
+	public SolrSample saveWithoutCommit(SolrSample entity);
 }
