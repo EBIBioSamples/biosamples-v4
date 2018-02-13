@@ -1,52 +1,77 @@
 package uk.ac.ebi.biosamples.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.annotation.JsonRawValue;
+
+import java.util.List;
 
 /**
  * Object to represent the ld+json version of the @see <a href="http://schema.org/PropertyValue">Property Value</a>
  * in schema.org
  */
+
+@JsonPropertyOrder({ "@type", "name", "value", "valueReference" })
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class JsonLDPropertyValue {
 
-    @JsonProperty("@context")
-    private final String context = "http://schema.org";
 
     @JsonProperty("@type")
     private final String type = "PropertyValue";
 
-    private String propertyId;
+    private String name;
     private String value;
-    private JsonLDMedicalCode code;
+    private String unitText;
+    private String unitCode;
 
-    public String getContext() {
-        return context;
-    }
+
+//    @JsonProperty("valueReference")
+//    private List<JsonLDStructuredValue> valueReference;
+
+    private List<JsonLDCategoryCode> valueReference;
 
     public String getType() {
         return type;
-    }
-
-    public String getPropertyId() {
-        return propertyId;
-    }
-
-    public void setPropertyId(String propertyId) {
-        this.propertyId = propertyId;
     }
 
     public String getValue() {
         return value;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getName() { return name; }
+
     public void setValue(String value) {
         this.value = value;
     }
 
-    public JsonLDMedicalCode getCode() {
-        return code;
+    public List<JsonLDCategoryCode> getValueReference() {
+        return valueReference;
     }
 
-    public void setCode(JsonLDMedicalCode code) {
-        this.code = code;
+    public void setValueReference(List<JsonLDCategoryCode> valueReference) {
+        this.valueReference = valueReference;
+    }
+
+    public String getUnitCode() {
+        return unitCode;
+    }
+
+    public JsonLDPropertyValue unitCode(String unitCode) {
+        this.unitCode = unitCode;
+        return this;
+    }
+
+    public String getUnitText() {
+        return unitText;
+    }
+
+    public JsonLDPropertyValue unitText(String unitText) {
+        this.unitText = unitText;
+        return this;
     }
 }

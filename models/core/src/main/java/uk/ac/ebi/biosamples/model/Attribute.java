@@ -10,6 +10,8 @@ import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -21,6 +23,9 @@ import com.google.common.collect.Lists;
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class Attribute implements Comparable<Attribute> {
+
+    //TODO: This needs to be public static otherwise spring-data-mongo goes crazy
+	public static Logger log = LoggerFactory.getLogger(Attribute.class);
 
 	private String type;
 	private String value;
@@ -59,11 +64,17 @@ public class Attribute implements Comparable<Attribute> {
 		String displayIri = iri.first();
 		
 		//check this is a sane iri
-		UriComponents iriComponents = UriComponentsBuilder.fromUriString(displayIri).build(true);
-		if (iriComponents.getScheme() == null
-				|| iriComponents.getHost() == null 
-				|| iriComponents.getPath() == null) {
-			//incomplete iri (e.g. 9606, EFO_12345) don't bother to check
+		try {
+			UriComponents iriComponents = UriComponentsBuilder.fromUriString(displayIri).build(true);
+			if (iriComponents.getScheme() == null
+					|| iriComponents.getHost() == null
+					|| iriComponents.getPath() == null) {
+				//incomplete iri (e.g. 9606, EFO_12345) don't bother to check
+				return null;
+			}
+		} catch (Exception e) {
+			//FIXME: Can't use a non static logger here because
+			log.error("An error occurred while trying to build OLS iri for " + displayIri, e);
 			return null;
 		}
 		

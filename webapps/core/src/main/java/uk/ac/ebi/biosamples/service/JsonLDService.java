@@ -39,6 +39,7 @@ public class JsonLDService {
      * @return the formatted string representing the ld+json object
      */
     public String jsonLDToString(JsonLDSample jsonld) {
+
         try {
             return this.objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonld);
         } catch (JsonProcessingException e) {
