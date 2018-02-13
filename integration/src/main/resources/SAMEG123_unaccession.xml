@@ -31,4 +31,8 @@
 		<URI>www.google.com</URI>
 		<ID>www.google.com</ID>
 	</Database>
+	<SampleIds>
+		<Id>SAME123456</Id>
+		<Id>SAME78910</Id>
+	</SampleIds>
 </BioSampleGroup>

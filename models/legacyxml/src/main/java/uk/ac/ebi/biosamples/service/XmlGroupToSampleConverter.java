@@ -31,20 +31,20 @@ public class XmlGroupToSampleConverter implements Converter<Element, Sample>  {
 	private Logger log = LoggerFactory.getLogger(getClass());
 	
 	@Override
-	public Sample convert(Element doc) {
+	public Sample convert(Element root) {
 		
 		Instant release = Instant.now();
 		Instant update = Instant.now();
 		String accession = null;
-		if (XmlPathBuilder.of(doc).attributeExists("id")) {
-			accession = XmlPathBuilder.of(doc).attribute("id");
+		if (XmlPathBuilder.of(root).attributeExists("id")) {
+			accession = XmlPathBuilder.of(root).attribute("id");
 		}
 		String name = null;
 		SortedSet<Attribute> attributes = new TreeSet<>();
 		SortedSet<Relationship> relationships = new TreeSet<>();
 		SortedSet<ExternalReference> externalReferences = new TreeSet<>();
 		
-		for (Element property : XmlPathBuilder.of(doc).elements("Property")){
+		for (Element property : XmlPathBuilder.of(root).elements("Property")){
 			if ("Group Name".equals(XmlPathBuilder.of(property).attribute("class"))) {
 				name = XmlPathBuilder.of(property).path("QualifiedValue", "Value").text();
 			} else if ("Group Description".equals(XmlPathBuilder.of(property).attribute("class"))) {
@@ -78,13 +78,20 @@ public class XmlGroupToSampleConverter implements Converter<Element, Sample>  {
 			}
 		}
 
-		SortedSet<Contact> contacts = extractContacts(doc);
-		SortedSet<Publication> publications = extractPublications(doc);
-		SortedSet<Organization> organizations = extractOrganizations(doc);
+		SortedSet<Contact> contacts = extractContacts(root);
+		SortedSet<Publication> publications = extractPublications(root);
+		SortedSet<Organization> organizations = extractOrganizations(root);
 
-		for (Element database : XmlPathBuilder.of(doc).elements("Database")){
+		for (Element database : XmlPathBuilder.of(root).elements("Database")){
 			if (XmlPathBuilder.of(database).path("URI").exists()) {
 				externalReferences.add(ExternalReference.build(XmlPathBuilder.of(database).path("URI").text()));
+			}
+		}
+		
+		//relationships
+		if (XmlPathBuilder.of(root).path("SampleIds").exists()) {
+			for (Element id : XmlPathBuilder.of(root).path("SampleIds").elements("Id")) {
+				relationships.add(Relationship.build(accession, "has member", id.getTextTrim()));
 			}
 		}
 		

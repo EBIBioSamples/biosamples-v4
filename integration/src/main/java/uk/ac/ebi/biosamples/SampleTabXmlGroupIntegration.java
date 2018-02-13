@@ -1,13 +1,17 @@
 package uk.ac.ebi.biosamples;
 
 import java.net.URI;
+import java.util.Optional;
 import java.util.Scanner;
+
+import javax.xml.ws.Response;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
+import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +21,7 @@ import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.model.Sample;
 
 @Component
 @Order(6)
@@ -52,8 +57,20 @@ public class SampleTabXmlGroupIntegration extends AbstractIntegration {
 					.accept(MediaType.TEXT_PLAIN)					
 					.body(sampleTabString);
 			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
-			// TODO check at the right URLs with GET to make sure all
+			String accession = response.getBody();
+			// check at the right URLs with GET to make sure all
 			// arrived
+			Optional<Resource<Sample>> group = client.fetchSampleResource(accession);
+			if (!group.isPresent()) {
+				throw new RuntimeException("Unable to retrieve group "+accession);
+			}
+			if (group.get().getContent().getAttributes().size() == 0) {
+				throw new RuntimeException("No attributes on group "+accession);
+			}
+			if (group.get().getContent().getRelationships().size() == 0) {
+				throw new RuntimeException("No relationships on group "+accession);
+			}
+			
 		});
 
 		URI putUri = UriComponentsBuilder.fromUri(uri).pathSegment("SAMEG123").build().toUri();
@@ -63,15 +80,20 @@ public class SampleTabXmlGroupIntegration extends AbstractIntegration {
 					.contentType(MediaType.APPLICATION_XML)
 					.accept(MediaType.TEXT_PLAIN)					
 					.body(sampleTabString);
-			ResponseEntity<String> response = null;
-			try {
-				response = restTemplate.exchange(request, String.class);
-			} catch (HttpStatusCodeException e) {
-				log.info("error response = "+response);
-				throw e;
-			}
-			// TODO check at the right URLs with GET to make sure all
+			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+			String accession = response.getBody();
+			// check at the right URLs with GET to make sure all
 			// arrived
+			Optional<Resource<Sample>> group = client.fetchSampleResource(accession);
+			if (!group.isPresent()) {
+				throw new RuntimeException("Unable to retrieve group "+accession);
+			}
+			if (group.get().getContent().getAttributes().size() == 0) {
+				throw new RuntimeException("No attributes on group "+accession);
+			}
+			if (group.get().getContent().getRelationships().size() == 0) {
+				throw new RuntimeException("No relationships on group "+accession);
+			}
 		});
 		
 	}
