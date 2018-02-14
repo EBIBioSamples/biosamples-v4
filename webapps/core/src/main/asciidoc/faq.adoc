@@ -4,7 +4,7 @@
 
 If you cannot find the answer to your question in this FAQ or the BioSamples Database help pages then please email us at biosamples@ebi.ac.uk.
 
-== How frequent are updates to BioSamples?
+== How frequent are updates to BioSamples' data?
 BioSamples content is updated daily. Information directly submitted or updated in a source should be reflected within 48 hours. However, occasionally daily updates may be missed due to unexpected circumstances.
 
 == What pattern do BioSamples accessions follow?
