@@ -83,8 +83,8 @@ public class SampleRestController {
 		this.entityLinks = entityLinks;
 	}
 
-	@CrossOrigin(methods = RequestMethod.GET)
     @PreAuthorize("isAuthenticated()")
+	@CrossOrigin(methods = RequestMethod.GET)
 	@GetMapping(value = "/{accession}", produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
 	public Resource<Sample> getSampleHal(@PathVariable String accession,
 			 @RequestParam(name = "legacydetails", required = false, defaultValue="false") boolean legacydetails) {
