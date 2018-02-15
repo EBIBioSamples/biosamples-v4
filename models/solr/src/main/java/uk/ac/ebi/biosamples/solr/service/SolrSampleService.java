@@ -17,6 +17,7 @@ import org.springframework.data.solr.core.query.FacetQuery;
 import org.springframework.data.solr.core.query.FilterQuery;
 import org.springframework.data.solr.core.query.Query;
 import org.springframework.data.solr.core.query.SimpleFacetQuery;
+import org.springframework.data.solr.core.query.SimpleField;
 import org.springframework.data.solr.core.query.SimpleQuery;
 import org.springframework.data.solr.core.query.result.FacetFieldEntry;
 import org.springframework.data.solr.core.query.result.FacetPage;
@@ -75,6 +76,7 @@ public class SolrSampleService {
 		Query query = new SimpleQuery(searchTerm);
 		query.setPageRequest(pageable);
 		query.setTimeAllowed(TIMEALLOWED*1000);
+		query.addProjectionOnField(new SimpleField("id"));
 
 		Optional<FilterQuery> publicFilterQuery = solrFilterService.getPublicFilterQuery(domains);
 		publicFilterQuery.ifPresent(query::addFilterQuery);
@@ -94,6 +96,7 @@ public class SolrSampleService {
 		FacetQuery query = new SimpleFacetQuery();
 		query.addCriteria(new Criteria().expression(searchTerm));
 		query.setPageRequest(new PageRequest(0, 1));
+		query.addProjectionOnField(new SimpleField("id"));
 
 		Optional<FilterQuery> optionalFilter = solrFilterService.getFilterQuery(filters);
 		optionalFilter.ifPresent(query::addFilterQuery);

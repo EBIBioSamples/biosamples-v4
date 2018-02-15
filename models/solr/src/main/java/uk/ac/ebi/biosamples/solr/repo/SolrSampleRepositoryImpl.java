@@ -97,14 +97,12 @@ public class SolrSampleRepositoryImpl implements SolrSampleRepositoryCustom  {
 
 	@Override
 	public Page<SolrSample> findByQuery(Query query) {
-		query.addProjectionOnField(new SimpleField("id"));
 		return solrOperations.query(query, SolrSample.class);
 	}
 
 
 	@Override
 	public FacetPage<SolrSample> findByFacetQuery(FacetQuery query) {
-		query.addProjectionOnField(new SimpleField("id"));
 		return solrOperations.queryForFacetPage(query, SolrSample.class);
 	}
 
