@@ -212,6 +212,7 @@ public class XmlV2Controller {
 		
 		//if no accession, try and find any samples that already exist with this sourceid and use their accession
 		//NB we don't validate that a sample *must* have this sourceid
+		//FIXME: here sample could be null and generate NullPointerException, check before for rejection on no accession provided
 		if (sample.getAccession() == null) {
 			//if no existing sample, reject 	
 			List<Filter> filterList = new ArrayList<>(2);
