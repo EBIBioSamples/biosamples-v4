@@ -29,11 +29,6 @@
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>			
-			<artifactId>utils-agent</artifactId>
-			<version>${bsd2017.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>uk.ac.ebi.biosamples</groupId>			
 			<artifactId>utils-ols</artifactId>
 			<version>${bsd2017.version}</version>
 		</dependency>
