@@ -37,7 +37,7 @@ appropriate sections:
     <dependency>
         <groupId>uk.ac.ebi.biosamples</groupId>
         <artifactId>biosamples-spring-boot-starter</artifactId>
-        <version>4.0.0</version>
+        <version>4.0.4</version>
     </dependency>
 </dependencies>
 ....
