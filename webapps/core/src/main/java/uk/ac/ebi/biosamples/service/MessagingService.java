@@ -25,31 +25,43 @@ public class MessagingService {
 		this.amqpTemplate = amqpTemplate;
 	}
 	
-	public void sendMessages(CurationLink curationLink) {
-		Optional<Sample> target = sampleReadService.fetch(curationLink.getSample());
-		if (target.isPresent()) {
-			sendMessages(target.get());
+	public void fetchThenSendMessage(String accession) {
+		if (accession == null) throw new IllegalArgumentException("accession cannot be null");
+		if (accession.trim().length() == 0) throw new IllegalArgumentException("accession cannot be empty");
+		
+		
+		Optional<Sample> sample = sampleReadService.fetch(accession);
+		if (sample.isPresent()) {
+			
+			//for each sample we have a relationship to, update it to index this sample as an inverse relationship	
+			//TODO do this async
+			List<Sample> related = new ArrayList<>();
+			for (Relationship relationship : sample.get().getRelationships()) {
+				if (relationship.getSource() != null 
+						&& relationship.getSource().equals(accession)) {
+					Optional<Sample> target = sampleReadService.fetch(relationship.getTarget());
+					if (target.isPresent()) {
+						related.add(target.get());
+					}
+				}
+			}	
+			
+			//send the original sample with the extras as related samples
+			amqpTemplate.convertAndSend(Messaging.exchangeForIndexingSolr, "", 
+					MessageContent.build(sample.get(), null, related, false));
 		}
+		
+	}
+	
+	@Deprecated
+	public void sendMessages(CurationLink curationLink) {
+		fetchThenSendMessage(curationLink.getSample());
 	}
 	
 
+	@Deprecated
 	public void sendMessages(Sample sample) {
-		
-		//for each sample we have a relationship to, update it to index this sample as an inverse relationship	
-		List<Sample> related = new ArrayList<>();
-		for (Relationship relationship : sample.getRelationships()) {
-			if (relationship.getSource() != null && relationship.getSource().equals(sample.getAccession())) {
-				Optional<Sample> target = sampleReadService.fetch(relationship.getTarget());
-				if (target.isPresent()) {
-					related.add(target.get());
-				}
-			}
-		}	
-		
-		//send the original sample with the extras as related samples
-		amqpTemplate.convertAndSend(Messaging.exchangeForIndexingSolr, "", 
-				MessageContent.build(sample, null, related, false));
-		
+		fetchThenSendMessage(sample.getAccession());
 	}
 	
 	public List<Sample> getDerivedFromSamples(Sample sample, List<Sample> related) {
