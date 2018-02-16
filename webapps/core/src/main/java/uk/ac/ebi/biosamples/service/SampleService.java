@@ -104,8 +104,6 @@ public class SampleService {
 			//assign it a new accession
 			sample = mongoAccessionService.generateAccession(sample);
 			
-			//update its relationships
-
 			//send a message for storage and further processing
 			messagingSerivce.sendMessages(sample);
 		}

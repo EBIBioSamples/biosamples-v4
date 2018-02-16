@@ -391,6 +391,8 @@ public class SampleTabService {
 				futureMap.put(sample.getName(), bioSamplesClient.persistSampleResourceAsync(sample, setUpdateDate, true));
 			}			
 		}
+		
+		//TODO replace relationships which were by name with by accession
 
 		//resolve futures for submitting samples
 		for (String futureName : futureMap.keySet()) {
