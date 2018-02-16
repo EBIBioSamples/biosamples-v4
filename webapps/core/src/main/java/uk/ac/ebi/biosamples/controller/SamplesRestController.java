@@ -7,7 +7,11 @@ import java.util.Collection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.domain.Sort.Order;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.ExposesResourceFor;
@@ -97,7 +101,12 @@ public class SamplesRestController {
 				}
 			}
 		}
-		
+				
+		if (page.getSort() == null) {
+			//if there is no existing sort, sort by score then accession
+			page = new PageRequest(page.getPageNumber(), page.getPageSize(), 
+				new Sort(new Order(Direction.DESC,"score"), new Order(Direction.ASC,"id")));
+		}
 		
 		Collection<Filter> filters = filterService.getFiltersCollection(filter);
 		Collection<String> domains = bioSamplesAapService.getDomains();
