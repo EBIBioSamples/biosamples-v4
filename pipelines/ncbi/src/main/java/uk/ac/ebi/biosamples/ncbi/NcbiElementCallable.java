@@ -126,24 +126,31 @@ public class NcbiElementCallable implements Callable<Void> {
 
 		// handle model and packages
 //disabled for the moment, do they really add anything? faulcon@2017/01/25
-//		for (Element modelElem : XmlPathBuilder.of(sampleElem).path("Models").elements("Model")) {
-//			attrs.add(Attribute.build("model", modelElem.getTextTrim(), null, null));
-//		}
-//		attrs.add(Attribute.build("package", XmlPathBuilder.of(sampleElem).path("Package").text(), null, null));
+//yes, ENA want them. But we can name them better. faulcon@2018/02/14
+		for (Element modelElem : XmlPathBuilder.of(sampleElem).path("Models").elements("Model")) {
+			attrs.add(Attribute.build("NCBI submission model", modelElem.getTextTrim()));
+		}
+		attrs.add(Attribute.build("NCBI submission package", XmlPathBuilder.of(sampleElem).path("Package").text()));
 
 		//handle dates
-		Instant updateDate = Instant.from(DateTimeFormatter.ISO_DATE_TIME.parse(sampleElem.attributeValue("last_update")+"Z"));
-		Instant releaseDate = Instant.from(DateTimeFormatter.ISO_DATE_TIME.parse(sampleElem.attributeValue("publication_date")+"Z"));
+		Instant lastUpdate = Instant.parse(sampleElem.attributeValue("last_update")+"Z");
+		Instant publicationDate = Instant.parse(sampleElem.attributeValue("publication_date")+"Z");
 		
-		Instant latestDate = updateDate;
-		if (releaseDate.isAfter(latestDate)) {
-			latestDate = releaseDate;
+		Instant latestDate = lastUpdate;
+		if (publicationDate.isAfter(latestDate)) {
+			latestDate = publicationDate;
 		}
 		
-		Sample sample = Sample.build(name, accession, domain, releaseDate, updateDate, attrs, rels, null);
+		//add some INSDC things for standardisation with ENA import
+		attrs.add(Attribute.build("INSDC first public", 
+			DateTimeFormatter.ISO_INSTANT.format(lastUpdate)));
+		attrs.add(Attribute.build("INSDC last update", 
+			DateTimeFormatter.ISO_INSTANT.format(publicationDate)));
+		
+		Sample sample = Sample.build(name, accession, domain, publicationDate, lastUpdate, attrs, rels, null);
 		
 		//now pass it along to the actual submission process
-		bioSamplesClient.persistSample(sample);
+		bioSamplesClient.persistSampleResource(sample);
 
 		log.trace("Element callable finished");
 		

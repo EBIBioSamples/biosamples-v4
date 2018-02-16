@@ -1,0 +1,59 @@
+<BioSample submission_date="2008-04-04T08:44:24.950" last_update="2015-02-12T15:57:53.867" publication_date="2008-04-04T08:44:25.077" access="public" id="2" accession="SAMN00000002">
+  <Ids>
+    <Id db="BioSample" is_primary="1">SAMN00000002</Id>
+    <Id db="WUGSC" db_label="Sample name">19655</Id>
+    <Id db="SRA">SRS000002</Id>
+  </Ids>
+  <Description>
+    <Title>Alistipes putredinis DSM 17216</Title>
+    <Organism taxonomy_id="445970" taxonomy_name="Alistipes putredinis DSM 17216"/>
+    <Comment>
+      <Paragraph>Alistipes putredinis (GenBank Accession Number for 16S rDNA gene: L16497) is a member of the Bacteroidetes division of the domain bacteria and has been isolated from human feces. It has been found in 16S rDNA sequence-based enumerations of the colonic microbiota of adult humans (Eckburg et. al. (2005), Ley et. al. (2006)). </Paragraph>
+      <Paragraph>Keywords: GSC:MIxS;MIGS:4.0</Paragraph>
+    </Comment>
+  </Description>
+  <Owner>
+    <Name abbreviation="WUGSC">Washington University, Genome Sequencing Center</Name>
+    <Contacts>
+      <Contact email="lims@genome.wustl.edu"/>
+    </Contacts>
+  </Owner>
+  <Models>
+    <Model>MIGS.ba</Model>
+  </Models>
+  <Package display_name="MIGS: cultured bacteria/archaea; version 4.0">MIGS.ba.4.0</Package>
+  <Attributes>
+    <Attribute attribute_name="finishing strategy (depth of coverage)">Level 3: Improved-High-Quality Draft11.6x;20</Attribute>
+    <Attribute attribute_name="collection date" harmonized_name="collection_date" display_name="collection date">not determined</Attribute>
+    <Attribute attribute_name="estimated_size" harmonized_name="estimated_size" display_name="estimated size">2550000</Attribute>
+    <Attribute attribute_name="sop">http://hmpdacc.org/doc/CommonGeneAnnotation_SOP.pdf</Attribute>
+    <Attribute attribute_name="project_type">Reference Genome</Attribute>
+    <Attribute attribute_name="host" harmonized_name="host" display_name="host">Homo sapiens</Attribute>
+    <Attribute attribute_name="lat_lon" harmonized_name="lat_lon" display_name="latitude and longitude">not determined</Attribute>
+    <Attribute attribute_name="biome" harmonized_name="env_biome" display_name="environment biome">terrestrial biome [ENVO:00000446]</Attribute>
+    <Attribute attribute_name="misc_param: HMP body site">not determined</Attribute>
+    <Attribute attribute_name="nucleic acid extraction">not determined</Attribute>
+    <Attribute attribute_name="feature" harmonized_name="env_feature" display_name="environment feature">human-associated habitat [ENVO:00009003]</Attribute>
+    <Attribute attribute_name="investigation_type" harmonized_name="investigation_type" display_name="investigation type">missing</Attribute>
+    <Attribute attribute_name="host taxid" harmonized_name="host_taxid" display_name="host taxonomy ID">9606</Attribute>
+    <Attribute attribute_name="project_name" harmonized_name="project_name" display_name="project name">Alistipes putredinis DSM 17216</Attribute>
+    <Attribute attribute_name="assembly">PCAP</Attribute>
+    <Attribute attribute_name="geo_loc_name" harmonized_name="geo_loc_name" display_name="geographic location">not determined</Attribute>
+    <Attribute attribute_name="source_mat_id" harmonized_name="source_material_id" display_name="source material identifiers">DSM 17216, CCUG 45780, CIP 104286, ATCC 29800, Carlier 10203, VPI 3293</Attribute>
+    <Attribute attribute_name="material" harmonized_name="env_material" display_name="environment material">biological product [ENVO:02000043]</Attribute>
+    <Attribute attribute_name="ref_biomaterial" harmonized_name="ref_biomaterial" display_name="reference for biomaterial">not determined</Attribute>
+    <Attribute attribute_name="misc_param: HMP supersite">gastrointestinal_tract</Attribute>
+    <Attribute attribute_name="num_replicons" harmonized_name="num_replicons" display_name="number of replicons">not determined</Attribute>
+    <Attribute attribute_name="sequencing method">454-GS20, Sanger</Attribute>
+    <Attribute attribute_name="isol_growth_condt" harmonized_name="isol_growth_condt" display_name="isolation and growth condition">not determined</Attribute>
+    <Attribute attribute_name="env_package" harmonized_name="env_package" display_name="environmental package">missing</Attribute>
+    <Attribute attribute_name="strain" harmonized_name="strain" display_name="strain">DSM 17216</Attribute>
+    <Attribute attribute_name="isolation-source" harmonized_name="isolation_source" display_name="isolation source">missing</Attribute>
+  </Attributes>
+  <Links>
+    <Link type="url" label="DNA Source">http://www.dsmz.de/catalogues/details/culture/DSM-17216</Link>
+    <Link type="entrez" target="bioproject">19655</Link>
+  </Links>
+  <Status status="live" when="2013-08-05T10:18:49"/>
+</BioSample>
+  
