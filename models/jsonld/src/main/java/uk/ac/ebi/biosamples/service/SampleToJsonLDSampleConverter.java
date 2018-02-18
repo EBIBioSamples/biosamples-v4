@@ -7,9 +7,14 @@ import java.util.Optional;
 
 import org.springframework.core.convert.converter.Converter;
 
+import org.springframework.hateoas.EntityLinks;
 import uk.ac.ebi.biosamples.model.*;
 
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
+
 public class SampleToJsonLDSampleConverter implements Converter<Sample, JsonLDSample> {
+
     @Override
     public JsonLDSample convert(Sample sample) {
 
@@ -33,6 +38,7 @@ public class SampleToJsonLDSampleConverter implements Converter<Sample, JsonLDSa
         if (!datasets.isEmpty()) {
             jsonLD.setDataset(datasets);
         }
+
         return jsonLD;
     }
 

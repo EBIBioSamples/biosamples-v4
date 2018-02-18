@@ -31,7 +31,7 @@ import uk.ac.ebi.biosamples.model.Sample;
 
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
-//@Profile({"default", "selenium", "test"})
+@Profile({"default", "selenium"})
 public class JsonLdIntegration extends AbstractIntegration {
     private final Environment env;
     private final RestOperations restTemplate;
@@ -178,6 +178,10 @@ public class JsonLdIntegration extends AbstractIntegration {
         }
         JsonLDSample jsonLDSample = responseEntity.getBody();
         assert jsonLDSample.getIdentifier().equals(sample.getAccession());
+
+        String checkingUrl = UriComponentsBuilder.fromUri(bioSamplesProperties.getBiosamplesClientUri())
+                .pathSegment("samples", sample.getAccession()).toUriString();
+        assert jsonLDSample.getUrl().equals(checkingUrl);
 
     }
 
