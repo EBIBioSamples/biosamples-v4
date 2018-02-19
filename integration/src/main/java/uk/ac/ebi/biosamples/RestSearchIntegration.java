@@ -23,7 +23,7 @@ import uk.ac.ebi.biosamples.model.Sample;
 
 @Component
 @Order(1)
-@Profile({"default", "rest"})
+@Profile({"default", "rest", "test"})
 public class RestSearchIntegration extends AbstractIntegration {;
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
