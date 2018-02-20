@@ -42,10 +42,7 @@ public class NcbiElementCallable implements Callable<Void> {
 		String accession = sampleElem.attributeValue("accession");
 
 		log.trace("Element callable starting for "+accession);
-		
-		// TODO compare to last version of XML?
-		// convert it to our model
-		
+				
 		String name = XmlPathBuilder.of(sampleElem).path("Description", "Title").text();
 		// if the name is double quotes, strip them
 		if (name.startsWith("\"")) {

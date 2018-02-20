@@ -37,7 +37,7 @@ public class EnaRunner implements ApplicationRunner {
 	private EnaCallableFactory enaCallableFactory;
 	
 	@Autowired
-	private NcbiCallableFactory ncbiCallableFactory;
+	private NcbiCurationCallableFactory ncbiCallableFactory;
 
 	private Map<String, Future<Void>> futures = new LinkedHashMap<>();
 	
@@ -137,11 +137,11 @@ public class EnaRunner implements ApplicationRunner {
 	private static class NcbiRowCallbackHandler implements RowCallbackHandler {
 
 		private final AdaptiveThreadPoolExecutor executorService;
-		private final NcbiCallableFactory ncbiCallableFactory;
+		private final NcbiCurationCallableFactory ncbiCallableFactory;
 		private final Map<String, Future<Void>> futures;
 		
 		public NcbiRowCallbackHandler(AdaptiveThreadPoolExecutor executorService,
-				NcbiCallableFactory ncbiCallableFactory,
+				NcbiCurationCallableFactory ncbiCallableFactory,
 				Map<String, Future<Void>> futures) {
 			this.executorService = executorService;
 			this.ncbiCallableFactory = ncbiCallableFactory;

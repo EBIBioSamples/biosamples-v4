@@ -7,18 +7,18 @@ import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 
 @Service
-public class NcbiCallableFactory {
+public class NcbiCurationCallableFactory {
 	
 	private Logger log = LoggerFactory.getLogger(getClass());
 	
 	private final BioSamplesClient bioSamplesClient;
 
-	public NcbiCallableFactory(BioSamplesClient bioSamplesClient) {
+	public NcbiCurationCallableFactory(BioSamplesClient bioSamplesClient) {
 
 		this.bioSamplesClient = bioSamplesClient;
 	}
 	
-	public NcbiCallable build(String accession) {
-		return new NcbiCallable(accession, bioSamplesClient);
+	public NcbiCurationCallable build(String accession) {
+		return new NcbiCurationCallable(accession, bioSamplesClient);
 	}
 }
