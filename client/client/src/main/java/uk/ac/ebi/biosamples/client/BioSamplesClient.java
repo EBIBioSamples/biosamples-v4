@@ -33,6 +33,8 @@ import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.client.service.AapClientService;
 import uk.ac.ebi.biosamples.client.service.CurationRetrievalService;
 import uk.ac.ebi.biosamples.client.service.CurationSubmissionService;
+import uk.ac.ebi.biosamples.client.service.SampleCursorRetrievalService;
+import uk.ac.ebi.biosamples.client.service.SamplePageRetrievalService;
 import uk.ac.ebi.biosamples.client.service.SampleRetrievalService;
 import uk.ac.ebi.biosamples.client.service.SampleSubmissionService;
 import uk.ac.ebi.biosamples.model.Curation;
@@ -54,6 +56,8 @@ public class BioSamplesClient implements AutoCloseable {
 	private Logger log = LoggerFactory.getLogger(getClass());
 	
 	private final SampleRetrievalService sampleRetrievalService;
+	private final SamplePageRetrievalService samplePageRetrievalService;
+	private final SampleCursorRetrievalService sampleCursorRetrievalService;
 	private final SampleSubmissionService sampleSubmissionService;
 	private final CurationRetrievalService curationRetrievalService;
 	private final CurationSubmissionService curationSubmissionService;
@@ -83,6 +87,9 @@ public class BioSamplesClient implements AutoCloseable {
 		traverson.setRestOperations(restOperations);
 		
 		sampleRetrievalService = new SampleRetrievalService(restOperations, traverson, threadPoolExecutor, bioSamplesProperties.getBiosamplesClientPagesize());
+		samplePageRetrievalService = new SamplePageRetrievalService(restOperations, traverson, threadPoolExecutor, bioSamplesProperties.getBiosamplesClientPagesize());
+		sampleCursorRetrievalService = new SampleCursorRetrievalService(restOperations, traverson, threadPoolExecutor, bioSamplesProperties.getBiosamplesClientPagesize());
+		
 		sampleSubmissionService = new SampleSubmissionService(restOperations, traverson, threadPoolExecutor);
 		curationRetrievalService = new CurationRetrievalService(restOperations, traverson, threadPoolExecutor, bioSamplesProperties.getBiosamplesClientPagesize());
 		curationSubmissionService = new CurationSubmissionService(restOperations, traverson, threadPoolExecutor);
@@ -135,15 +142,19 @@ public class BioSamplesClient implements AutoCloseable {
 	}
 
 	public Iterable<Resource<Sample>> fetchSampleResourceAll() throws RestClientException {
-		return sampleRetrievalService.fetchAll("", Collections.emptyList());
+		return sampleCursorRetrievalService.fetchAll("", Collections.emptyList());
 	}
 
 	public Iterable<Resource<Sample>> fetchSampleResourceAll(String text) throws RestClientException {
-		return sampleRetrievalService.fetchAll(text, Collections.emptyList());
+		return samplePageRetrievalService.fetchAll(text, Collections.emptyList());
+	}
+
+	public Iterable<Resource<Sample>> fetchSampleResourceAll(Collection<Filter> filters) {
+		return sampleCursorRetrievalService.fetchAll("", filters);
 	}
 
 	public Iterable<Resource<Sample>> fetchSampleResourceAll(String text, Collection<Filter> filters) {
-		return sampleRetrievalService.fetchAll(text, filters);
+		return samplePageRetrievalService.fetchAll(text, filters);
 	}
 
 	public Iterable<Optional<Resource<Sample>>> fetchSampleResourceAll(Iterable<String> accessions) throws RestClientException {
@@ -159,11 +170,11 @@ public class BioSamplesClient implements AutoCloseable {
 	 * @return a paginated results of samples relative to the search term
 	 */
 	public PagedResources<Resource<Sample>> fetchPagedSampleResource(String text, int page, int size) {
-		return sampleRetrievalService.search(text, Collections.emptyList(), page, size);
+		return samplePageRetrievalService.search(text, Collections.emptyList(), page, size);
 	}
 
 	public PagedResources<Resource<Sample>> fetchPagedSampleResource(String text, Collection<Filter> filters, int page, int size) {
-		return sampleRetrievalService.search(text, filters, page, size);
+		return samplePageRetrievalService.search(text, filters, page, size);
 	}
 
 	@Deprecated

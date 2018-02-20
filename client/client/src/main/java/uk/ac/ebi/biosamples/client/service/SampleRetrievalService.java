@@ -68,39 +68,6 @@ public class SampleRetrievalService {
 	public Future<Optional<Resource<Sample>>> fetch(String accession) {
 		return executor.submit(new FetchCallable(accession));
 	}
-	
-	public PagedResources<Resource<Sample>> search(String text, Collection<Filter> filters, int page, int size) {
-		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();
-		params.add("page", Integer.toString(page));
-		params.add("size", Integer.toString(size));
-		params.add("searchTerm", !text.isEmpty() ? text : "*:*");
-		for (Filter filter: filters) {
-            params.add("filter", filter.getSerialization());
-		}
-
-		params = encodePlusInQueryParameters(params);
-
-		URI uri = UriComponentsBuilder.fromUriString(traverson.follow("samples").asLink().getHref())
-				.queryParams(params)
-				.build()
-				.toUri();
-
-		log.trace("GETing " + uri);
-
-		RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
-		ResponseEntity<PagedResources<Resource<Sample>>> responseEntity = restOperations.exchange(requestEntity,
-				new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {
-				});
-
-		if (!responseEntity.getStatusCode().is2xxSuccessful()) {
-			throw new RuntimeException("Problem GETing samples");
-		}
-
-
-		log.trace("GETted " + uri);
-
-		return responseEntity.getBody();
-	}
 
 	private class FetchCallable implements Callable<Optional<Resource<Sample>>> {
 
@@ -139,39 +106,6 @@ public class SampleRetrievalService {
 			return Optional.of(responseEntity.getBody());
 		}
 	}
-
-	public Iterable<Resource<Sample>> fetchAll(String text, Collection<Filter> filterCollection) {
-		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();
-		params.add("text", text);
-		for (Filter filter: filterCollection) {
-			params.add("filter", filter.getSerialization());
-		}
-		params.add("size", Integer.toString(pageSize));
-
-		params = encodePlusInQueryParameters(params);
-
-		return new IterableResourceFetchAll<Sample>(executor, traverson, restOperations,
-				parameterizedTypeReferencePagedResourcesSample,
-				params,	"samples");
-
-	}
-
-    // TODO to keep the + in a (not encoded) query parameter is to force encoding
-	private MultiValueMap<String, String> encodePlusInQueryParameters(MultiValueMap<String, String> queryParameters) {
-	    MultiValueMap<String,String> encodedQueryParameters = new LinkedMultiValueMap<>();
-	    for (Map.Entry<String, List<String>> param: queryParameters.entrySet()) {
-	        	String key = param.getKey();
-	        	param.getValue().forEach(v -> {
-					if (v != null) {
-						encodedQueryParameters.add(key, v.replaceAll("\\+", "%2B"));
-					} else {
-						encodedQueryParameters.add(key, "");
-					}
-				});
-        }
-        return encodedQueryParameters;
-    }
-
 
 	public Iterable<Optional<Resource<Sample>>> fetchAll(Iterable<String> accessions) {
 		return new IterableResourceFetch(accessions);

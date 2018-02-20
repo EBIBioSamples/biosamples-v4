@@ -69,14 +69,14 @@ public class SampleFacetRestController {
     			
     	//to generate the HAL template correctly, the parameter name must match the requestparam name
 		resources.add(ControllerLinkBuilder.linkTo(
-				ControllerLinkBuilder.methodOn(SampleFacetRestController.class)
+			ControllerLinkBuilder.methodOn(SampleFacetRestController.class)
 					.getFacetsHal(text, filter))
 				.withSelfRel());
 
 		resources.add(ControllerLinkBuilder.linkTo(
-				ControllerLinkBuilder.methodOn(SamplesRestController.class)
-					.searchHal(text, filter,null, null))
-                    .withRel("samples"));
+			ControllerLinkBuilder.methodOn(SamplesRestController.class)
+					.searchHal(text, filter, null, null, null, null, null))
+                .withRel("samples"));
 		
 		
 		return ResponseEntity.ok().body(resources);

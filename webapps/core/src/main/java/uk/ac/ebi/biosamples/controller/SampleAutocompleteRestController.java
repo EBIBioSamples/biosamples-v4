@@ -66,14 +66,14 @@ public class SampleAutocompleteRestController {
     	resource.removeLinks();
     	//to generate the HAL template correctly, the parameter name must match the requestparam name
     	resource.add(ControllerLinkBuilder.linkTo(
-				ControllerLinkBuilder.methodOn(SampleFacetRestController.class)
+			ControllerLinkBuilder.methodOn(SampleFacetRestController.class)
 					.getFacetsHal(text, filter))
-				.withSelfRel());
+    			.withSelfRel());
 		
     	resource.add(ControllerLinkBuilder.linkTo(
-				ControllerLinkBuilder.methodOn(SamplesRestController.class)
-					.searchHal(text,  filter, null, null))
-                    .withRel("samples"));
+			ControllerLinkBuilder.methodOn(SamplesRestController.class)
+					.searchHal(text, filter, null, null, null, null, null))
+    			.withRel("samples"));
 		
 		return ResponseEntity.ok().body(resource);
 	}

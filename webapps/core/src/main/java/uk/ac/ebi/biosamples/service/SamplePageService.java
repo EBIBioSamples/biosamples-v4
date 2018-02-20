@@ -1,6 +1,8 @@
 package uk.ac.ebi.biosamples.service;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -23,6 +25,7 @@ import uk.ac.ebi.biosamples.mongo.repo.MongoCurationLinkRepository;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
+import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
 import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
 
 /**
@@ -42,8 +45,7 @@ public class SamplePageService {
 	private MongoSampleRepository mongoSampleRepository;
 	@Autowired
 	private MongoCurationLinkRepository mongoCurationLinkRepository;
-	
-	
+		
 	//TODO use a ConversionService to manage all these
 	@Autowired
 	private MongoSampleToSampleConverter mongoSampleToSampleConverter;
@@ -54,7 +56,8 @@ public class SamplePageService {
 	@Autowired
 	private SolrSampleService solrSampleService;
 	
-	//@Cacheable(cacheNames=WebappProperties.getSamplesByText, sync=true)
+	
+	
 	public Page<Sample> getSamplesByText(String text, Collection<Filter> filters, Collection<String> domains, Pageable pageable) {
 		long startTime = System.nanoTime();
 		Page<SolrSample> pageSolrSample = solrSampleService.fetchSolrSampleByText(text, filters, domains, pageable);
@@ -65,7 +68,6 @@ public class SamplePageService {
 
 		startTime = System.nanoTime();
 		Page<Future<Optional<Sample>>> pageFutureSample = pageSolrSample.map(ss -> sampleService.fetchAsync(ss.getAccession()));
-		//Page<Sample> pageSample = pageSolrSample.map(ss->sampleService.fetchUsing(ss.getAccession()).get());
 		Page<Sample> pageSample = pageFutureSample.map(ss->{
 			try {
 				return ss.get().get();
@@ -89,10 +91,46 @@ public class SamplePageService {
 
 	public Page<Sample> getSamplesOfCuration(String hash, Pageable pageable) {
 		Page<MongoCurationLink> accession = mongoCurationLinkRepository.findByCurationHash(hash, pageable);
-		//stream process each into a sample *in parallel*
-		Page<Sample> pageSample = new PageImpl<>(StreamSupport.stream(accession.spliterator(), true)
-					.map(mcl->sampleService.fetch(mcl.getSample()).get()).collect(Collectors.toList()), 
-				pageable, accession.getTotalElements());			
+		//stream process each into a sample
+		Page<Sample> pageSample = accession.map(mcl -> sampleService.fetch(mcl.getSample()).get());			
 		return pageSample;
+	}
+	
+	public CursorArrayList<Sample> getSamplesByText(String text, Collection<Filter> filters, 
+			Collection<String> domains, String cursorMark, int size) {
+		
+		if (cursorMark == null || cursorMark.trim().length() == 0) {
+			cursorMark = "*";
+		}
+		if (size > 1000) {
+			size = 1000;
+		}
+		if (size < 1) {
+			size = 1;
+		}
+		
+		long startTime = System.nanoTime();
+		CursorArrayList<SolrSample> cursorSolrSample = solrSampleService.fetchSolrSampleByText(text, filters, domains, cursorMark, size);
+		long endTime = System.nanoTime();
+		log.trace("Got solr cursor in "+((endTime-startTime)/1000000)+"ms");
+
+		startTime = System.nanoTime();
+		List<Future<Optional<Sample>>> listFutureSample = cursorSolrSample.stream()
+				.map(s -> sampleService.fetchAsync(s.getAccession()))
+				.collect(Collectors.toList());
+		List<Sample> listSample = listFutureSample.stream().map(ss->{
+			try {
+				return ss.get().get();
+			} catch (InterruptedException e) {
+				throw new RuntimeException(e);
+			} catch (ExecutionException e) {
+				throw new RuntimeException(e);
+			}
+		}).collect(Collectors.toList());
+		endTime = System.nanoTime();
+		log.trace("Got mongo page content in "+((endTime-startTime)/1000000)+"ms");
+		
+		CursorArrayList<Sample> cursorSample = new CursorArrayList<>(listSample, cursorSolrSample.getNextCursorMark());
+		return cursorSample;
 	}
 }
