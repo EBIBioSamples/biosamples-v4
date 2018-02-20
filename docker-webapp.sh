@@ -10,17 +10,16 @@ while [ "$1" != "" ]; do
     shift
 done
 
-#mvn -T 2C -Dmaven.test.skip=true clean package
-mvn -T 2C -P embl-ebi clean package
-
 #cleanup any previous data
 if [ $clean == 1 ]
 then
+	mvn -T 2C -P embl-ebi clean package
 	echo "Cleaning existing volumes"
 	#remove any images, in case of out-of-date or corrupt images
 	docker-compose down --volumes --rmi local --remove-orphans
 	#docker-compose down --volumes --remove-orphans
 else
+	mvn -T 2C -P embl-ebi package
 	docker-compose down --remove-orphans
 fi
 set -e
