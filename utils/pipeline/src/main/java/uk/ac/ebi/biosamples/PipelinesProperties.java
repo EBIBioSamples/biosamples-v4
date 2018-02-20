@@ -42,6 +42,9 @@ public class PipelinesProperties {
 	@Value("${biosamples.pipelines.curation.domain:self.BiosampleCuration}")
 	private String curationDomain;
 	
+	@Value("${biosamples.pipelines.zooma.domain:self.BiosampleZooma}")
+	private String zoomaDomain;
+	
 	public String getNcbiFile() {
 		return ncbiFile;
 	}
@@ -56,6 +59,9 @@ public class PipelinesProperties {
 	}
 	public String getCurationDomain() {
 		return curationDomain;
+	}
+	public String getZoomaDomain() {
+		return zoomaDomain;
 	}
 
 	public int getThreadCount() {

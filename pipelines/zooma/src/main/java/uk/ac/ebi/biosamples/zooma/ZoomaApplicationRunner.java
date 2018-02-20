@@ -59,7 +59,7 @@ public class ZoomaApplicationRunner implements ApplicationRunner {
 				}
 
 				Callable<Void> task = new SampleZoomaCallable(bioSamplesClient, sample, 
-						zoomaProcessor, curationApplicationService, pipelinesProperties.getCurationDomain());
+						zoomaProcessor, curationApplicationService, pipelinesProperties.getZoomaDomain());
 				
 				futures.put(sample.getAccession(), executorService.submit(task));
 			}
