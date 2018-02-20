@@ -177,7 +177,7 @@ public class JsonLdIntegration extends AbstractIntegration {
             throw new RuntimeException("Error retrieving sample in application/ld+json format from the webapp");
         }
         JsonLDSample jsonLDSample = responseEntity.getBody();
-        assert jsonLDSample.getIdentifier().equals(sample.getAccession());
+        assert Stream.of(jsonLDSample.getIdentifiers()).anyMatch(s -> s.equals("biosamples:" + sample.getAttributes()));
 
         String checkingUrl = UriComponentsBuilder.fromUri(bioSamplesProperties.getBiosamplesClientUri())
                 .pathSegment("samples", sample.getAccession()).toUriString();

@@ -17,7 +17,7 @@ public class JsonLDSample {
     @JsonProperty("@type")
     private final String[] type = {"BioChemEntity", "Sample"};
 
-    private String identifier;
+    private String[] identifiers;
     private String name;
     private String description;
     private String url;
@@ -35,12 +35,12 @@ public class JsonLDSample {
         return type;
     }
 
-    public String getIdentifier() {
-        return identifier;
+    public String[] getIdentifiers() {
+        return identifiers;
     }
 
-    public void setIdentifier(String identifier) {
-        this.identifier = identifier;
+    public void setIdentifiers(String[] identifiers) {
+        this.identifiers = identifiers;
     }
 
     public String getName() {

@@ -20,7 +20,8 @@ public class SampleToJsonLDSampleConverter implements Converter<Sample, JsonLDSa
 
 
         JsonLDSample jsonLD = new JsonLDSample();
-        jsonLD.setIdentifier(sample.getAccession());
+        String[] identifiers = {"biosamples:" + sample.getAccession()};
+        jsonLD.setIdentifiers(identifiers);
         jsonLD.setName(sample.getName());
 
         List<JsonLDPropertyValue> jsonLDAttributeList = getAttributeList(sample);
