@@ -1,7 +1,5 @@
 package uk.ac.ebi.biosamples.service;
 
-import org.springframework.hateoas.EntityLinks;
-import org.springframework.hateoas.Link;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -14,7 +12,6 @@ import uk.ac.ebi.biosamples.model.Sample;
 import java.lang.reflect.Method;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 /**
  * This servise is meant for the convertions jobs to/form ld+json

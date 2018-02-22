@@ -22,8 +22,6 @@ import org.springframework.data.solr.core.query.result.FacetFieldEntry;
 import org.springframework.data.solr.core.query.result.FacetPage;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
-
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
 
 @Component

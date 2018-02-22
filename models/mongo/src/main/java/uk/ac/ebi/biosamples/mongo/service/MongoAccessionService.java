@@ -5,7 +5,6 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-
 import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
@@ -14,7 +13,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 
 //this needs to be the spring exception, not the mongo one
 import org.springframework.dao.DuplicateKeyException;
-
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
@@ -99,32 +97,39 @@ public class MongoAccessionService {
 	@Scheduled(fixedDelay = 1000)
 	public synchronized void prepareAccessions() {	
 		//check that all accessions are still available		
-		Iterator<String> it = accessionCandidateQueue.iterator();
-		while (it.hasNext()) {
-			String accessionCandidate = it.next();
+		Iterator<String> itCandidate = accessionCandidateQueue.iterator();
+		while (itCandidate.hasNext()) {
+			String accessionCandidate = itCandidate.next();
 			MongoSample sample = mongoSampleRepository.findOne(accessionCandidate);
 			if (sample != null) {
 				log.warn("Removing accession "+accessionCandidate+" from queue because now assigned");
-				it.remove();
+				itCandidate.remove();
 			}
 		}
-	
-		
-		while (accessionCandidateQueue.remainingCapacity() > 0) {
-			log.debug("Adding more accessions to queue");
-			String accessionCandidate = prefix + accessionCandidateCounter;
-			// if the accession already exists, skip it
-			if (mongoSampleRepository.exists(accessionCandidate)) {
-				accessionCandidateCounter += 1;
-				// if the accession can't be put in the queue at this time
-				// (queue full), stop
-			} else if (!accessionCandidateQueue.offer(accessionCandidate)) {
-				return;
-			} else {
-				//put it into the queue, move on to next
-				accessionCandidateCounter += 1;
+//		
+//		try (Stream<MongoSample> stream = mongoSampleRepository.streamAll(new Sort(new Order(Direction.ASC,"accession")))) {
+//
+//			Iterator<MongoSample> itStream = stream.iterator();
+//			//TODO use this to try to initially populate this more effectively
+			
+			
+			while (accessionCandidateQueue.remainingCapacity() > 0) {
+				log.debug("Adding more accessions to queue");
+				
+				String accessionCandidate = prefix + accessionCandidateCounter;
+				// if the accession already exists, skip it
+				if (mongoSampleRepository.exists(accessionCandidate)) {
+					accessionCandidateCounter += 1;
+					// if the accession can't be put in the queue at this time
+					// (queue full), stop
+				} else if (!accessionCandidateQueue.offer(accessionCandidate)) {
+					return;
+				} else {
+					//put it into the queue, move on to next
+					accessionCandidateCounter += 1;
+				}
+				log.trace("Added more accessions to queue");
 			}
-			log.trace("Added more accessions to queue");
-		}
+//		}
 	}
 }

@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 
 import uk.ac.ebi.biosamples.legacy.json.controller.SamplesController;
 import uk.ac.ebi.biosamples.legacy.json.controller.SamplesRelationsController;
-import uk.ac.ebi.biosamples.legacy.json.domain.LegacySample;
 import uk.ac.ebi.biosamples.legacy.json.domain.SamplesRelations;
 
 @Service

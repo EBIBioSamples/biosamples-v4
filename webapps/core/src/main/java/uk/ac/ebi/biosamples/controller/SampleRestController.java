@@ -38,8 +38,6 @@ import uk.ac.ebi.biosamples.service.SamplePageService;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 import uk.ac.ebi.biosamples.service.SampleService;
 
-import javax.servlet.http.HttpServletRequest;
-
 /**
  * Primary controller for REST operations both in JSON and XML and both read and
  * write.

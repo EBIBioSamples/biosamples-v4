@@ -1,7 +1,6 @@
 package uk.ac.ebi.biosamples.solr.service;
 
 import java.util.AbstractMap.SimpleEntry;
-import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
