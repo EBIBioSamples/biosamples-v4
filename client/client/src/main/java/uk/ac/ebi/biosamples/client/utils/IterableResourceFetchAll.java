@@ -15,7 +15,8 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.UriTemplate;
+import org.springframework.web.util.UriTemplate;
+//import org.springframework.hateoas.UriTemplate;
 import org.springframework.hateoas.client.Traverson;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
@@ -100,7 +101,7 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
 				} else { 
 					uri = URI.create(nextLink.getHref());					
 				}
-				
+				log.info("getting next page uri "+uri);
 				
 				nextPageFuture = executor.submit(new NextPageCallable<U>(restOperations, parameterizedTypeReference, uri));
 			}

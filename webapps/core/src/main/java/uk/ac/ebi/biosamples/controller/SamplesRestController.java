@@ -26,12 +26,15 @@ import org.springframework.hateoas.Resources;
 import org.springframework.hateoas.core.LinkBuilderSupport;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.MediaType;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.web.util.UriUtils;
 
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
@@ -57,7 +60,6 @@ import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
 @RequestMapping("/samples")
 public class SamplesRestController {
 
-	private final SampleReadService sampleService;
 	private final SamplePageService samplePageService;
 	private final FilterService filterService;
 	private final BioSamplesAapService bioSamplesAapService;
@@ -65,26 +67,24 @@ public class SamplesRestController {
 
 	private final SampleResourceAssembler sampleResourceAssembler;
 
-	private final EntityLinks entityLinks;
-
 	private Logger log = LoggerFactory.getLogger(getClass());
 
-	public SamplesRestController(SampleReadService sampleService,
+	public SamplesRestController(
 			SamplePageService samplePageService,FilterService filterService,
 			BioSamplesAapService bioSamplesAapService,
-			SampleResourceAssembler sampleResourceAssembler, EntityLinks entityLinks) {
-		this.sampleService = sampleService;
+			SampleResourceAssembler sampleResourceAssembler) {
 		this.samplePageService = samplePageService;
 		this.filterService = filterService;
 		this.bioSamplesAapService = bioSamplesAapService;
 		this.sampleResourceAssembler = sampleResourceAssembler;
-		this.entityLinks = entityLinks;
 	}
 	
 	private String decodeText(String text) {
 		if (text != null) {
 			try {
-				text = URLDecoder.decode(text, "UTF-8");
+				//URLDecoder doesn't work right...
+				//text = URLDecoder.decode(text, "UTF-8");
+				text = UriUtils.decode(text, "UTF-8");
 			} catch (UnsupportedEncodingException e) {
 				throw new RuntimeException(e);
 			}
@@ -96,7 +96,9 @@ public class SamplesRestController {
 		if (filter != null) {
 			for (int i = 0; i < filter.length; i++) {
 				try {
-					filter[i] = URLDecoder.decode(filter[i], "UTF-8");
+					//URLDecoder doesn't work right...
+					//filter[i] = URLDecoder.decode(filter[i], "UTF-8");
+					filter[i] = UriUtils.decode(filter[i], "UTF-8");
 				} catch (UnsupportedEncodingException e) {
 					throw new RuntimeException(e);
 				}
@@ -110,7 +112,7 @@ public class SamplesRestController {
 	public Resources<Resource<Sample>> searchHal(
 			@RequestParam(name = "text", required = false) String text,
 			@RequestParam(name = "filter", required = false) String[] filter, 
-			@RequestParam(name = "cursor", required = false) final String cursor,
+			@RequestParam(name = "cursor", required = false) String cursor,
 			@RequestParam(name = "page", required = false) final Integer page,
 			@RequestParam(name = "size", required = false) final Integer size, 
 			@RequestParam(name = "sort", required = false) final String[] sort, 
@@ -121,6 +123,7 @@ public class SamplesRestController {
 		//this is *not* needed for the html controller
 		text = decodeText(text);
 		filter = decodeFilter(filter);
+		String effectiveCursor = decodeText(cursor);
 			
 		int effectivePage;
 		if (page == null) {
@@ -140,9 +143,11 @@ public class SamplesRestController {
 
 		Resources<Resource<Sample>> resources;
 		if (cursor != null) {
-			
+
+			log.info("This cursor = "+effectiveCursor);
 			CursorArrayList<Sample> samples = samplePageService.getSamplesByText(text, filters, 
 				domains, cursor, effectiveSize);
+			log.info("Next cursor = "+samples.getNextCursorMark());
 			
 			resources = new Resources<>(samples.stream()
 				.map(s -> sampleResourceAssembler.toResource(s))
@@ -150,15 +155,23 @@ public class SamplesRestController {
 
 			resources.add(ControllerLinkBuilder.linkTo(
 				ControllerLinkBuilder.methodOn(SamplesRestController.class)
-					.searchHal(text, filter, cursor, null, size, null, null))
+					.searchHal(text, filter, effectiveCursor, null, size, null, null))
 				.withSelfRel());
 			
+			
 			//only display the next link if there is a next cursor to go to
-			if (!samples.getNextCursorMark().equals(cursor)) {
-				resources.add(ControllerLinkBuilder.linkTo(
+			if (!decodeText(samples.getNextCursorMark()).equals(effectiveCursor) 
+					&& !samples.getNextCursorMark().equals("*")) {
+				Link next = ControllerLinkBuilder.linkTo(
 					ControllerLinkBuilder.methodOn(SamplesRestController.class)
-						.searchHal(text, filter, samples.getNextCursorMark(), null, size, null, null))
-					.withRel(Link.REL_NEXT));	
+						.searchHal(text, filter, decodeText(samples.getNextCursorMark()), null, size, null, null))
+					.withRel(Link.REL_NEXT);
+				
+				
+				//have to manually strip all templating out because it can't handle encoded content
+				next = new Link(next.getHref().replaceAll("\\{.*\\}", ""), Link.REL_NEXT);
+				
+				resources.add(next);	
 			}
 			
 		} else {	
@@ -177,27 +190,35 @@ public class SamplesRestController {
 			// add the links to each individual sample on the page
 			// also adds links to first/last/next/prev at the same time
 			resources = pageAssembler.toResource(pageSample, sampleResourceAssembler,
-					ControllerLinkBuilder.linkTo(ControllerLinkBuilder.methodOn(SamplesRestController.class)
-							.searchHal(text, filter, null, page, size, sort, null))
-						.withSelfRel());
+				ControllerLinkBuilder.linkTo(ControllerLinkBuilder.methodOn(SamplesRestController.class)
+						.searchHal(text, filter, null, page, size, sort, null))
+					.withSelfRel());
+			//TODO this doesn't do pagination links cleanly, so fix them if present
+
+//			resources.add(ControllerLinkBuilder.linkTo(
+//				ControllerLinkBuilder.methodOn(SamplesRestController.class)
+//					.searchHal(text, filter, null, page, size, sort, null))
+//				.withSelfRel());
 			
 			// to generate the HAL template correctly, the parameter name must match
 			// the requestparam name
 			resources.add(ControllerLinkBuilder
-					.linkTo(ControllerLinkBuilder.methodOn(SamplesRestController.class)
-							.searchHal(text, filter, "*", null, size, null, null))
-					.withRel("cursor"));
-			
-			resources
-					.add(ControllerLinkBuilder.linkTo(ControllerLinkBuilder.methodOn(SampleAutocompleteRestController.class)
-							.getAutocompleteHal(text, filter, null)).withRel("autocomplete"));
-			
+				.linkTo(ControllerLinkBuilder.methodOn(SamplesRestController.class)
+					.searchHal(text, filter, "*", null, size, null, null))
+				.withRel("cursor"));
+		
 			resources.add(ControllerLinkBuilder
-					.linkTo(ControllerLinkBuilder.methodOn(SampleFacetRestController.class).getFacetsHal(text, filter))
-					.withRel("facet"));
+				.linkTo(ControllerLinkBuilder.methodOn(SampleAutocompleteRestController.class)
+						.getAutocompleteHal(text, filter, null))
+				.withRel("autocomplete"));			
 			resources.add(ControllerLinkBuilder
-					.linkTo(ControllerLinkBuilder.methodOn(SampleRestController.class).getSampleHal(null, false))
-					.withRel("sample"));
+				.linkTo(ControllerLinkBuilder.methodOn(SampleFacetRestController.class)
+					.getFacetsHal(text, filter))
+				.withRel("facet"));
+			resources.add(ControllerLinkBuilder
+				.linkTo(ControllerLinkBuilder.methodOn(SampleRestController.class)
+					.getSampleHal(null, false))
+				.withRel("sample"));
 			
 			/*
 			if (filters.stream().allMatch(f -> !f.getType().equals(FilterType.DATE_FILTER))) {
