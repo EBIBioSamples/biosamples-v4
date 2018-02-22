@@ -36,7 +36,6 @@ public class SampleReadService {
 	
 	private final CurationReadService curationReadService;
 	
-	//TODO application.properties this
 	private final ExecutorService executorService;
 	
 	public SampleReadService(MongoSampleRepository mongoSampleRepository,
