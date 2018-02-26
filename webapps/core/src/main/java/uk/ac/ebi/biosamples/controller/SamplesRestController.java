@@ -196,29 +196,32 @@ public class SamplesRestController {
 				.linkTo(ControllerLinkBuilder.methodOn(SamplesRestController.class)
 					.searchHal(text, filter, null, page, size, sort, null))
 				.withSelfRel()));
-			
-			//if there was a previous page, link to it and the first page
-			if (effectivePage > 0) {
-				resources.add(LinkUtils.cleanLink(ControllerLinkBuilder
-						.linkTo(ControllerLinkBuilder.methodOn(SamplesRestController.class)
-							.searchHal(text, filter, null, effectivePage-1, size, sort, null))
-						.withRel(Link.REL_PREVIOUS)));
+
+			//if theres more than one page, link to first and last
+			if (pageSample.getTotalPages() > 1) {
 				resources.add(LinkUtils.cleanLink(ControllerLinkBuilder
 					.linkTo(ControllerLinkBuilder.methodOn(SamplesRestController.class)
 						.searchHal(text, filter, null, 0, size, sort, null))
 					.withRel(Link.REL_FIRST)));
-			}
-			
-			//if there is a next page, link to it and the last page
-			if (effectivePage < pageSample.getTotalPages()) {
-				resources.add(LinkUtils.cleanLink(ControllerLinkBuilder
-						.linkTo(ControllerLinkBuilder.methodOn(SamplesRestController.class)
-							.searchHal(text, filter, null, effectivePage+1, size, sort, null))
-						.withRel(Link.REL_NEXT)));
 				resources.add(LinkUtils.cleanLink(ControllerLinkBuilder
 					.linkTo(ControllerLinkBuilder.methodOn(SamplesRestController.class)
 						.searchHal(text, filter, null, pageSample.getTotalPages(), size, sort, null))
 					.withRel(Link.REL_LAST)));
+			}
+			//if there was a previous page, link to it
+			if (effectivePage > 0) {
+				resources.add(LinkUtils.cleanLink(ControllerLinkBuilder
+					.linkTo(ControllerLinkBuilder.methodOn(SamplesRestController.class)
+						.searchHal(text, filter, null, effectivePage-1, size, sort, null))
+					.withRel(Link.REL_PREVIOUS)));
+			}
+			
+			//if there is a next page, link to it 
+			if (effectivePage < pageSample.getTotalPages()) {
+				resources.add(LinkUtils.cleanLink(ControllerLinkBuilder
+					.linkTo(ControllerLinkBuilder.methodOn(SamplesRestController.class)
+						.searchHal(text, filter, null, effectivePage+1, size, sort, null))
+					.withRel(Link.REL_NEXT)));
 			}
 			
 

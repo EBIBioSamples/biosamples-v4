@@ -99,8 +99,8 @@ public class BigIntegration extends AbstractIntegration {
 		double elapsedMs = (int) ((endTime-startTime)/1000000l);
 		double msPerSample = elapsedMs/noSamples;
 		log.info("Submitted "+noSamples+" samples in "+elapsedMs+"ms ("+msPerSample+"ms each)");
-		if (msPerSample > 20) {
-			throw new RuntimeException("Took more than 20ms per sample to submit ("+msPerSample+"ms each)");
+		if (msPerSample > 25) {
+			throw new RuntimeException("Took more than 25ms per sample to submit ("+msPerSample+"ms each)");
 		}
 
 	}
@@ -160,7 +160,7 @@ public class BigIntegration extends AbstractIntegration {
 		for (Link link : page.getLinks()) {
 			log.info("Found link "+link);
 		}
-		Link firstLink = page.getLink("first");
+		Link firstLink = page.getLink(Link.REL_FIRST);
 		UriComponents firstLinkUriComponents = UriComponentsBuilder.fromUriString(firstLink.getHref())
 				.build();
 		
