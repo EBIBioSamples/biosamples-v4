@@ -23,6 +23,7 @@ import uk.ac.ebi.biosamples.model.facet.Facet;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.FacetService;
 import uk.ac.ebi.biosamples.service.FilterService;
+import utils.LinkUtils;
 
 @RestController
 @ExposesResourceFor(Facet.class)
@@ -68,15 +69,15 @@ public class SampleFacetRestController {
     	resources.removeLinks();
     			
     	//to generate the HAL template correctly, the parameter name must match the requestparam name
-		resources.add(ControllerLinkBuilder.linkTo(
+		resources.add(LinkUtils.cleanLink(ControllerLinkBuilder.linkTo(
 			ControllerLinkBuilder.methodOn(SampleFacetRestController.class)
 					.getFacetsHal(text, filter))
-				.withSelfRel());
+				.withSelfRel()));
 
-		resources.add(ControllerLinkBuilder.linkTo(
+		resources.add(LinkUtils.cleanLink(ControllerLinkBuilder.linkTo(
 			ControllerLinkBuilder.methodOn(SamplesRestController.class)
 					.searchHal(text, filter, null, null, null, null, null))
-                .withRel("samples"));
+                .withRel("samples")));
 		
 		
 		return ResponseEntity.ok().body(resources);

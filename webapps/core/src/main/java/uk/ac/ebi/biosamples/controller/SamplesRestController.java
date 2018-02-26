@@ -3,6 +3,7 @@ package uk.ac.ebi.biosamples.controller;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -16,6 +17,8 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.ExposesResourceFor;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.PagedResources.PageMetadata;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.Resources;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
@@ -35,6 +38,7 @@ import uk.ac.ebi.biosamples.service.FilterService;
 import uk.ac.ebi.biosamples.service.SamplePageService;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
+import utils.LinkUtils;
 
 /**
  * Primary controller for REST operations both in JSON and XML and both read and
@@ -131,7 +135,6 @@ public class SamplesRestController {
 		Collection<Filter> filters = filterService.getFiltersCollection(filter);
 		Collection<String> domains = bioSamplesAapService.getDomains();
 
-		Resources<Resource<Sample>> resources;
 		if (cursor != null) {
 
 			log.info("This cursor = "+effectiveCursor);
@@ -139,7 +142,7 @@ public class SamplesRestController {
 				domains, cursor, effectiveSize);
 			log.info("Next cursor = "+samples.getNextCursorMark());
 			
-			resources = new Resources<>(samples.stream()
+			Resources<Resource<Sample>>  resources = new Resources<>(samples.stream()
 				.map(s -> sampleResourceAssembler.toResource(s))
 				.collect(Collectors.toList()));
 
@@ -164,6 +167,8 @@ public class SamplesRestController {
 				resources.add(next);	
 			}
 			
+			return resources;
+			
 		} else {	
 			
 			String effectiveSort[] = sort;
@@ -177,13 +182,45 @@ public class SamplesRestController {
 			Pageable pageable = new PageRequest(effectivePage, effectiveSize, pageSort);
 			
 			Page<Sample> pageSample = samplePageService.getSamplesByText(text, filters, domains, pageable);
-			// add the links to each individual sample on the page
-			// also adds links to first/last/next/prev at the same time
-			resources = pageAssembler.toResource(pageSample, sampleResourceAssembler,
-				ControllerLinkBuilder.linkTo(ControllerLinkBuilder.methodOn(SamplesRestController.class)
-						.searchHal(text, filter, null, page, size, sort, null))
-					.withSelfRel());
-			//TODO this doesn't do pagination links cleanly, so fix them if present
+
+			
+			PageMetadata pageMetadata = new PageMetadata(pageSample.getNumberOfElements(), 
+					pageSample.getNumber(), pageSample.getTotalElements(), pageSample.getTotalPages());
+			
+			Resources<Resource<Sample>> resources = new PagedResources<>(pageSample.getContent().stream()
+					.map(s -> sampleResourceAssembler.toResource(s))
+					.collect(Collectors.toList()), pageMetadata);			 
+
+			//self link
+			resources.add(LinkUtils.cleanLink(ControllerLinkBuilder
+				.linkTo(ControllerLinkBuilder.methodOn(SamplesRestController.class)
+					.searchHal(text, filter, null, page, size, sort, null))
+				.withSelfRel()));
+			
+			//if there was a previous page, link to it and the first page
+			if (effectivePage > 0) {
+				resources.add(LinkUtils.cleanLink(ControllerLinkBuilder
+						.linkTo(ControllerLinkBuilder.methodOn(SamplesRestController.class)
+							.searchHal(text, filter, null, effectivePage-1, size, sort, null))
+						.withRel(Link.REL_PREVIOUS)));
+				resources.add(LinkUtils.cleanLink(ControllerLinkBuilder
+					.linkTo(ControllerLinkBuilder.methodOn(SamplesRestController.class)
+						.searchHal(text, filter, null, 0, size, sort, null))
+					.withRel(Link.REL_FIRST)));
+			}
+			
+			//if there is a next page, link to it and the last page
+			if (effectivePage < pageSample.getTotalPages()) {
+				resources.add(LinkUtils.cleanLink(ControllerLinkBuilder
+						.linkTo(ControllerLinkBuilder.methodOn(SamplesRestController.class)
+							.searchHal(text, filter, null, effectivePage+1, size, sort, null))
+						.withRel(Link.REL_NEXT)));
+				resources.add(LinkUtils.cleanLink(ControllerLinkBuilder
+					.linkTo(ControllerLinkBuilder.methodOn(SamplesRestController.class)
+						.searchHal(text, filter, null, pageSample.getTotalPages(), size, sort, null))
+					.withRel(Link.REL_LAST)));
+			}
+			
 
 //			resources.add(ControllerLinkBuilder.linkTo(
 //				ControllerLinkBuilder.methodOn(SamplesRestController.class)
@@ -192,19 +229,19 @@ public class SamplesRestController {
 			
 			// to generate the HAL template correctly, the parameter name must match
 			// the requestparam name
-			resources.add(ControllerLinkBuilder
+			resources.add(LinkUtils.cleanLink(ControllerLinkBuilder
 				.linkTo(ControllerLinkBuilder.methodOn(SamplesRestController.class)
 					.searchHal(text, filter, "*", null, size, null, null))
-				.withRel("cursor"));
+				.withRel("cursor")));
 		
-			resources.add(ControllerLinkBuilder
+			resources.add(LinkUtils.cleanLink(ControllerLinkBuilder
 				.linkTo(ControllerLinkBuilder.methodOn(SampleAutocompleteRestController.class)
 						.getAutocompleteHal(text, filter, null))
-				.withRel("autocomplete"));			
-			resources.add(ControllerLinkBuilder
+				.withRel("autocomplete")));			
+			resources.add(LinkUtils.cleanLink(ControllerLinkBuilder
 				.linkTo(ControllerLinkBuilder.methodOn(SampleFacetRestController.class)
 					.getFacetsHal(text, filter))
-				.withRel("facet"));
+				.withRel("facet")));
 			resources.add(ControllerLinkBuilder
 				.linkTo(ControllerLinkBuilder.methodOn(SampleRestController.class)
 					.getSampleHal(null, false))
@@ -221,11 +258,12 @@ public class SamplesRestController {
 						.withRel("samplesbyUpdateDate"));
 			}
 			*/
+			
+			return resources;
 		}
 		
 		//TODO add search link
 
-		return resources;
 	}
 	
 	private Order parseSort(String sort) {
@@ -237,4 +275,5 @@ public class SamplesRestController {
 			return new Order(null, sort);
 		}
 	}
+	
 }
