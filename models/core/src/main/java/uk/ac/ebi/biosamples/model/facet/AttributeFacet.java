@@ -42,6 +42,20 @@ public class AttributeFacet implements Facet {
     public LabelCountListContent getContent() {
         return this.content;
     }
+    
+    @Override
+    public String toString() {
+    	StringBuilder sb = new StringBuilder();
+    	sb.append("AttributeFacet(");
+    	sb.append(facetLabel);
+    	sb.append(",");
+    	sb.append(facetCount);
+    	sb.append(",");
+    	sb.append(content);
+    	sb.append(")");
+    	return sb.toString();
+    }
+    
 
     public static class Builder implements Facet.Builder {
 

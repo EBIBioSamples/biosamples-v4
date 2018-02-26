@@ -43,6 +43,19 @@ public class RelationFacet implements Facet {
     public LabelCountListContent getContent() {
         return this.content;
     }
+    
+    @Override
+    public String toString() {
+    	StringBuilder sb = new StringBuilder();
+    	sb.append("RelationFacet(");
+    	sb.append(facetLabel);
+    	sb.append(",");
+    	sb.append(facetCount);
+    	sb.append(",");
+    	sb.append(content);
+    	sb.append(")");
+    	return sb.toString();
+    }
 
 
     public static class Builder implements Facet.Builder {
@@ -52,9 +65,9 @@ public class RelationFacet implements Facet {
         private LabelCountListContent content = null;
 
         @JsonCreator
-        public Builder(@JsonProperty("field") String field,
+        public Builder(@JsonProperty("label") String label,
                        @JsonProperty("count") Long count) {
-            this.label = field;
+            this.label = label;
             this.count = count;
         }
 
