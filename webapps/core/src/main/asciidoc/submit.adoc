@@ -4,7 +4,9 @@
 == Submit sample to BioSamples
 
 === Request
+include::{snippets}/sample-submission/http-request.adoc[]
 === Response
+include::{snippets}/sample-submission/http-response.adoc[]
 
 
 == Update previously submitted sample

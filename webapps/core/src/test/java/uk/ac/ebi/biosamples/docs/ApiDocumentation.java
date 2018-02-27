@@ -1,5 +1,6 @@
 package uk.ac.ebi.biosamples.docs;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -64,8 +65,6 @@ public class ApiDocumentation {
     @Before
     public void setUp() {
         this.faker = new DocumentationHelper();
-//        Faker faker = new Faker();
-//        String name = faker.job()
         this.mockMvc = MockMvcBuilders.webAppContextSetup(this.context)
 
                 .apply(documentationConfiguration(this.restDocumentation).uris()
@@ -77,6 +76,10 @@ public class ApiDocumentation {
                 .build();
     }
 
+    /**
+     * Generate the snippets for the API root
+     * @throws Exception
+     */
     @Test
     @Ignore
     public void apiRoot() throws Exception {
@@ -89,6 +92,10 @@ public class ApiDocumentation {
 
     }
 
+    /**
+     * Generate the snippets for the samples root page
+     * @throws Exception
+     */
     @Test
     @Ignore
     public void samplesRoot() throws Exception {
@@ -100,26 +107,38 @@ public class ApiDocumentation {
                 .andDo(document("samples"));
     }
 
+    /**
+     * Generate the snippets for Sample submission to BioSamples
+     * @throws Exception
+     */
     @Test
+    @Ignore
     public void submitSample() throws Exception {
         Sample sample = this.faker.generateRandomSample();
-        String sampleSerialized = mapper.writeValueAsString(sample);
-
         Sample sampleWithDomain = this.faker.getBuilderFromSample(sample).withDomain(this.faker.generateRandomDomain()).build();
         when(aapService.handleSampleDomain(sample)).thenReturn(sampleWithDomain);
 
         this.mockMvc.perform(
                 post("/biosamples/samples")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(sampleSerialized)
+                        .content(serialize(sample))
                         .header("Authorization", "Bearer $TOKEN"))
                 .andExpect(status().is2xxSuccessful())
                 .andDo(document("sample-submission", preprocessRequest(prettyPrint()), preprocessResponse(prettyPrint())));
+    }
 
+    @Test
+    public void sampleSubmissionMinimumInformation() throws Exception {
+        
+    }
+
+    @Test
+    public void submitSampl() throws Exception {
+        Sample sample = this.faker.generateRandomSample();
 
     }
 
-
+    // TODO Move all the subsequent to DocumentationHelper class
     private Pageable getDefaultPageable() {
         return new PageRequest(0, 20, getDefaultSort());
     }
@@ -138,4 +157,7 @@ public class ApiDocumentation {
         }
     }
 
+    private String serialize(Sample sample) throws JsonProcessingException {
+        return mapper.writeValueAsString(sample);
+    }
 }
