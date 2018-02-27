@@ -30,12 +30,40 @@ public class DocumentationHelper {
             }
 
             usedAccession.add(sampleAccession);
-            Sample sample = new Sample.Builder(sampleAccession, "Fake sample").build();
+            Sample sample = new Sample.Builder(sampleAccession, "FakeSample").build();
 
             samples.add(sample);
         }
 
         return samples;
     }
+
+    public Sample generateRandomSample() {
+        return this.generateRandomSamples(1).get(0);
+    }
+
+    public String generateRandomDomain() {
+        List<String> domainNames = Arrays.asList("self.BioSamples", "self.USI", "self.ENA", "self.ArrayExpress", "self.EVA", "self.FAANG", "self.HipSci", "self.EBiSC");
+
+        return domainNames.get(randomGenerator.nextInt(domainNames.size()));
+    }
+
+    public Sample.Builder getBuilderFromSample(Sample sample) {
+        Sample.Builder sampleBuilder = new Sample.Builder(sample.getName(), sample.getAccession())
+                .withDomain(sample.getDomain())
+                .withReleaseDate(sample.getRelease())
+                .withUpdateDate(sample.getUpdate());
+
+        sample.getAttributes().forEach(sampleBuilder::withAttribute);
+        sample.getRelationships().forEach(sampleBuilder::withRelationship);
+        sample.getContacts().forEach(sampleBuilder::withContact);
+        sample.getPublications().forEach(sampleBuilder::withPublication);
+        sample.getOrganizations().forEach(sampleBuilder::withOrganization);
+
+        return sampleBuilder;
+
+
+    }
+
 
 }

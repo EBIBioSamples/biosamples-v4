@@ -127,16 +127,6 @@
 			<version>4.5.3</version>
 		</dependency>
 		<dependency>
-			<groupId>io.rest-assured</groupId>
-			<artifactId>rest-assured</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>io.rest-assured</groupId>
-			<artifactId>json-path</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>org.springframework.restdocs</groupId>
 			<artifactId>spring-restdocs-core</artifactId>
 			<scope>test</scope>
@@ -170,7 +160,7 @@
 			<plugin>
 				<groupId>org.asciidoctor</groupId>
 				<artifactId>asciidoctor-maven-plugin</artifactId>
-				<version>1.5.2</version>
+				<version>1.5.3</version>
 				<executions>
 					<execution>
 						<id>output-html</id>
@@ -184,10 +174,13 @@
 					<sourceDirectory>src/main/asciidoc</sourceDirectory>
 					<outputDirectory>${project.build.directory}/${project.artifactId}-${project.version}/WEB-INF/classes/templates/asciidoc/</outputDirectory>
 					<backend>html</backend>
-<!-- 					<doctype>book</doctype> -->
-					<!-- <attributes> -->
-					<!-- <snippets>${snippetsDirectory}</snippets> -->
-					<!-- </attributes> -->
+ 					<doctype>book</doctype>
+					 <attributes>
+                         <snippets>${snippetsDirectory}</snippets>
+						 <source-highlighter>highlightjs</source-highlighter>
+						 <toc-title>Contents</toc-title>
+						 <toclevels>1</toclevels>
+					 </attributes>
 				</configuration>
 			</plugin>
 		</plugins>
