@@ -77,7 +77,7 @@ public class SitemapIntegration extends AbstractIntegration {
             });
         }
         lookupTable.entrySet().stream().filter(entry -> !entry.getValue()).findFirst().ifPresent(entry -> {
-            throw new RuntimeException("Sample "+entry+" is not in the sitemap");
+            throw new RuntimeException("Sample "+entry.getKey()+" is not in the sitemap");
         });
 
     }

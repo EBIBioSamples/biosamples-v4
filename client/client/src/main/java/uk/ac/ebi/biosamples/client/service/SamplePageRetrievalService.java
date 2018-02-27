@@ -50,9 +50,10 @@ public class SamplePageRetrievalService {
 	
 	public PagedResources<Resource<Sample>> search(String text, Collection<Filter> filters, int page, int size) {
 		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();
+		//TODO use shared constants here
 		params.add("page", Integer.toString(page));
 		params.add("size", Integer.toString(size));
-		params.add("searchTerm", !text.isEmpty() ? text : "*:*");
+		params.add("text", !text.isEmpty() ? text : "*:*");
 		for (Filter filter: filters) {
             params.add("filter", filter.getSerialization());
 		}

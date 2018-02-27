@@ -33,7 +33,7 @@ import uk.ac.ebi.biosamples.model.facet.content.LabelCountListContent;
 
 @Component
 @Order(3)
-@Profile({"default", "rest"})
+@Profile({"default","rest"})
 public class RestFacetIntegration extends AbstractIntegration {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
@@ -90,29 +90,10 @@ public class RestFacetIntegration extends AbstractIntegration {
 			if (((LabelCountListContent) facetContent).size() <= 0) {
 				throw new RuntimeException("No facet values found!");
 			}
-
 		}
 
-		//check that the particular facets we expect are present
+		//TODO check that the particular facets we expect are present
 
-		//TODO reintroduce this part of code
-		boolean facetIsCorrect = false;
-		for (Facet facet : content) {
-		    switch (facet.getLabel()) {
-		    	case "organism":
-		    		facetIsCorrect = true;
-		    		break;
-				case "geographic location (country and/or sea)":
-					facetIsCorrect = true;
-					break;
-				default:
-					facetIsCorrect = false;
-			}
-		}
-		if (!facetIsCorrect) {
-			throw new RuntimeException("Unable to find facet \"(Attribute) geographic location (country and/or sea)\"");
-		}
-		
 	}
 
 	@Override
@@ -133,7 +114,6 @@ public class RestFacetIntegration extends AbstractIntegration {
 			throw new RuntimeException("Facet endpoint does not contain the expected number of facet");
 		}
 
-		List<Facet> facetList = new ArrayList<>(facets.getContent());
 		List<ExternalReferenceDataFacet> externalDataFacetList = facets.getContent().stream()
 				.filter(facet -> facet.getType().equals(FacetType.EXTERNAL_REFERENCE_DATA_FACET))
 				.map(facet -> (ExternalReferenceDataFacet) facet)
