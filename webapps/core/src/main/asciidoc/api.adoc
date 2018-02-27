@@ -4,7 +4,7 @@
 You can issue a `GET` request to the root endpoint to get all the entry points into the API.
 
 == Request
-include::{snippets}/index/curl-request.adoc[]
+include::{snippets}/index/http-request.adoc[]
 
 == Response
 include::{snippets}/index/http-response.adoc[]

@@ -23,11 +23,14 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.SamplePageService;
+import uk.ac.ebi.biosamples.service.SampleService;
 
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.*;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
@@ -37,6 +40,7 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.pr
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
@@ -54,6 +58,9 @@ public class ApiDocumentation {
 
     @MockBean
     private SamplePageService samplePageService;
+
+    @MockBean
+    private SampleService sampleService;
 
     @MockBean
     private BioSamplesAapService aapService;
@@ -107,6 +114,20 @@ public class ApiDocumentation {
                 .andDo(document("samples"));
     }
 
+    @Test
+    public void sampleSubmissionMinimumInformation() throws Exception {
+        String wrongSampleSerialized = "{\"name\": \"Sample without minimum information\"," +
+                " \"accession\": \"SAMEA123123123\"}";
+
+        this.mockMvc.perform(
+                post("/biosamples/samples")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(wrongSampleSerialized)
+                    .header("Authorization", "Bearer $TOKEN"))
+                .andExpect(status().is4xxClientError())
+                .andDo(document("sample-minimal-information", preprocessRequest(prettyPrint()), preprocessResponse(prettyPrint())));
+    }
+
     /**
      * Generate the snippets for Sample submission to BioSamples
      * @throws Exception
@@ -115,7 +136,7 @@ public class ApiDocumentation {
     @Ignore
     public void submitSample() throws Exception {
         Sample sample = this.faker.generateRandomSample();
-        Sample sampleWithDomain = this.faker.getBuilderFromSample(sample).withDomain(this.faker.generateRandomDomain()).build();
+        Sample sampleWithDomain = this.faker.getBuilderFromSample(sample).withDomain(this.faker.generateTestDomain()).build();
         when(aapService.handleSampleDomain(sample)).thenReturn(sampleWithDomain);
 
         this.mockMvc.perform(
@@ -127,14 +148,22 @@ public class ApiDocumentation {
                 .andDo(document("sample-submission", preprocessRequest(prettyPrint()), preprocessResponse(prettyPrint())));
     }
 
-    @Test
-    public void sampleSubmissionMinimumInformation() throws Exception {
-        
-    }
 
     @Test
-    public void submitSampl() throws Exception {
-        Sample sample = this.faker.generateRandomSample();
+    public void updateSample() throws Exception {
+        Sample sampleWithDomain = this.faker.getBuilderFromSample(this.faker.generateRandomSample())
+                .withDomain(this.faker.generateTestDomain())
+                .build();
+
+        when(sampleService.fetch(eq(sampleWithDomain.getAccession()))).thenReturn(Optional.of(sampleWithDomain));
+        when(sampleService.store(eq(sampleWithDomain))).thenReturn(sampleWithDomain);
+        when(aapService.handleSampleDomain(sampleWithDomain)).thenReturn(sampleWithDomain);
+        doNothing().when(aapService).checkAccessible(isA(Sample.class));
+
+        this.mockMvc.perform(
+                put("/biosamples/samples/"  + sampleWithDomain.getAccession()).contentType(MediaType.APPLICATION_JSON).content(serialize(sampleWithDomain)).header("Authorization", "Bearer $TOKEN"))
+                .andExpect(status().is2xxSuccessful())
+                .andDo(document("sample-update", preprocessRequest(prettyPrint()), preprocessResponse(prettyPrint())));
 
     }
 

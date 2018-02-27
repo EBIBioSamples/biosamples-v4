@@ -48,6 +48,10 @@ public class DocumentationHelper {
         return domainNames.get(randomGenerator.nextInt(domainNames.size()));
     }
 
+    public String generateTestDomain() {
+        return "self.DocumentationDomain";
+    }
+
     public Sample.Builder getBuilderFromSample(Sample sample) {
         Sample.Builder sampleBuilder = new Sample.Builder(sample.getName(), sample.getAccession())
                 .withDomain(sample.getDomain())

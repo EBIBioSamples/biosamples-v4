@@ -2,7 +2,6 @@
 :toc: auto
 
 == Submit sample to BioSamples
-
 === Request
 include::{snippets}/sample-submission/http-request.adoc[]
 === Response
@@ -10,8 +9,28 @@ include::{snippets}/sample-submission/http-response.adoc[]
 
 
 == Update previously submitted sample
+
 === Request
 === Response
+
+== Sample submission minimal information
+Sample content reference:
+[cols=3*, options="header"]
+|===
+|Field
+|Type
+|Cardinality
+
+| name | `String` | Required
+| accession |  `String` | Required
+| release | `Date ISO 8601` | Required
+| update | `Date ISO 8601` | Required
+| domain | `String` | Required
+| characteristics | `Object` | Optional
+| externalReferences | `Array` | Optional
+| relationships | `Array` | Optional
+|===
+
 
 == Submit curation
 === Request
