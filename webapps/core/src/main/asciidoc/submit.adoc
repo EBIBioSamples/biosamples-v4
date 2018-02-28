@@ -31,9 +31,16 @@ include::{snippets}/sample-submission/http-response.adoc[]
 
 
 == Update previously submitted sample
-
 === Request
+include::{snippets}/sample-update/http-request.adoc[]
 === Response
+include::{snippets}/sample-update/http-response.adoc[]
+
+== Submit curation
+=== Request
+include::{snippets}/curation-submission/http-request.adoc[]
+=== Response
+include::{snippets}/curation-submission/http-response.adoc[]
 
 == Sample submission minimal information
 Sample content reference:
@@ -52,10 +59,3 @@ Sample content reference:
 | externalReferences | `Array` | Optional
 | relationships | `Array` | Optional
 |===
-
-
-== Submit curation
-=== Request
-=== Response
-
-

@@ -12,20 +12,22 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.*;
 import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.client.Traverson;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.JUnitRestDocumentation;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.BioSamplesAapService;
+import uk.ac.ebi.biosamples.service.CurationPersistService;
 import uk.ac.ebi.biosamples.service.SamplePageService;
 import uk.ac.ebi.biosamples.service.SampleService;
 
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -44,7 +46,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class ApiDocumentation {
 
     @Rule
@@ -63,11 +65,20 @@ public class ApiDocumentation {
     private SampleService sampleService;
 
     @MockBean
+    CurationPersistService curationPersistService;
+
+    @MockBean
     private BioSamplesAapService aapService;
 
     private DocumentationHelper faker;
 
     private MockMvc mockMvc;
+
+    private Traverson traverson;
+
+//    @LocalServerPort
+//    int port;
+
 
     @Before
     public void setUp() {
@@ -88,7 +99,6 @@ public class ApiDocumentation {
      * @throws Exception
      */
     @Test
-    @Ignore
     public void apiRoot() throws Exception {
         this.mockMvc.perform(get("/biosamples").accept(MediaTypes.HAL_JSON))
                 .andExpect(status().isOk())
@@ -115,6 +125,7 @@ public class ApiDocumentation {
     }
 
     @Test
+    @Ignore
     public void sampleSubmissionMinimumInformation() throws Exception {
         String wrongSampleSerialized = "{\"name\": \"Sample without minimum information\"," +
                 " \"accession\": \"SAMEA123123123\"}";
@@ -150,6 +161,7 @@ public class ApiDocumentation {
 
 
     @Test
+    @Ignore
     public void updateSample() throws Exception {
         Sample sampleWithDomain = this.faker.getBuilderFromSample(this.faker.generateRandomSample())
                 .withDomain(this.faker.generateTestDomain())
@@ -165,6 +177,18 @@ public class ApiDocumentation {
                 .andExpect(status().is2xxSuccessful())
                 .andDo(document("sample-update", preprocessRequest(prettyPrint()), preprocessResponse(prettyPrint())));
 
+    }
+
+    @Test
+    public void curateSample() throws Exception {
+        CurationLink curationLink = this.faker.getExampleCurationLinkObject();
+        when(aapService.handleCurationLinkDomain(eq(curationLink))).thenReturn(curationLink);
+        when(curationPersistService.store(curationLink)).thenReturn(curationLink);
+
+        this.mockMvc.perform(
+                post("/biosamples/samples/{accession}/curationlinks", curationLink.getSample()).contentType(MediaType.APPLICATION_JSON).content(serialize(curationLink)).header("Authorization", "Bearer $TOKER"))
+                .andExpect(status().is2xxSuccessful())
+                .andDo(document("curation-submission", preprocessRequest(prettyPrint()), preprocessResponse(prettyPrint())));
     }
 
     // TODO Move all the subsequent to DocumentationHelper class
@@ -186,7 +210,7 @@ public class ApiDocumentation {
         }
     }
 
-    private String serialize(Sample sample) throws JsonProcessingException {
-        return mapper.writeValueAsString(sample);
+    private String serialize(Object obj) throws JsonProcessingException {
+        return mapper.writeValueAsString(obj);
     }
 }

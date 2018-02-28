@@ -2,8 +2,9 @@ package uk.ac.ebi.biosamples.docs;
 
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.Resources;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.*;
 
+import java.time.Instant;
 import java.util.*;
 
 public class DocumentationHelper {
@@ -67,6 +68,19 @@ public class DocumentationHelper {
         return sampleBuilder;
 
 
+    }
+
+    public CurationLink getExampleCurationLinkObject() {
+
+        Curation curationObject = Curation.build(
+                Collections.singletonList(Attribute.build("Organism", "Human", "9606", null)),
+                Collections.singletonList(Attribute.build("Organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null)),
+                Collections.singletonList(ExternalReference.build("www.google.com")),
+                Collections.singletonList(ExternalReference.build("www.ebi.ac.uk/ena/ERA123456"))
+        );
+
+        CurationLink curationLinkObject = CurationLink.build("SAMEA123456", curationObject, generateTestDomain(), Instant.now());
+        return curationLinkObject;
     }
 
 
