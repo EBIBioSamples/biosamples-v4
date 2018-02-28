@@ -1,7 +1,29 @@
 = [.ebi-color]#Data submission#
+:last-update-label!:
 :toc: auto
 
-== Submit sample to BioSamples
+== How to submit BioSamples Database?
+
+We support two submission methods:
+
+1. JSON API (recommended)
+
+We recommend all submissions to BioSamples be made in JSON via our JSON API. 
+
+2. Legacy SampleTab format 
+
+Legacy submissions to BioSamples Database should be in link:st[SampleTab file format]. This is a tab-separated spreadsheet-like text format compatible with popular office tools.
+
+Once you have a SampleTab file, you can use the +++<a th:href="@{/sampletab/validation}">validation Service</a>+++ to ensure it is correct. This will also apply common corrections and ontology mappings that are used to standardise the data.
+
+You can send the validated and corrected SampleTab file by email to mailto:biosamples@ebi.ac.uk[biosamples@ebi.ac.uk]. We aim to respond to submissions within one working day.
+
+Alternatively, we provide a +++<a th:href="@{/sampletab/submission}">submission service</a>+++ for programmatically submitting SampleTab files. Please note that they will not be immediately visible in the web interface, but the assigned accession(s) will be returned immediately as a SampleTab file after the submission.
+
+If you have any questions about these services or would like more information, please contact us at mailto:biosamples@ebi.ac.uk[biosamples@ebi.ac.uk].
+
+
+
 === Request
 include::{snippets}/sample-submission/http-request.adoc[]
 === Response
