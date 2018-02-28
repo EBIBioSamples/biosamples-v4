@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.ExposesResourceFor;
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import uk.ac.ebi.biosamples.model.Autocomplete;
 import uk.ac.ebi.biosamples.model.filter.Filter;
@@ -76,5 +78,22 @@ public class SampleAutocompleteRestController {
     			.withRel("samples"));
 		
 		return ResponseEntity.ok().body(resource);
+	}
+    
+	public static Link getLink(String text, String[] filter, Integer size, String rel) {
+		UriComponentsBuilder builder = ControllerLinkBuilder.linkTo(SampleAutocompleteRestController.class)
+				.toUriComponentsBuilder();
+		if (text != null && text.trim().length() > 0) {
+			builder.queryParam("text", text);
+		}
+		if (filter != null) {
+			for (String filterString : filter) {
+				builder.queryParam("filter",filterString);				
+			}
+		}
+		if (size != null) {
+			builder.queryParam("size", size);
+		}
+		return new Link(builder.toUriString(), rel);
 	}
 }

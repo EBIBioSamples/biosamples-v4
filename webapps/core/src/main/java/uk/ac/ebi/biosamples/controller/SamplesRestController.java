@@ -1,6 +1,8 @@
 package uk.ac.ebi.biosamples.controller;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -23,22 +25,29 @@ import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.Resources;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.util.UriUtils;
 
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.FilterService;
+import uk.ac.ebi.biosamples.service.SampleManipulationService;
 import uk.ac.ebi.biosamples.service.SamplePageService;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
+import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
-import utils.LinkUtils;
+import uk.ac.ebi.biosamples.utils.LinkUtils;
 
 /**
  * Primary controller for REST operations both in JSON and XML and both read and
@@ -55,10 +64,11 @@ import utils.LinkUtils;
 public class SamplesRestController {
 
 	private final SamplePageService samplePageService;
+	private final SampleService sampleService;
 	private final FilterService filterService;
 	private final BioSamplesAapService bioSamplesAapService;
-
-
+	private final SampleManipulationService sampleManipulationService;
+	
 	private final SampleResourceAssembler sampleResourceAssembler;
 
 	private Logger log = LoggerFactory.getLogger(getClass());
@@ -66,11 +76,15 @@ public class SamplesRestController {
 	public SamplesRestController(
 			SamplePageService samplePageService,FilterService filterService,
 			BioSamplesAapService bioSamplesAapService,
-			SampleResourceAssembler sampleResourceAssembler) {
+			SampleResourceAssembler sampleResourceAssembler,
+			SampleManipulationService sampleManipulationService,
+			SampleService sampleService) {
 		this.samplePageService = samplePageService;
 		this.filterService = filterService;
 		this.bioSamplesAapService = bioSamplesAapService;
 		this.sampleResourceAssembler = sampleResourceAssembler;
+		this.sampleManipulationService = sampleManipulationService;
+		this.sampleService = sampleService;
 	}
 	
 	private String decodeText(String text) {
@@ -115,9 +129,9 @@ public class SamplesRestController {
 		
 		//Need to decode the %20 and similar from the parameters
 		//this is *not* needed for the html controller
-		text = decodeText(text);
-		filter = decodeFilter(filter);
-		String effectiveCursor = decodeText(cursor);
+		String decodedText = decodeText(text);
+		String[] decodedFilter = decodeFilter(filter);
+		String decodedCursor = decodeText(cursor);
 			
 		int effectivePage;
 		if (page == null) {
@@ -132,39 +146,25 @@ public class SamplesRestController {
 			effectiveSize = size;
 		}
 		
-		Collection<Filter> filters = filterService.getFiltersCollection(filter);
+		Collection<Filter> filters = filterService.getFiltersCollection(decodedFilter);
 		Collection<String> domains = bioSamplesAapService.getDomains();
 
 		if (cursor != null) {
 
-			log.info("This cursor = "+effectiveCursor);
-			CursorArrayList<Sample> samples = samplePageService.getSamplesByText(text, filters, 
-				domains, cursor, effectiveSize);
-			log.info("Next cursor = "+samples.getNextCursorMark());
+			log.trace("This cursor = "+decodedCursor);
+			CursorArrayList<Sample> samples = samplePageService.getSamplesByText(decodedText, filters, 
+				domains, decodedCursor, effectiveSize);
+			log.trace("Next cursor = "+samples.getNextCursorMark());
 			
 			Resources<Resource<Sample>>  resources = new Resources<>(samples.stream()
 				.map(s -> sampleResourceAssembler.toResource(s))
 				.collect(Collectors.toList()));
 
-			resources.add(ControllerLinkBuilder.linkTo(
-				ControllerLinkBuilder.methodOn(SamplesRestController.class)
-					.searchHal(text, filter, effectiveCursor, null, size, null, null))
-				.withSelfRel());
-			
-			
+			resources.add(getCursorLink(decodedText, decodedFilter, decodedCursor, effectiveSize, Link.REL_SELF));
 			//only display the next link if there is a next cursor to go to
-			if (!decodeText(samples.getNextCursorMark()).equals(effectiveCursor) 
+			if (!decodeText(samples.getNextCursorMark()).equals(decodedCursor) 
 					&& !samples.getNextCursorMark().equals("*")) {
-				Link next = ControllerLinkBuilder.linkTo(
-					ControllerLinkBuilder.methodOn(SamplesRestController.class)
-						.searchHal(text, filter, decodeText(samples.getNextCursorMark()), null, size, null, null))
-					.withRel(Link.REL_NEXT);
-				
-				
-				//have to manually strip all templating out because it can't handle encoded content
-				next = new Link(next.getHref().replaceAll("\\{.*\\}", ""), Link.REL_NEXT);
-				
-				resources.add(next);	
+				resources.add(getCursorLink(decodedText, decodedFilter, samples.getNextCursorMark(), effectiveSize, Link.REL_NEXT));				
 			}
 			
 			return resources;
@@ -191,60 +191,42 @@ public class SamplesRestController {
 					.map(s -> sampleResourceAssembler.toResource(s))
 					.collect(Collectors.toList()), pageMetadata);			 
 
-			//self link
-			resources.add(LinkUtils.cleanLink(ControllerLinkBuilder
-				.linkTo(ControllerLinkBuilder.methodOn(SamplesRestController.class)
-					.searchHal(text, filter, null, page, size, sort, null))
-				.withSelfRel()));
 
 			//if theres more than one page, link to first and last
 			if (pageSample.getTotalPages() > 1) {
-				resources.add(LinkUtils.cleanLink(ControllerLinkBuilder
-					.linkTo(ControllerLinkBuilder.methodOn(SamplesRestController.class)
-						.searchHal(text, filter, null, 0, size, sort, null))
-					.withRel(Link.REL_FIRST)));
-				resources.add(LinkUtils.cleanLink(ControllerLinkBuilder
-					.linkTo(ControllerLinkBuilder.methodOn(SamplesRestController.class)
-						.searchHal(text, filter, null, pageSample.getTotalPages(), size, sort, null))
-					.withRel(Link.REL_LAST)));
+				resources.add(getPageLink(decodedText, decodedFilter, 0, effectiveSize, sort, Link.REL_FIRST));				
 			}
 			//if there was a previous page, link to it
 			if (effectivePage > 0) {
-				resources.add(LinkUtils.cleanLink(ControllerLinkBuilder
-					.linkTo(ControllerLinkBuilder.methodOn(SamplesRestController.class)
-						.searchHal(text, filter, null, effectivePage-1, size, sort, null))
-					.withRel(Link.REL_PREVIOUS)));
+				resources.add(getPageLink(decodedText, decodedFilter, effectivePage-1, effectiveSize, sort, Link.REL_PREVIOUS));
 			}
+			resources.add(getPageLink(decodedText, decodedFilter, effectivePage, effectiveSize, sort, Link.REL_SELF));
 			
 			//if there is a next page, link to it 
-			if (effectivePage < pageSample.getTotalPages()) {
-				resources.add(LinkUtils.cleanLink(ControllerLinkBuilder
-					.linkTo(ControllerLinkBuilder.methodOn(SamplesRestController.class)
-						.searchHal(text, filter, null, effectivePage+1, size, sort, null))
-					.withRel(Link.REL_NEXT)));
+			if (effectivePage < pageSample.getTotalPages()-1) {
+				resources.add(getPageLink(decodedText, decodedFilter, effectivePage+1, effectiveSize, sort, Link.REL_NEXT));
+			}
+			//if theres more than one page, link to first and last
+			if (pageSample.getTotalPages() > 1) {
+				resources.add(getPageLink(decodedText, decodedFilter, pageSample.getTotalPages(), effectiveSize, sort, Link.REL_LAST));				
+			}
+
+			//if we are on the first page and not sorting
+			if (effectivePage==0 && (sort==null || sort.length==0)) {
+				resources.add(getCursorLink(decodedText, decodedFilter, "*", effectiveSize, "cursor"));
 			}
 			
-
-//			resources.add(ControllerLinkBuilder.linkTo(
-//				ControllerLinkBuilder.methodOn(SamplesRestController.class)
-//					.searchHal(text, filter, null, page, size, sort, null))
-//				.withSelfRel());
+			//if there is no search term, and on first page, add a link to use search
+			//TODO
+//			if (text.trim().length() == 0 && page == 0) {
+//				resources.add(LinkUtils.cleanLink(ControllerLinkBuilder
+//					.linkTo(ControllerLinkBuilder.methodOn(SamplesRestController.class)
+//						.searchHal(null, filter, null, page, effectiveSize, sort, null))
+//					.withRel("search")));
+//			}
 			
-			// to generate the HAL template correctly, the parameter name must match
-			// the requestparam name
-			resources.add(LinkUtils.cleanLink(ControllerLinkBuilder
-				.linkTo(ControllerLinkBuilder.methodOn(SamplesRestController.class)
-					.searchHal(text, filter, "*", null, size, null, null))
-				.withRel("cursor")));
-		
-			resources.add(LinkUtils.cleanLink(ControllerLinkBuilder
-				.linkTo(ControllerLinkBuilder.methodOn(SampleAutocompleteRestController.class)
-						.getAutocompleteHal(text, filter, null))
-				.withRel("autocomplete")));			
-			resources.add(LinkUtils.cleanLink(ControllerLinkBuilder
-				.linkTo(ControllerLinkBuilder.methodOn(SampleFacetRestController.class)
-					.getFacetsHal(text, filter))
-				.withRel("facet")));
+			resources.add(SampleAutocompleteRestController.getLink(decodedText, decodedFilter, null, "autocomplete"));
+					
 			resources.add(ControllerLinkBuilder
 				.linkTo(ControllerLinkBuilder.methodOn(SampleRestController.class)
 					.getSampleHal(null, false))
@@ -266,7 +248,6 @@ public class SamplesRestController {
 		}
 		
 		//TODO add search link
-
 	}
 	
 	private Order parseSort(String sort) {
@@ -277,6 +258,87 @@ public class SamplesRestController {
 		} else {
 			return new Order(null, sort);
 		}
+	}
+	
+	/**
+	 * ControllerLinkBuilder seems to have problems linking to the same controller?
+	 * Split out into manual manipulation for greater control
+	 * 
+	 * @param text
+	 * @param filter
+	 * @param cursor
+	 * @param size
+	 * @param rel
+	 * @return
+	 */
+	public static Link getCursorLink(String text, String[] filter, String cursor, int size, String rel) {
+		UriComponentsBuilder builder = ControllerLinkBuilder.linkTo(SamplesRestController.class)
+				.toUriComponentsBuilder();
+		if (text != null && text.trim().length() > 0) {
+			builder.queryParam("text", text);
+		}
+		if (filter != null) {
+			for (String filterString : filter) {
+				builder.queryParam("filter",filterString);				
+			}
+		}
+		builder.queryParam("cursor", cursor);
+		builder.queryParam("size", size);
+		return new Link(builder.toUriString(), rel);
+	}
+	
+	public static Link getPageLink(String text, String[] filter, int page, int size, String[] sort, String rel) {
+		UriComponentsBuilder builder = ControllerLinkBuilder.linkTo(SamplesRestController.class)
+				.toUriComponentsBuilder();
+		if (text != null && text.trim().length() > 0) {
+			builder.queryParam("text", text);
+		}
+		if (filter != null) {
+			for (String filterString : filter) {
+				builder.queryParam("filter",filterString);				
+			}
+		}
+		builder.queryParam("page", page);
+		builder.queryParam("size", size);
+		if (sort != null) {
+			for (String sortString : sort) {
+				builder.queryParam("sort",sortString);				
+			}
+		}
+		return new Link(builder.toUriString(), rel);
+	}
+	
+
+
+	@PreAuthorize("isAuthenticated()")
+	@PostMapping(consumes = { MediaType.APPLICATION_JSON_VALUE })
+	public ResponseEntity<Resource<Sample>> post(@RequestBody Sample sample,
+			@RequestParam(name = "setupdatedate", required = false, defaultValue="true") boolean setUpdateDate,
+            @RequestParam(name = "setfulldetails", required = false, defaultValue = "false") boolean setFullDetails) {
+		
+		log.debug("Recieved POST for "+sample);
+		sample = bioSamplesAapService.handleSampleDomain(sample);
+
+		//limit use of this method to write super-users only
+		if (bioSamplesAapService.isWriteSuperUser() && setUpdateDate) {
+			sample = Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(), 
+					sample.getRelease(), Instant.now(),
+					sample.getCharacteristics(), sample.getRelationships(), sample.getExternalReferences(), 
+					sample.getOrganizations(), sample.getContacts(), sample.getPublications());
+		}
+
+		if (!setFullDetails) {
+			sample = sampleManipulationService.removeLegacyFields(sample);
+		}
+		
+		sample = sampleService.store(sample);
+		
+		// assemble a resource to return
+		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
+
+		// create the response object with the appropriate status
+		//TODO work out how to avoid using ResponseEntity but also set location header
+		return ResponseEntity.created(URI.create(sampleResource.getLink("self").getHref())).body(sampleResource);
 	}
 	
 }

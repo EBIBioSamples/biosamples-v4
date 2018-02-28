@@ -1,12 +1,25 @@
-package utils;
+package uk.ac.ebi.biosamples.utils;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.TemplateVariable;
+import org.springframework.hateoas.TemplateVariables;
+import org.springframework.hateoas.UriTemplate;
 import org.springframework.web.util.UriUtils;
 
 public class LinkUtils {
+
+	private static Logger log = LoggerFactory.getLogger(LinkUtils.class);
 
 
 	
