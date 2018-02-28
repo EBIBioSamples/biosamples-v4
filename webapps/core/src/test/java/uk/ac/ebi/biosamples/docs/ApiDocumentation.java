@@ -15,6 +15,7 @@ import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.client.Traverson;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.JUnitRestDocumentation;
+import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -37,16 +38,14 @@ import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.*;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest
 public class ApiDocumentation {
 
     @Rule
@@ -71,14 +70,8 @@ public class ApiDocumentation {
     private BioSamplesAapService aapService;
 
     private DocumentationHelper faker;
-
+    private RestDocumentationResultHandler documentationHandler;
     private MockMvc mockMvc;
-
-    private Traverson traverson;
-
-//    @LocalServerPort
-//    int port;
-
 
     @Before
     public void setUp() {
@@ -114,7 +107,6 @@ public class ApiDocumentation {
      * @throws Exception
      */
     @Test
-    @Ignore
     public void samplesRoot() throws Exception {
         Page<Sample> samplePage = new PageImpl<>(this.faker.generateRandomSamples(100), getDefaultPageable(), 100);
         when(samplePageService.getSamplesByText(any(String.class), anyCollectionOf(Filter.class), anyCollectionOf(String.class), eq(getDefaultPageable())))
@@ -125,7 +117,6 @@ public class ApiDocumentation {
     }
 
     @Test
-    @Ignore
     public void sampleSubmissionMinimumInformation() throws Exception {
         String wrongSampleSerialized = "{\"name\": \"Sample without minimum information\"," +
                 " \"accession\": \"SAMEA123123123\"}";
@@ -144,11 +135,11 @@ public class ApiDocumentation {
      * @throws Exception
      */
     @Test
-    @Ignore
     public void submitSample() throws Exception {
         Sample sample = this.faker.generateRandomSample();
         Sample sampleWithDomain = this.faker.getBuilderFromSample(sample).withDomain(this.faker.generateTestDomain()).build();
-        when(aapService.handleSampleDomain(sample)).thenReturn(sampleWithDomain);
+        when(aapService.handleSampleDomain(eq(sample))).thenReturn(sampleWithDomain);
+        when(sampleService.store(any(Sample.class))).thenReturn(sampleWithDomain);
 
         this.mockMvc.perform(
                 post("/biosamples/samples")
@@ -161,7 +152,6 @@ public class ApiDocumentation {
 
 
     @Test
-    @Ignore
     public void updateSample() throws Exception {
         Sample sampleWithDomain = this.faker.getBuilderFromSample(this.faker.generateRandomSample())
                 .withDomain(this.faker.generateTestDomain())

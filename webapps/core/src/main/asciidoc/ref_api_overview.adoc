@@ -60,6 +60,6 @@ header. This is described in the guide to <<guide_accounts_and_logging_in.adoc#,
 
 All examples of accessing the API will use `$TOKEN` as a placeholder for your real token.
 
-== Errors
+//== Errors
 
 
