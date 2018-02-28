@@ -6,7 +6,15 @@ set -e
 #create an api key for submitting test sampletab documents
 docker-compose run --rm mongo mongo --eval 'db.mongoSampleTabApiKey.insert({"_id" : "fooqwerty", "_class" : "uk.ac.ebi.biosamples.mongo.model.MongoSampleTabApiKey", "userName" : "BioSamples", "publicEmail" : "", "publicUrl" : "", "contactName" : "", "contactEmail" : "", "aapDomain" : "123456789abcdef" });' mongo:27017
 
+#create an API key like:
+#"".join([random.choice("ABCDEFGHKLMNPRTUWXY0123456789") for x in xrange(16)])
+#
+
+
 docker-compose up -d biosamples-agents-solr
+
+
+#--spring.profiles.active=default,big
 
 for X in 1 2 3 4 5
 do
