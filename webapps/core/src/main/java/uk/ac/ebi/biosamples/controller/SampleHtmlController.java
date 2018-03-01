@@ -84,20 +84,7 @@ public class SampleHtmlController {
 		return "about";
 	}
 
-	@GetMapping(value = "/help")
-	public String helpIndex() {
-		return "help/index";
-	}
 
-	@GetMapping(value = "/help/{page}")
-	public String helpIndex(@PathVariable String page) {
-		return "help/"+page;
-	}
-
-	@GetMapping(value = "/test")
-	public String test() {
-		return "test";
-	}
 
 	@GetMapping(value = "/samples")
 	public String samples(Model model, @RequestParam(name="text", required=false) String text,

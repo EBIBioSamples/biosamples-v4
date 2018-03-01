@@ -1,4 +1,5 @@
 = [.ebi-color]#API Root#
+:last-update-label!:
 :toc: auto
 
 You can issue a `GET` request to the root endpoint to get all the entry points into the API.

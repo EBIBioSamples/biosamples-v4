@@ -1,4 +1,6 @@
 = [.ebi-color]#API Overview#
+:last-update-label!:
+:toc: auto
 
 == Accessing the service
 === Content negotiation
