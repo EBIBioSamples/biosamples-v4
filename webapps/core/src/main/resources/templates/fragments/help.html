@@ -11,16 +11,28 @@
         <div class="small-12 medium-3 columns sidebar">
             <div data-options="marginTop:4;">
 				<ul class="menu vertical accordion=menu">
-					<li><a th:href="@{/help/}">Home</a></li>
-					<li><a th:href="@{/help/search}">Searching</a></li>
-					<li><a th:href="@{/help/submit}">Submitting</a></li>
-					<li><a th:href="@{/help/api}">Programmatic interface</a></li>
+					<li><a th:href="@{/docs/}">Home</a></li>
+					<!--<li><a th:href="@{/docs/search}">Searching</a></li>-->
+					<!--<li><a th:href="@{/docs/submit}">Submitting</a></li>-->
+					<li>Programmatic interface</li>
 					<ul class="menu vertical nested">
-						<li><a th:href="@{/help/legacy_xml_api}">Legacy XML API</a></li>
+						<!--<li><a th:href="@{/docs/legacy_xml_api}">Legacy XML API</a></li>-->
+						<li>References</li>
+						<ul class="menu vertical nested">
+							<li><a th:href="@{/docs/references/overview}">Overview</a></li>
+							<li><a th:href="@{/docs/references/root}">API root</a></li>
+							<li><a th:href="@{/docs/references/root}">Search</a></li>
+							<li><a th:href="@{/docs/references/submit}">Submit</a></li>
+						</ul>
+						<li>Guides</li>
+						<ul class="menu vertical nested">
+							<li><a th:href="@{/docs/guides/authentication}">Authentication</a></li>
+							<li><a th:href="@{/docs/guides/submit}">Submission</a></li>
+						</ul>
 					</ul>
-					<li><a th:href="@{/help/faq}">FAQ</a></li>
-					<li><a th:href="@{/help/releasenotes}">Release notes</a></li>
-					<li><a th:href="@{/help/contacts}">Contact us</a></li>
+					<li><a th:href="@{/docs/faq}">FAQ</a></li>
+					<li><a th:href="@{/docs/releasenotes}">Release notes</a></li>
+					<li><a th:href="@{/docs/contacts}">Contact us</a></li>
 				</ul>
 			</div>
 		</div>

@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+TESTVARS=-Daap.domains.url=explore.api.app.tsi.ebi.ac.uk
+
 clean=0
 while [ "$1" != "" ]; do
     case $1 in
@@ -13,13 +15,13 @@ done
 #cleanup any previous data
 if [ $clean == 1 ]
 then
-	mvn -T 2C -P embl-ebi clean package
+	mvn -T 2C -P embl-ebi clean package $TESTVARS
 	echo "Cleaning existing volumes"
 	#remove any images, in case of out-of-date or corrupt images
 	docker-compose down --volumes --rmi local --remove-orphans
 	#docker-compose down --volumes --remove-orphans
 else
-	mvn -T 2C -P embl-ebi package
+	mvn -T 2C -P embl-ebi package $TESTVARS
 	docker-compose down --remove-orphans
 fi
 set -e

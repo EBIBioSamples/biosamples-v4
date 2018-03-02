@@ -5,10 +5,10 @@
 You can issue a `GET` request to the root endpoint to get all the entry points into the API.
 
 == Request
-include::{snippets}/index/http-request.adoc[]
+include::{snippets}/get-index/http-request.adoc[]
 
 == Response
-include::{snippets}/index/http-response.adoc[]
+include::{snippets}/get-index/http-response.adoc[]
 
 == Links
-include::{snippets}/index/links.adoc[]
+include::{snippets}/get-index/links.adoc[]

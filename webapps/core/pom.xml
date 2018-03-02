@@ -134,7 +134,6 @@
 		<dependency>
 			<groupId>org.springframework.restdocs</groupId>
 			<artifactId>spring-restdocs-mockmvc</artifactId>
-			<version>1.2.3.RELEASE</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -180,7 +179,7 @@
                          <snippets>${snippetsDirectory}</snippets>
 						 <source-highlighter>highlightjs</source-highlighter>
 						 <toc-title>Contents</toc-title>
-						 <toclevels>1</toclevels>
+						 <toclevels>2</toclevels>
 					 </attributes>
 				</configuration>
 			</plugin>

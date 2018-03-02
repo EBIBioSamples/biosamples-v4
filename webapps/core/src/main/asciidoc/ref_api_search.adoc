@@ -1,0 +1,56 @@
+= [.ebi-color]#API search#
+:last-update-label!:
+:toc: auto
+
+== List samples resources
+`GET` all the sample resources paginated
+
+=== Request
+include::{snippets}/get-samples/http-request.adoc[]
+
+=== Request Parameters
+include::{snippets}/get-samples/request-parameters.adoc[]
+
+=== Response
+include::{snippets}/get-samples/http-response.adoc[]
+
+//=== Response fields
+//include::{snippets}/get-samples/response-fields.adoc[]
+
+=== Links
+include::{snippets}/get-samples/links.adoc[]
+
+
+== Get sample by accession
+`GET` single sample resource
+
+=== Request
+include::{snippets}/get-sample/http-request.adoc[]
+
+=== Response
+include::{snippets}/get-sample/http-response.adoc[]
+
+=== Links
+include::{snippets}/get-sample/links.adoc[]
+
+== Get all samples curations
+`GET` all the curation resources
+
+=== Request
+include::{snippets}/get-curations/http-request.adoc[]
+
+=== Response
+include::{snippets}/get-curations/http-response.adoc[]
+
+=== Links
+include::{snippets}/get-curations/links.adoc[]
+
+== Get sample curation objects
+`GET` all the curations associated to a sample
+
+=== Request
+include::{snippets}/get-sample-curation/http-request.adoc[]
+
+=== Response
+include::{snippets}/get-sample-curation/http-response.adoc[]
+

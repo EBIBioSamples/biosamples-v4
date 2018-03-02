@@ -54,7 +54,7 @@ public class DocumentationHelper {
     }
 
     public Sample.Builder getBuilderFromSample(Sample sample) {
-        Sample.Builder sampleBuilder = new Sample.Builder(sample.getName(), sample.getAccession())
+        Sample.Builder sampleBuilder = new Sample.Builder(sample.getAccession(), sample.getName())
                 .withDomain(sample.getDomain())
                 .withReleaseDate(sample.getRelease())
                 .withUpdateDate(sample.getUpdate());
