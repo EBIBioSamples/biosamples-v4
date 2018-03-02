@@ -35,6 +35,8 @@ Link naming follows a consistent pattern.
 * Individual resources are named with the type name, e.g. `sample`
 * Collection resources are named with the plural of the type name in camel case, e.g. `samples`, `curations`, `curationLinks`
 
+For a reference of links available in BioSamples check the corresponding <<ref_api_links.adoc#, Links section>>
+
 == Supported HTTP verbs
 This API aims to use appropriate HTTP verbs for each action, although not all the actions are supported by our service.
 You can read more about HTTP verbs on https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods[MDN web docs].

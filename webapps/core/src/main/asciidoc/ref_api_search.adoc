@@ -20,6 +20,7 @@ include::{snippets}/get-samples/http-response.adoc[]
 === Links
 include::{snippets}/get-samples/links.adoc[]
 
+For all the links available in BioSamples check the <<ref_api_links.adoc#, Links reference>>
 
 == Get sample by accession
 `GET` single sample resource
@@ -33,6 +34,8 @@ include::{snippets}/get-sample/http-response.adoc[]
 === Links
 include::{snippets}/get-sample/links.adoc[]
 
+For all the links available in BioSamples check the <<ref_api_links.adoc#, Links reference>>
+
 == Get all samples curations
 `GET` all the curation resources
 
@@ -44,6 +47,8 @@ include::{snippets}/get-curations/http-response.adoc[]
 
 === Links
 include::{snippets}/get-curations/links.adoc[]
+
+For all the links available in BioSamples check the <<ref_api_links.adoc#, Links reference>>
 
 == Get sample curation objects
 `GET` all the curations associated to a sample

@@ -1,0 +1,37 @@
+= [.ebi-color]#Links#
+:last-update-label!:
+:toc: auto
+
+== Links standard
+For more details about links, check out the https://tools.ietf.org/html/rfc5988[standard docs] and the  of https://www.iana.org/assignments/link-relations/link-relations.xhtml[link relation types]
+
+== Pagination
+[cols=2*,options="header"]
+|===
+| Type
+| Description
+
+| `self` | Link to the current page
+| `first` | Link to the first page of results
+| `last` | Link to the last page of results
+| `next` | Link to the next page of results
+| `prev` | Link to the previous page of results
+|===
+
+== BioSamples relations type
+[cols=2*,options="header"]
+|===
+| Type
+| Description
+
+| `autocomplete` | Link to autocomplete results associated to current query
+| `curation` | Link to a curation resource
+| `curationLinks` | Link to curation resources associated to a sample
+| `curations` | Link to all curation resources
+| `cursor` | Link to a cursor to navigate results consistently
+| `facets` | Link to facets associated to current search result
+| `sample` | Link to a sample resource
+| `samples` | Link to all sample resources
+| `self` | Link to the current resource
+|===
+
