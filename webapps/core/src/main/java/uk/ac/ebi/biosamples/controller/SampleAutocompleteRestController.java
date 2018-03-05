@@ -63,20 +63,8 @@ public class SampleAutocompleteRestController {
     	Autocomplete autocomplete = sampleService.getAutocomplete(text, filters, rows);
     	Resource<Autocomplete> resource = new Resource<>(autocomplete);
 
-		//Links for the entire page
-		//this is hacky, but no clear way to do this in spring-hateoas currently
-    	resource.removeLinks();
-    	//to generate the HAL template correctly, the parameter name must match the requestparam name
-    	resource.add(ControllerLinkBuilder.linkTo(
-			ControllerLinkBuilder.methodOn(SampleFacetRestController.class)
-					.getFacetsHal(text, filter))
-    			.withSelfRel());
-		
-    	resource.add(ControllerLinkBuilder.linkTo(
-			ControllerLinkBuilder.methodOn(SamplesRestController.class)
-					.searchHal(text, filter, null, null, null, null, null))
-    			.withRel("samples"));
-		
+    	resource.add(getLink(text, filter, rows, Link.REL_SELF));
+    	resource.add(SamplesRestController.getPageLink(text, filter, 0, 20, null, "samples"));
 		return ResponseEntity.ok().body(resource);
 	}
     
