@@ -11,11 +11,11 @@ For more details about links, check out the https://tools.ietf.org/html/rfc5988[
 | Type
 | Description
 
-| `self` | Link to the current page
-| `first` | Link to the first page of results
-| `last` | Link to the last page of results
-| `next` | Link to the next page of results
-| `prev` | Link to the previous page of results
+| `self` | current page of a collection
+| `first` | first page of a collection
+| `last` | last page of a collection
+| `next` | next page of a collection
+| `prev` | previous page of a collection
 |===
 
 == BioSamples relations type
@@ -24,14 +24,14 @@ For more details about links, check out the https://tools.ietf.org/html/rfc5988[
 | Type
 | Description
 
-| `autocomplete` | Link to autocomplete results associated to current query
-| `curation` | Link to a curation resource
-| `curationLinks` | Link to curation resources associated to a sample
-| `curations` | Link to all curation resources
-| `cursor` | Link to a cursor to navigate results consistently
-| `facets` | Link to facets associated to current search result
-| `sample` | Link to a sample resource
-| `samples` | Link to all sample resources
-| `self` | Link to the current resource
+| `autocomplete` | collection autocompletion terms associated to current query
+| `curation` | single curation resource
+| `curationLinks` | collection curation resources associated to a sample
+| `curations` | collection of curation resources
+| `cursor` | cursor for sample resource collection navigation
+| `facets` | facets collection associated to current search result
+| `sample` | single sample resource
+| `samples` | collection of sample resources
+| `self` | current resource
 |===
 

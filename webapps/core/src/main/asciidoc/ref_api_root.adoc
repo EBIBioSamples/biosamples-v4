@@ -11,6 +11,7 @@ include::{snippets}/get-index/http-request.adoc[]
 include::{snippets}/get-index/http-response.adoc[]
 
 == Links
-include::{snippets}/get-index/links.adoc[]
+//include::{snippets}/get-index/links.adoc[]
+
 
 For all the links available in BioSamples check the <<ref_api_links.adoc#, Links reference>>

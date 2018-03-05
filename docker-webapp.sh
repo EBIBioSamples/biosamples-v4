@@ -15,19 +15,16 @@ done
 #cleanup any previous data
 if [ $clean == 1 ]
 then
-	mvn -T 2C -P embl-ebi clean package $TESTVARS
+	mvn -T 2C -P embl-ebi clean package
 	echo "Cleaning existing volumes"
 	#remove any images, in case of out-of-date or corrupt images
 	docker-compose down --volumes --rmi local --remove-orphans
 	#docker-compose down --volumes --remove-orphans
 else
-	mvn -T 2C -P embl-ebi package $TESTVARS
+	mvn -T 2C -P embl-ebi package
 	docker-compose down --remove-orphans
 fi
 set -e
-
-#make sure we have up-to-date jar files in the docker image
-docker-compose build
 
 #start up the webapps (and dependencies)
 docker-compose up -d --remove-orphans solr rabbitmq mongo
@@ -38,6 +35,10 @@ echo "checking rabbitmq is up"
 echo "checking mongo is up"
 ./http-status-check -u http://localhost:27017 -t 30
 
+mvn -P documentation test $TESTVARS
+
+#make sure we have up-to-date jar files in the docker image
+docker-compose build
 
 #configure solr
 curl http://localhost:8983/solr/samples/config -H 'Content-type:application/json' -d'{"set-property" : {"updateHandler.autoCommit.maxTime":5000, "updateHandler.autoCommit.openSearcher":"true", "query.documentCache.size":1024, "query.filterCache.size":1024, "query.filterCache.autowarmCount":128, "query.queryResultCache.size":1024, "query.queryResultCache.autowarmCount":128}}'

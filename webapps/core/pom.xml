@@ -141,7 +141,7 @@
 			<artifactId>javafaker</artifactId>
 			<version>0.14</version>
 		</dependency>
-	</dependencies>
+    </dependencies>
 
 	<build>
 		<plugins>

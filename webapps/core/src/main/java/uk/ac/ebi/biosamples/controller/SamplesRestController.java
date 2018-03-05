@@ -184,7 +184,7 @@ public class SamplesRestController {
 			Page<Sample> pageSample = samplePageService.getSamplesByText(text, filters, domains, pageable);
 
 			
-			PageMetadata pageMetadata = new PageMetadata(pageSample.getNumberOfElements(), 
+			PageMetadata pageMetadata = new PageMetadata(effectiveSize,
 					pageSample.getNumber(), pageSample.getTotalElements(), pageSample.getTotalPages());
 			
 			Resources<Resource<Sample>> resources = new PagedResources<>(pageSample.getContent().stream()
