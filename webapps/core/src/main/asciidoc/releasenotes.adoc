@@ -14,7 +14,7 @@ This is a bugfix release that addresses the following issues:
 * Correctly accept XML sample groups and their related samples
 * Fix issue related to search query terms not being applied to legacy XML and legacy JSON endpoints.
 * Fix incorrect HAL links on autocomplete endpoint
-* Replace SampleTab submitted relationships by name with accessions. This causes them to be cross referenced by accession in user interface and API
+* Replace SampleTab submitted relationships by name with accessions. As a consequence, they can now be consistently cross referenced by accession in user interface and API
 * Improved indexing of samples when they are rapidly updated or curated
 * Updated Elixir Deposition Database banner URL
 * Reduce number of Zooma calls by not attempting to map "unknown" or "other" attributes
