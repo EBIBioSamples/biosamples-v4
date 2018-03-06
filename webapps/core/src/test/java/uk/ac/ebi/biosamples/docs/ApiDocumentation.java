@@ -2,31 +2,24 @@ package uk.ac.ebi.biosamples.docs;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mongodb.MongoClient;
-import com.mongodb.client.MongoDatabase;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.SpringBootConfiguration;
+import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureWebMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.*;
-import org.springframework.data.mongodb.MongoDbFactory;
-import org.springframework.data.mongodb.core.MongoOperations;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.JUnitRestDocumentation;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import uk.ac.ebi.biosamples.Application;
@@ -34,7 +27,6 @@ import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
-import uk.ac.ebi.biosamples.mongo.repo.*;
 import uk.ac.ebi.biosamples.service.*;
 
 import java.util.Collections;
@@ -53,9 +45,9 @@ import static org.springframework.restdocs.request.RequestDocumentation.requestP
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+
 @RunWith(SpringRunner.class)
-@SpringBootTest
-//@ContextConfiguration(classes = ApiDocsConfiguration.class)
+@SpringBootTest(classes= {DocsConfig.class, Application.class})
 public class ApiDocumentation {
 
     @Rule
@@ -78,30 +70,13 @@ public class ApiDocumentation {
     @MockBean
     CurationReadService curationReadService;
 
-//    @MockBean
-//    MongoCurationRepository mongoCurationRepository;
-//
-//    @MockBean
-//    MongoCurationLinkRepository mongoCurationLinkRepository;
-//
-//    @MockBean
-//    MongoSampleRepository mongoSampleRepository;
-//
-//    @MockBean
-//    MongoExternalReferenceRepository mongoExternalReferenceRepository;
-//
-//    @MockBean
-//    MongoRelationshipRepository mongoRelationshipRepository;
-//
-//    @MockBean
-//    MongoSubmissionRepository mongoSubmissionRepository;
-
     @MockBean
     private BioSamplesAapService aapService;
 
     private DocumentationHelper faker;
 
     private MockMvc mockMvc;
+
 
     @Before
     public void setUp() {
@@ -143,16 +118,15 @@ public class ApiDocumentation {
         Page<Sample> samplePage = new PageImpl<>(Collections.singletonList(this.faker.generateRandomSample()), getDefaultPageable(), 100);
         when(samplePageService.getSamplesByText(any(String.class), anyCollectionOf(Filter.class), anyCollectionOf(String.class), isA(Pageable.class)))
                 .thenReturn(samplePage);
-        MvcResult result = this.mockMvc.perform(get("/biosamples/samples").accept(MediaTypes.HAL_JSON)).andReturn();
-        System.out.println(result);
-//                .andExpect(status().isOk())
-//                .andDo(document("get-samples",  preprocessRequest(prettyPrint()), preprocessResponse(prettyPrint()),
-//                        requestParameters(
-//                            parameterWithName("page").description("The page to retrieve").optional(),
-//                            parameterWithName("size").description("Entries per page").optional(),
-//                            parameterWithName("text").description("Text to search").optional(),
-//                            parameterWithName("filter").description("List of filters to apply to search results").optional()
-//                )));
+        this.mockMvc.perform(get("/biosamples/samples").accept(MediaTypes.HAL_JSON))
+                .andExpect(status().isOk())
+                .andDo(document("get-samples",  preprocessRequest(prettyPrint()), preprocessResponse(prettyPrint()),
+                        requestParameters(
+                            parameterWithName("page").description("The page to retrieve").optional(),
+                            parameterWithName("size").description("Entries per page").optional(),
+                            parameterWithName("text").description("Text to search").optional(),
+                            parameterWithName("filter").description("List of filters to apply to search results").optional()
+                )));
                 /*, links(halLinks(),
                     linkWithRel("self"),
                     linkWithRel("first"),
@@ -179,7 +153,6 @@ public class ApiDocumentation {
      * @throws Exception
      */
     @Test
-    @Ignore
     public void postSampleMinimalInfo() throws Exception {
         String wrongSampleSerialized = "{\"name\": \"Sample without minimum information\"," +
                 " \"accession\": \"SAMEA123123123\"}";
@@ -198,7 +171,6 @@ public class ApiDocumentation {
      * @throws Exception
      */
     @Test
-    @Ignore
     public void postCurationLinkMinimalInfo() throws Exception {
 
         String wrongSampleSerialized = "{\"sample\": \"SAMEA123123123\", \"curation\": {}}";
