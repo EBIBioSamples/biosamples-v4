@@ -1,12 +1,15 @@
 package uk.ac.ebi.biosamples.service;
 
 import org.springframework.hateoas.EntityLinks;
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceAssembler;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.stereotype.Service;
 
 import uk.ac.ebi.biosamples.controller.SampleCurationLinksRestController;
+import uk.ac.ebi.biosamples.controller.SampleRestController;
+import uk.ac.ebi.biosamples.controller.SamplesRestController;
 import uk.ac.ebi.biosamples.model.Sample;
 
 /**
@@ -28,7 +31,7 @@ public class SampleResourceAssembler implements ResourceAssembler<Sample, Resour
 	public Resource<Sample> toResource(Sample sample) {
 		Resource<Sample> resource = new Resource<>(sample);
 		
-		resource.add(entityLinks.linkToSingleResource(Sample.class, sample.getAccession()).withSelfRel());
+		resource.add(ControllerLinkBuilder.linkTo(SampleRestController.class, sample.getAccession()).withSelfRel());
 							
 		resource.add(ControllerLinkBuilder.linkTo(
 				ControllerLinkBuilder.methodOn(SampleCurationLinksRestController.class)

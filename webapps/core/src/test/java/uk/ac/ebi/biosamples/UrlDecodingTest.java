@@ -7,6 +7,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.util.UriUtils;
 
+import uk.ac.ebi.biosamples.utils.LinkUtils;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 

@@ -5,6 +5,7 @@ import java.util.concurrent.TimeUnit;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.ResourceSupport;
+import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -31,10 +33,9 @@ public class RootHalController {
 	@GetMapping(produces = { MediaTypes.HAL_JSON_VALUE })
 	public ResponseEntity<ResourceSupport> rootHal() {
     	ResourceSupport resource = new ResourceSupport();    	
-    	
-    	resource.add(entityLinks.linkToCollectionResource(Sample.class).withRel("samples"));
-    	//resource.add(entityLinks.linkToCollectionResource(ExternalReference.class).withRel("externalReferences"));
-    	resource.add(entityLinks.linkToCollectionResource(Curation.class).withRel("curations"));
+    	    	
+    	resource.add(ControllerLinkBuilder.linkTo(SamplesRestController.class).withRel("samples"));
+    	resource.add(ControllerLinkBuilder.linkTo(CurationRestController.class).withRel("curations"));
     	
     	return ResponseEntity.ok()
 				.header(HttpHeaders.CACHE_CONTROL, CacheControl.maxAge(60, TimeUnit.MINUTES).cachePublic().getHeaderValue())

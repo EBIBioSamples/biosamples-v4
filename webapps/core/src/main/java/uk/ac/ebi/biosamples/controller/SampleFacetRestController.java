@@ -23,7 +23,7 @@ import uk.ac.ebi.biosamples.model.facet.Facet;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.FacetService;
 import uk.ac.ebi.biosamples.service.FilterService;
-import utils.LinkUtils;
+import uk.ac.ebi.biosamples.utils.LinkUtils;
 
 @RestController
 @ExposesResourceFor(Facet.class)
