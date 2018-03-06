@@ -1,8 +1,6 @@
 #!/bin/bash
 set -e
 
-TESTVARS=-Daap.domains.url=explore.api.app.tsi.ebi.ac.uk
-
 clean=0
 while [ "$1" != "" ]; do
     case $1 in
@@ -26,6 +24,9 @@ else
 fi
 set -e
 
+#make sure we have up-to-date jar files in the docker image
+docker-compose build
+
 #start up the webapps (and dependencies)
 docker-compose up -d --remove-orphans solr rabbitmq mongo
 echo "checking solr is up"
@@ -35,10 +36,6 @@ echo "checking rabbitmq is up"
 echo "checking mongo is up"
 ./http-status-check -u http://localhost:27017 -t 30
 
-mvn -P documentation test $TESTVARS
-
-#make sure we have up-to-date jar files in the docker image
-docker-compose build
 
 #configure solr
 curl http://localhost:8983/solr/samples/config -H 'Content-type:application/json' -d'{"set-property" : {"updateHandler.autoCommit.maxTime":5000, "updateHandler.autoCommit.openSearcher":"true", "query.documentCache.size":1024, "query.filterCache.size":1024, "query.filterCache.autowarmCount":128, "query.queryResultCache.size":1024, "query.queryResultCache.autowarmCount":128}}'

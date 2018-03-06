@@ -324,7 +324,3 @@ volumes:
   rabbitmq_data: null
   logs: null
 
-networks:
-  marref_default:
-    external: true
-
