@@ -75,6 +75,28 @@
 
 
 	<repositories>	
+		<!-- needed to EBI TSC AAP -->
+		<repository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>ossrh-snapshot</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+		<!-- needed for biosamples -->
 		<repository>
 			<id>spotnexus-relase</id>
 			<url>https://www.ebi.ac.uk/spot/nexus/repository/maven-releases/</url>
