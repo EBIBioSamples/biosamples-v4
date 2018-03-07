@@ -13,14 +13,14 @@ done
 #cleanup any previous data
 if [ $clean == 1 ]
 then
-	mvn -T 2C -P embl-ebi clean package
 	echo "Cleaning existing volumes"
 	#remove any images, in case of out-of-date or corrupt images
-	docker-compose down --volumes --rmi local --remove-orphans
 	#docker-compose down --volumes --remove-orphans
+	docker-compose down --volumes --rmi local --remove-orphans
+	mvn -T 2C -P embl-ebi clean package -Dembedmongo.wait
 else
-	mvn -T 2C -P embl-ebi package
 	docker-compose down --remove-orphans
+	mvn -T 2C -P embl-ebi package -Dembedmongo.wait
 fi
 set -e
 
