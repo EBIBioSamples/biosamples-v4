@@ -46,9 +46,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @TestPropertySource(properties = {"aap.domains.url = ''"})
 public class ApiDocumentationTest {
 
-//    @Rule
-//    public FongoRule fongoRule = new FongoRule();
-
     @Rule
     public final JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation("target/generated-snippets");
 
