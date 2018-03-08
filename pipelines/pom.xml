@@ -18,7 +18,6 @@
 		<!-- i.e. oracle drivers that cannot be redistributed in public -->
 			<id>embl-ebi</id>
 			<modules>
-				<module>accession</module>
 				<module>ena</module>
 			</modules>
 		</profile>
