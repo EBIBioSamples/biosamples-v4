@@ -66,7 +66,11 @@ public class SamplePageService {
 		Page<Future<Optional<Sample>>> pageFutureSample = pageSolrSample.map(ss -> sampleService.fetchAsync(ss.getAccession()));
 		Page<Sample> pageSample = pageFutureSample.map(ss->{
 			try {
-				return ss.get().get();
+				if (ss.get().isPresent()) {
+					return ss.get().get();
+				} else {
+					return null;
+				}
 			} catch (InterruptedException e) {
 				throw new RuntimeException(e);
 			} catch (ExecutionException e) {
