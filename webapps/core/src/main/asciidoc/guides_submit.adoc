@@ -1,6 +1,6 @@
 = [.ebi-color]#Data submission#
 :last-update-label!:
-:toc: auto
+:toc:
 
 == How to submit to BioSamples Database?
 
