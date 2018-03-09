@@ -1,0 +1,129 @@
+= [.ebi-color]#Filters Overview#
+:last-update-label!:
+:toc: auto
+
+== Overview
+Filters are generally composed by a `type`, a `field` and a `value` combined as `<type>:<field>:<value>`
+
+If a `value` is not provided, the filters check for existence of the
+provided field
+
+//The filter need to be encoded in order to be interpreted by the user interface. You can use an https://www.urlencoder.org/[online url encoder] for this purpose
+
+
+== Filters
+
+=== Attribute
+[cols="1*s , 2*", options=header]
+|===
+| Field | Value | Notes
+| `type` | `attr` |
+| `field` | Attribute name | Case sensitive, encoded
+| `value` | Attribute value | Case sensitive, encoded
+|===
+
+==== Example
+- link:samples?filter=attr:Organism:Homo+Sapies[`filter=attr:Organism:Homo+Sapiens`]
+- `filter=attr:organism+part:liver`
+
+//==== Notes
+//- `field` is an attribute name.
+//- `value` is an attribute value
+//- *N.B* Both `field` and `value` are case sensitive
+
+//[cols=3*, options=header]
+//|===
+//| `type` | Format | Example
+//| `attr` | `attr:<attr-name>:<attr-value>` | `attr:organism:Homo%20Sapiens`
+//|===
+
+=== Date range
+
+[cols="1*s , 2*", options=header]
+|===
+| Field | Value | Notes
+| `type` | `dt` |
+| `field` | release \| update | Case sensitive, encoded
+| `value` | Date range in the format of `from=<date>until=<date>`     | Dates should be formatted using ISO8601; timezone is UTC by default; `from=` and `until=` are optional
+|===
+
+==== Examples
+- `filter=dt:release:from=2014-01-01T20:30:00until=2015-01-01`
+- `filter=dt:update:from=2018-01-01`
+- `filter=dt:update:until=2016-12-31T20:30:00`
+
+//==== Notes
+//- The `field` can be only `release` or `update`
+//- The `value` is a range of dates defined using a `from=` keyword and `until=` keyword. If `from=` is missing, from is set to  `from=<min-available-date>`, if `until=` is missing, until is set to `until=<max-available-date>`
+//- *N.B* Date format need to be ISO8601
+//
+//[cols=3*, options=header]
+//|===
+//| `type` | Format | Example
+//| `dt` | `dt:<relese\|update>:[from=<from-date>][until=<until-date>]` | `dt:release:from=2014-01-01T20:30:00until=2015-01-01`
+//|===
+
+
+=== Accession
+[cols="1*s , 2*", options=header]
+|===
+| Field | Value | Notes
+| `type` | `acc` |
+| `field` | `NA` | The field is predefined
+| `value` | Sample accession |
+|===
+
+==== Examples
+- `filter=acc:SAMEA341514`
+
+=== Relationship
+[cols="1*s , 2*", options=header]
+|===
+| Field | Value | Notes
+| `type` | `rel` |
+| `field` | relation type | Case sensitive, encoded
+| `value` | relation target | _Usually_ an accession
+|===
+
+==== Examples
+-`filter=rel:derived+from:Human+blood`
+-`filter=rel:child+of:SAME1596745`
+
+=== Reverse Relationship
+[cols="1*s , 2*", options=header]
+|===
+| Field | Value | Notes
+| `type` | `rrel` |
+| `field` | relation type | Case sensitive, encoded
+| `value` | relation target | _Usually_ an accession
+|===
+
+==== Examples
+-`filter=rrel:child+of`
+-`filter=rrel:has+member:SAMEG316651`
+
+=== Name
+[cols="1*s , 2*", options=header]
+|===
+| Field | Value | Notes
+| `type` | `name` |
+| `field` | `NA` | The field is predefined
+| `value` | A sample name | Case sensitive, encoded
+|===
+
+==== Examples
+- `filter:name:A5F`
+- `filter=name:Generic+sample+from+Glycine+max`
+
+=== External Reference Data
+[cols="1*s , 2*", options=header]
+|===
+| Field | Value | Notes
+| `type` | `extd` |
+| `field` | External reference name | e.g. ENA, ArrayExpress
+| `value` | Externnal data id |
+|===
+
+==== Examples
+- `filter=extd:ArrayExpress:E-MTAB-3732`
+- `filter=extd:ENA:SRS359918`

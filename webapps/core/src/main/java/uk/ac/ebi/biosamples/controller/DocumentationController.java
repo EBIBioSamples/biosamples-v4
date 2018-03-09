@@ -20,12 +20,17 @@ public class DocumentationController {
     }
 
     @GetMapping(value = "/guides/{page}")
-    public String helpApiGuidesPage(@PathVariable String page) {
+    public String helpGuidePage(@PathVariable String page) {
         return "docs/guides/"+page;
     }
 
+    @GetMapping(value = "/references/{page}")
+    public String helpReferencePage(@PathVariable String page) {
+        return "docs/references/" + page;
+    }
+
     @GetMapping(value = "/references/api")
-    public String helpApiReferenceIndex() {
+    public String helpApiReferenceHome() {
         return "docs/references/api/overview";
     }
 
