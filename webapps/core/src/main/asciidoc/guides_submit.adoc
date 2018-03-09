@@ -2,7 +2,7 @@
 :last-update-label!:
 :toc: auto
 
-== How to submit BioSamples Database?
+== How to submit to BioSamples Database?
 
 We support two submission methods:
 
