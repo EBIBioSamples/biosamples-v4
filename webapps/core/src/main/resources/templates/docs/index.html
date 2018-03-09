@@ -18,25 +18,191 @@
 <body>
 	<div th:insert="fragments/header :: header"></div>
 	<div layout:fragment="content">
-		<div id="main-content-area" class="row">
-			<div class="small-12 medium-9 columns">
-				<h2>Welcome to BioSamples Database Help</h2>
-				<div class="small-6 columns">
-					<div style="padding: 30px 15px; position: relative; background-color: rgb(249, 243, 238);">
-						<img th:src="@{/images/user.png}" title="user icon" />
-						<a href="help/search">I'd like to browse or search BioSamples Database</a>
-					</div>
-				</div>
-				<div class="small-6 columns">
-					<div style="padding: 30px 15px; position: relative; background-color: rgb(238, 249, 243);">
-						<img th:src="@{/images/submitter.png}" title="submitter icon" />
-						<a href="help/submit">I'd like to submit data to BioSamples Database</a>
-					</div>
-				</div>
-			</div>
-			<div th:insert="fragments/help :: sidebar"></div>	
+		<div id="main-content-area" class="row intro-unit">
+            <style>
+                .biosamples-card { text-align: center; border: 1px solid #007c82 /*EBI Color*/ ; min-height: 150px; padding: 1em; margin-bottom: 1em}
+
+                .biosamples-card:hover { background-color: #007c82; }
+
+                .biosamples-card:hover * { color: white; }
+
+                .title_underlined { border-bottom: #007c82 1px solid}
+
+                .card {
+                    background: none;
+                }
+
+            </style>
+			<!--<div class="small-12 medium-9 columns">-->
+				<!--<h2>Welcome to BioSamples Database Help</h2>-->
+				<!--<div class="small-6 columns">-->
+					<!--<div style="padding: 30px 15px; position: relative; background-color: rgb(249, 243, 238);">-->
+						<!--<img th:src="@{/images/user.png}" title="user icon" />-->
+						<!--<a href="docs/search" th:href="@{/docs/search}">I'd like to browse or search BioSamples Database</a>-->
+					<!--</div>-->
+				<!--</div>-->
+				<!--<div class="small-6 columns">-->
+					<!--<div style="padding: 30px 15px; position: relative; background-color: rgb(238, 249, 243);">-->
+						<!--<img th:src="@{/images/submitter.png}" title="submitter icon" />-->
+						<!--<a href="docs/submit" th:href="@{/docs/submit}">I'd like to submit data to BioSamples Database</a>-->
+					<!--</div>-->
+				<!--</div>-->
+			<!--</div>-->
+			<!--<div th:insert="fragments/help :: sidebar"></div>	-->
+            <h1 class="title_underlined row ebi-color">Guides</h1>
+            <div class="row flex-container">
+                <a th:href="@{/docs/guides/search}" href="search.html">
+                    <div class="large-3 columns">
+                        <div class="card biosamples-card">
+                            <h3>Search in BioSamples</h3>
+                        </div>
+                    </div>
+                </a>
+                <a th:href="@{/docs/guides/submit}" href="submit.html">
+                    <div class="large-3 columns">
+                        <div class="card biosamples-card">
+                            <h3>Submit to BioSamples</h3>
+                        </div>
+                    </div>
+                </a>
+                <a th:href="@{/docs/guides/curate}" href="curate.html">
+                    <div class="large-3 columns">
+                        <div class="card biosamples-card">
+                            <h3>Curation in BioSamples</h3>
+                        </div>
+                    </div>
+                </a>
+                <a th:href="@{/docs/faq}" href="faq.html">
+                    <div class="large-3 columns">
+                        <div class="card biosamples-card">
+                            <h3>FAQ</h3>
+                        </div>
+                    </div>
+                </a>
+                <a th:href="@{/docs/contacts}" href="contacts.html">
+                    <div class="large-3 columns">
+                        <div class="card biosamples-card">
+                            <h3>Contacts</h3>
+                        </div>
+                    </div>
+                </a>
+                <a th:href="@{/docs/releasenotes}" href="releases.html">
+                    <div class="large-3 columns">
+                        <div class="card biosamples-card">
+                            <h3>Release notes</h3>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <h1 class="row title_underlined ebi-color">References</h1>
+            <div class="row flex-container">
+                <a th:href="@{/docs/references/api}" href="references/api.html">
+                    <div class="large-3 columns">
+                        <div class="card biosamples-card">
+                            <h3>API</h3>
+                        </div>
+                    </div>
+                </a>
+                <a th:href="@{/docs/references/filters}" href="references/filters.html">
+                    <div class="large-3 columns">
+                        <div class="card biosamples-card">
+                            <h3>BioSamples filters</h3>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!--<ul class="accordion is-active" data-accordion data-multi-expand="true">-->
+            <!--<li class="accordion-item" data-accordion-item>-->
+                <!--<a href="#" class="accordion-title">Guides</a>-->
+					<!--<div class="accordion-content" data-tab-content>-->
+                        <!--<div class="row flex-container">-->
+                            <!--<a th:href="@{/docs/guides/search}" href="search.html">-->
+                                <!--<div class="large-3 columns">-->
+                                    <!--<div class="card biosamples-card">-->
+                                        <!--<h3>Search in BioSamples</h3>-->
+                                    <!--</div>-->
+                                <!--</div>-->
+                            <!--</a>-->
+                            <!--<a th:href="@{/docs/guides/submit}" href="submit.html">-->
+                                <!--<div class="large-3 columns">-->
+                                    <!--<div class="card biosamples-card">-->
+                                        <!--<h3>Submit to BioSamples</h3>-->
+                                    <!--</div>-->
+                                <!--</div>-->
+                            <!--</a>-->
+                            <!--<a th:href="@{/docs/guides/curate}" href="curate.html">-->
+                                <!--<div class="large-3 columns">-->
+                                    <!--<div class="card biosamples-card">-->
+                                        <!--<h3>Curation in BioSamples</h3>-->
+                                    <!--</div>-->
+                                <!--</div>-->
+                            <!--</a>-->
+                            <!--<a th:href="@{/docs/guides/faq}" href="faq.html">-->
+                                <!--<div class="large-3 columns">-->
+                                    <!--<div class="card biosamples-card">-->
+                                        <!--<h3>FAQ</h3>-->
+                                    <!--</div>-->
+                                <!--</div>-->
+                            <!--</a>-->
+                            <!--<a th:href="@{/docs/guides/contacts}" href="contacts.html">-->
+                                <!--<div class="large-3 columns">-->
+                                    <!--<div class="card biosamples-card">-->
+                                        <!--<h3>Contacts</h3>-->
+                                    <!--</div>-->
+                                <!--</div>-->
+                            <!--</a>-->
+                            <!--<a th:href="@{/docs/guides/releases}" href="releases.html">-->
+                                <!--<div class="large-3 columns">-->
+                                    <!--<div class="card biosamples-card">-->
+                                        <!--<h3>Release notes</h3>-->
+                                    <!--</div>-->
+                                <!--</div>-->
+                            <!--</a>-->
+                        <!--</div>-->
+                        <!--<div class="row">References</div>-->
+                        <!--<div class="row flex-container">-->
+                            <!--<a th:href="@{/docs/references/api}" href="references/api.html">-->
+                                <!--<div class="large-3 columns">-->
+                                    <!--<div class="card biosamples-card">-->
+                                        <!--<h3>API</h3>-->
+                                    <!--</div>-->
+                                <!--</div>-->
+                            <!--</a>-->
+                            <!--<a th:href="@{/docs/references/filters}" href="references/filters.html">-->
+                                <!--<div class="large-3 columns">-->
+                                    <!--<div class="card biosamples-card">-->
+                                        <!--<h3>BioSamples filters</h3>-->
+                                    <!--</div>-->
+                                <!--</div>-->
+                            <!--</a>-->
+                        <!--</div>-->
+					<!--</div>-->
+				<!--</li>-->
+                <!--<li class="accordion-item" data-accordion-item>-->
+                    <!--<a href="#" class="accordion-title">References</a>-->
+                    <!--<div class="accordion-content" data-tab-content>-->
+                        <!--<div class="row flex-container">-->
+                            <!--<a th:href="@{/docs/references/api}" href="references/api.html">-->
+                                <!--<div class="large-3 columns">-->
+                                    <!--<div class="card biosamples-card">-->
+                                        <!--<h3>API</h3>-->
+                                    <!--</div>-->
+                                <!--</div>-->
+                            <!--</a>-->
+                            <!--<a th:href="@{/docs/references/filters}" href="references/filters.html">-->
+                                <!--<div class="large-3 columns">-->
+                                    <!--<div class="card biosamples-card">-->
+                                        <!--<h3>BioSamples filters</h3>-->
+                                    <!--</div>-->
+                                <!--</div>-->
+                            <!--</a>-->
+                        <!--</div>-->
+                    <!--</div>-->
+				<!--</li>-->
+			<!--</ul>-->
 		</div>
-	</div> 
+	</div>
 	<div th:insert="fragments/footer :: footer"></div>	
 </body>
 </html>

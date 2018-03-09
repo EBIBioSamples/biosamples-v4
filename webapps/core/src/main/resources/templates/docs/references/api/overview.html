@@ -23,8 +23,8 @@
 	<div th:insert="fragments/header :: header"></div>
 	<div layout:fragment="content">
 		<div id="main-content-area" class="row">
-			<div class="small-12 medium-9 columns" th:insert="asciidoc/ref_api_search :: div"></div>
-			<div th:insert="fragments/help :: sidebar"></div>
+			<div class="small-12 medium-9 columns" th:insert="asciidoc/ref_api_overview :: div"></div>
+			<div th:insert="fragments/help :: sidebar(active='refs/api/overview')"></div>
 		</div>
 	</div> 
 	<div th:insert="fragments/footer :: footer"></div>	

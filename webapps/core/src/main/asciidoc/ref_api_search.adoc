@@ -18,7 +18,7 @@ include::{snippets}/get-samples/http-response.adoc[]
 //include::{snippets}/get-samples/response-fields.adoc[]
 
 === Links
-include::{snippets}/get-samples/links.adoc[]
+//include::{snippets}/get-samples/links.adoc[]
 
 For all the links available in BioSamples check the <<ref_api_links.adoc#, Links reference>>
 
@@ -32,7 +32,7 @@ include::{snippets}/get-sample/http-request.adoc[]
 include::{snippets}/get-sample/http-response.adoc[]
 
 === Links
-include::{snippets}/get-sample/links.adoc[]
+//include::{snippets}/get-sample/links.adoc[]
 
 For all the links available in BioSamples check the <<ref_api_links.adoc#, Links reference>>
 
@@ -46,7 +46,7 @@ include::{snippets}/get-curations/http-request.adoc[]
 include::{snippets}/get-curations/http-response.adoc[]
 
 === Links
-include::{snippets}/get-curations/links.adoc[]
+//include::{snippets}/get-curations/links.adoc[]
 
 For all the links available in BioSamples check the <<ref_api_links.adoc#, Links reference>>
 
@@ -59,3 +59,5 @@ include::{snippets}/get-sample-curation/http-request.adoc[]
 === Response
 include::{snippets}/get-sample-curation/http-response.adoc[]
 
+=== Links
+For all the links available in BioSamples check the <<ref_api_links.adoc#, Links reference>>

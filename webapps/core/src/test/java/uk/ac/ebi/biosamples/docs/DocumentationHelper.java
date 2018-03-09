@@ -1,7 +1,5 @@
 package uk.ac.ebi.biosamples.docs;
 
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.Resources;
 import uk.ac.ebi.biosamples.model.*;
 
 import java.time.Instant;
@@ -9,7 +7,7 @@ import java.util.*;
 
 public class DocumentationHelper {
 
-    private final String[] sampleAccessionPrefix = {"SAME", "SAMD", "SAMEA", "SAMN"};
+//    private final String[] sampleAccessionPrefix = {"SAME", "SAMD", "SAMEA", "SAMN"};
     private final int maxRandomNumber = 100000;
 
 
@@ -26,8 +24,8 @@ public class DocumentationHelper {
             while(sampleAccession == null || usedAccession.contains(sampleAccession)) {
 
                 int randomInt = randomGenerator.nextInt(maxRandomNumber);
-                String randomPrefix = sampleAccessionPrefix[randomInt % sampleAccessionPrefix.length];
-                sampleAccession = String.format("%s%06d", randomPrefix, randomInt);
+                sampleAccession = String.format("%s%06d", "SAMFAKE", randomInt);
+//                String randomPrefix = sampleAccessionPrefix[randomInt % sampleAccessionPrefix.length];
             }
 
             usedAccession.add(sampleAccession);
@@ -49,28 +47,40 @@ public class DocumentationHelper {
         return domainNames.get(randomGenerator.nextInt(domainNames.size()));
     }
 
-    public String generateTestDomain() {
-        return "self.DocumentationDomain";
+    public String getExampleDomain() {
+        return "self.ExampleDomain";
     }
 
-    public Sample.Builder getBuilderFromSample(Sample sample) {
-        Sample.Builder sampleBuilder = new Sample.Builder(sample.getAccession(), sample.getName())
-                .withDomain(sample.getDomain())
-                .withReleaseDate(sample.getRelease())
-                .withUpdateDate(sample.getUpdate());
+//    public Sample.Builder getBuilderFromSample(Sample sample) {
+//        Sample.Builder sampleBuilder = new Sample.Builder(sample.getAccession(), sample.getName())
+//                .withDomain(sample.getDomain())
+//                .withReleaseDate(sample.getRelease())
+//                .withUpdateDate(sample.getUpdate());
+//
+//        sample.getAttributes().forEach(sampleBuilder::withAttribute);
+//        sample.getRelationships().forEach(sampleBuilder::withRelationship);
+//        sample.getContacts().forEach(sampleBuilder::withContact);
+//        sample.getPublications().forEach(sampleBuilder::withPublication);
+//        sample.getOrganizations().forEach(sampleBuilder::withOrganization);
+//
+//        return sampleBuilder;
+//
+//
+//    }
 
-        sample.getAttributes().forEach(sampleBuilder::withAttribute);
-        sample.getRelationships().forEach(sampleBuilder::withRelationship);
-        sample.getContacts().forEach(sampleBuilder::withContact);
-        sample.getPublications().forEach(sampleBuilder::withPublication);
-        sample.getOrganizations().forEach(sampleBuilder::withOrganization);
-
-        return sampleBuilder;
-
-
+    public Sample.Builder getExampleSampleBuilder() {
+        return new Sample.Builder("SAMFAKE123456", "FakeSample");
     }
 
-    public CurationLink getExampleCurationLinkObject() {
+    public Sample getExampleSample() {
+        return getExampleSampleBuilder().build();
+    }
+
+    public Sample getExampleSampleWithDomain() {
+        return getExampleSampleBuilder().withDomain(getExampleDomain()).build();
+    }
+
+    public Curation getExampleCuration() {
 
         Curation curationObject = Curation.build(
                 Collections.singletonList(Attribute.build("Organism", "Human", "9606", null)),
@@ -79,9 +89,19 @@ public class DocumentationHelper {
                 Collections.singletonList(ExternalReference.build("www.ebi.ac.uk/ena/ERA123456"))
         );
 
-        CurationLink curationLinkObject = CurationLink.build("SAMEA123456", curationObject, generateTestDomain(), Instant.now());
-        return curationLinkObject;
+//        CurationLink curationLinkObject = CurationLink.build("SAMEA123456", curationObject, getExampleDomain(), Instant.now());
+//        return curationLinkObject;
+        return curationObject;
     }
 
+    public CurationLink getExampleCurationLink() {
+
+        Curation curationObject = getExampleCuration();
+        Sample sampleObject = getExampleSampleBuilder().build();
+        String domain = getExampleDomain();
+
+        return CurationLink.build(sampleObject.getAccession(), curationObject, domain, Instant.now());
+
+    }
 
 }

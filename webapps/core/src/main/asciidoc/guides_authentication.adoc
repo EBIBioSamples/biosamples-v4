@@ -1,6 +1,5 @@
-= [.ebi-color]#Setting up a user account and logging in#
+= [.ebi-color]#User accounts and authentication#
 :last-update-label!:
-:docinfo: shared
 :toc: auto
 
 This page describes how to create a user account and log in to use the API.

@@ -13,18 +13,14 @@
 	<!-- The last time the content was reviewed -->
 	<meta name="ebi:expiry" content="2017-12-20" />
 	<!-- When this content is no longer relevant -->
-	<link rel="stylesheet"
-		  href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css">
-	<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
-	<script>hljs.initHighlightingOnLoad();</script>
 </head>
 
 <body>
 	<div th:insert="fragments/header :: header"></div>
 	<div layout:fragment="content">
-		<div id="main-content-area" class="row">
-			<div class="small-12 medium-9 columns" th:insert="asciidoc/ref_api_links :: div"></div>
-			<div th:insert="fragments/help :: sidebar"></div>
+		<div id="main-content-area" class="row" >
+			<div class="small-12 medium-9 columns" th:insert="asciidoc/faq :: div"></div>
+			<div th:insert="fragments/help :: sidebar(active='faq')"></div>
 		</div>
 	</div> 
 	<div th:insert="fragments/footer :: footer"></div>	

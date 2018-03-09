@@ -3,6 +3,10 @@
 :toc: auto
 
 == Accessing the service
+
+=== HTTPS vs HTTP
+BioSamples content is served using HTTPS protocol by default. For more details about  check  https://www.ebi.ac.uk/about/technology/2017/09/https-by-default/[Technical Services Cluster blog post]
+
 === Content negotiation
 BioSamples leverages content-negotiation for data access. To get more details about content-negotiation you can check then https://developer.mozilla.org/en-US/docs/Web/HTTP/Content_negotiation[MDN web docs].
 

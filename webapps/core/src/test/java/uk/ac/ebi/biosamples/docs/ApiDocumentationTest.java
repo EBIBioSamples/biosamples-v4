@@ -111,7 +111,8 @@ public class ApiDocumentationTest {
      */
     @Test
     public void getSamples() throws Exception {
-        Page<Sample> samplePage = new PageImpl<>(Collections.singletonList(this.faker.generateRandomSample()), getDefaultPageable(), 100);
+        Sample fakeSample = this.faker.getExampleSample();
+        Page<Sample> samplePage = new PageImpl<>(Collections.singletonList(fakeSample), getDefaultPageable(), 100);
         when(samplePageService.getSamplesByText(any(String.class), anyCollectionOf(Filter.class), anyCollectionOf(String.class), isA(Pageable.class)))
                 .thenReturn(samplePage);
         this.mockMvc.perform(get("/biosamples/samples").accept(MediaTypes.HAL_JSON))
@@ -151,7 +152,7 @@ public class ApiDocumentationTest {
     @Test
     public void postSampleMinimalInfo() throws Exception {
         String wrongSampleSerialized = "{\"name\": \"Sample without minimum information\"," +
-                " \"accession\": \"SAMEA123123123\"}";
+                " \"accession\": \"SAMFAKE123456\"}";
 
         this.mockMvc.perform(
                 post("/biosamples/samples")
@@ -169,7 +170,7 @@ public class ApiDocumentationTest {
     @Test
     public void postCurationLinkMinimalInfo() throws Exception {
 
-        String wrongSampleSerialized = "{\"sample\": \"SAMEA123123123\", \"curation\": {}}";
+        String wrongSampleSerialized = "{\"sample\": \"SAMFAKE123456\", \"curation\": {}}";
 
         this.mockMvc.perform(
                 post("/biosamples/samples")
@@ -186,8 +187,9 @@ public class ApiDocumentationTest {
      */
     @Test
     public void postSample() throws Exception {
-        Sample sample = this.faker.generateRandomSample();
-        Sample sampleWithDomain = this.faker.getBuilderFromSample(sample).withDomain(this.faker.generateTestDomain()).build();
+        Sample sample = this.faker.getExampleSample();
+        Sample sampleWithDomain = this.faker.getExampleSampleWithDomain();
+
         when(aapService.handleSampleDomain(eq(sample))).thenReturn(sampleWithDomain);
         when(sampleService.store(any(Sample.class))).thenReturn(sampleWithDomain);
 
@@ -208,9 +210,8 @@ public class ApiDocumentationTest {
 
     @Test
     public void putSample() throws Exception {
-        Sample sampleWithDomain = this.faker.getBuilderFromSample(this.faker.generateRandomSample())
-                .withDomain(this.faker.generateTestDomain())
-                .build();
+
+        Sample sampleWithDomain = this.faker.getExampleSampleWithDomain();
 
         when(sampleService.fetch(eq(sampleWithDomain.getAccession()))).thenReturn(Optional.of(sampleWithDomain));
         when(sampleService.store(eq(sampleWithDomain))).thenReturn(sampleWithDomain);
@@ -226,7 +227,7 @@ public class ApiDocumentationTest {
 
     @Test
     public void postCurationLink() throws Exception {
-        CurationLink curationLink = this.faker.getExampleCurationLinkObject();
+        CurationLink curationLink = this.faker.getExampleCurationLink();
         when(aapService.handleCurationLinkDomain(eq(curationLink))).thenReturn(curationLink);
         when(curationPersistService.store(curationLink)).thenReturn(curationLink);
 
@@ -238,7 +239,7 @@ public class ApiDocumentationTest {
 
     @Test
     public void getSample() throws Exception {
-        Sample sample = this.faker.getBuilderFromSample(this.faker.generateRandomSample()).withDomain(this.faker.generateTestDomain()).build();
+        Sample sample = this.faker.getExampleSampleBuilder().withDomain(this.faker.getExampleDomain()).build();
         when(sampleService.fetch(sample.getAccession())).thenReturn(Optional.of(sample));
         doNothing().when(aapService).checkAccessible(isA(Sample.class));
 
@@ -256,7 +257,7 @@ public class ApiDocumentationTest {
 
     @Test
     public void getCurations() throws Exception {
-        Page<Curation> curationPage = new PageImpl<>(Collections.singletonList(this.faker.getExampleCurationLinkObject().getCuration()), getDefaultPageable(), 100);
+        Page<Curation> curationPage = new PageImpl<>(Collections.singletonList(this.faker.getExampleCurationLink().getCuration()), getDefaultPageable(), 100);
         when(curationReadService.getPage(isA(Pageable.class))).thenReturn(curationPage);
 
         this.mockMvc.perform(get("/biosamples/curations").accept(MediaTypes.HAL_JSON))
@@ -267,7 +268,7 @@ public class ApiDocumentationTest {
 
     @Test
     public void getSampleCurationLinks() throws Exception {
-        Page<CurationLink> curationLinkPage = new PageImpl<>(Collections.singletonList(this.faker.getExampleCurationLinkObject()), getDefaultPageable(), 100);
+        Page<CurationLink> curationLinkPage = new PageImpl<>(Collections.singletonList(this.faker.getExampleCurationLink()), getDefaultPageable(), 100);
         String sampleAccession = curationLinkPage.getContent().get(0).getSample();
 
         when(curationReadService.getCurationLinksForSample(eq(sampleAccession), isA(Pageable.class))).thenReturn(curationLinkPage);
