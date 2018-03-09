@@ -1,6 +1,7 @@
 = [.ebi-color]#Filters Overview#
 :last-update-label!:
 :toc: auto
+:linkattrs:
 
 == Overview
 Filters are generally composed by a `type`, a `field` and a `value` combined as `<type>:<field>:<value>`
@@ -23,8 +24,8 @@ provided field
 |===
 
 ==== Example
-- link:samples?filter=attr:Organism:Homo+Sapies[`filter=attr:Organism:Homo+Sapiens`]
-- `filter=attr:organism+part:liver`
+- link:/biosamples/samples?filter=attr:Organism:Homo+Sapies[`filter=attr:Organism:Homo+Sapiens`, window="_blank"]
+- link:/biosamples/samples?filter=attr:organism+part:liver[`filter=attr:organism+part:liver`, window="_blank"]
 
 //==== Notes
 //- `field` is an attribute name.
@@ -48,9 +49,9 @@ provided field
 |===
 
 ==== Examples
-- `filter=dt:release:from=2014-01-01T20:30:00until=2015-01-01`
-- `filter=dt:update:from=2018-01-01`
-- `filter=dt:update:until=2016-12-31T20:30:00`
+- link:/biosamples/samples?filter=dt:release:from=2014-01-01T20:30:00until=2015-01-01[`filter=dt:release:from=2014-01-01T20:30:00until=2015-01-01`, window='_blank']
+- link:/biosamples/samples?filter=dt:update:from=2018-01-01[`filter=dt:update:from=2018-01-01`, window='_blank']
+- link:/biosamples/samples?filter=dt:update:until=2016-12-31T20:30:00[`filter=dt:update:until=2016-12-31T20:30:00`,window='_blank']
 
 //==== Notes
 //- The `field` can be only `release` or `update`
@@ -74,7 +75,7 @@ provided field
 |===
 
 ==== Examples
-- `filter=acc:SAMEA341514`
+- link:/biosamples/samples?filter=acc:SAMEA341514[`filter=acc:SAMEA341514`, window='_blank']
 
 === Relationship
 [cols="1*s , 2*", options=header]
@@ -86,8 +87,8 @@ provided field
 |===
 
 ==== Examples
--`filter=rel:derived+from:Human+blood`
--`filter=rel:child+of:SAME1596745`
+- link:/biosamples/samples?filter=rel:derived+from:Human+blood[`filter=rel:derived+from:Human+blood`, window='_blank']
+- link:/biosamples/samples?filter=rel:child+of:SAME1596745[`filter=rel:child+of:SAME1596745`, window='_blank']
 
 === Reverse Relationship
 [cols="1*s , 2*", options=header]
@@ -99,8 +100,8 @@ provided field
 |===
 
 ==== Examples
--`filter=rrel:child+of`
--`filter=rrel:has+member:SAMEG316651`
+- link:/biosamples/samples?filter=rrel:child+of[`filter=rrel:child+of`, window='_blank']
+- link:/biosamples/samples?filter=rrel:has+member:SAMEG316651[`filter=rrel:has+member:SAMEG316651`, window='_blank']
 
 === Name
 [cols="1*s , 2*", options=header]
@@ -112,8 +113,8 @@ provided field
 |===
 
 ==== Examples
-- `filter:name:A5F`
-- `filter=name:Generic+sample+from+Glycine+max`
+- link:/biosamples/samples?filter=name:A5F[`filter=name:A5F`, window="_blank"]
+- link:/biosamples/samples?filter=name:Generic+sample+from+Glycine+max[`filter=name:Generic+sample+from+Glycine+max^`,  window='_blank']
 
 === External Reference Data
 [cols="1*s , 2*", options=header]
@@ -125,5 +126,5 @@ provided field
 |===
 
 ==== Examples
-- `filter=extd:ArrayExpress:E-MTAB-3732`
-- `filter=extd:ENA:SRS359918`
+- link:/biosamples/samples?filter=extd:ArrayExpress:E-MTAB-3732[`filter=extd:ArrayExpress:E-MTAB-3732`, window='_blank']
+- link:/biosamples/samples?filter=extd:ENA:SRS359918[`filter=extd:ENA:SRS359918`, window='_blank']
