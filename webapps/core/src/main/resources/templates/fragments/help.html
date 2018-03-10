@@ -11,17 +11,23 @@
         <div class="small-12 medium-3 columns sidebar">
             <div data-options="marginTop:4;">
 				<ul class="menu vertical drilldown" data-drilldown>
-					<li><a th:href="@{/docs/}">Home</a></li>
+					<li><a th:classappend="${#strings.equals(active, 'overview')}" th:href="@{/docs/}">Overview</a></li>
+					<!--<ul class="menu vertical nested">-->
+						<!--<li><a href="#">About</a></li>-->
+						<!--<li><a href="#">Latest release</a></li>-->
+					<!--</ul>-->
+
 					<!--<li><a th:href="@{/docs/search}">Searching</a></li>-->
 					<!--<li><a th:href="@{/docs/submit}">Submitting</a></li>-->
-					<li><a href="#">Guides</a></li>
+					<li><a href="#">Getting started</a></li>
+					<li><a href="#">User guides</a></li>
 					<ul class="menu vertical nested">
 						<li><a th:classappend="${#strings.equals(active,'guides/auth')} ? 'active'" th:href="@{/docs/guides/authentication}">Authentication</a></li>
 						<li><a th:classappend="${#strings.equals(active, 'guides/search')} ? 'active'" th:href="@{/docs/guides/search}">Search in BioSamples</a></li>
 						<li><a th:classappend="${#strings.equals(active, 'guides/submit')} ? 'active'" th:href="@{/docs/guides/submit}">Submit to BioSamples</a></li>
-						<li><a th:classappend="${#strings.equals(active, 'guides/curate')} ? 'active'" th:href="@{/docs/guides/curate}">Curate BioSamples</a></li>
+						<li><a th:classappend="${#strings.equals(active, 'guides/curate')} ? 'active'" th:href="@{/docs/guides/curate}">Curation in  BioSamples</a></li>
 					</ul>
-					<li><a href="#">References</a></li>
+					<li><a href="#">Developers reference</a></li>
 					<ul class="menu vertical nested">
 						<!--<li><a th:href="@{/docs/legacy_xml_api}">Legacy XML API</a></li>-->
 						<!--<ul class="menu vertical nested">-->
@@ -33,12 +39,12 @@
 							<li><a th:classappend="${#strings.equals(active, 'refs/api/search')} ? 'active'" th:href="@{/docs/references/api/search}">Search</a></li>
 							<li><a th:classappend="${#strings.equals(active, 'refs/api/submit')} ? 'active'" th:href="@{/docs/references/api/submit}">Submit</a></li>
 						</ul>
-						<li><a th:classappend="${#strings.equals(active, 'refs/filters')} ? 'active'" th:href="@{/docs/references/filters}">BioSamples fitlers</a></li>
+						<li><a th:classappend="${#strings.equals(active, 'refs/filters')} ? 'active'" th:href="@{/docs/references/filters}">Search filters</a></li>
 						<!--</ul>-->
 					</ul>
 					<li><a th:classappend="${#strings.equals(active, 'faq')} ? 'active'" th:href="@{/docs/faq}">FAQ</a></li>
-					<li><a th:classappend="${#strings.equals(active, 'release')} ? 'active'" th:href="@{/docs/releasenotes}">Release notes</a></li>
-					<li><a th:classappend="${#strings.equals(active, 'contacts')} ? 'active'" th:href="@{/docs/contacts}">Contact us</a></li>
+					<li><a th:classappend="${#strings.equals(active, 'releasehistory')} ? 'active'" th:href="@{/docs/releasenotes}">Release history</a></li>
+					<li><a th:classappend="${#strings.equals(active, 'contacts')} ? 'active'" th:href="@{/docs/contacts}">Contacts</a></li>
 				</ul>
 			</div>
 		</div>

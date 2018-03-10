@@ -4,24 +4,7 @@
 
 == Accessing the service
 
-=== HTTPS vs HTTP
-BioSamples content is served using HTTPS protocol by default. For more details about  check  https://www.ebi.ac.uk/about/technology/2017/09/https-by-default/[Technical Services Cluster blog post]
-
-=== Content negotiation
-BioSamples leverages content-negotiation for data access. To get more details about content-negotiation you can check then https://developer.mozilla.org/en-US/docs/Web/HTTP/Content_negotiation[MDN web docs].
-
-.BioSamples's supported content
-[cols=3*,options="header"]
-|===
-|Type
-|Header
-|Comments
-
-| HTML | `Accept: text/html` |
-| JSON | `Accept: application/hal+json` or `Accept: application/json` | Recommended
-| JSON-LD | `Accept: application/ld+json` | Use to serve http://bioschemas.org/[BioSchemas] content
-| XML | `Accept: text/xml` or `Accept: application/xml` | Soon deprecated
-|===
+The BioSamples API is organized around link:http://en.wikipedia.org/wiki/Representational_State_Transfer[REST]. Our API has predictable, resource-oriented URLs, and uses HTTP response codes to indicate API errors. We use built-in HTTP features, like HTTP authentication, HTTP verbs and content-negotiation.
 
 === Hypermedia
 
@@ -41,11 +24,38 @@ Link naming follows a consistent pattern.
 
 For a reference of links available in BioSamples check the corresponding <<ref_api_links.adoc#, Links section>>
 
-== Supported HTTP verbs
-This API aims to use appropriate HTTP verbs for each action, although not all the actions are supported by our service.
-You can read more about HTTP verbs on https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods[MDN web docs].
+=== Content negotiation for data representation
 
-.BioSamples's API supported verbs
+BioSamples is able to serve data using different serializations and provides this functionality through https://developer.mozilla.org/en-US/docs/Web/HTTP/Content_negotiation[content negotiation HTTP standard]. Even if *JSON* format is the recommended format for API interactions, in <<content_negotiation_table>> you can find a list of all the currently available data representations in BioSamples
+
+[[content_negotiation_table]]
+.BioSamples's supported serializations table
+[cols=3*,options="header"]
+|===
+|Type
+|Header
+|Comments
+
+| HTML | `Accept: text/html` |
+| JSON | `Accept: application/hal+json` or `Accept: application/json` | [green]#*Recommended*#
+| JSON-LD | `Accept: application/ld+json` | Use to serve http://bioschemas.org/[BioSchemas] content
+| XML | `Accept: text/xml` or `Accept: application/xml` | [red]#*Soon deprecated*#
+|===
+
+== HTTP conventions
+
+=== Authentication
+In BioSamples, user authentication and authorization functionalities are supported by the mean of a https://jwt.io/[JWT] token provided in the HTTP request header.
+For more information on how authentication works in BioSamples, check the link:/biosamples/docs/guides/authentication[authentication guide].
+
+All our API examples that require a JWT token to be fullfilled, will use `$TOKEN` as a placeholder instead.
+
+=== Supported HTTP verbs
+The BioSamples API aims to use appropriate https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods[HTTP verbs] for each action.
+Not all the verbs are available in the BioSamples API, and you can check the supported one in the <<supported_verbs>>
+
+[[supported_verbs]]
+.BioSamples's API supported verbs table
 [cols=2*,options="header"]
 |===
 |Verb
@@ -58,15 +68,28 @@ You can read more about HTTP verbs on https://developer.mozilla.org/en-US/docs/W
 |`HEAD`|Returns whether a resource is available
 |===
 
-== HTTP Status codes
-BioSamples uses standard HTTP response codes for request to our service. You can find a complete reference on the
+=== HTTP Status codes
+BioSamples uses standard response status code to show the outcome of each HTTP request. You can find a complete reference on
 HTTP status codes on https://developer.mozilla.org/en-US/docs/Web/HTTP/Status[MDN web docs]
 
-== Authentication
-Authentication and authorization decisions are made based on a https://jwt.io/[JWT] token, provided as a HTTP request
-header. This is described in the guide to <<guide_accounts_and_logging_in.adoc#,Accounts and logging in>>.
+[cols=2*,options="header"]
+|===
+|Status code
+|Description
 
-All examples of accessing the API will use `$TOKEN` as a placeholder for your real token.
+
+|`200 OK`|The request completed successfully
+|`201 Created`|Returned after successfully creating a new resource with a `POST` request
+|`400 Bad Request`|The request was malformed. The response body will include an error providing further information
+|`401 Unauthorized`|The request did not include an `Authorization` header
+|`403 Forbidden`|You are not permitted to access this resource
+|`405 Method Not Allowed`|The request used a method that is not permitted
+
+|===
+
+=== HTTPS vs HTTP
+BioSamples content is by default served using the HTTPS protocol. The adoption of HTTPs follows an EMBL-EBI guidelines. You can find some more details about these guidelines in this  https://www.ebi.ac.uk/about/technology/2017/09/https-by-default/[Technical Services Cluster blog post]
+
 
 //== Errors
 

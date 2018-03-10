@@ -15,13 +15,23 @@ public class DocumentationController {
     }
 
     @GetMapping(value = "/{page}")
-    public String helpIndex(@PathVariable String page) {
+    public String helpBasePage(@PathVariable String page) {
         return "docs/"+page;
+    }
+
+    @GetMapping(value = "/guides/")
+    public String helpGuideIndex() {
+        return "docs/guides/index";
     }
 
     @GetMapping(value = "/guides/{page}")
     public String helpGuidePage(@PathVariable String page) {
         return "docs/guides/"+page;
+    }
+
+    @GetMapping(value = "/references/")
+    public String helpReferenceIndex() {
+        return "docs/references/index";
     }
 
     @GetMapping(value = "/references/{page}")
