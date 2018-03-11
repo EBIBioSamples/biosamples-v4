@@ -2,7 +2,7 @@
 :last-update-label!:
 :toc: auto
 
-You can issue a `GET` request to the root endpoint to get all the entry points into the API.
+The BioSamples API root provide access to all the resources available in BioSamples using hypermedia links.
 
 == Request
 include::{snippets}/get-index/http-request.adoc[]

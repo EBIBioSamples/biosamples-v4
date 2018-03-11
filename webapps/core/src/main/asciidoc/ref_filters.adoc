@@ -4,17 +4,17 @@
 :linkattrs:
 
 == Overview
-Filters are generally composed by a `type`, a `field` and a `value` combined as `<type>:<field>:<value>`
-
-If a `value` is not provided, the filters check for existence of the
-provided field
-
-//The filter need to be encoded in order to be interpreted by the user interface. You can use an https://www.urlencoder.org/[online url encoder] for this purpose
+You can use BioSamples filters are to filter resources based on their characteristics.
+BioSamples filters are generally composed by a `type`, a `field` and a `value` combined as `<type>:<field>:<value>`
+Note that if a `value` is not provided, the filter will check for existence of the provided field.
 
 
-== Filters
+
+== Type of filter
 
 === Attribute
+Filter based on samples' attributes and attribute's value
+
 [cols="1*s , 2*", options=header]
 |===
 | Field | Value | Notes
@@ -39,6 +39,7 @@ provided field
 //|===
 
 === Date range
+Range filter based on samples' update date or release date
 
 [cols="1*s , 2*", options=header]
 |===
@@ -66,6 +67,8 @@ provided field
 
 
 === Accession
+Filter based on samples' accession
+
 [cols="1*s , 2*", options=header]
 |===
 | Field | Value | Notes
@@ -78,6 +81,8 @@ provided field
 - link:/biosamples/samples?filter=acc:SAMEA341514[`filter=acc:SAMEA341514`, window='_blank']
 
 === Relationship
+Filter based on samples relationship source
+
 [cols="1*s , 2*", options=header]
 |===
 | Field | Value | Notes
@@ -91,6 +96,8 @@ provided field
 - link:/biosamples/samples?filter=rel:child+of:SAME1596745[`filter=rel:child+of:SAME1596745`, window='_blank']
 
 === Reverse Relationship
+Filter based on samples' relationship target
+
 [cols="1*s , 2*", options=header]
 |===
 | Field | Value | Notes
@@ -104,6 +111,8 @@ provided field
 - link:/biosamples/samples?filter=rrel:has+member:SAMEG316651[`filter=rrel:has+member:SAMEG316651`, window='_blank']
 
 === Name
+Filter based on samples' name
+
 [cols="1*s , 2*", options=header]
 |===
 | Field | Value | Notes
@@ -117,11 +126,13 @@ provided field
 - link:/biosamples/samples?filter=name:Generic+sample+from+Glycine+max[`filter=name:Generic+sample+from+Glycine+max^`,  window='_blank']
 
 === External Reference Data
+Filter based on sample's link with external data
+
 [cols="1*s , 2*", options=header]
 |===
 | Field | Value | Notes
 | `type` | `extd` |
-| `field` | External reference name | e.g. ENA, ArrayExpress
+| `field` | External reference name | e.g. ENA, ArrayExpress, etc.
 | `value` | Externnal data id |
 |===
 

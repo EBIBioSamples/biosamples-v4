@@ -3,7 +3,7 @@
 :toc: auto
 
 == List samples resources
-`GET` all the sample resources paginated
+`GET` all the BioSamples sample resources in a paginated fashion.
 
 === Request
 include::{snippets}/get-samples/http-request.adoc[]
@@ -23,7 +23,7 @@ include::{snippets}/get-samples/http-response.adoc[]
 For all the links available in BioSamples check the <<ref_api_links.adoc#, Links reference>>
 
 == Get sample by accession
-`GET` single sample resource
+`GET` single BioSamples sample resource using its accession.
 
 === Request
 include::{snippets}/get-sample/http-request.adoc[]
@@ -37,7 +37,7 @@ include::{snippets}/get-sample/http-response.adoc[]
 For all the links available in BioSamples check the <<ref_api_links.adoc#, Links reference>>
 
 == Get all samples curations
-`GET` all the curation resources
+`GET` all the BioSamples curation resources in a paginated fashion.
 
 === Request
 include::{snippets}/get-curations/http-request.adoc[]
@@ -50,8 +50,8 @@ include::{snippets}/get-curations/http-response.adoc[]
 
 For all the links available in BioSamples check the <<ref_api_links.adoc#, Links reference>>
 
-== Get sample curation objects
-`GET` all the curations associated to a sample
+== Get sample linked curations
+`GET` all the curation associated to a sample
 
 === Request
 include::{snippets}/get-sample-curation/http-request.adoc[]

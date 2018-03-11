@@ -3,6 +3,7 @@
 :toc: auto
 
 == Links standard
+In BioSamples API links are used to connect resources. Use the links to move reliably through the API.
 For more details about links, check out the https://tools.ietf.org/html/rfc5988[standard docs] and the  of https://www.iana.org/assignments/link-relations/link-relations.xhtml[link relation types]
 
 == Pagination
