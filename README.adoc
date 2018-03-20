@@ -28,5 +28,5 @@ Head to http://localhost:8081/biosamples to see your local version of the servic
 # What to do now
 An example sample has been provided in this repository: `sample_example.json`
 
-Using the docs available in your local enviroment, submit this sample to your local version of biosamples.
+Using the docs available in your local enviroment, submit this sample to your local version of BioSamples.
 
