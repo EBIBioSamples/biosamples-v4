@@ -3,31 +3,30 @@ Badge]]
 
 # Development getting started
 
-## Install the dependecies
+## Install the dependencies
 To checkout and compile the code, you will need Git, Maven, and a JDK 8.
 On ubuntu-based Linux distributions (16.04 or higher) you can do this
 with:
 
 `sudo apt-get install maven git default-jdk`
 
-You should now being able to check out the code from github:
+You should now being able to check out the code from GitHub:
 
 `git clone https://github.com/EBIBioSamples/biosamples-v4 biosamples`
 
 In order to create a local instance of BioSamples services you need to have Docker and Docker-compose installed on you machine. Check out https://www.docker.com/community-edition and https://docs.docker.com/compose/install/ to know how to install these services on your machine.
 
-## Startup the local version of the Biosamples services
-Now you should be able to get into the biosamples folder and run the script that will compile the java application and start up all the docker containers using `docker-webapp.sh` script.
+## Startup the local version of the BioSamples services
+Go to the biosamples folder and run the script that will compile the java application. Then start up the docker containers using `docker-webapp.sh` script.
 `cd biosamples` `docker-webapp.sh`
 
-*Note*: This will require a large download of Spring dependencies and Docker containers. Be aware that it could take a bit based on your connection.
+*Note*: This will require a large download of Spring dependencies and Docker containers and could be a lengthy process depending on your connection.
 
-## Checkout stuff is working ##
-You should be now able to head to http://localhost:8081/biosamples and see your local version of the services. Note that no samples is directly provided with this development version and therefore no results will be shown in the "Search" page.
+## Check status ##
+Head to http://localhost:8081/biosamples to see your local version of the services. Note that no samples is directly provided with this development version and therefore no results will be shown in the "Search" page.
 
 # What to do now
 An example sample has been provided in this repository: `sample_example.json`
 
-Using the docs available in your local enviroment, we would like you to try to submit this sample
-to your local version of biosamples.
+Using the docs available in your local enviroment, submit this sample to your local version of biosamples.
 
