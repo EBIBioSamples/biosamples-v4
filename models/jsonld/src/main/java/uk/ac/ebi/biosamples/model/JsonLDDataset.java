@@ -9,7 +9,7 @@ import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder(value={"@context", "@type", "name", "description", "url", "includedInDataCatalog"})
-public class JsonLDDataset {
+public class JsonLDDataset implements BioschemasObject{
 
     @JsonProperty("@context")
     private final String context = "http://schema.org";

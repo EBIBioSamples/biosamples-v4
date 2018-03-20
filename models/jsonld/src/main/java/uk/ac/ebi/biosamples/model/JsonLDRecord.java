@@ -10,7 +10,7 @@ import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder(value = {"@context",  "@type", "identifier", "dateCreated", "dateModified", "mainEntity", "isPartOf"})
-public class JsonLDRecord {
+public class JsonLDRecord implements BioschemasObject{
 
     @JsonProperty("@context")
     private final String context = "http://schema.org";

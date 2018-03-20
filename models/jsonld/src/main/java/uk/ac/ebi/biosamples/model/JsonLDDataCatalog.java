@@ -11,7 +11,7 @@ import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder(value = {"@context",  "@type", "description", "keywords", "name", "url", "url", "publication", "provider", "sourceOrganization"})
-public class JsonLDDataCatalog {
+public class JsonLDDataCatalog implements BioschemasObject{
 
     @JsonProperty("@context")
     private final String context = "http://schema.org";

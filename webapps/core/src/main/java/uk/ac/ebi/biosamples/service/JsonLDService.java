@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import uk.ac.ebi.biosamples.controller.SampleHtmlController;
+import uk.ac.ebi.biosamples.model.BioschemasObject;
 import uk.ac.ebi.biosamples.model.JsonLDRecord;
 import uk.ac.ebi.biosamples.model.JsonLDSample;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -56,7 +57,7 @@ public class JsonLDService {
      * @param jsonld the ld+json object
      * @return the formatted string representing the ld+json object
      */
-    public String jsonLDToString(JsonLDRecord jsonld) {
+    public String jsonLDToString(BioschemasObject jsonld) {
 
         try {
             return this.objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonld);
