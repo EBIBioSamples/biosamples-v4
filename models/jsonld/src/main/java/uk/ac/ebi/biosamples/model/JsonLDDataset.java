@@ -35,7 +35,6 @@ public class JsonLDDataset implements BioschemasObject{
         return dataCatalog;
     }
 
-
     @JsonProperty("url")
     public String getUrl() {
         return url;
