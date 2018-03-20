@@ -1,212 +1,33 @@
 https://www.codacy.com/app/afaulconbridge/biosamples-v4?utm_source=github.com&utm_medium=referral&utm_content=EBIBioSamples/biosamples-v4&utm_campaign=badger[image:https://api.codacy.com/project/badge/Grade/c2acf39bb65d4793ae3420c70ab51388[Codacy
 Badge]]
 
-[[quickstart]]
-Quickstart
-----------
+# Development getting started
 
-Install Maven and JDK 8 Install docker-compose
-https://docs.docker.com/compose/
-
-MacOS: Install Docker for Mac from https://www.docker.com/docker-mac
-
-`mvn package`
-
-`docker-compose build`
-
-`docker-compose up biosamples-webapps-core`
-
-Note: this will download around 1GB of docker containers
-
-public interface at http://localhost:8081/biosamples/beta
-
-An example of the JSON format that can be sent by POST to
-http://localhost:8081/biosamples/beta/samples is at
-https://github.com/EBIBioSamples/biosamples-v4/blob/master/models/core/src/test/resources/TEST1.json
-
-[[client-useage]]
-Client useage
--------------
-
-There is a spring client, and a spring-boot starter module, for use with
-BioSamples. To use these in a maven project, add the following to the
-appropriate sections:
-
-....
-<dependencies>      
-    <dependency>
-        <groupId>uk.ac.ebi.biosamples</groupId>
-        <artifactId>biosamples-spring-boot-starter</artifactId>
-        <version>4.0.4</version>
-    </dependency>
-</dependencies>
-....
-....
-<repositories>
-    <repository>
-      <id>spotnexus</id>
-      <url>https://www.ebi.ac.uk/spot/nexus/repository/maven-releases/</url>
-    </repository>
-</repositories>
-....
-
-This can then be configured by several spring application.properties
-including biosamples.client.uri to specify the base URI of the
-BioSamples instance to use.
-
-[[development-getting-started]]
-Development getting started
----------------------------
-
+## Install the dependecies
 To checkout and compile the code, you will need Git, Maven, and a JDK 8.
 On ubuntu-based Linux distributions (16.04 or higher) you can do this
 with:
 
 `sudo apt-get install maven git default-jdk`
 
-Then you can check out and compile the code with:
+You should now being able to check out the code from github:
 
 `git clone https://github.com/EBIBioSamples/biosamples-v4 biosamples`
-`cd biosamples` `mvn -T 2C package`
 
-Note: This will require a large download of Spring dependencies. Note:
-This uses up to two threads per core of your machine.
+In order to create a local instance of BioSamples services you need to have Docker and Docker-compose installed on you machine. Check out https://www.docker.com/community-edition and https://docs.docker.com/compose/install/ to know how to install these services on your machine.
 
-At that point, you will have a local compiled version of all the
-biosamples tools.
+## Startup the local version of the Biosamples services
+Now you should be able to get into the biosamples folder and run the script that will compile the java application and start up all the docker containers using `docker-webapp.sh` script.
+`cd biosamples` `docker-webapp.sh`
 
-To start a copy running on the local machine (e.g. to test any changes
-you have made) you can use Docker and Docker-compose.
-https://docs.docker.com/compose/
+*Note*: This will require a large download of Spring dependencies and Docker containers. Be aware that it could take a bit based on your connection.
 
-You can use `docker-compose up` to start all the services, or you can
-bring them up individually. See docker-compose.yml file for more
-information on service names and dependencies.
+## Checkout stuff is working ##
+You should be now able to head to http://localhost:8081/biosamples and see your local version of the services. Note that no samples is directly provided with this development version and therefore no results will be shown in the "Search" page.
 
-To update the code you are running you will need to 
-1. `git pull` the latest version
-2. Recompile the java classes by running `docker-webapp.sh`
+# What to do now
+An example sample has been provided in this repository: `sample_example.json`
 
-By default, the pipelines will not be run. They can be manually
-triggered as follows:
+Using the docs available in your local enviroment, we would like you to try to submit this sample
+to your local version of biosamples.
 
-[[ncbi]]
-NCBI
-~~~~
-
-Download the XML dump (~400Mb) to the current directory:
-
-`wget http://ftp.ncbi.nih.gov/biosample/biosample_set.xml.gz`
-
-Run the pipeline to send the data to the submission API via REST
-
-`docker-compose up biosamples-pipelines-ncbi`
-
-Note: You will need to mount the location that the XML dump was
-downloaded to within the docker container. A docker-compose.override.yml
-file is the easiest way to do that.
-
-[[developing]]
-Developing
-----------
-
-Docker can be run from within a virtual machine e.g VirtualBox. This is
-useful if it causes any problems for your machine or if you have an OS
-that is not supported.
-
-You might want to mount the virtual machines directory with the host, so
-you can work in a standard IDE outside of the VM. VirtualBox supports
-this.
-
-If you ware using a virtual machine, you might also want to configure
-docker-compose to start by default.
-
-As you make changes to the code, you can recompile it via Maven with:
-
-`mvn -T 2C package`
-
-And to get the new packages into the docker containers you will need to
-rebuild containers with:
-
-`docker-compose build`
-
-If needed, you can rebuild just a single container by specifying its
-name e.g.
-
-`docker-compose build biosamples-pipelines`
-
-To start a service, using docker compose will also start and dependent
-services it requires e.g.
-
-`docker-compose up biosamples-webapp-api`
-
-will also start solr, neo4j, mongo, and rabbitmq
-
-To run an executable file in a docker container, and start its
-dependencies first use something like:
-
-`docker-compose run --service-ports biosamples-pipelines`
-
-If you want to add command line arguments note that these will entirely
-replace the executable in the docker-compose.yml file. So you need to do
-something like:
-
-`docker-compose run --service-ports biosamples-pipelines java -jar pipelines-4.0.0-SNAPSHOT.jar --debug`
-
-If you want to connect debugging tools to the java applications running
-inside docker containers, see instructions at
-http://www.jamasoftware.com/blog/monitoring-java-applications/
-
-Note that you can bring maven and docker together into a single
-commandline like:
-
-`mvn -T 2C package && docker-compose build && docker-compose run --service-ports biosamples-pipelines`
-
-Beware, Docker tar's and copies all the files on the filesystem from the
-location of docker-compose down. If you have data files there (e.g.
-downloads from ncbi, docker volumes, logs) then that process can take so
-long that it makes using Docker impractical.
-
-As docker-compose creates new volumes each time, you may fill the disk
-docker is working on. To delete all docker volumes use:
-
-`docker volume ls -q | xargs -r docker volume rm`
-
-To delete all docker images use:
-
-`docker images -q | xargs -r docker rmi`
-
-NOTE: this will remove everything not just things for this project
-
-[[mongodb-notes]]
-MongoDB notes
--------------
-
-Cross-platform easy to use mongodb management tool
-http://www.mongoclient.com
-
-[[problems-with-spring-data-rest]]
-Problems with spring-data-rest
-------------------------------
-
-This was originally using spring-data-rest to expose rest API for the
-repositories. But there are a number of problems with this (see below)
-and that was scrapped in favor of implementing custom HATEOAS compliant
-endpoints.
-
-Content type negotiation is not possible as it can't overlap with the
-URLs for the Thymeleaf controllers and it can't serve XML even with the
-appropriate converters supplied.
-
-When repeatedly sending JSON because it is a list of things with
-optional components, the optional parts can become mixed if the list
-ordering changes. Maybe this can be remedied by using map of attribute
-types instead?
-
-[[known-issues]]
-Known issues
-------------
-
-Solr has a limit on the field size (technically the term vector).
-Therefore the attribute values over 255 characters are not indexed in
-solr.
