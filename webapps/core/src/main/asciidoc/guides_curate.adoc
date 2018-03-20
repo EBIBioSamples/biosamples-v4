@@ -1,0 +1,6 @@
+= [.ebi-color]#Curate BioSamples#
+:last-update-label!:
+:toc:
+
+To fill
+

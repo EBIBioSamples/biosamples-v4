@@ -1,0 +1,38 @@
+= [.ebi-color]#Links#
+:last-update-label!:
+:toc: auto
+
+== Links standard
+In BioSamples API links are used to connect resources. Use the links to move reliably through the API.
+For more details about links, check out the https://tools.ietf.org/html/rfc5988[standard docs] and the  of https://www.iana.org/assignments/link-relations/link-relations.xhtml[link relation types]
+
+== Pagination
+[cols=2*,options="header"]
+|===
+| Type
+| Description
+
+| `self` | current page of a collection
+| `first` | first page of a collection
+| `last` | last page of a collection
+| `next` | next page of a collection
+| `prev` | previous page of a collection
+|===
+
+== BioSamples relations type
+[cols=2*,options="header"]
+|===
+| Type
+| Description
+
+| `autocomplete` | collection autocompletion terms associated to current query
+| `curation` | single curation resource
+| `curationLinks` | collection curation resources associated to a sample
+| `curations` | collection of curation resources
+| `cursor` | cursor for sample resource collection navigation
+| `facets` | facets collection associated to current search result
+| `sample` | single sample resource
+| `samples` | collection of sample resources
+| `self` | current resource
+|===
+

@@ -20,7 +20,7 @@ import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.FilterBuilder;
 
 @Component
-@Profile({"default", "rest", "test"})
+@Profile({"default", "rest"})
 
 public class RestFilterIntegration extends AbstractIntegration{
 
