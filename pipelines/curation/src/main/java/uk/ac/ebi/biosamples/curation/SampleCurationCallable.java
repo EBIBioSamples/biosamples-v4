@@ -287,7 +287,9 @@ public class SampleCurationCallable implements Callable<Void> {
 	private Sample ols(Sample sample) {		
 		for (Attribute attribute : sample.getAttributes()) {
 			for (String iri : attribute.getIri()) {				
-				if (iri.matches("^[A-Za-z]+[_:\\-][0-9]+$")) {
+				log.trace("Checking iri "+iri);
+				if (iri.matches("^[A-Za-z]+[_:\\-][0-9]+$")) {				
+					log.trace("Querying OLS for iri "+iri);
 					Optional<String> iriResult = olsProcessor.queryOlsForShortcode(iri);
 					if (iriResult.isPresent()) {
 						log.trace("Mapped "+iri+" to "+iriResult.get());
