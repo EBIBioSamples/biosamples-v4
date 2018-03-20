@@ -17,8 +17,7 @@ You should now being able to check out the code from GitHub:
 In order to create a local instance of BioSamples services you need to have Docker and Docker-compose installed on you machine. Check out https://www.docker.com/community-edition and https://docs.docker.com/compose/install/ to know how to install these services on your machine.
 
 ## Startup the local version of the BioSamples services
-Go to the biosamples folder. Run the script that will compile the java application and start up the docker containers using `docker-webapp.sh` script.
-`cd biosamples` `docker-webapp.sh`
+Go to the biosamples folder. Run the script that will compile the java application and start up the docker containers using `docker-webapp.sh`.
 
 *Note*: This will require a large download of Spring dependencies and Docker containers and could be a lengthy process depending on your connection.
 
