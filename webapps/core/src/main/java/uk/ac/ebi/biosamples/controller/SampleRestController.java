@@ -1,9 +1,5 @@
 package uk.ac.ebi.biosamples.controller;
 
-import java.net.URI;
-import java.time.Instant;
-import java.util.Optional;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.EntityLinks;
@@ -12,31 +8,16 @@ import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.exception.SampleNotAccessibleException;
 import uk.ac.ebi.biosamples.exception.SampleNotFoundException;
-import uk.ac.ebi.biosamples.model.JsonLDSample;
+import uk.ac.ebi.biosamples.model.JsonLDRecord;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.service.BioSamplesAapService;
-import uk.ac.ebi.biosamples.service.FilterService;
-import uk.ac.ebi.biosamples.service.JsonLDService;
-import uk.ac.ebi.biosamples.service.SampleManipulationService;
-import uk.ac.ebi.biosamples.service.SamplePageService;
-import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
-import uk.ac.ebi.biosamples.service.SampleService;
+import uk.ac.ebi.biosamples.service.*;
+
+import java.time.Instant;
+import java.util.Optional;
 
 /**
  * Primary controller for REST operations both in JSON and XML and both read and
@@ -116,7 +97,7 @@ public class SampleRestController {
     @PreAuthorize("isAuthenticated()")
 	@CrossOrigin(methods = RequestMethod.GET)
     @GetMapping(produces = "application/ld+json")
-    public JsonLDSample getJsonLDSample(@PathVariable String accession) {
+    public JsonLDRecord getJsonLDSample(@PathVariable String accession) {
 		Optional<Sample> sample = sampleService.fetch(accession);
 		if (!sample.isPresent()) {
 			throw new SampleNotFoundException();
@@ -129,9 +110,9 @@ public class SampleRestController {
 			throw new SampleNotAccessibleException();
         }
 
-        JsonLDSample jsonLDSample = jsonLDService.sampleToJsonLD(sample.get());
+        JsonLDRecord jsonLDRecord = jsonLDService.sampleToJsonLD(sample.get());
         
-        return jsonLDSample;
+        return jsonLDRecord;
     }
 
 	@ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Sample accession must match URL accession") // 400

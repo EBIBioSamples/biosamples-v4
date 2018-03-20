@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import uk.ac.ebi.biosamples.controller.SampleHtmlController;
+import uk.ac.ebi.biosamples.model.JsonLDRecord;
 import uk.ac.ebi.biosamples.model.JsonLDSample;
 import uk.ac.ebi.biosamples.model.Sample;
 
@@ -21,10 +22,10 @@ public class JsonLDService {
 
     ObjectMapper objectMapper;
 
-    SampleToJsonLDSampleConverter jsonLDSampleConverter;
+    SampleToJsonLDSampleRecordConverter jsonLDSampleConverter;
 
     public JsonLDService(ObjectMapper mapper) {
-        this.jsonLDSampleConverter = new SampleToJsonLDSampleConverter();
+        this.jsonLDSampleConverter = new SampleToJsonLDSampleRecordConverter();
         this.objectMapper = mapper;
     }
 
@@ -33,8 +34,10 @@ public class JsonLDService {
      * @param sample the sample to convert
      * @return the ld+json version of the sample
      */
-    public JsonLDSample sampleToJsonLD(Sample sample) {
-        JsonLDSample jsonLDSample = this.jsonLDSampleConverter.convert(sample);
+    public JsonLDRecord sampleToJsonLD(Sample sample) {
+        JsonLDRecord jsonLDRecord = this.jsonLDSampleConverter.convert(sample);
+        JsonLDSample jsonLDSample = jsonLDRecord.getMainEntity();
+
         try {
             Method method = SampleHtmlController.class.getMethod("sampleAccession", String.class);
             String sampleUrl = linkTo(method, sample.getAccession()).toString();
@@ -42,7 +45,9 @@ public class JsonLDService {
         } catch (NoSuchMethodException e) {
             e.printStackTrace();
         }
-        return jsonLDSample;
+
+        jsonLDRecord.mainEntity(jsonLDSample);
+        return jsonLDRecord;
     }
 
 
@@ -51,7 +56,7 @@ public class JsonLDService {
      * @param jsonld the ld+json object
      * @return the formatted string representing the ld+json object
      */
-    public String jsonLDToString(JsonLDSample jsonld) {
+    public String jsonLDToString(JsonLDRecord jsonld) {
 
         try {
             return this.objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonld);
