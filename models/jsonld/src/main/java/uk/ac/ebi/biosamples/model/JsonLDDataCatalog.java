@@ -32,11 +32,9 @@ public class JsonLDDataCatalog implements BioschemasObject{
     @JsonProperty("name")
     private final String name;
 
-    @JsonProperty("url")
-    private final String url;
+    private String url;
 
-    @JsonProperty("dataset")
-    private final List<Map<String,String>> dataset;
+    private List<Map<String,String>> dataset;
 
     @JsonProperty("publication")
     private final List<Map<String,String>> publication;
@@ -52,9 +50,8 @@ public class JsonLDDataCatalog implements BioschemasObject{
         this.keywords = "samples, sample metadata";
         this.provider = getBiosamplesProvider();
         this.name = "BioSamples database";
-        // TODO make the url relative to the application and not hard-coded
         this.url = "https://www.ebi.ac.uk/biosamples";
-        this.dataset = getBioSamplesDataset();
+        this.dataset = getDefaultBioSamplesDataset();
         this.publication = getBioSamplesPublication();
         this.sourceOrganization = getBioSamplesSourceOrganization();
 
@@ -78,11 +75,10 @@ public class JsonLDDataCatalog implements BioschemasObject{
         return publication;
     }
 
-    private List<Map<String,String>> getBioSamplesDataset() {
+    private List<Map<String,String>> getDefaultBioSamplesDataset() {
         List<Map<String, String>> dataset = new ArrayList<Map<String,String>>();
         Map<String, String> datasetEntry = new HashMap<String, String>();
         datasetEntry.put("@type", "Dataset");
-        // TODO make the @id url relative to the application and not hard-coded
         datasetEntry.put("@id", "https://www.ebi.ac.uk/biosamples/samples");
         dataset.add(datasetEntry);
         return dataset;
@@ -102,6 +98,28 @@ public class JsonLDDataCatalog implements BioschemasObject{
     }
 
 
+    public List<Map<String, String>> getDataset() {
+        return dataset;
+    }
 
+    @JsonProperty("dataset")
+    public JsonLDDataCatalog datasetUrl(String datasetUrl) {
+        List<Map<String, String>> allDatasets = getDefaultBioSamplesDataset();
+        Map dataset = allDatasets.get(0);
+        dataset.put("@id", datasetUrl);
+        allDatasets = new ArrayList<>();
+        allDatasets.add(dataset);
+        this.dataset = allDatasets;
+        return this;
+    }
 
+    @JsonProperty("url")
+    public String getUrl() {
+        return url;
+    }
+
+    public JsonLDDataCatalog url(String url) {
+        this.url = url;
+        return this;
+    }
 }

@@ -1,13 +1,5 @@
 package uk.ac.ebi.biosamples.controller;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.stream.Collectors;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -16,38 +8,26 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.ExposesResourceFor;
-import org.springframework.hateoas.Link;
-import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.*;
 import org.springframework.hateoas.PagedResources.PageMetadata;
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.Resources;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.util.UriUtils;
-
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
-import uk.ac.ebi.biosamples.service.BioSamplesAapService;
-import uk.ac.ebi.biosamples.service.FilterService;
-import uk.ac.ebi.biosamples.service.SampleManipulationService;
-import uk.ac.ebi.biosamples.service.SamplePageService;
-import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
-import uk.ac.ebi.biosamples.service.SampleService;
+import uk.ac.ebi.biosamples.service.*;
 import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
-import uk.ac.ebi.biosamples.utils.LinkUtils;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 /**
  * Primary controller for REST operations both in JSON and XML and both read and
@@ -68,13 +48,13 @@ public class SamplesRestController {
 	private final FilterService filterService;
 	private final BioSamplesAapService bioSamplesAapService;
 	private final SampleManipulationService sampleManipulationService;
-	
+
 	private final SampleResourceAssembler sampleResourceAssembler;
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 
 	public SamplesRestController(
-			SamplePageService samplePageService,FilterService filterService,
+			SamplePageService samplePageService, FilterService filterService,
 			BioSamplesAapService bioSamplesAapService,
 			SampleResourceAssembler sampleResourceAssembler,
 			SampleManipulationService sampleManipulationService,

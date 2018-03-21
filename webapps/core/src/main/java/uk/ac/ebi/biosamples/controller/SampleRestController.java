@@ -10,9 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import uk.ac.ebi.biosamples.exception.SampleNotAccessibleException;
 import uk.ac.ebi.biosamples.exception.SampleNotFoundException;
-import uk.ac.ebi.biosamples.model.JsonLDRecord;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.*;
 
@@ -41,7 +39,6 @@ public class SampleRestController {
 
 	private final EntityLinks entityLinks;
 
-    private final JsonLDService jsonLDService;
 
     private Logger log = LoggerFactory.getLogger(getClass());
 
@@ -49,13 +46,11 @@ public class SampleRestController {
 								BioSamplesAapService bioSamplesAapService,
 								SampleManipulationService sampleManipulationService,
 								SampleResourceAssembler sampleResourceAssembler,
-								EntityLinks entityLinks,
-								JsonLDService jsonLDService) {
+								EntityLinks entityLinks) {
 		this.sampleService = sampleService;
 		this.bioSamplesAapService = bioSamplesAapService;
 		this.sampleManipulationService = sampleManipulationService;
 		this.sampleResourceAssembler = sampleResourceAssembler;
-		this.jsonLDService = jsonLDService;
 		this.entityLinks = entityLinks;
 	}
 
@@ -94,26 +89,24 @@ public class SampleRestController {
 		return sample;
 	}
 
-    @PreAuthorize("isAuthenticated()")
-	@CrossOrigin(methods = RequestMethod.GET)
-    @GetMapping(produces = "application/ld+json")
-    public JsonLDRecord getJsonLDSample(@PathVariable String accession) {
-		Optional<Sample> sample = sampleService.fetch(accession);
-		if (!sample.isPresent()) {
-			throw new SampleNotFoundException();
-		}
-		bioSamplesAapService.checkAccessible(sample.get());
-
-        // check if the release date is in the future and if so return it as
-        // private
-        if (sample.get().getRelease().isAfter(Instant.now())) {
-			throw new SampleNotAccessibleException();
-        }
-
-        JsonLDRecord jsonLDRecord = jsonLDService.sampleToJsonLD(sample.get());
-        
-        return jsonLDRecord;
-    }
+//    @PreAuthorize("isAuthenticated()")
+//	@CrossOrigin(methods = RequestMethod.GET)
+//    @GetMapping(produces = "application/ld+json")
+//    public JsonLDRecord getJsonLDSample(@PathVariable String accession) {
+//		Optional<Sample> sample = sampleService.fetch(accession);
+//		if (!sample.isPresent()) {
+//			throw new SampleNotFoundException();
+//		}
+//		bioSamplesAapService.checkAccessible(sample.get());
+//
+//        // check if the release date is in the future and if so return it as
+//        // private
+//        if (sample.get().getRelease().isAfter(Instant.now())) {
+//			throw new SampleNotAccessibleException();
+//        }
+//
+//		return jsonLDService.sampleToJsonLD(sample.get());
+//    }
 
 	@ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Sample accession must match URL accession") // 400
 	public static class SampleAccessionMismatchException extends RuntimeException {
@@ -128,7 +121,7 @@ public class SampleRestController {
     	
     	if (sample.getAccession() == null || !sample.getAccession().equals(accession)) {
 			// if the accession in the body is different to the accession in the
-			// url, throw an error
+			// datasetUrl, throw an error
 			// TODO create proper exception with right http error code
 			throw new SampleAccessionMismatchException();
 		}		

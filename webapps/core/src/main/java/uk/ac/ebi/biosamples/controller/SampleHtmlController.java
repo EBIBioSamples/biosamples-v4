@@ -66,7 +66,8 @@ public class SampleHtmlController {
 	@GetMapping(value = "/")
 	public String index(Model model) {
 
-		model.addAttribute("jsonLD",  jsonLDService.jsonLDToString(new JsonLDDataCatalog()));
+		JsonLDDataCatalog dataCatalog = jsonLDService.getBioSamplesDataCatalog();
+		model.addAttribute("jsonLD",  jsonLDService.jsonLDToString(dataCatalog));
 		return "index";
 	}
 
@@ -112,6 +113,7 @@ public class SampleHtmlController {
 		}
 		Collections.sort(filtersList);
 
+		JsonLDDataset jsonLDDataset = jsonLDService.getBioSamplesDataset();
 		
 		model.addAttribute("text", text);
 		model.addAttribute("start", start);
@@ -120,7 +122,7 @@ public class SampleHtmlController {
 		model.addAttribute("facets", sampleFacets);
 		model.addAttribute("filters", filtersList);
 		model.addAttribute("paginations", getPaginations(pageSample, uriBuilder));
-		model.addAttribute("jsonLD", jsonLDService.jsonLDToString(new JsonLDDataset()));
+		model.addAttribute("jsonLD", jsonLDService.jsonLDToString(jsonLDDataset));
 				
 		//TODO add "clear all facets" button
 		//TODO title of webpage
