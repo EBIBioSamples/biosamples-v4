@@ -25,7 +25,10 @@ Go to the biosamples folder. Run the script that will compile the java applicati
 Head to http://localhost:8081/biosamples to see your local version of the services. Note that no samples is directly provided with this development version and therefore no results will be shown in the "Search" page.
 
 # What to do now
-An example sample has been provided in this repository: `sample_example.json`
 
-Using the docs available in your local enviroment, submit this sample to your local version of BioSamples.
+We hve provided with this repository a test sample in the file `sample_example.json`
+
+We would like you to **submit this sample to your local Biosamples environment using the BioSamples JSON API**. 
+
+You can find more details on how to do this in the reference guide that is available in your local copy of BioSamples. Feel free to use commands like `curl` or `httpie` or software like Postman to get the task done.
 
