@@ -60,9 +60,7 @@ public class JsonLDService {
 
         initUrls();
         JsonLDDataCatalog dataCatalog = new JsonLDDataCatalog();
-        dataCatalog.url(this.dataCatalogUrl).datasetUrl(this.datasetUrl);
-
-        return dataCatalog;
+        return dataCatalog.url(this.dataCatalogUrl).datasetUrl(this.datasetUrl);
 
     }
 

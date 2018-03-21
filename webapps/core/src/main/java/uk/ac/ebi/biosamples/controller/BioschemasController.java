@@ -15,8 +15,8 @@ import uk.ac.ebi.biosamples.service.SampleService;
 import java.time.Instant;
 import java.util.Optional;
 
-//@Controller
-//@RequestMapping(produces="application/ld+json")
+@RestController
+@RequestMapping(produces="application/ld+json")
 public class BioschemasController {
 
     private final JsonLDService jsonLDService;
