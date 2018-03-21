@@ -1,6 +1,5 @@
 package uk.ac.ebi.biosamples.controller;
 
-<<<<<<< HEAD
 import java.net.URI;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -15,8 +14,6 @@ import java.util.concurrent.TimeUnit;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-=======
->>>>>>> Add a basic version of the DataCatalog, DataSet and DataRecord to the index, search and singlesample pages
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -33,11 +30,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
-<<<<<<< HEAD
 
 import uk.ac.ebi.biosamples.BioSamplesProperties;
-=======
->>>>>>> Add a basic version of the DataCatalog, DataSet and DataRecord to the index, search and singlesample pages
 import uk.ac.ebi.biosamples.model.JsonLDDataCatalog;
 import uk.ac.ebi.biosamples.model.JsonLDDataset;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -93,12 +87,8 @@ public class SampleHtmlController {
 	@GetMapping(value = "/")
 	public String index(Model model) {
 
-<<<<<<< HEAD
 		JsonLDDataCatalog dataCatalog = jsonLDService.getBioSamplesDataCatalog();
 		model.addAttribute("jsonLD",  jsonLDService.jsonLDToString(dataCatalog));
-=======
-		model.addAttribute("jsonLD",  jsonLDService.jsonLDToString(new JsonLDDataCatalog()));
->>>>>>> Add a basic version of the DataCatalog, DataSet and DataRecord to the index, search and singlesample pages
 		return "index";
 	}
 
@@ -153,11 +143,7 @@ public class SampleHtmlController {
 		model.addAttribute("facets", sampleFacets);
 		model.addAttribute("filters", filtersList);
 		model.addAttribute("paginations", getPaginations(pageSample, uriBuilder));
-<<<<<<< HEAD
 		model.addAttribute("jsonLD", jsonLDService.jsonLDToString(jsonLDDataset));
-=======
-		model.addAttribute("jsonLD", jsonLDService.jsonLDToString(new JsonLDDataset()));
->>>>>>> Add a basic version of the DataCatalog, DataSet and DataRecord to the index, search and singlesample pages
 				
 		//TODO add "clear all facets" button
 		//TODO title of webpage
