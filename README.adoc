@@ -26,7 +26,7 @@ Head to http://localhost:8081/biosamples to see your local version of the servic
 
 # What to do now
 
-We hve provided with this repository a test sample in the file `sample_example.json`
+A test file, `sample_example.json`, is available in this repo.
 
 We would like you to **submit this sample to your local Biosamples environment using the BioSamples JSON API**. 
 
