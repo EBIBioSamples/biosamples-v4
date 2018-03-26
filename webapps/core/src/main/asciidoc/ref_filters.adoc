@@ -45,7 +45,7 @@ Range filter based on samples' update date or release date
 |===
 | Field | Value | Notes
 | `type` | `dt` |
-| `field` | release \| update | Case sensitive, encoded
+| `field` | release \| update | Case sensitive
 | `value` | Date range in the format of `from=<date>until=<date>`     | Dates should be formatted using ISO8601; timezone is UTC by default; `from=` and `until=` are optional
 |===
 
