@@ -124,7 +124,7 @@ Filter based on samples' name
 
 ==== Examples
 - link:/biosamples/samples?filter=name:A5F[`filter=name:A5F`, window="_blank"]
-- link:/biosamples/samples?filter=name:Generic+sample+from+Glycine+max[`filter=name:Generic+sample+from+Glycine+max^`,  window='_blank']
+- link:/biosamples/samples?filter=name:Generic+sample+from+Glycine+max[`filter=name:Generic+sample+from+Glycine+max`,  window='_blank']
 
 === External Reference Data
 Filter based on sample's link with external data
