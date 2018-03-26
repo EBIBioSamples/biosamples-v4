@@ -92,8 +92,9 @@ Filter based on samples relationship source
 |===
 
 ==== Examples
-- link:/biosamples/samples?filter=rel:derived+from:Human+blood[`filter=rel:derived+from:Human+blood`, window='_blank']
 - link:/biosamples/samples?filter=rel:child+of:SAME1596745[`filter=rel:child+of:SAME1596745`, window='_blank']
+- link:/biosamples/samples?filter=rel:derived+from:Human+blood[`filter=rel:derived+from:Human+blood`, window='_blank']
+
 
 === Reverse Relationship
 Filter based on samples' relationship target
