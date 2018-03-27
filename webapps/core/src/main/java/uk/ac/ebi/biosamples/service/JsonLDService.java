@@ -40,9 +40,9 @@ public class JsonLDService {
      * @param sample the sample to convert
      * @return the ld+json version of the sample
      */
-    public JsonLDRecord sampleToJsonLD(Sample sample) {
-        JsonLDRecord jsonLDRecord = this.jsonLDSampleConverter.convert(sample);
-        JsonLDSample jsonLDSample = jsonLDRecord.getMainEntity();
+    public JsonLDDataRecord sampleToJsonLD(Sample sample) {
+        JsonLDDataRecord jsonLDDataRecord = this.jsonLDSampleConverter.convert(sample);
+        JsonLDSample jsonLDSample = jsonLDDataRecord.getMainEntity();
 
         try {
             Method method = SampleHtmlController.class.getMethod("sampleAccession", String.class);
@@ -52,8 +52,8 @@ public class JsonLDService {
             e.printStackTrace();
         }
 
-        jsonLDRecord.mainEntity(jsonLDSample);
-        return jsonLDRecord;
+        jsonLDDataRecord.mainEntity(jsonLDSample);
+        return jsonLDDataRecord;
     }
 
     public JsonLDDataCatalog getBioSamplesDataCatalog() {

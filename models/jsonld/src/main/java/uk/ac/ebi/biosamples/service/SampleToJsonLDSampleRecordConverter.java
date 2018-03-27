@@ -9,12 +9,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
-public class SampleToJsonLDSampleRecordConverter implements Converter<Sample, JsonLDRecord> {
+public class SampleToJsonLDSampleRecordConverter implements Converter<Sample, JsonLDDataRecord> {
 
     @Override
-    public JsonLDRecord convert(Sample sample) {
+    public JsonLDDataRecord convert(Sample sample) {
 
-        JsonLDRecord sampleRecord = new JsonLDRecord();
+        JsonLDDataRecord sampleRecord = new JsonLDDataRecord();
         //TODO Check if we actually want to use release date as date created
         sampleRecord.dateCreated(sample.getRelease().atZone(ZoneId.of("UTC")));
         sampleRecord.dateModified(sample.getUpdate().atZone(ZoneId.of("UTC")));
