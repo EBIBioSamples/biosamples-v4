@@ -6,7 +6,7 @@ import uk.ac.ebi.biosamples.exception.SampleNotAccessibleException;
 import uk.ac.ebi.biosamples.exception.SampleNotFoundException;
 import uk.ac.ebi.biosamples.model.JsonLDDataCatalog;
 import uk.ac.ebi.biosamples.model.JsonLDDataset;
-import uk.ac.ebi.biosamples.model.JsonLDRecord;
+import uk.ac.ebi.biosamples.model.JsonLDDataRecord;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.JsonLDService;
@@ -45,7 +45,7 @@ public class BioschemasController {
     @PreAuthorize("isAuthenticated()")
     @CrossOrigin(methods = RequestMethod.GET)
     @GetMapping(value="/samples/{accession}", produces = "application/ld+json")
-    public JsonLDRecord getJsonLDSample(@PathVariable String accession) {
+    public JsonLDDataRecord getJsonLDSample(@PathVariable String accession) {
         Optional<Sample> sample = sampleService.fetch(accession);
         if (!sample.isPresent()) {
             throw new SampleNotFoundException();
