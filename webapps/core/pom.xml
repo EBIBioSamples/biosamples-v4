@@ -126,6 +126,26 @@
 			<artifactId>httpclient-cache</artifactId>
 			<version>4.5.3</version>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework.restdocs</groupId>
+			<artifactId>spring-restdocs-core</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.restdocs</groupId>
+			<artifactId>spring-restdocs-mockmvc</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.github.javafaker</groupId>
+			<artifactId>javafaker</artifactId>
+			<version>0.14</version>
+		</dependency>
+		<dependency>
+			<groupId>de.flapdoodle.embed</groupId>
+			<artifactId>de.flapdoodle.embed.mongo</artifactId>
+            <scope>test</scope>
+		</dependency>
     </dependencies>
 
 	<build>
@@ -145,7 +165,7 @@
 			<plugin>
 				<groupId>org.asciidoctor</groupId>
 				<artifactId>asciidoctor-maven-plugin</artifactId>
-				<version>1.5.2</version>
+				<version>1.5.3</version>
 				<executions>
 					<execution>
 						<id>output-html</id>
@@ -159,11 +179,33 @@
 					<sourceDirectory>src/main/asciidoc</sourceDirectory>
 					<outputDirectory>${project.build.directory}/${project.artifactId}-${project.version}/WEB-INF/classes/templates/asciidoc/</outputDirectory>
 					<backend>html</backend>
-<!-- 					<doctype>book</doctype> -->
-					<!-- <attributes> -->
-					<!-- <snippets>${snippetsDirectory}</snippets> -->
-					<!-- </attributes> -->
+ 					<doctype>book</doctype>
+					 <attributes>
+                         <snippets>${snippetsDirectory}</snippets>
+						 <source-highlighter>highlightjs</source-highlighter>
+						 <toc-title>Contents</toc-title>
+						 <toclevels>2</toclevels>
+					 </attributes>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>com.github.joelittlejohn.embedmongo</groupId>
+				<artifactId>embedmongo-maven-plugin</artifactId>
+				<version>0.3.5</version>
+				<executions>
+					<execution>
+						<id>start</id>
+						<goals>
+							<goal>start</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>stop</id>
+						<goals>
+							<goal>stop</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

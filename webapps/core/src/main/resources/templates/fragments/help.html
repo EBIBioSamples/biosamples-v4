@@ -4,23 +4,47 @@
 <head>
 </head>
 <body>
-	<section th:fragment="sidebar ()">
+	<section th:fragment="sidebar (active)">
 		<!--<div class="small-12 medium-3 columns sidebar" data-sticky-container>-->
 			<!--<div class="sticky" data-sticky data-anchor="main-content-area"-->
 				<!--data-options="marginTop:4;">-->
         <div class="small-12 medium-3 columns sidebar">
             <div data-options="marginTop:4;">
-				<ul class="menu vertical accordion=menu">
-					<li><a th:href="@{/help/}">Home</a></li>
-					<li><a th:href="@{/help/search}">Searching</a></li>
-					<li><a th:href="@{/help/submit}">Submitting</a></li>
-					<li><a th:href="@{/help/api}">Programmatic interface</a></li>
+				<ul class="menu vertical drilldown" data-drilldown>
+					<li><a th:classappend="${#strings.equals(active, 'overview')}" th:href="@{/docs/}">Overview</a></li>
+					<!--<ul class="menu vertical nested">-->
+						<!--<li><a href="#">About</a></li>-->
+						<!--<li><a href="#">Latest release</a></li>-->
+					<!--</ul>-->
+
+					<!--<li><a th:href="@{/docs/search}">Searching</a></li>-->
+					<!--<li><a th:href="@{/docs/submit}">Submitting</a></li>-->
+					<li><a href="#">Getting started</a></li>
+					<li><a href="#">User guides</a></li>
 					<ul class="menu vertical nested">
-						<li><a th:href="@{/help/legacy_xml_api}">Legacy XML API</a></li>
+						<li><a th:classappend="${#strings.equals(active,'guides/auth')} ? 'active'" th:href="@{/docs/guides/authentication}">Authentication</a></li>
+						<li><a th:classappend="${#strings.equals(active, 'guides/search')} ? 'active'" th:href="@{/docs/guides/search}">Search in BioSamples</a></li>
+						<li><a th:classappend="${#strings.equals(active, 'guides/submit')} ? 'active'" th:href="@{/docs/guides/submit}">Submit to BioSamples</a></li>
+						<li><a th:classappend="${#strings.equals(active, 'guides/curate')} ? 'active'" th:href="@{/docs/guides/curate}">Curation in  BioSamples</a></li>
 					</ul>
-					<li><a th:href="@{/help/faq}">FAQ</a></li>
-					<li><a th:href="@{/help/releasenotes}">Release notes</a></li>
-					<li><a th:href="@{/help/contacts}">Contact us</a></li>
+					<li><a href="#">Developers reference</a></li>
+					<ul class="menu vertical nested">
+						<!--<li><a th:href="@{/docs/legacy_xml_api}">Legacy XML API</a></li>-->
+						<!--<ul class="menu vertical nested">-->
+						<li><a href="#">API</a></li>
+						<ul class="menu vertical nested">
+							<li><a th:classappend="${#strings.equals(active, 'refs/api/overview')} ? 'active'" th:href="@{/docs/references/api/overview}">Overview</a></li>
+							<li><a th:classappend="${#strings.equals(active, 'refs/api/links')} ? 'active'" th:href="@{/docs/references/api/links}">Links</a></li>
+							<li><a th:classappend="${#strings.equals(active, 'refs/api/root')} ? 'active'" th:href="@{/docs/references/api/root}">API root</a></li>
+							<li><a th:classappend="${#strings.equals(active, 'refs/api/search')} ? 'active'" th:href="@{/docs/references/api/search}">Search</a></li>
+							<li><a th:classappend="${#strings.equals(active, 'refs/api/submit')} ? 'active'" th:href="@{/docs/references/api/submit}">Submit</a></li>
+						</ul>
+						<li><a th:classappend="${#strings.equals(active, 'refs/filters')} ? 'active'" th:href="@{/docs/references/filters}">Search filters</a></li>
+						<!--</ul>-->
+					</ul>
+					<li><a th:classappend="${#strings.equals(active, 'faq')} ? 'active'" th:href="@{/docs/faq}">FAQ</a></li>
+					<li><a th:classappend="${#strings.equals(active, 'releasehistory')} ? 'active'" th:href="@{/docs/releasenotes}">Release history</a></li>
+					<li><a th:classappend="${#strings.equals(active, 'contacts')} ? 'active'" th:href="@{/docs/contacts}">Contacts</a></li>
 				</ul>
 			</div>
 		</div>

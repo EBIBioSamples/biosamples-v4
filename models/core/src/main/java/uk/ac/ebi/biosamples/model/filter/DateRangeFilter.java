@@ -187,7 +187,7 @@ public class DateRangeFilter implements Filter {
         private final Instant from;
         private final Instant until;
         private static final Instant min = LocalDateTime.MIN.atZone(ZoneOffset.UTC).toInstant();
-        private static final Instant max = LocalDateTime.MIN.atZone(ZoneOffset.UTC).toInstant();
+        private static final Instant max = LocalDateTime.MAX.atZone(ZoneOffset.UTC).toInstant();
 
         private DateRange(Instant from, Instant until) {        	
         	if (from == null) {
