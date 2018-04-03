@@ -1,6 +1,8 @@
 package uk.ac.ebi.biosamples;
 
 import com.jayway.jsonpath.JsonPath;
+import io.restassured.response.ExtractableResponse;
+import io.restassured.response.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -22,13 +24,12 @@ import java.util.TreeSet;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.springframework.hateoas.MediaTypes.HAL_JSON;
 
 @Component
-@Profile({"default"})
+@Profile({"default", "test"})
 public class LegacyJsonSearchIntegration extends AbstractIntegration {
 
     private final RestTemplate restTemplate;
@@ -237,7 +238,7 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
                             hasKey("characteristics"),
                             hasKey("samples"),
                             hasKey("_links")))
-                    .body("characteristics", allOf(hasKey("origin donor"), hasKey("origin cell-line")));
+                    .body("characteristics", allOf(hasKey("originDonor"), hasKey("originCellLine")));
 
             log.info("Sample " + testGroup.getAccession() + " has all expected fields");
 

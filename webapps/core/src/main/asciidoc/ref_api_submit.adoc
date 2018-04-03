@@ -1,0 +1,81 @@
+= [.ebi-color]#API submission#
+:last-update-label!:
+:toc: auto
+
+Using the BioSamples API you can submit new samples to our resource, as well as update or curate samples.
+
+== Submission minimal fields
+
+=== Sample
+Sample content reference:
+[cols=3*, options="header"]
+|===
+|Field
+|Type
+|Cardinality
+
+| name | `String` | Required
+| accession |  `String` | Required
+| release | `Date ISO 8601` | Required
+| update | `Date ISO 8601` | Required
+| domain | `String` | Required
+| characteristics | `Object` | Optional
+| externalReferences | `Array` | Optional
+| relationships | `Array` | Optional
+|===
+
+=== Curation Link
+[cols=3*, options="header"]
+|===
+|Field
+|Type
+|Cardinality
+
+| sample | `String` | Required
+| domain |  `String` | Required
+| curation | `Object` | Required
+| curation.attributesPre | `Array` | Required, could be empty
+| curation.attributesPost | `Array` | Required, could be empty
+| curation.externalReferencesPre | `Array` | Required, could be empty
+| curation.externalReferencesPost | `Array` | Required, could be empty
+| domain | `String` | Required
+|===
+
+
+== Submit a sample
+`POST` sample to BioSamples
+
+=== Request
+include::{snippets}/post-sample/http-request.adoc[]
+
+=== Response
+include::{snippets}/post-sample/http-response.adoc[]
+
+=== Links
+For all the links available in BioSamples check the <<ref_api_links.adoc#, Links reference>>
+
+== Update sample
+`PUT` a sample to BioSamples
+
+=== Request
+include::{snippets}/put-sample/http-request.adoc[]
+
+=== Response
+include::{snippets}/put-sample/http-response.adoc[]
+
+=== Links
+For all the links available in BioSamples check the <<ref_api_links.adoc#, Links reference>>
+
+
+== Submit curation object
+`POST` a curation to BioSamples
+
+=== Request
+include::{snippets}/post-curation/http-request.adoc[]
+
+=== Response
+include::{snippets}/post-curation/http-response.adoc[]
+
+=== Links
+For all the links available in BioSamples check the <<ref_api_links.adoc#, Links reference>>
+
