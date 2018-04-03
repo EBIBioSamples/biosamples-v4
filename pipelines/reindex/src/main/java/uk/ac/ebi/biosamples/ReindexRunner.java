@@ -16,16 +16,15 @@ import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.core.MongoOperations;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.util.CloseableIterator;
 import org.springframework.stereotype.Component;
 
 import uk.ac.ebi.biosamples.MessageContent;
 import uk.ac.ebi.biosamples.Messaging;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
-import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.service.SampleReadService;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 
@@ -34,13 +33,13 @@ public class ReindexRunner implements ApplicationRunner {
 	private Logger log = LoggerFactory.getLogger(getClass());
 	
 	@Autowired
-	private MongoSampleRepository mongoSampleRepository;
-	
-	@Autowired
 	private AmqpTemplate amqpTemplate;
 	
 	@Autowired
 	private SampleReadService sampleReadService;
+	
+	@Autowired
+	MongoOperations mongoOperations;
 	
 	@Override
 	public void run(ApplicationArguments args) throws Exception {	
@@ -49,23 +48,16 @@ public class ReindexRunner implements ApplicationRunner {
 		ExecutorService executor = null;
 		try {
 			executor = Executors.newFixedThreadPool(128);
-			
-			boolean hasNext = true;
-			Pageable pageable = new PageRequest(0,1000);
-			while (hasNext) {
-				Page<MongoSample> mongoSamplePage = mongoSampleRepository.findAll(pageable);
-				
-				for (MongoSample mongoSample : mongoSamplePage) {
+			try (CloseableIterator<MongoSample> it = mongoOperations.stream(new Query(), MongoSample.class)) {				
+				while (it.hasNext()) {
+					MongoSample mongoSample = it.next();
 					String accession = mongoSample.getAccession();
-					log.info("handling sample "+mongoSample.getAccession());
+					log.info("handling sample "+accession);
 					futures.put(accession, 
-							executor.submit(
-									new AccessionCallable(accession, sampleReadService, amqpTemplate)));
+						executor.submit(
+							new AccessionCallable(accession, sampleReadService, amqpTemplate)));
+					ThreadUtils.checkFutures(futures, 1000);
 				}
-				ThreadUtils.checkFutures(futures, 1000);
-				
-				hasNext = mongoSamplePage.hasNext();
-				pageable = pageable.next();
 			}
 			ThreadUtils.checkFutures(futures, 0);
 		} finally {
