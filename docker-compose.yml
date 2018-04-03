@@ -261,6 +261,22 @@ services:
     - LOGGING_FILE=/logs/pipelines-zooma.log
     - spring.cache.cache-names=zooma,ols_short
     - spring.cache.caffeine.spec=maximumSize=50000
+    
+  biosamples-pipelines-reindex:
+    volumes:
+    - logs:/logs
+    image: biosamples:latest
+    links:
+    - biosamples-webapps-core
+    command:
+    - java
+    - -jar
+    - pipelines-reindex-4.0.6-SNAPSHOT.jar
+    environment:
+    - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
+    - LOGGING_FILE=/logs/pipelines-reindex.log
+    - spring.data.mongodb.uri=mongodb://mongo/biosamples
+    - SPRING_RABBITMQ_HOST=rabbitmq
            
   biosamples-integration:
     volumes:
