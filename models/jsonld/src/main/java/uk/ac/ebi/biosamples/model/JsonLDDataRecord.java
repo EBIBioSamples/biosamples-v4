@@ -13,7 +13,7 @@ import java.util.Map;
 @JsonPropertyOrder(value = {"@context",  "@type", "identifier", "dateCreated", "dateModified", "mainEntity", "isPartOf"})
 public class JsonLDDataRecord implements BioschemasObject{
 
-    private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+    private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 
     @JsonProperty("@context")
     private final String context = "http://schema.org";
