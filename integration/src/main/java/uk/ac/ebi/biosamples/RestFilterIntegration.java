@@ -1,23 +1,23 @@
 package uk.ac.ebi.biosamples;
 
-import java.time.Instant;
-import java.util.Collections;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
-
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.FilterBuilder;
+
+import java.time.Instant;
+import java.util.Collections;
+import java.util.Optional;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 @Component
 @Profile({"default", "rest"})
@@ -88,6 +88,22 @@ public class RestFilterIntegration extends AbstractIntegration{
             throw new RuntimeException("Unexpected number of results for attribute filter query: " + samplePage.getMetadata().getTotalElements());
         }
 
+        log.info("Getting sample 2 using filter on attribute with comma in the value");
+        Optional<Attribute> targetAttribute = testSample1.getAttributes().stream().filter(attribute -> attribute.getType().equalsIgnoreCase("description")).findFirst();
+        if (!targetAttribute.isPresent()) {
+            throw new RuntimeException("Sample 2 should contain an attribute description");
+        }
+
+        attributeFilter = FilterBuilder.create().onAttribute("description").withValue(targetAttribute.get().getValue()).build();
+        samplePage = client.fetchPagedSampleResource("", Collections.singletonList(attributeFilter), 0, 10);
+        if (samplePage.getMetadata().getTotalElements() != 1) {
+            throw new RuntimeException("Unexpected number of results for attribute filter query: " + samplePage.getMetadata().getTotalElements());
+        }
+        restSample = samplePage.getContent().iterator().next();
+        if (!restSample.getContent().getAccession().equals(testSample1.getAccession())) {
+            throw new RuntimeException("Unexpected number of results for attribute filter query: " + samplePage.getMetadata().getTotalElements());
+        }
+
 
         log.info("Getting sample 2 using filter on attribute");
         Sample testSample2 = getTestSample2();
@@ -102,6 +118,7 @@ public class RestFilterIntegration extends AbstractIntegration{
         if (!restSample.getContent().getAccession().equals(testSample2.getAccession())) {
             throw new RuntimeException("Unexpected number of results for attribute filter query: " + samplePage.getMetadata().getTotalElements());
         }
+
 
 
         log.info("Getting sample 2 using filter on name");
@@ -219,6 +236,7 @@ public class RestFilterIntegration extends AbstractIntegration{
 
         SortedSet<Attribute> attributes = new TreeSet<>();
         attributes.add(Attribute.build("TestAttribute", "FilterMe"));
+        attributes.add(Attribute.build("description", "Sequencing of barley BACs, that constitute the MTP of chromosome 7H. Sequencing was carried out by BGI China.8439"));
 
         return Sample.build(name, accession, domain, release, update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
     }
