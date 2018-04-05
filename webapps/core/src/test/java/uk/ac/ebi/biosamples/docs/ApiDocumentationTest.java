@@ -24,6 +24,8 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.*;
 
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -73,6 +75,7 @@ public class ApiDocumentationTest {
 
     private MockMvc mockMvc;
 
+    private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 
     @Before
     public void setUp() {
@@ -98,10 +101,6 @@ public class ApiDocumentationTest {
         this.mockMvc.perform(get("/biosamples").accept(MediaTypes.HAL_JSON))
                 .andExpect(status().isOk())
                 .andDo(document("get-index", preprocessRequest(prettyPrint()), preprocessResponse(prettyPrint())));
-//                    links(halLinks(),
-//                        linkWithRel("samples"),
-//                        linkWithRel("curations")
-//                )));
 
     }
 
@@ -124,25 +123,6 @@ public class ApiDocumentationTest {
                             parameterWithName("text").description("Text to search").optional(),
                             parameterWithName("filter").description("List of filters to apply to search results").optional()
                 )));
-                /*, links(halLinks(),
-                    linkWithRel("self"),
-                    linkWithRel("first"),
-                    linkWithRel("next"),
-                    linkWithRel("prev"),
-                    linkWithRel("last"),
-                    linkWithRel("autocomplete"),
-                    linkWithRel("facet"),
-                    linkWithRel("sample"),
-                    linkWithRel("cursor")
-                ),responseFields(
-                    fieldWithPath("_links").description("<<resources-page-links,Links>> to other resources"),
-                    fieldWithPath("_embedded").description("The list of resources"),
-                    fieldWithPath("page.size").description("The number of resources in this page"),
-                    fieldWithPath("page.totalElements").description("The total number of resources"),
-                    fieldWithPath("page.totalPages").description("The total number of pages"),
-                    fieldWithPath("page.number").description("The page number")
-                )
-                ));*/
     }
 
     /**
@@ -151,8 +131,7 @@ public class ApiDocumentationTest {
      */
     @Test
     public void postSampleMinimalInfo() throws Exception {
-        String wrongSampleSerialized = "{\"name\": \"Sample without minimum information\"," +
-                " \"accession\": \"SAMFAKE123456\"}";
+        String wrongSampleSerialized = "{\"name\": \"Sample without minimum information\" }";
 
         this.mockMvc.perform(
                 post("/biosamples/samples")
@@ -190,22 +169,26 @@ public class ApiDocumentationTest {
         Sample sample = this.faker.getExampleSample();
         Sample sampleWithDomain = this.faker.getExampleSampleWithDomain();
 
-        when(aapService.handleSampleDomain(eq(sample))).thenReturn(sampleWithDomain);
+        String sampleToSubmit = "{ " +
+                "\"name\" : \"" + sample.getName() + "\", " +
+                "\"update\" : \"" + dateTimeFormatter.format(sample.getUpdate().atOffset(ZoneOffset.UTC)) + "\", " +
+                "\"release\" : \"" +dateTimeFormatter.format(sample.getRelease().atOffset(ZoneOffset.UTC)) + "\", " +
+                "\"domain\" : \"self.ExampleDomain\" " +
+                "}";
+
+
+        when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(sampleWithDomain);
         when(sampleService.store(any(Sample.class))).thenReturn(sampleWithDomain);
 
         this.mockMvc.perform(
                 post("/biosamples/samples")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(serialize(sample))
+                        .content(sampleToSubmit)
                         .header("Authorization", "Bearer $TOKEN"))
                 .andExpect(status().is2xxSuccessful())
                 .andDo(document("post-sample",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint())));
-//                        links(halLinks(),
-//                            linkWithRel("self"),
-//                            linkWithRel("curationLinks")
-//                        )));
     }
 
     @Test
@@ -232,7 +215,7 @@ public class ApiDocumentationTest {
         when(curationPersistService.store(curationLink)).thenReturn(curationLink);
 
         this.mockMvc.perform(
-                post("/biosamples/samples/{accession}/curationlinks", curationLink.getSample()).contentType(MediaType.APPLICATION_JSON).content(serialize(curationLink)).header("Authorization", "Bearer $TOKER"))
+                post("/biosamples/samples/{accession}/curationlinks", curationLink.getSample()).contentType(MediaType.APPLICATION_JSON).content(serialize(curationLink)).header("Authorization", "Bearer $TOKEN"))
                 .andExpect(status().is2xxSuccessful())
                 .andDo(document("post-curation", preprocessRequest(prettyPrint()), preprocessResponse(prettyPrint())));
     }
@@ -249,10 +232,6 @@ public class ApiDocumentationTest {
                 .andDo(document("get-sample",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint())));
-//                        links(halLinks(),
-//                            linkWithRel("self").description("Check Links reference docs"),
-//                            linkWithRel("curationLinks").description("Check Links reference docs")
-//                        )));
     }
 
     @Test
