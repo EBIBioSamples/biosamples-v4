@@ -136,7 +136,6 @@ public class RestFilterIntegration extends AbstractIntegration{
         }
 
 
-
         log.info("Getting sample 2 using filter on name");
         Filter nameFilter = FilterBuilder.create().onName(testSample2.getName()).build();
         samplePage = client.fetchPagedSampleResource("",
