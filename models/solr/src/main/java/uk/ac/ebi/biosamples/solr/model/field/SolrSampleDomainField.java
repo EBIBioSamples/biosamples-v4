@@ -38,7 +38,8 @@ public class SolrSampleDomainField extends SolrSampleField {
 
             DomainFilter domainFilter = (DomainFilter) filter;
             if (domainFilter.getContent().isPresent())
-                filterCriteria = filterCriteria.expression("/" + domainFilter.getContent().get() + "/");
+//                filterCriteria = filterCriteria.expression("/" + domainFilter.getContent().get() + "/");
+                filterCriteria = filterCriteria.expression(String.format("\"%s\"",domainFilter.getContent().get()));
             else
                 filterCriteria = filterCriteria.isNotNull();
 
