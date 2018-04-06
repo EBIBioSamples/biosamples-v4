@@ -94,7 +94,23 @@ public class RestFilterIntegration extends AbstractIntegration{
             throw new RuntimeException("Sample 2 should contain an attribute description");
         }
 
-        attributeFilter = FilterBuilder.create().onAttribute("description").withValue(targetAttribute.get().getValue()).build();
+        attributeFilter = FilterBuilder.create().onAttribute(targetAttribute.get().getType()).withValue(targetAttribute.get().getValue()).build();
+        samplePage = client.fetchPagedSampleResource("", Collections.singletonList(attributeFilter), 0, 10);
+        if (samplePage.getMetadata().getTotalElements() != 1) {
+            throw new RuntimeException("Unexpected number of results for attribute filter query: " + samplePage.getMetadata().getTotalElements());
+        }
+        restSample = samplePage.getContent().iterator().next();
+        if (!restSample.getContent().getAccession().equals(testSample1.getAccession())) {
+            throw new RuntimeException("Unexpected number of results for attribute filter query: " + samplePage.getMetadata().getTotalElements());
+        }
+
+        log.info("Getting sample 2 using filter on attribute with regex which should not be picked up");
+        targetAttribute = testSample1.getAttributes().stream().filter(attribute -> attribute.getType().equalsIgnoreCase("Submission title")).findFirst();
+        if (!targetAttribute.isPresent()) {
+            throw new RuntimeException("Sample 2 should contain an attribute description");
+        }
+
+        attributeFilter = FilterBuilder.create().onAttribute(targetAttribute.get().getType()).withValue(targetAttribute.get().getValue()).build();
         samplePage = client.fetchPagedSampleResource("", Collections.singletonList(attributeFilter), 0, 10);
         if (samplePage.getMetadata().getTotalElements() != 1) {
             throw new RuntimeException("Unexpected number of results for attribute filter query: " + samplePage.getMetadata().getTotalElements());
@@ -118,7 +134,6 @@ public class RestFilterIntegration extends AbstractIntegration{
         if (!restSample.getContent().getAccession().equals(testSample2.getAccession())) {
             throw new RuntimeException("Unexpected number of results for attribute filter query: " + samplePage.getMetadata().getTotalElements());
         }
-
 
 
         log.info("Getting sample 2 using filter on name");
@@ -237,6 +252,7 @@ public class RestFilterIntegration extends AbstractIntegration{
         SortedSet<Attribute> attributes = new TreeSet<>();
         attributes.add(Attribute.build("TestAttribute", "FilterMe"));
         attributes.add(Attribute.build("description", "Sequencing of barley BACs, that constitute the MTP of chromosome 7H. Sequencing was carried out by BGI China.8439"));
+        attributes.add(Attribute.build("Submission title", "Regular Expression * risky (I know what I'm saying) [0-9]+?"));
 
         return Sample.build(name, accession, domain, release, update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
     }
