@@ -31,18 +31,7 @@
 			<optional>true</optional>
 		</dependency>
 
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient-cache</artifactId>
-			<!-- this doenst work because dependencies is a dependencyManagement not a parent -->
-			<!-- <version>${httpclient.version}</version> -->
-			<version>4.5.3</version>
-		</dependency>
-	</dependencies>
+   </dependencies>
 
 	<dependencyManagement>
 		<dependencies> <!-- The parent should provide all that -->

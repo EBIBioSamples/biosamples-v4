@@ -66,7 +66,7 @@ public class BioSamplesClient implements AutoCloseable {
 	
 	private final ExecutorService threadPoolExecutor;
 	
-	public BioSamplesClient(URI uri, RestTemplateBuilder restTemplateBuilder, 
+	BioSamplesClient(URI uri, RestTemplateBuilder restTemplateBuilder,
 			SampleValidator sampleValidator, AapClientService aapClientService, 
 			BioSamplesProperties bioSamplesProperties) {
 		
