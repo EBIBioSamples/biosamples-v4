@@ -1,0 +1,33 @@
+:last-update-label!:
+
+== What is a BioSample?
+The definition of a BioSample is deliberately flexible in order to accommodate a wide range of uses. Typically each BioSample corresponds to a discrete physical object that is composed of live biological material.
+
+In most cases BioSample entities are self-evident; such as a blood sample, cell culture or an individual organism. However, a BioSample can also be an environmental sample (e.g. for meta-genomic analysis), a hybrid between two species, parasite infected cell culture, etc.
+
+=== How are BioSamples described?
+
+A BioSample is described using attributes, external references, and relationships to other samples. 
+
+Some key/value pairs examples:
+
+[options="header"]
+|================
+|Key      |Value
+|Organism |Homo sapiens
+|Sex      |female
+|Cell Type|fibroblast
+|================
+
+=== Required metadata
+
+BioSamples must have a name and a release date. An update date will be set at the time the submission is sent at.
+
+
+== What should be submitted to BioSamples Database?
+
+The BioSamples Database is a suitable repository for pre-registering multi-omic submissions (e.g. http://www.hipsci.org/[http://www.hipsci.org]).
+
+Samples that do not have associated data in other EBI databases may also be suitable for submission.
+
+When submitting to other EBI databases (e.g. ENA or ArrayExpress), please note that these share sample information with BioSamples Database. Therefore sample information may be present in BioSamples Database even if the information was not submitted directly to BioSamples Database.
