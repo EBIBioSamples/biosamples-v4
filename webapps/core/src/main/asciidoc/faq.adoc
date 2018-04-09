@@ -1,14 +1,16 @@
+= [.ebi-color]#Frequently Asked Questions (FAQ)#
 :last-update-label!:
 == Frequently Asked Questions (FAQ)
+:toc: auto
 If you cannot find the answer to your question in this FAQ or the <a th:href="@{/help}">help pages</a> then please email us at biosamples@ebi.ac.uk.
 
 === How frequent are updates to BioSamples' data?
 BioSamples content is updated daily. Information directly submitted or updated in a data source should be reflected within 48 hours. 
 
-=== What pattern do BioSamples accessions follow?
+== What pattern do BioSamples accessions follow?
 BioSample accessions always begin with `SAM`. The next letter is either `E` or `N` or `D` depending if the sample information was originally submitted to EBI or NCBI or DDBJ respectively. After that, there may be an `A` or a `G` to denote an Assay sample or a Group of samples. Finally there is a numeric component that may or may not be zero-padded.
 
-=== How can I stay informed about BioSamples?
+== How can I stay informed about BioSamples?
 Subscribe to our low-traffic https://listserver.ebi.ac.uk/mailman/listinfo/biosamples-announce[announcement mailing list^].
 
 === Why do some of my search results not contain my query?

@@ -15,6 +15,8 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
+import org.springframework.web.util.UriTemplate;
+//import org.springframework.hateoas.UriTemplate;
 import org.springframework.hateoas.client.Traverson;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
@@ -90,7 +92,17 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
 		synchronized public boolean hasNext() {
 			//pre-emptively grab the next page as a future
 			if (nextPageFuture == null && page.hasLink(Link.REL_NEXT)) {
-				URI uri = URI.create(page.getLink(Link.REL_NEXT).getHref());
+				
+				Link nextLink = page.getLink(Link.REL_NEXT);
+				URI uri;
+				if (nextLink.isTemplated()) {
+					UriTemplate uriTemplate = new UriTemplate(nextLink.getHref());
+					uri = uriTemplate.expand();
+				} else { 
+					uri = URI.create(nextLink.getHref());					
+				}
+				log.info("getting next page uri "+uri);
+				
 				nextPageFuture = executor.submit(new NextPageCallable<U>(restOperations, parameterizedTypeReference, uri));
 			}
 			

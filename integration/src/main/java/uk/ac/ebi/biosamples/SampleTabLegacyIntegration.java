@@ -143,6 +143,13 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 						throw new RuntimeException("SAMEA2186845 has 'has member' relationship to something not SAMEG");
 					}
 				}
+				//check each relationship has a sane source and target
+				if (!r.getTarget().matches("SAM[END][AG]?[0-9]+")) {
+					throw new RuntimeException("SAMEA2186845 has relationship to "+r.getTarget());
+				}
+				if (!r.getSource().matches("SAM[END][AG]?[0-9]+")) {
+					throw new RuntimeException("SAMEA2186845 has relationship from "+r.getSource());
+				}
 			}
 			if (!inGroup) {
 				throw new RuntimeException("SAMEA2186845 has no 'has member' relationship to it");

@@ -17,7 +17,6 @@ import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.ols.OlsProcessor;
 import uk.ac.ebi.biosamples.service.CurationApplicationService;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
@@ -59,7 +58,7 @@ public class ZoomaApplicationRunner implements ApplicationRunner {
 				}
 
 				Callable<Void> task = new SampleZoomaCallable(bioSamplesClient, sample, 
-						zoomaProcessor, curationApplicationService, pipelinesProperties.getCurationDomain());
+						zoomaProcessor, curationApplicationService, pipelinesProperties.getZoomaDomain());
 				
 				futures.put(sample.getAccession(), executorService.submit(task));
 			}

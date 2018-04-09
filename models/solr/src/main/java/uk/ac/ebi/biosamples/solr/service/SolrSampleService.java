@@ -11,12 +11,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.solr.core.query.Criteria;
 import org.springframework.data.solr.core.query.FacetOptions;
 import org.springframework.data.solr.core.query.FacetQuery;
 import org.springframework.data.solr.core.query.FilterQuery;
 import org.springframework.data.solr.core.query.Query;
 import org.springframework.data.solr.core.query.SimpleFacetQuery;
+import org.springframework.data.solr.core.query.SimpleField;
 import org.springframework.data.solr.core.query.SimpleQuery;
 import org.springframework.data.solr.core.query.result.FacetFieldEntry;
 import org.springframework.data.solr.core.query.result.FacetPage;
@@ -26,6 +28,7 @@ import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.Autocomplete;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
+import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
 import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
 
 @Service
@@ -65,7 +68,35 @@ public class SolrSampleService {
 	 * @param pageable pagination information
 	 * @return a page of Samples full-filling the query
 	 */
-	public Page<SolrSample> fetchSolrSampleByText(String searchTerm, Collection<Filter> filters, Collection<String> domains, Pageable pageable) {
+	public Page<SolrSample> fetchSolrSampleByText(String searchTerm, Collection<Filter> filters, 
+			Collection<String> domains, Pageable pageable) {
+
+		Query query = buildQuery(searchTerm, filters, domains);
+		query.setPageRequest(pageable);
+		query.setTimeAllowed(TIMEALLOWED*1000);
+		
+		// return the samples from solr that match the query
+		return solrSampleRepository.findByQuery(query);
+	}
+
+	/**
+	 * Fetch the solr samples based on query specification
+	 * @param searchTerm the term to search for in solr
+	 * @param filters a Collection of filters used in the solr query
+	 * @param domains a Collection of domains used in the solr query
+	 * @param cursorMark cursor serialization
+	 * @return a page of Samples full-filling the query
+	 */
+	public CursorArrayList<SolrSample> fetchSolrSampleByText(String searchTerm, Collection<Filter> filters, 
+			Collection<String> domains, String cursorMark, int size) {
+
+		Query query = buildQuery(searchTerm, filters, domains);
+		query.addSort(new Sort("id")); //this must match the field in solr
+		
+		return solrSampleRepository.findByQueryCursorMark(query, cursorMark, size);
+	}
+	
+	private Query buildQuery(String searchTerm, Collection<Filter> filters, Collection<String> domains) {
 
 		//default to search all
 		if (searchTerm == null || searchTerm.trim().length() == 0) {
@@ -73,27 +104,25 @@ public class SolrSampleService {
 		}
 		//build a query out of the users string and any facets
 		Query query = new SimpleQuery(searchTerm);
-		query.setPageRequest(pageable);
-		query.setTimeAllowed(TIMEALLOWED*1000);
+		query.addProjectionOnField(new SimpleField("id"));
 
 		Optional<FilterQuery> publicFilterQuery = solrFilterService.getPublicFilterQuery(domains);
 		publicFilterQuery.ifPresent(query::addFilterQuery);
 
 		Optional<FilterQuery> optionalFilter = solrFilterService.getFilterQuery(filters);
 		optionalFilter.ifPresent(query::addFilterQuery);
-
-		// return the samples from solr that match the query
-		return solrSampleRepository.findByQuery(query);
-
+		
+		return query;
 	}
 
 	public Autocomplete getAutocomplete(String autocompletePrefix, Collection<Filter> filters, int maxSuggestions) {
+		
 		//default to search all
 		String searchTerm = "*:*";
 		//build a query out of the users string and any facets
 		FacetQuery query = new SimpleFacetQuery();
 		query.addCriteria(new Criteria().expression(searchTerm));
-		query.setPageRequest(new PageRequest(0, 1));
+		query.addProjectionOnField(new SimpleField("id"));
 
 		Optional<FilterQuery> optionalFilter = solrFilterService.getFilterQuery(filters);
 		optionalFilter.ifPresent(query::addFilterQuery);
@@ -101,6 +130,8 @@ public class SolrSampleService {
 		//filter out non-public
 		Optional<FilterQuery> publicSampleFilterQuery = solrFilterService.getPublicFilterQuery(Collections.EMPTY_LIST);
 		publicSampleFilterQuery.ifPresent(query::addFilterQuery);
+
+		query.setPageRequest(new PageRequest(0, 1));
 
 		FacetOptions facetOptions = new FacetOptions();
 		facetOptions.addFacetOnField("autocomplete_ss");

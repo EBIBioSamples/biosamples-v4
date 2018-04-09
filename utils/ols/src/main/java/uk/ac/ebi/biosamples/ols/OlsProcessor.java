@@ -2,6 +2,7 @@ package uk.ac.ebi.biosamples.ols;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -25,6 +26,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.util.UriUtils;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.utils.ClientUtils;
@@ -133,35 +135,55 @@ public class OlsProcessor {
 	}
 	
 	
-	@Cacheable("ols_short")
+	//@Cacheable("ols_short")
 	public Optional<String> queryOlsForShortcode(String shortcode) {
 		log.trace("OLS getting : "+shortcode);
 
 		//TODO do more by hal links, needs OLS to support
-		UriComponents uriComponents = UriComponentsBuilder.fromUriString(bioSamplesProperties.getOls()+"/api/terms?id={shortcode}").build();
+		UriComponents uriComponents = UriComponentsBuilder.fromUriString(bioSamplesProperties.getOls()+"/api/terms?id={shortcode}&size=500").build();
 		URI uri = uriComponents.expand(shortcode).encode().toUri();
 		
-		RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaType.APPLICATION_JSON).build();
-		ResponseEntity<JsonNode> responseEntity = restOperations.exchange(requestEntity,
-				new ParameterizedTypeReference<JsonNode>(){});
+		log.trace("OLS query for shortcode "+shortcode+" against "+uri);
 		
-		//if zero or more than one result found, abort
-		if (responseEntity.getBody().size() != 1) {
+		RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaType.APPLICATION_JSON).build();
+		ResponseEntity<ObjectNode> responseEntity = restOperations.exchange(requestEntity,
+				new ParameterizedTypeReference<ObjectNode>(){});
+		
+		//non-200 status code
+		if (!responseEntity.getStatusCode().is2xxSuccessful()) {
+			log.trace("Got status "+responseEntity.getStatusCodeValue()+" for shortcode "+shortcode+" against "+uri);
 			return Optional.empty();
 		}
-		JsonNode n = responseEntity.getBody();
 		
+		//if zero or more than one result found, abort
+		if (responseEntity.getBody() == null) {
+			log.trace("Found empty body for shortcode "+shortcode+" against "+uri);
+			return Optional.empty();
+		}
+		ObjectNode n = responseEntity.getBody();
+		
+		String iri = null;
 		if (n.has("_embedded")) {
 			if (n.get("_embedded").has("terms")) {
-				if (n.get("_embedded").get("terms").size() == 1) {
-					if (n.get("_embedded").get("terms").get(0).has("iri")) {
-						String iri = n.get("_embedded").get("terms").get(0).get("iri").asText();
-						log.info("OLS mapped "+shortcode+"  to "+iri);
-						return Optional.of(iri);
+				for (JsonNode term : n.get("_embedded").get("terms")) {
+					if (term.has("iri")) {
+						//no previous iri, use this one
+						if (iri == null) {
+							iri = term.get("iri").asText();
+							log.trace("OLS found "+iri+" for shortcode "+shortcode);
+						//same iri, skip
+						} else if (iri.equals(term.get("iri").asText())) {
+							//do nothing
+						}
+						//different iri, error
+						else {
+							log.warn("OLS mapped "+shortcode+" to multiple iris at "+uri);
+							return Optional.empty();
+						}
 					}
 				}
 			}	
 		}
-		return Optional.empty();
+		return Optional.ofNullable(iri);
 	}
 }

@@ -65,7 +65,7 @@ public class SitemapIntegration extends AbstractIntegration {
 
         XmlSitemapIndex index = getSitemapIndex();
         if (index.getXmlSitemaps().size() != expectedSitemapIndexSize) {
-            throw new RuntimeException("The model index size doesn't match the expected size");
+            throw new RuntimeException("The model index size ("+index.getXmlSitemaps().size()+") doesn't match the expected size ("+expectedSitemapIndexSize+")");
         }
 
         for (XmlSitemap sitemap : index.getXmlSitemaps()) {
@@ -77,7 +77,7 @@ public class SitemapIntegration extends AbstractIntegration {
             });
         }
         lookupTable.entrySet().stream().filter(entry -> !entry.getValue()).findFirst().ifPresent(entry -> {
-            throw new RuntimeException("Some samples are not available in the model");
+            throw new RuntimeException("Sample "+entry.getKey()+" is not in the sitemap");
         });
 
     }

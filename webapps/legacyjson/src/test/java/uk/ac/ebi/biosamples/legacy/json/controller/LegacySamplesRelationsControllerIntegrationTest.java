@@ -10,7 +10,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -33,7 +32,6 @@ import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.UriTemplate;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -41,10 +39,7 @@ import org.springframework.test.web.servlet.ResultActions;
 
 import com.jayway.jsonpath.JsonPath;
 
-import uk.ac.ebi.biosamples.legacy.json.domain.SamplesRelations;
-import uk.ac.ebi.biosamples.legacy.json.domain.SupportedSamplesRelationships;
 import uk.ac.ebi.biosamples.legacy.json.domain.TestSample;
-import uk.ac.ebi.biosamples.legacy.json.repository.RelationsRepository;
 import uk.ac.ebi.biosamples.legacy.json.repository.SampleRepository;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;

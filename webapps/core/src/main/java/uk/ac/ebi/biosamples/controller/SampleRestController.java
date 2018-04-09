@@ -49,12 +49,10 @@ import uk.ac.ebi.biosamples.service.SampleService;
  */
 @RestController
 @ExposesResourceFor(Sample.class)
-@RequestMapping("/samples")
+@RequestMapping("/samples/{accession}")
 public class SampleRestController {
 
 	private final SampleService sampleService;
-	private final SamplePageService samplePageService;
-	private final FilterService filterService;
 	private final BioSamplesAapService bioSamplesAapService;
 	private final SampleManipulationService sampleManipulationService;
 
@@ -67,25 +65,22 @@ public class SampleRestController {
     private Logger log = LoggerFactory.getLogger(getClass());
 
 	public SampleRestController(SampleService sampleService,
-								SamplePageService samplePageService, FilterService filterService,
 								BioSamplesAapService bioSamplesAapService,
 								SampleManipulationService sampleManipulationService,
 								SampleResourceAssembler sampleResourceAssembler,
 								EntityLinks entityLinks,
 								JsonLDService jsonLDService) {
 		this.sampleService = sampleService;
-		this.samplePageService = samplePageService;
 		this.bioSamplesAapService = bioSamplesAapService;
-		this.filterService = filterService;
 		this.sampleManipulationService = sampleManipulationService;
 		this.sampleResourceAssembler = sampleResourceAssembler;
 		this.jsonLDService = jsonLDService;
 		this.entityLinks = entityLinks;
 	}
 
-	@CrossOrigin(methods = RequestMethod.GET)
     @PreAuthorize("isAuthenticated()")
-	@GetMapping(value = "/{accession}", produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
+	@CrossOrigin(methods = RequestMethod.GET)
+	@GetMapping(produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
 	public Resource<Sample> getSampleHal(@PathVariable String accession,
 			 @RequestParam(name = "legacydetails", required = false, defaultValue="false") boolean legacydetails) {
 		log.trace("starting call");
@@ -107,7 +102,7 @@ public class SampleRestController {
 
     @PreAuthorize("isAuthenticated()")
 	@CrossOrigin(methods = RequestMethod.GET)
-	@GetMapping(value = "/{accession}", produces = { MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE })
+	@GetMapping(produces = { MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE })
 	public Sample getSampleXml(@PathVariable String accession) {
 		Sample sample = this.getSampleHal(accession, true).getContent();
 		if (!sample.getAccession().matches("SAMEG\\d+")) {
@@ -120,7 +115,7 @@ public class SampleRestController {
 
     @PreAuthorize("isAuthenticated()")
 	@CrossOrigin(methods = RequestMethod.GET)
-    @GetMapping(value = "/{accession}", produces = "application/ld+json")
+    @GetMapping(produces = "application/ld+json")
     public JsonLDSample getJsonLDSample(@PathVariable String accession) {
 		Optional<Sample> sample = sampleService.fetch(accession);
 		if (!sample.isPresent()) {
@@ -144,7 +139,7 @@ public class SampleRestController {
 	}
 
     @PreAuthorize("isAuthenticated()")
-	@PutMapping(value = "/{accession}", consumes = { MediaType.APPLICATION_JSON_VALUE })
+	@PutMapping(consumes = { MediaType.APPLICATION_JSON_VALUE })
 	public Resource<Sample> put(@PathVariable String accession, 
 			@RequestBody Sample sample,
 			@RequestParam(name = "setupdatedate", required = false, defaultValue="true") boolean setUpdateDate,
@@ -181,37 +176,6 @@ public class SampleRestController {
 
 		// create the response object with the appropriate status
 		return sampleResource;
-	}
-
-	@PreAuthorize("isAuthenticated()")
-	@PostMapping(consumes = { MediaType.APPLICATION_JSON_VALUE })
-	public ResponseEntity<Resource<Sample>> post(@RequestBody Sample sample,
-			@RequestParam(name = "setupdatedate", required = false, defaultValue="true") boolean setUpdateDate,
-            @RequestParam(name = "setfulldetails", required = false, defaultValue = "false") boolean setFullDetails) {
-		
-		log.debug("Recieved POST for "+sample);
-		sample = bioSamplesAapService.handleSampleDomain(sample);
-
-		//limit use of this method to write super-users only
-		if (bioSamplesAapService.isWriteSuperUser() && setUpdateDate) {
-			sample = Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(), 
-					sample.getRelease(), Instant.now(),
-					sample.getCharacteristics(), sample.getRelationships(), sample.getExternalReferences(), 
-					sample.getOrganizations(), sample.getContacts(), sample.getPublications());
-		}
-
-		if (!setFullDetails) {
-			sample = sampleManipulationService.removeLegacyFields(sample);
-		}
-		
-		sample = sampleService.store(sample);
-		
-		// assemble a resource to return
-		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
-
-		// create the response object with the appropriate status
-		//TODO work out how to avoid using ResponseEntity but also set location header
-		return ResponseEntity.created(URI.create(sampleResource.getLink("self").getHref())).body(sampleResource);
 	}
 
 

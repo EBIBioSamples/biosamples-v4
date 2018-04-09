@@ -1,6 +1,5 @@
 package uk.ac.ebi.biosamples.solr;
 
-import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -8,14 +7,12 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import uk.ac.ebi.biosamples.MessageContent;
 import uk.ac.ebi.biosamples.Messaging;
-import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.ols.OlsProcessor;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;

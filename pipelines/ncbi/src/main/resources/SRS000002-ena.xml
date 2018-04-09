@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ROOT request="SRS000002&amp;display=xml">
+<SAMPLE center_name="WUGSC" alias="19655" accession="SRS000002" broker_name="NCBI">
+     <IDENTIFIERS>
+          <PRIMARY_ID>SRS000002</PRIMARY_ID>
+          <EXTERNAL_ID namespace="BioSample">SAMN00000002</EXTERNAL_ID>
+          <SUBMITTER_ID namespace="WUGSC">19655</SUBMITTER_ID>
+     </IDENTIFIERS>
+     <TITLE>Alistipes putredinis DSM 17216</TITLE>
+     <SAMPLE_NAME>
+          <TAXON_ID>445970</TAXON_ID>
+          <SCIENTIFIC_NAME>Alistipes putredinis DSM 17216</SCIENTIFIC_NAME>
+     </SAMPLE_NAME>
+     <DESCRIPTION>Alistipes putredinis (GenBank Accession Number for 16S rDNA gene: L16497) is a member of the Bacteroidetes division of the domain bacteria and has been isolated from human feces. It has been found in 16S rDNA sequence-based enumerations of the colonic microbiota of adult humans (Eckburg et. al. (2005), Ley et. al. (2006)).</DESCRIPTION>
+     <SAMPLE_LINKS>
+          <SAMPLE_LINK>
+               <XREF_LINK>
+                    <DB>ENA-STUDY</DB>
+                    <ID>SRP000002</ID>
+               </XREF_LINK>
+          </SAMPLE_LINK>
+          <SAMPLE_LINK>
+               <XREF_LINK>
+                    <DB>ENA-EXPERIMENT</DB>
+                    <ID>SRX000008</ID>
+               </XREF_LINK>
+          </SAMPLE_LINK>
+          <SAMPLE_LINK>
+               <XREF_LINK>
+                    <DB>ENA-RUN</DB>
+                    <ID>SRR000066-SRR000067</ID>
+               </XREF_LINK>
+          </SAMPLE_LINK>
+          <SAMPLE_LINK>
+               <XREF_LINK>
+                    <DB>ENA-SUBMISSION</DB>
+                    <ID>SRA000126</ID>
+               </XREF_LINK>
+          </SAMPLE_LINK>
+          <SAMPLE_LINK>
+               <XREF_LINK>
+                    <DB>ENA-FASTQ-FILES</DB>
+                    <ID><![CDATA[http://www.ebi.ac.uk/ena/data/warehouse/filereport?accession=SRS000002&result=read_run&fields=run_accession,fastq_ftp,fastq_md5,fastq_bytes]]></ID>
+               </XREF_LINK>
+          </SAMPLE_LINK>
+          <SAMPLE_LINK>
+               <XREF_LINK>
+                    <DB>ENA-SUBMITTED-FILES</DB>
+                    <ID><![CDATA[http://www.ebi.ac.uk/ena/data/warehouse/filereport?accession=SRS000002&result=read_run&fields=run_accession,submitted_ftp,submitted_md5,submitted_bytes,submitted_format]]></ID>
+               </XREF_LINK>
+          </SAMPLE_LINK>
+     </SAMPLE_LINKS>
+     <SAMPLE_ATTRIBUTES>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>finishing strategy (depth of coverage)</TAG>
+               <VALUE>Level 3: Improved-High-Quality Draft11.6x;20</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>collection date</TAG>
+               <VALUE>not determined</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>estimated_size</TAG>
+               <VALUE>2550000</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>sop</TAG>
+               <VALUE>http://hmpdacc.org/doc/CommonGeneAnnotation_SOP.pdf</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>project_type</TAG>
+               <VALUE>Reference Genome</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>host</TAG>
+               <VALUE>Homo sapiens</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>lat_lon</TAG>
+               <VALUE>not determined</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>biome</TAG>
+               <VALUE>terrestrial biome [ENVO:00000446]</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>misc_param: HMP body site</TAG>
+               <VALUE>not determined</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>nucleic acid extraction</TAG>
+               <VALUE>not determined</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>feature</TAG>
+               <VALUE>human-associated habitat [ENVO:00009003]</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>investigation_type</TAG>
+               <VALUE>missing</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>host taxid</TAG>
+               <VALUE>9606</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>project_name</TAG>
+               <VALUE>Alistipes putredinis DSM 17216</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>assembly</TAG>
+               <VALUE>PCAP</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>geo_loc_name</TAG>
+               <VALUE>not determined</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>source_mat_id</TAG>
+               <VALUE>DSM 17216, CCUG 45780, CIP 104286, ATCC 29800, Carlier 10203, VPI 3293</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>material</TAG>
+               <VALUE>biological product [ENVO:02000043]</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ref_biomaterial</TAG>
+               <VALUE>not determined</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>misc_param: HMP supersite</TAG>
+               <VALUE>gastrointestinal_tract</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>num_replicons</TAG>
+               <VALUE>not determined</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>sequencing method</TAG>
+               <VALUE>454-GS20, Sanger</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>isol_growth_condt</TAG>
+               <VALUE>not determined</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>env_package</TAG>
+               <VALUE>missing</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>strain</TAG>
+               <VALUE>DSM 17216</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>isolation-source</TAG>
+               <VALUE>missing</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>BioSampleModel</TAG>
+               <VALUE>MIGS.ba</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ENA-SPOT-COUNT</TAG>
+               <VALUE>498024</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ENA-BASE-COUNT</TAG>
+               <VALUE>128734924</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ENA-FIRST-PUBLIC</TAG>
+               <VALUE>2010-02-26</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ENA-LAST-UPDATE</TAG>
+               <VALUE>2015-06-23</VALUE>
+          </SAMPLE_ATTRIBUTE>
+     </SAMPLE_ATTRIBUTES>
+</SAMPLE>
+</ROOT>

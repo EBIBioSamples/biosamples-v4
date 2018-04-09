@@ -1,18 +1,11 @@
 package uk.ac.ebi.biosamples.model.filter;
 
-import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
-import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
-
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
-import java.time.temporal.TemporalAccessor;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -194,7 +187,7 @@ public class DateRangeFilter implements Filter {
         private final Instant from;
         private final Instant until;
         private static final Instant min = LocalDateTime.MIN.atZone(ZoneOffset.UTC).toInstant();
-        private static final Instant max = LocalDateTime.MIN.atZone(ZoneOffset.UTC).toInstant();
+        private static final Instant max = LocalDateTime.MAX.atZone(ZoneOffset.UTC).toInstant();
 
         private DateRange(Instant from, Instant until) {        	
         	if (from == null) {

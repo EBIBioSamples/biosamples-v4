@@ -65,14 +65,16 @@ public class RestCurationIntegration extends AbstractIntegration {
 		attributesPre.add(Attribute.build("Organism", "9606"));
 		Set<Attribute> attributesPost = new HashSet<>();
 		attributesPost.add(Attribute.build("Organism", "Homo sapiens"));			
-		client.persistCuration(sample.getAccession(), Curation.build(attributesPre, attributesPost, null, null), "self.BiosampleIntegrationTest");
+		client.persistCuration(sample.getAccession(), 
+				Curation.build(attributesPre, attributesPost, null, null), "self.BiosampleIntegrationTest");
 
 
 		attributesPre = new HashSet<>();
 		attributesPre.add(Attribute.build("Organism", "Homo sapiens"));
 		attributesPost = new HashSet<>();
 		attributesPost.add(Attribute.build("Organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));			
-		client.persistCuration(sample.getAccession(), Curation.build(attributesPre, attributesPost, null, null), "self.BiosampleIntegrationTest");
+		client.persistCuration(sample.getAccession(), 
+				Curation.build(attributesPre, attributesPost, null, null), "self.BiosampleIntegrationTest");
 		
 	}
 

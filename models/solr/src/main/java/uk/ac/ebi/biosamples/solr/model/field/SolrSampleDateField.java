@@ -1,7 +1,6 @@
 package uk.ac.ebi.biosamples.solr.model.field;
 
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 

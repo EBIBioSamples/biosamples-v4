@@ -1,7 +1,6 @@
 package uk.ac.ebi.biosamples.legacy.json.service;
 
 import org.springframework.hateoas.EntityLinks;
-import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceAssembler;
 import org.springframework.stereotype.Service;

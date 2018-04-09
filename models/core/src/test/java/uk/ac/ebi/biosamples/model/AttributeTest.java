@@ -1,10 +1,6 @@
 package uk.ac.ebi.biosamples.model;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.autoconfigure.json.JsonTest;
-import org.springframework.test.context.junit4.SpringRunner;
-
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 

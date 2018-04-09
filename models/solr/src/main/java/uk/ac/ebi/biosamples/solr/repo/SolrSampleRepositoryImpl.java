@@ -1,39 +1,46 @@
 package uk.ac.ebi.biosamples.solr.repo;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.common.params.CommonParams;
+import org.apache.solr.common.params.CursorMarkParams;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.solr.core.SolrOperations;
+import org.springframework.data.solr.core.QueryParsers;
+import org.springframework.data.solr.core.SolrCallback;
 import org.springframework.data.solr.core.SolrTemplate;
 import org.springframework.data.solr.core.convert.SolrConverter;
 import org.springframework.data.solr.core.query.FacetOptions;
 import org.springframework.data.solr.core.query.FacetQuery;
 import org.springframework.data.solr.core.query.Query;
-import org.springframework.data.solr.core.query.SimpleField;
 import org.springframework.data.solr.core.query.result.FacetFieldEntry;
 import org.springframework.data.solr.core.query.result.FacetPage;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
-
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
 
 @Component
 public class SolrSampleRepositoryImpl implements SolrSampleRepositoryCustom  {
 
-	private SolrOperations solrOperations;
-	
+	//this must be SolrTemplate not SolrOperations because we use some of the details
+	private SolrTemplate solrTemplate;
+
+	private final QueryParsers queryParsers = new QueryParsers();
 	
 	/**
 	 * Constructor with required fields to build its own SolrOperations object
-	 * becuase one is not normally exposed as a bean.
+	 * because one is not normally exposed as a bean.
 	 * 
 	 * @param solrClient
 	 * @param converter
 	 */
 	public SolrSampleRepositoryImpl(SolrClient solrClient, SolrConverter converter) {
-		this.solrOperations = createTemplate(solrClient, converter);
+		this.solrTemplate = createTemplate(solrClient, converter);
 	}
 
 	/**
@@ -62,7 +69,7 @@ public class SolrSampleRepositoryImpl implements SolrSampleRepositoryCustom  {
 
 		query.setFacetOptions(facetOptions);
 		//execute the query against the solr server
-		FacetPage<SolrSample> page = solrOperations.queryForFacetPage(query, SolrSample.class);
+		FacetPage<SolrSample> page = solrTemplate.queryForFacetPage(query, SolrSample.class);
 		return page.getFacetResultPage("facetfields_ss");
 	}
 
@@ -84,7 +91,7 @@ public class SolrSampleRepositoryImpl implements SolrSampleRepositoryCustom  {
 
 		query.setFacetOptions(facetOptions);
 		//execute the query against the solr server
-		FacetPage<SolrSample> page = solrOperations.queryForFacetPage(query, SolrSample.class);
+		FacetPage<SolrSample> page = solrTemplate.queryForFacetPage(query, SolrSample.class);
 		return page;
 		
 	}
@@ -97,21 +104,40 @@ public class SolrSampleRepositoryImpl implements SolrSampleRepositoryCustom  {
 
 	@Override
 	public Page<SolrSample> findByQuery(Query query) {
-		query.addProjectionOnField(new SimpleField("id"));
-		return solrOperations.query(query, SolrSample.class);
+		return solrTemplate.query(query, SolrSample.class);
 	}
 
+	@Override
+	public CursorArrayList<SolrSample> findByQueryCursorMark(Query query, String cursorMark, int size) {
+		
+		//TODO this is a different set of query parsers than the solrOperation has itself
+		SolrQuery solrQuery = queryParsers.getForClass(query.getClass()).constructSolrQuery(query);
+
+		solrQuery.set(CursorMarkParams.CURSOR_MARK_PARAM, cursorMark);
+		solrQuery.set(CommonParams.ROWS, size);
+		
+		QueryResponse response = solrTemplate.execute(new SolrCallback<QueryResponse>() {
+			@Override
+			public QueryResponse doInSolr(SolrClient solrClient) throws SolrServerException, IOException {
+				return solrClient.query("samples", solrQuery);
+			}
+		});
+		response.getNextCursorMark();
+		List<SolrSample> solrSampleList = solrTemplate.convertQueryResponseToBeans(response, SolrSample.class);
+		CursorArrayList<SolrSample> solrSampleCursorList = new CursorArrayList<SolrSample>(solrSampleList, response.getNextCursorMark());
+		
+		return solrSampleCursorList;
+	}
 
 	@Override
 	public FacetPage<SolrSample> findByFacetQuery(FacetQuery query) {
-		query.addProjectionOnField(new SimpleField("id"));
-		return solrOperations.queryForFacetPage(query, SolrSample.class);
+		return solrTemplate.queryForFacetPage(query, SolrSample.class);
 	}
 
 	@Override
 	public SolrSample saveWithoutCommit(SolrSample entity) {
 		Assert.notNull(entity, "Cannot save 'null' entity.");
-		this.solrOperations.saveBean(entity);
+		this.solrTemplate.saveBean(entity);
 		return entity;
 	}
 }

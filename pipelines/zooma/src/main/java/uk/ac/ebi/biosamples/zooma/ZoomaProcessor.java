@@ -34,7 +34,8 @@ public class ZoomaProcessor {
 		
 	public ZoomaProcessor(RestTemplateBuilder restTemplateBuilder, PipelinesProperties pipelinesProperties) {
 		this.restOperations = restTemplateBuilder.build();
-		uriBuilder = UriComponentsBuilder.fromUriString(pipelinesProperties.getZooma()+"/v2/api/services/annotate?propertyValue={value}&propertyType={type}").build();
+		uriBuilder = UriComponentsBuilder.fromUriString(
+				pipelinesProperties.getZooma()+"/v2/api/services/annotate?propertyValue={value}&propertyType={type}&filter=ontologies:[none]").build();
 	}
 	
 	

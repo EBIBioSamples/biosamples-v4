@@ -7,6 +7,7 @@ import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.stereotype.Service;
 
 import uk.ac.ebi.biosamples.controller.SampleCurationLinksRestController;
+import uk.ac.ebi.biosamples.controller.SampleRestController;
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -25,10 +26,12 @@ public class CurationLinkResourceAssembler implements ResourceAssembler<Curation
 
 		resource.add(ControllerLinkBuilder.linkTo(
 				ControllerLinkBuilder.methodOn(SampleCurationLinksRestController.class)
-					.getCurationLinkJson(curationLink.getSample(), curationLink.getHash())).withSelfRel());
+					.getCurationLinkJson(curationLink.getSample(), curationLink.getHash()))
+				.withSelfRel());
 		
-		resource.add(entityLinks.linkToSingleResource(Sample.class, curationLink.getSample())
+		resource.add(ControllerLinkBuilder.linkTo(SampleRestController.class, curationLink.getSample())
 				.withRel("sample"));
+		
 		resource.add(entityLinks.linkToSingleResource(Curation.class, curationLink.getCuration().getHash())
 				.withRel("curation"));
 		

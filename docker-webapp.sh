@@ -10,18 +10,17 @@ while [ "$1" != "" ]; do
     shift
 done
 
-#mvn -T 2C -Dmaven.test.skip=true clean package
-mvn -T 2C -P embl-ebi clean package
-
 #cleanup any previous data
 if [ $clean == 1 ]
 then
 	echo "Cleaning existing volumes"
 	#remove any images, in case of out-of-date or corrupt images
-	docker-compose down --volumes --rmi local --remove-orphans
 	#docker-compose down --volumes --remove-orphans
+	docker-compose down --volumes --rmi local --remove-orphans
+	mvn -T 2C -P embl-ebi clean package -Dembedmongo.wait
 else
 	docker-compose down --remove-orphans
+	mvn -T 2C -P embl-ebi package -Dembedmongo.wait
 fi
 set -e
 
@@ -45,7 +44,7 @@ curl http://localhost:8983/solr/samples/config -H 'Content-type:application/json
 docker-compose up -d biosamples-webapps-core biosamples-webapps-sampletab biosamples-webapps-legacyxml biosamples-webapps-legacyjson
 sleep 30
 echo "checking webapps-core is up"
-./http-status-check -u http://localhost:8081/biosamples/health -t 300
+./http-status-check -u http://localhost:8081/biosamples/health -t 400
 echo "checking webapps-sampletab is up"
 ./http-status-check -u http://localhost:8082/biosamples/sampletab/health -t 60
 echo "checking webapps-legacyxml is up"

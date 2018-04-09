@@ -31,7 +31,7 @@ import uk.ac.ebi.biosamples.model.Sample;
 
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
-//@Profile({"default", "selenium", "test"})
+@Profile({"default", "selenium"})
 public class JsonLdIntegration extends AbstractIntegration {
     private final Environment env;
     private final RestOperations restTemplate;
@@ -177,7 +177,11 @@ public class JsonLdIntegration extends AbstractIntegration {
             throw new RuntimeException("Error retrieving sample in application/ld+json format from the webapp");
         }
         JsonLDSample jsonLDSample = responseEntity.getBody();
-        assert jsonLDSample.getIdentifier().equals(sample.getAccession());
+        assert Stream.of(jsonLDSample.getIdentifiers()).anyMatch(s -> s.equals("biosamples:" + sample.getAttributes()));
+
+        String checkingUrl = UriComponentsBuilder.fromUri(bioSamplesProperties.getBiosamplesClientUri())
+                .pathSegment("samples", sample.getAccession()).toUriString();
+        assert jsonLDSample.getUrl().equals(checkingUrl);
 
     }
 

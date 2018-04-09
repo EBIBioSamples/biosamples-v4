@@ -38,7 +38,8 @@ public class SolrSampleInverseRelationField extends SolrSampleField {
 
             InverseRelationFilter inverseRelationFilter = (InverseRelationFilter) filter;
             if (inverseRelationFilter.getContent().isPresent()) {
-                filterCriteria = filterCriteria.expression("/" + inverseRelationFilter.getContent().get() + "/");
+//                filterCriteria = filterCriteria.expression("/" + inverseRelationFilter.getContent().get() + "/");
+                filterCriteria = filterCriteria.expression(String.format("\"%s\"",inverseRelationFilter.getContent().get()));
             } else {
                 filterCriteria = filterCriteria.isNotNull();
             }

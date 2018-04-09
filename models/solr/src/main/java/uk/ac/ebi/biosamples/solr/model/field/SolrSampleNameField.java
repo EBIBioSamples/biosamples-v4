@@ -37,7 +37,8 @@ public class SolrSampleNameField extends SolrSampleField {
 
             NameFilter nameFilter = (NameFilter) filter;
             if (nameFilter.getContent().isPresent()) {
-                filterCriteria = filterCriteria.expression("/" + nameFilter.getContent().get() + "/");
+//                filterCriteria = filterCriteria.expression("/" + nameFilter.getContent().get() + "/");
+                filterCriteria = filterCriteria.expression(String.format("\"%s\"", nameFilter.getContent().get()));
             } else {
                 filterCriteria = filterCriteria.isNotNull();
             }

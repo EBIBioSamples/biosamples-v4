@@ -37,7 +37,7 @@ appropriate sections:
     <dependency>
         <groupId>uk.ac.ebi.biosamples</groupId>
         <artifactId>biosamples-spring-boot-starter</artifactId>
-        <version>4.0.0</version>
+        <version>4.0.4</version>
     </dependency>
 </dependencies>
 ....
@@ -82,6 +82,10 @@ https://docs.docker.com/compose/
 You can use `docker-compose up` to start all the services, or you can
 bring them up individually. See docker-compose.yml file for more
 information on service names and dependencies.
+
+To update the code you are running you will need to 
+1. `git pull` the latest version
+2. Recompile the java classes by running `docker-webapp.sh`
 
 By default, the pipelines will not be run. They can be manually
 triggered as follows:

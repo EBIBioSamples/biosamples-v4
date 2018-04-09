@@ -49,7 +49,7 @@ public class BioSamplesProperties {
 	@Value("${biosamples.aap.super.write:self.BiosampleSuperUserWrite}")
 	private String biosamplesAapSuperWrite;
 	
-	@Value("${biosamples.ols:http://wwwdev.ebi.ac.uk/ols}")
+	@Value("${biosamples.ols:https://wwwdev.ebi.ac.uk/ols}")
 	private String ols;
 
 	@Value("${biosamples.webapp.core.page.threadcount:64}")

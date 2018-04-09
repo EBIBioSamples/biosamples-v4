@@ -11,6 +11,7 @@ public class MongoSampleRepositoryImpl implements MongoSampleRepositoryCustom {
 	
 	public MongoSampleRepositoryImpl(MongoOperations mongoOperations) {
 		this.mongoOperations = mongoOperations;
+		
 	}
 	
 	/**

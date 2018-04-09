@@ -10,12 +10,14 @@ import org.springframework.core.convert.converter.Converter;
 import uk.ac.ebi.biosamples.model.*;
 
 public class SampleToJsonLDSampleConverter implements Converter<Sample, JsonLDSample> {
+
     @Override
     public JsonLDSample convert(Sample sample) {
 
 
         JsonLDSample jsonLD = new JsonLDSample();
-        jsonLD.setIdentifier(sample.getAccession());
+        String[] identifiers = {"biosamples:" + sample.getAccession()};
+        jsonLD.setIdentifiers(identifiers);
         jsonLD.setName(sample.getName());
 
         List<JsonLDPropertyValue> jsonLDAttributeList = getAttributeList(sample);
@@ -33,6 +35,7 @@ public class SampleToJsonLDSampleConverter implements Converter<Sample, JsonLDSa
         if (!datasets.isEmpty()) {
             jsonLD.setDataset(datasets);
         }
+
         return jsonLD;
     }
 

@@ -27,6 +27,16 @@ public class LabelCountEntry implements Comparable<LabelCountEntry>{
     public int compareTo(LabelCountEntry o) {
         return Long.compare(this.count, o.count);
     }
+    @Override
+    public String toString() {
+    	StringBuilder sb = new StringBuilder();
+    	sb.append("LabelCountEntry(");
+    	sb.append(label);
+    	sb.append(",");
+    	sb.append(count);
+    	sb.append(")");
+    	return sb.toString();
+    }
 
     @JsonCreator
     public static LabelCountEntry build(@JsonProperty("label") String label, @JsonProperty("count") long count) {

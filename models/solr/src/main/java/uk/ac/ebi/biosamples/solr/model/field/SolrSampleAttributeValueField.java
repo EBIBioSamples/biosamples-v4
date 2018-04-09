@@ -34,9 +34,10 @@ public class SolrSampleAttributeValueField extends SolrSampleField {
 
             AttributeFilter attributeFilter = (AttributeFilter) filter;
             if (attributeFilter.getContent().isPresent())
-                filterCriteria.expression(String.format("/%s/",attributeFilter.getContent().get()));
+//                filterCriteria.expression(String.format("/%s/",attributeFilter.getContent().get()));
+                filterCriteria = filterCriteria.expression(String.format("\"%s\"",attributeFilter.getContent().get()));
             else
-                filterCriteria.isNotNull();
+                filterCriteria = filterCriteria.isNotNull();
 
         }
 

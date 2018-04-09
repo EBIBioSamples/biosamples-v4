@@ -102,11 +102,13 @@ public class MongoSampleEventListener extends AbstractMongoEventListener<MongoSa
 		List<MongoRelationship> relationships = mongoRelationshipRepository.findAllByTarget(event.getSource().getAccession());
 		log.trace("Found "+relationships.size()+" relationships in "+((System.nanoTime()-startTime)/1000000l)+"ms");
 		event.getSource().getRelationships().addAll(relationships);
+		//TODO this should update update-date on the retrieved sample to the most recent out of all related samples
+		//but this might cause over-updating, bletch
 	}
 
 	@Override
 	public void onAfterSave(AfterSaveEvent<MongoSample> event) {
-		log.trace("processing onAfterConvert for "+event.getSource());
+		log.trace("processing onAfterSave for "+event.getSource());
 		List<MongoRelationship> relationships = mongoRelationshipRepository.findAllByTarget(event.getSource().getAccession());
 		log.trace("Found relationships "+relationships);
 		event.getSource().getRelationships().addAll(relationships);

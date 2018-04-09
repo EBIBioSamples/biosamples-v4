@@ -2,8 +2,6 @@ package uk.ac.ebi.biosamples.zooma;
 
 import java.util.Collections;
 import java.util.Optional;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -16,7 +14,6 @@ import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.ols.OlsProcessor;
 import uk.ac.ebi.biosamples.service.CurationApplicationService;
 
 public class SampleZoomaCallable implements Callable<Void> {
@@ -96,23 +93,33 @@ public class SampleZoomaCallable implements Callable<Void> {
 				continue;
 			} 
 			
-			if (attribute.getType().equals("synonym")) {
+			if (attribute.getType().toLowerCase().equals("synonym")) {
 				log.trace("Skipping synonym "+attribute.getValue());
 				continue;
 			} 
-			if (attribute.getType().equals("label")) {
+			if (attribute.getType().toLowerCase().equals("other")) {
+				log.trace("Skipping other "+attribute.getValue());
+				continue;
+			} 
+			if (attribute.getType().toLowerCase().equals("unknown")) {
+				log.trace("Skipping unknown "+attribute.getValue());
+				continue;
+			} 
+			if (attribute.getType().toLowerCase().equals("label")) {
 				log.trace("Skipping label "+attribute.getValue());
 				continue;
 			}
-			if (attribute.getType().equals("model")) {
-				log.trace("Skipping model "+attribute.getValue());
+			if ("model".equals(attribute.getType().toLowerCase())
+					|| "package".equals(attribute.getType().toLowerCase())
+					|| "INSDC first public".equals(attribute.getType())
+					|| "INSDC last update".equals(attribute.getType())
+					|| "NCBI submission model".equals(attribute.getType())
+					|| "NCBI submission package".equals(attribute.getType())) {
+				log.trace("Skipping "+attribute.getType()+" : "+attribute.getValue());
 				continue;
 			}
-			if (attribute.getType().equals("package")) {
-				log.trace("Skipping package "+attribute.getValue());
-				continue;
-			}
-			if (attribute.getType().equals("host_subject_id")) {
+			
+			if (attribute.getType().toLowerCase().equals("host_subject_id")) {
 				log.trace("Skipping host_subject_id "+attribute.getValue());
 				continue;
 			}

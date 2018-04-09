@@ -1,4 +1,22 @@
 [[section]]
+4.0.5
+-----
+
+This is a bugfix release that addresses the following issues:
+
+* Improved consistency of paged search results if any of the samples are added or modified whilst paging
+* Improved search update throughput by using Solr transaction log  
+* Updated JSON+LD format to the latest version
+* Correctly accept XML sample groups and their related samples
+* Fix issue related to search query terms not being applied to legacy XML and legacy JSON endpoints
+* Fix incorrect HAL links on autocomplete endpoint
+* Replace SampleTab submitted relationships by name with accessions. As a consequence, they can now be consistently cross referenced by accession in user interface and API
+* Improved indexing of samples when they are rapidly updated or curated
+* Updated Elixir Deposition Database banner URL
+* Reduce number of Zooma calls by not attempting to map "unknown" or "other" attributes
+* Reduce load on OLS by ensuring Zooma does not requery OLS as any results from OLS would not be used by BioSamples
+
+[[section]]
 4.0.4
 -----
 

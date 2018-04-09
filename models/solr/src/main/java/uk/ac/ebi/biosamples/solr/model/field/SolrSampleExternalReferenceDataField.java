@@ -39,7 +39,8 @@ public class SolrSampleExternalReferenceDataField extends SolrSampleField{
 
             ExternalReferenceDataFilter extRefFilter = (ExternalReferenceDataFilter) filter;
             if (extRefFilter.getContent().isPresent()) {
-                filterCriteria = filterCriteria.expression("/" + extRefFilter.getContent().get() + "/");
+//                filterCriteria = filterCriteria.expression("/" + extRefFilter.getContent().get() + "/");
+                filterCriteria = filterCriteria.expression(String.format("\"%s\"",extRefFilter.getContent().get()));
             } else {
                 filterCriteria = filterCriteria.isNotNull();
             }

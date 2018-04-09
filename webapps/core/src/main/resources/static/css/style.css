@@ -44,3 +44,15 @@ div#elixir-banner-info { color: white; }
 .shield span { padding: 0.1rem 0.2rem; }
 .shield .shield__key { background-color: #444; margin: 0 0 0 2px; }
 .shield .shield__value { background-color: #f27e3f; margin: 0 2px 0 0; }
+
+/* DOCS */
+pre.nowrap {
+    white-space: pre-wrap;
+    background-color: #e6e6e6;
+    overflow: auto;
+}
+
+code[class^="language"] {
+    border: none;
+    background: none;
+}

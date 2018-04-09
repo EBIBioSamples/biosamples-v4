@@ -5,8 +5,13 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import uk.ac.ebi.biosamples.controller.SampleHtmlController;
 import uk.ac.ebi.biosamples.model.JsonLDSample;
 import uk.ac.ebi.biosamples.model.Sample;
+
+import java.lang.reflect.Method;
+
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
 /**
  * This servise is meant for the convertions jobs to/form ld+json
@@ -29,7 +34,15 @@ public class JsonLDService {
      * @return the ld+json version of the sample
      */
     public JsonLDSample sampleToJsonLD(Sample sample) {
-        return this.jsonLDSampleConverter.convert(sample);
+        JsonLDSample jsonLDSample = this.jsonLDSampleConverter.convert(sample);
+        try {
+            Method method = SampleHtmlController.class.getMethod("sampleAccession", String.class);
+            String sampleUrl = linkTo(method, sample.getAccession()).toString();
+            jsonLDSample.setUrl(sampleUrl);
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        }
+        return jsonLDSample;
     }
 
 

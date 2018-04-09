@@ -23,4 +23,13 @@ public class LabelCountListContent extends AbstractList<LabelCountEntry> impleme
     public int size() {
         return labelCountEntryList.size();
     }
+    
+    @Override
+    public String toString() {
+    	StringBuilder sb = new StringBuilder();
+    	sb.append("LabelCountListContent(");
+    	sb.append(labelCountEntryList);
+    	sb.append(")");
+    	return sb.toString();
+    }
 }

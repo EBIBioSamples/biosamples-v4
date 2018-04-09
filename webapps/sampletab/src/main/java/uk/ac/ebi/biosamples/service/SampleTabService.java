@@ -309,6 +309,8 @@ public class SampleTabService {
 
 		//persist the samples and groups
 		persistSamplesAndGroups(sampleData, domain, release, update, setUpdateDate);
+		
+		//TODO replace relationships which were by name with by accession
 
 		//persist updated SampleTab so has all the associated accessions added
 		persistSampleTab(sampleData, domain);
@@ -388,6 +390,7 @@ public class SampleTabService {
 		for (SampleNode sampleNode : sampleData.scd.getNodes(SampleNode.class)) {
 			if (!isDummy(sampleNode)) {			
 				Sample sample = sampleNodeToSample(sampleNode, sampleData.msi, domain, release, update);
+				
 				futureMap.put(sample.getName(), bioSamplesClient.persistSampleResourceAsync(sample, setUpdateDate, true));
 			}			
 		}
@@ -404,6 +407,52 @@ public class SampleTabService {
 			//if it didn't have an accession before, assign one now
 			if (sampleNode.getSampleAccession() == null) {
 				sampleNode.setSampleAccession(sample.getAccession());
+			}
+		}
+		//now that everything has an accession, need to update relationships that were by name
+		for (String futureName : futureMap.keySet()) {
+			Sample sample;
+			try {
+				sample = futureMap.get(futureName).get().getContent();
+			} catch (InterruptedException | ExecutionException e) {
+				throw new RuntimeException(e);
+			}
+			boolean changed = false;
+			Collection<Relationship> addRelationships = new HashSet<>();
+			Collection<Relationship> removeRelationships = new HashSet<>();
+			for (Relationship relationship : sample.getRelationships()) {
+				if (relationship.getSource().equals(sample.getAccession())) {
+					if (!relationship.getTarget().matches("SAM[END][AG]?[0-9]+")) {
+						//this is a relationship that points to a non accessions
+						//check if any of the samples here  have a name that matches
+						//if so, update the relationship to use the accession
+						if (futureMap.keySet().contains(relationship.getTarget())) {							
+							Sample target;
+							try {
+								target = futureMap.get(relationship.getTarget()).get().getContent();
+							} catch (InterruptedException | ExecutionException e) {
+								throw new RuntimeException(e);
+							}							
+							removeRelationships.add(relationship);
+							addRelationships.add(Relationship.build(sample.getAccession(), 
+									relationship.getType(), target.getAccession()));
+						}
+					}
+				}
+			}
+			if (changed) {
+				sample.getRelationships().removeAll(removeRelationships);
+				sample.getRelationships().addAll(addRelationships);
+				futureMap.put(sample.getName(), bioSamplesClient.persistSampleResourceAsync(sample, setUpdateDate, true));
+			}
+		}
+		//check any updated futures to make sure they are finished
+		for (String futureName : futureMap.keySet()) {
+			Sample sample;
+			try {
+				sample = futureMap.get(futureName).get().getContent();
+			} catch (InterruptedException | ExecutionException e) {
+				throw new RuntimeException(e);
 			}
 		}
 		
