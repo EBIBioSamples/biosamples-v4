@@ -101,7 +101,7 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
 				} else { 
 					uri = URI.create(nextLink.getHref());					
 				}
-				log.info("getting next page uri "+uri);
+				log.trace("getting next page uri "+uri);
 				
 				nextPageFuture = executor.submit(new NextPageCallable<U>(restOperations, parameterizedTypeReference, uri));
 			}
