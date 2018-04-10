@@ -27,7 +27,14 @@ public class NcbiCurationCallable implements Callable<Void> {
 		log.trace("HANDLING " + accession);
 		ExternalReference exRef = ExternalReference.build("https://www.ebi.ac.uk/ena/data/view/"+accession);
 		Curation curation = Curation.build(null, null, null, Collections.singleton(exRef));
-		bioSamplesClient.persistCuration(accession, curation, null);
+		
+		//get the sample to make sure it exists first
+		if (bioSamplesClient.fetchSampleResource(accession).isPresent()) {
+			bioSamplesClient.persistCuration(accession, curation, null);
+		} else {
+			log.trace("Unable to find " + accession);			
+		}
+		
 		log.trace("HANDLED " + accession);
 		return null;
 	}
