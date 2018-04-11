@@ -56,7 +56,7 @@ Selecting different facets will produce an intersection of the results, like an 
 
 *NOTE*: To apply the filters you need to click the *Apply filters* button at the top of the facet list
 
-You can also try to create manual filter following the link:../references/filters[reference guide on filters]
+You can also try to create manual filter following the link:../references/filters[reference guide on filters, window='_blank']
 
 == Some search use cases
 In this section we will show some example of queries which could be of potential interest for the user
