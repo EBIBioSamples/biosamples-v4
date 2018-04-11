@@ -8,12 +8,13 @@ You can enter any words that you want describe your samples of interest here. On
 
 The main section of the results page is stack of samples that match your search term. Each of them is described in summary, and can be clicked on to go to a dedicated page with more details. The results are ordered by quality of match.
 
-On the left of the side are a collection of facets that you can use to refine your query. Picking one or more of these will limit the results displayed to only those that have that specific attribute type and value. Once a facet has been selected, it is remove from the list; to de-select a facet, simply click on the cross displayed next to the badge at the top of the page.
+On the left side of the page is available as set of facets that you can use to refine your query. Picking one or more of these will limit the results displayed to only those that match the specific criteria. You can read more about this in the dedicated <<filters,filters section>>
+//For example, selecting the facet title will filter samples having that specific attribute, while selecting a facet value will filter samples based on the attribute type/value pair. Selecting different facets have that specific attribute type or even specific combination attribute type-value pair. You can select both the facet title and one or more facet values.
 
 If there are many results for a query then they will be split over multiple pages; to change page, use the controls underneath the facets on the left.
 
 == Advanced search
-As as as simply entering the terms you wish to search for, there are some additional features of the search that might be useful to find samples of interest.
+As simply entering the terms you wish to search for, there are some additional features of the search that might be useful to find samples of interest.
 
 === Double quotes
 Sometimes you will want to search for a specific phrase and this can be controlled by surrounding the phrase within double quotes e.g. to search for breast cancer you can use: `"breast cancer"` . This will make sure that your results match your query entirely as adjacent words in the result, rather than matching just part of it or matching it at different parts of the result.
@@ -39,4 +40,18 @@ Attributes that can be searched using ranges are:
 
 NOTE: the date syntax is `yyyy-MM-dd` with a double digit month and day required.
 
+[#primitives-nulls]
+
+[#filters]
 === Filters
+
+The search interface provide a quick and easy way to filter the results based on attributes type and value. This is done
+using the facets available on the left side of the screen.
+
+Each facet represents an attribute with 10 of the most common values for that attributes. Clicking on the facet title
+will filter the results of your query to samples having the attribute with any value, while clicking on one of the facet sublist will filter the results to only show samples having that specific attribute type-value pair.
+
+You can compose filter using different attributes or even different values from the same attribute.
+Selecting different facets will produce an intersection of the results, like an AND operator between the filters, while selecting different values within the same facet will generate an union of the results, like an OR operation between the two filters.
+
+You can also try to create manual filter following the link:../references/filters[reference guide on filters]
