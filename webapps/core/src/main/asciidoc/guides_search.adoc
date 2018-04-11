@@ -3,15 +3,14 @@
 :toc:
 
 == How to search BioSamples
-In the top right corner of every page (including this one!) you can find a search box.
-You can enter any words that you want describe your samples of interest here. Once a query has been entered, press return or click on adjacent button to view the results.
+In the top right corner of every page (including this one) you will find a search box.
+Enter keywords that describe the samples that you would like to find. Once your query has been entered, press return or click on the adjacent button to view the results.
 
-The main section of the results page is stack of samples that match your search term. Each of them is described in summary, and can be clicked on to go to a dedicated page with more details. The results are ordered by quality of match.
+Your search results will be displayed as a stack of sample records that match your search terms, ordered by the most relevant results first. In each record you will see a summary of the associated metadata but you can click on each sample to go to a dedicated page with further details.
 
-On the left side of the page is available as set of facets that you can use to refine your query. Picking one or more of these will limit the results displayed to only those that match the specific criteria. You can read more about this in the dedicated <<filters,filters section>>
-//For example, selecting the facet title will filter samples having that specific attribute, while selecting a facet value will filter samples based on the attribute type/value pair. Selecting different facets have that specific attribute type or even specific combination attribute type-value pair. You can select both the facet title and one or more facet values.
+On the left side of the page you will see the available metadata attributes as facets that you can further use to refine your query. Picking one or more of these facets will limit the results displayed to those that match the newly specific criteria after you click on the button to apply the filters. Selecting the facet title will filter samples that contain the attribute, whilst selecting a facet value will more precisely filter samples that contain the attribute type/value pair. You can select combinations of both the facet title and one or more of the facet values. You can read more about this in the dedicated <<filters,filters section>>
 
-If there are many results for a query then they will be split over multiple pages; to change page, use the controls underneath the facets on the left.
+If there are more than 10 results for a query then they will be split over multiple pages; to change page, use the controls underneath the facets on the left.
 
 == Advanced search
 As simply entering the terms you wish to search for, there are some additional features of the search that might be useful to find samples of interest.
