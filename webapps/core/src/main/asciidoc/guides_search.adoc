@@ -1,6 +1,7 @@
 = [.ebi-color]#Search#
 :last-update-label!:
 :toc:
+:linkattrs:
 
 == How to search BioSamples
 In the top right corner of every page (including this one) you will find a search box.
@@ -53,4 +54,50 @@ will filter the results of your query to samples having the attribute with any v
 You can compose filter using different attributes or even different values from the same attribute.
 Selecting different facets will produce an intersection of the results, like an AND operator between the filters, while selecting different values within the same facet will generate an union of the results, like an OR operation between the two filters.
 
+*NOTE*: To apply the filters you need to click the *Apply filters* button at the top of the facet list
+
 You can also try to create manual filter following the link:../references/filters[reference guide on filters]
+
+== Some search use cases
+In this section we will show some example of queries which could be of potential interest for the user
+
+=== Filter samples by project
+Many samples uses the `project` attribute do describe which project they are part of. Some examples are the FAANG project, as well as HipSci or EBiSC.
+You can get a feeling of the projects using a filter on the project attribute. Note that if the facet for the project attribute is not available in the facet list, you can still hardcode th
+e filter in the URL as explained in the link:../references/filters[reference guide on filters, window='_blank']
+
+To show only the samples with a project attribute select the project facet from the facet list (if available), or add `filter=attr:project` to the url after the `search?`.
+You can see the result of such filter using link:/biosamples/samples?filter=attr:project[this link, window='_blank'].
+
+You should be able to see now the project facet on the left side of the page. You can select one or more values from it to further filter the results based on specific project[s]. Check out link:/biosamples/samples?filter=attr:project:FAANG&filter=attr:project:HipSci[this link, window='_blank'] to see a search for FAANG and HipSci samples.
+
+[#filter_by_external_archive]
+=== Filter samples with data in an external archive
+Many samples in BioSamples have external data associated to them and stored in other archives, like ENA or ArrayExpress.
+If you want to filter your query to samples with data in a specific archive, you can do that using an link:../references/filters#_external_reference_data[External Reference Data filter, window='_blank'].
+
+To see what are the most used external archives with data associated to sample, select the `external reference` facet from the list of facets available on the left side of the screen, or add `filter=attr:external+reference` to the url after the `search?` bit.
+
+Check out the result page for this query link:/biosamples/samples?filter=attr:external+reference[here, window='_blank']
+
+A list of available external archives will be available in the facet list. Click the archive you're interested in, e.g. ArrayExpress, or add the corresponding value to the url, i.e. `filter=attr:external+reference:ArrayExpress`.
+
+Check out the result page for this query link:/biosamples/samples?filter=attr:external+reference:ArrayExpress[here, window='_blank']
+
+=== Get sample metadata associated to an ENA accession
+There are cases where you have an ENA accession available but you need to retrieve the sample metadata associated to such accession from BioSamples.
+
+The best way to get the sample, or samples, associated to an ENA accession is to use an external reference data filter. You can read the details about this in the link:../references/filters#_external_reference_data[filters reference page, window='_blank']
+
+Even if using facet is the easiest way of creating filters in the UI, the specificity of the request make it easier to manually add the filter to the url.
+If for example you want to get all the samples associated to the ENA accession SRS359918, just add  `filter=extd:ENA:SRS359918` after the `search?` part of the url.
+
+Check out the result of this filter at link:/biosamples/samples?filter=extd:ENA:SRS359918[this page, window='_blank']
+
+You can follow the procedure explained in the "<<filter_by_external_archive>>" section to check what are the most used archives in BioSamples
+
+
+
+
+
+
