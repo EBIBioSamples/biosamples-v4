@@ -96,9 +96,3 @@ If for example you want to get all the samples associated to the ENA accession S
 Check out the result of this filter at link:/biosamples/samples?filter=extd:ENA:SRS359918[this page, window='_blank']
 
 To check which are the most used archives in BioSamples, you can follow the procedure explained in the "<<filter_by_external_archive>>" section.
-
-
-
-
-
-
