@@ -58,7 +58,7 @@ Selecting different facets will produce an intersection of the results (an AND o
 
 *NOTE*: To apply the filters you need to click the *Apply filters* button at the top of the facet list
 
-You can also create manual filters by following the link:../references/filters[reference guide on filters]
+You can also try to create manual filter following the link:../references/filters[reference guide on filters, window='_blank']
 
 == Some example queries
 
