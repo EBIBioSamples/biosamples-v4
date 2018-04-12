@@ -31,9 +31,10 @@
 					<ul class="menu vertical nested">
 						<!--<li><a th:href="@{/docs/legacy_xml_api}">Legacy XML API</a></li>-->
 						<!--<ul class="menu vertical nested">-->
-						<li><a href="#">API</a></li>
+						<!--<li><a href="#">API</a></li>-->
+						<li><a th:classappend="${#strings.equals(active, 'refs/api/overview')} ? 'active'" th:href="@{/docs/references/api/overview}">API</a></li>
 						<ul class="menu vertical nested">
-							<li><a th:classappend="${#strings.equals(active, 'refs/api/overview')} ? 'active'" th:href="@{/docs/references/api/overview}">Overview</a></li>
+							<!--<li><a th:classappend="${#strings.equals(active, 'refs/api/overview')} ? 'active'" th:href="@{/docs/references/api/overview}">Overview</a></li>-->
 							<li><a th:classappend="${#strings.equals(active, 'refs/api/links')} ? 'active'" th:href="@{/docs/references/api/links}">Links</a></li>
 							<li><a th:classappend="${#strings.equals(active, 'refs/api/root')} ? 'active'" th:href="@{/docs/references/api/root}">API root</a></li>
 							<li><a th:classappend="${#strings.equals(active, 'refs/api/search')} ? 'active'" th:href="@{/docs/references/api/search}">Search</a></li>
