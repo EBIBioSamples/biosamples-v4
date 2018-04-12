@@ -17,6 +17,7 @@ public class BioSamplesProperties {
 	@Value("${biosamples.client.pagesize:1000}")
 	private int biosamplesClientPagesize;
 	
+	//in milliseconds
 	@Value("${biosamples.client.timeout:60000}")
 	private int biosamplesClientTimeout;
 
@@ -57,6 +58,10 @@ public class BioSamplesProperties {
 
 	@Value("${biosamples.webapp.core.page.threadcount.max:128}")
 	private int webappCorePageThreadCountMax;
+
+	//in seconds
+	@Value("${biosamples.webapp.core.page.cache.maxage:300}")
+	private int webappCorePageCacheMaxAge;
 
 	
 	public URI getBiosamplesClientUri() {
@@ -121,6 +126,10 @@ public class BioSamplesProperties {
 
 	public int getBiosamplesCorePageThreadCountMax() {
 		return webappCorePageThreadCountMax;
+	}
+
+	public int getBiosamplesCorePageCacheMaxAge() {
+		return webappCorePageCacheMaxAge;
 	}
 	
 }

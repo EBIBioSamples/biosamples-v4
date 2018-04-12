@@ -6,6 +6,7 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -24,6 +25,7 @@ import org.springframework.hateoas.PagedResources.PageMetadata;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.Resources;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
+import org.springframework.http.CacheControl;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -38,6 +40,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.util.UriUtils;
 
+import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.BioSamplesAapService;
@@ -68,7 +71,7 @@ public class SamplesRestController {
 	private final FilterService filterService;
 	private final BioSamplesAapService bioSamplesAapService;
 	private final SampleManipulationService sampleManipulationService;
-	
+	private final BioSamplesProperties bioSamplesProperties;
 	private final SampleResourceAssembler sampleResourceAssembler;
 
 	private Logger log = LoggerFactory.getLogger(getClass());
@@ -78,13 +81,15 @@ public class SamplesRestController {
 			BioSamplesAapService bioSamplesAapService,
 			SampleResourceAssembler sampleResourceAssembler,
 			SampleManipulationService sampleManipulationService,
-			SampleService sampleService) {
+			SampleService sampleService,
+			BioSamplesProperties bioSamplesProperties) {
 		this.samplePageService = samplePageService;
 		this.filterService = filterService;
 		this.bioSamplesAapService = bioSamplesAapService;
 		this.sampleResourceAssembler = sampleResourceAssembler;
 		this.sampleManipulationService = sampleManipulationService;
 		this.sampleService = sampleService;
+		this.bioSamplesProperties = bioSamplesProperties;
 	}
 	
 	private String decodeText(String text) {
@@ -115,9 +120,10 @@ public class SamplesRestController {
 		return filter;
 	}
 
+	//must return a ResponseEntity so that cache headers can be set
 	@CrossOrigin(methods = RequestMethod.GET)
 	@GetMapping(produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
-	public Resources<Resource<Sample>> searchHal(
+	public ResponseEntity<Resources<Resource<Sample>>> searchHal(
 			@RequestParam(name = "text", required = false) String text,
 			@RequestParam(name = "filter", required = false) String[] filter, 
 			@RequestParam(name = "cursor", required = false) String cursor,
@@ -148,6 +154,14 @@ public class SamplesRestController {
 		
 		Collection<Filter> filters = filterService.getFiltersCollection(decodedFilter);
 		Collection<String> domains = bioSamplesAapService.getDomains();
+		
+
+		//Note - EBI load balancer does cache but doesn't add age header, so clients could cache up to twice this age
+		CacheControl cacheControl = CacheControl.maxAge(bioSamplesProperties.getBiosamplesCorePageCacheMaxAge(), TimeUnit.SECONDS);
+		//if the user has access to any domains, then mark the response as private as must be using AAP and responses will be different
+		if (domains.size() > 0) {
+			cacheControl.cachePrivate();
+		}
 
 		if (cursor != null) {
 
@@ -167,7 +181,10 @@ public class SamplesRestController {
 				resources.add(getCursorLink(decodedText, decodedFilter, samples.getNextCursorMark(), effectiveSize, Link.REL_NEXT));				
 			}
 			
-			return resources;
+			//Note - EBI load balancer does cache but doesn't add age header, so clients could cache up to twice this age
+			return ResponseEntity.ok()
+					.cacheControl(cacheControl)
+					.body(resources);
 			
 		} else {	
 			
@@ -232,22 +249,10 @@ public class SamplesRestController {
 					.getSampleHal(null, false))
 				.withRel("sample"));
 			
-			/*
-			if (filters.stream().allMatch(f -> !f.getType().equals(FilterType.DATE_FILTER))) {
-	
-				String[] templatedFilters = new String[1];
-				templatedFilters[0] = FilterType.DATE_FILTER.getSerialization()+":update:from{ISO-8601from}until{ISO-8601until}";
-				pagedResources.add(ControllerLinkBuilder
-						.linkTo(ControllerLinkBuilder.methodOn(SamplesRestController.class)
-								.searchHal(text, templatedFilters, null, null))
-						.withRel("samplesbyUpdateDate"));
-			}
-			*/
-			
-			return resources;
+			return ResponseEntity.ok()
+					.cacheControl(cacheControl)
+					.body(resources);
 		}
-		
-		//TODO add search link
 	}
 	
 	private Order parseSort(String sort) {
@@ -318,6 +323,8 @@ public class SamplesRestController {
 		
 		log.debug("Recieved POST for "+sample);
 		sample = bioSamplesAapService.handleSampleDomain(sample);
+		
+		//TODO disallow previously accessioned samples - BSD-1186
 
 		//limit use of this method to write super-users only
 		if (bioSamplesAapService.isWriteSuperUser() && setUpdateDate) {
