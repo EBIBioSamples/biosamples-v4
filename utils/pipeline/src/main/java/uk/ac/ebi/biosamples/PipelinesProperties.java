@@ -12,16 +12,16 @@ public class PipelinesProperties {
 	@Value("${biosamples.pipelines.threadcount:1}")
 	private int threadCount;
 
-	@Value("${biosamples.pipelines.threadcount.max:32}")
+	@Value("${biosamples.pipelines.threadcount.max:8}")
 	private int threadCountMax;
 
-	@Value("${biosamples.pipelines.connectioncount.max:32}")
+	@Value("${biosamples.pipelines.connectioncount.max:8}")
 	private int connectionCountMax;
 	
-	@Value("${biosamples.pipelines.connectioncount.default:32}")
+	@Value("${biosamples.pipelines.connectioncount.default:8}")
 	private int connectionCountDefault;
 	
-	@Value("${biosamples.pipelines.connectioncount.ols:32}")
+	@Value("${biosamples.pipelines.connectioncount.ols:8}")
 	private int connectionCountOls;
 	
 	@Value("${biosamples.pipelines.connectioncount.zooma:1}")
