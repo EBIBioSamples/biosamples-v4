@@ -30,5 +30,6 @@
 		<module>sampletab</module>
 		<module>legacyxml</module>
 		<module>reindex</module>
+		<module>copydown</module>
 	</modules>
 </project>
