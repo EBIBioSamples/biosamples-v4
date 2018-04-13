@@ -1,5 +1,18 @@
 package uk.ac.ebi.biosamples;
 
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.context.annotation.Profile;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
+import org.springframework.core.env.Environment;
+import org.springframework.hateoas.Resource;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestOperations;
+import org.springframework.web.util.UriComponentsBuilder;
+import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.model.*;
+
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Optional;
@@ -12,26 +25,10 @@ import java.util.stream.Stream;
 //import org.openqa.selenium.WebDriver;
 //import org.openqa.selenium.WebElement;
 //import org.openqa.selenium.chrome.ChromeDriver;
-import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.context.annotation.Profile;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
-import org.springframework.core.env.Environment;
-import org.springframework.hateoas.Resource;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestOperations;
-import org.springframework.web.util.UriComponentsBuilder;
-
-import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.ExternalReference;
-import uk.ac.ebi.biosamples.model.JsonLDSample;
-import uk.ac.ebi.biosamples.model.Sample;
 
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
-@Profile({"default", "selenium"})
+@Profile({"default", "selenium", "test"})
 public class JsonLdIntegration extends AbstractIntegration {
     private final Environment env;
     private final RestOperations restTemplate;
@@ -172,11 +169,12 @@ public class JsonLdIntegration extends AbstractIntegration {
     private void checkPresenceWithRest(Sample sample) {
         UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(bioSamplesProperties.getBiosamplesClientUri());
         uriBuilder.pathSegment("samples", sample.getAccession()+".ldjson");
-        ResponseEntity<JsonLDSample> responseEntity = restTemplate.getForEntity(uriBuilder.toUriString(), JsonLDSample.class);
+        ResponseEntity<JsonLDDataRecord> responseEntity = restTemplate.getForEntity(uriBuilder.toUriString(), JsonLDDataRecord.class);
         if (!responseEntity.getStatusCode().is2xxSuccessful()) {
             throw new RuntimeException("Error retrieving sample in application/ld+json format from the webapp");
         }
-        JsonLDSample jsonLDSample = responseEntity.getBody();
+        JsonLDDataRecord jsonLDDataRecord = responseEntity.getBody();
+        JsonLDSample jsonLDSample = jsonLDDataRecord.getMainEntity();
         assert Stream.of(jsonLDSample.getIdentifiers()).anyMatch(s -> s.equals("biosamples:" + sample.getAttributes()));
 
         String checkingUrl = UriComponentsBuilder.fromUri(bioSamplesProperties.getBiosamplesClientUri())
