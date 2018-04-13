@@ -2,6 +2,9 @@ package uk.ac.ebi.biosamples.utils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Stack;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -34,7 +37,7 @@ public class XmlFragmenter {
 	
 	private XmlFragmenter() {};
 	
-	public void handleStream(InputStream inputStream, String encoding, ElementCallback callback)
+	public void handleStream(InputStream inputStream, String encoding, ElementCallback... callback)
 			throws ParserConfigurationException, SAXException, IOException {
 
 		InputSource isource = new InputSource(inputStream);
@@ -49,75 +52,90 @@ public class XmlFragmenter {
 
 	private class FragmentationHandler extends DefaultHandler {
 
-		private final ElementCallback callback;
+		private final List<ElementCallback> callbacks;
 
-		private Document doc = null;
-		private boolean inRegion = false;
-		private Stack<Element> elementStack = new Stack<Element>();
-		private StringBuilder textBuffer = new StringBuilder();
+		private final List<Document> doc;
+		private final List<Boolean> inRegion;
+		private final List<Stack<Element>> elementStack;
+		private final List<StringBuilder> textBuffer;
 
-		public FragmentationHandler(ElementCallback callback) {
-			this.callback = callback;
+		public FragmentationHandler(ElementCallback... callbacks) {
+			this.callbacks = Arrays.asList(callbacks);
+			
+			this.doc = new ArrayList<>(this.callbacks.size());
+			this.inRegion = new ArrayList<>(this.callbacks.size());
+			this.elementStack = new ArrayList<>(this.callbacks.size());
+			this.textBuffer = new ArrayList<>(this.callbacks.size());
+			
+			for (ElementCallback callback : callbacks) {
+				doc.add(null);
+				inRegion.add(false);
+				elementStack.add(new Stack<Element>());
+				textBuffer.add(new StringBuilder());
+			}
 		}
 
 		@Override
 		public void startElement(String uri, String localName, String qName, Attributes attributes)
 				throws SAXException {
-			if (callback.isBlockStart(uri, localName, qName, attributes)) {
-				inRegion = true;
-				doc = DocumentHelper.createDocument();
-
-			}
-			if (inRegion) {
-				addTextIfNeeded();
-				Element el;
-				if (elementStack.size() == 0) {
-
-					el = doc.addElement(qName);
-				} else {
-					el = elementStack.peek().addElement(qName);
+			for (int i = 0; i < callbacks.size(); i++) {			
+				if (callbacks.get(i).isBlockStart(uri, localName, qName, attributes)) {
+					inRegion.set(i, true);
+					doc.set(i, DocumentHelper.createDocument());	
 				}
-				for (int i = 0; i < attributes.getLength(); i++) {
-					el.addAttribute(attributes.getQName(i), attributes.getValue(i));
+				if (inRegion.get(i)) {
+					addTextIfNeeded(i);
+					Element el;
+					if (elementStack.get(i).size() == 0) {	
+						el = doc.get(i).addElement(qName);
+					} else {
+						el = elementStack.get(i).peek().addElement(qName);
+					}
+					for (int j = 0; j < attributes.getLength(); j++) {
+						el.addAttribute(attributes.getQName(j), attributes.getValue(j));
+					}
+					elementStack.get(i).push(el);
 				}
-				elementStack.push(el);
 			}
 		}
 
 		@Override
 		public void endElement(String uri, String localName, String qName) {
-			if (inRegion) {
-				addTextIfNeeded();
-				elementStack.pop();
-
-				if (elementStack.isEmpty()) {
-					// do something with the element
-					try {
-						callback.handleElement(doc.getRootElement());
-					} catch (Exception e) {
-						throw new RuntimeException(e);
+			for (int i = 0;i < callbacks.size(); i++) {		
+				if (inRegion.get(i)) {
+					addTextIfNeeded(i);
+					elementStack.get(i).pop();
+	
+					if (elementStack.get(i).isEmpty()) {
+						// do something with the element
+						try {
+							callbacks.get(i).handleElement(doc.get(i).getRootElement());
+						} catch (Exception e) {
+							throw new RuntimeException(e);
+						}
+	
+						inRegion.set(i, false);
+						doc.set(i, null);
 					}
-
-					inRegion = false;
-					doc = null;
-
 				}
 			}
 		}
 
 		@Override
 		public void characters(char ch[], int start, int length) throws SAXException {
-			if (inRegion) {
-				textBuffer.append(ch, start, length);
+			for (int i = 0;i < callbacks.size(); i++) {		
+				if (inRegion.get(i)) {
+					textBuffer.get(i).append(ch, start, length);
+				}
 			}
 		}
 
 		// Outputs text accumulated under the current node
-		private void addTextIfNeeded() {
-			if (textBuffer.length() > 0) {
-				Element el = elementStack.peek();
-				el.addText(textBuffer.toString());
-				textBuffer.delete(0, textBuffer.length());
+		private void addTextIfNeeded(int i) {
+			if (textBuffer.get(i).length() > 0) {
+				Element el = elementStack.get(i).peek();
+				el.addText(textBuffer.get(i).toString());
+				textBuffer.get(i).delete(0, textBuffer.get(i).length());
 			}
 		}
 	};
