@@ -28,6 +28,7 @@ import org.springframework.web.client.RestTemplate;
 import com.google.common.collect.Sets;
 
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.client.BioSamplesClientBuilder;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Contact;
 import uk.ac.ebi.biosamples.model.ExternalReference;
@@ -49,8 +50,7 @@ public class RestIntegration extends AbstractIntegration {
 	public RestIntegration(BioSamplesClient client, RestTemplateBuilder restTemplateBuilder, BioSamplesProperties clientProperties) {
 		super(client);
 		this.restTemplate = restTemplateBuilder.build();
-		
-		this.annonymousClient = new BioSamplesClient(clientProperties.getBiosamplesClientUri(), restTemplateBuilder, null, null, clientProperties);
+		this.annonymousClient = BioSamplesClientBuilder.getInstance(clientProperties , restTemplateBuilder, null, null);
 	}
 
 	@Override
