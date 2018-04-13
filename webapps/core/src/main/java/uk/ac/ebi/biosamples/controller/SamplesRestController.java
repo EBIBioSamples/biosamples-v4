@@ -5,7 +5,6 @@ import java.net.URI;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -50,7 +49,6 @@ import uk.ac.ebi.biosamples.service.SamplePageService;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
-import uk.ac.ebi.biosamples.utils.LinkUtils;
 
 /**
  * Primary controller for REST operations both in JSON and XML and both read and
@@ -77,7 +75,7 @@ public class SamplesRestController {
 	private Logger log = LoggerFactory.getLogger(getClass());
 
 	public SamplesRestController(
-			SamplePageService samplePageService,FilterService filterService,
+			SamplePageService samplePageService, FilterService filterService,
 			BioSamplesAapService bioSamplesAapService,
 			SampleResourceAssembler sampleResourceAssembler,
 			SampleManipulationService sampleManipulationService,

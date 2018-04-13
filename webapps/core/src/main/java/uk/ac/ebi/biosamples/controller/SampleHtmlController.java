@@ -32,6 +32,8 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import uk.ac.ebi.biosamples.BioSamplesProperties;
+import uk.ac.ebi.biosamples.model.JsonLDDataCatalog;
+import uk.ac.ebi.biosamples.model.JsonLDDataset;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.facet.Facet;
 import uk.ac.ebi.biosamples.model.filter.Filter;
@@ -41,6 +43,7 @@ import uk.ac.ebi.biosamples.service.FilterService;
 import uk.ac.ebi.biosamples.service.JsonLDService;
 import uk.ac.ebi.biosamples.service.SamplePageService;
 import uk.ac.ebi.biosamples.service.SampleService;
+
 
 /**
  * Primary controller for HTML operations.
@@ -81,7 +84,10 @@ public class SampleHtmlController {
 	}
 
 	@GetMapping(value = "/")
-	public String index() {
+	public String index(Model model) {
+
+		JsonLDDataCatalog dataCatalog = jsonLDService.getBioSamplesDataCatalog();
+		model.addAttribute("jsonLD",  jsonLDService.jsonLDToString(dataCatalog));
 		return "index";
 	}
 
@@ -127,6 +133,7 @@ public class SampleHtmlController {
 		}
 		Collections.sort(filtersList);
 
+		JsonLDDataset jsonLDDataset = jsonLDService.getBioSamplesDataset();
 		
 		model.addAttribute("text", text);
 		model.addAttribute("start", start);
@@ -135,6 +142,7 @@ public class SampleHtmlController {
 		model.addAttribute("facets", sampleFacets);
 		model.addAttribute("filters", filtersList);
 		model.addAttribute("paginations", getPaginations(pageSample, uriBuilder));
+		model.addAttribute("jsonLD", jsonLDService.jsonLDToString(jsonLDDataset));
 				
 		//TODO add "clear all facets" button
 		//TODO title of webpage

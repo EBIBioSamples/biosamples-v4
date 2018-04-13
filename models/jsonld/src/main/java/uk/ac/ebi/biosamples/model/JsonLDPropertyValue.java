@@ -12,7 +12,7 @@ import java.util.List;
 
 @JsonPropertyOrder({ "@type", "name", "value", "valueReference" })
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class JsonLDPropertyValue {
+public class JsonLDPropertyValue implements BioschemasObject{
 
 
     @JsonProperty("@type")

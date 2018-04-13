@@ -1,15 +1,17 @@
 package uk.ac.ebi.biosamples.model;
 
-import java.util.List;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
-import com.fasterxml.jackson.annotation.*;
+import java.util.List;
 
 /**
  * Object representing BioSchema Sample entity
  */
 @JsonPropertyOrder({ "@context", "@type", "identifier", "name", "description", "url", "dataset", "additionalProperty"})
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class JsonLDSample {
+public class JsonLDSample implements BioschemasObject {
 
     @JsonProperty("@context")
     private final String context = "http://schema.org";

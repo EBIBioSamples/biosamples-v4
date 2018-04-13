@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 @JsonPropertyOrder({ "@type", "name", "url", "codeValue" })
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class JsonLDCategoryCode {
+public class JsonLDCategoryCode implements BioschemasObject {
 
     @JsonProperty("@type")
     private final String type = "CategoryCode";

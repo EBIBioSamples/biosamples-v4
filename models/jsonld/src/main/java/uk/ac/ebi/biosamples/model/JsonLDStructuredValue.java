@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 @JsonPropertyOrder({ "@type", "name", "url", "identifier" })
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class JsonLDStructuredValue {
+public class JsonLDStructuredValue implements BioschemasObject{
 
     @JsonProperty("@type")
     private final String type = "StructuredValue";
