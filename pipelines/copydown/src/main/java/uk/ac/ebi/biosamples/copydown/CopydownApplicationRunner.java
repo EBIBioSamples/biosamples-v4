@@ -17,7 +17,6 @@ import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.service.CurationApplicationService;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 
@@ -72,6 +71,9 @@ public class CopydownApplicationRunner implements ApplicationRunner {
 				log.info("Failed files ("+SampleCopydownCallable.failedQueue.size()+") "+String.join(" , ", fails));
 			}
 		}
+		
+		
+		//TODO re-check existing curations
 	}
 
 }
