@@ -19,8 +19,8 @@
 	<div th:insert="fragments/header :: header"></div>
 	<div layout:fragment="content">
 		<div id="main-content-area" class="row" >
-			<div class="small-12 medium-9 columns" th:insert="asciidoc/st :: div"></div>
-			<div th:insert="fragments/help :: sidebar"></div>	
+			<div class="small-12 medium-9 columns" th:insert="asciidoc/ref_sampletab :: div"></div>
+			<div th:insert="fragments/help :: sidebar(active='refs/sampletab')"></div>
 		</div>
 	</div> 
 	<div th:insert="fragments/footer :: footer"></div>	

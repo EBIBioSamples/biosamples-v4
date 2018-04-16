@@ -7,7 +7,7 @@ The BioSamples Database uses the SampleTab file format for submissions. This is 
 
 The SampleTab format has a number of advanced features for power users, such as ontology mappings, anonymous groups, and UTF-8 character encoding.
 
-SampleTab files are composed of two sections - <<msi,MSI>> and <<SCD, SCD>>. In general, the following rules apply to SampleTab files:
+SampleTab files are composed of two sections - <<MSI,MSI section>> and <<SCD, SCD section>>. In general, the following rules apply to SampleTab files:
 
 * Dates and times should be in ISO 8601 format to an appropriate level of accuracy i.e. YYYY-MM-DD HH:MM:SS.ss
 * US English spellings should be used, and abbreviations are discouraged.
@@ -21,9 +21,14 @@ SampleTab files are composed of two sections - <<msi,MSI>> and <<SCD, SCD>>. In 
 * The use of only alphanumeric characters (upper and lowercase A-Z and 0-9, no accents or other symbols) is preferred.
 * Files should be UTF-8 encoded.
 
-== SampleTab MSI section
+[#MSI]
+== MSI file section
 
-The MSI (Meta-submission information) is based on rows. The first column specifies a key and subsequent columns the values. There are 6 sections, described below. All MSI sections are block based; entries in the same column within the same section are related, but the order of the rows is not important. The start of the MSI section is denoted by "[MSI]" on a line by itself.
+The MSI (Meta-submission information) is based on rows.
+
+The first column specifies a key and subsequent columns the values associated to that key. There are 6 sections as described below, and all MSI sections are block based, in the sense that entries in the same column within the same section are related. The order of the rows though is not important.
+
+The start of the MSI section is denoted by "[MSI]" and needs to be on a line by itself.
 
 === Submission
 
@@ -31,14 +36,16 @@ The submission block describes overall features of the submission and its associ
 
 [options="header"]
 |=========
-|Tag|Count|Notes
-|Submission Title|x1 required|Short title, 50 characters approx.
-|Submission Identifier|Must be blank|Assigned by BioSamples Database
-|Submission Description|x1 required|Short description, one paragraph.
-|Submission Version|x1 optional|Version of SampleTab specification (currently 1.2)
-|Submission Reference Layer|Must be blank|If this submission is part of the reference layer, this will be "true". Otherwise it will be "false".
-|Submission Update Date|x1 optional|Date this submission was last modified. Must be in a YYYY-MM-DD format.
-|Submission Release Date|x1 optional|Date to be made public on. If blank, it will be public immediately. Must be in a YYYY-MM-DD format.Screenshot of MSI Submission section
+|Tag|Number of values|Required|Notes
+|Submission Title| 1| Required|Short title, 50 characters approx.
+|Submission Identifier|Must be blank||Assigned by BioSamples Database
+|Submission Description| 1 | required|Short description, one paragraph.
+|Submission Version| 1 | Optional|Version of SampleTab specification (currently 1.2)
+|Submission Reference Layer|Must be blank||If this submission is part of the reference layer, this will be "true". Otherwise it will be "false".
+|Submission Update Date| 1 | Optional | Date this submission was last modified. Must be in a YYYY-MM-DD format.
+|Submission Release Date | 1 | Optional| Date when the submission will be made public on. If blank, it will be public immediately. Must be in a YYYY-MM-DD format.
+|=========
+
 
 === Person
 
@@ -48,36 +55,42 @@ Although there are both Organization and Person sections, the entries do not cor
 
 [options="header"]
 |=========
-|Tag|Notes
+|Tag| Notes
 |Person Last Name|Required
-|Person Initials|Either middle initial or first initial depending if a first name is present
+|Person Initials| Either middle initial or first initial depending if a first name is present
 |Person First Name|
 |Person Email|
-|Person Role|Should be a child of role in EFO
+|Person Role| Should be a child of role in EFO
+|=========
+
 
 === Organization
 
-The Organization section contains information describing who supplied the sample information. Note that the Person section also supplies this information on a per-individual basis.
+The Organization section contains information describing who supplied the sample information per-organization basis. Note that the Person section also supplies this information on a per-individual basis.
 
 Although there are both Organization and Person sections, the entries do not correlate; e.g. the first person is not necessarily affiliated with the first organization.
 
 [options="header"]
 |=========
-|Tag|Notes
-|Organization Name|Required
+|Tag| Notes
+|Organization Name | Required
 |Organization Address|One line, comma separated
-|Organization URI|Web site.
-|Organization Role|Should be a child of role in EFOScreenshot of MSI Organization section
+|Organization URI| Web site.
+|Organization Role | Should be a child of role in EFO
+|=========
 
+//Screenshot of MSI Organization section
 === Publication
 
 Publication section links to papers and other published materials describing these samples, in particular how they were created and treated.
 
 [options="header"]
 |=========
-|Tag|Notes
-|Publication PubMed ID|Valid PubMed ID, numeric only
-|Publication DOI|Valid Digital Object Identifier
+|Tag| Notes
+|Publication PubMed ID| Valid PubMed ID, numeric only
+|Publication DOI| Valid Digital Object Identifier
+|=========
+
 
 === Database
 
@@ -85,10 +98,11 @@ The database section provides links to other databases that have data associated
 
 [options="header"]
 |=========
-|Tag|Notes
-|Database Name|The name of this database e.g. ArrayExpress
-|Database ID|The identifier of this record within the database
-|Database URI|Database URI for this entry, typically a web page.
+|Tag| Notes
+|Database Name| The name of this database e.g. ArrayExpress
+|Database ID| The identifier of this record within the database
+|Database URI| Database URI for this entry, typically a web page.
+|=========
 
 === Term Source
 
@@ -101,7 +115,8 @@ The Term Source section is used to specify ontologies or controlled vocabularies
 |Term Source URI|Each value must be unique and an valid URL
 |Term Source Version|If version is unknown, then last access date should be provided. If no date is provided, one will be assigned at submission.
 
-== SampleTab SCD section
+[#SCD]
+== SCD file section
 
 The Sample Characteristics Description is the section that describes the samples as a series of key : value attributes.
 
