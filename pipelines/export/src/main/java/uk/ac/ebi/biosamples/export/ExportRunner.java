@@ -27,7 +27,7 @@ public class ExportRunner implements ApplicationRunner {
 
 	@Override
 	public void run(ApplicationArguments args) throws Exception {
-		String jsonSampleFilename = args.getNonOptionArgs().get(1);
+		String jsonSampleFilename = args.getNonOptionArgs().get(0);
 		long oldTime = System.nanoTime();		
 		try {
 			boolean first = true;
