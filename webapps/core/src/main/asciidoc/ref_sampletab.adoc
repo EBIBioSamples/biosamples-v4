@@ -114,6 +114,7 @@ The Term Source section is used to specify ontologies or controlled vocabularies
 |Term Source Name|Each value must be unique
 |Term Source URI|Each value must be unique and an valid URL
 |Term Source Version|If version is unknown, then last access date should be provided. If no date is provided, one will be assigned at submission.
+|=========
 
 [#SCD]
 == SCD file section
@@ -207,16 +208,13 @@ A Unit modifier is used to specify the units used for a numeric value. For examp
 Connections between BioSamples are indicated through relationships. These are named attributes where the value is either the name of another sample in the submission, or the accession of a sample in the BioSamples Database. The following relationships are currently recognized:
 
 
-
-
 [options="header"]
 |=========
-
 |Relationship Key|Notes
-
 |Same as|The same physical sample has multiple BioSample records e.g. from different source databases.
-
 |Derived from|Where one BioSample was derived from another e.g. blood sample from an individual, genetic modification of a cell line.
 |Child of|Indicates parentage. Only applicable to sexual organisms; for bacteria see Derived from.
+|=========
+
 
 A Derived from relationship can be specified implicitly by having two samples on the same row. In such cases, the right hand sample is derived from the left hand sample. Splitting and pooling of samples can also be specified by having multiple samples on the same row and have the same sample on different rows.
