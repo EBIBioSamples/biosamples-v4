@@ -4,17 +4,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.ExposesResourceFor;
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
+
 import uk.ac.ebi.biosamples.exception.SampleNotFoundException;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.*;
+import uk.ac.ebi.biosamples.utils.LinkUtils;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -58,30 +65,73 @@ public class SampleRestController {
 	@CrossOrigin(methods = RequestMethod.GET)
 	@GetMapping(produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
 	public Resource<Sample> getSampleHal(@PathVariable String accession,
-			 @RequestParam(name = "legacydetails", required = false, defaultValue="false") boolean legacydetails) {
+			@RequestParam(name = "legacydetails", required = false) String legacydetails,
+			@RequestParam(name = "curationdomain", required = false) String[] curationdomain) {
 		log.trace("starting call");
-		// convert it into the format to return
-		Optional<Sample> sample = sampleService.fetch(accession);
+
+		// decode percent-encoding from curation domains
+		Optional<List<String>> decodedCurationDomains = LinkUtils.decodeTextsToArray(curationdomain);
+
+		// convert it into the format to return		
+		Optional<Sample> sample = sampleService.fetch(accession, decodedCurationDomains);
 		if (!sample.isPresent()) {
 			throw new SampleNotFoundException();
 		}
 		bioSamplesAapService.checkAccessible(sample.get());
 
 		// TODO If user is not Read super user, reduce the fields to show
-		if (!legacydetails) {
+		if (legacydetails == null || !"true".equals(legacydetails)) {
 			sample = Optional.of(sampleManipulationService.removeLegacyFields(sample.get()));
 		}
 
-		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample.get());
+		Resource<Sample> sampleResource = new Resource<Sample>(sample.get());
+		sampleResource.add(getSelfLink(accession, legacydetails, decodedCurationDomains));
+
+
+		//add link to select curation domain
+		sampleResource.add(getCurationDomainLink(sampleResource.getLink(Link.REL_SELF)));
+		
+		
+		//add link to curationLinks on this sample
+		sampleResource.add(ControllerLinkBuilder.linkTo(
+				ControllerLinkBuilder.methodOn(SampleCurationLinksRestController.class)
+					.getCurationLinkPageJson(accession, null, null)).withRel("curationLinks"));
+		
 		//TODO cache control
 		return sampleResource;
 	}
+    
+    private Link getSelfLink(String accession, String legacydetails, Optional<List<String>> curationDomains) {
+    	UriComponentsBuilder uriComponentsBuilder = ControllerLinkBuilder.linkTo(SampleRestController.class, accession).toUriComponentsBuilder();
+    	if (legacydetails != null) {
+    		uriComponentsBuilder.queryParam("legacydetails", legacydetails);
+    	}
+    	if (curationDomains.isPresent()) {
+    		if (curationDomains.get().size() == 0) {
+    			uriComponentsBuilder.queryParam("curationdomain", null);
+    		} else {
+        		for (String curationDomain : curationDomains.get()) {
+        			uriComponentsBuilder.queryParam("curationdomain", curationDomain);
+        		}
+    		}
+    	}
+    	return new Link(uriComponentsBuilder.build().toUriString(), Link.REL_SELF);
+    }
+    
+    private Link getCurationDomainLink(Link selfLink) {
+		UriComponents selfUriComponents = UriComponentsBuilder.fromUriString(selfLink.getHref()).build();
+		if (selfUriComponents.getQueryParams().size() == 0) {
+			return new Link(selfLink.getHref()+"{?curationdomain}", "curationDomain");
+		} else {
+			return new Link(selfLink.getHref()+"{&curationdomain}", "curationDomain");
+		}
+    }
 
     @PreAuthorize("isAuthenticated()")
 	@CrossOrigin(methods = RequestMethod.GET)
 	@GetMapping(produces = { MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE })
 	public Sample getSampleXml(@PathVariable String accession) {
-		Sample sample = this.getSampleHal(accession, true).getContent();
+		Sample sample = this.getSampleHal(accession, "true", null).getContent();
 		if (!sample.getAccession().matches("SAMEG\\d+")) {
 			sample = Sample.build(sample.getName(),sample.getAccession(), sample.getDomain(),
 					sample.getRelease(), sample.getUpdate(), sample.getCharacteristics(), sample.getRelationships(),
@@ -135,9 +185,9 @@ public class SampleRestController {
 		//if (bioSamplesAapService.isWriteSuperUser() && setUpdateDate) {
 		if (setUpdateDate) {
 			sample = Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(), 
-					sample.getRelease(), Instant.now(),
-					sample.getCharacteristics(), sample.getRelationships(), sample.getExternalReferences(), 
-					sample.getOrganizations(), sample.getContacts(), sample.getPublications());
+				sample.getRelease(), Instant.now(),
+				sample.getCharacteristics(), sample.getRelationships(), sample.getExternalReferences(), 
+				sample.getOrganizations(), sample.getContacts(), sample.getPublications());
 		}
 
 		if (!setFullDetails) {

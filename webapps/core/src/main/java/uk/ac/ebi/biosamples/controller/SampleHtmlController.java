@@ -290,7 +290,8 @@ public class SampleHtmlController {
 	@GetMapping(value = "/samples/{accession}")
 	public String samplesAccession(Model model, @PathVariable String accession, HttpServletRequest request,
 			HttpServletResponse response) {
-		Optional<Sample> sample = sampleService.fetch(accession);
+		//TODO allow curation domain specification
+		Optional<Sample> sample = sampleService.fetch(accession, Optional.empty());
 		if (!sample.isPresent()) {
 			// did not exist, throw 404
 			//TODO do as an exception

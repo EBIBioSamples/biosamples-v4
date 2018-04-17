@@ -49,6 +49,7 @@ import uk.ac.ebi.biosamples.service.SamplePageService;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
+import uk.ac.ebi.biosamples.utils.LinkUtils;
 
 /**
  * Primary controller for REST operations both in JSON and XML and both read and
@@ -89,34 +90,6 @@ public class SamplesRestController {
 		this.sampleService = sampleService;
 		this.bioSamplesProperties = bioSamplesProperties;
 	}
-	
-	private String decodeText(String text) {
-		if (text != null) {
-			try {
-				//URLDecoder doesn't work right...
-				//text = URLDecoder.decode(text, "UTF-8");
-				text = UriUtils.decode(text, "UTF-8");
-			} catch (UnsupportedEncodingException e) {
-				throw new RuntimeException(e);
-			}
-		}		
-		return text;		
-	}
-	
-	private String[] decodeFilter(String[] filter) {
-		if (filter != null) {
-			for (int i = 0; i < filter.length; i++) {
-				try {
-					//URLDecoder doesn't work right...
-					//filter[i] = URLDecoder.decode(filter[i], "UTF-8");
-					filter[i] = UriUtils.decode(filter[i], "UTF-8");
-				} catch (UnsupportedEncodingException e) {
-					throw new RuntimeException(e);
-				}
-			}
-		}
-		return filter;
-	}
 
 	//must return a ResponseEntity so that cache headers can be set
 	@CrossOrigin(methods = RequestMethod.GET)
@@ -133,9 +106,9 @@ public class SamplesRestController {
 		
 		//Need to decode the %20 and similar from the parameters
 		//this is *not* needed for the html controller
-		String decodedText = decodeText(text);
-		String[] decodedFilter = decodeFilter(filter);
-		String decodedCursor = decodeText(cursor);
+		String decodedText = LinkUtils.decodeText(text);
+		String[] decodedFilter = LinkUtils.decodeTexts(filter);
+		String decodedCursor = LinkUtils.decodeText(cursor);
 			
 		int effectivePage;
 		if (page == null) {
@@ -174,7 +147,7 @@ public class SamplesRestController {
 
 			resources.add(getCursorLink(decodedText, decodedFilter, decodedCursor, effectiveSize, Link.REL_SELF));
 			//only display the next link if there is a next cursor to go to
-			if (!decodeText(samples.getNextCursorMark()).equals(decodedCursor) 
+			if (!LinkUtils.decodeText(samples.getNextCursorMark()).equals(decodedCursor) 
 					&& !samples.getNextCursorMark().equals("*")) {
 				resources.add(getCursorLink(decodedText, decodedFilter, samples.getNextCursorMark(), effectiveSize, Link.REL_NEXT));				
 			}
@@ -244,7 +217,7 @@ public class SamplesRestController {
 					
 			resources.add(ControllerLinkBuilder
 				.linkTo(ControllerLinkBuilder.methodOn(SampleRestController.class)
-					.getSampleHal(null, false))
+					.getSampleHal(null, null, null))
 				.withRel("sample"));
 			
 			return ResponseEntity.ok()

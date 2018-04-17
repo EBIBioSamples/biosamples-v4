@@ -46,7 +46,7 @@ public class BioschemasController {
     @CrossOrigin(methods = RequestMethod.GET)
     @GetMapping(value="/samples/{accession}", produces = "application/ld+json")
     public JsonLDDataRecord getJsonLDSample(@PathVariable String accession) {
-        Optional<Sample> sample = sampleService.fetch(accession);
+        Optional<Sample> sample = sampleService.fetch(accession, Optional.empty());
         if (!sample.isPresent()) {
             throw new SampleNotFoundException();
         }

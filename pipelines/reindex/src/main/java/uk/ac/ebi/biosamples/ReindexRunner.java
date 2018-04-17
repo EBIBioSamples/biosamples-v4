@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -99,7 +100,7 @@ public class ReindexRunner implements ApplicationRunner {
 		@Override
 		public Void call() throws Exception {
 			amqpTemplate.convertAndSend(Messaging.exchangeForIndexingSolr, "", 
-					MessageContent.build(sampleReadService.fetch(accession).get(), null, related, false));
+					MessageContent.build(sampleReadService.fetch(accession, Optional.empty()).get(), null, related, false));
 			return null;
 		}
 	}
