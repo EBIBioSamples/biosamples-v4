@@ -1,5 +1,6 @@
 = [.ebi-color]#SampleTab file#
 :last-update-label!:
+:imagesdir: static/images/
 :toc:
 
 == Overview
@@ -79,7 +80,6 @@ Although there are both Organization and Person sections, the entries do not cor
 |Organization Role | Should be a child of role in EFO
 |=========
 
-//Screenshot of MSI Organization section
 === Publication
 
 Publication section links to papers and other published materials describing these samples, in particular how they were created and treated.
@@ -116,21 +116,27 @@ The Term Source section is used to specify ontologies or controlled vocabularies
 |Term Source Version|If version is unknown, then last access date should be provided. If no date is provided, one will be assigned at submission.
 |=========
 
+Here is an image representing an example of an MSI section:
+
+image::../../../images/msi_example.png[]
+
+
 [#SCD]
 == SCD file section
 
-The Sample Characteristics Description is the section that describes the samples as a series of key : value attributes.
+The Sample Characteristics Description, or SCD, is the section that describes the samples as a series of key : value attributes.
 
-In contrast to the MSI section, the SCD section is column based. The start of the SCD section is denoted by [SCD] on a line by itself. The first row contains column headers that specify attribute keys; subsequent rows contain the values of each attribute. Not all columns have to be filled in for all rows; for samples where a particular attribute or attribute modifier does not apply, then those cells can simply be left blank.
+In contrast to the MSI section, the SCD section is column based. The start of the SCD section is denoted by [SCD] on a line by itself.
+The first row contains a set of column headers that specify the attribute keys for the samples in the file, and the subsequent rows contain instead the values of each attribute. Note that not all columns have to be filled in for all rows, meaning that not all the samples need to have the same attributes; for samples where a particular attribute or attribute modifier does not apply, then those cells can simply be left blank.
 
 There are several types of column headers:
 
-Object definitions. This is Sample Name.
-Named attributes: attributes with a specific name such as Sex or Organism.
-Free-form attributes: attributes that have a user-specified name component.
-Attribute modifiers. These columns modify the closest attribute to the left by specifying units or ontology terms.
-Relationships. These are key : value pairs where the value is a different sample. This includes family relationships and assertions of equivalence and/or derivation.
-Screenshot of SCD section
+- *Object definitions:* this is Sample Name.
+- *Named attributes:* attributes with a specific name such as Sex or Organism.
+- *Free-form attributes:* attributes that have a user-specified name component.
+- *Attribute modifiers:* these columns modify the closest attribute to the left by specifying units or ontology terms.
+- *Relationships:* these are key : value pairs where the value is a different sample. This includes family relationships and assertions of equivalence and/or derivation.
+
 Object Definitions
 The SCD section of a SampleTab file contains definitions BioSamples. These are denoted by a column header key of Sample Name and a unique value within that file. The same object can be used in multiple places within the same file, but all attributes identical in all uses.
 
@@ -138,10 +144,8 @@ Object names should be alphanumeric without punctuation. Furthermore, names shou
 
 === Attributes
 
-BioSamples are described by attributes, which are a pair of a tag and a value. Values are expected to be generally be in lowercase and use American English spellings; abbreviations should be avoided.
-
+BioSamples are described by attributes, which are a pair of a tag and a value. Values are expected to be generally lowercase and use American English spellings; abbreviations should be avoided.
 BioSamples cannot have multiple copies of the same attribute, but multiple attributes with the same key but different values are permitted.
-
 BioSamples that do not have a value in a column are not considered to have the attribute that that column is associated with.
 
 ==== Named Attributes
@@ -218,3 +222,7 @@ Connections between BioSamples are indicated through relationships. These are na
 
 
 A Derived from relationship can be specified implicitly by having two samples on the same row. In such cases, the right hand sample is derived from the left hand sample. Splitting and pooling of samples can also be specified by having multiple samples on the same row and have the same sample on different rows.
+
+Here is an image as an example of an SCD section:
+
+image::../../../images/scd_example.png[]
