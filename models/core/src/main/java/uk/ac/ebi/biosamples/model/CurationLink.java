@@ -105,19 +105,13 @@ public class CurationLink implements Comparable<CurationLink> {
 			@JsonProperty("curation") Curation curation,
 			@JsonProperty("domain") String domain, 
 			@JsonProperty("created") @JsonDeserialize(using = CustomInstantDeserializer.class) Instant created) {
-   	
-    	
-    	Hasher hasher = Hashing.sha256().newHasher()
-        		.putUnencodedChars(sample)
-    			.putUnencodedChars(curation.getHash());
 
-    	if (domain != null) {
-    		hasher.putUnencodedChars(domain);
-    	}
-    			
-    	String hash = hasher.hash().toString();
-    	
-    	
+    	String hash = Hashing.sha256().newHasher()
+			.putUnencodedChars(curation.getHash())
+			.putUnencodedChars(sample)
+			.hash().toString();
+    	//TODO hash on domain
+    	//TODO synchronized with MongoCurationLink
 
 		return new CurationLink(sample, domain, curation, hash, created);
 	}

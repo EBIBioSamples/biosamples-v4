@@ -17,6 +17,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -71,12 +72,12 @@ public class SampleCurationLinksRestController {
     
 
     @CrossOrigin
-	@GetMapping(value = "/{id}", produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
+	@GetMapping(value = "/{hash}", produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
 	public ResponseEntity<Resource<CurationLink>> getCurationLinkJson(
 			@PathVariable String accession,
-			@PathVariable String id) {
+			@PathVariable String hash) {
     	
-    	CurationLink curationLink = curationReadService.getCurationLink(id);    	
+    	CurationLink curationLink = curationReadService.getCurationLink(hash);    	
     	Resource<CurationLink> resource = curationLinkResourceAssembler.toResource(curationLink);
     	
 		return ResponseEntity.ok(resource);   
@@ -111,5 +112,17 @@ public class SampleCurationLinksRestController {
 
 	@ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Sample must match URL or be omitted") // 400
 	public static class SampleNotMatchException extends RuntimeException {
+	}
+	
+    @CrossOrigin
+	@DeleteMapping(value = "/{hash}")
+	public ResponseEntity<?> deleteCurationLinkJson(
+			@PathVariable String accession,
+			@PathVariable String hash) {
+		log.info("Received DELETE for curation link " + hash);
+		CurationLink curationLink = curationReadService.getCurationLink(hash);
+		log.info("Deleting curationLink "+curationLink);
+		curationPersistService.delete(curationLink);
+		return ResponseEntity.noContent().build();   
 	}
 }

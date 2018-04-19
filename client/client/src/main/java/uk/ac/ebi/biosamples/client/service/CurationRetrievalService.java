@@ -46,6 +46,9 @@ public class CurationRetrievalService {
 		params.add("size", Integer.toString(pageSize));
 		return new IterableResourceFetchAll<CurationLink>(executor, traverson, restOperations,
 				new ParameterizedTypeReference<PagedResources<Resource<CurationLink>>>() {}, 
-				params, Hop.rel("samples").withParameter("accession", accession), Hop.rel("curationLinks"));
+				params, 
+				Hop.rel("samples"), 
+				Hop.rel("sample").withParameter("accession", accession), 
+				Hop.rel("curationLinks"));
 	}
 }

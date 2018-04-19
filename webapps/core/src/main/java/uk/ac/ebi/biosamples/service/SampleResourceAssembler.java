@@ -36,6 +36,9 @@ public class SampleResourceAssembler implements ResourceAssembler<Sample, Resour
 		resource.add(ControllerLinkBuilder.linkTo(
 				ControllerLinkBuilder.methodOn(SampleCurationLinksRestController.class)
 					.getCurationLinkPageJson(sample.getAccession(), null, null)).withRel("curationLinks"));
+		resource.add(ControllerLinkBuilder.linkTo(
+				ControllerLinkBuilder.methodOn(SampleCurationLinksRestController.class)
+					.getCurationLinkJson(sample.getAccession(), null)).withRel("curationLink"));
 		
 		return resource;
 	}
