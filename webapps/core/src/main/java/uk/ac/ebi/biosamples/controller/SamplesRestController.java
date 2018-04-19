@@ -203,7 +203,7 @@ public class SamplesRestController {
 					pageSample.getNumber(), pageSample.getTotalElements(), pageSample.getTotalPages());
 			
 			Resources<Resource<Sample>> resources = new PagedResources<>(pageSample.getContent().stream()
-					.map(s -> sampleResourceAssembler.toResource(s))
+					.map(s -> s != null ? sampleResourceAssembler.toResource(s) : null)
 					.collect(Collectors.toList()), pageMetadata);			 
 
 
