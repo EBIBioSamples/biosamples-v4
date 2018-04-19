@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -26,18 +25,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.util.UriUtils;
-
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.*;
 import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
-
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.stream.Collectors;
 
 /**
@@ -143,14 +135,6 @@ public class SamplesRestController {
 		Collection<Filter> filters = filterService.getFiltersCollection(decodedFilter);
 		Collection<String> domains = bioSamplesAapService.getDomains();
 		
-
-		//Note - EBI load balancer does cache but doesn't add age header, so clients could cache up to twice this age
-		CacheControl cacheControl = CacheControl.maxAge(bioSamplesProperties.getBiosamplesCorePageCacheMaxAge(), TimeUnit.SECONDS);
-		//if the user has access to any domains, then mark the response as private as must be using AAP and responses will be different
-		if (domains.size() > 0) {
-			cacheControl.cachePrivate();
-		}
-
 
 		//Note - EBI load balancer does cache but doesn't add age header, so clients could cache up to twice this age
 		CacheControl cacheControl = CacheControl.maxAge(bioSamplesProperties.getBiosamplesCorePageCacheMaxAge(), TimeUnit.SECONDS);
