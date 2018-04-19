@@ -11,6 +11,7 @@ utils/
 **/src/
 **/*.class
 **/*.java
+docker/mongoarchive
 
 *.*
 #!agents/*/target/*.jar

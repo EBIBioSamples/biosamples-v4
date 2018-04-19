@@ -1,8 +1,8 @@
 = [.ebi-color]#Frequently Asked Questions (FAQ)#
 :last-update-label!:
-== Frequently Asked Questions (FAQ)
 :toc: auto
-If you cannot find the answer to your question in this FAQ or the <a th:href="@{/help}">help pages</a> then please email us at biosamples@ebi.ac.uk.
+
+If you cannot find the answer to your question in this FAQ or the link:../docs[help pages] then please email us at biosamples@ebi.ac.uk.
 
 === How frequent are updates to BioSamples' data?
 BioSamples content is updated daily. Information directly submitted or updated in a data source should be reflected within 48 hours. 
