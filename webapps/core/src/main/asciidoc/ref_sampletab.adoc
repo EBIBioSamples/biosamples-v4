@@ -15,7 +15,7 @@ SampleTab files are composed of two sections - <<MSI,MSI section>> and <<SCD, SC
 * Filenames should end with .txt
 * Cells are tab separated and only tab separated. Tabs should not be within cells, even if quoted or escaped.
 * If a data cell is empty and data for that tag is optional, then it is assumed that no data is provided for that cell for that tag. If data must be provided but is missing, the file is invalid.
-* Within a cell leading and trailing whitespace is stripped. Empty cells at the end of a line are also stripped. Line endings can be in any format (Windows, Linux, Mac) but Linux line endings (LF) are preferred. New line characters must not be in any field, even if quoted/escaped. The presence of such character could prevent the submission of the SampleTab.
+* Within a cell leading and trailing whitespaces are stripped. Empty cells at the end of a line are also stripped. Line endings can be in any format (Windows, Linux, Mac) but Linux line endings (LF) are preferred. New line characters must not be in any field, even if quoted/escaped. The presence of such character could prevent the submission of the SampleTab.
 * Empty lines are ignored, including lines composed only of whitespace (inc tabs)
 * If a cell is started and terminated with double quotes, they may be stripped.
 * If the first character on a line is #, then that line is ignored. Use of # characters elsewhere is allowed, but discouraged.
