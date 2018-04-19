@@ -137,14 +137,15 @@ There are several types of column headers:
 - *Attribute modifiers:* these columns modify the closest attribute to the left by specifying units or ontology terms.
 - *Relationships:* these are key : value pairs where the value is a different sample. This includes family relationships and assertions of equivalence and/or derivation.
 
-Object Definitions
-The SCD section of a SampleTab file contains definitions BioSamples. These are denoted by a column header key of Sample Name and a unique value within that file. The same object can be used in multiple places within the same file, but all attributes identical in all uses.
+=== Object Definitions
+
+The SCD section of a SampleTab file contains the definitions of BioSamples. These are denoted by a column header key of Sample Name and a unique value within that file. The same object can be used in multiple places within the same file, but all attributes need to be identical in all uses.
 
 Object names should be alphanumeric without punctuation. Furthermore, names should be different by more than just capitalization (e.g. the use of both "Subject A" and "Subject a" is discouraged). Names should be descriptive where possible, but also should not be more than about 25 characters long.
 
 === Attributes
 
-BioSamples are described by attributes, which are a pair of a tag and a value. Values are expected to be generally lowercase and use American English spellings; abbreviations should be avoided.
+BioSamples are described by attributes, which are a pair of a key and a value. Values are expected to be generally lowercase and use American English spellings; abbreviations should be avoided.
 BioSamples cannot have multiple copies of the same attribute, but multiple attributes with the same key but different values are permitted.
 BioSamples that do not have a value in a column are not considered to have the attribute that that column is associated with.
 
