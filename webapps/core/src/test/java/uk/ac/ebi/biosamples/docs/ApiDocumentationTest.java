@@ -196,9 +196,12 @@ public class ApiDocumentationTest {
 
         Sample sampleWithDomain = this.faker.getExampleSampleWithDomain();
 
-        when(sampleService.fetch(eq(sampleWithDomain.getAccession()))).thenReturn(Optional.of(sampleWithDomain));
-        when(sampleService.store(eq(sampleWithDomain))).thenReturn(sampleWithDomain);
-        when(aapService.handleSampleDomain(sampleWithDomain)).thenReturn(sampleWithDomain);
+        when(sampleService.fetch(eq(sampleWithDomain.getAccession()), eq(Optional.empty())))
+        	.thenReturn(Optional.of(sampleWithDomain));
+        when(sampleService.store(eq(sampleWithDomain)))
+        	.thenReturn(sampleWithDomain);
+        when(aapService.handleSampleDomain(sampleWithDomain))
+        	.thenReturn(sampleWithDomain);
         doNothing().when(aapService).checkAccessible(isA(Sample.class));
 
         this.mockMvc.perform(
@@ -223,7 +226,7 @@ public class ApiDocumentationTest {
     @Test
     public void getSample() throws Exception {
         Sample sample = this.faker.getExampleSampleBuilder().withDomain(this.faker.getExampleDomain()).build();
-        when(sampleService.fetch(sample.getAccession())).thenReturn(Optional.of(sample));
+        when(sampleService.fetch(sample.getAccession(), Optional.empty())).thenReturn(Optional.of(sample));
         doNothing().when(aapService).checkAccessible(isA(Sample.class));
 
         this.mockMvc.perform(

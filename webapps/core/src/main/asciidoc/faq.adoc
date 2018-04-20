@@ -4,8 +4,8 @@
 
 If you cannot find the answer to your question in this FAQ or the link:../docs[help pages] then please email us at biosamples@ebi.ac.uk.
 
-=== How frequent are updates to BioSamples' data?
-BioSamples content is updated daily. Information directly submitted or updated in a data source should be reflected within 48 hours. 
+== How frequent are updates to BioSamples' data?
+BioSamples content is updated daily. Information directly submitted or updated in a source should be reflected within 48 hours. However, occasionally daily updates may be missed due to unexpected circumstances.
 
 === What pattern do BioSamples accessions follow?
 BioSample accessions always begin with `SAM`. The next letter is either `E` or `N` or `D` depending if the sample information was originally submitted to EBI or NCBI or DDBJ respectively. After that, there may be an `A` or a `G` to denote an Assay sample or a Group of samples. Finally there is a numeric component that may or may not be zero-padded.

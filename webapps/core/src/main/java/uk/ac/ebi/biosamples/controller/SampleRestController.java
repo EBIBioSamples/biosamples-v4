@@ -4,17 +4,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.ExposesResourceFor;
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
+
 import uk.ac.ebi.biosamples.exception.SampleNotFoundException;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.*;
+import uk.ac.ebi.biosamples.utils.LinkUtils;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -58,21 +65,34 @@ public class SampleRestController {
 	@CrossOrigin(methods = RequestMethod.GET)
 	@GetMapping(produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
 	public Resource<Sample> getSampleHal(@PathVariable String accession,
-			 @RequestParam(name = "legacydetails", required = false, defaultValue="false") boolean legacydetails) {
+			@RequestParam(name = "legacydetails", required = false) String legacydetails,
+			@RequestParam(name = "curationdomain", required = false) String[] curationdomain) {
 		log.trace("starting call");
-		// convert it into the format to return
-		Optional<Sample> sample = sampleService.fetch(accession);
+
+		// decode percent-encoding from curation domains
+		Optional<List<String>> decodedCurationDomains = LinkUtils.decodeTextsToArray(curationdomain);
+		Optional<Boolean> decodedLegacyDetails;
+		if (legacydetails != null && "true".equals(legacydetails)) {
+			decodedLegacyDetails = Optional.ofNullable(Boolean.TRUE);
+		} else {
+			decodedLegacyDetails = Optional.empty();
+		}
+
+		// convert it into the format to return		
+		Optional<Sample> sample = sampleService.fetch(accession, decodedCurationDomains);
 		if (!sample.isPresent()) {
 			throw new SampleNotFoundException();
 		}
 		bioSamplesAapService.checkAccessible(sample.get());
 
 		// TODO If user is not Read super user, reduce the fields to show
-		if (!legacydetails) {
+		if (decodedLegacyDetails.isPresent() && decodedLegacyDetails.get()) {
 			sample = Optional.of(sampleManipulationService.removeLegacyFields(sample.get()));
 		}
 
-		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample.get());
+		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample.get(), 
+				decodedLegacyDetails, decodedCurationDomains);	
+		
 		//TODO cache control
 		return sampleResource;
 	}
@@ -81,7 +101,7 @@ public class SampleRestController {
 	@CrossOrigin(methods = RequestMethod.GET)
 	@GetMapping(produces = { MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE })
 	public Sample getSampleXml(@PathVariable String accession) {
-		Sample sample = this.getSampleHal(accession, true).getContent();
+		Sample sample = this.getSampleHal(accession, "true", null).getContent();
 		if (!sample.getAccession().matches("SAMEG\\d+")) {
 			sample = Sample.build(sample.getName(),sample.getAccession(), sample.getDomain(),
 					sample.getRelease(), sample.getUpdate(), sample.getCharacteristics(), sample.getRelationships(),
@@ -135,9 +155,9 @@ public class SampleRestController {
 		//if (bioSamplesAapService.isWriteSuperUser() && setUpdateDate) {
 		if (setUpdateDate) {
 			sample = Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(), 
-					sample.getRelease(), Instant.now(),
-					sample.getCharacteristics(), sample.getRelationships(), sample.getExternalReferences(), 
-					sample.getOrganizations(), sample.getContacts(), sample.getPublications());
+				sample.getRelease(), Instant.now(),
+				sample.getCharacteristics(), sample.getRelationships(), sample.getExternalReferences(), 
+				sample.getOrganizations(), sample.getContacts(), sample.getPublications());
 		}
 
 		if (!setFullDetails) {
@@ -149,7 +169,7 @@ public class SampleRestController {
 
 		// assemble a resource to return
 		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
-
+		
 		// create the response object with the appropriate status
 		return sampleResource;
 	}

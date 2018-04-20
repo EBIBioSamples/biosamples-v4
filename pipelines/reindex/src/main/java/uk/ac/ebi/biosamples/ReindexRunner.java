@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -32,19 +33,19 @@ import uk.ac.ebi.biosamples.utils.ThreadUtils;
 /**
  * This runner will get a list of accessions from mongo directly, query
  * the API to get the latest information, and then send that information
- * to Rabbit for the Solr Agent to reindex it into Solr. 
- * 
+ * to Rabbit for the Solr Agent to reindex it into Solr.
+ *
  * Mongo is queried instead of the API because the API is driven by Solr,
- * and if Solr is incorrect (which it will be because why else would you 
+ * and if Solr is incorrect (which it will be because why else would you
  * run this) then it won't get the right information from the API.
- * 
+ *
  * @author faulcon
  *
  */
 @Component
 public class ReindexRunner implements ApplicationRunner {
 	private Logger log = LoggerFactory.getLogger(getClass());
-	
+
 	@Autowired
 	private AmqpTemplate amqpTemplate;
 	
@@ -53,7 +54,7 @@ public class ReindexRunner implements ApplicationRunner {
 	
 	@Autowired
 	MongoOperations mongoOperations;
-	
+
 	@Override
 	public void run(ApplicationArguments args) throws Exception {	
 		Map<String, Future<Void>> futures =  new HashMap<>();
@@ -62,8 +63,7 @@ public class ReindexRunner implements ApplicationRunner {
 		try {
 			executor = Executors.newFixedThreadPool(128);
 
-			
-			try (CloseableIterator<MongoSample> it = mongoOperations.stream(new Query(), MongoSample.class)) {				
+			try (CloseableIterator<MongoSample> it = mongoOperations.stream(new Query(), MongoSample.class)) {
 				while (it.hasNext()) {
 					MongoSample mongoSample = it.next();
 					String accession = mongoSample.getAccession();
@@ -99,7 +99,7 @@ public class ReindexRunner implements ApplicationRunner {
 		@Override
 		public Void call() throws Exception {
 			amqpTemplate.convertAndSend(Messaging.exchangeForIndexingSolr, "", 
-					MessageContent.build(sampleReadService.fetch(accession).get(), null, related, false));
+					MessageContent.build(sampleReadService.fetch(accession, Optional.empty()).get(), null, related, false));
 			return null;
 		}
 	}
