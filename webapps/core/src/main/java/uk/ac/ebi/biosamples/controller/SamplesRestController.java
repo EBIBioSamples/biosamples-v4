@@ -4,6 +4,7 @@ import java.net.URI;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -140,7 +141,7 @@ public class SamplesRestController {
 			log.trace("Next cursor = "+samples.getNextCursorMark());
 			
 			Resources<Resource<Sample>>  resources = new Resources<>(samples.stream()
-					.map(s -> s != null ? sampleResourceAssembler.toResource(s, null, null) : null)
+					.map(s -> s != null ? sampleResourceAssembler.toResource(s) : null)
 				.collect(Collectors.toList()));
 
 			resources.add(getCursorLink(decodedText, decodedFilter, decodedCursor, effectiveSize, Link.REL_SELF));
@@ -174,7 +175,7 @@ public class SamplesRestController {
 					pageSample.getNumber(), pageSample.getTotalElements(), pageSample.getTotalPages());
 			
 			Resources<Resource<Sample>> resources = new PagedResources<>(pageSample.getContent().stream()
-					.map(s -> s != null ? sampleResourceAssembler.toResource(s, null, null) : null)
+					.map(s -> s != null ? sampleResourceAssembler.toResource(s) : null)
 					.collect(Collectors.toList()), pageMetadata);			 
 
 
@@ -212,11 +213,11 @@ public class SamplesRestController {
 //			}
 			
 			resources.add(SampleAutocompleteRestController.getLink(decodedText, decodedFilter, null, "autocomplete"));
-					
-			resources.add(ControllerLinkBuilder
-				.linkTo(ControllerLinkBuilder.methodOn(SampleRestController.class)
-					.getSampleHal(null, null, null))
-				.withRel("sample"));
+			
+			
+			UriComponentsBuilder uriComponentsBuilder = ControllerLinkBuilder.linkTo(SamplesRestController.class).toUriComponentsBuilder();
+			//This is a bit of a hack, but best we can do for now...
+			resources.add(new Link(uriComponentsBuilder.build(true).toUriString()+"/{accession}", "sample"));
 			
 			return ResponseEntity.ok()
 					.cacheControl(cacheControl)
@@ -310,7 +311,7 @@ public class SamplesRestController {
 		sample = sampleService.store(sample);
 		
 		// assemble a resource to return
-		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample, null, null);
+		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
 
 		// create the response object with the appropriate status
 		//TODO work out how to avoid using ResponseEntity but also set location header

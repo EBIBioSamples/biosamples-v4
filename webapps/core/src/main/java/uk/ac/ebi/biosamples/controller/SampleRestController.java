@@ -71,6 +71,12 @@ public class SampleRestController {
 
 		// decode percent-encoding from curation domains
 		Optional<List<String>> decodedCurationDomains = LinkUtils.decodeTextsToArray(curationdomain);
+		Optional<Boolean> decodedLegacyDetails;
+		if (legacydetails != null && "true".equals(legacydetails)) {
+			decodedLegacyDetails = Optional.ofNullable(Boolean.TRUE);
+		} else {
+			decodedLegacyDetails = Optional.empty();
+		}
 
 		// convert it into the format to return		
 		Optional<Sample> sample = sampleService.fetch(accession, decodedCurationDomains);
@@ -80,11 +86,13 @@ public class SampleRestController {
 		bioSamplesAapService.checkAccessible(sample.get());
 
 		// TODO If user is not Read super user, reduce the fields to show
-		if (legacydetails == null || !"true".equals(legacydetails)) {
+		if (decodedLegacyDetails.isPresent() && decodedLegacyDetails.get()) {
 			sample = Optional.of(sampleManipulationService.removeLegacyFields(sample.get()));
 		}
 
-		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample.get(), legacydetails, decodedCurationDomains);		
+		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample.get(), 
+				decodedLegacyDetails, decodedCurationDomains);	
+		
 		//TODO cache control
 		return sampleResource;
 	}
@@ -160,7 +168,7 @@ public class SampleRestController {
 		sample = sampleService.store(sample);
 
 		// assemble a resource to return
-		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample, null, null);
+		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
 		
 		// create the response object with the appropriate status
 		return sampleResource;

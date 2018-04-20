@@ -31,12 +31,12 @@ public class SampleResourceAssembler implements ResourceAssembler<Sample, Resour
 	public SampleResourceAssembler() {
 	}
 
-	private Link getSelfLink(String accession, String legacydetails, Optional<List<String>> curationDomains) {
+	private Link getSelfLink(String accession, Optional<Boolean> legacydetails, Optional<List<String>> curationDomains) {
     	UriComponentsBuilder uriComponentsBuilder = ControllerLinkBuilder.linkTo(SampleRestController.class, accession).toUriComponentsBuilder();
-    	if (legacydetails != null) {
+    	if (legacydetails.isPresent() && legacydetails.get()) {
     		uriComponentsBuilder.queryParam("legacydetails", legacydetails);
     	}
-    	if (curationDomains.isPresent()) {
+    	if (curationDomains != null && curationDomains.isPresent()) {
     		if (curationDomains.get().size() == 0) {
     			uriComponentsBuilder.queryParam("curationdomain", (Object[])null);
     		} else {
@@ -63,7 +63,7 @@ public class SampleResourceAssembler implements ResourceAssembler<Sample, Resour
 				.getCurationLinkPageJson(accession, null, null)).withRel("curationLinks");
     }
     
-    public Resource<Sample> toResource(Sample sample, String legacydetails, Optional<List<String>> curationDomains) {
+    public Resource<Sample> toResource(Sample sample, Optional<Boolean> legacydetails, Optional<List<String>> curationDomains) {
 		Resource<Sample> sampleResource = new Resource<>(sample);
 		sampleResource.add(getSelfLink(sample.getAccession(), legacydetails, curationDomains));
 		//add link to select curation domain
@@ -75,7 +75,7 @@ public class SampleResourceAssembler implements ResourceAssembler<Sample, Resour
     
 	@Override
 	public Resource<Sample> toResource(Sample sample) {		
-		return toResource(sample, null, null);
+		return toResource(sample, Optional.empty(), Optional.empty());
 	}
     
 
