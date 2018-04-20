@@ -277,6 +277,23 @@ services:
     - LOGGING_FILE=/logs/pipelines-reindex.log
     - spring.data.mongodb.uri=mongodb://mongo/biosamples
     - SPRING_RABBITMQ_HOST=rabbitmq
+    
+  biosamples-pipelines-export:
+    volumes:
+    - logs:/logs
+    - ./docker/export:/export
+    image: biosamples:latest
+    links:
+    - biosamples-webapps-core
+    command:
+    - java
+    - -jar
+    - pipelines-export-4.0.6-SNAPSHOT.jar
+    - --gzip
+    - /export/export.json.gzip
+    environment:
+    - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
+    - LOGGING_FILE=/logs/pipelines-export.log
            
   biosamples-integration:
     volumes:
