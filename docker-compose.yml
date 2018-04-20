@@ -22,7 +22,7 @@ services:
     - aap.token.url=https://explore.api.aap.tsi.ebi.ac.uk/auth
     #configure other services
     - spring.data.solr.host=http://solr:8983/solr
-    - spring.data.mongodb.host=mongo
+    - spring.data.mongodb.uri=mongodb://mongo:27017/biosamples
     - SPRING_RABBITMQ_HOST=rabbitmq
     - SPRING_RABBITMQ_PUBLISHER-CONFIRMS=true
     - SPRING_RABBITMQ_PUBLISHER-RETURNS=true
@@ -89,7 +89,7 @@ services:
     # Provide AAP infos
     #- BIOSAMPLES_CLIENT_AAP_USERNAME=override_in_docker-compose.override.yml
     #- BIOSAMPLES_CLIENT_AAP_PASSWORD=override_in_docker-compose.override.yml
-    - spring.data.mongodb.host=mongo
+    - spring.data.mongodb.uri=mongodb://mongo:27017/biosamples
     ports:
     - 8082:8080
   
@@ -308,6 +308,7 @@ services:
     image: mongo:3.2
     volumes:
     - mongo_data:/data/db
+    - ./docker/mongoarchive:/mongoarchive
     ports:
     - 27017:27017
     
