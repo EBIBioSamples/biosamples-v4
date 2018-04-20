@@ -1,6 +1,5 @@
 package uk.ac.ebi.biosamples.controller;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.time.Instant;
 import java.util.Arrays;
@@ -37,7 +36,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
-import org.springframework.web.util.UriUtils;
 
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -142,7 +140,7 @@ public class SamplesRestController {
 			log.trace("Next cursor = "+samples.getNextCursorMark());
 			
 			Resources<Resource<Sample>>  resources = new Resources<>(samples.stream()
-				.map(s -> sampleResourceAssembler.toResource(s))
+					.map(s -> s != null ? sampleResourceAssembler.toResource(s, null, null) : null)
 				.collect(Collectors.toList()));
 
 			resources.add(getCursorLink(decodedText, decodedFilter, decodedCursor, effectiveSize, Link.REL_SELF));
@@ -176,7 +174,7 @@ public class SamplesRestController {
 					pageSample.getNumber(), pageSample.getTotalElements(), pageSample.getTotalPages());
 			
 			Resources<Resource<Sample>> resources = new PagedResources<>(pageSample.getContent().stream()
-					.map(s -> s != null ? sampleResourceAssembler.toResource(s) : null)
+					.map(s -> s != null ? sampleResourceAssembler.toResource(s, null, null) : null)
 					.collect(Collectors.toList()), pageMetadata);			 
 
 
@@ -312,7 +310,7 @@ public class SamplesRestController {
 		sample = sampleService.store(sample);
 		
 		// assemble a resource to return
-		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
+		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample, null, null);
 
 		// create the response object with the appropriate status
 		//TODO work out how to avoid using ResponseEntity but also set location header

@@ -84,48 +84,10 @@ public class SampleRestController {
 			sample = Optional.of(sampleManipulationService.removeLegacyFields(sample.get()));
 		}
 
-		Resource<Sample> sampleResource = new Resource<Sample>(sample.get());
-		sampleResource.add(getSelfLink(accession, legacydetails, decodedCurationDomains));
-
-
-		//add link to select curation domain
-		sampleResource.add(getCurationDomainLink(sampleResource.getLink(Link.REL_SELF)));
-		
-		
-		//add link to curationLinks on this sample
-		sampleResource.add(ControllerLinkBuilder.linkTo(
-				ControllerLinkBuilder.methodOn(SampleCurationLinksRestController.class)
-					.getCurationLinkPageJson(accession, null, null)).withRel("curationLinks"));
-		
+		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample.get(), legacydetails, decodedCurationDomains);		
 		//TODO cache control
 		return sampleResource;
 	}
-    
-    private Link getSelfLink(String accession, String legacydetails, Optional<List<String>> curationDomains) {
-    	UriComponentsBuilder uriComponentsBuilder = ControllerLinkBuilder.linkTo(SampleRestController.class, accession).toUriComponentsBuilder();
-    	if (legacydetails != null) {
-    		uriComponentsBuilder.queryParam("legacydetails", legacydetails);
-    	}
-    	if (curationDomains.isPresent()) {
-    		if (curationDomains.get().size() == 0) {
-    			uriComponentsBuilder.queryParam("curationdomain", null);
-    		} else {
-        		for (String curationDomain : curationDomains.get()) {
-        			uriComponentsBuilder.queryParam("curationdomain", curationDomain);
-        		}
-    		}
-    	}
-    	return new Link(uriComponentsBuilder.build().toUriString(), Link.REL_SELF);
-    }
-    
-    private Link getCurationDomainLink(Link selfLink) {
-		UriComponents selfUriComponents = UriComponentsBuilder.fromUriString(selfLink.getHref()).build();
-		if (selfUriComponents.getQueryParams().size() == 0) {
-			return new Link(selfLink.getHref()+"{?curationdomain}", "curationDomain");
-		} else {
-			return new Link(selfLink.getHref()+"{&curationdomain}", "curationDomain");
-		}
-    }
 
     @PreAuthorize("isAuthenticated()")
 	@CrossOrigin(methods = RequestMethod.GET)
@@ -198,8 +160,8 @@ public class SampleRestController {
 		sample = sampleService.store(sample);
 
 		// assemble a resource to return
-		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
-
+		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample, null, null);
+		
 		// create the response object with the appropriate status
 		return sampleResource;
 	}
