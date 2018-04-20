@@ -37,12 +37,13 @@ import uk.ac.ebi.biosamples.model.JsonLDDataset;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.facet.Facet;
 import uk.ac.ebi.biosamples.model.filter.Filter;
-import uk.ac.ebi.biosamples.service.BioSamplesAapService;
-import uk.ac.ebi.biosamples.service.FacetService;
-import uk.ac.ebi.biosamples.service.FilterService;
-import uk.ac.ebi.biosamples.service.JsonLDService;
-import uk.ac.ebi.biosamples.service.SamplePageService;
-import uk.ac.ebi.biosamples.service.SampleService;
+import uk.ac.ebi.biosamples.service.*;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.net.URI;
+import java.time.ZoneOffset;
+import java.util.*;
 
 
 /**
@@ -134,7 +135,7 @@ public class SampleHtmlController {
 		Collections.sort(filtersList);
 
 		JsonLDDataset jsonLDDataset = jsonLDService.getBioSamplesDataset();
-		
+
 		model.addAttribute("text", text);
 		model.addAttribute("start", start);
 		model.addAttribute("rows", rows);
@@ -143,7 +144,7 @@ public class SampleHtmlController {
 		model.addAttribute("filters", filtersList);
 		model.addAttribute("paginations", getPaginations(pageSample, uriBuilder));
 		model.addAttribute("jsonLD", jsonLDService.jsonLDToString(jsonLDDataset));
-				
+
 		//TODO add "clear all facets" button
 		//TODO title of webpage
 		
@@ -155,7 +156,6 @@ public class SampleHtmlController {
 			cacheControl.cachePrivate();
 		}
 		response.setHeader("Cache-Control", cacheControl.getHeaderValue());
-		
 		return "samples";
 	}
 		

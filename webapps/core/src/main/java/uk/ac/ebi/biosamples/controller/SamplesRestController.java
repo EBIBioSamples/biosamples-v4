@@ -5,9 +5,8 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -37,7 +36,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
-
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
@@ -49,6 +47,7 @@ import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
 import uk.ac.ebi.biosamples.utils.LinkUtils;
+import java.util.stream.Collectors;
 
 /**
  * Primary controller for REST operations both in JSON and XML and both read and
@@ -294,6 +293,8 @@ public class SamplesRestController {
 		log.debug("Recieved POST for "+sample);
 		sample = bioSamplesAapService.handleSampleDomain(sample);
 		
+		//TODO disallow previously accessioned samples - BSD-1186
+
 		//TODO disallow previously accessioned samples - BSD-1186
 
 		//limit use of this method to write super-users only
