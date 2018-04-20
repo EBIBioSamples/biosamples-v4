@@ -63,7 +63,7 @@ public class SamplePageService {
 		//stream process each into a sample
 
 		startTime = System.nanoTime();
-		Page<Future<Optional<Sample>>> pageFutureSample = pageSolrSample.map(ss -> sampleService.fetchAsync(ss.getAccession()));
+		Page<Future<Optional<Sample>>> pageFutureSample = pageSolrSample.map(ss -> sampleService.fetchAsync(ss.getAccession(), Optional.empty()));
 		Page<Sample> pageSample = pageFutureSample.map(ss->{
 			try {
 				if (ss.get().isPresent()) {
@@ -92,7 +92,7 @@ public class SamplePageService {
 	public Page<Sample> getSamplesOfCuration(String hash, Pageable pageable) {
 		Page<MongoCurationLink> accession = mongoCurationLinkRepository.findByCurationHash(hash, pageable);
 		//stream process each into a sample
-		Page<Sample> pageSample = accession.map(mcl -> sampleService.fetch(mcl.getSample()).get());			
+		Page<Sample> pageSample = accession.map(mcl -> sampleService.fetch(mcl.getSample(), Optional.empty()).get());			
 		return pageSample;
 	}
 	
@@ -116,7 +116,7 @@ public class SamplePageService {
 
 		startTime = System.nanoTime();
 		List<Future<Optional<Sample>>> listFutureSample = cursorSolrSample.stream()
-				.map(s -> sampleService.fetchAsync(s.getAccession()))
+				.map(s -> sampleService.fetchAsync(s.getAccession(), Optional.empty()))
 				.collect(Collectors.toList());
 		List<Sample> listSample = listFutureSample.stream().map(ss->{
 			try {

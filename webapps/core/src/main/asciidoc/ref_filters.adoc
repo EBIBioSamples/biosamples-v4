@@ -88,12 +88,12 @@ Filter based on samples relationship source
 | Field | Value | Notes
 | `type` | `rel` |
 | `field` | relation type | Case sensitive, encoded
-| `value` | relation target | _Usually_ an accession
+| `value` | relation target | An accession
 |===
 
 ==== Examples
 - link:/biosamples/samples?filter=rel:child+of:SAME1596745[`filter=rel:child+of:SAME1596745`, window='_blank']
-- link:/biosamples/samples?filter=rel:derived+from:Human+blood[`filter=rel:derived+from:Human+blood`, window='_blank']
+- link:/biosamples/samples?filter=rel:derived+from:SAMEA7992418[`filter=rel:derived+from:SAMEA7992418`, window='_blank']
 
 
 === Reverse Relationship

@@ -30,6 +30,7 @@ For more details about links, check out the https://tools.ietf.org/html/rfc5988[
 | `curationLinks` | collection curation resources associated to a sample
 | `curations` | collection of curation resources
 | `cursor` | cursor for sample resource collection navigation
+| `domainCuration` | limit curations to only those of this domain
 | `facets` | facets collection associated to current search result
 | `sample` | single sample resource
 | `samples` | collection of sample resources

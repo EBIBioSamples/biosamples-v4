@@ -1,6 +1,7 @@
 package uk.ac.ebi.biosamples.service;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -66,8 +67,8 @@ public class SampleService {
 	 */
 	//can't use a sync cache because we need to use CacheEvict
 	//@Cacheable(cacheNames=WebappProperties.fetchUsing, key="#root.args[0]")
-	public Optional<Sample> fetch(String accession) {
-		return sampleReadService.fetch(accession);
+	public Optional<Sample> fetch(String accession, Optional<List<String>> curationDomains) {
+		return sampleReadService.fetch(accession, curationDomains);
 	}
 	
 	
