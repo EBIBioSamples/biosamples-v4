@@ -4,6 +4,7 @@ client/
 properties/
 utils/
 *.gz
+*.gzip
 **/.settings/
 **/.classpath
 **/.project
