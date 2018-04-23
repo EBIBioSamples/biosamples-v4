@@ -43,8 +43,6 @@ public class SampleRetrievalService {
 	private final ExecutorService executor;
 	private final RestOperations restOperations;
 	private final int pageSize;
-
-	
 	
 	public SampleRetrievalService(RestOperations restOperations, Traverson traverson,
 			ExecutorService executor, int pageSize) {
