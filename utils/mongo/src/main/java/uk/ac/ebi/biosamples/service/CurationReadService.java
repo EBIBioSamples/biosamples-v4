@@ -72,8 +72,8 @@ public class CurationReadService {
 	}
 
 	public CurationLink getCurationLink(String hash) {
-		MongoCurationLink neo = mongoCurationLinkRepository.findOne(hash);
-		CurationLink link = mongoCurationLinkToCurationLinkConverter.convert(neo);
+		MongoCurationLink mongoCurationLink = mongoCurationLinkRepository.findOne(hash);
+		CurationLink link = mongoCurationLinkToCurationLinkConverter.convert(mongoCurationLink);
 		return link;
 	}
 	

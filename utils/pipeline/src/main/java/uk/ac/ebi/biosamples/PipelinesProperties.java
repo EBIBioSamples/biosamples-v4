@@ -45,6 +45,9 @@ public class PipelinesProperties {
 	@Value("${biosamples.pipelines.zooma.domain:self.BiosampleZooma}")
 	private String zoomaDomain;
 	
+	@Value("${biosamples.pipelines.copydown.domain:self.BiosampleCopydown}")
+	private String copydownDomain;
+	
 	public String getNcbiFile() {
 		return ncbiFile;
 	}
@@ -62,6 +65,9 @@ public class PipelinesProperties {
 	}
 	public String getZoomaDomain() {
 		return zoomaDomain;
+	}
+	public String getCopydownDomain() {
+		return copydownDomain;
 	}
 
 	public int getThreadCount() {

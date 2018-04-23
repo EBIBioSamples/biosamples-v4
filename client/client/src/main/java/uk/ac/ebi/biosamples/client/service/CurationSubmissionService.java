@@ -50,4 +50,16 @@ public class CurationSubmissionService {
 
 		return responseEntity.getBody();
 	}
+
+	public void deleteCurationLink(String sample, String hash) {
+
+		URI target = URI.create(traverson
+				.follow("samples")
+				.follow(Hop.rel("sample").withParameter("accession", sample))
+				.follow(Hop.rel("curationLink").withParameter("hash", hash))
+				.asLink().getHref());
+		log.trace("DELETEing " + target);
+		
+		restOperations.exchange(RequestEntity.delete(target).build(), Void.class);
+	}
 }

@@ -31,5 +31,6 @@
 		<module>legacyxml</module>
 		<module>reindex</module>
 		<module>export</module>
+		<module>copydown</module>
 	</modules>
 </project>

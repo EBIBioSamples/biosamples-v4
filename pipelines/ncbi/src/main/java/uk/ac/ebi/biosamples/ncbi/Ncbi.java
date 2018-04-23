@@ -142,8 +142,9 @@ public class Ncbi implements ApplicationRunner {
 		
 		//remove those samples that are left
 		for (String accession : toRemoveAccessions) {
-			//TODO this must get the ORIGINAL sample without curation
-			Optional<Resource<Sample>> sampleOptional = bioSamplesClient.fetchSampleResource(accession);
+			// this must get the ORIGINAL sample without curation
+			Optional<Resource<Sample>> sampleOptional = bioSamplesClient.fetchSampleResource(accession, Optional.empty());
+			
 			if (sampleOptional.isPresent()) {
 				Sample sample = sampleOptional.get().getContent();
 				

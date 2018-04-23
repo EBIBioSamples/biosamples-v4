@@ -62,6 +62,13 @@ public class SampleResourceAssembler implements ResourceAssembler<Sample, Resour
 			ControllerLinkBuilder.methodOn(SampleCurationLinksRestController.class)
 				.getCurationLinkPageJson(accession, null, null)).withRel("curationLinks");
     }
+
+    
+    private Link getCurationLinkLink(String accession) {
+		return ControllerLinkBuilder.linkTo(
+				ControllerLinkBuilder.methodOn(SampleCurationLinksRestController.class)
+					.getCurationLinkJson(accession, null)).withRel("curationLink");
+    }
     
     public Resource<Sample> toResource(Sample sample, Optional<Boolean> legacydetails, Optional<List<String>> curationDomains) {
 		Resource<Sample> sampleResource = new Resource<>(sample);
@@ -70,13 +77,13 @@ public class SampleResourceAssembler implements ResourceAssembler<Sample, Resour
 		sampleResource.add(getCurationDomainLink(sampleResource.getLink(Link.REL_SELF)));				
 		//add link to curationLinks on this sample
 		sampleResource.add(getCurationLinksLink(sample.getAccession()));
+		sampleResource.add(getCurationLinkLink(sample.getAccession()));
 		return sampleResource;
     }
     
 	@Override
-	public Resource<Sample> toResource(Sample sample) {		
+	public Resource<Sample> toResource(Sample sample) {
 		return toResource(sample, Optional.empty(), Optional.empty());
 	}
-    
 
 }

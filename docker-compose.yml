@@ -228,7 +228,21 @@ services:
     - pipelines-sampletab-4.0.6-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_SAMPLETAB_URI=http://biosamples-webapps-sampletab:8080/biosamples/sampletab/v4
-    - LOGGING_FILE=/logs/pipelines-sampletab.log  
+    - LOGGING_FILE=/logs/pipelines-sampletab.log   
+    
+  biosamples-pipelines-copydown:
+    image: biosamples:latest
+    volumes:
+    - logs:/logs
+    links:
+    - biosamples-webapps-core
+    command:
+    - java
+    - -jar
+    - pipelines-copydown-4.0.6-SNAPSHOT.jar
+    environment:
+    - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
+    - LOGGING_FILE=/logs/pipelines-copydown.log  
     
   biosamples-pipelines-curation:
     volumes:
