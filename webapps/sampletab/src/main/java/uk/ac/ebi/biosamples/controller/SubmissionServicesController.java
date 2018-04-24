@@ -24,4 +24,9 @@ public class SubmissionServicesController {
     public String accessionService() {
         return "accession";
     }
+
+    @RequestMapping("/file_submit")
+    public String something() {
+        return "hello";
+    }
 }

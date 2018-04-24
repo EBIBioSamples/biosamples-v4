@@ -5,190 +5,169 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
 }
 
 (function ($) {
-    var errorsDiv, apiKeyInput, apiKey, pickFileAccession, pickFileSubmission, pickFileValidation;
+    var errorsDiv, apiKeyInput, apiKey, filePicker, form, submissionUrl;
 
     $(document).ready(function () {
+        form = document.getElementById("sampletab_form");
+        filePicker = document.getElementById("sampletab_picker");
         errorsDiv = document.getElementById("errorsdiv");
-        apiKeyInput = document.getElementById("apikeyinput");
-        pickFileAccession = document.getElementById("pickfileaccession");
-        pickFileSubmission = document.getElementById("pickfilesubmission");
-        pickFileValidation = document.getElementById("pickfilevalidation");
 
+        filePicker.addEventListener('click', getAndCheckApiKey, false);
+        filePicker.addEventListener('change', genericFileSubmissionHandler(form), false); //submissionUrl, new FormData(form)), false);
 
-        if (pickFileAccession !== null) {
-            pickFileAccession.addEventListener('click', getAndCheckApiKey, false);
-            pickFileAccession.addEventListener('change', handleAccessionFileSelect, false);
-        }
-        if (pickFileValidation !== null) {
-            pickFileValidation.addEventListener('change', handleValidationFileSelect, false);
-        }
-        if (pickFileSubmission !== null) {
-            pickFileSubmission.addEventListener('click', getAndCheckApiKey, false);
-            pickFileSubmission.addEventListener('change', handleSubmissionFileSelect, false);
-        }
     });
 
-    function handleAccessionFileSelect(evt) {
-        var file = evt.target.files[0];
-        var submissionURL = 'api/v1/json/ac';
-        genericSubmissionHandler(file, submissionURL, apiKey);
-        // var errorsDiv = document.getElementById("errorsdiv");
-        // var filereader = new FileReader();
-        //
-        // //TODO some fancy loader swirly
-        // //setup the callback used when loading the file from disk
-        // filereader.onload = (function(e) {
-        //    try {
-        //        //convert the string into a JSON array of arrays
-        //        var sampletabstring = stringToJSON2DArray(e.target.result);
-        //        //retrieve the API key to use
-        //        var apikey = document.getElementById('apikeyinput').value;
-        //
-        //        //do the ajax call
-        //        $.ajax({
-        //            type: 'POST',
-        //            url: 'api/v1/json/ac?apikey=' + apikey, //TODO do this better
-        //            contentType: 'application/json',
-        //            data: sampletabstring,
-        //            processData: false,
-        //            success: function (json) {
-        //                //once the ajax call is complete, display the output
-        //                //through this callback
-        //                doResponse(json.errors, json.sampletab)
-        //            },
-        //            error: handleAJAXError
-        //            // error: function(request, error_type, error_mesg) {
-        //            //    //if the ajax call when awry, tell the user
-        //            //     alert('Oops! Something went wrong whilst trying to display your results.\n' +
-        //            //                   'A script on this page said...\n' +
-        //            //                   '\"' + error_type + ': ' + error_mesg + '\"');
-        //            // }
-        //        });
-        //    } catch (err) {
-        //        errorsDiv.innerHTML = "";
-        //        errorsDiv.appendChild(generateErrorLabel());
-        //        if (err.stack.search(/at JSON\.parse/) !== -1) {
-        //            errorsDiv.appendChild(generateErrorLabel("The provided file seems not compatible with the SampleTab standard.\""))
-        //        }
-        //        if (err.message.search(/"API key"/ !== -1)) {
-        //            errorsDiv.appendChild(generateErrorLabel("There's an error in your API key, are you sure is correct?"))
-        //        }
-        //    }
-        //
-        // });
-        // //now setup is complete, actually read the file
-        // filereader.readAsText(file, "UTF-8");
+
+    /**
+     * Submit the form using AJAX
+     * @param form the HTML form element
+     */
+    function genericFileSubmissionHandler(form) {
+        // errorsDiv = document.getElementById("errorsdiv");
+        let formData = new FormData(form);
+        let submissionURL = form.getAttribute("action");
+        let apiKey = formData.get("apikey");
+        if (apiKey !== null) {
+            submissionURL = submissionURL + "?apikey=" + apiKey;
+        }
+
+        $.ajax({
+            type: 'POST',
+            url: submissionURL,
+            data: formData,
+            enctype: 'multipart/form-data',
+            contentType: false,
+            processData: false,
+            success: function (json) {
+                //once the ajax call is complete, display the output
+                //through this callback
+                doResponse(json.errors, json.sampletab)
+            },
+            error: handleAJAXError
+        });
     }
 
-    function handleValidationFileSelect(evt) {
-        var file = evt.target.files[0];
-        var submissionURL = 'api/v1/json/va';
-        genericSubmissionHandler(file, submissionURL, undefined);
-        // var errorsDiv = document.getElementById("errorsdiv");
-        // var file = evt.target.files[0];
-        // var filereader = new FileReader();
-        //
-        // //TODO some fancy loader swirly
-        // //setup the callback used when loading the file from disk
-        // filereader.onload = (function(e) {
-        //     try {
-        //        //convert the string into a JSON array of arrays
-        //        var sampletabstring = stringToJSON2DArray(e.target.result)
-        //
-        //        //do the ajax call
-        //        $.ajax({
-        //            type: 'POST',
-        //            url: 'api/v1/json/va',
-        //            contentType: 'application/json',
-        //            data: sampletabstring,
-        //            processData: false,
-        //            success: function (json) {
-        //                //once the ajax call is complete, display the output
-        //                //through this callback
-        //                doResponse(json.errors, json.sampletab)
-        //            },
-        //            error: handleAJAXError
-        //            // error: function(request, error_type, error_mesg) {
-        //            //    //if the ajax call when awry, tell the user
-        //            //     alert('Oops! Something went wrong whilst trying to display your results.\n' +
-        //            //                   'A script on this page said...\n' +
-        //            //                   '\"' + error_type + ': ' + error_mesg + '\"');
-        //            // }
-        //        });
-        //    } catch (err) {
-        //        errorsDiv.innerHTML = "";
-        //        errorsDiv.appendChild(generateErrorLabel());
-        //        if (err.stack.search(/at JSON\.parse/) !== -1) {
-        //            errorsDiv.appendChild(generateErrorLabel("The provided file seems not compatible with the SampleTab standard.\""))
-        //        }
-        //        if (err.message.search(/"API key"/ !== -1)) {
-        //            errorsDiv.appendChild(generateErrorLabel("There's an error in your API key, are you sure is correct?"))
-        //        }
-        //    }
-        // })
-        // //now setup is complete, actually read the file
-        // filereader.readAsText(file, "UTF-8");
+    /**
+     * Handle AJAX response from the server
+     * @param errors the error list
+     * @param sampleTab the processed SampleTab
+     */
+    function doResponse(errors, sampleTab) {
+        //TODO process errors nicely
+        if (errors.length > 0) {
+            clearErrors();
+            showErrors(errors);
+
+        } else {
+            storeProcessedSampletab(sampleTab);
+        }
+
     }
 
-    function handleSubmissionFileSelect(evt) {
-        var file = evt.target.files[0];
-        var submissionURL = 'api/v1/json/sb';
-        genericSubmissionHandler(file, submissionURL, apiKey);
-        // var file = evt.target.files[0];
-        // var errorsDiv = document.getElementById("errorsdiv");
-        // var filereader = new FileReader();
-        //
-        // //TODO some fancy loader swirly
-        // //setup the callback used when loading the file from disk
-        // filereader.onload = (function(e) {
-        // 	try {
-        //        //convert the string into a JSON array of arrays
-        //        var sampletabstring = stringToJSON2DArray(e.target.result);
-        //        //retrieve the API key to use
-        //        var apikey = document.getElementById('apikeyinput').value;
-        //        if (!isValidAPIkey(apikey)) {
-        //            throw new Error("Provided API key is not valid");
-        //        }
-        //
-        //        //do the ajax call
-        //        $.ajax({
-        //            type: 'POST',
-        //            url: 'api/v1/json/sb?apikey=' + apikey, //TODO do this better
-        //            contentType: 'application/json',
-        //            data: sampletabstring,
-        //            processData: false,
-        //            success: function (json) {
-        //                //once the ajax call is complete, display the output
-        //                //through this callback
-        //                doResponse(json.errors, json.sampletab)
-        //            },
-        //            error: handleAJAXError
-        //            // error: function (request, error_type, error_mesg) {
-        //            //     //if the ajax call when awry, tell the user
-        //            //     errorsDiv.innerHTML = "";
-        //            //     errorsDiv.appendChild(generateErrorLabel("Oops! Something went wrong while processing your request"));
-        //            //     var errorDetails = "" + error_type + ": " + error_mesg;
-        //            //     if (errorDetails.length > 0) {
-        //            //         errorsDiv.appendChild(generateErrorLabel(errorDetails))
-        //            //     }
-        //            //     // alert('Oops! Something went wrong whilst trying to display your results.\n' +
-        //            //     //     'A script on this page said...\n' +
-        //            //     //     '\"' + error_type + ': ' + error_mesg + '\"');
-        //            // }
-        //        });
-        //    } catch (err) {
-        //        errorsDiv.innerHTML = "";
-        // 		errorsDiv.appendChild(generateErrorLabel());
-        // 		if (err.stack.search(/at JSON\.parse/) !== -1) {
-        // 		    errorsDiv.appendChild(generateErrorLabel("The provided file seems not compatible with the SampleTab standard.\""))
-        //        }
-        //        if (err.message.search(/"API key"/ !== -1)) {
-        // 		    errorsDiv.appendChild(generateErrorLabel("There's an error in your API key, are you sure is correct?"))
-        //        }
-        // 	}
-        // });
-        // //now setup is complete, actually read the file
-        // filereader.readAsText(file, "UTF-8");
+    /**
+     * Generate a table with the provided errors and append that to the page
+     * @param errors
+     */
+    function showErrors(errors) {
+        var errorTable = document.createElement('table');
+        var tableRow = document.createElement('tr');
+        errorTable.appendChild(tableRow);
+
+        var tableData = document.createElement('th');
+        tableData.innerHTML = "Error Message";
+        tableRow.appendChild(tableData);
+        tableData = document.createElement('th');
+        tableData.innerHTML = "Comment";
+        tableRow.appendChild(tableData);
+        for (var i = 0; i < errors.length; i++) {
+
+            var error = errors[i];
+            tableRow = document.createElement('tr');
+            errorTable.appendChild(tableRow);
+            tableData = document.createElement('td');
+            tableData.innerHTML = error.message;
+            tableRow.appendChild(tableData);
+            tableData = document.createElement('td');
+            tableData.innerHTML = error.comment;
+            tableRow.appendChild(tableData);
+            //DEBUG
+        }
+        errorsDiv.appendChild(errorTable);
+    }
+
+    /**
+     * Displays a file picker to save the returned SampleTab
+     * @param sampleTab: the JSON matrix returned from the server
+     */
+    function storeProcessedSampletab(sampleTab) {
+        var sampleTabString = JSON2DArrayToString(sampleTab);
+
+        //in order to download the sampletab string
+        //it needs to be echoes off the server due to
+        //javascript security restrictions
+
+        //to do that, we create a invisible form
+        var myForm = document.createElement("form");
+        myForm.method = "post";
+        myForm.action = "api/echo";
+
+        //attach download string to form as a multiline textbox
+        var myInput = document.createElement("textarea");
+        myInput.setAttribute("cols", 1);
+        myInput.setAttribute("rows", 1);
+        myInput.setAttribute("name", "input");
+        myInput.innerHTML = sampleTabString;
+
+        myForm.appendChild(myInput);
+        document.body.appendChild(myForm);
+        //send the form, which should trigger a download
+        myForm.submit();
+        //clean up afterwards
+        document.body.removeChild(myForm);
+
+    }
+
+    /**
+     * Append an error message to the error div
+     * @param msg: the message to append
+     */
+    function displayError(msg) {
+        errorsDiv.appendChild(generateErrorLabel(msg));
+    }
+
+    /**
+     * Clean error div content
+     */
+    function clearErrors() {
+        errorsDiv.innerHTML = "";
+    }
+
+    /**
+     * Create an HTML error label with the provided message
+     * @param msg: the error label content
+     * @returns {HTMLSpanElement} the error label HTML element
+     */
+    function generateErrorLabel(msg) {
+        var message = isValidString(msg) ? msg : "An error occurred while processing your request.";
+        var labelSpan = document.createElement("span");
+        labelSpan.classList.add("label", "warning");
+        labelSpan.style = "padding: 5px; font-size:1.2rem";
+        labelSpan.textContent = message;
+        return labelSpan;
+    }
+
+
+    /**
+     * Check if the provided string is valid
+     * @param string: the string to verify
+     * @returns {boolean} if the string is a not undefined string
+     */
+    function isValidString(string) {
+        return string !== undefined && typeof string === "string";
+    }
+
+    function isValidAPIkey(apikey) {
+        return apikey !== undefined && typeof apikey === "string" && apikey.length === 16;
     }
 
     function genericSubmissionHandler(file, submissionURL, apiKey) {
@@ -207,7 +186,8 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
                     type: 'POST',
                     url: submissionURL,
                     contentType: 'application/json',
-                    data: stringToJSON2DArray(e.target.result),
+                    // data: stringToJSON2DArray(e.target.result),
+                    data: e.target.result,
                     processData: false,
                     success: function (json) {
                         //once the ajax call is complete, display the output
@@ -229,31 +209,6 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
 
     }
 
-    function displayError(msg) {
-        errorsDiv.appendChild(generateErrorLabel(msg));
-    }
-
-    function clearErrors() {
-        errorsDiv.innerHTML = "";
-    }
-
-    function generateErrorLabel(msg) {
-        var message = isValidString(msg) ? msg : "An error occurred while processing your request.";
-        var labelSpan = document.createElement("span");
-        labelSpan.classList.add("label", "warning");
-        labelSpan.style = "padding: 5px; font-size:1.2rem";
-        labelSpan.textContent = message;
-        return labelSpan;
-    }
-
-    function isValidString(string) {
-        return string !== undefined && typeof string === "string";
-    }
-
-    function isValidAPIkey(apikey) {
-        return apikey !== undefined && typeof apikey === "string" && apikey.length === 16;
-    }
-
     function handleAJAXError(request, error_type, error_mesg) {
         //if the ajax call when awry, tell the user
         clearErrors();
@@ -264,68 +219,6 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
         }
     }
 
-    function doResponse(errors, sampletab) {
-        //TODO process errors nicely
-        if (errors.length > 0) {
-            // var errorsdiv = document.getElementById('errorsdiv');
-            //clear any previous errors
-            // errorsDiv.innerHTML = "";
-            clearErrors();
-            //create the table
-            var errortable = document.createElement('table');
-            var tablerow = document.createElement('tr');
-            errortable.appendChild(tablerow);
-            var tabledata = document.createElement('th');
-            tabledata.innerHTML = "Error Message";
-            tablerow.appendChild(tabledata)
-            tabledata = document.createElement('th');
-            tabledata.innerHTML = "Comment";
-            tablerow.appendChild(tabledata)
-            for (var i = 0; i < errors.length; i++) {
-                var error = errors[i];
-                tablerow = document.createElement('tr');
-                errortable.appendChild(tablerow);
-                tabledata = document.createElement('td');
-                tabledata.innerHTML = error.message;
-                tablerow.appendChild(tabledata);
-                tabledata = document.createElement('td');
-                tabledata.innerHTML = error.comment;
-                tablerow.appendChild(tabledata);
-                //DEBUG
-                //alert(error);
-            }
-            errorsdiv.appendChild(errortable);
-
-        } else {
-            //convert the JSON array of arrays into a single
-            //string with tabs and newlines
-            var sampletabstring = JSON2DArrayToString(sampletab);
-
-            //in order to download the sampletab string
-            //it needs to be echoes off the server due to
-            //javascript security restrictions
-
-            //to do that, we create a invisible form
-            var myForm = document.createElement("form");
-            myForm.method = "post";
-            myForm.action = "api/echo";
-
-            //attach download string to form as a multiline textbox
-            var myInput = document.createElement("textarea");
-            myInput.setAttribute("cols", 1);
-            myInput.setAttribute("rows", 1);
-            myInput.setAttribute("name", "input");
-            myInput.innerHTML = sampletabstring;
-
-            myForm.appendChild(myInput);
-            document.body.appendChild(myForm);
-            //send the form, which should trigger a download
-            myForm.submit();
-            //clean up afterwards
-            document.body.removeChild(myForm);
-        }
-
-    }
 
     function stringToJSON2DArray(myString) {
         var content = new Array();
@@ -365,6 +258,18 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
             response = response + "\r\n"; //use windows line endings for best safety
         }
         return response;
+    }
+
+    function handleAccessionFileSelect() {
+        genericFileSubmissionHandler(submissionUrl, new FormData(form));
+    }
+
+    function handleValidationFileSelect() {
+        genericFileSubmissionHandler(submissionUrl, new FormData(form));
+    }
+
+    function handleSubmissionFileSelect() {
+        genericFileSubmissionHandler(submissionUrl, new FormData(form));
     }
 
     function getAndCheckApiKey(evt) {
