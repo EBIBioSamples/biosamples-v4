@@ -86,6 +86,8 @@ services:
     - spring.http.encoding.force=true
     - ENDPOINTS_SHUTDOWN_ENABLED=true
     - ENDPOINTS_SHUTDOWN_SENSITIVE=false
+    - SPRING_HTTP_MULTIPART_MAX-FILE-SIZE=30MB
+    - SPRING_HTTP_MULTIPART_MAX-REQUEST-SIZE=30MB
     # Provide AAP infos
     #- BIOSAMPLES_CLIENT_AAP_USERNAME=override_in_docker-compose.override.yml
     #- BIOSAMPLES_CLIENT_AAP_PASSWORD=override_in_docker-compose.override.yml

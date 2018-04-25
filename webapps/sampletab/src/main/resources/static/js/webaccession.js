@@ -5,15 +5,23 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
 }
 
 (function ($) {
-    var errorsDiv, apiKeyInput, apiKey, filePicker, form, submissionUrl;
+    var errorsDiv, apiKeyInput, apiKey, sampleTabFilePicker, form, spinner, submissionUrl;
 
     $(document).ready(function () {
-        form = document.getElementById("sampletab_form");
-        filePicker = document.getElementById("sampletab_picker");
         errorsDiv = document.getElementById("errorsdiv");
+        form = document.getElementById("sampletab_form");
+        sampleTabFilePicker = document.getElementById("sampletab_file_picker");
+        spinner = document.getElementById("processing-spinner");
+        // apiKeyInput = document.getElementById("apikeyinput");
 
-        filePicker.addEventListener('click', getAndCheckApiKey, false);
-        filePicker.addEventListener('change', genericFileSubmissionHandler(form), false); //submissionUrl, new FormData(form)), false);
+        sampleTabFilePicker.addEventListener('change', function(evt) {
+                evt.preventDefault();
+                genericFileSubmissionHandler(form)
+            },
+            {
+                capture: false
+            }
+        );
 
     });
 
@@ -26,10 +34,11 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
         // errorsDiv = document.getElementById("errorsdiv");
         let formData = new FormData(form);
         let submissionURL = form.getAttribute("action");
-        let apiKey = formData.get("apikey");
-        if (apiKey !== null) {
-            submissionURL = submissionURL + "?apikey=" + apiKey;
-        }
+        spinner.style.visibility = "visible";
+        // let apiKey = formData.get("apikey");
+        // if (apiKey !== null) {
+        //     submissionURL = submissionURL + "?apikey=" + apiKey;
+        // }
 
         $.ajax({
             type: 'POST',
@@ -43,7 +52,10 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
                 //through this callback
                 doResponse(json.errors, json.sampletab)
             },
-            error: handleAJAXError
+            error: handleAJAXError,
+            complete: function() {
+                spinner.style.visibility = "hidden";
+            }
         });
     }
 
@@ -166,49 +178,12 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
         return string !== undefined && typeof string === "string";
     }
 
-    function isValidAPIkey(apikey) {
-        return apikey !== undefined && typeof apikey === "string" && apikey.length === 16;
-    }
-
-    function genericSubmissionHandler(file, submissionURL, apiKey) {
-        var errorsDiv = document.getElementById("errorsdiv");
-        var filereader = new FileReader();
-        if (apiKey) {
-            submissionURL = submissionURL + "?apikey=" + apiKey;
-        }
-
-        //TODO some fancy loader swirly
-        //setup the callback used when loading the file from disk
-        filereader.onload = (function (e) {
-            try {
-                //do the ajax call
-                $.ajax({
-                    type: 'POST',
-                    url: submissionURL,
-                    contentType: 'application/json',
-                    // data: stringToJSON2DArray(e.target.result),
-                    data: e.target.result,
-                    processData: false,
-                    success: function (json) {
-                        //once the ajax call is complete, display the output
-                        //through this callback
-                        doResponse(json.errors, json.sampletab)
-                    },
-                    error: handleAJAXError
-                });
-            } catch (err) {
-                errorsDiv.appendChild(generateErrorLabel());
-                if (err.stack.search(/at JSON\.parse/) !== -1) {
-                    displayError("The provided file seems not compatible with the SampleTab standard.")
-                }
-            }
-
-        });
-        //now setup is complete, actually read the file
-        filereader.readAsText(file, "UTF-8");
-
-    }
-
+    /**
+     * Function to handle AJAX errors
+     * @param request the request that generated the error
+     * @param error_type
+     * @param error_mesg
+     */
     function handleAJAXError(request, error_type, error_mesg) {
         //if the ajax call when awry, tell the user
         clearErrors();
@@ -219,33 +194,11 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
         }
     }
 
-
-    function stringToJSON2DArray(myString) {
-        var content = new Array();
-        var lines = null;
-        //escape doublequote characters
-        myString = myString.replace(/\"/g, "\\\"");
-        ///split by different line endings depending what are present in source
-        if (myString.indexOf("\r\n") != -1) {
-            lines = myString.split("\r\n");
-        } else if (myString.indexOf("\r") != -1) {
-            lines = myString.split("\r");
-        } else if (myString.indexOf("\n") != -1) {
-            lines = myString.split("\n");
-        }
-        for (var i = 0; i < lines.length; i++) {
-            var line = new Array();
-            var cells = lines[i].split("\t");
-            for (var j = 0; j < cells.length; j++) {
-                line.push("\"" + cells[j] + "\"");
-            }
-            content.push("[" + line + "]");
-        }
-        var jsonstring = "{\"sampletab\" : [" + content + "]}";
-        $.parseJSON(jsonstring);
-        return jsonstring;
-    }
-
+    /**
+     * Function that convert a JSON matrix back to a single string
+     * @param array the JSON matrix
+     * @returns {string} the string
+     */
     function JSON2DArrayToString(array) {
         var response = "";
         for (var i = 0; i < array.length; i++) {
@@ -258,35 +211,6 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
             response = response + "\r\n"; //use windows line endings for best safety
         }
         return response;
-    }
-
-    function handleAccessionFileSelect() {
-        genericFileSubmissionHandler(submissionUrl, new FormData(form));
-    }
-
-    function handleValidationFileSelect() {
-        genericFileSubmissionHandler(submissionUrl, new FormData(form));
-    }
-
-    function handleSubmissionFileSelect() {
-        genericFileSubmissionHandler(submissionUrl, new FormData(form));
-    }
-
-    function getAndCheckApiKey(evt) {
-        apiKey = apiKeyInput.value;
-        clearErrors();
-        if (apiKey !== undefined) {
-            if (apiKey.length === 0) {
-                displayError("To submit your data you need to provide an API key");
-                evt.preventDefault();
-            } else if (apiKey.length !== 16) {
-                displayError("Check your API key has the correct number of characters");
-                evt.preventDefault();
-            }
-        } else {
-            displayError("There's an error in your API key, are you sure is correct?");
-            evt.preventDefault();
-        }
     }
 
 })(jQuery);

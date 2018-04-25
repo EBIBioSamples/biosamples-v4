@@ -25,6 +25,7 @@ public class SampleTabMultipartFileConverter implements Converter<MultipartFile,
             while ((line = bufferedReader.readLine()) != null) {
                 List<String> elements = Stream.of(line.split("\t"))
                         .map(String::trim)
+                        .map(this::cleanFromEscapedCharacters)
                         .collect(Collectors.toList());
                 fileContent.add(elements);
             }
@@ -35,5 +36,10 @@ public class SampleTabMultipartFileConverter implements Converter<MultipartFile,
 
         return new SampleTabRequest(fileContent);
 
+    }
+
+    private String cleanFromEscapedCharacters(String string) {
+        String resultString =  string.replace("\"","").replace("\\\\", "\\");
+        return resultString;
     }
 }
