@@ -122,7 +122,7 @@ public class Ncbi implements ApplicationRunner {
 				xmlFragmenter.handleStream(is, "UTF-8", sampleCallback);
 			}
 		}
-		log.info("Imported NCBI samples");
+		log.info("Handled new and updated NCBI samples");
 		
 
 		log.debug("Number of accession from NCBI = "+accessionCallback.accessions.size());
@@ -162,6 +162,7 @@ public class Ncbi implements ApplicationRunner {
 						sample.getPublications());
 				
 				//persist the now private sample
+				log.debug("Making private "+sample.getAccession());
 				bioSamplesClient.persistSampleResource(newSample);
 			}
 		}
