@@ -111,6 +111,22 @@ Filter based on samples' relationship target
 - link:/biosamples/samples?filter=rrel:child+of[`filter=rrel:child+of`, window='_blank']
 - link:/biosamples/samples?filter=rrel:has+member:SAMEG316651[`filter=rrel:has+member:SAMEG316651`, window='_blank']
 
+
+=== Domain
+Filter based on samples' submission domain
+
+[cols="1*s , 2*", options=header]
+|===
+| Field | Value | Notes
+| `type` | `dom` |
+| `field` | `NA` | The field is predefined
+| `value` | domain | The domain need to include the `self.` prefix
+|===
+
+==== Examples
+- link:/biosamples/samples?filter=dom:self.70e89c7993c5cbdaea7cc9ceb710e7640d0840a60a1747fa8c9cfdcd94997d1b[`filter=dom:self.70e89c7993c5cbdaea7cc9ceb710e7640d0840a60a1747fa8c9cfdcd94997d1b`, window='_blank']
+
+
 === Name
 Filter based on samples' name
 
