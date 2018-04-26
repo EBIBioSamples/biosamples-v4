@@ -107,7 +107,7 @@ public class NcbiElementCallable implements Callable<Void> {
 		String organismIri = null;
 		String organismValue = null;
 		if (XmlPathBuilder.of(sampleElem).path("Description", "Organism").attributeExists("taxonomy_id")) {
-			int taxonId = Integer.parseInt(XmlPathBuilder.of(sampleElem).path("Description", "Organism").attribute("taxonomy_id"));
+			int taxonId = getTaxId(XmlPathBuilder.of(sampleElem).path("Description", "Organism").attribute("taxonomy_id"));
 			organismIri = taxonomyService.getUriForTaxonId(taxonId);
 		}
 		if (XmlPathBuilder.of(sampleElem).path("Description", "Organism").attributeExists("taxonomy_name")) {
@@ -176,6 +176,18 @@ public class NcbiElementCallable implements Callable<Void> {
 		log.trace("Element callable finished");
 		
 		return null;
+	}
+	
+	/**
+	 * Safe way to extract the taxonomy id from the string
+	 * @param value
+	 * @return
+	 */
+	private int getTaxId(String value) {
+		if (value == null) {
+			throw new RuntimeException("Unable to extract tax id from a null value");
+		}
+		return Integer.parseInt(value.trim());
 	}
 
 }
