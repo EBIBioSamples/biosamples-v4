@@ -33,6 +33,9 @@ public class PipelinesProperties {
 	@Value("${biosamples.pipelines.ncbi.domain:self.BiosampleImportNCBI}")
 	private String ncbiDomain;
 	
+	@Value("${biosamples.pipelines.ncbi.controlledaccess:false}")
+	private Boolean ncbiControlledAccess;
+	
 	@Value("${biosamples.pipelines.ena.domain:self.BiosampleImportENA}")
 	private String enaDomain;
 	
@@ -53,6 +56,9 @@ public class PipelinesProperties {
 	}
 	public String getNcbiDomain() {
 		return ncbiDomain;
+	}
+	public Boolean getNcbiControlledAccess() {
+		return ncbiControlledAccess;
 	}
 	public String getEnaDomain() {
 		return enaDomain;

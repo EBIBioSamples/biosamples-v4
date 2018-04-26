@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.xml.sax.Attributes;
 
+import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 import uk.ac.ebi.biosamples.utils.XmlFragmenter.ElementCallback;
 
@@ -21,6 +22,7 @@ import uk.ac.ebi.biosamples.utils.XmlFragmenter.ElementCallback;
 public class NcbiFragmentCallback implements ElementCallback {
 	
 	private final NcbiElementCallableFactory ncbiElementCallableFactory;
+	private final PipelinesProperties pipelinesProperties;
 	
 	private Logger log = LoggerFactory.getLogger(getClass());
 	private LocalDate fromDate;
@@ -28,8 +30,9 @@ public class NcbiFragmentCallback implements ElementCallback {
 	private ExecutorService executorService;
 	private Map<Element, Future<Void>> futures;
 	
-	private NcbiFragmentCallback(NcbiElementCallableFactory ncbiElementCallableFactory){
+	private NcbiFragmentCallback(NcbiElementCallableFactory ncbiElementCallableFactory, PipelinesProperties pipelinesProperties){
 		this.ncbiElementCallableFactory = ncbiElementCallableFactory;
+		this.pipelinesProperties = pipelinesProperties;
 	};
 	
 	public LocalDate getFromDate() {
@@ -94,7 +97,12 @@ public class NcbiFragmentCallback implements ElementCallback {
 			return false;
 		}
 		//its not public, skip
-		if (!attributes.getValue("", "access").equals("public")) {
+		if (attributes.getValue("", "access").equals("public")) {
+			//do nothing
+		} else if (pipelinesProperties.getNcbiControlledAccess() && 
+				attributes.getValue("", "access").equals("controlled-access")) {
+			//do nothing
+		} else {
 			return false;
 		}
 		//its an EBI biosample, or has no accession, skip
