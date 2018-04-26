@@ -6,7 +6,9 @@ import java.util.List;
 import org.apache.http.HeaderElement;
 import org.apache.http.HeaderElementIterator;
 import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.ServiceUnavailableRetryStrategy;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.conn.ConnectionKeepAliveStrategy;
 import org.apache.http.impl.client.cache.CacheConfig;
@@ -129,6 +131,24 @@ public class BioSamplesAutoConfiguration {
 			  .setConnectionRequestTimeout(timeout) //maximum time of inactivity between two data packets
 			  .setSocketTimeout(timeout).build(); //time to wait for a connection from the connection manager/pool
 			
+			//set retry strategy to retry on any 5xx error
+			//ebi load balancers return a 500 error when a service is unavaliable not a 503
+			ServiceUnavailableRetryStrategy serviceUnavailStrategy = new ServiceUnavailableRetryStrategy(){				
+				private final int maxRetries = 100;
+				private final int retryInterval = 1000;
+
+				public boolean retryRequest(HttpResponse response, int executionCount, HttpContext context) {
+			        return executionCount <= maxRetries &&
+		                (response.getStatusLine().getStatusCode() == HttpStatus.SC_SERVICE_UNAVAILABLE
+			                || response.getStatusLine().getStatusCode() == HttpStatus.SC_INTERNAL_SERVER_ERROR);
+				}
+
+				public long getRetryInterval() {
+					//measured in milliseconds
+					return retryInterval;
+				}};
+			
+			
 			
 			//make the actual client
 			HttpClient httpClient = CachingHttpClientBuilder.create()
@@ -136,6 +156,7 @@ public class BioSamplesAutoConfiguration {
 					.useSystemProperties()
 					.setConnectionManager(poolingHttpClientConnectionManager)
 					.setKeepAliveStrategy(keepAliveStrategy)
+					.setServiceUnavailableRetryStrategy(serviceUnavailStrategy)
 					.setDefaultRequestConfig(config)
 					.build();
 			
