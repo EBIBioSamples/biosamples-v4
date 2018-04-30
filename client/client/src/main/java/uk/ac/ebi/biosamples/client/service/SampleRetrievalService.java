@@ -4,6 +4,7 @@ import java.net.URI;
 import java.time.format.DateTimeFormatter;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Queue;
@@ -20,9 +21,12 @@ import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.client.Hop;
 import org.springframework.hateoas.client.Traverson;
+import org.springframework.hateoas.client.Traverson.TraversalBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestOperations;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -39,8 +43,6 @@ public class SampleRetrievalService {
 	private final ExecutorService executor;
 	private final RestOperations restOperations;
 	private final int pageSize;
-
-	
 	
 	public SampleRetrievalService(RestOperations restOperations, Traverson traverson,
 			ExecutorService executor, int pageSize) {
@@ -56,24 +58,37 @@ public class SampleRetrievalService {
 	 * @param sample
 	 * @return
 	 */
-	public Future<Optional<Resource<Sample>>> fetch(String accession) {
-		return executor.submit(new FetchCallable(accession));
+	public Future<Optional<Resource<Sample>>> fetch(String accession, Optional<List<String>> curationDomains) {
+		return executor.submit(new FetchCallable(accession, curationDomains));
 	}
 
 	private class FetchCallable implements Callable<Optional<Resource<Sample>>> {
 
 		private final String accession;
+		private final Optional<List<String>> curationDomains;
 
-		public FetchCallable(String accession) {
+		public FetchCallable(String accession, Optional<List<String>> curationDomains) {
 			this.accession = accession;
+			this.curationDomains = curationDomains;
 		}
 
 		@Override
 		public Optional<Resource<Sample>> call() throws Exception {
 
-			URI uri = URI.create(traverson.follow("samples")
-					.follow(Hop.rel("sample").withParameter("accession", accession))
-					.asLink().getHref());
+			URI uri;
+			
+			if (!curationDomains.isPresent()) {
+				uri = URI.create(traverson.follow("samples")
+						.follow(Hop.rel("sample").withParameter("accession", accession))
+						.asLink().getHref());
+			} else {
+				TraversalBuilder traversalBuilder = traverson.follow("samples")
+						.follow(Hop.rel("sample").withParameter("accession", accession));
+				for (String curationDomain : curationDomains.get()) {
+					traversalBuilder.follow(Hop.rel("curationDomain").withParameter("curationdomain", curationDomain));
+				}
+				uri = URI.create(traversalBuilder.asLink().getHref());	
+			}
 			
 			log.trace("GETing " + uri);
 
@@ -146,7 +161,7 @@ public class SampleRetrievalService {
 				while (queue.size() < queueMaxSize && accessions.hasNext()) {
 					log.trace("Queue size is " + queue.size());
 					String nextAccession = accessions.next();
-					queue.add(fetch(nextAccession));
+					queue.add(fetch(nextAccession, Optional.empty()));
 				}
 
 				// get the end of the queue and wait for it to finish if needed

@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -19,6 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
+import org.springframework.http.CacheControl;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -29,15 +31,20 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import uk.ac.ebi.biosamples.BioSamplesProperties;
+import uk.ac.ebi.biosamples.model.JsonLDDataCatalog;
+import uk.ac.ebi.biosamples.model.JsonLDDataset;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.facet.Facet;
 import uk.ac.ebi.biosamples.model.filter.Filter;
-import uk.ac.ebi.biosamples.service.BioSamplesAapService;
-import uk.ac.ebi.biosamples.service.FacetService;
-import uk.ac.ebi.biosamples.service.FilterService;
-import uk.ac.ebi.biosamples.service.JsonLDService;
-import uk.ac.ebi.biosamples.service.SamplePageService;
-import uk.ac.ebi.biosamples.service.SampleService;
+import uk.ac.ebi.biosamples.service.*;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.net.URI;
+import java.time.ZoneOffset;
+import java.util.*;
+
 
 /**
  * Primary controller for HTML operations.
@@ -59,23 +66,29 @@ public class SampleHtmlController {
 	private final FacetService facetService;
 	private final FilterService filterService;
 	private final BioSamplesAapService bioSamplesAapService;
+	private final BioSamplesProperties bioSamplesProperties;
 
 	public SampleHtmlController(SampleService sampleService,
 			SamplePageService samplePageService,
 			JsonLDService jsonLDService,
 			FacetService facetService,
 			FilterService filterService,
-			BioSamplesAapService bioSamplesAapService) {
+			BioSamplesAapService bioSamplesAapService,
+			BioSamplesProperties bioSamplesProperties) {
 		this.sampleService = sampleService;
 		this.samplePageService = samplePageService;
 		this.jsonLDService = jsonLDService;
 		this.facetService = facetService;
 		this.filterService = filterService;
 		this.bioSamplesAapService = bioSamplesAapService;
+		this.bioSamplesProperties = bioSamplesProperties;
 	}
 
 	@GetMapping(value = "/")
-	public String index() {
+	public String index(Model model) {
+
+		JsonLDDataCatalog dataCatalog = jsonLDService.getBioSamplesDataCatalog();
+		model.addAttribute("jsonLD",  jsonLDService.jsonLDToString(dataCatalog));
 		return "index";
 	}
 
@@ -121,7 +134,8 @@ public class SampleHtmlController {
 		}
 		Collections.sort(filtersList);
 
-		
+		JsonLDDataset jsonLDDataset = jsonLDService.getBioSamplesDataset();
+
 		model.addAttribute("text", text);
 		model.addAttribute("start", start);
 		model.addAttribute("rows", rows);
@@ -129,10 +143,19 @@ public class SampleHtmlController {
 		model.addAttribute("facets", sampleFacets);
 		model.addAttribute("filters", filtersList);
 		model.addAttribute("paginations", getPaginations(pageSample, uriBuilder));
-				
+		model.addAttribute("jsonLD", jsonLDService.jsonLDToString(jsonLDDataset));
+
 		//TODO add "clear all facets" button
 		//TODO title of webpage
 		
+
+		//Note - EBI load balancer does cache but doesn't add age header, so clients could cache up to twice this age
+		CacheControl cacheControl = CacheControl.maxAge(bioSamplesProperties.getBiosamplesCorePageCacheMaxAge(), TimeUnit.SECONDS);
+		//if the user has access to any domains, then mark the response as private as must be using AAP and responses will be different
+		if (domains.size() > 0) {
+			cacheControl.cachePrivate();
+		}
+		response.setHeader("Cache-Control", cacheControl.getHeaderValue());
 		return "samples";
 	}
 		
@@ -267,7 +290,8 @@ public class SampleHtmlController {
 	@GetMapping(value = "/samples/{accession}")
 	public String samplesAccession(Model model, @PathVariable String accession, HttpServletRequest request,
 			HttpServletResponse response) {
-		Optional<Sample> sample = sampleService.fetch(accession);
+		//TODO allow curation domain specification
+		Optional<Sample> sample = sampleService.fetch(accession, Optional.empty());
 		if (!sample.isPresent()) {
 			// did not exist, throw 404
 			//TODO do as an exception

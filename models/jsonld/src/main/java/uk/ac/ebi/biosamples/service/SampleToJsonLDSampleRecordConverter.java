@@ -1,22 +1,26 @@
 package uk.ac.ebi.biosamples.service;
 
+import org.springframework.core.convert.converter.Converter;
+import uk.ac.ebi.biosamples.model.*;
+
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.core.convert.converter.Converter;
-
-import uk.ac.ebi.biosamples.model.*;
-
-public class SampleToJsonLDSampleConverter implements Converter<Sample, JsonLDSample> {
+public class SampleToJsonLDSampleRecordConverter implements Converter<Sample, JsonLDDataRecord> {
 
     @Override
-    public JsonLDSample convert(Sample sample) {
+    public JsonLDDataRecord convert(Sample sample) {
 
+        JsonLDDataRecord sampleRecord = new JsonLDDataRecord();
+        //TODO Check if we actually want to use release date as date created
+        sampleRecord.dateCreated(sample.getRelease().atZone(ZoneId.of("UTC")));
+        sampleRecord.dateModified(sample.getUpdate().atZone(ZoneId.of("UTC")));
 
         JsonLDSample jsonLD = new JsonLDSample();
-        String[] identifiers = {"biosamples:" + sample.getAccession()};
+        String[] identifiers = {getBioSamplesIdentifierDotOrg(sample.getAccession())};
         jsonLD.setIdentifiers(identifiers);
         jsonLD.setName(sample.getName());
 
@@ -36,7 +40,10 @@ public class SampleToJsonLDSampleConverter implements Converter<Sample, JsonLDSa
             jsonLD.setDataset(datasets);
         }
 
-        return jsonLD;
+        sampleRecord.idetifier(getBioSamplesIdentifierDotOrg(sample.getAccession()));
+        sampleRecord.mainEntity(jsonLD);
+
+        return sampleRecord;
     }
 
     private List<JsonLDPropertyValue> getAttributeList(Sample sample) {
@@ -80,4 +87,9 @@ public class SampleToJsonLDSampleConverter implements Converter<Sample, JsonLDSa
         }
         return datasets;
     }
+
+    private String getBioSamplesIdentifierDotOrg(String accession) {
+        return "biosamples:"+accession;
+    }
+
 }

@@ -44,7 +44,7 @@ curl http://localhost:8983/solr/samples/config -H 'Content-type:application/json
 docker-compose up -d biosamples-webapps-core biosamples-webapps-sampletab biosamples-webapps-legacyxml biosamples-webapps-legacyjson
 sleep 30
 echo "checking webapps-core is up"
-./http-status-check -u http://localhost:8081/biosamples/health -t 300
+./http-status-check -u http://localhost:8081/biosamples/health -t 400
 echo "checking webapps-sampletab is up"
 ./http-status-check -u http://localhost:8082/biosamples/sampletab/health -t 60
 echo "checking webapps-legacyxml is up"

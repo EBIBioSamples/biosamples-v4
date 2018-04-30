@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.mongo.model.MongoCuration;
+import uk.ac.ebi.biosamples.mongo.model.MongoCurationLink;
 import uk.ac.ebi.biosamples.mongo.repo.MongoCurationLinkRepository;
 import uk.ac.ebi.biosamples.mongo.repo.MongoCurationRepository;
 import uk.ac.ebi.biosamples.mongo.service.CurationLinkToMongoCurationLinkConverter;
@@ -37,7 +38,6 @@ public class CurationPersistService {
 	private MessagingService messagingSerivce;
 	
 	public CurationLink store(CurationLink curationLink) {
-
 		//TODO do this as a trigger on the curation link repo
 		//if it already exists, no need to save
 		if (mongoCurationRepository.findOne(curationLink.getCuration().getHash()) == null) {
@@ -52,7 +52,6 @@ public class CurationPersistService {
 					//if it is a different curation with an hash collision, then throw an exception
 					throw e;
 				}
-				
 			}
 		}
 
@@ -61,8 +60,15 @@ public class CurationPersistService {
 			curationLink = mongoCurationLinkToCurationLinkConverter.convert(mongoCurationLinkRepository.save(curationLinkToMongoCurationLinkConverter.convert(curationLink)));
 		}
 
-		messagingSerivce.sendMessages(curationLink);
+		messagingSerivce.fetchThenSendMessage(curationLink.getSample());
 		return curationLink;
+	}
+	
+	public void delete(CurationLink curationLink) {
+		if (curationLink == null) throw new IllegalArgumentException("curationLink must not be null");
+		MongoCurationLink mongoCurationLink = curationLinkToMongoCurationLinkConverter.convert(curationLink);
+		mongoCurationLinkRepository.delete(mongoCurationLink.getHash());
+		messagingSerivce.fetchThenSendMessage(curationLink.getSample());
 	}
 	
 }

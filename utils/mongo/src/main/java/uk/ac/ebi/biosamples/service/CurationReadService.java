@@ -3,6 +3,8 @@ package uk.ac.ebi.biosamples.service;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -70,11 +72,22 @@ public class CurationReadService {
 	}
 
 	public CurationLink getCurationLink(String hash) {
-		MongoCurationLink neo = mongoCurationLinkRepository.findOne(hash);
-		CurationLink link = mongoCurationLinkToCurationLinkConverter.convert(neo);
+		MongoCurationLink mongoCurationLink = mongoCurationLinkRepository.findOne(hash);
+		CurationLink link = mongoCurationLinkToCurationLinkConverter.convert(mongoCurationLink);
 		return link;
 	}
 	
+	/**
+	 * This applies a given curation link to a sample and returns a new sample.
+	 * 
+	 * This needs a curation link rather than a curation object because the samples update date
+	 * may be modified if the curation link is newer.
+	 * 
+	 * 
+	 * @param sample
+	 * @param curationLink
+	 * @return
+	 */
 	public Sample applyCurationLinkToSample(Sample sample, CurationLink curationLink) {
 		log.trace("Applying curation "+curationLink+" to sample "+sample.getAccession());
 		Curation curation = curationLink.getCuration();
@@ -119,8 +132,12 @@ public class CurationReadService {
 				sample.getOrganizations(), sample.getContacts(), sample.getPublications());
 	}
 	
-	public Sample applyAllCurationToSample(Sample sample) {
-
+	public Sample applyAllCurationToSample(Sample sample, Optional<List<String>> curationDomains) {
+        //short-circuit if no curation domains specified
+		if (curationDomains.isPresent() && curationDomains.get().size()==0) {
+			return sample;
+		}
+		
 		Set<CurationLink> curationLinks = new HashSet<>();
 		int pageNo = 0;
 		Page<CurationLink> page;
@@ -128,11 +145,21 @@ public class CurationReadService {
 			Pageable pageable = new PageRequest(pageNo, 1000);
 			page = getCurationLinksForSample(sample.getAccession(), pageable);
 			for (CurationLink curationLink : page) {
-				curationLinks.add(curationLink);
+				if (curationDomains.isPresent()) {
+					//curation domains restricted, curation must be part of that domain
+					if (curationDomains.get().contains(curationLink.getDomain())) {
+						curationLinks.add(curationLink);
+					}
+				} else {
+					//no curation domain restriction, use all
+					curationLinks.add(curationLink);
+				}
 			}
 			pageNo += 1;
 		} while(pageNo < page.getTotalPages());
-		
+
+		//filter curation links to remove conflicts
+		curationLinks = filterConflictingCurationLinks(curationLinks);
 
 		boolean curationApplied = true;
 		while (curationApplied && curationLinks.size() > 0) {
@@ -156,6 +183,32 @@ public class CurationReadService {
 			log.warn("Unapplied curation on "+sample.getAccession());
 		}
 		return sample;
+	}
+	
+	private Set<CurationLink> filterConflictingCurationLinks(Set<CurationLink> curationLinks) {
+		Set<CurationLink> filteredCurationLinks = new HashSet<>();
+		for (CurationLink curationLink : curationLinks) {
+			boolean conflicts = false;
+			for (CurationLink otherCurationLink : curationLinks) {
+				if (otherCurationLink.equals(curationLink)) {
+					continue;
+				}
+				
+				log.trace("Comparing  "+curationLink.getCuration().getAttributesPre()+" with "+otherCurationLink.getCuration().getAttributesPre());
+				
+				Set<Attribute> intersection = new HashSet<>(curationLink.getCuration().getAttributesPre());
+				intersection.retainAll(otherCurationLink.getCuration().getAttributesPre());
+				if (intersection.size() > 0) {
+					conflicts = true;
+					break;
+				}
+			}
+			if (!conflicts) {
+				log.trace("Adding curationLink "+curationLink);
+				filteredCurationLinks.add(curationLink);
+			}
+		}
+		return filteredCurationLinks;
 	}
 
 }

@@ -37,7 +37,7 @@ public class MessagingService {
 		if (accession.trim().length() == 0) throw new IllegalArgumentException("accession cannot be empty");
 		
 		
-		Optional<Sample> sample = sampleReadService.fetch(accession);
+		Optional<Sample> sample = sampleReadService.fetch(accession, Optional.empty());
 		if (sample.isPresent()) {
 			
 			//for each sample we have a relationship to, update it to index this sample as an inverse relationship	
@@ -46,7 +46,7 @@ public class MessagingService {
 			for (Relationship relationship : sample.get().getRelationships()) {
 				if (relationship.getSource() != null 
 						&& relationship.getSource().equals(accession)) {
-					futures.add(sampleReadService.fetchAsync(relationship.getTarget()));
+					futures.add(sampleReadService.fetchAsync(relationship.getTarget(), Optional.empty()));
 				}
 			}	
 			List<Sample> related = new ArrayList<>();
@@ -85,7 +85,7 @@ public class MessagingService {
 		for (Relationship relationship : sample.getRelationships()) {
 			if (relationship.getSource().equals(sample.getAccession())) {
 				if (relationship.getType().toLowerCase().equals("derived from")) {
-					Optional<Sample> target = sampleReadService.fetch(relationship.getTarget());
+					Optional<Sample> target = sampleReadService.fetch(relationship.getTarget(), Optional.empty());
 					if (target.isPresent()) {
 						if (!related.contains(target.get())) {
 							related.add(target.get());

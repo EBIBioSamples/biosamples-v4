@@ -1,43 +1,28 @@
 package uk.ac.ebi.biosamples.controller;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import javax.servlet.http.HttpServletResponse;
-
 import org.mged.magetab.error.ErrorItem;
+import org.mged.magetab.error.ErrorItemImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import uk.ac.ebi.arrayexpress2.magetab.exception.ParseException;
 import uk.ac.ebi.arrayexpress2.magetab.listener.ErrorItemListener;
 import uk.ac.ebi.arrayexpress2.sampletab.datamodel.SampleData;
 import uk.ac.ebi.arrayexpress2.sampletab.parser.SampleTabParser;
 import uk.ac.ebi.arrayexpress2.sampletab.renderer.SampleTabWriter;
 import uk.ac.ebi.biosamples.service.ApiKeyService;
+import uk.ac.ebi.biosamples.service.SampleTabMultipartFileConverter;
 import uk.ac.ebi.biosamples.service.SampleTabService;
 import uk.ac.ebi.biosamples.service.SampleTabService.AssertingSampleTabOwnershipException;
 import uk.ac.ebi.biosamples.service.SampleTabService.ConflictingSampleTabOwnershipException;
 import uk.ac.ebi.biosamples.service.SampleTabService.DuplicateDomainSampleException;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 
 @RestController()
 public class SampleTabV1Controller {
@@ -48,11 +33,26 @@ public class SampleTabV1Controller {
 	private SampleTabService sampleTabService;
 	@Autowired
 	private ApiKeyService apiKeyService;
+	@Autowired
+	private SampleTabMultipartFileConverter sampleTabFileConverter;
 
     @PostMapping(value = "/api/v1/json/va")
     public @ResponseBody Outcome doValidation(@RequestBody SampleTabRequest request) {
     	return parse(request);        
     }
+
+	/**
+	 * Temporary solution to support direct submission of SampleTabs as files instead of JSON String matrix
+	 * This is not ideal, and probably we should handle this differently by updating the SampleTab parser instead of converting the file
+	 * into a List<List<String>> to reuse the code
+	 * TODO: Work on the parser to better read MultipartFile sampletabs
+	 * @param sampleTabFile the sample tab file submitted by the user
+	 * @return the Outcome of the validation
+	 */
+	@PostMapping(value = "/api/v1/file/va")
+    public @ResponseBody Outcome validateFile(@RequestParam("file") MultipartFile sampleTabFile) {
+    	return parse(sampleTabFileConverter.convert(sampleTabFile));
+	}
     
     @PostMapping(value = "/api/v1/json/ac")
     public @ResponseBody Outcome doAccession(@RequestBody SampleTabRequest request, @RequestParam(value="apikey") String apiKey) {
@@ -87,7 +87,12 @@ public class SampleTabV1Controller {
             return outcome;
         }        
     }
-    
+
+	@PostMapping(value = "/api/v1/file/ac")
+	public @ResponseBody Outcome accessionFile(@RequestParam("file") MultipartFile sampleTabFile, @RequestParam(value="apikey") String apiKey) {
+		return doAccession(sampleTabFileConverter.convert(sampleTabFile), apiKey);
+	}
+
     @PostMapping(value = "/api/v1/json/sb")
     public @ResponseBody Outcome doSubmission(@RequestBody SampleTabRequest request,  @RequestParam(value="apikey") String apiKey) {
     	//handle APIkey
@@ -127,7 +132,11 @@ public class SampleTabV1Controller {
             return outcome;
         }        
     }
-    
+
+    @PostMapping(value = "/api/v1/file/sb")
+	public @ResponseBody Outcome submitFile(@RequestParam("file") MultipartFile sampleTabFile, @RequestParam("apikey") String apiKey) {
+	    return doSubmission(sampleTabFileConverter.convert(sampleTabFile), apiKey);
+	}
     /*
      * Echoing function. Used for triggering download of javascript
      * processed sampletab files. No way to download a javascript string
@@ -196,6 +205,42 @@ public class SampleTabV1Controller {
         }
         return new Outcome(sampledata, errorItems);    	
     }
+
+    private Outcome parse(MultipartFile file) {
+		SampleTabParser<SampleData> parser = new SampleTabParser<SampleData>();
+
+		List<ErrorItem> errorItems;
+		errorItems = new ArrayList<ErrorItem>();
+		parser.addErrorItemListener(new ErrorItemListener() {
+			public void errorOccurred(ErrorItem item) {
+				errorItems.add(item);
+			}
+		});
+		SampleData sampledata = null;
+		InputStream stream = null;
+		try {
+			stream = file.getInputStream();
+			sampledata = parser.parse(stream);
+		} catch (ParseException e) {
+			//catch parsing errors for malformed submissions
+			log.error("parsing error", e);
+			return new Outcome(null, e.getErrorItems());
+		} catch (IOException e) {
+		    log.error("reading error", e);
+		    ErrorItem errorItem = new ErrorItemImpl(e.getMessage(), 500, "InputReader");
+		    return new Outcome( null, Collections.singletonList(errorItem));
+		} finally {
+			if (stream != null) {
+				try {
+					stream.close();
+				} catch (IOException e) {
+					// do nothing
+				}
+			}
+		}
+		return new Outcome(sampledata, errorItems);
+
+	}
     
 
 	public static class SampleTabRequest {
@@ -336,4 +381,18 @@ public class SampleTabV1Controller {
         
     }
 
+	private class SampleTabForm {
+
+
+        private MultipartFile file;
+
+		public MultipartFile getFile() {
+			return file;
+		}
+
+		public SampleTabForm file(MultipartFile file) {
+			this.file = file;
+			return this;
+		}
+	}
 }

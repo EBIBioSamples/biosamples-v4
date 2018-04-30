@@ -1,13 +1,12 @@
 package uk.ac.ebi.biosamples.controller;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Collections;
-import java.util.stream.Collectors;
-
+import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -24,6 +23,7 @@ import org.springframework.hateoas.PagedResources.PageMetadata;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.Resources;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
+import org.springframework.http.CacheControl;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -36,8 +36,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
-import org.springframework.web.util.UriUtils;
-
+import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.BioSamplesAapService;
@@ -48,6 +47,7 @@ import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
 import uk.ac.ebi.biosamples.utils.LinkUtils;
+import java.util.stream.Collectors;
 
 /**
  * Primary controller for REST operations both in JSON and XML and both read and
@@ -68,56 +68,31 @@ public class SamplesRestController {
 	private final FilterService filterService;
 	private final BioSamplesAapService bioSamplesAapService;
 	private final SampleManipulationService sampleManipulationService;
-	
+	private final BioSamplesProperties bioSamplesProperties;
 	private final SampleResourceAssembler sampleResourceAssembler;
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 
 	public SamplesRestController(
-			SamplePageService samplePageService,FilterService filterService,
+			SamplePageService samplePageService, FilterService filterService,
 			BioSamplesAapService bioSamplesAapService,
 			SampleResourceAssembler sampleResourceAssembler,
 			SampleManipulationService sampleManipulationService,
-			SampleService sampleService) {
+			SampleService sampleService,
+			BioSamplesProperties bioSamplesProperties) {
 		this.samplePageService = samplePageService;
 		this.filterService = filterService;
 		this.bioSamplesAapService = bioSamplesAapService;
 		this.sampleResourceAssembler = sampleResourceAssembler;
 		this.sampleManipulationService = sampleManipulationService;
 		this.sampleService = sampleService;
-	}
-	
-	private String decodeText(String text) {
-		if (text != null) {
-			try {
-				//URLDecoder doesn't work right...
-				//text = URLDecoder.decode(text, "UTF-8");
-				text = UriUtils.decode(text, "UTF-8");
-			} catch (UnsupportedEncodingException e) {
-				throw new RuntimeException(e);
-			}
-		}		
-		return text;		
-	}
-	
-	private String[] decodeFilter(String[] filter) {
-		if (filter != null) {
-			for (int i = 0; i < filter.length; i++) {
-				try {
-					//URLDecoder doesn't work right...
-					//filter[i] = URLDecoder.decode(filter[i], "UTF-8");
-					filter[i] = UriUtils.decode(filter[i], "UTF-8");
-				} catch (UnsupportedEncodingException e) {
-					throw new RuntimeException(e);
-				}
-			}
-		}
-		return filter;
+		this.bioSamplesProperties = bioSamplesProperties;
 	}
 
+	//must return a ResponseEntity so that cache headers can be set
 	@CrossOrigin(methods = RequestMethod.GET)
 	@GetMapping(produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
-	public Resources<Resource<Sample>> searchHal(
+	public ResponseEntity<Resources<Resource<Sample>>> searchHal(
 			@RequestParam(name = "text", required = false) String text,
 			@RequestParam(name = "filter", required = false) String[] filter, 
 			@RequestParam(name = "cursor", required = false) String cursor,
@@ -129,9 +104,9 @@ public class SamplesRestController {
 		
 		//Need to decode the %20 and similar from the parameters
 		//this is *not* needed for the html controller
-		String decodedText = decodeText(text);
-		String[] decodedFilter = decodeFilter(filter);
-		String decodedCursor = decodeText(cursor);
+		String decodedText = LinkUtils.decodeText(text);
+		String[] decodedFilter = LinkUtils.decodeTexts(filter);
+		String decodedCursor = LinkUtils.decodeText(cursor);
 			
 		int effectivePage;
 		if (page == null) {
@@ -148,6 +123,14 @@ public class SamplesRestController {
 		
 		Collection<Filter> filters = filterService.getFiltersCollection(decodedFilter);
 		Collection<String> domains = bioSamplesAapService.getDomains();
+		
+
+		//Note - EBI load balancer does cache but doesn't add age header, so clients could cache up to twice this age
+		CacheControl cacheControl = CacheControl.maxAge(bioSamplesProperties.getBiosamplesCorePageCacheMaxAge(), TimeUnit.SECONDS);
+		//if the user has access to any domains, then mark the response as private as must be using AAP and responses will be different
+		if (domains.size() > 0) {
+			cacheControl.cachePrivate();
+		}
 
 		if (cursor != null) {
 
@@ -157,17 +140,20 @@ public class SamplesRestController {
 			log.trace("Next cursor = "+samples.getNextCursorMark());
 			
 			Resources<Resource<Sample>>  resources = new Resources<>(samples.stream()
-				.map(s -> sampleResourceAssembler.toResource(s))
+					.map(s -> s != null ? sampleResourceAssembler.toResource(s) : null)
 				.collect(Collectors.toList()));
 
 			resources.add(getCursorLink(decodedText, decodedFilter, decodedCursor, effectiveSize, Link.REL_SELF));
 			//only display the next link if there is a next cursor to go to
-			if (!decodeText(samples.getNextCursorMark()).equals(decodedCursor) 
+			if (!LinkUtils.decodeText(samples.getNextCursorMark()).equals(decodedCursor) 
 					&& !samples.getNextCursorMark().equals("*")) {
 				resources.add(getCursorLink(decodedText, decodedFilter, samples.getNextCursorMark(), effectiveSize, Link.REL_NEXT));				
 			}
 			
-			return resources;
+			//Note - EBI load balancer does cache but doesn't add age header, so clients could cache up to twice this age
+			return ResponseEntity.ok()
+					.cacheControl(cacheControl)
+					.body(resources);
 			
 		} else {	
 			
@@ -188,7 +174,7 @@ public class SamplesRestController {
 					pageSample.getNumber(), pageSample.getTotalElements(), pageSample.getTotalPages());
 			
 			Resources<Resource<Sample>> resources = new PagedResources<>(pageSample.getContent().stream()
-					.map(s -> sampleResourceAssembler.toResource(s))
+					.map(s -> s != null ? sampleResourceAssembler.toResource(s) : null)
 					.collect(Collectors.toList()), pageMetadata);			 
 
 
@@ -226,28 +212,16 @@ public class SamplesRestController {
 //			}
 			
 			resources.add(SampleAutocompleteRestController.getLink(decodedText, decodedFilter, null, "autocomplete"));
-					
-			resources.add(ControllerLinkBuilder
-				.linkTo(ControllerLinkBuilder.methodOn(SampleRestController.class)
-					.getSampleHal(null, false))
-				.withRel("sample"));
 			
-			/*
-			if (filters.stream().allMatch(f -> !f.getType().equals(FilterType.DATE_FILTER))) {
-	
-				String[] templatedFilters = new String[1];
-				templatedFilters[0] = FilterType.DATE_FILTER.getSerialization()+":update:from{ISO-8601from}until{ISO-8601until}";
-				pagedResources.add(ControllerLinkBuilder
-						.linkTo(ControllerLinkBuilder.methodOn(SamplesRestController.class)
-								.searchHal(text, templatedFilters, null, null))
-						.withRel("samplesbyUpdateDate"));
-			}
-			*/
 			
-			return resources;
+			UriComponentsBuilder uriComponentsBuilder = ControllerLinkBuilder.linkTo(SamplesRestController.class).toUriComponentsBuilder();
+			//This is a bit of a hack, but best we can do for now...
+			resources.add(new Link(uriComponentsBuilder.build(true).toUriString()+"/{accession}", "sample"));
+			
+			return ResponseEntity.ok()
+					.cacheControl(cacheControl)
+					.body(resources);
 		}
-		
-		//TODO add search link
 	}
 	
 	private Order parseSort(String sort) {
@@ -318,6 +292,10 @@ public class SamplesRestController {
 		
 		log.debug("Recieved POST for "+sample);
 		sample = bioSamplesAapService.handleSampleDomain(sample);
+		
+		//TODO disallow previously accessioned samples - BSD-1186
+
+		//TODO disallow previously accessioned samples - BSD-1186
 
 		//limit use of this method to write super-users only
 		if (bioSamplesAapService.isWriteSuperUser() && setUpdateDate) {

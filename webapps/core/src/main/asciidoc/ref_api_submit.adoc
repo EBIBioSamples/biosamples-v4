@@ -15,10 +15,10 @@ Sample content reference:
 |Cardinality
 
 | name | `String` | Required
-| accession |  `String` | Required
 | release | `Date ISO 8601` | Required
 | update | `Date ISO 8601` | Required
 | domain | `String` | Required
+| accession |  `String` | Required for `PUT` requests
 | characteristics | `Object` | Optional
 | externalReferences | `Array` | Optional
 | relationships | `Array` | Optional
@@ -45,6 +45,7 @@ Sample content reference:
 == Submit a sample
 `POST` sample to BioSamples
 
+
 === Request
 include::{snippets}/post-sample/http-request.adoc[]
 
@@ -56,6 +57,8 @@ For all the links available in BioSamples check the <<ref_api_links.adoc#, Links
 
 == Update sample
 `PUT` a sample to BioSamples
+
+The submitted sample is required to have an accession and the accession should match the one in the url
 
 === Request
 include::{snippets}/put-sample/http-request.adoc[]

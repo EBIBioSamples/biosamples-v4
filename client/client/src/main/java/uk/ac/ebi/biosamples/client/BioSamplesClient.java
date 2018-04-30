@@ -132,8 +132,12 @@ public class BioSamplesClient implements AutoCloseable {
     }
     
 	public Optional<Resource<Sample>> fetchSampleResource(String accession) throws RestClientException {
+		return fetchSampleResource(accession, Optional.empty());
+	}
+	public Optional<Resource<Sample>> fetchSampleResource(String accession, 
+			Optional<List<String>> curationDomains) throws RestClientException {
 		try {
-			return sampleRetrievalService.fetch(accession).get();
+			return sampleRetrievalService.fetch(accession, curationDomains).get();
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		} catch (ExecutionException e) {
@@ -252,5 +256,13 @@ public class BioSamplesClient implements AutoCloseable {
 
 	public Resource<CurationLink> persistCuration(String accession, Curation curation, String domain) {
 		return curationSubmissionService.submit(CurationLink.build(accession, curation, domain, null));
+	}
+	
+	public Iterable<Resource<CurationLink>> fetchCurationLinksOfSample(String accession) {
+		return curationRetrievalService.fetchCurationLinksOfSample(accession);
+	}
+
+	public void deleteCurationLink(CurationLink content) {
+		curationSubmissionService.deleteCurationLink(content.getSample(), content.getHash());
 	}
 }

@@ -45,7 +45,7 @@ Range filter based on samples' update date or release date
 |===
 | Field | Value | Notes
 | `type` | `dt` |
-| `field` | release \| update | Case sensitive, encoded
+| `field` | release \| update | Case sensitive
 | `value` | Date range in the format of `from=<date>until=<date>`     | Dates should be formatted using ISO8601; timezone is UTC by default; `from=` and `until=` are optional
 |===
 
@@ -88,12 +88,13 @@ Filter based on samples relationship source
 | Field | Value | Notes
 | `type` | `rel` |
 | `field` | relation type | Case sensitive, encoded
-| `value` | relation target | _Usually_ an accession
+| `value` | relation target | An accession
 |===
 
 ==== Examples
-- link:/biosamples/samples?filter=rel:derived+from:Human+blood[`filter=rel:derived+from:Human+blood`, window='_blank']
 - link:/biosamples/samples?filter=rel:child+of:SAME1596745[`filter=rel:child+of:SAME1596745`, window='_blank']
+- link:/biosamples/samples?filter=rel:derived+from:SAMEA7992418[`filter=rel:derived+from:SAMEA7992418`, window='_blank']
+
 
 === Reverse Relationship
 Filter based on samples' relationship target
@@ -110,6 +111,22 @@ Filter based on samples' relationship target
 - link:/biosamples/samples?filter=rrel:child+of[`filter=rrel:child+of`, window='_blank']
 - link:/biosamples/samples?filter=rrel:has+member:SAMEG316651[`filter=rrel:has+member:SAMEG316651`, window='_blank']
 
+
+=== Domain
+Filter based on samples' submission domain
+
+[cols="1*s , 2*", options=header]
+|===
+| Field | Value | Notes
+| `type` | `dom` |
+| `field` | `NA` | The field is predefined
+| `value` | domain | The domain need to include the `self.` prefix
+|===
+
+==== Examples
+- link:/biosamples/samples?filter=dom:self.70e89c7993c5cbdaea7cc9ceb710e7640d0840a60a1747fa8c9cfdcd94997d1b[`filter=dom:self.70e89c7993c5cbdaea7cc9ceb710e7640d0840a60a1747fa8c9cfdcd94997d1b`, window='_blank']
+
+
 === Name
 Filter based on samples' name
 
@@ -123,7 +140,7 @@ Filter based on samples' name
 
 ==== Examples
 - link:/biosamples/samples?filter=name:A5F[`filter=name:A5F`, window="_blank"]
-- link:/biosamples/samples?filter=name:Generic+sample+from+Glycine+max[`filter=name:Generic+sample+from+Glycine+max^`,  window='_blank']
+- link:/biosamples/samples?filter=name:Generic+sample+from+Glycine+max[`filter=name:Generic+sample+from+Glycine+max`,  window='_blank']
 
 === External Reference Data
 Filter based on sample's link with external data

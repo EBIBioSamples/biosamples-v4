@@ -155,7 +155,7 @@ public class OlsProcessor {
 			return Optional.empty();
 		}
 		
-		//if zero or more than one result found, abort
+		//if zero result found, abort
 		if (responseEntity.getBody() == null) {
 			log.trace("Found empty body for shortcode "+shortcode+" against "+uri);
 			return Optional.empty();

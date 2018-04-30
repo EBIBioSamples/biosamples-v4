@@ -75,7 +75,7 @@ public class MongoCurationLink implements Comparable<MongoCurationLink>{
     
     @Override
     public int hashCode() {
-    	return Objects.hash(sample, curation);
+    	return Objects.hash(sample, domain, curation);
     }
 
 	@Override
@@ -115,6 +115,8 @@ public class MongoCurationLink implements Comparable<MongoCurationLink>{
 			.putUnencodedChars(curation.getHash())
 			.putUnencodedChars(sample)
 			.hash().toString();
+    	//TODO hash on domain
+    	//TODO synchronized with CurationLink    	
     	
 		return new MongoCurationLink(sample, domain, curation, hash, created);
 	}

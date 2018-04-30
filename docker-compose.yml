@@ -22,7 +22,7 @@ services:
     - aap.token.url=https://explore.api.aap.tsi.ebi.ac.uk/auth
     #configure other services
     - spring.data.solr.host=http://solr:8983/solr
-    - spring.data.mongodb.host=mongo
+    - spring.data.mongodb.uri=mongodb://mongo:27017/biosamples
     - SPRING_RABBITMQ_HOST=rabbitmq
     - SPRING_RABBITMQ_PUBLISHER-CONFIRMS=true
     - SPRING_RABBITMQ_PUBLISHER-RETURNS=true
@@ -86,10 +86,12 @@ services:
     - spring.http.encoding.force=true
     - ENDPOINTS_SHUTDOWN_ENABLED=true
     - ENDPOINTS_SHUTDOWN_SENSITIVE=false
+    - SPRING_HTTP_MULTIPART_MAX-FILE-SIZE=30MB
+    - SPRING_HTTP_MULTIPART_MAX-REQUEST-SIZE=30MB
     # Provide AAP infos
     #- BIOSAMPLES_CLIENT_AAP_USERNAME=override_in_docker-compose.override.yml
     #- BIOSAMPLES_CLIENT_AAP_PASSWORD=override_in_docker-compose.override.yml
-    - spring.data.mongodb.host=mongo
+    - spring.data.mongodb.uri=mongodb://mongo:27017/biosamples
     ports:
     - 8082:8080
   
@@ -228,7 +230,21 @@ services:
     - pipelines-sampletab-4.0.6-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_SAMPLETAB_URI=http://biosamples-webapps-sampletab:8080/biosamples/sampletab/v4
-    - LOGGING_FILE=/logs/pipelines-sampletab.log  
+    - LOGGING_FILE=/logs/pipelines-sampletab.log   
+    
+  biosamples-pipelines-copydown:
+    image: biosamples:latest
+    volumes:
+    - logs:/logs
+    links:
+    - biosamples-webapps-core
+    command:
+    - java
+    - -jar
+    - pipelines-copydown-4.0.6-SNAPSHOT.jar
+    environment:
+    - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
+    - LOGGING_FILE=/logs/pipelines-copydown.log  
     
   biosamples-pipelines-curation:
     volumes:
@@ -261,6 +277,39 @@ services:
     - LOGGING_FILE=/logs/pipelines-zooma.log
     - spring.cache.cache-names=zooma,ols_short
     - spring.cache.caffeine.spec=maximumSize=50000
+    
+  biosamples-pipelines-reindex:
+    volumes:
+    - logs:/logs
+    image: biosamples:latest
+    links:
+    - biosamples-webapps-core
+    command:
+    - java
+    - -jar
+    - pipelines-reindex-4.0.6-SNAPSHOT.jar
+    environment:
+    - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
+    - LOGGING_FILE=/logs/pipelines-reindex.log
+    - spring.data.mongodb.uri=mongodb://mongo/biosamples
+    - SPRING_RABBITMQ_HOST=rabbitmq
+    
+  biosamples-pipelines-export:
+    volumes:
+    - logs:/logs
+    - ./docker/export:/export
+    image: biosamples:latest
+    links:
+    - biosamples-webapps-core
+    command:
+    - java
+    - -jar
+    - pipelines-export-4.0.6-SNAPSHOT.jar
+    - --gzip
+    - /export/export.json.gzip
+    environment:
+    - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
+    - LOGGING_FILE=/logs/pipelines-export.log
            
   biosamples-integration:
     volumes:
@@ -292,6 +341,7 @@ services:
     image: mongo:3.2
     volumes:
     - mongo_data:/data/db
+    - ./docker/mongoarchive:/mongoarchive
     ports:
     - 27017:27017
     

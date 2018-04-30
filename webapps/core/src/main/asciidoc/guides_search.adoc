@@ -1,22 +1,25 @@
 = [.ebi-color]#Search#
 :last-update-label!:
 :toc:
+:linkattrs:
 
 == How to search BioSamples
-In the top right corner of every page (including this one!) you can find a search box.
-You can enter any words that you want describe your samples of interest here. Once a query has been entered, press return or click on adjacent button to view the results.
+In the top right corner of every page (including this one) you will find a search box.
+Enter keywords that describe the samples that you would like to find. Once your query has been entered, press return or click on the adjacent button to view the results.
 
-The main section of the results page is stack of samples that match your search term. Each of them is described in summary, and can be clicked on to go to a dedicated page with more details. The results are ordered by quality of match.
+Your search results will be displayed as a stack of sample records that match your search terms, ordered by the most relevant results first. In each record you will see a summary of the associated metadata but you can click on each sample to go to a dedicated page with further details.
 
-On the left of the side are a collection of facets that you can use to refine your query. Picking one or more of these will limit the results displayed to only those that have that specific attribute type and value. Once a facet has been selected, it is remove from the list; to de-select a facet, simply click on the cross displayed next to the badge at the top of the page.
+On the left side of the page you will see the available metadata attributes as facets that you can further use to refine your query. Picking one or more of these facets will limit the results displayed to those that match the newly specific criteria after you click on the button to apply the filters. Selecting the facet title will filter samples that contain the attribute, whilst selecting a facet value will more precisely filter samples that contain the attribute type/value pair. You can select combinations of both the facet title and one or more of the facet values. You can read more about this in the dedicated <<filters,filters section>>
 
-If there are many results for a query then they will be split over multiple pages; to change page, use the controls underneath the facets on the left.
+If there are more than 10 results for a query, your results will be split over multiple pages. You can jump through the pages using the controls underneath the facets on the left hand side of the page.
+
+Search results are visible using different formats, like JSON or XML, through Content-Negotiation. Check more about this in the link:../references/api/overview[API summary]
 
 == Advanced search
-As as as simply entering the terms you wish to search for, there are some additional features of the search that might be useful to find samples of interest.
+In addition to standard search, there are some additional features of BioSamples search that may be useful.
 
 === Double quotes
-Sometimes you will want to search for a specific phrase and this can be controlled by surrounding the phrase within double quotes e.g. to search for breast cancer you can use: `"breast cancer"` . This will make sure that your results match your query entirely as adjacent words in the result, rather than matching just part of it or matching it at different parts of the result.
+Surrounding a phrase within double quotes you can search for a specific phrase that spans multiple words.  e.g. to search for breast cancer you can use: `"breast cancer"` . This will ensure that your results match your query as intended as adjacent words, rather than matching part of the phrase or or matching words separately.
 
 === Boolean queries
 
@@ -25,18 +28,71 @@ Each word in the query is treated as a separate term (unless surrounded by doubl
 This behaviour can be modified by using boolean operators (`AND` `OR` `NOT`) and round brackets e.g. to find mouse or human samples that do not have leukmemia you can use: `NOT Leukemia AND ( mouse OR human )` .
 
 === Wildcards
-Queries containing star or question mark characters are treated separately. A star character will match any combination of zero or more characters e.g. `leuk*mia` will match to 'leukemia' and 'leukaemia' as well as 'leukqwertymia'. A question mark character will match any single characters e.g. `m?n` will match both man and men.
+Queries containing an asterix (*) or question mark (?) characters are treated separately. An asterix character will match any combination of zero or more characters e.g. `leuk*mia` will match to 'leukemia' and 'leukaemia' as well as 'leukqwertymia'. A question mark character will match any single characters e.g. `m?n` will match both man and men.
 
-NOTE: for technical reasons, wildcards cannot be at the beginning of words e.g. `?ouse` .
+NOTE: for technical reasons, wildcards cannot be used at the beginning of words e.g. `?ouse` .
 
 === Range queries
-Certain attributes can be queried for ranges of matching values. For example for things that were last updated between the 1st and 4th of April 2014.
+For certain attributes you can search for ranges of matching values. An example of this would be to find sample records that were last updated between the 1st and 4th of April 2014.
 
 Attributes that can be searched using ranges are:
 
 * Last update date e.g. `updatedate:[2014-04-01 TO 2014-04-04]`
 * Release date e.g. `releasedate:[2014-04-01 TO 2014-04-04]`
 
-NOTE: the date syntax is `yyyy-MM-dd` with a double digit month and day required.
+NOTE: the date syntax is `yyyy-MM-dd` with a double digit month and day are required.
 
+[#primitives-nulls]
+
+[#filters]
 === Filters
+
+The search interface provides an easy way to filter the results based on attributes type and value. This is done
+using the facets available on the left side of the screen.
+
+Each facet represents an attribute along with 10 of it's most common values. Clicking on the facet title
+will filter the results of your query to sample records that contain the attribute with any value, whilst clicking on one of the facets in the sublist will filter the results more precisely to only show samples which contain the selected attribute type-value pair.
+
+You can compose filters using multiple attributes or multiple values from the same attribute.
+Selecting different facets will produce an intersection of the results (an AND operator between the filters), whilst selecting different values within the same facet will generate an union of the results (an OR operation between the two filters).
+
+*NOTE*: To apply the filters you need to click the *Apply filters* button at the top of the facet list
+
+You can also create manual filters by following the link:../references/filters[reference guide on filters]
+
+== Some example queries
+
+=== Filter samples by project
+Many samples use the `project` attribute do describe which project they are part of. Examples of this include the FAANG project, as well as HipSci and EBiSC.
+Therefore, to select samples from these projects we can filter on the project attribute. Note that if the facet for the project attribute is not available in the facet list (because only a maximum of the 10 most popular facets are displayed on the left hand side of the interface), you can hardcode the filter in the URL as explained in the link:../references/filters[reference guide on filters, window='_blank']
+
+To exclusively return samples within a specific project, select the project facet from the facet list (if available), or add `filter=attr:project` to the url after the `search?`.
+You can see the result of such filter using link:/biosamples/samples?filter=attr:project[this link, window='_blank'].
+
+You should now be able to see the project facet on the left side of the page. You may select one or more values to further filter the results to a specific project[s]. Check out link:/biosamples/samples?filter=attr:project:FAANG&filter=attr:project:HipSci[this link, window='_blank'] to see a search for FAANG and HipSci samples.
+
+[#filter_by_external_archive]
+=== Filter samples with data in an external archive
+Many samples in BioSamples have external data associated to them which is stored in other archives such as ENA or ArrayExpress.
+If you want to limit your query to sample records that contain data in a specific archive, you can do it using an link:../references/filters#_external_reference_data[External Reference Data filter, window='_blank'].
+
+To see the most used external data archives, select the `external reference` facet from the list of facets available on the left side of the screen, or add `filter=attr:external+reference` to the url after the term `search?`.
+
+Check out the result page for this query link:/biosamples/samples?filter=attr:external+reference[here, window='_blank']
+
+A list of available external archives will be available in the facet list. Click the archive you're interested in, e.g. ArrayExpress, or add the corresponding value to the url, i.e. `filter=attr:external+reference:ArrayExpress`.
+
+Check out the result page for this query link:/biosamples/samples?filter=attr:external+reference:ArrayExpress[here, window='_blank']
+
+=== Get sample metadata associated to an ENA accession
+You may have an ENA accession ID available but you need to retrieve the sample metadata associated to such accession from BioSamples.
+
+The best way to do this is to use an external reference data filter. You can read the details about this in the link:../references/filters#_external_reference_data[filters reference page, window='_blank']
+
+Using facets is the easiest way of creating filters in the UI, but for more complicated searches it is usually easiest to manually add the filter to the url.
+
+If for example you want to get all the samples associated to the ENA accession SRS359918, then just add  `filter=extd:ENA:SRS359918` after the `search?` part of the url.
+
+Check out the result of this filter at link:/biosamples/samples?filter=extd:ENA:SRS359918[this page, window='_blank']
+
+To check which are the most used archives in BioSamples, you can follow the procedure explained in the "<<filter_by_external_archive>>" section.

@@ -25,21 +25,23 @@
 						<li><a th:classappend="${#strings.equals(active,'guides/auth')} ? 'active'" th:href="@{/docs/guides/authentication}">Authentication</a></li>
 						<li><a th:classappend="${#strings.equals(active, 'guides/search')} ? 'active'" th:href="@{/docs/guides/search}">Search in BioSamples</a></li>
 						<li><a th:classappend="${#strings.equals(active, 'guides/submit')} ? 'active'" th:href="@{/docs/guides/submit}">Submit to BioSamples</a></li>
-						<li><a th:classappend="${#strings.equals(active, 'guides/curate')} ? 'active'" th:href="@{/docs/guides/curate}">Curation in  BioSamples</a></li>
+						<!--<li><a th:classappend="${#strings.equals(active, 'guides/curate')} ? 'active'" th:href="@{/docs/guides/curate}">Curation in  BioSamples</a></li>-->
 					</ul>
 					<li><a href="#">Developers reference</a></li>
 					<ul class="menu vertical nested">
 						<!--<li><a th:href="@{/docs/legacy_xml_api}">Legacy XML API</a></li>-->
 						<!--<ul class="menu vertical nested">-->
-						<li><a href="#">API</a></li>
+						<!--<li><a href="#">API</a></li>-->
+						<li><a th:classappend="${#strings.equals(active, 'refs/api/overview')} ? 'active'" th:href="@{/docs/references/api/overview}">API</a></li>
 						<ul class="menu vertical nested">
-							<li><a th:classappend="${#strings.equals(active, 'refs/api/overview')} ? 'active'" th:href="@{/docs/references/api/overview}">Overview</a></li>
+							<!--<li><a th:classappend="${#strings.equals(active, 'refs/api/overview')} ? 'active'" th:href="@{/docs/references/api/overview}">Overview</a></li>-->
 							<li><a th:classappend="${#strings.equals(active, 'refs/api/links')} ? 'active'" th:href="@{/docs/references/api/links}">Links</a></li>
 							<li><a th:classappend="${#strings.equals(active, 'refs/api/root')} ? 'active'" th:href="@{/docs/references/api/root}">API root</a></li>
 							<li><a th:classappend="${#strings.equals(active, 'refs/api/search')} ? 'active'" th:href="@{/docs/references/api/search}">Search</a></li>
 							<li><a th:classappend="${#strings.equals(active, 'refs/api/submit')} ? 'active'" th:href="@{/docs/references/api/submit}">Submit</a></li>
 						</ul>
 						<li><a th:classappend="${#strings.equals(active, 'refs/filters')} ? 'active'" th:href="@{/docs/references/filters}">Search filters</a></li>
+						<li><a th:classappend="${#strings.equals(active, 'refs/sampletab')} ? 'active'" th:href="@{/docs/references/sampletab}">SampleTab file</a></li>
 						<!--</ul>-->
 					</ul>
 					<li><a th:classappend="${#strings.equals(active, 'faq')} ? 'active'" th:href="@{/docs/faq}">FAQ</a></li>

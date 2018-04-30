@@ -1,12 +1,14 @@
 package uk.ac.ebi.biosamples.client.utils;
 
 import java.net.URI;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.function.IntFunction;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,8 +18,10 @@ import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.web.util.UriTemplate;
+import org.springframework.hateoas.client.Hop;
 //import org.springframework.hateoas.UriTemplate;
 import org.springframework.hateoas.client.Traverson;
+import org.springframework.hateoas.client.Traverson.TraversalBuilder;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
@@ -30,7 +34,7 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
 	
 	private final Traverson traverson;
 	private final RestOperations restOperations;
-	private final String[] rels;
+	private final Hop[] hops;
 	private final ParameterizedTypeReference<PagedResources<Resource<T>>> parameterizedTypeReference;
 	private final MultiValueMap<String,String> params;
 	private final ExecutorService executor;
@@ -48,17 +52,49 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
 	public IterableResourceFetchAll(ExecutorService executor, Traverson traverson, RestOperations restOperations, 
 			ParameterizedTypeReference<PagedResources<Resource<T>>> parameterizedTypeReference,
 			MultiValueMap<String,String> params, String... rels) {
+		this(executor, traverson, restOperations, parameterizedTypeReference, params, 
+				Arrays.stream(rels).map(rel -> Hop.rel(rel)).toArray(new IntFunction<Hop[]>(){
+					@Override
+					public Hop[] apply(int value) {
+						return new Hop[value];
+					}
+				}));
+	}
+
+	/**
+	 * ParameterizedTypeReference must be ParameterizedTypeReference<PagedResources<Resource<T>>> but this
+	 * information is lost due to type erasure of the generic on compilation, and therefore has to be
+	 * passed manually.
+	 * 
+	 * @param traverson
+	 * @param restOperations
+	 * @param parameterizedTypeReference
+	 * @param rels
+	 */
+	public IterableResourceFetchAll(ExecutorService executor, Traverson traverson, RestOperations restOperations, 
+			ParameterizedTypeReference<PagedResources<Resource<T>>> parameterizedTypeReference,
+			MultiValueMap<String,String> params, Hop... hops) {
 		this.executor = executor;
 		this.traverson = traverson;
 		this.restOperations = restOperations;
-		this.rels = rels;
+		this.hops = hops;
 		this.parameterizedTypeReference = parameterizedTypeReference;
 		this.params = params;
 	}
 	
-	public Iterator<Resource<T>> iterator() {			
+	public Iterator<Resource<T>> iterator() {
+		
+		TraversalBuilder traversonBuilder = null;
+		for (Hop hop : hops) {
+			if (traversonBuilder == null) {
+				traversonBuilder = traverson.follow(hop);
+			} else {
+				traversonBuilder.follow(hop);
+			}
+		}
+		
 		//get the first page
-		URI uri = UriComponentsBuilder.fromHttpUrl(traverson.follow(rels).asLink().getHref())
+		URI uri = UriComponentsBuilder.fromHttpUrl(traversonBuilder.asLink().getHref())
 				.queryParams(params).build().toUri();
 		RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
 		ResponseEntity<PagedResources<Resource<T>>> responseEntity = restOperations.exchange(requestEntity,
@@ -101,7 +137,7 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
 				} else { 
 					uri = URI.create(nextLink.getHref());					
 				}
-				log.info("getting next page uri "+uri);
+				log.trace("getting next page uri "+uri);
 				
 				nextPageFuture = executor.submit(new NextPageCallable<U>(restOperations, parameterizedTypeReference, uri));
 			}

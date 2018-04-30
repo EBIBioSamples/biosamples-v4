@@ -42,33 +42,57 @@ public class NcbiElementCallable implements Callable<Void> {
 		String accession = sampleElem.attributeValue("accession");
 
 		log.trace("Element callable starting for "+accession);
-				
-		String name = XmlPathBuilder.of(sampleElem).path("Description", "Title").text();
-		// if the name is double quotes, strip them
-		if (name.startsWith("\"")) {
-			name = name.substring(1, name.length()).trim();
-		}
-		if (name.endsWith("\"")) {
-			name = name.substring(0, name.length()-1).trim();
-		}
-		// if the name is blank, force it
-		if (name.trim().length() == 0) {
-			name = accession;
-		}
-		
+						
 		SortedSet<Attribute> attrs = new TreeSet<>();
 		SortedSet<Relationship> rels = new TreeSet<>();
-
+		String alias = null; //this will be the ENA alias of the sample
+		String geoAlias = null;
+		String centreName = null; //this will be the ENA centre name of the sample.
 		for (Element idElem : XmlPathBuilder.of(sampleElem).path("Ids").elements("Id")) {
-			String id = idElem.getTextTrim();
-			if (!accession.equals(id) && !name.equals(id)) {
-				attrs.add(Attribute.build("synonym",  id));
+			if ("BioSample".equals(idElem.attributeValue("db"))) {
+				//ignore ids from BioSample
+			} else if ("SRA".equals(idElem.attributeValue("db"))) {
+				//INSDC SRA IDs get special treatment
+				attrs.add(Attribute.build("INSDC secondary accession",  idElem.getTextTrim()));
+			} else if ("Sample name".equals(idElem.attributeValue("db_label"))) {
+				//original submitter identifier is stored as the alias to be used as the name
+				alias = idElem.getTextTrim();
+				centreName = idElem.attributeValue("db");
+			} else if ("GEO".equals(idElem.attributeValue("db"))) {
+				//GEO IDs get special treatment
+				geoAlias = idElem.getTextTrim();
+			} else if (!accession.equals(idElem.getTextTrim())) {
+				attrs.add(Attribute.build("synonym",  idElem.getTextTrim()));
 			}
 		}
+		if (alias == null && geoAlias != null) {
+			//if theres no alias but there is a geo alias, then use the geo alias as the alias
+			alias = geoAlias;
+			geoAlias = null;
+		}
+		if (geoAlias != null) {
+			//if we still have a geo alias, store it as a synonym
+			attrs.add(Attribute.build("synonym",  geoAlias));
+		}
+		
+		
+		if (alias == null) {
+			log.warn("Unable to determine sample alias for "+accession+", falling back to accession");
+			alias = accession;
+		}
+		if (centreName == null) {
+			//throw new RuntimeException("Unable to determine centre name for "+accession);
+			log.warn("Unable to determine centre name for "+accession);
+		} else {
+			attrs.add(Attribute.build("INSDC centre name", centreName));
+		}
 
+		if (XmlPathBuilder.of(sampleElem).path("Description", "Title").exists()) {
+			String value = XmlPathBuilder.of(sampleElem).path("Description", "Title").text();
+			attrs.add(Attribute.build("description title",  value));
+		}
 		
 		if (XmlPathBuilder.of(sampleElem).path("Description", "Comment", "Paragraph").exists()) {
-			String key = "description";
 			String value = XmlPathBuilder.of(sampleElem).path("Description", "Comment", "Paragraph").text().trim();
 			/*
 			if (value.length() > 255) {
@@ -76,14 +100,14 @@ public class NcbiElementCallable implements Callable<Void> {
 				value = value.substring(0, 252)+"...";
 			}
 			*/
-			attrs.add(Attribute.build(key, value));
+			attrs.add(Attribute.build("description",  value));
 		}
 
 		// handle the organism		
 		String organismIri = null;
 		String organismValue = null;
 		if (XmlPathBuilder.of(sampleElem).path("Description", "Organism").attributeExists("taxonomy_id")) {
-			int taxonId = Integer.parseInt(XmlPathBuilder.of(sampleElem).path("Description", "Organism").attribute("taxonomy_id"));
+			int taxonId = getTaxId(XmlPathBuilder.of(sampleElem).path("Description", "Organism").attribute("taxonomy_id"));
 			organismIri = taxonomyService.getUriForTaxonId(taxonId);
 		}
 		if (XmlPathBuilder.of(sampleElem).path("Description", "Organism").attributeExists("taxonomy_name")) {
@@ -144,7 +168,7 @@ public class NcbiElementCallable implements Callable<Void> {
 		attrs.add(Attribute.build("INSDC last update", 
 			DateTimeFormatter.ISO_INSTANT.format(publicationDate)));
 		
-		Sample sample = Sample.build(name, accession, domain, publicationDate, lastUpdate, attrs, rels, null);
+		Sample sample = Sample.build(alias, accession, domain, publicationDate, lastUpdate, attrs, rels, null);
 		
 		//now pass it along to the actual submission process
 		bioSamplesClient.persistSampleResource(sample);
@@ -152,6 +176,18 @@ public class NcbiElementCallable implements Callable<Void> {
 		log.trace("Element callable finished");
 		
 		return null;
+	}
+	
+	/**
+	 * Safe way to extract the taxonomy id from the string
+	 * @param value
+	 * @return
+	 */
+	private int getTaxId(String value) {
+		if (value == null) {
+			throw new RuntimeException("Unable to extract tax id from a null value");
+		}
+		return Integer.parseInt(value.trim());
 	}
 
 }

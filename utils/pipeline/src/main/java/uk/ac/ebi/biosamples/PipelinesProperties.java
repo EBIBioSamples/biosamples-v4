@@ -12,16 +12,16 @@ public class PipelinesProperties {
 	@Value("${biosamples.pipelines.threadcount:1}")
 	private int threadCount;
 
-	@Value("${biosamples.pipelines.threadcount.max:32}")
+	@Value("${biosamples.pipelines.threadcount.max:8}")
 	private int threadCountMax;
 
-	@Value("${biosamples.pipelines.connectioncount.max:32}")
+	@Value("${biosamples.pipelines.connectioncount.max:8}")
 	private int connectionCountMax;
 	
-	@Value("${biosamples.pipelines.connectioncount.default:32}")
+	@Value("${biosamples.pipelines.connectioncount.default:8}")
 	private int connectionCountDefault;
 	
-	@Value("${biosamples.pipelines.connectioncount.ols:32}")
+	@Value("${biosamples.pipelines.connectioncount.ols:8}")
 	private int connectionCountOls;
 	
 	@Value("${biosamples.pipelines.connectioncount.zooma:1}")
@@ -32,6 +32,9 @@ public class PipelinesProperties {
 	
 	@Value("${biosamples.pipelines.ncbi.domain:self.BiosampleImportNCBI}")
 	private String ncbiDomain;
+	
+	@Value("${biosamples.pipelines.ncbi.controlledaccess:false}")
+	private Boolean ncbiControlledAccess;
 	
 	@Value("${biosamples.pipelines.ena.domain:self.BiosampleImportENA}")
 	private String enaDomain;
@@ -45,11 +48,17 @@ public class PipelinesProperties {
 	@Value("${biosamples.pipelines.zooma.domain:self.BiosampleZooma}")
 	private String zoomaDomain;
 	
+	@Value("${biosamples.pipelines.copydown.domain:self.BiosampleCopydown}")
+	private String copydownDomain;
+	
 	public String getNcbiFile() {
 		return ncbiFile;
 	}
 	public String getNcbiDomain() {
 		return ncbiDomain;
+	}
+	public Boolean getNcbiControlledAccess() {
+		return ncbiControlledAccess;
 	}
 	public String getEnaDomain() {
 		return enaDomain;
@@ -62,6 +71,9 @@ public class PipelinesProperties {
 	}
 	public String getZoomaDomain() {
 		return zoomaDomain;
+	}
+	public String getCopydownDomain() {
+		return copydownDomain;
 	}
 
 	public int getThreadCount() {
