@@ -33,7 +33,7 @@ public class MessageConfig {
 	@Bean
 	public Queue getQueueRetryDeadLetter() {		
 		return QueueBuilder.durable(Messaging.queueRetryDeadLetter)
-				.withArgument("x-message-ttl", 60000) //60 seconds
+				.withArgument("x-message-ttl", 30000) //60 seconds
 				.withArgument("x-dead-letter-exchange", Messaging.exchangeForIndexingSolr)
 				.build();
 	}
