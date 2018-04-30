@@ -30,5 +30,17 @@ A test file, `sample_example.json`, is available in this repo.
 
 We would like you to **submit this sample to your local Biosamples environment using the BioSamples JSON API**. 
 
-You can find more details on how to do this in the reference guide that is available in your local copy of BioSamples. Feel free to use commands like `curl` or `httpie` or software like Postman to get the task done.
+In order to do that you will need to create an account with the explore version of the EBI AAP authentication/authorization service
+
+You can read more about this in the *Authentication* documentation which should be available locally at http://localhost:8081/biosamples/docs/guides/authentication. 
+
+As a reference, here the links to:
+- Register a new user (yourself): https://explore.aap.tsi.ebi.ac.uk/registerUser
+- Login with your credentials: https://explore.aap.tsi.ebi.ac.uk/login
+- Require an AAP token with the api: https://explore.api.aap.tsi.ebi.ac.uk/auth
+
+Remember that for the submission you will need to use a domain you're member of and not just manager. You can create a domain using the 
+programmatic interface or through the link:https://explore.aap.tsi.ebi.ac.uk/myDomains[UI]
+
+You can further details on how to do submit samples in the reference guide that is available in your local copy of BioSamples. Feel free to use commands like `curl` or `httpie` or software like link:https://www.getpostman.com/[Postman] to get the task done.
 
