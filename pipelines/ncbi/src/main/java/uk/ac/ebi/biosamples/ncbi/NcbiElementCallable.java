@@ -2,6 +2,7 @@ package uk.ac.ebi.biosamples.ncbi;
 
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
@@ -12,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.utils.TaxonomyService;
@@ -45,6 +47,7 @@ public class NcbiElementCallable implements Callable<Void> {
 						
 		SortedSet<Attribute> attrs = new TreeSet<>();
 		SortedSet<Relationship> rels = new TreeSet<>();
+		Set<ExternalReference> externalReferences = new TreeSet<>();
 		String alias = null; //this will be the ENA alias of the sample
 		String geoAlias = null;
 		String centreName = null; //this will be the ENA centre name of the sample.
@@ -132,6 +135,11 @@ public class NcbiElementCallable implements Callable<Void> {
 				value = value.substring(0, 252)+"...";
 			}
 			*/
+			//if its a gap accession add an external reference too
+			if (value.matches("phs[0-9]+")) {
+				externalReferences.add(ExternalReference.build("https://www.ncbi.nlm.nih.gov/projects/gap/cgi-bin/study.cgi?study_id="+value));
+			}
+			
 			//value is a sample accession, assume its a relationship
 			if (value.matches("SAM[END]A?[0-9]+")) {
 				//if its a self-relationship, then don't add it
@@ -168,7 +176,7 @@ public class NcbiElementCallable implements Callable<Void> {
 		attrs.add(Attribute.build("INSDC last update", 
 			DateTimeFormatter.ISO_INSTANT.format(publicationDate)));
 		
-		Sample sample = Sample.build(alias, accession, domain, publicationDate, lastUpdate, attrs, rels, null);
+		Sample sample = Sample.build(alias, accession, domain, publicationDate, lastUpdate, attrs, rels, externalReferences);
 		
 		//now pass it along to the actual submission process
 		bioSamplesClient.persistSampleResource(sample);
