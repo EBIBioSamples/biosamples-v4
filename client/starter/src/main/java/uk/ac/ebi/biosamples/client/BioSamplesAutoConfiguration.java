@@ -66,25 +66,30 @@ public class BioSamplesAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean(AapClientService.class)
 	public AapClientService aapClientService(RestTemplateBuilder restTemplateBuilder, BioSamplesProperties bioSamplesProperties) {
+		if (bioSamplesProperties.getBiosamplesClientAapUsername() != null 
+				&& bioSamplesProperties.getBiosamplesClientAapPassword() != null) {
 			return new AapClientService(restTemplateBuilder, bioSamplesProperties.getBiosamplesClientAapUri(),
 					bioSamplesProperties.getBiosamplesClientAapUsername(), bioSamplesProperties.getBiosamplesClientAapPassword());
+		} else {
+			return null;
+		}
 	}
 
 	@Bean
 	@ConditionalOnMissingBean(BioSamplesClient.class)
 	public BioSamplesClient bioSamplesClient(BioSamplesProperties bioSamplesProperties,
 			RestTemplateBuilder restTemplateBuilder, SampleValidator sampleValidator, AapClientService aapClientService) {
-		restTemplateBuilder = restTemplateBuilder.additionalCustomizers(new BioSampleClientRestTempalteCustomizer(bioSamplesProperties));
+		restTemplateBuilder = restTemplateBuilder.additionalCustomizers(new BioSampleClientRestTemplateCustomizer(bioSamplesProperties));
 		return new BioSamplesClient(bioSamplesProperties.getBiosamplesClientUri(), restTemplateBuilder,
 				sampleValidator, aapClientService, bioSamplesProperties);
 	}
 	
 	
-	private static class BioSampleClientRestTempalteCustomizer implements RestTemplateCustomizer {
+	private static class BioSampleClientRestTemplateCustomizer implements RestTemplateCustomizer {
 		
 		private final BioSamplesProperties bioSamplesProperties;
 		
-		public BioSampleClientRestTempalteCustomizer(BioSamplesProperties bioSamplesProperties) {
+		public BioSampleClientRestTemplateCustomizer(BioSamplesProperties bioSamplesProperties) {
 			this.bioSamplesProperties = bioSamplesProperties;
 		}
 		

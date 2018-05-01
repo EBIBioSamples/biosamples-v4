@@ -42,14 +42,12 @@ public class SampleRetrievalService {
 	private final Traverson traverson;
 	private final ExecutorService executor;
 	private final RestOperations restOperations;
-	private final int pageSize;
 	
 	public SampleRetrievalService(RestOperations restOperations, Traverson traverson,
-			ExecutorService executor, int pageSize) {
+			ExecutorService executor) {
 		this.restOperations = restOperations;
 		this.traverson = traverson;
 		this.executor = executor;
-		this.pageSize = pageSize;
 	}
 
 	/**

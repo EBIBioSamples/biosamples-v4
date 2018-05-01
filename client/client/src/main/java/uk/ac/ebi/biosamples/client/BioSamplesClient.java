@@ -66,6 +66,8 @@ public class BioSamplesClient implements AutoCloseable {
 	
 	private final ExecutorService threadPoolExecutor;
 	
+	private final Optional<BioSamplesClient> publicClient;
+	
 	public BioSamplesClient(URI uri, RestTemplateBuilder restTemplateBuilder, 
 			SampleValidator sampleValidator, AapClientService aapClientService, 
 			BioSamplesProperties bioSamplesProperties) {
@@ -86,7 +88,7 @@ public class BioSamplesClient implements AutoCloseable {
 		Traverson traverson = new Traverson(uri, MediaTypes.HAL_JSON);
 		traverson.setRestOperations(restOperations);
 		
-		sampleRetrievalService = new SampleRetrievalService(restOperations, traverson, threadPoolExecutor, bioSamplesProperties.getBiosamplesClientPagesize());
+		sampleRetrievalService = new SampleRetrievalService(restOperations, traverson, threadPoolExecutor);
 		samplePageRetrievalService = new SamplePageRetrievalService(restOperations, traverson, threadPoolExecutor, bioSamplesProperties.getBiosamplesClientPagesize());
 		sampleCursorRetrievalService = new SampleCursorRetrievalService(restOperations, traverson, threadPoolExecutor, bioSamplesProperties.getBiosamplesClientPagesize());
 		
@@ -95,8 +97,18 @@ public class BioSamplesClient implements AutoCloseable {
 		curationSubmissionService = new CurationSubmissionService(restOperations, traverson, threadPoolExecutor);
 		
 		this.sampleValidator = sampleValidator;
+		
+		if (aapClientService == null ) {
+			this.publicClient = Optional.empty();
+		} else {
+			this.publicClient = Optional.of(new BioSamplesClient(uri, restTemplateBuilder, sampleValidator, null, bioSamplesProperties));
+		}
 	}
 
+	public Optional<BioSamplesClient> getPublicClient() {
+		return this.publicClient;
+	}
+	
 	private static class AapClientHttpRequestInterceptor implements ClientHttpRequestInterceptor {
 		
 		private final AapClientService aapClientService;
