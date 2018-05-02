@@ -135,6 +135,11 @@ public class BioSamplesClient implements AutoCloseable {
     
     @PreDestroy
     public void close() {
+    	//close down public client if present
+    	if (publicClient.isPresent()) {
+    		publicClient.get().close();
+    	}
+    	//close down our own thread pools
 		threadPoolExecutor.shutdownNow();
 		try {
 			threadPoolExecutor.awaitTermination(1, TimeUnit.MINUTES);
