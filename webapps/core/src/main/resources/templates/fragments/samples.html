@@ -97,7 +97,7 @@
 				</span>
 			</span>
 			<span th:each="extData: ${sample.externalReferences}" th:remove="tag">
-				<span th:replace=":: shield ('External data', ${@externalReferenceService.getNickname(extData)})"></span>
+				<span th:replace=":: shield ('external link', ${@externalReferenceService.getNickname(extData)})"></span>
 			</span>
 		</span>
 		<a class="button readmore float-right" th:href="@{'/samples/'+${sample.accession}}"></a>
