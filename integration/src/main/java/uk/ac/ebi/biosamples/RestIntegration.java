@@ -1,14 +1,6 @@
 package uk.ac.ebi.biosamples;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Collections;
-import java.util.Optional;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
-import javax.annotation.PreDestroy;
-
+import com.google.common.collect.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -16,25 +8,25 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.annotation.Order;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.hateoas.client.Traverson;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
-
-import com.google.common.collect.Sets;
-
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Contact;
-import uk.ac.ebi.biosamples.model.ExternalReference;
-import uk.ac.ebi.biosamples.model.Organization;
-import uk.ac.ebi.biosamples.model.Publication;
-import uk.ac.ebi.biosamples.model.Relationship;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.*;
+
+import javax.annotation.PreDestroy;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Collections;
+import java.util.Optional;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 @Component
 @Order(2)
@@ -43,14 +35,15 @@ public class RestIntegration extends AbstractIntegration {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 	private final RestTemplate restTemplate;
+	private BioSamplesProperties clientProperties;
 	private final BioSamplesClient annonymousClient;
 	
 	
 	public RestIntegration(BioSamplesClient client, RestTemplateBuilder restTemplateBuilder, BioSamplesProperties clientProperties) {
 		super(client);
 		this.restTemplate = restTemplateBuilder.build();
-		
-		this.annonymousClient = new BioSamplesClient(clientProperties.getBiosamplesClientUri(), restTemplateBuilder, null, null, clientProperties);
+		this.clientProperties = clientProperties;
+		this.annonymousClient = new BioSamplesClient(this.clientProperties.getBiosamplesClientUri(), restTemplateBuilder, null, null, clientProperties);
 	}
 
 	@Override
@@ -73,6 +66,9 @@ public class RestIntegration extends AbstractIntegration {
 
 	@Override
 	protected void phaseTwo() {
+	    // Test POSTing a sample with an accession to /samples should return 400 BAD REQUEST response
+		this.postSampleWithAccessionShouldReturnABadRequestResponse();
+
 		Sample sampleTest1 = getSampleTest1();
 		// get to check it worked
 		Optional<Resource<Sample>> optional = client.fetchSampleResource(sampleTest1.getAccession());
@@ -292,6 +288,46 @@ public class RestIntegration extends AbstractIntegration {
 		attributes.add(Attribute.build("UTF-8 test", "αβ"));
 
 		return Sample.build(name, accession, domain, release, update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
+	}
+
+	private void postSampleWithAccessionShouldReturnABadRequestResponse() {
+
+
+		Traverson traverson = new Traverson(this.clientProperties.getBiosamplesClientUri(), MediaTypes.HAL_JSON);
+		Traverson.TraversalBuilder builder = traverson.follow("samples");
+		log.info("POSTing sample with accession from " + builder.asLink().getHref());
+
+		MultiValueMap<String, String> sample= new LinkedMultiValueMap<String, String>();
+		sample.add("name", "test_sample");
+		sample.add("accession", "SAMEA09123842");
+		sample.add("domain", "self.BiosampleIntegrationTest");
+		sample.add("release", "2016-05-05T11:36:57.00Z");
+		sample.add("update", "2016-04-01T11:36:57.00Z");
+
+		HttpHeaders httpHeaders = new HttpHeaders();
+		httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+		httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+
+		HttpEntity<MultiValueMap> entity = new HttpEntity<>(sample, httpHeaders);
+
+		try {
+			restTemplate.exchange(
+					builder.asLink().getHref(),
+					HttpMethod.POST,
+					entity,
+					String.class);
+		} catch (HttpStatusCodeException sce) {
+			if ( ! sce.getStatusCode().equals(HttpStatus.BAD_REQUEST) ) {
+				throw new RuntimeException("POSTing to samples endpoint a sample with an accession should return a 400 Bad Request exception");
+			}
+		}
+
+		log.info(String.format(
+				"POSTing sample with accession from %s produced a BAD REQUEST as expected and wanted ",
+				builder.asLink().getHref()
+		));
+
+
 	}
 
 }
