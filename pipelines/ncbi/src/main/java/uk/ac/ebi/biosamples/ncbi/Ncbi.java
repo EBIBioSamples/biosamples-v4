@@ -92,8 +92,6 @@ public class Ncbi implements ApplicationRunner {
 		} else {
 			toDate = LocalDate.parse("3000-01-01", DateTimeFormatter.ISO_LOCAL_DATE);
 		}
-		
-		boolean removeOutdated = args.getOptionNames().contains("delete");
 
 		log.info("Processing samples from "+DateTimeFormatter.ISO_LOCAL_DATE.format(fromDate));
 		log.info("Processing samples to "+DateTimeFormatter.ISO_LOCAL_DATE.format(toDate));
@@ -142,17 +140,9 @@ public class Ncbi implements ApplicationRunner {
 		log.debug("Number of accession from NCBI = "+accessionCallback.accessions.size());
 		
 		//remove old NCBI samples no longer present
-		//make sure to only get the public samples
-		Set<String> toRemoveAccessions = new TreeSet<>();		
-		for (Resource<Sample> sample : bioSamplesClient.getPublicClient().get().fetchSampleResourceAll(
-				Collections.singleton(FilterBuilder.create().onAccession("SAM[^E].*").build()))) {
-			toRemoveAccessions.add(sample.getContent().getAccession());
-		}		
-
-		log.debug("Number of accession in API = "+toRemoveAccessions.size());
 		
-		toRemoveAccessions.removeAll(accessionCallback.accessions);
-		
+		Set<String> toRemoveAccessions = getExstingPublicNcbiAccessions();		
+		toRemoveAccessions.removeAll(accessionCallback.accessions);		
 		log.debug("Number of samples to remove = "+toRemoveAccessions.size());
 		
 		//remove those samples that are left
@@ -185,6 +175,21 @@ public class Ncbi implements ApplicationRunner {
 		log.info("Processed NCBI pipeline");
 	}
 	
+	private Set<String> getExstingPublicNcbiAccessions() {
+		long startTime = System.nanoTime();
+		//make sure to only get the public samples
+		Set<String> existingAccessions = new TreeSet<>();		
+		for (Resource<Sample> sample : bioSamplesClient.getPublicClient().get().fetchSampleResourceAll(
+				Collections.singleton(FilterBuilder.create().onAccession("SAM[^E].*").build()))) {
+			existingAccessions.add(sample.getContent().getAccession());
+		}	
+		
+		long endTime = System.nanoTime();
+		double intervalSec = ((double)(endTime-startTime))/1000000000.0;
+		log.debug("Took "+intervalSec+"s to get "+existingAccessions.size()+" existing accessions");	
+		return existingAccessions;
+	}
+	
 	private void waitUntilAccessionSearchable(String accession) {
 		long startTime = System.nanoTime();
 		
@@ -207,7 +212,7 @@ public class Ncbi implements ApplicationRunner {
 		
 		long endTime = System.nanoTime();
 		double intervalSec = ((double)(endTime-startTime))/1000000000.0;
-		log.debug("Took "+intervalSec+"s to wait for last accession");
+		log.debug("Took "+intervalSec+"s to wait for last accession "+accession);
 	}
 	
 	private static class AccessionCallback implements ElementCallback {
