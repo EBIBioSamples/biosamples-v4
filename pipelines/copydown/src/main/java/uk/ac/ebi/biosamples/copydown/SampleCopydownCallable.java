@@ -28,6 +28,7 @@ public class SampleCopydownCallable implements Callable<Void> {
 	private final String domain;
 
 	public static final ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<String>();
+	private static final Attribute mixedAttribute = Attribute.build("organism", "mixed sample", "http://purl.obolibrary.org/obo/NCBITaxon_1427524", null);
 	
 	public SampleCopydownCallable(BioSamplesClient bioSamplesClient, Sample sample, String domain) {
 		this.bioSamplesClient = bioSamplesClient;
@@ -55,14 +56,14 @@ public class SampleCopydownCallable implements Callable<Void> {
 		
 		if (!hasOrganism && hasDerivedFrom) {
 			//walk up the derived from relationships and pull out all the organisms
-			Set<String> organisms = getOrganismsForSample(sample, false);
+			Set<Attribute> organisms = getOrganismsForSample(sample, false);
 			if (organisms.size() > 1) {
 				//if there are multiple organisms, use a "mixed sample" taxonomy reference
 				//some users expect one taxonomy reference, no more, no less
-				log.debug("Applying curation to "+sample.getAccession()+" of "+String.join(", ", organisms));
-				applyCuration("mixed sample");
+				log.debug("Applying curation to "+sample.getAccession());
+				applyCuration(mixedAttribute);
 			} else if (organisms.size() == 1) {
-				log.debug("Applying curation to "+sample.getAccession()+" of "+String.join(", ", organisms));
+				log.debug("Applying curation to "+sample.getAccession());
 				applyCuration(organisms.iterator().next());
 			} else {
 				log.warn("Unable to find organism for "+sample.getAccession());
@@ -81,18 +82,18 @@ public class SampleCopydownCallable implements Callable<Void> {
 						throw new RuntimeException("Expected single post attribute, got "+attributesPost.size());
 					}
 					//this curation link was applied by us, check it is still valid
-					Set<String> organisms = getOrganismsForSample(sample, true);
+					Set<Attribute> organisms = getOrganismsForSample(sample, true);
 					if (organisms.size() > 1) {
 						//check if the postattribute is the same as the organisms
 						String organism = "mixed sample";
 						if (!organism.equals(attributesPost.iterator().next().getValue())) {
 							log.debug("Replacing curation on "+sample.getAccession()+" with \"mixed Sample\"");
 							bioSamplesClient.deleteCurationLink(curationLink.getContent());
-							applyCuration("mixed sample");
+							applyCuration(mixedAttribute);
 						}
 					} else if (organisms.size() == 1) {
 						//check if the postattribute is the same as the organisms
-						String organism = organisms.iterator().next();
+						Attribute organism = organisms.iterator().next();
 						if (!organism.equals(attributesPost.iterator().next().getValue())) {
 							log.debug("Replacing curation on "+sample.getAccession()+" with "+organism);
 							bioSamplesClient.deleteCurationLink(curationLink.getContent());
@@ -106,20 +107,20 @@ public class SampleCopydownCallable implements Callable<Void> {
 		return null;
 	}
 	
-	private void applyCuration(String organismValue) {
+	private void applyCuration(Attribute organismValue) {
 		Set<Attribute> postAttributes = new HashSet<>();
-		postAttributes.add(Attribute.build("Organism", organismValue));
+		postAttributes.add(organismValue);
 		Curation curation = Curation.build(Collections.emptyList(), 
 				postAttributes);
 		bioSamplesClient.persistCuration(sample.getAccession(), curation, domain);
 	}
 	
-	private Set<String> getOrganismsForSample(Sample sample, boolean ignoreSample) {
-		Set<String> organisms = new HashSet<>();
+	private Set<Attribute> getOrganismsForSample(Sample sample, boolean ignoreSample) {
+		Set<Attribute> organisms = new HashSet<>();
 		if (!ignoreSample) {
 			for (Attribute attribute : sample.getAttributes()) {
 				if ("organism".equals(attribute.getType().toLowerCase())) {
-					organisms.add(attribute.getValue());
+					organisms.add(attribute);
 				}
 			}
 		}
