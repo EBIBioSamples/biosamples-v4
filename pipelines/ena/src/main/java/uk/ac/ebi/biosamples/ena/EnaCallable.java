@@ -50,20 +50,8 @@ public class EnaCallable implements Callable<Void> {
 		
 		try {
 
-			// https://www.ebi.ac.uk/ena/data/view/SAMEA1317921&display=xml works
-			// https://www.ebi.ac.uk/ena/data/view/SAMEA1317921?display=xml is a
-			// more correct URL, but doesn't work	
-			URI uri = UriComponentsBuilder.newInstance().scheme("http").host("www.ebi.ac.uk")
-					.pathSegment("ena", "data", "view", sampleAccession + "&display=xml").build().toUri();
 			
-			log.trace("looking at " + uri);
-			ResponseEntity<String> response = restTemplate.getForEntity(uri, String.class);
-			if (!response.getStatusCode().is2xxSuccessful()) {
-				log.error("Non-2xx status code for " + sampleAccession);
-				return null;
-			}
-	
-			String xmlString = response.getBody();
+			String xmlString = eraProDao.getSampleXml(sampleAccession);
 			// System.out.println(xmlString);
 			SAXReader reader = new SAXReader();
 			Document xml = reader.read(new StringReader(xmlString));

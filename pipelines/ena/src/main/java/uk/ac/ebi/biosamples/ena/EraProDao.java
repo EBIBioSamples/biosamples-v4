@@ -1,11 +1,13 @@
 package uk.ac.ebi.biosamples.ena;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -16,7 +18,14 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.nativejdbc.SimpleNativeJdbcExtractor;
 import org.springframework.stereotype.Service;
+
+import oracle.jdbc.OracleConnection;
+import oracle.jdbc.OraclePreparedStatement;
+import oracle.jdbc.OracleResultSet;
+import oracle.sql.OPAQUE;
+import oracle.xdb.XMLType;
 
 @Service
 public class EraProDao {
@@ -124,5 +133,16 @@ select * from cv_status;
 		String dateString = jdbcTemplate.queryForObject(sql, String.class, biosampleAccession);
 		log.trace("Release date is "+dateString);
 		return Instant.parse(dateString);
+	}
+	
+	public String getSampleXml(String biosampleAccession) throws SQLException {
+		String query = "SELECT SAMPLE_XML FROM SAMPLE WHERE BIOSAMPLE_ID = ?";	    
+		String result = jdbcTemplate.queryForObject(query, new RowMapper<String>() {
+			@Override
+			public String mapRow(ResultSet rs, int rowNum) throws SQLException {
+				return rs.getString(1);
+			}}, biosampleAccession);
+		return result;
+		
 	}
 }
