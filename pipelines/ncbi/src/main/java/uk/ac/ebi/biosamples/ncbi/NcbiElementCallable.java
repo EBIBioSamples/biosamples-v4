@@ -1,7 +1,10 @@
 package uk.ac.ebi.biosamples.ncbi;
 
 import java.time.Instant;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -78,16 +81,24 @@ public class NcbiElementCallable implements Callable<Void> {
 			attrs.add(Attribute.build("synonym",  geoAlias));
 		}
 		
-		
 		if (alias == null) {
 			log.warn("Unable to determine sample alias for "+accession+", falling back to accession");
 			alias = accession;
 		}
+		
+		//override any existing centre name with this, if present
+		if (XmlPathBuilder.of(sampleElem).path("Owner", "Name").exists()) {
+			if (XmlPathBuilder.of(sampleElem).path("Owner", "Name").text().trim().length() > 0) {
+				centreName = XmlPathBuilder.of(sampleElem).path("Owner", "Name").text().trim();
+			}
+		}
+		
 		if (centreName == null) {
 			//throw new RuntimeException("Unable to determine centre name for "+accession);
 			log.warn("Unable to determine centre name for "+accession);
 		} else {
-			attrs.add(Attribute.build("INSDC centre name", centreName));
+			//Note US spelling because NCBI
+			attrs.add(Attribute.build("INSDC center name", centreName));
 		}
 
 		if (XmlPathBuilder.of(sampleElem).path("Description", "Title").exists()) {
@@ -175,6 +186,15 @@ public class NcbiElementCallable implements Callable<Void> {
 			DateTimeFormatter.ISO_INSTANT.format(lastUpdate)));
 		attrs.add(Attribute.build("INSDC last update", 
 			DateTimeFormatter.ISO_INSTANT.format(publicationDate)));
+		
+		if (XmlPathBuilder.of(sampleElem).path("Status").attributeExists("status")) {
+			String status = XmlPathBuilder.of(sampleElem).path("Status").attribute("status").trim();
+			attrs.add(Attribute.build("INSDC status", status));
+			if (!"live".equals(status.toLowerCase())) {
+				//not a live sample, hide
+				publicationDate = publicationDate.atZone(ZoneOffset.UTC).plus(1000, ChronoUnit.YEARS).toInstant();
+			}
+		}
 		
 		Sample sample = Sample.build(alias, accession, domain, publicationDate, lastUpdate, attrs, rels, externalReferences);
 		
