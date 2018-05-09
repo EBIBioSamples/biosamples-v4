@@ -125,4 +125,15 @@ select * from cv_status;
 		log.trace("Release date is "+dateString);
 		return Instant.parse(dateString);
 	}
+	
+	public String getSampleXml(String biosampleAccession) throws SQLException {
+		String query = "SELECT SAMPLE_XML FROM SAMPLE WHERE BIOSAMPLE_ID = ? AND BIOSAMPLE_AUTHORITY='N' ";	    
+		String result = jdbcTemplate.queryForObject(query, new RowMapper<String>() {
+			@Override
+			public String mapRow(ResultSet rs, int rowNum) throws SQLException {
+				return rs.getString(1);
+			}}, biosampleAccession);
+		return result;
+		
+	}
 }

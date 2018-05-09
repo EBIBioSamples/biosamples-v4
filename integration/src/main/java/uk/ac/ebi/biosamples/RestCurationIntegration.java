@@ -19,7 +19,6 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;

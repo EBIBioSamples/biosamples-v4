@@ -39,12 +39,6 @@ import uk.ac.ebi.biosamples.model.facet.Facet;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.*;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.net.URI;
-import java.time.ZoneOffset;
-import java.util.*;
-
 
 /**
  * Primary controller for HTML operations.

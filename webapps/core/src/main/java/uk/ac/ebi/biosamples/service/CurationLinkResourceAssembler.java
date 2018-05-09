@@ -10,7 +10,6 @@ import uk.ac.ebi.biosamples.controller.SampleCurationLinksRestController;
 import uk.ac.ebi.biosamples.controller.SampleRestController;
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.CurationLink;
-import uk.ac.ebi.biosamples.model.Sample;
 
 @Service
 public class CurationLinkResourceAssembler implements ResourceAssembler<CurationLink, Resource<CurationLink>> {

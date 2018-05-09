@@ -1,35 +1,19 @@
 package uk.ac.ebi.biosamples;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
-import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.Resources;
-import org.springframework.hateoas.client.Traverson;
-import org.springframework.hateoas.mvc.TypeReferences;
 import org.springframework.stereotype.Component;
 
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.facet.ExternalReferenceDataFacet;
-import uk.ac.ebi.biosamples.model.facet.Facet;
-import uk.ac.ebi.biosamples.model.facet.FacetType;
-import uk.ac.ebi.biosamples.model.facet.content.FacetContent;
-import uk.ac.ebi.biosamples.model.facet.content.LabelCountEntry;
-import uk.ac.ebi.biosamples.model.facet.content.LabelCountListContent;
 
 @Component
 @Order(3)

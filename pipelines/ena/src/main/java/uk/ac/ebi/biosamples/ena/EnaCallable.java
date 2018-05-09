@@ -1,7 +1,6 @@
 package uk.ac.ebi.biosamples.ena;
 
 import java.io.StringReader;
-import java.net.URI;
 import java.time.Instant;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -11,11 +10,8 @@ import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
-
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
@@ -50,20 +46,8 @@ public class EnaCallable implements Callable<Void> {
 		
 		try {
 
-			// https://www.ebi.ac.uk/ena/data/view/SAMEA1317921&display=xml works
-			// https://www.ebi.ac.uk/ena/data/view/SAMEA1317921?display=xml is a
-			// more correct URL, but doesn't work	
-			URI uri = UriComponentsBuilder.newInstance().scheme("http").host("www.ebi.ac.uk")
-					.pathSegment("ena", "data", "view", sampleAccession + "&display=xml").build().toUri();
 			
-			log.trace("looking at " + uri);
-			ResponseEntity<String> response = restTemplate.getForEntity(uri, String.class);
-			if (!response.getStatusCode().is2xxSuccessful()) {
-				log.error("Non-2xx status code for " + sampleAccession);
-				return null;
-			}
-	
-			String xmlString = response.getBody();
+			String xmlString = eraProDao.getSampleXml(sampleAccession);
 			// System.out.println(xmlString);
 			SAXReader reader = new SAXReader();
 			Document xml = reader.read(new StringReader(xmlString));
