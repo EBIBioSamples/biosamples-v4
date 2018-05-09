@@ -14,10 +14,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.util.UriComponentsBuilder;
-
-import uk.ac.ebi.biosamples.model.Curation;
-import uk.ac.ebi.biosamples.model.Sample;
 
 @RestController
 @RequestMapping

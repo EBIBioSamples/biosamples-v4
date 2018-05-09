@@ -1,8 +1,6 @@
 package uk.ac.ebi.biosamples.utils;
 
 
-import java.io.UnsupportedEncodingException;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;

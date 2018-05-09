@@ -1,8 +1,6 @@
 package uk.ac.ebi.biosamples;
 
 import com.jayway.jsonpath.JsonPath;
-import io.restassured.response.ExtractableResponse;
-import io.restassured.response.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
