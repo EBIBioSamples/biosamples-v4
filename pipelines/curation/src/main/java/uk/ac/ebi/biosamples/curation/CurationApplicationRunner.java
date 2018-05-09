@@ -1,5 +1,11 @@
 package uk.ac.ebi.biosamples.curation;
 
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -17,9 +23,12 @@ import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.filter.DateRangeFilter;
+import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.ols.OlsProcessor;
 import uk.ac.ebi.biosamples.service.CurationApplicationService;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
+import uk.ac.ebi.biosamples.utils.ArgUtils;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 
 @Component
@@ -44,14 +53,16 @@ public class CurationApplicationRunner implements ApplicationRunner {
 	
 	
 	@Override
-	public void run(ApplicationArguments arg0) throws Exception {
-
+	public void run(ApplicationArguments args) throws Exception {
+		
+		Collection<Filter> filters = ArgUtils.getDateFilters(args);
+		
 		try (AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, 
 				pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax())) {
 
 			Map<String, Future<Void>> futures = new HashMap<>();
 			
-			for (Resource<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll()) {
+			for (Resource<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll("", filters)) {
 				log.trace("Handling "+sampleResource);
 				Sample sample = sampleResource.getContent();
 				if (sample == null) {
