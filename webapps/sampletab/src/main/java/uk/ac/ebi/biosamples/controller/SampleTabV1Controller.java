@@ -96,7 +96,7 @@ public class SampleTabV1Controller {
     @PostMapping(value = "/api/v1/json/sb")
     public @ResponseBody Outcome doSubmission(@RequestBody SampleTabRequest request,  @RequestParam(value="apikey") String apiKey) {
     	//handle APIkey
-    	if (apiKey == null) {
+    	if (apiKey == null ) {
     		Outcome outcome = getErrorOutcome("API key not present", "API key not present. Contact biosamples@ebi.ac.uk for more information.");
     		return outcome;
     	}

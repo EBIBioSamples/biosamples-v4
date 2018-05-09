@@ -1,38 +1,39 @@
 package uk.ac.ebi.biosamples;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.URL;
-import java.util.Collections;
-import java.util.Optional;
-
+import com.google.common.base.Charsets;
+import com.google.common.io.Resources;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
-import org.springframework.http.MediaType;
-import org.springframework.http.RequestEntity;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import com.google.common.base.Charsets;
-import com.google.common.io.Resources;
-
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.FilterBuilder;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.URL;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 
 @Component
 @Order(5)
-@Profile({"default"})
+@Profile({"default", "test"})
 public class SampleTabLegacyIntegration extends AbstractIntegration {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
@@ -42,6 +43,7 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 	private final RestOperations restTemplate;
 
 	private final URI uriSb;
+	private final URI uriFileSb;
 	private final URI uriVa;
 	private final URI uriAc;
 	
@@ -58,6 +60,10 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 				.build().toUri();
 		uriSb = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUriSampleTab())
 				.pathSegment("api", "v1", "json", "sb")
+				.queryParam("apikey", integrationProperties.getLegacyApiKey())
+				.build().toUri();
+		uriFileSb = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUriSampleTab())
+				.pathSegment("api", "v1", "file", "sb")
 				.queryParam("apikey", integrationProperties.getLegacyApiKey())
 				.build().toUri();
 	}
@@ -119,6 +125,23 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 				throw new RuntimeException("Response does not have expected submission identifier");
 			}
 			log.info(""+response.getBody());
+		});
+
+		log.info("Testing SampleTab file submission with DatabaseURI");
+		runCallableOnSampleTabFile("/GSB-52.txt", sampletabFile -> {
+			log.info("POSTing to " + uriFileSb);
+			LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
+			map.add("file", sampletabFile);
+			HttpHeaders headers = new HttpHeaders();
+			headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+
+			HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = new HttpEntity(
+					map, headers);
+			ResponseEntity<String> response = restTemplate.exchange(
+					uriFileSb, HttpMethod.POST, requestEntity,
+					String.class);
+			log.info(""+response.getBody());
+
 		});
 
 		
@@ -222,12 +245,13 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 	@Override
 	protected void phaseFour() {
 		// Find Sample
-		Filter nameFilter = FilterBuilder.create().onName("JJSample").build();
-		PagedResources<Resource<Sample>> samplePage = client.fetchPagedSampleResource("*:*",
-				Collections.singleton(nameFilter), 0, 1);
-		assert samplePage.getMetadata().getTotalElements() == 1;
+//		Filter nameFilter = FilterBuilder.create().onName("JJSample").build();
+//		PagedResources<Resource<Sample>> samplePage = client.fetchPagedSampleResource("*:*",
+//				Collections.singleton(nameFilter), 0, 1);
+//		assert samplePage.getMetadata().getTotalElements() == 1;
+//
+//		Sample jjSample = samplePage.getContent().iterator().next().getContent();
 
-		Sample jjSample = samplePage.getContent().iterator().next().getContent();
 		//TODO do this better
 //		assertThat(jjSample.getContacts(), hasSize(2));
 //		assertThat(jjSample.getOrganizations(), hasSize(2));
@@ -247,6 +271,24 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 //		assertThat(jjGroup.getPublications(), hasSize(2));
 //
 //		assertThat(jjGroup.getPublications().first().getPubMedId(), notNullValue());
+
+		String sampleNameToCheck = "testExternalRefSample";
+		Filter nameFilter = FilterBuilder.create().onName(sampleNameToCheck).build();
+		PagedResources<Resource<Sample>> samplePage = client.fetchPagedSampleResource("*:*",
+				Collections.singleton(nameFilter), 0, 1);
+
+
+		Optional<Resource<Sample>> sample = samplePage.getContent().stream().findFirst();
+		if (!sample.isPresent()) {
+			throw new RuntimeException("Can't find sample submitted using sampletab GSB-52.txt");
+		}
+
+		List<String> externalReferencesURL = sample.get().getContent().getExternalReferences()
+				.stream().map(ExternalReference::getUrl).collect(Collectors.toList());
+		if (!externalReferencesURL.contains("https://hpscreg.eu/cell-line/CENSOi007-A")) {
+			throw new RuntimeException("Sample " + sampleNameToCheck + " does not present the expected " +
+					"external relationships");
+		}
 	}
 
 	@Override
@@ -259,6 +301,10 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 		public void callback(String sampleTabString);
 	}
 
+	private interface SampleTabFileCallback {
+		public void callback(ClassPathResource sampletabFileContent);
+	}
+
 	private void runCallableOnSampleTabResource(String resource, SampleTabCallback callback) {
 		URL url = Resources.getResource(resource);
 		String text = null;
@@ -269,6 +315,10 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 		} finally {
 			callback.callback(text);			
 		}
+	}
+
+	private void runCallableOnSampleTabFile(String resource, SampleTabFileCallback callback) {
+	    callback.callback(new ClassPathResource(resource));
 	}
 
 }
