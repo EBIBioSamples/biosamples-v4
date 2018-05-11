@@ -95,6 +95,7 @@ public class SampleCurationLinksRestController {
 			//curationLink has no sample, use the one specified in the URL
 		} else if (!curationLink.getSample().equals(accession)) {
 			//points to a different sample, this is an error
+			log.warn("Attempted to POST a curation link on "+curationLink.getSample()+" to "+accession);
 			throw new SampleNotMatchException();
 		}
 		

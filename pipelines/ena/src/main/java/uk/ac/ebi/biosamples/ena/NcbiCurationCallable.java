@@ -16,10 +16,12 @@ public class NcbiCurationCallable implements Callable<Void> {
 	
 	private final String accession;
 	private final BioSamplesClient bioSamplesClient;
+	private final String domain;
 	
-	public NcbiCurationCallable(String accession, BioSamplesClient bioSamplesClient) {
+	public NcbiCurationCallable(String accession, BioSamplesClient bioSamplesClient, String domain) {
 		this.accession = accession;
 		this.bioSamplesClient = bioSamplesClient;
+		this.domain = domain;
 	}
 	
 	@Override
@@ -30,7 +32,7 @@ public class NcbiCurationCallable implements Callable<Void> {
 		
 		//get the sample to make sure it exists first
 		if (bioSamplesClient.fetchSampleResource(accession).isPresent()) {
-			bioSamplesClient.persistCuration(accession, curation, null);
+			bioSamplesClient.persistCuration(accession, curation, domain);
 		} else {
 			log.warn("Unable to find " + accession);			
 		}
