@@ -166,6 +166,7 @@ public class NcbiElementCallable implements Callable<Void> {
 		// handle model and packages
 //disabled for the moment, do they really add anything? faulcon@2017/01/25
 //yes, ENA want them. But we can name them better. faulcon@2018/02/14
+		//TODO safetly access these - shouldn't ever be missing but....
 		for (Element modelElem : XmlPathBuilder.of(sampleElem).path("Models").elements("Model")) {
 			attrs.add(Attribute.build("NCBI submission model", modelElem.getTextTrim()));
 		}
@@ -182,9 +183,9 @@ public class NcbiElementCallable implements Callable<Void> {
 		
 		//add some INSDC things for standardisation with ENA import
 		attrs.add(Attribute.build("INSDC first public", 
-			DateTimeFormatter.ISO_INSTANT.format(lastUpdate)));
-		attrs.add(Attribute.build("INSDC last update", 
 			DateTimeFormatter.ISO_INSTANT.format(publicationDate)));
+		attrs.add(Attribute.build("INSDC last update", 
+			DateTimeFormatter.ISO_INSTANT.format(lastUpdate)));
 		
 		if (XmlPathBuilder.of(sampleElem).path("Status").attributeExists("status")) {
 			String status = XmlPathBuilder.of(sampleElem).path("Status").attribute("status").trim();
