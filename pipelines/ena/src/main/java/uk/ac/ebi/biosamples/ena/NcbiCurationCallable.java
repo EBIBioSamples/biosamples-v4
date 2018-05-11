@@ -32,7 +32,7 @@ public class NcbiCurationCallable implements Callable<Void> {
 		if (bioSamplesClient.fetchSampleResource(accession).isPresent()) {
 			bioSamplesClient.persistCuration(accession, curation, null);
 		} else {
-			log.trace("Unable to find " + accession);			
+			log.warn("Unable to find " + accession);			
 		}
 		
 		log.trace("HANDLED " + accession);

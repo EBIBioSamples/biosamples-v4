@@ -81,11 +81,11 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 			}
 		}
 		if (XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, ANONYMIZED_NAME).exists()) {
-			synonyms.add(XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, ANONYMIZED_NAME).text());
+			synonyms.add(XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, ANONYMIZED_NAME).text().trim());
 			//attributes.add(Attribute.build("anonymized name", XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, ANONYMIZED_NAME).text()));
 		}
 		if (XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, INDIVIDUAL_NAME).exists()) {
-			synonyms.add(XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, INDIVIDUAL_NAME).text());
+			synonyms.add(XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, INDIVIDUAL_NAME).text().trim());
 			//attributes.add(Attribute.build("individual name", XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, INDIVIDUAL_NAME).text()));
 		}
 		for (String synonym : synonyms) {
@@ -95,8 +95,9 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 		}
 		
 		//description
-		if (XmlPathBuilder.of(root).path(SAMPLE, DESCRIPTION).exists()) {
-			String description = XmlPathBuilder.of(root).path(SAMPLE, DESCRIPTION).text();
+		if (XmlPathBuilder.of(root).path(SAMPLE, DESCRIPTION).exists()
+				&& XmlPathBuilder.of(root).path(SAMPLE, DESCRIPTION).text().trim().length() > 0) {
+			String description = XmlPathBuilder.of(root).path(SAMPLE, DESCRIPTION).text().trim();
 			attributes.add(Attribute.build("description", description));			
 		}
 		
@@ -113,35 +114,40 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 			for (Element e : XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_ATTRIBUTES).elements(SAMPLE_ATTRIBUTE)) {
 
 				String tag = null;
-				if (XmlPathBuilder.of(e).path("TAG").exists()) {
-					tag = XmlPathBuilder.of(e).path("TAG").text();
+				if (XmlPathBuilder.of(e).path("TAG").exists()
+						&& XmlPathBuilder.of(e).path("TAG").text().trim().length() > 0) {
+					tag = XmlPathBuilder.of(e).path("TAG").text().trim();
 				}
 				String value = null;
-				if (XmlPathBuilder.of(e).path("VALUE").exists()) {
-					value = XmlPathBuilder.of(e).path("VALUE").text();
+				if (XmlPathBuilder.of(e).path("VALUE").exists()
+						&& XmlPathBuilder.of(e).path("VALUE").text().trim().length() > 0) {
+					value = XmlPathBuilder.of(e).path("VALUE").text().trim();
 				}
 				String unit = null;
-				if (XmlPathBuilder.of(e).path("UNITS").exists()) {
-					unit = XmlPathBuilder.of(e).path("UNITS").text();
+				if (XmlPathBuilder.of(e).path("UNITS").exists()
+						&& XmlPathBuilder.of(e).path("UNITS").text().trim().length() > 0) {
+					unit = XmlPathBuilder.of(e).path("UNITS").text().trim();
 				}
 
 				//log.info("Attribute "+tag+" : "+value+" : "+unit);
 				
 				// skip artificial attributes
-				if (tag.startsWith("ENA-")) {
+				if (tag != null && tag.startsWith("ENA-")) {
 					continue;
 				}
-				if (tag.startsWith("ArrayExpress-")) {
+				if (tag != null && tag.startsWith("ArrayExpress-")) {
 					continue;
 				}
 				
 				//TODO handle relationships
 
-				if (value != null) {
-					attributes.add(Attribute.build(tag, value, Collections.emptyList(), unit));
-				} else {
-					// no value supplied
-					attributes.add(Attribute.build("unknown", tag, Collections.emptyList(), unit));
+				if (tag != null) {
+					if (value != null) {
+						attributes.add(Attribute.build(tag, value, Collections.emptyList(), unit));
+					} else {
+						// no value supplied
+						attributes.add(Attribute.build("unknown", tag, Collections.emptyList(), unit));
+					}
 				}
 			}
 		}
@@ -154,6 +160,7 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 		}
 
 	    //external reference
+		/*
 		if (XmlPathBuilder.of(root).path(SAMPLE, "SAMPLE_LINKS", "SAMPLE_LINK").exists()) {
 			for (Element e : XmlPathBuilder.of(root).path(SAMPLE, "SAMPLE_LINKS").elements("SAMPLE_LINK")) {
 				if (XmlPathBuilder.of(e).path("XREF_LINK", "DB").exists() && XmlPathBuilder.of(e).path("XREF_LINK", "ID").exists()) {
@@ -171,8 +178,7 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 				}				
 			}
 		}
-		//add external link by BioSample accession 
-		externalReferences.add(ExternalReference.build("https://www.ebi.ac.uk/ena/data/view/"+accession));
+		*/
 		
 		return Sample.build(name, accession, null, Instant.now(), Instant.now(), attributes, relationships, externalReferences);
 	}
