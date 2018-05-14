@@ -1,4 +1,4 @@
-@XmlSchema(namespace = "http://www.sitemaps.org/schemas/model/0.9",
+@XmlSchema(namespace = "http://www.sitemaps.org/schemas/sitemap/0.9",
         elementFormDefault = XmlNsForm.QUALIFIED)
 package uk.ac.ebi.biosamples.model;
 
