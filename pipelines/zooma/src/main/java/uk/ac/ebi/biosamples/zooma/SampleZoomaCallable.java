@@ -105,6 +105,10 @@ public class SampleZoomaCallable implements Callable<Void> {
 				log.trace("Skipping unknown "+attribute.getValue());
 				continue;
 			} 
+			if (attribute.getType().toLowerCase().equals("description")) {
+				log.trace("Skipping description "+attribute.getValue());
+				continue;
+			} 
 			if (attribute.getType().toLowerCase().equals("label")) {
 				log.trace("Skipping label "+attribute.getValue());
 				continue;
