@@ -63,8 +63,8 @@ public class EnaRunner implements ApplicationRunner {
 		}
 		
 		if (pipelinesProperties.getThreadCount() == 0) {
-			//EraRowCallbackHandler eraRowCallbackHandler = new EraRowCallbackHandler(null, enaCallableFactory, futures);
-			//eraProDao.doSampleCallback(fromDate, toDate, eraRowCallbackHandler);
+			EraRowCallbackHandler eraRowCallbackHandler = new EraRowCallbackHandler(null, enaCallableFactory, futures);
+			eraProDao.doSampleCallback(fromDate, toDate, eraRowCallbackHandler);
 			
 			NcbiRowCallbackHandler ncbiRowCallbackHandler = new NcbiRowCallbackHandler(null, ncbiCallableFactory, futures);
 			eraProDao.getNcbiCallback(fromDate, toDate, ncbiRowCallbackHandler);
@@ -73,8 +73,8 @@ public class EnaRunner implements ApplicationRunner {
 			try (AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, false, 
 					pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax())) {
 	
-				//EraRowCallbackHandler eraRowCallbackHandler = new EraRowCallbackHandler(executorService, enaCallableFactory, futures);
-				//eraProDao.doSampleCallback(fromDate, toDate, eraRowCallbackHandler);
+				EraRowCallbackHandler eraRowCallbackHandler = new EraRowCallbackHandler(executorService, enaCallableFactory, futures);
+				eraProDao.doSampleCallback(fromDate, toDate, eraRowCallbackHandler);
 				
 				NcbiRowCallbackHandler ncbiRowCallbackHandler = new NcbiRowCallbackHandler(executorService, ncbiCallableFactory, futures);
 				eraProDao.getNcbiCallback(fromDate, toDate, ncbiRowCallbackHandler);
