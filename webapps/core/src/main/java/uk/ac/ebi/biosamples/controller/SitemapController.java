@@ -54,7 +54,7 @@ public class SitemapController {
     public XmlSitemapIndex createSampleSitemapIndex(HttpServletRequest request) throws MalformedURLException {
 
         long sampleCount = getTotalSamples();
-        long pageNumber = Math.floorDiv(sampleCount,sitemapPageSize) + 1L;
+        long pageNumber = (sampleCount / (long)sitemapPageSize) + 1L;
         XmlSitemapIndex xmlSitemapIndex = new XmlSitemapIndex();
         for (int i=0; i< pageNumber; i++) {
             String location = generateBaseUrl(request) + String.format("/sitemap/%d", i+1);
