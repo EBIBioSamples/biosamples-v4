@@ -32,6 +32,16 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor implements Au
 	}
 
 	/**
+	 * This is required to implement the AutoClosable interface. It will stop 
+	 * accepting new jobs and wait up to 24h before termination;
+	 */
+	@Override
+	public void close() throws Exception {
+		shutdown();
+		awaitTermination(1, TimeUnit.MINUTES);
+	}
+
+	/**
 	 * By default creates a pool with a queue size of 1000 that 
 	 * will test to increase/decrease threads every 60 seconds
 	 * and does not guarantee to distribute jobs fairly among threads
@@ -172,8 +182,8 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor implements Au
 							&& currentThreads < maxThreads ) {
 						//increase the number of threads			
 						log.trace("Adjusting to try "+(currentThreads+1)+" threads");
-						pool.setCorePoolSize(currentThreads+1);
 						pool.setMaximumPoolSize(currentThreads+1);
+						pool.setCorePoolSize(currentThreads+1);
 					} else if (currentThreads > 1 && (!threadsScores.containsKey(currentThreads-1) || threadsScores.get(currentThreads-1) > margin*score)) {
 						//decrease the number of threads
 						//only decrease threads if there are at least 2 (so we don't drop to zero!)
@@ -184,15 +194,5 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor implements Au
 				}
 			}
 		}
-	}
-
-	/**
-	 * This is required to implement the AutoClosable interface. It will stop 
-	 * accepting new jobs and wait up to 24h before termination;
-	 */
-	@Override
-	public void close() throws Exception {
-		shutdown();
-		awaitTermination(1, TimeUnit.DAYS);
 	}
 }
