@@ -82,22 +82,6 @@ public class SamplePageRetrievalService {
 		return responseEntity.getBody();
 	}
 
-	public Iterable<Resource<Sample>> fetchAll(String text, Collection<Filter> filterCollection) {
-		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();
-		params.add("text", text);
-		for (Filter filter: filterCollection) {
-			params.add("filter", filter.getSerialization());
-		}
-		params.add("size", Integer.toString(pageSize));
-
-		params = encodePlusInQueryParameters(params);
-
-		return new IterableResourceFetchAll<Sample>(executor, traverson, restOperations,
-				parameterizedTypeReferencePagedResourcesSample,
-				params,	"samples");
-
-	}
-
     // TODO to keep the + in a (not encoded) query parameter is to force encoding
 	private MultiValueMap<String, String> encodePlusInQueryParameters(MultiValueMap<String, String> queryParameters) {
 	    MultiValueMap<String,String> encodedQueryParameters = new LinkedMultiValueMap<>();

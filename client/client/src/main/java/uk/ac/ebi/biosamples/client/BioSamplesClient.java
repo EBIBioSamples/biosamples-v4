@@ -167,7 +167,7 @@ public class BioSamplesClient implements AutoCloseable {
 	}
 
 	public Iterable<Resource<Sample>> fetchSampleResourceAll(String text) throws RestClientException {
-		return samplePageRetrievalService.fetchAll(text, Collections.emptyList());
+		return sampleCursorRetrievalService.fetchAll(text, Collections.emptyList());
 	}
 
 	public Iterable<Resource<Sample>> fetchSampleResourceAll(Collection<Filter> filters) {
@@ -175,7 +175,7 @@ public class BioSamplesClient implements AutoCloseable {
 	}
 
 	public Iterable<Resource<Sample>> fetchSampleResourceAll(String text, Collection<Filter> filters) {
-		return samplePageRetrievalService.fetchAll(text, filters);
+		return sampleCursorRetrievalService.fetchAll(text, filters);
 	}
 
 	public Iterable<Optional<Resource<Sample>>> fetchSampleResourceAll(Iterable<String> accessions) throws RestClientException {
