@@ -41,7 +41,7 @@ services:
     - server.tomcat.accesslog.enabled=true
     - server.tomcat.accesslog.directory=/logs
     - server.tomcat.accesslog.prefix=webapps-core.access
-    - server.tomcat.accesslog.pattern=%h %l %u %t \"%r\" %s %b %D %{Content-Type}o
+    - server.tomcat.accesslog.pattern=- %l %u %t \"%r\" %s %b %D %{Content-Type}o
     #Enable gzip compression of responses
     - server.compression.enabled=true
     - server.compression.mime-types=application/json,application/hal+json,application/xml,text/html,application/javascript,text/css
@@ -77,7 +77,7 @@ services:
     - SERVER_TOMCAT_ACCESSLOG_ENABLED=true
     - SERVER_TOMCAT_ACCESSLOG_DIRECTORY=/logs
     - SERVER_TOMCAT_ACCESSLOG_PREFIX=webapps-sampletab.access
-    - server.tomcat.accesslog.pattern=%h %l %u %t \"%r\" %s %b %D %{Content-Type}o
+    - server.tomcat.accesslog.pattern=- %l %u %t \"%r\" %s %b %D %{Content-Type}o
     # Charset of HTTP requests and responses. Added to the "Content-Type" header if not set explicitly.
     - SPRING_HTTP_ENCODING_CHARSET=UTF-8
     # Enable http encoding support.
@@ -114,7 +114,7 @@ services:
     - SERVER_TOMCAT_ACCESSLOG_ENABLED=true
     - SERVER_TOMCAT_ACCESSLOG_DIRECTORY=/logs
     - SERVER_TOMCAT_ACCESSLOG_PREFIX=webapps-legacyxml.access
-    - server.tomcat.accesslog.pattern=%h %l %u %t \"%r\" %s %b %D %{Content-Type}o
+    - server.tomcat.accesslog.pattern=- %l %u %t \"%r\" %s %b %D %{Content-Type}o
     - ENDPOINTS_SHUTDOWN_ENABLED=true
     - ENDPOINTS_SHUTDOWN_SENSITIVE=false
     # Provide AAP infos
@@ -142,7 +142,7 @@ services:
       - SERVER_TOMCAT_ACCESSLOG_ENABLED=true
       - SERVER_TOMCAT_ACCESSLOG_DIRECTORY=/logs
       - SERVER_TOMCAT_ACCESSLOG_PREFIX=webapps-legacyjson.access
-      - server.tomcat.accesslog.pattern=%h %l %u %t \"%r\" %s %b %D %{Content-Type}o
+      - server.tomcat.accesslog.pattern=- %l %u %t \"%r\" %s %b %D %{Content-Type}o
       - ENDPOINTS_SHUTDOWN_ENABLED=true
       - ENDPOINTS_SHUTDOWN_SENSITIVE=false
       # Provide AAP infos
