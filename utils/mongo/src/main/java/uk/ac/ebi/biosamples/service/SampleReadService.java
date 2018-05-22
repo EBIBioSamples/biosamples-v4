@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
@@ -67,7 +69,16 @@ public class SampleReadService {
 		if (mongoSample == null) {
 			return Optional.empty();
 		}
-		//TODO only have relationships to things that are accessible
+		
+		try (Stream<MongoSample> stream = mongoSampleRepository.findAllByRelationshipsTarget(accession)) {
+			  stream.forEach(relatedSample -> {
+					for (MongoRelationship relationship : relatedSample.getRelationships()) {
+						if (relationship.getTarget().equals(accession)) {
+							mongoSample.getRelationships().add(relationship);
+						}
+					}
+			  });
+		}
 
 		// convert it into the format to return
 		Sample sample = mongoSampleToSampleConverter.convert(mongoSample);
