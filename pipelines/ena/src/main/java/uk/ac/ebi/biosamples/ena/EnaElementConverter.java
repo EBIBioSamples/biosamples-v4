@@ -108,7 +108,8 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 		if (XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, SCIENTIFIC_NAME).exists()) {
 			organismName = XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, SCIENTIFIC_NAME).text();
 		}
-		attributes.add(Attribute.build("organism", organismName, organismUri, null));
+		//ideally this should be lowercase, but backwards compatibilty... 
+		attributes.add(Attribute.build("Organism", organismName, organismUri, null));
 
 		if (XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_ATTRIBUTES).exists()) {
 			for (Element e : XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_ATTRIBUTES).elements(SAMPLE_ATTRIBUTE)) {
