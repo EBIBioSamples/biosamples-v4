@@ -2,6 +2,17 @@
 :toc: auto
 
 This pages contains links to release notes for BioSamples for version 4.0.0 and higher. This release represents a comprehensive overhaul and therefore previous release notes are no longer applicable.
+
+[[section]]
+4.0.7
+-----
+
+This release integrates GDPR notices and regulations
+
+Other bug fixes:
+
+* Update format of the Sitemap file
+
 [[section]]
 4.0.6
 -----
