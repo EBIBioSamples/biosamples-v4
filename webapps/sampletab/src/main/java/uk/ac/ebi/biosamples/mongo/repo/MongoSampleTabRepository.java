@@ -10,6 +10,6 @@ import uk.ac.ebi.biosamples.mongo.model.MongoSampleTab;
 public interface MongoSampleTabRepository extends MongoRepository<MongoSampleTab, String>, MongoSampleTabRepositoryCustom {
 	
 	@Query("{ accessions : ?0 }")
-	public List<MongoSampleTab> findOneByAccessionContaining(String accession);
+	public List<MongoSampleTab> findByAccessionsContaining(String accession);
 	
 }

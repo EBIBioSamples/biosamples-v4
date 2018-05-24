@@ -156,7 +156,7 @@ public class SampleTabService {
 
 				//check samples are not owned by any others
 				for (String accession : newAccessions) {
-					List<MongoSampleTab> accessionSampleTabs = mongoSampleTabRepository.findOneByAccessionContaining(accession);
+					List<MongoSampleTab> accessionSampleTabs = mongoSampleTabRepository.findByAccessionsContaining(accession);
 
 					String newId = sampleData.msi.submissionIdentifier.trim();
 					
@@ -188,7 +188,7 @@ public class SampleTabService {
 				
 				//check samples are owned by this sampletab and not any others
 				for (String accession : newAccessions) {
-					List<MongoSampleTab> accessionSampleTabs = mongoSampleTabRepository.findOneByAccessionContaining(accession);
+					List<MongoSampleTab> accessionSampleTabs = mongoSampleTabRepository.findByAccessionsContaining(accession);
 
 					String newId = sampleData.msi.submissionIdentifier.trim();
 					
@@ -237,7 +237,7 @@ public class SampleTabService {
 			
 			//check samples are not owned by any others
 			for (String accession : newAccessions) {
-				List<MongoSampleTab> accessionSampleTabs = mongoSampleTabRepository.findOneByAccessionContaining(accession);
+				List<MongoSampleTab> accessionSampleTabs = mongoSampleTabRepository.findByAccessionsContaining(accession);
 
 				String newId = sampleData.msi.submissionIdentifier.trim();
 				
