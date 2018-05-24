@@ -7,10 +7,9 @@ This pages contains links to release notes for BioSamples for version 4.0.0 and 
 4.0.7
 -----
 
-This release integrates GDPR notices and regulations
+This is a bugfix release that addresses the following issues:
 
-Other bug fixes:
-
+* GDPR notices
 * Update format of the Sitemap file
 
 [[section]]
