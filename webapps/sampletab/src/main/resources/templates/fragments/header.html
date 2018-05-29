@@ -74,7 +74,7 @@
 						<!-- /local-title -->
 			            <!-- local-search -->
 						<div class="columns medium-5">
-				            <form id="local-search" name="local-search" th:action="@{/samples}" method="get">
+				            <form id="local-search" name="local-search" th:action="@{{core_url}/samples(core_url=${@environment.getProperty('biosamples.client.uri')})}" method="get">
 				              <fieldset>				              
 				              	<!--<input type="hidden" name="filter" th:each="filter : ${filters}" th:value="@{${filter}}">-->
 				                <div class="input-group margin-bottom-none">
@@ -98,11 +98,11 @@
 						<nav>
 							<ul class="menu float-left"
 								data-description="navigational">
-								<li class=""><a th:href="@{../}">Home</a></li>
-								<li class=""><a th:href="@{../samples}">Search</a></li>
+								<li class=""><a th:href="@{${@environment.getProperty('biosamples.client.uri')}}">Home</a></li>
+								<li class=""><a th:href="@{{core_url}/samples(core_url=${@environment.getProperty('biosamples.client.uri')})}">Search</a></li>
 								<li class=""><a th:href="@{/}">Submit</a></li>
-								<li class=""><a th:href="@{../help}">Help</a></li>
-								<li class=""><a th:href="@{../about}">About</a></li>
+								<li class=""><a th:href="@{{core_url}/docs(core_url=${@environment.getProperty('biosamples.client.uri')})}">Documentation</a></li>
+								<li class=""><a th:href="@{{core_url}/about(core_url=${@environment.getProperty('biosamples.client.uri')})}">About</a></li>
 								<!-- local-search-sticky -->
 								<!--<li class="columns medium-5 sticky-search">-->
                                     <!--<fieldset>-->
