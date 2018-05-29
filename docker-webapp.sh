@@ -19,7 +19,7 @@ then
 	docker-compose down --volumes --rmi local --remove-orphans
 	mvn -T 2C -P embl-ebi clean package -Dembedmongo.wait
 else
-	docker-compose down --remove-orphans
+	docker-compose down --rmi local --remove-orphans
 	mvn -T 2C -P embl-ebi package -Dembedmongo.wait
 fi
 set -e
@@ -42,9 +42,9 @@ curl http://localhost:8983/solr/samples/config -H 'Content-type:application/json
 
 
 docker-compose up -d biosamples-webapps-core biosamples-webapps-sampletab biosamples-webapps-legacyxml biosamples-webapps-legacyjson
-sleep 30
+sleep 40
 echo "checking webapps-core is up"
-./http-status-check -u http://localhost:8081/biosamples/health -t 400
+./http-status-check -u http://localhost:8081/biosamples/health -t 600
 echo "checking webapps-sampletab is up"
 ./http-status-check -u http://localhost:8082/biosamples/sampletab/health -t 60
 echo "checking webapps-legacyxml is up"

@@ -64,7 +64,7 @@ public class RestSearchIntegration extends AbstractIntegration {;
 		test5 = Sample.build(test5.getName(), test5.getAccession(), test5.getDomain(), test5.getRelease(), test5.getUpdate(),
 				test5.getCharacteristics(), test5AllRelationships, test5.getExternalReferences(), null, null, null);
 		if (!test5.equals(resource.getContent())) {
-			throw new RuntimeException("Expected response to equal submission");
+			throw new RuntimeException("Expected response ("+resource.getContent()+") to equal submission ("+test5+")");
 		}
 
 	}

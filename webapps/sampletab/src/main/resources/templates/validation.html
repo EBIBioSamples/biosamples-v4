@@ -23,8 +23,11 @@
 				<h2>Validation &amp; Correction</h2>
 				<p>This webpage provides a service for validating SampleTab format files as used by the BioSample Database.</p>
 				<p>Please provide the SampleTab file you wish to validate into the form below. You will then be able to download a version
-					of that file that has been corrected.
-				</p>
+					of that file that has been corrected.</p>
+				<p>If you have any questions about this service, please contact <a
+						href="mailto:biosamples@ebi.ac.uk?Subject=SampleTab+Web+Validator">
+					biosamples@ebi.ac.uk</a> and attach the SampleTab file you were
+					trying to validate.</p>
 				<form id="sampletab_form" method="POST" enctype="multipart/form-data" action="api/v1/file/va">
 					<div class="input-group">
 						<label for="sampletab_file_picker" class="button">Upload file</label>
@@ -40,13 +43,12 @@
 
 					</div>
 				</div>
-				<div class="row">
-					<p>If you have any questions about this service, please contact <a
-							href="mailto:biosamples@ebi.ac.uk?Subject=SampleTab+Web+Validator">
-						biosamples@ebi.ac.uk</a> and attach the SampleTab file you were
-						trying to validate.</p>
-				</div>
+				<p>This website requires cookies, and the limited processing of your personal data in order to
+					function. By using the site you are agreeing to this as outlined in our
+					<a href="https://www.ebi.ac.uk/data-protection/privacy-notice/biosamples-submissions">Submission Privacy Notice</a>
+					and <a href="https://www.ebi.ac.uk/about/terms-of-use">Terms of Use.</a></p>
 			</div>
+		</div>
 	</div>
 	<th:block th:include="fragments/footer :: footer"></th:block>	
 </body>
