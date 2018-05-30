@@ -3,6 +3,14 @@
 <head>
 </head>
 <body>
+    <div th:fragment="checked_terms_button">
+        <div class="input-group" style="display: flex; align-items: center">
+            <input id="accept-terms" type="checkbox" value="accept-term" />
+            <label for="accept-terms">This website requires cookies, and the limited processing of your personal data in order to
+                function. By using the site you are agreeing to this as outlined in our <a href="https://www.ebi.ac.uk/data-protection/privacy-notice/biosamples-submissions">Submission Privacy Notice</a>
+					and <a href="https://www.ebi.ac.uk/about/terms-of-use">Terms of Use.</a></label>
+        </div>
+    </div>
     <div th:fragment="spinner">
         <div id="processing-spinner" class="spinner-container">
             <div> Please wait while we are processing your file...</div>
