@@ -99,8 +99,8 @@ public class BigIntegration extends AbstractIntegration {
 		double elapsedMs = (int) ((endTime-startTime)/1000000l);
 		double msPerSample = elapsedMs/noSamples;
 		log.info("Submitted "+noSamples+" samples in "+elapsedMs+"ms ("+msPerSample+"ms each)");
-		if (msPerSample > 25) {
-			throw new RuntimeException("Took more than 25ms per sample to submit ("+msPerSample+"ms each)");
+		if (msPerSample > 30) {
+			throw new RuntimeException("Took more than 30ms per sample to submit ("+msPerSample+"ms each)");
 		}
 
 	}
