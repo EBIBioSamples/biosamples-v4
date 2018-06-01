@@ -1,61 +1,37 @@
 package uk.ac.ebi.biosamples.service;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.stream.Collectors;
-
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Service;
-
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-
 import uk.ac.ebi.arrayexpress2.magetab.datamodel.graph.Node;
 import uk.ac.ebi.arrayexpress2.magetab.exception.ParseException;
 import uk.ac.ebi.arrayexpress2.sampletab.datamodel.MSI;
 import uk.ac.ebi.arrayexpress2.sampletab.datamodel.SampleData;
 import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.GroupNode;
 import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.SampleNode;
-import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.attribute.AbstractNamedAttribute;
-import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.attribute.AbstractRelationshipAttribute;
-import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.attribute.CharacteristicAttribute;
-import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.attribute.CommentAttribute;
-import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.attribute.DatabaseAttribute;
-import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.attribute.DerivedFromAttribute;
-import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.attribute.SCDNodeAttribute;
+import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.attribute.*;
 import uk.ac.ebi.arrayexpress2.sampletab.renderer.SampleTabWriter;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Contact;
-import uk.ac.ebi.biosamples.model.ExternalReference;
-import uk.ac.ebi.biosamples.model.Organization;
-import uk.ac.ebi.biosamples.model.Publication;
-import uk.ac.ebi.biosamples.model.Relationship;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.mongo.model.MongoSampleTab;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleTabRepository;
 import uk.ac.ebi.biosamples.mongo.service.MongoAccessionService;
+
+import java.io.IOException;
+import java.io.StringWriter;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 @Service
 public class SampleTabService {
@@ -111,8 +87,11 @@ public class SampleTabService {
 
 		MongoSampleTab oldSampleTab = null;
 
+
         //replace implicit derived from with explicit derived from relationships
         for (SampleNode sample : sampleData.scd.getNodes(SampleNode.class)) {
+
+            // Check relationships with parent node
             if (sample.getParentNodes().size() > 0) {
                 for (Node parent : new HashSet<Node>(sample.getParentNodes())) {
                     if (SampleNode.class.isInstance(parent)) {
@@ -139,7 +118,7 @@ public class SampleTabService {
 				newAccessions.add(groupNode.getGroupAccession());
 			}
 		}
-		
+
 		if (sampleData.msi.submissionIdentifier != null 
 				&& sampleData.msi.submissionIdentifier.trim().length() > 0) {
 			//this is an update of an existing sampletab
@@ -311,6 +290,35 @@ public class SampleTabService {
 		persistSamplesAndGroups(sampleData, domain, release, update, setUpdateDate);
 		
 		//TODO replace relationships which were by name with by accession
+
+        // Build name->accession lookup table
+        Map<String, String> nameAccessionPairs = new HashMap<>();
+        for(SampleNode sample : sampleData.scd.getNodes(SampleNode.class)) {
+            nameAccessionPairs.put(sample.getNodeName(), sample.getSampleAccession());
+        }
+
+        for (SampleNode sample : sampleData.scd.getNodes(SampleNode.class)) {
+            // Handle DerivedFromAttributes
+            List<DerivedFromAttribute> derivedFromAttributes = sample.getAttributes().stream()
+                    .filter(DerivedFromAttribute.class::isInstance)
+                    .map(attr -> (DerivedFromAttribute) attr).collect(Collectors.toList());
+
+            for (DerivedFromAttribute derivedFrom : derivedFromAttributes) {
+                if (!derivedFrom.getAttributeValue().matches("^SAM[NED](\\w)?\\d+$")) {
+                    // The derivedFrom is not an accession, assume it's an implicit relationship
+                    Optional<String> derivedFromAccession = Optional.ofNullable(nameAccessionPairs.get(derivedFrom.getAttributeValue()));
+                    if (!derivedFromAccession.isPresent()) {
+                        throw new RuntimeException(String.format("The derived from attribute in the SampleTab for sample %s contains an invalid target", sample.getNodeName()));
+                    }
+
+                    DerivedFromAttribute explicitDerivedFrom = new DerivedFromAttribute(derivedFromAccession.get());
+                    sample.removeAttribute(derivedFrom);
+                    sample.addAttribute(explicitDerivedFrom);
+                }
+            }
+        }
+        
+        persistSamplesAndGroups(sampleData, domain, release, update, setUpdateDate);
 
 		//persist updated SampleTab so has all the associated accessions added
 		persistSampleTab(sampleData, domain);
