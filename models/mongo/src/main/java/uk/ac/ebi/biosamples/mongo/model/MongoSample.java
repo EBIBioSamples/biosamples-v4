@@ -5,6 +5,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -30,7 +32,11 @@ import uk.ac.ebi.biosamples.service.CustomInstantSerializer;
 public class MongoSample {
 	
 	@Id
-	public String accession;
+	protected String accession;
+	@Indexed(background=true)
+	protected String accessionPrefix;
+	@Indexed(background=true)
+	protected Integer accessionNumber;
 
 	protected String name; 
 	
@@ -70,6 +76,14 @@ public class MongoSample {
 	
 	public String getAccession() {
 		return accession;
+	}
+	
+	public String getAccessionPrefix() {
+		return accessionPrefix;
+	}
+	
+	public Integer getAccessionNumber() {
+		return accessionNumber;
 	}
 
 	public String getName() {
@@ -219,6 +233,16 @@ public class MongoSample {
 		if (publications != null && publications.size() > 0) {
 			sample.publications.addAll(publications);
 		}
+		
+		//split accession into prefix & number, if possible
+        Pattern r = Pattern.compile("^(\\D+)(\\d+)$");
+        if (accession != null) { 
+	        Matcher m = r.matcher(accession);
+	        if (m.matches() && m.groupCount() == 2) {
+		        sample.accessionPrefix = m.group(1);
+		        sample.accessionNumber = Integer.parseInt(m.group(2));
+	        }
+        }
 		
 		return sample;
 	}
