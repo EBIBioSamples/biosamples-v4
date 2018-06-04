@@ -20,7 +20,6 @@ import uk.ac.ebi.biosamples.model.Autocomplete;
 
 @Component
 @Order(4)
-@Profile({"default"})
 public class RestAutocompleteIntegration extends AbstractIntegration {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());

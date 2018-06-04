@@ -20,7 +20,6 @@ import uk.ac.ebi.biosamples.client.BioSamplesClient;
 
 @Component
 @Order(5)
-@Profile({"default"})
 public class SampleTabXmlSampleIntegration extends AbstractIntegration {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
