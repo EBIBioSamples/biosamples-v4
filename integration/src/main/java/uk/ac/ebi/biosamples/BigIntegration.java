@@ -76,7 +76,6 @@ public class BigIntegration extends AbstractIntegration {
 
 	@Override
 	protected void phaseOne() {
-		
 		List<Sample> samples = new ArrayList<>();
 		//generate a root sample
 		Sample root = generateSample(0, Collections.emptyList(), null);
@@ -99,10 +98,9 @@ public class BigIntegration extends AbstractIntegration {
 		double elapsedMs = (int) ((endTime-startTime)/1000000l);
 		double msPerSample = elapsedMs/noSamples;
 		log.info("Submitted "+noSamples+" samples in "+elapsedMs+"ms ("+msPerSample+"ms each)");
-		if (msPerSample > 30) {
-			throw new RuntimeException("Took more than 30ms per sample to submit ("+msPerSample+"ms each)");
+		if (msPerSample > 100) {
+			throw new RuntimeException("Took more than 100ms per sample to submit ("+msPerSample+"ms each)");
 		}
-
 	}
 
 	@Override
