@@ -23,7 +23,6 @@ import uk.ac.ebi.biosamples.model.Sample;
 
 @Component
 @Order(6)
-@Profile({"default"})
 public class SampleTabXmlGroupIntegration extends AbstractIntegration {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());

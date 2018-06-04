@@ -32,7 +32,6 @@ import uk.ac.ebi.biosamples.service.FilterBuilder;
 
 @Component
 @Order(5)
-@Profile({"default"})
 public class SampleTabLegacyIntegration extends AbstractIntegration {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
