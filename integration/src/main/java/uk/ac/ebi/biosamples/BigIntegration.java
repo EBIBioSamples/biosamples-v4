@@ -118,6 +118,7 @@ public class BigIntegration extends AbstractIntegration {
 		if (elapsedMs > 5000) {
 			throw new RuntimeException("Took more than 5000ms to fetch highly-connected sample ("+elapsedMs+"ms)");			
 		}
+		log.info("Took "+elapsedMs+"ms to fetch highly-connected sample SAMbig"+noSamples);
 		
 		startTime = System.nanoTime();
 		client.fetchSample("SAMbig"+0);
@@ -126,6 +127,7 @@ public class BigIntegration extends AbstractIntegration {
 		if (elapsedMs > 5000) {
 			throw new RuntimeException("Took more than 5000ms to fetch highly-connected sample ("+elapsedMs+"ms)");			
 		}
+		log.info("Took "+elapsedMs+"ms to fetch highly-connected sample SAMbig0");
 		
 		//time how long it takes to loop over all of them
 
@@ -138,6 +140,7 @@ public class BigIntegration extends AbstractIntegration {
 		if (elapsedMs > 5000) {
 			throw new RuntimeException("Took more than 5000ms to fetch all samples ("+elapsedMs+"ms)");			
 		}
+		log.info("Took "+elapsedMs+"ms to fetch all samples");
 
 		//TODO check HAL links for search term and facets are persistent over paging etc
 		
