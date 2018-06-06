@@ -128,7 +128,7 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 		});
 
 		log.info("Testing submission of sampletab with valid implicit relationship");
-		runCallableOnSampleTabFileResource("/Implicit_relationship_sampletab.txt", sampletabFile -> {
+		runCallableOnSampleTabFileResource("/Implicit_relationship_sampletab.tab", sampletabFile -> {
 			log.info("POSTing to " + fileUriSb);
 			LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
 			map.add("file", sampletabFile);
@@ -137,6 +137,22 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 
 			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
 			if (!response.getBody().contains("GSB-")) {
+				log.error(response.toString());
+				throw new RuntimeException("Response does not have expected submission identifier");
+			}
+			log.info(""+response.getBody());
+		});
+
+		log.info("Testing submission of accessioned SampleTab with valid implicit relationship");
+		runCallableOnSampleTabFileResource("/accessioned_sampletab_with_implicit_relationships.tab", sampletabFile -> {
+			log.info("POSTing to " + fileUriSb);
+			LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
+			map.add("file", sampletabFile);
+			RequestEntity<LinkedMultiValueMap> request = RequestEntity.post(fileUriSb).contentType(MediaType.MULTIPART_FORM_DATA)
+					.body(map);
+
+			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+			if (!response.getBody().contains("GSB-9191")) {
 				log.error(response.toString());
 				throw new RuntimeException("Response does not have expected submission identifier");
 			}
@@ -318,6 +334,28 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 				throw new RuntimeException("Sample contains invalid relationship");
 			}
 		}
+
+		Filter attrFilter = FilterBuilder.create()
+				.onAttribute("Submission identifier")
+				.withValue("GSB-9191")
+				.build();
+
+		samplePage = client.fetchPagedSampleResource("*:*",
+				Collections.singletonList(attrFilter), 0, 10);
+
+
+		if (samplePage.getMetadata().getTotalElements() != 5) {
+			throw new RuntimeException("Unexpected number of samples found with Submission identifier GSB-9191");
+		}
+
+		samplePage.getContent().forEach(sample -> {
+			for(Relationship rel: sample.getContent().getRelationships()) {
+				if (!rel.getTarget().matches("SAM[END][AG]?[0-9]+")) {
+					throw new RuntimeException("Sample "+sample.getContent().getName()+ " contains invalid relationship");
+				}
+			}
+		});
+
 	}
 
 	@Override
