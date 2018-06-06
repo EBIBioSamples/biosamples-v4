@@ -1,4 +1,4 @@
-package com.example.simple_biosamples_client.models.ga4ghmetadata;
+package uk.ac.ebi.biosamples.model.ga4ghmetadata;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;

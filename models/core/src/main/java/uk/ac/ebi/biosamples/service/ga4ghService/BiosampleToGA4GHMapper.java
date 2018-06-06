@@ -1,16 +1,11 @@
-package uk.ac.ebi.biosamples.service.ga4gh_services;
+package uk.ac.ebi.biosamples.service.ga4ghService;
 
-import com.example.simple_biosamples_client.models.ga4ghmetadata.*;
-import com.example.simple_biosamples_client.utils.GeoLocationDataHelper;
-import com.example.simple_biosamples_client.utils.Location;
-import com.example.simple_biosamples_client.utils.OLSDataRetriever;
-import com.example.simple_biosamples_client.utils.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
-
+import uk.ac.ebi.biosamples.model.ga4ghmetadata.*;
 import java.util.*;
 
 /**
@@ -18,7 +13,7 @@ import java.util.*;
  *
  * @author Dilshat Salikhov
  */
-
+import uk.ac.ebi.biosamples.model.ga4ghmetadata.*;
 @Service
 public class BiosampleToGA4GHMapper {
 

@@ -63,6 +63,7 @@
 			<artifactId>models-legacyxml</artifactId>
 			<version>${bsd2017.version}</version>
 		</dependency>
+
 		
 		<!-- use Thymleaf for HTML templating -->
 		<dependency>
@@ -164,7 +165,13 @@
 		    <version>2.3.0</version>
             <scope>runtime</scope>
 		</dependency>
+		<dependency>
+			<groupId>jstl</groupId>
+			<artifactId>jstl</artifactId>
+			<version>1.2</version>
+		</dependency>
     </dependencies>
+
 
 	<build>
 		<plugins>

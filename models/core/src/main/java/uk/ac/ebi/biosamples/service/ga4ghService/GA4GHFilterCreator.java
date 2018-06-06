@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.service.ga4gh_services;
+package uk.ac.ebi.biosamples.service.ga4ghService;
 
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.filter.Filter;

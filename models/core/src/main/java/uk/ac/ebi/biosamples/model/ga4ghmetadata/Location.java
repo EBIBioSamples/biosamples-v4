@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.utils.ga4gh_utils;
+package uk.ac.ebi.biosamples.model.ga4ghmetadata;
 
 public class Location {
     private double latitude;

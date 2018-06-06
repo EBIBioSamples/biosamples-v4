@@ -1,6 +1,6 @@
-package uk.ac.ebi.biosamples.service.ga4gh_services;
+package uk.ac.ebi.biosamples.service.ga4ghService;
 
-import com.example.simple_biosamples_client.models.ga4ghmetadata.*;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.ObjectCodec;
@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import uk.ac.ebi.biosamples.model.ga4ghmetadata.*;
 
 import java.io.IOException;
 import java.util.*;

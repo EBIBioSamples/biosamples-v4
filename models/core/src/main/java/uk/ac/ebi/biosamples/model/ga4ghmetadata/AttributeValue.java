@@ -1,8 +1,8 @@
-package com.example.simple_biosamples_client.models.ga4ghmetadata;
+package uk.ac.ebi.biosamples.model.ga4ghmetadata;
 
-import com.example.simple_biosamples_client.services.AttributeValueSerializer;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import uk.ac.ebi.biosamples.service.ga4ghService.AttributeValueSerializer;
 
 import java.util.List;
 import java.util.Objects;

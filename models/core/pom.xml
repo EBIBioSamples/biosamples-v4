@@ -50,6 +50,8 @@
 			<groupId>org.springframework.hateoas</groupId>
 			<artifactId>spring-hateoas</artifactId>
 		</dependency>
+
+
 	</dependencies>
 
 	<!-- lock transitive dependency version -->
@@ -62,4 +64,5 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
+
 </project>

@@ -1,10 +1,10 @@
-package com.example.simple_biosamples_client.models.ga4ghmetadata;
+package uk.ac.ebi.biosamples.model.ga4ghmetadata;
 
-import com.example.simple_biosamples_client.services.AttributeDeserializer;
-import com.example.simple_biosamples_client.services.AttributeSerializer;
+
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.springframework.stereotype.Component;
+import uk.ac.ebi.biosamples.service.ga4ghService.*;
 
 import java.util.*;
 

@@ -1,9 +1,9 @@
-package uk.ac.ebi.biosamples.service.ga4gh_services;
+package uk.ac.ebi.biosamples.service.ga4ghService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.filter.Filter;
-import uk.ac.ebi.biosamples.utils.ga4gh_utils.SearchingForm;
+import uk.ac.ebi.biosamples.model.ga4ghmetadata.SearchingForm;
 
 import java.util.ArrayList;
 import java.util.Collection;

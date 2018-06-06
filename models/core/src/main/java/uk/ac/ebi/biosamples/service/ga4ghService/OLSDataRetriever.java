@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.utils.ga4gh_utils;
+package uk.ac.ebi.biosamples.service.ga4ghService;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

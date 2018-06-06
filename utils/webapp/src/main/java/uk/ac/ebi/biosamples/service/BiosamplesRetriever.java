@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.service.ga4ghService;
+package uk.ac.ebi.biosamples.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -9,6 +9,8 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.FilterBuilder;
 import uk.ac.ebi.biosamples.model.ga4ghmetadata.*;
+import uk.ac.ebi.biosamples.service.ga4ghService.BiosampleToGA4GHMapper;
+import uk.ac.ebi.biosamples.service.ga4ghService.FilterCreator;
 
 import java.util.*;
 

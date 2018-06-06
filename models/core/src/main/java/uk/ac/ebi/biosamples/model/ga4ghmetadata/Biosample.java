@@ -1,7 +1,5 @@
-package com.example.simple_biosamples_client.models.ga4ghmetadata;
+package uk.ac.ebi.biosamples.model.ga4ghmetadata;
 
-import com.example.simple_biosamples_client.services.AttributeDeserializer;
-import com.example.simple_biosamples_client.services.AttributeSerializer;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -10,6 +8,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import uk.ac.ebi.biosamples.service.ga4ghService.AttributeDeserializer;
+import uk.ac.ebi.biosamples.service.ga4ghService.AttributeSerializer;
 
 import java.util.*;
 

@@ -1,20 +1,19 @@
-package com.example.simple_biosamples_client.controllers;
+package uk.ac.ebi.biosamples.controller;
 
-import com.example.simple_biosamples_client.utils.BiosamplesRetriever;
-import com.example.simple_biosamples_client.models.SearchingForm;
-import com.example.simple_biosamples_client.models.ga4ghmetadata.Biosample;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import uk.ac.ebi.biosamples.model.ga4ghmetadata.Biosample;
+import uk.ac.ebi.biosamples.service.BiosamplesRetriever;
+import uk.ac.ebi.biosamples.model.ga4ghmetadata.SearchingForm;
 
 import javax.validation.Valid;
 import java.util.List;
 
 
 @Controller
-@EnableAutoConfiguration
 public class GA4GHSearchController {
 
     @Autowired
@@ -23,13 +22,13 @@ public class GA4GHSearchController {
     protected BiosamplesRetriever accessPoint;
 
 
-    @GetMapping("/SearchingForm")
+    @GetMapping("/ga4gh_search")
     public String getSearchForm(Model model) {
         model.addAttribute("SearchingForm", form);
         return "SearchingForm";
     }
 
-    @RequestMapping(value = "/SearchingForm/result", method = RequestMethod.GET)
+    @RequestMapping(value = "/ga4gh_search/result", method = RequestMethod.GET)
     @ResponseBody
     public List<Biosample> submitForm(@Valid @ModelAttribute("SearchingForm") SearchingForm form) {
         return accessPoint.getFilteredSamplesBySearchForm(form);
