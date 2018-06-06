@@ -442,6 +442,8 @@ public class SampleTabService {
 							// Update also sampletab node entry
 							SampleNode sampleNode = sampleData.scd.getNode(futureName, SampleNode.class);
 							SCDNodeAttribute newRelationship = null;
+
+							// Create the relationship node based on the relationship type
 							switch (relationship.getType()) {
 								case "derived from":
 									newRelationship = new DerivedFromAttribute(target.getAccession());
@@ -454,6 +456,7 @@ public class SampleTabService {
 									break;
 							}
 
+							// Search for the corresponding attribute with
 							List<SCDNodeAttribute> nodeAttrList = sampleNode.getAttributes().stream()
 									.filter(attr -> attr.getAttributeType().equalsIgnoreCase(relationship.getType()))
 									.filter(attr -> attr.getAttributeValue().equals(relationship.getTarget()))
@@ -463,8 +466,14 @@ public class SampleTabService {
 								sampleNode.removeAttribute(nodeAttr);
 								sampleNode.addAttribute(newRelationship);
 							} else {
-								throw new RuntimeException("Sample with a relationship not coming from the sampletab");
+								// This should not happen at this stage of the process
+								throw new RuntimeException("Sample " + futureName + " has a relationship with " +
+										relationship.getTarget() + " which is not part of the same sampletab");
 							}
+						} else {
+							// This should not happen at this stage of the process
+							throw new RuntimeException("Sample " + futureName + " has a relationship with " +
+									relationship.getTarget() + " which is not part of the same sampletab");
 						}
 					}
 				}
