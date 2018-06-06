@@ -1,33 +1,34 @@
 package uk.ac.ebi.biosamples;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.URL;
-import java.util.Collections;
-import java.util.Optional;
-
+import com.google.common.base.Charsets;
+import com.google.common.io.Resources;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import com.google.common.base.Charsets;
-import com.google.common.io.Resources;
-
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.FilterBuilder;
+
+import java.io.IOException;
+import java.net.URI;
+import java.net.URL;
+import java.util.Collections;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 @Component
@@ -43,7 +44,8 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 	private final URI uriSb;
 	private final URI uriVa;
 	private final URI uriAc;
-	
+	private final URI fileUriSb;
+
 	public SampleTabLegacyIntegration(RestTemplateBuilder restTemplateBuilder, IntegrationProperties integrationProperties, BioSamplesClient client) {
         super(client);
 		this.restTemplate = restTemplateBuilder.build();
@@ -57,6 +59,11 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 				.build().toUri();
 		uriSb = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUriSampleTab())
 				.pathSegment("api", "v1", "json", "sb")
+				.queryParam("apikey", integrationProperties.getLegacyApiKey())
+				.build().toUri();
+
+		fileUriSb = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUriSampleTab())
+				.pathSegment("api", "v1", "file", "sb")
 				.queryParam("apikey", integrationProperties.getLegacyApiKey())
 				.build().toUri();
 	}
@@ -120,7 +127,55 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 			log.info(""+response.getBody());
 		});
 
-		
+		log.info("Testing submission of sampletab with valid implicit relationship");
+		runCallableOnSampleTabFileResource("/Implicit_relationship_sampletab.tab", sampletabFile -> {
+			log.info("POSTing to " + fileUriSb);
+			LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
+			map.add("file", sampletabFile);
+			RequestEntity<LinkedMultiValueMap> request = RequestEntity.post(fileUriSb).contentType(MediaType.MULTIPART_FORM_DATA)
+					.body(map);
+
+			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+			if (!response.getBody().contains("GSB-")) {
+				log.error(response.toString());
+				throw new RuntimeException("Response does not have expected submission identifier");
+			}
+			log.info(""+response.getBody());
+		});
+
+		log.info("Testing submission of accessioned SampleTab with valid implicit relationship");
+		runCallableOnSampleTabFileResource("/accessioned_sampletab_with_implicit_relationships.tab", sampletabFile -> {
+			log.info("POSTing to " + fileUriSb);
+			LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
+			map.add("file", sampletabFile);
+			RequestEntity<LinkedMultiValueMap> request = RequestEntity.post(fileUriSb).contentType(MediaType.MULTIPART_FORM_DATA)
+					.body(map);
+
+			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+			if (!response.getBody().contains("GSB-9191")) {
+				log.error(response.toString());
+				throw new RuntimeException("Response does not have expected submission identifier");
+			}
+			log.info(""+response.getBody());
+		});
+
+		log.info("Testing rejection submission of sampletab with invalid implicit relationship");
+		runCallableOnSampleTabFileResource("/Invalid_implicit_relationship_sampletab.txt", sampletabFile -> {
+			log.info("POSTing to " + fileUriSb);
+			LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
+			map.add("file", sampletabFile);
+			RequestEntity<LinkedMultiValueMap> request = RequestEntity.post(fileUriSb).contentType(MediaType.MULTIPART_FORM_DATA)
+					.body(map);
+
+			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+			if (!response.getBody().contains("Unable to accession")) {
+				log.error(response.toString());
+				throw new RuntimeException("Response does not have expected submission identifier");
+			}
+			log.info("SampleTab with invalid relation has been rejected as expected");
+			log.info(""+response.getBody());
+		});
+
 	}
 
 	@Override
@@ -210,7 +265,7 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 			log.info(response.getBody());
 			//response is a JSON object of stuff
 			//just try to match the error message for now - messy but quick
-			if (!response.getBody().contains("was previouly described in")) {
+			if (!response.getBody().contains("was previously described in")) {
 				//TODO do this properly once it is all fixed up
 				throw new RuntimeException("Unable to recognize duplicate sample");
 			}
@@ -221,12 +276,12 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 	@Override
 	protected void phaseFour() {
 		// Find Sample
-		Filter nameFilter = FilterBuilder.create().onName("JJSample").build();
-		PagedResources<Resource<Sample>> samplePage = client.fetchPagedSampleResource("*:*",
-				Collections.singleton(nameFilter), 0, 1);
-		assert samplePage.getMetadata().getTotalElements() == 1;
-
-		Sample jjSample = samplePage.getContent().iterator().next().getContent();
+//		Filter nameFilter = FilterBuilder.create().onName("JJSample").build();
+//		PagedResources<Resource<Sample>> samplePage = client.fetchPagedSampleResource("*:*",
+//				Collections.singleton(nameFilter), 0, 1);
+//		assert samplePage.getMetadata().getTotalElements() == 1;
+//
+//		Sample jjSample = samplePage.getContent().iterator().next().getContent();
 		//TODO do this better
 //		assertThat(jjSample.getContacts(), hasSize(2));
 //		assertThat(jjSample.getOrganizations(), hasSize(2));
@@ -246,6 +301,61 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 //		assertThat(jjGroup.getPublications(), hasSize(2));
 //
 //		assertThat(jjGroup.getPublications().first().getPubMedId(), notNullValue());
+
+		// Evaluate implicit relationships are converted propertly
+		Filter nameFilter = FilterBuilder.create().onName("ValidOrigin").build();
+		PagedResources<Resource<Sample>> samplePage = client.fetchPagedSampleResource("*:*",
+				Collections.singleton(nameFilter), 0, 1);
+		if (samplePage.getMetadata().getTotalElements() != 1) {
+			throw new RuntimeException("Unexpected number of samples found with name ValidOrigin");
+		}
+		Sample validOriginSample = samplePage.getContent().iterator().next().getContent();
+
+		Filter derivedFromFilter = FilterBuilder.create()
+				.onRelation("derived from")
+				.withValue(validOriginSample.getAccession())
+				.build();
+
+		Filter derivedSampleName = FilterBuilder.create()
+				.onName("DerivedFromValidOrigin")
+				.build();
+
+		samplePage = client.fetchPagedSampleResource("*:*",
+				Stream.of(derivedFromFilter, derivedSampleName).collect(Collectors.toList()), 0, 1);
+
+
+		if (samplePage.getMetadata().getTotalElements() != 1) {
+			throw new RuntimeException("Unexpected number of samples found with name DerivedFromValidOrigin and " +
+					"relationship");
+		}
+		Sample derivedFromValidOriginSample = samplePage.getContent().iterator().next().getContent();
+		for(Relationship rel: derivedFromValidOriginSample.getRelationships()) {
+			if (!rel.getTarget().matches("SAM[END][AG]?[0-9]+")) {
+				throw new RuntimeException("Sample contains invalid relationship");
+			}
+		}
+
+		Filter attrFilter = FilterBuilder.create()
+				.onAttribute("Submission identifier")
+				.withValue("GSB-9191")
+				.build();
+
+		samplePage = client.fetchPagedSampleResource("*:*",
+				Collections.singletonList(attrFilter), 0, 10);
+
+
+		if (samplePage.getMetadata().getTotalElements() != 5) {
+			throw new RuntimeException("Unexpected number of samples found with Submission identifier GSB-9191");
+		}
+
+		samplePage.getContent().forEach(sample -> {
+			for(Relationship rel: sample.getContent().getRelationships()) {
+				if (!rel.getTarget().matches("SAM[END][AG]?[0-9]+")) {
+					throw new RuntimeException("Sample "+sample.getContent().getName()+ " contains invalid relationship");
+				}
+			}
+		});
+
 	}
 
 	@Override
@@ -254,11 +364,15 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 	}
 
 
-	private interface SampleTabCallback {
+	private interface SampleTabStringCallback {
 		public void callback(String sampleTabString);
 	}
 
-	private void runCallableOnSampleTabResource(String resource, SampleTabCallback callback) {
+	private interface SampleTabFileCallback {
+		public void callback(ClassPathResource sampletabFile);
+	}
+
+	private void runCallableOnSampleTabResource(String resource, SampleTabStringCallback callback) {
 		URL url = Resources.getResource(resource);
 		String text = null;
 		try {
@@ -269,5 +383,12 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 			callback.callback(text);			
 		}
 	}
+
+	private void runCallableOnSampleTabFileResource(String resource, SampleTabFileCallback callback) {
+		ClassPathResource classPathResource = new ClassPathResource(resource);
+		callback.callback(classPathResource);
+
+	}
+
 
 }

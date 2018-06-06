@@ -27,7 +27,7 @@ import static org.junit.Assert.*;
 import static org.springframework.hateoas.MediaTypes.HAL_JSON;
 
 @Component
-@Profile({"default", "test"})
+@Profile({"default"})
 public class LegacyJsonSearchIntegration extends AbstractIntegration {
 
     private final RestTemplate restTemplate;
