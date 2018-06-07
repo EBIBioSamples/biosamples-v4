@@ -3,7 +3,7 @@ package uk.ac.ebi.biosamples.service.ga4ghService;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.FilterBuilder;
-import uk.ac.ebi.biosamples.model.ga4ghmetadata.SearchingForm;
+import uk.ac.ebi.biosamples.ga4ghmetadata.SearchingForm;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;

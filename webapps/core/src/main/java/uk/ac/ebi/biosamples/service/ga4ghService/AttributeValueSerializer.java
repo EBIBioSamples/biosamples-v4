@@ -5,7 +5,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-import uk.ac.ebi.biosamples.model.ga4ghmetadata.AttributeValue;
+import uk.ac.ebi.biosamples.ga4ghmetadata.AttributeValue;
 
 import java.io.IOException;
 

@@ -1,6 +1,6 @@
 package uk.ac.ebi.biosamples.service.ga4ghService;
 
-import uk.ac.ebi.biosamples.model.ga4ghmetadata.*;
+import uk.ac.ebi.biosamples.ga4ghmetadata.*;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;

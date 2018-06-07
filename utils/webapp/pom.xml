@@ -34,7 +34,7 @@
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
-			<artifactId>client</artifactId>
+			<artifactId>biosamples-spring-boot-starter</artifactId>
 			<version>4.0.9-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>

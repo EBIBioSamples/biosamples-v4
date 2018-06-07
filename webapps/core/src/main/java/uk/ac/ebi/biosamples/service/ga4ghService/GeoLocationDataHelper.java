@@ -1,7 +1,7 @@
 package uk.ac.ebi.biosamples.service.ga4ghService;
 
 import org.springframework.stereotype.Component;
-import uk.ac.ebi.biosamples.model.ga4ghmetadata.Location;
+import uk.ac.ebi.biosamples.ga4ghmetadata.Location;
 
 import java.util.Scanner;
 

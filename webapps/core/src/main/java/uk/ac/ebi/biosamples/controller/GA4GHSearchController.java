@@ -5,9 +5,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import uk.ac.ebi.biosamples.model.ga4ghmetadata.Biosample;
-import uk.ac.ebi.biosamples.service.BiosamplesRetriever;
-import uk.ac.ebi.biosamples.model.ga4ghmetadata.SearchingForm;
+import uk.ac.ebi.biosamples.ga4ghmetadata.Biosample;
+import uk.ac.ebi.biosamples.service.ga4ghService.BiosamplesRetriever;
+import uk.ac.ebi.biosamples.ga4ghmetadata.SearchingForm;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -28,7 +28,7 @@ public class GA4GHSearchController {
         return "SearchingForm";
     }
 
-    @RequestMapping(value = "/ga4gh_search/result", method = RequestMethod.GET)
+    @RequestMapping(value = "/SearchingForm/result", method = RequestMethod.GET, produces="application/ld+json")
     @ResponseBody
     public List<Biosample> submitForm(@Valid @ModelAttribute("SearchingForm") SearchingForm form) {
         return accessPoint.getFilteredSamplesBySearchForm(form);

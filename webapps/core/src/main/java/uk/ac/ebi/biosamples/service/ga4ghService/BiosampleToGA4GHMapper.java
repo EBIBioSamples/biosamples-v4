@@ -5,7 +5,8 @@ import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.ga4ghmetadata.*;
+import uk.ac.ebi.biosamples.ga4ghmetadata.*;
+
 import java.util.*;
 
 /**
@@ -13,7 +14,7 @@ import java.util.*;
  *
  * @author Dilshat Salikhov
  */
-import uk.ac.ebi.biosamples.model.ga4ghmetadata.*;
+
 @Service
 public class BiosampleToGA4GHMapper {
 
@@ -169,12 +170,12 @@ public class BiosampleToGA4GHMapper {
      * @see Attributes
      */
     private void mapAttributes(List<Attribute> characteristics) {
-        characteristics.parallelStream().peek( attribute -> {
-                    ArrayList<AttributeValue> values = new ArrayList<>();
-                    AttributeValue value = new AttributeValue(attribute.getValue());
-                    values.add(value);
-                    ga4ghSample.addAttributeList(attribute.getType(), values);
-                });
+        characteristics.stream().forEach(attribute -> {
+            List<AttributeValue> values = new ArrayList<>();
+            AttributeValue value = new AttributeValue(attribute.getValue());
+            values.add(value);
+            ga4ghSample.addAttributeList(attribute.getType(), values);
+        });
 
     }
 
@@ -187,13 +188,13 @@ public class BiosampleToGA4GHMapper {
     private void mapBioCharacteristics(List<Attribute> characteristics) {
         SortedSet<Biocharacteristics> biocharacteristics = new TreeSet<>();
 
-        characteristics.parallelStream().peek(attribute -> {
-                    Biocharacteristics biocharacteristic = new Biocharacteristics();
-                    biocharacteristic.setDescription(attribute.getType());
-                    biocharacteristic.setScope(attribute.getUnit());
-                    biocharacteristic.setOntology_terms(getOntologyTerms(attribute.getIri()));
-                    biocharacteristics.add(biocharacteristic);
-                });
+        characteristics.parallelStream().forEach(attribute -> {
+            Biocharacteristics biocharacteristic = new Biocharacteristics();
+            biocharacteristic.setDescription(attribute.getType());
+            biocharacteristic.setScope(attribute.getUnit());
+            biocharacteristic.setOntology_terms(getOntologyTerms(attribute.getIri()));
+            biocharacteristics.add(biocharacteristic);
+        });
         ga4ghSample.setBio_characteristic(biocharacteristics);
 
     }
@@ -264,25 +265,25 @@ public class BiosampleToGA4GHMapper {
      */
     private <T> List<AttributeValue> convertObjectsToAttributeValues(SortedSet<T> values) {
         List<AttributeValue> attributes = new ArrayList<>();
-        values.parallelStream().peek(value -> {
-                    Map<String, Object> objectFieldsAndValues = null;
-                    try {
-                        objectFieldsAndValues = ObjectUtils.getFieldNamesAndValues(value, false);
-                    } catch (IllegalAccessException e) {
-                        e.printStackTrace();
+        values.stream().forEach(value -> {
+            SortedMap<String, Object> objectFieldsAndValues = null;
+            try {
+                objectFieldsAndValues = new TreeMap<>(ObjectUtils.getFieldNamesAndValues(value, false));
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
 
-                    }
-                    Attributes attributesFromField = new Attributes();
-                    Set<String> namesOfFields = objectFieldsAndValues.keySet();
-                    for (String key : namesOfFields) {
+            }
+            Attributes attributesFromField = new Attributes();
+            SortedSet<String> namesOfFields = new TreeSet<>(objectFieldsAndValues.keySet());
+            for (String key : namesOfFields) {
 
-                        String object = (String) objectFieldsAndValues.get(key);
-                        if (object != null) {
-                            attributesFromField.addSingleAttribute(key, new AttributeValue(object));
-                        }
-                    }
-                    attributes.add(new AttributeValue(attributesFromField));
-                });
+                String object = (String) objectFieldsAndValues.get(key);
+                if (object != null) {
+                    attributesFromField.addSingleAttribute(key, new AttributeValue(object));
+                }
+            }
+            attributes.add(new AttributeValue(attributesFromField));
+        });
 
         return attributes;
 
