@@ -371,13 +371,6 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 		public void callback(ClassPathResource sampletabFile);
 	}
 
-<<<<<<< HEAD
-	private interface SampleTabFileCallback {
-		public void callback(ClassPathResource sampletabFile);
-	}
-
-=======
->>>>>>> BSD-1242-Add_consent_tickbox_on_submission_page
 	private void runCallableOnSampleTabResource(String resource, SampleTabStringCallback callback) {
 		URL url = Resources.getResource(resource);
 		String text = null;
