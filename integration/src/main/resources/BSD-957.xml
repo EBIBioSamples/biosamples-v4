@@ -1,0 +1,97 @@
+<BioSample xmlns="http://www.ebi.ac.uk/biosamples/SampleGroupExport/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://www.ebi.ac.uk/biosamples/assets/xsd/v1.0/BioSDSchema.xsd"
+           submissionUpdateDate="2017-10-05T10:41:34.952+00:00" submissionReleaseDate="2016-04-01T11:36:57+00:00">
+    <Property class="Sample Name" characteristic="true" comment="false" type="STRING" >
+        <QualifiedValue>
+            <Value>CENSOi007-A</Value>
+        </QualifiedValue>
+    </Property>
+    <Property class="Submission Release Date" characteristic="false"
+              type="DATETIME" comment="false">
+        <QualifiedValue>
+            <Value>2017-03-29T23:00:00+00:00</Value>
+        </QualifiedValue>
+    </Property>
+    <Property class="Submission Update Date" characteristic="false"
+              type="DATETIME" comment="false">
+        <QualifiedValue>
+            <Value>2017-04-22T21:24:51+00:00</Value>
+        </QualifiedValue>
+    </Property>
+    <Property class="synonym" characteristic="false" comment="true" type="STRING">
+        <QualifiedValue>
+            <Value>FB75R2c5</Value>
+        </QualifiedValue>
+    </Property>
+    <Property class="synonym" characteristic="false" comment="true" type="STRING">
+        <QualifiedValue>
+            <Value>CENSOi255</Value>
+        </QualifiedValue>
+    </Property>
+    <Property class="Organism" characteristic="false" comment="false" type="STRING">
+        <QualifiedValue>
+            <Value>Homo sapiens</Value>
+            <TermSourceREF>
+                <Name>NCBI Taxonomy</Name>
+                <URI>http://www.ncbi.nlm.nih.gov/taxonomy</URI>
+                <TermSourceID>9606</TermSourceID>
+            </TermSourceREF>
+        </QualifiedValue>
+    </Property>
+    <Property class="Material" characteristic="false" comment="false" type="STRING">
+        <QualifiedValue>
+            <Value>cell line</Value>
+            <TermSourceREF>
+                <Name>EFO</Name>
+                <URI>http://www.ebi.ac.uk/efo</URI>
+                <TermSourceID>EFO_0000322</TermSourceID>
+            </TermSourceREF>
+        </QualifiedValue>
+    </Property>
+    <Property class="cell type" characteristic="true" comment="false" type="STRING">
+        <QualifiedValue>
+            <Value>induced pluripotent stem cell</Value>
+            <TermSourceREF>
+                <Name>EFO</Name>
+                <URI>http://www.ebi.ac.uk/efo</URI>
+                <TermSourceID>EFO_0004905</TermSourceID>
+            </TermSourceREF>
+        </QualifiedValue>
+    </Property>
+    <Property class="project" characteristic="false" comment="true" type="STRING">
+        <QualifiedValue>
+            <Value>EBiSC</Value>
+        </QualifiedValue>
+    </Property>
+    <Property class="donor id" characteristic="true" comment="false" type="STRING">
+        <QualifiedValue>
+            <Value>SAMEA104133815</Value>
+        </QualifiedValue>
+    </Property>
+    <Property class="Sex" characteristic="false" comment="false" type="STRING">
+        <QualifiedValue>
+            <Value>male</Value>
+            <TermSourceREF>
+                <Name>PATO</Name>
+                <URI>http://purl.obolibrary.org/obo</URI>
+                <TermSourceID>PATO_0000384</TermSourceID>
+            </TermSourceREF>
+        </QualifiedValue>
+    </Property>
+    <Property class="disease state" characteristic="true" comment="false" type="STRING">
+        <QualifiedValue>
+            <Value>DMD</Value>
+            <TermSourceREF>
+                <Name>OMIT</Name>
+                <URI>http://purl.obolibrary.org/obo</URI>
+                <TermSourceID>OMIT_0031428</TermSourceID>
+            </TermSourceREF>
+        </QualifiedValue>
+    </Property>
+    <derivedFrom>SAMEA104133815</derivedFrom>
+    <Database>
+        <Name>hPSCreg</Name>
+        <ID>CENSOi007-A</ID>
+        <URI>http://hpscreg.local/cell-line/CENSOi007-A</URI>
+    </Database>
+</BioSample>
