@@ -5,13 +5,18 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
 }
 
 (function ($) {
-    var errorsDiv, apiKeyInput, apiKey, sampleTabFilePicker, form, spinner, submissionUrl;
+    var errorsDiv, apiKeyInput, apiKey,
+        sampleTabFilePicker, sampleTabFilePickerLabel,
+        form, spinner, submissionUrl,
+        checkedTerms;
 
     $(document).ready(function () {
         errorsDiv = document.getElementById("errorsdiv");
         form = document.getElementById("sampletab_form");
         sampleTabFilePicker = document.getElementById("sampletab_file_picker");
+        sampleTabFilePickerLabel = document.querySelector("label[for=sampletab_file_picker]");
         spinner = document.getElementById("processing-spinner");
+        checkedTerms = document.getElementById('accept-terms');
         // apiKeyInput = document.getElementById("apikeyinput");
 
         sampleTabFilePicker.addEventListener('change', function(evt) {
@@ -22,6 +27,15 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
                 capture: false
             }
         );
+
+        checkedTerms.addEventListener('change', function(evt) {
+            evt.preventDefault();
+            sampleTabFilePickerLabel.classList.toggle('disabled', !this.checked);
+            sampleTabFilePicker.disabled = !this.checked;
+        }, {
+            capture: false
+        })
+
 
     });
 

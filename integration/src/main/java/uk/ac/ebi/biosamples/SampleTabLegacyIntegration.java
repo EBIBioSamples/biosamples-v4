@@ -9,9 +9,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
-import org.springframework.http.MediaType;
-import org.springframework.http.RequestEntity;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestOperations;
@@ -366,12 +364,20 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 
 	private interface SampleTabStringCallback {
 		public void callback(String sampleTabString);
+
 	}
 
 	private interface SampleTabFileCallback {
 		public void callback(ClassPathResource sampletabFile);
 	}
 
+<<<<<<< HEAD
+	private interface SampleTabFileCallback {
+		public void callback(ClassPathResource sampletabFile);
+	}
+
+=======
+>>>>>>> BSD-1242-Add_consent_tickbox_on_submission_page
 	private void runCallableOnSampleTabResource(String resource, SampleTabStringCallback callback) {
 		URL url = Resources.getResource(resource);
 		String text = null;

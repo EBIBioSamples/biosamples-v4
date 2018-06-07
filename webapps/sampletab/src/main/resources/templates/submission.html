@@ -41,9 +41,10 @@
 								<input type="text" name="apikey" id="apikeyinput">
 							</label>
 						</div>
+                        <th:block th:include="fragments/components :: checked_terms_button"></th:block>
 						<div class="input-group">
-							<label for="sampletab_file_picker" class="button">Upload file</label>
-							<input type="file" id="sampletab_file_picker" name="file" class="show-for-sr">
+							<label for="sampletab_file_picker" class="button disabled">Upload file</label>
+							<input type="file" id="sampletab_file_picker" name="file" class="show-for-sr" disabled>
 						</div>
 	                    <th:block th:include="fragments/components :: spinner"></th:block>
 	                </form>
@@ -52,10 +53,6 @@
 					<div id="errorsdiv"></div>
 					<div id="sampletabdiv"></div>
 				</div>
-				<p>This website requires cookies, and the limited processing of your personal data in order to
-					function. By using the site you are agreeing to this as outlined in our
-					<a href="https://www.ebi.ac.uk/data-protection/privacy-notice/biosamples-submissions">Submission Privacy Notice</a>
-					and <a href="https://www.ebi.ac.uk/about/terms-of-use">Terms of Use.</a></p>
 			</div>
 		</div>
 	</div>
