@@ -1,13 +1,10 @@
 package uk.ac.ebi.biosamples;
 
-import java.net.URI;
-import java.util.Scanner;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
+import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
@@ -15,12 +12,18 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
-
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.filter.Filter;
+import uk.ac.ebi.biosamples.service.FilterBuilder;
+
+import java.net.URI;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Scanner;
 
 @Component
 @Order(5)
-@Profile({"default"})
 public class SampleTabXmlSampleIntegration extends AbstractIntegration {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
@@ -99,7 +102,25 @@ public class SampleTabXmlSampleIntegration extends AbstractIntegration {
 			// arrived
 		});
 
-		
+		//Test Database URI is working as expected
+		runCallableOnResource("/BSD-957.xml", sampleTabString -> {
+			log.info("POSTing to " + uri);
+			RequestEntity<String> request = RequestEntity.post(uri)
+					.contentType(MediaType.APPLICATION_XML)
+					.accept(MediaType.TEXT_PLAIN)
+					//.header("Accept","text/plain;q=0.9, */*;q=0.1")
+					.body(sampleTabString);
+			ResponseEntity<String> response = null;
+			try {
+				response = restTemplate.exchange(request, String.class);
+			} catch (HttpStatusCodeException e) {
+				log.info("error response = " + response);
+				throw e;
+			}
+			// TODO check at the right URLs with GET to make sure all
+			// arrived
+		});
+
 		//test ENA getting accession for null body with local name
 		URI uriPostFoosiz =  UriComponentsBuilder.fromUri(uri).pathSegment("foosiz").build().toUri();
 		log.info("POSTing to " + putUriNcbi);
@@ -114,11 +135,27 @@ public class SampleTabXmlSampleIntegration extends AbstractIntegration {
 			log.info("error response = "+response);
 			throw e;
 		}
+
 	}
 
 	@Override
 	protected void phaseTwo() {
-		
+		String nameToSearch = "CENSOi007-A";
+		Filter nameFilter = FilterBuilder.create().onName(nameToSearch).build();
+		Iterator<Resource<Sample>> resourceIterator = client.fetchSampleResourceAll(Collections.singletonList(nameFilter)).iterator();
+		if(resourceIterator.hasNext()) {
+			Resource<Sample> sample = resourceIterator.next();
+			if (! sample.getContent().getExternalReferences().first().getUrl().equals("http://hpscreg.local/cell-line/CENSOi007-A")) {
+				throw new RuntimeException(nameToSearch + " XML submitted sample does not contain DatabaseURI as an External Reference");
+			}
+			if (resourceIterator.hasNext()) {
+				throw new RuntimeException("Unexpected number of samples matching name filter '"+ nameToSearch + "'. Should be 1");
+			}
+		} else {
+			throw new RuntimeException("No sample found using filter on name '"+ nameToSearch +"'");
+		}
+
+
 	}
 
 	@Override

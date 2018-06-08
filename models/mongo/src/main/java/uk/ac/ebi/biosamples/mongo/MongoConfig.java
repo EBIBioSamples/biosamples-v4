@@ -8,9 +8,6 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.convert.MongoConverter;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
-import uk.ac.ebi.biosamples.mongo.event.MongoSampleEventListener;
-import uk.ac.ebi.biosamples.mongo.repo.MongoExternalReferenceRepository;
-import uk.ac.ebi.biosamples.mongo.repo.MongoRelationshipRepository;
 import uk.ac.ebi.biosamples.mongo.service.CustomWriteConcernResolver;
 
 @Configuration
@@ -22,10 +19,5 @@ public class MongoConfig {
 		MongoTemplate ops = new MongoTemplate(mongoDbFactory, mongoConverter);
 		ops.setWriteConcernResolver(customWriteConcernResolver);
 		return ops;
-	}
-	@Bean
-	public MongoSampleEventListener MongoSampleEventListener(MongoExternalReferenceRepository mongoExternalReferenceRepository,
-			MongoRelationshipRepository mongoRelationshipRepository) {
-	    return new MongoSampleEventListener(mongoExternalReferenceRepository, mongoRelationshipRepository);
 	}
 }

@@ -23,12 +23,16 @@
 				<h2>Validation &amp; Correction</h2>
 				<p>This webpage provides a service for validating SampleTab format files as used by the BioSample Database.</p>
 				<p>Please provide the SampleTab file you wish to validate into the form below. You will then be able to download a version
-					of that file that has been corrected.
-				</p>
+					of that file that has been corrected.</p>
+				<p>If you have any questions about this service, please contact <a
+						href="mailto:biosamples@ebi.ac.uk?Subject=SampleTab+Web+Validator">
+					biosamples@ebi.ac.uk</a> and attach the SampleTab file you were
+					trying to validate.</p>
 				<form id="sampletab_form" method="POST" enctype="multipart/form-data" action="api/v1/file/va">
+					<th:block th:include="fragments/components :: checked_terms_button"></th:block>
 					<div class="input-group">
-						<label for="sampletab_file_picker" class="button">Upload file</label>
-						<input type="file" id="sampletab_file_picker" name="file" class="show-for-sr">
+						<label for="sampletab_file_picker" class="button disabled">Upload file</label>
+						<input type="file" id="sampletab_file_picker" name="file" class="show-for-sr" disabled>
 						<th:block th:include="fragments/components :: spinner"></th:block>
 					</div>
 				</form>
@@ -40,13 +44,8 @@
 
 					</div>
 				</div>
-				<div class="row">
-					<p>If you have any questions about this service, please contact <a
-							href="mailto:biosamples@ebi.ac.uk?Subject=SampleTab+Web+Validator">
-						biosamples@ebi.ac.uk</a> and attach the SampleTab file you were
-						trying to validate.</p>
-				</div>
 			</div>
+		</div>
 	</div>
 	<th:block th:include="fragments/footer :: footer"></th:block>	
 </body>

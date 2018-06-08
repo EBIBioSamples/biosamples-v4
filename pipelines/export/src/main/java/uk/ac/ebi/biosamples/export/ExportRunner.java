@@ -23,7 +23,12 @@ public class ExportRunner implements ApplicationRunner {
 	private final ObjectMapper objectMapper;
 	
 	public ExportRunner(BioSamplesClient bioSamplesClient, ObjectMapper objectMapper) {
-		this.bioSamplesClient = bioSamplesClient;
+		//ensure the client is public
+		if (bioSamplesClient.getPublicClient().isPresent()) {
+			this.bioSamplesClient = bioSamplesClient.getPublicClient().get();
+		} else {
+			this.bioSamplesClient = bioSamplesClient;
+		}
 		this.objectMapper = objectMapper;
 	}
 	

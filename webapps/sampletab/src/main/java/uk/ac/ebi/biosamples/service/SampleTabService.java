@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Service;
+import uk.ac.ebi.arrayexpress2.magetab.datamodel.graph.AbstractNode;
 import uk.ac.ebi.arrayexpress2.magetab.datamodel.graph.Node;
 import uk.ac.ebi.arrayexpress2.magetab.exception.ParseException;
 import uk.ac.ebi.arrayexpress2.sampletab.datamodel.MSI;
@@ -16,6 +17,8 @@ import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.SampleNode;
 import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.attribute.*;
 import uk.ac.ebi.arrayexpress2.sampletab.renderer.SampleTabWriter;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.model.*;
+import uk.ac.ebi.biosamples.exceptions.*;
 import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.mongo.model.MongoSampleTab;
@@ -75,10 +78,12 @@ public class SampleTabService {
 	}
 	
 	public SampleData saveSampleTab(SampleData sampleData, String domain, boolean superUser, boolean setUpdateDate, boolean setFullDetails)
-			throws DuplicateDomainSampleException, ConflictingSampleTabOwnershipException, AssertingSampleTabOwnershipException {
+			throws SampleTabException {
 		
 		log.info("Saving sampletab "+sampleData.msi.submissionIdentifier);
-		
+
+		rejectForInvalidRelationship(sampleData);
+
 		Instant release = Instant.ofEpochMilli(sampleData.msi.submissionReleaseDate.getTime());
 		Instant update = Instant.ofEpochMilli(sampleData.msi.submissionUpdateDate.getTime());
 
@@ -87,8 +92,11 @@ public class SampleTabService {
 
 		MongoSampleTab oldSampleTab = null;
 
+
         //replace implicit derived from with explicit derived from relationships
         for (SampleNode sample : sampleData.scd.getNodes(SampleNode.class)) {
+
+            // Check relationships with parent node
             if (sample.getParentNodes().size() > 0) {
                 for (Node parent : new HashSet<Node>(sample.getParentNodes())) {
                     if (SampleNode.class.isInstance(parent)) {
@@ -115,7 +123,7 @@ public class SampleTabService {
 				newAccessions.add(groupNode.getGroupAccession());
 			}
 		}
-		
+
 		if (sampleData.msi.submissionIdentifier != null 
 				&& sampleData.msi.submissionIdentifier.trim().length() > 0) {
 			//this is an update of an existing sampletab
@@ -132,7 +140,7 @@ public class SampleTabService {
 
 				//check samples are not owned by any others
 				for (String accession : newAccessions) {
-					List<MongoSampleTab> accessionSampleTabs = mongoSampleTabRepository.findOneByAccessionContaining(accession);
+					List<MongoSampleTab> accessionSampleTabs = mongoSampleTabRepository.findByAccessionsContaining(accession);
 
 					String newId = sampleData.msi.submissionIdentifier.trim();
 					
@@ -164,7 +172,7 @@ public class SampleTabService {
 				
 				//check samples are owned by this sampletab and not any others
 				for (String accession : newAccessions) {
-					List<MongoSampleTab> accessionSampleTabs = mongoSampleTabRepository.findOneByAccessionContaining(accession);
+					List<MongoSampleTab> accessionSampleTabs = mongoSampleTabRepository.findByAccessionsContaining(accession);
 
 					String newId = sampleData.msi.submissionIdentifier.trim();
 					
@@ -213,7 +221,7 @@ public class SampleTabService {
 			
 			//check samples are not owned by any others
 			for (String accession : newAccessions) {
-				List<MongoSampleTab> accessionSampleTabs = mongoSampleTabRepository.findOneByAccessionContaining(accession);
+				List<MongoSampleTab> accessionSampleTabs = mongoSampleTabRepository.findByAccessionsContaining(accession);
 
 				String newId = sampleData.msi.submissionIdentifier.trim();
 				
@@ -285,15 +293,33 @@ public class SampleTabService {
 
 		//persist the samples and groups
 		persistSamplesAndGroups(sampleData, domain, release, update, setUpdateDate);
-		
-		//TODO replace relationships which were by name with by accession
 
 		//persist updated SampleTab so has all the associated accessions added
 		persistSampleTab(sampleData, domain);
 		
 		return sampleData;
 	}
-	
+
+	private void rejectForInvalidRelationship(SampleData sampleData) throws UnexpectedSampleTabRelationshipException {
+
+	    Collection<SampleNode> sampleNodes = sampleData.scd.getNodes(SampleNode.class);
+	    List<String> sampleNames = sampleNodes.stream().map(AbstractNode::getNodeName).collect(Collectors.toList());
+	    for(SampleNode sampleNode: sampleNodes) {
+			Optional<AbstractRelationshipAttribute> invalidRelationship = sampleNode.getAttributes().stream()
+					.filter(AbstractRelationshipAttribute.class::isInstance)
+					.map(node -> (AbstractRelationshipAttribute) node)
+					.filter(node -> !(node.getAttributeValue().matches("SAM[END][AG]?[0-9]+") || sampleNames.contains(node.getAttributeValue())))
+					.findAny();
+
+			if (invalidRelationship.isPresent()) {
+				throw new UnexpectedSampleTabRelationshipException(sampleNode.getNodeName(),
+						invalidRelationship.get().getAttributeType(),
+						invalidRelationship.get().getAttributeValue());
+			}
+
+		}
+	}
+
 	private void persistSampleTab(SampleData sampleData, String domain) {
 		//get the accessions in it
 		Set<String> sampletabAccessions = new HashSet<>();
@@ -361,7 +387,7 @@ public class SampleTabService {
 	 * @param update
 	 * @param setUpdateDate
 	 */
-	private void persistSamplesAndGroups(SampleData sampleData, String domain, Instant release, Instant update, boolean setUpdateDate) {		
+	private void persistSamplesAndGroups(SampleData sampleData, String domain, Instant release, Instant update, boolean setUpdateDate) {
 		Map<String, Future<Resource<Sample>>> futureMap = new TreeMap<>();
 		for (SampleNode sampleNode : sampleData.scd.getNodes(SampleNode.class)) {
 			if (!isDummy(sampleNode)) {			
@@ -412,6 +438,43 @@ public class SampleTabService {
 							removeRelationships.add(relationship);
 							addRelationships.add(Relationship.build(sample.getAccession(), 
 									relationship.getType(), target.getAccession()));
+							changed = true;
+
+							// Update also sampletab node entry
+							SampleNode sampleNode = sampleData.scd.getNode(futureName, SampleNode.class);
+							SCDNodeAttribute newRelationship = null;
+
+							// Create the relationship node based on the relationship type
+							switch (relationship.getType()) {
+								case "derived from":
+									newRelationship = new DerivedFromAttribute(target.getAccession());
+									break;
+								case "same as":
+									newRelationship = new SameAsAttribute(target.getAccession());
+									break;
+								case "child of":
+									newRelationship = new ChildOfAttribute(target.getAccession());
+									break;
+							}
+
+							// Search for the corresponding attribute with
+							List<SCDNodeAttribute> nodeAttrList = sampleNode.getAttributes().stream()
+									.filter(attr -> attr.getAttributeType().equalsIgnoreCase(relationship.getType()))
+									.filter(attr -> attr.getAttributeValue().equals(relationship.getTarget()))
+									.collect(Collectors.toList());
+							if (nodeAttrList.size() == 1) {
+								SCDNodeAttribute nodeAttr = nodeAttrList.get(0);
+								sampleNode.removeAttribute(nodeAttr);
+								sampleNode.addAttribute(newRelationship);
+							} else {
+								// This should not happen at this stage of the process
+								throw new RuntimeException("Sample " + futureName + " has a relationship with " +
+										relationship.getTarget() + " which is not part of the same sampletab");
+							}
+						} else {
+							// This should not happen at this stage of the process
+							throw new RuntimeException("Sample " + futureName + " has a relationship with " +
+									relationship.getTarget() + " which is not part of the same sampletab");
 						}
 					}
 				}
@@ -470,9 +533,8 @@ public class SampleTabService {
 			return true;
 		}
 	}
-	
-	
-	
+
+
 	private Sample groupNodeToSample(GroupNode groupNode, MSI msi, String domain, Instant release, Instant update) {
 
 		String accession = groupNode.getGroupAccession();
@@ -575,8 +637,6 @@ public class SampleTabService {
 						.build())
 				.collect(Collectors.toCollection(TreeSet::new));
 	}
-
-
 
     private SortedSet<Publication> getPublicationsFromMSI(MSI msi) {
         return msi.publications.stream()
@@ -710,43 +770,5 @@ public class SampleTabService {
 		}
 		return Attribute.build(type, value, iris, unit);
 	}
-	
-	public static class DuplicateDomainSampleException extends Exception {
-		
-		private static final long serialVersionUID = -3469688972274912777L;
-		public final String domain;
-		public final String name;
-		
-		public DuplicateDomainSampleException(String domain, String name) {
-			super("Multiple existing accessions of domain '"+domain+"' sample name '"+name+"'");
-			this.domain = domain;
-			this.name = name;
-		}
-	}
-	
-	public static class ConflictingSampleTabOwnershipException extends Exception {
-		
-		private static final long serialVersionUID = -1504945560846665587L;
-		public final String sampleAccession;
-		public final String originalSubmission;
-		public final String newSubmission;
-		
-		public ConflictingSampleTabOwnershipException(String sampleAccession, String originalSubmission, String newSubmission) {
-			super("Accession "+sampleAccession+" was previouly described in "+originalSubmission);
-			this.sampleAccession = sampleAccession;
-			this.originalSubmission = originalSubmission;
-			this.newSubmission = newSubmission;
-		}
-	}
-	
-	public static class AssertingSampleTabOwnershipException extends Exception {
-		
-		private static final long serialVersionUID = -1504945560846665587L;
-		public final String submissionIdentifier;
-		
-		public AssertingSampleTabOwnershipException(String submissionIdentifier) {
-			super("Submission identifier "+submissionIdentifier+" has not been previously submitted");
-			this.submissionIdentifier = submissionIdentifier;
-		}
-	}
+
 }

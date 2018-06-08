@@ -23,7 +23,7 @@ public class CustomWriteConcernResolver implements WriteConcernResolver {
 	
 	@Override
 	public WriteConcern resolve(MongoAction action) {
-		log.info("Resolving mongoAction "+action);
+		log.trace("Resolving mongoAction "+action);
 		if (MongoSubmission.class.isAssignableFrom(action.getEntityType())) {
 			if (mongoProperties.getSubmissionWriteConcern().matches("[0-9]+")) {
 				return new WriteConcern(Integer.parseInt(mongoProperties.getSubmissionWriteConcern()));

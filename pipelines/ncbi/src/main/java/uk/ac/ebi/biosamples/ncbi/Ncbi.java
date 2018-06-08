@@ -151,7 +151,7 @@ public class Ncbi implements ApplicationRunner {
 				Sample newSample = Sample.build(sample.getName(), 
 						sample.getAccession(), 
 						sample.getDomain(), 
-						ZonedDateTime.now(ZoneOffset.UTC).plusYears(100).toInstant(), 
+						ZonedDateTime.now(ZoneOffset.UTC).plusYears(1000).toInstant(), 
 						sample.getUpdate(), 
 						sample.getAttributes(), 
 						sample.getRelationships(), 
@@ -226,6 +226,9 @@ public class Ncbi implements ApplicationRunner {
 		
 		@Override
 		public void handleElement(Element e) throws Exception {
+			
+			//TODO check status
+			
 			String accession = e.attributeValue("accession");
 			accessions.add(accession);
 			lastAccession = accession;

@@ -42,7 +42,6 @@ import uk.ac.ebi.biosamples.model.legacyxml.ResultQuery;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
 @Component
-@Profile({"default"})
 public class XmlSearchIntegration extends AbstractIntegration {
     
     private final RestTemplate restTemplate;

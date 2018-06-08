@@ -18,9 +18,8 @@ public class MongoRelationship implements Comparable<MongoRelationship> {
 	private final String hash;
 	
 	private final String type;
-	@Indexed(background=true)
+	@Indexed(background=true,sparse=true)
 	private final String target;
-	@Indexed(background=true)
 	private final String source;
 	
 	private MongoRelationship(String type, String target, String source, String hash){

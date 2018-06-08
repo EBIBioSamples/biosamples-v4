@@ -105,6 +105,10 @@ public class SampleZoomaCallable implements Callable<Void> {
 				log.trace("Skipping unknown "+attribute.getValue());
 				continue;
 			} 
+			if (attribute.getType().toLowerCase().equals("description")) {
+				log.trace("Skipping description "+attribute.getValue());
+				continue;
+			} 
 			if (attribute.getType().toLowerCase().equals("label")) {
 				log.trace("Skipping label "+attribute.getValue());
 				continue;
@@ -114,7 +118,10 @@ public class SampleZoomaCallable implements Callable<Void> {
 					|| "INSDC first public".equals(attribute.getType())
 					|| "INSDC last update".equals(attribute.getType())
 					|| "NCBI submission model".equals(attribute.getType())
-					|| "NCBI submission package".equals(attribute.getType())) {
+					|| "NCBI submission package".equals(attribute.getType())
+					|| "INSDC status".equals(attribute.getType())
+					|| "ENA checklist".equals(attribute.getType())
+					|| "INSDC center name".equals(attribute.getType())) {
 				log.trace("Skipping "+attribute.getType()+" : "+attribute.getValue());
 				continue;
 			}

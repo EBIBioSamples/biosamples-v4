@@ -13,7 +13,7 @@ services:
     command:
     - java
     - -jar
-    - webapps-core-4.0.6-SNAPSHOT.war
+    - webapps-core-4.0.9-SNAPSHOT.war
     environment:
     #AAP certificate
     - jwt.certificate=public.explore.der
@@ -41,7 +41,7 @@ services:
     - server.tomcat.accesslog.enabled=true
     - server.tomcat.accesslog.directory=/logs
     - server.tomcat.accesslog.prefix=webapps-core.access
-    - server.tomcat.accesslog.pattern=%h %l %u %t \"%r\" %s %b %D %{Content-Type}o
+    - server.tomcat.accesslog.pattern=- %l %u %t \"%r\" %s %b %D %{Content-Type}o
     #Enable gzip compression of responses
     - server.compression.enabled=true
     - server.compression.mime-types=application/json,application/hal+json,application/xml,text/html,application/javascript,text/css
@@ -67,7 +67,7 @@ services:
     command:
     - java
     - -jar
-    - webapps-sampletab-4.0.6-SNAPSHOT.war
+    - webapps-sampletab-4.0.9-SNAPSHOT.war
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - SERVER_SERVLET_CONTEXT-PATH=/biosamples/sampletab
@@ -77,7 +77,7 @@ services:
     - SERVER_TOMCAT_ACCESSLOG_ENABLED=true
     - SERVER_TOMCAT_ACCESSLOG_DIRECTORY=/logs
     - SERVER_TOMCAT_ACCESSLOG_PREFIX=webapps-sampletab.access
-    - server.tomcat.accesslog.pattern=%h %l %u %t \"%r\" %s %b %D %{Content-Type}o
+    - server.tomcat.accesslog.pattern=- %l %u %t \"%r\" %s %b %D %{Content-Type}o
     # Charset of HTTP requests and responses. Added to the "Content-Type" header if not set explicitly.
     - SPRING_HTTP_ENCODING_CHARSET=UTF-8
     # Enable http encoding support.
@@ -88,6 +88,8 @@ services:
     - ENDPOINTS_SHUTDOWN_SENSITIVE=false
     - SPRING_HTTP_MULTIPART_MAX-FILE-SIZE=30MB
     - SPRING_HTTP_MULTIPART_MAX-REQUEST-SIZE=30MB
+    - SPRING_SERVLET_MULTIPART_MAX-FILE-SIZE=30MB
+    - SPRING_SERVLET_MULTIPART_MAX-REQUEST-SIZE=30MB
     # Provide AAP infos
     #- BIOSAMPLES_CLIENT_AAP_USERNAME=override_in_docker-compose.override.yml
     #- BIOSAMPLES_CLIENT_AAP_PASSWORD=override_in_docker-compose.override.yml
@@ -104,7 +106,7 @@ services:
     command:
     - java
     - -jar
-    - webapps-legacyxml-4.0.6-SNAPSHOT.war
+    - webapps-legacyxml-4.0.9-SNAPSHOT.war
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - SERVER_SERVLET_CONTEXT-PATH=/biosamples/xml
@@ -114,7 +116,7 @@ services:
     - SERVER_TOMCAT_ACCESSLOG_ENABLED=true
     - SERVER_TOMCAT_ACCESSLOG_DIRECTORY=/logs
     - SERVER_TOMCAT_ACCESSLOG_PREFIX=webapps-legacyxml.access
-    - server.tomcat.accesslog.pattern=%h %l %u %t \"%r\" %s %b %D %{Content-Type}o
+    - server.tomcat.accesslog.pattern=- %l %u %t \"%r\" %s %b %D %{Content-Type}o
     - ENDPOINTS_SHUTDOWN_ENABLED=true
     - ENDPOINTS_SHUTDOWN_SENSITIVE=false
     # Provide AAP infos
@@ -132,7 +134,7 @@ services:
     command:
       - java
       - -jar
-      - webapps-legacyjson-4.0.6-SNAPSHOT.war
+      - webapps-legacyjson-4.0.9-SNAPSHOT.war
     environment:
       - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
       - SERVER_SERVLET_CONTEXT-PATH=/biosamples/api
@@ -142,7 +144,7 @@ services:
       - SERVER_TOMCAT_ACCESSLOG_ENABLED=true
       - SERVER_TOMCAT_ACCESSLOG_DIRECTORY=/logs
       - SERVER_TOMCAT_ACCESSLOG_PREFIX=webapps-legacyjson.access
-      - server.tomcat.accesslog.pattern=%h %l %u %t \"%r\" %s %b %D %{Content-Type}o
+      - server.tomcat.accesslog.pattern=- %l %u %t \"%r\" %s %b %D %{Content-Type}o
       - ENDPOINTS_SHUTDOWN_ENABLED=true
       - ENDPOINTS_SHUTDOWN_SENSITIVE=false
       # Provide AAP infos
@@ -161,7 +163,7 @@ services:
     command:
     - java
     - -jar
-    - agents-solr-4.0.6-SNAPSHOT.jar
+    - agents-solr-4.0.9-SNAPSHOT.jar
     environment:
     - SPRING_RABBITMQ_HOST=rabbitmq
     - SPRING_RABBITMQ_PUBLISHER-CONFIRMS=true
@@ -185,7 +187,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-ena-4.0.6-SNAPSHOT.jar
+    - pipelines-ena-4.0.9-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-ena.log
@@ -199,7 +201,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-ncbi-4.0.6-SNAPSHOT.jar
+    - pipelines-ncbi-4.0.9-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-ncbi.log
@@ -213,7 +215,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-accession-4.0.6-SNAPSHOT.jar
+    - pipelines-accession-4.0.9-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-accession.log      
@@ -227,7 +229,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-sampletab-4.0.6-SNAPSHOT.jar
+    - pipelines-sampletab-4.0.9-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_SAMPLETAB_URI=http://biosamples-webapps-sampletab:8080/biosamples/sampletab/v4
     - LOGGING_FILE=/logs/pipelines-sampletab.log   
@@ -241,7 +243,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-copydown-4.0.6-SNAPSHOT.jar
+    - pipelines-copydown-4.0.9-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-copydown.log  
@@ -255,7 +257,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-curation-4.0.6-SNAPSHOT.jar
+    - pipelines-curation-4.0.9-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-curation.log
@@ -271,7 +273,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-zooma-4.0.6-SNAPSHOT.jar
+    - pipelines-zooma-4.0.9-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-zooma.log
@@ -287,7 +289,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-reindex-4.0.6-SNAPSHOT.jar
+    - pipelines-reindex-4.0.9-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-reindex.log
@@ -304,7 +306,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-export-4.0.6-SNAPSHOT.jar
+    - pipelines-export-4.0.9-SNAPSHOT.jar
     - --gzip
     - /export/export.json.gzip
     environment:
@@ -323,7 +325,7 @@ services:
     command:
     - java
     - -jar
-    - integration-4.0.6-SNAPSHOT.jar
+    - integration-4.0.9-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - BIOSAMPLES_SUBMISSIONURI=http://biosamples-webapps-sampletab:8080/biosamples/sampletab

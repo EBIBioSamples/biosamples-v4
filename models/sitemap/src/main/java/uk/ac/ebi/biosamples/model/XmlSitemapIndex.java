@@ -33,7 +33,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "sitemapindex")
 public class XmlSitemapIndex {
 
-    @XmlElements({@XmlElement(name = "model", type = uk.ac.ebi.biosamples.model.XmlSitemap.class)})
+    @XmlElements({@XmlElement(name = "sitemap", type = uk.ac.ebi.biosamples.model.XmlSitemap.class)})
     private final Collection<XmlSitemap> xmlSitemaps = new ArrayList();
 
     public void addSitemap(XmlSitemap xmlSitemap) {

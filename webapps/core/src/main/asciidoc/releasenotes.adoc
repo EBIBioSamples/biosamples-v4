@@ -4,6 +4,33 @@
 This pages contains links to release notes for BioSamples for version 4.0.0 and higher. This release represents a comprehensive overhaul and therefore previous release notes are no longer applicable.
 
 [[section]]
+4.0.7
+-----
+
+This is a bugfix release that addresses the following issues:
+
+* GDPR notices
+* Update format of the Sitemap file
+
+[[section]]
+4.0.6
+-----
+
+This is a bugfix release that addresses the following issues:
+
+* Improves search handling of special characters in facets
+* Improves search handling of special characters in search terms
+* Fix issue with curation link URLs
+* Implemented DataCatalog, Dataset and DataRecord profiles on JSON+LD
+* Add ability to control which curation domains are applied to a sample
+* Updated and improved API documentation
+* Updated and improved SampleTab documentation
+* Fix links to XML and JSON serialisation in the UI
+* Fix bug in handling special characters in SampleTab submission
+* Add export pipeline
+* Add copy down pipeline
+
+[[section]]
 4.0.5
 -----
 

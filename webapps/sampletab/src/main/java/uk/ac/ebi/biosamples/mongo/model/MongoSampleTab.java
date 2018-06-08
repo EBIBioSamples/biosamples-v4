@@ -6,6 +6,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -19,6 +20,8 @@ public class MongoSampleTab {
 	private String id;	
 	private String domain;	
 	private String sampleTab;
+
+	@Indexed(background=true)
 	private Collection<String> accessions;
 
 	private MongoSampleTab(String id, String domain, String sampleTab, Collection<String> accessions) {

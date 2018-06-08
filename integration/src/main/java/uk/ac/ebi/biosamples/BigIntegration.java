@@ -76,7 +76,6 @@ public class BigIntegration extends AbstractIntegration {
 
 	@Override
 	protected void phaseOne() {
-		
 		List<Sample> samples = new ArrayList<>();
 		//generate a root sample
 		Sample root = generateSample(0, Collections.emptyList(), null);
@@ -99,10 +98,9 @@ public class BigIntegration extends AbstractIntegration {
 		double elapsedMs = (int) ((endTime-startTime)/1000000l);
 		double msPerSample = elapsedMs/noSamples;
 		log.info("Submitted "+noSamples+" samples in "+elapsedMs+"ms ("+msPerSample+"ms each)");
-		if (msPerSample > 25) {
-			throw new RuntimeException("Took more than 25ms per sample to submit ("+msPerSample+"ms each)");
+		if (msPerSample > 100) {
+			throw new RuntimeException("Took more than 100ms per sample to submit ("+msPerSample+"ms each)");
 		}
-
 	}
 
 	@Override
@@ -120,6 +118,7 @@ public class BigIntegration extends AbstractIntegration {
 		if (elapsedMs > 5000) {
 			throw new RuntimeException("Took more than 5000ms to fetch highly-connected sample ("+elapsedMs+"ms)");			
 		}
+		log.info("Took "+elapsedMs+"ms to fetch highly-connected sample SAMbig"+noSamples);
 		
 		startTime = System.nanoTime();
 		client.fetchSample("SAMbig"+0);
@@ -128,6 +127,7 @@ public class BigIntegration extends AbstractIntegration {
 		if (elapsedMs > 5000) {
 			throw new RuntimeException("Took more than 5000ms to fetch highly-connected sample ("+elapsedMs+"ms)");			
 		}
+		log.info("Took "+elapsedMs+"ms to fetch highly-connected sample SAMbig0");
 		
 		//time how long it takes to loop over all of them
 
@@ -140,6 +140,7 @@ public class BigIntegration extends AbstractIntegration {
 		if (elapsedMs > 5000) {
 			throw new RuntimeException("Took more than 5000ms to fetch all samples ("+elapsedMs+"ms)");			
 		}
+		log.info("Took "+elapsedMs+"ms to fetch all samples");
 
 		//TODO check HAL links for search term and facets are persistent over paging etc
 		

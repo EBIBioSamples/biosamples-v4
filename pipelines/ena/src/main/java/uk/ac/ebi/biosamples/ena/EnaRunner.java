@@ -17,6 +17,7 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
@@ -64,10 +65,9 @@ public class EnaRunner implements ApplicationRunner {
 		if (pipelinesProperties.getThreadCount() == 0) {
 			EraRowCallbackHandler eraRowCallbackHandler = new EraRowCallbackHandler(null, enaCallableFactory, futures);
 			eraProDao.doSampleCallback(fromDate, toDate, eraRowCallbackHandler);
-			//now print a list of things that failed
-			if (EnaCallable.failedQueue.size() > 0) {
-				log.info("Failed accessions: "+String.join(", ", EnaCallable.failedQueue));
-			}			
+			
+			NcbiRowCallbackHandler ncbiRowCallbackHandler = new NcbiRowCallbackHandler(null, ncbiCallableFactory, futures);
+			eraProDao.getNcbiCallback(fromDate, toDate, ncbiRowCallbackHandler);
 		} else {
 		
 			try (AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, false, 
@@ -82,17 +82,7 @@ public class EnaRunner implements ApplicationRunner {
 				log.info("waiting for futures");
 				// wait for anything to finish
 				ThreadUtils.checkFutures(futures, 0);
-			} finally {
-				//now print a list of things that failed
-				if (EnaCallable.failedQueue.size() > 0) {
-					log.info("Failed accessions: "+String.join(", ", EnaCallable.failedQueue));
-				}
-			}
-		}
-		
-		//now print a list of things that failed
-		if (EnaCallable.failedQueue.size() > 0) {
-			log.info("Failed accessions: "+String.join(", ", EnaCallable.failedQueue));
+			} 
 		}
 	}
 	
@@ -119,6 +109,8 @@ public class EnaRunner implements ApplicationRunner {
 			if (executorService == null) {
 				try {
 					callable.call();
+				} catch (RuntimeException e) {
+					throw e;
 				} catch (Exception e) {
 					throw new RuntimeException(e);
 				}
@@ -126,7 +118,11 @@ public class EnaRunner implements ApplicationRunner {
 				futures.put(sampleAccession, executorService.submit(callable));
 				try {
 					ThreadUtils.checkFutures(futures, 100);
-				} catch (InterruptedException | ExecutionException e) {
+				} catch (RuntimeException e) {
+					throw e;
+				} catch (ExecutionException e) {
+					throw new RuntimeException(e.getCause());
+				}catch (InterruptedException e) {
 					throw new RuntimeException(e);
 				}
 			}
@@ -139,6 +135,8 @@ public class EnaRunner implements ApplicationRunner {
 		private final AdaptiveThreadPoolExecutor executorService;
 		private final NcbiCurationCallableFactory ncbiCallableFactory;
 		private final Map<String, Future<Void>> futures;
+
+		private Logger log = LoggerFactory.getLogger(getClass());
 		
 		public NcbiRowCallbackHandler(AdaptiveThreadPoolExecutor executorService,
 				NcbiCurationCallableFactory ncbiCallableFactory,
@@ -163,7 +161,14 @@ public class EnaRunner implements ApplicationRunner {
 				futures.put(sampleAccession, executorService.submit(callable));
 				try {
 					ThreadUtils.checkFutures(futures, 100);
-				} catch (InterruptedException | ExecutionException e) {
+				} catch (HttpClientErrorException e) {
+					log.error("HTTP Client error body : "+e.getResponseBodyAsString());
+					throw e;
+				} catch (RuntimeException e) {
+					throw e;
+				} catch (ExecutionException e) {
+					throw new RuntimeException(e.getCause());
+				}catch (InterruptedException e) {
 					throw new RuntimeException(e);
 				}
 			}

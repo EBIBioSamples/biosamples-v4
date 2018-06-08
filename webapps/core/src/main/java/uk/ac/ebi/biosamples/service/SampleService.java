@@ -100,17 +100,18 @@ public class SampleService {
 			sample = mongoSampleToSampleConverter.convert(mongoSample);
 
 			// send a message for storage and further processing
-			messagingSerivce.sendMessages(sample);
+			messagingSerivce.fetchThenSendMessage(sample.getAccession());
 		} else {
 			//assign it a new accession
 			sample = mongoAccessionService.generateAccession(sample);
 			
 			//send a message for storage and further processing
-			messagingSerivce.sendMessages(sample);
+			messagingSerivce.fetchThenSendMessage(sample.getAccession());
 		}
 		
 		//return the sample in case we have modified it i.e accessioned
-		return sample;
+		//do a fetch to return it with curation objects and inverse relationships
+		return fetch(sample.getAccession(), Optional.empty()).get();
 	}
 
 	@ResponseStatus(HttpStatus.BAD_REQUEST)

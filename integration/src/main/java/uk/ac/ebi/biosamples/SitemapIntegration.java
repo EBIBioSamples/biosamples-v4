@@ -25,7 +25,6 @@ import uk.ac.ebi.biosamples.model.XmlUrlSet;
 
 @Order
 @Component
-@Profile({"default"})
 public class SitemapIntegration extends AbstractIntegration {
 
     private URI biosamplesSubmissionUri;

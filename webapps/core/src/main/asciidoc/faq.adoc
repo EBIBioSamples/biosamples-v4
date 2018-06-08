@@ -4,7 +4,7 @@
 
 If you cannot find the answer to your question in this FAQ or the link:../docs[help pages] then please email us at biosamples@ebi.ac.uk.
 
-== How frequent are updates to BioSamples' data?
+=== How frequent are updates to BioSamples' data?
 BioSamples content is updated daily. Information directly submitted or updated in a source should be reflected within 48 hours. However, occasionally daily updates may be missed due to unexpected circumstances.
 
 === What pattern do BioSamples accessions follow?
@@ -15,6 +15,12 @@ Subscribe to our low-traffic https://listserver.ebi.ac.uk/mailman/listinfo/biosa
 
 === Why do some of my search results not contain my query?
 We use ontologies to help refine search queries. This means that your query might match to a synonym or more specific term than you were looking for; e.g. a search for 'human' will match 'homo sapiens'. However, direct matches will be ranked higher in the results.
+
+=== How will my personal data be used?
+
+This website requires cookies, and the limited processing of your personal data in order to function. By using the site you are agreeing to this as outlined in our https://www.ebi.ac.uk/data-protection/privacy-notice/embl-ebi-public-website[Privacy Notice] and https://www.ebi.ac.uk/about/terms-of-use[Terms of Use].
+
+If you submit information to BioSamples please note that we will handle your submission in accordance with our https://www.ebi.ac.uk/data-protection/privacy-notice/biosamples-submissions[Submission Privacy Notice].
 
 === I think some of the data is wrong. Can you fix it?
 Most of the data in BioSamples has been submitted by third parties, often via one or more other services. This means that we are unable to go back to submitters for corrections or clarifications. Therefore we do not have the same degree of up front quality control as services with specific curators and submission requirements. We do however try to extract the highest quality of information from the data we are given, for example by mapping to ontologies and using ontology expansion for queries.

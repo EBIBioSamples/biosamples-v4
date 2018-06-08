@@ -213,6 +213,16 @@ public class Attribute implements Comparable<Attribute> {
     @JsonCreator
 	static public Attribute build(@JsonProperty("type") String type, @JsonProperty("value") String value, 
 			@JsonProperty("iri") Collection<String> iri, @JsonProperty("unit") String unit) {
+    	//check for nulls
+    	if (type == null) { 
+    		throw new IllegalArgumentException("type must not be null");    	
+    	}
+    	if (value == null) {
+    		throw new IllegalArgumentException("value must not be null");
+    	}
+    	if (iri == null) {
+    		iri = Lists.newArrayList();
+    	}
     	//cleanup inputs
     	if (type != null) type = type.trim();
     	if (value != null) value = value.trim();

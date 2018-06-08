@@ -14,6 +14,7 @@ import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
+import uk.ac.ebi.biosamples.mongo.service.MongoInverseRelationshipService;
 import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 
@@ -36,16 +37,19 @@ public class SampleReadService {
 	private final MongoSampleToSampleConverter mongoSampleToSampleConverter;
 	
 	private final CurationReadService curationReadService;
+	private final MongoInverseRelationshipService mongoInverseRelationshipService;
 	
 	private final ExecutorService executorService;
 	
 	public SampleReadService(MongoSampleRepository mongoSampleRepository,
 			MongoSampleToSampleConverter mongoSampleToSampleConverter,
 			CurationReadService curationReadService,
+			MongoInverseRelationshipService mongoInverseRelationshipService,
 			BioSamplesProperties bioSamplesProperties) {
 		this.mongoSampleRepository = mongoSampleRepository;
 		this.mongoSampleToSampleConverter = mongoSampleToSampleConverter;
 		this.curationReadService = curationReadService;
+		this.mongoInverseRelationshipService = mongoInverseRelationshipService;
 		executorService = AdaptiveThreadPoolExecutor.create(10000, 1000, false, 
 				bioSamplesProperties.getBiosamplesCorePageThreadCount(), 
 				bioSamplesProperties.getBiosamplesCorePageThreadCountMax());
@@ -62,19 +66,31 @@ public class SampleReadService {
 	//@Cacheable(cacheNames=WebappProperties.fetchUsing, key="#root.args[0]")
 	public Optional<Sample> fetch(String accession, 
 			Optional<List<String>> curationDomains) throws IllegalArgumentException {
-		// return the raw sample from the repository
+		// return the sample from the repository
+		long startTime, endTime;
+
+		startTime = System.nanoTime();
 		MongoSample mongoSample = mongoSampleRepository.findOne(accession);
 		if (mongoSample == null) {
 			return Optional.empty();
 		}
-		//TODO only have relationships to things that are accessible
+		endTime = System.nanoTime();
+		log.trace("Got mongo original "+accession+" in "+((endTime-startTime)/1000000)+"ms");
+		
+		//add on inverse relationships
+		startTime = System.nanoTime();
+		mongoSample = mongoInverseRelationshipService.addInverseRelationships(mongoSample);
+		endTime = System.nanoTime();
+		log.trace("Got inverse relationships "+accession+" in "+((endTime-startTime)/1000000)+"ms");
 
 		// convert it into the format to return
 		Sample sample = mongoSampleToSampleConverter.convert(mongoSample);
 		
 		//add curation from a set of users
-		//TODO limit curation to a set of users (possibly empty set)
+		startTime = System.nanoTime();
 		sample = curationReadService.applyAllCurationToSample(sample, curationDomains);
+		endTime = System.nanoTime();
+		log.trace("Applied curation to "+accession+" in "+((endTime-startTime)/1000000)+"ms");
 		
 		
 		return Optional.of(sample);
