@@ -21,6 +21,7 @@ services:
     - aap.domains.url=https://explore.api.aap.tsi.ebi.ac.uk
     - aap.token.url=https://explore.api.aap.tsi.ebi.ac.uk/auth
     #configure other services
+    - biosamples.client.uri=http://localhost:8080/biosamples
     - spring.data.solr.host=http://solr:8983/solr
     - spring.data.mongodb.uri=mongodb://mongo:27017/biosamples
     - SPRING_RABBITMQ_HOST=rabbitmq
