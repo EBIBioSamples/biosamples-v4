@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/sampletab")
 public class SampletabHtmlController {
 
-    @RequestMapping(value = {"", "/"} )
+    @RequestMapping({"", "/"})
     public String index(){
         return "sampletab/index";
     }

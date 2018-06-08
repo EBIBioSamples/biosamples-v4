@@ -15,7 +15,7 @@
 	<!-- When this content is no longer relevant -->
 </head>
 
-<body>
+<body class="sampletab">
 	<th:block th:include="fragments/header :: header"></th:block>
 	<div layout:fragment="content">
 		<div id="main-content-area" class="row">
@@ -58,5 +58,6 @@
 		</div>
 	</div>
 	<th:block th:include="fragments/footer :: footer"></th:block>
+	<script defer="defer" th:src="@{/js/webaccession.js}" src="../../static/js/webaccession.js"></script>
 </body>
 </html>

@@ -6,7 +6,8 @@
 .autocomplete-group strong { display: block; border-bottom: 1px solid #000; }
 
 /* CARDS */
-.card { background-color:#999; color:#f8f8f8; }
+/* This will target only pages where the body doesn't have a sampletab class*/
+body:not(.sampletab) .card { background-color:#999; color:#f8f8f8; }
 
 /* FACETS */
 .facet-checkbox {
@@ -55,4 +56,69 @@ pre.nowrap {
 code[class^="language"] {
     border: none;
     background: none;
+}
+
+/* SAMPLETAB */
+.sampletab .biosamples-button-row { margin-bottom: 1em; }
+
+.sampletab .biosamples-card { text-align: center; border: 1px solid #007c82 /*EBI Color*/ ; min-height: 150px; padding: 1em; }
+
+.sampletab .biosamples-card:hover { background-color: #007c82; }
+
+.sampletab .biosamples-card:hover * { color: white; }
+
+.sampletab .spinner-container {
+    display: flex;
+    align-content: center;
+    visibility: hidden;
+}
+
+.spinner {
+    text-align: center;
+    font-size: 10px;
+}
+
+.spinner > div {
+    background-color: #007c82;
+    height: 100%;
+    width: 6px;
+    display: inline-block;
+
+    -webkit-animation: sk-stretchdelay 1.2s infinite ease-in-out;
+    animation: sk-stretchdelay 1.2s infinite ease-in-out;
+}
+
+.spinner .rect2 {
+    -webkit-animation-delay: -1.1s;
+    animation-delay: -1.1s;
+}
+
+.spinner .rect3 {
+    -webkit-animation-delay: -1.0s;
+    animation-delay: -1.0s;
+}
+
+.spinner .rect4 {
+    -webkit-animation-delay: -0.9s;
+    animation-delay: -0.9s;
+}
+
+.spinner .rect5 {
+    -webkit-animation-delay: -0.8s;
+    animation-delay: -0.8s;
+}
+
+@-webkit-keyframes sk-stretchdelay {
+    0%, 40%, 100% { -webkit-transform: scaleY(0.4) }
+    20% { -webkit-transform: scaleY(1.0) }
+}
+
+@keyframes sk-stretchdelay {
+    0%, 40%, 100% {
+        transform: scaleY(0.4);
+        -webkit-transform: scaleY(0.4);
+    }  20% {
+           transform: scaleY(1.0);
+           -webkit-transform: scaleY(1.0);
+       }
 }

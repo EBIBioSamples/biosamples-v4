@@ -53,6 +53,8 @@ services:
     - spring.http.encoding.enabled=true
     # Force the encoding to the configured charset on HTTP requests and responses.
     - spring.http.encoding.force=true
+    # Links to other apps
+    - biosamples.sampletab.uri=http://biosamples-webapps-sampletab:8080/biosamples/sampletab
     ports:
     - 8081:8080
     - 9090:9090
