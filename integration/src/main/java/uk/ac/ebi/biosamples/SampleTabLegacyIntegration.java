@@ -6,15 +6,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
@@ -24,7 +27,10 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 @Component
@@ -124,7 +130,7 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 		});
 
 		log.info("Testing submission of sampletab with valid implicit relationship");
-		runCallableOnSampleTabFileResource("/Implicit_relationship_sampletab.tab", sampletabFile -> {
+		runCallableOnSampleTabFile("/Implicit_relationship_sampletab.tab", sampletabFile -> {
 			log.info("POSTing to " + fileUriSb);
 			LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
 			map.add("file", sampletabFile);
@@ -140,7 +146,7 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 		});
 
 		log.info("Testing submission of accessioned SampleTab with valid implicit relationship");
-		runCallableOnSampleTabFileResource("/accessioned_sampletab_with_implicit_relationships.tab", sampletabFile -> {
+		runCallableOnSampleTabFile("/accessioned_sampletab_with_implicit_relationships.tab", sampletabFile -> {
 			log.info("POSTing to " + fileUriSb);
 			LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
 			map.add("file", sampletabFile);
@@ -156,12 +162,11 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 		});
 
 		log.info("Testing rejection submission of sampletab with invalid implicit relationship");
-		runCallableOnSampleTabFileResource("/Invalid_implicit_relationship_sampletab.txt", sampletabFile -> {
+		runCallableOnSampleTabFile("/Invalid_implicit_relationship_sampletab.txt", sampletabFile -> {
 			log.info("POSTing to " + fileUriSb);
 			LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
 			map.add("file", sampletabFile);
-			RequestEntity<LinkedMultiValueMap> request = RequestEntity.post(fileUriSb).contentType(MediaType.MULTIPART_FORM_DATA)
-					.body(map);
+			RequestEntity<LinkedMultiValueMap> request = RequestEntity.post(fileUriSb).contentType(MediaType.MULTIPART_FORM_DATA) .body(map);
 
 			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
 			if (!response.getBody().contains("Unable to accession")) {
@@ -174,17 +179,20 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 
 		log.info("Testing SampleTab file submission with DatabaseURI");
 		runCallableOnSampleTabFile("/GSB-52.txt", sampletabFile -> {
-			log.info("POSTing to " + uriFileSb);
+			log.info("POSTing to " + fileUriSb);
 			LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
 			map.add("file", sampletabFile);
-			HttpHeaders headers = new HttpHeaders();
-			headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 
-			HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = new HttpEntity(
-					map, headers);
-			ResponseEntity<String> response = restTemplate.exchange(
-					uriFileSb, HttpMethod.POST, requestEntity,
-					String.class);
+			RequestEntity<LinkedMultiValueMap> request = RequestEntity.post(fileUriSb).contentType(MediaType.MULTIPART_FORM_DATA) .body(map);
+
+			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+
+			if (!response.getBody().contains("GSB-")) {
+				log.error(response.toString());
+				throw new RuntimeException("Response does not have expected submission identifier");
+			}
+			log.info("SampleTab with invalid relation has been rejected as expected");
+			log.info(""+response.getBody());
 			log.info(""+response.getBody());
 
 		});
@@ -335,8 +343,8 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 		}
 
 		// Evaluate implicit relationships are converted propertly
-		Filter nameFilter = FilterBuilder.create().onName("ValidOrigin").build();
-		PagedResources<Resource<Sample>> samplePage = client.fetchPagedSampleResource("*:*",
+		nameFilter = FilterBuilder.create().onName("ValidOrigin").build();
+		samplePage = client.fetchPagedSampleResource("*:*",
 				Collections.singleton(nameFilter), 0, 1);
 		if (samplePage.getMetadata().getTotalElements() != 1) {
 			throw new RuntimeException("Unexpected number of samples found with name ValidOrigin");
@@ -380,10 +388,10 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 			throw new RuntimeException("Unexpected number of samples found with Submission identifier GSB-9191");
 		}
 
-		samplePage.getContent().forEach(sample -> {
-			for(Relationship rel: sample.getContent().getRelationships()) {
+		samplePage.getContent().forEach(_sample -> {
+			for(Relationship rel: _sample.getContent().getRelationships()) {
 				if (!rel.getTarget().matches("SAM[END][AG]?[0-9]+")) {
-					throw new RuntimeException("Sample "+sample.getContent().getName()+ " contains invalid relationship");
+					throw new RuntimeException("Sample "+ _sample.getContent().getName()+ " contains invalid relationship");
 				}
 			}
 		});

@@ -49,7 +49,7 @@
 	<script th:inline="javascript">
         $(document).ready(function() {
             $('#local-searchbox').autocomplete({
-                serviceUrl: '[(@{{baseUrl}/samples/autocomplete(baseUrl=${coreUrl})]',
+                serviceUrl: '[(@{{baseUrl}/samples/autocomplete(baseUrl=${coreUrl})})]',
                 paramName: 'text',
                 onSelect: function (suggestion) {
                     //alert('You selected: ' + suggestion.value + ', ' + suggestion.data);
