@@ -17,6 +17,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -197,6 +198,26 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 
 		});
 
+		log.info("Testing SampleTab file submission with new line character");
+		runCallableOnSampleTabFile("/sampletab_with_escaped_newline.txt", sampletabFile -> {
+			log.info("POSTing to " + fileUriSb);
+			LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
+			map.add("file", sampletabFile);
+
+			RequestEntity<LinkedMultiValueMap> request = RequestEntity.post(fileUriSb).contentType(MediaType.MULTIPART_FORM_DATA) .body(map);
+
+			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+
+			if (!response.getBody().contains("GSB-")) {
+				log.error(response.toString());
+				throw new RuntimeException("Response does not have expected submission identifier");
+			}
+			log.info("SampleTab with invalid relation has been rejected as expected");
+			log.info(""+response.getBody());
+			log.info(""+response.getBody());
+
+		});
+
 
 	}
 
@@ -324,23 +345,75 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 //
 //		assertThat(jjGroup.getPublications().first().getPubMedId(), notNullValue());
 
-		String sampleNameToCheck = "testExternalRefSample";
-		Filter nameFilter = FilterBuilder.create().onName(sampleNameToCheck).build();
-		PagedResources<Resource<Sample>> samplePage = client.fetchPagedSampleResource("*:*",
-				Collections.singleton(nameFilter), 0, 1);
+		verify_external_references_was_picked_up_from_sampletab();
+
+		verify_implicit_relationships_in_unaccessioned_sampletab_are_converted_and_exported();
+
+		verify_relationships_in_accessioned_sampletab_are_exported_correctly();
+
+		verify_samples_with_escaped_newline_characters_are_kept_the_same();
+	}
 
 
-		Optional<Resource<Sample>> sample = samplePage.getContent().stream().findFirst();
-		if (!sample.isPresent()) {
-			throw new RuntimeException("Can't find sample submitted using sampletab GSB-52.txt");
+
+	@Override
+	protected void phaseFive() {
+		
+	}
+
+
+	private interface SampleTabStringCallback {
+		public void callback(String sampleTabString);
+	}
+
+	private interface SampleTabFileCallback {
+		public void callback(ClassPathResource sampletabFile);
+	}
+
+	private void runCallableOnSampleTabResource(String resource, SampleTabStringCallback callback) {
+		URL url = Resources.getResource(resource);
+		String text = null;
+		try {
+			text = Resources.toString(url, Charsets.UTF_8);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		} finally {
+			callback.callback(text);			
+		}
+	}
+
+	private void runCallableOnSampleTabFile(String resource, SampleTabFileCallback callback) {
+	    callback.callback(new ClassPathResource(resource));
+	}
+
+	private void verify_relationships_in_accessioned_sampletab_are_exported_correctly() {
+		PagedResources<Resource<Sample>> samplePage;
+
+		Filter attrFilter = FilterBuilder.create()
+				.onAttribute("Submission identifier")
+				.withValue("GSB-9191")
+				.build();
+
+		samplePage = client.fetchPagedSampleResource("*:*",
+				Collections.singletonList(attrFilter), 0, 10);
+
+
+		if (samplePage.getMetadata().getTotalElements() != 5) {
+			throw new RuntimeException("Unexpected number of samples found with Submission identifier GSB-9191");
 		}
 
-		List<String> externalReferencesURL = sample.get().getContent().getExternalReferences()
-				.stream().map(ExternalReference::getUrl).collect(Collectors.toList());
-		if (!externalReferencesURL.contains("https://hpscreg.eu/cell-line/CENSOi007-A")) {
-			throw new RuntimeException("Sample " + sampleNameToCheck + " does not present the expected " +
-					"external relationships");
-		}
+		samplePage.getContent().forEach(_sample -> {
+			for(Relationship rel: _sample.getContent().getRelationships()) {
+				if (!rel.getTarget().matches("SAM[END][AG]?[0-9]+")) {
+					throw new RuntimeException("Sample "+ _sample.getContent().getName()+ " contains invalid relationship");
+				}
+			}
+		});
+	}
+
+	private void verify_implicit_relationships_in_unaccessioned_sampletab_are_converted_and_exported() {
+		Filter nameFilter;
+		PagedResources<Resource<Sample>> samplePage;
 
 		// Evaluate implicit relationships are converted propertly
 		nameFilter = FilterBuilder.create().onName("ValidOrigin").build();
@@ -374,58 +447,57 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 				throw new RuntimeException("Sample contains invalid relationship");
 			}
 		}
+	}
 
-		Filter attrFilter = FilterBuilder.create()
-				.onAttribute("Submission identifier")
-				.withValue("GSB-9191")
-				.build();
-
-		samplePage = client.fetchPagedSampleResource("*:*",
-				Collections.singletonList(attrFilter), 0, 10);
+	private void verify_external_references_was_picked_up_from_sampletab() {
+		String sampleNameToCheck = "testExternalRefSample";
+		Filter nameFilter = FilterBuilder.create().onName(sampleNameToCheck).build();
+		PagedResources<Resource<Sample>> samplePage = client.fetchPagedSampleResource("*:*",
+				Collections.singleton(nameFilter), 0, 1);
 
 
-		if (samplePage.getMetadata().getTotalElements() != 5) {
-			throw new RuntimeException("Unexpected number of samples found with Submission identifier GSB-9191");
+		Optional<Resource<Sample>> sample = samplePage.getContent().stream().findFirst();
+		if (!sample.isPresent()) {
+			throw new RuntimeException("Can't find sample submitted using sampletab GSB-52.txt");
 		}
 
-		samplePage.getContent().forEach(_sample -> {
-			for(Relationship rel: _sample.getContent().getRelationships()) {
-				if (!rel.getTarget().matches("SAM[END][AG]?[0-9]+")) {
-					throw new RuntimeException("Sample "+ _sample.getContent().getName()+ " contains invalid relationship");
-				}
+		List<String> externalReferencesURL = sample.get().getContent().getExternalReferences()
+				.stream().map(ExternalReference::getUrl).collect(Collectors.toList());
+		if (!externalReferencesURL.contains("https://hpscreg.eu/cell-line/CENSOi007-A")) {
+			throw new RuntimeException("Sample " + sampleNameToCheck + " does not present the expected " +
+					"external relationships");
+		}
+	}
+
+	private void verify_samples_with_escaped_newline_characters_are_kept_the_same() {
+	    String sampleNameToCheck = "EscapedNewlineSample";
+	    Filter nameFilter = FilterBuilder.create().onName(sampleNameToCheck).build();
+	    PagedResources samplePage = client.fetchPagedSampleResource("*:*", Collections.singletonList(nameFilter),
+				0, 1);
+
+	    Optional<Resource<Sample>> optionalSampleResource = samplePage.getContent().stream().findFirst();
+		if (!optionalSampleResource.isPresent()) {
+			throw new RuntimeException("Can't find sample submitted using sampletab 'sampletab_with_escaped_newline.txt'");
+		}
+
+		Sample sample = optionalSampleResource.get().getContent();
+		boolean descriptionCorrect = false;
+		boolean diseaseCorrect = false;
+		for (Attribute attr : sample.getCharacteristics()) {
+			if (attr.getType().equalsIgnoreCase("description")) {
+				descriptionCorrect = attr.getValue().equals("This sample has and escaped newline character \\n inside the description");
+			} else if (attr.getType().equalsIgnoreCase("disease")) {
+				diseaseCorrect = attr.getValue().equals("Some\\nDisease");
 			}
-		});
-
-	}
-
-	@Override
-	protected void phaseFive() {
-		
-	}
-
-
-	private interface SampleTabStringCallback {
-		public void callback(String sampleTabString);
-	}
-
-	private interface SampleTabFileCallback {
-		public void callback(ClassPathResource sampletabFile);
-	}
-
-	private void runCallableOnSampleTabResource(String resource, SampleTabStringCallback callback) {
-		URL url = Resources.getResource(resource);
-		String text = null;
-		try {
-			text = Resources.toString(url, Charsets.UTF_8);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		} finally {
-			callback.callback(text);			
 		}
-	}
 
-	private void runCallableOnSampleTabFile(String resource, SampleTabFileCallback callback) {
-	    callback.callback(new ClassPathResource(resource));
-	}
+		if (!descriptionCorrect) {
+			throw new RuntimeException("Description with newline escaped character is not found correctly");
+		}
 
+		if (!diseaseCorrect) {
+			throw new RuntimeException("Disease attribute with newline escaped character is not found correctly");
+		}
+
+	}
 }
