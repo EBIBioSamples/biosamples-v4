@@ -1,0 +1,12 @@
+[MSI]									
+Submission Version	1.2								
+Submission Reference Layer	FALSE								
+Submission Release Date	2016/10/17								
+Submission Update Date	2016/10/17								
+									
+[SCD]									
+Sample Name	Sample Description	Derived From	Child of	Same As					
+ValidOrigin	This is a valid sample from which other are deriving from								
+DerivedFromValidOrigin		ValidOrigin							
+Child of ValidOrigin			ValidOrigin						
+Same as ValidOrigin				ValidOrigin					

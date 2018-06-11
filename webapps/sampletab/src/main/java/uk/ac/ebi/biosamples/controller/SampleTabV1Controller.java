@@ -12,12 +12,11 @@ import uk.ac.ebi.arrayexpress2.magetab.listener.ErrorItemListener;
 import uk.ac.ebi.arrayexpress2.sampletab.datamodel.SampleData;
 import uk.ac.ebi.arrayexpress2.sampletab.parser.SampleTabParser;
 import uk.ac.ebi.arrayexpress2.sampletab.renderer.SampleTabWriter;
+import uk.ac.ebi.biosamples.exceptions.DuplicateDomainSampleException;
+import uk.ac.ebi.biosamples.exceptions.SampleTabException;
 import uk.ac.ebi.biosamples.service.ApiKeyService;
 import uk.ac.ebi.biosamples.service.SampleTabMultipartFileConverter;
 import uk.ac.ebi.biosamples.service.SampleTabService;
-import uk.ac.ebi.biosamples.service.SampleTabService.AssertingSampleTabOwnershipException;
-import uk.ac.ebi.biosamples.service.SampleTabService.ConflictingSampleTabOwnershipException;
-import uk.ac.ebi.biosamples.service.SampleTabService.DuplicateDomainSampleException;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
@@ -96,7 +95,7 @@ public class SampleTabV1Controller {
     @PostMapping(value = "/api/v1/json/sb")
     public @ResponseBody Outcome doSubmission(@RequestBody SampleTabRequest request,  @RequestParam(value="apikey") String apiKey) {
     	//handle APIkey
-    	if (apiKey == null) {
+    	if (apiKey == null ) {
     		Outcome outcome = getErrorOutcome("API key not present", "API key not present. Contact biosamples@ebi.ac.uk for more information.");
     		return outcome;
     	}
@@ -125,7 +124,7 @@ public class SampleTabV1Controller {
             }
             try {
             	outcome.sampledata = sampleTabService.saveSampleTab(outcome.sampledata, "self."+domain.get(), isSuperuser, true, true);
-			} catch (DuplicateDomainSampleException | ConflictingSampleTabOwnershipException | AssertingSampleTabOwnershipException e) {
+			} catch (SampleTabException e) {
 				log.error("Caught exception "+e.getMessage(), e);
 				return getErrorOutcome("Unable to accession", e.getMessage()+" Contact biosamples@ebi.ac.uk for more information.");
 			}

@@ -1,8 +1,5 @@
 package uk.ac.ebi.biosamples;
 
-import java.net.URI;
-import java.util.Scanner;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -11,14 +8,16 @@ import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
-
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
+
+import java.net.URI;
+import java.util.Scanner;
 
 //TODO update v4 sampletab endpoint to work with AAP and this test
 //@Component
 //@Order(5)
-//@Profile({"default","test"})
+//@Profile({"default"})
 public class SampleTabIntegration extends AbstractIntegration {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
@@ -90,7 +89,8 @@ public class SampleTabIntegration extends AbstractIntegration {
 				.contains(Attribute.build("description", "Test sample β"))) {
 			throw new RuntimeException("SAMEA2186844 does not have 'description':'Test sample β'");
 		}
-		
+
+
 	}
 
 	@Override
