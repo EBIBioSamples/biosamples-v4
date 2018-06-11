@@ -2,7 +2,11 @@ package uk.ac.ebi.biosamples.ncbi;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -23,6 +27,7 @@ public class NcbiFragmentCallback implements ElementCallback {
 	
 	private final NcbiElementCallableFactory ncbiElementCallableFactory;
 	private final PipelinesProperties pipelinesProperties;
+	private final SortedSet<String> accessions = new TreeSet<>();
 	
 	private Logger log = LoggerFactory.getLogger(getClass());
 	private LocalDate fromDate;
@@ -66,6 +71,10 @@ public class NcbiFragmentCallback implements ElementCallback {
 	public void setFutures(Map<Element, Future<Void>> futures) {
 		this.futures = futures;
 	}
+	
+	public SortedSet<String> getAccessions() {
+		return Collections.unmodifiableSortedSet(accessions);
+	}
 
 	
 	@Override
@@ -106,9 +115,14 @@ public class NcbiFragmentCallback implements ElementCallback {
 			return false;
 		}		
 		//its an EBI biosample, or has no accession, skip
-		if (attributes.getValue("", "accession") == null || attributes.getValue("", "accession").startsWith("SAME")) {
+		String accession = attributes.getValue("", "accession");
+		if (accession == null || accession.startsWith("SAME")) {
 			return false;
 		}
+		
+		//at this point, we know its a sensible accession, store it
+		accessions.add(accession);
+		
 		//check the date compared to window
 		LocalDate updateDate = null;
 		if (attributes.getValue("", "last_update") != null) {

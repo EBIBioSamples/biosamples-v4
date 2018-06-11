@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -30,7 +29,6 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
-import org.xml.sax.Attributes;
 
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
@@ -41,7 +39,6 @@ import uk.ac.ebi.biosamples.service.FilterBuilder;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 import uk.ac.ebi.biosamples.utils.XmlFragmenter;
-import uk.ac.ebi.biosamples.utils.XmlFragmenter.ElementCallback;
 
 @Component
 public class Ncbi implements ApplicationRunner {
@@ -56,8 +53,6 @@ public class Ncbi implements ApplicationRunner {
 	
 	private final BioSamplesClient bioSamplesClient;
 	
-	private final AccessionCallback accessionCallback;
-	
 	public Ncbi(PipelinesProperties pipelinesProperties, 
 			XmlFragmenter xmlFragmenter,
 			NcbiFragmentCallback sampleCallback, 
@@ -65,8 +60,7 @@ public class Ncbi implements ApplicationRunner {
 		this.pipelinesProperties = pipelinesProperties;
 		this.xmlFragmenter = xmlFragmenter;
 		this.sampleCallback = sampleCallback;
-		this.bioSamplesClient = bioSamplesClient;
-		this.accessionCallback = new AccessionCallback(pipelinesProperties);		
+		this.bioSamplesClient = bioSamplesClient;	
 	}
 
 	@Override
@@ -108,7 +102,7 @@ public class Ncbi implements ApplicationRunner {
 					sampleCallback.setFutures(futures);
 
 					// this does the actual processing
-					xmlFragmenter.handleStream(is, "UTF-8", sampleCallback, accessionCallback);
+					xmlFragmenter.handleStream(is, "UTF-8", sampleCallback);
 
 					log.info("waiting for futures");
 
@@ -126,20 +120,41 @@ public class Ncbi implements ApplicationRunner {
 			}
 		}
 		log.info("Handled new and updated NCBI samples");
-		
-		//wait until the last accession is avaliable by search 
-		String lastAccession = accessionCallback.getLastAccession();
-		waitUntilAccessionSearchable(lastAccession);
 
-		log.debug("Number of accession from NCBI = "+accessionCallback.accessions.size());
+		log.debug("Number of accession from NCBI = "+sampleCallback.getAccessions().size());
 		
-		//remove old NCBI samples no longer present
+		//remove old NCBI samples no longer present	
 		
-		Set<String> toRemoveAccessions = getExstingPublicNcbiAccessions();		
-		toRemoveAccessions.removeAll(accessionCallback.accessions);		
-		log.debug("Number of samples to remove = "+toRemoveAccessions.size());
+		//get all existing NCBI samples
+		Set<String> toRemoveAccessions = getExstingPublicNcbiAccessions();
+		//remove those that still exist
+		toRemoveAccessions.removeAll(sampleCallback.getAccessions());		
 		
 		//remove those samples that are left
+		log.debug("Number of samples to remove = "+toRemoveAccessions.size());
+		makePrivate(toRemoveAccessions);
+
+		log.info("Processed NCBI pipeline");
+	}
+	
+	private Set<String> getExstingPublicNcbiAccessions() {
+		log.info("getting existing public ncbi accessions");
+		long startTime = System.nanoTime();
+		//make sure to only get the public samples
+		Set<String> existingAccessions = new TreeSet<>();		
+		for (Resource<Sample> sample : bioSamplesClient.getPublicClient().get().fetchSampleResourceAll(
+				Collections.singleton(FilterBuilder.create().onAccession("SAM[^E].*").build()))) {
+			existingAccessions.add(sample.getContent().getAccession());
+		}	
+		
+		long endTime = System.nanoTime();
+		double intervalSec = ((double)(endTime-startTime))/1000000000.0;
+		log.debug("Took "+intervalSec+"s to get "+existingAccessions.size()+" existing public ncbi accessions");	
+		return existingAccessions;
+	}
+	
+	private void makePrivate(Set<String> toRemoveAccessions) {
+		//TODO make this multithreaded for performance
 		for (String accession : toRemoveAccessions) {
 			// this must get the ORIGINAL sample without curation
 			Optional<Resource<Sample>> sampleOptional = bioSamplesClient.fetchSampleResource(accession, Optional.empty());
@@ -165,99 +180,6 @@ public class Ncbi implements ApplicationRunner {
 				bioSamplesClient.persistSampleResource(newSample);
 			}
 		}
-
-		log.info("Processed NCBI pipeline");
-	}
-	
-	private Set<String> getExstingPublicNcbiAccessions() {
-		long startTime = System.nanoTime();
-		//make sure to only get the public samples
-		Set<String> existingAccessions = new TreeSet<>();		
-		for (Resource<Sample> sample : bioSamplesClient.getPublicClient().get().fetchSampleResourceAll(
-				Collections.singleton(FilterBuilder.create().onAccession("SAM[^E].*").build()))) {
-			existingAccessions.add(sample.getContent().getAccession());
-		}	
-		
-		long endTime = System.nanoTime();
-		double intervalSec = ((double)(endTime-startTime))/1000000000.0;
-		log.debug("Took "+intervalSec+"s to get "+existingAccessions.size()+" existing accessions");	
-		return existingAccessions;
-	}
-	
-	private void waitUntilAccessionSearchable(String accession) {
-		long startTime = System.nanoTime();
-		
-		List<Filter> filters = new ArrayList<>();
-		filters.add(new AccessionFilter.Builder(accession).build());
-		List<Resource<Sample>> samples = new ArrayList<>();
-		
-		while(samples.size() == 0) {
-			samples = new ArrayList<>();
-			for (Resource<Sample> sample : bioSamplesClient.fetchSampleResourceAll(filters)) {
-				samples.add(sample);
-			}
-			//wait for a minute before trying again
-			try {
-				Thread.sleep(1000*60);
-			} catch (InterruptedException e) {
-				throw new RuntimeException(e);
-			}
-		}
-		
-		long endTime = System.nanoTime();
-		double intervalSec = ((double)(endTime-startTime))/1000000000.0;
-		log.debug("Took "+intervalSec+"s to wait for last accession "+accession);
-	}
-	
-	private static class AccessionCallback implements ElementCallback {
-		
-		public SortedSet<String> accessions = new TreeSet<>();
-		private final PipelinesProperties pipelinesProperties;
-		
-		private String lastAccession = null;
-
-		public AccessionCallback(PipelinesProperties pipelinesProperties) {
-			this.pipelinesProperties = pipelinesProperties;
-		}
-		
-		public String getLastAccession() {
-			return lastAccession;
-		}
-		
-		@Override
-		public void handleElement(Element e) throws Exception {
-			
-			//TODO check status
-			
-			String accession = e.attributeValue("accession");
-			accessions.add(accession);
-			lastAccession = accession;
-		}
-
-		@Override
-		public boolean isBlockStart(String uri, String localName, String qName, Attributes attributes) {
-			//its not a biosample element, skip
-			if (!qName.equals("BioSample")) {
-				return false;
-			}
-			//its not public, skip
-			if (attributes.getValue("", "access").equals("public")) {
-				//do nothing
-			} else if (pipelinesProperties.getNcbiControlledAccess() && 
-					attributes.getValue("", "access").equals("controlled-access")) {
-				//do nothing
-			} else {
-				return false;
-			}	
-			//its an EBI biosample, or has no accession, skip
-			if (attributes.getValue("", "accession") == null || attributes.getValue("", "accession").startsWith("SAME")) {
-				return false;
-			}
-			
-			//hasn't failed, so we must be interested in it
-			return true;
-		}
-		
 	}
 
 }
