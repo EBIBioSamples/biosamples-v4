@@ -1,19 +1,5 @@
 package uk.ac.ebi.biosamples.controller;
 
-import java.net.URI;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -24,13 +10,9 @@ import org.springframework.http.CacheControl;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
-
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.JsonLDDataCatalog;
 import uk.ac.ebi.biosamples.model.JsonLDDataset;
@@ -38,6 +20,13 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.facet.Facet;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.*;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.net.URI;
+import java.time.ZoneOffset;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -76,6 +65,12 @@ public class SampleHtmlController {
 		this.filterService = filterService;
 		this.bioSamplesAapService = bioSamplesAapService;
 		this.bioSamplesProperties = bioSamplesProperties;
+	}
+
+	//TODO: Convert this to use ControllerAdvice
+	@ModelAttribute
+	public void addCoreLink(Model model) {
+		model.addAttribute("sampletabUrl", bioSamplesProperties.getBiosamplesWebappSampletabUri());
 	}
 
 	@GetMapping(value = "/")

@@ -15,6 +15,11 @@ public class SubmissionServicesController {
         this.bioSamplesProperties = properties;
     }
 
+    @ModelAttribute
+    public void addCoreLink(Model model) {
+        model.addAttribute("coreUrl", bioSamplesProperties.getBiosamplesWebappCoreUri());
+    }
+
     @RequestMapping("/")
     public String index(){
         return "index";
@@ -39,8 +44,5 @@ public class SubmissionServicesController {
         return "hello";
     }
 
-    @ModelAttribute
-    public void addCoreLink(Model model) {
-        model.addAttribute("coreUrl", bioSamplesProperties.getBiosamplesWebappCoreUri());
-    }
+
 }

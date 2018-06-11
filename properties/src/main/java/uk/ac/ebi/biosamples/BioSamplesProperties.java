@@ -53,6 +53,8 @@ public class BioSamplesProperties {
 	@Value("${biosamples.ols:https://wwwdev.ebi.ac.uk/ols}")
 	private String ols;
 
+	@Value("${biosamples.webapp.sampletab.uri:http://localhost:8082/biosamples/sampletab}")
+	private URI biosamplesWebappSampletabUri;
 
 	@Value("${biosamples.webapp.core.uri:http://localhost:8081/biosamples}")
 	private URI biosamplesWebappCoreUri;
@@ -138,5 +140,9 @@ public class BioSamplesProperties {
 
 	public URI getBiosamplesWebappCoreUri() {
 		return biosamplesWebappCoreUri;
+	}
+
+	public URI getBiosamplesWebappSampletabUri() {
+		return biosamplesWebappSampletabUri;
 	}
 }
