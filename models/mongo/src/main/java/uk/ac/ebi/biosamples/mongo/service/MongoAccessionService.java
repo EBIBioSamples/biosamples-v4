@@ -128,6 +128,7 @@ public class MongoAccessionService {
 					String accessionCandidate = prefix + accessionCandidateCounter;
 					if (accessionCandidateQueue.offer(accessionCandidate)) {
 						//successfully added, move to next
+						log.trace("Added to accession pool "+accessionCandidate);
 						accessionCandidateCounter += 1;
 					} else {
 						//failed, queue full
@@ -137,9 +138,12 @@ public class MongoAccessionService {
 					//update stream to next accession
 					try {
 						streamAccessionNumber = streamIt.next().getAccessionNumber();
+						accessionCandidateCounter += 1;
+						log.trace("Updating stream to "+prefix+streamAccessionNumber);
 					} catch (NoSuchElementException e) {
 						//end of stream
 						streamAccessionNumber = null;
+						log.trace("Reached end of stream");
 					}
 					//move back and try again
 				}
