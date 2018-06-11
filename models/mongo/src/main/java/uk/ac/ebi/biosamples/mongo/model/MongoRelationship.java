@@ -11,10 +11,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
 
-@Document
 public class MongoRelationship implements Comparable<MongoRelationship> {
 
-	@Id
 	private final String hash;
 	
 	private final String type;

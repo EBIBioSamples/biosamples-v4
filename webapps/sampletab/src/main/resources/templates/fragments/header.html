@@ -68,13 +68,13 @@
 						<div class="columns medium-7" id="local-title">							
 							<h1>
 								<img th:src="@{/images/logo_biosamples.png}" alt="BioSamples logo" /> 
-								<a th:href="@{/}" title="to BioSamples homepage">BioSamples</a>
+								<a th:href="@{${coreUrl}}" title="to BioSamples homepage">BioSamples</a>
 							</h1>	
 						</div>
 						<!-- /local-title -->
 			            <!-- local-search -->
 						<div class="columns medium-5">
-				            <form id="local-search" name="local-search" th:action="@{{baseUrl}/samples(baseUrl=${@environment.getProperty('biosamples.client.uri')})}" method="get">
+				            <form id="local-search" name="local-search" th:action="@{{baseUrl}/samples(baseUrl=${coreUrl})}" method="get">
 				              <fieldset>				              
 				              	<!--<input type="hidden" name="filter" th:each="filter : ${filters}" th:value="@{${filter}}">-->
 				                <div class="input-group margin-bottom-none">
@@ -85,9 +85,9 @@
 				                  <!-- If your search is more complex than just a keyword search, you can link to an Advanced Search -->
 				                  <!-- <span class="adv"><a href="../search" id="adv-search" title="Advanced">Advanced</a></span> | -->
 				                  <!-- Include some example searchterms - keep them short and few. -->
-				                  <a th:href="@{{baseUrl}/samples(text='leukemia', baseUrl=${@environment.getProperty('biosamples.client.uri')})}">leukaemia</a>,
-				                  <a th:href="@{{baseUrl}/samples(text='viridiplantae', baseUrl=${@environment.getProperty('biosamples.client.uri')})}">viridiplantae</a>,
-				                  <a th:href="@{{baseUrl}/samples(text='sheep+liver', baseUrl=${@environment.getProperty('biosamples.client.uri')})}">sheep liver</a>
+				                  <a th:href="@{{baseUrl}/samples(text='leukemia', baseUrl=${coreUrl})}">leukaemia</a>,
+				                  <a th:href="@{{baseUrl}/samples(text='viridiplantae', baseUrl=${coreUrl})}">viridiplantae</a>,
+				                  <a th:href="@{{baseUrl}/samples(text='sheep+liver', baseUrl=${coreUrl})}">sheep liver</a>
 				                </small>
 				              </fieldset>
 				            </form>
@@ -98,11 +98,11 @@
 						<nav>
 							<ul class="menu float-left"
 								data-description="navigational">
-								<li class=""><a th:href="@{${@environment.getProperty('biosamples.client.uri')}}">Home</a></li>
-								<li class=""><a th:href="@{{baseUrl}/samples(baseUrl=${@environment.getProperty('biosamples.client.uri')})}">Search</a></li>
+								<li class=""><a th:href="@{${coreUrl}}">Home</a></li>
+								<li class=""><a th:href="@{{baseUrl}/samples(baseUrl=${coreUrl})}">Search</a></li>
 								<li class=""><a th:href="@{/}">Submit</a></li>
-								<li class=""><a th:href="@{{baseUrl}/docs(baseUrl=${@environment.getProperty('biosamples.client.uri')})}">Documentation</a></li>
-								<li class=""><a th:href="@{{baseUrl}/about(baseUrl=${@environment.getProperty('biosamples.client.uri')})}">About</a></li>
+								<li class=""><a th:href="@{{baseUrl}/docs(baseUrl=${coreUrl})}">Documentation</a></li>
+								<li class=""><a th:href="@{{baseUrl}/about(baseUrl=${coreUrl})}">About</a></li>
 								<!-- local-search-sticky -->
 								<!--<li class="columns medium-5 sticky-search">-->
                                     <!--<fieldset>-->

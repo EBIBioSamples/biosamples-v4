@@ -106,6 +106,16 @@ Note: You will need to mount the location that the XML dump was
 downloaded to within the docker container. A docker-compose.override.yml
 file is the easiest way to do that.
 
+[[ena]]
+ENA
+~~~~
+You can run the pipelines-ena to import ENA samples.
+In order to do that you will need to add some security settings to maven 
+to get access to oracle private driver repository.
+
+You can read more instructions about this at https://blogs.oracle.com/dev2dev/get-oracle-jdbc-drivers-and-ucp-from-oracle-maven-repository-without-ides
+
+
 [[developing]]
 Developing
 ----------

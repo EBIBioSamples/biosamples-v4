@@ -12,11 +12,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.hash.Hashing;
 
-@Document
 public class MongoExternalReference implements Comparable<MongoExternalReference> {
 	
 	private final String url;	
-	@Id
 	private final String hash;	
 
 	private MongoExternalReference(String url, String hash) {

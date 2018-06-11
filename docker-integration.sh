@@ -12,6 +12,7 @@ docker-compose run --rm mongo mongo --eval 'db.setProfilingLevel(1)' mongo:27017
 #"".join([random.choice("ABCDEFGHKLMNPRTUWXY0123456789") for x in xrange(16)])
 #
 
+
 docker-compose up -d biosamples-agents-solr
 
 #ARGS=--spring.profiles.active=big
