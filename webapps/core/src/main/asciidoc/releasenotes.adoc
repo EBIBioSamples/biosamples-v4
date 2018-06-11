@@ -3,6 +3,26 @@
 
 This pages contains links to release notes for BioSamples for version 4.0.0 and higher. This release represents a comprehensive overhaul and therefore previous release notes are no longer applicable.
 
+
+[[section]]
+4.1.0
+----
+
+### New features
+
+* GDPR:
+** SampleTab submissions enforce explicit acceptance of the terms of service and the privacy information
+** GDPR notices added throughout
+* SampleTab where targets of relationships are neither sample name nor sample accession are now rejected, providing user additional information on the problematic data
+* *Bioschema.org* entities are exported in BioSamples and available both in the UI - embedded in a script tag - and through the API
+
+### Bug fixes
+* Solved issues with wrong header’s hyperlinks
+* Solved issue with resolving relationship by name in SampleTab submissions
+* Solved issue with converting DatabaseURI to external references in SampleTab submissions
+* Improved special characters handling in SampleTab submissions
+
+
 [[section]]
 4.0.7
 -----
