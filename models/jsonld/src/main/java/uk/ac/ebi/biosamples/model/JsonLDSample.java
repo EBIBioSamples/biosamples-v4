@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * Object representing BioSchema Sample entity
  */
-@JsonPropertyOrder({ "@context", "@type", "identifier", "name", "description", "url", "dataset", "additionalProperty"})
+@JsonPropertyOrder({ "@context", "@type", "additionalType", "identifier", "name", "description", "url", "dataset", "additionalProperty"})
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class JsonLDSample implements BioschemasObject {
 
@@ -19,6 +19,7 @@ public class JsonLDSample implements BioschemasObject {
     @JsonProperty("@type")
     private final String[] type = {"BioChemEntity", "Sample"};
 
+    private final String additionalType = "http://www.ontobee.org/ontology/OBI?iri=http://purl.obolibrary.org/obo/OBI_0000747";
     private String[] identifiers;
     private String name;
     private String description;
@@ -35,6 +36,10 @@ public class JsonLDSample implements BioschemasObject {
 
     public String[] getType() {
         return type;
+    }
+
+    public String getAdditionalType() {
+        return additionalType;
     }
 
     public String[] getIdentifiers() {
