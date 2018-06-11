@@ -1,9 +1,9 @@
 package uk.ac.ebi.biosamples;
 
-import java.net.URI;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import java.net.URI;
 
 @Component
 public class BioSamplesProperties {
@@ -52,6 +52,10 @@ public class BioSamplesProperties {
 	
 	@Value("${biosamples.ols:https://wwwdev.ebi.ac.uk/ols}")
 	private String ols;
+
+
+	@Value("${biosamples.webapp.core.uri:http://localhost:8081/biosamples}")
+	private URI biosamplesWebappCoreUri;
 
 	@Value("${biosamples.webapp.core.page.threadcount:64}")
 	private int webappCorePageThreadCount;
@@ -131,5 +135,8 @@ public class BioSamplesProperties {
 	public int getBiosamplesCorePageCacheMaxAge() {
 		return webappCorePageCacheMaxAge;
 	}
-	
+
+	public URI getBiosamplesWebappCoreUri() {
+		return biosamplesWebappCoreUri;
+	}
 }

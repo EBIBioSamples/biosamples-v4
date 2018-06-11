@@ -1,17 +1,19 @@
 package uk.ac.ebi.biosamples.controller;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
+import uk.ac.ebi.biosamples.BioSamplesProperties;
 
 @Controller
 public class SubmissionServicesController {
 
-    @Value("${biosamples.client.uri}")
-    private String biosamplesCoreURI;
+    private BioSamplesProperties bioSamplesProperties;
 
+    public SubmissionServicesController(BioSamplesProperties properties) {
+        this.bioSamplesProperties = properties;
+    }
 
     @RequestMapping("/")
     public String index(){
@@ -39,6 +41,6 @@ public class SubmissionServicesController {
 
     @ModelAttribute
     public void addCoreLink(Model model) {
-        model.addAttribute("coreUrl", biosamplesCoreURI);
+        model.addAttribute("coreUrl", bioSamplesProperties.getBiosamplesWebappCoreUri());
     }
 }
