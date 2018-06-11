@@ -19,7 +19,7 @@ public class JsonLDSample implements BioschemasObject {
     @JsonProperty("@type")
     private final String[] type = {"BioChemEntity", "Sample"};
 
-    private final String additionalType = "http://www.ontobee.org/ontology/OBI?iri=http://purl.obolibrary.org/obo/OBI_0000747";
+    //private final String additionalType = "http://www.ontobee.org/ontology/OBI?iri=http://purl.obolibrary.org/obo/OBI_0000747";
     private String[] identifiers;
     private String name;
     private String description;
@@ -38,9 +38,9 @@ public class JsonLDSample implements BioschemasObject {
         return type;
     }
 
-    public String getAdditionalType() {
-        return additionalType;
-    }
+//    public String getAdditionalType() {
+//        return additionalType;
+//    }
 
     public String[] getIdentifiers() {
         return identifiers;
