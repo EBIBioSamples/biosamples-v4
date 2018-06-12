@@ -17,7 +17,6 @@ import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.SampleNode;
 import uk.ac.ebi.arrayexpress2.sampletab.datamodel.scd.node.attribute.*;
 import uk.ac.ebi.arrayexpress2.sampletab.renderer.SampleTabWriter;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.exceptions.*;
 import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.model.filter.Filter;
@@ -82,17 +81,20 @@ public class SampleTabService {
 		
 		log.info("Saving sampletab "+sampleData.msi.submissionIdentifier);
 
-		rejectForInvalidRelationship(sampleData);
+		rejectSampletabForInvalidRelationship(sampleData);
 
 		Instant release = Instant.ofEpochMilli(sampleData.msi.submissionReleaseDate.getTime());
 		Instant update = Instant.ofEpochMilli(sampleData.msi.submissionUpdateDate.getTime());
 
+		//verifies that accessions provided in the sampletab are owned by the APIkey and its associated domain
+		verifySampletabAccessionsOwnership(sampleData, domain, release, update);
+
 		//put any existing accessions into the samplenode and groupnode objects
-		populateExistingAccessions(sampleData, domain, release, update);	
+        //Not that the ownership of the accession is performed also during this step
+		populateExistingAccessions(sampleData, domain, release, update);
+
 
 		MongoSampleTab oldSampleTab = null;
-
-
         //replace implicit derived from with explicit derived from relationships
         for (SampleNode sample : sampleData.scd.getNodes(SampleNode.class)) {
 
@@ -124,7 +126,9 @@ public class SampleTabService {
 			}
 		}
 
-		if (sampleData.msi.submissionIdentifier != null 
+		// At this point all samples has been checked for an accession
+
+		if (sampleData.msi.submissionIdentifier != null
 				&& sampleData.msi.submissionIdentifier.trim().length() > 0) {
 			//this is an update of an existing sampletab
 			//get old sampletab document	
@@ -140,112 +144,59 @@ public class SampleTabService {
 
 				//check samples are not owned by any others
 				for (String accession : newAccessions) {
-					List<MongoSampleTab> accessionSampleTabs = mongoSampleTabRepository.findByAccessionsContaining(accession);
-
-					String newId = sampleData.msi.submissionIdentifier.trim();
-					
-					if (accessionSampleTabs == null) {
-						log.info("Null accession sample tabs for accession "+accession);
-					} else if (accessionSampleTabs.size() == 0) {
-						log.info("No accession sample tabs for accession "+accession);
-					} else if (accessionSampleTabs.size() > 1) {
-						log.info("Multiple accession sample tabs for accession "+accession);	
-						MongoSampleTab accessionSampleTab = accessionSampleTabs.get(0);
-						String existingId = accessionSampleTab.getId().trim();			
-						throw new ConflictingSampleTabOwnershipException(accession, existingId, newId);
-					} else if (accessionSampleTabs.size() == 1) {
-						log.info("One accession sample tabs for accession "+accession);
-						MongoSampleTab accessionSampleTab = accessionSampleTabs.get(0);
-						String existingId = accessionSampleTab.getId().trim();
-						log.info("existingId = "+existingId);
-						log.info("newId = "+newId);
-						if (!existingId.equals(newId)) {
-							//this sample is "owned" by a different sampletab file						
-							throw new ConflictingSampleTabOwnershipException(accession, 
-									existingId, newId);
-						}
-					}
+					verifySampletabAccessionsUniqueOwnership(sampleData, accession);
 				}
+
 			} else {
 				Set<String> oldAccessions = new HashSet<>(oldSampleTab.getAccessions());
+				// Extract all the accessions that will be made private
 				oldAccessions.removeAll(newAccessions);
 				
 				//check samples are owned by this sampletab and not any others
 				for (String accession : newAccessions) {
-					List<MongoSampleTab> accessionSampleTabs = mongoSampleTabRepository.findByAccessionsContaining(accession);
-
-					String newId = sampleData.msi.submissionIdentifier.trim();
-					
-					if (accessionSampleTabs == null) {
-						log.info("Null accession sample tabs for accession "+accession);
-					} else if (accessionSampleTabs.size() == 0) {
-						log.info("No accession sample tabs for accession "+accession);
-					} else if (accessionSampleTabs.size() > 1) {
-						log.info("Multiple accession sample tabs for accession "+accession);
-						MongoSampleTab accessionSampleTab = accessionSampleTabs.get(0);
-						String existingId = accessionSampleTab.getId().trim();	
-						throw new ConflictingSampleTabOwnershipException(accession, 
-								existingId, newId);
-					} else if (accessionSampleTabs.size() == 1) {
-						log.info("One accession sample tabs for accession "+accession);
-						MongoSampleTab accessionSampleTab = accessionSampleTabs.get(0);
-						String existingId = accessionSampleTab.getId().trim();
-						log.info("existingId = "+existingId);
-						log.info("newId = "+newId);
-						if (!existingId.equals(newId)) {
-							//this sample is "owned" by a different sampletab file						
-							throw new ConflictingSampleTabOwnershipException(accession, 
-									existingId, newId);
-						}
-					}
+					verifySampletabAccessionsUniqueOwnership(sampleData, accession);
 				}
 			
 				//delete any samples/groups that were in the old version but not the latest one
-				for (String toRemove : oldAccessions) {
-					//get the existing version to be deleted
-					Optional<Resource<Sample>> oldSample = bioSamplesClient.fetchSampleResource(toRemove);
-					if (oldSample.isPresent()) {
-						//don't do a hard-delete, instead mark it as public in 100 years
-						Sample sample = Sample.build(oldSample.get().getContent().getName(), toRemove, domain, 
-								ZonedDateTime.now(ZoneOffset.UTC).plusYears(100).toInstant(), update, 
-								new TreeSet<>(), new TreeSet<>(), new TreeSet<>());
-						sample = bioSamplesClient.persistSampleResource(sample, setUpdateDate,true ).getContent();
-					}
-				}
-				
-			}			
+				makeDiscardedSamplesPrivate(oldAccessions, domain, update, setUpdateDate);
+			}
 		} else {
+
+			if (newAccessions.size() > 0) {
+				// At least one accession was provided, try to find a Submission with that accession included
+				String referenceAccession = newAccessions.iterator().next();
+				List<MongoSampleTab> submissionCandidates = mongoSampleTabRepository.findByAccessionsContaining(referenceAccession);
+				if (submissionCandidates.size() == 0) {
+					//Users is trying to combine pre-existing samples into a new submission
+					throw new SampleTabWithUnacceptableAccessionException(referenceAccession);
+				} else if (submissionCandidates.size() > 1) {
+					List<String> submissionCandidatesIdentifiers = submissionCandidates.stream().map(MongoSampleTab::getId).collect(Collectors.toList());
+					throw new UnknownAccessionOwnershipException(submissionCandidatesIdentifiers, referenceAccession);
+				} else {
+					// Use the submission Identifier to check samples ownerships
+					String submissionIdentifier = submissionCandidates.get(0).getId();
+					Set<String> oldAccessions = new HashSet<>(oldSampleTab.getAccessions());
+					// Extract all the accessions that will be made private
+					oldAccessions.removeAll(newAccessions);
+
+					//check samples are owned by this sampletab and not any others
+					for (String accession : newAccessions) {
+						verifySampletabAccessionsUniqueOwnership(sampleData, accession);
+					}
+
+					//delete any samples/groups that were in the old version but not the latest one
+					makeDiscardedSamplesPrivate(oldAccessions, domain, update, setUpdateDate);
+				}
+			}
+
 			//no previous sampletab submission id
 			//persist latest SampleTab so it gets a submission id
+			//TODO: Check if we actually need to submit a sampletab without accession or not
 			persistSampleTab(sampleData, domain);
 			
 			//check samples are not owned by any others
 			for (String accession : newAccessions) {
-				List<MongoSampleTab> accessionSampleTabs = mongoSampleTabRepository.findByAccessionsContaining(accession);
-
-				String newId = sampleData.msi.submissionIdentifier.trim();
-				
-				if (accessionSampleTabs == null) {
-					log.info("Null accession sample tabs for accession "+accession);
-				} else if (accessionSampleTabs.size() == 0) {
-					log.info("No accession sample tabs for accession "+accession);
-				} else if (accessionSampleTabs.size() > 1) {
-					log.info("Multiple accession sample tabs for accession "+accession);	
-					MongoSampleTab accessionSampleTab = accessionSampleTabs.get(0);
-					String existingId = accessionSampleTab.getId().trim();			
-					throw new ConflictingSampleTabOwnershipException(accession, existingId, newId);
-				} else if (accessionSampleTabs.size() == 1) {
-					log.info("One accession sample tabs for accession "+accession);
-					MongoSampleTab accessionSampleTab = accessionSampleTabs.get(0);
-					String existingId = accessionSampleTab.getId().trim();
-					log.info("existingId = "+existingId);
-					log.info("newId = "+newId);
-					if (!existingId.equals(newId)) {
-						//this sample is "owned" by a different sampletab file						
-						throw new ConflictingSampleTabOwnershipException(accession, 
-								existingId, newId);
-					}
-				}
+			    verifySampletabAccessionsUniqueOwnership(sampleData, accession);
 			}
 			
 		}
@@ -256,7 +207,8 @@ public class SampleTabService {
 		}
 
         if (sampleData.scd.getNodes(GroupNode.class).size() == 0) {
-        	// TODO need to check submissionIdentifier is popualted correctly
+        	// TODO need to check submissionIdentifier is populated correctly
+
             GroupNode othergroup = new GroupNode("Submission "+sampleData.msi.submissionIdentifier);
             for (SampleNode sample : sampleData.scd.getNodes(SampleNode.class)) {
                 // check there is not an existing group first...
@@ -300,7 +252,30 @@ public class SampleTabService {
 		return sampleData;
 	}
 
-	private void rejectForInvalidRelationship(SampleData sampleData) throws UnexpectedSampleTabRelationshipException {
+
+	/**
+	 * Make a set of samples private
+	 *
+	 * @param sampleAccessions the accession of the samples to make private
+	 * @param domain the domain to use for the update
+	 * @param update the update date
+	 * @param setUpdateDate boolean to update the update date
+	 */
+	private void makeDiscardedSamplesPrivate(Set<String> sampleAccessions, String domain, Instant update, boolean setUpdateDate) {
+		for (String toRemove : sampleAccessions) {
+			//get the existing version to be deleted
+			Optional<Resource<Sample>> oldSample = bioSamplesClient.fetchSampleResource(toRemove);
+			if (oldSample.isPresent()) {
+				//don't do a hard-delete, instead mark it as public in 100 years
+				Sample sample = Sample.build(oldSample.get().getContent().getName(), toRemove, domain,
+						ZonedDateTime.now(ZoneOffset.UTC).plusYears(100).toInstant(), update,
+						new TreeSet<>(), new TreeSet<>(), new TreeSet<>());
+				sample = bioSamplesClient.persistSampleResource(sample, setUpdateDate,true ).getContent();
+			}
+		}
+	}
+
+	private void rejectSampletabForInvalidRelationship(SampleData sampleData) throws UnexpectedSampleTabRelationshipException {
 
 	    Collection<SampleNode> sampleNodes = sampleData.scd.getNodes(SampleNode.class);
 	    List<String> sampleNames = sampleNodes.stream().map(AbstractNode::getNodeName).collect(Collectors.toList());
@@ -320,6 +295,12 @@ public class SampleTabService {
 		}
 	}
 
+	/**
+	 * Persist a sampletab data, accessions and file to MongoCollection generating an ID
+	 *
+	 * @param sampleData the sampletab data
+	 * @param domain the domain to use for the submission
+	 */
 	private void persistSampleTab(SampleData sampleData, String domain) {
 		//get the accessions in it
 		Set<String> sampletabAccessions = new HashSet<>();
@@ -331,7 +312,27 @@ public class SampleTabService {
 		}
 		for (GroupNode groupNode : sampleData.scd.getNodes(GroupNode.class)) {
 			sampletabAccessions.add(groupNode.getGroupAccession());
-		}			
+		}
+
+		String sampleTab = convertToSampletabDoc(sampleData);
+		//actually persist it
+		//this will assign a new submission identifier if needed
+		MongoSampleTab mongoSampleTab = MongoSampleTab.build(sampleData.msi.submissionIdentifier, domain, sampleTab, sampletabAccessions);
+		if (mongoSampleTab.getId() == null || mongoSampleTab.getId().length()==0) {
+			log.info("Generating new sampletab identifier");
+			mongoSampleTab = sampleTabIdSerivce.accessionAndInsert(mongoSampleTab);
+			sampleData.msi.submissionIdentifier = mongoSampleTab.getId();
+			log.info("Generated new sampletab identifier "+mongoSampleTab.getId());
+		} else {			
+			log.info("Saving submission "+sampleData.msi.submissionIdentifier);
+			mongoSampleTab = mongoSampleTabRepository.save(mongoSampleTab);
+		}
+		
+	}
+
+
+	private String convertToSampletabDoc(SampleData sampleData) {
+
 		//write the sampledata object into a string representation
 		//this might end up being slightly different from what was submitted
 		//so we still need to keep the original POST content
@@ -361,19 +362,9 @@ public class SampleTabService {
 				}
 			}
 		}
-		//actually persist it
-		//this will assign a new submission identifier if needed
-		MongoSampleTab mongoSampleTab = MongoSampleTab.build(sampleData.msi.submissionIdentifier, domain, sampleTab, sampletabAccessions);
-		if (mongoSampleTab.getId() == null || mongoSampleTab.getId().length()==0) {
-			log.info("Generating new sampletab identifier");
-			mongoSampleTab = sampleTabIdSerivce.accessionAndInsert(mongoSampleTab);
-			sampleData.msi.submissionIdentifier = mongoSampleTab.getId();
-			log.info("Generated new sampletab identifier "+mongoSampleTab.getId());
-		} else {			
-			log.info("Saving submission "+sampleData.msi.submissionIdentifier);
-			mongoSampleTab = mongoSampleTabRepository.save(mongoSampleTab);
-		}
-		
+
+		return sampleTab;
+
 	}
 	
 	/**
@@ -702,7 +693,102 @@ public class SampleTabService {
 		}
 
 	}
-	
+
+	/**
+	 * Verify accessions inside of the SampleData object are owned by the domain used to save the sampletab
+	 * @param sampleData the parsed sampletab data
+	 * @param domain domain that should own the sampletab and the accessions within it
+	 * @param release instant used to create the group associated to the sampletab
+	 * @param update instant used to create the group associated to the sampletab
+	 * @throws DomainOwnershipException
+	 */
+	private void verifySampletabAccessionsOwnership(SampleData sampleData, String domain, Instant release, Instant update) throws DomainOwnershipException {
+
+		for (SampleNode sampleNode : sampleData.scd.getNodes(SampleNode.class)) {
+			//only build a sample if there is at least one attribute or it has no "parent" node
+			//otherwise, it is just a group membership tracking dummy
+			if (!isDummy(sampleNode)) {
+				if (sampleNode.getSampleAccession() != null) {
+					List<Filter> filterList = new ArrayList<>(2);
+					filterList.add(FilterBuilder.create().onDomain(domain).build());
+					filterList.add(FilterBuilder.create().onAccession(sampleNode.getSampleAccession()).build());
+					Iterator<Resource<Sample>> it = bioSamplesClient.fetchSampleResourceAll(null, filterList).iterator();
+					if (it.hasNext()) {
+						it.next();
+						if (it.hasNext()) {
+							// Error because multiple samples with the same accesion has been found and it should never happen
+							throw new RuntimeException("More than one sample found with the same accession " + sampleNode.getSampleAccession());
+						}
+					} else {
+						throw new DomainOwnershipException(domain, sampleNode.getSampleAccession());
+					}
+
+				}
+			}
+		}
+
+		for (GroupNode groupNode : sampleData.scd.getNodes(GroupNode.class)) {
+
+			Sample sample = groupNodeToSample(groupNode, sampleData.msi, domain, release, update);
+			if (groupNode.getGroupAccession() != null) {
+
+				//if there was no accession provided, try to find an existing accession by name and domain
+				List<Filter> filterList = new ArrayList<>(2);
+				filterList.add(FilterBuilder.create().onAccession(sample.getAccession()).build());
+				filterList.add(FilterBuilder.create().onDomain(sample.getDomain()).build());
+				Iterator<Resource<Sample>> it = bioSamplesClient.fetchSampleResourceAll(null, filterList).iterator();
+				if (it.hasNext()) {
+					it.next();
+					if (it.hasNext()) {
+						//error multiple accessions
+						throw new RuntimeException("More than one group found with accession "+groupNode.getGroupAccession()+ " and domain "+domain);
+					}
+				} else {
+					throw new DomainOwnershipException(domain, groupNode.getGroupAccession());
+				}
+			}
+		}
+
+	}
+
+	/**
+	 * Verify accession is part of a single sampletab and is not owned by any other submission
+	 *
+	 * This method verifies that given a sampletab and an accession, there is no other submission that
+	 * @param sampleData the parsed sampletab data
+	 * @param accession the accession to check
+	 * @throws ConflictingSampleTabOwnershipException
+	 */
+	private void verifySampletabAccessionsUniqueOwnership(SampleData sampleData, String accession) throws ConflictingSampleTabOwnershipException {
+
+		List<MongoSampleTab> sampletabsContainingAccession = mongoSampleTabRepository.findByAccessionsContaining(accession);
+		String sampletabSubmissionIdentifier = sampleData.msi.submissionIdentifier.trim();
+
+		if (sampletabsContainingAccession == null) {
+			log.info("Null accession sample tabs for accession "+accession);
+		} else if (sampletabsContainingAccession.size() == 0) {
+			log.info("No accession sample tabs for accession "+accession);
+		} else if (sampletabsContainingAccession.size() > 1) {
+			log.warn("Multiple accession sample tabs for accession "+accession);
+			MongoSampleTab accessionSampleTab = sampletabsContainingAccession.get(0);
+			String existingSubmissionIdentifier = accessionSampleTab.getId().trim();
+			throw new ConflictingSampleTabOwnershipException(accession, existingSubmissionIdentifier, sampletabSubmissionIdentifier);
+		} else {
+
+			log.info("One accession sample tabs for accession "+accession);
+			MongoSampleTab accessionSampleTab = sampletabsContainingAccession.get(0);
+			String existingSubmissionIdentifier = accessionSampleTab.getId().trim();
+			log.info("existingId = "+existingSubmissionIdentifier);
+			log.info("newId = "+sampletabSubmissionIdentifier);
+			if (!existingSubmissionIdentifier.equals(sampletabSubmissionIdentifier)) {
+				//this sample is "owned" by a different sampletab file
+				throw new ConflictingSampleTabOwnershipException(accession,
+						existingSubmissionIdentifier, sampletabSubmissionIdentifier);
+			}
+		}
+
+	}
+
 	/**
 	 * Works by side effect!
 	 * 
