@@ -21,14 +21,13 @@ public class FilterCreator {
     }
 
     public Collection<Collection<Filter>> createFilters(SearchingForm form) {
-        Collection<Collection<Filter>> filters = new ArrayList<>();
-        Collection<Filter> formFilters = filterCreatorByForm.getFilters(form);
         Collection<Collection<Filter>> ga4ghFilters = filterCreatorGA4GH.getFilters();
-        for (Collection<Filter> ga4ghFilterItem : ga4ghFilters) {
-            ga4ghFilterItem.addAll(formFilters);
-            filters.add(ga4ghFilterItem);
-        }
-        return filters;
+        Collection<Filter> formFilters = filterCreatorByForm.getFilters(form);
+        ga4ghFilters.parallelStream()
+                .map(i -> {i.addAll(formFilters);
+                           return i;
+                });
+        return ga4ghFilters;
 
     }
 }

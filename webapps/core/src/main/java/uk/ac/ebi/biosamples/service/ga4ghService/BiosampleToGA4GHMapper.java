@@ -18,12 +18,13 @@ import java.util.*;
 @Service
 public class BiosampleToGA4GHMapper {
 
-    private Biosample ga4ghSample;
+    private Biosample baseBioSample;
     private GeoLocationDataHelper locationHelper;
+    private Biosample ga4ghSample;
 
     @Autowired
     public BiosampleToGA4GHMapper(Biosample ga4ghSample, GeoLocationDataHelper helper) {
-        this.ga4ghSample = ga4ghSample;
+        this.baseBioSample = ga4ghSample;
         this.locationHelper = helper;
     }
 
@@ -34,7 +35,7 @@ public class BiosampleToGA4GHMapper {
      * @return sample in GA4GH format
      */
     public Biosample mapSampleToGA4GH(Sample rawSample) {
-        ga4ghSample.clear();
+        ga4ghSample = baseBioSample.clone();
         ga4ghSample.setId(rawSample.getAccession());
         ga4ghSample.setName(rawSample.getName());
         mapCharacteristics(rawSample);

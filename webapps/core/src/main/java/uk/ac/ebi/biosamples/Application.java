@@ -1,9 +1,13 @@
 package uk.ac.ebi.biosamples;
 
+import java.net.URI;
 import java.util.concurrent.Executor;
 
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
@@ -17,6 +21,8 @@ import org.thymeleaf.templateresolver.UrlTemplateResolver;
 
 import com.github.benmanes.caffeine.cache.CaffeineSpec;
 
+import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.client.service.AapClientService;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.mongo.MongoProperties;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
@@ -25,6 +31,7 @@ import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
 import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
 import uk.ac.ebi.biosamples.service.SampleAsXMLHttpMessageConverter;
 import uk.ac.ebi.biosamples.service.SampleToXmlConverter;
+import uk.ac.ebi.biosamples.service.SampleValidator;
 
 //import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 
@@ -36,7 +43,17 @@ public class Application extends SpringBootServletInitializer {
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);
 	}
-
+	@Bean
+	public BioSamplesClient bioSamplesClient(RestTemplateBuilder restTemplateBuilder,
+											 SampleValidator sampleValidator,
+											 AapClientService aapClientService,
+											 BioSamplesProperties bioSamplesProperties){
+		return new BioSamplesClient(URI.create("https://www.ebi.ac.uk/biosamples"),
+				restTemplateBuilder,
+				sampleValidator,
+				aapClientService,
+				bioSamplesProperties);
+	}
 	@Bean
 	public HttpMessageConverter<Sample> getXmlSampleHttpMessageConverter(SampleToXmlConverter sampleToXmlConverter) {
 		return new SampleAsXMLHttpMessageConverter(sampleToXmlConverter);

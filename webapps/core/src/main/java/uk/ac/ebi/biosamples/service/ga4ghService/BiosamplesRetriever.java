@@ -1,27 +1,32 @@
 package uk.ac.ebi.biosamples.service.ga4ghService;
 
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.ga4ghmetadata.Biosample;
+import uk.ac.ebi.biosamples.ga4ghmetadata.SearchingForm;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
-import uk.ac.ebi.biosamples.ga4ghmetadata.*;
 import uk.ac.ebi.biosamples.service.FilterBuilder;
-
+import uk.ac.ebi.biosamples.service.ga4ghService.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Component
-@Scope("prototype")
 public class BiosamplesRetriever {
 
     private BioSamplesClient client;
     private FilterCreator filterCreator;
     @Autowired
     protected BiosampleToGA4GHMapper mapper;
+    protected PagedResources<Resource<Sample>> pagedSamples;
+
 
     @Autowired
     BiosamplesRetriever(BioSamplesClient bioSamplesClient, FilterCreator filterCreator) {
@@ -47,21 +52,25 @@ public class BiosamplesRetriever {
         return client.fetchSampleResourceAll(text, filters);
     }
 
-    public List<Biosample> getFilteredSamplesBySearchForm(SearchingForm form) {
+    public List<Biosample> getFilteredSamplesBySearchForm(SearchingForm form, int page) {
         Collection<Collection<Filter>> filters = filterCreator.createFilters(form);
-        List<Biosample> results = new ArrayList<>();
-        for (Collection<Filter> filter : filters) {
-            Iterable<Resource<Sample>> samples = client.fetchSampleResourceAll(form.getText(), filter);
-            for(Resource<Sample> resource:samples){
-                Sample sample = resource.getContent();
-                Biosample biosample = mapper.mapSampleToGA4GH(sample);
-                results.add(biosample);
+        pagedSamples = (PagedResources<Resource<Sample>>) PagedResources.NO_PAGE;
+        Collection<Resource<Sample>> samples = new ArrayList<>();
+        for(Collection<Filter> ga4ghFilters: filters){
+            PagedResources<Resource<Sample>> tempSamples = client.fetchPagedSampleResource(form.getText(),ga4ghFilters,page,15);
+            Collection<Resource<Sample>> currentSamples = tempSamples.getContent();
+            if(currentSamples!=null) {
+                samples.addAll(currentSamples);
             }
-
-
         }
 
-        return results;
+        List<Biosample> biosamples = samples.parallelStream()
+                .map(
+                        i ->{ Sample sample = i.getContent();
+                            return mapper.mapSampleToGA4GH(sample); }
+                )
+                .collect(Collectors.toList());
+        return biosamples;
     }
 
 }

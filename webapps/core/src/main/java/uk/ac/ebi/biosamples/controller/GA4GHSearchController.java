@@ -19,7 +19,7 @@ import javax.validation.Valid;
 import java.util.List;
 
 
-@RestController
+@Controller
 public class GA4GHSearchController {
 
     @Autowired
@@ -36,7 +36,14 @@ public class GA4GHSearchController {
 
     @RequestMapping(value = "/SearchingForm/result", method = RequestMethod.GET, produces={ MediaType.APPLICATION_JSON_VALUE })
     @ResponseBody
-    public List<Biosample> submitForm(@Valid @ModelAttribute("SearchingForm") SearchingForm form) {
-        return accessPoint.getFilteredSamplesBySearchForm(form);
+    public List<Biosample> submitForm(@Valid @ModelAttribute("SearchingForm") SearchingForm form,
+                                      @RequestParam(name = "page", required = false) final Integer page) {
+        int requestedPage;
+        if(page==null){
+            requestedPage=0;
+        } else {
+            requestedPage = page;
+        }
+        return accessPoint.getFilteredSamplesBySearchForm(form,requestedPage);
     }
 }

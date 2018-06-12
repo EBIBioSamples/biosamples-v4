@@ -4,10 +4,8 @@ import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.FilterBuilder;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.ArrayBlockingQueue;
 
 @Service
 class GA4GHFilterCreator {
@@ -16,7 +14,7 @@ class GA4GHFilterCreator {
     private Collection<Collection<Filter>> filters;
     private final String externalReference = "ENA";
     private final List<String> attributeLabels = Arrays.asList("Organism", "organism");
-    private final List<String> values = Arrays.asList("Homo sapiens", "homo sapiens");
+    private final List<String> values = Arrays.asList("Homo sapiens", "homo sapiens","9606","human","Human");
 
     GA4GHFilterCreator() {
         builder = FilterBuilder.create();
@@ -30,20 +28,19 @@ class GA4GHFilterCreator {
 
     private void createFilters() {
         for (String attribute : attributeLabels) {
+            Collection<Filter> organismSetOfFilters = new ArrayList<>();
             for (String value : values) {
-                List<Filter> tempFilters = new LinkedList<>();
                 Filter attrbuteFilter = builder
                         .onAttribute(attribute)
                         .withValue(value)
                         .build();
-                Filter externalReferenceFilter = builder
-                        .onDataFromExternalReference(externalReference)
-                        .build();
-                tempFilters.add(attrbuteFilter);
-                tempFilters.add(externalReferenceFilter);
-                filters.add(tempFilters);
+                organismSetOfFilters.add(attrbuteFilter);
             }
-
+            Filter externalReferenceFilter = builder
+                    .onDataFromExternalReference(externalReference)
+                    .build();
+            organismSetOfFilters.add(externalReferenceFilter);
+            filters.add(organismSetOfFilters);
         }
 
     }

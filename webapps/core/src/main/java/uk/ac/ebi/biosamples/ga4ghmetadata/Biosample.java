@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import uk.ac.ebi.biosamples.model.legacyxml.BioSample;
 import uk.ac.ebi.biosamples.service.ga4ghService.AttributeDeserializer;
 import uk.ac.ebi.biosamples.service.ga4ghService.AttributeSerializer;
 
@@ -200,15 +201,15 @@ public class Biosample {
         bio_characteristic.add(biocharacteristics);
     }
 
-    public void clear() {
-        this.setAttributes(new Attributes()); // need to be cleared before map next sample using the same mapper
-        this.setBio_characteristic(new TreeSet<Biocharacteristics>());
-        this.setExternal_identifiers(new TreeSet<>());
-        this.setDescription(null);
-        this.setDataset_id(null);
-        this.setIndividual_id(null);
-        this.setLocation(null);
-        this.setIndividual_age_at_collection(null);
+    @Override
+    public Biosample clone() {
+        Biosample biosample = null;
+        try {
+            biosample = (Biosample) super.clone();
+        } catch (CloneNotSupportedException e) {
+            biosample = new Biosample(new Attributes());
+        }
+        return biosample;
     }
 
     @Override
