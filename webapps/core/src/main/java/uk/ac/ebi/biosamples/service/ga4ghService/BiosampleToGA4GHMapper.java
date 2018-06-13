@@ -57,7 +57,7 @@ public class BiosampleToGA4GHMapper {
         List<Attribute> bioCharacteristics = new ArrayList<>();
         for (Attribute attribute : characteristics) {
             String type = attribute.getType();
-            if (type.equals("age")) {
+            if (type.equals("age")||type.equals("age_years")||type.equals("age(years)")){
                 mapAge(attribute);
             } else if (locationHelper.isGeoLocationData(type)) {
                 locationInfo.add(attribute);

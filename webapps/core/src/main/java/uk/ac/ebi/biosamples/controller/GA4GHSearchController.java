@@ -1,17 +1,11 @@
 package uk.ac.ebi.biosamples.controller;
 
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.ExposesResourceFor;
-import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.ga4ghmetadata.Biosample;
-import uk.ac.ebi.biosamples.model.JsonLDDataRecord;
-import uk.ac.ebi.biosamples.service.JsonLDService;
 import uk.ac.ebi.biosamples.service.ga4ghService.BiosamplesRetriever;
 import uk.ac.ebi.biosamples.ga4ghmetadata.SearchingForm;
 
