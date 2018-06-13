@@ -38,6 +38,7 @@ public class BiosampleToGA4GHMapper {
         ga4ghSample = baseBioSample.clone();
         ga4ghSample.setId(rawSample.getAccession());
         ga4ghSample.setName(rawSample.getName());
+        //TODO  dataset_id mapping
         mapCharacteristics(rawSample);
         mapRelationsihps(rawSample);
         mapRemainingData(rawSample);
@@ -94,6 +95,9 @@ public class BiosampleToGA4GHMapper {
         for (Attribute attribute : attributes) {
             switch (attribute.getType()) {
                 case "geographic location":
+                    geoLocation.setLabel(attribute.getValue());
+                    break;
+                case "location":
                     geoLocation.setLabel(attribute.getValue());
                     break;
                 case "latitude and longitude":

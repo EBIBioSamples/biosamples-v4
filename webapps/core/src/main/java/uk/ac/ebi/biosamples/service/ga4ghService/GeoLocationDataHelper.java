@@ -10,6 +10,7 @@ public class GeoLocationDataHelper {
 
     public boolean isGeoLocationData(String type) {
         boolean isGeolocation = type.contains("geographic location");
+        isGeolocation = isGeolocation || type.contains("location");
         isGeolocation = isGeolocation || type.contains("latitude");
         isGeolocation = isGeolocation || type.contains("longitude");
         isGeolocation = isGeolocation || type.contains("altitude");
