@@ -13,7 +13,7 @@ import uk.ac.ebi.biosamples.ga4ghmetadata.*;
 import java.io.IOException;
 import java.util.*;
 
-//TODO javadoc
+
 public class AttributeDeserializer extends StdDeserializer<Attributes> {
 
     public AttributeDeserializer() {

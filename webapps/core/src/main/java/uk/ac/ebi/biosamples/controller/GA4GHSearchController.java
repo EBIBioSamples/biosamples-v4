@@ -37,7 +37,6 @@ public class GA4GHSearchController {
             requestedPage=0;
         } else {
             requestedPage = page;
-        }
-        return accessPoint.getFilteredSamplesBySearchForm(form,requestedPage);
+        }return accessPoint.getFilteredPagedSamplesBySearchForm(form,requestedPage);
     }
 }

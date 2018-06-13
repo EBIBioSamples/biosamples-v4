@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.SortedMap;
 
-//TODO javadoc
+
 public class AttributeSerializer extends StdSerializer<Attributes> {
     public AttributeSerializer() {
         super(Attributes.class);

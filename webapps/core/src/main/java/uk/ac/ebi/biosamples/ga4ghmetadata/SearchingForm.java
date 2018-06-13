@@ -9,11 +9,6 @@ import java.util.Date;
 public class SearchingForm {
 
     private String text;
-    @DateTimeFormat(pattern = "yyyy-mm-dd")
-    private Date releaseDateFrom;
-    @DateTimeFormat(pattern = "yyyy-mm-dd")
-    private Date releaseDateUntil;
-
     public String getText() {
         return text;
     }
@@ -22,21 +17,7 @@ public class SearchingForm {
         this.text = text;
     }
 
-    public Date getReleaseDateFrom() {
-        return releaseDateFrom;
-    }
 
-    public void setReleaseDateFrom(Date releaseDateFrom) {
-        this.releaseDateFrom = releaseDateFrom;
-    }
-
-    public Date getReleaseDateUntil() {
-        return releaseDateUntil;
-    }
-
-    public void setReleaseDateUntil(Date releaseDateUntil) {
-        this.releaseDateUntil = releaseDateUntil;
-    }
 
 
 }

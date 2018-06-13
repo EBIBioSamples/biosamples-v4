@@ -26,7 +26,7 @@ class GA4GHFilterCreator {
         return filters;
     }
 
-    private void createFilters() {
+    public void createFilters() {
         for (String attribute : attributeLabels) {
             Collection<Filter> organismSetOfFilters = new ArrayList<>();
             for (String value : values) {
