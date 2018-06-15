@@ -218,7 +218,7 @@ public class RestCurationIntegration extends AbstractIntegration {
 
 		PagedResources<Resource<Curation>> paged = response.getBody();
 
-		if (paged.getMetadata().getTotalElements() != 4) {
+		if (paged.getMetadata().getTotalElements() != 5) {
 			throw new RuntimeException(
 					"Expecting 4 curations, found " + paged.getMetadata().getTotalElements());
 		}
