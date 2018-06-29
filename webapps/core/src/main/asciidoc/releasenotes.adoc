@@ -5,7 +5,7 @@ This pages contains links to release notes for BioSamples for version 4.0.0 and 
 
 
 [[section]]
-4.1.0
+4.1.1-SNAPSHOT
 ----
 
 ### New features

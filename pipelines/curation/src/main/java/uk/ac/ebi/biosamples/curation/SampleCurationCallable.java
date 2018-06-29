@@ -67,6 +67,16 @@ public class SampleCurationCallable implements Callable<Void> {
 			// clean unexpected characters
 			String newType = cleanString(attribute.getType());
 			String newValue = cleanString(attribute.getValue());
+			
+			//if the clean type or value would be empty, curate to an non attribute
+			if (newType.length() == 0 || newValue.length() == 0) {
+				Curation curation = Curation.build(Collections.singleton(attribute), Collections.emptyList());
+				bioSamplesClient.persistCuration(sample.getAccession(), curation, domain);
+				sample = curationApplicationService.applyCurationToSample(sample, curation);
+				return sample;
+			}
+			
+			
 			if (!attribute.getType().equals(newType) || !attribute.getValue().equals(newValue)) {
 				Attribute newAttribute = Attribute.build(newType, newValue, attribute.getIri(),
 						attribute.getUnit());
@@ -160,6 +170,13 @@ public class SampleCurationCallable implements Callable<Void> {
 		// string = string.replaceAll("_", " ");
 		//this is a significant change, so leave it undone for the moment....
 
+		// <br> or <b>
+		string = string.replaceAll("\\s*\\</?[bB][rR]? ?/?\\>\\s*", " ");
+		// <p>
+		string = string.replaceAll("\\s*\\</?[pP] ?/?\\>\\s*", " ");
+		// <i>
+		string = string.replaceAll("\\s*\\</?[iI] ?/?\\>\\s*", " ");
+
 		// trim extra whitespace at start and end
 		string = string.trim();
 
@@ -168,13 +185,6 @@ public class SampleCurationCallable implements Callable<Void> {
 		while (string.contains("  ")) {
 			string = string.replace("  ", " ");
 		}
-
-		// <br> or <b>
-		string = string.replaceAll("\\s*\\</?[bB][rR]? ?/?\\>\\s*", " ");
-		// <p>
-		string = string.replaceAll("\\s*\\</?[pP] ?/?\\>\\s*", " ");
-		// <i>
-		string = string.replaceAll("\\s*\\</?[iI] ?/?\\>\\s*", " ");
 
 		// some UTF-8 hacks
 		// TODO replace with code from Solr UTF-8 plugin

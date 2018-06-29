@@ -83,6 +83,11 @@ public class RestCurationIntegration extends AbstractIntegration {
 		client.persistCuration(sample.getAccession(), 
 				Curation.build(attributesPre, attributesPost, null, null), "self.BiosampleIntegrationTest");
 
+		attributesPre = new HashSet<>();
+		attributesPre.add(Attribute.build("Weird", "\"\""));
+		attributesPost = new HashSet<>();			
+		client.persistCuration(sample.getAccession(), 
+				Curation.build(attributesPre, attributesPost, null, null), "self.BiosampleIntegrationTest");
 		
 		//test alternative domain interpretations
 		attributesPre = new HashSet<>();
@@ -213,7 +218,7 @@ public class RestCurationIntegration extends AbstractIntegration {
 
 		PagedResources<Resource<Curation>> paged = response.getBody();
 
-		if (paged.getMetadata().getTotalElements() != 4) {
+		if (paged.getMetadata().getTotalElements() != 5) {
 			throw new RuntimeException(
 					"Expecting 4 curations, found " + paged.getMetadata().getTotalElements());
 		}
@@ -266,6 +271,7 @@ public class RestCurationIntegration extends AbstractIntegration {
 		SortedSet<Attribute> attributes = new TreeSet<>();
 		attributes.add(Attribute.build("Organism", "9606"));
 		attributes.add(Attribute.build("CurationDomain", "original"));
+		attributes.add(Attribute.build("Weird", "\"\""));
 		
 		SortedSet<Relationship> relationships = new TreeSet<>();
 

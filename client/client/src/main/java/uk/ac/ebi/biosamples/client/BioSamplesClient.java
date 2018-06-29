@@ -264,6 +264,7 @@ public class BioSamplesClient implements AutoCloseable {
 	}
 
 	public Resource<CurationLink> persistCuration(String accession, Curation curation, String domain) {
+		log.trace("Persisting curation "+curation+" on "+accession+" in "+domain);
 		return curationSubmissionService.submit(CurationLink.build(accession, curation, domain, null));
 	}
 	
