@@ -70,7 +70,7 @@ public class BioSamplesClient implements AutoCloseable {
 			log.trace("Adding AapClientHttpRequestInterceptor");
 			restOperations.getInterceptors().add(new AapClientHttpRequestInterceptor(aapClientService));
 		} else {
-			log.trace("No AapClientService avaliable");
+			log.trace("No AapClientService available");
 		}
 		
 		Traverson traverson = new Traverson(uri, MediaTypes.HAL_JSON);
@@ -120,6 +120,8 @@ public class BioSamplesClient implements AutoCloseable {
 		}
 		
 	}
+
+	//TODO: we can think of using an interceptor to remove the cache from the biosamples client
     
     @PreDestroy
     public void close() {
