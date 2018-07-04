@@ -4,8 +4,6 @@
 *Welcome to BioSamples*! A sample repository where you can search, submit and curate sample metadata used in various
 projects and context. This documentation should help you better understanding what is BioSamples and how to use our service.
 
-For more detailed information on specific functionality of BioSamples, checkout our +++<a th:href="@{/docs/guides/}">guides</a>+++.
-
 If you're a developer and you need a refresh on how our API works, have a look at our +++<a th:href="@{/docs/references/api/overview/}">developer guides</a>+++.
 
 If you have a question about BioSamples, get a look at the +++<a th:href="@{/docs/faq}">FAQ section</a>+++, or contact us using one of the available channels listed in the +++<a th:href="@{/docs/contacts}">contacts page</a>+++.
