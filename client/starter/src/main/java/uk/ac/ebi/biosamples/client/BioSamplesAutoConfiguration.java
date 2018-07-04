@@ -1,8 +1,7 @@
 package uk.ac.ebi.biosamples.client;
 
-import java.util.Arrays;
-import java.util.List;
-
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HeaderElement;
 import org.apache.http.HeaderElementIterator;
 import org.apache.http.HttpResponse;
@@ -32,14 +31,13 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
-
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.client.service.AapClientService;
 import uk.ac.ebi.biosamples.service.AttributeValidator;
 import uk.ac.ebi.biosamples.service.SampleValidator;
+
+import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @AutoConfigureAfter(WebClientAutoConfiguration.class)
@@ -121,20 +119,20 @@ public class BioSamplesAutoConfiguration {
 			poolingHttpClientConnectionManager.setDefaultMaxPerRoute(bioSamplesProperties.getBiosamplesClientConnectionCountDefault());
 			
 			//set a local cache for cacheable responses
-			//TODO application.properties this
 			CacheConfig cacheConfig = CacheConfig.custom()
-			        .setMaxCacheEntries(1024)
-			        .setMaxObjectSize(1024*1024) //max size of 1Mb
-			        //number of entries x size of entries = 1Gb total cache size
-			        .setSharedCache(false) //act like a browser cache not a middle-hop cache
-			        .build();
-			
+                .setMaxCacheEntries(bioSamplesProperties.getBiosamplesClientCacheMaxEntries())
+                .setMaxObjectSize(bioSamplesProperties.getBiosamplesClientCacheMaxObjectSize()) //max size of 1Mb
+                //number of entries x size of entries = 1Gb total cache size
+                .setSharedCache(false) //act like a browser cache not a middle-hop cache
+                .build();
+
 			//set a timeout limit
 			int timeout = bioSamplesProperties.getBiosamplesClientTimeout();
 			RequestConfig config = RequestConfig.custom()
 			  .setConnectTimeout(timeout) //time to establish the connection with the remote host
 			  .setConnectionRequestTimeout(timeout) //maximum time of inactivity between two data packets
-			  .setSocketTimeout(timeout).build(); //time to wait for a connection from the connection manager/pool
+			  .setSocketTimeout(timeout)
+			  .build(); //time to wait for a connection from the connection manager/pool
 			
 			//set retry strategy to retry on any 5xx error
 			//ebi load balancers return a 500 error when a service is unavaliable not a 503
@@ -156,15 +154,15 @@ public class BioSamplesAutoConfiguration {
 			
 			
 			//make the actual client
-			HttpClient httpClient = CachingHttpClientBuilder.create()
-					.setCacheConfig(cacheConfig)
-					.useSystemProperties()
-					.setConnectionManager(poolingHttpClientConnectionManager)
-					.setKeepAliveStrategy(keepAliveStrategy)
-					.setServiceUnavailableRetryStrategy(serviceUnavailStrategy)
-					.setDefaultRequestConfig(config)
-					.build();
-			
+            HttpClient httpClient = CachingHttpClientBuilder.create()
+                    .setCacheConfig(cacheConfig)
+                    .useSystemProperties()
+                    .setConnectionManager(poolingHttpClientConnectionManager)
+                    .setKeepAliveStrategy(keepAliveStrategy)
+                    .setServiceUnavailableRetryStrategy(serviceUnavailStrategy)
+                    .setDefaultRequestConfig(config)
+                    .build();
+
 			//and wire it into the resttemplate
 	        restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory(httpClient));
 
