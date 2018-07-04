@@ -5,13 +5,13 @@
 projects and context. This documentation should help you better understanding what is BioSamples and how to use our service.
 
 If you are completely new to BioSamples and want to get an overview on how to interact with it, you should start with
-the link:getting-started.html[Getting started] page
+the link:#[Getting started] page
 
-For more detailed information on specific functionality of BioSamples, checkout our link:guides[guides].
+For more detailed information on specific functionality of BioSamples, checkout our +++<a th:href="@{/docs/guides/}">guides</a>+++.
 
-If you're a developer and you need a refresh on how our API works, have a look at our link:api[developer guides]
+If you're a developer and you need a refresh on how our API works, have a look at our +++<a th:href="@{/docs/references/api/overview/}">references</a>+++.
 
-If you have a question about BioSamples, get a look at the link:faq[FAQ section], or contact us using one of the available channels listed in the link:contacts[contacts page]
+If you have a question about BioSamples, get a look at the +++<a th:href="@{/docs/faq}">FAQ section</a>+++, or contact us using one of the available channels listed in the +++<a th:href="@{/docs/contacts}">contacts page</a>+++.
  
 This website requires cookies, and the limited processing of your personal data in order to function. By using the site you are agreeing to this as outlined in our https://www.ebi.ac.uk/data-protection/privacy-notice/embl-ebi-public-website[Privacy Notice] and https://www.ebi.ac.uk/about/terms-of-use[Terms of Use].
 
