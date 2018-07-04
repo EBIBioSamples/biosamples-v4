@@ -9,7 +9,6 @@
         <div data-options="marginTop:4;">
             <ul class="menu vertical drilldown" data-drilldown>
                 <li><a th:classappend="${#strings.equals(active, 'overview')}" th:href="@{/docs/}">Overview</a></li>
-                <li><a href="#">Getting started</a></li>
                 <li><a href="#">User guides</a></li>
                 <ul class="menu vertical nested">
                     <li><a th:classappend="${#strings.equals(active,'guides/auth')} ? 'active'"
