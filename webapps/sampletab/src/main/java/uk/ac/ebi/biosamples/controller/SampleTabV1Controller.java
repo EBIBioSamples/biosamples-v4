@@ -12,7 +12,6 @@ import uk.ac.ebi.arrayexpress2.magetab.listener.ErrorItemListener;
 import uk.ac.ebi.arrayexpress2.sampletab.datamodel.SampleData;
 import uk.ac.ebi.arrayexpress2.sampletab.parser.SampleTabParser;
 import uk.ac.ebi.arrayexpress2.sampletab.renderer.SampleTabWriter;
-import uk.ac.ebi.biosamples.exceptions.DuplicateDomainSampleException;
 import uk.ac.ebi.biosamples.exceptions.SampleTabException;
 import uk.ac.ebi.biosamples.service.ApiKeyService;
 import uk.ac.ebi.biosamples.service.SampleTabMultipartFileConverter;
@@ -79,8 +78,8 @@ public class SampleTabV1Controller {
             }
             // do AAP domain property
             try {
-				sampleTabService.accessionSampleTab(outcome.sampledata, "self."+domain.get(), null, true);
-			} catch (DuplicateDomainSampleException e) {
+				outcome.sampledata = sampleTabService.accessionSampleTab(outcome.sampledata, "self."+domain.get(), null, true);
+			} catch (SampleTabException e) {
 				return getErrorOutcome("Unable to accession", e.getMessage()+" Contact biosamples@ebi.ac.uk for more information.");
 			}
             return outcome;
