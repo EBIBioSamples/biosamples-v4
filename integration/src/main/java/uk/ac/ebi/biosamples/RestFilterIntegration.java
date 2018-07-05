@@ -2,7 +2,6 @@ package uk.ac.ebi.biosamples;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Profile;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
@@ -20,8 +19,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 @Component
-@Profile({"default", "rest"})
-
+//@Profile({"default", "rest"})
 public class RestFilterIntegration extends AbstractIntegration{
 
     private Logger log = LoggerFactory.getLogger(this.getClass());

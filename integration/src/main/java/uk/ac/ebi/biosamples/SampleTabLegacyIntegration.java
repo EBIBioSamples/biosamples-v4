@@ -23,19 +23,24 @@ import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.FilterBuilder;
+import uk.ac.ebi.biosamples.service.SampleUtils;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 
 @Component
 @Order(5)
+//@Profile({"default"})
 public class SampleTabLegacyIntegration extends AbstractIntegration {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
@@ -43,25 +48,39 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 	private final IntegrationProperties integrationProperties;
 
 	private final RestOperations restTemplate;
+	private final SampleUtils sampleUtils;
+	private final Pattern accessionPattern;
+
 
 	private final URI uriSb;
 	private final URI uriVa;
 	private final URI uriAc;
 	private final URI fileUriSb;
+	private final URI fileUriAc;
 
 	public SampleTabLegacyIntegration(RestTemplateBuilder restTemplateBuilder, IntegrationProperties integrationProperties, BioSamplesClient client) {
         super(client);
 		this.restTemplate = restTemplateBuilder.build();
 		this.integrationProperties = integrationProperties;
 
+		sampleUtils = new SampleUtils();
+		accessionPattern = Pattern.compile(sampleUtils.getAccessionPattern(), Pattern.MULTILINE);
+
 		uriVa = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUriSampleTab())
 				.pathSegment("api", "v1", "json", "va").build().toUri();
+
 		uriAc = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUriSampleTab())
 				.pathSegment("api", "v1", "json", "ac")
 				.queryParam("apikey", integrationProperties.getLegacyApiKey())
 				.build().toUri();
+
 		uriSb = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUriSampleTab())
 				.pathSegment("api", "v1", "json", "sb")
+				.queryParam("apikey", integrationProperties.getLegacyApiKey())
+				.build().toUri();
+
+		fileUriAc = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUriSampleTab())
+				.pathSegment("api", "v1", "file", "ac")
 				.queryParam("apikey", integrationProperties.getLegacyApiKey())
 				.build().toUri();
 
@@ -69,12 +88,14 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 				.pathSegment("api", "v1", "file", "sb")
 				.queryParam("apikey", integrationProperties.getLegacyApiKey())
 				.build().toUri();
+
+
 	}
 
 	@Override
 	protected void phaseOne() {
 		log.info("Testing SampleTab JSON validation");
-		runCallableOnSampleTabResource("/GSB-32.json", sampleTabString -> {
+		runCallableOnSampleTabResource("GSB-32.json", sampleTabString -> {
 			log.info("POSTing to " + uriVa);
 			RequestEntity<String> request = RequestEntity.post(uriVa).contentType(MediaType.APPLICATION_JSON)
 					.body(sampleTabString);
@@ -83,7 +104,7 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 		});
 
 		log.info("Testing SampleTab JSON accession");
-		runCallableOnSampleTabResource("/GSB-32.json", sampleTabString -> {
+		runCallableOnSampleTabResource("GSB-32.json", sampleTabString -> {
 			log.info("POSTing to " + uriAc);
 			RequestEntity<String> request = RequestEntity.post(uriAc).contentType(MediaType.APPLICATION_JSON)
 					.body(sampleTabString);
@@ -95,30 +116,8 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 			}
 		});
 
-		log.info("Testing SampleTab JSON submission");
-		runCallableOnSampleTabResource("/GSB-32.json", sampleTabString -> {
-			log.info("POSTing to " + uriSb);
-			RequestEntity<String> request = RequestEntity.post(uriSb).contentType(MediaType.APPLICATION_JSON)
-					.body(sampleTabString);
-			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
-			log.info(""+response.getBody());
-
-			if (!response.getBody().contains("SAMEA2186845")) {
-				throw new RuntimeException("Response does not have expected accession SAMEA2186845");
-			}
-		});
-
-		log.info("Testing SampleTab JSON submission with MSI contact, publication and organization");
-		runCallableOnSampleTabResource("/GSB-1010.json", sampleTabString -> {
-			log.info("POSTing to " + uriSb);
-			RequestEntity<String> request = RequestEntity.post(uriSb).contentType(MediaType.APPLICATION_JSON)
-					.body(sampleTabString);
-			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
-			log.info(""+response.getBody());
-		});
-
 		log.info("Testing unaccessioned SampleTab JSON submission ");
-		runCallableOnSampleTabResource("/GSB-new.json", sampleTabString -> {
+		runCallableOnSampleTabResource("GSB-new.json", sampleTabString -> {
 			log.info("POSTing to " + uriSb);
 			RequestEntity<String> request = RequestEntity.post(uriSb).contentType(MediaType.APPLICATION_JSON)
 					.body(sampleTabString);
@@ -131,7 +130,7 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 		});
 
 		log.info("Testing submission of sampletab with valid implicit relationship");
-		runCallableOnSampleTabFile("/Implicit_relationship_sampletab.tab", sampletabFile -> {
+		runCallableOnSampleTabFile("Implicit_relationship_sampletab.tab", sampletabFile -> {
 			log.info("POSTing to " + fileUriSb);
 			LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
 			map.add("file", sampletabFile);
@@ -146,12 +145,12 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 			log.info(""+response.getBody());
 		});
 
-		log.info("Testing submission of accessioned SampleTab with valid implicit relationship");
-		runCallableOnSampleTabFile("/accessioned_sampletab_with_implicit_relationships.tab", sampletabFile -> {
-			log.info("POSTing to " + fileUriSb);
+		log.info("Testing pre-accessioning of SampleTab with valid implicit relationship");
+		runCallableOnSampleTabFile("accessioned_sampletab_with_implicit_relationships.tab", sampletabFile -> {
 			LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
 			map.add("file", sampletabFile);
-			RequestEntity<LinkedMultiValueMap> request = RequestEntity.post(fileUriSb).contentType(MediaType.MULTIPART_FORM_DATA)
+		    log.info("POSTing to " + fileUriAc + " to pre-accession the samples in order to get ownership on the accession");
+			RequestEntity<LinkedMultiValueMap> request = RequestEntity.post(fileUriAc).contentType(MediaType.MULTIPART_FORM_DATA)
 					.body(map);
 
 			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
@@ -159,11 +158,10 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 				log.error(response.toString());
 				throw new RuntimeException("Response does not have expected submission identifier");
 			}
-			log.info(""+response.getBody());
 		});
 
 		log.info("Testing rejection submission of sampletab with invalid implicit relationship");
-		runCallableOnSampleTabFile("/Invalid_implicit_relationship_sampletab.txt", sampletabFile -> {
+		runCallableOnSampleTabFile("Invalid_implicit_relationship_sampletab.txt", sampletabFile -> {
 			log.info("POSTing to " + fileUriSb);
 			LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
 			map.add("file", sampletabFile);
@@ -179,7 +177,7 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 		});
 
 		log.info("Testing SampleTab file submission with DatabaseURI");
-		runCallableOnSampleTabFile("/GSB-52.txt", sampletabFile -> {
+		runCallableOnSampleTabFile("GSB-52.txt", sampletabFile -> {
 			log.info("POSTing to " + fileUriSb);
 			LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
 			map.add("file", sampletabFile);
@@ -199,7 +197,7 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 		});
 
 		log.info("Testing SampleTab file submission with new line character");
-		runCallableOnSampleTabFile("/sampletab_with_escaped_newline.txt", sampletabFile -> {
+		runCallableOnSampleTabFile("sampletab_with_escaped_newline.txt", sampletabFile -> {
 			log.info("POSTing to " + fileUriSb);
 			LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
 			map.add("file", sampletabFile);
@@ -223,69 +221,153 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 
 	@Override
 	protected void phaseTwo() {
-		
+
+
 		//check that previous submitted GSB-32 samples have been put into a group
-		
-		Optional<Sample> SAMEA2186845 = client.fetchSample("SAMEA2186845");
-		if (!SAMEA2186845.isPresent()) {
-			throw new RuntimeException("Unable to fetch SAMEA2186845");
-		} else if (SAMEA2186845.get().getRelationships().size() == 0) {
-			throw new RuntimeException("SAMEA2186845 has no relationships");	
+//		Optional<Sample> SAMEA2186845 = client.fetchSample("SAMEA2186845");
+//		if (!SAMEA2186845.isPresent()) {
+//			throw new RuntimeException("Unable to fetch SAMEA2186845");
+//		} else if (SAMEA2186845.get().getRelationships().size() == 0) {
+//			throw new RuntimeException("SAMEA2186845 has no relationships");
+//		} else {
+//			boolean inGroup = false;
+//			for (Relationship r : SAMEA2186845.get().getRelationships()) {
+//				if (r.getTarget().equals("SAMEA2186845") && r.getType().equals("has member")) {
+//					inGroup = true;
+//					if (!r.getSource().startsWith("SAMEG")) {
+//						throw new RuntimeException("SAMEA2186845 has 'has member' relationship to something not SAMEG");
+//					}
+//				}
+//				//check each relationship has a sane source and target
+//				if (!r.getTarget().matches("SAM[END][AG]?[0-9]+")) {
+//					throw new RuntimeException("SAMEA2186845 has relationship to "+r.getTarget());
+//				}
+//				if (!r.getSource().matches("SAM[END][AG]?[0-9]+")) {
+//					throw new RuntimeException("SAMEA2186845 has relationship from "+r.getSource());
+//				}
+//			}
+//			if (!inGroup) {
+//				throw new RuntimeException("SAMEA2186845 has no 'has member' relationship to it");
+//			}
+//		}
+
+
+		Filter nameFilter = FilterBuilder.create().onName("foozitTest 1").build();
+		Iterator<Resource<Sample>> sampleResourceIterator = client.fetchSampleResourceAll(null, Collections.singletonList(nameFilter)).iterator();
+		if (!sampleResourceIterator.hasNext()) {
+			throw new RuntimeException("Unable to find submitted sample with name foozitTest 1");
+		}
+		Sample sample = sampleResourceIterator.next().getContent();
+		if (sampleResourceIterator.hasNext()) {
+			throw new RuntimeException("More than one sample found with name foozitTest 1");
+		}
+
+		if (sample.getRelationships().size() == 0) {
+			throw new RuntimeException("Sample foozitTest 1 should have some relationship but it doesn't");
 		} else {
 			boolean inGroup = false;
-			for (Relationship r : SAMEA2186845.get().getRelationships()) {
-				if (r.getTarget().equals("SAMEA2186845") && r.getType().equals("has member")) {
+			String sampleAccession = sample.getAccession();
+			for (Relationship r : sample.getRelationships()) {
+				if (r.getTarget().equals(sampleAccession) && r.getType().equals("has member")) {
 					inGroup = true;
 					if (!r.getSource().startsWith("SAMEG")) {
-						throw new RuntimeException("SAMEA2186845 has 'has member' relationship to something not SAMEG");
+						throw new RuntimeException("foozitTest 1 has 'has member' relationship to something not SAMEG");
 					}
 				}
 				//check each relationship has a sane source and target
-				if (!r.getTarget().matches("SAM[END][AG]?[0-9]+")) {
-					throw new RuntimeException("SAMEA2186845 has relationship to "+r.getTarget());
+				if (!r.getTarget().matches(sampleUtils.getAccessionPattern())) {
+					throw new RuntimeException("foozitTest 1 has relationship to "+r.getTarget());
 				}
-				if (!r.getSource().matches("SAM[END][AG]?[0-9]+")) {
-					throw new RuntimeException("SAMEA2186845 has relationship from "+r.getSource());
+				if (!r.getSource().matches(sampleUtils.getAccessionPattern())) {
+					throw new RuntimeException("foozitTest 1 has relationship from "+r.getSource());
 				}
 			}
 			if (!inGroup) {
-				throw new RuntimeException("SAMEA2186845 has no 'has member' relationship to it");
+				throw new RuntimeException("foozitTest 1 has no 'has member' relationship to it");
 			}
 		}
 
-		log.info("Testing SampleTab JSON accession unaccessioned");
-		runCallableOnSampleTabResource("/GSB-32_unaccession.json", sampleTabString -> {
+
+		Optional<List<Attribute>> submissionIdAttribute = sampleUtils.getAttributesWithType(sample, "Submission identifier");
+		if (!submissionIdAttribute.isPresent()) {
+			throw new RuntimeException("A 'Submission identifier' field should be present on a sample submitted using SampleTab");
+		}
+
+		if (submissionIdAttribute.get().size() != 1) {
+			throw new RuntimeException("The number of 'Submission identifier' attributes for the sample is not 1");
+		}
+
+		// Get all the accession and verify that we are
+		String submissionId = submissionIdAttribute.get().get(0).getValue();
+		Filter submissionIdFilter = FilterBuilder.create().onAttribute("Submission identifier").withValue(submissionId).build();
+		Iterable<Resource<Sample>> sampleResourceAll = client.fetchSampleResourceAll(null, Collections.singletonList(submissionIdFilter));
+		List<String> submissionAccessions = StreamSupport.stream(sampleResourceAll.spliterator(), false).map(resource -> resource.getContent().getAccession()).collect(Collectors.toList());
+
+		log.info("Testing SampleTab JSON re-accession unaccessioned");
+		runCallableOnSampleTabResource("GSB-new.json", sampleTabString -> {
 			log.info("POSTing to " + uriAc);
 			RequestEntity<String> request = RequestEntity.post(uriAc).contentType(MediaType.APPLICATION_JSON)
 					.body(sampleTabString);
 			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
 			log.info(""+response.getBody());
-			
-			if (!response.getBody().contains("SAMEA2186845")) {
-				throw new RuntimeException("Response does not have expected accession SAMEA2186845");
+
+			for(String acc: submissionAccessions) {
+				if (!response.getBody().contains(acc)) {
+					throw new RuntimeException("Response for accession service does not have expected accession " + acc);
+				}
 			}
-			
-		});	
+		});
 		
 		log.info("Testing SampleTab JSON submission unaccessioned");
-		runCallableOnSampleTabResource("/GSB-32_unaccession.json", sampleTabString -> {
+		runCallableOnSampleTabResource("GSB-new.json", sampleTabString -> {
 			log.info("POSTing to " + uriSb);
 			RequestEntity<String> request = RequestEntity.post(uriSb).contentType(MediaType.APPLICATION_JSON)
 					.body(sampleTabString);
 			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
 			log.info(""+response.getBody());
-			
-			if (!response.getBody().contains("SAMEA2186845")) {
-				throw new RuntimeException("Response does not have expected accession SAMEA2186845");
+
+			for(String acc: submissionAccessions) {
+				if (!response.getBody().contains(acc)) {
+					throw new RuntimeException("Response for submission service does not have expected accession " + acc);
+				}
 			}
-		});	
+		});
 	}
 
 	@Override
 	protected void phaseThree() {
-		
+
+		log.info("Testing submission of pre-accessioned SampleTab with valid implicit relationship");
+		runCallableOnSampleTabFile("accessioned_sampletab_with_implicit_relationships.tab", sampletabFile -> {
+			LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
+			map.add("file", sampletabFile);
+			RequestEntity<LinkedMultiValueMap> request = RequestEntity.post(fileUriSb).contentType(MediaType.MULTIPART_FORM_DATA)
+					.body(map);
+
+			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+			if (!response.getBody().contains("GSB-9191")) {
+				log.error(response.toString());
+				throw new RuntimeException("Response does not have expected submission identifier");
+			}
+
+		});
+
+		log.info("Testing SampleTab JSON with pre-acessioned samples");
+		runCallableOnSampleTabResource("GSB-32.json", sampleTabString -> {
+			log.info("POSTing to " + uriSb);
+			RequestEntity<String> request = RequestEntity.post(uriSb).contentType(MediaType.APPLICATION_JSON)
+					.body(sampleTabString);
+			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+			log.info(""+response.getBody());
+
+			Optional<Resource<Sample>> clientSample = client.fetchSampleResource("SAMEA2186844");
+			if (!clientSample.isPresent()) {
+				throw new RuntimeException("Couldn't find pre-accessioned sample SAMEA2186844 after submission");
+			}
+		});
+
 		log.info("Testing SampleTab JSON submission deleted");
-		runCallableOnSampleTabResource("/GSB-32_deleted.json", sampleTabString -> {
+		runCallableOnSampleTabResource("GSB-32_deleted.json", sampleTabString -> {
 			log.info("POSTing to " + uriSb);
 			RequestEntity<String> request = RequestEntity.post(uriSb).contentType(MediaType.APPLICATION_JSON)
 					.body(sampleTabString);
@@ -299,7 +381,7 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 		});	
 		
 		log.info("Testing SampleTab JSON accession in multiple samples");
-		runCallableOnSampleTabResource("/GSB-44_ownership.json", sampleTabString -> {
+		runCallableOnSampleTabResource("GSB-44_ownership.json", sampleTabString -> {
 			log.info(sampleTabString);
 			log.info("POSTing to " + uriSb);
 			RequestEntity<String> request = RequestEntity.post(uriSb).contentType(MediaType.APPLICATION_JSON)
@@ -404,7 +486,7 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 
 		samplePage.getContent().forEach(_sample -> {
 			for(Relationship rel: _sample.getContent().getRelationships()) {
-				if (!rel.getTarget().matches("SAM[END][AG]?[0-9]+")) {
+				if (!rel.getTarget().matches(sampleUtils.getAccessionPattern())) {
 					throw new RuntimeException("Sample "+ _sample.getContent().getName()+ " contains invalid relationship");
 				}
 			}
@@ -443,7 +525,7 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 		}
 		Sample derivedFromValidOriginSample = samplePage.getContent().iterator().next().getContent();
 		for(Relationship rel: derivedFromValidOriginSample.getRelationships()) {
-			if (!rel.getTarget().matches("SAM[END][AG]?[0-9]+")) {
+			if (!rel.getTarget().matches(sampleUtils.getAccessionPattern())) {
 				throw new RuntimeException("Sample contains invalid relationship");
 			}
 		}
