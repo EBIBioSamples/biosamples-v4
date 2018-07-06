@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
+import java.net.URI;
 import java.util.List;
 
 /**
@@ -14,7 +15,7 @@ import java.util.List;
 public class JsonLDSample implements BioschemasObject {
 
     @JsonProperty("@context")
-    private final String context = "http://schema.org";
+    private final BioSchemasContext sampleContext;
 
     @JsonProperty("@type")
     private final String[] type = {"BioChemEntity", "Sample"};
@@ -30,8 +31,13 @@ public class JsonLDSample implements BioschemasObject {
     @JsonProperty("additionalProperty")
     private List<JsonLDPropertyValue> additionalProperties;
 
-    public String getContext() {
-        return context;
+    public JsonLDSample() {
+        sampleContext = new BioSchemasContext();
+        sampleContext.addContext("Sample", URI.create("http://www.ontobee.org/ontology/OBI?iri=http://purl.obolibrary.org/obo/OBI_0000747"));
+    }
+
+    public BioSchemasContext getContext() {
+        return sampleContext;
     }
 
     public String[] getType() {
