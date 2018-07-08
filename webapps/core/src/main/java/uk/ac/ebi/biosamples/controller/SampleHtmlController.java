@@ -307,8 +307,6 @@ public class SampleHtmlController {
 		String jsonLDString = jsonLDService.jsonLDToString(jsonLDService.sampleToJsonLD(sample.get()));
 		model.addAttribute("sample", sample.get());
 		model.addAttribute("jsonLD", jsonLDString);
-		String phenopacketJson = phenopacketExporter.getJsonFormattedPhenopacketByAccession(accession);
-		model.addAttribute("phenopacket", phenopacketJson);
 		//becuase thymleaf can only work with timezoned temporals, not instant
 		//we need to do the conversion
 		model.addAttribute("update", sample.get().getUpdate().atOffset(ZoneOffset.UTC));

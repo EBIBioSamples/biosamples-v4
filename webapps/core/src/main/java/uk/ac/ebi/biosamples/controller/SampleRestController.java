@@ -1,5 +1,6 @@
 package uk.ac.ebi.biosamples.controller;
 
+import org.phenopackets.schema.v1.PhenoPacket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.EntityLinks;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.exception.SampleNotFoundException;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.*;
+import uk.ac.ebi.biosamples.service.phenopackets_exportation_service.BiosampleToPhenopacketExporter;
 import uk.ac.ebi.biosamples.utils.LinkUtils;
 
 import java.time.Instant;
@@ -40,6 +42,7 @@ public class SampleRestController {
 	private final SampleResourceAssembler sampleResourceAssembler;
 
 	private final EntityLinks entityLinks;
+	private BiosampleToPhenopacketExporter phenopacketExporter;
 
 
     private Logger log = LoggerFactory.getLogger(getClass());
@@ -48,11 +51,13 @@ public class SampleRestController {
 								BioSamplesAapService bioSamplesAapService,
 								SampleManipulationService sampleManipulationService,
 								SampleResourceAssembler sampleResourceAssembler,
+								BiosampleToPhenopacketExporter phenopacketExporter,
 								EntityLinks entityLinks) {
 		this.sampleService = sampleService;
 		this.bioSamplesAapService = bioSamplesAapService;
 		this.sampleManipulationService = sampleManipulationService;
 		this.sampleResourceAssembler = sampleResourceAssembler;
+		this.phenopacketExporter = phenopacketExporter;
 		this.entityLinks = entityLinks;
 	}
 
@@ -87,9 +92,41 @@ public class SampleRestController {
 
 		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample.get(), 
 				decodedLegacyDetails, decodedCurationDomains);	
-		
+
 		//TODO cache control
 		return sampleResource;
+	}
+
+	@RequestMapping(params = "type=phenopacket")
+	@PreAuthorize("isAuthenticated()")
+	@CrossOrigin(methods = RequestMethod.GET)
+	@GetMapping(produces = { MediaType.APPLICATION_JSON_UTF8_VALUE})
+	public String getSamplePhenopacket(@PathVariable String accession,
+											@RequestParam(name = "legacydetails", required = false) String legacydetails,
+											@RequestParam(name = "curationdomain", required = false) String[] curationdomain) {
+		log.trace("starting call");
+		// decode percent-encoding from curation domains
+		Optional<List<String>> decodedCurationDomains = LinkUtils.decodeTextsToArray(curationdomain);
+		Optional<Boolean> decodedLegacyDetails;
+		if (legacydetails != null && "true".equals(legacydetails)) {
+			decodedLegacyDetails = Optional.ofNullable(Boolean.TRUE);
+		} else {
+			decodedLegacyDetails = Optional.empty();
+		}
+
+		// convert it into the format to return
+		Optional<Sample> sample = sampleService.fetch(accession, decodedCurationDomains);
+		if (!sample.isPresent()) {
+			throw new SampleNotFoundException();
+		}
+		bioSamplesAapService.checkAccessible(sample.get());
+
+		// TODO If user is not Read super user, reduce the fields to show
+		if (decodedLegacyDetails.isPresent() && decodedLegacyDetails.get()) {
+			sample = Optional.of(sampleManipulationService.removeLegacyFields(sample.get()));
+		}
+
+		return phenopacketExporter.getJsonFormattedPhenopacketFromSample(sample.get());
 	}
 
     @PreAuthorize("isAuthenticated()")
