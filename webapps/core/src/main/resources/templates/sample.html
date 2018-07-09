@@ -32,7 +32,7 @@
 		            <a th:href="@{/samples/{json_link}(json_link=${sample.accession}+'.json')}" class="button" title="JSON">
 		            	<h3 class="icon icon-fileformats white-color" data-icon="J"></h3>
 		            </a>
-					<a th:href="@{/samples/{phenopacket_link}(phenopacket_link=${sample.accession}+'.json',type='phenopacket')}" class="button" title="PHENOPACKET" >
+					<a th:href="@{/samples/{phenopacket_link}(phenopacket_link=${sample.accession}+'.phenopacket')}" class="button" title="PHENOPACKET"  >
 		            	<h3 class="icon icon-fileformats white-color" data-icon="P"></h3>
 		            </a>
 	            </span>

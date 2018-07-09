@@ -24,7 +24,7 @@ import java.util.Optional;
 /**
  * Primary controller for REST operations both in JSON and XML and both read and
  * write.
- * <p>
+ *
  * See {@link SampleHtmlController} for the HTML equivalent controller.
  *
  * @author faulcon
@@ -95,15 +95,15 @@ public class SampleRestController {
         //TODO cache control
         return sampleResource;
     }
-
-    @RequestMapping(params = "type=phenopacket")
+    @RequestMapping(produces = "application/phenopacket+json")
     @PreAuthorize("isAuthenticated()")
     @CrossOrigin(methods = RequestMethod.GET)
-    @GetMapping(produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    @GetMapping()
     public String getSamplePhenopacket(@PathVariable String accession,
                                        @RequestParam(name = "legacydetails", required = false) String legacydetails,
                                        @RequestParam(name = "curationdomain", required = false) String[] curationdomain) {
         log.trace("starting call");
+
         // decode percent-encoding from curation domains
         Optional<List<String>> decodedCurationDomains = LinkUtils.decodeTextsToArray(curationdomain);
         Optional<Boolean> decodedLegacyDetails;
