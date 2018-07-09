@@ -14,6 +14,8 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class JsonLDSample implements BioschemasObject {
 
+    private final URI sampleOntologyURI =  URI.create("http://purl.obolibrary.org/obo/OBI_0000747");
+
     @JsonProperty("@context")
     private final BioSchemasContext sampleContext;
 
@@ -33,7 +35,7 @@ public class JsonLDSample implements BioschemasObject {
 
     public JsonLDSample() {
         sampleContext = new BioSchemasContext();
-        sampleContext.addContext("Sample", URI.create("http://www.ontobee.org/ontology/OBI?iri=http://purl.obolibrary.org/obo/OBI_0000747"));
+        sampleContext.addContext("Sample", sampleOntologyURI);
     }
 
     public BioSchemasContext getContext() {
