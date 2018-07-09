@@ -13,7 +13,7 @@ import java.util.*;
 @JsonInclude
 @JsonPropertyOrder({"id", "dataset_id", "individual_id", "name", "description", "bio_characteristic", "attributes", "external_identifiers",
         "individual_age_at_collection", "location"})
-public class Biosample {
+public class Ga4ghSample {
 
     private String id;
     private String dataset_id;
@@ -27,14 +27,14 @@ public class Biosample {
     private GeoLocation location;
 
     @Autowired
-    public Biosample(Attributes attributes) {
+    public Ga4ghSample(Attributes attributes) {
         this.attributes = attributes;
         bio_characteristic = new TreeSet<>();
         external_identifiers = new TreeSet<>();
     }
 
     @JsonCreator
-    public static Biosample build(
+    public static Ga4ghSample build(
             @JsonProperty("id") String id,
             @JsonProperty("name") String name,
             @JsonProperty("dataset_id") String dataset_id,
@@ -45,48 +45,48 @@ public class Biosample {
             @JsonProperty("external_identifiers") Collection<ExternalIdentifier> externalIdentifiers,
             @JsonProperty("individual_age_at_collection") Age age,
             @JsonProperty("location") GeoLocation location) {
-        Biosample biosample = new Biosample(new Attributes());
+        Ga4ghSample ga4ghSample = new Ga4ghSample(new Attributes());
 
         if (id == null) throw new IllegalArgumentException("Sample id must be provided");
-        biosample.id = id.trim();
+        ga4ghSample.id = id.trim();
 
         if (name == null) throw new IllegalArgumentException("Sample id must be provided");
-        biosample.name = name.trim();
+        ga4ghSample.name = name.trim();
 
         if (dataset_id != null) {
-            biosample.dataset_id = dataset_id;
+            ga4ghSample.dataset_id = dataset_id;
         }
 
         if (individual_id != null) {
-            biosample.individual_id = individual_id;
+            ga4ghSample.individual_id = individual_id;
         }
 
         if (description != null) {
-            biosample.description = description;
+            ga4ghSample.description = description;
         }
 
         if (biocharacteristics != null) {
 
-            biosample.bio_characteristic.addAll(biocharacteristics);
+            ga4ghSample.bio_characteristic.addAll(biocharacteristics);
         }
 
         if (attributes != null) {
-            biosample.attributes = attributes;
+            ga4ghSample.attributes = attributes;
         }
 
         if (externalIdentifiers != null) {
-            biosample.external_identifiers.addAll(externalIdentifiers);
+            ga4ghSample.external_identifiers.addAll(externalIdentifiers);
         }
 
         if (age != null) {
-            biosample.individual_age_at_collection = age;
+            ga4ghSample.individual_age_at_collection = age;
         }
 
         if (location != null) {
-            biosample.location = location;
+            ga4ghSample.location = location;
         }
 
-        return biosample;
+        return ga4ghSample;
 
 
     }
@@ -212,31 +212,31 @@ public class Biosample {
     }
 
     @Override
-    public Biosample clone() {
-        Biosample biosample = null;
+    public Ga4ghSample clone() {
+        Ga4ghSample ga4ghSample = null;
         try {
-            biosample = (Biosample) super.clone();
+            ga4ghSample = (Ga4ghSample) super.clone();
         } catch (CloneNotSupportedException e) {
-            biosample = new Biosample(new Attributes());
+            ga4ghSample = new Ga4ghSample(new Attributes());
         }
-        return biosample;
+        return ga4ghSample;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Biosample biosample = (Biosample) o;
-        return Objects.equals(id, biosample.id) &&
-                Objects.equals(dataset_id, biosample.dataset_id) &&
-                Objects.equals(individual_id, biosample.individual_id) &&
-                Objects.equals(name, biosample.name) &&
-                Objects.equals(description, biosample.description) &&
-                Objects.equals(bio_characteristic, biosample.bio_characteristic) &&
-                Objects.equals(attributes, biosample.attributes) &&
-                Objects.equals(external_identifiers, biosample.external_identifiers) &&
-                Objects.equals(individual_age_at_collection, biosample.individual_age_at_collection) &&
-                Objects.equals(location, biosample.location);
+        Ga4ghSample ga4ghSample = (Ga4ghSample) o;
+        return Objects.equals(id, ga4ghSample.id) &&
+                Objects.equals(dataset_id, ga4ghSample.dataset_id) &&
+                Objects.equals(individual_id, ga4ghSample.individual_id) &&
+                Objects.equals(name, ga4ghSample.name) &&
+                Objects.equals(description, ga4ghSample.description) &&
+                Objects.equals(bio_characteristic, ga4ghSample.bio_characteristic) &&
+                Objects.equals(attributes, ga4ghSample.attributes) &&
+                Objects.equals(external_identifiers, ga4ghSample.external_identifiers) &&
+                Objects.equals(individual_age_at_collection, ga4ghSample.individual_age_at_collection) &&
+                Objects.equals(location, ga4ghSample.location);
     }
 
     @Override
