@@ -1,12 +1,14 @@
 package uk.ac.ebi.biosamples.service.ga4ghService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.ga4gh_model.*;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 
+import java.lang.reflect.Field;
 import java.util.*;
 
 /**
@@ -16,14 +18,17 @@ import java.util.*;
  */
 
 @Service
-public class BiosampleToGA4GHMapper {
+public class SampleToGa4ghSampleConverter implements Converter<Sample, Ga4ghSample> {
 
-    private Biosample baseBioSample;
+    private Ga4ghSample baseBioSample;
     private GeoLocationDataHelper locationHelper;
-    private Biosample ga4ghSample;
+    private Ga4ghSample ga4ghSample;
 
     @Autowired
-    public BiosampleToGA4GHMapper(Biosample ga4ghSample, GeoLocationDataHelper helper) {
+    OLSDataRetriever olsRetriever;
+
+    @Autowired
+    public SampleToGa4ghSampleConverter(Ga4ghSample ga4ghSample, GeoLocationDataHelper helper) {
         this.baseBioSample = ga4ghSample;
         this.locationHelper = helper;
     }
@@ -34,7 +39,8 @@ public class BiosampleToGA4GHMapper {
      * @param rawSample sample retrieved from Biosamples
      * @return sample in GA4GH format
      */
-    public Biosample mapSampleToGA4GH(Sample rawSample) {
+    @Override
+    public Ga4ghSample convert(Sample rawSample) {
         ga4ghSample = baseBioSample.clone();
         ga4ghSample.setId(rawSample.getAccession());
         ga4ghSample.setName(rawSample.getName());
@@ -274,7 +280,7 @@ public class BiosampleToGA4GHMapper {
         values.stream().forEach(value -> {
             SortedMap<String, Object> objectFieldsAndValues = null;
             try {
-                objectFieldsAndValues = new TreeMap<>(ObjectUtils.getFieldNamesAndValues(value, false));
+                objectFieldsAndValues = new TreeMap<>(getFieldNamesAndValues(value));
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
 
@@ -293,6 +299,22 @@ public class BiosampleToGA4GHMapper {
 
         return attributes;
 
+    }
+
+    private Map<String, Object> getFieldNamesAndValues(final Object obj)
+            throws IllegalArgumentException, IllegalAccessException {
+        Class<? extends Object> c1 = obj.getClass();
+        Map<String, Object> map = new HashMap<String, Object>();
+        Field[] fields = c1.getDeclaredFields();
+        for (Field field : fields) {
+            String name = field.getName();
+
+            Object value = field.get(obj);
+            map.put(name, value);
+
+
+        }
+        return map;
     }
 
 

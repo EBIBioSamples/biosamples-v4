@@ -7,26 +7,32 @@ import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Service;
 
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.ga4gh_model.Biosample;
+import uk.ac.ebi.biosamples.model.ga4gh_model.Ga4ghSample;
 import uk.ac.ebi.biosamples.model.ga4gh_model.SearchingForm;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.FilterBuilder;
 
+
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Wrapper class for biosamples client that retreives samples according specific (ga4gh) queries
+ *
+ * @author Dilshat Salikhov
+ */
 
 @Service
 public class BiosamplesRetriever {
 
     private BioSamplesClient client;
     private GA4GHFilterCreator filterCreator;
-    private BiosampleToGA4GHMapper mapper;
+    private SampleToGa4ghSampleConverter mapper;
 
 
     @Autowired
-    BiosamplesRetriever(BioSamplesClient bioSamplesClient, GA4GHFilterCreator filterCreator, BiosampleToGA4GHMapper mapper) {
+    public BiosamplesRetriever(BioSamplesClient bioSamplesClient, GA4GHFilterCreator filterCreator, SampleToGa4ghSampleConverter mapper) {
         this.client = bioSamplesClient;
         this.filterCreator = filterCreator;
         this.mapper = mapper;
@@ -50,7 +56,7 @@ public class BiosamplesRetriever {
         return client.fetchSampleResourceAll(text, filters);
     }
 
-    public List<Biosample> getFilteredPagedSamplesBySearchForm(SearchingForm form, int page) {
+    public List<Ga4ghSample> getFilteredPagedSamplesBySearchForm(SearchingForm form, int page) {
         Collection<Collection<Filter>> filters = filterCreator.getFilters();
         String a = form.getText();
         Collection<Resource<Sample>> samples = new ArrayList<>();
@@ -63,15 +69,15 @@ public class BiosamplesRetriever {
 
         }
 
-        List<Biosample> biosamples = samples.parallelStream()
+        List<Ga4ghSample> ga4ghSamples = samples.parallelStream()
                 .map(
                         i -> {
                             Sample sample = i.getContent();
-                            return mapper.mapSampleToGA4GH(sample);
+                            return mapper.convert(sample);
                         }
                 )
                 .collect(Collectors.toList());
-        return biosamples;
+        return ga4ghSamples;
     }
 
 }

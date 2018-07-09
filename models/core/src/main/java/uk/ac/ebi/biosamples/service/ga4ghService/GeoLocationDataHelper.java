@@ -5,6 +5,11 @@ import uk.ac.ebi.biosamples.model.ga4gh_model.Location;
 
 import java.util.Scanner;
 
+/**
+ * GEolocationDataHelper is util class for working with ga4gh sample location
+ *
+ * @author Dilshat Salikhov
+ */
 @Component
 public class GeoLocationDataHelper {
 

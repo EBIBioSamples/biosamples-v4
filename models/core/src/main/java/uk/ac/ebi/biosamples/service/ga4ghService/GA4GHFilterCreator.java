@@ -6,8 +6,14 @@ import uk.ac.ebi.biosamples.service.FilterBuilder;
 
 import java.util.*;
 
+/**
+ * GA4GHFilterCreator is a class for creating specific GA4GH filters for samples querying, where Organism is equals to homo sapiens
+ * and any interpretation of that, has exterenal reference to ENA.
+ *
+ * @author  Dilshat Salikhov
+ */
 @Service
-class GA4GHFilterCreator {
+public class GA4GHFilterCreator {
 
     private FilterBuilder builder;
     private Collection<Collection<Filter>> filters;
@@ -21,11 +27,11 @@ class GA4GHFilterCreator {
         createFilters();
     }
 
-    Collection<Collection<Filter>> getFilters() {
+    public Collection<Collection<Filter>> getFilters() {
         return filters;
     }
 
-    public void createFilters() {
+    private void createFilters() {
         for (String attribute : attributeLabels) {
             Collection<Filter> organismSetOfFilters = new ArrayList<>();
             for (String value : values) {
