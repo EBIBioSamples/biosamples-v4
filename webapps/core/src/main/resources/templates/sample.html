@@ -25,13 +25,16 @@
 					<h2 th:text="${sample.accession}">TEST</h2>
 					<h3 th:text="${sample.name}">name</h3>
 				</div>
-				<span class="float-right">    
+				<span class="float-right button-list">
 					<a th:href="@{/samples/{xml_link}(xml_link=${sample.accession} + '.xml')}" class="button" title="XML">
 						<h3 class="icon icon-fileformats white-color" data-icon="x"></h3>
 					</a>
 		            <a th:href="@{/samples/{json_link}(json_link=${sample.accession}+'.json')}" class="button" title="JSON">
 		            	<h3 class="icon icon-fileformats white-color" data-icon="J"></h3>
-		            </a>   
+		            </a>
+					<a th:href="@{/samples/{bioschemas_link}(bioschemas_link=${sample.accession}+'.ldjson')}" class="button" title="Bioschemas">
+						<img th:src="@{/images/logo_bioschemas.png}" alt="BioSchemas logo" width="60px">
+					</a>
 	            </span>
             </div>   
 			
