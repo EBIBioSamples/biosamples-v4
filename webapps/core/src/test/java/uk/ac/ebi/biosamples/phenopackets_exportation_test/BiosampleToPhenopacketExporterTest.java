@@ -33,42 +33,42 @@ public class BiosampleToPhenopacketExporterTest {
 
     public BiosampleToPhenopacketExporter biosampleToPhenopacketExporter;
 
-    public BiosampleToPhenopacketExporterTest(){
-         biosampleToGA4GHMapper = new BiosampleToGA4GHMapper(new Biosample(new Attributes()), new GeoLocationDataHelper());
-         biosampleToPhenopacketExporter = new BiosampleToPhenopacketExporter(null,biosampleToGA4GHMapper, new OLSDataRetriever());
+    public BiosampleToPhenopacketExporterTest() {
+        biosampleToGA4GHMapper = new BiosampleToGA4GHMapper(new Biosample(new Attributes()), new GeoLocationDataHelper());
+        biosampleToPhenopacketExporter = new BiosampleToPhenopacketExporter(null, biosampleToGA4GHMapper, new OLSDataRetriever());
     }
 
 
     @Test
     public void exportation_test1() throws IOException, JSONException {
         ObjectMapper mapper = new ObjectMapper();
-        Sample sample = mapper.readValue(new File(biosample1Path),Sample.class);
+        Sample sample = mapper.readValue(new File(biosample1Path), Sample.class);
         Biosample biosample = biosampleToGA4GHMapper.mapSampleToGA4GH(sample);
         String actualJson = biosampleToPhenopacketExporter.getJsonFormattedPhenopacket(biosample);
-        String expectedJson = new String ( Files.readAllBytes( Paths.get(phenopacket1Path) ) );
-        JSONAssert.assertEquals(expectedJson,actualJson,new CustomComparator(JSONCompareMode.LENIENT,
+        String expectedJson = new String(Files.readAllBytes(Paths.get(phenopacket1Path)));
+        JSONAssert.assertEquals(expectedJson, actualJson, new CustomComparator(JSONCompareMode.LENIENT,
                 new Customization("metaData.created", (o1, o2) -> true)));
     }
 
     @Test
     public void exportation_test2() throws IOException, JSONException {
         ObjectMapper mapper = new ObjectMapper();
-        Sample sample = mapper.readValue(new File(biosample2Path),Sample.class);
+        Sample sample = mapper.readValue(new File(biosample2Path), Sample.class);
         Biosample biosample = biosampleToGA4GHMapper.mapSampleToGA4GH(sample);
         String actualJson = biosampleToPhenopacketExporter.getJsonFormattedPhenopacket(biosample);
-        String expectedJson = new String ( Files.readAllBytes( Paths.get(phenopacket2Path) ) );
-        JSONAssert.assertEquals(expectedJson,actualJson,new CustomComparator(JSONCompareMode.LENIENT,
+        String expectedJson = new String(Files.readAllBytes(Paths.get(phenopacket2Path)));
+        JSONAssert.assertEquals(expectedJson, actualJson, new CustomComparator(JSONCompareMode.LENIENT,
                 new Customization("metaData.created", (o1, o2) -> true)));
     }
 
     @Test
     public void exportation_test3() throws IOException, JSONException {
         ObjectMapper mapper = new ObjectMapper();
-        Sample sample = mapper.readValue(new File(biosample3Path),Sample.class);
+        Sample sample = mapper.readValue(new File(biosample3Path), Sample.class);
         Biosample biosample = biosampleToGA4GHMapper.mapSampleToGA4GH(sample);
         String actualJson = biosampleToPhenopacketExporter.getJsonFormattedPhenopacket(biosample);
-        String expectedJson = new String ( Files.readAllBytes( Paths.get(phenopacket3Path) ) );
-        JSONAssert.assertEquals(expectedJson,actualJson,new CustomComparator(JSONCompareMode.LENIENT,
+        String expectedJson = new String(Files.readAllBytes(Paths.get(phenopacket3Path)));
+        JSONAssert.assertEquals(expectedJson, actualJson, new CustomComparator(JSONCompareMode.LENIENT,
                 new Customization("metaData.created", (o1, o2) -> true)));
 
     }
