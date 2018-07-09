@@ -95,8 +95,6 @@ services:
     #- BIOSAMPLES_CLIENT_AAP_PASSWORD=override_in_docker-compose.override.yml
     - spring.data.mongodb.uri=mongodb://mongo:27017/biosamples
     - biosamples.webapp.core.uri=http://localhost:8081/biosamples
-    # Enable result cache
-    - biosamples.client.cache.maxentries=1024
     ports:
     - 8082:8080
   

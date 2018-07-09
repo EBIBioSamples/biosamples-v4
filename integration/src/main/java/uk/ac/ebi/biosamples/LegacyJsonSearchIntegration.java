@@ -4,7 +4,6 @@ import com.jayway.jsonpath.JsonPath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.context.annotation.Profile;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.client.Hop;
 import org.springframework.hateoas.client.Traverson;
@@ -27,7 +26,7 @@ import static org.junit.Assert.*;
 import static org.springframework.hateoas.MediaTypes.HAL_JSON;
 
 @Component
-@Profile({"default"})
+//@Profile({"default"})
 public class LegacyJsonSearchIntegration extends AbstractIntegration {
 
     private final RestTemplate restTemplate;
