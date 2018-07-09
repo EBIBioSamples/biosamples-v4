@@ -20,7 +20,6 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.facet.Facet;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.*;
-import uk.ac.ebi.biosamples.service.phenopackets_exportation_service.BiosampleToPhenopacketExporter;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -51,16 +50,14 @@ public class SampleHtmlController {
 	private final FilterService filterService;
 	private final BioSamplesAapService bioSamplesAapService;
 	private final BioSamplesProperties bioSamplesProperties;
-	private BiosampleToPhenopacketExporter phenopacketExporter;
 
 	public SampleHtmlController(SampleService sampleService,
-								SamplePageService samplePageService,
-								JsonLDService jsonLDService,
-								FacetService facetService,
-								FilterService filterService,
-								BioSamplesAapService bioSamplesAapService,
-								BioSamplesProperties bioSamplesProperties,
-								BiosampleToPhenopacketExporter exporter) {
+                                SamplePageService samplePageService,
+                                JsonLDService jsonLDService,
+                                FacetService facetService,
+                                FilterService filterService,
+                                BioSamplesAapService bioSamplesAapService,
+                                BioSamplesProperties bioSamplesProperties) {
 		this.sampleService = sampleService;
 		this.samplePageService = samplePageService;
 		this.jsonLDService = jsonLDService;
@@ -68,7 +65,6 @@ public class SampleHtmlController {
 		this.filterService = filterService;
 		this.bioSamplesAapService = bioSamplesAapService;
 		this.bioSamplesProperties = bioSamplesProperties;
-		this.phenopacketExporter = exporter;
 	}
 
 	//TODO: Convert this to use ControllerAdvice

@@ -1,6 +1,5 @@
 package uk.ac.ebi.biosamples.controller;
 
-import org.phenopackets.schema.v1.PhenoPacket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.EntityLinks;
@@ -14,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.exception.SampleNotFoundException;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.*;
-import uk.ac.ebi.biosamples.service.phenopackets_exportation_service.BiosampleToPhenopacketExporter;
+import uk.ac.ebi.biosamples.service.phenopackets_exportation_service.Ga4ghSampleToPhenopacketConverter;
 import uk.ac.ebi.biosamples.utils.LinkUtils;
 
 import java.time.Instant;
@@ -41,7 +40,7 @@ public class SampleRestController {
     private final SampleResourceAssembler sampleResourceAssembler;
 
     private final EntityLinks entityLinks;
-    private BiosampleToPhenopacketExporter phenopacketExporter;
+    private Ga4ghSampleToPhenopacketConverter phenopacketExporter;
 
 
     private Logger log = LoggerFactory.getLogger(getClass());
@@ -50,7 +49,7 @@ public class SampleRestController {
                                 BioSamplesAapService bioSamplesAapService,
                                 SampleManipulationService sampleManipulationService,
                                 SampleResourceAssembler sampleResourceAssembler,
-                                BiosampleToPhenopacketExporter phenopacketExporter,
+                                Ga4ghSampleToPhenopacketConverter phenopacketExporter,
                                 EntityLinks entityLinks) {
         this.sampleService = sampleService;
         this.bioSamplesAapService = bioSamplesAapService;
