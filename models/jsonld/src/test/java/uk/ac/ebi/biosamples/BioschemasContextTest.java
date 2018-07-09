@@ -36,7 +36,7 @@ public class BioschemasContextTest {
         String contextJson = "[" +
 									" \"http://schema.org\", " +
 									" { \"@base\": \"http://schema.org\" }, " +
-									" { \"Sample\": { \"@id\": \"http://www.ontobee.org/ontology/OBI?iri=http://purl.obolibrary.org/obo/OBI_0000747\" } } ]";
+									" { \"Sample\": { \"@id\": \"http://purl.obolibrary.org/obo/OBI_0000747\" } } ]";
 
         BioSchemasContext context = new ObjectMapper()
 				.readerFor(BioSchemasContext.class)
@@ -45,7 +45,7 @@ public class BioschemasContextTest {
 		// Use JSON path based assertions
 		assertThat(context.getOtherContext().size()).isEqualTo(1);
 		assertThat(context.getOtherContext().containsKey("Sample"));
-		assertThat(context.getOtherContext().get("Sample")).isEqualTo(URI.create("http://www.ontobee.org/ontology/OBI?iri=http://purl.obolibrary.org/obo/OBI_0000747"));
+		assertThat(context.getOtherContext().get("Sample")).isEqualTo(URI.create("http://purl.obolibrary.org/obo/OBI_0000747"));
 	}
 
 	@SpringBootConfiguration
