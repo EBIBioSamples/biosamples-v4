@@ -45,22 +45,19 @@ div#elixir-banner-info { color: white; }
 .shield .shield__key { background-color: #444; margin: 0 0 0 2px; }
 .shield .shield__value { background-color: #f27e3f; margin: 0 2px 0 0; }
 
-img {
-    max-width: 100%;
-}
-
 .button-list {
     display: flex;
     max-height: 100px;
+}
+
+.button-list a {
+    margin-left: 5px;
 }
 
 .button-list img {
     height: 100%;
 }
 
-.button-list a {
-    margin-left: 5px;
-}
 
 /* DOCS */
 pre.nowrap {
