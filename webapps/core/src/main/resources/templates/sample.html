@@ -25,13 +25,8 @@
 					<h2 th:text="${sample.accession}">TEST</h2>
 					<h3 th:text="${sample.name}">name</h3>
 				</div>
-				<span class="float-right">    
-					<a th:href="@{/samples/{xml_link}(xml_link=${sample.accession} + '.xml')}" class="button" title="XML">
-						<h3 class="icon icon-fileformats white-color" data-icon="x"></h3>
-					</a>
-		            <a th:href="@{/samples/{json_link}(json_link=${sample.accession}+'.json')}" class="button" title="JSON">
-		            	<h3 class="icon icon-fileformats white-color" data-icon="J"></h3>
-		            </a>   
+				<span class="float-right">
+                    <th:block th:include="fragments/sample :: serialisationsForm"></th:block>
 	            </span>
             </div>   
 			
@@ -54,74 +49,8 @@
 			<th:block th:include="fragments/sample :: relationships (${sample.relationships})"></th:block>
 			<th:block th:include="fragments/sample :: externalReferences (${sample.externalReferences})"></th:block>
 
-			<!--
-			<th:section
-				th:if="${sample.attributes != null and #arrays.length(sample.attributes) > 0}"
-				th:remove="tag">
-				<h3>Attributes</h3>
-				<table class="hover">
-					<tr>
-						<th>Type</th>
-						<th>Value</th>
-					</tr>
-					<tr th:each="attribute : ${sample.attributes}">
-						<td th:text="${attribute.type}">Attribute Type</td>
-
-						<td
-							th:if="${not #strings.isEmpty(attribute.getIriOls()) and #strings.isEmpty(attribute.unit)}"><a
-							th:href="${attribute.getIriOls()}" th:text="${attribute.value}"
-							target="_blank">attribute value<i class="icon icon-generic"
-								data-icon="x"></i></a></td>
-						<td
-							th:if="${#strings.isEmpty(attribute.getIriOls()) and #strings.isEmpty(attribute.unit)}"
-							th:text="${attribute.value}">attribute value</td>
-						<td
-							th:if="${not #strings.isEmpty(attribute.getIriOls()) and not #strings.isEmpty(attribute.unit)}"><th:span
-								th:text="${attribute.value}" th:remove="tag"></th:span> (<a
-							th:href="${attribute.getIriOls()}" th:text="${attribute.unit}"
-							target="_blank">unit<i class="icon icon-generic"
-								data-icon="x"></i></a>)</td>
-						<td
-							th:if="${#strings.isEmpty(attribute.getIriOls()) and not #strings.isEmpty(attribute.unit)}"
-							th:text="${attribute.value}+' ('+${attribute.unit}+')'">attribute
-							value (unit)</td>
-					</tr>
-				</table>
-			</th:section>
-
-			<th:section
-				th:if="${sample.relationships != null and #arrays.length(sample.relationships) > 0}"
-				th:remove="tag">
-				<h3>Relationships</h3>
-				<table>
-					<tr>
-						<th>Source</th>
-						<th>Type</th>
-						<th>Target</th>
-					</tr>
-					<tr th:each="relationship : ${sample.relationships}">
-						<td><a th:href="${relationship.source}"
-							th:text="${relationship.source}">source</a></td>
-						<td th:text="${relationship.type}">type</td>
-						<td><a th:href="${relationship.target}"
-							th:text="${relationship.target}">target</a></td>
-					</tr>
-				</table>
-			</th:section>  
-
-			<div th:if="${sample.externalReferences != null and #arrays.length(sample.externalReferences) > 0}"
-				th:remove="tag">
-				<h3>External Links</h3>
-				<th:section th:each="externalReference : ${sample.externalReferences}" >
-				<a th:href="${externalReference.url}" class="button">
-					<h3 class="icon icon-generic white-color" data-icon="L"></h3>
-				</a>
-				</th:section>
-			</div>
-			-->
-
 		</div>
 	</div>
-	<th:block th:include="fragments/footer :: footer"></th:block>	
+	<th:block th:include="fragments/footer :: footer"></th:block>
 </body>
 </html>
