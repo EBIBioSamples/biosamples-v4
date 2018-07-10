@@ -9,6 +9,7 @@ import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.*;
 
 /**
@@ -280,7 +281,7 @@ public class SampleToGa4ghSampleConverter implements Converter<Sample, Ga4ghSamp
         values.stream().forEach(value -> {
             SortedMap<String, Object> objectFieldsAndValues = null;
             try {
-                objectFieldsAndValues = new TreeMap<>(getFieldNamesAndValues(value));
+                objectFieldsAndValues = new TreeMap<>(getFieldNamesAndValues(value, false));
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
 
@@ -301,18 +302,23 @@ public class SampleToGa4ghSampleConverter implements Converter<Sample, Ga4ghSamp
 
     }
 
-    private Map<String, Object> getFieldNamesAndValues(final Object obj)
+    private Map<String, Object> getFieldNamesAndValues(final Object obj, boolean publicOnly)
             throws IllegalArgumentException, IllegalAccessException {
         Class<? extends Object> c1 = obj.getClass();
         Map<String, Object> map = new HashMap<String, Object>();
         Field[] fields = c1.getDeclaredFields();
         for (Field field : fields) {
             String name = field.getName();
-
-            Object value = field.get(obj);
-            map.put(name, value);
-
-
+            if (publicOnly) {
+                if (Modifier.isPublic(field.getModifiers())) {
+                    Object value = field.get(obj);
+                    map.put(name, value);
+                }
+            } else {
+                field.setAccessible(true);
+                Object value = field.get(obj);
+                map.put(name, value);
+            }
         }
         return map;
     }
