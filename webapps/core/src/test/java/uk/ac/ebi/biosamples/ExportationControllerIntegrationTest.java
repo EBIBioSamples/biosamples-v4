@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.phenopackets_exportation_test;
+package uk.ac.ebi.biosamples;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -21,7 +21,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import uk.ac.ebi.biosamples.Application;
 import uk.ac.ebi.biosamples.controller.SampleRestController;
 
 import org.skyscreamer.jsonassert.JSONCompareMode;
@@ -30,6 +29,12 @@ import org.skyscreamer.jsonassert.Customization;
 
 import java.io.File;
 
+/**
+ * Integraion testing of phenopackets exportatioon and testing of controller. You need to have access to
+ * https://www.ebi.ac.uk/ols/api for test performing. Also you should get token from https://explore.aap.tsi.ebi.ac.uk/auth and
+ * write it in token attribute. For more detailed description check https://github.com/EBIBioSamples/biosamples-v4/tree/g-summer-code.
+ *
+ */
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = Application.class)
@@ -39,8 +44,8 @@ import java.io.File;
 
 public class ExportationControllerIntegrationTest {
 
-    final String path = "/Users/dilsatsalihov/Desktop/gsoc/biosamples-v4/webapps/core/src/test/java/uk/ac/ebi/biosamples/phenopackets_test_cases/sample.json";
-    final String phenopacketPath = "/Users/dilsatsalihov/Desktop/gsoc/biosamples-v4/webapps/core/src/test/java/uk/ac/ebi/biosamples/phenopackets_test_cases/phenopacket.json";
+    final String path = "/Users/dilsatsalihov/Desktop/gsoc/biosamples-v4/models/core/src/test/java/uk/ac/ebi/biosamples/model/phenopackets_test_cases/sample.json";
+    final String phenopacketPath = "/Users/dilsatsalihov/Desktop/gsoc/biosamples-v4/models/core/src/test/java/uk/ac/ebi/biosamples/model/phenopackets_test_cases/phenopacket.json";
     final String token = "Bearer $TOKEN"; //TODO update token
 
     @Autowired
@@ -72,9 +77,11 @@ public class ExportationControllerIntegrationTest {
         headers
                 .add("Authorization", token);
         mvc1.perform(post("/samples").contentType(MediaType.APPLICATION_JSON_VALUE).content(sample).headers(headers)).andExpect(status().isCreated());
-        actualJson = mvc1.perform(get("/samples/SAMEA100000.json?type=phenopacket").contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(status().isOk()).andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_UTF8))
-                .andReturn().getResponse().getContentAsString();
+        actualJson = mvc1.perform(get("/samples/SAMEA100000.phenopacket").contentType("appication/phenopacket+json"))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
         org.skyscreamer.jsonassert.JSONAssert.assertEquals(actualJson, phenopacket, new CustomComparator(JSONCompareMode.LENIENT,
                 new Customization("metaData.created", (o1, o2) -> true)));
     }
