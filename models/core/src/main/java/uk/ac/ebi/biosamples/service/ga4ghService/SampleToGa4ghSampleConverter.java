@@ -302,6 +302,15 @@ public class SampleToGa4ghSampleConverter implements Converter<Sample, Ga4ghSamp
 
     }
 
+    /**
+     * Convert java objects to pairs of names and values of fields. This will be used in convertation that
+     * to ga4gh format. From this pairs will be created AttributeValues that will be wrapped by Attributes.
+     * @param obj object to read
+     * @param publicOnly strict to not read non public fields
+     * @return map of field names and values
+     * @throws IllegalArgumentException
+     * @throws IllegalAccessException
+     */
     private Map<String, Object> getFieldNamesAndValues(final Object obj, boolean publicOnly)
             throws IllegalArgumentException, IllegalAccessException {
         Class<? extends Object> c1 = obj.getClass();
