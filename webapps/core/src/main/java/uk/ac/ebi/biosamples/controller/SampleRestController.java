@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.exception.SampleNotFoundException;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.*;
-import uk.ac.ebi.biosamples.service.phenopackets_exportation_service.Ga4ghSampleToPhenopacketConverter;
 import uk.ac.ebi.biosamples.utils.LinkUtils;
 
 import java.time.Instant;
