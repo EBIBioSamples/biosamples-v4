@@ -1,4 +1,4 @@
-version: '2'
+﻿version: '2'
 services:
 
   biosamples-webapps-core:
@@ -16,6 +16,7 @@ services:
     - webapps-core-4.1.1-SNAPSHOT.war
     environment:
     #AAP certificate
+    - biosamples.client.uri=http://localhost:8080/biosamples
     - jwt.certificate=public.explore.der
     - security.basic.path=
     - aap.domains.url=https://explore.api.aap.tsi.ebi.ac.uk
@@ -97,7 +98,7 @@ services:
     - biosamples.webapp.core.uri=http://localhost:8081/biosamples
     ports:
     - 8082:8080
-  
+
   biosamples-webapps-legacyxml:
     image: biosamples:latest
     links:
@@ -192,7 +193,7 @@ services:
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-ena.log
-    
+
   biosamples-pipelines-ncbi:
     image: biosamples:latest
     volumes:
@@ -206,7 +207,7 @@ services:
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-ncbi.log
-    
+
   biosamples-pipelines-accession:
     image: biosamples:latest
     volumes:
@@ -219,8 +220,8 @@ services:
     - pipelines-accession-4.1.1-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
-    - LOGGING_FILE=/logs/pipelines-accession.log      
-    
+    - LOGGING_FILE=/logs/pipelines-accession.log
+
   biosamples-pipelines-sampletab:
     image: biosamples:latest
     volumes:
@@ -233,8 +234,8 @@ services:
     - pipelines-sampletab-4.1.1-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_SAMPLETAB_URI=http://biosamples-webapps-sampletab:8080/biosamples/sampletab/v4
-    - LOGGING_FILE=/logs/pipelines-sampletab.log   
-    
+    - LOGGING_FILE=/logs/pipelines-sampletab.log
+
   biosamples-pipelines-copydown:
     image: biosamples:latest
     volumes:
@@ -247,8 +248,8 @@ services:
     - pipelines-copydown-4.1.1-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
-    - LOGGING_FILE=/logs/pipelines-copydown.log  
-    
+    - LOGGING_FILE=/logs/pipelines-copydown.log
+
   biosamples-pipelines-curation:
     volumes:
     - logs:/logs
@@ -264,7 +265,7 @@ services:
     - LOGGING_FILE=/logs/pipelines-curation.log
     - spring.cache.cache-names=ols_short
     - spring.cache.caffeine.spec=maximumSize=50000
-    
+
   biosamples-pipelines-zooma:
     volumes:
     - logs:/logs
@@ -280,7 +281,7 @@ services:
     - LOGGING_FILE=/logs/pipelines-zooma.log
     - spring.cache.cache-names=zooma,ols_short
     - spring.cache.caffeine.spec=maximumSize=50000
-    
+
   biosamples-pipelines-reindex:
     volumes:
     - logs:/logs
@@ -296,7 +297,7 @@ services:
     - LOGGING_FILE=/logs/pipelines-reindex.log
     - spring.data.mongodb.uri=mongodb://mongo/biosamples
     - SPRING_RABBITMQ_HOST=rabbitmq
-    
+
   biosamples-pipelines-export:
     volumes:
     - logs:/logs
@@ -313,7 +314,7 @@ services:
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-export.log
-           
+
   biosamples-integration:
     volumes:
     - logs:/logs
