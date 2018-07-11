@@ -1,18 +1,15 @@
-package uk.ac.ebi.biosamples.service.ga4ghService;
+package uk.ac.ebi.biosamples.service;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Service;
-
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.ga4gh_model.Ga4ghSample;
-import uk.ac.ebi.biosamples.model.ga4gh_model.SearchingForm;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
-import uk.ac.ebi.biosamples.service.FilterBuilder;
-
+import uk.ac.ebi.biosamples.model.ga4gh.Ga4ghSample;
+import uk.ac.ebi.biosamples.model.ga4gh.SearchingForm;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -23,16 +20,18 @@ import java.util.stream.Collectors;
  * @author Dilshat Salikhov
  */
 
+//TODO: Probably this class will not be necessary anymore because all the queries should be done in the webapps core module and not in the models module
+
 @Service
 public class BiosamplesRetriever {
 
     private BioSamplesClient client;
-    private GA4GHFilterCreator filterCreator;
+    private GA4GHFilterBuilder filterCreator;
     private SampleToGa4ghSampleConverter mapper;
 
 
     @Autowired
-    public BiosamplesRetriever(BioSamplesClient bioSamplesClient, GA4GHFilterCreator filterCreator, SampleToGa4ghSampleConverter mapper) {
+    public BiosamplesRetriever(BioSamplesClient bioSamplesClient, GA4GHFilterBuilder filterCreator, SampleToGa4ghSampleConverter mapper) {
         this.client = bioSamplesClient;
         this.filterCreator = filterCreator;
         this.mapper = mapper;
@@ -55,6 +54,7 @@ public class BiosamplesRetriever {
 
         return client.fetchSampleResourceAll(text, filters);
     }
+
 
     public List<Ga4ghSample> getFilteredPagedSamplesBySearchForm(SearchingForm form, int page) {
         Collection<Collection<Filter>> filters = filterCreator.getFilters();
