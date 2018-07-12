@@ -1,5 +1,6 @@
 package uk.ac.ebi.biosamples.ena;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -33,6 +34,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+@Ignore
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {EnaRunnerTest.TestConfig.class})
 public class EnaRunnerTest {

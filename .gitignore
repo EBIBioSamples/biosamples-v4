@@ -82,3 +82,5 @@ fabric.properties
 /notes/
 /notes/BSD-1282.md
 /notes/setup-notes.md
+/pipelines/ena/samples-output.txt
+/pipelines/ena/curations-output.txt
