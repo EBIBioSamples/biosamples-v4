@@ -19,7 +19,6 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 @Component
-//@Profile({"default", "rest"})
 public class RestFilterIntegration extends AbstractIntegration{
 
     private Logger log = LoggerFactory.getLogger(this.getClass());

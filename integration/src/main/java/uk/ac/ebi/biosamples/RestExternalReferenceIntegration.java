@@ -2,7 +2,6 @@ package uk.ac.ebi.biosamples;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.*;
@@ -13,8 +12,6 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 @Component
-@Order(6)
-//@Profile({ "default", "rest" })
 public class RestExternalReferenceIntegration extends AbstractIntegration {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
