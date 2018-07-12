@@ -1,32 +1,33 @@
+*.backup
+!/models/legacyjson/src/test/resources/testLegacySample.json
+webapps/legacyjson/legacy_endpoints.json
+jsonExport.json
+xmlExport.xml
 *.log
 *.log.*
 application.properties
 ncbi.xml.gz
-/run_env.sh
-
-docker-compose.override.yml
 
 bin/
 target/
-
-docker-env.sh
-webapps/legacyjson/legacy_endpoints.json
-docker-compose.debug.override.yml
-docker-agents.sh
-webapps/core/src/main/java/uk/ac/ebi/biosamples/xml/XmlExceptionHttpMessageConverter.java.backup
-*.backup
-env.sh
-.ideavimrc
 test-features
-run_test.py
-!/models/legacyjson/src/test/resources/testLegacySample.json
 
-jsonExport.json
-xmlExport.xml
+docker-compose.override.yml
+docker-compose.debug.override.yml
+
+
 docker-integration.local.sh
+docker-agents.sh
+docker-env.sh
+docker-clean.sh
+docker-restart.sh
+env.sh
+run_env.sh
+run_test.py
 
 *.iml
 **/.idea
+.ideavimrc
 ### JetBrains template
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio and WebStorm
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
