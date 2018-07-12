@@ -5,7 +5,10 @@ import com.google.common.io.Resources;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+<<<<<<< HEAD
 import org.springframework.context.annotation.Profile;
+=======
+>>>>>>> Removes the unnecessary annotations from the integration tests
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
@@ -37,7 +40,6 @@ import java.util.stream.StreamSupport;
 
 
 @Component
-@Profile("test")
 public class SampleTabLegacyIntegration extends AbstractIntegration {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
