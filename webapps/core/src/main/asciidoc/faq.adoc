@@ -7,6 +7,11 @@ If you cannot find the answer to your question in this FAQ or the link:../docs[h
 === How frequent are updates to BioSamples' data?
 BioSamples content is updated daily. Information directly submitted or updated in a source should be reflected within 48 hours. However, occasionally daily updates may be missed due to unexpected circumstances.
 
+=== What is the Bioschemas export?
+Bioschemas is an extension of schemas.org, a markup language for website and services to provide consistently structured information. It adds semantic markup to web pages by describing ‘types’ of information, which then have ‘properties’. The BIoSamples team at EMBL-EBi leads the Bioschemas samples specification work and has added BIoschemas export, serialised as JSON-LD, to all our samples pages. Check out an example https://www.ebi.ac.uk/biosamples/samples/SAMEA104130.ldjson[here].
+
+BioSamples also provides serialisations for other Bioschemas entities embedded in a script tag within the HTML source code, check out examples of the https://www.ebi.ac.uk/biosamples[DataCatalog entity] as well as the https://www.ebi.ac.uk/biosamples/samples[DataSet entity].
+
 === What pattern do BioSamples accessions follow?
 BioSample accessions always begin with `SAM`. The next letter is either `E` or `N` or `D` depending if the sample information was originally submitted to EBI or NCBI or DDBJ respectively. After that, there may be an `A` or a `G` to denote an Assay sample or a Group of samples. Finally there is a numeric component that may or may not be zero-padded.
 

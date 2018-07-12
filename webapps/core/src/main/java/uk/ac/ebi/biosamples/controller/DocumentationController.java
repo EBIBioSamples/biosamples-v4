@@ -34,20 +34,20 @@ public class DocumentationController {
         return "docs/"+page;
     }
 
-//    @GetMapping(value = "/guides/")
-//    public String helpGuideIndex() {
-//        return "docs/guides/index";
-//    }
+    @GetMapping(value = "/guides/")
+    public String helpGuideIndex() {
+        return "docs/guides/index";
+   }
 
     @GetMapping(value = "/guides/{page}")
     public String helpGuidePage(@PathVariable String page) {
         return "docs/guides/"+page;
     }
 
-//    @GetMapping(value = "/references/")
-//    public String helpReferenceIndex() {
-//        return "docs/references/overview";
-//    }
+    @GetMapping(value = "/references/")
+    public String helpReferenceIndex() {
+        return "docs/references/overview";
+    }
 
     @GetMapping(value = "/references/{page}")
     public String helpReferencePage(@PathVariable String page) {
