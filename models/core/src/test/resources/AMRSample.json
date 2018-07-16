@@ -1,0 +1,16 @@
+{
+    "type": "AMR",
+    "schema": "test",
+    "content": [
+        {
+            "antibiotic":"ampicillin",
+            "resistancePhenotype":"susceptible",
+            "measurementSign":"==",
+            "measurement":2,
+            "measurementUnit":"mg/L",
+            "vendor":"in-house",
+            "laboratoryTypingMethod":"MIC",
+            "testingStandard":"CLSI"
+        }
+    ]
+}

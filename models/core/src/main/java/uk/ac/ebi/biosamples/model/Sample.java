@@ -1,35 +1,25 @@
 package uk.ac.ebi.biosamples.model;
 
-import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
-import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
-
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.time.temporal.TemporalAccessor;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Objects;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
+import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.service.CharacteristicDeserializer;
 import uk.ac.ebi.biosamples.service.CharacteristicSerializer;
 import uk.ac.ebi.biosamples.service.CustomInstantDeserializer;
 import uk.ac.ebi.biosamples.service.CustomInstantSerializer;
+
+import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.TemporalAccessor;
+import java.util.*;
+
+import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
+import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
 
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -48,12 +38,14 @@ public class Sample implements Comparable<Sample> {
 	protected Instant update;
 
 	protected SortedSet<Attribute> attributes;
+	protected SortedSet<AbstractData> data;
 	protected SortedSet<Relationship> relationships;
 	protected SortedSet<ExternalReference> externalReferences;
 
 	protected SortedSet<Organization> organizations;
 	protected SortedSet<Contact> contacts;
 	protected SortedSet<Publication> publications;
+
 
 	protected Sample() {
 		
@@ -63,6 +55,7 @@ public class Sample implements Comparable<Sample> {
 	public String getAccession() {
 		return accession;
 	}
+
 	@JsonIgnore
 	public boolean hasAccession() {
 		if ( accession != null && accession.trim().length() != 0) {
@@ -115,6 +108,10 @@ public class Sample implements Comparable<Sample> {
 		return attributes;
 	}
 
+	public SortedSet<AbstractData> getData() {
+		return data;
+	}
+
 	@JsonProperty("relationships")
 	public SortedSet<Relationship> getRelationships() {
 		return relationships;
@@ -157,6 +154,7 @@ public class Sample implements Comparable<Sample> {
         		&& Objects.equals(this.domain, other.domain)
         		&& Objects.equals(this.release, other.release)
         		&& Objects.equals(this.attributes, other.attributes)
+				&& Objects.equals(this.data, other.data)
         		&& Objects.equals(this.relationships, other.relationships)
         		&& Objects.equals(this.externalReferences, other.externalReferences)
         		&& Objects.equals(this.organizations, other.organizations)
@@ -327,7 +325,7 @@ public class Sample implements Comparable<Sample> {
 			@JsonProperty("externalReferences") Collection<ExternalReference> externalReferences,
 			@JsonProperty("organization") Collection<Organization> organizations, 
 			@JsonProperty("contact") Collection<Contact> contacts, 
-			@JsonProperty("publications") Collection<Publication> publications) {
+			@JsonProperty("publications") Collection<Publication> publications ) {
     	
 		Sample sample = new Sample();
 		
