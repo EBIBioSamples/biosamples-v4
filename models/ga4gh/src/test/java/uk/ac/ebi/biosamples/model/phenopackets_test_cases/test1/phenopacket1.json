@@ -1,0 +1,57 @@
+{
+   "individuals":[
+      {
+         "id":"SAMEA190234-individual",
+         "sex":{
+
+         },
+         "taxonomy":{
+            "id":"NCBITaxon:9606",
+            "label":"Homo sapiens"
+         }
+      }
+   ],
+   "biosamples":[
+      {
+         "id":"SAMEA190234",
+         "name":"source GSM729765 1",
+         "description":"Biological replicate 1",
+         "created":"2011-05-23T23:00:00Z",
+         "updated":"2018-01-20T13:55:29.870Z",
+         "individualId":"SAMEA190234-individual",
+         "taxonomy":{
+            "id":"NCBITaxon:9606",
+            "label":"Homo sapiens"
+         },
+         "individualAgeAtCollection":{
+
+         }
+      }
+   ],
+   "diseases":[
+      {
+         "id":"EFO:0000571",
+         "label":"lung adenocarcinoma"
+      }
+   ],
+   "metaData":{
+      "created":"2018-06-28T15:47:17.684Z",
+      "createdBy":"Biosamples phenopacket exporter",
+      "resources":[
+         {
+            "id":"ncbitaxon",
+            "name":"NCBI organismal classification",
+            "namespacePrefix":"NCBITAXON",
+            "url":"http://purl.obolibrary.org/obo/ncbitaxon.owl",
+            "version":"2018-03-02"
+         },
+         {
+            "id":"efo",
+            "name":"Experimental Factor Ontology",
+            "namespacePrefix":"EFO",
+            "url":"http://www.ebi.ac.uk/efo/efo.owl",
+            "version":"2.97"
+         }
+      ]
+   }
+}

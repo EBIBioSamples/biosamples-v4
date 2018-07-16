@@ -15,6 +15,7 @@
 
 	<properties>
 		<snippetsDirectory>${project.build.directory}/generated-snippets</snippetsDirectory>
+		<protobuf.version>3.5.1</protobuf.version>
 	</properties>
 
 	<dependencies>
@@ -78,6 +79,11 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-actuator</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.hateoas</groupId>
@@ -164,6 +170,34 @@
 		    <version>2.3.0</version>
             <scope>runtime</scope>
 		</dependency>
+		<!-- For phenopackets. Phenopackets lib needed to be installed manually. -->
+		<dependency>
+			<groupId>com.google.protobuf</groupId>
+			<artifactId>protobuf-java</artifactId>
+			<version>${protobuf.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.protobuf</groupId>
+			<artifactId>protobuf-java-util</artifactId>
+			<version>${protobuf.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.phenopackets.schema.v1</groupId>
+			<artifactId>phenopacket-schema</artifactId>
+			<version>0.0.7-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>uk.ac.ebi.biosamples</groupId>
+			<artifactId>biosamples-spring-boot-starter</artifactId>
+			<version>4.0.9-SNAPSHOT</version>
+			<scope>compile</scope>
+		</dependency>
+        <dependency>
+            <groupId>uk.ac.ebi.biosamples</groupId>
+            <artifactId>models-ga4gh</artifactId>
+            <version>4.1.1-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
 	<build>

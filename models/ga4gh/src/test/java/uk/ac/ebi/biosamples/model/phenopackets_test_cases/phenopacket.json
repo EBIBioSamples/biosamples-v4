@@ -1,0 +1,57 @@
+{
+  "individuals":[
+    {
+      "id":"SAMEA100000-individual",
+      "sex":{
+
+      },
+      "taxonomy":{
+        "id":"NCBITaxon:9606",
+        "label":"Homo sapiens"
+      }
+    }
+  ],
+  "biosamples":[
+    {
+      "id":"SAMEA100000",
+      "name":"source GSM631031 1",
+      "description":"Primary AML",
+      "created":"2010-11-30T00:00:00Z",
+      "updated":"2018-01-20T14:15:09.713Z",
+      "individualId":"SAMEA100000-individual",
+      "taxonomy":{
+        "id":"NCBITaxon:9606",
+        "label":"Homo sapiens"
+      },
+      "individualAgeAtCollection":{
+
+      }
+    }
+  ],
+  "diseases":[
+    {
+      "id":"EFO:0000616",
+      "label":"neoplasm"
+    }
+  ],
+  "metaData":{
+    "created":"2018-07-09T07:23:28.674Z",
+    "createdBy":"Biosamples phenopacket exporter",
+    "resources":[
+      {
+        "id":"ncbitaxon",
+        "name":"NCBI organismal classification",
+        "namespacePrefix":"NCBITAXON",
+        "url":"http://purl.obolibrary.org/obo/ncbitaxon.owl",
+        "version":"2018-03-02"
+      },
+      {
+        "id":"efo",
+        "name":"Experimental Factor Ontology",
+        "namespacePrefix":"EFO",
+        "url":"http://www.ebi.ac.uk/efo/efo.owl",
+        "version":"2.97"
+      }
+    ]
+  }
+}
