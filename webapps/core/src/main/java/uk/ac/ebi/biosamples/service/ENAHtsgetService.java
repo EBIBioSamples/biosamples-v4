@@ -11,16 +11,16 @@ import com.jsunsoft.http.HttpRequestBuilder;
 
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.List;
 
 @Service
 public class ENAHtsgetService {
 
-    private final String host = "service_host/ga4gh/sample";
+    private final String host = "http://localhost:8080/ga4gh/sample"; //TODO change host to real
 
-    public ENAHtsgetTicket getTicket(String accession, String format){
+    public ENAHtsgetTicket getTicket(String accession, String format) {
+
         HttpRequest<String> request = HttpRequestBuilder.
-                createGet(String.format("%s?accession=%s&format=%s",host,accession,format), String.class)
+                createGet(String.format("%s/%s?format=%s", host, accession, format), String.class)
                 .responseDeserializer(ResponseDeserializer.ignorableDeserializer())
                 .build();
         ResponseHandler<String> responseHandler = request.execute();
@@ -38,12 +38,12 @@ public class ENAHtsgetService {
         ticket.setAccession(accession);
         ticket.setFormat(format);
 
-        String md5 = node.get("md5").asText();
+        String md5 = node.get("md5Hash").asText();
         ticket.setMd5Hash(md5);
 
         JsonNode urls = node.get("urls");
         Iterator<JsonNode> urlsIterator = urls.elements();
-        while(urlsIterator.hasNext()){
+        while (urlsIterator.hasNext()) {
             JsonNode currentUrl = urlsIterator.next();
             ticket.addFtpLink(currentUrl.get("url").asText());
         }
@@ -51,7 +51,6 @@ public class ENAHtsgetService {
 
 
     }
-
 
 
 }
