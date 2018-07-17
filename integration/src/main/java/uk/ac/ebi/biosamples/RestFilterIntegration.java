@@ -252,7 +252,11 @@ public class RestFilterIntegration extends AbstractIntegration{
         attributes.add(Attribute.build("description", "Sequencing of barley BACs, that constitute the MTP of chromosome 7H. Sequencing was carried out by BGI China.8439"));
         attributes.add(Attribute.build("Submission title", "Regular Expression * risky (I know what I'm saying) [0-9]+?"));
 
-        return Sample.build(name, accession, domain, release, update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
+//        return Sample.build(name, accession, domain, release, update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
+        return new Sample.Builder(name, accession).withDomain(domain)
+                .withReleaseDate(release).withUpdateDate(update)
+                .withAttributes(attributes)
+                .build();
     }
 
     public Sample getTestSample2() {
@@ -266,7 +270,11 @@ public class RestFilterIntegration extends AbstractIntegration{
         attributes.add(
                 Attribute.build("testAttribute", "filterMe", "http://www.ebi.ac.uk/efo/EFO_0001071", null));
 
-        return Sample.build(name, accession, domain, release, update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
+//        return Sample.build(name, accession, domain, release, update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
+        return new Sample.Builder(name, accession).withDomain(domain)
+                .withReleaseDate(release).withUpdateDate(update)
+                .withAttributes(attributes)
+                .build();
     }
 
     public Sample getTestSample3() {
@@ -280,7 +288,11 @@ public class RestFilterIntegration extends AbstractIntegration{
         relations.add(Relationship.build(accession, "parent of", "TestFilter2"));
 
 
-        return Sample.build(name, accession, domain, release, update, null, relations, new TreeSet<>(), null, null, null);
+//        return Sample.build(name, accession, domain, release, update, null, relations, new TreeSet<>(), null, null, null);
+        return new Sample.Builder(name, accession).withDomain(domain)
+                .withReleaseDate(release).withUpdateDate(update)
+                .withRelationships(relations)
+                .build();
     }
 
 }

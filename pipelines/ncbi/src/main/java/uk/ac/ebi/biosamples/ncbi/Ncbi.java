@@ -1,5 +1,20 @@
 package uk.ac.ebi.biosamples.ncbi;
 
+import org.dom4j.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.hateoas.Resource;
+import org.springframework.stereotype.Component;
+import uk.ac.ebi.biosamples.PipelinesProperties;
+import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.service.FilterBuilder;
+import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
+import uk.ac.ebi.biosamples.utils.ThreadUtils;
+import uk.ac.ebi.biosamples.utils.XmlFragmenter;
+
 import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -9,36 +24,11 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.GZIPInputStream;
-
-import org.dom4j.Element;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
-import org.springframework.hateoas.Resource;
-import org.springframework.stereotype.Component;
-
-import uk.ac.ebi.biosamples.PipelinesProperties;
-import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.filter.AccessionFilter;
-import uk.ac.ebi.biosamples.model.filter.Filter;
-import uk.ac.ebi.biosamples.service.FilterBuilder;
-import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
-import uk.ac.ebi.biosamples.utils.ThreadUtils;
-import uk.ac.ebi.biosamples.utils.XmlFragmenter;
 
 @Component
 public class Ncbi implements ApplicationRunner {
@@ -162,18 +152,21 @@ public class Ncbi implements ApplicationRunner {
 			if (sampleOptional.isPresent()) {
 				Sample sample = sampleOptional.get().getContent();
 				
-				//set the release date to 100 years in the future to make it private again
-				Sample newSample = Sample.build(sample.getName(), 
-						sample.getAccession(), 
-						sample.getDomain(), 
-						ZonedDateTime.now(ZoneOffset.UTC).plusYears(1000).toInstant(), 
-						sample.getUpdate(), 
-						sample.getAttributes(), 
-						sample.getRelationships(), 
-						sample.getExternalReferences(), 
-						sample.getOrganizations(), 
-						sample.getContacts(), 
-						sample.getPublications());
+				//set the release date to 1000 years in the future to make it private again
+//				Sample newSample = Sample.build(sample.getName(),
+//						sample.getAccession(),
+//						sample.getDomain(),
+//						ZonedDateTime.now(ZoneOffset.UTC).plusYears(1000).toInstant(),
+//						sample.getUpdate(),
+//						sample.getAttributes(),
+//						sample.getRelationships(),
+//						sample.getExternalReferences(),
+//						sample.getOrganizations(),
+//						sample.getContacts(),
+//						sample.getPublications());
+                Sample newSample = Sample.Builder.fromSample(sample)
+						.withReleaseDate(ZonedDateTime.now(ZoneOffset.UTC).plusYears(1000).toInstant())
+						.build();
 				
 				//persist the now private sample
 				log.debug("Making private "+sample.getAccession());

@@ -1,18 +1,17 @@
 package uk.ac.ebi.biosamples.service;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Sample;
+
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 @Service
 public class CurationApplicationService {
@@ -53,7 +52,7 @@ public class CurationApplicationService {
 		}
 		
 		return Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(), 
-				sample.getRelease(), sample.getUpdate(), attributes, sample.getRelationships(), externalReferences, 
+				sample.getRelease(), sample.getUpdate(), attributes, sample.getData(), sample.getRelationships(), externalReferences,
 				sample.getOrganizations(), sample.getContacts(), sample.getPublications());
 	}
 	

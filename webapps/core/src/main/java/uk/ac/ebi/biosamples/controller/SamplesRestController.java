@@ -286,10 +286,11 @@ public class SamplesRestController {
 
 		//limit use of this method to write super-users only
 		if (bioSamplesAapService.isWriteSuperUser() && setUpdateDate) {
-			sample = Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(), 
-					sample.getRelease(), Instant.now(),
-					sample.getCharacteristics(), sample.getRelationships(), sample.getExternalReferences(), 
-					sample.getOrganizations(), sample.getContacts(), sample.getPublications());
+//			sample = Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(),
+//					sample.getRelease(), Instant.now(),
+//					sample.getCharacteristics(), sample.getRelationships(), sample.getExternalReferences(),
+//					sample.getOrganizations(), sample.getContacts(), sample.getPublications());
+            sample = Sample.Builder.fromSample(sample).withUpdateDate(Instant.now()).build();
 		}
 
 		if (!setFullDetails) {

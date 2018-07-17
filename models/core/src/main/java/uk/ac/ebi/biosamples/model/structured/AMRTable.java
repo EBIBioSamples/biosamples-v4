@@ -1,6 +1,7 @@
 package uk.ac.ebi.biosamples.model.structured;
 
 import java.net.URI;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -82,8 +83,13 @@ public class AMRTable extends AbstractData implements Comparable<AMRTable> {
             this(URI.create(schema));
         }
 
-        public Builder addEntry(AMREntry entry) {
+        public Builder withEntry(AMREntry entry) {
             this.amrEntries.add(entry);
+            return this;
+        }
+
+        public Builder withEntries(Collection<AMREntry> entries) {
+            this.amrEntries.addAll(entries);
             return this;
         }
 

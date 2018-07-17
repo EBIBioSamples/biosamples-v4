@@ -43,7 +43,7 @@ public class AbstractDataDeserializer extends StdDeserializer<AbstractData> {
             for (Iterator<JsonNode> it = content.elements(); it.hasNext(); ) {
                 JsonNode amrRowObject = it.next();
                 AMREntry entry = this.objectMapper.treeToValue(amrRowObject, AMREntry.class);
-                tableBuilder.addEntry(entry);
+                tableBuilder.withEntry(entry);
             }
 
             return tableBuilder.build();

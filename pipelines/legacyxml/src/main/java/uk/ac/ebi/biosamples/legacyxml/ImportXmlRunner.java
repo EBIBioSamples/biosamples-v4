@@ -1,5 +1,21 @@
 package uk.ac.ebi.biosamples.legacyxml;
 
+import org.dom4j.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.hateoas.Resource;
+import org.springframework.stereotype.Component;
+import org.xml.sax.Attributes;
+import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.service.XmlGroupToSampleConverter;
+import uk.ac.ebi.biosamples.service.XmlSampleToSampleConverter;
+import uk.ac.ebi.biosamples.utils.ThreadUtils;
+import uk.ac.ebi.biosamples.utils.XmlFragmenter;
+import uk.ac.ebi.biosamples.utils.XmlFragmenter.ElementCallback;
+
 import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -9,23 +25,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.zip.GZIPInputStream;
-
-import org.dom4j.Element;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
-import org.springframework.hateoas.Resource;
-import org.springframework.stereotype.Component;
-import org.xml.sax.Attributes;
-
-import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.service.XmlGroupToSampleConverter;
-import uk.ac.ebi.biosamples.service.XmlSampleToSampleConverter;
-import uk.ac.ebi.biosamples.utils.ThreadUtils;
-import uk.ac.ebi.biosamples.utils.XmlFragmenter;
-import uk.ac.ebi.biosamples.utils.XmlFragmenter.ElementCallback;
 
 @Component
 public class ImportXmlRunner implements ApplicationRunner {
@@ -102,10 +101,11 @@ public class ImportXmlRunner implements ApplicationRunner {
 			}
 
 			//need to specify domain
-			sample = Sample.build(sample.getName(), sample.getAccession(), DOMAIN, 
-					sample.getRelease(), sample.getUpdate(), 
-					sample.getAttributes(), sample.getRelationships(), sample.getExternalReferences(),
-					sample.getOrganizations(), sample.getContacts(), sample.getPublications());
+//			sample = Sample.build(sample.getName(), sample.getAccession(), DOMAIN,
+//					sample.getRelease(), sample.getUpdate(),
+//					sample.getAttributes(), sample.getRelationships(), sample.getExternalReferences(),
+//					sample.getOrganizations(), sample.getContacts(), sample.getPublications());
+            sample = Sample.Builder.fromSample(sample).withDomain(DOMAIN).build();
 			
 			futures.put(e, client.persistSampleResourceAsync(sample, false, true));
 

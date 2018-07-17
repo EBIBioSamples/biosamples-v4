@@ -84,9 +84,15 @@ public class RestIntegration extends AbstractIntegration {
 		//checkIfMatch(optional.get());
 
 		// put a version that is private
-		sampleTest1 = Sample.build(sampleTest1.getName(), sampleTest1.getAccession(), sampleTest1.getDomain(),
-				Instant.parse("2116-04-01T11:36:57.00Z"), sampleTest1.getUpdate(),
-				sampleTest1.getCharacteristics(), sampleTest1.getRelationships(), sampleTest1.getExternalReferences(), null, null, null);
+//		sampleTest1 = Sample.build(sampleTest1.getName(), sampleTest1.getAccession(), sampleTest1.getDomain(),
+//				Instant.parse("2116-04-01T11:36:57.00Z"), sampleTest1.getUpdate(),
+//				sampleTest1.getCharacteristics(), sampleTest1.getRelationships(), sampleTest1.getExternalReferences(), null, null, null);
+        sampleTest1 = new Sample.Builder(sampleTest1.getName(), sampleTest1.getAccession())
+				.withDomain(sampleTest1.getDomain()).withReleaseDate("2116-04-01T11:36:57.00Z")
+				.withUpdateDate(sampleTest1.getUpdate()).withAttributes(sampleTest1.getCharacteristics())
+				.withRelationships(sampleTest1.getRelationships()).withExternalReferences(sampleTest1.getExternalReferences())
+				.build();
+
 		Resource<Sample> resource = client.persistSampleResource(sampleTest1);
 		if (!sampleTest1.equals(resource.getContent())) {
 			log.warn("expected: "+sampleTest1);
@@ -119,10 +125,13 @@ public class RestIntegration extends AbstractIntegration {
 		
 		//put the second sample in
 		Resource<Sample> resource = client.persistSampleResource(sampleTest2, false, true);
-		sampleTest2 = Sample.build(sampleTest2.getName(), sampleTest2.getAccession(), "self.BiosampleIntegrationTest",
-				sampleTest2.getRelease(), sampleTest2.getUpdate(),
-				sampleTest2.getCharacteristics(), sampleTest1.getRelationships(), sampleTest2.getExternalReferences(),
-				null, null, null);
+//		sampleTest2 = Sample.build(sampleTest2.getName(), sampleTest2.getAccession(), "self.BiosampleIntegrationTest",
+//				sampleTest2.getRelease(), sampleTest2.getUpdate(),
+//				sampleTest2.getCharacteristics(), sampleTest1.getRelationships(), sampleTest2.getExternalReferences(),
+//				null, null, null);
+        sampleTest2 = Sample.Builder.fromSample(sampleTest2).withDomain("self.BiosampleIntegrationTest")
+				.withRelationships(sampleTest1.getRelationships())
+				.build();
 
 		if (!sampleTest2.equals(resource.getContent())) {
 			log.warn("expected: "+sampleTest2);
@@ -137,9 +146,12 @@ public class RestIntegration extends AbstractIntegration {
 		Sample sampleTest2 = getSampleTest2();
 		//at this point, the inverse relationship should have been added
 		
-		sampleTest2 = Sample.build(sampleTest2.getName(), sampleTest2.getAccession(), sampleTest2.getDomain(),
-				sampleTest2.getRelease(), sampleTest2.getUpdate(),
-				sampleTest2.getCharacteristics(), sampleTest1.getRelationships(), sampleTest2.getExternalReferences(), null, null, null);
+//		sampleTest2 = Sample.build(sampleTest2.getName(), sampleTest2.getAccession(), sampleTest2.getDomain(),
+//				sampleTest2.getRelease(), sampleTest2.getUpdate(),
+//				sampleTest2.getCharacteristics(), sampleTest1.getRelationships(), sampleTest2.getExternalReferences(), null, null, null);
+        sampleTest2 = Sample.Builder.fromSample(sampleTest2).withRelationships(sampleTest1.getRelationships())
+				.withNoOrganisations().withNoPublications().withNoContacts()
+				.build();
 
 		//check that it has the additional relationship added
 		// get to check it worked
@@ -165,9 +177,12 @@ public class RestIntegration extends AbstractIntegration {
 			throw new RuntimeException("Update date was modified when it shouldn't have been");			
 		}
 		//now do another update to delete the relationship
-		sampleTest1 = Sample.build(sampleTest1.getName(), sampleTest1.getAccession(), sampleTest1.getDomain(),
-				Instant.parse("2116-04-01T11:36:57.00Z"), sampleTest1.getUpdate(),
-				sampleTest1.getCharacteristics(), new TreeSet<>(), sampleTest1.getExternalReferences(), null, null, null);
+//		sampleTest1 = Sample.build(sampleTest1.getName(), sampleTest1.getAccession(), sampleTest1.getDomain(),
+//				Instant.parse("2116-04-01T11:36:57.00Z"), sampleTest1.getUpdate(),
+//				sampleTest1.getCharacteristics(), new TreeSet<>(), sampleTest1.getExternalReferences(), null, null, null);
+        sampleTest1 = Sample.Builder.fromSample(sampleTest1).withReleaseDate("2116-04-01T11:36:57.00Z")
+				.withNoRelationships().withNoContacts().withNoPublications().withNoOrganisations()
+				.build();
 		Resource<Sample> resource = client.persistSampleResource(sampleTest1);
 		if (!sampleTest1.equals(resource.getContent())) {
 			log.warn("expected: "+sampleTest1);
@@ -266,7 +281,13 @@ public class RestIntegration extends AbstractIntegration {
 				.pubmed_id("24265224")
 				.build());
 
-		return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences, organizations, contacts, publications);
+//		return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences, organizations, contacts, publications);
+        return new Sample.Builder(name, accession)
+				.withReleaseDate(release).withUpdateDate(update).withDomain(domain)
+				.withAttributes(attributes)
+				.withRelationships(relationships).withExternalReferences(externalReferences)
+				.withOrganizations(organizations).withContacts(contacts).withPublications(publications)
+				.build();
 	}
 	
 	@PreDestroy
@@ -286,7 +307,9 @@ public class RestIntegration extends AbstractIntegration {
 				Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
 		attributes.add(Attribute.build("UTF-8 test", "αβ"));
 
-		return Sample.build(name, accession, domain, release, update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
+//		return Sample.build(name, accession, domain, release, update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
+		return new Sample.Builder(name, accession).withDomain(domain).withReleaseDate(release).withUpdateDate(update)
+				.withAttributes(attributes).build();
 	}
 
 	private void postSampleWithAccessionShouldReturnABadRequestResponse() {

@@ -423,6 +423,7 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
         public static Sample getGroupContainegSAMEA911() {
             String name = "TestLegacyJsonGroup";
             String accession = "SAMEG199";
+            String domain ="self.BiosampleIntegrationTest";
             Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
             Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
@@ -433,9 +434,12 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
             SortedSet<Relationship> relationships = new TreeSet<>();
             relationships.add(Relationship.build("SAMEG199", "has member", "SAMEA911"));
 
-            return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, 
-            		attributes, relationships, null, 
-            		null, null, null);
+//            return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update,
+//            		attributes, relationships, null,
+//            		null, null, null);
+            return new Sample.Builder(name, accession).withDomain(domain)
+                    .withReleaseDate(release).withUpdateDate(update)
+                    .withAttributes(attributes).withRelationships(relationships).build();
 
         }
 
@@ -477,7 +481,12 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
                     .pubmed_id("24265224")
                     .build());
 
-            return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences, organizations, contacts, publications);
+//            return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences, organizations, contacts, publications);
+            return new Sample.Builder(name, accession).withDomain(domain)
+                    .withReleaseDate(release).withUpdateDate(update)
+                    .withAttributes(attributes).withRelationships(relationships).withExternalReferences(externalReferences)
+                    .withOrganizations(organizations).withContacts(contacts).withPublications(publications)
+                    .build();
         }
 
 
@@ -519,7 +528,12 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
                     .pubmed_id("24265224")
                     .build());
 
-            return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences, organizations, contacts, publications);
+//            return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences, organizations, contacts, publications);
+            return new Sample.Builder(name, accession).withDomain(domain)
+                    .withReleaseDate(release).withUpdateDate(update)
+                    .withAttributes(attributes).withRelationships(relationships).withExternalReferences(externalReferences)
+                    .withOrganizations(organizations).withContacts(contacts).withPublications(publications)
+                    .build();
         }
     }
 
