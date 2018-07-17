@@ -7,13 +7,18 @@ If you cannot find the answer to your question in this FAQ or the link:../docs[h
 === How frequent are updates to BioSamples' data?
 BioSamples content is updated daily. Information directly submitted or updated in a source should be reflected within 48 hours. However, occasionally daily updates may be missed due to unexpected circumstances.
 
+=== What pattern do BioSamples accessions follow?
+BioSample accessions always begin with `SAM`. The next letter is either `E` or `N` or `D` depending if the sample information was originally submitted to EBI or NCBI or DDBJ respectively. After that, there may be an `A` or a `G` to denote an Assay sample or a Group of samples. Finally there is a numeric component that may or may not be zero-padded.
+
+=== Why are some BioSamples linked to RRIDs?
+
+The Resource Identification, RRID, Initiative began working with the BioSamples databases in the EU and US in order to identify the pancreatic islets used by researchers who are part of the Integrated Islet Distribution Program, IIDP.
+Recently the leadership of the IIDP, BioSamples and the RRID project came together to add BioSamples in a limited capacity to the RRID project, which will identify the IIDP samples as RRIDs. More information can be found in the https://scicrunch.org/page/blog/1132[blog post] and the https://scicrunch.org/resources/about/faqs[RRID FAQs].
+
 === What is the Bioschemas export?
 Bioschemas is an extension of schemas.org, a markup language for website and services to provide consistently structured information. It adds semantic markup to web pages by describing ‘types’ of information, which then have ‘properties’. The BIoSamples team at EMBL-EBi leads the Bioschemas samples specification work and has added BIoschemas export, serialised as JSON-LD, to all our samples pages. Check out an example https://www.ebi.ac.uk/biosamples/samples/SAMEA104130.ldjson[here].
 
 BioSamples also provides serialisations for other Bioschemas entities embedded in a script tag within the HTML source code, check out examples of the https://www.ebi.ac.uk/biosamples[DataCatalog entity] as well as the https://www.ebi.ac.uk/biosamples/samples[DataSet entity].
-
-=== What pattern do BioSamples accessions follow?
-BioSample accessions always begin with `SAM`. The next letter is either `E` or `N` or `D` depending if the sample information was originally submitted to EBI or NCBI or DDBJ respectively. After that, there may be an `A` or a `G` to denote an Assay sample or a Group of samples. Finally there is a numeric component that may or may not be zero-padded.
 
 === How can I stay informed about BioSamples?
 Subscribe to our low-traffic https://listserver.ebi.ac.uk/mailman/listinfo/biosamples-announce[announcement mailing list^].
