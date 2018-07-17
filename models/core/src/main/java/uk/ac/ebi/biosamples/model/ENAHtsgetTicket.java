@@ -1,6 +1,8 @@
 package uk.ac.ebi.biosamples.model;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 @JsonDeserialize(using = TicketDeserializer.class)
@@ -11,6 +13,9 @@ public class ENAHtsgetTicket {
         private String md5Hashs;
         private String format;
 
+        public ENAHtsgetTicket(){
+            ftpLinks = new ArrayList<>();
+        }
         public String getAccession() {
             return accession;
         }
@@ -49,7 +54,8 @@ public class ENAHtsgetTicket {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             ENAHtsgetTicket that = (ENAHtsgetTicket) o;
-            return Objects.equals(ftpLinks, that.ftpLinks) &&
+            return  Objects.equals(accession,that.accession) &&
+                    Objects.equals(ftpLinks, that.ftpLinks) &&
                     Objects.equals(md5Hashs, that.md5Hashs);
         }
 
