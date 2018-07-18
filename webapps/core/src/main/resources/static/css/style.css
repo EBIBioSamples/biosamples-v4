@@ -8,6 +8,10 @@
 /* CARDS */
 .card { background-color:#999; color:#f8f8f8; }
 
+.card a, .card a:visited, .card a:hover {
+    color: white;
+}
+
 /* FACETS */
 .facet-checkbox {
     display: none;

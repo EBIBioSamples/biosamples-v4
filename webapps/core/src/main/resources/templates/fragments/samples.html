@@ -70,7 +70,8 @@
 			
 			<span th:replace=":: pagination (${paginations})"></span>
 			
-			<div class="button-grid" th:each="sample : ${page}" th:insert="fragments/samples :: result (${sample})"></div>
+			<div class="button-grid" th:each="sample : ${page}" th:insert="fragments/samples :: result (${sample})">
+			</div>
 			
 			<span th:replace=":: pagination (${paginations})"></span>
 		</div>
@@ -79,31 +80,33 @@
 		</div>
 	</section>
 
-	<div class="card columns medium-12 margin-bottom-small" th:fragment="result (sample)">
-		<span class="columns medium-12">
-			<span class="lead float-left text-left" th:text="${sample.name}">Sample</span>
-			<span class="lead float-right text-right" th:text="${sample.accession}">ACC1</span>
-		</span>
-		<span class="columns medium-12">
-			<span th:each="attribute,iterStat  : ${sample.attributes}" th:remove="tag">
-				<span th:if="${iterstat &lt; 25}" th:replace=":: shield (${attribute.type}, ( ${attribute.unit} ? (${attribute.value}+' ('+${attribute.unit})+')' : ${attribute.value} ) )"></span>
-			</span>
-			<span th:each="relationship : ${sample.relationships}" th:remove="tag">
-				<span th:if="${#strings.equals(relationship.source,sample.accession)}" th:remove="tag" >
-					<span th:replace=":: shield (${relationship.type}, ( ${relationship.target} ) )"></span>
-				</span>
-				<span th:if="${#strings.equals(relationship.target,sample.accession)}" th:remove="tag">
-					<span th:replace=":: shield (${relationship.type}+' (reverse)', ( ${relationship.source} ) )"></span>
-				</span>
-			</span>
-			<span th:each="extData: ${sample.externalReferences}" th:remove="tag">
-				<span th:replace=":: shield ('external link', ${@externalReferenceService.getNickname(extData)})"></span>
-			</span>
-		</span>
-		<a class="button readmore float-right" th:href="@{'/samples/'+${sample.accession}}"></a>
-        <span class="column medium-12" style="margin-bottom: 1em">
-            <i class="small">Updated on: <span th:include=":: datetime(${sample.update})"></span></i>
-        </span>
+	<div class="card columns medium-12 margin-bottom-small biosamples-card" th:fragment="result (sample)">
+            <span class="columns medium-12">
+                <a th:href="@{'/samples/'+${sample.accession}}">
+                    <span class="lead float-left text-left" th:text="${sample.name}">Sample</span>
+                    <span class="lead float-right text-right" th:text="${sample.accession}">ACC1</span>
+				</a>
+            </span>
+                <span class="columns medium-12">
+                <span th:each="attribute,iterStat  : ${sample.attributes}" th:remove="tag">
+                    <span th:if="${iterstat &lt; 25}" th:replace=":: shield (${attribute.type}, ( ${attribute.unit} ? (${attribute.value}+' ('+${attribute.unit})+')' : ${attribute.value} ) )"></span>
+                </span>
+                <span th:each="relationship : ${sample.relationships}" th:remove="tag">
+                    <span th:if="${#strings.equals(relationship.source,sample.accession)}" th:remove="tag" >
+                        <span th:replace=":: shield (${relationship.type}, ( ${relationship.target} ) )"></span>
+                    </span>
+                    <span th:if="${#strings.equals(relationship.target,sample.accession)}" th:remove="tag">
+                        <span th:replace=":: shield (${relationship.type}+' (reverse)', ( ${relationship.source} ) )"></span>
+                    </span>
+                </span>
+                <span th:each="extData: ${sample.externalReferences}" th:remove="tag">
+                    <span th:replace=":: shield ('external link', ${@externalReferenceService.getNickname(extData)})"></span>
+                </span>
+            </span>
+                <a class="button readmore float-right" th:href="@{'/samples/'+${sample.accession}}"></a>
+                <span class="column medium-12" style="margin-bottom: 1em">
+                <i class="small">Updated on: <span th:include=":: datetime(${sample.update})"></span></i>
+            </span>
 	</div>
 
 	<span th:fragment="shield (key, value)" class="shield">
