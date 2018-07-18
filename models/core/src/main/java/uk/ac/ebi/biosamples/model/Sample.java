@@ -109,6 +109,7 @@ public class Sample implements Comparable<Sample> {
 		return attributes;
 	}
 
+	@JsonProperty("data")
 	public SortedSet<AbstractData> getData() {
 		return data;
 	}
@@ -271,7 +272,7 @@ public class Sample implements Comparable<Sample> {
     @Override
     public int hashCode() {
     	//dont put update date in the hash because its not in comparison
-    	return Objects.hash(name, accession, release, attributes, relationships, externalReferences, organizations, publications);
+    	return Objects.hash(name, accession, release, attributes, data, relationships, externalReferences, organizations, publications);
     }
     
     @Override
@@ -322,8 +323,9 @@ public class Sample implements Comparable<Sample> {
 			@JsonProperty("release") @JsonDeserialize(using = CustomInstantDeserializer.class) Instant release, 
 			@JsonProperty("update") @JsonDeserialize(using = CustomInstantDeserializer.class) Instant update,
 			@JsonProperty("characteristics") @JsonDeserialize(using = CharacteristicDeserializer.class) Collection<Attribute> attributes,
-			@JsonProperty("data") @JsonDeserialize(using = AbstractDataDeserializer.class) Set<AbstractData> structuredData,
-			@JsonProperty("relationships") Collection<Relationship> relationships, 
+//			@JsonProperty("data") @JsonDeserialize(using = AbstractDataDeserializer.class) Collection<AbstractData> structuredData,
+            @JsonProperty("data") Collection<AbstractData> structuredData,
+			@JsonProperty("relationships") Collection<Relationship> relationships,
 			@JsonProperty("externalReferences") Collection<ExternalReference> externalReferences,
 			@JsonProperty("organization") Collection<Organization> organizations, 
 			@JsonProperty("contact") Collection<Contact> contacts, 
@@ -388,9 +390,10 @@ public class Sample implements Comparable<Sample> {
 
 	public static class Builder {
 
-		protected String accession;
 		protected String name;
-		protected String domain;
+
+		protected String accession = null;
+		protected String domain = null;
 
 		protected Instant release = Instant.now();
 		protected Instant update = Instant.now();
@@ -408,6 +411,14 @@ public class Sample implements Comparable<Sample> {
 			this.accession = accession;
 		}
 
+		public Builder(String name) {
+			this.name = name;
+		}
+
+		public Builder withAccession(String accession) {
+			this.accession = accession;
+			return this;
+		}
 
 		public Builder withDomain(String domain) {
 			this.domain = domain;
@@ -582,6 +593,18 @@ public class Sample implements Comparable<Sample> {
 		 */
 		public Builder addAllPublications(Collection<Publication> publications) {
 			this.publications.addAll(publications);
+			return this;
+		}
+
+		// Clean accession field
+		public Builder withNoAccession() {
+			this.accession = null;
+			return this;
+		}
+
+		// Clean domain field
+		public Builder withNoDomain() {
+			this.domain = null;
 			return this;
 		}
 

@@ -17,11 +17,14 @@ import java.util.Iterator;
 
 public class AbstractDataDeserializer extends StdDeserializer<AbstractData> {
 
-    private final ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     protected AbstractDataDeserializer() {
         super(AbstractData.class);
-        this.objectMapper = new ObjectMapper();
+    }
+
+    protected AbstractDataDeserializer(Class<AbstractData> t) {
+        super(t);
     }
 
     @Override

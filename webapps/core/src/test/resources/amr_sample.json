@@ -1,0 +1,22 @@
+{
+  "name": "testSample",
+  "domain": "foozit",
+  "update": "2018-07-18T10:01:23Z",
+  "release": "2018-07-18T10:01:23Z",
+  "data": [{
+    "type": "AMR",
+    "schema": "test",
+    "content": [
+      {
+        "antibiotic":"ampicillin",
+        "resistancePhenotype":"susceptible",
+        "measurementSign":"==",
+        "measurement": "2",
+        "measurementUnit":"mg/L",
+        "vendor":"in-house",
+        "laboratoryTypingMethod":"MIC",
+        "testingStandard":"CLSI"
+      }
+    ]
+  }]
+}
