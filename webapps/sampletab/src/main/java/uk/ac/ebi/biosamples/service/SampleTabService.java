@@ -53,19 +53,28 @@ public class SampleTabService {
 		this.mongoGroupAccessionService = mongoGroupAccessionService;
 	}
 	
-	public SampleData accessionSampleTab(SampleData sampleData, String domain, String jwt, boolean setUpdateDate) 
-			throws DuplicateDomainSampleException {
+	public SampleData accessionSampleTab(SampleData sampleData, String domain, String jwt, boolean setUpdateDate)
+			throws SampleTabException {
 		
 		log.trace("Accessioning sampletab "+sampleData.msi.submissionIdentifier);
 
 		//release in 100 years time
-		Instant release = Instant.ofEpochMilli(LocalDateTime.now(ZoneOffset.UTC).plusYears(100).toEpochSecond(ZoneOffset.UTC));
+		Instant release = Instant.ofEpochSecond(LocalDateTime.now(ZoneOffset.UTC).plusYears(100).toEpochSecond(ZoneOffset.UTC));
 		Instant update = Instant.ofEpochMilli(sampleData.msi.submissionUpdateDate.getTime());
 
 		//put any existing accessions into the samplenode and groupnode objects
 		populateExistingAccessions(sampleData, domain, release, update);		
 
 		//because we are only accessioning samples and groups, we don't care about submission ownership
+
+
+		// Remove all the SampleTab metadata and keep only a placeholder description
+		try {
+			sampleData = convertToPlaceholderSampletab(sampleData, release, update);
+		} catch (ParseException e) {
+			throw new SampletabAccessioningException("An error occurred producing the pre-accessioned sample placeholders");
+		}
+
 				
 		//persist the samples and groups
 		//TODO only persist unaccessioned?
@@ -75,7 +84,8 @@ public class SampleTabService {
 		
 		return sampleData;
 	}
-	
+
+
 	public SampleData saveSampleTab(SampleData sampleData, String domain, boolean superUser, boolean setUpdateDate, boolean setFullDetails)
 			throws SampleTabException {
 		
@@ -532,14 +542,18 @@ public class SampleTabService {
 			attributes.add(Attribute.build("description", sampleNode.getSampleDescription()));
 		}
 		//add submission information
-		attributes.add(Attribute.build("Submission identifier", msi.submissionIdentifier));
+		//TODO: Whydo we need to have a submission identifier if for the accessioning service we don't even store the sampletab?
+		if (msi.submissionIdentifier != null && msi.submissionIdentifier.trim().length() > 0) {
+			attributes.add(Attribute.build("Submission identifier", msi.submissionIdentifier));
+		}
+
 		if (msi.submissionDescription != null && msi.submissionDescription.trim().length() > 0) {
 			attributes.add(Attribute.build("Submission description", msi.submissionDescription));			
 		}
+
 		if (msi.submissionTitle != null && msi.submissionTitle.trim().length() > 0) {
 			attributes.add(Attribute.build("Submission title", msi.submissionTitle));			
 		}
-
 
 		Sample sample = Sample.build(name, accession, domain, release, update,
 				attributes, relationships, externalReferences,
@@ -876,7 +890,43 @@ public class SampleTabService {
 			}				
 		}		
 	}
-	
+
+	/**
+	 * Given the sampletab data, removes the MSI information as well as all the characteristics and relationships
+	 * to make the samples and groups placeholders
+	 * @param sampleData the sampletab data to process
+     * @param updateDate the update date to use for the submission
+	 * @param releaseDate the release date to use for the submission
+	 * @return a new sampletab content cleaned from everything except samples and groups
+	 */
+	private SampleData convertToPlaceholderSampletab(SampleData sampleData, Instant releaseDate, Instant updateDate) throws ParseException {
+
+		SampleData newSampledata = new SampleData();
+
+		// Create samples placeholders
+		for (SampleNode sampleNode: sampleData.scd.getNodes(SampleNode.class)) {
+		    SampleNode sampleNodePlaceholder = new SampleNode();
+		    sampleNodePlaceholder.setNodeName(sampleNode.getNodeName());
+		    sampleNodePlaceholder.setSampleAccession(sampleNode.getSampleAccession());
+			sampleNodePlaceholder.setSampleDescription("This is a placeholder for a pre-accessioned sample");
+
+		    newSampledata.scd.addNode(sampleNodePlaceholder);
+		}
+
+		for (GroupNode groupNode: sampleData.scd.getNodes(GroupNode.class)) {
+			groupNode.setGroupDescription("This is a pre-accessioned sample placeholder");
+			newSampledata.scd.addNode(groupNode);
+		}
+
+		// Update MSI infos
+		newSampledata.msi.submissionReleaseDate.setTime(releaseDate.toEpochMilli());
+		newSampledata.msi.submissionUpdateDate.setTime(updateDate.toEpochMilli());
+
+		return newSampledata;
+	}
+
+
+
 	private Attribute makeAttribute(String type, String value, String termSourceId, String unit) {
 		Collection<String> iris = Lists.newArrayList();
 		if (termSourceId != null && termSourceId.trim().length() > 0) {

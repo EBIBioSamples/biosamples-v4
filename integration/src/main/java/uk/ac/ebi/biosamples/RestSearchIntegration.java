@@ -2,7 +2,6 @@ package uk.ac.ebi.biosamples;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.annotation.Order;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
@@ -14,8 +13,6 @@ import java.time.Instant;
 import java.util.*;
 
 @Component
-@Order(1)
-//@Profile({"default", "rest"})
 public class RestSearchIntegration extends AbstractIntegration {;
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());

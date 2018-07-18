@@ -3,7 +3,6 @@ package uk.ac.ebi.biosamples;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.core.annotation.Order;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
@@ -23,7 +22,6 @@ import java.util.Iterator;
 import java.util.Scanner;
 
 @Component
-@Order(5)
 public class SampleTabXmlSampleIntegration extends AbstractIntegration {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());

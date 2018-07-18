@@ -1,8 +1,6 @@
 package uk.ac.ebi.biosamples;
 
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
@@ -26,8 +24,6 @@ import java.util.stream.Stream;
 //import org.openqa.selenium.chrome.ChromeDriver;
 
 @Component
-@Order(Ordered.HIGHEST_PRECEDENCE)
-//@Profile({"default", "selenium"})
 public class JsonLdIntegration extends AbstractIntegration {
     private final Environment env;
     private final RestOperations restTemplate;
