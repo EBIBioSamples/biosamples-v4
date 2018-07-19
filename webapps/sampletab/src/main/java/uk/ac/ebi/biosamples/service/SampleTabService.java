@@ -69,11 +69,11 @@ public class SampleTabService {
 
 
 		// Remove all the SampleTab metadata and keep only a placeholder description
-		try {
-			sampleData = convertToPlaceholderSampletab(sampleData, release, update);
-		} catch (ParseException e) {
-			throw new SampletabAccessioningException("An error occurred producing the pre-accessioned sample placeholders");
-		}
+//		try {
+//			sampleData = convertToPlaceholderSampletab(sampleData, release, update);
+//		} catch (ParseException e) {
+//			throw new SampletabAccessioningException("An error occurred producing the pre-accessioned sample placeholders");
+//		}
 
 				
 		//persist the samples and groups
@@ -919,6 +919,9 @@ public class SampleTabService {
 		}
 
 		// Update MSI infos
+		newSampledata.msi.submissionIdentifier = "";
+		newSampledata.msi.submissionDescription = "This sampletab contains accessions for future submissions";
+		newSampledata.msi.submissionTitle = "Accessioned sampletab";
 		newSampledata.msi.submissionReleaseDate.setTime(releaseDate.toEpochMilli());
 		newSampledata.msi.submissionUpdateDate.setTime(updateDate.toEpochMilli());
 
