@@ -25,4 +25,14 @@ public class Location {
         this.longtitude = longtitude;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Location)) return false;
+        Location location = (Location) o;
+        return Double.compare(location.latitude, latitude) == 0 &&
+                Double.compare(location.longtitude, longtitude) == 0;
+    }
+
+
 }

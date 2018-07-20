@@ -32,6 +32,7 @@ public class GeoLocationDataHelper {
         if (location.contains("W")) {
             weCoef = -1;
         }
+
         Scanner scanner = new Scanner(location);
         double latitude = scanner.nextDouble();
         while (!scanner.hasNextDouble()) {
