@@ -22,89 +22,127 @@ import java.util.Optional;
 /**
  * Primary controller for REST operations both in JSON and XML and both read and
  * write.
- * 
- * See {@link SampleHtmlController} for the HTML equivalent controller.
- * 
- * @author faulcon
  *
+ * See {@link SampleHtmlController} for the HTML equivalent controller.
+ *
+ * @author faulcon
  */
 @RestController
 @ExposesResourceFor(Sample.class)
 @RequestMapping("/samples/{accession}")
 public class SampleRestController {
 
-	private final SampleService sampleService;
-	private final BioSamplesAapService bioSamplesAapService;
-	private final SampleManipulationService sampleManipulationService;
+    private final SampleService sampleService;
+    private final BioSamplesAapService bioSamplesAapService;
+    private final SampleManipulationService sampleManipulationService;
 
-	private final SampleResourceAssembler sampleResourceAssembler;
+    private final SampleResourceAssembler sampleResourceAssembler;
 
-	private final EntityLinks entityLinks;
+    private final EntityLinks entityLinks;
+    private Ga4ghSampleToPhenopacketConverter phenopacketExporter;
 
 
     private Logger log = LoggerFactory.getLogger(getClass());
 
-	public SampleRestController(SampleService sampleService,
-								BioSamplesAapService bioSamplesAapService,
-								SampleManipulationService sampleManipulationService,
-								SampleResourceAssembler sampleResourceAssembler,
-								EntityLinks entityLinks) {
-		this.sampleService = sampleService;
-		this.bioSamplesAapService = bioSamplesAapService;
-		this.sampleManipulationService = sampleManipulationService;
-		this.sampleResourceAssembler = sampleResourceAssembler;
-		this.entityLinks = entityLinks;
-	}
+    public SampleRestController(SampleService sampleService,
+                                BioSamplesAapService bioSamplesAapService,
+                                SampleManipulationService sampleManipulationService,
+                                SampleResourceAssembler sampleResourceAssembler,
+                                Ga4ghSampleToPhenopacketConverter phenopacketExporter,
+                                EntityLinks entityLinks) {
+        this.sampleService = sampleService;
+        this.bioSamplesAapService = bioSamplesAapService;
+        this.sampleManipulationService = sampleManipulationService;
+        this.sampleResourceAssembler = sampleResourceAssembler;
+        this.phenopacketExporter = phenopacketExporter;
+        this.entityLinks = entityLinks;
+    }
 
     @PreAuthorize("isAuthenticated()")
-	@CrossOrigin(methods = RequestMethod.GET)
-	@GetMapping(produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
-	public Resource<Sample> getSampleHal(@PathVariable String accession,
-			@RequestParam(name = "legacydetails", required = false) String legacydetails,
-			@RequestParam(name = "curationdomain", required = false) String[] curationdomain) {
-		log.trace("starting call");
+    @CrossOrigin(methods = RequestMethod.GET)
+    @GetMapping(produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
+    public Resource<Sample> getSampleHal(@PathVariable String accession,
+                                         @RequestParam(name = "legacydetails", required = false) String legacydetails,
+                                         @RequestParam(name = "curationdomain", required = false) String[] curationdomain) {
+        log.trace("starting call");
 
-		// decode percent-encoding from curation domains
-		Optional<List<String>> decodedCurationDomains = LinkUtils.decodeTextsToArray(curationdomain);
-		Optional<Boolean> decodedLegacyDetails;
-		if (legacydetails != null && "true".equals(legacydetails)) {
-			decodedLegacyDetails = Optional.ofNullable(Boolean.TRUE);
-		} else {
-			decodedLegacyDetails = Optional.empty();
-		}
+        // decode percent-encoding from curation domains
+        Optional<List<String>> decodedCurationDomains = LinkUtils.decodeTextsToArray(curationdomain);
+        Optional<Boolean> decodedLegacyDetails;
+        if (legacydetails != null && "true".equals(legacydetails)) {
+            decodedLegacyDetails = Optional.ofNullable(Boolean.TRUE);
+        } else {
+            decodedLegacyDetails = Optional.empty();
+        }
 
-		// convert it into the format to return		
-		Optional<Sample> sample = sampleService.fetch(accession, decodedCurationDomains);
-		if (!sample.isPresent()) {
-			throw new SampleNotFoundException();
-		}
-		bioSamplesAapService.checkAccessible(sample.get());
+        // convert it into the format to return
+        Optional<Sample> sample = sampleService.fetch(accession, decodedCurationDomains);
+        if (!sample.isPresent()) {
+            throw new SampleNotFoundException();
+        }
+        bioSamplesAapService.checkAccessible(sample.get());
 
-		// TODO If user is not Read super user, reduce the fields to show
-		if (decodedLegacyDetails.isPresent() && decodedLegacyDetails.get()) {
-			sample = Optional.of(sampleManipulationService.removeLegacyFields(sample.get()));
-		}
+        // TODO If user is not Read super user, reduce the fields to show
+        if (decodedLegacyDetails.isPresent() && decodedLegacyDetails.get()) {
+            sample = Optional.of(sampleManipulationService.removeLegacyFields(sample.get()));
+        }
 
-		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample.get(), 
-				decodedLegacyDetails, decodedCurationDomains);	
-		
-		//TODO cache control
-		return sampleResource;
-	}
+        Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample.get(),
+                decodedLegacyDetails, decodedCurationDomains);
+
+        //TODO cache control
+        return sampleResource;
+    }
+    @RequestMapping(produces = "application/phenopacket+json")
+    @PreAuthorize("isAuthenticated()")
+    @CrossOrigin(methods = RequestMethod.GET)
+    @GetMapping()
+    public String getSamplePhenopacket(@PathVariable String accession,
+                                       @RequestParam(name = "legacydetails", required = false) String legacydetails,
+                                       @RequestParam(name = "curationdomain", required = false) String[] curationdomain) {
+        log.trace("starting call");
+
+        // decode percent-encoding from curation domains
+        Optional<List<String>> decodedCurationDomains = LinkUtils.decodeTextsToArray(curationdomain);
+        Optional<Boolean> decodedLegacyDetails;
+        if (legacydetails != null && "true".equals(legacydetails)) {
+            decodedLegacyDetails = Optional.ofNullable(Boolean.TRUE);
+        } else {
+            decodedLegacyDetails = Optional.empty();
+        }
+
+        // convert it into the format to return
+        Optional<Sample> sample = sampleService.fetch(accession, decodedCurationDomains);
+        if (!sample.isPresent()) {
+            throw new SampleNotFoundException();
+        }
+        bioSamplesAapService.checkAccessible(sample.get());
+
+        // TODO If user is not Read super user, reduce the fields to show
+        if (decodedLegacyDetails.isPresent() && decodedLegacyDetails.get()) {
+            sample = Optional.of(sampleManipulationService.removeLegacyFields(sample.get()));
+        }
+
+        if (!sample.isPresent()) {
+            throw new SampleNotFoundException();
+        }
+
+        return phenopacketExporter.getJsonFormattedPhenopacketFromSample(sample.get());
+    }
 
     @PreAuthorize("isAuthenticated()")
-	@CrossOrigin(methods = RequestMethod.GET)
-	@GetMapping(produces = { MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE })
-	public Sample getSampleXml(@PathVariable String accession) {
-		Sample sample = this.getSampleHal(accession, "true", null).getContent();
-		if (!sample.getAccession().matches("SAMEG\\d+")) {
-			sample = Sample.build(sample.getName(),sample.getAccession(), sample.getDomain(),
-					sample.getRelease(), sample.getUpdate(), sample.getCharacteristics(), sample.getRelationships(),
-					sample.getExternalReferences(), null, null, null);
-		}
-		//TODO cache control		
-		return sample;
-	}
+    @CrossOrigin(methods = RequestMethod.GET)
+    @GetMapping(produces = {MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE})
+    public Sample getSampleXml(@PathVariable String accession) {
+        Sample sample = this.getSampleHal(accession, "true", null).getContent();
+        if (!sample.getAccession().matches("SAMEG\\d+")) {
+            sample = Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(),
+                    sample.getRelease(), sample.getUpdate(), sample.getCharacteristics(), sample.getRelationships(),
+                    sample.getExternalReferences(), null, null, null);
+        }
+        //TODO cache control
+        return sample;
+    }
 
 //    @PreAuthorize("isAuthenticated()")
 //	@CrossOrigin(methods = RequestMethod.GET)
@@ -125,49 +163,49 @@ public class SampleRestController {
 //		return jsonLDService.sampleToJsonLD(sample.get());
 //    }
 
-	@ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Sample accession must match URL accession") // 400
-	public static class SampleAccessionMismatchException extends RuntimeException {
-	}
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Sample accession must match URL accession") // 400
+    public static class SampleAccessionMismatchException extends RuntimeException {
+    }
 
     @PreAuthorize("isAuthenticated()")
-	@PutMapping(consumes = { MediaType.APPLICATION_JSON_VALUE })
-	public Resource<Sample> put(@PathVariable String accession, 
-			@RequestBody Sample sample,
-			@RequestParam(name = "setupdatedate", required = false, defaultValue="true") boolean setUpdateDate,
-			@RequestParam(name = "setfulldetails", required = false, defaultValue="false") boolean setFullDetails) {
-    	
-    	if (sample.getAccession() == null || !sample.getAccession().equals(accession)) {
-			// if the accession in the body is different to the accession in the
-			// datasetUrl, throw an error
-			// TODO create proper exception with right http error code
-			throw new SampleAccessionMismatchException();
-		}		
-		
-		log.debug("Recieved PUT for " + accession);
-		sample = bioSamplesAapService.handleSampleDomain(sample);		
-		
-		//TODO limit use of this method to write super-users only
-		//if (bioSamplesAapService.isWriteSuperUser() && setUpdateDate) {
-		if (setUpdateDate) {
-			sample = Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(), 
-				sample.getRelease(), Instant.now(),
-				sample.getCharacteristics(), sample.getRelationships(), sample.getExternalReferences(), 
-				sample.getOrganizations(), sample.getContacts(), sample.getPublications());
-		}
+    @PutMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
+    public Resource<Sample> put(@PathVariable String accession,
+                                @RequestBody Sample sample,
+                                @RequestParam(name = "setupdatedate", required = false, defaultValue = "true") boolean setUpdateDate,
+                                @RequestParam(name = "setfulldetails", required = false, defaultValue = "false") boolean setFullDetails) {
 
-		if (!setFullDetails) {
-			log.trace("Removing contact legacy fields for " + accession);
-			sample = sampleManipulationService.removeLegacyFields(sample);
-		}
-		
-		sample = sampleService.store(sample);
+        if (sample.getAccession() == null || !sample.getAccession().equals(accession)) {
+            // if the accession in the body is different to the accession in the
+            // datasetUrl, throw an error
+            // TODO create proper exception with right http error code
+            throw new SampleAccessionMismatchException();
+        }
 
-		// assemble a resource to return
-		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
-		
-		// create the response object with the appropriate status
-		return sampleResource;
-	}
+        log.debug("Recieved PUT for " + accession);
+        sample = bioSamplesAapService.handleSampleDomain(sample);
+
+        //TODO limit use of this method to write super-users only
+        //if (bioSamplesAapService.isWriteSuperUser() && setUpdateDate) {
+        if (setUpdateDate) {
+            sample = Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(),
+                    sample.getRelease(), Instant.now(),
+                    sample.getCharacteristics(), sample.getRelationships(), sample.getExternalReferences(),
+                    sample.getOrganizations(), sample.getContacts(), sample.getPublications());
+        }
+
+        if (!setFullDetails) {
+            log.trace("Removing contact legacy fields for " + accession);
+            sample = sampleManipulationService.removeLegacyFields(sample);
+        }
+
+        sample = sampleService.store(sample);
+
+        // assemble a resource to return
+        Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
+
+        // create the response object with the appropriate status
+        return sampleResource;
+    }
 
 
 }
