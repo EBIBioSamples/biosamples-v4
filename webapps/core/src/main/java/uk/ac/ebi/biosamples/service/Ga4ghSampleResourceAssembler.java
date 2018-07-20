@@ -4,12 +4,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceAssembler;
+import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.ENAHtsgetTicket;
 import uk.ac.ebi.biosamples.model.ga4gh.Ga4ghSample;
 
 import java.util.ArrayList;
 import java.util.List;
-
+@Service
 public class Ga4ghSampleResourceAssembler implements ResourceAssembler<Ga4ghSample,Resource<Ga4ghSample>> {
 
     private ENAHtsgetService htsgetService;
