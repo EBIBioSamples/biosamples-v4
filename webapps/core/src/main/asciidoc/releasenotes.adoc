@@ -8,9 +8,9 @@ This pages contains links to release notes for BioSamples for version 4.0.0 and 
 ----
 
 * Expose the BioSchemas markup with enhanced context and Sample ontology code
-* SampleTab submission pipeline has been rewrite for better robustness
-* In the samples results page the sample name and the sample accession are now linking to the single sample page
-* Fix various broken hyperlinks
+* SampleTab submission pipeline has been rewritten for better robustness
+* In the samples results page, the sample name and the sample accession are now linking to the single sample page
+* Fixed various broken hyperlinks on the home page and in documentation
 
 
 [[section]]
