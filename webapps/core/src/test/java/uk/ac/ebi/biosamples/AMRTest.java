@@ -1,5 +1,8 @@
 package uk.ac.ebi.biosamples;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,10 +19,9 @@ import org.springframework.util.StreamUtils;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.structured.AMREntry;
 import uk.ac.ebi.biosamples.model.structured.AMRTable;
+import uk.ac.ebi.biosamples.service.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.SampleService;
 
-import java.io.IOException;
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.time.Instant;
 import java.util.Optional;
@@ -53,14 +55,19 @@ public class AMRTest {
 
     private JacksonTester<Sample> json;
 
+    private ObjectMapper mapper;
+
     @MockBean
-    private SampleService readService;
+    private BioSamplesAapService bioSamplesAapService;
+
+    @MockBean
+    private SampleService sampleService;
 
     private AMREntry getAMREntry() {
         return new AMREntry.Builder()
                 .withAntibiotic("ampicillin")
                 .withResistancePhenotype("susceptible")
-                .withMeasure("==", 10, "mg/L")
+                .withMeasure("==", "10", "mg/L")
                 .withVendor("in-house")
                 .withLaboratoryTypingMethod("CMAD")
                 .withTestingStandard("CLD")
@@ -78,11 +85,16 @@ public class AMRTest {
                 .withDomain("foozit").withReleaseDate(Instant.now()).withUpdateDate(Instant.now());
     }
 
+    @Before
+    public void init() {
+        mapper = new ObjectMapper();
+    }
+
     @Test
     public void givenSample_whenGetSample_thenReturnJsonObject() throws Exception {
         Sample sample = getTestSampleBuilder().build();
 
-        when(readService.fetch(eq(sample.getAccession()), any())).thenReturn(Optional.of(sample));
+        when(sampleService.fetch(eq(sample.getAccession()), any())).thenReturn(Optional.of(sample));
 
 
         mockMvc.perform(get("/samples/{accession}", sample.getAccession())
@@ -101,7 +113,7 @@ public class AMRTest {
 
 
         Sample sample = getTestSampleBuilder().addData(amrTable).build();
-        when(readService.fetch(eq(sample.getAccession()), any())).thenReturn(Optional.of(sample));
+        when(sampleService.fetch(eq(sample.getAccession()), any())).thenReturn(Optional.of(sample));
 
         mockMvc.perform(get("/samples/{accession}", sample.getAccession()).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -114,15 +126,15 @@ public class AMRTest {
                 .andExpect(jsonPath("$.data[0].content").isArray())
                 .andExpect(jsonPath("$.data[0].content[0]").value(allOf(
                         hasEntry("antibiotic", amrEntry.getAntibiotic()),
-                        hasEntry("resistancePhenotype", amrEntry.getResistancePhenotype()),
-                        hasEntry("measurementSign", amrEntry.getMeasurementSign()),
-                        hasEntry("measurementUnit", amrEntry.getMeasurementUnit()),
+                        hasEntry("resistance_phenotype", amrEntry.getResistancePhenotype()),
+                        hasEntry("measurement_sign", amrEntry.getMeasurementSign()),
+                        hasEntry("measurement_units", amrEntry.getMeasurementUnits()),
                         hasEntry("vendor", amrEntry.getVendor()),
-                        hasEntry("laboratoryTypingMethod", amrEntry.getLaboratoryTypingMethod()),
-                        hasEntry("testingStandard", amrEntry.getTestingStandard())
+                        hasEntry("laboratory_typing_method", amrEntry.getLaboratoryTypingMethod()),
+                        hasEntry("testing_standard", amrEntry.getTestingStandard())
                         )))
                 .andExpect(jsonPath("$.data[0].content[0]").value(
-                        hasEntry("measurementValue", amrEntry.getMeasurementValue()) // This needs to go here because the the hasEntry has a different signature - Only one having a number as a value. allOf wants all matchers of the same type
+                        hasEntry("measurement", amrEntry.getMeasurementValue()) // This needs to go here because the the hasEntry has a different signature - Only one having a number as a value. allOf wants all matchers of the same type
                 ));
 
     }
@@ -130,14 +142,34 @@ public class AMRTest {
     @Test
     public void able_to_submit_sample_with_structuredData() throws Exception {
 
-//        URL amrJsonUrl = this.getClass().getResource("/amr_sample.json");
-
         String json = StreamUtils.copyToString(new ClassPathResource("amr_sample.json").getInputStream(), Charset.defaultCharset());
+        JsonNode jsonSample = mapper.readTree(json);
+
+        JsonNode jsonAmr = jsonSample.at("/data/0/content/0");
+        AMREntry amrEntry = new AMREntry.Builder()
+                .withAntibiotic(jsonAmr.get("antibiotic").asText())
+                .withResistancePhenotype(jsonAmr.get("resistance_phenotype").asText())
+                .withMeasure(jsonAmr.get("measurement_sign").asText(), jsonAmr.get("measurement").asText(), jsonAmr.get("measurement_units").asText())
+                .withVendor(jsonAmr.get("vendor").asText())
+                .withLaboratoryTypingMethod(jsonAmr.get("laboratory_typing_method").asText())
+                .withTestingStandard(jsonAmr.get("testing_standard").asText())
+                .build();
+
+
+        Sample testSample = new Sample.Builder(jsonSample.at("/name").asText()).withDomain(jsonSample.at("/domain").asText())
+                .withUpdateDate(jsonSample.at("/update").asText()).withReleaseDate(jsonSample.at("/release").asText())
+                .addData(new AMRTable.Builder(jsonSample.at("/data/0/schema").asText()).withEntry(amrEntry).build())
+                .build();
+
+
+        when(bioSamplesAapService.handleSampleDomain(any(Sample.class))).thenReturn(testSample);
+        when(sampleService.store(testSample)).thenReturn(testSample);
 
         mockMvc.perform(post("/samples")
                     .contentType(MediaType.APPLICATION_JSON_VALUE)
                     .content(json)
-            ).andExpect(status().isOk());
+            ).andExpect(status().isCreated())
+            .andExpect(jsonPath("$.data[0].content").isArray());
 
     }
 

@@ -3,38 +3,38 @@ package uk.ac.ebi.biosamples.model.structured;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import java.util.Objects;
 
 @JsonDeserialize(builder = AMREntry.Builder.class)
+@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class AMREntry implements Comparable<AMREntry>{
-//    "antibiotic": "ampicillin",
-//    "resistance_phenotype": "susceptible",
-//    "measurement_sign": "==",
-//    "measurementValue": 2,
-//    "measurement_units": "mg/L",
-//    "vendor": "in-house",
-//    "laboratory_typing_method": "MIC",
-//    "testing_standard": "CLSI"
 
     private final String antibiotic;
     private final String resistancePhenotype;
     private final String measurementSign;
-    private final int measurementValue;
-    private final String measurementUnit;
+    private final String measurementValue;
+    private final String measurementUnits;
     private final String vendor;
     private final String laboratoryTypingMethod;
+    private final String laboratoryTypingPlatform;
+    private final String laboratoryTypingMethodVersionOrReagent;
     private final String testingStandard;
 
-    private AMREntry(String antibiotic, String resistancePhenotype, String measurementSign, int measurementValue, String measurementUnit, String vendor, String laboratoryTypingMethod, String testingStandard) {
+
+    private AMREntry(String antibiotic, String resistancePhenotype, String measurementSign, String measurementValue, String measurementUnits, String vendor, String laboratoryTypingMethod, String laboratoryTypingPlatform, String laboratoryTypingMethodVersionOrReagent, String testingStandard) {
         this.antibiotic = antibiotic;
         this.resistancePhenotype = resistancePhenotype;
         this.measurementSign = measurementSign;
         this.measurementValue = measurementValue;
-        this.measurementUnit = measurementUnit;
+        this.measurementUnits = measurementUnits;
         this.vendor = vendor;
         this.laboratoryTypingMethod = laboratoryTypingMethod;
+        this.laboratoryTypingPlatform = laboratoryTypingPlatform;
+        this.laboratoryTypingMethodVersionOrReagent = laboratoryTypingMethodVersionOrReagent;
         this.testingStandard = testingStandard;
     }
 
@@ -51,12 +51,13 @@ public class AMREntry implements Comparable<AMREntry>{
         return measurementSign;
     }
 
-    public int getMeasurementValue() {
+    @JsonProperty("measurement")
+    public String getMeasurementValue() {
         return measurementValue;
     }
 
-    public String getMeasurementUnit() {
-        return measurementUnit;
+    public String getMeasurementUnits() {
+        return measurementUnits;
     }
 
     public String getVendor() {
@@ -65,6 +66,14 @@ public class AMREntry implements Comparable<AMREntry>{
 
     public String getLaboratoryTypingMethod() {
         return laboratoryTypingMethod;
+    }
+
+    public String getLaboratoryTypingPlatform() {
+        return laboratoryTypingPlatform;
+    }
+
+    public String getLaboratoryTypingMethodVersionOrReagent() {
+        return laboratoryTypingMethodVersionOrReagent;
     }
 
     public String getTestingStandard() {
@@ -92,17 +101,26 @@ public class AMREntry implements Comparable<AMREntry>{
                 return comparison;
             }
 
-            comparison = this.measurementValue - other.measurementValue;
+            comparison = nullSafeStringComparison(this.measurementValue, other.measurementValue);
             if (comparison != 0) {
-                return comparison/Math.abs(comparison);
+                return comparison;
             }
 
-            comparison = nullSafeStringComparison(this.measurementUnit, other.measurementUnit);
+            comparison = nullSafeStringComparison(this.measurementUnits, other.measurementUnits);
             if (comparison != 0) {
                 return comparison;
             }
 
             comparison = nullSafeStringComparison(this.laboratoryTypingMethod, other.laboratoryTypingMethod);
+            if (comparison != 0) {
+                return comparison;
+            }
+
+            comparison = nullSafeStringComparison(this.laboratoryTypingPlatform, other.laboratoryTypingPlatform);
+            if (comparison != 0) {
+                return comparison;
+            }
+            comparison = nullSafeStringComparison(this.laboratoryTypingMethodVersionOrReagent, other.laboratoryTypingMethodVersionOrReagent);
             if (comparison != 0) {
                 return comparison;
             }
@@ -135,30 +153,35 @@ public class AMREntry implements Comparable<AMREntry>{
         if (this == o) return true;
         if (!(o instanceof AMREntry)) return false;
         AMREntry amrEntry = (AMREntry) o;
-        return getMeasurementValue() == amrEntry.getMeasurementValue() &&
+        return getMeasurementValue().equals(amrEntry.getMeasurementValue()) &&
                 Objects.equals(getAntibiotic(), amrEntry.getAntibiotic()) &&
                 Objects.equals(getResistancePhenotype(), amrEntry.getResistancePhenotype()) &&
                 Objects.equals(getMeasurementSign(), amrEntry.getMeasurementSign()) &&
-                Objects.equals(getMeasurementUnit(), amrEntry.getMeasurementUnit()) &&
+                Objects.equals(getMeasurementUnits(), amrEntry.getMeasurementUnits()) &&
                 Objects.equals(getVendor(), amrEntry.getVendor()) &&
                 Objects.equals(getLaboratoryTypingMethod(), amrEntry.getLaboratoryTypingMethod()) &&
+                Objects.equals(getLaboratoryTypingPlatform(), amrEntry.getLaboratoryTypingPlatform()) &&
+                Objects.equals(getLaboratoryTypingMethodVersionOrReagent(), amrEntry.getLaboratoryTypingMethodVersionOrReagent()) &&
                 Objects.equals(getTestingStandard(), amrEntry.getTestingStandard());
     }
 
     @Override
     public int hashCode() {
 
-        return Objects.hash(getAntibiotic(), getResistancePhenotype(), getMeasurementSign(), getMeasurementValue(), getMeasurementUnit(), getVendor(), getLaboratoryTypingMethod(), getTestingStandard());
+        return Objects.hash(getAntibiotic(), getResistancePhenotype(), getMeasurementSign(), getMeasurementValue(), getMeasurementUnits(), getVendor(), getLaboratoryTypingMethod(), getTestingStandard());
     }
 
+    @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
     public static class Builder {
         private String antibiotic;
         private String resistancePhenotype;
         private String measurementSign;
-        private Integer measurementValue;
-        private String measurementUnit;
+        private String measurementValue;
+        private String measurementUnits;
         private String vendor;
         private String laboratoryTypingMethod;
+        private String laboratoryTypingPlatform = "";
+        private String laboratoryTypingMethodVersionOrReagent = "";
         private String testingStandard;
 
         @JsonCreator
@@ -177,10 +200,10 @@ public class AMREntry implements Comparable<AMREntry>{
         }
 
         @JsonIgnore
-        public Builder withMeasure(String sign, int value, String unit) {
+        public Builder withMeasure(String sign, String value, String unit) {
             this.measurementSign = sign;
             this.measurementValue = value;
-            this.measurementUnit = unit;
+            this.measurementUnits = unit;
             return this;
         }
 
@@ -191,13 +214,13 @@ public class AMREntry implements Comparable<AMREntry>{
         }
 
         @JsonProperty
-        public Builder withMeasurementUnit(String unit) {
-            this.measurementUnit = unit;
+        public Builder withMeasurementUnits(String unit) {
+            this.measurementUnits = unit;
             return this;
         }
 
         @JsonProperty("measurement")
-        public Builder withMeasurementValue(int value) {
+        public Builder withMeasurementValue(String value) {
             this.measurementValue = value;
             return this;
         }
@@ -211,6 +234,18 @@ public class AMREntry implements Comparable<AMREntry>{
         @JsonProperty
         public Builder withLaboratoryTypingMethod(String method) {
             this.laboratoryTypingMethod = method;
+            return this;
+        }
+
+        @JsonProperty
+        public Builder withLaboratoryTypingPlatform(String laboratoryTypingPlatform) {
+            this.laboratoryTypingPlatform = laboratoryTypingPlatform;
+            return this;
+        }
+
+        @JsonProperty
+        public Builder withLaboratoryTypingMethodVersionOrReagent(String laboratoryTypingMethodVersionOrReagent) {
+            this.laboratoryTypingMethodVersionOrReagent = laboratoryTypingMethodVersionOrReagent;
             return this;
         }
 
@@ -236,7 +271,7 @@ public class AMREntry implements Comparable<AMREntry>{
             if (this.measurementSign == null || this.measurementSign.isEmpty()) {
                 throw AMREntryBuldingException.createForMissingField("measurementValue sign");
             }
-            if (this.measurementUnit == null || this.measurementUnit.isEmpty()) {
+            if (this.measurementUnits == null || this.measurementUnits.isEmpty()) {
                 throw AMREntryBuldingException.createForMissingField("measurementValue unit");
             }
 
@@ -252,7 +287,8 @@ public class AMREntry implements Comparable<AMREntry>{
             }
 
             return new AMREntry(this.antibiotic, this.resistancePhenotype, this.measurementSign, this.measurementValue,
-                    this.measurementUnit, this.vendor, this.laboratoryTypingMethod, this.testingStandard);
+                    this.measurementUnits, this.vendor, this.laboratoryTypingMethod, this.laboratoryTypingPlatform,
+                    this.laboratoryTypingMethodVersionOrReagent, this.testingStandard);
         }
 
     }

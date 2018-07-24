@@ -195,7 +195,7 @@ public class MongoSample {
     		@JsonProperty("release") Instant release, 
     		@JsonProperty("update") Instant update, 
     		@JsonProperty("attributes") Set<Attribute> attributes,
-    		@JsonProperty("structured") Set<AbstractData> structuredData,
+    		@JsonProperty("data") Set<AbstractData> structuredData,
     		@JsonProperty("relationships") Set<MongoRelationship> relationships, 
     		@JsonProperty("externalReferences") SortedSet<MongoExternalReference> externalReferences, 
     		@JsonProperty("organizations") SortedSet<Organization> organizations, 

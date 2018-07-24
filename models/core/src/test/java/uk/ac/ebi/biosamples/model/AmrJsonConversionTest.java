@@ -40,7 +40,7 @@ public class AmrJsonConversionTest {
         AMREntry entry = new AMREntry.Builder()
                 .withAntibiotic("A")
                 .withResistancePhenotype("Something")
-                .withMeasure("==", 10, "mg/L")
+                .withMeasure("==", "2", "mg/L")
                 .withVendor("in-house")
                 .withTestingStandard("VeryHighStandard")
                 .withLaboratoryTypingMethod("TypingMethod")
@@ -59,7 +59,7 @@ public class AmrJsonConversionTest {
         tableBuilder.withEntry(new AMREntry.Builder()
                 .withAntibiotic("A")
                 .withResistancePhenotype("Something")
-                .withMeasure("==", 10, "mg/L")
+                .withMeasure("==", "14", "mg/L")
                 .withVendor("in-house")
                 .withTestingStandard("VeryHighStandard")
                 .withLaboratoryTypingMethod("TypingMethod")
@@ -68,7 +68,7 @@ public class AmrJsonConversionTest {
         tableBuilder.withEntry(new AMREntry.Builder()
                 .withAntibiotic("B")
                 .withResistancePhenotype("pectine")
-                .withMeasure(">=", 14, "mg/L")
+                .withMeasure(">=", "14", "mg/L")
                 .withVendor("GSKey")
                 .withTestingStandard("low-quality-standard")
                 .withLaboratoryTypingMethod("Nothing")
@@ -87,10 +87,10 @@ public class AmrJsonConversionTest {
         assertThat(json).extractingJsonPathArrayValue("@.content").hasOnlyElementsOfType(LinkedHashMap.class);
 
         assertThat(json).extractingJsonPathMapValue("@.content[1]").containsKeys(
-                "antibiotic", "resistancePhenotype", "testingStandard", "vendor", "measurementUnit",
-                "laboratoryTypingMethod", "measurementSign", "measurementValue"
+                "antibiotic", "resistance_phenotype", "testing_standard", "vendor", "measurement_units",
+                "laboratory_typing_method", "measurement_sign", "measurement"
         );
-        assertThat(json).extractingJsonPathMapValue("@.content[1]").containsEntry("measurementValue", 10);
+        assertThat(json).extractingJsonPathMapValue("@.content[1]").containsEntry("measurement", "14");
 
     }
 
@@ -100,7 +100,7 @@ public class AmrJsonConversionTest {
         tableBuilder.withEntry(new AMREntry.Builder()
                 .withAntibiotic("ampicillin")
                 .withResistancePhenotype("susceptible")
-                .withMeasure("==", 2, "mg/L")
+                .withMeasure("==", "2", "mg/L")
                 .withVendor("in-house")
                 .withTestingStandard("CLSI")
                 .withLaboratoryTypingMethod("MIC")

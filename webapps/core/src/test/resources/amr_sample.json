@@ -9,13 +9,13 @@
     "content": [
       {
         "antibiotic":"ampicillin",
-        "resistancePhenotype":"susceptible",
-        "measurementSign":"==",
+        "resistance_phenotype":"susceptible",
+        "measurement_sign":"==",
         "measurement": "2",
-        "measurementUnit":"mg/L",
+        "measurement_units":"mg/L",
         "vendor":"in-house",
-        "laboratoryTypingMethod":"MIC",
-        "testingStandard":"CLSI"
+        "laboratory_typing_method":"MIC",
+        "testing_standard":"CLSI"
       }
     ]
   }]
