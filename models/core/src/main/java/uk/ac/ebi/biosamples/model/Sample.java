@@ -16,6 +16,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.TemporalAccessor;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
@@ -94,15 +95,21 @@ public class Sample implements Comparable<Sample> {
         return ZonedDateTime.ofInstant(update, ZoneOffset.UTC).format(ISO_LOCAL_DATE);
     }
 
-    @JsonProperty(value = "taxonId", access = JsonProperty.Access.READ_ONLY)
-    public String getTaxonId() {
+    @JsonProperty(value = "taxId", access = JsonProperty.Access.READ_ONLY)
+    public String getTaxId() {
+        String taxId = "unknown";
         for (Attribute attribute : attributes) {
-            if (attribute.getType().toLowerCase().equalsIgnoreCase("Organism"))
-            {
-                return attribute.getValue();
+            if (attribute.getType().toLowerCase().equalsIgnoreCase("Organism") && !attribute.getIri().isEmpty()) {
+                taxId = attribute.getIri().stream().map(Object::toString).map(this::extractTaxIdFromIri).collect(Collectors.joining(","));
             }
         }
-        return "0";
+        return taxId;
+    }
+
+    private String extractTaxIdFromIri(String iri) {
+        if (iri.isEmpty()) return "unknown";
+        String segments[] = iri.split("NCBITaxon_");
+        return segments[segments.length - 1];
     }
 
     @JsonIgnore
