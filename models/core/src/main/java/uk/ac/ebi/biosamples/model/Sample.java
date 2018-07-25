@@ -1,9 +1,6 @@
 package uk.ac.ebi.biosamples.model;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import uk.ac.ebi.biosamples.service.CharacteristicDeserializer;
@@ -23,6 +20,7 @@ import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
 
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
+@JsonPropertyOrder({"name", "accession", "domain", "realease", "update", "taxId", "characteristics", "relationships", "externalReferences", "releaseDate", "updateDate"})
 public class Sample implements Comparable<Sample> {
 
     protected String accession;
