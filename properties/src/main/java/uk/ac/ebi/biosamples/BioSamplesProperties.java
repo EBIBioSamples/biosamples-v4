@@ -79,7 +79,7 @@ public class BioSamplesProperties {
 	private int webappCorePageCacheMaxAge;
 
 	@Value("${biosamples.schema.validator.uri:http://localhost:8085/validate}")
-	private URI biosamplesSchemaValidatorService;
+	private URI biosamplesSchemaValidatorServiceUri;
 	
 	public URI getBiosamplesClientUri() {
 		return biosamplesClientUri;
@@ -165,7 +165,7 @@ public class BioSamplesProperties {
 		return biosamplesWebappSampletabUri;
 	}
 
-	public URI getBiosamplesSchemaValidatorService() {
-		return biosamplesSchemaValidatorService;
+	public URI getBiosamplesSchemaValidatorServiceUri() {
+		return biosamplesSchemaValidatorServiceUri;
 	}
 }

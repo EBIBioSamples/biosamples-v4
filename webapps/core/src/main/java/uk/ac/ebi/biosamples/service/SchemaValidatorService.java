@@ -13,13 +13,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.util.StreamUtils;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 
 import java.io.*;
 import java.net.URI;
-import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,7 +43,7 @@ public class SchemaValidatorService {
         headers.add("accept", MediaType.APPLICATION_JSON_VALUE);
 
         RequestEntity<String> request = RequestEntity
-            .post(this.bioSamplesProperties.getBiosamplesSchemaValidatorService())
+            .post(this.bioSamplesProperties.getBiosamplesSchemaValidatorServiceUri())
             .contentType(MediaType.APPLICATION_JSON)
             .body(objectToValidate);
 
