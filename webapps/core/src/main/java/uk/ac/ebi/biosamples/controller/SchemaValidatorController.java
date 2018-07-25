@@ -1,27 +1,26 @@
 package uk.ac.ebi.biosamples.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
-import org.springframework.hateoas.MediaTypes;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import uk.ac.ebi.biosamples.service.SchemaValidatorService;
 
 @RestController
 public class SchemaValidatorController {
 
-    @RequestMapping("/validation")
-    public String validate(){
-        return "Validates";
+    private final SchemaValidatorService schemaValidatorService;
+
+    public SchemaValidatorController(SchemaValidatorService schemaValidatorService) {
+        this.schemaValidatorService = schemaValidatorService;
+    }
+
+    @PostMapping(value = "/validation", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> validate(@RequestBody String content){
+        return schemaValidatorService.validate(content);
     }
 
 }

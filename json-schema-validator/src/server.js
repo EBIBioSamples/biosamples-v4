@@ -41,6 +41,7 @@ app.post("/validate", (req, res) => {
       logger.log("silly", "Sent validation results.");
       res.status(200).send(output);
     }).catch((error) => {
+      logger.log('error', error);
       res.status(500).send(error);
     });
   } else {
