@@ -20,7 +20,7 @@ import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
 
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-@JsonPropertyOrder({"name", "accession", "domain", "realease", "update", "taxId", "characteristics", "relationships", "externalReferences", "releaseDate", "updateDate"})
+@JsonPropertyOrder({"name", "accession", "domain", "release", "update", "taxId", "characteristics", "relationships", "externalReferences", "releaseDate", "updateDate"})
 public class Sample implements Comparable<Sample> {
 
     protected String accession;
