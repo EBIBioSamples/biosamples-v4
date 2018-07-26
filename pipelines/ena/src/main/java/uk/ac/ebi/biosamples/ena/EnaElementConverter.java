@@ -178,7 +178,7 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 
 //        return Sample.build(name, accession, null, Instant.now(), Instant.now(), attributes, relationships, externalReferences);
 		return new Sample.Builder(name, accession)
-                .withReleaseDate(Instant.now()).withUpdateDate(Instant.now())
+                .withRelease(Instant.now()).withUpdate(Instant.now())
                 .withAttributes(attributes)
                 .withRelationships(relationships)
                 .withExternalReferences(externalReferences)

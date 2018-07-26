@@ -203,7 +203,7 @@ public class BigIntegration extends AbstractIntegration {
 		}
 		
 		Sample sample = new Sample.Builder("big sample " + i, "SAMbig"+i)
-				.withDomain(domain).withReleaseDate(release).withUpdateDate(update)
+				.withDomain(domain).withRelease(release).withUpdate(update)
 				.withAttributes(attributes).withRelationships(relationships).build();
 
 

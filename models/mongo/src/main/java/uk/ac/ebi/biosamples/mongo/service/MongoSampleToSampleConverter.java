@@ -41,7 +41,7 @@ public class MongoSampleToSampleConverter implements Converter<MongoSample, Samp
 		}
 		
 		return new Sample.Builder(sample.getName(), sample.getAccession()).withDomain(sample.getDomain())
-				.withReleaseDate(sample.getRelease()).withUpdateDate(sample.getUpdate())
+				.withRelease(sample.getRelease()).withUpdate(sample.getUpdate())
 				.withAttributes(sample.getAttributes()).withRelationships(relationships)
 				.withExternalReferences(externalReferences).withOrganizations(sample.getOrganizations())
 				.withContacts(sample.getContacts()).withPublications(sample.getPublications())

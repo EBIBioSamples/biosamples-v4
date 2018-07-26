@@ -65,7 +65,7 @@ public class ResourceSerializationTest {
 
 //		return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences, null, null, null);
 		return new Sample.Builder(name, accession).withDomain(domain)
-				.withReleaseDate(release).withUpdateDate(update)
+				.withRelease(release).withUpdate(update)
 				.withAttributes(attributes)
 				.withRelationships(relationships)
 				.withExternalReferences(externalReferences).build();

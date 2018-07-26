@@ -43,8 +43,8 @@ public class JSONSampleToSampleConverter implements Converter<String, Sample> {
         SortedSet<ExternalReference> embeddedExternalReferences = getEmbeddedExternalReferences(jsonDoc);
 
         Sample.Builder sampleBuilder = new Sample.Builder(sampleName, accession)
-                .withUpdateDate(updateDate)
-                .withReleaseDate(releaseDate)
+                .withUpdate(updateDate)
+                .withRelease(releaseDate)
                 .withAttributes(attributes)
                 .addAllAttributes(submissionInfo)
                 .withContacts(contacts).withPublications(publications).withOrganizations(organizations)

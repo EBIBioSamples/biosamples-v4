@@ -167,7 +167,7 @@ public class ImportJsonRunner implements ApplicationRunner {
 //                            new TreeSet<>(), sample.getRelationships(), new TreeSet<>(),
 //                            sample.getOrganizations(), sample.getContacts(), sample.getPublications());
 //                sample = new Sample.Builder(sample.getName(), sample.getAccession()).withDomain(DOMAIN)
-//						.withReleaseDate(sample.getRelease()).withUpdateDate(sample.getUpdate())
+//						.withRelease(sample.getRelease()).withUpdate(sample.getUpdate())
 //						.withRelationships(sample.getRelationships())
 //						.withOrganizations(sample.getOrganizations()).withContacts(sample.getContacts())
 //						.withPublications(sample.getPublications()).build();

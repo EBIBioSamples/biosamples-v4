@@ -94,7 +94,7 @@ public class SerializationTest {
 
 //		return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences, organizations, contacts, publications);
         return new Sample.Builder(name, accession).withDomain(domain)
-				.withReleaseDate(release).withUpdateDate(update)
+				.withRelease(release).withUpdate(update)
 				.withAttributes(attributes).withRelationships(relationships).withExternalReferences(externalReferences)
                 .withOrganizations(organizations).withContacts(contacts).withPublications(publications)
 				.build();

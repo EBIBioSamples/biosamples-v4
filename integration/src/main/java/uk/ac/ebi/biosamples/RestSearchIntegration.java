@@ -159,7 +159,7 @@ public class RestSearchIntegration extends AbstractIntegration {;
 				Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
 
 //		return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
-		return new Sample.Builder(name, accession).withDomain(domain).withReleaseDate(release).withUpdateDate(update)
+		return new Sample.Builder(name, accession).withDomain(domain).withRelease(release).withUpdate(update)
 				.withAttributes(attributes).build();
 	}
 
@@ -178,7 +178,7 @@ public class RestSearchIntegration extends AbstractIntegration {;
 		relationships.add(Relationship.build("TESTrestsearch2", "derived from", "TESTrestsearch3"));
 		
 //		return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, relationships, new TreeSet<>(), null, null, null);
-		return new Sample.Builder(name, accession).withDomain(domain).withReleaseDate(release).withUpdateDate(update)
+		return new Sample.Builder(name, accession).withDomain(domain).withRelease(release).withUpdate(update)
 				.withAttributes(attributes).build();
 	}
 
@@ -199,7 +199,7 @@ public class RestSearchIntegration extends AbstractIntegration {;
 		relationships.add(Relationship.build("TESTrestsearch4", "derive to", getSampleTest5().getAccession()));
 
 //		return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, relationships, new TreeSet<>(), null, null, null);
-		return new Sample.Builder(name, accession).withDomain(domain).withReleaseDate(release).withUpdateDate(update)
+		return new Sample.Builder(name, accession).withDomain(domain).withRelease(release).withUpdate(update)
 				.withAttributes(attributes).withRelationships(relationships).build();
 	}
 
@@ -218,7 +218,7 @@ public class RestSearchIntegration extends AbstractIntegration {;
 		SortedSet<Relationship> relationships = new TreeSet<>();
 
 //		return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, relationships, new TreeSet<>(), null, null, null);
-		return new Sample.Builder(name, accession).withDomain(domain).withReleaseDate(release).withUpdateDate(update)
+		return new Sample.Builder(name, accession).withDomain(domain).withRelease(release).withUpdate(update)
 				.withAttributes(attributes).build();
 	}
 

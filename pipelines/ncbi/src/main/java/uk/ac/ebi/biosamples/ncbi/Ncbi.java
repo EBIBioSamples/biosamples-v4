@@ -165,7 +165,7 @@ public class Ncbi implements ApplicationRunner {
 //						sample.getContacts(),
 //						sample.getPublications());
                 Sample newSample = Sample.Builder.fromSample(sample)
-						.withReleaseDate(ZonedDateTime.now(ZoneOffset.UTC).plusYears(1000).toInstant())
+						.withRelease(ZonedDateTime.now(ZoneOffset.UTC).plusYears(1000).toInstant())
 						.build();
 				
 				//persist the now private sample
