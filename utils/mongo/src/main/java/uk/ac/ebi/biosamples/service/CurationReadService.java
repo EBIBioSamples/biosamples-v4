@@ -1,14 +1,5 @@
 package uk.ac.ebi.biosamples.service;
 
-import java.time.Instant;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,18 +7,16 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Curation;
-import uk.ac.ebi.biosamples.model.CurationLink;
-import uk.ac.ebi.biosamples.model.ExternalReference;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.mongo.model.MongoCuration;
 import uk.ac.ebi.biosamples.mongo.model.MongoCurationLink;
 import uk.ac.ebi.biosamples.mongo.repo.MongoCurationLinkRepository;
 import uk.ac.ebi.biosamples.mongo.repo.MongoCurationRepository;
 import uk.ac.ebi.biosamples.mongo.service.MongoCurationLinkToCurationLinkConverter;
 import uk.ac.ebi.biosamples.mongo.service.MongoCurationToCurationConverter;
+
+import java.time.Instant;
+import java.util.*;
 
 @Service
 public class CurationReadService {
@@ -127,9 +116,14 @@ public class CurationReadService {
 			update = curationLink.getCreated();
 		}
 		
-		return Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(), 
-				sample.getRelease(), update, attributes, sample.getRelationships(), externalReferences, 
-				sample.getOrganizations(), sample.getContacts(), sample.getPublications());
+//		return Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(),
+//				sample.getRelease(), update, attributes, sample.getRelationships(), externalReferences,
+//				sample.getOrganizations(), sample.getContacts(), sample.getPublications());
+        return Sample.Builder.fromSample(sample)
+				.withUpdate(update)
+				.withAttributes(attributes)
+				.withExternalReferences(externalReferences)
+				.build();
 	}
 	
 	public Sample applyAllCurationToSample(Sample sample, Optional<List<String>> curationDomains) {

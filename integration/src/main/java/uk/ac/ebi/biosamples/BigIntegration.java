@@ -1,24 +1,14 @@
 package uk.ac.ebi.biosamples;
 
-import java.net.URI;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.hateoas.Link;
-import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.ResourceSupport;
+import org.springframework.hateoas.*;
 import org.springframework.hateoas.hal.Jackson2HalModule;
 import org.springframework.hateoas.mvc.TypeConstrainedMappingJackson2HttpMessageConverter;
 import org.springframework.http.RequestEntity;
@@ -30,15 +20,14 @@ import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Lists;
-
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
+
+import java.net.URI;
+import java.time.Instant;
+import java.util.*;
 
 @Component
 @Profile({"big"})
@@ -213,7 +202,12 @@ public class BigIntegration extends AbstractIntegration {
 			relationships.add(Relationship.build("SAMbig"+i, "derived from", root.getAccession()));
 		}
 		
-		Sample sample = Sample.build("big sample "+i, "SAMbig"+i, domain, release, update, attributes, relationships, null, null, null, null);
+		Sample sample = new Sample.Builder("big sample " + i, "SAMbig"+i)
+				.withDomain(domain).withRelease(release).withUpdate(update)
+				.withAttributes(attributes).withRelationships(relationships).build();
+
+
+//		Sample.build("big sample "+i, "SAMbig"+i, domain, release, update, attributes, relationships, null, null, null, null);
 
 		log.trace("built "+sample.getAccession());
 		return sample;

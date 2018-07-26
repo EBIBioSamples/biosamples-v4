@@ -87,7 +87,12 @@ public class XmlSampleToSampleConverter implements Converter<Element, Sample>  {
 		}
 		
 		
-		return Sample.build(name, accession, null, release, update, attributes, relationships, externalReferences, null, null, null);
+//		return Sample.build(name, accession, null, release, update, attributes, relationships, externalReferences, null, null, null);
+        return new Sample.Builder(name, accession)
+				.withRelease(release).withUpdate(update)
+				.withAttributes(attributes).withRelationships(relationships)
+				.withExternalReferences(externalReferences)
+				.build();
 	}
 
 }

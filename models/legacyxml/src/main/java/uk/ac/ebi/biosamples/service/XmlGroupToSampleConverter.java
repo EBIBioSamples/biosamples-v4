@@ -102,9 +102,15 @@ public class XmlGroupToSampleConverter implements Converter<Element, Sample>  {
 		log.trace("attributes = "+attributes);
 		log.trace("relationships = "+relationships);
 		
-		return Sample.build(name, accession, null, release, update,
-				attributes, relationships, externalReferences,
-				organizations, contacts, publications);
+//		return Sample.build(name, accession, null, release, update,
+//				attributes, relationships, externalReferences,
+//				organizations, contacts, publications);
+        return new Sample.Builder(name, accession).withDomain(null)
+				.withRelease(release).withUpdate(update)
+				.withAttributes(attributes).withRelationships(relationships)
+				.withExternalReferences(externalReferences).withOrganizations(organizations)
+				.withContacts(contacts).withPublications(publications)
+				.build();
 	}
 
 	private SortedSet<Contact> extractContacts(Element doc) {

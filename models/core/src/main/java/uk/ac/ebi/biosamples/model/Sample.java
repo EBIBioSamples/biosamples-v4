@@ -1,35 +1,24 @@
 package uk.ac.ebi.biosamples.model;
 
-import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
-import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
-
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.time.temporal.TemporalAccessor;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Objects;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
 import uk.ac.ebi.biosamples.service.CharacteristicDeserializer;
 import uk.ac.ebi.biosamples.service.CharacteristicSerializer;
 import uk.ac.ebi.biosamples.service.CustomInstantDeserializer;
 import uk.ac.ebi.biosamples.service.CustomInstantSerializer;
+
+import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.TemporalAccessor;
+import java.util.*;
+
+import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
+import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
 
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -55,6 +44,7 @@ public class Sample implements Comparable<Sample> {
 	protected SortedSet<Contact> contacts;
 	protected SortedSet<Publication> publications;
 
+
 	protected Sample() {
 		
 	}
@@ -63,6 +53,7 @@ public class Sample implements Comparable<Sample> {
 	public String getAccession() {
 		return accession;
 	}
+
 	@JsonIgnore
 	public boolean hasAccession() {
 		if ( accession != null && accession.trim().length() != 0) {
@@ -323,11 +314,11 @@ public class Sample implements Comparable<Sample> {
 			@JsonProperty("release") @JsonDeserialize(using = CustomInstantDeserializer.class) Instant release, 
 			@JsonProperty("update") @JsonDeserialize(using = CustomInstantDeserializer.class) Instant update,
 			@JsonProperty("characteristics") @JsonDeserialize(using = CharacteristicDeserializer.class) Collection<Attribute> attributes,
-			@JsonProperty("relationships") Collection<Relationship> relationships, 
+			@JsonProperty("relationships") Collection<Relationship> relationships,
 			@JsonProperty("externalReferences") Collection<ExternalReference> externalReferences,
 			@JsonProperty("organization") Collection<Organization> organizations, 
 			@JsonProperty("contact") Collection<Contact> contacts, 
-			@JsonProperty("publications") Collection<Publication> publications) {
+			@JsonProperty("publications") Collection<Publication> publications ) {
     	
 		Sample sample = new Sample();
 		
@@ -377,15 +368,16 @@ public class Sample implements Comparable<Sample> {
 		if (publications != null) {
 			sample.publications.addAll(publications);
 		}
-		
+
 		return sample;
 	}
 
 	public static class Builder {
 
-		protected String accession;
 		protected String name;
-		protected String domain;
+
+		protected String accession = null;
+		protected String domain = null;
 
 		protected Instant release = Instant.now();
 		protected Instant update = Instant.now();
@@ -397,9 +389,18 @@ public class Sample implements Comparable<Sample> {
 		protected SortedSet<Contact> contacts = new TreeSet<>();
 		protected SortedSet<Publication> publications = new TreeSet<>();
 
-		public Builder(String accession, String name) {
+		public Builder(String name, String accession) {
 			this.name = name;
 			this.accession = accession;
+		}
+
+		public Builder(String name) {
+			this.name = name;
+		}
+
+		public Builder withAccession(String accession) {
+			this.accession = accession;
+			return this;
 		}
 
 		public Builder withDomain(String domain) {
@@ -407,53 +408,194 @@ public class Sample implements Comparable<Sample> {
 			return this;
 		}
 
-		public Builder withReleaseDate(String release) {
+		public Builder withRelease(String release) {
 			this.release = parseDateTime(release).toInstant();
 			return this;
 		}
 
-		public Builder withReleaseDate(Instant release) {
+		public Builder withRelease(Instant release) {
 			this.release = release;
 			return this;
 		}
 
-		public Builder withUpdateDate(Instant update) {
+		public Builder withUpdate(Instant update) {
 			this.update = update;
 			return this;
 		}
 
-		public Builder withUpdateDate(String update) {
+		public Builder withUpdate(String update) {
 			this.update = parseDateTime(update).toInstant();
 			return this;
 		}
 
-		public Builder withAttribute(Attribute attribute) {
+		/**
+		 * Replace builder's attributes with the provided attribute collection
+		 * @param attributes
+		 * @return
+		 */
+		public Builder withAttributes(Collection<Attribute> attributes) {
+			this.attributes = new TreeSet<>(attributes);
+			return this;
+		}
+
+		public Builder addAttribute(Attribute attribute) {
 			this.attributes.add(attribute);
 			return this;
 		}
 
-		public Builder withRelationship(Relationship relationship) {
+		public Builder addAllAttributes(Collection<Attribute> attributes) {
+			this.attributes.addAll(attributes);
+			return this;
+		}
+
+
+        /**
+		 * Replace builder's relationships with the provided relationships collection
+		 * @param relationships
+		 * @return
+		 */
+		public Builder withRelationships(Collection<Relationship> relationships) {
+			this.relationships = new TreeSet<>(relationships);
+			return this;
+		}
+
+		public Builder addRelationship(Relationship relationship) {
 			this.relationships.add(relationship);
 			return this;
 		}
 
-		public Builder withExternalReference(ExternalReference externalReference) {
+		public Builder addAllRelationships(Collection<Relationship> relationships) {
+			this.relationships.addAll(relationships);
+			return this;
+		}
+
+		/**
+		 * Replace builder's externalReferences with the provided external references collection
+		 * @param externalReferences
+		 * @return
+		 */
+		public Builder withExternalReferences(Collection<ExternalReference> externalReferences) {
+			this.externalReferences = new TreeSet<>(externalReferences);
+			return this;
+		}
+
+
+		public Builder addExternalReference(ExternalReference externalReference) {
 			this.externalReferences.add(externalReference);
 			return this;
 		}
 
-		public Builder withOrganization(Organization organization) {
+		public Builder addAllExternalReferences(Collection<ExternalReference> externalReferences) {
+			this.externalReferences.addAll(externalReferences);
+			return this;
+		}
+
+		/**
+		 * Replace builder's organisations with the provided organisation collection
+		 * @param organizations
+		 * @return
+		 */
+		public Builder withOrganizations(Collection<Organization> organizations) {
+			this.organizations = new TreeSet<>(organizations);
+			return this;
+		}
+
+		public Builder addOrganization(Organization organization) {
 			this.organizations.add(organization);
 			return this;
 		}
 
-		public Builder withContact(Contact contact) {
+		public Builder allAllOrganizations(Collection<Organization> organizations) {
+			this.organizations.addAll(organizations);
+			return this;
+		}
+
+		/**
+		 * Replace builder's contacts with the provided contact collection
+		 * @param contacts
+		 * @return
+		 */
+		public Builder withContacts(Collection<Contact> contacts) {
+			this.contacts = new TreeSet<>(contacts);
+			return this;
+		}
+
+		public Builder addContact(Contact contact) {
 			this.contacts.add(contact);
 			return this;
 		}
 
-		public Builder withPublication(Publication publication) {
+		public Builder addAllContacts(Collection<Contact> contacts) {
+			this.contacts.addAll(contacts);
+			return this;
+		}
+
+		/**
+		 * Replace the publications with the provided collections
+		 * @param publications
+		 * @return
+		 */
+		public Builder withPublications(Collection<Publication> publications) {
+			this.publications = new TreeSet<>(publications);
+			return this;
+		}
+
+		/**
+		 * Add a publication to the list of builder publications
+		 * @param publication
+		 * @return
+		 */
+		public Builder addPublication(Publication publication) {
 			this.publications.add(publication);
+			return this;
+		}
+
+		/**
+		 * Add all publications in the provided collection to the builder publications
+		 * @param publications
+		 * @return
+		 */
+		public Builder addAllPublications(Collection<Publication> publications) {
+			this.publications.addAll(publications);
+			return this;
+		}
+
+		// Clean accession field
+		public Builder withNoAccession() {
+			this.accession = null;
+			return this;
+		}
+
+		// Clean domain field
+		public Builder withNoDomain() {
+			this.domain = null;
+			return this;
+		}
+
+		// Clean collection fields
+		public Builder withNoAttributes() {
+			this.attributes = new TreeSet<>();
+			return this;
+		}
+
+		public Builder withNoRelationships() {
+			this.relationships = new TreeSet<>();
+			return this;
+		}
+		public Builder withNoExternalReferences() {
+			this.externalReferences = new TreeSet<>();
+			return this;
+		}
+		public Builder withNoContacts() {
+			this.contacts = new TreeSet<>();
+			return this;
+		}
+		public Builder withNoOrganisations() {
+			this.organizations = new TreeSet<>();
+			return this;
+		}
+		public Builder withNoPublications() {
+			this.publications = new TreeSet<>();
 			return this;
 		}
 
@@ -477,6 +619,19 @@ public class Sample implements Comparable<Sample> {
 
 		}
 
+		/**
+		 * Return a Builder produced extracting informations from the sample
+		 * @param sample the sample to use as reference
+		 * @return the Builder
+		 */
+		public static Builder fromSample(Sample sample) {
+			return new Builder(sample.getName(), sample.getAccession()).withDomain(sample.getDomain())
+					.withRelease(sample.getRelease()).withUpdate(sample.getUpdate())
+					.withAttributes(sample.getAttributes())
+					.withRelationships(sample.getRelationships()).withExternalReferences(sample.getExternalReferences())
+					.withOrganizations(sample.getOrganizations()).withPublications(sample.getPublications())
+					.withContacts(sample.getContacts());
+		}
 
 		private DateTimeFormatter getFormatter() {
 			return new DateTimeFormatterBuilder()
