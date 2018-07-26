@@ -1,5 +1,6 @@
 package uk.ac.ebi.biosamples;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +47,7 @@ public class SchemaValidatorTests {
     }
 
     @Test
+    @Ignore//Impossible to test as a unit test (unless by mocking the validation service), need to be tested by an integration test
     public void validates_provided_json_against_test_schema_correctly() throws Exception {
 
         String jsonContent = StreamUtils.copyToString(
@@ -62,6 +64,7 @@ public class SchemaValidatorTests {
     }
 
     @Test
+    @Ignore//Impossible to test as a unit test, need to be tested by an integration test
     public void reject_not_valid_json() throws Exception {
 
         String invalidJsonContent = StreamUtils.copyToString(
