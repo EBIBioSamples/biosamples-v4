@@ -120,7 +120,7 @@ public class CurationReadService {
 //				sample.getRelease(), update, attributes, sample.getRelationships(), externalReferences,
 //				sample.getOrganizations(), sample.getContacts(), sample.getPublications());
         return Sample.Builder.fromSample(sample)
-				.withUpdateDate(update)
+				.withUpdate(update)
 				.withAttributes(attributes)
 				.withExternalReferences(externalReferences)
 				.build();

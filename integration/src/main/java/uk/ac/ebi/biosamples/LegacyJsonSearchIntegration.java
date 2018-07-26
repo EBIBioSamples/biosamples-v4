@@ -419,7 +419,7 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
 
 //            return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, relationships, externalReferences);
             return new Sample.Builder(name, accession).withDomain("self.BiosampleIntegrationTest")
-                    .withReleaseDate(release).withUpdateDate(update)
+                    .withRelease(release).withUpdate(update)
                     .withAttributes(attributes)
                     .withRelationships(relationships)
                     .withExternalReferences(externalReferences).build();
@@ -443,7 +443,7 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
 //            		attributes, relationships, null,
 //            		null, null, null);
             return new Sample.Builder(name, accession).withDomain(domain)
-                    .withReleaseDate(release).withUpdateDate(update)
+                    .withRelease(release).withUpdate(update)
                     .withAttributes(attributes).withRelationships(relationships).build();
 
         }
@@ -488,7 +488,7 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
 
 //            return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences, organizations, contacts, publications);
             return new Sample.Builder(name, accession).withDomain(domain)
-                    .withReleaseDate(release).withUpdateDate(update)
+                    .withRelease(release).withUpdate(update)
                     .withAttributes(attributes).withRelationships(relationships).withExternalReferences(externalReferences)
                     .withOrganizations(organizations).withContacts(contacts).withPublications(publications)
                     .build();
@@ -535,7 +535,7 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
 
 //            return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences, organizations, contacts, publications);
             return new Sample.Builder(name, accession).withDomain(domain)
-                    .withReleaseDate(release).withUpdateDate(update)
+                    .withRelease(release).withUpdate(update)
                     .withAttributes(attributes).withRelationships(relationships).withExternalReferences(externalReferences)
                     .withOrganizations(organizations).withContacts(contacts).withPublications(publications)
                     .build();

@@ -434,22 +434,22 @@ public class Sample implements Comparable<Sample> {
 			return this;
 		}
 
-		public Builder withReleaseDate(String release) {
+		public Builder withRelease(String release) {
 			this.release = parseDateTime(release).toInstant();
 			return this;
 		}
 
-		public Builder withReleaseDate(Instant release) {
+		public Builder withRelease(Instant release) {
 			this.release = release;
 			return this;
 		}
 
-		public Builder withUpdateDate(Instant update) {
+		public Builder withUpdate(Instant update) {
 			this.update = update;
 			return this;
 		}
 
-		public Builder withUpdateDate(String update) {
+		public Builder withUpdate(String update) {
 			this.update = parseDateTime(update).toInstant();
 			return this;
 		}
@@ -680,7 +680,7 @@ public class Sample implements Comparable<Sample> {
 		 */
 		public static Builder fromSample(Sample sample) {
 			return new Builder(sample.getName(), sample.getAccession()).withDomain(sample.getDomain())
-					.withReleaseDate(sample.getRelease()).withUpdateDate(sample.getUpdate())
+					.withRelease(sample.getRelease()).withUpdate(sample.getUpdate())
 					.withAttributes(sample.getAttributes()).withData(sample.getData())
 					.withRelationships(sample.getRelationships()).withExternalReferences(sample.getExternalReferences())
 					.withOrganizations(sample.getOrganizations()).withPublications(sample.getPublications())

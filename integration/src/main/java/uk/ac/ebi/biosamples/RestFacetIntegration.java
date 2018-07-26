@@ -140,7 +140,7 @@ public class RestFacetIntegration extends AbstractIntegration {
 
 //		return Sample.build(name, accession, domain, release, update, attributes, null, null, null, null, null);
 		return new Sample.Builder(name, accession).withDomain(domain)
-				.withReleaseDate(release).withUpdateDate(update)
+				.withRelease(release).withUpdate(update)
 				.withAttributes(attributes)
 				.build();
 	}
@@ -158,7 +158,7 @@ public class RestFacetIntegration extends AbstractIntegration {
 
 //		return Sample.build(name, accession, domain, release, update, null, null, externalReferences, null, null, null);
 		return new Sample.Builder(name, accession).withDomain(domain)
-				.withReleaseDate(release).withUpdateDate(update)
+				.withRelease(release).withUpdate(update)
 				.withExternalReferences(externalReferences)
 				.build();
 	}
@@ -175,7 +175,7 @@ public class RestFacetIntegration extends AbstractIntegration {
 
 //		return Sample.build(name, accession, domain, release, update, null, null, externalReferences, null, null, null);
 		return new Sample.Builder(name, accession).withDomain(domain)
-				.withReleaseDate(release).withUpdateDate(update)
+				.withRelease(release).withUpdate(update)
 				.withExternalReferences(externalReferences)
 				.build();
 

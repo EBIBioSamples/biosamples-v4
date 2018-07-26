@@ -129,7 +129,7 @@ public class JsonLdIntegration extends AbstractIntegration {
 //        return Sample.build(name, accession, domain, release, update,
 //                attributes,null,externalReferences, null, null, null);
         return new Sample.Builder(name, accession).withDomain(domain)
-                .withReleaseDate(release).withUpdateDate(update)
+                .withRelease(release).withUpdate(update)
                 .withAttributes(attributes).withExternalReferences(externalReferences).build();
     }
 

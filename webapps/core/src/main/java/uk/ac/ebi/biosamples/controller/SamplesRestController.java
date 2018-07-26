@@ -294,7 +294,7 @@ public class SamplesRestController {
 //					sample.getRelease(), Instant.now(),
 //					sample.getCharacteristics(), sample.getRelationships(), sample.getExternalReferences(),
 //					sample.getOrganizations(), sample.getContacts(), sample.getPublications());
-            sample = Sample.Builder.fromSample(sample).withUpdateDate(Instant.now()).build();
+            sample = Sample.Builder.fromSample(sample).withUpdate(Instant.now()).build();
 		}
 
 		if (!setFullDetails) {

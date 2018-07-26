@@ -631,7 +631,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
             attributes.add(
                     Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
 //            return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
-            return new Sample.Builder(name, accession).withDomain(domain).withReleaseDate(release).withUpdateDate(update)
+            return new Sample.Builder(name, accession).withDomain(domain).withRelease(release).withUpdate(update)
                     .withAttributes(attributes)
                     .build();
         }
@@ -648,7 +648,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
                     Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
 
 //            return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
-            return new Sample.Builder(name, accession).withDomain(domain).withReleaseDate(release).withUpdateDate(update)
+            return new Sample.Builder(name, accession).withDomain(domain).withRelease(release).withUpdate(update)
                     .withAttributes(attributes)
                     .build();
 
@@ -666,7 +666,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
 
 //            return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
 
-            return new Sample.Builder(name, accession).withDomain(domain).withReleaseDate(release).withUpdateDate(update)
+            return new Sample.Builder(name, accession).withDomain(domain).withRelease(release).withUpdate(update)
                     .build();
 
         }
@@ -682,7 +682,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
             relationships.add(Relationship.build(accession, "has member", getSampleWithinGroup().getAccession()));
 
 //            return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, new TreeSet<>(), relationships, new TreeSet<>(), null, null, null);
-            return new Sample.Builder(name, accession).withDomain(domain).withReleaseDate(release).withUpdateDate(update)
+            return new Sample.Builder(name, accession).withDomain(domain).withRelease(release).withUpdate(update)
                     .withRelationships(relationships)
                     .build();
 
@@ -698,7 +698,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
 //            return Sample.build(name, accession, submissionDomain, release, update, null,
 //                    null, null, null, null,
 //                    null);
-            return new Sample.Builder(name, accession).withDomain(domain).withReleaseDate(release).withUpdateDate(update)
+            return new Sample.Builder(name, accession).withDomain(domain).withRelease(release).withUpdate(update)
                     .build();
 
 
@@ -718,7 +718,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
 //            return Sample.build(name, accession, submissionDomain, release, update,
 //                    null, null, null,
 //                    null, contacts, null);
-            return new Sample.Builder(name, accession).withDomain(domain).withReleaseDate(release).withUpdateDate(update)
+            return new Sample.Builder(name, accession).withDomain(domain).withRelease(release).withUpdate(update)
                     .withContacts(contacts)
                     .build();
 
@@ -744,7 +744,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
 //            return Sample.build(name, accession, submissionDomain, release, update,
 //                    null, null, null,
 //                    organizations, contacts, publications);
-            return new Sample.Builder(name, accession).withDomain(domain).withReleaseDate(release).withUpdateDate(update)
+            return new Sample.Builder(name, accession).withDomain(domain).withRelease(release).withUpdate(update)
                     .withOrganizations(organizations).withContacts(contacts).withPublications(publications)
                     .build();
         }
@@ -759,7 +759,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
 //            return Sample.build(name, accession, submissionDomain, release, update,
 //                    null, null, null,
 //                    null, null, null);
-            return new Sample.Builder(name, accession).withDomain(domain).withReleaseDate(release).withUpdateDate(update)
+            return new Sample.Builder(name, accession).withDomain(domain).withRelease(release).withUpdate(update)
                     .build();
 
         }
@@ -778,7 +778,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
 //            return Sample.build(name, accession, submissionDomain, release, update,
 //                    attributes, null, null,
 //                    null, null, null);
-            return new Sample.Builder(name, accession).withDomain(domain).withReleaseDate(release).withUpdateDate(update)
+            return new Sample.Builder(name, accession).withDomain(domain).withRelease(release).withUpdate(update)
                     .withAttributes(attributes)
                     .build();
 

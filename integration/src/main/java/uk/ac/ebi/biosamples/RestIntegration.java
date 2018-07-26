@@ -88,8 +88,8 @@ public class RestIntegration extends AbstractIntegration {
 //				Instant.parse("2116-04-01T11:36:57.00Z"), sampleTest1.getUpdate(),
 //				sampleTest1.getCharacteristics(), sampleTest1.getRelationships(), sampleTest1.getExternalReferences(), null, null, null);
         sampleTest1 = new Sample.Builder(sampleTest1.getName(), sampleTest1.getAccession())
-				.withDomain(sampleTest1.getDomain()).withReleaseDate("2116-04-01T11:36:57.00Z")
-				.withUpdateDate(sampleTest1.getUpdate()).withAttributes(sampleTest1.getCharacteristics())
+				.withDomain(sampleTest1.getDomain()).withRelease("2116-04-01T11:36:57.00Z")
+				.withUpdate(sampleTest1.getUpdate()).withAttributes(sampleTest1.getCharacteristics())
 				.withRelationships(sampleTest1.getRelationships()).withExternalReferences(sampleTest1.getExternalReferences())
 				.build();
 
@@ -180,7 +180,7 @@ public class RestIntegration extends AbstractIntegration {
 //		sampleTest1 = Sample.build(sampleTest1.getName(), sampleTest1.getAccession(), sampleTest1.getDomain(),
 //				Instant.parse("2116-04-01T11:36:57.00Z"), sampleTest1.getUpdate(),
 //				sampleTest1.getCharacteristics(), new TreeSet<>(), sampleTest1.getExternalReferences(), null, null, null);
-        sampleTest1 = Sample.Builder.fromSample(sampleTest1).withReleaseDate("2116-04-01T11:36:57.00Z")
+        sampleTest1 = Sample.Builder.fromSample(sampleTest1).withRelease("2116-04-01T11:36:57.00Z")
 				.withNoRelationships().withNoContacts().withNoPublications().withNoOrganisations()
 				.build();
 		Resource<Sample> resource = client.persistSampleResource(sampleTest1);
@@ -283,7 +283,7 @@ public class RestIntegration extends AbstractIntegration {
 
 //		return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences, organizations, contacts, publications);
         return new Sample.Builder(name, accession)
-				.withReleaseDate(release).withUpdateDate(update).withDomain(domain)
+				.withRelease(release).withUpdate(update).withDomain(domain)
 				.withAttributes(attributes)
 				.withRelationships(relationships).withExternalReferences(externalReferences)
 				.withOrganizations(organizations).withContacts(contacts).withPublications(publications)
@@ -308,7 +308,7 @@ public class RestIntegration extends AbstractIntegration {
 		attributes.add(Attribute.build("UTF-8 test", "αβ"));
 
 //		return Sample.build(name, accession, domain, release, update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
-		return new Sample.Builder(name, accession).withDomain(domain).withReleaseDate(release).withUpdateDate(update)
+		return new Sample.Builder(name, accession).withDomain(domain).withRelease(release).withUpdate(update)
 				.withAttributes(attributes).build();
 	}
 

@@ -94,7 +94,7 @@ public class XmlGroupToSampleConverter implements Converter<Element, Sample>  {
 //				attributes, relationships, externalReferences,
 //				organizations, contacts, publications);
         return new Sample.Builder(name, accession)
-				.withReleaseDate(release).withUpdateDate(update)
+                .withRelease(release).withUpdate(update)
 				.withAttributes(attributes).withRelationships(relationships)
 				.withExternalReferences(externalReferences).withOrganizations(organizations)
 				.withContacts(contacts).withPublications(publications)

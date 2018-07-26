@@ -74,7 +74,7 @@ public class TestSample {
 
     public Sample build() {
         return new Sample.Builder(this.name, this.accession)
-                .withDomain(testDomain).withReleaseDate(this.releaseDate).withUpdateDate(Instant.now())
+                .withDomain(testDomain).withRelease(this.releaseDate).withUpdate(Instant.now())
                 .withAttributes(attributes).withRelationships(relationships).withExternalReferences(externalReferences)
                 .withOrganizations(organizations).withContacts(contacts).withPublications(publications)
                 .build();

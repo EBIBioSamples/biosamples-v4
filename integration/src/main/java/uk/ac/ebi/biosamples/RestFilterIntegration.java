@@ -254,7 +254,7 @@ public class RestFilterIntegration extends AbstractIntegration{
 
 //        return Sample.build(name, accession, domain, release, update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
         return new Sample.Builder(name, accession).withDomain(domain)
-                .withReleaseDate(release).withUpdateDate(update)
+                .withRelease(release).withUpdate(update)
                 .withAttributes(attributes)
                 .build();
     }
@@ -272,7 +272,7 @@ public class RestFilterIntegration extends AbstractIntegration{
 
 //        return Sample.build(name, accession, domain, release, update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
         return new Sample.Builder(name, accession).withDomain(domain)
-                .withReleaseDate(release).withUpdateDate(update)
+                .withRelease(release).withUpdate(update)
                 .withAttributes(attributes)
                 .build();
     }
@@ -290,7 +290,7 @@ public class RestFilterIntegration extends AbstractIntegration{
 
 //        return Sample.build(name, accession, domain, release, update, null, relations, new TreeSet<>(), null, null, null);
         return new Sample.Builder(name, accession).withDomain(domain)
-                .withReleaseDate(release).withUpdateDate(update)
+                .withRelease(release).withUpdate(update)
                 .withRelationships(relations)
                 .build();
     }

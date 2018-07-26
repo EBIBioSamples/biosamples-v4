@@ -154,8 +154,8 @@ public class ETagIntegration extends AbstractIntegration {
         return new Sample.Builder("ETAG sample test")
                 .withAccession("SAMETAG2031")
                 .withDomain("self.BiosampleIntegrationTest")
-                .withReleaseDate("2017-01-01T12:00:00")
-                .withUpdateDate("2017-01-01T12:00:00")
+                .withRelease("2017-01-01T12:00:00")
+                .withUpdate("2017-01-01T12:00:00")
                 .addAttribute(Attribute.build("organism", "human"))
                 .build();
 
