@@ -12,7 +12,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.exception.SampleNotFoundException;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.service.*;
+import uk.ac.ebi.biosamples.service.BioSamplesAapService;
+import uk.ac.ebi.biosamples.service.SampleManipulationService;
+import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
+import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.utils.LinkUtils;
 
 import java.time.Instant;
@@ -98,9 +101,12 @@ public class SampleRestController {
 	public Sample getSampleXml(@PathVariable String accession) {
 		Sample sample = this.getSampleHal(accession, "true", null).getContent();
 		if (!sample.getAccession().matches("SAMEG\\d+")) {
-			sample = Sample.build(sample.getName(),sample.getAccession(), sample.getDomain(),
-					sample.getRelease(), sample.getUpdate(), sample.getCharacteristics(), sample.getRelationships(),
-					sample.getExternalReferences(), null, null, null);
+//			sample = Sample.build(sample.getName(),sample.getAccession(), sample.getDomain(),
+//					sample.getRelease(), sample.getUpdate(), sample.getCharacteristics(), sample.getRelationships(),
+//					sample.getExternalReferences(), null, null, null);
+            sample = Sample.Builder.fromSample(sample)
+					.withNoOrganisations().withNoPublications().withNoContacts()
+					.build();
 		}
 		//TODO cache control		
 		return sample;
@@ -149,10 +155,11 @@ public class SampleRestController {
 		//TODO limit use of this method to write super-users only
 		//if (bioSamplesAapService.isWriteSuperUser() && setUpdateDate) {
 		if (setUpdateDate) {
-			sample = Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(), 
-				sample.getRelease(), Instant.now(),
-				sample.getCharacteristics(), sample.getRelationships(), sample.getExternalReferences(), 
-				sample.getOrganizations(), sample.getContacts(), sample.getPublications());
+//			sample = Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(),
+//				sample.getRelease(), Instant.now(),
+//				sample.getCharacteristics(), sample.getRelationships(), sample.getExternalReferences(),
+//				sample.getOrganizations(), sample.getContacts(), sample.getPublications());
+            sample = Sample.Builder.fromSample(sample).withUpdateDate(Instant.now()).build();
 		}
 
 		if (!setFullDetails) {

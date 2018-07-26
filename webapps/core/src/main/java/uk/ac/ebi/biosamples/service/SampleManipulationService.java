@@ -1,16 +1,14 @@
 package uk.ac.ebi.biosamples.service;
 
+import com.google.common.base.Strings;
+import org.springframework.stereotype.Service;
+import uk.ac.ebi.biosamples.model.Contact;
+import uk.ac.ebi.biosamples.model.Sample;
+
 import java.time.Instant;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
-
-import org.springframework.stereotype.Service;
-
-import com.google.common.base.Strings;
-
-import uk.ac.ebi.biosamples.model.Contact;
-import uk.ac.ebi.biosamples.model.Sample;
 
 @Service
 public class SampleManipulationService {
@@ -25,10 +23,11 @@ public class SampleManipulationService {
                 .map(this::removeContactLegacyFields)
                 .collect(Collectors.toCollection(TreeSet::new));
 
-        return Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(),
-                sample.getRelease(), sample.getUpdate(), sample.getCharacteristics(),
-                sample.getRelationships(), sample.getExternalReferences(), sample.getOrganizations(),
-                contacts, sample.getPublications());
+//        return Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(),
+//                sample.getRelease(), sample.getUpdate(), sample.getCharacteristics(),
+//                sample.getRelationships(), sample.getExternalReferences(), sample.getOrganizations(),
+//                contacts, sample.getPublications());
+        return Sample.Builder.fromSample(sample).withContacts(contacts).build();
     }
 
     /**
@@ -37,10 +36,11 @@ public class SampleManipulationService {
      * @return sample which update date is set to current instant
      */
     public Sample setUpdateDateToNow(Sample sample) {
-        return Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(),
-                sample.getRelease(), Instant.now(),
-                sample.getCharacteristics(), sample.getRelationships(), sample.getExternalReferences(),
-                sample.getOrganizations(), sample.getContacts(), sample.getPublications());
+//        return Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(),
+//                sample.getRelease(), Instant.now(),
+//                sample.getCharacteristics(), sample.getRelationships(), sample.getExternalReferences(),
+//                sample.getOrganizations(), sample.getContacts(), sample.getPublications());
+        return Sample.Builder.fromSample(sample).withUpdateDate(Instant.now()).build();
     }
 
 

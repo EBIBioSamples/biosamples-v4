@@ -1,30 +1,13 @@
 package uk.ac.ebi.biosamples.legacy.json.service;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.*;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
+import uk.ac.ebi.biosamples.model.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jayway.jsonpath.Configuration;
-import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.JsonPath;
-import com.jayway.jsonpath.Option;
-import com.jayway.jsonpath.ParseContext;
-
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Contact;
-import uk.ac.ebi.biosamples.model.ExternalReference;
-import uk.ac.ebi.biosamples.model.Organization;
-import uk.ac.ebi.biosamples.model.Publication;
-import uk.ac.ebi.biosamples.model.Relationship;
-import uk.ac.ebi.biosamples.model.Sample;
+import java.util.*;
+import java.util.Map.Entry;
 
 
 @Service
@@ -59,23 +42,21 @@ public class JSONSampleToSampleConverter implements Converter<String, Sample> {
         SortedSet<Organization> organizations = getOrganizations(jsonDoc);
         SortedSet<ExternalReference> embeddedExternalReferences = getEmbeddedExternalReferences(jsonDoc);
 
-        Sample.Builder sampleBuilder = new Sample.Builder(accession, sampleName)
+        Sample.Builder sampleBuilder = new Sample.Builder(sampleName, accession)
                 .withUpdateDate(updateDate)
-                .withReleaseDate(releaseDate);
+                .withReleaseDate(releaseDate)
+                .withAttributes(attributes)
+                .addAllAttributes(submissionInfo)
+                .withContacts(contacts).withPublications(publications).withOrganizations(organizations)
+                .withExternalReferences(embeddedExternalReferences);
 
         if (description != null && description.trim().length() > 0) {
-            sampleBuilder.withAttribute(Attribute.build("description", description));
+            sampleBuilder.addAttribute(Attribute.build("description", description));
         }
 
-        attributes.forEach(sampleBuilder::withAttribute);
-        submissionInfo.forEach(sampleBuilder::withAttribute);
-        contacts.forEach(sampleBuilder::withContact);
-        publications.forEach(sampleBuilder::withPublication);
-        organizations.forEach(sampleBuilder::withOrganization);
-        embeddedExternalReferences.forEach(sampleBuilder::withExternalReference);
 
         if (accession.startsWith("SAMEG")) {
-            getGroupRelationships(jsonDoc).forEach(sampleBuilder::withRelationship);
+            sampleBuilder.addAllRelationships(getGroupRelationships(jsonDoc));
         }
 
         return sampleBuilder.build();

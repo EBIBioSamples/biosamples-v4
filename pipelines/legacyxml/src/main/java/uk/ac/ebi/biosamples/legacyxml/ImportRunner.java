@@ -1,19 +1,6 @@
 package uk.ac.ebi.biosamples.legacyxml;
 
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Future;
-import java.util.zip.GZIPInputStream;
-
+import com.opencsv.CSVReader;
 import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,9 +9,6 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
 import org.xml.sax.Attributes;
-
-import com.opencsv.CSVReader;
-
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -33,6 +17,16 @@ import uk.ac.ebi.biosamples.service.XmlSampleToSampleConverter;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 import uk.ac.ebi.biosamples.utils.XmlFragmenter;
 import uk.ac.ebi.biosamples.utils.XmlFragmenter.ElementCallback;
+
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.concurrent.Future;
+import java.util.zip.GZIPInputStream;
 
 @Component
 public class ImportRunner implements ApplicationRunner {
@@ -169,10 +163,11 @@ public class ImportRunner implements ApplicationRunner {
 			}
 
 			//need to specify domain
-			sample = Sample.build(sample.getName(), sample.getAccession(), DOMAIN, 
-					sample.getRelease(), sample.getUpdate(), 
-					sample.getAttributes(), sample.getRelationships(), sample.getExternalReferences(),
-					sample.getOrganizations(), sample.getContacts(), sample.getPublications());
+//			sample = Sample.build(sample.getName(), sample.getAccession(), DOMAIN,
+//					sample.getRelease(), sample.getUpdate(),
+//					sample.getAttributes(), sample.getRelationships(), sample.getExternalReferences(),
+//					sample.getOrganizations(), sample.getContacts(), sample.getPublications());
+            sample = Sample.Builder.fromSample(sample).withDomain(DOMAIN).build();
 			
 			//need to add "has member" relationships
 			if (groupMembership.containsKey(sample.getAccession())) {

@@ -51,10 +51,15 @@ public class CurationApplicationService {
 			}
 			externalReferences.add(externalReference);
 		}
-		
-		return Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(), 
-				sample.getRelease(), sample.getUpdate(), attributes, sample.getRelationships(), externalReferences, 
-				sample.getOrganizations(), sample.getContacts(), sample.getPublications());
+
+
+//		return Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(),
+//				sample.getRelease(), sample.getUpdate(), attributes, sample.getRelationships(), externalReferences,
+//				sample.getOrganizations(), sample.getContacts(), sample.getPublications());
+        return Sample.Builder.fromSample(sample)
+				.withAttributes(attributes)
+				.withExternalReferences(externalReferences)
+				.build();
 	}
 	
 	public Sample applyAllCurationToSample(Sample sample, Collection<Curation> curations) {

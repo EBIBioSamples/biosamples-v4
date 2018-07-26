@@ -1,14 +1,5 @@
 package uk.ac.ebi.biosamples;
 
-import java.io.StringReader;
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
@@ -16,30 +7,21 @@ import org.dom4j.io.SAXReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.context.annotation.Profile;
 import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.RequestEntity;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Contact;
-import uk.ac.ebi.biosamples.model.Organization;
-import uk.ac.ebi.biosamples.model.Publication;
-import uk.ac.ebi.biosamples.model.Relationship;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.model.legacyxml.BioSample;
 import uk.ac.ebi.biosamples.model.legacyxml.ResultQuery;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
+
+import java.io.StringReader;
+import java.time.Instant;
+import java.util.*;
 
 @Component
 public class XmlSearchIntegration extends AbstractIntegration {
@@ -641,18 +623,23 @@ public class XmlSearchIntegration extends AbstractIntegration {
         public static Sample getRegularSample() {
             String name = "Test XML Sample";
             String accession = "SAMEA999999";
+            String domain = "self.BiosampleIntegrationTest";
             Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
             Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
             SortedSet<Attribute> attributes = new TreeSet<>();
             attributes.add(
                     Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
-            return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
+//            return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
+            return new Sample.Builder(name, accession).withDomain(domain).withReleaseDate(release).withUpdateDate(update)
+                    .withAttributes(attributes)
+                    .build();
         }
 
         public static Sample getPrivateSample() {
             String name = "Private XML sample";
             String accession = "SAMEA888888";
+            String domain = "self.BiosampleIntegrationTest";
             Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
             Instant release = Instant.parse("2116-04-01T11:36:57.00Z");
 
@@ -660,50 +647,67 @@ public class XmlSearchIntegration extends AbstractIntegration {
             attributes.add(
                     Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
 
-            return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
+//            return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
+            return new Sample.Builder(name, accession).withDomain(domain).withReleaseDate(release).withUpdateDate(update)
+                    .withAttributes(attributes)
+                    .build();
 
         }
 
         public static Sample getSampleWithinGroup() {
             String name = "Sample part of group";
             String accession = "SAMEA777777";
+            String domain = "self.BiosampleIntegrationTest";
             Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
             Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
-            SortedSet<Attribute> attributes = new TreeSet<>();
+//            SortedSet<Attribute> attributes = new TreeSet<>();
 
 
-            return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
+//            return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
+
+            return new Sample.Builder(name, accession).withDomain(domain).withReleaseDate(release).withUpdateDate(update)
+                    .build();
 
         }
 
         public static Sample getSampleGroup() {
             String name = "Test XML sample group";
             String accession = "SAMEG001122";
+            String domain = "self.BiosampleIntegrationTest";
             Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
             Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
             SortedSet<Relationship> relationships = new TreeSet<>();
             relationships.add(Relationship.build(accession, "has member", getSampleWithinGroup().getAccession()));
 
-            return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, new TreeSet<>(), relationships, new TreeSet<>(), null, null, null);
+//            return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, new TreeSet<>(), relationships, new TreeSet<>(), null, null, null);
+            return new Sample.Builder(name, accession).withDomain(domain).withReleaseDate(release).withUpdateDate(update)
+                    .withRelationships(relationships)
+                    .build();
+
         }
 
         public static Sample getSampleWithSpecificUpdateDate() {
             String name = "Test XML sample for update date";
             String accession = "SAME101010";
+            String domain = "self.BiosampleIntegrationTest";
             Instant update = Instant.now();
             Instant release = Instant.parse("1980-08-02T00:30:00Z");
 
-            return Sample.build(name, accession, submissionDomain, release, update, null,
-                    null, null, null, null,
-                    null);
+//            return Sample.build(name, accession, submissionDomain, release, update, null,
+//                    null, null, null, null,
+//                    null);
+            return new Sample.Builder(name, accession).withDomain(domain).withReleaseDate(release).withUpdateDate(update)
+                    .build();
+
 
         }
 
         public static Sample getSampleWithContactInformations() {
             String name = "Test XML sample with contact information";
             String accession = "SAME114477";
+            String domain = "self.BiosampleIntegrationTest";
             Instant update = Instant.now();
             Instant release = Instant.parse("1980-08-02T00:30:00Z");
 
@@ -711,14 +715,19 @@ public class XmlSearchIntegration extends AbstractIntegration {
             contacts.add(new Contact.Builder().firstName("Loca").lastName("Lol").build());
 
 
-            return Sample.build(name, accession, submissionDomain, release, update,
-                    null, null, null,
-                    null, contacts, null);
+//            return Sample.build(name, accession, submissionDomain, release, update,
+//                    null, null, null,
+//                    null, contacts, null);
+            return new Sample.Builder(name, accession).withDomain(domain).withReleaseDate(release).withUpdateDate(update)
+                    .withContacts(contacts)
+                    .build();
+
         }
 
         public static Sample getGroupWithFullMsiDetails() {
             String name = "Test XML group with contact information and other";
             String accession = "SAMEG114477";
+            String domain = "self.BiosampleIntegrationTest";
             Instant update = Instant.now();
             Instant release = Instant.parse("1980-08-02T00:30:00Z");
 
@@ -732,26 +741,33 @@ public class XmlSearchIntegration extends AbstractIntegration {
             SortedSet<Publication> publications = new TreeSet<>();
             publications.add(new Publication.Builder().doi("123123").pubmed_id("someID").build());
 
-            return Sample.build(name, accession, submissionDomain, release, update,
-                    null, null, null,
-                    organizations, contacts, publications);
+//            return Sample.build(name, accession, submissionDomain, release, update,
+//                    null, null, null,
+//                    organizations, contacts, publications);
+            return new Sample.Builder(name, accession).withDomain(domain).withReleaseDate(release).withUpdateDate(update)
+                    .withOrganizations(organizations).withContacts(contacts).withPublications(publications)
+                    .build();
         }
 
         public static Sample getSampleReleasedAtTheEndOfTheDay() {
             String name = "Test XML Sample with release date almost at the end of the day";
             String accession = "SAMD0912312";
+            String domain = "self.BiosampleIntegrationTest";
             Instant update = Instant.now();
             Instant release = Instant.parse("2016-08-02T23:59:59Z");
 
-            return Sample.build(name, accession, submissionDomain, release, update,
-                    null, null, null,
-                    null, null, null);
+//            return Sample.build(name, accession, submissionDomain, release, update,
+//                    null, null, null,
+//                    null, null, null);
+            return new Sample.Builder(name, accession).withDomain(domain).withReleaseDate(release).withUpdateDate(update)
+                    .build();
 
         }
 
         public static Sample getSampleReleasedExaclyTheDayAfterSAMD0912312() {
             String name = "Test XML Sample SAMD0912313";
             String accession = "SAMD0912313";
+            String domain = "self.BiosampleIntegrationTest";
             Instant update = Instant.now();
             Instant release = Instant.parse("2016-08-03T00:00:00Z");
 
@@ -759,9 +775,12 @@ public class XmlSearchIntegration extends AbstractIntegration {
             attributes.add(new Attribute.Builder("description",
                     "Sample released exactly at midnight of the day after another sample was released").build());
 
-            return Sample.build(name, accession, submissionDomain, release, update,
-                    attributes, null, null,
-                    null, null, null);
+//            return Sample.build(name, accession, submissionDomain, release, update,
+//                    attributes, null, null,
+//                    null, null, null);
+            return new Sample.Builder(name, accession).withDomain(domain).withReleaseDate(release).withUpdateDate(update)
+                    .withAttributes(attributes)
+                    .build();
 
         }
     }

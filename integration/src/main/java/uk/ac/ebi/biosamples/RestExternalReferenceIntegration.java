@@ -2,6 +2,7 @@ package uk.ac.ebi.biosamples;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.*;
@@ -12,6 +13,8 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 @Component
+@Order(6)
+//@Profile({ "default", "rest" })
 public class RestExternalReferenceIntegration extends AbstractIntegration {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
@@ -130,7 +133,11 @@ public class RestExternalReferenceIntegration extends AbstractIntegration {
 		externalReferences.add(ExternalReference.build("http://www.test.com/9"));
 		externalReferences.add(ExternalReference.build("http://www.test.com/0"));
 
-		return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences, null, null, null);
+//		return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences, null, null, null);
+		return new Sample.Builder(name, accession).withDomain(domain)
+				.withReleaseDate(release).withUpdateDate(update)
+				.withAttributes(attributes).withRelationships(relationships).withExternalReferences(externalReferences)
+				.build();
 	}
 
 }

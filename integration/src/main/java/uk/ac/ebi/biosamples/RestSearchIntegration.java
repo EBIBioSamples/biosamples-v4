@@ -2,6 +2,7 @@ package uk.ac.ebi.biosamples;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.annotation.Order;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
@@ -13,6 +14,8 @@ import java.time.Instant;
 import java.util.*;
 
 @Component
+@Order(1)
+//@Profile({"default", "rest"})
 public class RestSearchIntegration extends AbstractIntegration {;
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
@@ -50,8 +53,9 @@ public class RestSearchIntegration extends AbstractIntegration {;
 		// Build inverse relationships for sample5
 		SortedSet<Relationship> test5AllRelationships = test5.getRelationships();
 		test5AllRelationships.add(Relationship.build(test4.getAccession(), "derive to", test5.getAccession()));
-		test5 = Sample.build(test5.getName(), test5.getAccession(), test5.getDomain(), test5.getRelease(), test5.getUpdate(),
-				test5.getCharacteristics(), test5AllRelationships, test5.getExternalReferences(), null, null, null);
+//		test5 = Sample.build(test5.getName(), test5.getAccession(), test5.getDomain(), test5.getRelease(), test5.getUpdate(),
+//				test5.getCharacteristics(), test5AllRelationships, test5.getExternalReferences(), null, null, null);
+        test5 = Sample.Builder.fromSample(test5).withRelationships(test5AllRelationships).build();
 		if (!test5.equals(resource.getContent())) {
 			throw new RuntimeException("Expected response ("+resource.getContent()+") to equal submission ("+test5+")");
 		}
@@ -146,6 +150,7 @@ public class RestSearchIntegration extends AbstractIntegration {;
 	private Sample getSampleTest1() {
 		String name = "Test Sample";
 		String accession = "TESTrestsearch1";
+		String domain = "self.BiosampleIntegrationTest";
 		Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
 		Instant release = Instant.parse("2116-04-01T11:36:57.00Z");
 
@@ -153,12 +158,15 @@ public class RestSearchIntegration extends AbstractIntegration {;
 		attributes.add(
 				Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
 
-		return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
+//		return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
+		return new Sample.Builder(name, accession).withDomain(domain).withReleaseDate(release).withUpdateDate(update)
+				.withAttributes(attributes).build();
 	}
 
 	private Sample getSampleTest2() {
 		String name = "Test Sample the second";
 		String accession = "TESTrestsearch2";
+		String domain = "self.BiosampleIntegrationTest";
 		Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
 		Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
@@ -169,12 +177,15 @@ public class RestSearchIntegration extends AbstractIntegration {;
 		SortedSet<Relationship> relationships = new TreeSet<>();
 		relationships.add(Relationship.build("TESTrestsearch2", "derived from", "TESTrestsearch3"));
 		
-		return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, relationships, new TreeSet<>(), null, null, null);
+//		return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, relationships, new TreeSet<>(), null, null, null);
+		return new Sample.Builder(name, accession).withDomain(domain).withReleaseDate(release).withUpdateDate(update)
+				.withAttributes(attributes).build();
 	}
 
 	private Sample getSampleTest4() {
 		String name = "Test Sample the fourth";
 		String accession = "TESTrestsearch4";
+		String domain = "self.BiosampleIntegrationTest";
 		Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
 		Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
@@ -187,12 +198,15 @@ public class RestSearchIntegration extends AbstractIntegration {;
 		relationships.add(Relationship.build("TESTrestsearch4", "derived from", getSampleTest2().getAccession()));
 		relationships.add(Relationship.build("TESTrestsearch4", "derive to", getSampleTest5().getAccession()));
 
-		return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, relationships, new TreeSet<>(), null, null, null);
+//		return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, relationships, new TreeSet<>(), null, null, null);
+		return new Sample.Builder(name, accession).withDomain(domain).withReleaseDate(release).withUpdateDate(update)
+				.withAttributes(attributes).withRelationships(relationships).build();
 	}
 
 	private Sample getSampleTest5() {
 		String name = "Test Sample the fifth";
 		String accession = "TESTrestsearch5";
+		String domain = "self.BiosampleIntegrationTest";
 		Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
 		Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
@@ -203,7 +217,9 @@ public class RestSearchIntegration extends AbstractIntegration {;
 		// TODO need to add inverse relationships later
 		SortedSet<Relationship> relationships = new TreeSet<>();
 
-		return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, relationships, new TreeSet<>(), null, null, null);
+//		return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, relationships, new TreeSet<>(), null, null, null);
+		return new Sample.Builder(name, accession).withDomain(domain).withReleaseDate(release).withUpdateDate(update)
+				.withAttributes(attributes).build();
 	}
 
 }

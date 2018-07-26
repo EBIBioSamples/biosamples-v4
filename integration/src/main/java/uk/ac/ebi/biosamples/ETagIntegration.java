@@ -87,12 +87,8 @@ public class ETagIntegration extends AbstractIntegration {
 
         String etag = response.getHeaders().getETag();
 
-        Sample updatedSample = new Sample.Builder(testSample.getAccession(), testSample.getName())
-                .withReleaseDate(testSample.getRelease())
-                .withUpdateDate(testSample.getUpdate())
-                .withDomain(testSample.getDomain())
-                .withAttribute(testSample.getAttributes().first())
-                .withAttribute(Attribute.build("Organism part", "liver"))
+        Sample updatedSample = Sample.Builder.fromSample(testSample)
+                .addAttribute(Attribute.build("Organism part", "liver"))
                 .build();
 
         client.persistSampleResource(updatedSample);
@@ -155,11 +151,12 @@ public class ETagIntegration extends AbstractIntegration {
     }
 
     private Sample getTestSample() {
-        return new Sample.Builder("SAMETAG2031", "ETAG sample test")
+        return new Sample.Builder("ETAG sample test")
+                .withAccession("SAMETAG2031")
                 .withDomain("self.BiosampleIntegrationTest")
                 .withReleaseDate("2017-01-01T12:00:00")
                 .withUpdateDate("2017-01-01T12:00:00")
-                .withAttribute(Attribute.build("organism", "human"))
+                .addAttribute(Attribute.build("organism", "human"))
                 .build();
 
     }

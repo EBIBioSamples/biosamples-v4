@@ -92,7 +92,12 @@ public class SerializationTest {
                 .pubmed_id("24265224")
 				.build());
 
-		return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences, organizations, contacts, publications);
+//		return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences, organizations, contacts, publications);
+        return new Sample.Builder(name, accession).withDomain(domain)
+				.withReleaseDate(release).withUpdateDate(update)
+				.withAttributes(attributes).withRelationships(relationships).withExternalReferences(externalReferences)
+                .withOrganizations(organizations).withContacts(contacts).withPublications(publications)
+				.build();
 	}
 
 	@Test

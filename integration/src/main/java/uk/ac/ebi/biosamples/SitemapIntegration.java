@@ -1,25 +1,29 @@
 package uk.ac.ebi.biosamples;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.hateoas.Resource;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestOperations;
-import org.springframework.web.util.UriComponents;
-import org.springframework.web.util.UriComponentsBuilder;
-import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.XmlSitemap;
-import uk.ac.ebi.biosamples.model.XmlSitemapIndex;
-import uk.ac.ebi.biosamples.model.XmlUrlSet;
-
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.context.annotation.Profile;
+import org.springframework.core.annotation.Order;
+import org.springframework.hateoas.Resource;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestOperations;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.XmlSitemap;
+import uk.ac.ebi.biosamples.model.XmlSitemapIndex;
+import uk.ac.ebi.biosamples.model.XmlUrlSet;
+
+@Order
 @Component
 public class SitemapIntegration extends AbstractIntegration {
 
