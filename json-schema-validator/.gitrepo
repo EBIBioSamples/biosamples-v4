@@ -1,0 +1,11 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/EMBL-EBI-SUBS/json-schema-validator.git
+	branch = dev
+	commit = 57026daa355ebe0114f7d5e84680e2cd4e188085
+	parent = 099f51da295e7d04918c5f516b68be2ca1357b56
+	cmdver = 0.3.1

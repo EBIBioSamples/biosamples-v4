@@ -314,7 +314,7 @@ public class Sample implements Comparable<Sample> {
     }
     
 	public static Sample build( String name, 
-			 String accession,  
+			String accession,
 			String domain,
 			Instant release, 
 			Instant update,

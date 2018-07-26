@@ -83,3 +83,8 @@ fabric.properties
 /notes/
 /notes/BSD-1282.md
 /notes/setup-notes.md
+
+# Javascript
+.vscode
+.nyc_output
+**/coverage

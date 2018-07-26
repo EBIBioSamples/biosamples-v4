@@ -29,6 +29,7 @@ import java.net.URI;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -53,6 +54,7 @@ public class SamplesRestController {
 	private final SampleManipulationService sampleManipulationService;
 	private final BioSamplesProperties bioSamplesProperties;
 	private final SampleResourceAssembler sampleResourceAssembler;
+	private final SchemaValidatorService schemaValidatorService;
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 
@@ -62,7 +64,8 @@ public class SamplesRestController {
 			SampleResourceAssembler sampleResourceAssembler,
 			SampleManipulationService sampleManipulationService,
 			SampleService sampleService,
-			BioSamplesProperties bioSamplesProperties) {
+			BioSamplesProperties bioSamplesProperties,
+			SchemaValidatorService schemaValidatorService) {
 		this.samplePageService = samplePageService;
 		this.filterService = filterService;
 		this.bioSamplesAapService = bioSamplesAapService;
@@ -70,6 +73,7 @@ public class SamplesRestController {
 		this.sampleManipulationService = sampleManipulationService;
 		this.sampleService = sampleService;
 		this.bioSamplesProperties = bioSamplesProperties;
+		this.schemaValidatorService = schemaValidatorService;
 	}
 
 	//must return a ResponseEntity so that cache headers can be set
@@ -296,6 +300,19 @@ public class SamplesRestController {
 		if (!setFullDetails) {
 			sample = sampleManipulationService.removeLegacyFields(sample);
 		}
+
+		if (!sample.getData().isEmpty()) {
+			Optional<ResponseEntity<String>> optionalInvalidResponse = sample.getData()
+					.parallelStream()
+					.map(abstractData -> schemaValidatorService.validate(abstractData.getStructuredData(), abstractData.getSchema()))
+                    .filter(response -> !response.getBody().equalsIgnoreCase("[]"))
+                    .findAny();
+			if (optionalInvalidResponse.isPresent()) {
+				throw new SampleWithInvalidStructuredData(optionalInvalidResponse.get().getBody());
+			}
+
+		}
+
 		
 		sample = sampleService.store(sample);
 		
@@ -309,6 +326,18 @@ public class SamplesRestController {
 
 	@ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "New sample submission should not contain an accession") // 400
 	public static class SampleWithAccessionSumbissionException extends RuntimeException {
+	}
+
+	@ResponseStatus(value = HttpStatus.BAD_REQUEST)
+	public static class SampleWithInvalidStructuredData extends RuntimeException {
+
+		String validation;
+
+		public SampleWithInvalidStructuredData(String validationError) {
+		    super(validationError);
+			this.validation = validationError;
+		}
+
 	}
 
 }
