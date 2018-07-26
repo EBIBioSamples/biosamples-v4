@@ -1,13 +1,6 @@
 package uk.ac.ebi.biosamples.models;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.net.URISyntaxException;
-import java.time.Instant;
-import java.util.Collections;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,16 +11,19 @@ import org.springframework.boot.test.autoconfigure.json.JsonTest;
 import org.springframework.boot.test.json.JacksonTester;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.junit4.SpringRunner;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Contact;
-import uk.ac.ebi.biosamples.model.Organization;
-import uk.ac.ebi.biosamples.model.Publication;
+import uk.ac.ebi.biosamples.model.*;
+import uk.ac.ebi.biosamples.model.structured.AMREntry;
+import uk.ac.ebi.biosamples.model.structured.AMRTable;
+import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.mongo.model.MongoExternalReference;
 import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
+
+import java.net.URISyntaxException;
+import java.time.Instant;
+import java.util.*;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringRunner.class)
 @JsonTest
@@ -54,7 +50,20 @@ public class MongoSerializationTest {
 		attributes.add(Attribute.build("age", "3", Collections.emptyList(), "year"));
 		attributes.add(Attribute.build("organism part", "lung"));
 		attributes.add(Attribute.build("organism part", "heart"));
-		
+
+		Set<AbstractData> structuredData = new HashSet<>();
+		AMRTable amrTable = new AMRTable.Builder("http://test").
+                withEntry(new AMREntry.Builder()
+                        .withAntibiotic("ampicillin")
+                        .withResistancePhenotype("susceptible")
+						.withMeasure("==", "2", "mg/L")
+						.withVendor("in-house")
+						.withLaboratoryTypingMethod("MIC")
+						.withTestingStandard("CLSI")
+						.build()
+				).build();
+		structuredData.add(amrTable);
+
 		SortedSet<MongoRelationship> relationships = new TreeSet<>();
 		relationships.add(MongoRelationship.build("TEST1", "derived from", "TEST2"));
 		
@@ -90,10 +99,41 @@ public class MongoSerializationTest {
 				.build());
 
 		return MongoSample.build(name, accession, "foozit", release, update, 
-				attributes, relationships, externalReferences, 
+				attributes, structuredData, relationships, externalReferences,
 				organizations, contacts, publications);
 	}
 
+	private MongoSample getAMRMongoSample() {
+		String name = "Test AMRSample";
+		String accession = "TEST1";
+		String domain = "foozit";
+		Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
+		Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
+		SortedSet<Attribute> attributes = new TreeSet<>();
+		SortedSet<MongoRelationship> relationships = new TreeSet<>();
+		SortedSet<MongoExternalReference> externalReferences = new TreeSet<>();
+		SortedSet<Publication> publications = new TreeSet<>();
+		SortedSet<Organization> organizations = new TreeSet<>();
+		SortedSet<Contact> contacts = new TreeSet<>();
+		Set<AbstractData> data = new HashSet<>();
+
+        AMRTable amrTable = new AMRTable.Builder("http://test").
+                withEntry(new AMREntry.Builder()
+                        .withAntibiotic("ampicillin")
+                        .withResistancePhenotype("susceptible")
+						.withMeasure("==", "2", "mg/L")
+						.withVendor("in-house")
+						.withLaboratoryTypingMethod("MIC")
+						.withTestingStandard("CLSI")
+						.build()
+				).build();
+		data.add(amrTable);
+
+		return MongoSample.build(name, accession, domain, release, update,
+				attributes, data, relationships, externalReferences, organizations,
+				contacts, publications);
+
+	}
 	@Test
 	public void testSerialize() throws Exception {
 		MongoSample details = getMongoSample();
@@ -107,6 +147,13 @@ public class MongoSerializationTest {
 		// Assert against a `.json` file in the same package as the test
 		log.info("testSerialize() "+this.json.write(details).getJson());
 		assertThat(this.json.write(details)).isEqualToJson("/TEST1.json");
+
+		// Assert json contains data field
+		assertThat(this.json.write(details)).hasJsonPathArrayValue("@.data");
+		assertThat(this.json.write(details)).extractingJsonPathMapValue("@.data[0].content[0]").contains(
+				new AbstractMap.SimpleEntry<>("antibiotic", "ampicillin")
+		);
+
 	}
 
 	@Test
@@ -116,7 +163,11 @@ public class MongoSerializationTest {
 		assertThat(this.json.readObject("/TEST1.json").getAccession()).isEqualTo("TEST1");
 		// Assert against a `.json` file
 		assertThat(this.json.readObject("/TEST1.json")).isEqualTo(getMongoSample());
+
 	}
+
+
+
 	
 	@Configuration
 	public static class TestConfig {
