@@ -94,20 +94,27 @@ public class Sample implements Comparable<Sample> {
     }
 
     @JsonProperty(value = "taxId", access = JsonProperty.Access.READ_ONLY)
-    public String getTaxId() {
-        String taxId = "unknown";
+    public Integer[] getTaxId() {
+        Integer[] taxId = {};
         for (Attribute attribute : attributes) {
             if (attribute.getType().toLowerCase().equalsIgnoreCase("Organism") && !attribute.getIri().isEmpty()) {
-                taxId = attribute.getIri().stream().map(Object::toString).map(this::extractTaxIdFromIri).collect(Collectors.joining(","));
+                taxId = attribute.getIri().stream().
+                        map(Object::toString).
+                        map(this::extractTaxIdFromIri).toArray(Integer[]::new);
             }
         }
         return taxId;
     }
 
-    private String extractTaxIdFromIri(String iri) {
-        if (iri.isEmpty()) return "unknown";
+    private int extractTaxIdFromIri(String iri) {
+        if (iri.isEmpty()) return 0;
         String segments[] = iri.split("NCBITaxon_");
-        return segments[segments.length - 1];
+        try {
+            return Integer.parseInt(segments[segments.length - 1]);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+
     }
 
     @JsonIgnore
