@@ -1,0 +1,142 @@
+{
+  "id": "SAMEA281881",
+  "dataset_id": null,
+  "individual_id": "donor 86",
+  "name": "source GSM553744 1",
+  "description": "PBMCs treated with LPS twice, the second treatment 24 hr after the first,donor 86",
+  "bio_characteristics": [
+    {
+      "description": "Organism",
+      "ontology_terms": [
+        {
+          "term_id": "NCBITaxon:9606",
+          "term_label": "Homo sapiens"
+        }
+      ],
+      "negated_ontology_terms": [],
+      "scope": null
+    },
+    {
+      "description": "cell type",
+      "ontology_terms": [
+        {
+          "term_id": "CL:2000001",
+          "term_label": "peripheral blood mononuclear cell"
+        }
+      ],
+      "negated_ontology_terms": [],
+      "scope": null
+    }
+  ],
+  "attributes": {
+    "Sample_source_name": {
+      "values": [
+        {
+          "string_value": "PBMCs, donor 86"
+        }
+      ]
+    },
+    "contacts": {
+      "values": [
+        {
+          "attributes": {
+            "name": {
+              "values": [
+                {
+                  "string_value": "Christopher Fjell"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "attributes": {
+            "name": {
+              "values": [
+                {
+                  "string_value": "Olga Pena"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "attributes": {
+            "name": {
+              "values": [
+                {
+                  "string_value": "Robert Hancock"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "domain": {
+      "values": [
+        {
+          "string_value": "self.BioSamplesMigration"
+        }
+      ]
+    },
+    "organizations": {
+      "values": [
+        {
+          "attributes": {
+            "name": {
+              "values": [
+                {
+                  "string_value": "University of British Columbia"
+                }
+              ]
+            },
+            "role": {
+              "values": [
+                {
+                  "string_value": "submitter "
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "publications": {
+      "values": [
+        {
+          "attributes": {}
+        }
+      ]
+    },
+    "released": {
+      "values": [
+        {
+          "string_value": "2011-05-16"
+        }
+      ]
+    },
+    "treatment": {
+      "values": [
+        {
+          "string_value": "PBMCs treated with LPS twice, the second treatment 24 hr after the first"
+        }
+      ]
+    },
+    "updated": {
+      "values": [
+        {
+          "string_value": "2018-01-24"
+        }
+      ]
+    }
+  },
+  "external_identifiers": [
+    {
+      "identifier": "SAMEG15654",
+      "relation": "has member"
+    }
+  ],
+  "individual_age_at_collection": null,
+  "location": null
+}

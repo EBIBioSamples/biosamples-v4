@@ -1,0 +1,55 @@
+{
+  "name" : "RNAseq Koptk1-sgRNA2",
+  "accession" : "SAMN07666496",
+  "domain" : "self.BioSamplesMigration",
+  "release" : "2017-09-20T23:00:00Z",
+  "update" : "2018-01-20T10:50:31.156Z",
+  "characteristics" : {
+    "Organism" : [ {
+      "text" : "Homo sapiens",
+      "ontologyTerms" : [ "http://purl.obolibrary.org/obo/NCBITaxon_9606" ]
+    } ],
+    "cell line" : [ {
+      "text" : "Koptk1",
+      "ontologyTerms" : [ "http://www.ebi.ac.uk/efo/EFO_0006283" ]
+    } ],
+    "cell type" : [ {
+      "text" : "T cell leukemia",
+      "ontologyTerms" : [ "http://www.ebi.ac.uk/efo/EFO_0005592" ]
+    } ],
+    "model" : [ {
+      "text" : "Generic"
+    } ],
+    "package" : [ {
+      "text" : "Generic.1.0"
+    } ],
+    "source name" : [ {
+      "text" : "T cell leukemia",
+      "ontologyTerms" : [ "http://www.ebi.ac.uk/efo/EFO_0005592" ]
+    } ],
+    "synonym" : [ {
+      "text" : "SRS2525237"
+    } ]
+  },
+  "externalReferences" : [ {
+    "url" : "http://www.ebi.ac.uk/ena/data/view/SAMN07666496"
+  } ],
+  "releaseDate" : "2017-09-20",
+  "updateDate" : "2018-01-20",
+  "_links" : {
+    "self" : {
+      "href" : "https://www.ebi.ac.uk/biosamples/samples/SAMN07666496"
+    },
+    "curationDomain" : {
+      "href" : "https://www.ebi.ac.uk/biosamples/samples/SAMN07666496{?curationdomain}",
+      "templated" : true
+    },
+    "curationLinks" : {
+      "href" : "https://www.ebi.ac.uk/biosamples/samples/SAMN07666496/curationlinks"
+    },
+    "curationLink" : {
+      "href" : "https://www.ebi.ac.uk/biosamples/samples/SAMN07666496/curationlinks/{hash}",
+      "templated" : true
+    }
+  }
+}

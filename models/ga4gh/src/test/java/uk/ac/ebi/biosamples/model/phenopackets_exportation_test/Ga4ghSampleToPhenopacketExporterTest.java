@@ -25,12 +25,12 @@ import java.nio.file.Paths;
  */
 
 public class Ga4ghSampleToPhenopacketExporterTest {
-    final String biosample1Path = "/Users/dilsatsalihov/Desktop/gsoc/biosamples-v4/models/core/src/test/java/uk/ac/ebi/biosamples/model/phenopackets_test_cases/test1/biosample1.json";
-    final String biosample2Path = "/Users/dilsatsalihov/Desktop/gsoc/biosamples-v4/models/core/src/test/java/uk/ac/ebi/biosamples/model/phenopackets_test_cases/test2/biosamples2.json";
-    final String biosample3Path = "/Users/dilsatsalihov/Desktop/gsoc/biosamples-v4/models/core/src/test/java/uk/ac/ebi/biosamples/model/phenopackets_test_cases/test3/biosample3.json";
-    final String phenopacket1Path = "/Users/dilsatsalihov/Desktop/gsoc/biosamples-v4/models/core/src/test/java/uk/ac/ebi/biosamples/model/phenopackets_test_cases/test1/phenopacket1.json";
-    final String phenopacket2Path = "/Users/dilsatsalihov/Desktop/gsoc/biosamples-v4/models/core/src/test/java/uk/ac/ebi/biosamples/model/phenopackets_test_cases/test2/phenopacket2.json";
-    final String phenopacket3Path = "/Users/dilsatsalihov/Desktop/gsoc/biosamples-v4/models/core/src/test/java/uk/ac/ebi/biosamples/model/phenopackets_test_cases/test3/phenopacket3.json";
+    final String biosample1Path = "/Users/dilsatsalihov/Desktop/gsoc/biosamples-v4/models/ga4gh/src/test/java/uk/ac/ebi/biosamples/model/phenopackets_test_cases/test1/biosample1.json";
+    final String biosample2Path = "/Users/dilsatsalihov/Desktop/gsoc/biosamples-v4/models/ga4gh/src/test/java/uk/ac/ebi/biosamples/model/phenopackets_test_cases/test2/biosamples2.json";
+    final String biosample3Path = "/Users/dilsatsalihov/Desktop/gsoc/biosamples-v4/models/ga4gh/src/test/java/uk/ac/ebi/biosamples/model/phenopackets_test_cases/test3/biosample3.json";
+    final String phenopacket1Path = "/Users/dilsatsalihov/Desktop/gsoc/biosamples-v4/models/ga4gh/src/test/java/uk/ac/ebi/biosamples/model/phenopackets_test_cases/test1/phenopacket1.json";
+    final String phenopacket2Path = "/Users/dilsatsalihov/Desktop/gsoc/biosamples-v4/models/ga4gh/src/test/java/uk/ac/ebi/biosamples/model/phenopackets_test_cases/test2/phenopacket2.json";
+    final String phenopacket3Path = "/Users/dilsatsalihov/Desktop/gsoc/biosamples-v4/models/ga4gh/src/test/java/uk/ac/ebi/biosamples/model/phenopackets_test_cases/test3/phenopacket3.json";
 
     public SampleToGa4ghSampleConverter SampleToGa4ghSampleConverter;
 

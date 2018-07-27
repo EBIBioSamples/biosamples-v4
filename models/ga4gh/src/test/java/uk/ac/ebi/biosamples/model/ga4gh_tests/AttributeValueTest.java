@@ -1,6 +1,7 @@
-package uk.ac.ebi.biosamples.model.ga4gh;
+package uk.ac.ebi.biosamples.model.ga4gh_tests;
 
 import org.junit.Test;
+import uk.ac.ebi.biosamples.model.ga4gh.*;
 
 import java.util.LinkedList;
 
