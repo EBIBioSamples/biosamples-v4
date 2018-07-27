@@ -32,5 +32,6 @@
 		<module>reindex</module>
 		<module>export</module>
 		<module>copydown</module>
+		<module>livelist</module>
 	</modules>
 </project>
