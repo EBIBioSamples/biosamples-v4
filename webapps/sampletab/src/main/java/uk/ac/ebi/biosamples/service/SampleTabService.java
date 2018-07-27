@@ -518,7 +518,7 @@ public class SampleTabService {
 //				attributes, relationships, externalReferences,
 //				organizations, contacts, publications);
         Sample sample = new Sample.Builder(name, accession).withDomain(domain)
-				.withReleaseDate(release).withUpdateDate(update)
+				.withRelease(release).withUpdate(update)
 				.withAttributes(attributes).withRelationships(relationships).withExternalReferences(externalReferences)
 				.withOrganizations(organizations).withContacts(contacts).withPublications(publications)
 				.build();
@@ -567,7 +567,7 @@ public class SampleTabService {
 //				organizations, contacts, publications);
 //		return sample;
         return new Sample.Builder(name, accession).withDomain(domain)
-				.withReleaseDate(release).withUpdateDate(update)
+				.withRelease(release).withUpdate(update)
 				.withAttributes(attributes).withRelationships(relationships).withExternalReferences(externalReferences)
 				.withOrganizations(organizations).withContacts(contacts).withPublications(publications)
 				.build();

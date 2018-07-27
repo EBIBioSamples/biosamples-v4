@@ -12,6 +12,7 @@ import org.springframework.boot.test.json.JacksonTester;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -21,6 +22,7 @@ import uk.ac.ebi.biosamples.model.structured.AMREntry;
 import uk.ac.ebi.biosamples.model.structured.AMRTable;
 import uk.ac.ebi.biosamples.service.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.SampleService;
+import uk.ac.ebi.biosamples.service.SchemaValidatorService;
 
 import java.nio.charset.Charset;
 import java.time.Instant;
@@ -63,6 +65,9 @@ public class AMRTest {
     @MockBean
     private SampleService sampleService;
 
+    @MockBean
+    private SchemaValidatorService schemaValidatorService;
+
     private AMREntry getAMREntry() {
         return new AMREntry.Builder()
                 .withAntibiotic("ampicillin")
@@ -82,7 +87,7 @@ public class AMRTest {
 
     private Sample.Builder getTestSampleBuilder() {
         return new Sample.Builder("testSample", "TEST1")
-                .withDomain("foozit").withReleaseDate(Instant.now()).withUpdateDate(Instant.now());
+                .withDomain("foozit").withRelease(Instant.now()).withUpdate(Instant.now());
     }
 
     @Before
@@ -157,11 +162,12 @@ public class AMRTest {
 
 
         Sample testSample = new Sample.Builder(jsonSample.at("/name").asText()).withDomain(jsonSample.at("/domain").asText())
-                .withUpdateDate(jsonSample.at("/update").asText()).withReleaseDate(jsonSample.at("/release").asText())
+                .withUpdate(jsonSample.at("/update").asText()).withRelease(jsonSample.at("/release").asText())
                 .addData(new AMRTable.Builder(jsonSample.at("/data/0/schema").asText()).withEntry(amrEntry).build())
                 .build();
 
 
+        when(schemaValidatorService.validate(any(), any())).thenReturn(ResponseEntity.ok("[]"));
         when(bioSamplesAapService.handleSampleDomain(any(Sample.class))).thenReturn(testSample);
         when(sampleService.store(testSample)).thenReturn(testSample);
 
