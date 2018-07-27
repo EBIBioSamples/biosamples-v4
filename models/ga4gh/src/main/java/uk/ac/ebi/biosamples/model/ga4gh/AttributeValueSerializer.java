@@ -8,14 +8,14 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 import java.io.IOException;
 
-public class AttributeValueSerializer extends StdSerializer<AttributeValue> {
+public class AttributeValueSerializer extends StdSerializer<Ga4ghAttributeValue> {
     public AttributeValueSerializer() {
-        super(AttributeValue.class);
+        super(Ga4ghAttributeValue.class);
     }
 
 
     @Override
-    public void serialize(AttributeValue value, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException, JsonProcessingException {
+    public void serialize(Ga4ghAttributeValue value, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException, JsonProcessingException {
         jsonGenerator.writeStartObject();
         jsonGenerator.writeObjectField(value.getType(), value.getValue());
         jsonGenerator.writeEndObject();

@@ -16,6 +16,7 @@ import uk.ac.ebi.biosamples.service.Ga4ghSampleResourceAssembler;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.when;
@@ -77,8 +78,8 @@ public class Ga4ghSampleResourceAssemblerUnitTest {
         when(cramTicket.getFtpLinks()).thenReturn(Lists.newArrayList("testlink2"));
 
 
-        when(htsgetService.getTicket("accession","BAM")).thenReturn(bamTicket);
-        when(htsgetService.getTicket("accession","CRAM")).thenReturn(cramTicket);
+        when(htsgetService.getTicket("accession","BAM")).thenReturn(Optional.of(bamTicket));
+        when(htsgetService.getTicket("accession","CRAM")).thenReturn(Optional.of(cramTicket));
 
     }
 

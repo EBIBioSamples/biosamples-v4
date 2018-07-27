@@ -40,7 +40,7 @@ public class GA4GHSampeSearchController {
 
     @RequestMapping(method = RequestMethod.GET, produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
     @ResponseBody
-    public ResponseEntity<Resources<Resource<Ga4ghSample>>> searchSample(@RequestParam(name = "disease") String disease, @RequestParam(name = "page") int page){
+    public ResponseEntity<Resources<Resource<Ga4ghSample>>> searchSample(@RequestParam(name = "disease") String disease, @RequestParam(name = "page", defaultValue = "1") int page){
         Collection<Filter> filters = filterBuilder.getFilters();
         PagedResources<Resource<Sample>> samples = client.fetchPagedSampleResource(disease, filters,page,10);
         List<Resource<Ga4ghSample>> ga4ghSamples = samples.getContent().parallelStream()

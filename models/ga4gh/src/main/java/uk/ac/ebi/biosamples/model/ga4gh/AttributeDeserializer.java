@@ -13,35 +13,35 @@ import java.io.IOException;
 import java.util.*;
 
 
-public class AttributeDeserializer extends StdDeserializer<Attributes> {
+public class AttributeDeserializer extends StdDeserializer<Ga4ghAttributes> {
 
     public AttributeDeserializer() {
-        super(Attributes.class);
+        super(Ga4ghAttributes.class);
     }
 
     @Override
-    public Attributes deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
-        Attributes attributes = new Attributes();
+    public Ga4ghAttributes deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+        Ga4ghAttributes ga4ghAttributes = new Ga4ghAttributes();
         ObjectCodec codec = jsonParser.getCodec();
         JsonNode node = codec.readTree(jsonParser);
         return deserializeAttributes(node);
     }
 
-    private Attributes deserializeAttributes(JsonNode node) {
+    private Ga4ghAttributes deserializeAttributes(JsonNode node) {
         Iterator<Map.Entry<String, JsonNode>> fieldsIterator = node.fields();
-        SortedMap<String, List<AttributeValue>> attributesFields = new TreeMap<>();
+        SortedMap<String, List<Ga4ghAttributeValue>> attributesFields = new TreeMap<>();
         while (fieldsIterator.hasNext()) {
             Map.Entry<String, JsonNode> field = fieldsIterator.next();
             String key = field.getKey();
             attributesFields.put(key, deserializeAttributeList(field.getValue().get("values")));
         }
-        Attributes attributes = new Attributes();
-        attributes.setAttributes(attributesFields);
-        return attributes;
+        Ga4ghAttributes ga4ghAttributes = new Ga4ghAttributes();
+        ga4ghAttributes.setAttributes(attributesFields);
+        return ga4ghAttributes;
     }
 
-    private List<AttributeValue> deserializeAttributeList(JsonNode node) {
-        List<AttributeValue> attributeValues = new ArrayList<>();
+    private List<Ga4ghAttributeValue> deserializeAttributeList(JsonNode node) {
+        List<Ga4ghAttributeValue> ga4ghAttributeValues = new ArrayList<>();
         Iterator<JsonNode> attributeObjects = node.iterator();
         ObjectMapper mapper = new ObjectMapper();
         while (attributeObjects.hasNext()) {
@@ -52,55 +52,55 @@ public class AttributeDeserializer extends StdDeserializer<Attributes> {
                 JsonNode value = currentNode.get(fieldName);
                 switch (fieldName) {
                     case "string_value":
-                        attributeValues.add(new AttributeValue(value.textValue()));
+                        ga4ghAttributeValues.add(new Ga4ghAttributeValue(value.textValue()));
                         break;
                     case "int64_value":
-                        attributeValues.add(new AttributeValue(value.longValue()));
+                        ga4ghAttributeValues.add(new Ga4ghAttributeValue(value.longValue()));
                         break;
                     case "bool_value":
-                        attributeValues.add(new AttributeValue(value.booleanValue()));
+                        ga4ghAttributeValues.add(new Ga4ghAttributeValue(value.booleanValue()));
                         break;
                     case "double_value":
-                        attributeValues.add(new AttributeValue(value.doubleValue()));
+                        ga4ghAttributeValues.add(new Ga4ghAttributeValue(value.doubleValue()));
                         break;
                     case "external_identifier":
                         try {
-                            attributeValues.add(new AttributeValue(mapper.readValue(value.asText(), ExternalIdentifier.class)));
+                            ga4ghAttributeValues.add(new Ga4ghAttributeValue(mapper.readValue(value.asText(), ExternalIdentifier.class)));
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
                     case "ontology_term":
                         try {
-                            attributeValues.add(new AttributeValue(mapper.readValue(value.asText(), OntologyTerm.class)));
+                            ga4ghAttributeValues.add(new Ga4ghAttributeValue(mapper.readValue(value.asText(), OntologyTerm.class)));
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
                     case "experiment":
                         try {
-                            attributeValues.add(new AttributeValue(mapper.readValue(value.asText(), Experiment.class)));
+                            ga4ghAttributeValues.add(new Ga4ghAttributeValue(mapper.readValue(value.asText(), Experiment.class)));
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
                     case "analysis":
                         try {
-                            attributeValues.add(new AttributeValue(mapper.readValue(value.asText(), Analysis.class)));
+                            ga4ghAttributeValues.add(new Ga4ghAttributeValue(mapper.readValue(value.asText(), Analysis.class)));
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
                     case "null_value":
-                        attributeValues.add(new AttributeValue(null));
+                        ga4ghAttributeValues.add(new Ga4ghAttributeValue(null));
                     case "attributes":
-                        attributeValues.add(new AttributeValue(deserializeAttributes(value)));
+                        ga4ghAttributeValues.add(new Ga4ghAttributeValue(deserializeAttributes(value)));
                     case "attribute_list":
-                        List<AttributeValue> values = deserializeAttributeList(value);
+                        List<Ga4ghAttributeValue> values = deserializeAttributeList(value);
                         //TODO add comments or reformat code to more underatandable
                         if (values != null && values.size() > 0) {
-                            attributeValues.add(new AttributeValue());
+                            ga4ghAttributeValues.add(new Ga4ghAttributeValue());
                         }
                 }
             }
         }
-        return attributeValues;
+        return ga4ghAttributeValues;
     }
 
 

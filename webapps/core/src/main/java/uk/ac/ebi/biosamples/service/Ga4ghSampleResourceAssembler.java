@@ -10,6 +10,8 @@ import uk.ac.ebi.biosamples.model.ga4gh.Ga4ghSample;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
 @Service
 public class Ga4ghSampleResourceAssembler implements ResourceAssembler<Ga4ghSample,Resource<Ga4ghSample>> {
 
@@ -30,12 +32,15 @@ public class Ga4ghSampleResourceAssembler implements ResourceAssembler<Ga4ghSamp
 
     public List<Link> getLinksToFiles(String accession,String format){
         List<Link> links = new ArrayList();
-        ENAHtsgetTicket ticket = htsgetService.getTicket(accession,format);
-        List<String> urls = ticket.getFtpLinks();
-        Integer i = 1;
-        for(String url: urls){
-            links.add(new Link(url,format+"Link_"+i.toString() ));
-            i++;
+
+        Optional<ENAHtsgetTicket> ticket = htsgetService.getTicket(accession,format);
+        if (ticket.isPresent()) {
+            List<String> urls = ticket.get().getFtpLinks();
+            Integer i = 1;
+            for(String url: urls){
+                links.add(new Link(url,format+"Link_"+i.toString() ));
+                i++;
+            }
         }
         return links;
     }

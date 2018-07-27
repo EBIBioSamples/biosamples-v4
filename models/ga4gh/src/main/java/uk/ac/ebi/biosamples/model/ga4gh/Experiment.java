@@ -18,7 +18,7 @@ public class Experiment {
     private String sequencing_center;
     private GeoLocation location;
     private String platform_util;
-    private Attributes attributes;
+    private Ga4ghAttributes ga4ghAttributes;
 
     public String getId() {
         return id;
@@ -140,12 +140,12 @@ public class Experiment {
         this.platform_util = platform_util;
     }
 
-    public Attributes getAttributes() {
-        return attributes;
+    public Ga4ghAttributes getGa4ghAttributes() {
+        return ga4ghAttributes;
     }
 
-    public void setAttributes(Attributes attributes) {
-        this.attributes = attributes;
+    public void setGa4ghAttributes(Ga4ghAttributes ga4ghAttributes) {
+        this.ga4ghAttributes = ga4ghAttributes;
     }
 
     @Override
@@ -168,12 +168,12 @@ public class Experiment {
                 Objects.equals(sequencing_center, that.sequencing_center) &&
                 Objects.equals(location, that.location) &&
                 Objects.equals(platform_util, that.platform_util) &&
-                Objects.equals(attributes, that.attributes);
+                Objects.equals(ga4ghAttributes, that.ga4ghAttributes);
     }
 
     @Override
     public int hashCode() {
 
-        return Objects.hash(id, name, description, created, updated, run_time, molecule, strategy, selection, library, library_layout, unstrument_model, sequencing_center, location, platform_util, attributes);
+        return Objects.hash(id, name, description, created, updated, run_time, molecule, strategy, selection, library, library_layout, unstrument_model, sequencing_center, location, platform_util, ga4ghAttributes);
     }
 }

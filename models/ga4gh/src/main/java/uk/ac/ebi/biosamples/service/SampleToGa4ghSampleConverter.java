@@ -179,12 +179,12 @@ public class SampleToGa4ghSampleConverter implements Converter<Sample, Ga4ghSamp
      * Maps characteristics from Biosamples to Attributes in GA4GH
      *
      * @param characteristics characteristics that provides nonbiological data (without Ontology term)
-     * @see Attributes
+     * @see Ga4ghAttributes
      */
     private void mapAttributes(List<Attribute> characteristics) {
         characteristics.stream().forEach(attribute -> {
-            List<AttributeValue> values = new ArrayList<>();
-            AttributeValue value = new AttributeValue(attribute.getValue());
+            List<Ga4ghAttributeValue> values = new ArrayList<>();
+            Ga4ghAttributeValue value = new Ga4ghAttributeValue(attribute.getValue());
             values.add(value);
             ga4ghSample.addAttributeList(attribute.getType(), values);
         });
@@ -195,7 +195,7 @@ public class SampleToGa4ghSampleConverter implements Converter<Sample, Ga4ghSamp
      * Maps characteristics from Biosamples to Biocharacteristics in GA4GH
      *
      * @param characteristics characteristics that provides biological data (with Ontology term)
-     * @see Attributes
+     * @see Ga4ghAttributes
      */
     private void mapBioCharacteristics(List<Attribute> characteristics) {
         SortedSet<Biocharacteristics> biocharacteristics = new TreeSet<>();
@@ -274,10 +274,10 @@ public class SampleToGa4ghSampleConverter implements Converter<Sample, Ga4ghSamp
      * @param values objects of any type
      * @param <T>
      * @return list of attributeValues (that contains values that supported by ga4gh)
-     * @see AttributeValue
+     * @see Ga4ghAttributeValue
      */
-    private <T> List<AttributeValue> convertObjectsToAttributeValues(SortedSet<T> values) {
-        List<AttributeValue> attributes = new ArrayList<>();
+    private <T> List<Ga4ghAttributeValue> convertObjectsToAttributeValues(SortedSet<T> values) {
+        List<Ga4ghAttributeValue> attributes = new ArrayList<>();
         values.stream().forEach(value -> {
             SortedMap<String, Object> objectFieldsAndValues = null;
             try {
@@ -286,16 +286,16 @@ public class SampleToGa4ghSampleConverter implements Converter<Sample, Ga4ghSamp
                 e.printStackTrace();
 
             }
-            Attributes attributesFromField = new Attributes();
+            Ga4ghAttributes ga4ghAttributesFromField = new Ga4ghAttributes();
             SortedSet<String> namesOfFields = new TreeSet<>(objectFieldsAndValues.keySet());
             for (String key : namesOfFields) {
 
                 String object = (String) objectFieldsAndValues.get(key);
                 if (object != null) {
-                    attributesFromField.addSingleAttribute(key, new AttributeValue(object));
+                    ga4ghAttributesFromField.addSingleAttribute(key, new Ga4ghAttributeValue(object));
                 }
             }
-            attributes.add(new AttributeValue(attributesFromField));
+            attributes.add(new Ga4ghAttributeValue(ga4ghAttributesFromField));
         });
 
         return attributes;

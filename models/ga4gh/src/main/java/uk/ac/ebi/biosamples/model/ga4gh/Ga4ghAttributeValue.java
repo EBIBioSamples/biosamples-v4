@@ -6,16 +6,16 @@ import java.util.List;
 import java.util.Objects;
 
 @JsonSerialize(using = AttributeValueSerializer.class)
-public class AttributeValue {
+public class Ga4ghAttributeValue {
 
 
     private String type;
     private Object value;
 
-    public AttributeValue() {
+    public Ga4ghAttributeValue() {
 
     }
-    public AttributeValue(Object value) {
+    public Ga4ghAttributeValue(Object value) {
         if (value instanceof String) {
             type = "string_value";
             this.value = value;
@@ -42,7 +42,7 @@ public class AttributeValue {
             this.value = value;
         } else if (value == null) {
             type = "null_value";
-        } else if (value instanceof Attributes) {
+        } else if (value instanceof Ga4ghAttributes) {
             type = "attributes";
             this.value = value;
         } else if (isListOfAttributes(value)) {
@@ -71,7 +71,7 @@ public class AttributeValue {
 
     private boolean isListOfAttributes(Object value) {
         try {
-            List<AttributeValue> attributeValues = (List<AttributeValue>) value;
+            List<Ga4ghAttributeValue> ga4ghAttributeValues = (List<Ga4ghAttributeValue>) value;
             return true;
         } catch (ClassCastException e) {
             return false;
@@ -80,7 +80,7 @@ public class AttributeValue {
     }
 
     @JsonCreator
-    public static AttributeValue build() {
+    public static Ga4ghAttributeValue build() {
         return null;
     }
 
@@ -88,7 +88,7 @@ public class AttributeValue {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        AttributeValue that = (AttributeValue) o;
+        Ga4ghAttributeValue that = (Ga4ghAttributeValue) o;
         return Objects.equals(type, that.type) &&
                 Objects.equals(value, that.value);
     }

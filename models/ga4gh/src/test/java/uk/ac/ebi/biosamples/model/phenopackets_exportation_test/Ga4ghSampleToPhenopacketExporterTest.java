@@ -8,7 +8,7 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.ga4gh.Attributes;
+import uk.ac.ebi.biosamples.model.ga4gh.Ga4ghAttributes;
 import uk.ac.ebi.biosamples.model.ga4gh.Ga4ghSample;
 import uk.ac.ebi.biosamples.service.SampleToGa4ghSampleConverter;
 import uk.ac.ebi.biosamples.service.GeoLocationDataHelper;
@@ -38,7 +38,7 @@ public class Ga4ghSampleToPhenopacketExporterTest {
     public String absolutePath;
 
     public Ga4ghSampleToPhenopacketExporterTest() {
-        SampleToGa4ghSampleConverter = new SampleToGa4ghSampleConverter(new Ga4ghSample(new Attributes()), new GeoLocationDataHelper());
+        SampleToGa4ghSampleConverter = new SampleToGa4ghSampleConverter(new Ga4ghSample(new Ga4ghAttributes()), new GeoLocationDataHelper());
         biosampleToPhenopacketExporter = new Ga4ghSampleToPhenopacketConverter(SampleToGa4ghSampleConverter, new OLSDataRetriever());
     }
 

@@ -218,7 +218,13 @@
 			<artifactId>models-core</artifactId>
 			<version>4.1.1-SNAPSHOT</version>
 		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>uk.ac.ebi.biosamples</groupId>
+            <artifactId>models-core</artifactId>
+            <version>4.1.2-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
 
 	<build>
 		<plugins>

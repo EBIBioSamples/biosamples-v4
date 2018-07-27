@@ -68,7 +68,7 @@ public class Ga4ghSampleToPhenopacketConverter implements Converter<Ga4ghSample,
         PhenoPacket.Builder phenoPacket = PhenoPacket.newBuilder();
         phenoPacket.addIndividuals(mapIndividual(ga4ghSample));
         phenoPacket.addBiosamples(mapBiosample(ga4ghSample));
-        Disease disease = mapDisease(ga4ghSample.getBio_characteristic(), ga4ghSample.getAttributes());
+        Disease disease = mapDisease(ga4ghSample.getBio_characteristic(), ga4ghSample.getGa4ghAttributes());
         if (disease != null) {
             phenoPacket.addDiseases(disease);
         }
@@ -189,7 +189,7 @@ public class Ga4ghSampleToPhenopacketConverter implements Converter<Ga4ghSample,
     }
 
 
-    private Disease mapDisease(SortedSet<Biocharacteristics> biocharacteristics, Attributes attributes) {
+    private Disease mapDisease(SortedSet<Biocharacteristics> biocharacteristics, Ga4ghAttributes ga4ghAttributes) {
         Disease.Builder diseaseBuilder = Disease.newBuilder();
         Disease resultDisease = null;
         for (Biocharacteristics biocharacteristic : biocharacteristics) {
@@ -202,15 +202,15 @@ public class Ga4ghSampleToPhenopacketConverter implements Converter<Ga4ghSample,
             }
         }
         if (resultDisease == null) {
-            List<AttributeValue> attributeValues = attributes.getAttributes().get("disease");
-            if (attributeValues == null) {
-                attributeValues = attributes.getAttributes().get("disease state");
+            List<Ga4ghAttributeValue> ga4ghAttributeValues = ga4ghAttributes.getAttributes().get("disease");
+            if (ga4ghAttributeValues == null) {
+                ga4ghAttributeValues = ga4ghAttributes.getAttributes().get("disease state");
             }
-            if (attributeValues == null) {
-                attributeValues = attributes.getAttributes().get("Disease");
+            if (ga4ghAttributeValues == null) {
+                ga4ghAttributeValues = ga4ghAttributes.getAttributes().get("Disease");
             }
-            if (attributeValues != null) {
-                AttributeValue disease = attributeValues.get(0);
+            if (ga4ghAttributeValues != null) {
+                Ga4ghAttributeValue disease = ga4ghAttributeValues.get(0);
                 diseaseBuilder.setLabel((String) disease.getValue()); //disease attribute in biosamples in this case will be definetely without ontology term and will contain only one value with name of disease
                 resultDisease = diseaseBuilder.build();
             }

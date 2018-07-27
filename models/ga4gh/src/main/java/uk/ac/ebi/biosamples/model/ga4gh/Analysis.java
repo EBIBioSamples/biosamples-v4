@@ -15,7 +15,7 @@ public class Analysis {
     private String updated;
     private String type;
     private String[] software;
-    private Attributes attributes;
+    private Ga4ghAttributes ga4ghAttributes;
 
     @JsonProperty("id")
     public String getId() {
@@ -81,12 +81,12 @@ public class Analysis {
     }
 
     @JsonProperty("attributes")
-    public Attributes getAttributes() {
-        return attributes;
+    public Ga4ghAttributes getGa4ghAttributes() {
+        return ga4ghAttributes;
     }
 
-    public void setAttributes(Attributes attributes) {
-        this.attributes = attributes;
+    public void setGa4ghAttributes(Ga4ghAttributes ga4ghAttributes) {
+        this.ga4ghAttributes = ga4ghAttributes;
     }
 
     @Override
@@ -101,13 +101,13 @@ public class Analysis {
                 Objects.equals(updated, analysis.updated) &&
                 Objects.equals(type, analysis.type) &&
                 Arrays.equals(software, analysis.software) &&
-                Objects.equals(attributes, analysis.attributes);
+                Objects.equals(ga4ghAttributes, analysis.ga4ghAttributes);
     }
 
     @Override
     public int hashCode() {
 
-        int result = Objects.hash(id, name, description, created, updated, type, attributes);
+        int result = Objects.hash(id, name, description, created, updated, type, ga4ghAttributes);
         result = 31 * result + Arrays.hashCode(software);
         return result;
     }

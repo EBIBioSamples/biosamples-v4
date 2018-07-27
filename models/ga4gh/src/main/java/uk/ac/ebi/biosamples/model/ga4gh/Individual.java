@@ -14,7 +14,7 @@ public class Individual {
     private OntologyTerm species;
     private OntologyTerm sex;
     private GeoLocation location;
-    private Attributes attributes;
+    private Ga4ghAttributes ga4ghAttributes;
     private ExternalIdentifier[] external_identifiers;
 
     public String getId() {
@@ -97,12 +97,12 @@ public class Individual {
         this.location = location;
     }
 
-    public Attributes getAttributes() {
-        return attributes;
+    public Ga4ghAttributes getGa4ghAttributes() {
+        return ga4ghAttributes;
     }
 
-    public void setAttributes(Attributes attributes) {
-        this.attributes = attributes;
+    public void setGa4ghAttributes(Ga4ghAttributes ga4ghAttributes) {
+        this.ga4ghAttributes = ga4ghAttributes;
     }
 
     public ExternalIdentifier[] getExternal_identifiers() {
@@ -128,14 +128,14 @@ public class Individual {
                 Objects.equals(species, that.species) &&
                 Objects.equals(sex, that.sex) &&
                 Objects.equals(location, that.location) &&
-                Objects.equals(attributes, that.attributes) &&
+                Objects.equals(ga4ghAttributes, that.ga4ghAttributes) &&
                 Arrays.equals(external_identifiers, that.external_identifiers);
     }
 
     @Override
     public int hashCode() {
 
-        int result = Objects.hash(id, dataset_id, name, description, created, updated, species, sex, location, attributes);
+        int result = Objects.hash(id, dataset_id, name, description, created, updated, species, sex, location, ga4ghAttributes);
         result = 31 * result + Arrays.hashCode(bio_characteristics);
         result = 31 * result + Arrays.hashCode(external_identifiers);
         return result;

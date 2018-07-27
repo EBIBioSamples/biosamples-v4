@@ -11,9 +11,9 @@ import java.util.List;
 import java.util.SortedMap;
 
 
-public class AttributeSerializer extends StdSerializer<Attributes> {
+public class AttributeSerializer extends StdSerializer<Ga4ghAttributes> {
     public AttributeSerializer() {
-        super(Attributes.class);
+        super(Ga4ghAttributes.class);
     }
 
     public AttributeSerializer(JavaType type) {
@@ -21,13 +21,13 @@ public class AttributeSerializer extends StdSerializer<Attributes> {
     }
 
     @Override
-    public void serialize(Attributes rawAttributes, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException, JsonProcessingException {
-        SortedMap<String, List<AttributeValue>> attributes = rawAttributes.getAttributes();
+    public void serialize(Ga4ghAttributes rawGa4ghAttributes, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException, JsonProcessingException {
+        SortedMap<String, List<Ga4ghAttributeValue>> attributes = rawGa4ghAttributes.getAttributes();
         jsonGenerator.writeStartObject();
         for (String key : attributes.keySet()) {
             jsonGenerator.writeObjectFieldStart(key);
             jsonGenerator.writeArrayFieldStart("values");
-            for (AttributeValue value : attributes.get(key)) {
+            for (Ga4ghAttributeValue value : attributes.get(key)) {
                 jsonGenerator.writeStartObject();
                 jsonGenerator.writeObjectField(value.getType(), value.getValue());
                 jsonGenerator.writeEndObject();

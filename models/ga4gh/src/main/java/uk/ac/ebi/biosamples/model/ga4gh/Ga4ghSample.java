@@ -21,14 +21,14 @@ public class Ga4ghSample {
     private String name;
     private String description;
     private SortedSet<Biocharacteristics> bio_characteristic;
-    private Attributes attributes;
+    private Ga4ghAttributes ga4ghAttributes;
     private SortedSet<ExternalIdentifier> external_identifiers;
     private Age individual_age_at_collection;
     private GeoLocation location;
 
     @Autowired
-    public Ga4ghSample(Attributes attributes) {
-        this.attributes = attributes;
+    public Ga4ghSample(Ga4ghAttributes ga4ghAttributes) {
+        this.ga4ghAttributes = ga4ghAttributes;
         bio_characteristic = new TreeSet<>();
         external_identifiers = new TreeSet<>();
     }
@@ -41,11 +41,11 @@ public class Ga4ghSample {
             @JsonProperty("individual_id") String individual_id,
             @JsonProperty("description") String description,
             @JsonProperty("biocharacteristic") Collection<Biocharacteristics> biocharacteristics,
-            @JsonProperty("attributes") @JsonDeserialize(using = AttributeDeserializer.class) Attributes attributes,
+            @JsonProperty("attributes") @JsonDeserialize(using = AttributeDeserializer.class) Ga4ghAttributes ga4ghAttributes,
             @JsonProperty("external_identifiers") Collection<ExternalIdentifier> externalIdentifiers,
             @JsonProperty("individual_age_at_collection") Age age,
             @JsonProperty("location") GeoLocation location) {
-        Ga4ghSample ga4ghSample = new Ga4ghSample(new Attributes());
+        Ga4ghSample ga4ghSample = new Ga4ghSample(new Ga4ghAttributes());
 
         if (id == null) throw new IllegalArgumentException("Sample id must be provided");
         ga4ghSample.id = id.trim();
@@ -70,8 +70,8 @@ public class Ga4ghSample {
             ga4ghSample.bio_characteristic.addAll(biocharacteristics);
         }
 
-        if (attributes != null) {
-            ga4ghSample.attributes = attributes;
+        if (ga4ghAttributes != null) {
+            ga4ghSample.ga4ghAttributes = ga4ghAttributes;
         }
 
         if (externalIdentifiers != null) {
@@ -143,16 +143,16 @@ public class Ga4ghSample {
 
     @JsonIgnore
     public String getReleasedDate() {
-        SortedMap<String, List<AttributeValue>> values = attributes.getAttributes();
-        List<AttributeValue> value = values.get("released");
-        AttributeValue releasedDate = value.get(0); //because there will be only one attribute
+        SortedMap<String, List<Ga4ghAttributeValue>> values = ga4ghAttributes.getAttributes();
+        List<Ga4ghAttributeValue> value = values.get("released");
+        Ga4ghAttributeValue releasedDate = value.get(0); //because there will be only one attribute
         return (String) releasedDate.getValue();
     }
 
     public String getUpdatedDate() {
-        SortedMap<String, List<AttributeValue>> values = attributes.getAttributes();
-        List<AttributeValue> value = values.get("updated");
-        AttributeValue releasedDate = value.get(0); //because there will be only one attribute
+        SortedMap<String, List<Ga4ghAttributeValue>> values = ga4ghAttributes.getAttributes();
+        List<Ga4ghAttributeValue> value = values.get("updated");
+        Ga4ghAttributeValue releasedDate = value.get(0); //because there will be only one attribute
         return (String) releasedDate.getValue();
     }
 
@@ -161,12 +161,12 @@ public class Ga4ghSample {
     }
 
     @JsonSerialize(using = AttributeSerializer.class)
-    public Attributes getAttributes() {
-        return attributes;
+    public Ga4ghAttributes getGa4ghAttributes() {
+        return ga4ghAttributes;
     }
 
-    public void setAttributes(Attributes attributes) {
-        this.attributes = attributes;
+    public void setGa4ghAttributes(Ga4ghAttributes ga4ghAttributes) {
+        this.ga4ghAttributes = ga4ghAttributes;
     }
 
     @JsonProperty("external_identifiers")
@@ -196,13 +196,13 @@ public class Ga4ghSample {
         this.location = location;
     }
 
-    public void addAttributeList(String label, List<AttributeValue> value) {
-        attributes.addAttribute(label, value);
+    public void addAttributeList(String label, List<Ga4ghAttributeValue> value) {
+        ga4ghAttributes.addAttribute(label, value);
     }
 
     public void addSingleAttributeValue(String label, Object value) {
-        List<AttributeValue> values = new ArrayList<>();
-        values.add(new AttributeValue(value));
+        List<Ga4ghAttributeValue> values = new ArrayList<>();
+        values.add(new Ga4ghAttributeValue(value));
         addAttributeList(label, values);
 
     }
@@ -217,7 +217,7 @@ public class Ga4ghSample {
         try {
             ga4ghSample = (Ga4ghSample) super.clone();
         } catch (CloneNotSupportedException e) {
-            ga4ghSample = new Ga4ghSample(new Attributes());
+            ga4ghSample = new Ga4ghSample(new Ga4ghAttributes());
         }
         return ga4ghSample;
     }
@@ -233,7 +233,7 @@ public class Ga4ghSample {
                 Objects.equals(name, ga4ghSample.name) &&
                 Objects.equals(description, ga4ghSample.description) &&
                 Objects.equals(bio_characteristic, ga4ghSample.bio_characteristic) &&
-                Objects.equals(attributes, ga4ghSample.attributes) &&
+                Objects.equals(ga4ghAttributes, ga4ghSample.ga4ghAttributes) &&
                 Objects.equals(external_identifiers, ga4ghSample.external_identifiers) &&
                 Objects.equals(individual_age_at_collection, ga4ghSample.individual_age_at_collection) &&
                 Objects.equals(location, ga4ghSample.location);
@@ -242,6 +242,6 @@ public class Ga4ghSample {
     @Override
     public int hashCode() {
 
-        return Objects.hash(id, dataset_id, individual_id, name, description, bio_characteristic, attributes, external_identifiers, individual_age_at_collection, location);
+        return Objects.hash(id, dataset_id, individual_id, name, description, bio_characteristic, ga4ghAttributes, external_identifiers, individual_age_at_collection, location);
     }
 }
