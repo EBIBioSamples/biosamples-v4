@@ -13,7 +13,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.TemporalAccessor;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
@@ -95,15 +94,16 @@ public class Sample implements Comparable<Sample> {
 
     @JsonProperty(value = "taxId", access = JsonProperty.Access.READ_ONLY)
     public Integer[] getTaxId() {
-        Integer[] taxId = {};
+        List<Integer> taxIds = new ArrayList<>();
         for (Attribute attribute : attributes) {
             if (attribute.getType().toLowerCase().equalsIgnoreCase("Organism") && !attribute.getIri().isEmpty()) {
-                taxId = attribute.getIri().stream().
+                attribute.getIri().stream().
                         map(Object::toString).
-                        map(this::extractTaxIdFromIri).toArray(Integer[]::new);
+                        map(this::extractTaxIdFromIri).
+                        forEach(taxIds::add);
             }
         }
-        return taxId;
+        return taxIds.toArray(new Integer[taxIds.size()]);
     }
 
     private int extractTaxIdFromIri(String iri) {

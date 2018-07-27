@@ -3,9 +3,7 @@ package uk.ac.ebi.biosamples.model;
 import org.junit.Test;
 
 import java.time.Instant;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 
@@ -16,7 +14,7 @@ public class SampleTaxIdTest {
         String olsValue = "http://purl.obolibrary.org/obo/NCBITaxon_10116";
         Integer[] taxIds = new Integer[]{10116};
         Attribute attribute = Attribute.build("Organism", "", Collections.singletonList(olsValue), null);
-        Sample sample = generateTestSample(attribute);
+        Sample sample = generateTestSample(Collections.singletonList(attribute));
         assertEquals(taxIds, sample.getTaxId());
     }
 
@@ -25,7 +23,27 @@ public class SampleTaxIdTest {
         String olsValue = "http://purl.obolibrary.org/obo/NCBITaxon_9685";
         Integer[] taxIds = new Integer[]{9685};
         Attribute attribute = Attribute.build("organism", "Felis catu", Collections.singletonList(olsValue), null);
-        Sample sample = generateTestSample(attribute);
+        Sample sample = generateTestSample(Collections.singletonList(attribute));
+        assertEquals(taxIds, sample.getTaxId());
+    }
+
+    @Test
+    public void given_an_Organism_with_multiple_entries() {
+        List<String> olsValues = Arrays.asList("http://purl.obolibrary.org/obo/NCBITaxon_10116", "http://purl.obolibrary.org/obo/NCBITaxon_9685");
+        Integer[] taxIds = new Integer[]{10116, 9685};
+        Attribute attribute = Attribute.build("Organism", "Felis catu", olsValues, null);
+        Sample sample = generateTestSample(Collections.singletonList(attribute));
+        assertEquals(taxIds, sample.getTaxId());
+    }
+
+    @Test
+    public void given_multiple_Organisms() {
+        String olsValue1 = "http://purl.obolibrary.org/obo/NCBITaxon_10116";
+        String olsValue2 = "http://purl.obolibrary.org/obo/NCBITaxon_9685";
+        Integer[] taxIds = new Integer[]{10116, 9685};
+        Attribute attribute1 = Attribute.build("Organism", "", olsValue1, null);
+        Attribute attribute2 = Attribute.build("Organism", "", olsValue2, null);
+        Sample sample = generateTestSample(Arrays.asList(attribute1, attribute2));
         assertEquals(taxIds, sample.getTaxId());
     }
 
@@ -33,7 +51,7 @@ public class SampleTaxIdTest {
     public void given_single_ontologyTerm_return_taxId_with_empty_iri() {
         String olsValue = "";
         Attribute attribute = Attribute.build("Organism", "", Collections.singletonList(olsValue), null);
-        Sample sample = generateTestSample(attribute);
+        Sample sample = generateTestSample(Collections.singletonList(attribute));
         assertEquals(new Integer[]{0}, sample.getTaxId());
     }
 
@@ -41,20 +59,22 @@ public class SampleTaxIdTest {
     public void given_9606_ontologyTerm_return_taxId() {
         String value = "9606";
         Attribute attribute = Attribute.build("Organism", "", Collections.singletonList(value), null);
-        Sample sample = generateTestSample(attribute);
+        Sample sample = generateTestSample(Collections.singletonList(attribute));
         assertEquals(new Integer[]{Integer.parseInt(value)}, sample.getTaxId());
     }
 
     @Test
     public void given_no_ontologyTerm_return_unknown_taxId() {
         Attribute attribute = Attribute.build("Organism", "s", Collections.EMPTY_LIST, null);
-        Sample sample = generateTestSample(attribute);
+        Sample sample = generateTestSample(Collections.singletonList(attribute));
         assertEquals(new Integer[0], sample.getTaxId());
     }
 
-    private Sample generateTestSample(Attribute attribute) {
+    private Sample generateTestSample(List<Attribute> attributes) {
         Set<Attribute> attributeSet = new HashSet<>();
-        attributeSet.add(attribute);
+        for (Attribute attribute : attributes) {
+            attributeSet.add(attribute);
+        }
         return Sample.build("", "", "", Instant.now(), Instant.now(), attributeSet, Collections.emptySet(), Collections.emptySet());
     }
 }
