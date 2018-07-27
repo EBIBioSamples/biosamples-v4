@@ -43,7 +43,6 @@ public class GA4GHSampeSearchController {
     public ResponseEntity<Resources<Resource<Ga4ghSample>>> searchSample(@RequestParam(name = "disease") String disease, @RequestParam(name = "page") int page){
         Collection<Filter> filters = filterBuilder.getFilters();
         PagedResources<Resource<Sample>> samples = client.fetchPagedSampleResource(disease, filters,page,10);
-
         List<Resource<Ga4ghSample>> ga4ghSamples = samples.getContent().parallelStream()
                 .map(
                         i -> {

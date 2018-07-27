@@ -25,27 +25,27 @@ public class GA4GHFilterBuilderTest {
         Filter externarReferenceFilter = builder.onDataFromExternalReference("ENA").build();
         assertTrue(filters.contains(externarReferenceFilter));
 
-        Filter organismFilter1 = builder.onAttribute("organism")
+        Filter organismFilter1 = builder.onAttribute("Organism")
                 .withValue("Homo sapiens")
                 .build();
         assertTrue(filters.contains(organismFilter1));
 
-        Filter organismFilter2 = builder.onAttribute("organism")
+        Filter organismFilter2 = builder.onAttribute("Organism")
                 .withValue("homo sapiens")
                 .build();
         assertTrue(filters.contains(organismFilter2));
 
-        Filter organismFilter3 = builder.onAttribute("organism")
+        Filter organismFilter3 = builder.onAttribute("Organism")
                 .withValue("9606")
                 .build();
         assertTrue(filters.contains(organismFilter3));
 
-        Filter organismFilter4 = builder.onAttribute("organism")
+        Filter organismFilter4 = builder.onAttribute("Organism")
                 .withValue("human")
                 .build();
         assertTrue(filters.contains(organismFilter4));
 
-        Filter organismFilter5 = builder.onAttribute("organism")
+        Filter organismFilter5 = builder.onAttribute("Organism")
                 .withValue("Human")
                 .build();
         assertTrue(filters.contains(organismFilter5));
