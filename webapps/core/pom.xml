@@ -15,6 +15,7 @@
 
 	<properties>
 		<snippetsDirectory>${project.build.directory}/generated-snippets</snippetsDirectory>
+		<protobuf.version>3.5.1</protobuf.version>
 	</properties>
 
 	<dependencies>
@@ -63,6 +64,11 @@
 			<artifactId>models-legacyxml</artifactId>
 			<version>${bsd2017.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>uk.ac.ebi.biosamples</groupId>
+			<artifactId>models-ga4gh</artifactId>
+			<version>${bsd2017.version}</version>
+		</dependency>
 		
 		<!-- use Thymleaf for HTML templating -->
 		<dependency>
@@ -78,6 +84,11 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-actuator</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.hateoas</groupId>
@@ -132,6 +143,11 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-webmvc</artifactId>
+			<version>4.3.0.RELEASE</version>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework.restdocs</groupId>
 			<artifactId>spring-restdocs-mockmvc</artifactId>
 			<scope>test</scope>
@@ -164,7 +180,45 @@
 		    <version>2.3.0</version>
             <scope>runtime</scope>
 		</dependency>
-    </dependencies>
+		<!-- For phenopackets. Phenopackets lib needed to be installed manually. -->
+		<dependency>
+			<groupId>com.google.protobuf</groupId>
+			<artifactId>protobuf-java</artifactId>
+			<version>${protobuf.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.protobuf</groupId>
+			<artifactId>protobuf-java-util</artifactId>
+			<version>${protobuf.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.phenopackets.schema.v1</groupId>
+			<artifactId>phenopacket-schema</artifactId>
+			<version>0.0.7-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>uk.ac.ebi.biosamples</groupId>
+			<artifactId>biosamples-spring-boot-starter</artifactId>
+			<version>4.0.9-SNAPSHOT</version>
+			<scope>compile</scope>
+		</dependency>
+        <dependency>
+            <groupId>uk.ac.ebi.biosamples</groupId>
+            <artifactId>models-ga4gh</artifactId>
+            <version>4.1.1-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+		<dependency>
+			<groupId>com.jsunsoft.http</groupId>
+			<artifactId>http-request</artifactId>
+			<version>1.0.1</version>
+		</dependency>
+		<dependency>
+			<groupId>uk.ac.ebi.biosamples</groupId>
+			<artifactId>models-core</artifactId>
+			<version>4.1.1-SNAPSHOT</version>
+		</dependency>
+	</dependencies>
 
 	<build>
 		<plugins>
