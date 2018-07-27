@@ -22,8 +22,8 @@ public class ENAHtsgetServiceTest {
         expectedTicket.setAccession("SAMN07666497");
         expectedTicket.setFormat("BAM");
         expectedTicket.setMd5Hash("bd1a36383f9b5b7ff5a8df79e85de245");
-        expectedTicket.addFtpLink("localhost:8080/sample?accesion=SAMN07666497&format=BAM");
-        assertEquals(ticket, expectedTicket);
+        expectedTicket.addFtpLink("localhost:8080/sample?accession=SAMN07666497&format=BAM&part=1");
+        assertTrue(ticket.equals(expectedTicket));
     }
 
     @Test
@@ -33,7 +33,7 @@ public class ENAHtsgetServiceTest {
         expectedTicket.setAccession("SAMN07666497");
         expectedTicket.setFormat("CRAM");
         expectedTicket.setMd5Hash("bd1a36383f9b5b7ff5a8df79e85de245");
-        expectedTicket.addFtpLink("localhost:8080/sample?accesion=SAMN07666497&format=CRAM");
+        expectedTicket.addFtpLink("localhost:8080/sample?accession=SAMN07666497&format=CRAM&part=1");
         assertEquals(ticket, expectedTicket);
 
     }
