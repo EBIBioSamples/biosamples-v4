@@ -18,7 +18,7 @@ public class GA4GHFilterBuilder {
     private FilterBuilder builder;
     private Collection<Filter> filters;
     private final String externalReference = "ENA";
-    private final String attributeLabel = "organism";
+    private final String attributeLabel = "Organism";
     private final List<String> values = Arrays.asList("Homo sapiens", "homo sapiens", "9606", "human", "Human");
 
     public GA4GHFilterBuilder() {
