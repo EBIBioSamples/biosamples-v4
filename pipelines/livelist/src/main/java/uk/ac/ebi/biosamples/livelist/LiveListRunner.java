@@ -33,7 +33,10 @@ public class LiveListRunner implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        String liveListFilename = args.getNonOptionArgs().get(0);
+        String liveListFilename = "livelist.txt";
+        if (args.getNonOptionArgs().size() > 0) {
+            liveListFilename = args.getNonOptionArgs().get(0);
+        }
         long startTime = System.nanoTime();
         int sampleCount = 0;
         try {
@@ -45,7 +48,7 @@ public class LiveListRunner implements ApplicationRunner {
                 for (Resource<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll()) {
                     LOGGER.trace("Handling " + sampleResource);
                     Sample sample = sampleResource.getContent();
-                    if (Instant.now().isAfter(sample.getRelease())) {
+                    if (sample.getStatus().equals("live")) {
                         liveListWriter.write(LiveListUtils.createLiveListString(sample));
                         liveListWriter.write("\n");
                         sampleCount++;

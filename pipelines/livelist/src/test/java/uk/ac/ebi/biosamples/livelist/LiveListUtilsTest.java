@@ -1,6 +1,7 @@
 package uk.ac.ebi.biosamples.livelist;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,8 +15,9 @@ import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static uk.ac.ebi.biosamples.livelist.LiveListUtils.*;
+import static uk.ac.ebi.biosamples.livelist.LiveListUtils.createLiveListString;
 
+@Ignore
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @Import(Application.class)
