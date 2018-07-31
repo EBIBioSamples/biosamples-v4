@@ -1,7 +1,12 @@
 package uk.ac.ebi.biosamples.solr.service;
 
 import java.io.UnsupportedEncodingException;
+import java.util.List;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.google.common.io.BaseEncoding;
@@ -17,6 +22,12 @@ import uk.ac.ebi.biosamples.solr.model.field.SolrSampleField;
 public class SolrFieldService {
 
 //    private Logger log = LoggerFactory.getLogger(getClass());
+    List<SolrSampleField> solrFieldList;
+
+    @Autowired
+    public SolrFieldService(List<SolrSampleField> solrSampleFields) {
+        this.solrFieldList = solrSampleFields;
+    }
 
     public static String encodeFieldName(String field) {
         //solr only allows alphanumeric field types
@@ -63,16 +74,30 @@ public class SolrFieldService {
      * @param encodedField encoded version of the field with the type suffix
      * @return the field name decoded
      */
-    public static SolrSampleField decodeField(String encodedField) {
+    public SolrSampleField decodeField(String encodedField) {
 
-        SolrFieldType fieldType = SolrFieldType.getFromField(encodedField);
-        String baseLabel = encodedField.replaceFirst(
-                fieldType.getSuffix() + "$",
-                "");
-        if (fieldType.isEncoded()) {
-           baseLabel = decodeFieldName(baseLabel);
+        Optional<SolrSampleField> optionalType = solrFieldList.stream()
+                .filter(solrField -> solrField.matches(encodedField))
+                .findFirst();
+        if (optionalType.isPresent()) {
+            SolrSampleField fieldCandidate = optionalType.get();
+            Matcher m = fieldCandidate.getFieldPattern().matcher(encodedField);
+            if (m.find()) {
+                String baseLabel = m.group("fieldname");
+
+                if (fieldCandidate.isEncodedField()) {
+                    baseLabel = decodeFieldName(baseLabel);
+                }
+
+                fieldCandidate.setReadableLabel(baseLabel);
+                fieldCandidate.setSolrLabel(encodedField);
+
+                return fieldCandidate;
+            }
+
         }
-        return fieldType.getAssociatedClassInstance(baseLabel, encodedField);
+
+        throw new RuntimeException("Provide field " + encodedField + " is unknown");
     }
 
 }

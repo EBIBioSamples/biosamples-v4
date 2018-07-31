@@ -2,12 +2,14 @@ package uk.ac.ebi.biosamples.solr.model.field;
 
 import org.springframework.data.solr.core.query.Criteria;
 
+import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.model.filter.AccessionFilter;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.solr.model.strategy.FacetFetchStrategy;
 
 import java.util.regex.Pattern;
 
+@Component
 public class SolrSampleAccessionField extends SolrSampleField {
 
 
@@ -27,7 +29,7 @@ public class SolrSampleAccessionField extends SolrSampleField {
 
     @Override
     public Pattern getFieldPattern() {
-        return Pattern.compile("^id$");
+        return Pattern.compile("^(?<fieldname>id)$");
     }
 
     @Override
@@ -52,7 +54,7 @@ public class SolrSampleAccessionField extends SolrSampleField {
 
         if (filter instanceof AccessionFilter) {
 
-            filterCriteria = new Criteria(getSolrDocumentFieldName());
+            filterCriteria = new Criteria(getSolrLabel());
 
             AccessionFilter accessionFilter = (AccessionFilter) filter;
             if (accessionFilter.getContent().isPresent())

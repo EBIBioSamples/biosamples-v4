@@ -1,14 +1,15 @@
 package uk.ac.ebi.biosamples.solr.model.field;
 
 import org.springframework.data.solr.core.query.Criteria;
+import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.model.filter.DataTypeFilter;
 import uk.ac.ebi.biosamples.model.filter.Filter;
-import uk.ac.ebi.biosamples.model.filter.NameFilter;
 import uk.ac.ebi.biosamples.solr.model.strategy.FacetFetchStrategy;
 import uk.ac.ebi.biosamples.solr.model.strategy.RegularFacetFetchStrategy;
 
 import java.util.regex.Pattern;
 
+@Component
 public class SolrSampleDataTypeField extends SolrSampleField {
 
     public SolrSampleDataTypeField() {
@@ -27,7 +28,7 @@ public class SolrSampleDataTypeField extends SolrSampleField {
 
     @Override
     public Pattern getFieldPattern() {
-        return Pattern.compile("^structdatatype_ss$");
+        return Pattern.compile("^(?<fieldname>structdatatype)(?<fieldsuffix>_ss)$");
     }
 
     @Override
@@ -51,7 +52,7 @@ public class SolrSampleDataTypeField extends SolrSampleField {
 
         if (filter instanceof DataTypeFilter) {
 
-            filterCriteria = new Criteria(getSolrDocumentFieldName());
+            filterCriteria = new Criteria(getSolrLabel());
 
             DataTypeFilter nameFilter = (DataTypeFilter) filter;
             if (nameFilter.getContent().isPresent()) {

@@ -2,6 +2,7 @@ package uk.ac.ebi.biosamples.solr.model.field;
 
 import org.springframework.data.solr.core.query.Criteria;
 
+import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.model.filter.InverseRelationFilter;
 import uk.ac.ebi.biosamples.solr.model.strategy.FacetFetchStrategy;
@@ -9,6 +10,7 @@ import uk.ac.ebi.biosamples.solr.model.strategy.RegularFacetFetchStrategy;
 
 import java.util.regex.Pattern;
 
+@Component
 public class SolrSampleInverseRelationField extends SolrSampleField {
 
     public SolrSampleInverseRelationField() {
@@ -27,7 +29,7 @@ public class SolrSampleInverseRelationField extends SolrSampleField {
 
     @Override
     public Pattern getFieldPattern() {
-        return Pattern.compile("^[A-Z0-9_]+_ir_ss$");
+        return Pattern.compile("^(?<fieldname>[A-Z0-9_]+)(?<fieldsuffix>_ir_ss)$");
     }
 
     @Override
@@ -51,7 +53,7 @@ public class SolrSampleInverseRelationField extends SolrSampleField {
 
         if (filter instanceof InverseRelationFilter) {
 
-            filterCriteria = new Criteria(getSolrDocumentFieldName());
+            filterCriteria = new Criteria(getSolrLabel());
 
             InverseRelationFilter inverseRelationFilter = (InverseRelationFilter) filter;
             if (inverseRelationFilter.getContent().isPresent()) {

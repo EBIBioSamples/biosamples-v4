@@ -2,12 +2,14 @@ package uk.ac.ebi.biosamples.solr.model.field;
 
 import org.springframework.data.solr.core.query.Criteria;
 
+import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.model.filter.DomainFilter;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.solr.model.strategy.FacetFetchStrategy;
 
 import java.util.regex.Pattern;
 
+@Component
 public class SolrSampleDomainField extends SolrSampleField {
 
     public SolrSampleDomainField() {
@@ -26,7 +28,7 @@ public class SolrSampleDomainField extends SolrSampleField {
 
     @Override
     public Pattern getFieldPattern() {
-        return Pattern.compile("^domain_s$");
+        return Pattern.compile("^(?<fieldname>domain)(?<fieldsuffix>_s)$");
     }
 
     @Override
@@ -51,7 +53,7 @@ public class SolrSampleDomainField extends SolrSampleField {
 
         if (filter instanceof DomainFilter) {
 
-            filterCriteria = new Criteria(getSolrDocumentFieldName());
+            filterCriteria = new Criteria(getSolrLabel());
 
             DomainFilter domainFilter = (DomainFilter) filter;
             if (domainFilter.getContent().isPresent())

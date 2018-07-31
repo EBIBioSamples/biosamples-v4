@@ -2,6 +2,7 @@ package uk.ac.ebi.biosamples.solr.model.field;
 
 import org.springframework.data.solr.core.query.Criteria;
 
+import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.model.filter.RelationFilter;
 import uk.ac.ebi.biosamples.solr.model.strategy.FacetFetchStrategy;
@@ -9,6 +10,7 @@ import uk.ac.ebi.biosamples.solr.model.strategy.RegularFacetFetchStrategy;
 
 import java.util.regex.Pattern;
 
+@Component
 public class SolrSampleRelationField extends SolrSampleField{
 
     public SolrSampleRelationField() {
@@ -27,7 +29,7 @@ public class SolrSampleRelationField extends SolrSampleField{
 
     @Override
     public Pattern getFieldPattern() {
-        return Pattern.compile("^[A-Z0-9_]+_or_ss$");
+        return Pattern.compile("^(?<fieldname>[A-Z0-9_]+)(?<fieldsuffix>_or_ss)$");
     }
 
     @Override
@@ -51,7 +53,7 @@ public class SolrSampleRelationField extends SolrSampleField{
 
         if (filter instanceof RelationFilter) {
 
-            filterCriteria = new Criteria(getSolrDocumentFieldName());
+            filterCriteria = new Criteria(getSolrLabel());
 
             RelationFilter relationFilter = (RelationFilter) filter;
             if (relationFilter.getContent().isPresent()) {

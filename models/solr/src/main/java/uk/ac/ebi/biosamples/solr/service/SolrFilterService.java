@@ -47,7 +47,7 @@ public class SolrFilterService {
 
         //TODO rename to getFilterTargetField
         SolrSampleField solrField = SolrFieldType.buildFromFilter(filter);
-//        String filterTargetField = solrFieldService.encodedField(filter.getLabel(), SolrFieldType.getFromFilterType(filter.getType()));
+//        String filterTargetField = solrFieldService.encodedField(filter.getReadableLabel(), SolrFieldType.getFromFilterType(filter.getType()));
 //        Criteria filterCriteria;
 //        if (filter.getContent().isPresent()) {
 //            Object content = filter.getContent().get();

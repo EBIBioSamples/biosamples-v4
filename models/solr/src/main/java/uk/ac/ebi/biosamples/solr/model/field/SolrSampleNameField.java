@@ -2,12 +2,14 @@ package uk.ac.ebi.biosamples.solr.model.field;
 
 import org.springframework.data.solr.core.query.Criteria;
 
+import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.model.filter.NameFilter;
 import uk.ac.ebi.biosamples.solr.model.strategy.FacetFetchStrategy;
 
 import java.util.regex.Pattern;
 
+@Component
 public class SolrSampleNameField extends SolrSampleField {
 
     public SolrSampleNameField() {
@@ -26,7 +28,7 @@ public class SolrSampleNameField extends SolrSampleField {
 
     @Override
     public Pattern getFieldPattern() {
-        return Pattern.compile("^name_s$");
+        return Pattern.compile("^(?<fieldname>name)(?<fieldsuffix>_s)$");
     }
 
     @Override
@@ -50,7 +52,7 @@ public class SolrSampleNameField extends SolrSampleField {
 
         if (filter instanceof NameFilter) {
 
-            filterCriteria = new Criteria(getSolrDocumentFieldName());
+            filterCriteria = new Criteria(getSolrLabel());
 
             NameFilter nameFilter = (NameFilter) filter;
             if (nameFilter.getContent().isPresent()) {

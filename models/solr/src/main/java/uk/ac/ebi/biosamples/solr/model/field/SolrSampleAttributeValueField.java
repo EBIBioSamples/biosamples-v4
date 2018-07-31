@@ -2,14 +2,15 @@ package uk.ac.ebi.biosamples.solr.model.field;
 
 import org.springframework.data.solr.core.query.Criteria;
 
+import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.model.filter.AttributeFilter;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.solr.model.strategy.FacetFetchStrategy;
 import uk.ac.ebi.biosamples.solr.model.strategy.RegularFacetFetchStrategy;
-import uk.ac.ebi.biosamples.solr.service.SolrFieldService;
 
 import java.util.regex.Pattern;
 
+@Component
 public class SolrSampleAttributeValueField extends SolrSampleField {
 
     public SolrSampleAttributeValueField() {
@@ -27,7 +28,7 @@ public class SolrSampleAttributeValueField extends SolrSampleField {
 
     @Override
     public Pattern getFieldPattern() {
-        return Pattern.compile("^[A-Z0-9_]+_av_ss$");
+        return Pattern.compile("^(?<fieldname>[A-Z0-9_]+)(?<fieldsuffix>_av_ss)$");
     }
 
     @Override
@@ -47,7 +48,7 @@ public class SolrSampleAttributeValueField extends SolrSampleField {
         Criteria filterCriteria = null;
         if (filter instanceof AttributeFilter) {
 
-            filterCriteria = new Criteria(this.getSolrDocumentFieldName());
+            filterCriteria = new Criteria(this.getSolrLabel());
 
             AttributeFilter attributeFilter = (AttributeFilter) filter;
             if (attributeFilter.getContent().isPresent())

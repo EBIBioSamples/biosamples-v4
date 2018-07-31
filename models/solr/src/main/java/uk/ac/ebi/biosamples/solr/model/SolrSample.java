@@ -306,6 +306,8 @@ public class SolrSample {
 		}
 
 		sample.facetFields = new ArrayList<>(facetFieldSet);
+
+
 		
 		
 		//copy into the other fields

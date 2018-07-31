@@ -15,7 +15,7 @@ public abstract class SolrSampleField implements FilterCriteriaBuilder {
     /**
      * Constructor meant to be used only for reflection purposes
      */
-    public SolrSampleField() {
+    protected SolrSampleField() {
         this.readableLabel = null;
         this.solrDocumentLabel = null;
     }
@@ -30,13 +30,14 @@ public abstract class SolrSampleField implements FilterCriteriaBuilder {
         this.solrDocumentLabel = solrDocumentLabel;
     }
 
+
     /**
      * Check if the provided string matches the field regularExpression
      * @param fieldName string to check against the field pattern
      * @return
      */
     public boolean matches(String fieldName) {
-        return getFieldPattern().asPredicate().test(fieldName);
+        return getFieldPattern().matcher(fieldName).find();
     }
 
     public abstract Pattern getFieldPattern();
@@ -56,17 +57,27 @@ public abstract class SolrSampleField implements FilterCriteriaBuilder {
     /**
      * @return the readable label of the field
      */
-    public String getLabel() {
+    public String getReadableLabel() {
         return this.readableLabel;
     }
 
     /**
      * @return the document field, which could be encoded or not encoded based on the SolrFieldType
      */
-    public String getSolrDocumentFieldName() {
+    public String getSolrLabel() {
         return solrDocumentLabel;
     }
 
+
+    public SolrSampleField setReadableLabel(String readableLabel) {
+        this.readableLabel = readableLabel;
+        return this;
+    }
+
+    public SolrSampleField setSolrLabel(String solrDocumentLabel) {
+        this.solrDocumentLabel = solrDocumentLabel;
+        return this;
+    }
 
 
 

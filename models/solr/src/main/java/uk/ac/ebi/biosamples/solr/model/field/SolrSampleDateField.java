@@ -7,10 +7,12 @@ import java.util.regex.Pattern;
 
 import org.springframework.data.solr.core.query.Criteria;
 
+import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.model.filter.DateRangeFilter;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.solr.model.strategy.FacetFetchStrategy;
 
+@Component
 public class SolrSampleDateField extends SolrSampleField{
 
 
@@ -30,7 +32,7 @@ public class SolrSampleDateField extends SolrSampleField{
 
     @Override
     public Pattern getFieldPattern() {
-        return Pattern.compile("^(release|update)_dt$");
+        return Pattern.compile("^(?<fieldname>release|update)(?<fieldsuffix>_dt)$");
     }
 
     @Override
@@ -55,7 +57,7 @@ public class SolrSampleDateField extends SolrSampleField{
         if (filter instanceof DateRangeFilter) {
 
             DateRangeFilter dateRangeFilter = (DateRangeFilter) filter;
-            filterCriteria = new Criteria(this.getSolrDocumentFieldName());
+            filterCriteria = new Criteria(this.getSolrLabel());
 
             if (dateRangeFilter.getContent().isPresent()) {
                 DateRangeFilter.DateRange dateRange = dateRangeFilter.getContent().get();

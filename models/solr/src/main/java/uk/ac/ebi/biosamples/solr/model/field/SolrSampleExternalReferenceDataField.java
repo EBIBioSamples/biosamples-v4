@@ -2,6 +2,7 @@ package uk.ac.ebi.biosamples.solr.model.field;
 
 import org.springframework.data.solr.core.query.Criteria;
 
+import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.model.filter.ExternalReferenceDataFilter;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.solr.model.strategy.FacetFetchStrategy;
@@ -9,6 +10,7 @@ import uk.ac.ebi.biosamples.solr.model.strategy.RegularFacetFetchStrategy;
 
 import java.util.regex.Pattern;
 
+@Component
 public class SolrSampleExternalReferenceDataField extends SolrSampleField{
 
     public SolrSampleExternalReferenceDataField() {
@@ -27,7 +29,7 @@ public class SolrSampleExternalReferenceDataField extends SolrSampleField{
 
     @Override
     public Pattern getFieldPattern() {
-        return Pattern.compile("^[A-Z0-9_]+_erd_ss$");
+        return Pattern.compile("^(?<fieldname>[A-Z0-9_]+)(?<fieldsuffix>_erd_ss)$");
     }
 
     @Override
@@ -51,7 +53,7 @@ public class SolrSampleExternalReferenceDataField extends SolrSampleField{
 
         if (filter instanceof ExternalReferenceDataFilter) {
 
-            filterCriteria = new Criteria(getSolrDocumentFieldName());
+            filterCriteria = new Criteria(getSolrLabel());
 
             ExternalReferenceDataFilter extRefFilter = (ExternalReferenceDataFilter) filter;
             if (extRefFilter.getContent().isPresent()) {

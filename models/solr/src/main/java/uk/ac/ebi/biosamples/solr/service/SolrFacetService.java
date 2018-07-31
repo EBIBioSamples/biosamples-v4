@@ -77,7 +77,7 @@ public class SolrFacetService {
         for(FacetFieldEntry ffe: facetFields) {
 
             Long facetFieldCount = ffe.getValueCount();
-            SolrSampleField solrSampleField = SolrFieldService.decodeField(ffe.getValue());
+            SolrSampleField solrSampleField = this.solrFieldService.decodeField(ffe.getValue());
             allFacetFields.add(new SimpleEntry<>(solrSampleField, facetFieldCount));
         }
 
