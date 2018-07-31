@@ -12,7 +12,6 @@ import uk.ac.ebi.biosamples.model.Sample;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.time.Instant;
 import java.util.zip.GZIPOutputStream;
 
 @Component
@@ -45,6 +44,7 @@ public class LiveListRunner implements ApplicationRunner {
                             ? new OutputStreamWriter(new FileOutputStream(liveListFilename), "UTF-8")
                             : new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(liveListFilename)), "UTF-8");
             ) {
+                LOGGER.info("Starting live list export");
                 for (Resource<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll()) {
                     LOGGER.trace("Handling " + sampleResource);
                     Sample sample = sampleResource.getContent();
@@ -53,13 +53,16 @@ public class LiveListRunner implements ApplicationRunner {
                         liveListWriter.write("\n");
                         sampleCount++;
                     }
+                    if (sampleCount % 10000 == 0) {
+                        LOGGER.info("Running live list export: exported " + sampleCount + " exported samples in " + ((System.nanoTime() - startTime) / 1000000000l) + "s");
+                    }
                 }
             } finally {
             }
         } finally {
         }
         long elapsed = System.nanoTime() - startTime;
-        LOGGER.info("Live list exported " + sampleCount + " samples in " + (elapsed / 1000000000l) + "s");
+        LOGGER.info("Completed live list export:  " + sampleCount + " samples exported in " + (elapsed / 1000000000l) + "s");
     }
 
 }
