@@ -5,8 +5,11 @@ import static uk.ac.ebi.biosamples.solr.model.field.SolrFieldType.FieldEncodingT
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 import uk.ac.ebi.biosamples.model.FacetFilterFieldType;
 import uk.ac.ebi.biosamples.model.filter.Filter;
@@ -27,7 +30,8 @@ public enum SolrFieldType {
     DOMAIN(FacetFilterFieldType.DOMAIN, "_s", NOT_ENCODED, SolrSampleDomainField.class),
     EXTERNAL_REFERENCE_DATA(FacetFilterFieldType.EXTERNAL_REFERENCE_DATA, "_erd_ss", ENCODED, SolrSampleExternalReferenceDataField.class),
     NAME(FacetFilterFieldType.NAME, "_s", NOT_ENCODED, SolrSampleNameField.class),
-    ACCESSION(FacetFilterFieldType.ACCESSION, "", NOT_ENCODED, SolrSampleAccessionField.class);
+    ACCESSION(FacetFilterFieldType.ACCESSION, "", NOT_ENCODED, SolrSampleAccessionField.class),
+    STRUCTURED_DATA_TYPES(FacetFilterFieldType.DATA_TYPE, "_ss", NOT_ENCODED, SolrSampleDataTypeField.class);
 
 
     private static EnumMap<FilterType, SolrFieldType> filterToSolrFieldMap = new EnumMap<FilterType, SolrFieldType>(FilterType.class);
@@ -68,6 +72,16 @@ public enum SolrFieldType {
         return isEncoded.equals(ENCODED);
     }
 
+    private boolean matches(String toMatch)  {
+        try {
+            Method matchingMethod = this.associatedClass.getMethod("matches", String.class);
+            SolrSampleField classInstance = this.associatedClass.newInstance();
+            return (boolean) matchingMethod.invoke(classInstance, toMatch);
+        } catch (InstantiationException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            throw new RuntimeException("Something went wrong while trying to match a field");
+        }
+    }
+
     public SolrSampleField getAssociatedClassInstance(String label, String solrDocumentLabel) {
         try {
             Constructor<? extends SolrSampleField> constructor = this.associatedClass.getConstructor(String.class, String.class);
@@ -93,14 +107,21 @@ public enum SolrFieldType {
     }
 
 
+
     public static SolrFieldType getFromField(String field) {
-        for(SolrFieldType type: values()) {
-            if (field.endsWith(type.getSuffix())) {
-                return type;
-            }
+//        for(SolrFieldType type: values()) {
+//            // FIXME This return the first result found for a suffix, could be problematic when multiple enum has the same suffix
+//            if (field.endsWith(type.getSuffix())) {
+//                return type;
+//            }
+//        }
+        Optional<SolrFieldType> optionalType = Arrays.stream(values()).filter(type -> type.matches(field)).findFirst();
+        if (optionalType.isPresent()) {
+            return optionalType.get();
+        } else {
+            throw new RuntimeException("Provide field " + field + " is unknown");
         }
 
-        throw new RuntimeException("Provide field " + field + " is unknown");
     }
 
     public static SolrFieldType getFromFilterType(FilterType filterType) {
@@ -110,6 +131,7 @@ public enum SolrFieldType {
         }
         return fieldType;
     }
+
 
     public enum FieldEncodingType {
         ENCODED, NOT_ENCODED;

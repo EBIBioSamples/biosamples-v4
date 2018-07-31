@@ -7,7 +7,14 @@ import uk.ac.ebi.biosamples.model.filter.InverseRelationFilter;
 import uk.ac.ebi.biosamples.solr.model.strategy.FacetFetchStrategy;
 import uk.ac.ebi.biosamples.solr.model.strategy.RegularFacetFetchStrategy;
 
+import java.util.regex.Pattern;
+
 public class SolrSampleInverseRelationField extends SolrSampleField {
+
+    public SolrSampleInverseRelationField() {
+        super();
+    }
+
     /**
      * All subclasses should implement this constructor
      *
@@ -16,6 +23,16 @@ public class SolrSampleInverseRelationField extends SolrSampleField {
      */
     public SolrSampleInverseRelationField(String readableLabel, String solrDocumentLabel) {
         super(readableLabel, solrDocumentLabel);
+    }
+
+    @Override
+    public Pattern getFieldPattern() {
+        return Pattern.compile("^[A-Z0-9_]+_ir_ss$");
+    }
+
+    @Override
+    public boolean isEncodedField() {
+        return true;
     }
 
     @Override

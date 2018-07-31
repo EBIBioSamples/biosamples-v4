@@ -3,6 +3,7 @@ package uk.ac.ebi.biosamples.solr.model.field;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
+import java.util.regex.Pattern;
 
 import org.springframework.data.solr.core.query.Criteria;
 
@@ -11,6 +12,12 @@ import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.solr.model.strategy.FacetFetchStrategy;
 
 public class SolrSampleDateField extends SolrSampleField{
+
+
+    public SolrSampleDateField() {
+        super();
+    }
+
     /**
      * All subclasses should implement this constructor
      *
@@ -19,6 +26,16 @@ public class SolrSampleDateField extends SolrSampleField{
      */
     public SolrSampleDateField(String readableLabel, String solrDocumentLabel) {
         super(readableLabel, solrDocumentLabel);
+    }
+
+    @Override
+    public Pattern getFieldPattern() {
+        return Pattern.compile("^(release|update)_dt$");
+    }
+
+    @Override
+    public boolean isEncodedField() {
+        return false;
     }
 
     @Override

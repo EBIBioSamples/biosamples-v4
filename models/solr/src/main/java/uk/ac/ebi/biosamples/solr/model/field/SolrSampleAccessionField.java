@@ -6,7 +6,15 @@ import uk.ac.ebi.biosamples.model.filter.AccessionFilter;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.solr.model.strategy.FacetFetchStrategy;
 
+import java.util.regex.Pattern;
+
 public class SolrSampleAccessionField extends SolrSampleField {
+
+
+    public SolrSampleAccessionField() {
+        super();
+    }
+
     /**
      * All subclasses should implement this constructor
      *
@@ -18,6 +26,16 @@ public class SolrSampleAccessionField extends SolrSampleField {
     }
 
     @Override
+    public Pattern getFieldPattern() {
+        return Pattern.compile("^id$");
+    }
+
+    @Override
+    public boolean isEncodedField() {
+        return false;
+    }
+
+    @Override
     public SolrFieldType getSolrFieldType() {
         return SolrFieldType.ACCESSION;
     }
@@ -26,7 +44,6 @@ public class SolrSampleAccessionField extends SolrSampleField {
     public FacetFetchStrategy getFacetCollectionStrategy() {
         return null;
     }
-
 
     @Override
     public Criteria getFilterCriteria(Filter filter) {

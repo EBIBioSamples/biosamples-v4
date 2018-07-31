@@ -16,6 +16,7 @@ import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.service.ExternalReferenceService;
 import uk.ac.ebi.biosamples.service.SampleRelationshipUtils;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
@@ -38,6 +39,7 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 		Map<String, List<String>> outgoingRelationships = new HashMap<>();
 		Map<String, List<String>> incomingRelationships = new HashMap<>();
 		Map<String, List<String>> externalReferencesData = new HashMap<>();
+		List<String> structuredDataTypes = new ArrayList<>();
 		List<String> keywords = new ArrayList<>();
 
 		if (sample.getCharacteristics() != null && sample.getCharacteristics().size() > 0) {
@@ -84,7 +86,13 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 					attributeUnits.get(key).add(attr.getUnit());
 				}
 			}
-		}	
+		}
+
+		// Extract all the available data types and put them in an array
+		sample.getData().parallelStream()
+				.forEach(abstractData -> structuredDataTypes.add(abstractData.getDataType().name()));
+
+
 		//turn external reference into additional attributes for facet & filter
 		for (ExternalReference externalReference : sample.getExternalReferences()) {
 			String externalReferenceNickname = externalReferenceService.getNickname(externalReference);
@@ -157,7 +165,7 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 				null, null,
 				attributeValues, attributeIris, attributeUnits,
 				outgoingRelationships, incomingRelationships,
-				externalReferencesData, keywords);
+				externalReferencesData, structuredDataTypes, keywords);
 	}
 	
 }

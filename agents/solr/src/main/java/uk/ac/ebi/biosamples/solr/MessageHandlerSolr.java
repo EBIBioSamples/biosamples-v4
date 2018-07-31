@@ -60,7 +60,7 @@ public class MessageHandlerSolr {
 				modifiedTime, indexedTime, 
 				solrSample.getAttributeValues(), solrSample.getAttributeIris(), solrSample.getAttributeUnits(), 
 				solrSample.getOutgoingRelationships(), solrSample.getIncomingRelationships(), 
-				solrSample.getExternalReferencesData(), solrSample.getKeywords());
+				solrSample.getExternalReferencesData(), solrSample.getStructuredDataTypes(), solrSample.getKeywords());
 		
 		//expand ontology terms from OLS
 		for (List<String> iris : solrSample.getAttributeIris().values()) {

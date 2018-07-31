@@ -20,7 +20,8 @@ public enum FacetFilterFieldType {
     RELEASE_DATE(null, FilterType.DATE_FILTER),
     EXTERNAL_REFERENCE_DATA(FacetType.EXTERNAL_REFERENCE_DATA_FACET, FilterType.EXTERNAL_REFERENCE_DATA_FILTER ), 
     NAME(null, FilterType.NAME_FILTER),
-    ACCESSION(null, FilterType.ACCESSION_FILTER);
+    ACCESSION(null, FilterType.ACCESSION_FILTER),
+    DATA_TYPE(FacetType.DATA_TYPE, FilterType.DATA_TYPE_FILTER);
 
     private static EnumMap<FacetType, FacetFilterFieldType> facetToField = new EnumMap<>(FacetType.class);
     private static EnumMap<FilterType, FacetFilterFieldType> filterToField = new EnumMap<>(FilterType.class);

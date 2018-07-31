@@ -60,19 +60,19 @@ public class SolrFieldService {
     /**
      * Try to decode a field guessing the facet type
      *
-     * @param field encoded version of the field with the type suffix
+     * @param encodedField encoded version of the field with the type suffix
      * @return the field name decoded
      */
-    public static SolrSampleField decodeField(String field) {
+    public static SolrSampleField decodeField(String encodedField) {
 
-        SolrFieldType fieldType = SolrFieldType.getFromField(field);
-        String baseLabel = field.replaceFirst(
+        SolrFieldType fieldType = SolrFieldType.getFromField(encodedField);
+        String baseLabel = encodedField.replaceFirst(
                 fieldType.getSuffix() + "$",
                 "");
         if (fieldType.isEncoded()) {
            baseLabel = decodeFieldName(baseLabel);
         }
-        return fieldType.getAssociatedClassInstance(baseLabel, field);
+        return fieldType.getAssociatedClassInstance(baseLabel, encodedField);
     }
 
 }

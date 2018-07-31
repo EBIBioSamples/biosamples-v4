@@ -1,11 +1,24 @@
 package uk.ac.ebi.biosamples.solr.model.field;
 
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import uk.ac.ebi.biosamples.solr.model.strategy.FacetFetchStrategy;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public abstract class SolrSampleField implements FilterCriteriaBuilder {
 
     private String readableLabel;
     private String solrDocumentLabel;
+
+
+    /**
+     * Constructor meant to be used only for reflection purposes
+     */
+    public SolrSampleField() {
+        this.readableLabel = null;
+        this.solrDocumentLabel = null;
+    }
 
     /**
      * All subclasses should implement this constructor.
@@ -16,6 +29,19 @@ public abstract class SolrSampleField implements FilterCriteriaBuilder {
         this.readableLabel = readableLabel;
         this.solrDocumentLabel = solrDocumentLabel;
     }
+
+    /**
+     * Check if the provided string matches the field regularExpression
+     * @param fieldName string to check against the field pattern
+     * @return
+     */
+    public boolean matches(String fieldName) {
+        return getFieldPattern().asPredicate().test(fieldName);
+    }
+
+    public abstract Pattern getFieldPattern();
+
+    public abstract boolean isEncodedField();
 
     public abstract SolrFieldType getSolrFieldType();
 
@@ -40,6 +66,7 @@ public abstract class SolrSampleField implements FilterCriteriaBuilder {
     public String getSolrDocumentFieldName() {
         return solrDocumentLabel;
     }
+
 
 
 

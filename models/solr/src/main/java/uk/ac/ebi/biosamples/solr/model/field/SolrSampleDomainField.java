@@ -6,7 +6,14 @@ import uk.ac.ebi.biosamples.model.filter.DomainFilter;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.solr.model.strategy.FacetFetchStrategy;
 
+import java.util.regex.Pattern;
+
 public class SolrSampleDomainField extends SolrSampleField {
+
+    public SolrSampleDomainField() {
+        super();
+    }
+
     /**
      * All subclasses should implement this constructor
      *
@@ -15,6 +22,16 @@ public class SolrSampleDomainField extends SolrSampleField {
      */
     public SolrSampleDomainField(String readableLabel, String solrDocumentLabel) {
         super(readableLabel, solrDocumentLabel);
+    }
+
+    @Override
+    public Pattern getFieldPattern() {
+        return Pattern.compile("^domain_s$");
+    }
+
+    @Override
+    public boolean isEncodedField() {
+        return false;
     }
 
     @Override

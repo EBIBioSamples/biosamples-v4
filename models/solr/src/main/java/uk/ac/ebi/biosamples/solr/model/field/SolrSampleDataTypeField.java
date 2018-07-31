@@ -1,17 +1,17 @@
 package uk.ac.ebi.biosamples.solr.model.field;
 
 import org.springframework.data.solr.core.query.Criteria;
-
+import uk.ac.ebi.biosamples.model.filter.DataTypeFilter;
 import uk.ac.ebi.biosamples.model.filter.Filter;
-import uk.ac.ebi.biosamples.model.filter.RelationFilter;
+import uk.ac.ebi.biosamples.model.filter.NameFilter;
 import uk.ac.ebi.biosamples.solr.model.strategy.FacetFetchStrategy;
 import uk.ac.ebi.biosamples.solr.model.strategy.RegularFacetFetchStrategy;
 
 import java.util.regex.Pattern;
 
-public class SolrSampleRelationField extends SolrSampleField{
+public class SolrSampleDataTypeField extends SolrSampleField {
 
-    public SolrSampleRelationField() {
+    public SolrSampleDataTypeField() {
         super();
     }
 
@@ -21,23 +21,23 @@ public class SolrSampleRelationField extends SolrSampleField{
      * @param readableLabel
      * @param solrDocumentLabel
      */
-    public SolrSampleRelationField(String readableLabel, String solrDocumentLabel) {
+    public SolrSampleDataTypeField(String readableLabel, String solrDocumentLabel) {
         super(readableLabel, solrDocumentLabel);
     }
 
     @Override
     public Pattern getFieldPattern() {
-        return Pattern.compile("^[A-Z0-9_]+_or_ss$");
+        return Pattern.compile("^structdatatype_ss$");
     }
 
     @Override
     public boolean isEncodedField() {
-        return true;
+        return false;
     }
 
     @Override
     public SolrFieldType getSolrFieldType() {
-        return SolrFieldType.RELATION;
+        return SolrFieldType.STRUCTURED_DATA_TYPES;
     }
 
     @Override
@@ -49,14 +49,14 @@ public class SolrSampleRelationField extends SolrSampleField{
     public Criteria getFilterCriteria(Filter filter) {
         Criteria filterCriteria = null;
 
-        if (filter instanceof RelationFilter) {
+        if (filter instanceof DataTypeFilter) {
 
             filterCriteria = new Criteria(getSolrDocumentFieldName());
 
-            RelationFilter relationFilter = (RelationFilter) filter;
-            if (relationFilter.getContent().isPresent()) {
-//                filterCriteria = filterCriteria.expression("/" + relationFilter.getContent().get() + "/");
-                filterCriteria = filterCriteria.expression(String.format("\"%s\"", relationFilter.getContent().get()));
+            DataTypeFilter nameFilter = (DataTypeFilter) filter;
+            if (nameFilter.getContent().isPresent()) {
+//                filterCriteria = filterCriteria.expression("/" + nameFilter.getContent().get() + "/");
+                filterCriteria = filterCriteria.expression(String.format("\"%s\"", nameFilter.getContent().get()));
             } else {
                 filterCriteria = filterCriteria.isNotNull();
             }

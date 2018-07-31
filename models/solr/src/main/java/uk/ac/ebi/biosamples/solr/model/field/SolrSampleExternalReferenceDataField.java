@@ -7,7 +7,13 @@ import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.solr.model.strategy.FacetFetchStrategy;
 import uk.ac.ebi.biosamples.solr.model.strategy.RegularFacetFetchStrategy;
 
+import java.util.regex.Pattern;
+
 public class SolrSampleExternalReferenceDataField extends SolrSampleField{
+
+    public SolrSampleExternalReferenceDataField() {
+        super();
+    }
 
     /**
      * All subclasses should implement this constructor.
@@ -17,6 +23,16 @@ public class SolrSampleExternalReferenceDataField extends SolrSampleField{
      */
     public SolrSampleExternalReferenceDataField(String readableLabel, String solrDocumentLabel) {
         super(readableLabel, solrDocumentLabel);
+    }
+
+    @Override
+    public Pattern getFieldPattern() {
+        return Pattern.compile("^[A-Z0-9_]+_erd_ss$");
+    }
+
+    @Override
+    public boolean isEncodedField() {
+        return true;
     }
 
     @Override

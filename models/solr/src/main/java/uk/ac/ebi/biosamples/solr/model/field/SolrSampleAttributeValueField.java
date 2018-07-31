@@ -6,11 +6,28 @@ import uk.ac.ebi.biosamples.model.filter.AttributeFilter;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.solr.model.strategy.FacetFetchStrategy;
 import uk.ac.ebi.biosamples.solr.model.strategy.RegularFacetFetchStrategy;
+import uk.ac.ebi.biosamples.solr.service.SolrFieldService;
+
+import java.util.regex.Pattern;
 
 public class SolrSampleAttributeValueField extends SolrSampleField {
 
+    public SolrSampleAttributeValueField() {
+        super();
+    }
+
     public SolrSampleAttributeValueField(String label, String documentField) {
         super(label, documentField);
+    }
+
+    @Override
+    public boolean isEncodedField() {
+        return true;
+    }
+
+    @Override
+    public Pattern getFieldPattern() {
+        return Pattern.compile("^[A-Z0-9_]+_av_ss$");
     }
 
     @Override

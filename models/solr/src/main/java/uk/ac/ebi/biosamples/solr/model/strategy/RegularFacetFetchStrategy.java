@@ -25,6 +25,9 @@ public class RegularFacetFetchStrategy implements FacetFetchStrategy {
 
     private Logger log = LoggerFactory.getLogger(getClass());
 
+    /*
+
+     */
     @Override
     public List<Optional<Facet>> fetchFacetsUsing(SolrSampleRepository solrSampleRepository,
                                       FacetQuery query,
