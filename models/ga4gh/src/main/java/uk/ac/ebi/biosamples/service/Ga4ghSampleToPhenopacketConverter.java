@@ -1,13 +1,12 @@
 package uk.ac.ebi.biosamples.service;
 
 import com.google.common.collect.ImmutableList;
-import com.google.protobuf.*;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import com.google.protobuf.util.Timestamps;
 import org.phenopackets.schema.v1.PhenoPacket;
-import org.phenopackets.schema.v1.core.*;
 import org.phenopackets.schema.v1.core.Age;
-import org.phenopackets.schema.v1.core.Biosample;
+import org.phenopackets.schema.v1.core.*;
 import org.phenopackets.schema.v1.core.Individual;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
@@ -15,9 +14,9 @@ import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.ga4gh.*;
 
-
 import java.text.ParseException;
 import java.util.*;
+
 /**
  * GA4GH format to Phenopackets format data converter
  *

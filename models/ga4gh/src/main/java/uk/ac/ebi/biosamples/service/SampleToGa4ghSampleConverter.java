@@ -3,10 +3,10 @@ package uk.ac.ebi.biosamples.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.model.ga4gh.*;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.ga4gh.*;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;

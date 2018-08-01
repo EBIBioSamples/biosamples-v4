@@ -2,9 +2,11 @@ package uk.ac.ebi.biosamples.service;
 
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.filter.Filter;
-import uk.ac.ebi.biosamples.service.FilterBuilder;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * GA4GHFilterCreator is a class for creating specific GA4GH filters for samples querying, where Organism is equals to homo sapiens
