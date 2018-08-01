@@ -149,6 +149,7 @@ public class Ga4ghSample {
         return (String) releasedDate.getValue();
     }
 
+    @JsonIgnore
     public String getUpdatedDate() {
         SortedMap<String, List<AttributeValue>> values = attributes.getAttributes();
         List<AttributeValue> value = values.get("updated");

@@ -1,5 +1,7 @@
 package uk.ac.ebi.biosamples.model.ga4gh;
 
+import java.util.Objects;
+
 public class Location {
     private double latitude;
     private double longtitude;
@@ -34,5 +36,9 @@ public class Location {
                 Double.compare(location.longtitude, longtitude) == 0;
     }
 
+    @Override
+    public int hashCode() {
 
+        return Objects.hash(latitude, longtitude);
+    }
 }

@@ -176,4 +176,13 @@ public class Experiment {
 
         return Objects.hash(id, name, description, created, updated, run_time, molecule, strategy, selection, library, library_layout, unstrument_model, sequencing_center, location, platform_util, attributes);
     }
+
+    @Override
+    protected Experiment clone() {
+        try {
+            return (Experiment) super.clone();
+        }catch (CloneNotSupportedException e){
+            return new Experiment();
+        }
+    }
 }

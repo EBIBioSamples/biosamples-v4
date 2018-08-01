@@ -42,4 +42,14 @@ public class Age {
 
         return Objects.hash(age, age_class);
     }
+
+    @Override
+    public Age clone() {
+        try {
+            return (Age) super.clone();
+        }catch (CloneNotSupportedException e){
+            return new Age();
+        }
+
+    }
 }

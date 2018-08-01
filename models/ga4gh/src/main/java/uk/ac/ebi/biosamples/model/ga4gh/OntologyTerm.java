@@ -58,4 +58,13 @@ public class OntologyTerm implements Comparable {
 
         return Objects.hash(term_id, term_label);
     }
+
+    @Override
+    protected OntologyTerm clone(){
+        try {
+            return (OntologyTerm) super.clone();
+        }catch (CloneNotSupportedException e){
+            return new OntologyTerm();
+        }
+    }
 }

@@ -75,4 +75,13 @@ public class GeoLocation {
 
         return Objects.hash(label, precision, latitude, longtitude, altitude);
     }
+
+    @Override
+    protected GeoLocation clone() {
+        try {
+            return (GeoLocation) super.clone();
+        }catch (CloneNotSupportedException e){
+            return new GeoLocation();
+        }
+    }
 }

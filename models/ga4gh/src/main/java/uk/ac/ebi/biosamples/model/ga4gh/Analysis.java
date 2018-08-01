@@ -111,4 +111,13 @@ public class Analysis {
         result = 31 * result + Arrays.hashCode(software);
         return result;
     }
+
+    @Override
+    protected Analysis clone(){
+        try {
+            return (Analysis) super.clone();
+        }catch (CloneNotSupportedException e){
+            return new Analysis();
+        }
+    }
 }

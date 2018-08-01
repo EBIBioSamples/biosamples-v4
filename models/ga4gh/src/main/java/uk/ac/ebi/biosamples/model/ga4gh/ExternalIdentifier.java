@@ -47,4 +47,13 @@ public class ExternalIdentifier implements Comparable {
 
         return Objects.hash(identifier, relation);
     }
+
+    @Override
+    protected ExternalIdentifier clone(){
+        try {
+            return (ExternalIdentifier) super.clone();
+        }catch (CloneNotSupportedException e){
+            return new ExternalIdentifier();
+        }
+    }
 }

@@ -93,5 +93,12 @@ public class AttributeValue {
                 Objects.equals(value, that.value);
     }
 
-
+    @Override
+    protected AttributeValue clone() {
+        try {
+            return (AttributeValue) super.clone();
+        }catch (CloneNotSupportedException e){
+            return new AttributeValue();
+        }
+    }
 }

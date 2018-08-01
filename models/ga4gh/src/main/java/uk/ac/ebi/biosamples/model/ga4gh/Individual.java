@@ -140,4 +140,13 @@ public class Individual {
         result = 31 * result + Arrays.hashCode(external_identifiers);
         return result;
     }
+
+    @Override
+    protected Individual clone() {
+        try {
+            return (Individual) super.clone();
+        }catch (CloneNotSupportedException e){
+            return new Individual();
+        }
+    }
 }

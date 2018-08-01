@@ -27,7 +27,11 @@ public class Attributes {
     }
 
     void addAttribute(String label, List<AttributeValue> values) {
-        attributes.put(label, values);
+        try {
+            attributes.put(label, values);
+        }catch (NullPointerException e ){
+            System.out.println();
+        }
     }
 
     public void addSingleAttribute(String label, AttributeValue value) {
@@ -48,5 +52,14 @@ public class Attributes {
     public int hashCode() {
 
         return Objects.hash(attributes);
+    }
+
+    @Override
+    protected Attributes clone() {
+        try {
+            return (Attributes) super.clone();
+        }catch (CloneNotSupportedException e){
+            return new Attributes();
+        }
     }
 }

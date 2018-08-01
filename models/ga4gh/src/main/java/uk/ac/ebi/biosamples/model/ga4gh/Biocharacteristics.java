@@ -78,4 +78,13 @@ public class Biocharacteristics implements Comparable {
 
         return Objects.hash(description, ontology_terms, negated_ontology_terms, scope);
     }
+
+    @Override
+    protected Biocharacteristics clone() {
+        try {
+            return (Biocharacteristics) super.clone();
+        }catch (CloneNotSupportedException e) {
+            return new Biocharacteristics();
+        }
+    }
 }
