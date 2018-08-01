@@ -4,6 +4,7 @@ import org.springframework.data.solr.core.query.Criteria;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.model.filter.DataTypeFilter;
 import uk.ac.ebi.biosamples.model.filter.Filter;
+import uk.ac.ebi.biosamples.model.structured.DataType;
 import uk.ac.ebi.biosamples.solr.model.strategy.FacetFetchStrategy;
 import uk.ac.ebi.biosamples.solr.model.strategy.RegularFacetFetchStrategy;
 
@@ -14,6 +15,10 @@ public class SolrSampleDataTypeField extends SolrSampleField {
 
     public SolrSampleDataTypeField() {
         super();
+    }
+
+    public SolrSampleDataTypeField(String readableLabel) {
+        super(readableLabel);
     }
 
     /**
@@ -28,13 +33,24 @@ public class SolrSampleDataTypeField extends SolrSampleField {
 
     @Override
     public Pattern getFieldPattern() {
-        return Pattern.compile("^(?<fieldname>structdatatype)(?<fieldsuffix>_ss)$");
+        return Pattern.compile("^(?<fieldname>structdatatype)(?<fieldsuffix>" + getSolrFieldSuffix() + ")$");
+    }
+
+    @Override
+    public String getSolrFieldSuffix() {
+        return "_ss";
     }
 
     @Override
     public boolean isEncodedField() {
         return false;
     }
+
+    @Override
+    public boolean isCompatibleWith(Filter filter) {
+        return filter instanceof DataTypeFilter;
+    }
+
 
     @Override
     public SolrFieldType getSolrFieldType() {

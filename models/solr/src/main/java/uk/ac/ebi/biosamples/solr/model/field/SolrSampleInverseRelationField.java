@@ -17,6 +17,10 @@ public class SolrSampleInverseRelationField extends SolrSampleField {
         super();
     }
 
+    public SolrSampleInverseRelationField(String readableLabel) {
+        super(readableLabel);
+    }
+
     /**
      * All subclasses should implement this constructor
      *
@@ -29,12 +33,22 @@ public class SolrSampleInverseRelationField extends SolrSampleField {
 
     @Override
     public Pattern getFieldPattern() {
-        return Pattern.compile("^(?<fieldname>[A-Z0-9_]+)(?<fieldsuffix>_ir_ss)$");
+        return Pattern.compile("^(?<fieldname>[A-Z0-9_]+)(?<fieldsuffix>"+getSolrFieldSuffix()+")$");
+    }
+
+    @Override
+    public String getSolrFieldSuffix() {
+        return "_ir_ss";
     }
 
     @Override
     public boolean isEncodedField() {
         return true;
+    }
+
+    @Override
+    public boolean isCompatibleWith(Filter filter) {
+        return filter instanceof InverseRelationFilter;
     }
 
     @Override

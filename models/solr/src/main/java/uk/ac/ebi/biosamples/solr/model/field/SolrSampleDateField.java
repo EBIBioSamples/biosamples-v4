@@ -20,6 +20,10 @@ public class SolrSampleDateField extends SolrSampleField{
         super();
     }
 
+    public SolrSampleDateField(String readableLabel) {
+        super(readableLabel);
+    }
+
     /**
      * All subclasses should implement this constructor
      *
@@ -32,12 +36,22 @@ public class SolrSampleDateField extends SolrSampleField{
 
     @Override
     public Pattern getFieldPattern() {
-        return Pattern.compile("^(?<fieldname>release|update)(?<fieldsuffix>_dt)$");
+        return Pattern.compile("^(?<fieldname>release|update)(?<fieldsuffix>"+getSolrFieldSuffix()+")$");
+    }
+
+    @Override
+    public String getSolrFieldSuffix() {
+        return "_dt";
     }
 
     @Override
     public boolean isEncodedField() {
         return false;
+    }
+
+    @Override
+    public boolean isCompatibleWith(Filter filter) {
+        return filter instanceof DateRangeFilter;
     }
 
     @Override

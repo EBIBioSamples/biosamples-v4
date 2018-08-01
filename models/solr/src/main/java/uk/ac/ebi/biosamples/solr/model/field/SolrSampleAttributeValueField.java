@@ -17,6 +17,10 @@ public class SolrSampleAttributeValueField extends SolrSampleField {
         super();
     }
 
+    public SolrSampleAttributeValueField(String readableLabel) {
+        super(readableLabel);
+    }
+
     public SolrSampleAttributeValueField(String label, String documentField) {
         super(label, documentField);
     }
@@ -28,12 +32,22 @@ public class SolrSampleAttributeValueField extends SolrSampleField {
 
     @Override
     public Pattern getFieldPattern() {
-        return Pattern.compile("^(?<fieldname>[A-Z0-9_]+)(?<fieldsuffix>_av_ss)$");
+        return Pattern.compile("^(?<fieldname>[A-Z0-9_]+)(?<fieldsuffix>" + getSolrFieldSuffix() + ")$");
+    }
+
+    @Override
+    public String getSolrFieldSuffix() {
+        return "_av_ss";
     }
 
     @Override
     public FacetFetchStrategy getFacetCollectionStrategy() {
         return new RegularFacetFetchStrategy();
+    }
+
+    @Override
+    public boolean isCompatibleWith(Filter filter) {
+        return filter instanceof AttributeFilter;
     }
 
     @Override

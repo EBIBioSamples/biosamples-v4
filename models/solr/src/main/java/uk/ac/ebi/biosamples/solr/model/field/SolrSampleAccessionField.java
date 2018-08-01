@@ -17,6 +17,10 @@ public class SolrSampleAccessionField extends SolrSampleField {
         super();
     }
 
+    public SolrSampleAccessionField(String readableLabel) {
+        super(readableLabel);
+    }
+
     /**
      * All subclasses should implement this constructor
      *
@@ -35,6 +39,16 @@ public class SolrSampleAccessionField extends SolrSampleField {
     @Override
     public boolean isEncodedField() {
         return false;
+    }
+
+    @Override
+    public String getSolrFieldSuffix() {
+        return "";
+    }
+
+    @Override
+    public boolean isCompatibleWith(Filter filter) {
+        return filter instanceof AccessionFilter;
     }
 
     @Override

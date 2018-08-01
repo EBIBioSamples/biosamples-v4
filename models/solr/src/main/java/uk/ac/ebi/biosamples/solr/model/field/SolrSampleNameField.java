@@ -16,6 +16,10 @@ public class SolrSampleNameField extends SolrSampleField {
         super();
     }
 
+    public SolrSampleNameField(String readableLabel) {
+        super(readableLabel);
+    }
+
     /**
      * All subclasses should implement this constructor
      *
@@ -28,12 +32,22 @@ public class SolrSampleNameField extends SolrSampleField {
 
     @Override
     public Pattern getFieldPattern() {
-        return Pattern.compile("^(?<fieldname>name)(?<fieldsuffix>_s)$");
+        return Pattern.compile("^(?<fieldname>name)(?<fieldsuffix>"+getSolrFieldSuffix()+")$");
+    }
+
+    @Override
+    public String getSolrFieldSuffix() {
+        return "_s";
     }
 
     @Override
     public boolean isEncodedField() {
         return false;
+    }
+
+    @Override
+    public boolean isCompatibleWith(Filter filter) {
+        return filter instanceof NameFilter;
     }
 
     @Override

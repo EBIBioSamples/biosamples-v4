@@ -278,25 +278,25 @@ public class SolrSample {
 		SortedSet<String> facetFieldSet = new TreeSet<>();
 		if (attributeValues != null && attributeValues.keySet().size() > 0) {
 			for (String attributeValueKey : attributeValues.keySet()) {
-				facetFieldSet.add(attributeValueKey+SolrFieldType.ATTRIBUTE.getSuffix());
+				facetFieldSet.add(attributeValueKey + "_av_ss");
 			}
 		}
 
 		if (outgoingRelationships != null && outgoingRelationships.keySet().size() > 0) {
 			for (String outgoingRelationshipsKey : outgoingRelationships.keySet()) {
-				facetFieldSet.add(outgoingRelationshipsKey+SolrFieldType.RELATION.getSuffix());
+				facetFieldSet.add(outgoingRelationshipsKey + "_or_ss");
 			}
 		}
 
 		if (incomingRelationships != null && incomingRelationships.keySet().size() > 0) {
 			for (String incomingRelationshipsKey : incomingRelationships.keySet()) {
-				facetFieldSet.add(incomingRelationshipsKey+SolrFieldType.INVERSE_RELATION.getSuffix());
+				facetFieldSet.add(incomingRelationshipsKey + "_ir_ss");
 			}
 		}
 
 		if (externalReferencesData != null && externalReferencesData.keySet().size() > 0) {
 			for (String externalReferencesDataKey : externalReferencesData.keySet()) {
-				facetFieldSet.add(externalReferencesDataKey+SolrFieldType.EXTERNAL_REFERENCE_DATA.getSuffix());
+				facetFieldSet.add(externalReferencesDataKey + "_erd_ss");
 			}
 		}
 
@@ -308,16 +308,12 @@ public class SolrSample {
 		sample.facetFields = new ArrayList<>(facetFieldSet);
 
 
-		
-		
 		//copy into the other fields
 		//this should be done in a copyfield but that doesn't work for some reason?
 		sample.autocompleteTerms = new ArrayList<>();
-		if (attributeValues != null) {
-			for (String key : attributeValues.keySet()) {
-				sample.autocompleteTerms.add(SolrFieldService.decodeFieldName(key));
-				sample.autocompleteTerms.addAll(attributeValues.get(key));
-			}
+		for (String key : attributeValues.keySet()) {
+			sample.autocompleteTerms.add(SolrFieldService.decodeFieldName(key));
+			sample.autocompleteTerms.addAll(attributeValues.get(key));
 		}
 
 		sample.keywords = new ArrayList<>();

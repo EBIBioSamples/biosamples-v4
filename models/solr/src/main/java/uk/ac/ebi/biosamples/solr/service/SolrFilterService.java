@@ -46,19 +46,7 @@ public class SolrFilterService {
     public Optional<Criteria> getFilterCriteria(Filter filter) {
 
         //TODO rename to getFilterTargetField
-        SolrSampleField solrField = SolrFieldType.buildFromFilter(filter);
-//        String filterTargetField = solrFieldService.encodedField(filter.getReadableLabel(), SolrFieldType.getFromFilterType(filter.getType()));
-//        Criteria filterCriteria;
-//        if (filter.getContent().isPresent()) {
-//            Object content = filter.getContent().get();
-//            if (filter instanceof DateRangeFilter) {
-//                filterCriteria = getDateRangeCriteriaOnField(filterTargetField, (DateRange) content);
-//            } else {
-//                filterCriteria = new Criteria(filterTargetField).is(content);
-//            }
-//        } else {
-//            filterCriteria = new Criteria(filterTargetField).isNotNull();
-//        }
+        SolrSampleField solrField = solrFieldService.getCompatibleField(filter);
         Criteria filterCriteria = solrField.getFilterCriteria(filter);
         return Optional.ofNullable(filterCriteria);
 

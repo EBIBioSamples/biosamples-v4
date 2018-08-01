@@ -101,7 +101,7 @@ public class SolrFacetService {
         }
 		*/
         
-        if (allFacetFields != null && allFacetFields.size() > 0) {
+        if (allFacetFields.size() > 0) {
 	        allFacetFields.get(0).getKey().getFacetCollectionStrategy()
 	        	.fetchFacetsUsing(solrSampleRepository, query, allFacetFields, facetValuesPageInfo)
 	        	.forEach(opt -> opt.ifPresent(facets::add));

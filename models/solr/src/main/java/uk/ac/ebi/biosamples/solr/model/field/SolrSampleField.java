@@ -1,7 +1,9 @@
 package uk.ac.ebi.biosamples.solr.model.field;
 
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.solr.model.strategy.FacetFetchStrategy;
+import uk.ac.ebi.biosamples.solr.service.SolrFieldService;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -19,6 +21,16 @@ public abstract class SolrSampleField implements FilterCriteriaBuilder {
         this.readableLabel = null;
         this.solrDocumentLabel = null;
     }
+
+    protected SolrSampleField(String readableLabel) {
+        this.readableLabel = readableLabel;
+        if (isEncodedField()) {
+            this.solrDocumentLabel = SolrFieldService.encodeFieldName(readableLabel) + getSolrFieldSuffix();
+        } else {
+            this.solrDocumentLabel = readableLabel + getSolrFieldSuffix();
+        }
+    }
+
 
     /**
      * All subclasses should implement this constructor.
@@ -40,9 +52,35 @@ public abstract class SolrSampleField implements FilterCriteriaBuilder {
         return getFieldPattern().matcher(fieldName).find();
     }
 
+    /**
+     * Return the regular expression pattern that matches the field in a Solr document.
+     * The pattern contains usually two groups: fieldname and fieldsuffix
+     * Usually is structured this way <pre>/^(?<fieldname>pattern>(?<fieldsuffix>suffix)$</pre>
+     * @return the Pattern to match the field in a solr document
+     */
     public abstract Pattern getFieldPattern();
 
+
+    /**
+     * Return the solr field suffix
+     * @return
+     */
+    public abstract String getSolrFieldSuffix();
+
+    /**
+     * Return if the field in the solr document is encoded or not
+     * @return
+     */
     public abstract boolean isEncodedField();
+
+
+    /**
+     * Return if the solr field is compatible with a specific Filter class
+     * TODO: if in future we want to compose filters (NOT, REGEX, etc.) This should look inside the filter itself
+     * @param filter the filter to test for compatibility
+     * @return if the field is compatible with the filter class
+     */
+    public abstract boolean isCompatibleWith(Filter filter);
 
     public abstract SolrFieldType getSolrFieldType();
 
