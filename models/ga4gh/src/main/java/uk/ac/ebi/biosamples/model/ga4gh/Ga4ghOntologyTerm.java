@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 
 @JsonInclude
-public class OntologyTerm implements Comparable {
+public class Ga4ghOntologyTerm implements Comparable {
     private String term_id;
     private String term_label;
     private String url;
@@ -41,14 +41,14 @@ public class OntologyTerm implements Comparable {
 
     @Override
     public int compareTo(Object o) {
-        return this.getTerm_label().compareTo(((OntologyTerm) o).getTerm_label());
+        return this.getTerm_label().compareTo(((Ga4ghOntologyTerm) o).getTerm_label());
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        OntologyTerm term = (OntologyTerm) o;
+        Ga4ghOntologyTerm term = (Ga4ghOntologyTerm) o;
         return Objects.equals(term_id, term.term_id) &&
                 Objects.equals(term_label, term.term_label);
     }
@@ -60,11 +60,11 @@ public class OntologyTerm implements Comparable {
     }
 
     @Override
-    protected OntologyTerm clone(){
+    protected Ga4ghOntologyTerm clone(){
         try {
-            return (OntologyTerm) super.clone();
+            return (Ga4ghOntologyTerm) super.clone();
         }catch (CloneNotSupportedException e){
-            return new OntologyTerm();
+            return new Ga4ghOntologyTerm();
         }
     }
 }

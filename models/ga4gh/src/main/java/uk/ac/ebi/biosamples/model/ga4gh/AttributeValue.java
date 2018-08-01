@@ -28,13 +28,13 @@ public class AttributeValue {
         } else if (value instanceof Double) {
             type = "double_value";
             this.value = value;
-        } else if (value instanceof ExternalIdentifier) {
+        } else if (value instanceof Ga4ghExternalIdentifier) {
             type = "external_identifier";
             this.value = value;
-        } else if (value instanceof OntologyTerm) {
+        } else if (value instanceof Ga4ghOntologyTerm) {
             type = "ontology_term";
             this.value = value;
-        } else if (value instanceof Experiment) {
+        } else if (value instanceof Ga4ghExperiment) {
             type = "experiment";
             this.value = value;
         } else if (value instanceof Analysis) {
@@ -42,7 +42,7 @@ public class AttributeValue {
             this.value = value;
         } else if (value == null) {
             type = "null_value";
-        } else if (value instanceof Attributes) {
+        } else if (value instanceof Ga4ghAttributes) {
             type = "attributes";
             this.value = value;
         } else if (isListOfAttributes(value)) {

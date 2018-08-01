@@ -1,7 +1,7 @@
 package uk.ac.ebi.biosamples.service;
 
 import org.springframework.stereotype.Component;
-import uk.ac.ebi.biosamples.model.ga4gh.Location;
+import uk.ac.ebi.biosamples.model.ga4gh.Ga4ghLocation;
 
 import java.util.Scanner;
 
@@ -23,7 +23,7 @@ public class GeoLocationDataHelper {
         return isGeolocation;
     }
 
-    public Location convertToDecimalDegree(String location) {
+    public Ga4ghLocation convertToDecimalDegree(String location) {
         int nsCoef = 1;
         if (location.contains("S")) {
             nsCoef = -1;
@@ -39,7 +39,7 @@ public class GeoLocationDataHelper {
             scanner.next();
         }
         double longtitude = scanner.nextDouble();
-        return new Location(latitude * nsCoef, longtitude * weCoef);
+        return new Ga4ghLocation(latitude * nsCoef, longtitude * weCoef);
 
     }
 }

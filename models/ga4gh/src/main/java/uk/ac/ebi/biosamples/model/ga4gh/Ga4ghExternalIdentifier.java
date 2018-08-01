@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 
 @JsonInclude(JsonInclude.Include.ALWAYS)
-public class ExternalIdentifier implements Comparable {
+public class Ga4ghExternalIdentifier implements Comparable {
     private String identifier;
     private String relation;
 
@@ -30,14 +30,14 @@ public class ExternalIdentifier implements Comparable {
 
     @Override
     public int compareTo(Object o) {
-        return this.getIdentifier().compareTo(((ExternalIdentifier) o).getIdentifier());
+        return this.getIdentifier().compareTo(((Ga4ghExternalIdentifier) o).getIdentifier());
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ExternalIdentifier that = (ExternalIdentifier) o;
+        Ga4ghExternalIdentifier that = (Ga4ghExternalIdentifier) o;
         return Objects.equals(identifier, that.identifier) &&
                 Objects.equals(relation, that.relation);
     }
@@ -49,11 +49,11 @@ public class ExternalIdentifier implements Comparable {
     }
 
     @Override
-    protected ExternalIdentifier clone(){
+    protected Ga4ghExternalIdentifier clone(){
         try {
-            return (ExternalIdentifier) super.clone();
+            return (Ga4ghExternalIdentifier) super.clone();
         }catch (CloneNotSupportedException e){
-            return new ExternalIdentifier();
+            return new Ga4ghExternalIdentifier();
         }
     }
 }

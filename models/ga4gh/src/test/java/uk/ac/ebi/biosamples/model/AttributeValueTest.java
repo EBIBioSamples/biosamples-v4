@@ -50,7 +50,7 @@ public class AttributeValueTest {
 
     @Test
     public void external_identifier_value_test() {
-        ExternalIdentifier value = new ExternalIdentifier();
+        Ga4ghExternalIdentifier value = new Ga4ghExternalIdentifier();
         value.setIdentifier("value");
         AttributeValue val1 = new AttributeValue(value);
         AttributeValue val2 = new AttributeValue("");
@@ -61,7 +61,7 @@ public class AttributeValueTest {
 
     @Test
     public void ontology_term_value_test() {
-        OntologyTerm value = new OntologyTerm();
+        Ga4ghOntologyTerm value = new Ga4ghOntologyTerm();
         value.setTerm_id("id");
         AttributeValue val1 = new AttributeValue(value);
         AttributeValue val2 = new AttributeValue("");
@@ -72,7 +72,7 @@ public class AttributeValueTest {
 
     @Test
     public void experiment_value_test() {
-        Experiment value = new Experiment();
+        Ga4ghExperiment value = new Ga4ghExperiment();
         value.setId("id");
         AttributeValue val1 = new AttributeValue(value);
         AttributeValue val2 = new AttributeValue("");
@@ -104,7 +104,7 @@ public class AttributeValueTest {
 
     @Test
     public void attributes_value_test() {
-        Attributes value = new Attributes();
+        Ga4ghAttributes value = new Ga4ghAttributes();
         AttributeValue val1 = new AttributeValue(value);
         AttributeValue val2 = new AttributeValue("");
         val2.setType("attributes");

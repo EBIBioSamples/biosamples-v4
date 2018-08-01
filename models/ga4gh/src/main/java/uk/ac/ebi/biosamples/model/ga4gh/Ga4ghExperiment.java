@@ -2,7 +2,7 @@ package uk.ac.ebi.biosamples.model.ga4gh;
 
 import java.util.Objects;
 
-public class Experiment {
+public class Ga4ghExperiment {
     private String id;
     private String name;
     private String description;
@@ -16,9 +16,9 @@ public class Experiment {
     private String library_layout;
     private String unstrument_model;
     private String sequencing_center;
-    private GeoLocation location;
+    private Ga4ghGeoLocation location;
     private String platform_util;
-    private Attributes attributes;
+    private Ga4ghAttributes attributes;
 
     public String getId() {
         return id;
@@ -124,11 +124,11 @@ public class Experiment {
         this.sequencing_center = sequencing_center;
     }
 
-    public GeoLocation getLocation() {
+    public Ga4ghGeoLocation getLocation() {
         return location;
     }
 
-    public void setLocation(GeoLocation location) {
+    public void setLocation(Ga4ghGeoLocation location) {
         this.location = location;
     }
 
@@ -140,11 +140,11 @@ public class Experiment {
         this.platform_util = platform_util;
     }
 
-    public Attributes getAttributes() {
+    public Ga4ghAttributes getAttributes() {
         return attributes;
     }
 
-    public void setAttributes(Attributes attributes) {
+    public void setAttributes(Ga4ghAttributes attributes) {
         this.attributes = attributes;
     }
 
@@ -152,7 +152,7 @@ public class Experiment {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Experiment that = (Experiment) o;
+        Ga4ghExperiment that = (Ga4ghExperiment) o;
         return Objects.equals(id, that.id) &&
                 Objects.equals(name, that.name) &&
                 Objects.equals(description, that.description) &&
@@ -178,11 +178,11 @@ public class Experiment {
     }
 
     @Override
-    protected Experiment clone() {
+    protected Ga4ghExperiment clone() {
         try {
-            return (Experiment) super.clone();
+            return (Ga4ghExperiment) super.clone();
         }catch (CloneNotSupportedException e){
-            return new Experiment();
+            return new Ga4ghExperiment();
         }
     }
 }

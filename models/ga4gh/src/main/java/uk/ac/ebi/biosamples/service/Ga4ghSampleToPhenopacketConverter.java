@@ -79,9 +79,9 @@ public class Ga4ghSampleToPhenopacketConverter implements Converter<Ga4ghSample,
         Individual.Builder individualBuilder = Individual.newBuilder();
         individualBuilder.setId(ga4ghSample.getId() + "-individual");
         OntologyClass.Builder ontologyBuilder = OntologyClass.newBuilder();
-        OntologyTerm sex = null;
-        OntologyTerm organism = null;
-        for (Biocharacteristics term : ga4ghSample.getBio_characteristic()) {
+        Ga4ghOntologyTerm sex = null;
+        Ga4ghOntologyTerm organism = null;
+        for (Ga4ghBiocharacteristics term : ga4ghSample.getBio_characteristic()) {
             if (term.getDescription().contains("sex")) {
                 sex = term.getOntology_terms().first(); //in sex field in all cases will be only one ontology term
             }
@@ -122,8 +122,8 @@ public class Ga4ghSampleToPhenopacketConverter implements Converter<Ga4ghSample,
         if (ga4GhGa4ghSample.getDescription() != null) {
             biosampleBuilder.setDescription(ga4GhGa4ghSample.getDescription());
         }
-        OntologyTerm organism = null;
-        for (Biocharacteristics term : ga4GhGa4ghSample.getBio_characteristic()) {
+        Ga4ghOntologyTerm organism = null;
+        for (Ga4ghBiocharacteristics term : ga4GhGa4ghSample.getBio_characteristic()) {
             if (term.getDescription().equals("organism") || term.getDescription().equals("Organism")) {
                 organism = term.getOntology_terms().first(); //in organism field in all cases will be only one ontology term
             }
@@ -131,7 +131,7 @@ public class Ga4ghSampleToPhenopacketConverter implements Converter<Ga4ghSample,
         if (organism != null) {
             biosampleBuilder.setTaxonomy(mapOntologyTerm(organism));
         }
-        uk.ac.ebi.biosamples.model.ga4gh.Age age = ga4GhGa4ghSample.getIndividual_age_at_collection();
+        Ga4ghAge age = ga4GhGa4ghSample.getIndividual_age_at_collection();
         Age.Builder phenopacketAgeBuilder = Age.newBuilder();
         if (age != null) {
             phenopacketAgeBuilder.setAge(age.getAge());
@@ -148,11 +148,11 @@ public class Ga4ghSampleToPhenopacketConverter implements Converter<Ga4ghSample,
         return biosampleBuilder.build();
     }
 
-    private Iterable<Phenotype> mapBiocharacteristics(SortedSet<Biocharacteristics> biocharacteristics) {
+    private Iterable<Phenotype> mapBiocharacteristics(SortedSet<Ga4ghBiocharacteristics> biocharacteristics) {
         Iterable<Phenotype> phenotypes = new ArrayList<>();
-        for (Biocharacteristics biocharacteristic : biocharacteristics) {
+        for (Ga4ghBiocharacteristics biocharacteristic : biocharacteristics) {
             if (isBiocharacteristicRelatedToPhenotype(biocharacteristic) && !stopList.contains(biocharacteristic.getDescription())) {
-                for (OntologyTerm characteristic : biocharacteristic.getOntology_terms()) {
+                for (Ga4ghOntologyTerm characteristic : biocharacteristic.getOntology_terms()) {
                     Phenotype.Builder phenotypeBuilder = Phenotype.newBuilder();
                     OntologyClass.Builder typeBuilder = OntologyClass.newBuilder();
                     typeBuilder.setId(characteristic.getTerm_id());
@@ -168,14 +168,14 @@ public class Ga4ghSampleToPhenopacketConverter implements Converter<Ga4ghSample,
         return phenotypes;
     }
 
-    private MetaData createMetaData(SortedSet<Biocharacteristics> biocharacteristics) {
+    private MetaData createMetaData(SortedSet<Ga4ghBiocharacteristics> biocharacteristics) {
         MetaData.Builder builder = MetaData.newBuilder();
         builder.setCreated(Timestamps.fromMillis(System.currentTimeMillis()));
         builder.setCreatedBy("Biosamples phenopacket exporter");
         Set<String> uniqueIds = new TreeSet<>();
-        for (Biocharacteristics biocharacteristic : biocharacteristics) {
+        for (Ga4ghBiocharacteristics biocharacteristic : biocharacteristics) {
             if (!stopList.contains(biocharacteristic.getDescription())) {
-                for (OntologyTerm term : biocharacteristic.getOntology_terms()) {
+                for (Ga4ghOntologyTerm term : biocharacteristic.getOntology_terms()) {
                     String id = term.getTerm_id().split(":")[0]; //term id presented by ontologyID:termId
                     if (!uniqueIds.contains(id)) {
                         builder.addResources(mapResource(id));
@@ -188,13 +188,13 @@ public class Ga4ghSampleToPhenopacketConverter implements Converter<Ga4ghSample,
     }
 
 
-    private Disease mapDisease(SortedSet<Biocharacteristics> biocharacteristics, Attributes attributes) {
+    private Disease mapDisease(SortedSet<Ga4ghBiocharacteristics> biocharacteristics, Ga4ghAttributes attributes) {
         Disease.Builder diseaseBuilder = Disease.newBuilder();
         Disease resultDisease = null;
-        for (Biocharacteristics biocharacteristic : biocharacteristics) {
+        for (Ga4ghBiocharacteristics biocharacteristic : biocharacteristics) {
             String description = biocharacteristic.getDescription();
             if (description.equals("disease") || description.equals("Disease") || description.equals("disease state")) {
-                OntologyTerm term = biocharacteristic.getOntology_terms().first();
+                Ga4ghOntologyTerm term = biocharacteristic.getOntology_terms().first();
                 diseaseBuilder.setId(term.getTerm_id());
                 diseaseBuilder.setLabel(term.getTerm_label());
                 resultDisease = diseaseBuilder.build();
@@ -219,7 +219,7 @@ public class Ga4ghSampleToPhenopacketConverter implements Converter<Ga4ghSample,
     }
 
 
-    private OntologyClass mapOntologyTerm(OntologyTerm term) {
+    private OntologyClass mapOntologyTerm(Ga4ghOntologyTerm term) {
         OntologyClass.Builder ontologyBuilder = OntologyClass.newBuilder();
         ontologyBuilder.setId(term.getTerm_id());
         ontologyBuilder.setLabel(term.getTerm_label());
@@ -244,7 +244,7 @@ public class Ga4ghSampleToPhenopacketConverter implements Converter<Ga4ghSample,
     }
 
 
-    private boolean isBiocharacteristicRelatedToPhenotype(Biocharacteristics biocharacteristic) {
+    private boolean isBiocharacteristicRelatedToPhenotype(Ga4ghBiocharacteristics biocharacteristic) {
         String description = biocharacteristic.getDescription();
         return !(description.contains("sex") ||
                 description.equals("organism") ||

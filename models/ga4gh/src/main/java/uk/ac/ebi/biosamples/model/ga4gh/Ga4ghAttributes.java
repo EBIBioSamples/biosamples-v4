@@ -10,10 +10,10 @@ import java.util.*;
 @Component
 @JsonSerialize(using = AttributeSerializer.class)
 @JsonDeserialize(using = AttributeDeserializer.class)
-public class Attributes {
+public class Ga4ghAttributes {
     private SortedMap<String, List<AttributeValue>> attributes;
 
-    public Attributes() {
+    public Ga4ghAttributes() {
         this.attributes = new TreeMap<>();
     }
 
@@ -44,7 +44,7 @@ public class Attributes {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Attributes that = (Attributes) o;
+        Ga4ghAttributes that = (Ga4ghAttributes) o;
         return Objects.equals(attributes, that.attributes);
     }
 
@@ -55,11 +55,11 @@ public class Attributes {
     }
 
     @Override
-    protected Attributes clone() {
+    protected Ga4ghAttributes clone() {
         try {
-            return (Attributes) super.clone();
+            return (Ga4ghAttributes) super.clone();
         }catch (CloneNotSupportedException e){
-            return new Attributes();
+            return new Ga4ghAttributes();
         }
     }
 }

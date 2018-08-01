@@ -8,14 +8,14 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 @JsonInclude(JsonInclude.Include.ALWAYS)
-public class Biocharacteristics implements Comparable {
+public class Ga4ghBiocharacteristics implements Comparable {
 
     private String description;
-    private SortedSet<OntologyTerm> ontology_terms;
-    private SortedSet<OntologyTerm> negated_ontology_terms;
+    private SortedSet<Ga4ghOntologyTerm> ontology_terms;
+    private SortedSet<Ga4ghOntologyTerm> negated_ontology_terms;
     private String scope;
 
-    public Biocharacteristics() {
+    public Ga4ghBiocharacteristics() {
         ontology_terms = new TreeSet<>();
         negated_ontology_terms = new TreeSet<>();
     }
@@ -30,20 +30,20 @@ public class Biocharacteristics implements Comparable {
     }
 
     @JsonProperty("ontology_terms")
-    public SortedSet<OntologyTerm> getOntology_terms() {
+    public SortedSet<Ga4ghOntologyTerm> getOntology_terms() {
         return ontology_terms;
     }
 
-    public void setOntology_terms(SortedSet<OntologyTerm> ontology_terms) {
+    public void setOntology_terms(SortedSet<Ga4ghOntologyTerm> ontology_terms) {
         this.ontology_terms = ontology_terms;
     }
 
     @JsonProperty("negated_ontology_terms")
-    public SortedSet<OntologyTerm> getNegated_ontology_terms() {
+    public SortedSet<Ga4ghOntologyTerm> getNegated_ontology_terms() {
         return negated_ontology_terms;
     }
 
-    public void setNegated_ontology_terms(SortedSet<OntologyTerm> negated_ontology_terms) {
+    public void setNegated_ontology_terms(SortedSet<Ga4ghOntologyTerm> negated_ontology_terms) {
         this.negated_ontology_terms = negated_ontology_terms;
     }
 
@@ -59,14 +59,14 @@ public class Biocharacteristics implements Comparable {
 
     @Override
     public int compareTo(Object o) {
-        return this.getDescription().compareTo(((Biocharacteristics) o).getDescription());
+        return this.getDescription().compareTo(((Ga4ghBiocharacteristics) o).getDescription());
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Biocharacteristics that = (Biocharacteristics) o;
+        Ga4ghBiocharacteristics that = (Ga4ghBiocharacteristics) o;
         return Objects.equals(description, that.description) &&
                 Objects.equals(ontology_terms, that.ontology_terms) &&
                 Objects.equals(negated_ontology_terms, that.negated_ontology_terms) &&
@@ -80,11 +80,11 @@ public class Biocharacteristics implements Comparable {
     }
 
     @Override
-    protected Biocharacteristics clone() {
+    protected Ga4ghBiocharacteristics clone() {
         try {
-            return (Biocharacteristics) super.clone();
+            return (Ga4ghBiocharacteristics) super.clone();
         }catch (CloneNotSupportedException e) {
-            return new Biocharacteristics();
+            return new Ga4ghBiocharacteristics();
         }
     }
 }

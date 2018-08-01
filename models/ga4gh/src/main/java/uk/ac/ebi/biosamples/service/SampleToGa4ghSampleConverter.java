@@ -92,13 +92,13 @@ public class SampleToGa4ghSampleConverter implements Converter<Sample, Ga4ghSamp
     }
 
     /**
-     * Maps location data from biosamples to GA4GH GeoLocation.
+     * Maps location data from biosamples to GA4GH Ga4ghGeoLocation.
      *
      * @param attributes geolocation data from biosample
-     * @see GeoLocation
+     * @see Ga4ghGeoLocation
      */
     private void mapLocation(SortedSet<Attribute> attributes) {
-        GeoLocation geoLocation = new GeoLocation();
+        Ga4ghGeoLocation geoLocation = new Ga4ghGeoLocation();
         for (Attribute attribute : attributes) {
             switch (attribute.getType()) {
                 case "geographic location":
@@ -108,7 +108,7 @@ public class SampleToGa4ghSampleConverter implements Converter<Sample, Ga4ghSamp
                     geoLocation.setLabel(attribute.getValue());
                     break;
                 case "latitude and longitude":
-                    Location location = locationHelper.convertToDecimalDegree(attribute.getValue());
+                    Ga4ghLocation location = locationHelper.convertToDecimalDegree(attribute.getValue());
                     geoLocation.setLatitude(location.getLatitude());
                     geoLocation.setLongtitude(location.getLongtitude());
                     break;
@@ -135,12 +135,12 @@ public class SampleToGa4ghSampleConverter implements Converter<Sample, Ga4ghSamp
      *
      * @param rawSample sample retreived from Biosamples
      * @see Relationship
-     * @see ExternalIdentifier
+     * @see Ga4ghExternalIdentifier
      */
     private void mapRelationsihps(Sample rawSample) {
-        SortedSet<ExternalIdentifier> externalIdentifiers = new TreeSet<>();
+        SortedSet<Ga4ghExternalIdentifier> externalIdentifiers = new TreeSet<>();
         for (Relationship relationship : rawSample.getRelationships()) {
-            ExternalIdentifier identifier = new ExternalIdentifier();
+            Ga4ghExternalIdentifier identifier = new Ga4ghExternalIdentifier();
             identifier.setRelation(relationship.getType());
             if (!relationship.getSource().equals(rawSample.getAccession())) {
                 identifier.setIdentifier(relationship.getSource());
@@ -154,13 +154,13 @@ public class SampleToGa4ghSampleConverter implements Converter<Sample, Ga4ghSamp
     }
 
     /**
-     * Maps age data from Biosamples to Age in GA4GH
+     * Maps age data from Biosamples to Ga4ghAge in GA4GH
      *
      * @param attribute attribute with age info from Biosamples
-     * @see Age
+     * @see Ga4ghAge
      */
     private void mapAge(Attribute attribute) {
-        Age age = new Age();
+        Ga4ghAge age = new Ga4ghAge();
         age.setAge(attribute.getValue());
         try {
             SortedSet<String> iri = attribute.getIri();
@@ -179,7 +179,7 @@ public class SampleToGa4ghSampleConverter implements Converter<Sample, Ga4ghSamp
      * Maps characteristics from Biosamples to Attributes in GA4GH
      *
      * @param characteristics characteristics that provides nonbiological data (without Ontology term)
-     * @see Attributes
+     * @see Ga4ghAttributes
      */
     private void mapAttributes(List<Attribute> characteristics) {
         characteristics.stream().forEach(attribute -> {
@@ -192,16 +192,16 @@ public class SampleToGa4ghSampleConverter implements Converter<Sample, Ga4ghSamp
     }
 
     /**
-     * Maps characteristics from Biosamples to Biocharacteristics in GA4GH
+     * Maps characteristics from Biosamples to Ga4ghBiocharacteristics in GA4GH
      *
      * @param characteristics characteristics that provides biological data (with Ontology term)
-     * @see Attributes
+     * @see Ga4ghAttributes
      */
     private void mapBioCharacteristics(List<Attribute> characteristics) {
-        SortedSet<Biocharacteristics> biocharacteristics = new TreeSet<>();
+        SortedSet<Ga4ghBiocharacteristics> biocharacteristics = new TreeSet<>();
 
         characteristics.parallelStream().forEach(attribute -> {
-            Biocharacteristics biocharacteristic = new Biocharacteristics();
+            Ga4ghBiocharacteristics biocharacteristic = new Ga4ghBiocharacteristics();
             biocharacteristic.setDescription(attribute.getType());
             biocharacteristic.setScope(attribute.getUnit());
             biocharacteristic.setOntology_terms(getOntologyTerms(attribute.getIri()));
@@ -242,9 +242,9 @@ public class SampleToGa4ghSampleConverter implements Converter<Sample, Ga4ghSamp
      * @return retreived term
      * @see OLSDataRetriever
      */
-    private OntologyTerm getSingleOntologyTerm(String link) {
+    private Ga4ghOntologyTerm getSingleOntologyTerm(String link) {
         OLSDataRetriever retriever = new OLSDataRetriever();
-        OntologyTerm term = new OntologyTerm();
+        Ga4ghOntologyTerm term = new Ga4ghOntologyTerm();
         term.setUrl(link);
         retriever.readOntologyJsonFromUrl(link);
         term.setTerm_id(retriever.getOntologyTermId());
@@ -257,12 +257,12 @@ public class SampleToGa4ghSampleConverter implements Converter<Sample, Ga4ghSamp
      *
      * @param iris set of iris to ontology terms
      * @return set of Ontology terms
-     * @see OntologyTerm
+     * @see Ga4ghOntologyTerm
      */
-    private SortedSet<OntologyTerm> getOntologyTerms(SortedSet<String> iris) {
-        SortedSet<OntologyTerm> terms = new TreeSet<>();
+    private SortedSet<Ga4ghOntologyTerm> getOntologyTerms(SortedSet<String> iris) {
+        SortedSet<Ga4ghOntologyTerm> terms = new TreeSet<>();
         for (String link : iris) {
-            OntologyTerm term = getSingleOntologyTerm(link);
+            Ga4ghOntologyTerm term = getSingleOntologyTerm(link);
             terms.add(term);
         }
         return terms;
@@ -286,7 +286,7 @@ public class SampleToGa4ghSampleConverter implements Converter<Sample, Ga4ghSamp
                 e.printStackTrace();
 
             }
-            Attributes attributesFromField = new Attributes();
+            Ga4ghAttributes attributesFromField = new Ga4ghAttributes();
             SortedSet<String> namesOfFields = new TreeSet<>(objectFieldsAndValues.keySet());
             for (String key : namesOfFields) {
 

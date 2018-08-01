@@ -3,19 +3,19 @@ package uk.ac.ebi.biosamples.model.ga4gh;
 import java.util.Arrays;
 import java.util.Objects;
 
-public class Individual {
+public class Ga4ghIndividual {
     private String id;
     private String dataset_id;
     private String name;
     private String description;
-    private Biocharacteristics[] bio_characteristics;
+    private Ga4ghBiocharacteristics[] bio_characteristics;
     private String created;
     private String updated;
-    private OntologyTerm species;
-    private OntologyTerm sex;
-    private GeoLocation location;
-    private Attributes attributes;
-    private ExternalIdentifier[] external_identifiers;
+    private Ga4ghOntologyTerm species;
+    private Ga4ghOntologyTerm sex;
+    private Ga4ghGeoLocation location;
+    private Ga4ghAttributes attributes;
+    private Ga4ghExternalIdentifier[] external_identifiers;
 
     public String getId() {
         return id;
@@ -49,11 +49,11 @@ public class Individual {
         this.description = description;
     }
 
-    public Biocharacteristics[] getBio_characteristics() {
+    public Ga4ghBiocharacteristics[] getBio_characteristics() {
         return bio_characteristics;
     }
 
-    public void setBio_characteristics(Biocharacteristics[] bio_characteristics) {
+    public void setBio_characteristics(Ga4ghBiocharacteristics[] bio_characteristics) {
         this.bio_characteristics = bio_characteristics;
     }
 
@@ -73,43 +73,43 @@ public class Individual {
         this.updated = updated;
     }
 
-    public OntologyTerm getSpecies() {
+    public Ga4ghOntologyTerm getSpecies() {
         return species;
     }
 
-    public void setSpecies(OntologyTerm species) {
+    public void setSpecies(Ga4ghOntologyTerm species) {
         this.species = species;
     }
 
-    public OntologyTerm getSex() {
+    public Ga4ghOntologyTerm getSex() {
         return sex;
     }
 
-    public void setSex(OntologyTerm sex) {
+    public void setSex(Ga4ghOntologyTerm sex) {
         this.sex = sex;
     }
 
-    public GeoLocation getLocation() {
+    public Ga4ghGeoLocation getLocation() {
         return location;
     }
 
-    public void setLocation(GeoLocation location) {
+    public void setLocation(Ga4ghGeoLocation location) {
         this.location = location;
     }
 
-    public Attributes getAttributes() {
+    public Ga4ghAttributes getAttributes() {
         return attributes;
     }
 
-    public void setAttributes(Attributes attributes) {
+    public void setAttributes(Ga4ghAttributes attributes) {
         this.attributes = attributes;
     }
 
-    public ExternalIdentifier[] getExternal_identifiers() {
+    public Ga4ghExternalIdentifier[] getExternal_identifiers() {
         return external_identifiers;
     }
 
-    public void setExternal_identifiers(ExternalIdentifier[] external_identifiers) {
+    public void setExternal_identifiers(Ga4ghExternalIdentifier[] external_identifiers) {
         this.external_identifiers = external_identifiers;
     }
 
@@ -117,7 +117,7 @@ public class Individual {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Individual that = (Individual) o;
+        Ga4ghIndividual that = (Ga4ghIndividual) o;
         return Objects.equals(id, that.id) &&
                 Objects.equals(dataset_id, that.dataset_id) &&
                 Objects.equals(name, that.name) &&
@@ -142,11 +142,11 @@ public class Individual {
     }
 
     @Override
-    protected Individual clone() {
+    protected Ga4ghIndividual clone() {
         try {
-            return (Individual) super.clone();
+            return (Ga4ghIndividual) super.clone();
         }catch (CloneNotSupportedException e){
-            return new Individual();
+            return new Ga4ghIndividual();
         }
     }
 }

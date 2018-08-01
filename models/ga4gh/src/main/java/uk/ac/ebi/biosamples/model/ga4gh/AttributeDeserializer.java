@@ -13,21 +13,21 @@ import java.io.IOException;
 import java.util.*;
 
 
-public class AttributeDeserializer extends StdDeserializer<Attributes> {
+public class AttributeDeserializer extends StdDeserializer<Ga4ghAttributes> {
 
     public AttributeDeserializer() {
-        super(Attributes.class);
+        super(Ga4ghAttributes.class);
     }
 
     @Override
-    public Attributes deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
-        Attributes attributes = new Attributes();
+    public Ga4ghAttributes deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
+        Ga4ghAttributes attributes = new Ga4ghAttributes();
         ObjectCodec codec = jsonParser.getCodec();
         JsonNode node = codec.readTree(jsonParser);
         return deserializeAttributes(node);
     }
 
-    private Attributes deserializeAttributes(JsonNode node) {
+    private Ga4ghAttributes deserializeAttributes(JsonNode node) {
         Iterator<Map.Entry<String, JsonNode>> fieldsIterator = node.fields();
         SortedMap<String, List<AttributeValue>> attributesFields = new TreeMap<>();
         while (fieldsIterator.hasNext()) {
@@ -35,7 +35,7 @@ public class AttributeDeserializer extends StdDeserializer<Attributes> {
             String key = field.getKey();
             attributesFields.put(key, deserializeAttributeList(field.getValue().get("values")));
         }
-        Attributes attributes = new Attributes();
+        Ga4ghAttributes attributes = new Ga4ghAttributes();
         attributes.setAttributes(attributesFields);
         return attributes;
     }
@@ -65,19 +65,19 @@ public class AttributeDeserializer extends StdDeserializer<Attributes> {
                         break;
                     case "external_identifier":
                         try {
-                            attributeValues.add(new AttributeValue(mapper.readValue(value.asText(), ExternalIdentifier.class)));
+                            attributeValues.add(new AttributeValue(mapper.readValue(value.asText(), Ga4ghExternalIdentifier.class)));
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
                     case "ontology_term":
                         try {
-                            attributeValues.add(new AttributeValue(mapper.readValue(value.asText(), OntologyTerm.class)));
+                            attributeValues.add(new AttributeValue(mapper.readValue(value.asText(), Ga4ghOntologyTerm.class)));
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
                     case "experiment":
                         try {
-                            attributeValues.add(new AttributeValue(mapper.readValue(value.asText(), Experiment.class)));
+                            attributeValues.add(new AttributeValue(mapper.readValue(value.asText(), Ga4ghExperiment.class)));
                         } catch (IOException e) {
                             e.printStackTrace();
                         }

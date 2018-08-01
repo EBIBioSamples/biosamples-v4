@@ -7,7 +7,7 @@ import org.springframework.hateoas.ResourceAssembler;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.ENAHtsgetTicket;
 import uk.ac.ebi.biosamples.model.ga4gh.AttributeValue;
-import uk.ac.ebi.biosamples.model.ga4gh.Attributes;
+import uk.ac.ebi.biosamples.model.ga4gh.Ga4ghAttributes;
 import uk.ac.ebi.biosamples.model.ga4gh.Ga4ghSample;
 
 import java.util.*;
@@ -53,7 +53,7 @@ public class Ga4ghSampleResourceAssembler implements ResourceAssembler<Ga4ghSamp
         List<String> accessions = new ArrayList<>();
         List<AttributeValue> externalReferences = ga4ghSample.getAttributes().getAttributes().get("external_references");
         for (AttributeValue value : externalReferences) {
-            Attributes urlAttribute = (Attributes) value.getValue();
+            Ga4ghAttributes urlAttribute = (Ga4ghAttributes) value.getValue();
             String url = (String) urlAttribute.getAttributes().get("url").get(0).getValue();
             String[] elements = url.split("/");
             accessions.add(elements[elements.length - 1]);

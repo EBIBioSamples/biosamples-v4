@@ -15,7 +15,7 @@ public class Analysis {
     private String updated;
     private String type;
     private String[] software;
-    private Attributes attributes;
+    private Ga4ghAttributes attributes;
 
     @JsonProperty("id")
     public String getId() {
@@ -81,11 +81,11 @@ public class Analysis {
     }
 
     @JsonProperty("attributes")
-    public Attributes getAttributes() {
+    public Ga4ghAttributes getAttributes() {
         return attributes;
     }
 
-    public void setAttributes(Attributes attributes) {
+    public void setAttributes(Ga4ghAttributes attributes) {
         this.attributes = attributes;
     }
 

@@ -20,14 +20,14 @@ public class Ga4ghSample {
     private String individual_id;
     private String name;
     private String description;
-    private SortedSet<Biocharacteristics> bio_characteristic;
-    private Attributes attributes;
-    private SortedSet<ExternalIdentifier> external_identifiers;
-    private Age individual_age_at_collection;
-    private GeoLocation location;
+    private SortedSet<Ga4ghBiocharacteristics> bio_characteristic;
+    private Ga4ghAttributes attributes;
+    private SortedSet<Ga4ghExternalIdentifier> external_identifiers;
+    private Ga4ghAge individual_age_at_collection;
+    private Ga4ghGeoLocation location;
 
     @Autowired
-    public Ga4ghSample(Attributes attributes) {
+    public Ga4ghSample(Ga4ghAttributes attributes) {
         this.attributes = attributes;
         bio_characteristic = new TreeSet<>();
         external_identifiers = new TreeSet<>();
@@ -40,12 +40,12 @@ public class Ga4ghSample {
             @JsonProperty("dataset_id") String dataset_id,
             @JsonProperty("individual_id") String individual_id,
             @JsonProperty("description") String description,
-            @JsonProperty("biocharacteristic") Collection<Biocharacteristics> biocharacteristics,
-            @JsonProperty("attributes") @JsonDeserialize(using = AttributeDeserializer.class) Attributes attributes,
-            @JsonProperty("external_identifiers") Collection<ExternalIdentifier> externalIdentifiers,
-            @JsonProperty("individual_age_at_collection") Age age,
-            @JsonProperty("location") GeoLocation location) {
-        Ga4ghSample ga4ghSample = new Ga4ghSample(new Attributes());
+            @JsonProperty("biocharacteristic") Collection<Ga4ghBiocharacteristics> biocharacteristics,
+            @JsonProperty("attributes") @JsonDeserialize(using = AttributeDeserializer.class) Ga4ghAttributes attributes,
+            @JsonProperty("external_identifiers") Collection<Ga4ghExternalIdentifier> externalIdentifiers,
+            @JsonProperty("individual_age_at_collection") Ga4ghAge age,
+            @JsonProperty("location") Ga4ghGeoLocation location) {
+        Ga4ghSample ga4ghSample = new Ga4ghSample(new Ga4ghAttributes());
 
         if (id == null) throw new IllegalArgumentException("Sample id must be provided");
         ga4ghSample.id = id.trim();
@@ -137,7 +137,7 @@ public class Ga4ghSample {
     }
 
     @JsonProperty("bio_characteristics")
-    public SortedSet<Biocharacteristics> getBio_characteristic() {
+    public SortedSet<Ga4ghBiocharacteristics> getBio_characteristic() {
         return bio_characteristic;
     }
 
@@ -157,43 +157,43 @@ public class Ga4ghSample {
         return (String) releasedDate.getValue();
     }
 
-    public void setBio_characteristic(SortedSet<Biocharacteristics> bio_characteristic) {
+    public void setBio_characteristic(SortedSet<Ga4ghBiocharacteristics> bio_characteristic) {
         this.bio_characteristic = bio_characteristic;
     }
 
     @JsonSerialize(using = AttributeSerializer.class)
-    public Attributes getAttributes() {
+    public Ga4ghAttributes getAttributes() {
         return attributes;
     }
 
-    public void setAttributes(Attributes attributes) {
+    public void setAttributes(Ga4ghAttributes attributes) {
         this.attributes = attributes;
     }
 
     @JsonProperty("external_identifiers")
-    public SortedSet<ExternalIdentifier> getExternal_identifiers() {
+    public SortedSet<Ga4ghExternalIdentifier> getExternal_identifiers() {
         return external_identifiers;
     }
 
-    public void setExternal_identifiers(SortedSet<ExternalIdentifier> external_identifiers) {
+    public void setExternal_identifiers(SortedSet<Ga4ghExternalIdentifier> external_identifiers) {
         this.external_identifiers = external_identifiers;
     }
 
     @JsonProperty("individual_age_at_collection")
-    public Age getIndividual_age_at_collection() {
+    public Ga4ghAge getIndividual_age_at_collection() {
         return individual_age_at_collection;
     }
 
-    public void setIndividual_age_at_collection(Age individual_age_at_collection) {
+    public void setIndividual_age_at_collection(Ga4ghAge individual_age_at_collection) {
         this.individual_age_at_collection = individual_age_at_collection;
     }
 
     @JsonProperty("location")
-    public GeoLocation getLocation() {
+    public Ga4ghGeoLocation getLocation() {
         return location;
     }
 
-    public void setLocation(GeoLocation location) {
+    public void setLocation(Ga4ghGeoLocation location) {
         this.location = location;
     }
 
@@ -208,7 +208,7 @@ public class Ga4ghSample {
 
     }
 
-    public void addBioCharacteristic(Biocharacteristics biocharacteristics) {
+    public void addBioCharacteristic(Ga4ghBiocharacteristics biocharacteristics) {
         bio_characteristic.add(biocharacteristics);
     }
 
@@ -218,7 +218,7 @@ public class Ga4ghSample {
         try {
             ga4ghSample = (Ga4ghSample) super.clone();
         } catch (CloneNotSupportedException e) {
-            ga4ghSample = new Ga4ghSample(new Attributes());
+            ga4ghSample = new Ga4ghSample(new Ga4ghAttributes());
         }
         return ga4ghSample;
     }

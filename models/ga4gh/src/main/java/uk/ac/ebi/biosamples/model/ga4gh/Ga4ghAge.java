@@ -6,9 +6,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 
 @JsonInclude(JsonInclude.Include.ALWAYS)
-public class Age {
+public class Ga4ghAge {
     private String age;
-    private OntologyTerm age_class;
+    private Ga4ghOntologyTerm age_class;
 
     @JsonProperty("age")
     public String getAge() {
@@ -20,11 +20,11 @@ public class Age {
     }
 
     @JsonProperty("age_class")
-    public OntologyTerm getAge_class() {
+    public Ga4ghOntologyTerm getAge_class() {
         return age_class;
     }
 
-    public void setAge_class(OntologyTerm age_class) {
+    public void setAge_class(Ga4ghOntologyTerm age_class) {
         this.age_class = age_class;
     }
 
@@ -32,7 +32,7 @@ public class Age {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Age age1 = (Age) o;
+        Ga4ghAge age1 = (Ga4ghAge) o;
         return Objects.equals(age, age1.age) &&
                 Objects.equals(age_class, age1.age_class);
     }
@@ -44,11 +44,11 @@ public class Age {
     }
 
     @Override
-    public Age clone() {
+    public Ga4ghAge clone() {
         try {
-            return (Age) super.clone();
+            return (Ga4ghAge) super.clone();
         }catch (CloneNotSupportedException e){
-            return new Age();
+            return new Ga4ghAge();
         }
 
     }
