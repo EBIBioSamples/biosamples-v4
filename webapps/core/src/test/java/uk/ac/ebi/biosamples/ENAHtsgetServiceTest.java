@@ -5,19 +5,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import uk.ac.ebi.biosamples.model.ENAHtsgetTicket;
 import uk.ac.ebi.biosamples.service.ENAHtsgetService;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class ENAHtsgetServiceTest {
 
     @Autowired
     ENAHtsgetService htsgetService;
 
-    public ENAHtsgetServiceTest(){
+    public ENAHtsgetServiceTest() {
         htsgetService = new ENAHtsgetService();
     }
+
     @Test
-    public void bamTicketTest(){
-        ENAHtsgetTicket ticket = htsgetService.getTicket("SAMN07666497", "BAM");
+    public void bamTicketTest() {
+        ENAHtsgetTicket ticket = htsgetService.getTicket("SAMN07666497", "BAM").get();
         ENAHtsgetTicket expectedTicket = new ENAHtsgetTicket();
         expectedTicket.setAccession("SAMN07666497");
         expectedTicket.setFormat("BAM");
@@ -27,8 +29,8 @@ public class ENAHtsgetServiceTest {
     }
 
     @Test
-    public void cramTicketTest(){
-        ENAHtsgetTicket ticket = htsgetService.getTicket("SAMN07666497", "CRAM");
+    public void cramTicketTest() {
+        ENAHtsgetTicket ticket = htsgetService.getTicket("SAMN07666497", "CRAM").get();
         ENAHtsgetTicket expectedTicket = new ENAHtsgetTicket();
         expectedTicket.setAccession("SAMN07666497");
         expectedTicket.setFormat("CRAM");

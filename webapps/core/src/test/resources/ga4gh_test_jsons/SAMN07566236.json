@@ -1,0 +1,53 @@
+{
+  "name" : "Human sample from Homo sapiens",
+  "accession" : "SAMN07566236",
+  "domain" : "self.BioSamplesMigration",
+  "release" : "2017-08-27T23:00:00Z",
+  "update" : "2018-01-22T16:03:26.773Z",
+  "characteristics" : {
+    "Organism" : [ {
+      "text" : "Homo sapiens",
+      "ontologyTerms" : [ "http://purl.obolibrary.org/obo/NCBITaxon_9606" ]
+    } ],
+    "age" : [ {
+      "text" : "40"
+    } ],
+    "biomaterial provider" : [ {
+      "text" : "Beijing USCI Medical Laboratory"
+    } ],
+    "body weight (kg)" : [ {
+      "text" : "46"
+    } ],
+    "gestational weeks" : [ {
+      "text" : "18"
+    } ],
+    "individual ID" : [ {
+      "text" : "ID_652"
+    } ],
+    "isolate" : [ {
+      "text" : "pregnant woman"
+    } ],
+    "model" : [ {
+      "text" : "Human"
+    } ],
+    "organism part" : [ {
+      "text" : "blood",
+      "ontologyTerms" : [ "http://www.ebi.ac.uk/efo/EFO_0000296" ]
+    } ],
+    "package" : [ {
+      "text" : "Human.1.0"
+    } ],
+    "race" : [ {
+      "text" : "Chinese",
+      "ontologyTerms" : [ "http://www.ebi.ac.uk/efo/EFO_0003157" ]
+    } ],
+    "synonym" : [ {
+      "text" : "nipt_scisoon_0652"
+    } ]
+  },
+  "externalReferences" : [ {
+    "url" : "http://www.ebi.ac.uk/ena/data/view/SAMN07566236"
+  } ],
+  "releaseDate" : "2017-08-27",
+  "updateDate" : "2018-01-22"
+}
