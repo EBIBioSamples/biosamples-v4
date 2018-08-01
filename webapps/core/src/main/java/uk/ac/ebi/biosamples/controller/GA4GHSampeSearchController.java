@@ -1,15 +1,13 @@
 package uk.ac.ebi.biosamples.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.*;
+import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.Resources;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.model.ga4gh.Ga4ghSample;
@@ -26,34 +24,43 @@ import java.util.stream.Collectors;
 public class GA4GHSampeSearchController {
 
     private GA4GHFilterBuilder filterBuilder;
-    private BioSamplesClient client;
+    private SamplesRestController restController;
     private SampleToGa4ghSampleConverter mapper;
     private Ga4ghSampleResourceAssembler resourceAssembler;
 
     @Autowired
-    public GA4GHSampeSearchController(GA4GHFilterBuilder filterBuilder, BioSamplesClient client, SampleToGa4ghSampleConverter mapper, Ga4ghSampleResourceAssembler resourceAssembler) {
+    public GA4GHSampeSearchController(GA4GHFilterBuilder filterBuilder, SamplesRestController controller, SampleToGa4ghSampleConverter mapper, Ga4ghSampleResourceAssembler resourceAssembler) {
         this.filterBuilder = filterBuilder;
-        this.client = client;
+        this.restController = controller;
         this.mapper = mapper;
         this.resourceAssembler = resourceAssembler;
     }
 
-    @RequestMapping(method = RequestMethod.GET, produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
+    @RequestMapping(method = RequestMethod.GET, produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
     @ResponseBody
-    public ResponseEntity<Resources<Resource<Ga4ghSample>>> searchSample(@RequestParam(name = "disease") String disease, @RequestParam(name = "page") int page){
+    public ResponseEntity<Resources<Resource<Ga4ghSample>>> searchSample(@RequestParam(name = "disease") String disease, @RequestParam(name = "page") int page) {
+
         Collection<Filter> filters = filterBuilder.getFilters();
-        PagedResources<Resource<Sample>> samples = client.fetchPagedSampleResource(disease, filters,page,10);
-        List<Resource<Ga4ghSample>> ga4ghSamples = samples.getContent().parallelStream()
+        List<String> filtersAsText = filters.parallelStream()
+                .map(
+                        Filter::getSerialization
+                )
+                .collect(Collectors.toList());
+        String[] filtersAsTextArray = new String[1];
+        filtersAsTextArray = filtersAsText.toArray(filtersAsTextArray);
+        ResponseEntity<Resources<Resource<Sample>>> response = restController.searchHal(disease, filtersAsTextArray, null, page, null, null, null);
+        Resources<Resource<Sample>> samples = response.getBody();
+        List<Resource<Ga4ghSample>> ga4ghSamples = samples.getContent().stream()
                 .map(
                         i -> {
                             Sample sample = i.getContent();
-                            Ga4ghSample ga4ghSample =  mapper.convert(sample);
+                            Ga4ghSample ga4ghSample = mapper.convert(sample);
                             return resourceAssembler.toResource(ga4ghSample);
                         }
                 )
                 .collect(Collectors.toList());
         Resources<Resource<Ga4ghSample>> resources = new Resources<>(ga4ghSamples);
-        return new ResponseEntity<>(resources,HttpStatus.OK);
+        return new ResponseEntity<>(resources, HttpStatus.OK);
 
     }
 
