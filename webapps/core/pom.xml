@@ -64,11 +64,6 @@
 			<artifactId>models-legacyxml</artifactId>
 			<version>${bsd2017.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>uk.ac.ebi.biosamples</groupId>
-			<artifactId>models-ga4gh</artifactId>
-			<version>${bsd2017.version}</version>
-		</dependency>
 		
 		<!-- use Thymleaf for HTML templating -->
 		<dependency>
@@ -143,11 +138,6 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-webmvc</artifactId>
-			<version>4.3.0.RELEASE</version>
-		</dependency>
-		<dependency>
 			<groupId>org.springframework.restdocs</groupId>
 			<artifactId>spring-restdocs-mockmvc</artifactId>
 			<scope>test</scope>
@@ -213,12 +203,7 @@
 			<artifactId>http-request</artifactId>
 			<version>1.0.1</version>
 		</dependency>
-		<dependency>
-			<groupId>uk.ac.ebi.biosamples</groupId>
-			<artifactId>models-core</artifactId>
-			<version>4.1.1-SNAPSHOT</version>
-		</dependency>
-	</dependencies>
+    </dependencies>
 
 	<build>
 		<plugins>
