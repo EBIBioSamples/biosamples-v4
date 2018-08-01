@@ -64,6 +64,14 @@ public class RegularFacetFetchStrategy implements FacetFetchStrategy {
 
             // Build the facet
             SolrSampleField solrSampleField = fieldCountEntry.getKey();
+            /*
+            if (solrSampleField.canGenerateFacets()) {
+                Facet facet = solrSampleField.getFacetBuilder(facetLabel, facetCount)
+                                .withContent(new LabelCountListContent(listFacetContent))
+                                .build();
+                 facetResults.add(Optional.of(facet));
+            }
+             */
             Optional<FacetType> associatedFacetType = solrSampleField.getSolrFieldType().getFacetFilterFieldType().getFacetType();
             if(associatedFacetType.isPresent()) {
                 FacetType facetType = associatedFacetType.get();

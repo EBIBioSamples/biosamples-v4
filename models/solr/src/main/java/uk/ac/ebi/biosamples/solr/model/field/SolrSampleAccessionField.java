@@ -32,7 +32,7 @@ public class SolrSampleAccessionField extends SolrSampleField {
     }
 
     @Override
-    public Pattern getFieldPattern() {
+    public Pattern getSolrFieldPattern() {
         return Pattern.compile("^(?<fieldname>id)$");
     }
 

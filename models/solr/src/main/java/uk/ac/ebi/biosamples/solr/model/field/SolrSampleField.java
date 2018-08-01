@@ -1,11 +1,9 @@
 package uk.ac.ebi.biosamples.solr.model.field;
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.solr.model.strategy.FacetFetchStrategy;
 import uk.ac.ebi.biosamples.solr.service.SolrFieldService;
 
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public abstract class SolrSampleField implements FilterCriteriaBuilder {
@@ -49,7 +47,7 @@ public abstract class SolrSampleField implements FilterCriteriaBuilder {
      * @return
      */
     public boolean matches(String fieldName) {
-        return getFieldPattern().matcher(fieldName).find();
+        return getSolrFieldPattern().matcher(fieldName).find();
     }
 
     /**
@@ -58,7 +56,7 @@ public abstract class SolrSampleField implements FilterCriteriaBuilder {
      * Usually is structured this way <pre>/^(?<fieldname>pattern>(?<fieldsuffix>suffix)$</pre>
      * @return the Pattern to match the field in a solr document
      */
-    public abstract Pattern getFieldPattern();
+    public abstract Pattern getSolrFieldPattern();
 
 
     /**

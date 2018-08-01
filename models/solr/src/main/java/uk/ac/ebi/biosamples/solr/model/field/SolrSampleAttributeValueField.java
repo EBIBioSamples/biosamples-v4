@@ -31,7 +31,7 @@ public class SolrSampleAttributeValueField extends SolrSampleField {
     }
 
     @Override
-    public Pattern getFieldPattern() {
+    public Pattern getSolrFieldPattern() {
         return Pattern.compile("^(?<fieldname>[A-Z0-9_]+)(?<fieldsuffix>" + getSolrFieldSuffix() + ")$");
     }
 
