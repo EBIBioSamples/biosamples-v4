@@ -394,123 +394,287 @@ public class Sample implements Comparable<Sample> {
         return sample;
     }
 
-    public static class Builder {
+	public static class Builder {
 
-        protected String accession;
-        protected String name;
-        protected String domain;
+		protected String name;
 
-        protected Instant release = Instant.now();
-        protected Instant update = Instant.now();
+		protected String accession = null;
+		protected String domain = null;
 
-        protected SortedSet<Attribute> attributes = new TreeSet<>();
-        protected SortedSet<Relationship> relationships = new TreeSet<>();
-        protected SortedSet<ExternalReference> externalReferences = new TreeSet<>();
-        protected SortedSet<Organization> organizations = new TreeSet<>();
-        protected SortedSet<Contact> contacts = new TreeSet<>();
-        protected SortedSet<Publication> publications = new TreeSet<>();
+		protected Instant release = Instant.now();
+		protected Instant update = Instant.now();
 
-        public Builder(String accession, String name) {
-            this.name = name;
-            this.accession = accession;
-        }
+		protected SortedSet<Attribute> attributes = new TreeSet<>();
+		protected SortedSet<Relationship> relationships = new TreeSet<>();
+		protected SortedSet<ExternalReference> externalReferences = new TreeSet<>();
+		protected SortedSet<Organization> organizations = new TreeSet<>();
+		protected SortedSet<Contact> contacts = new TreeSet<>();
+		protected SortedSet<Publication> publications = new TreeSet<>();
 
-        public Builder withDomain(String domain) {
-            this.domain = domain;
-            return this;
-        }
+		public Builder(String name, String accession) {
+			this.name = name;
+			this.accession = accession;
+		}
 
-        public Builder withReleaseDate(String release) {
-            this.release = parseDateTime(release).toInstant();
-            return this;
-        }
+		public Builder(String name) {
+			this.name = name;
+		}
 
-        public Builder withReleaseDate(Instant release) {
-            this.release = release;
-            return this;
-        }
+		public Builder withAccession(String accession) {
+			this.accession = accession;
+			return this;
+		}
 
-        public Builder withUpdateDate(Instant update) {
-            this.update = update;
-            return this;
-        }
+		public Builder withDomain(String domain) {
+			this.domain = domain;
+			return this;
+		}
 
-        public Builder withUpdateDate(String update) {
-            this.update = parseDateTime(update).toInstant();
-            return this;
-        }
+		public Builder withRelease(String release) {
+			this.release = parseDateTime(release).toInstant();
+			return this;
+		}
 
-        public Builder withAttribute(Attribute attribute) {
-            this.attributes.add(attribute);
-            return this;
-        }
+		public Builder withRelease(Instant release) {
+			this.release = release;
+			return this;
+		}
 
-        public Builder withRelationship(Relationship relationship) {
-            this.relationships.add(relationship);
-            return this;
-        }
+		public Builder withUpdate(Instant update) {
+			this.update = update;
+			return this;
+		}
 
-        public Builder withExternalReference(ExternalReference externalReference) {
-            this.externalReferences.add(externalReference);
-            return this;
-        }
+		public Builder withUpdate(String update) {
+			this.update = parseDateTime(update).toInstant();
+			return this;
+		}
 
-        public Builder withOrganization(Organization organization) {
-            this.organizations.add(organization);
-            return this;
-        }
+		/**
+		 * Replace builder's attributes with the provided attribute collection
+		 * @param attributes
+		 * @return
+		 */
+		public Builder withAttributes(Collection<Attribute> attributes) {
+			this.attributes = new TreeSet<>(attributes);
+			return this;
+		}
 
-        public Builder withContact(Contact contact) {
-            this.contacts.add(contact);
-            return this;
-        }
+		public Builder addAttribute(Attribute attribute) {
+			this.attributes.add(attribute);
+			return this;
+		}
 
-        public Builder withPublication(Publication publication) {
-            this.publications.add(publication);
-            return this;
-        }
-
-        public Sample build() {
-            return Sample.build(name, accession, domain, release, update,
-                    attributes, relationships, externalReferences,
-                    organizations, contacts, publications);
-        }
-
-        private ZonedDateTime parseDateTime(String datetimeString) {
-            if (datetimeString.isEmpty()) return null;
-            TemporalAccessor temporalAccessor = getFormatter().parseBest(datetimeString,
-                    ZonedDateTime::from, LocalDateTime::from, LocalDate::from);
-            if (temporalAccessor instanceof ZonedDateTime) {
-                return (ZonedDateTime) temporalAccessor;
-            } else if (temporalAccessor instanceof LocalDateTime) {
-                return ((LocalDateTime) temporalAccessor).atZone(ZoneId.of("UTC"));
-            } else {
-                return ((LocalDate) temporalAccessor).atStartOfDay(ZoneId.of("UTC"));
-            }
-
-        }
+		public Builder addAllAttributes(Collection<Attribute> attributes) {
+			this.attributes.addAll(attributes);
+			return this;
+		}
 
 
-        private DateTimeFormatter getFormatter() {
-            return new DateTimeFormatterBuilder()
-                    .parseCaseInsensitive()
-                    .append(ISO_LOCAL_DATE)
-                    .optionalStart()           // time made optional
-                    .appendLiteral('T')
-                    .append(ISO_LOCAL_TIME)
-                    .optionalStart()           // zone and offset made optional
-                    .appendOffsetId()
-                    .optionalStart()
-                    .appendLiteral('[')
-                    .parseCaseSensitive()
-                    .appendZoneRegionId()
-                    .appendLiteral(']')
-                    .optionalEnd()
-                    .optionalEnd()
-                    .optionalEnd()
-                    .toFormatter();
-        }
-    }
+        /**
+		 * Replace builder's relationships with the provided relationships collection
+		 * @param relationships
+		 * @return
+		 */
+		public Builder withRelationships(Collection<Relationship> relationships) {
+			this.relationships = new TreeSet<>(relationships);
+			return this;
+		}
+
+		public Builder addRelationship(Relationship relationship) {
+			this.relationships.add(relationship);
+			return this;
+		}
+
+		public Builder addAllRelationships(Collection<Relationship> relationships) {
+			this.relationships.addAll(relationships);
+			return this;
+		}
+
+		/**
+		 * Replace builder's externalReferences with the provided external references collection
+		 * @param externalReferences
+		 * @return
+		 */
+		public Builder withExternalReferences(Collection<ExternalReference> externalReferences) {
+			this.externalReferences = new TreeSet<>(externalReferences);
+			return this;
+		}
+
+
+		public Builder addExternalReference(ExternalReference externalReference) {
+			this.externalReferences.add(externalReference);
+			return this;
+		}
+
+		public Builder addAllExternalReferences(Collection<ExternalReference> externalReferences) {
+			this.externalReferences.addAll(externalReferences);
+			return this;
+		}
+
+		/**
+		 * Replace builder's organisations with the provided organisation collection
+		 * @param organizations
+		 * @return
+		 */
+		public Builder withOrganizations(Collection<Organization> organizations) {
+			this.organizations = new TreeSet<>(organizations);
+			return this;
+		}
+
+		public Builder addOrganization(Organization organization) {
+			this.organizations.add(organization);
+			return this;
+		}
+
+		public Builder allAllOrganizations(Collection<Organization> organizations) {
+			this.organizations.addAll(organizations);
+			return this;
+		}
+
+		/**
+		 * Replace builder's contacts with the provided contact collection
+		 * @param contacts
+		 * @return
+		 */
+		public Builder withContacts(Collection<Contact> contacts) {
+			this.contacts = new TreeSet<>(contacts);
+			return this;
+		}
+
+		public Builder addContact(Contact contact) {
+			this.contacts.add(contact);
+			return this;
+		}
+
+		public Builder addAllContacts(Collection<Contact> contacts) {
+			this.contacts.addAll(contacts);
+			return this;
+		}
+
+		/**
+		 * Replace the publications with the provided collections
+		 * @param publications
+		 * @return
+		 */
+		public Builder withPublications(Collection<Publication> publications) {
+			this.publications = new TreeSet<>(publications);
+			return this;
+		}
+
+		/**
+		 * Add a publication to the list of builder publications
+		 * @param publication
+		 * @return
+		 */
+		public Builder addPublication(Publication publication) {
+			this.publications.add(publication);
+			return this;
+		}
+
+		/**
+		 * Add all publications in the provided collection to the builder publications
+		 * @param publications
+		 * @return
+		 */
+		public Builder addAllPublications(Collection<Publication> publications) {
+			this.publications.addAll(publications);
+			return this;
+		}
+
+		// Clean accession field
+		public Builder withNoAccession() {
+			this.accession = null;
+			return this;
+		}
+
+		// Clean domain field
+		public Builder withNoDomain() {
+			this.domain = null;
+			return this;
+		}
+
+		// Clean collection fields
+		public Builder withNoAttributes() {
+			this.attributes = new TreeSet<>();
+			return this;
+		}
+
+		public Builder withNoRelationships() {
+			this.relationships = new TreeSet<>();
+			return this;
+		}
+		public Builder withNoExternalReferences() {
+			this.externalReferences = new TreeSet<>();
+			return this;
+		}
+		public Builder withNoContacts() {
+			this.contacts = new TreeSet<>();
+			return this;
+		}
+		public Builder withNoOrganisations() {
+			this.organizations = new TreeSet<>();
+			return this;
+		}
+		public Builder withNoPublications() {
+			this.publications = new TreeSet<>();
+			return this;
+		}
+
+		public Sample build() {
+			return Sample.build(name, accession, domain, release, update,
+					attributes, relationships, externalReferences,
+					organizations, contacts, publications);
+		}
+
+		private ZonedDateTime parseDateTime(String datetimeString) {
+			if (datetimeString.isEmpty()) return null;
+			TemporalAccessor temporalAccessor = getFormatter().parseBest(datetimeString,
+					ZonedDateTime::from, LocalDateTime::from, LocalDate::from);
+			if (temporalAccessor instanceof ZonedDateTime) {
+				return (ZonedDateTime) temporalAccessor;
+			} else if (temporalAccessor instanceof LocalDateTime) {
+				return ((LocalDateTime) temporalAccessor).atZone(ZoneId.of("UTC"));
+			} else {
+				return ((LocalDate) temporalAccessor).atStartOfDay(ZoneId.of("UTC"));
+			}
+
+		}
+
+		/**
+		 * Return a Builder produced extracting informations from the sample
+		 * @param sample the sample to use as reference
+		 * @return the Builder
+		 */
+		public static Builder fromSample(Sample sample) {
+			return new Builder(sample.getName(), sample.getAccession()).withDomain(sample.getDomain())
+					.withRelease(sample.getRelease()).withUpdate(sample.getUpdate())
+					.withAttributes(sample.getAttributes())
+					.withRelationships(sample.getRelationships()).withExternalReferences(sample.getExternalReferences())
+					.withOrganizations(sample.getOrganizations()).withPublications(sample.getPublications())
+					.withContacts(sample.getContacts());
+		}
+
+		private DateTimeFormatter getFormatter() {
+			return new DateTimeFormatterBuilder()
+					.parseCaseInsensitive()
+					.append(ISO_LOCAL_DATE)
+					.optionalStart()           // time made optional
+					.appendLiteral('T')
+					.append(ISO_LOCAL_TIME)
+					.optionalStart()           // zone and offset made optional
+					.appendOffsetId()
+					.optionalStart()
+					.appendLiteral('[')
+					.parseCaseSensitive()
+					.appendZoneRegionId()
+					.appendLiteral(']')
+					.optionalEnd()
+					.optionalEnd()
+					.optionalEnd()
+					.toFormatter();
+		}
+	}
 
 
 }
