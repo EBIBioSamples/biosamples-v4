@@ -64,25 +64,23 @@ public class RegularFacetFetchStrategy implements FacetFetchStrategy {
 
             // Build the facet
             SolrSampleField solrSampleField = fieldCountEntry.getKey();
-            /*
             if (solrSampleField.canGenerateFacets()) {
-                Facet facet = solrSampleField.getFacetBuilder(facetLabel, facetCount)
+                Facet facet = solrSampleField.getFacetBuilder(solrSampleField.getReadableLabel(), fieldCountEntry.getValue())
                                 .withContent(new LabelCountListContent(listFacetContent))
                                 .build();
                  facetResults.add(Optional.of(facet));
             }
-             */
-            Optional<FacetType> associatedFacetType = solrSampleField.getSolrFieldType().getFacetFilterFieldType().getFacetType();
-            if(associatedFacetType.isPresent()) {
-                FacetType facetType = associatedFacetType.get();
-                String facetLabel = solrSampleField.getReadableLabel();
-                Long facetCount = fieldCountEntry.getValue();
-                Facet facet = facetType
-                        .getBuilderForLabelAndCount(facetLabel, facetCount)
-                        .withContent(new LabelCountListContent(listFacetContent))
-                        .build();
-                facetResults.add(Optional.of(facet));
-            }
+//            Optional<FacetType> associatedFacetType = solrSampleField.getSolrFieldType().getFacetFilterFieldType().getFacetType();
+//            if(associatedFacetType.isPresent()) {
+//                FacetType facetType = associatedFacetType.get();
+//                String facetLabel = solrSampleField.getReadableLabel();
+//                Long facetCount = fieldCountEntry.getValue();
+//                Facet facet = facetType
+//                        .getBuilderForLabelAndCount(facetLabel, facetCount)
+//                        .withContent(new LabelCountListContent(listFacetContent))
+//                        .build();
+//                facetResults.add(Optional.of(facet));
+//            }
         }
 
         return facetResults;

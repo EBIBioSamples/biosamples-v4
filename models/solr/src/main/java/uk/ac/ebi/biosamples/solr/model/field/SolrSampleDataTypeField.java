@@ -2,12 +2,15 @@ package uk.ac.ebi.biosamples.solr.model.field;
 
 import org.springframework.data.solr.core.query.Criteria;
 import org.springframework.stereotype.Component;
+import uk.ac.ebi.biosamples.model.facet.DataTypeFacet;
+import uk.ac.ebi.biosamples.model.facet.Facet;
 import uk.ac.ebi.biosamples.model.filter.DataTypeFilter;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.model.structured.DataType;
 import uk.ac.ebi.biosamples.solr.model.strategy.FacetFetchStrategy;
 import uk.ac.ebi.biosamples.solr.model.strategy.RegularFacetFetchStrategy;
 
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 @Component
@@ -51,6 +54,15 @@ public class SolrSampleDataTypeField extends SolrSampleField {
         return filter instanceof DataTypeFilter;
     }
 
+    @Override
+    public boolean canGenerateFacets() {
+        return true;
+    }
+
+    @Override
+    public Facet.Builder getFacetBuilder(String facetLabel, Long facetCount) {
+        return new DataTypeFacet.Builder("Contains data", facetCount);
+    }
 
     @Override
     public SolrFieldType getSolrFieldType() {

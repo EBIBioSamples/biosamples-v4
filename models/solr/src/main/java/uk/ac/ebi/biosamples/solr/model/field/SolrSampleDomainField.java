@@ -45,6 +45,7 @@ public class SolrSampleDomainField extends SolrSampleField {
         return false;
     }
 
+
     @Override
     public boolean isCompatibleWith(Filter filter) {
         return filter instanceof DomainFilter;

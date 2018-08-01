@@ -3,11 +3,14 @@ package uk.ac.ebi.biosamples.solr.model.field;
 import org.springframework.data.solr.core.query.Criteria;
 
 import org.springframework.stereotype.Component;
+import uk.ac.ebi.biosamples.model.facet.ExternalReferenceDataFacet;
+import uk.ac.ebi.biosamples.model.facet.Facet;
 import uk.ac.ebi.biosamples.model.filter.ExternalReferenceDataFilter;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.solr.model.strategy.FacetFetchStrategy;
 import uk.ac.ebi.biosamples.solr.model.strategy.RegularFacetFetchStrategy;
 
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 @Component
@@ -49,6 +52,16 @@ public class SolrSampleExternalReferenceDataField extends SolrSampleField{
     @Override
     public boolean isCompatibleWith(Filter filter) {
         return filter instanceof ExternalReferenceDataFilter;
+    }
+
+    @Override
+    public boolean canGenerateFacets() {
+        return true;
+    }
+
+    @Override
+    public Facet.Builder getFacetBuilder(String facetLabel, Long facetCount) {
+        return new ExternalReferenceDataFacet.Builder(facetLabel, facetCount);
     }
 
     @Override

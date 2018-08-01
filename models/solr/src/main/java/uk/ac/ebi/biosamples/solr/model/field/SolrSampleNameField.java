@@ -3,10 +3,12 @@ package uk.ac.ebi.biosamples.solr.model.field;
 import org.springframework.data.solr.core.query.Criteria;
 
 import org.springframework.stereotype.Component;
+import uk.ac.ebi.biosamples.model.facet.Facet;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.model.filter.NameFilter;
 import uk.ac.ebi.biosamples.solr.model.strategy.FacetFetchStrategy;
 
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 @Component

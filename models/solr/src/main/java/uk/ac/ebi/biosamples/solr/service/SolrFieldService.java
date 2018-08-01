@@ -5,7 +5,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -87,7 +86,7 @@ public class SolrFieldService {
                 .findFirst();
         if (optionalType.isPresent()) {
             SolrSampleField fieldCandidate = optionalType.get();
-            Matcher m = fieldCandidate.getFieldPattern().matcher(encodedField);
+            Matcher m = fieldCandidate.getSolrFieldPattern().matcher(encodedField);
             if (m.find()) {
                 String baseLabel = m.group("fieldname");
 

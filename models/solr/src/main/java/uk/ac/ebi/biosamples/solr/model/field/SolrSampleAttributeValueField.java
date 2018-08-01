@@ -3,11 +3,14 @@ package uk.ac.ebi.biosamples.solr.model.field;
 import org.springframework.data.solr.core.query.Criteria;
 
 import org.springframework.stereotype.Component;
+import uk.ac.ebi.biosamples.model.facet.AttributeFacet;
+import uk.ac.ebi.biosamples.model.facet.Facet;
 import uk.ac.ebi.biosamples.model.filter.AttributeFilter;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.solr.model.strategy.FacetFetchStrategy;
 import uk.ac.ebi.biosamples.solr.model.strategy.RegularFacetFetchStrategy;
 
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 @Component
@@ -38,6 +41,16 @@ public class SolrSampleAttributeValueField extends SolrSampleField {
     @Override
     public String getSolrFieldSuffix() {
         return "_av_ss";
+    }
+
+    @Override
+    public boolean canGenerateFacets() {
+        return true;
+    }
+
+    @Override
+    public Facet.Builder getFacetBuilder(String facetLabel, Long facetCount) {
+        return new AttributeFacet.Builder(facetLabel, facetCount);
     }
 
     @Override

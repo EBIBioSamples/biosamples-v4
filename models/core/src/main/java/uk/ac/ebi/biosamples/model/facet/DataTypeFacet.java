@@ -23,7 +23,7 @@ public class DataTypeFacet implements Facet {
 
     @Override
     public FacetType getType() {
-        return FacetType.ATTRIBUTE_FACET;
+        return FacetType.DATA_TYPE;
     }
 
     @Override

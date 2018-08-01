@@ -3,11 +3,13 @@ package uk.ac.ebi.biosamples.solr.model.field;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 import org.springframework.data.solr.core.query.Criteria;
 
 import org.springframework.stereotype.Component;
+import uk.ac.ebi.biosamples.model.facet.Facet;
 import uk.ac.ebi.biosamples.model.filter.DateRangeFilter;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.solr.model.strategy.FacetFetchStrategy;

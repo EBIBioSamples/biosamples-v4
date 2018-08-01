@@ -1,9 +1,11 @@
 package uk.ac.ebi.biosamples.solr.model.field;
 
+import uk.ac.ebi.biosamples.model.facet.Facet;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.solr.model.strategy.FacetFetchStrategy;
 import uk.ac.ebi.biosamples.solr.service.SolrFieldService;
 
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 public abstract class SolrSampleField implements FilterCriteriaBuilder {
@@ -79,6 +81,26 @@ public abstract class SolrSampleField implements FilterCriteriaBuilder {
      * @return if the field is compatible with the filter class
      */
     public abstract boolean isCompatibleWith(Filter filter);
+
+    /**
+     * Return if the field can be used to generate facets
+     * @return
+     */
+    public boolean canGenerateFacets() {
+        return false;
+    }
+
+
+    /**
+     * Return an optional builder for the facet corresponding to the field
+     * @param facetLabel
+     * @param facetCount
+     * @return
+     */
+    public Facet.Builder getFacetBuilder(String facetLabel, Long facetCount) {
+        return null;
+    }
+
 
     public abstract SolrFieldType getSolrFieldType();
 
