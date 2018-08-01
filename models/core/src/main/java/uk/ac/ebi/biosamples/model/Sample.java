@@ -85,11 +85,6 @@ public class Sample implements Comparable<Sample> {
 		return update;
 	}
 
-	@JsonProperty(value="status", access=JsonProperty.Access.READ_ONLY)
-	public String getStatus() {
-		return Instant.now().isAfter(release) ? "live" : "private";
-	}
-
 	@JsonProperty(value="releaseDate", access=JsonProperty.Access.READ_ONLY)
 	public String getReleaseDate() {
 		return ZonedDateTime.ofInstant(release, ZoneOffset.UTC).format(ISO_LOCAL_DATE);

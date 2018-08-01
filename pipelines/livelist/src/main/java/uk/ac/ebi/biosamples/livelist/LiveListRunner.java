@@ -12,6 +12,7 @@ import uk.ac.ebi.biosamples.model.Sample;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.time.Instant;
 import java.util.zip.GZIPOutputStream;
 
 @Component
@@ -48,7 +49,7 @@ public class LiveListRunner implements ApplicationRunner {
                 for (Resource<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll()) {
                     LOGGER.trace("Handling " + sampleResource);
                     Sample sample = sampleResource.getContent();
-                    if (sample.getStatus().equals("live")) {
+                    if (Instant.now().isAfter(sample.getRelease())) {
                         liveListWriter.write(LiveListUtils.createLiveListString(sample));
                         liveListWriter.write("\n");
                         sampleCount++;
