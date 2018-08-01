@@ -1,6 +1,7 @@
-package uk.ac.ebi.biosamples.service;
+package uk.ac.ebi.biosamples.model;
 
 import org.junit.Test;
+import uk.ac.ebi.biosamples.service.OLSDataRetriever;
 
 import static org.junit.Assert.*;
 

@@ -1,7 +1,7 @@
 {
    "individuals":[
       {
-         "id":"SAMEA182635-individual",
+         "id":"SAMEA190234-individual",
          "sex":{
 
          },
@@ -13,20 +13,12 @@
    ],
    "biosamples":[
       {
-         "id":"SAMEA182635",
-         "name":"source GSM498707 1",
-         "description":"A643MNP1",
-         "phenotypes":[
-            {
-               "type":{
-                  "id":"EFO:0000361",
-                  "label":"obsolete_colon"
-               }
-            }
-         ],
-         "created":"2010-12-01T00:00:00Z",
-         "updated":"2018-04-04T15:56:20.902Z",
-         "individualId":"SAMEA182635-individual",
+         "id":"SAMEA190234",
+         "name":"source GSM729765 1",
+         "description":"Biological replicate 1",
+         "created":"2011-05-23T23:00:00Z",
+         "updated":"2018-01-20T13:55:29.870Z",
+         "individualId":"SAMEA190234-individual",
          "taxonomy":{
             "id":"NCBITaxon:9606",
             "label":"Homo sapiens"
@@ -38,11 +30,12 @@
    ],
    "diseases":[
       {
-         "label":"hyperplastic polyposis syndrome (HPPS)"
+         "id":"EFO:0000571",
+         "label":"lung adenocarcinoma"
       }
    ],
    "metaData":{
-      "created":"2018-06-28T15:50:05.007Z",
+      "created":"2018-06-28T15:47:17.684Z",
       "createdBy":"Biosamples phenopacket exporter",
       "resources":[
          {
@@ -50,7 +43,7 @@
             "name":"NCBI organismal classification",
             "namespacePrefix":"NCBITAXON",
             "url":"http://purl.obolibrary.org/obo/ncbitaxon.owl",
-            "version":"2018-03-02"
+            "version":"2018-07-27"
          },
          {
             "id":"efo",

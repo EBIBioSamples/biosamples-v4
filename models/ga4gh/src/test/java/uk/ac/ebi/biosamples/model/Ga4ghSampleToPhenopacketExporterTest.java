@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.model.phenopackets_exportation_test;
+package uk.ac.ebi.biosamples.model;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONException;
@@ -7,6 +7,7 @@ import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
+import org.springframework.core.io.ClassPathResource;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.ga4gh.Attributes;
 import uk.ac.ebi.biosamples.model.ga4gh.Ga4ghSample;
@@ -15,8 +16,10 @@ import uk.ac.ebi.biosamples.service.GeoLocationDataHelper;
 import uk.ac.ebi.biosamples.service.OLSDataRetriever;
 import uk.ac.ebi.biosamples.service.Ga4ghSampleToPhenopacketConverter;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -25,12 +28,12 @@ import java.nio.file.Paths;
  */
 
 public class Ga4ghSampleToPhenopacketExporterTest {
-    final String biosample1Path = "/Users/dilsatsalihov/Desktop/gsoc/biosamples-v4/models/ga4gh/src/test/java/uk/ac/ebi/biosamples/model/phenopackets_test_cases/test1/biosample1.json";
-    final String biosample2Path = "/Users/dilsatsalihov/Desktop/gsoc/biosamples-v4/models/ga4gh/src/test/java/uk/ac/ebi/biosamples/model/phenopackets_test_cases/test2/biosamples2.json";
-    final String biosample3Path = "/Users/dilsatsalihov/Desktop/gsoc/biosamples-v4/models/ga4gh/src/test/java/uk/ac/ebi/biosamples/model/phenopackets_test_cases/test3/biosample3.json";
-    final String phenopacket1Path = "/Users/dilsatsalihov/Desktop/gsoc/biosamples-v4/models/ga4gh/src/test/java/uk/ac/ebi/biosamples/model/phenopackets_test_cases/test1/phenopacket1.json";
-    final String phenopacket2Path = "/Users/dilsatsalihov/Desktop/gsoc/biosamples-v4/models/ga4gh/src/test/java/uk/ac/ebi/biosamples/model/phenopackets_test_cases/test2/phenopacket2.json";
-    final String phenopacket3Path = "/Users/dilsatsalihov/Desktop/gsoc/biosamples-v4/models/ga4gh/src/test/java/uk/ac/ebi/biosamples/model/phenopackets_test_cases/test3/phenopacket3.json";
+    final String biosample1Path = "/biosample1.json";
+    final String biosample2Path = "/biosamples2.json";
+    final String biosample3Path = "/biosample3.json";
+    final String phenopacket1Path = "/phenopacket1.json";
+    final String phenopacket2Path = "/phenopacket2.json";
+    final String phenopacket3Path = "/phenopacket3.json";
 
     public SampleToGa4ghSampleConverter SampleToGa4ghSampleConverter;
 
@@ -47,10 +50,10 @@ public class Ga4ghSampleToPhenopacketExporterTest {
     public void exportation_test1() throws IOException, JSONException {
 
         ObjectMapper mapper = new ObjectMapper();
-        Sample sample = mapper.readValue(new File(biosample1Path), Sample.class);
+        Sample sample = mapper.readValue(getJsonString(biosample1Path), Sample.class);
         Ga4ghSample ga4ghSample = SampleToGa4ghSampleConverter.convert(sample);
         String actualJson = biosampleToPhenopacketExporter.getJsonFormattedPhenopacket(ga4ghSample);
-        String expectedJson = new String(Files.readAllBytes(Paths.get(phenopacket1Path)));
+        String expectedJson = getJsonString(phenopacket1Path);
         JSONAssert.assertEquals(expectedJson, actualJson, new CustomComparator(JSONCompareMode.LENIENT,
                 new Customization("metaData.created", (o1, o2) -> true)));
     }
@@ -58,10 +61,10 @@ public class Ga4ghSampleToPhenopacketExporterTest {
     @Test
     public void exportation_test2() throws IOException, JSONException {
         ObjectMapper mapper = new ObjectMapper();
-        Sample sample = mapper.readValue(new File(biosample2Path), Sample.class);
+        Sample sample = mapper.readValue(getJsonString(biosample2Path), Sample.class);
         Ga4ghSample ga4ghSample = SampleToGa4ghSampleConverter.convert(sample);
         String actualJson = biosampleToPhenopacketExporter.getJsonFormattedPhenopacket(ga4ghSample);
-        String expectedJson = new String(Files.readAllBytes(Paths.get(phenopacket2Path)));
+        String expectedJson = getJsonString(phenopacket2Path);
         JSONAssert.assertEquals(expectedJson, actualJson, new CustomComparator(JSONCompareMode.LENIENT,
                 new Customization("metaData.created", (o1, o2) -> true)));
     }
@@ -69,13 +72,25 @@ public class Ga4ghSampleToPhenopacketExporterTest {
     @Test
     public void exportation_test3() throws IOException, JSONException {
         ObjectMapper mapper = new ObjectMapper();
-        Sample sample = mapper.readValue(new File(biosample3Path), Sample.class);
+        Sample sample = mapper.readValue(getJsonString(biosample3Path), Sample.class);
         Ga4ghSample ga4ghSample = SampleToGa4ghSampleConverter.convert(sample);
         String actualJson = biosampleToPhenopacketExporter.getJsonFormattedPhenopacket(ga4ghSample);
-        String expectedJson = new String(Files.readAllBytes(Paths.get(phenopacket3Path)));
+        String expectedJson = getJsonString(phenopacket3Path);
         JSONAssert.assertEquals(expectedJson, actualJson, new CustomComparator(JSONCompareMode.LENIENT,
                 new Customization("metaData.created", (o1, o2) -> true)));
 
     }
 
+
+    static String getJsonString(String path) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(new ClassPathResource(path).getInputStream()), 4096);
+        StringBuilder stringBuilder = new StringBuilder();
+        String line;
+        while ((line = br.readLine()) != null) {
+            stringBuilder.append(line).append('\n');
+        }
+        br.close();
+        String expectedJson = stringBuilder.toString();
+        return expectedJson;
+    }
 }

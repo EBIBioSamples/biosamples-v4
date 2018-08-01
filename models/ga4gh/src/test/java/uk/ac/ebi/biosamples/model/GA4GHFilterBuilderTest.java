@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.model.ga4gh_tests;
+package uk.ac.ebi.biosamples.model;
 
 import org.junit.Test;
 import uk.ac.ebi.biosamples.model.filter.Filter;
@@ -13,12 +13,12 @@ public class GA4GHFilterBuilderTest {
 
     private GA4GHFilterBuilder filterBuilder;
 
-    public GA4GHFilterBuilderTest(){
+    public GA4GHFilterBuilderTest() {
         filterBuilder = new GA4GHFilterBuilder();
     }
 
     @Test
-    public void filtersCompletedTest(){
+    public void filtersCompletedTest() {
         Collection<Filter> filters = filterBuilder.getFilters();
         FilterBuilder builder = FilterBuilder.create();
 
@@ -49,7 +49,6 @@ public class GA4GHFilterBuilderTest {
                 .withValue("Human")
                 .build();
         assertTrue(filters.contains(organismFilter5));
-
 
 
     }

@@ -1,7 +1,7 @@
 {
    "individuals":[
       {
-         "id":"SAMEA1534312-individual",
+         "id":"SAMEA182635-individual",
          "sex":{
 
          },
@@ -13,26 +13,20 @@
    ],
    "biosamples":[
       {
-         "id":"SAMEA1534312",
-         "name":"source GSM996317 1",
-         "description":"South Africa patient blood",
+         "id":"SAMEA182635",
+         "name":"source GSM498707 1",
+         "description":"A643MNP1",
          "phenotypes":[
             {
                "type":{
-                  "id":"UBERON:0000178",
-                  "label":"blood"
-               }
-            },
-            {
-               "type":{
-                  "id":"EFO:0000296",
-                  "label":"blood"
+                  "id":"EFO:0000361",
+                  "label":"obsolete_colon"
                }
             }
          ],
-         "created":"2012-09-30T23:00:00Z",
-         "updated":"2018-04-04T15:37:26.093Z",
-         "individualId":"SAMEA1534312-individual",
+         "created":"2010-12-01T00:00:00Z",
+         "updated":"2018-04-04T15:56:20.902Z",
+         "individualId":"SAMEA182635-individual",
          "taxonomy":{
             "id":"NCBITaxon:9606",
             "label":"Homo sapiens"
@@ -44,11 +38,11 @@
    ],
    "diseases":[
       {
-         "label":"PTB"
+         "label":"hyperplastic polyposis syndrome (HPPS)"
       }
    ],
    "metaData":{
-      "created":"2018-06-28T15:52:50.638Z",
+      "created":"2018-06-28T15:50:05.007Z",
       "createdBy":"Biosamples phenopacket exporter",
       "resources":[
          {
@@ -56,14 +50,7 @@
             "name":"NCBI organismal classification",
             "namespacePrefix":"NCBITAXON",
             "url":"http://purl.obolibrary.org/obo/ncbitaxon.owl",
-            "version":"2018-03-02"
-         },
-         {
-            "id":"uberon",
-            "name":"Uber-anatomy ontology",
-            "namespacePrefix":"UBERON",
-            "url":"http://purl.obolibrary.org/obo/uberon.owl",
-            "version":"2018-06-21"
+            "version":"2018-07-27"
          },
          {
             "id":"efo",

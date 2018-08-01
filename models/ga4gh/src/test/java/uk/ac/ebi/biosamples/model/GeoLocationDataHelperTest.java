@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.model.ga4gh_tests;
+package uk.ac.ebi.biosamples.model;
 
 import org.junit.Test;
 import uk.ac.ebi.biosamples.model.ga4gh.Location;
