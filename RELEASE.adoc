@@ -1,3 +1,64 @@
+= [.ebi-color]#Release notes#
+:toc: auto
+
+This pages contains links to release notes for BioSamples for version 4.0.0 and higher. This release represents a comprehensive overhaul and therefore previous release notes are no longer applicable.
+
+[[section]]
+4.1.1
+----
+
+* Expose the BioSchemas markup with enhanced context and Sample ontology code
+* SampleTab submission pipeline has been rewritten for better robustness
+* In the samples results page, the sample name and the sample accession are now linking to the single sample page
+* Fixed various broken hyperlinks on the home page and in documentation
+
+
+[[section]]
+4.1.0
+----
+
+### New features
+
+* GDPR:
+** SampleTab submissions enforce explicit acceptance of the terms of service and the privacy information
+** GDPR notices added throughout
+* SampleTab where targets of relationships are neither sample name nor sample accession are now rejected, providing user additional information on the problematic data
+* *Bioschema.org* entities are exported in BioSamples and available both in the UI - embedded in a script tag - and through the API
+
+### Bug fixes
+* Solved issues with wrong header’s hyperlinks
+* Solved issue with resolving relationship by name in SampleTab submissions
+* Solved issue with converting DatabaseURI to external references in SampleTab submissions
+* Improved special characters handling in SampleTab submissions
+
+
+[[section]]
+4.0.7
+-----
+
+This is a bugfix release that addresses the following issues:
+
+* GDPR notices
+* Update format of the Sitemap file
+
+[[section]]
+4.0.6
+-----
+
+This is a bugfix release that addresses the following issues:
+
+* Improves search handling of special characters in facets
+* Improves search handling of special characters in search terms
+* Fix issue with curation link URLs
+* Implemented DataCatalog, Dataset and DataRecord profiles on JSON+LD
+* Add ability to control which curation domains are applied to a sample
+* Updated and improved API documentation
+* Updated and improved SampleTab documentation
+* Fix links to XML and JSON serialisation in the UI
+* Fix bug in handling special characters in SampleTab submission
+* Add export pipeline
+* Add copy down pipeline
+
 [[section]]
 4.0.5
 -----
@@ -8,7 +69,7 @@ This is a bugfix release that addresses the following issues:
 * Improved search update throughput by using Solr transaction log  
 * Updated JSON+LD format to the latest version
 * Correctly accept XML sample groups and their related samples
-* Fix issue related to search query terms not being applied to legacy XML and legacy JSON endpoints
+* Fix issue related to search query terms not being applied to legacy XML and legacy JSON endpoints.
 * Fix incorrect HAL links on autocomplete endpoint
 * Replace SampleTab submitted relationships by name with accessions. As a consequence, they can now be consistently cross referenced by accession in user interface and API
 * Improved indexing of samples when they are rapidly updated or curated
@@ -60,17 +121,17 @@ This is a bugfix release that addresses the following issues:
 * Fix curation pipeline of numeric organism iri to "http://purl.obolibrary.org/obo/NCBITaxon_+taxId" when it should be "http://purl.obolibrary.org/obo/NCBITaxon_"+taxId e.g. http://purl.obolibrary.org/obo/NCBITaxon_9606
 * Allow CORS requests for legacy XML APIs.
 * Updated homepage project sample links to use a filter search rather than a text search.
- 
+
 [[section]]
 4.0.0
 -----
 
-Version 4.0.0 represents a re-architecture and re-engineering of the
+Version v4.0.0 represents a re-architecture and re-engineering of the
 BioSamples software stack. It is now based on the Java
 https://projects.spring.io/spring-boot[Spring-Boot] framework, utilising
 https://www.mongodb.com[MongoDB] for storage and
-https://lucene.apache.org/solr[Solr] for indexing and search. Version 4.0.0 
-follows modern web standards and conventions, while remaining
+https://lucene.apache.org/solr[Solr] for indexing and search. It tries
+to follow up-to-date web standards and conventions, while remaining
 backwards compatible. This will also give us a strong and stable
 foundation to build more features and improvements from, more reliably
 and more rapidly.
@@ -90,8 +151,7 @@ information, including the ability for 3rd party (re-)curation of
 samples. Please contact us if you would be interested in more
 information and/or to supply curation information.
 * Improved handling of non-alphanumeric characters in attribute types
-e.g. "geographic location (country and/or sea)". Previous versions 
-stripped these characters e.g. "geographic location country and or sea". 
+e.g. "geographic location (country and/or sea)"
 * Improved faceting allowing selection of multiple values within same
 facet, fixed re-use and re-distribution of search URLs. This will be
 expanded in future with additional facet types where appropriate.
@@ -116,7 +176,7 @@ Data content
 * Ontology terms Numeric tax IDs (e.g. 9606) and short ontology terms
 (e.g. PATO:0000384) are being replaced with full IRIs (e.g.
 http://purl.obolibrary.org/obo/NCBITaxon_9606 and http://purl.obolibrary.org/obo/PATO_0000384 )
-in many places and eventually everywhere.
+in many places, eventually everywhere.
 * Groups will continue to exist for backwards compatibility purposes.
 However, we are investigating future development to reduce or remove
 many of these in favour of alternatives such as filtering samples by
@@ -135,7 +195,7 @@ as the engine of application state (HATEOS) API] and therefore we
 recommend users do not use specific URLs but rather follow relationships
 between API endpoints, much like a user would use links between HTML
 pages. It is similar to the `/biosamples/api` JSON format, with a few
-critical differences to improve on various issues users have raised:
+critical differences:
 
 * added __release__ in full ISO 8601 format including time. The
 backwards-compatible __releaseDate__ exists but should be considered
@@ -164,13 +224,10 @@ XML `/biosamples/xml`
 ~~~~~~~~~~~~~~~~~~~~~
 
 We are maintaining this for backwards compatibility. Later in 2018 we
-will be consulting about future development of this API, with a view to
-removing it. This is in the context of the improved JSON `/biosamples` API 
-using content negotiation and several long-standing issues with limitations arising
-from the XML schema in use. We strongly recommend users switch to the 
-new JSON `/biosamples` API but nevertheless will be maintaining 
-`/biosamples/xml` for backwards compatibility, although please note the 
-following differences:
+will be consulting about future development of this API, particularly in
+the context of the improved JSON `/biosamples` API using content
+negotiation and several long-standing issues with limitations arising
+from the XML schema in use.
 
 * XML element *TermSourceREF* element *Name* and element *URI* are
 removed.
@@ -215,4 +272,3 @@ This release has been made possible with the support of our funders:
 * IMI - EBiSC
 * ELIXIR – Meta Data Implementation Study 
 * WT-GA4GH
-

@@ -1,5 +1,6 @@
 package uk.ac.ebi.biosamples.model;
 
+
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -393,6 +394,7 @@ public class Sample implements Comparable<Sample> {
 
         return sample;
     }
+
 
 	public static class Builder {
 

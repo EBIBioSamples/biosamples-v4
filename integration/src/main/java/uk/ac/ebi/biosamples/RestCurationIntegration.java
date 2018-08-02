@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.annotation.Order;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.PagedResources;
@@ -23,6 +24,8 @@ import java.time.Instant;
 import java.util.*;
 
 @Component
+@Order(6)
+//@Profile({ "default", "rest" })
 public class RestCurationIntegration extends AbstractIntegration {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
@@ -263,6 +266,10 @@ public class RestCurationIntegration extends AbstractIntegration {
 
 		SortedSet<ExternalReference> externalReferences = new TreeSet<>();
 
-		return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences, null, null, null);
+//		return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences, null, null, null);
+        return new Sample.Builder(name, accession).withDomain(domain)
+				.withRelease(release).withUpdate(update)
+				.withAttributes(attributes).withRelationships(relationships).withExternalReferences(externalReferences)
+				.build();
 	}
 }

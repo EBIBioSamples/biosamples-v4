@@ -1,16 +1,10 @@
 package uk.ac.ebi.biosamples.legacy.json.domain;
 
+import uk.ac.ebi.biosamples.model.*;
+
 import java.time.Instant;
 import java.util.SortedSet;
 import java.util.TreeSet;
-
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Contact;
-import uk.ac.ebi.biosamples.model.ExternalReference;
-import uk.ac.ebi.biosamples.model.Organization;
-import uk.ac.ebi.biosamples.model.Publication;
-import uk.ac.ebi.biosamples.model.Relationship;
-import uk.ac.ebi.biosamples.model.Sample;
 
 public class TestSample {
 
@@ -79,17 +73,11 @@ public class TestSample {
     }
 
     public Sample build() {
-        return Sample.build(this.name,
-                this.accession,
-                this.testDomain,
-                this.releaseDate,
-                Instant.now(),
-                this.attributes,
-                this.relationships,
-                this.externalReferences,
-                this.organizations,
-                this.contacts,
-                this.publications);
+        return new Sample.Builder(this.name, this.accession)
+                .withDomain(testDomain).withRelease(this.releaseDate).withUpdate(Instant.now())
+                .withAttributes(attributes).withRelationships(relationships).withExternalReferences(externalReferences)
+                .withOrganizations(organizations).withContacts(contacts).withPublications(publications)
+                .build();
     }
 
 }

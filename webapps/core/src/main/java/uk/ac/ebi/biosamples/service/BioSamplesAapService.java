@@ -117,10 +117,11 @@ public class BioSamplesAapService {
 		if (sample.getDomain() == null || sample.getDomain().length() == 0) {
 			//if the sample doesn't have a domain, and the user has one domain, then they must be submitting to that domain
 			if (usersDomains.size() == 1) {
-				sample = Sample.build(sample.getName(), sample.getAccession(), 
-						usersDomains.iterator().next(), sample.getRelease(), sample.getUpdate(), 
-						sample.getAttributes(), sample.getRelationships(), sample.getExternalReferences(), 
-						sample.getOrganizations(), sample.getContacts(), sample.getPublications());
+//				sample = Sample.build(sample.getName(), sample.getAccession(),
+//						usersDomains.iterator().next(), sample.getRelease(), sample.getUpdate(),
+//						sample.getAttributes(), sample.getRelationships(), sample.getExternalReferences(),
+//						sample.getOrganizations(), sample.getContacts(), sample.getPublications());
+                sample = Sample.Builder.fromSample(sample).withDomain(usersDomains.iterator().next()).build();
 			} else {			
 				//if the sample doesn't have a domain, and we can't guess one, then end
 				throw new DomainMissingException();
