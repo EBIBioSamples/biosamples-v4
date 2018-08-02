@@ -52,11 +52,6 @@ public class SolrSampleAccessionField extends SolrSampleField {
     }
 
     @Override
-    public SolrFieldType getSolrFieldType() {
-        return SolrFieldType.ACCESSION;
-    }
-
-    @Override
     public FacetFetchStrategy getFacetCollectionStrategy() {
         return null;
     }

@@ -65,11 +65,6 @@ public class SolrSampleInverseRelationField extends SolrSampleField {
     }
 
     @Override
-    public SolrFieldType getSolrFieldType() {
-        return SolrFieldType.INVERSE_RELATION;
-    }
-
-    @Override
     public FacetFetchStrategy getFacetCollectionStrategy() {
         return new RegularFacetFetchStrategy();
     }

@@ -57,11 +57,6 @@ public class SolrSampleDateField extends SolrSampleField{
     }
 
     @Override
-    public SolrFieldType getSolrFieldType() {
-        return SolrFieldType.DATE;
-    }
-
-    @Override
     public FacetFetchStrategy getFacetCollectionStrategy() {
         throw new RuntimeException("Method not yet implemented");
     }

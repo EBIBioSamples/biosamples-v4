@@ -1,5 +1,7 @@
 package uk.ac.ebi.biosamples.model.filter;
 
+import uk.ac.ebi.biosamples.model.facet.FacetType;
+
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -27,6 +29,11 @@ public class DateRangeFilter implements Filter {
     @Override
     public String getLabel() {
         return this.label;
+    }
+
+    @Override
+    public FacetType getAssociatedFacetType() {
+        return FacetType.NO_TYPE;
     }
 
     @Override

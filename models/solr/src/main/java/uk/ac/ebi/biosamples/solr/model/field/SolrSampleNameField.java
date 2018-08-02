@@ -53,11 +53,6 @@ public class SolrSampleNameField extends SolrSampleField {
     }
 
     @Override
-    public SolrFieldType getSolrFieldType() {
-        return SolrFieldType.NAME;
-    }
-
-    @Override
     public FacetFetchStrategy getFacetCollectionStrategy() {
         return null;
     }

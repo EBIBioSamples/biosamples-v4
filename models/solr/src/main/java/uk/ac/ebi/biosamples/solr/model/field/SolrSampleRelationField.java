@@ -66,11 +66,6 @@ public class SolrSampleRelationField extends SolrSampleField{
     }
 
     @Override
-    public SolrFieldType getSolrFieldType() {
-        return SolrFieldType.RELATION;
-    }
-
-    @Override
     public FacetFetchStrategy getFacetCollectionStrategy() {
         return new RegularFacetFetchStrategy();
     }

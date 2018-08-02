@@ -1,5 +1,7 @@
 package uk.ac.ebi.biosamples.model.filter;
 
+import uk.ac.ebi.biosamples.model.facet.FacetType;
+
 import java.util.Objects;
 import java.util.Optional;
 
@@ -29,6 +31,11 @@ public class DomainFilter implements Filter{
     @Override
     public String getSerialization() {
         return this.getType().getSerialization() + ":" + this.domain;
+    }
+
+    @Override
+    public FacetType getAssociatedFacetType() {
+        return FacetType.NO_TYPE;
     }
 
     @Override

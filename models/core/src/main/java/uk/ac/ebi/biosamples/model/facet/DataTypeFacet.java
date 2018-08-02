@@ -6,6 +6,9 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.springframework.hateoas.core.Relation;
 import uk.ac.ebi.biosamples.model.facet.content.FacetContent;
 import uk.ac.ebi.biosamples.model.facet.content.LabelCountListContent;
+import uk.ac.ebi.biosamples.model.filter.FilterType;
+
+import java.util.Optional;
 
 @Relation(collectionRelation = "facets")
 @JsonDeserialize(builder =  DataTypeFacet.Builder.class)
@@ -24,6 +27,11 @@ public class DataTypeFacet implements Facet {
     @Override
     public FacetType getType() {
         return FacetType.DATA_TYPE;
+    }
+
+    @Override
+    public Optional<FilterType> getAssociatedFilterType() {
+        return Optional.of(FilterType.DATA_TYPE_FILTER);
     }
 
     @Override

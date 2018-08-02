@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import com.google.common.io.BaseEncoding;
 
 import uk.ac.ebi.biosamples.model.filter.Filter;
-import uk.ac.ebi.biosamples.solr.model.field.SolrFieldType;
 import uk.ac.ebi.biosamples.solr.model.field.SolrSampleField;
 
 /**
@@ -56,21 +55,6 @@ public class SolrFieldService {
             throw new RuntimeException(e);
         }
         return decodedField;
-    }
-
-    /**
-     * Provide the encoded name of the field using a specific facet type
-     * @param field the regular field name
-     * @param solrFieldType the facet type
-     * @return the encoded field with specific type suffix
-     */
-    public static String encodedField(String field, SolrFieldType solrFieldType) {
-
-        // Dates fields (update and release) are not encoded at the moment
-        if (solrFieldType.isEncoded()) {
-            return encodeFieldName(field) + solrFieldType.getSuffix();
-        }
-        return field + solrFieldType.getSuffix();
     }
 
     /**

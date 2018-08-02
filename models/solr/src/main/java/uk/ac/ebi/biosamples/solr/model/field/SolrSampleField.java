@@ -102,8 +102,6 @@ public abstract class SolrSampleField implements FilterCriteriaBuilder {
     }
 
 
-    public abstract SolrFieldType getSolrFieldType();
-
     /**
      * For each field a specific strategy to get the facet content need to be implemented
      * Facet content retrieve will be delegated to the facet fetch strategy

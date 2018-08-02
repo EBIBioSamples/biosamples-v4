@@ -1,5 +1,6 @@
 package uk.ac.ebi.biosamples.model.filter;
 
+import uk.ac.ebi.biosamples.model.facet.FacetType;
 import uk.ac.ebi.biosamples.model.structured.DataType;
 
 import java.util.Objects;
@@ -23,7 +24,13 @@ public class DataTypeFilter implements Filter {
     }
 
     @Override
+    public FacetType getAssociatedFacetType() {
+        return FacetType.DATA_TYPE;
+    }
+
+    @Override
     public String getLabel() {
+        //TODO is this the solr prefix
         return "structdatatype";
     }
 

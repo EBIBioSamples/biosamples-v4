@@ -18,23 +18,19 @@ import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.filter.AccessionFilter;
 import uk.ac.ebi.biosamples.model.filter.Filter;
-import uk.ac.ebi.biosamples.service.FacetToFilterConverter;
-import uk.ac.ebi.biosamples.solr.model.field.SolrFieldType;
 import uk.ac.ebi.biosamples.solr.model.field.SolrSampleField;
 
 @Service
 public class SolrFilterService {
 
     private final SolrFieldService solrFieldService;
-    private final FacetToFilterConverter facetFilterConverter;
     private final BioSamplesProperties bioSamplesProperties;
 
     private final DateTimeFormatter releaseFilterFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'23:59:59'Z'");
     
-    public SolrFilterService(SolrFieldService solrFieldService, FacetToFilterConverter facetFilterConverter, 
+    public SolrFilterService(SolrFieldService solrFieldService,
     		BioSamplesProperties bioSamplesProperties) {
         this.solrFieldService = solrFieldService;
-        this.facetFilterConverter = facetFilterConverter;
         this.bioSamplesProperties = bioSamplesProperties;
     }
 

@@ -19,7 +19,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.filter.Filter;
-import uk.ac.ebi.biosamples.service.FacetToFilterConverter;
 import uk.ac.ebi.biosamples.service.FilterBuilder;
 import uk.ac.ebi.biosamples.solr.model.field.*;
 import uk.ac.ebi.biosamples.solr.service.SolrFieldService;
@@ -37,7 +36,7 @@ import static org.junit.Assert.*;
 @SpringBootTest(classes = {SolrSampleAccessionField.class, SolrSampleAttributeValueField.class, SolrSampleDataTypeField.class,
 SolrSampleDateField.class, SolrSampleDomainField.class, SolrSampleExternalReferenceDataField.class,
 SolrSampleInverseRelationField.class, SolrSampleNameField.class, SolrSampleRelationField.class,
-SolrFilterService.class, SolrFieldService.class, FacetToFilterConverter.class, BioSamplesProperties.class})
+SolrFilterService.class, SolrFieldService.class, BioSamplesProperties.class})
 public class SolrServiceTests {
 
 

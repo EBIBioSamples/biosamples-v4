@@ -64,11 +64,6 @@ public class SolrSampleAttributeValueField extends SolrSampleField {
     }
 
     @Override
-    public SolrFieldType getSolrFieldType() {
-        return SolrFieldType.ATTRIBUTE;
-    }
-
-    @Override
     public Criteria getFilterCriteria(Filter filter) {
 
 

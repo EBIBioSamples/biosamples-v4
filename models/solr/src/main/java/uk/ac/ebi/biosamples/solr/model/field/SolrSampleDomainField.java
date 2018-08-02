@@ -52,11 +52,6 @@ public class SolrSampleDomainField extends SolrSampleField {
     }
 
     @Override
-    public SolrFieldType getSolrFieldType() {
-        return SolrFieldType.DOMAIN;
-    }
-
-    @Override
     public FacetFetchStrategy getFacetCollectionStrategy() {
         return null;
     }

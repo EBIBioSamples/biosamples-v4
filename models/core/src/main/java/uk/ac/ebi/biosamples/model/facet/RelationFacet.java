@@ -8,6 +8,9 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import uk.ac.ebi.biosamples.model.facet.content.FacetContent;
 import uk.ac.ebi.biosamples.model.facet.content.LabelCountListContent;
+import uk.ac.ebi.biosamples.model.filter.FilterType;
+
+import java.util.Optional;
 
 @Relation(collectionRelation = "facets")
 @JsonDeserialize(builder = RelationFacet.Builder.class)
@@ -27,6 +30,11 @@ public class RelationFacet implements Facet {
     @Override
     public FacetType getType() {
         return FacetType.RELATION_FACET;
+    }
+
+    @Override
+    public Optional<FilterType> getAssociatedFilterType() {
+        return Optional.of(FilterType.RELATION_FILER);
     }
 
     @Override

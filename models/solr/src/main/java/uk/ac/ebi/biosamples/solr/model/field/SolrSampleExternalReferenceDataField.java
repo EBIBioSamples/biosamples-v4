@@ -65,11 +65,6 @@ public class SolrSampleExternalReferenceDataField extends SolrSampleField{
     }
 
     @Override
-    public SolrFieldType getSolrFieldType() {
-        return SolrFieldType.EXTERNAL_REFERENCE_DATA;
-    }
-
-    @Override
     public FacetFetchStrategy getFacetCollectionStrategy() {
         return new RegularFacetFetchStrategy();
     }
