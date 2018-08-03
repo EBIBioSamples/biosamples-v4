@@ -10,12 +10,12 @@ import uk.ac.ebi.biosamples.BioSamplesProperties;
 @Configuration
 @ComponentScan
 public class TestApplication {
-
+/*
     @Bean
     public RestTemplate restTemplate() {
         return new RestTemplate();
     }
-
+*/
     @Bean
     public BioSamplesProperties bioSamplesProperties() {
         return new BioSamplesProperties();
