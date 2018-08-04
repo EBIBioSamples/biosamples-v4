@@ -200,7 +200,7 @@ public class SampleToGa4ghSampleConverter implements Converter<Sample, Ga4ghSamp
     private void mapBioCharacteristics(List<Attribute> characteristics) {
         SortedSet<Ga4ghBiocharacteristics> biocharacteristics = new TreeSet<>();
 
-        characteristics.parallelStream().forEach(attribute -> {
+        characteristics.forEach(attribute -> {
             Ga4ghBiocharacteristics biocharacteristic = new Ga4ghBiocharacteristics();
             biocharacteristic.setDescription(attribute.getType());
             biocharacteristic.setScope(attribute.getUnit());
