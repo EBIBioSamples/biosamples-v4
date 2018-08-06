@@ -26,6 +26,7 @@ public class SchemaValidatorService {
 
     Logger log = LoggerFactory.getLogger(getClass());
 
+    private final String noErrorBody = "[]";
     private final RestTemplate restTemplate;
     private final BioSamplesProperties bioSamplesProperties;
     private final ObjectMapper objectMapper;
@@ -39,15 +40,17 @@ public class SchemaValidatorService {
     }
 
     public ResponseEntity<String> validate(String objectToValidate) {
-        MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
-        headers.add("accept", MediaType.APPLICATION_JSON_VALUE);
-
-        RequestEntity<String> request = RequestEntity
-            .post(this.bioSamplesProperties.getBiosamplesSchemaValidatorServiceUri())
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(objectToValidate);
-
-        return restTemplate.exchange(request, String.class);
+        //TODO reanable this later
+//        MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+//        headers.add("accept", MediaType.APPLICATION_JSON_VALUE);
+//
+//        RequestEntity<String> request = RequestEntity
+//            .post(this.bioSamplesProperties.getBiosamplesSchemaValidatorServiceUri())
+//            .contentType(MediaType.APPLICATION_JSON)
+//            .body(objectToValidate);
+//
+//        return restTemplate.exchange(request, String.class);
+        return ResponseEntity.ok(noErrorBody);
 
     }
 

@@ -302,6 +302,7 @@ public class SamplesRestController {
 		}
 
 		if (!sample.getData().isEmpty()) {
+			//TODO reanable the validation once the AMR schema is defined and we have the actual validator in place
 			Optional<ResponseEntity<String>> optionalInvalidResponse = sample.getData()
 					.parallelStream()
 					.map(abstractData -> schemaValidatorService.validate(abstractData.getStructuredData(), abstractData.getSchema()))
