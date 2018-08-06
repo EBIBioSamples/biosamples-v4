@@ -32,7 +32,7 @@ public class ExternalReferenceDataFilter implements Filter{
 
     @Override
     public FacetType getAssociatedFacetType() {
-        return FacetType.NO_TYPE;
+        return FacetType.EXTERNAL_REFERENCE_DATA_FACET;
     }
 
     @Override
