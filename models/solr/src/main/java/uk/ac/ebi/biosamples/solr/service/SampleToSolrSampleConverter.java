@@ -39,7 +39,6 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 		Map<String, List<String>> outgoingRelationships = new HashMap<>();
 		Map<String, List<String>> incomingRelationships = new HashMap<>();
 		Map<String, List<String>> externalReferencesData = new HashMap<>();
-		List<String> structuredDataTypes = new ArrayList<>();
 		List<String> keywords = new ArrayList<>();
 
 		if (sample.getCharacteristics() != null && sample.getCharacteristics().size() > 0) {
@@ -88,9 +87,17 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 			}
 		}
 
-		// Extract all the available data types and put them in an array
+		//  Extract the abstract data type and add them as characteristics in solr
 		sample.getData().parallelStream()
-				.forEach(abstractData -> structuredDataTypes.add(abstractData.getDataType().name()));
+				.forEach(abstractData -> {
+					String key = SolrFieldService.encodeFieldName("structured data");
+
+					if (!attributeValues.containsKey(key)) {
+						attributeValues.put(key, new ArrayList<>());
+					}
+
+					attributeValues.get(key).add(abstractData.getDataType().name());
+				});
 
 
 		//turn external reference into additional attributes for facet & filter
@@ -165,7 +172,7 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 				null, null,
 				attributeValues, attributeIris, attributeUnits,
 				outgoingRelationships, incomingRelationships,
-				externalReferencesData, structuredDataTypes, keywords);
+				externalReferencesData, keywords);
 	}
 	
 }

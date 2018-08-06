@@ -94,12 +94,6 @@ public class SolrSample {
 
 
 	/**
-	 * Field to store the structured data type available in the sample
-	 */
-	@Indexed(name="structdatatype_ss", copyTo="facetfields_ss")
-    protected List<String> structuredDataTypes;
-
-	/**
 	 * This field is required to get a list of attribute to use for faceting. * It includes attributes and relationships of the sample
 	 * Since faceting does not require it to be stored, it wont be to save space.
 	 * 
@@ -185,10 +179,6 @@ public class SolrSample {
 		return outgoingRelationships;
 	}
 
-	public List<String> getStructuredDataTypes() {
-		return structuredDataTypes;
-	}
-
 	public List<String> getAutocompletes() {
 		return autocompleteTerms;
 	}
@@ -217,8 +207,6 @@ public class SolrSample {
     	sb.append(",");
     	sb.append(attributeUnits);
     	sb.append(",");
-    	sb.append(structuredDataTypes);
-    	sb.append(",");
     	sb.append(outgoingRelationships);
     	sb.append(",");
     	sb.append(incomingRelationships);
@@ -242,7 +230,6 @@ public class SolrSample {
 		    Map<String, List<String>> outgoingRelationships, 
 		    Map<String, List<String>> incomingRelationships,
 			Map<String, List<String>> externalReferencesData,
-			List<String> structuredDataTypes,
 			List<String> keywords) {
 
 		//TODO validate maps
@@ -270,7 +257,6 @@ public class SolrSample {
 		sample.incomingRelationships = incomingRelationships;
 		sample.outgoingRelationships = outgoingRelationships;
 		sample.externalReferencesData = externalReferencesData;
-		sample.structuredDataTypes = structuredDataTypes;
 
 		
 
@@ -299,13 +285,7 @@ public class SolrSample {
 			}
 		}
 
-		//FIXME not rubust mechanism
-		if (structuredDataTypes != null && structuredDataTypes.size() > 0) {
-			facetFieldSet.add("structdatatype_ss");
-		}
-
 		sample.facetFields = new ArrayList<>(facetFieldSet);
-
 
 		//copy into the other fields
 		//this should be done in a copyfield but that doesn't work for some reason?

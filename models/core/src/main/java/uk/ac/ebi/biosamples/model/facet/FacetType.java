@@ -9,7 +9,6 @@ public enum FacetType {
     INVERSE_RELATION_FACET("inverse relation", InverseRelationFacet.Builder.class),
     RELATION_FACET("relation", RelationFacet.Builder.class),
     EXTERNAL_REFERENCE_DATA_FACET("external reference data", ExternalReferenceDataFacet.Builder.class),
-    DATA_TYPE("contains data", DataTypeFacet.Builder.class),
     NO_TYPE("", null);
 
 

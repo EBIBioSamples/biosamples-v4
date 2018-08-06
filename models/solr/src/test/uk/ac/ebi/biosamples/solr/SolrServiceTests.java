@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 import static org.junit.Assert.*;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {SolrSampleAccessionField.class, SolrSampleAttributeValueField.class, SolrSampleDataTypeField.class,
+@SpringBootTest(classes = {SolrSampleAccessionField.class, SolrSampleAttributeValueField.class,
 SolrSampleDateField.class, SolrSampleDomainField.class, SolrSampleExternalReferenceDataField.class,
 SolrSampleInverseRelationField.class, SolrSampleNameField.class, SolrSampleRelationField.class,
 SolrFilterService.class, SolrFieldService.class, BioSamplesProperties.class})
@@ -66,14 +66,9 @@ public class SolrServiceTests {
     @Test
     public void given_fields_with_similar_suffix_return_the_correct_type() {
 
-        SolrSampleField dataTypeField = fieldService.decodeField("structdatatype_ss");
         SolrSampleField attributeField = fieldService.decodeField("MRSXGY3SNFYHI2LPNY_______av_ss");
         SolrSampleField nameField = fieldService.decodeField("name_s");
         SolrSampleField domainField = fieldService.decodeField("domain_s");
-
-        assertTrue(dataTypeField instanceof SolrSampleDataTypeField);
-        assertEquals(dataTypeField.getReadableLabel(), "structdatatype");
-        assertEquals(dataTypeField.getSolrLabel(), "structdatatype_ss");
 
         assertTrue(attributeField instanceof SolrSampleAttributeValueField);
         assertTrue(nameField instanceof SolrSampleNameField);
