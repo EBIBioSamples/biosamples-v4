@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
@@ -29,12 +29,12 @@ public class OlsProcessor {
 
     private Logger log = LoggerFactory.getLogger(getClass());
 
-    final RestTemplate restTemplate;
+    private final RestTemplate restTemplate;
 
     private final BioSamplesProperties bioSamplesProperties;
 
-    public OlsProcessor(RestTemplateBuilder restTemplateBuilder, BioSamplesProperties bioSamplesProperties) {
-        this.restTemplate = restTemplateBuilder.build();
+    public OlsProcessor(RestTemplate restTemplate, BioSamplesProperties bioSamplesProperties) {
+        this.restTemplate = restTemplate;
         this.bioSamplesProperties = bioSamplesProperties;
     }
 

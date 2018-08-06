@@ -11,6 +11,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.client.MockRestServiceServer;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -36,9 +37,12 @@ public class OlsProcessorTest {
     @Autowired
     private OlsProcessor olsProcessor;
 
+    @Autowired
+    private RestTemplate restTemplate;
+
     @Before
     public void setUp() {
-        mockServer = MockRestServiceServer.createServer(olsProcessor.restTemplate);
+        mockServer = MockRestServiceServer.createServer(restTemplate);
     }
 
     private Map<String, String> expectedValues = ImmutableMap.of(
