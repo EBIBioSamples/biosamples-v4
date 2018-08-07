@@ -22,7 +22,7 @@ Link naming follows a consistent pattern.
 * Individual resources are named with the type name, e.g. `sample`
 * Collection resources are named with the plural of the type name in camel case, e.g. `samples`, `curations`, `curationLinks`
 
-For a reference of links available in BioSamples check the corresponding <<ref_api_links.adoc#, Links section>>
+For a reference of links available in BioSamples check the corresponding link:../api/links[Links section]
 
 === Content negotiation for data representation
 
