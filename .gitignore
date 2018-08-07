@@ -88,3 +88,4 @@ fabric.properties
 .vscode
 .nyc_output
 **/coverage
+create_new_facets_and_filters.md
