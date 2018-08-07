@@ -2,6 +2,8 @@ package uk.ac.ebi.biosamples.curation;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.hateoas.MediaTypes;
@@ -11,14 +13,28 @@ import org.springframework.hateoas.mvc.TypeConstrainedMappingJackson2HttpMessage
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
+import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.client.service.AapClientService;
 import uk.ac.ebi.biosamples.ols.OlsProcessor;
 import uk.ac.ebi.biosamples.service.CurationApplicationService;
+import uk.ac.ebi.biosamples.service.SampleValidator;
 
-import java.net.URISyntaxException;
 import java.util.Arrays;
 
 @Configuration
 public class TestApplication {
+
+    @Autowired
+    private BioSamplesProperties bioSamplesProperties;
+
+    @Autowired
+    private RestTemplateBuilder restTemplateBuilder;
+
+    @Autowired
+    private SampleValidator sampleValidator;
+
+    @Autowired
+    private AapClientService aapClientService;
 
     @Bean
     public RestTemplate restTemplate() {
@@ -36,6 +52,15 @@ public class TestApplication {
         return mapper;
     }
 
+    @Bean SampleValidator sampleValidator() {
+        return null;
+    }
+
+    @Bean AapClientService aapClientService() {
+        return null;
+    }
+
+
     @Bean
     public BioSamplesProperties bioSamplesProperties() {
         return new BioSamplesProperties();
@@ -51,9 +76,9 @@ public class TestApplication {
         return new CurationApplicationService();
     }
 
-
     @Bean
-    public MockBioSamplesClient mockBioSamplesClient() throws URISyntaxException {
-        return new MockBioSamplesClient(bioSamplesProperties());
+    public BioSamplesClient bioSamplesClient() {
+        return new MockBioSamplesClient(bioSamplesProperties.getBiosamplesClientUri(), restTemplateBuilder,
+                sampleValidator, aapClientService, bioSamplesProperties, true);
     }
 }

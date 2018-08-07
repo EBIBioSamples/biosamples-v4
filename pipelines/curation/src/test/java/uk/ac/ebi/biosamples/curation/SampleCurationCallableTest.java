@@ -32,6 +32,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = TestApplication.class)
+
 @AutoConfigureWebClient
 public class SampleCurationCallableTest {
 
