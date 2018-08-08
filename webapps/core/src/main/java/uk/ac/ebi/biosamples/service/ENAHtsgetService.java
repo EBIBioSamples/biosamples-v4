@@ -7,6 +7,7 @@ import com.jsunsoft.http.HttpRequestBuilder;
 import com.jsunsoft.http.ResponseDeserializer;
 import com.jsunsoft.http.ResponseHandler;
 import org.apache.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.ENAHtsgetTicket;
 
@@ -17,7 +18,8 @@ import java.util.Optional;
 @Service
 public class ENAHtsgetService {
 
-    private final String host = "http://localhost:8080/ga4gh/sample"; //TODO change host to real
+    private final String host = "http://localhost:8086/ga4gh/sample"; //TODO change host to real
+
 
     public Optional<ENAHtsgetTicket> getTicket(String accession, String format) {
 
