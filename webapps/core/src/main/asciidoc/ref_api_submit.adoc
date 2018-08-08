@@ -56,7 +56,7 @@ include::{snippets}/post-sample/http-request.adoc[]
 include::{snippets}/post-sample/http-response.adoc[]
 
 === Links
-For all the links available in BioSamples check the <<ref_api_links.adoc#, Links reference>>
+For all the links available in BioSamples check the link:../api/links[Links Reference]
 
 == Update sample
 `PUT` a sample to BioSamples
@@ -70,7 +70,7 @@ include::{snippets}/put-sample/http-request.adoc[]
 include::{snippets}/put-sample/http-response.adoc[]
 
 === Links
-For all the links available in BioSamples check the <<ref_api_links.adoc#, Links reference>>
+For all the links available in BioSamples check the link:../api/links[Links Reference]
 
 
 == Submit curation object
@@ -83,5 +83,5 @@ include::{snippets}/post-curation/http-request.adoc[]
 include::{snippets}/post-curation/http-response.adoc[]
 
 === Links
-For all the links available in BioSamples check the <<ref_api_links.adoc#, Links reference>>
+For all the links available in BioSamples check the link:../api/links[Links Reference]
 
