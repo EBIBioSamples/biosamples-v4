@@ -20,9 +20,7 @@ import uk.ac.ebi.biosamples.controller.SampleRestController;
 
 
 /**
- * Integraion testing of phenopackets exportatioon and testing of controller. You need to have access to
- * https://www.ebi.ac.uk/ols/api for test performing. Also you should get token from https://explore.aap.tsi.ebi.ac.uk/auth and
- * write it in token attribute. For more detailed description check https://github.com/EBIBioSamples/biosamples-v4/tree/g-summer-code.
+ * Integraion testing of phenopackets exportatioon and testing of controller.
  */
 
 @RunWith(SpringRunner.class)
@@ -33,16 +31,10 @@ import uk.ac.ebi.biosamples.controller.SampleRestController;
 
 public class ExportationControllerIntegrationTest {
 
-    final String path = "/sample.json";
-    final String phenopacketPath = "/phenopacket.json";
-
     @Autowired
     private SampleRestController controller;
     @Autowired
     MockMvc mvc;
-
-    @Autowired
-    MockMvc mvc1;
 
     @Test
     public void contexLoads() {
