@@ -39,7 +39,6 @@ public class SampleRestController {
     private final SampleResourceAssembler sampleResourceAssembler;
 
     private final EntityLinks entityLinks;
-    private Ga4ghSampleToPhenopacketConverter phenopacketExporter;
 
 
     private Logger log = LoggerFactory.getLogger(getClass());
@@ -48,13 +47,11 @@ public class SampleRestController {
                                 BioSamplesAapService bioSamplesAapService,
                                 SampleManipulationService sampleManipulationService,
                                 SampleResourceAssembler sampleResourceAssembler,
-                                Ga4ghSampleToPhenopacketConverter phenopacketExporter,
                                 EntityLinks entityLinks) {
         this.sampleService = sampleService;
         this.bioSamplesAapService = bioSamplesAapService;
         this.sampleManipulationService = sampleManipulationService;
         this.sampleResourceAssembler = sampleResourceAssembler;
-        this.phenopacketExporter = phenopacketExporter;
         this.entityLinks = entityLinks;
     }
 
@@ -93,42 +90,7 @@ public class SampleRestController {
         //TODO cache control
         return sampleResource;
     }
-    @RequestMapping(produces = "application/phenopacket+json")
-    @PreAuthorize("isAuthenticated()")
-    @CrossOrigin(methods = RequestMethod.GET)
-    @GetMapping()
-    public String getSamplePhenopacket(@PathVariable String accession,
-                                       @RequestParam(name = "legacydetails", required = false) String legacydetails,
-                                       @RequestParam(name = "curationdomain", required = false) String[] curationdomain) {
-        log.trace("starting call");
 
-        // decode percent-encoding from curation domains
-        Optional<List<String>> decodedCurationDomains = LinkUtils.decodeTextsToArray(curationdomain);
-        Optional<Boolean> decodedLegacyDetails;
-        if (legacydetails != null && "true".equals(legacydetails)) {
-            decodedLegacyDetails = Optional.ofNullable(Boolean.TRUE);
-        } else {
-            decodedLegacyDetails = Optional.empty();
-        }
-
-        // convert it into the format to return
-        Optional<Sample> sample = sampleService.fetch(accession, decodedCurationDomains);
-        if (!sample.isPresent()) {
-            throw new SampleNotFoundException();
-        }
-        bioSamplesAapService.checkAccessible(sample.get());
-
-        // TODO If user is not Read super user, reduce the fields to show
-        if (decodedLegacyDetails.isPresent() && decodedLegacyDetails.get()) {
-            sample = Optional.of(sampleManipulationService.removeLegacyFields(sample.get()));
-        }
-
-        if (!sample.isPresent()) {
-            throw new SampleNotFoundException();
-        }
-
-        return phenopacketExporter.getJsonFormattedPhenopacketFromSample(sample.get());
-    }
 
     @PreAuthorize("isAuthenticated()")
     @CrossOrigin(methods = RequestMethod.GET)
