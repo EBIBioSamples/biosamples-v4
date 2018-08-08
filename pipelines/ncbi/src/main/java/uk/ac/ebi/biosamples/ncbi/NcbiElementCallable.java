@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.utils.TaxonomyService;
 
 public class NcbiElementCallable implements Callable<Void> {
 	
@@ -20,10 +19,10 @@ public class NcbiElementCallable implements Callable<Void> {
 	
 	private final BioSamplesClient bioSamplesClient;
 
-	private final SampleConversionService sampleConversionService;
+	private final NcbiSampleConversionService ncbiSampleConversionService;
 
-	public NcbiElementCallable(SampleConversionService sampleConversionService, BioSamplesClient bioSamplesClient, Element sampleElem, String domain) {
-		this.sampleConversionService = sampleConversionService;
+	public NcbiElementCallable(NcbiSampleConversionService ncbiSampleConversionService, BioSamplesClient bioSamplesClient, Element sampleElem, String domain) {
+		this.ncbiSampleConversionService = ncbiSampleConversionService;
 		this.bioSamplesClient = bioSamplesClient;
 		this.sampleElem = sampleElem;
 		this.domain = domain;
@@ -36,11 +35,11 @@ public class NcbiElementCallable implements Callable<Void> {
 
 		log.trace("Element callable starting for "+accession);
 
-		// Generate the sample
-		Sample.Builder sampleBuilder = this.sampleConversionService.sampleBuilderFromElement(sampleElem);
+		// Generate the sample without the domain
+		Sample sampleWithoutDomain = this.ncbiSampleConversionService.convertNcbiXmlElementToSample(sampleElem);
 
 		// Attach the domain
-		Sample sample = sampleBuilder.withDomain(domain).build();
+		Sample sample = Sample.Builder.fromSample(sampleWithoutDomain).withDomain(domain).build();
 
 		//now pass it along to the actual submission process
 		bioSamplesClient.persistSampleResource(sample);

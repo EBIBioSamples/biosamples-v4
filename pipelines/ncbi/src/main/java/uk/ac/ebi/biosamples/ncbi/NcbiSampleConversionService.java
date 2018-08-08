@@ -20,17 +20,17 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 @Service
-public class SampleConversionService {
+public class NcbiSampleConversionService {
 
     private Logger log = LoggerFactory.getLogger(getClass());
 
     private final TaxonomyService taxonomyService;
 
-    public SampleConversionService(TaxonomyService taxonomyService) {
+    public NcbiSampleConversionService(TaxonomyService taxonomyService) {
         this.taxonomyService = taxonomyService;
     }
 
-    public Sample.Builder sampleBuilderFromElement(Element sampleElem) {
+    public Sample convertNcbiXmlElementToSample(Element sampleElem) {
         String accession = sampleElem.attributeValue("accession");
 
 
@@ -187,7 +187,7 @@ public class SampleConversionService {
                 .withRelease(publicationDate).withUpdate(lastUpdate)
                 .withAttributes(attrs)
                 .withRelationships(rels)
-                .withExternalReferences(externalReferences);
+                .withExternalReferences(externalReferences).build();
 
 //        return Sample.build(alias, accession, domain, publicationDate, lastUpdate, attrs, rels, externalReferences);
     }
