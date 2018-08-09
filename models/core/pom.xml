@@ -4,6 +4,9 @@
 
 	<artifactId>models-core</artifactId>
 	<packaging>jar</packaging>
+	<properties>
+	<protobuf.version>3.5.1</protobuf.version>
+	</properties>
 
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
@@ -50,6 +53,27 @@
 			<groupId>org.springframework.hateoas</groupId>
 			<artifactId>spring-hateoas</artifactId>
 		</dependency>
+	<dependency>
+		<groupId>com.google.protobuf</groupId>
+		<artifactId>protobuf-java</artifactId>
+		<version>${protobuf.version}</version>
+	</dependency>
+	<dependency>
+		<groupId>com.google.protobuf</groupId>
+		<artifactId>protobuf-java-util</artifactId>
+		<version>${protobuf.version}</version>
+	</dependency>
+		<dependency>
+			<groupId>org.phenopackets</groupId>
+			<artifactId>phenopacket-schema</artifactId>
+			<version>0.0.7</version>
+		</dependency>
+	<dependency>
+		<groupId>uk.ac.ebi.biosamples</groupId>
+		<artifactId>biosamples-spring-boot-starter</artifactId>
+		<version>4.0.9-SNAPSHOT</version>
+		<scope>compile</scope>
+	</dependency>
 	</dependencies>
 
 	<!-- lock transitive dependency version -->

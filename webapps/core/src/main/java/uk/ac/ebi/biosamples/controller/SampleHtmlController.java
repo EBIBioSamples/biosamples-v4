@@ -52,12 +52,12 @@ public class SampleHtmlController {
 	private final BioSamplesProperties bioSamplesProperties;
 
 	public SampleHtmlController(SampleService sampleService,
-			SamplePageService samplePageService,
-			JsonLDService jsonLDService,
-			FacetService facetService,
-			FilterService filterService,
-			BioSamplesAapService bioSamplesAapService,
-			BioSamplesProperties bioSamplesProperties) {
+                                SamplePageService samplePageService,
+                                JsonLDService jsonLDService,
+                                FacetService facetService,
+                                FilterService filterService,
+                                BioSamplesAapService bioSamplesAapService,
+                                BioSamplesProperties bioSamplesProperties) {
 		this.sampleService = sampleService;
 		this.samplePageService = samplePageService;
 		this.jsonLDService = jsonLDService;
