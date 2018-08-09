@@ -2,21 +2,23 @@
 set -e
 
 clean=0
+
 while [ "$1" != "" ]; do
     case $1 in
         -c | --clean )
             clean=1
             ;;
         --skipTests )
-            testArg="-DskipTests"
+            testArgs=-DskipTests
             ;;
     esac
     shift
 done
 
-if [ ${testArg}=="-DskipTests" ];
+if [ ! -z "$testArgs" ] 
 then
-    echo "Skipping tests"
+    echo "Tests will be skipped during building"
+    echo ""
 fi
 
 #cleanup any previous data

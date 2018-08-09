@@ -340,11 +340,6 @@ services:
     #- BIOSAMPLES_CLIENT_AAP_PASSWORD=override_in_docker-compose.override.yml
     - BIOSAMPLES_LEGACYAPIKEY=fooqwerty
 
-  htsget:
-    image: ega-data-api/dataedge
-    ports:
-    - 8086:8080
-       
   mongo:
     image: mongo:3.2
     volumes:
