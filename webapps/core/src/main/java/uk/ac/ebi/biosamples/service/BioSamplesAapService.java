@@ -46,7 +46,7 @@ public class BioSamplesAapService {
 	public static class DomainMissingException extends RuntimeException {
 	}
 
-	@ResponseStatus(value = HttpStatus.FORBIDDEN, reason = "Sample not accessible") // 403
+	@ResponseStatus(value = HttpStatus.FORBIDDEN, reason = "This sample is private and not available for browsing. If you think this is an error and/or you should have access please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk") // 403
 	public static class SampleNotAccessibleException extends RuntimeException {
 	}
 	
