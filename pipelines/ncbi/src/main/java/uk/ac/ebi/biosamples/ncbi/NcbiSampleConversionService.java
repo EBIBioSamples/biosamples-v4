@@ -19,6 +19,7 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class NcbiSampleConversionService {
@@ -26,9 +27,11 @@ public class NcbiSampleConversionService {
     private Logger log = LoggerFactory.getLogger(getClass());
 
     private final TaxonomyService taxonomyService;
+    private final NcbiAmrConversionService amrConversionService;
 
     public NcbiSampleConversionService(TaxonomyService taxonomyService) {
         this.taxonomyService = taxonomyService;
+        this.amrConversionService = new NcbiAmrConversionService();
     }
 
     public Sample convertNcbiXmlElementToSample(Element sampleElem) {
@@ -191,7 +194,12 @@ public class NcbiSampleConversionService {
             String antibiogramClass = element.attributeValue("class");
             if (antibiogramClass != null && antibiogramClass.equalsIgnoreCase("Antibiogram.1.0")) {
                 // AMR table found
-                structuredData.add(extractAmrData(element));
+                try {
+                    AMRTable amrTable = amrConversionService.convertElementToAmrTable(element);
+                    structuredData.add(amrTable);
+                } catch (NcbiAmrConversionService.AmrParsingException ex) {
+                    log.error("An error occurred while parsing AMR table", ex);
+                }
             }
 
         }
@@ -213,7 +221,4 @@ public class NcbiSampleConversionService {
         return Integer.parseInt(value.trim());
     }
 
-    private AbstractData extractAmrData(Element amrElement) {
-        return new AMRTable.Builder("test").build();
-    }
 }

@@ -92,7 +92,7 @@ public class AMRTable extends AbstractData implements Comparable<AMRTable> {
         }
 
         @JsonProperty
-        public Builder withEntry(AMREntry entry) {
+        public Builder addEntry(AMREntry entry) {
             this.amrEntries.add(entry);
             return this;
         }
