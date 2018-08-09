@@ -305,35 +305,35 @@ public class AMREntry implements Comparable<AMREntry>{
         }
 
         public AMREntry build() {
-            if (this.antibiotic == null || this.antibiotic.isEmpty()) {
-                throw AMREntryBuldingException.createForMissingField("antibiotic");
-            }
-
-            if (this.resistancePhenotype == null || this.resistancePhenotype.isEmpty()) {
-                throw AMREntryBuldingException.createForMissingField("resistance phenotype");
-            }
-
-            if (this.measurementValue == null) {
-                throw AMREntryBuldingException.createForMissingField("measurementValue sign");
-            }
-
-            if (this.measurementSign == null || this.measurementSign.isEmpty()) {
-                throw AMREntryBuldingException.createForMissingField("measurementValue sign");
-            }
-            if (this.measurementUnits == null || this.measurementUnits.isEmpty()) {
-                throw AMREntryBuldingException.createForMissingField("measurementValue unit");
-            }
-
-            if (this.vendor == null || this.vendor.isEmpty()) {
-                throw AMREntryBuldingException.createForMissingField("vendor");
-            }
-            if (this.laboratoryTypingMethod == null || this.laboratoryTypingMethod.isEmpty()) {
-                throw AMREntryBuldingException.createForMissingField("laboratory typing method");
-            }
-
-            if (this.testingStandard == null || this.testingStandard.isEmpty()) {
-                throw AMREntryBuldingException.createForMissingField("testing standard");
-            }
+//            if (this.antibiotic == null || this.antibiotic.isEmpty()) {
+//                throw AMREntryBuldingException.createForMissingField("antibiotic");
+//            }
+//
+//            if (this.resistancePhenotype == null || this.resistancePhenotype.isEmpty()) {
+//                throw AMREntryBuldingException.createForMissingField("resistance phenotype");
+//            }
+//
+//            if (this.measurementValue == null) {
+//                throw AMREntryBuldingException.createForMissingField("measurementValue sign");
+//            }
+//
+//            if (this.measurementSign == null || this.measurementSign.isEmpty()) {
+//                throw AMREntryBuldingException.createForMissingField("measurementValue sign");
+//            }
+//            if (this.measurementUnits == null || this.measurementUnits.isEmpty()) {
+//                throw AMREntryBuldingException.createForMissingField("measurementValue unit");
+//            }
+//
+//            if (this.vendor == null || this.vendor.isEmpty()) {
+//                throw AMREntryBuldingException.createForMissingField("vendor");
+//            }
+//            if (this.laboratoryTypingMethod == null || this.laboratoryTypingMethod.isEmpty()) {
+//                throw AMREntryBuldingException.createForMissingField("laboratory typing method");
+//            }
+//
+//            if (this.testingStandard == null || this.testingStandard.isEmpty()) {
+//                throw AMREntryBuldingException.createForMissingField("testing standard");
+//            }
 
 
             return new AMREntry(this.antibiotic, this.resistancePhenotype, this.measurementSign, this.measurementValue,
