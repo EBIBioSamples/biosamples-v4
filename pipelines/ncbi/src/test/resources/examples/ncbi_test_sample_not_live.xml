@@ -25,7 +25,7 @@
         <Models>
             <Model>Metagenome or environmental</Model>
         </Models>
-        <Package display_name="Metagenome or environmental; version 1.0">Metagenome.environmental.2.0</Package>
+        <Package display_name="Metagenome or environmental; version 1.0">Metagenome.environmental.1.0</Package>
         <Attributes>
             <Attribute attribute_name="isolation_source" display_name="isolation source" harmonized_name="isolation_source">Alseis blackiana roots</Attribute>
             <Attribute attribute_name="collection_date" display_name="collection date" harmonized_name="collection_date">Sep-2012</Attribute>
@@ -37,6 +37,6 @@
         <Links>
             <Link label="PRJNA325589" target="bioproject" type="entrez">325589</Link>
         </Links>
-        <Status status="live" when="2018-07-01T00:50:05.513"/>
+        <Status status="suppressed" when="2018-07-01T00:50:05.513"/>
     </BioSample>
 </BioSampleSet>
