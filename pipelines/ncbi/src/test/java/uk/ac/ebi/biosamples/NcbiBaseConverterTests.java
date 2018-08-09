@@ -19,7 +19,6 @@ import java.io.InputStreamReader;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -36,12 +35,7 @@ public class NcbiBaseConverterTests {
     @Before
     public void setup() {
         this.conversionService = new NcbiSampleConversionService(new TaxonomyService());
-        try {
-            this.testNcbiBioSamples = readBioSampleElementFromXml("/examples/ncbi_sample_5246317.xml");
-        } catch (DocumentException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        }
+        this.testNcbiBioSamples = NcbiTestsService.readNcbiBiosampleElementFromFile("/examples/ncbi_sample_5246317.xml");
     }
 
     @Test

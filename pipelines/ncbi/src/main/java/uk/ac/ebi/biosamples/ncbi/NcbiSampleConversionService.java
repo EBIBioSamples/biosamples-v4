@@ -8,6 +8,9 @@ import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.structured.AMREntry;
+import uk.ac.ebi.biosamples.model.structured.AMRTable;
+import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.utils.TaxonomyService;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
@@ -15,9 +18,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 
 @Service
 public class NcbiSampleConversionService {
@@ -37,6 +38,8 @@ public class NcbiSampleConversionService {
         SortedSet<Attribute> attrs = new TreeSet<>();
         SortedSet<Relationship> rels = new TreeSet<>();
         Set<ExternalReference> externalReferences = new TreeSet<>();
+        Set<AbstractData> structuredData = new HashSet<>();
+
         String alias = null; //this will be the ENA alias of the sample
         String geoAlias = null;
         String centreName = null; //this will be the ENA centre name of the sample.
@@ -183,10 +186,21 @@ public class NcbiSampleConversionService {
             }
         }
 
+        //handle amr data
+        for (Element element: XmlPathBuilder.of(sampleElem).path("Description", "Comment").elements("Table")) {
+            String antibiogramClass = element.attributeValue("class");
+            if (antibiogramClass != null && antibiogramClass.equalsIgnoreCase("Antibiogram.1.0")) {
+                // AMR table found
+                structuredData.add(extractAmrData(element));
+            }
+
+        }
+
         return new Sample.Builder(alias, accession)
                 .withRelease(publicationDate).withUpdate(lastUpdate)
                 .withAttributes(attrs)
                 .withRelationships(rels)
+                .withData(structuredData)
                 .withExternalReferences(externalReferences).build();
 
 //        return Sample.build(alias, accession, domain, publicationDate, lastUpdate, attrs, rels, externalReferences);
@@ -197,5 +211,9 @@ public class NcbiSampleConversionService {
             throw new RuntimeException("Unable to extract tax id from a null value");
         }
         return Integer.parseInt(value.trim());
+    }
+
+    private AbstractData extractAmrData(Element amrElement) {
+        return new AMRTable.Builder("test").build();
     }
 }
