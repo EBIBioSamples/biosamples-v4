@@ -9,22 +9,24 @@ import uk.ac.ebi.biosamples.model.structured.AMREntry;
 import uk.ac.ebi.biosamples.model.structured.AMRTable;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.model.structured.DataType;
+import uk.ac.ebi.biosamples.ncbi.NcbiAmrConversionService;
 import uk.ac.ebi.biosamples.ncbi.NcbiSampleConversionService;
 import uk.ac.ebi.biosamples.utils.TaxonomyService;
+import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
-import java.util.Iterator;
-import java.util.Set;
-import java.util.SortedSet;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
 public class NcbiAmrConvertionTests {
 
     private NcbiSampleConversionService sampleConversionService;
+    private NcbiAmrConversionService amrConversionService;
 
     @Before
     public void setUp() {
         sampleConversionService = new NcbiSampleConversionService(new TaxonomyService());
+        amrConversionService = new NcbiAmrConversionService();
     }
 
     @Test
@@ -65,7 +67,40 @@ public class NcbiAmrConvertionTests {
 
     }
 
+    @Test
+    public void it_extract_multiple_entries_from_a_table() throws NcbiAmrConversionService.AmrParsingException {
+        Element sampleWithMultipleAmrEntries = getBioSampleFromAmrSampleSet("SAMN09492289");
+        Element amrTableElement = XmlPathBuilder.of(sampleWithMultipleAmrEntries).path("Description", "Comment", "Table").element();
+
+        AMRTable amrTable = null;
+
+        try {
+            amrTable = amrConversionService.convertElementToAmrTable(amrTableElement);
+        } catch (NcbiAmrConversionService.AmrParsingException e) {
+            e.printStackTrace();
+            throw e;
+        }
+
+        assertTrue(amrTable.getStructuredData().size() == 4);
+    }
+
+
     private Element getAmrSample() {
         return NcbiTestsService.readNcbiBiosampleElementFromFile("/examples/ncbi_amr_sample.xml");
     }
+
+    public List<Element> getAmrSampleSet() {
+        return NcbiTestsService.readNcbiBioSampleElementsFromFile("/examples/ncbi_amr_sample_set.xml");
+    }
+
+    public Element getBioSampleFromAmrSampleSet(String accession) {
+        List<Element> biosamples = getAmrSampleSet();
+        Optional<Element> element = biosamples.stream().filter(elem -> elem.attributeValue("accession").equals(accession)).findFirst();
+        if (!element.isPresent()) {
+            throw new RuntimeException("Unable to find BioSample with accession " + accession + " in the AMR sample set");
+        }
+
+        return element.get();
+    }
 }
+
