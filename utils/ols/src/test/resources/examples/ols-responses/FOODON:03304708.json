@@ -1,0 +1,142 @@
+{
+  "_embedded": {
+    "terms": [
+      {
+        "iri": "http://purl.obolibrary.org/obo/FOODON_03304708",
+        "label": "potato salad",
+        "description": null,
+        "annotation": {
+          "comment": [
+            "SIREN DB annotation:\n* has quality 'semisolid with solid pieces' (http://purl.obolibrary.org/obo/FOODON_03430134)\n* has quality 'partially heat-treated' (http://purl.obolibrary.org/obo/FOODON_03440018)\n* derives from 'root, tuber or bulb' (http://purl.obolibrary.org/obo/FOODON_03420238)\n* has substance added  http://purl.obolibrary.org/obo/FOODON_03460212\n* has substance added  'fat or oil added' (http://purl.obolibrary.org/obo/FOODON_03460221)\n* has substance added  'flavoring, spice or herb added' (http://purl.obolibrary.org/obo/FOODON_03460227)\n        "
+          ],
+          "database cross reference": [
+            "SUBSET_SIREN:F4708"
+          ],
+          "has curation status": [
+            "http://purl.obolibrary.org/obo/IAO_0000428"
+          ],
+          "imported from": [
+            "http://langual.org"
+          ],
+          "inSubset": [
+            "subset_siren"
+          ]
+        },
+        "synonyms": null,
+        "ontology_name": "foodon",
+        "ontology_prefix": "FOODON",
+        "ontology_iri": "http://purl.obolibrary.org/obo/foodon.owl",
+        "is_obsolete": false,
+        "term_replaced_by": null,
+        "is_defining_ontology": true,
+        "has_children": false,
+        "is_root": false,
+        "short_form": "FOODON_03304708",
+        "obo_id": "FOODON:03304708",
+        "in_subset": null,
+        "obo_definition_citation": null,
+        "obo_xref": [
+          {
+            "database": "SUBSET_SIREN",
+            "id": "F4708",
+            "description": null,
+            "url": null
+          }
+        ],
+        "obo_synonym": null,
+        "_links": {
+          "self": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/foodon/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FFOODON_03304708"
+          },
+          "parents": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/foodon/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FFOODON_03304708/parents"
+          },
+          "ancestors": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/foodon/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FFOODON_03304708/ancestors"
+          },
+          "hierarchicalParents": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/foodon/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FFOODON_03304708/hierarchicalParents"
+          },
+          "hierarchicalAncestors": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/foodon/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FFOODON_03304708/hierarchicalAncestors"
+          },
+          "jstree": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/foodon/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FFOODON_03304708/jstree"
+          },
+          "graph": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/foodon/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FFOODON_03304708/graph"
+          }
+        }
+      },
+      {
+        "iri": "http://purl.obolibrary.org/obo/FOODON_03304708",
+        "label": "potato salad",
+        "description": null,
+        "annotation": {
+          "hasDbXref": [
+            "SUBSET_SIREN:F4708"
+          ],
+          "imported from": [
+            "http://purl.obolibrary.org/obo/foodon.owl"
+          ]
+        },
+        "synonyms": null,
+        "ontology_name": "genepio",
+        "ontology_prefix": "GENEPIO",
+        "ontology_iri": "http://purl.obolibrary.org/obo/genepio.owl",
+        "is_obsolete": false,
+        "term_replaced_by": null,
+        "is_defining_ontology": false,
+        "has_children": false,
+        "is_root": false,
+        "short_form": "FOODON_03304708",
+        "obo_id": "FOODON:03304708",
+        "in_subset": null,
+        "obo_definition_citation": null,
+        "obo_xref": [
+          {
+            "database": "SUBSET_SIREN",
+            "id": "F4708",
+            "description": null,
+            "url": null
+          }
+        ],
+        "obo_synonym": null,
+        "_links": {
+          "self": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/genepio/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FFOODON_03304708"
+          },
+          "parents": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/genepio/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FFOODON_03304708/parents"
+          },
+          "ancestors": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/genepio/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FFOODON_03304708/ancestors"
+          },
+          "hierarchicalParents": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/genepio/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FFOODON_03304708/hierarchicalParents"
+          },
+          "hierarchicalAncestors": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/genepio/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FFOODON_03304708/hierarchicalAncestors"
+          },
+          "jstree": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/genepio/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FFOODON_03304708/jstree"
+          },
+          "graph": {
+            "href": "https://wwwdev.ebi.ac.uk/ols/api/ontologies/genepio/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FFOODON_03304708/graph"
+          }
+        }
+      }
+    ]
+  },
+  "_links": {
+    "self": {
+      "href": "https://wwwdev.ebi.ac.uk/ols/api/terms"
+    }
+  },
+  "page": {
+    "size": 500,
+    "totalElements": 2,
+    "totalPages": 1,
+    "number": 0
+  }
+}

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
@@ -13,7 +13,7 @@ import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
-import org.springframework.web.client.RestOperations;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.util.UriUtils;
@@ -29,12 +29,12 @@ public class OlsProcessor {
 
     private Logger log = LoggerFactory.getLogger(getClass());
 
-    private final RestOperations restOperations;
+    private final RestTemplate restTemplate;
 
     private final BioSamplesProperties bioSamplesProperties;
 
-    public OlsProcessor(RestTemplateBuilder restTemplateBuilder, BioSamplesProperties bioSamplesProperties) {
-        this.restOperations = restTemplateBuilder.build();
+    public OlsProcessor(RestTemplate restTemplate, BioSamplesProperties bioSamplesProperties) {
+        this.restTemplate = restTemplate;
         this.bioSamplesProperties = bioSamplesProperties;
     }
 
@@ -88,7 +88,7 @@ public class OlsProcessor {
         RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaType.APPLICATION_JSON).build();
         ResponseEntity<JsonNode> responseEntity = null;
         try {
-            responseEntity = ClientUtils.<Void, JsonNode>doRetryQuery(requestEntity, restOperations, 5,
+            responseEntity = ClientUtils.<Void, JsonNode>doRetryQuery(requestEntity, restTemplate, 5,
                     new ParameterizedTypeReference<JsonNode>() {
                     });
         } catch (HttpStatusCodeException e) {
@@ -138,7 +138,7 @@ public class OlsProcessor {
         log.trace("OLS query for shortcode " + shortcode + " against " + uri);
 
         RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaType.APPLICATION_JSON).build();
-        ResponseEntity<ObjectNode> responseEntity = restOperations.exchange(requestEntity,
+        ResponseEntity<ObjectNode> responseEntity = restTemplate.exchange(requestEntity,
                 new ParameterizedTypeReference<ObjectNode>() {
                 });
 
