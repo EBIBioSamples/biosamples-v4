@@ -179,7 +179,7 @@ public class AMREntry implements Comparable<AMREntry>{
         if (this == o) return true;
         if (!(o instanceof AMREntry)) return false;
         AMREntry amrEntry = (AMREntry) o;
-        return getMeasurementValue().equals(amrEntry.getMeasurementValue()) &&
+        return Objects.equals(getMeasurementValue(), amrEntry.getMeasurementValue()) &&
                 Objects.equals(getAntibiotic(), amrEntry.getAntibiotic()) &&
                 Objects.equals(getResistancePhenotype(), amrEntry.getResistancePhenotype()) &&
                 Objects.equals(getMeasurementSign(), amrEntry.getMeasurementSign()) &&

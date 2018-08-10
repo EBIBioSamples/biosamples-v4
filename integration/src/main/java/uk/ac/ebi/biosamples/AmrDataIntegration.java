@@ -2,6 +2,8 @@ package uk.ac.ebi.biosamples;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.dom4j.Document;
+import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -20,6 +22,7 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.structured.AMREntry;
 import uk.ac.ebi.biosamples.model.structured.AMRTable;
 import uk.ac.ebi.biosamples.model.structured.DataType;
+import uk.ac.ebi.biosamples.utils.TestUtilities;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -51,7 +54,7 @@ public class AmrDataIntegration extends AbstractIntegration {
 
     @Override
     protected void phaseOne() {
-        String json = readFileAsString("amr_sample.json");
+        String json = TestUtilities.readFileAsString("amr_sample.json");
         Sample amrSample = null;
         try {
             amrSample = mapper.readValue(json, Sample.class);
@@ -111,8 +114,6 @@ public class AmrDataIntegration extends AbstractIntegration {
         assertEquals(ciprofloxacin.getVendor(), "Trek");
         assertEquals(ciprofloxacin.getTestingStandard(), "CLSI");
 
-
-
     }
 
     @Override
@@ -130,25 +131,26 @@ public class AmrDataIntegration extends AbstractIntegration {
 
     }
 
-    public String readFileAsString(String resource){
+//    public String readFileAsString(String resource){
+//
+//        String json;
+//
+//        try {
+//            json =StreamUtils.copyToString(new ClassPathResource(resource).getInputStream(), Charset.defaultCharset());
+//        } catch (IOException e) {
+//            throw new RuntimeException("An error occurred while reading resource " + resource, e);
+//        }
+//
+//        return json;
+//
+//    }
+//
+//    public JsonNode readAsJsonObject(String serialisedJson) {
+//        try {
+//            return mapper.readTree(serialisedJson);
+//        } catch (IOException e) {
+//            throw new RuntimeException("An error occurred while converting the string " + serialisedJson + " to a JSON object", e);
+//        }
+//    }
 
-        String json;
-
-        try {
-            json =StreamUtils.copyToString(new ClassPathResource(resource).getInputStream(), Charset.defaultCharset());
-        } catch (IOException e) {
-            throw new RuntimeException("An error occurred while reading resource " + resource, e);
-        }
-
-        return json;
-
-    }
-
-    public JsonNode readAsJsonObject(String serialisedJson) {
-        try {
-            return mapper.readTree(serialisedJson);
-        } catch (IOException e) {
-            throw new RuntimeException("An error occurred while converting the string " + serialisedJson + " to a JSON object", e);
-        }
-    }
 }

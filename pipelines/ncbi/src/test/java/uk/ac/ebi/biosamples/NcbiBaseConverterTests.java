@@ -10,7 +10,7 @@ import org.junit.runner.RunWith;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.ncbi.NcbiSampleConversionService;
+import uk.ac.ebi.biosamples.ncbi.service.NcbiSampleConversionService;
 import uk.ac.ebi.biosamples.utils.TaxonomyService;
 
 import java.io.BufferedReader;
@@ -23,6 +23,7 @@ import java.util.SortedSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.*;
 
 @RunWith(SpringRunner.class)
@@ -195,6 +196,15 @@ public class NcbiBaseConverterTests {
             assertTrue(sampleToTest.getRelease().isAfter(Instant.parse("3018-07-01T00:50:05.00Z")));
 
 
+    }
+
+    @Test
+    public void given_ncbi_sample_with_multiple_amr_tables_it_converts_it_correctly() throws DocumentException {
+        Element ncbiSampleWithMultipleAMR = readBioSampleElementFromXml("/examples/ncbi_amr_sample_with_multiple_amr_entries.xml");
+        Sample sampleToTest = this.conversionService.convertNcbiXmlElementToSample(ncbiSampleWithMultipleAMR);
+
+        assertNotNull(sampleToTest);
+        assertThat(sampleToTest.getData(), hasSize(2));
     }
 
     public Element readBioSampleElementFromXml(String pathToFile) throws DocumentException {

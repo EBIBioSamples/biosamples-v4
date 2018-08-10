@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.ncbi.service.NcbiSampleConversionService;
 
 @Service
 public class NcbiElementCallableFactory {

@@ -3,14 +3,13 @@ package uk.ac.ebi.biosamples;
 import org.dom4j.Element;
 import org.junit.Before;
 import org.junit.Test;
-import org.hamcrest.*;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.structured.AMREntry;
 import uk.ac.ebi.biosamples.model.structured.AMRTable;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.model.structured.DataType;
-import uk.ac.ebi.biosamples.ncbi.NcbiAmrConversionService;
-import uk.ac.ebi.biosamples.ncbi.NcbiSampleConversionService;
+import uk.ac.ebi.biosamples.ncbi.service.NcbiAmrConversionService;
+import uk.ac.ebi.biosamples.ncbi.service.NcbiSampleConversionService;
 import uk.ac.ebi.biosamples.utils.TaxonomyService;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
@@ -84,6 +83,15 @@ public class NcbiAmrConvertionTests {
         assertTrue(amrTable.getStructuredData().size() == 4);
     }
 
+    @Test
+    public void it_can_read_multiple_types_of_antibiograms_table() {
+        for (Element element: getAmrSampleSet()) {
+            Sample testSample = sampleConversionService.convertNcbiXmlElementToSample(element);
+            AMRTable amrTable = (AMRTable) testSample.getData().first();
+            assertTrue(amrTable != null);
+            assertTrue(amrTable.getStructuredData().size() > 0);
+        }
+    }
 
     private Element getAmrSample() {
         return NcbiTestsService.readNcbiBiosampleElementFromFile("/examples/ncbi_amr_sample.xml");

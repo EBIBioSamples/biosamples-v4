@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.ncbi;
+package uk.ac.ebi.biosamples.ncbi.service;
 
 import org.dom4j.Element;
 import org.slf4j.Logger;
@@ -8,7 +8,6 @@ import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.structured.AMREntry;
 import uk.ac.ebi.biosamples.model.structured.AMRTable;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.utils.TaxonomyService;
@@ -19,7 +18,6 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class NcbiSampleConversionService {
@@ -190,18 +188,20 @@ public class NcbiSampleConversionService {
         }
 
         //handle amr data
-        for (Element element: XmlPathBuilder.of(sampleElem).path("Description", "Comment").elements("Table")) {
-            String antibiogramClass = element.attributeValue("class");
-            if (antibiogramClass != null && antibiogramClass.equalsIgnoreCase("Antibiogram.1.0")) {
-                // AMR table found
-                try {
-                    AMRTable amrTable = amrConversionService.convertElementToAmrTable(element);
-                    structuredData.add(amrTable);
-                } catch (NcbiAmrConversionService.AmrParsingException ex) {
-                    log.error("An error occurred while parsing AMR table", ex);
+        if (XmlPathBuilder.of(sampleElem).path("Description", "Comment").exists()) {
+            for (Element element : XmlPathBuilder.of(sampleElem).path("Description", "Comment").elements("Table")) {
+                String antibiogramClass = element.attributeValue("class");
+                if (antibiogramClass != null && antibiogramClass.matches("^Antibiogram.*")) {
+                    // AMR table found
+                    try {
+                        AMRTable amrTable = amrConversionService.convertElementToAmrTable(element);
+                        structuredData.add(amrTable);
+                    } catch (NcbiAmrConversionService.AmrParsingException ex) {
+                        log.error("An error occurred while parsing AMR table", ex);
+                    }
                 }
-            }
 
+            }
         }
 
         return new Sample.Builder(alias, accession)

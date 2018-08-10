@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.ncbi;
+package uk.ac.ebi.biosamples.ncbi.service;
 
 import org.dom4j.Element;
 import org.springframework.stereotype.Service;
