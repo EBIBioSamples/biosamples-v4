@@ -10,7 +10,7 @@ import java.net.URI;
 
 @JsonPropertyOrder({"type", "schema", "content"})
 @JsonDeserialize(using = AbstractDataDeserializer.class)
-public abstract class AbstractData {
+public abstract class AbstractData implements Comparable<AbstractData>{
 
     public AbstractData() {
     }
