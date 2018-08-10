@@ -20,6 +20,7 @@
 		<div id="main-content-area" class="row">
 			<h2>Error processing your request</h2>
 			<h3><th:span th:text="${status}">Status</th:span> - <th:span th:text="${error}">Error Message</th:span></h3>
+			<p><th:span th:text="${message}"></th:span></p>
 		</div>
 	</div>
 	<th:block th:include="fragments/footer :: footer"></th:block>
