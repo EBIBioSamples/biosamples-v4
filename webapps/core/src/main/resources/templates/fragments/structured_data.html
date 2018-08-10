@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+</head>
+<body>
+    <section th:fragment="amr_table(data)">
+             <!--th:with=}">-->
+        <th:block th:with="allEntries=${data.getStructuredData()},
+                           firstAmrEntry=${allEntries.iterator().next()}">
+            <table th:with="headers=${@amrEntryToMapConverter.convert(firstAmrEntry).keySet()}">
+                <thead>
+                   <tr>
+                       <th th:each="head: ${headers}" th:text="${head}"></th>
+                   </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="entryObject: ${allEntries}"
+                        th:with="entryMap = ${@amrEntryToMapConverter.convert(entryObject)}">
+                        <td th:each="head: ${headers}" th:text="${entryMap.get(head)}"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </th:block>
+    </section>
+</body>
+</html>
