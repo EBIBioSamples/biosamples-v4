@@ -23,9 +23,12 @@ public class AMREntry implements Comparable<AMREntry>{
     private final String laboratoryTypingPlatform;
     private final String laboratoryTypingMethodVersionOrReagent;
     private final String testingStandard;
+    private final String dstMedia;
+    private final String dstMethod;
+    private final String criticalConcentration;
 
 
-    private AMREntry(String antibiotic, String resistancePhenotype, String measurementSign, String measurementValue, String measurementUnits, String vendor, String laboratoryTypingMethod, String laboratoryTypingPlatform, String laboratoryTypingMethodVersionOrReagent, String testingStandard) {
+    private AMREntry(String antibiotic, String resistancePhenotype, String measurementSign, String measurementValue, String measurementUnits, String vendor, String laboratoryTypingMethod, String laboratoryTypingPlatform, String laboratoryTypingMethodVersionOrReagent, String testingStandard, String dstMedia, String dstMethod, String criticalConcentration) {
         this.antibiotic = antibiotic;
         this.resistancePhenotype = resistancePhenotype;
         this.measurementSign = measurementSign;
@@ -36,6 +39,9 @@ public class AMREntry implements Comparable<AMREntry>{
         this.laboratoryTypingPlatform = laboratoryTypingPlatform;
         this.laboratoryTypingMethodVersionOrReagent = laboratoryTypingMethodVersionOrReagent;
         this.testingStandard = testingStandard;
+        this.dstMedia = dstMedia;
+        this.dstMethod = dstMethod;
+        this.criticalConcentration = criticalConcentration;
     }
 
 
@@ -80,58 +86,78 @@ public class AMREntry implements Comparable<AMREntry>{
         return testingStandard;
     }
 
-        @Override
-        public int compareTo(AMREntry other) {
-            if (other == null) {
-                return 1;
-            }
+    public String getDstMedia() {
+        return dstMedia;
+    }
 
-            int comparison = nullSafeStringComparison(this.antibiotic, other.antibiotic);
-            if (comparison != 0) {
-                return comparison;
-            }
+    public String getDstMethod() {
+        return dstMethod;
+    }
 
-            comparison = nullSafeStringComparison(this.resistancePhenotype, other.resistancePhenotype);
-            if (comparison != 0) {
-                return comparison;
-            }
+    public String getCriticalConcentration() {
+        return criticalConcentration;
+    }
 
-            comparison = nullSafeStringComparison(this.measurementSign, other.measurementSign);
-            if (comparison != 0) {
-                return comparison;
-            }
-
-            comparison = nullSafeStringComparison(this.measurementValue, other.measurementValue);
-            if (comparison != 0) {
-                return comparison;
-            }
-
-            comparison = nullSafeStringComparison(this.measurementUnits, other.measurementUnits);
-            if (comparison != 0) {
-                return comparison;
-            }
-
-            comparison = nullSafeStringComparison(this.laboratoryTypingMethod, other.laboratoryTypingMethod);
-            if (comparison != 0) {
-                return comparison;
-            }
-
-            comparison = nullSafeStringComparison(this.laboratoryTypingPlatform, other.laboratoryTypingPlatform);
-            if (comparison != 0) {
-                return comparison;
-            }
-            comparison = nullSafeStringComparison(this.laboratoryTypingMethodVersionOrReagent, other.laboratoryTypingMethodVersionOrReagent);
-            if (comparison != 0) {
-                return comparison;
-            }
-
-            comparison = nullSafeStringComparison(this.vendor, other.vendor);
-            if (comparison != 0) {
-                return comparison;
-            }
-
-            return nullSafeStringComparison(this.testingStandard, other.testingStandard);
+    @Override
+    public int compareTo(AMREntry other) {
+        if (other == null) {
+            return 1;
         }
+
+
+
+        int comparison = nullSafeStringComparison(this.antibiotic, other.antibiotic);
+        if (comparison != 0) {
+            return comparison;
+        }
+
+        comparison = nullSafeStringComparison(this.resistancePhenotype, other.resistancePhenotype);
+        if (comparison != 0) {
+            return comparison;
+        }
+
+        comparison = nullSafeStringComparison(this.measurementSign, other.measurementSign);
+        if (comparison != 0) {
+            return comparison;
+        }
+
+        comparison = nullSafeStringComparison(this.measurementValue, other.measurementValue);
+        if (comparison != 0) {
+            return comparison;
+        }
+
+        comparison = nullSafeStringComparison(this.measurementUnits, other.measurementUnits);
+        if (comparison != 0) {
+            return comparison;
+        }
+
+        comparison = nullSafeStringComparison(this.laboratoryTypingMethod, other.laboratoryTypingMethod);
+        if (comparison != 0) {
+            return comparison;
+        }
+
+        comparison = nullSafeStringComparison(this.laboratoryTypingPlatform, other.laboratoryTypingPlatform);
+        if (comparison != 0) {
+            return comparison;
+        }
+        comparison = nullSafeStringComparison(this.laboratoryTypingMethodVersionOrReagent, other.laboratoryTypingMethodVersionOrReagent);
+        if (comparison != 0) {
+            return comparison;
+        }
+
+        comparison = nullSafeStringComparison(this.vendor, other.vendor);
+        if (comparison != 0) {
+            return comparison;
+        }
+
+        comparison = nullSafeStringComparison(this.dstMedia, other.dstMedia);
+        if (comparison != 0) {
+
+        }
+
+
+        return nullSafeStringComparison(this.testingStandard, other.testingStandard);
+    }
 
     private int nullSafeStringComparison(String one, String two) {
 
@@ -153,7 +179,7 @@ public class AMREntry implements Comparable<AMREntry>{
         if (this == o) return true;
         if (!(o instanceof AMREntry)) return false;
         AMREntry amrEntry = (AMREntry) o;
-        return getMeasurementValue().equals(amrEntry.getMeasurementValue()) &&
+        return Objects.equals(getMeasurementValue(), amrEntry.getMeasurementValue()) &&
                 Objects.equals(getAntibiotic(), amrEntry.getAntibiotic()) &&
                 Objects.equals(getResistancePhenotype(), amrEntry.getResistancePhenotype()) &&
                 Objects.equals(getMeasurementSign(), amrEntry.getMeasurementSign()) &&
@@ -162,7 +188,10 @@ public class AMREntry implements Comparable<AMREntry>{
                 Objects.equals(getLaboratoryTypingMethod(), amrEntry.getLaboratoryTypingMethod()) &&
                 Objects.equals(getLaboratoryTypingPlatform(), amrEntry.getLaboratoryTypingPlatform()) &&
                 Objects.equals(getLaboratoryTypingMethodVersionOrReagent(), amrEntry.getLaboratoryTypingMethodVersionOrReagent()) &&
-                Objects.equals(getTestingStandard(), amrEntry.getTestingStandard());
+                Objects.equals(getTestingStandard(), amrEntry.getTestingStandard()) &&
+                Objects.equals(getDstMedia(), amrEntry.getDstMedia()) &&
+                Objects.equals(getDstMethod(), amrEntry.getDstMethod()) &&
+                Objects.equals(getCriticalConcentration(), amrEntry.getCriticalConcentration());
     }
 
     @Override
@@ -183,6 +212,9 @@ public class AMREntry implements Comparable<AMREntry>{
         private String laboratoryTypingPlatform = "";
         private String laboratoryTypingMethodVersionOrReagent = "";
         private String testingStandard;
+        private String dstMedia;
+        private String dstMethod;
+        private String criticalConcentration;
 
         @JsonCreator
         public Builder() { }
@@ -255,40 +287,59 @@ public class AMREntry implements Comparable<AMREntry>{
             return this;
         }
 
+        @JsonProperty
+        public Builder withDstMedia(String media) {
+            this.dstMedia = media;
+            return this;
+        }
+
+        @JsonProperty
+        public Builder withDstMethod(String method) {
+            this.dstMethod = method;
+            return this;
+        }
+        @JsonProperty
+        public Builder withCriticalConcentration(String concentration) {
+            this.criticalConcentration = concentration;
+            return this;
+        }
+
         public AMREntry build() {
-            if (this.antibiotic == null || this.antibiotic.isEmpty()) {
-                throw AMREntryBuldingException.createForMissingField("antibiotic");
-            }
+//            if (this.antibiotic == null || this.antibiotic.isEmpty()) {
+//                throw AMREntryBuldingException.createForMissingField("antibiotic");
+//            }
+//
+//            if (this.resistancePhenotype == null || this.resistancePhenotype.isEmpty()) {
+//                throw AMREntryBuldingException.createForMissingField("resistance phenotype");
+//            }
+//
+//            if (this.measurementValue == null) {
+//                throw AMREntryBuldingException.createForMissingField("measurementValue sign");
+//            }
+//
+//            if (this.measurementSign == null || this.measurementSign.isEmpty()) {
+//                throw AMREntryBuldingException.createForMissingField("measurementValue sign");
+//            }
+//            if (this.measurementUnits == null || this.measurementUnits.isEmpty()) {
+//                throw AMREntryBuldingException.createForMissingField("measurementValue unit");
+//            }
+//
+//            if (this.vendor == null || this.vendor.isEmpty()) {
+//                throw AMREntryBuldingException.createForMissingField("vendor");
+//            }
+//            if (this.laboratoryTypingMethod == null || this.laboratoryTypingMethod.isEmpty()) {
+//                throw AMREntryBuldingException.createForMissingField("laboratory typing method");
+//            }
+//
+//            if (this.testingStandard == null || this.testingStandard.isEmpty()) {
+//                throw AMREntryBuldingException.createForMissingField("testing standard");
+//            }
 
-            if (this.resistancePhenotype == null || this.resistancePhenotype.isEmpty()) {
-                throw AMREntryBuldingException.createForMissingField("resistance phenotype");
-            }
-
-            if (this.measurementValue == null) {
-                throw AMREntryBuldingException.createForMissingField("measurementValue sign");
-            }
-
-            if (this.measurementSign == null || this.measurementSign.isEmpty()) {
-                throw AMREntryBuldingException.createForMissingField("measurementValue sign");
-            }
-            if (this.measurementUnits == null || this.measurementUnits.isEmpty()) {
-                throw AMREntryBuldingException.createForMissingField("measurementValue unit");
-            }
-
-            if (this.vendor == null || this.vendor.isEmpty()) {
-                throw AMREntryBuldingException.createForMissingField("vendor");
-            }
-            if (this.laboratoryTypingMethod == null || this.laboratoryTypingMethod.isEmpty()) {
-                throw AMREntryBuldingException.createForMissingField("laboratory typing method");
-            }
-
-            if (this.testingStandard == null || this.testingStandard.isEmpty()) {
-                throw AMREntryBuldingException.createForMissingField("testing standard");
-            }
 
             return new AMREntry(this.antibiotic, this.resistancePhenotype, this.measurementSign, this.measurementValue,
                     this.measurementUnits, this.vendor, this.laboratoryTypingMethod, this.laboratoryTypingPlatform,
-                    this.laboratoryTypingMethodVersionOrReagent, this.testingStandard);
+                    this.laboratoryTypingMethodVersionOrReagent, this.testingStandard,
+                    this.dstMedia, this.dstMethod, this.criticalConcentration);
         }
 
     }

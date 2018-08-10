@@ -6,13 +6,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import java.net.URI;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 //@JsonDeserialize(builder = AMRTable.Builder.class)
-public class AMRTable extends AbstractData implements Comparable<AMRTable> {
+public class AMRTable extends AbstractData implements Comparable<AbstractData> {
 
     private final URI schema;
     private final Set<AMREntry> amrEntries;
@@ -38,12 +35,33 @@ public class AMRTable extends AbstractData implements Comparable<AMRTable> {
     }
 
     @Override
-    public int compareTo(AMRTable other) {
+    public int compareTo(AbstractData other) {
+
         if (other == null) {
             return 1;
         }
 
-        return nullSafeStringComparison(this.schema.toString(), other.schema.toString());
+        if ( !(other instanceof AMRTable) ) {
+            return 1;
+        }
+
+        AMRTable otherAmrTable = (AMRTable) other;
+        Set<AMREntry> otherTableAMREntries = otherAmrTable.getStructuredData();
+        for (AMREntry entry: this.getStructuredData()) {
+            Optional<AMREntry> otherEntry = otherTableAMREntries.parallelStream()
+                    .filter(e -> e.equals(entry)).findFirst();
+            if (! otherEntry.isPresent()) {
+                return 1;
+            } else {
+                int comparison = entry.compareTo(otherEntry.get());
+                if (0 != comparison) {
+                    return comparison;
+                }
+            }
+        }
+
+
+        return nullSafeStringComparison(this.schema.toString(), otherAmrTable.schema.toString());
         //TODO does it make sense to compare amr data?
     }
 
@@ -92,7 +110,7 @@ public class AMRTable extends AbstractData implements Comparable<AMRTable> {
         }
 
         @JsonProperty
-        public Builder withEntry(AMREntry entry) {
+        public Builder addEntry(AMREntry entry) {
             this.amrEntries.add(entry);
             return this;
         }
