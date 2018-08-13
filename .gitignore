@@ -88,3 +88,4 @@ fabric.properties
 /notes/setup-notes.md
 /livelist.txt
 /livelist-prod.txt
+/.gradle/
