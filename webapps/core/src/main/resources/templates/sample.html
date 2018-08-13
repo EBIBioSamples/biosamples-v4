@@ -49,6 +49,9 @@
 			<th:block th:include="fragments/sample :: relationships (${sample.relationships})"></th:block>
 			<th:block th:include="fragments/sample :: externalReferences (${sample.externalReferences})"></th:block>
 
+			<th:block th:if="${sample.data.size() > 0}">
+				<th:block th:each="data: ${sample.data}" th:include="fragments/structured_data :: amr_table(${data})"></th:block>
+			</th:block>
 		</div>
 	</div>
 	<th:block th:include="fragments/footer :: footer"></th:block>
