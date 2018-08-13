@@ -17,9 +17,9 @@
                 }
             </script>
             <div>
-				<input id="filter-apply" type="submit" th:form="local-search" class="button columns medium-12" value="Apply filters" disabled/>
-				<input id="filter-clear" th:onclick="|clearFilters()|"
-                       th:form="local-search" class="button columns medium-12"
+				<input id="filter-apply" type="submit" th:form="local-search" class="button columns large-6" value="Apply filters" disabled/>
+				<input id="filter-clear" th:onclick="|clearFilters()|" type="button"
+                       th:form="local-search" class="button columns large-6"
                        value="Clear filters" th:disabled="${filters.isEmpty()}"/>
 			</div>
 			<div th:each="facet: ${facets}"
