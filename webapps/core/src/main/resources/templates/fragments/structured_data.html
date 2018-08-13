@@ -6,22 +6,26 @@
 <body>
     <section th:fragment="amr_table(data)">
              <!--th:with=}">-->
-        <th:block th:with="allEntries=${data.getStructuredData()},
-                           firstAmrEntry=${allEntries.iterator().next()}">
-            <table th:with="headers=${@amrEntryToMapConverter.convert(firstAmrEntry).keySet()}">
-                <thead>
-                   <tr>
-                       <th th:each="head: ${headers}" th:text="${head}"></th>
-                   </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="entryObject: ${allEntries}"
-                        th:with="entryMap = ${@amrEntryToMapConverter.convert(entryObject)}">
-                        <td th:each="head: ${headers}" th:text="${entryMap.get(head)}"></td>
-                    </tr>
-                </tbody>
-            </table>
-        </th:block>
+        <h3>
+            Antibiogram data
+        </h3>
+        <div style="max-width: 100%; overflow-x: scroll;">
+            <th:block th:with="amrEntryList=${@amrTableToMapConverter.convert(data)},
+                               firstAmrEntry=${amrEntryList.get(0)}">
+                <table th:with="headers=${firstAmrEntry.keySet()}">
+                    <thead>
+                       <tr>
+                           <th th:each="head: ${headers}" th:text="${head}"></th>
+                       </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="amrEntry: ${amrEntryList}">
+                            <td th:each="head: ${headers}" th:text="${amrEntry.get(head)}"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </th:block>
+        </div>
     </section>
 </body>
 </html>
