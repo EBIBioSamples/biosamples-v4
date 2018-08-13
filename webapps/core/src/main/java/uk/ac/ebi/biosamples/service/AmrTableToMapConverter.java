@@ -14,12 +14,9 @@ public class AmrTableToMapConverter implements Converter<AMRTable, List<Map<Stri
     @Override
     public List<Map<String, String>> convert(AMRTable amrTable) {
 
-        List<Map<String, String>> tempMap = new ArrayList<>();
-        Set<String> fieldsWithValue = new HashSet<>();
+        List<Map<String, String>> amrTableMap = new ArrayList<>();
 
-        Set<AMREntry> tableEntries = amrTable.getStructuredData();
-
-        for(AMREntry amrEntry: tableEntries) {
+        for(AMREntry amrEntry: amrTable.getStructuredData()) {
             Map<String, String> amrEntryMap = new HashMap<>();
             Method[] classMethods = AMREntry.class.getDeclaredMethods();
             for (Method m: classMethods) {
@@ -30,33 +27,20 @@ public class AmrTableToMapConverter implements Converter<AMRTable, List<Map<Stri
                         if (value != null && !value.isEmpty()) {
                             String fieldName = getFieldFromMethod(methodName);
                             amrEntryMap.put(fieldName, value);
-                            fieldsWithValue.add(fieldName);
                         }
                     } catch (IllegalAccessException | InvocationTargetException e) {
                         e.printStackTrace();
                     }
                 }
             }
-            tempMap.add(amrEntryMap);
+            amrTableMap.add(amrEntryMap);
         }
 
-        // Clean the table from empty fields
-//        return tempMap.parallelStream().peek(entry -> {
-//            Set<String>  absentKeys = entry.keySet();
-//            absentKeys.removeAll(fieldsWithValue);
-//            for(String key: absentKeys) {
-//                entry.remove(key);
-//            }
-//        }).collect(Collectors.toList());
-        return tempMap;
+        return amrTableMap;
 
     }
 
     private String getFieldFromMethod(String methodName) {
-//        String[] nameParts = methodName.replaceFirst("get", "")
-//                .split("[A-Z]");
-//
-//        return String.join(" ", nameParts);
         return methodName
                 .replaceFirst("get", "")
                 .replaceAll(
