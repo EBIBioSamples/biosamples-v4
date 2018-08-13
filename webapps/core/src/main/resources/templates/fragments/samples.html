@@ -6,16 +6,6 @@
 <body>
 	<section th:fragment="facets (facets, filters)">
 		<div class="button-grid">
-            <script th:inline="javascript">
-                function clearFilters() {
-                    let $filtersCheckboxes = $(".facet-checkbox");
-                    filterForm = $("#local-search");
-                    $filtersCheckboxes.each(function(index,elem){
-                        elem.checked = false;
-                    });
-                    filterForm.submit();
-                }
-            </script>
             <div>
 				<input id="filter-apply" type="submit" th:form="local-search" class="button columns large-6" value="Apply filters" disabled/>
 				<input id="filter-clear" th:onclick="|clearFilters()|" type="button"
@@ -58,6 +48,16 @@
                     </label>
 				</div>
 			</div>
+			<script th:inline="javascript">
+                function clearFilters() {
+                    let $filtersCheckboxes = $(".facet-checkbox");
+                    filterForm = $("#local-search");
+                    $filtersCheckboxes.each(function(index,elem){
+                        elem.checked = false;
+                    });
+                    filterForm.submit();
+                }
+			</script>
 		</div>
 	</section>
 
