@@ -33,6 +33,8 @@ label.facet > .show-if-checked { margin-right: 5px; }
 
 #filter-apply:disabled { background-color: #999; }
 
+#filter-clear:disabled { background-color: #999; }
+
 /*
 #local-masthead.is-stuck .menu>li.sticky-search { display: inherit; }
 #local-masthead .menu>li.sticky-search { display:none; }
