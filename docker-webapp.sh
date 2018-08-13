@@ -2,13 +2,24 @@
 set -e
 
 clean=0
+
 while [ "$1" != "" ]; do
     case $1 in
-        -c | --clean )    		clean=1
-                                ;;
+        -c | --clean )
+            clean=1
+            ;;
+        --skipTests )
+            testArgs=-DskipTests
+            ;;
     esac
     shift
 done
+
+if [ ! -z "$testArgs" ] 
+then
+    echo "Tests will be skipped during building"
+    echo ""
+fi
 
 #cleanup any previous data
 if [ $clean == 1 ]
@@ -17,10 +28,10 @@ then
 	#remove any images, in case of out-of-date or corrupt images
 	#docker-compose down --volumes --remove-orphans
 	docker-compose down --volumes --rmi local --remove-orphans
-	mvn -T 2C -P embl-ebi clean package -Dembedmongo.wait
+	mvn -T 2C  clean package -Dembedmongo.wait ${testArg}
 else
 	docker-compose down --rmi local --remove-orphans
-	mvn -T 2C -P embl-ebi package -Dembedmongo.wait
+	mvn -T 2C  package -Dembedmongo.wait ${testArg}
 fi
 set -e
 

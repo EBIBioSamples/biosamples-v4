@@ -339,7 +339,7 @@ services:
     #- BIOSAMPLES_CLIENT_AAP_USERNAME=override_in_docker-compose.override.yml
     #- BIOSAMPLES_CLIENT_AAP_PASSWORD=override_in_docker-compose.override.yml
     - BIOSAMPLES_LEGACYAPIKEY=fooqwerty
-       
+
   mongo:
     image: mongo:3.2
     volumes:

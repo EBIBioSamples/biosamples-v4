@@ -25,6 +25,7 @@
 		<module>solr</module>
 		<module>sitemap</module>
 		<module>jsonld</module>
+		<module>ga4gh</module>
 		<module>legacyxml</module>
 		<module>legacyjson</module>
 	</modules>

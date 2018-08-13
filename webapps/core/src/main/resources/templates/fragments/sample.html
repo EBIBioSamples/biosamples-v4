@@ -164,6 +164,7 @@
                     <option th:value="@{/samples/{xml}(xml=${sample.accession} + '.xml')}">XML</option>
                     <option th:value="@{/samples/{json}(json=${sample.accession} + '.json')}">JSON</option>
                     <option th:value="@{/samples/{ldjson}(ldjson=${sample.accession} + '.ldjson')}">BioSchemas</option>
+					<option th:value="@{/samples/{phenopacket}(phenopacket=${sample.accession}+'.phenopacket')}">Phenopacket</option>
                 </select>
             </label>
         </form>
