@@ -1,39 +1,32 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
-
 	<artifactId>webapps-core</artifactId>
-
 	<packaging>war</packaging>
-
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
 		<version>4.1.2-SNAPSHOT</version>
 		<relativePath>../../</relativePath>
 	</parent>
-
 	<properties>
 		<snippetsDirectory>${project.build.directory}/generated-snippets</snippetsDirectory>
-		<protobuf.version>3.5.1</protobuf.version>
 	</properties>
-
 	<dependencies>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>utils-webapp</artifactId>
 			<version>${bsd2017.version}</version>
-		</dependency>	
+		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>utils-mongo</artifactId>
 			<version>${bsd2017.version}</version>
-		</dependency>	
+		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>utils-thread</artifactId>
 			<version>${bsd2017.version}</version>
-		</dependency>	
+		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>properties</artifactId>
@@ -43,7 +36,7 @@
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>messaging</artifactId>
 			<version>${bsd2017.version}</version>
-		</dependency>	
+		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>models-solr</artifactId>
@@ -64,7 +57,11 @@
 			<artifactId>models-legacyxml</artifactId>
 			<version>${bsd2017.version}</version>
 		</dependency>
-		
+		<dependency>
+			<groupId>uk.ac.ebi.biosamples</groupId>
+			<artifactId>models-ga4gh</artifactId>
+			<version>${bsd2017.version}</version>
+		</dependency>
 		<!-- use Thymleaf for HTML templating -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -74,16 +71,10 @@
 			<groupId>org.thymeleaf.extras</groupId>
 			<artifactId>thymeleaf-extras-java8time</artifactId>
 		</dependency>
-
 		<!-- other spring dependencies -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-actuator</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.hateoas</groupId>
@@ -93,12 +84,11 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-rest</artifactId>
 		</dependency>
-		
 		<!-- aap client -->
-<!--         <dependency> -->
-<!--             <groupId>org.springframework.boot</groupId> -->
-<!--             <artifactId>spring-boot-starter-security</artifactId> -->
-<!--         </dependency> -->
+		<!--         <dependency> -->
+		<!--             <groupId>org.springframework.boot</groupId> -->
+		<!--             <artifactId>spring-boot-starter-security</artifactId> -->
+		<!--         </dependency> -->
 		<dependency>
 			<groupId>uk.ac.ebi.tsc.aap.client</groupId>
 			<artifactId>security</artifactId>
@@ -109,14 +99,11 @@
 			<artifactId>service</artifactId>
 			<version>1.0.1-SNAPSHOT</version>
 		</dependency>
-		
 		<!-- needed for traverson to work properly -->
 		<dependency>
 			<groupId>com.jayway.jsonpath</groupId>
 			<artifactId>json-path</artifactId>
 		</dependency>
-
-
 		<!-- mark tomcat as provided so we can deploy to tomcat -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -150,84 +137,40 @@
 		<dependency>
 			<groupId>de.flapdoodle.embed</groupId>
 			<artifactId>de.flapdoodle.embed.mongo</artifactId>
-            <scope>test</scope>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
-		    <groupId>javax.xml.bind</groupId>
-		    <artifactId>jaxb-api</artifactId>
-		    <version>2.3.0</version>
-            <scope>runtime</scope>
+			<groupId>javax.xml.bind</groupId>
+			<artifactId>jaxb-api</artifactId>
+			<version>2.3.0</version>
+			<scope>runtime</scope>
 		</dependency>
 		<dependency>
-		    <groupId>com.sun.xml.bind</groupId>
-		    <artifactId>jaxb-core</artifactId>
-		    <version>2.3.0</version>
-            <scope>runtime</scope>
+			<groupId>com.sun.xml.bind</groupId>
+			<artifactId>jaxb-core</artifactId>
+			<version>2.3.0</version>
+			<scope>runtime</scope>
 		</dependency>
 		<dependency>
-		    <groupId>com.sun.xml.bind</groupId>
-		    <artifactId>jaxb-impl</artifactId>
-		    <version>2.3.0</version>
-            <scope>runtime</scope>
+			<groupId>com.sun.xml.bind</groupId>
+			<artifactId>jaxb-impl</artifactId>
+			<version>2.3.0</version>
+			<scope>runtime</scope>
 		</dependency>
-		<dependency>
-			<groupId>com.google.protobuf</groupId>
-			<artifactId>protobuf-java</artifactId>
-			<version>${protobuf.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.google.protobuf</groupId>
-			<artifactId>protobuf-java-util</artifactId>
-			<version>${protobuf.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.phenopackets</groupId>
-			<artifactId>phenopacket-schema</artifactId>
-			<version>0.0.7</version>
-		</dependency>
-		<dependency>
-			<groupId>uk.ac.ebi.biosamples</groupId>
-			<artifactId>biosamples-spring-boot-starter</artifactId>
-			<version>4.0.9-SNAPSHOT</version>
-			<scope>compile</scope>
-		</dependency>
-        <dependency>
-            <groupId>uk.ac.ebi.biosamples</groupId>
-            <artifactId>models-ga4gh</artifactId>
-            <version>4.1.1-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
-		<dependency>
-			<groupId>com.jsunsoft.http</groupId>
-			<artifactId>http-request</artifactId>
-			<version>1.0.1</version>
-		</dependency>
-		<dependency>
-			<groupId>org.mock-server</groupId>
-			<artifactId>mockserver-netty</artifactId>
-			<version>3.10.8</version>
-		</dependency>
-		<dependency>
-			<groupId>org.mock-server</groupId>
-			<artifactId>mockserver-client-java</artifactId>
-			<version>3.10.8</version>
-		</dependency>
-    </dependencies>
-
+	</dependencies>
 	<build>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-	            <executions>
-	                <execution>
-	                    <goals>
-	                        <goal>build-info</goal>
-	                    </goals>
-	                </execution>
-	            </executions>
+				<executions>
+					<execution>
+						<goals>
+							<goal>build-info</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
-
 			<plugin>
 				<groupId>org.asciidoctor</groupId>
 				<artifactId>asciidoctor-maven-plugin</artifactId>
@@ -245,13 +188,13 @@
 					<sourceDirectory>src/main/asciidoc</sourceDirectory>
 					<outputDirectory>${project.build.directory}/${project.artifactId}-${project.version}/WEB-INF/classes/templates/asciidoc/</outputDirectory>
 					<backend>html</backend>
- 					<doctype>book</doctype>
-					 <attributes>
-                         <snippets>${snippetsDirectory}</snippets>
-						 <source-highlighter>highlightjs</source-highlighter>
-						 <toc-title>Contents</toc-title>
-						 <toclevels>2</toclevels>
-					 </attributes>
+					<doctype>book</doctype>
+					<attributes>
+						<snippets>${snippetsDirectory}</snippets>
+						<source-highlighter>highlightjs</source-highlighter>
+						<toc-title>Contents</toc-title>
+						<toclevels>2</toclevels>
+					</attributes>
 				</configuration>
 			</plugin>
 			<plugin>

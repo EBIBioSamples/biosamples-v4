@@ -57,7 +57,7 @@ services:
     - 8081:8080
     - 9090:9090
     - 8000:8000
-    
+
   biosamples-webapps-sampletab:
     image: biosamples:latest
     links:
@@ -97,7 +97,7 @@ services:
     - biosamples.webapp.core.uri=http://localhost:8081/biosamples
     ports:
     - 8082:8080
-  
+
   biosamples-webapps-legacyxml:
     image: biosamples:latest
     links:
@@ -129,30 +129,30 @@ services:
   biosamples-webapps-legacyjson:
     image: biosamples:latest
     links:
-      - biosamples-webapps-core
+    - biosamples-webapps-core
     volumes:
-      - logs:/logs
+    - logs:/logs
     command:
-      - java
-      - -jar
-      - webapps-legacyjson-4.1.2-SNAPSHOT.war
+    - java
+    - -jar
+    - webapps-legacyjson-4.1.2-SNAPSHOT.war
     environment:
-      - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
-      - SERVER_SERVLET_CONTEXT-PATH=/biosamples/api
-      - SERVER_CONTEXT-PATH=/biosamples/api
-      - SPRING_JACKSON_SERIALIZATION_INDENT_OUTPUT=true
-      - LOGGING_FILE=/logs/webapps-legacyjson.log
-      - SERVER_TOMCAT_ACCESSLOG_ENABLED=true
-      - SERVER_TOMCAT_ACCESSLOG_DIRECTORY=/logs
-      - SERVER_TOMCAT_ACCESSLOG_PREFIX=webapps-legacyjson.access
-      - server.tomcat.accesslog.pattern=- %l %u %t \"%r\" %s %b %D %{Content-Type}o
-      - ENDPOINTS_SHUTDOWN_ENABLED=true
-      - ENDPOINTS_SHUTDOWN_SENSITIVE=false
-      # Provide AAP infos
-      # - BIOSAMPLES_CLIENT_AAP_USERNAME=override_in_docker-compose.override.yml
-      # - BIOSAMPLES_CLIENT_AAP_PASSWORD=override_in_docker-compose.override.yml
+    - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
+    - SERVER_SERVLET_CONTEXT-PATH=/biosamples/api
+    - SERVER_CONTEXT-PATH=/biosamples/api
+    - SPRING_JACKSON_SERIALIZATION_INDENT_OUTPUT=true
+    - LOGGING_FILE=/logs/webapps-legacyjson.log
+    - SERVER_TOMCAT_ACCESSLOG_ENABLED=true
+    - SERVER_TOMCAT_ACCESSLOG_DIRECTORY=/logs
+    - SERVER_TOMCAT_ACCESSLOG_PREFIX=webapps-legacyjson.access
+    - server.tomcat.accesslog.pattern=- %l %u %t \"%r\" %s %b %D %{Content-Type}o
+    - ENDPOINTS_SHUTDOWN_ENABLED=true
+    - ENDPOINTS_SHUTDOWN_SENSITIVE=false
+    # Provide AAP infos
+    # - BIOSAMPLES_CLIENT_AAP_USERNAME=override_in_docker-compose.override.yml
+    # - BIOSAMPLES_CLIENT_AAP_PASSWORD=override_in_docker-compose.override.yml
     ports:
-      - 8084:8080
+    - 8084:8080
 
   biosamples-agents-solr:
     image: biosamples:latest
@@ -192,7 +192,7 @@ services:
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-ena.log
-    
+
   biosamples-pipelines-ncbi:
     image: biosamples:latest
     volumes:
@@ -206,7 +206,7 @@ services:
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-ncbi.log
-    
+
   biosamples-pipelines-accession:
     image: biosamples:latest
     volumes:
@@ -219,8 +219,8 @@ services:
     - pipelines-accession-4.1.2-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
-    - LOGGING_FILE=/logs/pipelines-accession.log      
-    
+    - LOGGING_FILE=/logs/pipelines-accession.log
+
   biosamples-pipelines-sampletab:
     image: biosamples:latest
     volumes:
@@ -233,8 +233,8 @@ services:
     - pipelines-sampletab-4.1.2-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_SAMPLETAB_URI=http://biosamples-webapps-sampletab:8080/biosamples/sampletab/v4
-    - LOGGING_FILE=/logs/pipelines-sampletab.log   
-    
+    - LOGGING_FILE=/logs/pipelines-sampletab.log
+
   biosamples-pipelines-copydown:
     image: biosamples:latest
     volumes:
@@ -247,8 +247,8 @@ services:
     - pipelines-copydown-4.1.2-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
-    - LOGGING_FILE=/logs/pipelines-copydown.log  
-    
+    - LOGGING_FILE=/logs/pipelines-copydown.log
+
   biosamples-pipelines-curation:
     volumes:
     - logs:/logs
@@ -264,7 +264,7 @@ services:
     - LOGGING_FILE=/logs/pipelines-curation.log
     - spring.cache.cache-names=ols_short
     - spring.cache.caffeine.spec=maximumSize=50000
-    
+
   biosamples-pipelines-zooma:
     volumes:
     - logs:/logs
@@ -280,7 +280,7 @@ services:
     - LOGGING_FILE=/logs/pipelines-zooma.log
     - spring.cache.cache-names=zooma,ols_short
     - spring.cache.caffeine.spec=maximumSize=50000
-    
+
   biosamples-pipelines-reindex:
     volumes:
     - logs:/logs
@@ -296,7 +296,7 @@ services:
     - LOGGING_FILE=/logs/pipelines-reindex.log
     - spring.data.mongodb.uri=mongodb://mongo/biosamples
     - SPRING_RABBITMQ_HOST=rabbitmq
-    
+
   biosamples-pipelines-export:
     volumes:
     - logs:/logs
@@ -313,7 +313,7 @@ services:
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-export.log
-           
+
   biosamples-integration:
     volumes:
     - logs:/logs
@@ -347,7 +347,7 @@ services:
     - ./docker/mongoarchive:/mongoarchive
     ports:
     - 27017:27017
-    
+
   rabbitmq:
     image: rabbitmq:3.6-management-alpine
     hostname: biosamples-rabbitmq
@@ -356,7 +356,7 @@ services:
     - 15672:15672
     volumes:
     - rabbitmq_data:/var/lib/rabbitmq/mnesia
-    
+
   solr:
     image: solr:6.6-alpine
     ports:
@@ -370,10 +370,9 @@ services:
     - docker-entrypoint.sh
     - solr-precreate
     - samples
-    
+
 volumes:
   solr_data: null
   mongo_data: null
   rabbitmq_data: null
   logs: null
-
