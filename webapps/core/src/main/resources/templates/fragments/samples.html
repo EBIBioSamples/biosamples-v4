@@ -7,7 +7,10 @@
 	<section th:fragment="facets (facets, filters)">
 		<div class="button-grid">
             <div>
-				<input id="filter-apply" type="submit" th:form="local-search" class="button columns medium-12" value="Apply filters" disabled/>
+				<input id="filter-apply" type="submit" th:form="local-search" class="button columns large-6" value="Apply filters" disabled/>
+				<input id="filter-clear" th:onclick="|clearFilters()|" type="button"
+                       th:form="local-search" class="button columns large-6"
+                       value="Clear filters" th:disabled="${filters.isEmpty()}"/>
 			</div>
 			<div th:each="facet: ${facets}"
 				 th:with="facetType = ${facet.getType().getFacetName()},
@@ -45,6 +48,16 @@
                     </label>
 				</div>
 			</div>
+			<script th:inline="javascript">
+                function clearFilters() {
+                    let $filtersCheckboxes = $(".facet-checkbox");
+                    filterForm = $("#local-search");
+                    $filtersCheckboxes.each(function(index,elem){
+                        elem.checked = false;
+                    });
+                    filterForm.submit();
+                }
+			</script>
 		</div>
 	</section>
 
@@ -67,12 +80,12 @@
 			<p th:text="'Showing '+(${start}+1)+' to '+(${start}+${page.getNumberOfElements()})+' of '+${page.getTotalElements()}+' results'">
 				Showing	1 to 10 of 6268 results
 			</p>
-			
+
 			<span th:replace=":: pagination (${paginations})"></span>
-			
+
 			<div class="button-grid" th:each="sample : ${page}" th:insert="fragments/samples :: result (${sample})">
 			</div>
-			
+
 			<span th:replace=":: pagination (${paginations})"></span>
 		</div>
 		<div th:if="${page.getTotalElements() == 0}" >
@@ -118,16 +131,16 @@
 		<ul class="pagination" role="navigation" aria-label="Pagination">
 			<li th:if="${paginations.previous}" class="pagination-previous"><a th:href="${paginations.previous.url}" aria-label="Previous page">Previous <span class="show-for-sr">page</span></a></li>
 			<li th:if="!${paginations.previous}" class="pagination-previous disabled">Previous <span class="show-for-sr" >page</span></li>
-			
+
 			<span th:each="pagination : ${paginations}" th:remove="tag">
 				<li class="ellipsis" aria-hidden="true" th:if="${pagination.skip} == true"></li>
 				<li th:if="!${pagination.current}"><a href="#" aria-label="Page 2" th:attr="aria-label='Page ${pagination.page}'" th:text="${pagination.page}" th:href="${pagination.url}">2</a></li>
 				<li class=current th:if="${pagination.current}"><span class="show-for-sr">You're on	page</span><span th:text=" ${pagination.page}" th:remove="tag"></span></li>
 			</span>
-			
+
 			<li th:if="${paginations.next}" class="pagination-next"><a th:href="${paginations.next.url}" aria-label="Next page">Next <span class="show-for-sr">page</span></a></li>
 			<li th:if="!${paginations.next}" class="pagination-next disabled">Next <span class="show-for-sr">page</span></li>
-		</ul>		
+		</ul>
 	</section>
 
 	<span th:fragment="datetime (instant)">

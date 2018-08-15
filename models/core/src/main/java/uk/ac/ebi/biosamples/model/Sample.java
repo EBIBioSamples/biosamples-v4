@@ -1,9 +1,7 @@
 package uk.ac.ebi.biosamples.model;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
+
+import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
@@ -33,90 +31,115 @@ import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
 
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
+@JsonPropertyOrder({"name", "accession", "domain", "release", "update", "taxId", "characteristics", "relationships", "externalReferences", "releaseDate", "updateDate"})
 public class Sample implements Comparable<Sample> {
-	
-	protected String accession;
-	protected String name; 
-	
-	/**
-	 * This is the unique permanent ID of the AAP domain/team
-	 * that owns this sample.
-	 */
-	protected String domain;
-	
-	protected Instant release; 
-	protected Instant update;
+
+    protected String accession;
+    protected String name;
+
+    /**
+     * This is the unique permanent ID of the AAP domain/team
+     * that owns this sample.
+     */
+    protected String domain;
+
+    protected Instant release;
+    protected Instant update;
 
 	protected SortedSet<Attribute> attributes;
 	protected SortedSet<AbstractData> data;
 	protected SortedSet<Relationship> relationships;
 	protected SortedSet<ExternalReference> externalReferences;
 
-	protected SortedSet<Organization> organizations;
-	protected SortedSet<Contact> contacts;
-	protected SortedSet<Publication> publications;
+    protected SortedSet<Organization> organizations;
+    protected SortedSet<Contact> contacts;
+    protected SortedSet<Publication> publications;
 
+    protected Sample() {
 
-	protected Sample() {
-		
-	}
+    }
 
-	@JsonProperty("accession")
-	public String getAccession() {
-		return accession;
-	}
-
-	@JsonIgnore
-	public boolean hasAccession() {
-		if ( accession != null && accession.trim().length() != 0) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	@JsonProperty("name")
-	public String getName() {
-		return name;
-	}
-
-	@JsonProperty("domain")
-	public String getDomain() {
-		return domain;
-	}
-
-	//DO NOT specify the JSON property value manually, must be autoinferred or errors
-	@JsonSerialize(using = CustomInstantSerializer.class)
-	public Instant getRelease() {
-		return release;
-	}
-
-	//DO NOT specify the JSON property value manually, must be autoinferred or errors
-	@JsonSerialize(using = CustomInstantSerializer.class)
-	public Instant getUpdate() {
-		return update;
-	}
-
-	@JsonProperty(value="releaseDate", access=JsonProperty.Access.READ_ONLY)
-	public String getReleaseDate() {
-		return ZonedDateTime.ofInstant(release, ZoneOffset.UTC).format(ISO_LOCAL_DATE);
-	}
-
-	@JsonProperty(value="updateDate", access=JsonProperty.Access.READ_ONLY)
-	public String getUpdateDate() {
-		return ZonedDateTime.ofInstant(update, ZoneOffset.UTC).format(ISO_LOCAL_DATE);
-	}
+    @JsonProperty("accession")
+    public String getAccession() {
+        return accession;
+    }
 
     @JsonIgnore
-	public SortedSet<Attribute> getAttributes() {
-		return attributes;
-	}
+    public boolean hasAccession() {
+        if (accession != null && accession.trim().length() != 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
-	//DO NOT specify the JSON property value manually, must be autoinferred or errors
+    @JsonProperty("name")
+    public String getName() {
+        return name;
+    }
+
+    @JsonProperty("domain")
+    public String getDomain() {
+        return domain;
+    }
+
+    //DO NOT specify the JSON property value manually, must be autoinferred or errors
+    @JsonSerialize(using = CustomInstantSerializer.class)
+    public Instant getRelease() {
+        return release;
+    }
+
+    //DO NOT specify the JSON property value manually, must be autoinferred or errors
+    @JsonSerialize(using = CustomInstantSerializer.class)
+    public Instant getUpdate() {
+        return update;
+    }
+
+    @JsonProperty(value = "releaseDate", access = JsonProperty.Access.READ_ONLY)
+    public String getReleaseDate() {
+        return ZonedDateTime.ofInstant(release, ZoneOffset.UTC).format(ISO_LOCAL_DATE);
+    }
+
+    @JsonProperty(value = "updateDate", access = JsonProperty.Access.READ_ONLY)
+    public String getUpdateDate() {
+        return ZonedDateTime.ofInstant(update, ZoneOffset.UTC).format(ISO_LOCAL_DATE);
+    }
+
+    @JsonProperty(value = "taxId", access = JsonProperty.Access.READ_ONLY)
+    public Integer[] getTaxId() {
+        List<Integer> taxIds = new ArrayList<>();
+        for (Attribute attribute : attributes) {
+            if (attribute.getType().toLowerCase().equalsIgnoreCase("Organism") && !attribute.getIri().isEmpty()) {
+                attribute.getIri().stream().
+                        map(Object::toString).
+                        map(this::extractTaxIdFromIri).
+                        forEach(taxIds::add);
+            }
+        }
+        return taxIds.toArray(new Integer[taxIds.size()]);
+    }
+
+    private int extractTaxIdFromIri(String iri) {
+        if (iri.isEmpty()) return 0;
+        String segments[] = iri.split("NCBITaxon_");
+        try {
+            return Integer.parseInt(segments[segments.length - 1]);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+
+    }
+
+    @JsonIgnore
+    public SortedSet<Attribute> getAttributes() {
+        return attributes;
+    }
+
+    //DO NOT specify the JSON property value manually, must be autoinferred or errors
     @JsonSerialize(using = CharacteristicSerializer.class)
-	public SortedSet<Attribute> getCharacteristics() {
-		return attributes;
-	}
+    public SortedSet<Attribute> getCharacteristics() {
+        return attributes;
+    }
 
 	@JsonProperty("data")
 	public SortedSet<AbstractData> getData() {
@@ -128,28 +151,28 @@ public class Sample implements Comparable<Sample> {
 		return relationships;
 	}
 
-	@JsonProperty("externalReferences")
-	public SortedSet<ExternalReference> getExternalReferences() {
-		return externalReferences;
-	}
+    @JsonProperty("externalReferences")
+    public SortedSet<ExternalReference> getExternalReferences() {
+        return externalReferences;
+    }
 
-	@JsonProperty("organization")
-	public SortedSet<Organization> getOrganizations() {
-		return organizations;
-	}
+    @JsonProperty("organization")
+    public SortedSet<Organization> getOrganizations() {
+        return organizations;
+    }
 
-	@JsonProperty("contact")
-	public SortedSet<Contact> getContacts() {
-		return contacts;
-	}
+    @JsonProperty("contact")
+    public SortedSet<Contact> getContacts() {
+        return contacts;
+    }
 
-	@JsonProperty("publications")
-	public SortedSet<Publication> getPublications() {
-		return publications;
-	}
-	
+    @JsonProperty("publications")
+    public SortedSet<Publication> getPublications() {
+        return publications;
+    }
 
-	@Override
+
+    @Override
     public boolean equals(Object o) {
 
         if (o == this) return true;
@@ -157,7 +180,7 @@ public class Sample implements Comparable<Sample> {
             return false;
         }
         Sample other = (Sample) o;
-        
+
         //dont use update date for comparisons, too volatile
         
         return Objects.equals(this.name, other.name) 
@@ -173,150 +196,150 @@ public class Sample implements Comparable<Sample> {
         		&& Objects.equals(this.publications, other.publications);
     }
 
-	@Override
-	public int compareTo(Sample other) {
-		if (other == null) {
-			return 1;
-		}
-		
-		if (!this.accession.equals(other.accession)) {
-			return this.accession.compareTo(other.accession);
-		}
-		
-		if (!this.name.equals(other.name)) {
-			return this.name.compareTo(other.name);
-		}
+    @Override
+    public int compareTo(Sample other) {
+        if (other == null) {
+            return 1;
+        }
 
-		if (!this.release.equals(other.release)) {
-			return this.release.compareTo(other.release);
-		}
-		
-		if (!this.attributes.equals(other.attributes)) {
-			if (this.attributes.size() < other.attributes.size()) {
-				return -1;
-			} else if (this.attributes.size() > other.attributes.size()) {
-				return 1;
-			} else {
-				Iterator<Attribute> thisIt = this.attributes.iterator();
-				Iterator<Attribute> otherIt = other.attributes.iterator();
-				while (thisIt.hasNext() && otherIt.hasNext()) {
-					int val = thisIt.next().compareTo(otherIt.next());
-					if (val != 0) return val;
-				}
-			}
-		}
-		if (!this.relationships.equals(other.relationships)) {
-			if (this.relationships.size() < other.relationships.size()) {
-				return -1;
-			} else if (this.relationships.size() > other.relationships.size()) {
-				return 1;
-			} else {
-				Iterator<Relationship> thisIt = this.relationships.iterator();
-				Iterator<Relationship> otherIt = other.relationships.iterator();
-				while (thisIt.hasNext() && otherIt.hasNext()) {
-					int val = thisIt.next().compareTo(otherIt.next());
-					if (val != 0) return val;
-				}
-			}
-		}
-		if (!this.externalReferences.equals(other.externalReferences)) {
-			if (this.externalReferences.size() < other.externalReferences.size()) {
-				return -1;
-			} else if (this.externalReferences.size() > other.externalReferences.size()) {
-				return 1;
-			} else {
-				Iterator<ExternalReference> thisIt = this.externalReferences.iterator();
-				Iterator<ExternalReference> otherIt = other.externalReferences.iterator();
-				while (thisIt.hasNext() && otherIt.hasNext()) {
-					int val = thisIt.next().compareTo(otherIt.next());
-					if (val != 0) return val;
-				}
-			}
-		}
-		if (!this.organizations.equals(other.organizations)) {
-			if (this.organizations.size() < other.organizations.size()) {
-				return -1;
-			} else if (this.organizations.size() > other.organizations.size()) {
-				return 1;
-			} else {
-				Iterator<Organization> thisIt = this.organizations.iterator();
-				Iterator<Organization> otherIt = other.organizations.iterator();
-				while (thisIt.hasNext() && otherIt.hasNext()) {
-					int val = thisIt.next().compareTo(otherIt.next());
-					if (val != 0) return val;
-				}
-			}
-		}
-		if (!this.contacts.equals(other.contacts)) {
-			if (this.contacts.size() < other.contacts.size()) {
-				return -1;
-			} else if (this.contacts.size() > other.contacts.size()) {
-				return 1;
-			} else {
-				Iterator<Contact> thisIt = this.contacts.iterator();
-				Iterator<Contact> otherIt = other.contacts.iterator();
-				while (thisIt.hasNext() && otherIt.hasNext()) {
-					int val = thisIt.next().compareTo(otherIt.next());
-					if (val != 0) return val;
-				}
-			}
-		}
-		if (!this.publications.equals(other.publications)) {
-			if (this.publications.size() < other.publications.size()) {
-				return -1;
-			} else if (this.publications.size() > other.publications.size()) {
-				return 1;
-			} else {
-				Iterator<Publication> thisIt = this.publications.iterator();
-				Iterator<Publication> otherIt = other.publications.iterator();
-				while (thisIt.hasNext() && otherIt.hasNext()) {
-					int val = thisIt.next().compareTo(otherIt.next());
-					if (val != 0) return val;
-				}
-			}
-		}
-		return 0;
-	}
-    
+        if (!this.accession.equals(other.accession)) {
+            return this.accession.compareTo(other.accession);
+        }
+
+        if (!this.name.equals(other.name)) {
+            return this.name.compareTo(other.name);
+        }
+
+        if (!this.release.equals(other.release)) {
+            return this.release.compareTo(other.release);
+        }
+
+        if (!this.attributes.equals(other.attributes)) {
+            if (this.attributes.size() < other.attributes.size()) {
+                return -1;
+            } else if (this.attributes.size() > other.attributes.size()) {
+                return 1;
+            } else {
+                Iterator<Attribute> thisIt = this.attributes.iterator();
+                Iterator<Attribute> otherIt = other.attributes.iterator();
+                while (thisIt.hasNext() && otherIt.hasNext()) {
+                    int val = thisIt.next().compareTo(otherIt.next());
+                    if (val != 0) return val;
+                }
+            }
+        }
+        if (!this.relationships.equals(other.relationships)) {
+            if (this.relationships.size() < other.relationships.size()) {
+                return -1;
+            } else if (this.relationships.size() > other.relationships.size()) {
+                return 1;
+            } else {
+                Iterator<Relationship> thisIt = this.relationships.iterator();
+                Iterator<Relationship> otherIt = other.relationships.iterator();
+                while (thisIt.hasNext() && otherIt.hasNext()) {
+                    int val = thisIt.next().compareTo(otherIt.next());
+                    if (val != 0) return val;
+                }
+            }
+        }
+        if (!this.externalReferences.equals(other.externalReferences)) {
+            if (this.externalReferences.size() < other.externalReferences.size()) {
+                return -1;
+            } else if (this.externalReferences.size() > other.externalReferences.size()) {
+                return 1;
+            } else {
+                Iterator<ExternalReference> thisIt = this.externalReferences.iterator();
+                Iterator<ExternalReference> otherIt = other.externalReferences.iterator();
+                while (thisIt.hasNext() && otherIt.hasNext()) {
+                    int val = thisIt.next().compareTo(otherIt.next());
+                    if (val != 0) return val;
+                }
+            }
+        }
+        if (!this.organizations.equals(other.organizations)) {
+            if (this.organizations.size() < other.organizations.size()) {
+                return -1;
+            } else if (this.organizations.size() > other.organizations.size()) {
+                return 1;
+            } else {
+                Iterator<Organization> thisIt = this.organizations.iterator();
+                Iterator<Organization> otherIt = other.organizations.iterator();
+                while (thisIt.hasNext() && otherIt.hasNext()) {
+                    int val = thisIt.next().compareTo(otherIt.next());
+                    if (val != 0) return val;
+                }
+            }
+        }
+        if (!this.contacts.equals(other.contacts)) {
+            if (this.contacts.size() < other.contacts.size()) {
+                return -1;
+            } else if (this.contacts.size() > other.contacts.size()) {
+                return 1;
+            } else {
+                Iterator<Contact> thisIt = this.contacts.iterator();
+                Iterator<Contact> otherIt = other.contacts.iterator();
+                while (thisIt.hasNext() && otherIt.hasNext()) {
+                    int val = thisIt.next().compareTo(otherIt.next());
+                    if (val != 0) return val;
+                }
+            }
+        }
+        if (!this.publications.equals(other.publications)) {
+            if (this.publications.size() < other.publications.size()) {
+                return -1;
+            } else if (this.publications.size() > other.publications.size()) {
+                return 1;
+            } else {
+                Iterator<Publication> thisIt = this.publications.iterator();
+                Iterator<Publication> otherIt = other.publications.iterator();
+                while (thisIt.hasNext() && otherIt.hasNext()) {
+                    int val = thisIt.next().compareTo(otherIt.next());
+                    if (val != 0) return val;
+                }
+            }
+        }
+        return 0;
+    }
+
     @Override
     public int hashCode() {
     	//dont put update date in the hash because its not in comparison
     	return Objects.hash(name, accession, release, attributes, data, relationships, externalReferences, organizations, publications);
     }
-    
+
     @Override
     public String toString() {
-    	StringBuilder sb = new StringBuilder();
-    	sb.append("Sample(");
-    	sb.append(name);
-    	sb.append(",");
-    	sb.append(accession);
-    	sb.append(",");
-    	sb.append(domain);
-    	sb.append(",");
-    	sb.append(release);
-    	sb.append(",");
-    	sb.append(update);
-    	sb.append(",");
-    	sb.append(attributes);
-    	sb.append(",");
-    	sb.append(relationships);
-    	sb.append(",");
-    	sb.append(externalReferences);
-    	sb.append(",");
-    	sb.append(organizations);
-    	sb.append(",");
-    	sb.append(contacts);
-    	sb.append(",");
-    	sb.append(publications);
-    	sb.append(")");
-    	return sb.toString();
+        StringBuilder sb = new StringBuilder();
+        sb.append("Sample(");
+        sb.append(name);
+        sb.append(",");
+        sb.append(accession);
+        sb.append(",");
+        sb.append(domain);
+        sb.append(",");
+        sb.append(release);
+        sb.append(",");
+        sb.append(update);
+        sb.append(",");
+        sb.append(attributes);
+        sb.append(",");
+        sb.append(relationships);
+        sb.append(",");
+        sb.append(externalReferences);
+        sb.append(",");
+        sb.append(organizations);
+        sb.append(",");
+        sb.append(contacts);
+        sb.append(",");
+        sb.append(publications);
+        sb.append(")");
+        return sb.toString();
     }
     
 	public static Sample build( String name, 
 			String accession,
 			String domain,
-			Instant release, 
+			Instant release,
 			Instant update,
 			Set<Attribute> attributes,
 			Set<Relationship> relationships,
@@ -359,35 +382,35 @@ public class Sample implements Comparable<Sample> {
 		if (release == null ) throw new IllegalArgumentException("Sample release must be provided");
 		sample.release = release;
 
-		sample.attributes = new TreeSet<>();
-		if (attributes != null) {
-			sample.attributes.addAll(attributes);
-		}
+        sample.attributes = new TreeSet<>();
+        if (attributes != null) {
+            sample.attributes.addAll(attributes);
+        }
 
-		sample.relationships = new TreeSet<>();
-		if (relationships != null) {
-			sample.relationships.addAll(relationships);
-		}
+        sample.relationships = new TreeSet<>();
+        if (relationships != null) {
+            sample.relationships.addAll(relationships);
+        }
 
-		sample.externalReferences = new TreeSet<>();
-		if (externalReferences != null) {
-			sample.externalReferences.addAll(externalReferences);
-		}	
+        sample.externalReferences = new TreeSet<>();
+        if (externalReferences != null) {
+            sample.externalReferences.addAll(externalReferences);
+        }
 
-		sample.organizations = new TreeSet<>();
-		if (organizations != null) {
-			sample.organizations.addAll(organizations);
-		}	
+        sample.organizations = new TreeSet<>();
+        if (organizations != null) {
+            sample.organizations.addAll(organizations);
+        }
 
-		sample.contacts = new TreeSet<>();
-		if (contacts != null) {
-			sample.contacts.addAll(contacts);
-		}	
+        sample.contacts = new TreeSet<>();
+        if (contacts != null) {
+            sample.contacts.addAll(contacts);
+        }
 
-		sample.publications = new TreeSet<>();
-		if (publications != null) {
-			sample.publications.addAll(publications);
-		}
+        sample.publications = new TreeSet<>();
+        if (publications != null) {
+            sample.publications.addAll(publications);
+        }
 
 		sample.data = new TreeSet<>();
 		if (structuredData != null) {
@@ -396,6 +419,7 @@ public class Sample implements Comparable<Sample> {
 
 		return sample;
 	}
+
 
 	public static class Builder {
 

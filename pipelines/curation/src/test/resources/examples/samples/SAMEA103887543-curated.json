@@ -1,0 +1,89 @@
+{
+  "name" : "OAR_RI_989N_TEX_RAM",
+  "accession" : "SAMEA103887543",
+  "domain" : "self.BioSamplesMigration",
+  "release" : "2016-10-27T23:00:00Z",
+  "update" : "2018-06-06T15:05:49.236Z",
+  "characteristics" : {
+    "Material" : [ {
+      "text" : "organism",
+      "ontologyTerms" : [ "http://purl.obolibrary.org/obo/OBI_0100026" ]
+    } ],
+    "Organism" : [ {
+      "text" : "Ovis aries",
+      "ontologyTerms" : [ "http://purl.obolibrary.org/obo/NCBITaxon_9940" ]
+    } ],
+    "Sex" : [ {
+      "text" : "male",
+      "ontologyTerms" : [ "http://purl.obolibrary.org/obo/PATO_0000384" ]
+    } ],
+    "birth location" : [ {
+      "text" : "Lancashire, UK"
+    } ],
+    "breed" : [ {
+      "text" : "Texel",
+      "ontologyTerms" : [ "http://purl.obolibrary.org/obo/LBO_0000640" ]
+    } ],
+    "description" : [ {
+      "text" : "Texel, Adult Male, Ram UK183913 07-143"
+    } ],
+    "health status" : [ {
+      "text" : "normal",
+      "ontologyTerms" : [ "http://purl.obolibrary.org/obo/PATO_0000461" ]
+    } ],
+    "project" : [ {
+      "text" : "FAANG"
+    } ]
+  },
+  "relationships" : [ {
+    "source" : "SAMEA103887551",
+    "type" : "child of",
+    "target" : "SAMEA103887543"
+  }, {
+    "source" : "SAMEA103887540",
+    "type" : "derived from",
+    "target" : "SAMEA103887543"
+  }, {
+    "source" : "SAMEA103887542",
+    "type" : "derived from",
+    "target" : "SAMEA103887543"
+  }, {
+    "source" : "SAMEA103887544",
+    "type" : "derived from",
+    "target" : "SAMEA103887543"
+  }, {
+    "source" : "SAMEA103887546",
+    "type" : "derived from",
+    "target" : "SAMEA103887543"
+  }, {
+    "source" : "SAMEA103887553",
+    "type" : "derived from",
+    "target" : "SAMEA103887543"
+  }, {
+    "source" : "SAMEG319720",
+    "type" : "has member",
+    "target" : "SAMEA103887543"
+  } ],
+  "organization" : [ {
+    "Name" : "EMBL-EBI",
+    "Role" : "curator ",
+    "URL" : "http://www.ebi.ac.uk/"
+  }, {
+    "Name" : "The Roslin Institute and Royal Dick School of Veterinary Studies",
+    "Role" : "institution ",
+    "URL" : "http://www.roslin.ed.ac.uk/"
+  } ],
+  "contact" : [ {
+    "Name" : "Alan Archibald"
+  }, {
+    "Name" : "Emily Clark"
+  }, {
+    "Name" : "Heather Finlayson"
+  } ],
+  "publications" : [ {
+    "doi" : "doi:http://science.sciencemag.org/content/344/6188/1168",
+    "pubmed_id" : "24904168"
+  } ],
+  "releaseDate" : "2016-10-27",
+  "updateDate" : "2018-06-06"
+}
