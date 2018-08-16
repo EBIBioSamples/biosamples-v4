@@ -33,5 +33,6 @@
 		<module>export</module>
 		<module>copydown</module>
 		<module>livelist</module>
+		<module>duplicatetaxid</module>
 	</modules>
 </project>
