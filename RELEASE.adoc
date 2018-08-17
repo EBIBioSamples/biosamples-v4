@@ -8,9 +8,9 @@ This pages contains links to release notes for BioSamples for version 4.0.0 and 
 4.1.2
 ----
 
-* Sample JSON now contains a taxId field at the top level
+* Sample JSON now contains a numeric taxId field at the top level
 * Ontology terms now resolve to the defining ontology when they are available in multiple ontologies
-* Requests for a sample now contain a computed ETag error to identify changes
+* Requests for a sample now contain a computed ETag header to identify changes
 * When requesting a private sample an explaination message is not provided as well as the 403 error code
 * The search UI now contains a clear filers button
 
