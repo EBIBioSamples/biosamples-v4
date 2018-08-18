@@ -50,7 +50,7 @@
             "name":"Experimental Factor Ontology",
             "namespacePrefix":"EFO",
             "url":"http://www.ebi.ac.uk/efo/efo.owl",
-            "version":"2.98"
+            "version":"2.99"
          }
       ]
    }
