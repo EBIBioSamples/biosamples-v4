@@ -74,6 +74,6 @@ public class TestConversion {
                 }
             }
         };
-        eraProDao.getSingleSample("SAMD00051364", rowCallbackHandler);
+        eraProDao.getSingleSample("SAMEA100000168", rowCallbackHandler);
     }
 }

@@ -19,6 +19,13 @@ import java.util.*;
 @Service
 public class EnaElementConverter implements Converter<Element, Sample> {
 
+    //Fields required by ENA content
+    private static final String ENA_ALIAS = "Alias";
+    private static final String ENA_SRA_ACCESSION = "SRA accession";
+    private static final String ENA_BROKER_NAME = "Broker name";
+    private static final String ENA_TITLE = "Title";
+    private static final String ENA_DESCRIPTION = "Description";
+
     private Logger log = LoggerFactory.getLogger(getClass());
 
     private static final String SAMPLE = "SAMPLE";
@@ -36,6 +43,7 @@ public class EnaElementConverter implements Converter<Element, Sample> {
     private static final String SAMPLE_ATTRIBUTES = "SAMPLE_ATTRIBUTES";
     private static final String DESCRIPTION = "DESCRIPTION";
     private static final String TITLE = "TITLE";
+
 
     @Autowired
     private TaxonomyService taxonomyService;
@@ -57,19 +65,19 @@ public class EnaElementConverter implements Converter<Element, Sample> {
         //ENA alias
         if (XmlPathBuilder.of(root).path(SAMPLE).attributeExists("alias")) {
             String alias = XmlPathBuilder.of(root).path(SAMPLE).attribute("alias").trim();
-            attributes.add(Attribute.build("ENA alias", alias));
+            attributes.add(Attribute.build(ENA_ALIAS, alias));
         }
 
         //ENA sra accession
         if (XmlPathBuilder.of(root).path(SAMPLE).attributeExists("accession")) {
             String sraAccession = XmlPathBuilder.of(root).path(SAMPLE).attribute("accession").trim();
-            attributes.add(Attribute.build("ENA sra accession", sraAccession));
+            attributes.add(Attribute.build(ENA_SRA_ACCESSION, sraAccession));
         }
 
         //ENA broker name
         if (XmlPathBuilder.of(root).path(SAMPLE).attributeExists("broker_name")) {
             String brokerName = XmlPathBuilder.of(root).path(SAMPLE).attribute("broker_name").trim();
-            attributes.add(Attribute.build("ENA broker name", brokerName));
+            attributes.add(Attribute.build(ENA_BROKER_NAME, brokerName));
         }
 
         //ENA title
@@ -79,18 +87,12 @@ public class EnaElementConverter implements Converter<Element, Sample> {
         } else if (XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, SCIENTIFIC_NAME).exists() && XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, SCIENTIFIC_NAME).text().trim().length() > 0) {
             title = XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, SCIENTIFIC_NAME).text().trim();
         }
-        attributes.add(Attribute.build("ENA title", title));
+        attributes.add(Attribute.build(ENA_TITLE, title));
 
         //ENA description
         if (XmlPathBuilder.of(root).path(SAMPLE, DESCRIPTION).exists() && XmlPathBuilder.of(root).path(SAMPLE, DESCRIPTION).text().trim().length() > 0) {
             String description = XmlPathBuilder.of(root).path(SAMPLE, DESCRIPTION).text().trim();
-            attributes.add(Attribute.build("ENA description", description));
-        }
-
-        //ENA taxonomy id
-        if (XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, TAXON_ID).exists() && XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, TAXON_ID).text().trim().length() > 0) {
-            String taxonomyId = XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, TAXON_ID).text().trim();
-            attributes.add(Attribute.build("ENA taxonomy id", taxonomyId));
+            attributes.add(Attribute.build(ENA_DESCRIPTION, description));
         }
 
         //put various other fields in as synonyms
