@@ -48,13 +48,12 @@ public class SolrFacetService {
         if (searchTerm == null || searchTerm.trim().length() == 0) {
             searchTerm = "*:*";
         }
-        String escapedSearchTerm = searchTerm == null ? null : ClientUtils.escapeQueryChars(searchTerm);
 
         List<Facet> facets = new ArrayList<>();
 
         //build a query out of the users string and any facets
         FacetQuery query = new SimpleFacetQuery();
-        query.addCriteria(new Criteria().expression(escapedSearchTerm));
+        query.addCriteria(new Criteria().expression(searchTerm));
         query.setTimeAllowed(TIMEALLOWED*1000);
 
 

@@ -33,8 +33,7 @@ public class FacetService {
 		//TODO allow update date range
 
 		long startTime = System.nanoTime();
-		String escapedText = text == null ? null : ClientUtils.escapeQueryChars(text);
-		List<Facet> facets = solrFacetService.getFacets(escapedText, filters, domains, facetPageable, facetValuePageable);
+		List<Facet> facets = solrFacetService.getFacets(text, filters, domains, facetPageable, facetValuePageable);
 		long endTime = System.nanoTime();
 		log.trace("Got solr facets in "+((endTime-startTime)/1000000)+"ms");
 		

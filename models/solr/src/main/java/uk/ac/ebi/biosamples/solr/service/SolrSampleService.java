@@ -71,8 +71,7 @@ public class SolrSampleService {
 	 */
 	public Page<SolrSample> fetchSolrSampleByText(String searchTerm, Collection<Filter> filters, 
 			Collection<String> domains, Pageable pageable) {
-		String escapedSearchTerm = searchTerm == null ? null : ClientUtils.escapeQueryChars(searchTerm);
-		Query query = buildQuery(escapedSearchTerm, filters, domains);
+		Query query = buildQuery(searchTerm, filters, domains);
 		query.setPageRequest(pageable);
 		query.setTimeAllowed(TIMEALLOWED*1000);
 		
@@ -90,8 +89,7 @@ public class SolrSampleService {
 	 */
 	public CursorArrayList<SolrSample> fetchSolrSampleByText(String searchTerm, Collection<Filter> filters, 
 			Collection<String> domains, String cursorMark, int size) {
-        String escapedSearchTerm = searchTerm == null ? null : ClientUtils.escapeQueryChars(searchTerm);
-		Query query = buildQuery(escapedSearchTerm, filters, domains);
+		Query query = buildQuery(searchTerm, filters, domains);
 		query.addSort(new Sort("id")); //this must match the field in solr
 		
 		return solrSampleRepository.findByQueryCursorMark(query, cursorMark, size);
