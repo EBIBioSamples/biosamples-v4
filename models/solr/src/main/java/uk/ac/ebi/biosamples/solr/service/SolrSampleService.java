@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.solr.client.solrj.util.ClientUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -89,8 +90,8 @@ public class SolrSampleService {
 	 */
 	public CursorArrayList<SolrSample> fetchSolrSampleByText(String searchTerm, Collection<Filter> filters, 
 			Collection<String> domains, String cursorMark, int size) {
-
-		Query query = buildQuery(searchTerm, filters, domains);
+        String escapedSearchTerm = searchTerm == null ? null : ClientUtils.escapeQueryChars(searchTerm);
+		Query query = buildQuery(escapedSearchTerm, filters, domains);
 		query.addSort(new Sort("id")); //this must match the field in solr
 		
 		return solrSampleRepository.findByQueryCursorMark(query, cursorMark, size);

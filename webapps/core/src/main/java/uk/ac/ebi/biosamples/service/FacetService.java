@@ -3,6 +3,7 @@ package uk.ac.ebi.biosamples.service;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.solr.client.solrj.util.ClientUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
@@ -32,7 +33,8 @@ public class FacetService {
 		//TODO allow update date range
 
 		long startTime = System.nanoTime();
-		List<Facet> facets = solrFacetService.getFacets(text, filters, domains, facetPageable, facetValuePageable);
+		String escapedText = text == null ? null : ClientUtils.escapeQueryChars(text);
+		List<Facet> facets = solrFacetService.getFacets(escapedText, filters, domains, facetPageable, facetValuePageable);
 		long endTime = System.nanoTime();
 		log.trace("Got solr facets in "+((endTime-startTime)/1000000)+"ms");
 		
