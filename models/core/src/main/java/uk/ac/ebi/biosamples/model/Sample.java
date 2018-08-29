@@ -94,7 +94,7 @@ public class Sample implements Comparable<Sample> {
     }
 
     @JsonProperty(value = "taxId", access = JsonProperty.Access.READ_ONLY)
-    public Integer[] getTaxId() {
+    public Integer getTaxId() {
         List<Integer> taxIds = new ArrayList<>();
         for (Attribute attribute : attributes) {
             if (attribute.getType().toLowerCase().equalsIgnoreCase("Organism") && !attribute.getIri().isEmpty()) {
@@ -104,7 +104,15 @@ public class Sample implements Comparable<Sample> {
                         forEach(taxIds::add);
             }
         }
-        return taxIds.toArray(new Integer[taxIds.size()]);
+        if (taxIds.size()>1)
+        {
+            return taxIds.get(0);
+        }
+        if (taxIds.size()==0)
+        {
+            return 0;
+        }
+        return taxIds.get(0);
     }
 
     private int extractTaxIdFromIri(String iri) {
