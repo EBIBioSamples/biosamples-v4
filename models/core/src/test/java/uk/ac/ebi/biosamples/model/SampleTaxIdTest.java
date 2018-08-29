@@ -5,6 +5,7 @@ import org.junit.Test;
 import java.time.Instant;
 import java.util.*;
 
+import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 
 public class SampleTaxIdTest {
@@ -15,7 +16,7 @@ public class SampleTaxIdTest {
         Integer[] taxIds = new Integer[]{10116};
         Attribute attribute = Attribute.build("Organism", "", Collections.singletonList(olsValue), null);
         Sample sample = generateTestSample(Collections.singletonList(attribute));
-        assertEquals(taxIds, sample.getTaxId());
+        assertTrue(10116 == sample.getTaxId());
     }
 
     @Test
@@ -24,7 +25,7 @@ public class SampleTaxIdTest {
         Integer[] taxIds = new Integer[]{9685};
         Attribute attribute = Attribute.build("organism", "Felis catu", Collections.singletonList(olsValue), null);
         Sample sample = generateTestSample(Collections.singletonList(attribute));
-        assertEquals(taxIds, sample.getTaxId());
+        assertTrue(9685 == sample.getTaxId());
     }
 
     @Test
@@ -33,7 +34,7 @@ public class SampleTaxIdTest {
         Integer[] taxIds = new Integer[]{10116, 9685};
         Attribute attribute = Attribute.build("Organism", "Felis catu", olsValues, null);
         Sample sample = generateTestSample(Collections.singletonList(attribute));
-        assertEquals(taxIds, sample.getTaxId());
+        assertTrue(10116 == sample.getTaxId());
     }
 
     @Test
@@ -44,7 +45,7 @@ public class SampleTaxIdTest {
         Attribute attribute1 = Attribute.build("Organism", "", olsValue1, null);
         Attribute attribute2 = Attribute.build("Organism", "", olsValue2, null);
         Sample sample = generateTestSample(Arrays.asList(attribute1, attribute2));
-        assertEquals(taxIds, sample.getTaxId());
+        assertTrue(10116 == sample.getTaxId());
     }
 
     @Test
@@ -52,7 +53,7 @@ public class SampleTaxIdTest {
         String olsValue = "";
         Attribute attribute = Attribute.build("Organism", "", Collections.singletonList(olsValue), null);
         Sample sample = generateTestSample(Collections.singletonList(attribute));
-        assertEquals(new Integer[]{0}, sample.getTaxId());
+        assertTrue(0 == sample.getTaxId());
     }
 
     @Test
@@ -60,14 +61,14 @@ public class SampleTaxIdTest {
         String value = "9606";
         Attribute attribute = Attribute.build("Organism", "", Collections.singletonList(value), null);
         Sample sample = generateTestSample(Collections.singletonList(attribute));
-        assertEquals(new Integer[]{Integer.parseInt(value)}, sample.getTaxId());
+        assertTrue(9606 == sample.getTaxId());
     }
 
     @Test
     public void given_no_ontologyTerm_return_unknown_taxId() {
         Attribute attribute = Attribute.build("Organism", "s", Collections.EMPTY_LIST, null);
         Sample sample = generateTestSample(Collections.singletonList(attribute));
-        assertEquals(new Integer[0], sample.getTaxId());
+        assertTrue(0 == sample.getTaxId());
     }
 
     private Sample generateTestSample(List<Attribute> attributes) {
