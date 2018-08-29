@@ -8,14 +8,12 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
 
+import org.apache.solr.client.solrj.util.ClientUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.solr.core.query.Criteria;
-import org.springframework.data.solr.core.query.FacetQuery;
-import org.springframework.data.solr.core.query.FilterQuery;
-import org.springframework.data.solr.core.query.SimpleFacetQuery;
+import org.springframework.data.solr.core.query.*;
 import org.springframework.data.solr.core.query.result.FacetFieldEntry;
 import org.springframework.stereotype.Service;
 
@@ -50,12 +48,13 @@ public class SolrFacetService {
         if (searchTerm == null || searchTerm.trim().length() == 0) {
             searchTerm = "*:*";
         }
+        String escapedSearchTerm = searchTerm == null ? null : ClientUtils.escapeQueryChars(searchTerm);
 
         List<Facet> facets = new ArrayList<>();
 
         //build a query out of the users string and any facets
         FacetQuery query = new SimpleFacetQuery();
-        query.addCriteria(new Criteria().expression(searchTerm));
+        query.addCriteria(new Criteria().expression(escapedSearchTerm));
         query.setTimeAllowed(TIMEALLOWED*1000);
 
 
