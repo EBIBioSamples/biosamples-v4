@@ -71,7 +71,7 @@ public class SolrSampleService {
 	 */
 	public Page<SolrSample> fetchSolrSampleByText(String searchTerm, Collection<Filter> filters, 
 			Collection<String> domains, Pageable pageable) {
-		String escapedSearchTerm = ClientUtils.escapeQueryChars(searchTerm);
+		String escapedSearchTerm = searchTerm == null ? null : ClientUtils.escapeQueryChars(searchTerm);
 		Query query = buildQuery(escapedSearchTerm, filters, domains);
 		query.setPageRequest(pageable);
 		query.setTimeAllowed(TIMEALLOWED*1000);
