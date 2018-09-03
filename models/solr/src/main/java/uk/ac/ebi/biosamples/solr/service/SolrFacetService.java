@@ -1,24 +1,27 @@
 package uk.ac.ebi.biosamples.solr.service;
 
+import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Optional;
+
+import org.apache.solr.client.solrj.util.ClientUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.solr.core.query.Criteria;
-import org.springframework.data.solr.core.query.FacetQuery;
-import org.springframework.data.solr.core.query.FilterQuery;
-import org.springframework.data.solr.core.query.SimpleFacetQuery;
+import org.springframework.data.solr.core.query.*;
 import org.springframework.data.solr.core.query.result.FacetFieldEntry;
 import org.springframework.stereotype.Service;
+
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.facet.Facet;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.solr.model.field.SolrSampleField;
 import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
-
-import java.util.AbstractMap.SimpleEntry;
-import java.util.*;
-import java.util.Map.Entry;
 
 @Service
 public class SolrFacetService {
@@ -51,7 +54,7 @@ public class SolrFacetService {
         //build a query out of the users string and any facets
         FacetQuery query = new SimpleFacetQuery();
         query.addCriteria(new Criteria().expression(searchTerm));
-        query.setTimeAllowed(TIMEALLOWED * 1000);
+        query.setTimeAllowed(TIMEALLOWED*1000);
 
 
         // Add domains and release date filters
@@ -68,8 +71,8 @@ public class SolrFacetService {
 
         // Get the facet fields
         //TODO implement hashing function
-        List<Entry<SolrSampleField, Long>> allFacetFields = new ArrayList<>();
-        for (FacetFieldEntry ffe : facetFields) {
+        List<Entry<SolrSampleField,Long>> allFacetFields = new ArrayList<>();
+        for(FacetFieldEntry ffe: facetFields) {
 
             Long facetFieldCount = ffe.getValueCount();
             SolrSampleField solrSampleField = SolrFieldService.decodeField(ffe.getValue());
