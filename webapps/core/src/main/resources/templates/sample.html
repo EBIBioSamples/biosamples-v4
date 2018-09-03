@@ -25,11 +25,11 @@
 				<h3 th:text="${sample.name}">name</h3>
 				<table>
 					<tr>
-						<th>Release</th>
+						<th>Released on</th>
 						<td	th:text="${#temporals.format(release, 'yyyy / MM / dd HH:mm:ss','UTC')+' UTC'}">2001 / 02 / 02 12:00:00</td>
 					</tr>
 					<tr>
-						<th>Update</th>
+						<th>Updated on</th>
 						<td	th:text="${#temporals.format(update, 'yyyy / MM / dd HH:mm:ss','UTC')+' UTC'}">2001 / 02 / 02 12:00:00</td>
 					</tr>
 				</table>
