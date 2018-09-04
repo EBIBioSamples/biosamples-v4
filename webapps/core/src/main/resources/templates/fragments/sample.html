@@ -171,24 +171,20 @@
 		<script id="chooseSerialisationScript">
             function goToPage(url) {
                 if (url !== "") {
-                    window.open(url);
+                    newWindow = window.open();
+                    newWindow.location.href = url
                 }
             }
 		</script>
-
-
 	</section>
 
 	<section th:fragment="serialisationDropDownMenu">
+		<h4>Download as:</h4>
 		<ul class="vertical dropdown menu" data-dropdown-menu>
-            <li>
-            Choose your serialisation:
-                <ul class="vertical menu nested">
-                    <li><a th:href="@{/samples/{xml}(xml=${sample.accession} + '.xml')}">XML</a></li>
-                    <li><a th:href="@{/samples/{json}(json=${sample.accession} + '.json')}">JSON</a></li>
-                    <li><a th:href="@{/samples/{ldjson}(ldjson=${sample.accession} + '.ldjson')}">Bioschemas</a></li>
-                </ul>
-            </li>
+			<li><a th:href="@{/samples/{xml}(xml=${sample.accession} + '.xml')}" download>XML</a></li>
+			<li><a th:href="@{/samples/{json}(json=${sample.accession} + '.json')}" download>JSON</a></li>
+			<li><a th:href="@{/samples/{ldjson}(ldjson=${sample.accession} + '.ldjson')}" download>Bioschemas</a></li>
+			<li><a th:href="@{/samples/{phenopacket}(phenopacket=${sample.accession}+'.phenopacket')}" download>Phenopacket</a></li>
 		</ul>
 	</section>
 
