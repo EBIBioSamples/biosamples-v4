@@ -149,9 +149,7 @@ select * from cv_status;
         } else if (3 == statusId) {
             return "cancelled";
         } else if (4 == statusId) {
-            //use "live" for consistency with NCBI
-            return "live";
-            //return "public";
+            return "public";
         } else if (5 == statusId) {
             return "suppressed";
         } else if (6 == statusId) {
