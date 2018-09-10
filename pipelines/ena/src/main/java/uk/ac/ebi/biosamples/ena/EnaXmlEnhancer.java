@@ -2,45 +2,63 @@ package uk.ac.ebi.biosamples.ena;
 
 import org.dom4j.*;
 import org.dom4j.io.SAXReader;
+import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.List;
 
 import static uk.ac.ebi.biosamples.ena.EnaXmlUtil.pretty;
 
 @Service
 public class EnaXmlEnhancer {
 
-    public String applyRules(String inputXml, DatabaseSample databaseSample, Rule... rules) throws SQLException, DocumentException, IOException {
+    private EraProDao eraProDao;
+
+    public EnaXmlEnhancer(EraProDao eraProDao) {
+        this.eraProDao = eraProDao;
+    }
+
+    public String applyRules(String inputXml, EnaDatabaseSample enaDatabaseSample, Rule... rules) throws SQLException, DocumentException, IOException {
         Element element = getSampleElement(inputXml);
-        Element modifiedElement = applyRules(element.createCopy(), databaseSample, rules);
+        Element modifiedElement = applyRules(element.createCopy(), enaDatabaseSample, rules);
         Document document = DocumentHelper.createDocument();
         document.setRootElement(modifiedElement);
         return pretty(document);
     }
 
-    public DatabaseSample getDatabaseSample() {
-        return new DatabaseSample();
+    public EnaDatabaseSample getEnaDatabaseSample(String accession) {
+        EnaDatabaseSample enaDatabaseSample = new EnaDatabaseSample();
+        RowCallbackHandler rch = new RowCallbackHandler() {
+            @Override
+            public void processRow(ResultSet resultSet) throws SQLException {
+                enaDatabaseSample.bioSamplesId = resultSet.getString("BIOSAMPLE_ID");
+                enaDatabaseSample.brokerName = resultSet.getString("BROKER_NAME");
+                enaDatabaseSample.centreName = resultSet.getString("CENTER_NAME");
+                enaDatabaseSample.lastUpdated = resultSet.getString("LAST_UPDATED");
+                enaDatabaseSample.firstPublic = resultSet.getString("FIRST_PUBLIC");
+            }
+        };
+        eraProDao.getEnaDatabaseSample(accession, rch);
+        return enaDatabaseSample;
     }
 
-    private Element applyRules(Element sampleElement, DatabaseSample databaseSample, Rule... rules) {
+    private Element applyRules(Element sampleElement, EnaDatabaseSample enaDatabaseSample, Rule... rules) {
         for (Rule rule : rules) {
-            sampleElement = rule.apply(sampleElement, databaseSample);
+            sampleElement = rule.apply(sampleElement, enaDatabaseSample);
         }
         return sampleElement;
     }
 
-    public String applyAllRules(String inputXml, DatabaseSample databaseSample) throws DocumentException, SQLException, IOException {
-        return applyRules(inputXml, databaseSample,AliasRule.INSTANCE, NamespaceRule.INSTANCE, BrokerRule.INSTANCE, LinkRemovalRule.INSTANCE, CenterNameRule.INSTANCE, DatesRule.INSTANCE, BioSamplesIdRule.INSTANCE );
+    public String applyAllRules(String inputXml, EnaDatabaseSample enaDatabaseSample) throws DocumentException, SQLException, IOException {
+        return applyRules(inputXml, enaDatabaseSample, AliasRule.INSTANCE, NamespaceRule.INSTANCE, BrokerRule.INSTANCE, LinkRemovalRule.INSTANCE, CenterNameRule.INSTANCE, DatesRule.INSTANCE, BioSamplesIdRule.INSTANCE);
     }
 
     public interface Rule {
-        Element apply(Element sampleXml, DatabaseSample databaseSample);
+        Element apply(Element sampleXml, EnaDatabaseSample enaDatabaseSample);
     }
 
     public enum AliasRule implements Rule {
@@ -48,7 +66,7 @@ public class EnaXmlEnhancer {
         INSTANCE;
 
         @Override
-        public Element apply(Element sampleXml, DatabaseSample databaseSample) {
+        public Element apply(Element sampleXml, EnaDatabaseSample enaDatabaseSample) {
             if (!XmlPathBuilder.of(sampleXml).path("SAMPLE").attributeExists("alias")) {
                 XmlPathBuilder xmlPathBuilder = XmlPathBuilder.of(sampleXml).path("SAMPLE", "IDENTIFIERS", "SUBMITTER_ID");
                 if (xmlPathBuilder.exists()) {
@@ -66,7 +84,7 @@ public class EnaXmlEnhancer {
         INSTANCE;
 
         @Override
-        public Element apply(Element sampleXml, DatabaseSample databaseSample) {
+        public Element apply(Element sampleXml, EnaDatabaseSample enaDatabaseSample) {
             if (!XmlPathBuilder.of(sampleXml).path("SAMPLE").attributeExists("center_name")) {
                 return sampleXml;
             }
@@ -89,13 +107,13 @@ public class EnaXmlEnhancer {
         INSTANCE;
 
         @Override
-        public Element apply(Element sampleXml, DatabaseSample databaseSample) {
+        public Element apply(Element sampleXml, EnaDatabaseSample enaDatabaseSample) {
             XmlPathBuilder xmlPathBuilder = XmlPathBuilder.of(sampleXml).path("SAMPLE");
             if (xmlPathBuilder.attributeExists("accession")) {
                 String accession = xmlPathBuilder.attribute("accession");
                 if (accession.startsWith("ERS")) {
-                    if (databaseSample.brokerName != null) {
-                        xmlPathBuilder.element().addAttribute("broker_name", databaseSample.brokerName);
+                    if (enaDatabaseSample.brokerName != null) {
+                        xmlPathBuilder.element().addAttribute("broker_name", enaDatabaseSample.brokerName);
                     }
                     return sampleXml;
                 }
@@ -117,7 +135,7 @@ public class EnaXmlEnhancer {
         INSTANCE;
 
         @Override
-        public Element apply(Element sampleXml, DatabaseSample databaseSample) {
+        public Element apply(Element sampleXml, EnaDatabaseSample enaDatabaseSample) {
             XmlPathBuilder xmlPathBuilder = XmlPathBuilder.of(sampleXml).path("SAMPLE", "SAMPLE_LINKS");
             if (xmlPathBuilder.exists()) {
                 for (Element sampleLinkElement : xmlPathBuilder.elements("SAMPLE_LINK")) {
@@ -130,24 +148,16 @@ public class EnaXmlEnhancer {
         }
     }
 
-    public class DatabaseSample {
-        public String lastUpdated;
-        public String firstPublic;
-        public String brokerName;
-        public String bioSamplesId;
-        public String centreName;
-    }
-
     public enum CenterNameRule implements Rule {
 
         INSTANCE;
 
         @Override
-        public Element apply(Element sampleXml, DatabaseSample databaseSample) {
-            if (databaseSample.centreName != null) {
+        public Element apply(Element sampleXml, EnaDatabaseSample enaDatabaseSample) {
+            if (enaDatabaseSample.centreName != null) {
                 XmlPathBuilder xmlPathBuilder = XmlPathBuilder.of(sampleXml).path("SAMPLE");
                 if (xmlPathBuilder.attributeExists("center_name")) {
-                    xmlPathBuilder.element().setAttributeValue("center_name", databaseSample.centreName);
+                    xmlPathBuilder.element().setAttributeValue("center_name", enaDatabaseSample.centreName);
                 }
             }
             return sampleXml;
@@ -159,11 +169,11 @@ public class EnaXmlEnhancer {
         INSTANCE;
 
         @Override
-        public Element apply(Element sampleXml, DatabaseSample databaseSample) {
+        public Element apply(Element sampleXml, EnaDatabaseSample enaDatabaseSample) {
             XmlPathBuilder xmlPathBuilder = XmlPathBuilder.of(sampleXml).path("SAMPLE", "SAMPLE_ATTRIBUTES");
             if (xmlPathBuilder.exists()) {
-                xmlPathBuilder.element().add(createSampleAttribute("ENA-FIRST-PUBLIC", databaseSample.firstPublic));
-                xmlPathBuilder.element().add(createSampleAttribute("ENA-LAST-UPDATED", databaseSample.lastUpdated));
+                xmlPathBuilder.element().add(createSampleAttribute("ENA-FIRST-PUBLIC", enaDatabaseSample.firstPublic));
+                xmlPathBuilder.element().add(createSampleAttribute("ENA-LAST-UPDATE", enaDatabaseSample.lastUpdated));
             }
             return sampleXml;
         }
@@ -174,11 +184,19 @@ public class EnaXmlEnhancer {
         INSTANCE;
 
         @Override
-        public Element apply(Element sampleXml, DatabaseSample databaseSample) {
-            if (databaseSample.bioSamplesId != null) {
+        public Element apply(Element sampleXml, EnaDatabaseSample enaDatabaseSample) {
+            if (enaDatabaseSample.bioSamplesId != null) {
                 XmlPathBuilder xmlPathBuilder = XmlPathBuilder.of(sampleXml).path("SAMPLE", "IDENTIFIERS");
                 if (xmlPathBuilder.exists()) {
-                    xmlPathBuilder.element().add(createExternalRef("BioSample", databaseSample.bioSamplesId));
+                    boolean bioSamplesExternalIdExists = false;
+                    for (Element element : xmlPathBuilder.elements("EXTERNAL_ID")) {
+                        if (element.attribute("namespace").getText().equals("BioSample")) {
+                            bioSamplesExternalIdExists = true;
+                        }
+                    }
+                    if (!bioSamplesExternalIdExists) {
+                        xmlPathBuilder.element().add(createExternalRef("BioSample", enaDatabaseSample.bioSamplesId));
+                    }
                 }
                 return sampleXml;
             }
@@ -202,7 +220,7 @@ public class EnaXmlEnhancer {
     private static Element createSampleAttribute(String tag, String value) {
         Element sampleAttributeElement = DocumentHelper.createElement("SAMPLE_ATTRIBUTE");
         Element tagElement = DocumentHelper.createElement("TAG");
-        tagElement.setText("ENA-FIRST-PUBLIC");
+        tagElement.setText(tag);
         sampleAttributeElement.add(tagElement);
         Element valueElement = DocumentHelper.createElement("VALUE");
         valueElement.setText(value);

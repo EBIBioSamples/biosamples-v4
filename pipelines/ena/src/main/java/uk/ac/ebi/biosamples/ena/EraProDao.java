@@ -175,6 +175,22 @@ select * from cv_status;
         String sql = "SELECT SAMPLE_XML FROM SAMPLE WHERE BIOSAMPLE_ID = ? AND BIOSAMPLE_AUTHORITY='N' AND SAMPLE_ID LIKE 'ERS%'";
         String result = jdbcTemplate.queryForObject(sql, String.class, biosampleAccession);
         return result;
+    }
 
+    public void getEnaDatabaseSample(String enaAccession, RowCallbackHandler rch) {
+        String query = "select BIOSAMPLE_ID,\n" +
+                "       to_char(first_public, 'yyyy-mm-dd')                                                as first_public,\n" +
+                "       to_char(last_updated, 'yyyy-mm-dd')                                                as last_updated,\n" +
+                "       (select nvl(cv_broker_name.description, T1.broker_name)\n" +
+                "        from XMLTable('/SAMPLE_SET[ 1 ]/SAMPLE/@broker_name' passing sample.sample_xml\n" +
+                "                      columns broker_name varchar(1000) path '.') T1\n" +
+                "               left join cv_broker_name on (cv_broker_name.broker_name = T1.broker_name)) as broker_name,\n" +
+                "       (select nvl(cv_center_name.description, T2.center_name)\n" +
+                "        from XMLTable('/SAMPLE_SET[ 1 ]/SAMPLE/@center_name' passing sample.sample_xml\n" +
+                "                      columns center_name varchar(1000) path '.') T2\n" +
+                "               left join cv_center_name on (cv_center_name.center_name = T2.center_name)) as center_name\n" +
+                "from SAMPLE\n" +
+                "where SAMPLE_ID = ?";
+        jdbcTemplate.query(query, rch, enaAccession);
     }
 }
