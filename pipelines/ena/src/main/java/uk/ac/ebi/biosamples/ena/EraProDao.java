@@ -86,49 +86,11 @@ select * from cv_status;
         jdbcTemplate.query(query, rch, minDateOld, maxDateOld, minDateOld, maxDateOld);
     }
 
-    public List<String> getPrivateSamples() {
-        log.trace("Getting private sample ids");
-
-        String query = "SELECT UNIQUE(BIOSAMPLE_ID) FROM SAMPLE WHERE STATUS_ID > 4 AND BIOSAMPLE_ID LIKE 'SAME%' "
-                + "AND EGA_ID IS NULL AND BIOSAMPLE_AUTHORITY= 'N' ORDER BY BIOSAMPLE_ID ASC";
-
-        List<String> sampleIds = jdbcTemplate.queryForList(query, String.class);
-
-        log.info("Got " + sampleIds.size() + " private sample ids");
-
-        return sampleIds;
-    }
-
-    public boolean getBioSamplesAuthority(String biosampleAccession) {
-        String query = "SELECT BIOSAMPLE_AUTHORITY FROM SAMPLE WHERE BIOSAMPLE_ID = ? ";
-        String result = jdbcTemplate.queryForObject(query, new RowMapper<String>() {
-
-            @Override
-            public String mapRow(ResultSet rs, int rowNum) throws SQLException {
-                return rs.getString(1);
-            }
-        }, biosampleAccession);
-        if (result.equals("Y")) {
-            return true;
-        } else if (result.equals("N")) {
-            return false;
-        } else {
-            throw new IllegalArgumentException("Unrecongized BIOSAMPLE_AUTHORITY " + result);
-        }
-    }
-
     public Instant getUpdateDateTime(String biosampleAccession) {
         String sql = "SELECT to_char(LAST_UPDATED, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') FROM SAMPLE WHERE BIOSAMPLE_ID = ? AND BIOSAMPLE_AUTHORITY='N' AND SAMPLE_ID LIKE 'ERS%'";
         String dateString = jdbcTemplate.queryForObject(sql, String.class, biosampleAccession);
         log.trace("Update date of \"+biosampleAccession+\"is " + dateString);
         return Instant.parse(dateString);
-    }
-
-    public String getCentreName(String biosampleAccession) {
-        String sql = "SELECT CENTER_NAME FROM SAMPLE WHERE BIOSAMPLE_ID = ? AND BIOSAMPLE_AUTHORITY='N' AND SAMPLE_ID LIKE 'ERS%'";
-        String centerName = jdbcTemplate.queryForObject(sql, String.class, biosampleAccession);
-        log.trace("Center name of " + biosampleAccession + " is " + centerName);
-        return centerName;
     }
 
     public String getChecklist(String biosampleAccession) {
@@ -149,9 +111,7 @@ select * from cv_status;
         } else if (3 == statusId) {
             return "cancelled";
         } else if (4 == statusId) {
-            //use "live" for consistency with NCBI
-            return "live";
-            //return "public";
+            return "public";
         } else if (5 == statusId) {
             return "suppressed";
         } else if (6 == statusId) {
@@ -190,7 +150,7 @@ select * from cv_status;
                 "                      columns center_name varchar(1000) path '.') T2\n" +
                 "               left join cv_center_name on (cv_center_name.center_name = T2.center_name)) as center_name\n" +
                 "from SAMPLE\n" +
-                "where SAMPLE_ID = ?";
+                "where BIOSAMPLE_ID = ?";
         jdbcTemplate.query(query, rch, enaAccession);
     }
 }

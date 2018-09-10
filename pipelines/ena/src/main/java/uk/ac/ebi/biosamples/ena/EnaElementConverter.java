@@ -23,6 +23,7 @@ public class EnaElementConverter implements Converter<Element, Sample> {
     private static final String ENA_ALIAS = "Alias";
     private static final String ENA_SRA_ACCESSION = "SRA accession";
     private static final String ENA_BROKER_NAME = "Broker name";
+    private static final String INSDC_CENTER_NAME = "INSDC center name";
     private static final String ENA_TITLE = "Title";
     private static final String ENA_DESCRIPTION = "Description";
 
@@ -78,6 +79,12 @@ public class EnaElementConverter implements Converter<Element, Sample> {
         if (XmlPathBuilder.of(root).path(SAMPLE).attributeExists("broker_name")) {
             String brokerName = XmlPathBuilder.of(root).path(SAMPLE).attribute("broker_name").trim();
             attributes.add(Attribute.build(ENA_BROKER_NAME, brokerName));
+        }
+
+        //ENA center name
+        if (XmlPathBuilder.of(root).path(SAMPLE).attributeExists("center_name")) {
+            String brokerName = XmlPathBuilder.of(root).path(SAMPLE).attribute("center_name").trim();
+            attributes.add(Attribute.build(INSDC_CENTER_NAME, brokerName));
         }
 
         //ENA title

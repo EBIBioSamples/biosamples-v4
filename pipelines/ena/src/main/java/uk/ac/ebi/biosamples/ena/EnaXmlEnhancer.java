@@ -57,6 +57,10 @@ public class EnaXmlEnhancer {
         return applyRules(inputXml, enaDatabaseSample, AliasRule.INSTANCE, NamespaceRule.INSTANCE, BrokerRule.INSTANCE, LinkRemovalRule.INSTANCE, CenterNameRule.INSTANCE, DatesRule.INSTANCE, BioSamplesIdRule.INSTANCE);
     }
 
+    public Element applyAllRules(Element element, EnaDatabaseSample enaDatabaseSample) throws DocumentException, SQLException, IOException {
+        return applyRules(element, enaDatabaseSample, AliasRule.INSTANCE, NamespaceRule.INSTANCE, BrokerRule.INSTANCE, LinkRemovalRule.INSTANCE, CenterNameRule.INSTANCE, DatesRule.INSTANCE, BioSamplesIdRule.INSTANCE);
+    }
+
     public interface Rule {
         Element apply(Element sampleXml, EnaDatabaseSample enaDatabaseSample);
     }
