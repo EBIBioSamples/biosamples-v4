@@ -20,34 +20,33 @@
 	<th:block th:include="fragments/header :: header"></th:block>
 	<div layout:fragment="content">
 		<div id="main-content-area" class="row">
-			<div>
-				<div class="float-left">
-					<h2 th:text="${sample.accession}">TEST</h2>
-					<h3 th:text="${sample.name}">name</h3>
-				</div>
-				<span class="float-right">
-                    <th:block th:include="fragments/sample :: serialisationsForm"></th:block>
-	            </span>
-            </div>   
-			
-			<table>
-				<tr>
-					<th>Release</th>
-					<td	th:text="${#temporals.format(release, 'yyyy / MM / dd HH:mm:ss','UTC')+' UTC'}">2001 / 02 / 02 12:00:00</td>
-				</tr>
-				<tr>
-					<th>Update</th>
-					<td	th:text="${#temporals.format(update, 'yyyy / MM / dd HH:mm:ss','UTC')+' UTC'}">2001 / 02 / 02 12:00:00</td>
-				</tr>
-			</table>
+			<div class="columns medium-10">
+				<h2 th:text="${sample.accession}">TEST</h2>
+				<h3 th:text="${sample.name}">name</h3>
+				<table>
+					<tr>
+						<th>Release</th>
+						<td	th:text="${#temporals.format(release, 'yyyy / MM / dd HH:mm:ss','UTC')+' UTC'}">2001 / 02 / 02 12:00:00</td>
+					</tr>
+					<tr>
+						<th>Update</th>
+						<td	th:text="${#temporals.format(update, 'yyyy / MM / dd HH:mm:ss','UTC')+' UTC'}">2001 / 02 / 02 12:00:00</td>
+					</tr>
+				</table>
+			</div>
+			<div class="columns medium-2">
+				<th:block th:include="fragments/sample :: serialisationDropDownMenu"></th:block>
+			</div>
 
-			<th:block th:include="fragments/sample :: contacts (${sample.contacts})"></th:block>
-			<th:block th:include="fragments/sample :: organizations (${sample.organizations})"></th:block>
-			<th:block th:include="fragments/sample :: publications (${sample.publications})"></th:block>
+			<div class="columns medium-12">
+				<th:block th:include="fragments/sample :: contacts (${sample.contacts})"></th:block>
+				<th:block th:include="fragments/sample :: organizations (${sample.organizations})"></th:block>
+				<th:block th:include="fragments/sample :: publications (${sample.publications})"></th:block>
 
-			<th:block th:include="fragments/sample :: attributes (${sample.attributes})"></th:block>
-			<th:block th:include="fragments/sample :: relationships (${sample.relationships})"></th:block>
-			<th:block th:include="fragments/sample :: externalReferences (${sample.externalReferences})"></th:block>
+				<th:block th:include="fragments/sample :: attributes (${sample.attributes})"></th:block>
+				<th:block th:include="fragments/sample :: relationships (${sample.relationships})"></th:block>
+				<th:block th:include="fragments/sample :: externalReferences (${sample.externalReferences})"></th:block>
+			</div>
 
 			<th:block th:if="${sample.data.size() > 0}">
 				<th:block th:each="data: ${sample.data}" th:include="fragments/structured_data :: amr_table(${data})"></th:block>
