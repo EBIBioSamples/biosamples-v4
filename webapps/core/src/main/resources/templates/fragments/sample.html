@@ -81,7 +81,7 @@
 			</section>
 		</div>
 	</section>
-	
+
     <section th:fragment="publications (publications)">
 		<section th:unless="${#arrays.isEmpty(publications)}">
 			<h3>Publications</h3>
@@ -101,7 +101,7 @@
 			</table>
 		</section>
 	</section>
-	
+
 	<section th:fragment="contacts (contacts)">
 		<section th:unless="${#arrays.isEmpty(contacts)}">
 			<h3>Contacts</h3>
@@ -164,7 +164,7 @@
                     <option th:value="@{/samples/{xml}(xml=${sample.accession} + '.xml')}">XML</option>
                     <option th:value="@{/samples/{json}(json=${sample.accession} + '.json')}">JSON</option>
                     <option th:value="@{/samples/{ldjson}(ldjson=${sample.accession} + '.ldjson')}">BioSchemas</option>
-					<option th:value="@{/samples/{phenopacket}(phenopacket=${sample.accession}+'.phenopacket')}">Phenopacket</option>
+					<option th:value="@{/samples/{phenopacket}(phenopacket=${sample.accession}+'.pxf')}">Phenopacket</option>
                 </select>
             </label>
         </form>
@@ -184,7 +184,7 @@
 			<li><a th:href="@{/samples/{xml}(xml=${sample.accession} + '.xml')}" download>XML</a></li>
 			<li><a th:href="@{/samples/{json}(json=${sample.accession} + '.json')}" download>JSON</a></li>
 			<li><a th:href="@{/samples/{ldjson}(ldjson=${sample.accession} + '.ldjson')}" download>Bioschemas</a></li>
-			<li><a th:href="@{/samples/{phenopacket}(phenopacket=${sample.accession}+'.phenopacket')}" download>Phenopacket</a></li>
+			<li><a th:href="@{/samples/{phenopacket}(phenopacket=${sample.accession}+'.pxf')}" download>Phenopacket</a></li>
 		</ul>
 	</section>
 
