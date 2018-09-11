@@ -33,13 +33,6 @@ public class EnaXmlEnhancerTest {
     @Before
     public void setup() {
         enaDatabaseSample = enaXmlEnhancer.getEnaDatabaseSample("SRS000121");
-        /*
-        enaDatabaseSample.firstPublic = "2018-01-01";
-        enaDatabaseSample.lastUpdated = "2018-02-01";
-        enaDatabaseSample.brokerName = "broker";
-        enaDatabaseSample.bioSamplesId = "SAMN00001603";
-        enaDatabaseSample.centreName = "expanded center name";
-        */
     }
 
     @Test
