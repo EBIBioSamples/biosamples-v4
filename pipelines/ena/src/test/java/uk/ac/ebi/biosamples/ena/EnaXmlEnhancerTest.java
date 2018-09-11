@@ -19,11 +19,7 @@ import static uk.ac.ebi.biosamples.ena.ExampleSamples.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = TestApplication.class, properties = {"job.autorun.enabled=false"})
-@Ignore
 public class EnaXmlEnhancerTest {
-
-    @Autowired
-    private EnaElementConverter enaElementConverter;
 
     @Autowired
     private EnaXmlEnhancer enaXmlEnhancer;
@@ -32,12 +28,12 @@ public class EnaXmlEnhancerTest {
 
     @Before
     public void setup() {
-        enaDatabaseSample = enaXmlEnhancer.getEnaDatabaseSample("SRS000121");
+        enaDatabaseSample = enaXmlEnhancer.getEnaDatabaseSample("SAMN00001603");
     }
 
     @Test
     public void test_xml_with_all_rules() throws SQLException, DocumentException, IOException {
-        assertEquals(pretty(expectedFullSampleXml), enaXmlEnhancer.applyAllRules(fullSampleXml, enaDatabaseSample));
+        assertEquals(expectedFullSampleXml, enaXmlEnhancer.applyAllRules(fullSampleXml, enaDatabaseSample));
     }
 
     @Test
@@ -48,7 +44,7 @@ public class EnaXmlEnhancerTest {
 
     @Test
     public void test_biosamples_rule_fixes_applicable_ebi_xml() throws SQLException, DocumentException, IOException {
-        assertEquals(pretty(expectedModifiedEbiBiosamplesSampleXml), enaXmlEnhancer.applyRules(exampleSampleXml, enaDatabaseSample, BioSamplesIdRule.INSTANCE));
+        assertEquals(expectedModifiedEbiBiosamplesSampleXml, enaXmlEnhancer.applyRules(exampleSampleXml, enaDatabaseSample, BioSamplesIdRule.INSTANCE));
     }
 
     @Test
@@ -94,16 +90,22 @@ public class EnaXmlEnhancerTest {
     }
 
     @Test
-    @Ignore
     public void test_link_removal_rule_fixes_applicable_xml() throws SQLException, DocumentException, IOException {
-        assertEquals(pretty(expectedModifiedNcbiLinksRemoved), enaXmlEnhancer.applyRules(ncbiSampleXml, enaDatabaseSample, LinkRemovalRule.INSTANCE));
+        assertEquals(expectedModifiedNcbiLinksRemoved, enaXmlEnhancer.applyRules(ncbiSampleXml, enaDatabaseSample, LinkRemovalRule.INSTANCE));
     }
 
     @Test
-    public void test_first_public_and_last_updated_for_applicable_xml() throws SQLException, DocumentException, IOException {
+    public void test_first_public_and_last_updated_for_applicable_xml()  {
         enaDatabaseSample.lastUpdated = "2018-02-01";
         enaDatabaseSample.firstPublic = "2018-01-01";
-        assertEquals(pretty(exampleSampleXmlWithDates), enaXmlEnhancer.applyRules(exampleSampleXml, enaDatabaseSample, DatesRule.INSTANCE));
+        assertEquals(exampleSampleXmlWithDates, enaXmlEnhancer.applyRules(exampleSampleXml, enaDatabaseSample, DatesRule.INSTANCE));
     }
 
+    @Test
+    public void test_pretty() {
+        String pretty1 = pretty(expectedModifiedNcbiLinksRemoved);
+        String pretty2 = pretty(pretty1);
+        assertEquals(pretty1, pretty2);
+
+    }
 }

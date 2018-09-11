@@ -2,6 +2,8 @@ package uk.ac.ebi.biosamples.ena;
 
 import org.dom4j.*;
 import org.dom4j.io.SAXReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
@@ -18,11 +20,13 @@ public class EnaXmlEnhancer {
 
     private EraProDao eraProDao;
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(EnaXmlEnhancer.class);
+
     public EnaXmlEnhancer(EraProDao eraProDao) {
         this.eraProDao = eraProDao;
     }
 
-    public String applyRules(String inputXml, EnaDatabaseSample enaDatabaseSample, Rule... rules) throws SQLException, DocumentException, IOException {
+    public String applyRules(String inputXml, EnaDatabaseSample enaDatabaseSample, Rule... rules) {
         Element element = getSampleElement(inputXml);
         Element modifiedElement = applyRules(element.createCopy(), enaDatabaseSample, rules);
         Document document = DocumentHelper.createDocument();
@@ -34,12 +38,17 @@ public class EnaXmlEnhancer {
         EnaDatabaseSample enaDatabaseSample = new EnaDatabaseSample();
         RowCallbackHandler rch = new RowCallbackHandler() {
             @Override
-            public void processRow(ResultSet resultSet) throws SQLException {
-                enaDatabaseSample.bioSamplesId = resultSet.getString("BIOSAMPLE_ID");
-                enaDatabaseSample.brokerName = resultSet.getString("BROKER_NAME");
-                enaDatabaseSample.centreName = resultSet.getString("CENTER_NAME");
-                enaDatabaseSample.lastUpdated = resultSet.getString("LAST_UPDATED");
-                enaDatabaseSample.firstPublic = resultSet.getString("FIRST_PUBLIC");
+            public void processRow(ResultSet resultSet) {
+                try {
+                    enaDatabaseSample.bioSamplesId = resultSet.getString("BIOSAMPLE_ID");
+                    enaDatabaseSample.brokerName = resultSet.getString("BROKER_NAME");
+                    enaDatabaseSample.centreName = resultSet.getString("CENTER_NAME");
+                    enaDatabaseSample.lastUpdated = resultSet.getString("LAST_UPDATED");
+                    enaDatabaseSample.firstPublic = resultSet.getString("FIRST_PUBLIC");
+                } catch (SQLException e) {
+                    LOGGER.error("Error processing database result", e);
+                }
+
             }
         };
         eraProDao.getEnaDatabaseSample(accession, rch);
@@ -53,11 +62,11 @@ public class EnaXmlEnhancer {
         return sampleElement;
     }
 
-    public String applyAllRules(String inputXml, EnaDatabaseSample enaDatabaseSample) throws DocumentException, SQLException, IOException {
+    public String applyAllRules(String inputXml, EnaDatabaseSample enaDatabaseSample){
         return applyRules(inputXml, enaDatabaseSample, AliasRule.INSTANCE, NamespaceRule.INSTANCE, BrokerRule.INSTANCE, LinkRemovalRule.INSTANCE, CenterNameRule.INSTANCE, DatesRule.INSTANCE, BioSamplesIdRule.INSTANCE);
     }
 
-    public Element applyAllRules(Element element, EnaDatabaseSample enaDatabaseSample) throws DocumentException, SQLException, IOException {
+    public Element applyAllRules(Element element, EnaDatabaseSample enaDatabaseSample) {
         return applyRules(element, enaDatabaseSample, AliasRule.INSTANCE, NamespaceRule.INSTANCE, BrokerRule.INSTANCE, LinkRemovalRule.INSTANCE, CenterNameRule.INSTANCE, DatesRule.INSTANCE, BioSamplesIdRule.INSTANCE);
     }
 
@@ -174,6 +183,9 @@ public class EnaXmlEnhancer {
 
         @Override
         public Element apply(Element sampleXml, EnaDatabaseSample enaDatabaseSample) {
+            if (enaDatabaseSample.firstPublic == null || enaDatabaseSample.lastUpdated == null) {
+                return sampleXml;
+            }
             XmlPathBuilder xmlPathBuilder = XmlPathBuilder.of(sampleXml).path("SAMPLE", "SAMPLE_ATTRIBUTES");
             if (xmlPathBuilder.exists()) {
                 xmlPathBuilder.element().add(createSampleAttribute("ENA-FIRST-PUBLIC", enaDatabaseSample.firstPublic));
@@ -189,28 +201,33 @@ public class EnaXmlEnhancer {
 
         @Override
         public Element apply(Element sampleXml, EnaDatabaseSample enaDatabaseSample) {
-            if (enaDatabaseSample.bioSamplesId != null) {
-                XmlPathBuilder xmlPathBuilder = XmlPathBuilder.of(sampleXml).path("SAMPLE", "IDENTIFIERS");
-                if (xmlPathBuilder.exists()) {
-                    boolean bioSamplesExternalIdExists = false;
-                    for (Element element : xmlPathBuilder.elements("EXTERNAL_ID")) {
-                        if (element.attribute("namespace").getText().equals("BioSample")) {
-                            bioSamplesExternalIdExists = true;
-                        }
-                    }
-                    if (!bioSamplesExternalIdExists) {
-                        xmlPathBuilder.element().add(createExternalRef("BioSample", enaDatabaseSample.bioSamplesId));
+            if (enaDatabaseSample.bioSamplesId == null) {
+                return sampleXml;
+            }
+            XmlPathBuilder xmlPathBuilder = XmlPathBuilder.of(sampleXml).path("SAMPLE", "IDENTIFIERS");
+            if (xmlPathBuilder.exists()) {
+                boolean bioSamplesExternalIdExists = false;
+                for (Element element : xmlPathBuilder.elements("EXTERNAL_ID")) {
+                    if (element.attribute("namespace").getText().equals("BioSample")) {
+                        bioSamplesExternalIdExists = true;
                     }
                 }
-                return sampleXml;
+                if (!bioSamplesExternalIdExists) {
+                    xmlPathBuilder.element().add(createExternalRef("BioSample", enaDatabaseSample.bioSamplesId));
+                }
             }
             return sampleXml;
         }
     }
 
-    private Element getSampleElement(String xmlString) throws SQLException, DocumentException {
+    private Element getSampleElement(String xmlString) {
         SAXReader reader = new SAXReader();
-        Document xml = reader.read(new StringReader(xmlString));
+        Document xml = null;
+        try {
+            xml = reader.read(new StringReader(xmlString));
+        } catch (DocumentException e) {
+            LOGGER.error("Error reading XML", e);
+        }
         return xml.getRootElement();
     }
 

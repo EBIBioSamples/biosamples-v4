@@ -354,7 +354,7 @@ public class ExampleSamples {
             "      <SCIENTIFIC_NAME>Homo sapiens</SCIENTIFIC_NAME> \n" +
             "    </SAMPLE_NAME>  \n" +
             "    <DESCRIPTION>Human HapMap individual Coriell catalog ID NA18561</DESCRIPTION>  \n" +
-            "    <SAMPLE_LINKS></SAMPLE_LINKS>    \n" +
+            "    <SAMPLE_LINKS></SAMPLE_LINKS>  \n" +
             "    <SAMPLE_ATTRIBUTES> \n" +
             "      <SAMPLE_ATTRIBUTE> \n" +
             "        <TAG>DNA-ID</TAG>  \n" +
@@ -402,7 +402,7 @@ public class ExampleSamples {
             "      </SAMPLE_ATTRIBUTE> \n" +
             "    </SAMPLE_ATTRIBUTES> \n" +
             "  </SAMPLE> \n" +
-            "</SAMPLE_SET>";
+            "</SAMPLE_SET>\n";
 
     public static String exampleSampleXmlWithDates = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
             "\n" +
@@ -424,14 +424,14 @@ public class ExampleSamples {
             "        <TAG>ENA-CHECKLIST</TAG>  \n" +
             "        <VALUE>ERC000011</VALUE> \n" +
             "      </SAMPLE_ATTRIBUTE>  \n" +
-            "      <SAMPLE_ATTRIBUTE> \n" +
-            "        <TAG>ENA-FIRST-PUBLIC</TAG> \n" +
-            "        <VALUE>2018-01-01</VALUE> \n" +
-            "      </SAMPLE_ATTRIBUTE> \n" +
-            "      <SAMPLE_ATTRIBUTE> \n" +
-            "        <TAG>ENA-FIRST-PUBLIC</TAG> \n" +
-            "        <VALUE>2018-02-01</VALUE> \n" +
-            "      </SAMPLE_ATTRIBUTE> \n" +
+            "      <SAMPLE_ATTRIBUTE>\n" +
+            "        <TAG>ENA-FIRST-PUBLIC</TAG>\n" +
+            "        <VALUE>2018-01-01</VALUE>\n" +
+            "      </SAMPLE_ATTRIBUTE>\n" +
+            "      <SAMPLE_ATTRIBUTE>\n" +
+            "        <TAG>ENA-LAST-UPDATE</TAG>\n" +
+            "        <VALUE>2018-02-01</VALUE>\n" +
+            "      </SAMPLE_ATTRIBUTE>\n" +
             "    </SAMPLE_ATTRIBUTES> \n" +
             "  </SAMPLE> \n" +
             "</SAMPLE_SET>\n";
@@ -483,7 +483,7 @@ public class ExampleSamples {
             "      </SAMPLE_ATTRIBUTE> \n" +
             "    </SAMPLE_ATTRIBUTES> \n" +
             "  </SAMPLE> \n" +
-            "</SAMPLE_SET>";
+            "</SAMPLE_SET>\n";
 
     public static String expectedModifiedCenterNameSampleXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
             "\n" +
@@ -589,75 +589,75 @@ public class ExampleSamples {
     public static String expectedFullSampleXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
             "\n" +
             "<SAMPLE_SET> \n" +
-            "  <SAMPLE center_name=\"1000G\" alias=\"NA18561\" accession=\"SRS000121\" broker_name=\"NCBI\">\n" +
-            "     <IDENTIFIERS>\n" +
-            "          <PRIMARY_ID>SRS000121</PRIMARY_ID>\n" +
-            "          <EXTERNAL_ID namespace=\"BioSample\">SAMN00001603</EXTERNAL_ID>\n" +
-            "          <EXTERNAL_ID namespace=\"Coriell\">GM18561</EXTERNAL_ID>\n" +
-            "          <SUBMITTER_ID namespace=\"1000G\">NA18561</SUBMITTER_ID>\n" +
-            "     </IDENTIFIERS>\n" +
-            "     <TITLE>Coriell GM18561</TITLE>\n" +
-            "     <SAMPLE_NAME>\n" +
-            "          <TAXON_ID>9606</TAXON_ID>\n" +
-            "          <SCIENTIFIC_NAME>Homo sapiens</SCIENTIFIC_NAME>\n" +
-            "     </SAMPLE_NAME>\n" +
-            "     <DESCRIPTION>Human HapMap individual Coriell catalog ID NA18561</DESCRIPTION>\n" +
-            "     <SAMPLE_LINKS></SAMPLE_LINKS>\n" +
-            "     <SAMPLE_ATTRIBUTES>\n" +
-            "          <SAMPLE_ATTRIBUTE>\n" +
-            "               <TAG>DNA-ID</TAG>\n" +
-            "               <VALUE>NA18561</VALUE>\n" +
-            "          </SAMPLE_ATTRIBUTE>\n" +
-            "          <SAMPLE_ATTRIBUTE>\n" +
-            "               <TAG>Super Population Code</TAG>\n" +
-            "               <VALUE>EAS</VALUE>\n" +
-            "          </SAMPLE_ATTRIBUTE>\n" +
-            "          <SAMPLE_ATTRIBUTE>\n" +
-            "               <TAG>population</TAG>\n" +
-            "               <VALUE>CHB</VALUE>\n" +
-            "          </SAMPLE_ATTRIBUTE>\n" +
-            "          <SAMPLE_ATTRIBUTE>\n" +
-            "               <TAG>Super Population Description</TAG>\n" +
-            "               <VALUE>East Asian</VALUE>\n" +
-            "          </SAMPLE_ATTRIBUTE>\n" +
-            "          <SAMPLE_ATTRIBUTE>\n" +
-            "               <TAG>Coriell plate</TAG>\n" +
-            "               <VALUE>HAPMAPPT02</VALUE>\n" +
-            "          </SAMPLE_ATTRIBUTE>\n" +
-            "          <SAMPLE_ATTRIBUTE>\n" +
-            "               <TAG>Coriell panel</TAG>\n" +
-            "               <VALUE>MGP00017</VALUE>\n" +
-            "          </SAMPLE_ATTRIBUTE>\n" +
-            "          <SAMPLE_ATTRIBUTE>\n" +
-            "               <TAG>Population Description</TAG>\n" +
-            "               <VALUE>Han Chinese in Beijing, China</VALUE>\n" +
-            "          </SAMPLE_ATTRIBUTE>\n" +
-            "          <SAMPLE_ATTRIBUTE>\n" +
-            "               <TAG>sex</TAG>\n" +
-            "               <VALUE>male</VALUE>\n" +
-            "          </SAMPLE_ATTRIBUTE>\n" +
-            "          <SAMPLE_ATTRIBUTE>\n" +
-            "               <TAG>HapMap sample ID</TAG>\n" +
-            "               <VALUE>NA18561</VALUE>\n" +
-            "          </SAMPLE_ATTRIBUTE>\n" +
-            "          <SAMPLE_ATTRIBUTE>\n" +
-            "               <TAG>culture_collection</TAG>\n" +
-            "               <VALUE>Coriell:GM18561</VALUE>\n" +
-            "          </SAMPLE_ATTRIBUTE>\n" +
-            "          <SAMPLE_ATTRIBUTE>\n" +
-            "               <TAG>BioSampleModel</TAG>\n" +
-            "               <VALUE>HapMap</VALUE>\n" +
-            "          </SAMPLE_ATTRIBUTE>\n" +
-            "          <SAMPLE_ATTRIBUTE>\n" +
-            "               <TAG>ENA-FIRST-PUBLIC</TAG>\n" +
-            "               <VALUE>2010-02-26</VALUE>\n" +
-            "          </SAMPLE_ATTRIBUTE>\n" +
-            "          <SAMPLE_ATTRIBUTE>\n" +
-            "               <TAG>ENA-LAST-UPDATE</TAG>\n" +
-            "               <VALUE>2015-06-23</VALUE>\n" +
-            "          </SAMPLE_ATTRIBUTE>\n" +
-            "     </SAMPLE_ATTRIBUTES>\n" +
-            "   </SAMPLE> \n" +
+            "  <SAMPLE center_name=\"1000G\" alias=\"NA18561\" accession=\"SRS000121\" broker_name=\"NCBI\"> \n" +
+            "    <IDENTIFIERS> \n" +
+            "      <PRIMARY_ID>SRS000121</PRIMARY_ID>  \n" +
+            "      <EXTERNAL_ID namespace=\"BioSample\">SAMN00001603</EXTERNAL_ID>  \n" +
+            "      <EXTERNAL_ID namespace=\"Coriell\">GM18561</EXTERNAL_ID>  \n" +
+            "      <SUBMITTER_ID namespace=\"1000G\">NA18561</SUBMITTER_ID> \n" +
+            "    </IDENTIFIERS>  \n" +
+            "    <TITLE>Coriell GM18561</TITLE>  \n" +
+            "    <SAMPLE_NAME> \n" +
+            "      <TAXON_ID>9606</TAXON_ID>  \n" +
+            "      <SCIENTIFIC_NAME>Homo sapiens</SCIENTIFIC_NAME> \n" +
+            "    </SAMPLE_NAME>  \n" +
+            "    <DESCRIPTION>Human HapMap individual Coriell catalog ID NA18561</DESCRIPTION>  \n" +
+            "    <SAMPLE_LINKS></SAMPLE_LINKS>  \n" +
+            "    <SAMPLE_ATTRIBUTES> \n" +
+            "      <SAMPLE_ATTRIBUTE> \n" +
+            "        <TAG>DNA-ID</TAG>  \n" +
+            "        <VALUE>NA18561</VALUE> \n" +
+            "      </SAMPLE_ATTRIBUTE>  \n" +
+            "      <SAMPLE_ATTRIBUTE> \n" +
+            "        <TAG>Super Population Code</TAG>  \n" +
+            "        <VALUE>EAS</VALUE> \n" +
+            "      </SAMPLE_ATTRIBUTE>  \n" +
+            "      <SAMPLE_ATTRIBUTE> \n" +
+            "        <TAG>population</TAG>  \n" +
+            "        <VALUE>CHB</VALUE> \n" +
+            "      </SAMPLE_ATTRIBUTE>  \n" +
+            "      <SAMPLE_ATTRIBUTE> \n" +
+            "        <TAG>Super Population Description</TAG>  \n" +
+            "        <VALUE>East Asian</VALUE> \n" +
+            "      </SAMPLE_ATTRIBUTE>  \n" +
+            "      <SAMPLE_ATTRIBUTE> \n" +
+            "        <TAG>Coriell plate</TAG>  \n" +
+            "        <VALUE>HAPMAPPT02</VALUE> \n" +
+            "      </SAMPLE_ATTRIBUTE>  \n" +
+            "      <SAMPLE_ATTRIBUTE> \n" +
+            "        <TAG>Coriell panel</TAG>  \n" +
+            "        <VALUE>MGP00017</VALUE> \n" +
+            "      </SAMPLE_ATTRIBUTE>  \n" +
+            "      <SAMPLE_ATTRIBUTE> \n" +
+            "        <TAG>Population Description</TAG>  \n" +
+            "        <VALUE>Han Chinese in Beijing, China</VALUE> \n" +
+            "      </SAMPLE_ATTRIBUTE>  \n" +
+            "      <SAMPLE_ATTRIBUTE> \n" +
+            "        <TAG>sex</TAG>  \n" +
+            "        <VALUE>male</VALUE> \n" +
+            "      </SAMPLE_ATTRIBUTE>  \n" +
+            "      <SAMPLE_ATTRIBUTE> \n" +
+            "        <TAG>HapMap sample ID</TAG>  \n" +
+            "        <VALUE>NA18561</VALUE> \n" +
+            "      </SAMPLE_ATTRIBUTE>  \n" +
+            "      <SAMPLE_ATTRIBUTE> \n" +
+            "        <TAG>culture_collection</TAG>  \n" +
+            "        <VALUE>Coriell:GM18561</VALUE> \n" +
+            "      </SAMPLE_ATTRIBUTE>  \n" +
+            "      <SAMPLE_ATTRIBUTE> \n" +
+            "        <TAG>BioSampleModel</TAG>  \n" +
+            "        <VALUE>HapMap</VALUE> \n" +
+            "      </SAMPLE_ATTRIBUTE>  \n" +
+            "      <SAMPLE_ATTRIBUTE>\n" +
+            "        <TAG>ENA-FIRST-PUBLIC</TAG>\n" +
+            "        <VALUE>2010-02-26</VALUE>\n" +
+            "      </SAMPLE_ATTRIBUTE>\n" +
+            "      <SAMPLE_ATTRIBUTE>\n" +
+            "        <TAG>ENA-LAST-UPDATE</TAG>\n" +
+            "        <VALUE>2015-06-23</VALUE>\n" +
+            "      </SAMPLE_ATTRIBUTE>\n" +
+            "    </SAMPLE_ATTRIBUTES> \n" +
+            "  </SAMPLE> \n" +
             "</SAMPLE_SET>\n";
 
 }
