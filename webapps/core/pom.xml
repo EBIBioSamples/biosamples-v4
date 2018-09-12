@@ -108,7 +108,7 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-tomcat</artifactId>
-			<scope>provided</scope>
+			<!--<scope>provided</scope>-->
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -191,7 +191,8 @@
 				</executions>
 				<configuration>
 					<sourceDirectory>src/main/asciidoc</sourceDirectory>
-					<outputDirectory>${project.build.directory}/${project.artifactId}-${project.version}/WEB-INF/classes/templates/asciidoc/</outputDirectory>
+                    <outputDirectory>${project.build.outputDirectory}/templates/asciidoc</outputDirectory>
+					<!--<outputDirectory>${project.build.directory}/${project.artifactId}-${project.version}/WEB-INF/classes/templates/asciidoc/</outputDirectory>-->
 					<backend>html</backend>
 					<doctype>book</doctype>
                     <preserveDirectories>true</preserveDirectories>
