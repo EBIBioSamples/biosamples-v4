@@ -43,10 +43,10 @@ public class DocumentationController {
         ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver(cl);
         this.cookbookResources = new Resource[]{};
         try {
-            this.cookbookResources = resolver.getResources("classpath*:templates/asciidoc/cookbook_recipes/*");
+            this.cookbookResources = resolver.getResources("classpath*:/templates/asciidoc/cookbook_recipes/*");
             cookbookRecipiesMap = new HashMap<>();
             for(Resource res: cookbookResources) {
-                Document doc = Jsoup.parse(res.getFile(), "UTF-8");
+                Document doc = Jsoup.parse(res.getInputStream(), "UTF-8", "");
                 Element title =  doc.getElementsByTag("title").first();
                 String linkText = title.text();
                 String linkUrl = res.getFilename().replaceFirst("cb_", "");
