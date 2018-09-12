@@ -17,8 +17,9 @@
 
 <body>
 	<th:block th:include="fragments/header :: header"></th:block>
-	<div layout:fragment="content">
-		<div id="main-content-area" class="row">
+	<div layout:fragment="content" id="content" >
+		<th:block th:include="fragments/header :: masterhead"></th:block>
+		<div id="main-content-area" class="row padding-top-xlarge">
 			<div class="row">
 				<h2>Submissions</h2>
 				<p>This webpage provides a service for submitting
