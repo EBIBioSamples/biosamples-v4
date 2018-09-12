@@ -64,6 +64,7 @@ public class DocumentationController {
     @ModelAttribute
     public void addCoreLink(Model model) {
         model.addAttribute("sampletabUrl", bioSamplesProperties.getBiosamplesWebappSampletabUri());
+        model.addAttribute("recipes", this.cookbookRecipiesMap);
     }
 
     @GetMapping
@@ -107,14 +108,12 @@ public class DocumentationController {
     }
 
     @GetMapping(value = {"/cookbook", "/cookbook/"})
-    public String cookBookIndex(Model model) throws Exception{
-        model.addAttribute("recipes", this.cookbookRecipiesMap);
+    public String cookBookIndex(){
         return "docs/cookbook/index";
     }
 
     @GetMapping(value = "/cookbook/{page}")
     public String cookbookPage(Model model, @PathVariable String page) {
-        model.addAttribute("recipes", this.cookbookRecipiesMap);
         model.addAttribute("page", page);
         return "docs/cookbook/cookbook_template";
     }

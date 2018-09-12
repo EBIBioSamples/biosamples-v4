@@ -1,14 +1,14 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org"
 	xmlns:layout="http://www.w3.org/1999/xhtml">
-	
+
 <head th:replace="fragments/head :: head">
 	<title>BioSamples &lt; EMBL-EBI</title>
 	<!-- A few keywords that relate to the content of THIS PAGE (not the whole project) -->
 	<meta name="keywords" content="biosamples, europe, EBI" />
 	<!-- Describe what this page is about -->
 	<meta name="description" content="EMBL-EBI" />
-	
+
 	<meta name="ebi:last-review" content="2016-12-20" />
 	<!-- The last time the content was reviewed -->
 	<meta name="ebi:expiry" content="2017-12-20" />
@@ -17,41 +17,42 @@
 
 <body>
 	<div th:insert="fragments/header :: header"></div>
-	<div layout:fragment="content">
-		<div id="main-content-area" class="row"> 
+	<div layout:fragment="content" id="content">
+		<th:block th:include="fragments/header :: masterhead"></th:block>
+		<div id="main-content-area" class="row padding-top-xlarge">
 	        <h2>About BioSamples</h2>
-	
-	        <h3 class="icon icon-generic" data-icon="}">The team</h3>	
-	        <p>The BioSamples team is part of the <a href="/about/people/helen-parkinson">Helen Parkinson's team</a> at EMBL-EBI. The team consists of bioinformaticians, ontologists, software engineers and web developers.</p>
-	
 
-	        <h3 class='icon icon-generic' data-icon='E'>Contact us</h3>        
+	        <h3 class="icon icon-spacer icon-generic" data-icon="}">The team</h3>
+	        <p>The BioSamples team is part of the <a href="/about/people/helen-parkinson">Helen Parkinson's team</a> at EMBL-EBI. The team consists of bioinformaticians, ontologists, software engineers and web developers.</p>
+
+
+	        <h3 class='icon icon-spacer icon-generic' data-icon='E'>Contact us</h3>
 	        <p>If you want to contact us, please email <a href="mailto:biosamples@ebi.ac.uk">biosamples@ebi.ac.uk</a>.
-	        We welcome enquiries on data submission and data access, as well as more technical issues, e.g. integration 
+	        We welcome enquiries on data submission and data access, as well as more technical issues, e.g. integration
 	        with other data bases, linked open data, etc. We aim to respond to all emails within 1 working day.</p>
-	        
-			<h3 class='icon icon-generic' data-icon='m'>Announcements</h3>
+
+			<h3 class='icon icon-spacer icon-generic' data-icon='m'>Announcements</h3>
 			<p>If you use the Biosamples Database regularly, or maintain software
 				that interacts with it, you may want to keep up to date with any
 				changes and improvements by <a
 					href="//listserver.ebi.ac.uk/mailman/listinfo/biosamples-announce">subscribing
 					to the announcement mailing list</a>.
 			</p>
-	        <h3 class="icon icon-generic" data-icon="P">Privacy Notices and Terms of Use</h3>
-            <p>This website requires cookies, and the limited processing of your personal data in order to 
-            function. By using the site you are agreeing to this as outlined in our 
+	        <h3 class="icon icon-spacer icon-generic" data-icon="P">Privacy Notices and Terms of Use</h3>
+            <p>This website requires cookies, and the limited processing of your personal data in order to
+            function. By using the site you are agreeing to this as outlined in our
             <a href="https://www.ebi.ac.uk/data-protection/privacy-notice/embl-ebi-public-website">Privacy Notice</a>
             and <a href="https://www.ebi.ac.uk/about/terms-of-use">Terms of Use.</a></p>
 			<p>If you submit information to BioSamples please note that we will handle your submission in accordance with our <a href="https://www.ebi.ac.uk/data-protection/privacy-notice/biosamples-submissions">Submission Privacy Notice</a>.</p>
-	
-	        <h3 class="icon icon-generic" data-icon="U">Publications / how to cite</h3>
+
+	        <h3 class="icon icon-spacer icon-generic" data-icon="U">Publications / how to cite</h3>
 	        <ul>
 	            <li><strong>Citing BioSamples database</strong>: please use the following publication:
 	                Faulconbridge A., et al., 2014. <a href="//europepmc.org/abstract/MED/24265224">Updates to BioSamples database at European Bioinformatics Institute</a>. Nucleic Acids Res, 10.1093/nar/gkt1081. Pubmed ID 24265224.</li>
 	            <li><strong>Citing BioSamples records in your manuscript</strong>: please include your sample and group accession numbers and the URL to BioSamples home page e.g. "Sample meta-data are available in the BioSamples database (http://www.ebi.ac.uk/biosamples) under accession numbers SAMxxxxxx, SAMxxxxxx, SAMxxxxxx, and SAMxxxxxx."</li>
 	        </ul>
-	        
-	        <h3 class="icon icon-generic" data-icon="I">Acknowledgements</h3>
+
+	        <h3 class="icon icon-spacer icon-generic" data-icon="I">Acknowledgements</h3>
 	        <p>BioSamples  has been made possible with the support of our funders:</p>
 	        <ul>
 	        	<li>European Molecular Biology Laboratory - European Bioinformatics Institute core funds</li>
@@ -60,14 +61,14 @@
 	        	<li>Innovative Medicines Initiative (IMI) - European Bank for induced pluripotent Stem Cells (EBiSC)</li>
 	        	<li>ELIXIR Meta Data implementation study</li>
 	        	<li>Wellcome Trust (WT) - Global Alliance for Genomics and Health (GA4GH)</li>
-	        </ul>	
+	        </ul>
 	        <p>The BioSamples team would like to thank the following companies for their support:</p>
 	        <ul>
 	            <li><a href="http://www.atlassian.com" target="_blank">Atlassian</a> for <a href="http://www.atlassian.com/software/bamboo/overview" target="_blank">Bamboo</a> - Continuous Integration and Release Management tool.</li>
 	            <li><a href="http://www.browserstack.com" target="_blank">BrowserStack</a> for providing the infrastructure that allows us to test our service in real browsers. <a href="http://www.browserstack.com" target="_blank"><img src="https://www.browserstack.com/images/mail/browserstack-logo-footer.png" width="120"></a></li>
 	        </ul>
 		</div>
-	</div> 
-	<div th:insert="fragments/footer :: footer"></div>	
+	</div>
+	<div th:insert="fragments/footer :: footer"></div>
 </body>
 </html>

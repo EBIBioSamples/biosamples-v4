@@ -1,14 +1,14 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org"
 	xmlns:layout="http://www.w3.org/1999/xhtml">
-	
+
 <head th:replace="fragments/head :: head">
 	<title>BioSamples &lt; EMBL-EBI</title>
 	<!-- A few keywords that relate to the content of THIS PAGE (not the whole project) -->
 	<meta name="keywords" content="biosamples, europe, EBI" />
 	<!-- Describe what this page is about -->
 	<meta name="description" content="EMBL-EBI" />
-	
+
 	<meta name="ebi:last-review" content="2016-12-20" />
 	<!-- The last time the content was reviewed -->
 	<meta name="ebi:expiry" content="2017-12-20" />
@@ -18,8 +18,9 @@
 
 <body>
 	<th:block th:include="fragments/header :: header"></th:block>
-	<div layout:fragment="content">
-		<div id="main-content-area" class="row">
+	<div layout:fragment="content" id="content" >
+		<th:block th:include="fragments/header :: masterhead"></th:block>
+		<div id="main-content-area" class="row padding-top-xlarge">
 			<div class="row">
 				<p class="intro justify">
 					BioSamples stores and supplies descriptions and metadata about
@@ -36,7 +37,7 @@
 
 			<div class="row">
 				<div class="small-5 columns">
-					<h3 class="icon icon-generic" data-icon="L">Info</h3>
+					<h3 class="icon icon-generic icon-spacer" data-icon="L">Info</h3>
 					<ul>
 						<li><a href="docs">Help pages</a> about how to
 							search BioSamples, how to submit data, and FAQ.</li>
@@ -47,7 +48,7 @@
 					</ul>
 				</div>
 				<div class="small-7 columns">
-					<h3 class="icon icon-generic" data-icon="g">Data Content</h3>
+					<h3 class="icon icon-generic icon-spacer" data-icon="g">Data Content</h3>
 					<div class="row" style="display: flex; align-items: center;">
 						<div class="small-4 columns">
 							<img src="images/logo_ebisc.png" alt="EBiSC logo"
@@ -64,13 +65,13 @@
 					</div>
 					<div class="row">
 						<div class="small-4 columns">
-							<a class="icon icon-generic" data-icon="L" href="//www.ebisc.org" target="_blank">www.ebisc.org</a>
+							<a class="icon icon-spacer  icon-generic" data-icon="L" href="//www.ebisc.org" target="_blank">www.ebisc.org</a>
 						</div>
 						<div class="small-4 columns">
-							<a class="icon icon-generic" data-icon="L" href="http://www.faang.org" target="_blank">www.faang.org</a>
+							<a class="icon icon-spacer  icon-generic" data-icon="L" href="http://www.faang.org" target="_blank">www.faang.org</a>
 						</div>
 						<div class="small-4 columns">
-							<a class="icon icon-generic" data-icon="L" href="http://www.hipsci.org" target="_blank">www.hipsci.org</a>
+							<a class="icon icon-spacer  icon-generic" data-icon="L" href="http://www.hipsci.org" target="_blank">www.hipsci.org</a>
 						</div>
 					</div>
 					<div class="row">
@@ -101,6 +102,6 @@
 			</div>
 		</div>
 	</div>
-	<th:block th:include="fragments/footer :: footer"></th:block>	
+	<th:block th:include="fragments/footer :: footer"></th:block>
 </body>
 </html>

@@ -17,8 +17,9 @@
 
 <body>
 <div th:insert="fragments/header :: header"></div>
-<div layout:fragment="content">
-    <div id="main-content-area" class="row" >
+<div layout:fragment="content" id="content">
+    <th:block th:include="fragments/header :: masterhead"></th:block>
+    <div id="main-content-area" class="row padding-top-xlarge">
         <div class="small-12 medium-9 columns">
             <div th:insert="asciidoc/cookbook :: div"></div>
             <ul>
@@ -26,34 +27,8 @@
                     <a th:href="@{/docs/cookbook/{name}(name=${recipe.getValue()})}" th:text="${recipe.getKey()}"></a>
                 </li>
             </ul>
-
-            <ul class="vertical menu accordion-menu" data-accordion-menu data-submenu-toggle="true">
-                <li>
-                    <a href="http://foundation.zurb.com/">Zurb Foundation</a>
-                    <ul class="menu vertical nested">
-                        <li>
-                            <a href="#">Item 1A</a>
-                            <ul class="menu vertical nested">
-                                <li><a href="#">Item 1Ai</a></li>
-                                <li><a href="#">Item 1Aii</a></li>
-                                <li><a href="#">Item 1Aiii</a></li>
-                            </ul>
-                        </li>
-                        <li><a href="#">Item 1B</a></li>
-                        <li><a href="#">Item 1C</a></li>
-                    </ul>
-                </li>
-                <li>
-                    <a href="#">Item 2</a>
-                    <ul class="menu vertical nested">
-                        <li><a href="#">Item 2A</a></li>
-                        <li><a href="#">Item 2B</a></li>
-                    </ul>
-                </li>
-                <li><a href="#">Item 3</a></li>
-            </ul>
         </div>
-        <div th:insert="fragments/help :: sidebar(active='cookbook')"></div>
+        <div th:insert="fragments/help :: sidebar(active='cookbook', recipes=${recipes})"></div>
     </div>
 </div>
 <div th:insert="fragments/footer :: footer"></div>
