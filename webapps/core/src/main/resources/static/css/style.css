@@ -158,7 +158,7 @@ code[class^="language"] {
     margin-right: 1em;
 }
 
-.sample .s__* {
+.s__serialization, .s__header, .s__details  {
     padding-bottom: 1em;
 }
 
