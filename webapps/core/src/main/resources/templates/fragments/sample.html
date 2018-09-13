@@ -180,7 +180,7 @@
 
 	<section th:fragment="serialisationDropDownMenu">
 		<h4>Download as:</h4>
-		<ul class="vertical dropdown menu" data-dropdown-menu>
+		<ul class="vertical dropdown menu">
 			<li><a th:href="@{/samples/{xml}(xml=${sample.accession} + '.xml')}" download>XML</a></li>
 			<li><a th:href="@{/samples/{json}(json=${sample.accession} + '.json')}" download>JSON</a></li>
 			<li><a th:href="@{/samples/{ldjson}(ldjson=${sample.accession} + '.ldjson')}" download>Bioschemas</a></li>

@@ -21,15 +21,17 @@
     <th:block th:include="fragments/header :: header (filters=${filters})"></th:block>
     <div layout:fragment="content" id="content">
         <th:block th:include="fragments/header :: masterhead"></th:block>
-        <div id="main-content-area" class="row padding-top-xlarge">
+        <div id="main-content-area" class="row padding-top-xlarge padding-left-xlarge padding-right-xlarge">
             <div class="small-12 columns">
                 <h2>Search results</h2>
             </div>
-            <div class="small-3 columns">
-                <section th:replace="fragments/samples :: facets (${facets}, ${filters})"></section>
-            </div>
-            <div class="small-9 columns">
-                <section th:replace="fragments/samples :: samples (${page})" ></section>
+            <div class="small-12 search-results">
+                <div class="sr__facets">
+                    <section th:replace="fragments/samples :: facets (${facets}, ${filters})"></section>
+                </div>
+                <div class="sr__results">
+                    <section th:replace="fragments/samples :: samples (${page})" ></section>
+                </div>
             </div>
         </div>
     </div>
