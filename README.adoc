@@ -1,5 +1,5 @@
-https://www.codacy.com/app/afaulconbridge/biosamples-v4?utm_source=github.com&utm_medium=referral&utm_content=EBIBioSamples/biosamples-v4&utm_campaign=badger[image:https://api.codacy.com/project/badge/Grade/c2acf39bb65d4793ae3420c70ab51388[Codacy
-Badge]]
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/d1d650940b1f4a6286607c1d06573090)](https://www.codacy.com/app/danielvaughan/biosamples-v4?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=EBIBioSamples/biosamples-v4&amp;utm_campaign=Badge_Grade)
+[![Docker Repository on Quay](https://quay.io/repository/ebibiosamples/biosamples-v4/status "Docker Repository on Quay")](https://quay.io/repository/ebibiosamples/biosamples-v4)
 
 [[quickstart]]
 Quickstart
