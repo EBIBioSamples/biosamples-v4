@@ -198,6 +198,18 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
     }
 
     /**
+     * Get the number of seconds elapsed since the starting date
+     * @param startDate
+     * @returns {number} the number of seconds elapsed
+     */
+    function getElapsedSeconds(startDate) {
+        var elapsed = new Date() - startDate;
+        elapsed /= 1000;
+
+        return Math.round(elapsed);
+    }
+
+    /**
      * Function to handle AJAX errors
      * @param request the request that generated the error
      * @param error_type
@@ -241,11 +253,5 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
         return response;
     }
 
-    function getElapsedSeconds(startDate) {
-        var elapsed = new Date() - startDate;
-        elapsed /= 1000;
-
-        return Math.round(elapsed);
-    }
 
 })(jQuery);
