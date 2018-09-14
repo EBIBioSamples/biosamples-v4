@@ -62,3 +62,8 @@ div#elixir-banner-info { color: white; }
            -webkit-transform: scaleY(1.0);
        }
 }
+
+#errorsdiv .label {
+    margin-bottom: 1em;
+    white-space: normal;
+}

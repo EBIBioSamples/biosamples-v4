@@ -34,6 +34,7 @@
 					biosamples-submissions@ebi.ac.uk</a></p>
 				<p>
 					<form id="sampletab_form" method="POST" enctype="multipart/form-data" action="api/v1/file/sb">
+                    <!--<form id="sampletab_form" method="POST" enctype="multipart/form-data" action="localhost:26379/api/v1/file/sb">-->
 						<div class="input-group">
 							<label>
 								API Key:
@@ -48,7 +49,7 @@
 	                    <th:block th:include="fragments/components :: spinner"></th:block>
 	                </form>
 				</p>
-				<div class="row">
+				<div class="row columns">
 					<div id="errorsdiv"></div>
 					<div id="sampletabdiv"></div>
 				</div>

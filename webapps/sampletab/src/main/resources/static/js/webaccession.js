@@ -10,6 +10,8 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
         form, spinner, submissionUrl,
         checkedTerms;
 
+    var submissionStart;
+
     $(document).ready(function () {
         errorsDiv = document.getElementById("errorsdiv");
         form = document.getElementById("sampletab_form");
@@ -61,6 +63,9 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
             enctype: 'multipart/form-data',
             contentType: false,
             processData: false,
+            beforeSend: function() {
+                submissionStart = new Date();
+            },
             success: function (json) {
                 //once the ajax call is complete, display the output
                 //through this callback
@@ -202,9 +207,18 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
         //if the ajax call when awry, tell the user
         clearErrors();
         displayError("Oops! Something went wrong while processing your request");
+        var responseCode = request.status;
+        if (responseCode === 500 &&
+            error_mesg === "" &&
+            getElapsedSeconds(submissionStart) > 200)  {
+            // If error message is empty but more than 250 has passed since first request,
+            // we can assume is a timeout
+            error_type = "Request timeout";
+            error_mesg = "The submission server timed out while processing your request. &nbsp; This may be due to a large file undergoing checks; please contact biosamples@ebi.ac.uk before resubmission to confirm submission status";
+        }
         var errorDetails = "" + error_type + ": " + error_mesg;
         if (errorDetails.length > 0) {
-            displayError(generateErrorLabel(errorDetails))
+            displayError(errorDetails)
         }
     }
 
@@ -225,6 +239,13 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
             response = response + "\r\n"; //use windows line endings for best safety
         }
         return response;
+    }
+
+    function getElapsedSeconds(startDate) {
+        var elapsed = new Date() - startDate;
+        elapsed /= 1000;
+
+        return Math.round(elapsed);
     }
 
 })(jQuery);
