@@ -22,15 +22,15 @@ import uk.ac.ebi.biosamples.utils.TaxonomyService;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
 public class NcbiElementCallable implements Callable<Void> {
-	
+
 	private Logger log = LoggerFactory.getLogger(getClass());
 
 	private final Element sampleElem;
 
 	private final String domain;
-	
+
 	private final TaxonomyService taxonomyService;
-	
+
 	private final BioSamplesClient bioSamplesClient;
 
 	public NcbiElementCallable(TaxonomyService taxonomyService, BioSamplesClient bioSamplesClient, Element sampleElem, String domain) {
@@ -46,7 +46,7 @@ public class NcbiElementCallable implements Callable<Void> {
 		String accession = sampleElem.attributeValue("accession");
 
 		log.trace("Element callable starting for "+accession);
-						
+
 		SortedSet<Attribute> attrs = new TreeSet<>();
 		SortedSet<Relationship> rels = new TreeSet<>();
 		Set<ExternalReference> externalReferences = new TreeSet<>();
@@ -79,19 +79,19 @@ public class NcbiElementCallable implements Callable<Void> {
 			//if we still have a geo alias, store it as a synonym
 			attrs.add(Attribute.build("synonym",  geoAlias));
 		}
-		
+
 		if (alias == null) {
 			log.warn("Unable to determine sample alias for "+accession+", falling back to accession");
 			alias = accession;
 		}
-		
+
 		//override any existing centre name with this, if present
 		if (XmlPathBuilder.of(sampleElem).path("Owner", "Name").exists()) {
 			if (XmlPathBuilder.of(sampleElem).path("Owner", "Name").text().trim().length() > 0) {
 				centreName = XmlPathBuilder.of(sampleElem).path("Owner", "Name").text().trim();
 			}
 		}
-		
+
 		if (centreName == null) {
 			//throw new RuntimeException("Unable to determine centre name for "+accession);
 			log.warn("Unable to determine centre name for "+accession);
@@ -104,7 +104,7 @@ public class NcbiElementCallable implements Callable<Void> {
 			String value = XmlPathBuilder.of(sampleElem).path("Description", "Title").text();
 			attrs.add(Attribute.build("description title",  value));
 		}
-		
+
 		if (XmlPathBuilder.of(sampleElem).path("Description", "Comment", "Paragraph").exists()) {
 			String value = XmlPathBuilder.of(sampleElem).path("Description", "Comment", "Paragraph").text().trim();
 			/*
@@ -116,9 +116,10 @@ public class NcbiElementCallable implements Callable<Void> {
 			attrs.add(Attribute.build("description",  value));
 		}
 
-		// handle the organism		
+		// handle the organism
 		String organismIri = null;
 		String organismValue = null;
+		boolean hasOrganismInDescription = false;
 		if (XmlPathBuilder.of(sampleElem).path("Description", "Organism").attributeExists("taxonomy_id")) {
 			int taxonId = getTaxId(XmlPathBuilder.of(sampleElem).path("Description", "Organism").attribute("taxonomy_id"));
 			organismIri = taxonomyService.getUriForTaxonId(taxonId);
@@ -126,11 +127,12 @@ public class NcbiElementCallable implements Callable<Void> {
 		if (XmlPathBuilder.of(sampleElem).path("Description", "Organism").attributeExists("taxonomy_name")) {
 			organismValue = XmlPathBuilder.of(sampleElem).path("Description", "Organism").attribute("taxonomy_name");
 		}
-		
+
 		if (organismValue != null) {
-			attrs.add(Attribute.build("organism", organismValue, organismIri,  null));			
+			attrs.add(Attribute.build("organism", organismValue, organismIri,  null));
+			hasOrganismInDescription = true;
 		}
-		
+
 
 		// handle attributes
 		for (Element attrElem : XmlPathBuilder.of(sampleElem).path("Attributes").elements("Attribute")) {
@@ -145,21 +147,26 @@ public class NcbiElementCallable implements Callable<Void> {
 				value = value.substring(0, 252)+"...";
 			}
 			*/
+			if (key.equalsIgnoreCase("organism") && hasOrganismInDescription) {
+				// Don't add a new organism attribute as it has already been added from the description
+				continue;
+			}
+
 			//if its a gap accession add an external reference too
 			if (value.matches("phs[0-9]+")) {
 				externalReferences.add(ExternalReference.build("https://www.ncbi.nlm.nih.gov/projects/gap/cgi-bin/study.cgi?study_id="+value));
 			}
-			
+
 			//value is a sample accession, assume its a relationship
 			if (value.matches("SAM[END]A?[0-9]+")) {
 				//if its a self-relationship, then don't add it
 				//otherwise add it
 				if (!value.equals(accession)) {
 					rels.add(Relationship.build(accession, key, value));
-				}				
+				}
 			} else {
 				//its an attribute
-				attrs.add(Attribute.build(key, value));
+                attrs.add(Attribute.build(key, value));
 			}
 		}
 
@@ -175,18 +182,18 @@ public class NcbiElementCallable implements Callable<Void> {
 		//handle dates
 		Instant lastUpdate = Instant.parse(sampleElem.attributeValue("last_update")+"Z");
 		Instant publicationDate = Instant.parse(sampleElem.attributeValue("publication_date")+"Z");
-		
+
 		Instant latestDate = lastUpdate;
 		if (publicationDate.isAfter(latestDate)) {
 			latestDate = publicationDate;
 		}
-		
+
 		//add some INSDC things for standardisation with ENA import
-		attrs.add(Attribute.build("INSDC first public", 
+		attrs.add(Attribute.build("INSDC first public",
 			DateTimeFormatter.ISO_INSTANT.format(publicationDate)));
-		attrs.add(Attribute.build("INSDC last update", 
+		attrs.add(Attribute.build("INSDC last update",
 			DateTimeFormatter.ISO_INSTANT.format(lastUpdate)));
-		
+
 		if (XmlPathBuilder.of(sampleElem).path("Status").attributeExists("status")) {
 			String status = XmlPathBuilder.of(sampleElem).path("Status").attribute("status").trim();
 			attrs.add(Attribute.build("INSDC status", status));
@@ -195,17 +202,17 @@ public class NcbiElementCallable implements Callable<Void> {
 				publicationDate = publicationDate.atZone(ZoneOffset.UTC).plus(1000, ChronoUnit.YEARS).toInstant();
 			}
 		}
-		
+
 		Sample sample = Sample.build(alias, accession, domain, publicationDate, lastUpdate, attrs, rels, externalReferences);
-		
+
 		//now pass it along to the actual submission process
 		bioSamplesClient.persistSampleResource(sample);
 
 		log.trace("Element callable finished");
-		
+
 		return null;
 	}
-	
+
 	/**
 	 * Safe way to extract the taxonomy id from the string
 	 * @param value

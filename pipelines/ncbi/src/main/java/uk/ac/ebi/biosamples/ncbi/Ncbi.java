@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.PipelinesProperties;
@@ -31,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.zip.GZIPInputStream;
 
 @Component
+@Profile("!test")
 public class Ncbi implements ApplicationRunner {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
@@ -40,17 +42,17 @@ public class Ncbi implements ApplicationRunner {
 	private final XmlFragmenter xmlFragmenter;
 
 	private final NcbiFragmentCallback sampleCallback;
-	
+
 	private final BioSamplesClient bioSamplesClient;
-	
-	public Ncbi(PipelinesProperties pipelinesProperties, 
+
+	public Ncbi(PipelinesProperties pipelinesProperties,
 			XmlFragmenter xmlFragmenter,
-			NcbiFragmentCallback sampleCallback, 
+			NcbiFragmentCallback sampleCallback,
 			BioSamplesClient bioSamplesClient) {
 		this.pipelinesProperties = pipelinesProperties;
 		this.xmlFragmenter = xmlFragmenter;
 		this.sampleCallback = sampleCallback;
-		this.bioSamplesClient = bioSamplesClient;	
+		this.bioSamplesClient = bioSamplesClient;
 	}
 
 	@Override
@@ -78,13 +80,13 @@ public class Ncbi implements ApplicationRunner {
 
 		Path inputPath = Paths.get(pipelinesProperties.getNcbiFile());
 		inputPath = inputPath.toAbsolutePath();
-		
+
 		try (InputStream is = new GZIPInputStream(new BufferedInputStream(Files.newInputStream(inputPath)))) {
 
 			if (pipelinesProperties.getThreadCount() > 0) {
 				ExecutorService executorService = null;
 				try {
-					executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, 
+					executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true,
 							pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax());
 					Map<Element, Future<Void>> futures = new LinkedHashMap<>();
 
@@ -112,46 +114,46 @@ public class Ncbi implements ApplicationRunner {
 		log.info("Handled new and updated NCBI samples");
 
 		log.debug("Number of accession from NCBI = "+sampleCallback.getAccessions().size());
-		
-		//remove old NCBI samples no longer present	
-		
+
+		//remove old NCBI samples no longer present
+
 		//get all existing NCBI samples
 		Set<String> toRemoveAccessions = getExstingPublicNcbiAccessions();
 		//remove those that still exist
-		toRemoveAccessions.removeAll(sampleCallback.getAccessions());		
-		
+		toRemoveAccessions.removeAll(sampleCallback.getAccessions());
+
 		//remove those samples that are left
 		log.debug("Number of samples to remove = "+toRemoveAccessions.size());
 		makePrivate(toRemoveAccessions);
 
 		log.info("Processed NCBI pipeline");
 	}
-	
+
 	private Set<String> getExstingPublicNcbiAccessions() {
 		log.info("getting existing public ncbi accessions");
 		long startTime = System.nanoTime();
 		//make sure to only get the public samples
-		Set<String> existingAccessions = new TreeSet<>();		
+		Set<String> existingAccessions = new TreeSet<>();
 		for (Resource<Sample> sample : bioSamplesClient.getPublicClient().get().fetchSampleResourceAll(
 				Collections.singleton(FilterBuilder.create().onAccession("SAM[^E].*").build()))) {
 			existingAccessions.add(sample.getContent().getAccession());
-		}	
-		
+		}
+
 		long endTime = System.nanoTime();
 		double intervalSec = ((double)(endTime-startTime))/1000000000.0;
-		log.debug("Took "+intervalSec+"s to get "+existingAccessions.size()+" existing public ncbi accessions");	
+		log.debug("Took "+intervalSec+"s to get "+existingAccessions.size()+" existing public ncbi accessions");
 		return existingAccessions;
 	}
-	
+
 	private void makePrivate(Set<String> toRemoveAccessions) {
 		//TODO make this multithreaded for performance
 		for (String accession : toRemoveAccessions) {
 			// this must get the ORIGINAL sample without curation
 			Optional<Resource<Sample>> sampleOptional = bioSamplesClient.fetchSampleResource(accession, Optional.empty());
-			
+
 			if (sampleOptional.isPresent()) {
 				Sample sample = sampleOptional.get().getContent();
-				
+
 				//set the release date to 1000 years in the future to make it private again
 //				Sample newSample = Sample.build(sample.getName(),
 //						sample.getAccession(),
@@ -167,7 +169,7 @@ public class Ncbi implements ApplicationRunner {
                 Sample newSample = Sample.Builder.fromSample(sample)
 						.withRelease(ZonedDateTime.now(ZoneOffset.UTC).plusYears(1000).toInstant())
 						.build();
-				
+
 				//persist the now private sample
 				log.debug("Making private "+sample.getAccession());
 				bioSamplesClient.persistSampleResource(newSample);
