@@ -13,20 +13,22 @@
     <!-- The last time the content was reviewed -->
     <meta name="ebi:expiry" content="2017-12-20" />
     <!-- When this content is no longer relevant -->
-    <link rel="stylesheet"
-          href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css">
-    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
-    <script>hljs.initHighlightingOnLoad();</script>
 </head>
 
 <body>
 <div th:insert="fragments/header :: header"></div>
-<div layout:fragment="content">
-    <div id="main-content-area" class="row">
-        This is the API reference index
-        <ul>
-            <li></li>
-        </ul>
+<div layout:fragment="content" id="content">
+    <th:block th:include="fragments/header :: masterhead"></th:block>
+    <div id="main-content-area" class="row padding-top-xlarge">
+        <div class="small-12 medium-9 columns">
+            <div th:insert="asciidoc/cookbook :: div"></div>
+            <ul>
+                <li th:each="recipe: ${recipes}">
+                    <a th:href="@{/docs/cookbook/{name}(name=${recipe.getValue()})}" th:text="${recipe.getKey()}"></a>
+                </li>
+            </ul>
+        </div>
+        <div th:insert="fragments/help :: sidebar(active='cookbook', recipes=${recipes})"></div>
     </div>
 </div>
 <div th:insert="fragments/footer :: footer"></div>

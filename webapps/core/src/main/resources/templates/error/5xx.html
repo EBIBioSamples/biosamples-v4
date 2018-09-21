@@ -16,8 +16,9 @@
 </head>
 <body>
 	<th:block th:include="fragments/header :: header"></th:block>
-	<div layout:fragment="content">
-		<div id="main-content-area" class="row">
+	<div layout:fragment="content" id="content">
+		<th:block th:include="fragments/header :: masterhead"></th:block>
+		<div id="main-content-area" class="row padding-top-xlarge">
 			<h2>Error processing your request</h2>
 			<h3><th:span th:text="${status}">Status</th:span> - <th:span th:text="${error}">Error Message</th:span></h3>
 		</div>

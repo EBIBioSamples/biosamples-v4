@@ -13,10 +13,6 @@
     <!-- The last time the content was reviewed -->
     <meta name="ebi:expiry" content="2017-12-20" />
     <!-- When this content is no longer relevant -->
-    <link rel="stylesheet"
-          href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css">
-    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
-    <script>hljs.initHighlightingOnLoad();</script>
 </head>
 
 <body>
@@ -24,8 +20,8 @@
 <div layout:fragment="content" id="content">
     <th:block th:include="fragments/header :: masterhead"></th:block>
     <div id="main-content-area" class="row padding-top-xlarge">
-        <div class="small-12 medium-9 columns" th:insert="asciidoc/guides_authentication :: div"></div>
-        <div th:insert="fragments/help :: sidebar( active = 'guides/auth', recipes=${recipes})"></div>
+        <div class="small-12 medium-9 columns" th:insert="@{asciidoc/cookbook_recipes/{page}(page=${page})} :: div"></div>
+        <div th:insert="fragments/help :: sidebar( active = ${'cookbook/' + page}, recipes=${recipes})"></div>
     </div>
 </div>
 <div th:insert="fragments/footer :: footer"></div>

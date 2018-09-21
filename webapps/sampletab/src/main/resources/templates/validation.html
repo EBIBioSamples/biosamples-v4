@@ -1,14 +1,14 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org"
 	xmlns:layout="http://www.w3.org/1999/xhtml">
-	
+
 <head th:replace="fragments/head :: head">
 	<title>BioSamples &lt; EMBL-EBI</title>
 	<!-- A few keywords that relate to the content of THIS PAGE (not the whole project) -->
 	<meta name="keywords" content="biosamples, europe, EBI" />
 	<!-- Describe what this page is about -->
 	<meta name="description" content="EMBL-EBI" />
-	
+
 	<meta name="ebi:last-review" content="2016-12-20" />
 	<!-- The last time the content was reviewed -->
 	<meta name="ebi:expiry" content="2017-12-20" />
@@ -17,9 +17,10 @@
 
 <body>
 	<th:block th:include="fragments/header :: header"></th:block>
-	<div layout:fragment="content">
-		<div id="main-content-area" class="row">
-			<div class="row">
+	<div layout:fragment="content" id="content" >
+		<th:block th:include="fragments/header :: masterhead"></th:block>
+		<div id="main-content-area" class="row padding-top-xlarge padding-right-xlarge padding-left-xlarge">
+			<div class="row columns">
 				<h2>Validation &amp; Correction</h2>
 				<p>This webpage provides a service for validating SampleTab format files as used by the BioSample Database.</p>
 				<p>Please provide the SampleTab file you wish to validate into the form below. You will then be able to download a version
@@ -47,6 +48,6 @@
 			</div>
 		</div>
 	</div>
-	<th:block th:include="fragments/footer :: footer"></th:block>	
+	<th:block th:include="fragments/footer :: footer"></th:block>
 </body>
 </html>

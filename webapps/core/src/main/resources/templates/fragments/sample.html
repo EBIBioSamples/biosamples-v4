@@ -22,7 +22,7 @@
                         <td
                                 th:if="${not #strings.isEmpty(attribute.getIriOls()) and #strings.isEmpty(attribute.unit)}"><a
                                 th:href="${attribute.getIriOls()}" th:text="${attribute.value}"
-                                target="_blank">attribute value<i class="icon icon-generic"
+                                target="_blank">attribute value<i class="icon icon-spacer  icon-generic"
                                                                   data-icon="x"></i></a></td>
                         <td
                                 th:if="${#strings.isEmpty(attribute.getIriOls()) and #strings.isEmpty(attribute.unit)}"
@@ -31,7 +31,7 @@
                                 th:if="${not #strings.isEmpty(attribute.getIriOls()) and not #strings.isEmpty(attribute.unit)}"><th:span
                                 th:text="${attribute.value}" th:remove="tag"></th:span> (<a
                                 th:href="${attribute.getIriOls()}" th:text="${attribute.unit}"
-                                target="_blank">unit<i class="icon icon-generic"
+                                target="_blank">unit<i class="icon icon-spacer  icon-generic"
                                                        data-icon="x"></i></a>)</td>
                         <td
                                 th:if="${#strings.isEmpty(attribute.getIriOls()) and not #strings.isEmpty(attribute.unit)}"
@@ -74,7 +74,7 @@
 			<section th:each="externalReference : ${externalReferences}" >
 				<div class="small-1 columns">
 					<a th:href="${externalReference.url}" class="button" th:title="${externalReference.url}">
-						<h3 class="icon icon-generic white-color" data-icon="L"></h3>
+						<h3 class="icon icon-spacer  icon-generic white-color" data-icon="L"></h3>
 					</a>
 					<a th:href="${externalReference.url}" th:text="${@externalReferenceService.getNickname(externalReference)}"></a>
 				</div>
@@ -180,7 +180,7 @@
 
 	<section th:fragment="serialisationDropDownMenu">
 		<h4>Download as:</h4>
-		<ul class="vertical dropdown menu" data-dropdown-menu>
+		<ul class="vertical dropdown menu">
 			<li><a th:href="@{/samples/{xml}(xml=${sample.accession} + '.xml')}" download>XML</a></li>
 			<li><a th:href="@{/samples/{json}(json=${sample.accession} + '.json')}" download>JSON</a></li>
 			<li><a th:href="@{/samples/{ldjson}(ldjson=${sample.accession} + '.ldjson')}" download>Bioschemas</a></li>
@@ -190,10 +190,10 @@
 
 	<section th:fragment="serialisationIcons">
 		<a th:href="@{/samples/{xml_link}(xml_link=${sample.accession} + '.xml')}" class="button" title="XML">
-			<h3 class="icon icon-fileformats white-color" data-icon="x"></h3>
+			<h3 class="icon icon-spacer  icon-fileformats white-color" data-icon="x"></h3>
 		</a>
 		<a th:href="@{/samples/{json_link}(json_link=${sample.accession}+'.json')}" class="button" title="JSON">
-			<h3 class="icon icon-fileformats white-color" data-icon="J"></h3>
+			<h3 class="icon icon-spacer  icon-fileformats white-color" data-icon="J"></h3>
 		</a>
 		<a th:href="@{/samples/{bioschemas_link}(bioschemas_link=${sample.accession}+'.ldjson')}" class="button" title="Bioschemas">
 			<img th:src="@{/images/logo_bioschemas.png}" alt="BioSchemas logo" width="60px">

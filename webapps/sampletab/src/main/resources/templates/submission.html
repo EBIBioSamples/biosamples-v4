@@ -17,9 +17,10 @@
 
 <body>
 	<th:block th:include="fragments/header :: header"></th:block>
-	<div layout:fragment="content">
-		<div id="main-content-area" class="row">
-			<div class="row">
+	<div layout:fragment="content" id="content" >
+		<th:block th:include="fragments/header :: masterhead"></th:block>
+		<div id="main-content-area" class="row padding-top-xlarge padding-left-xlarge padding-right-xlarge">
+			<div class="row columns">
 				<h2>Submissions</h2>
 				<p>This webpage provides a service for submitting
 					SampleTab format files as used by the BioSample Database.</p>
