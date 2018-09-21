@@ -3,6 +3,25 @@
 
 This pages contains links to release notes for BioSamples for version 4.0.0 and higher. This release represents a comprehensive overhaul and therefore previous release notes are no longer applicable.
 
+[[section]]
+4.1.4
+----
+
+* As part of curation pipeline attributes with the value "not_applicable" are removed
+* Date titles on the sample page are now "Releases on" and "Updated on" rather than "Release" and "Update"
+* An initial accession endpoint has been added to the REST API to enable ENA to get a list of accessions for a project
+* A multi-step Docker build has been added to allow Docker images to be distributed on quay.io
+* A fix has been made for an issue that caused the Zooma Pipeline to fail on wwwdev
+
+
+[[section]]
+4.1.3
+----
+
+* Additional sample attributes required by ENA are now available including a single, top-level taxId field
+* The export box for a sample is now renamed download and contains a list of serialisations that always download as a file fixing a blocked popups issue in Safari
+* The search results now have an updated look and feel based on feedback from ENA
+
 
 [[section]]
 4.1.2
