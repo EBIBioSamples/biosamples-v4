@@ -1,14 +1,14 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org"
 	xmlns:layout="http://www.w3.org/1999/xhtml">
-	
+
 <head th:replace="fragments/head :: head">
 	<title>BioSamples &lt; EMBL-EBI</title>
 	<!-- A few keywords that relate to the content of THIS PAGE (not the whole project) -->
 	<meta name="keywords" content="biosamples, europe, EBI" />
 	<!-- Describe what this page is about -->
 	<meta name="description" content="EMBL-EBI" />
-	
+
 	<meta name="ebi:last-review" content="2016-12-20" />
 	<!-- The last time the content was reviewed -->
 	<meta name="ebi:expiry" content="2017-12-20" />
@@ -18,11 +18,11 @@
 <body>
 	<div th:insert="fragments/header :: header"></div>
 	<div layout:fragment="content">
-		<div id="main-content-area" class="row">
+		<div id="main-content-area" class="row padding-top-xlarge">
 			<div class="small-12 medium-9 columns" th:insert="asciidoc/legacy_xml_api :: #content"></div>
 			<div th:insert="fragments/help :: sidebar"></div>
 		</div>
-	</div> 
-	<div th:insert="fragments/footer :: footer"></div>	
+	</div>
+	<div th:insert="fragments/footer :: footer"></div>
 </body>
 </html>

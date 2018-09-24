@@ -1,0 +1,33 @@
+<BioSampleSet>
+    <BioSample access="public" accession="SAMN04192108" id="4192108" last_update="2016-11-08T06:44:38.883" publication_date="2016-11-08T06:44:38.883" submission_date="2015-10-16T14:47:05.923">
+        <Ids>
+            <Id db="BioSample" is_primary="1">SAMN04192108</Id>
+            <Id db="SRA">SRS1117526</Id>
+            <Id db="BioCI">329ce1c4-71e6-11e5-bd1d-3c4a92e4a804</Id>
+        </Ids>
+        <Description>
+            <Title>Transgenic Nipponbare plant expressing FLAG-His tagged ribosomal large unit protein (RPL18) (PMJ_CX_01)</Title>
+            <Organism taxonomy_id="39947" taxonomy_name="Oryza sativa Japonica Group">
+                <OrganismName>Oryza sativa Japonica Group</OrganismName>
+            </Organism>
+        </Description>
+        <Owner>
+            <Name abbreviation="bioci" url="http://www.iplantcollaborative.org/">BioCI</Name>
+        </Owner>
+        <Models>
+            <Model>Plant</Model>
+        </Models>
+        <Package display_name="Plant; version 1.0">Plant.1.0</Package>
+        <Attributes>
+            <Attribute attribute_name="cultivar" display_name="cultivar" harmonized_name="cultivar">japonica</Attribute>
+            <Attribute attribute_name="dev_stage" display_name="development stage" harmonized_name="dev_stage">callus</Attribute>
+            <Attribute attribute_name="geo_loc_name" display_name="geographic location" harmonized_name="geo_loc_name">USA: Michigan</Attribute>
+            <Attribute attribute_name="organism">Oryza sativa</Attribute>
+            <Attribute attribute_name="sample_name" display_name="sample name" harmonized_name="sample_name">Nipponbare callus mRNA-seq (Library: PMJ_CX_01)</Attribute>
+            <Attribute attribute_name="sample_title">Transgenic Nipponbare plant expressing FLAG-His tagged ribosomal large unit protein (RPL18) (PMJ_CX_01)</Attribute>
+            <Attribute attribute_name="tissue" display_name="tissue" harmonized_name="tissue">callus</Attribute>
+        </Attributes>
+        <Links/>
+        <Status status="live" when="2016-11-08T06:44:38.883"/>
+    </BioSample>
+</BioSampleSet>

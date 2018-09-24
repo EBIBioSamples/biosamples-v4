@@ -5,124 +5,58 @@
 </head>
 <body>
 	<div th:fragment="header" >
-		<div data-sticky-container="true">
-			<div id="local-masthead" data-sticky="true" data-sticky-on="large"
-				data-top-anchor="180" data-btm-anchor="300000">
-				<header>
-	
-					<div id="global-masthead" class="clearfix">
-						<!--This has to be one line and no newline characters-->
-						<a href="//www.ebi.ac.uk/" title="Go to the EMBL-EBI homepage"><span
-							class="ebi-logo"></span></a>
-	
-						<nav>
-							<div class="row">
-								<ul id="global-nav" class="menu">
-									<!-- set active class as appropriate -->
-									<li id="home-mobile" class=""><a href="//www.ebi.ac.uk"></a></li>
-									<li id="home" class="active"><a href="//www.ebi.ac.uk"><i
-											class="icon icon-generic" data-icon="H"></i> EMBL-EBI</a></li>
-									<li id="services"><a href="//www.ebi.ac.uk/services"><i
-											class="icon icon-generic" data-icon="("></i> Services</a></li>
-									<li id="research"><a href="//www.ebi.ac.uk/research"><i
-											class="icon icon-generic" data-icon=")"></i> Research</a></li>
-									<li id="training"><a href="//www.ebi.ac.uk/training"><i
-											class="icon icon-generic" data-icon="t"></i> Training</a></li>
-									<li id="about"><a href="//www.ebi.ac.uk/about"><i
-											class="icon icon-generic" data-icon="i"></i> About us</a></li>
-									<li id="search"><a href="#"
-										data-toggle="search-global-dropdown"><i
-											class="icon icon-functional" data-icon="1"></i> <span
-											class="show-for-small-only">Search</span></a>
-										<div id="search-global-dropdown" class="dropdown-pane"
-											data-dropdown="true" data-options="closeOnClick:true;">
-											<form id="global-search" name="global-search"
-												action="/ebisearch/search.ebi" method="GET">
-												<fieldset>
-													<div class="input-group">
-														<input type="text" name="query" id="global-searchbox"
-															class="input-group-field"
-															placeholder="Search all of EMBL-EBI" />
-														<div class="input-group-button">
-															<input type="submit" name="submit" value="Search" class="button" />
-															<input type="hidden" name="db" value="allebi" checked="checked" />
-															<input type="hidden" name="requestFrom" value="global-masthead"	checked="checked" />
-														</div>
-													</div>
-												</fieldset>
-											</form>
-										</div></li>
-									<li class="float-right show-for-medium embl-selector">
-									<!-- The dropdown menu will be programatically added by script.js -->
-										<button class="button float-right" type="button" data-toggle="embl-dropdown">Hinxton</button> 
-									</li>
-								</ul>
-							</div>
-						</nav>
-	
+        <header id="masthead-black-bar" class="clearfix masthead-black-bar"> </header>
+	</div>
+	<div th:fragment="masterhead">
+		<div data-sticky-container>
+			<div id="masthead" class="masthead" data-sticky data-sticky-on="large" data-top-anchor="main-content-area:top" data-btm-anchor="main-content-area:bottom">
+				<div class="masthead-inner row">
+
+					<!-- local-title -->
+					<div class="columns medium-7" id="local-title">
+						<h1>
+							<img th:src="@{/images/logo_biosamples.png}" alt="BioSamples logo" />
+							<a th:href="@{/}" title="to BioSamples homepage">BioSamples</a>
+						</h1>
 					</div>
-	
-					<div class="masthead row">
-	
-						<!-- local-title -->
-						<div class="columns medium-7" id="local-title">							
-							<h1>
-								<img th:src="@{/images/logo_biosamples.png}" alt="BioSamples logo" /> 
-								<a th:href="@{/}" title="to BioSamples homepage">BioSamples</a>
-							</h1>	
-						</div>
-						<!-- /local-title -->
-			            <!-- local-search -->
-						<div class="columns medium-5">
-				            <form id="local-search" name="local-search" th:action="@{/samples}" method="get">
-				              <fieldset>				              
-				              	<!--<input type="hidden" name="filter" th:each="filter : ${filters}" th:value="@{${filter}}">-->
-				                <div class="input-group margin-bottom-none">
-				                  <input type="text" name="text" id="local-searchbox" placeholder="Search" class="input-group-field" th:value="${param.text}" />
-				                  <div class="input-group-button"><input type="submit" class="button icon icon-functional" value="1" ></div>
-				                </div>
-				                <small class="">
-				                  <!-- If your search is more complex than just a keyword search, you can link to an Advanced Search -->
-				                  <!-- <span class="adv"><a href="../search" id="adv-search" title="Advanced">Advanced</a></span> | -->
-				                  <!-- Include some example searchterms - keep them short and few. -->
-				                  <a th:href="@{/samples?text=leukaemia}">leukaemia</a>,
-				                  <a th:href="@{/samples?text=viridiplantae}">viridiplantae</a>,
-				                  <a th:href="@{/samples?text=sheep+liver}">sheep liver</a> 
-				                </small>
-				              </fieldset>
-				            </form>
-			            </div>
-			            <!-- /local-search -->
-	
-						<!-- local-nav -->
-						<nav>
-							<ul class="menu float-left"
-								data-description="navigational">
-								<li class=""><a th:href="@{/}">Home</a></li>
-								<li class=""><a th:href="@{/samples}">Search</a></li>
-								<li class=""><a th:href="@{${sampletabUrl}}">Submit</a></li>
-								<li class=""><a th:href="@{/docs}">Documentation</a></li>
-								<li class=""><a th:href="@{/about}">About</a></li>
-								<!-- local-search-sticky -->
-								<!--<li class="columns medium-5 sticky-search">-->
-                                    <!--<fieldset>-->
-                                        <!--&lt;!&ndash;<input type="hidden" name="filter" th:each="filter : ${filters}" th:value="@{${filter}}">&ndash;&gt;-->
-                                        <!--<div class="input-group margin-bottom-none">-->
-                                            <!--<input type="text" name="text" th:form="local-search" placeholder="Search" class="input-group-field" th:value="${param.text}" />-->
-                                            <!--<div class="input-group-button">-->
-												<!--<input th:form="local-search" type="submit" class="button icon icon-functional" value="1" >-->
-											<!--</div>-->
-                                        <!--</div>-->
-                                    <!--</fieldset>-->
-								<!--</li>-->
-								<!-- /local-search -->
-							</ul>
-						</nav>
-						<!-- /local-nav -->
-	
+					<!-- /local-title -->
+					<!-- local-search -->
+					<div class="columns medium-5">
+						<form id="local-search" name="local-search" th:action="@{/samples}" method="get">
+							<fieldset>
+								<!--<input type="hidden" name="filter" th:each="filter : ${filters}" th:value="@{${filter}}">-->
+								<div class="input-group margin-bottom-none">
+									<input type="text" name="text" id="local-searchbox" placeholder="Search" class="input-group-field" th:value="${param.text}" />
+									<div class="input-group-button"><input type="submit" class="button icon icon-functional" value="1" ></div>
+								</div>
+								<small class="">
+									<!-- If your search is more complex than just a keyword search, you can link to an Advanced Search -->
+									<!-- <span class="adv"><a href="../search" id="adv-search" title="Advanced">Advanced</a></span> | -->
+									<!-- Include some example searchterms - keep them short and few. -->
+									<a th:href="@{/samples?text=leukaemia}">leukaemia</a>,
+									<a th:href="@{/samples?text=viridiplantae}">viridiplantae</a>,
+									<a th:href="@{/samples?text=sheep+liver}">sheep liver</a>
+								</small>
+							</fieldset>
+						</form>
 					</div>
-	
-				</header>
+					<!-- /local-search -->
+
+					<!-- local-nav -->
+					<nav>
+						<ul class="menu float-left"
+							data-description="navigational">
+							<li class=""><a th:href="@{/}">Home</a></li>
+							<li class=""><a th:href="@{/samples}">Search</a></li>
+							<li class=""><a th:href="@{${sampletabUrl}}">Submit</a></li>
+							<li class=""><a th:href="@{/docs}">Documentation</a></li>
+							<li class=""><a th:href="@{/about}">About</a></li>
+						</ul>
+					</nav>
+					<!-- /local-nav -->
+
+				</div>
+
 			</div>
 		</div>
 	</div>

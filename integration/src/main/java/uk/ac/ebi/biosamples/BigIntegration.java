@@ -38,7 +38,7 @@ public class BigIntegration extends AbstractIntegration {
 	private final BioSamplesProperties bioSamplesProperties;
 	
 	//must be over 1000
-	private final int noSamples = 5000;
+	private final int noSamples = 10000;
 	
 	
 	public BigIntegration(BioSamplesClient client, RestTemplateBuilder restTemplateBuilder, BioSamplesProperties bioSamplesProperties) {

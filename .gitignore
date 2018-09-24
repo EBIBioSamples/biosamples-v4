@@ -89,3 +89,4 @@ fabric.properties
 /livelist.txt
 /livelist-prod.txt
 .gradle/
+pipelines/curation/curations.csv

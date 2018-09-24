@@ -7,36 +7,44 @@
 
     <div class="small-12 medium-3 columns sidebar">
         <div data-options="marginTop:4;">
-            <ul class="menu vertical drilldown" data-drilldown>
+            <ul class="vertical menu accordion-menu" data-accordion-menu>
                 <li><a th:classappend="${#strings.equals(active, 'overview')}" th:href="@{/docs/}">Overview</a></li>
-                <li><a href="#">User guides</a></li>
-                <ul class="menu vertical nested">
-                    <li><a th:classappend="${#strings.equals(active,'guides/auth')} ? 'active'"
-                           th:href="@{/docs/guides/authentication}">Authentication</a></li>
-                    <li><a th:classappend="${#strings.equals(active, 'guides/search')} ? 'active'"
-                           th:href="@{/docs/guides/search}">Search in BioSamples</a></li>
-                    <li><a th:classappend="${#strings.equals(active, 'guides/submit')} ? 'active'"
-                           th:href="@{/docs/guides/submit}">Submit to BioSamples</a></li>
-                </ul>
-                <li><a href="#">Developers reference</a></li>
-                <ul class="menu vertical nested">
-                    <li><a th:classappend="${#strings.equals(active, 'refs/api/overview')} ? 'active'"
-                           th:href="@{/docs/references/api/overview}">API</a></li>
-                    <ul class="menu vertical nested">
-                        <li><a th:classappend="${#strings.equals(active, 'refs/api/links')} ? 'active'"
-                               th:href="@{/docs/references/api/links}">Links</a></li>
-                        <li><a th:classappend="${#strings.equals(active, 'refs/api/root')} ? 'active'"
-                               th:href="@{/docs/references/api/root}">API root</a></li>
-                        <li><a th:classappend="${#strings.equals(active, 'refs/api/search')} ? 'active'"
-                               th:href="@{/docs/references/api/search}">Search</a></li>
-                        <li><a th:classappend="${#strings.equals(active, 'refs/api/submit')} ? 'active'"
-                               th:href="@{/docs/references/api/submit}">Submit</a></li>
+                <li><a th:classappend="${#strings.equals(active,'cookbook')} ? 'active'" th:href="@{/docs/cookbook/}">BioSamples Cookbook</a></li>
+                <li>
+                    <a href="#">User guides</a>
+                    <ul class="menu vertical nested" th:classappend="${#strings.startsWith(active, 'guides')} ? 'is-active'">
+                        <li><a th:classappend="${#strings.equals(active,'guides/auth')} ? 'active'"
+                               th:href="@{/docs/guides/authentication}">Authentication</a></li>
+                        <li><a th:classappend="${#strings.equals(active, 'guides/search')} ? 'active'"
+                               th:href="@{/docs/guides/search}">Search in BioSamples</a></li>
+                        <li><a th:classappend="${#strings.equals(active, 'guides/submit')} ? 'active'"
+                               th:href="@{/docs/guides/submit}">Submit to BioSamples</a></li>
                     </ul>
-                    <li><a th:classappend="${#strings.equals(active, 'refs/filters')} ? 'active'"
-                           th:href="@{/docs/references/filters}">Search filters</a></li>
-                    <li><a th:classappend="${#strings.equals(active, 'refs/sampletab')} ? 'active'"
-                           th:href="@{/docs/references/sampletab}">SampleTab file</a></li>
-                </ul>
+                </li>
+                <li>
+                    <a href="#">Developers reference</a>
+                    <ul class="menu vertical nested" th:classappend="${#strings.startsWith(active, 'refs')} ? 'is-active'">
+                        <li th:attr="aria-expanded=${#strings.startsWith(active, 'refs/api')} ? 'true' : 'false' ">
+                            <a href="#">API</a>
+                            <ul class="menu vertical nested" th:classappend="${#strings.startsWith(active, 'refs/api')} ? 'is-active'" >
+                                <li><a th:classappend="${#strings.equals(active, 'refs/api/overview')} ? 'active'"
+                                       th:href="@{/docs/references/api/overview}">Overview</a></li>
+                                <li><a th:classappend="${#strings.equals(active, 'refs/api/links')} ? 'active'"
+                                       th:href="@{/docs/references/api/links}">Links</a></li>
+                                <li><a th:classappend="${#strings.equals(active, 'refs/api/root')} ? 'active'"
+                                       th:href="@{/docs/references/api/root}">API root</a></li>
+                                <li><a th:classappend="${#strings.equals(active, 'refs/api/search')} ? 'active'"
+                                       th:href="@{/docs/references/api/search}">Search</a></li>
+                                <li><a th:classappend="${#strings.equals(active, 'refs/api/submit')} ? 'active'"
+                                       th:href="@{/docs/references/api/submit}">Submit</a></li>
+                            </ul>
+                        </li>
+                        <li><a th:classappend="${#strings.equals(active, 'refs/filters')} ? 'active'"
+                               th:href="@{/docs/references/filters}">Search filters</a></li>
+                        <li><a th:classappend="${#strings.equals(active, 'refs/sampletab')} ? 'active'"
+                               th:href="@{/docs/references/sampletab}">SampleTab file</a></li>
+                    </ul>
+                </li>
                 <li><a th:classappend="${#strings.equals(active, 'faq')} ? 'active'" th:href="@{/docs/faq}">FAQ</a></li>
                 <li><a th:classappend="${#strings.equals(active, 'releasehistory')} ? 'active'"
                        th:href="@{/docs/releasenotes}">Release history</a></li>

@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>4.1.3</version>
+		<version>4.1.4</version>
 		<relativePath>../../</relativePath>
 	</parent>
 	<properties>
@@ -108,7 +108,7 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-tomcat</artifactId>
-			<scope>provided</scope>
+			<!--<scope>provided</scope>-->
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -157,6 +157,11 @@
 			<version>2.3.0</version>
 			<scope>runtime</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.jsoup</groupId>
+			<artifactId>jsoup</artifactId>
+			<version>1.8.3</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
@@ -186,9 +191,11 @@
 				</executions>
 				<configuration>
 					<sourceDirectory>src/main/asciidoc</sourceDirectory>
-					<outputDirectory>${project.build.directory}/${project.artifactId}-${project.version}/WEB-INF/classes/templates/asciidoc/</outputDirectory>
+                    <outputDirectory>${project.build.outputDirectory}/templates/asciidoc</outputDirectory>
+					<!--<outputDirectory>${project.build.directory}/${project.artifactId}-${project.version}/WEB-INF/classes/templates/asciidoc/</outputDirectory>-->
 					<backend>html</backend>
 					<doctype>book</doctype>
+                    <preserveDirectories>true</preserveDirectories>
 					<attributes>
 						<snippets>${snippetsDirectory}</snippets>
 						<source-highlighter>highlightjs</source-highlighter>
