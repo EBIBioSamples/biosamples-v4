@@ -11,7 +11,7 @@ I want to link a BioSamples accession with an external repositories or an extern
 
 ==  Steps
 
-==== 1. Get the Json Web Token from AAP
+=== 1. Get the Json Web Token from AAP
 Start by getting your JWT to use in your application
 
 You can do that in curl for example using the next command
@@ -19,7 +19,7 @@ You can do that in curl for example using the next command
 TOKEN=$(curl --user <app-user>:<aap-password> https://api.aai.ebi.ac.uk/auth)
 ```
 
-==== 2. Produce a JSON object like the next one filled with the proper content
+=== 2. Produce a JSON object like the next one filled with the proper content
 Use this as a template for the submission but change the required fields between `<>`
 ```
 {
@@ -36,7 +36,7 @@ Use this as a template for the submission but change the required fields between
 }
 ```
 
-==== 3. Submit the curation object using a POST request to the
+=== 3. Submit the curation object using a POST request to the
 
 You can use any method to submit a POST request to BioSamples, where an example
 using cURL
