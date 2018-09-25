@@ -255,6 +255,43 @@ public class EnaXmlEnhancer {
         }
     }
 
+    public enum TaxonRule implements Rule {
+
+        INSTANCE;
+
+        @Override
+        public Element apply(Element sampleXml, EnaDatabaseSample enaDatabaseSample) {
+            if (enaDatabaseSample.fixed.equals("Y")) {
+                XmlPathBuilder parentXmlPathBuilderName = XmlPathBuilder.of(sampleXml).path("SAMPLE", "SAMPLE_NAME");
+                if (!parentXmlPathBuilderName.exists()) {
+                    XmlPathBuilder.of(sampleXml).path("SAMPLE").element().addElement("SAMPLE_NAME");
+                }
+                XmlPathBuilder taxIdXmlPathBuilderTaxonId = XmlPathBuilder.of(sampleXml).path("SAMPLE", "SAMPLE_NAME", "TAXON_ID");
+                String taxId = enaDatabaseSample.fixedTaxId == null ? "" : enaDatabaseSample.fixedTaxId;
+                if (taxIdXmlPathBuilderTaxonId.exists()) {
+                    taxIdXmlPathBuilderTaxonId.element().setText(taxId);
+                } else {
+                    parentXmlPathBuilderName.element().addElement("TAXON_ID", taxId);
+                }
+                XmlPathBuilder taxIdXmlPathBuilderScientificName = XmlPathBuilder.of(sampleXml).path("SAMPLE", "SAMPLE_NAME", "SCIENTIFIC_NAME");
+                String scientificName = enaDatabaseSample.fixedScientificName == null ? "" : enaDatabaseSample.fixedScientificName;
+                if (taxIdXmlPathBuilderScientificName.exists()) {
+                    taxIdXmlPathBuilderScientificName.element().setText(scientificName);
+                } else {
+                    parentXmlPathBuilderName.element().addElement("SCIENTIFIC_NAME", scientificName);
+                }
+                XmlPathBuilder taxIdXmlPathBuilderCommonName = XmlPathBuilder.of(sampleXml).path("SAMPLE", "SAMPLE_NAME", "COMMON_NAME");
+                String commonName = enaDatabaseSample.fixedCommonName == null ? "" : enaDatabaseSample.fixedCommonName;
+                if (taxIdXmlPathBuilderCommonName.exists()) {
+                    taxIdXmlPathBuilderCommonName.element().setText(commonName);
+                } else {
+                    parentXmlPathBuilderName.element().addElement("COMMON_NAME", commonName);
+                }
+            }
+            return sampleXml;
+        }
+    }
+
     private Element getSampleElement(String xmlString) {
         SAXReader reader = new SAXReader();
         Document xml = null;

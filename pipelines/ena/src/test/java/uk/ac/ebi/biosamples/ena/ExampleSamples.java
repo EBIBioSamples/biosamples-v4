@@ -44,6 +44,43 @@ public class ExampleSamples {
             "   </SAMPLE>\n" +
             "</SAMPLE_SET>";
 
+    public static String exampleSampleThatCanBeTaxonFixed = "<SAMPLE_SET>\n" +
+            "   <SAMPLE alias=\"BCM-DGRP301\" center_name=\"BCM\" accession=\"SRS003443\">\n" +
+            "      <IDENTIFIERS>\n" +
+            "         <PRIMARY_ID>SRS003443</PRIMARY_ID>\n" +
+            "         <EXTERNAL_ID namespace=\"BioSample\">SAMN00014227</EXTERNAL_ID>\n" +
+            "         <SUBMITTER_ID namespace=\"BCM\">BCM-DGRP301</SUBMITTER_ID>\n" +
+            "      </IDENTIFIERS>\n" +
+            "      <TITLE>Drosophila melanogaster DGRP-301</TITLE>\n" +
+            "      <SAMPLE_NAME>\n" +
+            "         <TAXON_ID>7227</TAXON_ID>\n" +
+            "         <COMMON_NAME>Drosophila melanogaster</COMMON_NAME>\n" +
+            "      </SAMPLE_NAME>\n" +
+            "      <DESCRIPTION>Drosophila melanogaster DGRP-301</DESCRIPTION>\n" +
+            "      <SAMPLE_LINKS>\n" +
+            "         <SAMPLE_LINK>\n" +
+            "            <URL_LINK>\n" +
+            "               <LABEL>Drosophila Genetic Reference Panel at Baylor College of Medicine</LABEL>\n" +
+            "               <URL>https://www.hgsc.bcm.edu/content/drosophila-genetic-reference-panel</URL>\n" +
+            "            </URL_LINK>\n" +
+            "         </SAMPLE_LINK>\n" +
+            "         <SAMPLE_LINK>\n" +
+            "            <URL_LINK>\n" +
+            "               <LABEL>SAMN00014227</LABEL>\n" +
+            "               <URL>https://www.hgsc.bcm.edu/content/drosophila-genetic-reference-panel</URL>\n" +
+            "            </URL_LINK>\n" +
+            "         </SAMPLE_LINK>\n" +
+            "      </SAMPLE_LINKS>\n" +
+            "      <SAMPLE_ATTRIBUTES>\n" +
+            "         <SAMPLE_ATTRIBUTE>\n" +
+            "            <TAG>Strain</TAG>\n" +
+            "            <VALUE>DGRP-301</VALUE>\n" +
+            "            <UNITS/>\n" +
+            "         </SAMPLE_ATTRIBUTE>\n" +
+            "      </SAMPLE_ATTRIBUTES>\n" +
+            "   </SAMPLE>\n" +
+            "</SAMPLE_SET>";
+
     public static String exampleSampleWithTitleAddedXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
             "\n" +
             "<SAMPLE_SET> \n" +
@@ -63,7 +100,7 @@ public class ExampleSamples {
             "        <VALUE>W303</VALUE> \n" +
             "      </SAMPLE_ATTRIBUTE> \n" +
             "    </SAMPLE_ATTRIBUTES>  \n" +
-            "    <TITLE>Homo sapiens</TITLE>\n" +
+            "    <TITLE>Saccharomyces cerevisiae W303</TITLE>\n" +
             "  </SAMPLE> \n" +
             "</SAMPLE_SET>\n";
 
@@ -703,5 +740,44 @@ public class ExampleSamples {
             "  </SAMPLE> \n" +
             "</SAMPLE_SET>\n";
 
+    public static String exampleSampleThatHasBeenTaxonFixed = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "\n" +
+            "<SAMPLE_SET> \n" +
+            "  <SAMPLE alias=\"BCM-DGRP301\" center_name=\"BCM\" accession=\"SRS003443\"> \n" +
+            "    <IDENTIFIERS> \n" +
+            "      <PRIMARY_ID>SRS003443</PRIMARY_ID>  \n" +
+            "      <EXTERNAL_ID namespace=\"BioSample\">SAMN00014227</EXTERNAL_ID>  \n" +
+            "      <SUBMITTER_ID namespace=\"BCM\">BCM-DGRP301</SUBMITTER_ID> \n" +
+            "    </IDENTIFIERS>  \n" +
+            "    <TITLE>Drosophila melanogaster DGRP-301</TITLE>  \n" +
+            "    <SAMPLE_NAME> \n" +
+            "      <TAXON_ID>7227</TAXON_ID>  \n" +
+            "      <COMMON_NAME></COMMON_NAME>  \n" +
+            "      <SCIENTIFIC_NAME xmlns=\"Drosophila melanogaster\"/>\n" +
+            "    </SAMPLE_NAME>  \n" +
+            "    <DESCRIPTION>Drosophila melanogaster DGRP-301</DESCRIPTION>  \n" +
+            "    <SAMPLE_LINKS> \n" +
+            "      <SAMPLE_LINK> \n" +
+            "        <URL_LINK> \n" +
+            "          <LABEL>Drosophila Genetic Reference Panel at Baylor College of Medicine</LABEL>  \n" +
+            "          <URL>https://www.hgsc.bcm.edu/content/drosophila-genetic-reference-panel</URL> \n" +
+            "        </URL_LINK> \n" +
+            "      </SAMPLE_LINK>  \n" +
+            "      <SAMPLE_LINK> \n" +
+            "        <URL_LINK> \n" +
+            "          <LABEL>SAMN00014227</LABEL>  \n" +
+            "          <URL>https://www.hgsc.bcm.edu/content/drosophila-genetic-reference-panel</URL> \n" +
+            "        </URL_LINK> \n" +
+            "      </SAMPLE_LINK> \n" +
+            "    </SAMPLE_LINKS>  \n" +
+            "    <SAMPLE_ATTRIBUTES> \n" +
+            "      <SAMPLE_ATTRIBUTE> \n" +
+            "        <TAG>Strain</TAG>  \n" +
+            "        <VALUE>DGRP-301</VALUE>  \n" +
+            "        <UNITS/> \n" +
+            "      </SAMPLE_ATTRIBUTE> \n" +
+            "    </SAMPLE_ATTRIBUTES> \n" +
+            "  </SAMPLE> \n" +
+            "</SAMPLE_SET>\n";
 }
 

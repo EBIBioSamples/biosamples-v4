@@ -99,7 +99,14 @@ public class EnaXmlEnhancerTest {
 
     @Test
     public void test_title_rule_fixes_applicable_xml() {
+        enaDatabaseSample = enaXmlEnhancer.getEnaDatabaseSample("SAMEA749880");
         assertEquals(exampleSampleWithTitleAddedXml, enaXmlEnhancer.applyRules(exampleSampleWithoutTitleXml, enaDatabaseSample, TitleRule.INSTANCE));
+    }
+
+    @Test
+    public void test_taxon_fix_rule_fixes_applicable_xml() {
+        enaDatabaseSample = enaXmlEnhancer.getEnaDatabaseSample("SAMN00014227");
+        assertEquals(exampleSampleThatHasBeenTaxonFixed, enaXmlEnhancer.applyRules(exampleSampleThatCanBeTaxonFixed, enaDatabaseSample, TaxonRule.INSTANCE));
     }
 
     @Test
