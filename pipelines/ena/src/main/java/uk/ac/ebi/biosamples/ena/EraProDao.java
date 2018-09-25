@@ -6,10 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -139,6 +137,12 @@ select * from cv_status;
 
     public void getEnaDatabaseSample(String enaAccession, RowCallbackHandler rch) {
         String query = "select BIOSAMPLE_ID,\n" +
+                "       FIXED_TAX_ID, " +
+                "       FIXED_SCIENTIFIC_NAME, " +
+                "       FIXED_COMMON_NAME, " +
+                "       FIXED, " +
+                "       TAX_ID, " +
+                "       SCIENTIFIC_NAME, " +
                 "       to_char(first_public, 'yyyy-mm-dd')                                                as first_public,\n" +
                 "       to_char(last_updated, 'yyyy-mm-dd')                                                as last_updated,\n" +
                 "       (select nvl(cv_broker_name.description, T1.broker_name)\n" +

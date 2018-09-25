@@ -8,7 +8,6 @@ import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
-import java.io.IOException;
 import java.io.StringReader;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -45,6 +44,12 @@ public class EnaXmlEnhancer {
                     enaDatabaseSample.centreName = resultSet.getString("CENTER_NAME");
                     enaDatabaseSample.lastUpdated = resultSet.getString("LAST_UPDATED");
                     enaDatabaseSample.firstPublic = resultSet.getString("FIRST_PUBLIC");
+                    enaDatabaseSample.fixed = resultSet.getString("FIXED");
+                    enaDatabaseSample.taxId = resultSet.getString("TAX_ID");
+                    enaDatabaseSample.scientificName = resultSet.getString("SCIENTIFIC_NAME");
+                    enaDatabaseSample.fixedTaxId = resultSet.getString("FIXED_TAX_ID");
+                    enaDatabaseSample.fixedCommonName = resultSet.getString("FIXED_COMMON_NAME");
+                    enaDatabaseSample.fixedScientificName = resultSet.getString("FIXED_SCIENTIFIC_NAME");
                 } catch (SQLException e) {
                     LOGGER.error("Error processing database result", e);
                 }
@@ -62,7 +67,7 @@ public class EnaXmlEnhancer {
         return sampleElement;
     }
 
-    public String applyAllRules(String inputXml, EnaDatabaseSample enaDatabaseSample){
+    public String applyAllRules(String inputXml, EnaDatabaseSample enaDatabaseSample) {
         return applyRules(inputXml, enaDatabaseSample, AliasRule.INSTANCE, NamespaceRule.INSTANCE, BrokerRule.INSTANCE, LinkRemovalRule.INSTANCE, CenterNameRule.INSTANCE, DatesRule.INSTANCE, BioSamplesIdRule.INSTANCE);
     }
 
@@ -214,6 +219,36 @@ public class EnaXmlEnhancer {
                 }
                 if (!bioSamplesExternalIdExists) {
                     xmlPathBuilder.element().add(createExternalRef("BioSample", enaDatabaseSample.bioSamplesId));
+                }
+            }
+            return sampleXml;
+        }
+    }
+
+    public enum TitleRule implements Rule {
+
+        INSTANCE;
+
+        @Override
+        public Element apply(Element sampleXml, EnaDatabaseSample enaDatabaseSample) {
+            if (enaDatabaseSample.bioSamplesId == null) {
+                return sampleXml;
+            }
+            XmlPathBuilder xmlPathBuilder = XmlPathBuilder.of(sampleXml).path("SAMPLE", "TITLE");
+            if (!xmlPathBuilder.exists()) {
+                String newTitle = null;
+                if (enaDatabaseSample.fixed.equals("Y")) {
+                    if (enaDatabaseSample.fixedScientificName != null) {
+                        newTitle = enaDatabaseSample.fixedScientificName;
+                    }
+                } else if (enaDatabaseSample.scientificName != null) {
+                    newTitle = enaDatabaseSample.scientificName;
+                }
+                if (newTitle != null) {
+                    xmlPathBuilder = XmlPathBuilder.of(sampleXml).path("SAMPLE");
+                    Element titleElement = DocumentHelper.createElement("TITLE");
+                    titleElement.setText(newTitle);
+                    xmlPathBuilder.element().add(titleElement);
                 }
             }
             return sampleXml;

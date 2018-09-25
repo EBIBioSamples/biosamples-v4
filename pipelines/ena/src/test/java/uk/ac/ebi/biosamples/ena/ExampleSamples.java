@@ -24,6 +24,49 @@ public class ExampleSamples {
             "   </SAMPLE>\n" +
             "</SAMPLE_SET>";
 
+    public static String exampleSampleWithoutTitleXml = "<?xml version = '1.0' encoding = 'UTF-8'?><SAMPLE_SET>\n" +
+            "   <SAMPLE accession=\"ERS000003\" alias=\"Solexa sequencing of Saccharomyces cerevisiae strain W303 random 200 bp library\" center_name=\"SC\">\n" +
+            "      <IDENTIFIERS>\n" +
+            "         <PRIMARY_ID>ERS000003</PRIMARY_ID>\n" +
+            "         <SUBMITTER_ID namespace=\"SC\">Solexa sequencing of Saccharomyces cerevisiae strain W303 random 200 bp library</SUBMITTER_ID>\n" +
+            "      </IDENTIFIERS>\n" +
+            "      <SAMPLE_NAME>\n" +
+            "         <TAXON_ID>580240</TAXON_ID>\n" +
+            "         <SCIENTIFIC_NAME>Saccharomyces cerevisiae W303</SCIENTIFIC_NAME>\n" +
+            "      </SAMPLE_NAME>\n" +
+            "      <DESCRIPTION>Solexa sequencing of Saccharomyces cerevisiae strain W303 random 200 bp library</DESCRIPTION>\n" +
+            "      <SAMPLE_ATTRIBUTES>\n" +
+            "         <SAMPLE_ATTRIBUTE>\n" +
+            "            <TAG>strain</TAG>\n" +
+            "            <VALUE>W303</VALUE>\n" +
+            "         </SAMPLE_ATTRIBUTE>\n" +
+            "      </SAMPLE_ATTRIBUTES>\n" +
+            "   </SAMPLE>\n" +
+            "</SAMPLE_SET>";
+
+    public static String exampleSampleWithTitleAddedXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "\n" +
+            "<SAMPLE_SET> \n" +
+            "  <SAMPLE accession=\"ERS000003\" alias=\"Solexa sequencing of Saccharomyces cerevisiae strain W303 random 200 bp library\" center_name=\"SC\"> \n" +
+            "    <IDENTIFIERS> \n" +
+            "      <PRIMARY_ID>ERS000003</PRIMARY_ID>  \n" +
+            "      <SUBMITTER_ID namespace=\"SC\">Solexa sequencing of Saccharomyces cerevisiae strain W303 random 200 bp library</SUBMITTER_ID> \n" +
+            "    </IDENTIFIERS>  \n" +
+            "    <SAMPLE_NAME> \n" +
+            "      <TAXON_ID>580240</TAXON_ID>  \n" +
+            "      <SCIENTIFIC_NAME>Saccharomyces cerevisiae W303</SCIENTIFIC_NAME> \n" +
+            "    </SAMPLE_NAME>  \n" +
+            "    <DESCRIPTION>Solexa sequencing of Saccharomyces cerevisiae strain W303 random 200 bp library</DESCRIPTION>  \n" +
+            "    <SAMPLE_ATTRIBUTES> \n" +
+            "      <SAMPLE_ATTRIBUTE> \n" +
+            "        <TAG>strain</TAG>  \n" +
+            "        <VALUE>W303</VALUE> \n" +
+            "      </SAMPLE_ATTRIBUTE> \n" +
+            "    </SAMPLE_ATTRIBUTES>  \n" +
+            "    <TITLE>Homo sapiens</TITLE>\n" +
+            "  </SAMPLE> \n" +
+            "</SAMPLE_SET>\n";
+
     public static String missingAliasSampleXml = "<?xml version = '1.0' encoding = 'UTF-8'?><SAMPLE_SET>\n" +
             "   <SAMPLE center_name=\"UNIBE-IG\" accession=\"ERS2295402\">\n" +
             "      <IDENTIFIERS>\n" +
