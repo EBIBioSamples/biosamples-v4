@@ -4,33 +4,33 @@
 
 If you cannot find the answer to your question in this FAQ or the link:../docs[help pages] then please email us at biosamples@ebi.ac.uk.
 
-=== How frequent are updates to BioSamples' data?
+== How frequent are updates to BioSamples' data?
 BioSamples content is updated daily. Information directly submitted or updated in a source should be reflected within 48 hours. However, occasionally daily updates may be missed due to unexpected circumstances.
 
-=== What pattern do BioSamples accessions follow?
+== What pattern do BioSamples accessions follow?
 BioSample accessions always begin with `SAM`. The next letter is either `E` or `N` or `D` depending if the sample information was originally submitted to EBI or NCBI or DDBJ respectively. After that, there may be an `A` or a `G` to denote an Assay sample or a Group of samples. Finally there is a numeric component that may or may not be zero-padded.
 
-=== Why are some BioSamples linked to RRIDs?
+== Why are some BioSamples linked to RRIDs?
 
 The Resource Identification, RRID, Initiative began working with the BioSamples databases in the EU and US in order to identify the pancreatic islets used by researchers who are part of the Integrated Islet Distribution Program, IIDP.
 Recently the leadership of the IIDP, BioSamples and the RRID project came together to add BioSamples in a limited capacity to the RRID project, which will identify the IIDP samples as RRIDs. More information can be found in the https://scicrunch.org/page/blog/1132[blog post] and the https://scicrunch.org/resources/about/faqs[RRID FAQs].
 
-=== What is the Bioschemas export?
+== What is the Bioschemas export?
 Bioschemas is an extension of schemas.org, a markup language for website and services to provide consistently structured information. It adds semantic markup to web pages by describing ‘types’ of information, which then have ‘properties’. The BIoSamples team at EMBL-EBi leads the Bioschemas samples specification work and has added BIoschemas export, serialised as JSON-LD, to all our samples pages. Check out an example https://www.ebi.ac.uk/biosamples/samples/SAMEA104130.ldjson[here].
 
 BioSamples also provides serialisations for other Bioschemas entities embedded in a script tag within the HTML source code, check out examples of the https://www.ebi.ac.uk/biosamples[DataCatalog entity] as well as the https://www.ebi.ac.uk/biosamples/samples[DataSet entity].
 
-=== How can I stay informed about BioSamples?
+== How can I stay informed about BioSamples?
 Subscribe to our low-traffic https://listserver.ebi.ac.uk/mailman/listinfo/biosamples-announce[announcement mailing list^].
 
-=== Why do some of my search results not contain my query?
+== Why do some of my search results not contain my query?
 We use ontologies to help refine search queries. This means that your query might match to a synonym or more specific term than you were looking for; e.g. a search for 'human' will match 'homo sapiens'. However, direct matches will be ranked higher in the results.
 
-=== How will my personal data be used?
+== How will my personal data be used?
 
 This website requires cookies, and the limited processing of your personal data in order to function. By using the site you are agreeing to this as outlined in our https://www.ebi.ac.uk/data-protection/privacy-notice/embl-ebi-public-website[Privacy Notice] and https://www.ebi.ac.uk/about/terms-of-use[Terms of Use].
 
 If you submit information to BioSamples please note that we will handle your submission in accordance with our https://www.ebi.ac.uk/data-protection/privacy-notice/biosamples-submissions[Submission Privacy Notice].
 
-=== I think some of the data is wrong. Can you fix it?
+== I think some of the data is wrong. Can you fix it?
 Most of the data in BioSamples has been submitted by third parties, often via one or more other services. This means that we are unable to go back to submitters for corrections or clarifications. Therefore we do not have the same degree of up front quality control as services with specific curators and submission requirements. We do however try to extract the highest quality of information from the data we are given, for example by mapping to ontologies and using ontology expansion for queries.

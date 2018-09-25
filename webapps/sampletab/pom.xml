@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>4.1.4-SNAPSHOT</version>
+		<version>4.1.6-SNAPSHOT</version>
 		<relativePath>../../</relativePath>
 	</parent>
 
@@ -86,33 +86,6 @@
             <version>4.3.9.RELEASE</version>
         </dependency>
     </dependencies>
-
-	<profiles>
-		<profile>
-			<!-- this profile contains references to internal-only artifacts -->
-			<!-- i.e. oracle drivers that cannot be redistributed in public -->
-			<id>embl-ebi</id>
-			<dependencies>
-				<!-- oracle driver for accessioning -->
-				<!-- this is not in public repos due to Oracle license -->
-				<dependency>
-					<groupId>com.oracle</groupId>
-					<artifactId>ojdbc6</artifactId>
-					<version>11.2.0.2.0</version>
-				</dependency>
-			</dependencies>
-			<repositories>
-				<repository>
-					<id>coconut.ebi.ac.uk-snapshots</id>
-					<name>Coconut Snapshot Repository</name>
-					<url>http://coconut.ebi.ac.uk:8081/artifactory/local-repo/</url>
-					<snapshots>
-						<enabled>true</enabled>
-					</snapshots>
-				</repository>
-			</repositories>
-		</profile>
-	</profiles>
 
 	<build>
 		<plugins>

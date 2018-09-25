@@ -190,8 +190,8 @@ public class Sample implements Comparable<Sample> {
         Sample other = (Sample) o;
 
         //dont use update date for comparisons, too volatile
-        
-        return Objects.equals(this.name, other.name) 
+
+        return Objects.equals(this.name, other.name)
         		&& Objects.equals(this.accession, other.accession)
         		&& Objects.equals(this.domain, other.domain)
         		&& Objects.equals(this.release, other.release)
@@ -311,8 +311,8 @@ public class Sample implements Comparable<Sample> {
 
     @Override
     public int hashCode() {
-    	//dont put update date in the hash because its not in comparison
-    	return Objects.hash(name, accession, release, attributes, data, relationships, externalReferences, organizations, publications);
+        //dont put update date in the hash because its not in comparison
+        return Objects.hash(name, accession, release, attributes, data, relationships, externalReferences, organizations, publications);
     }
 
     @Override
@@ -343,8 +343,8 @@ public class Sample implements Comparable<Sample> {
         sb.append(")");
         return sb.toString();
     }
-    
-	public static Sample build( String name, 
+
+	public static Sample build( String name,
 			String accession,
 			String domain,
 			Instant release,
@@ -357,36 +357,36 @@ public class Sample implements Comparable<Sample> {
 
     //Used for deserializtion (JSON -> Java)
     @JsonCreator
-	public static Sample build(@JsonProperty("name") String name, 
-			@JsonProperty("accession") String accession,  
+	public static Sample build(@JsonProperty("name") String name,
+			@JsonProperty("accession") String accession,
 			@JsonProperty("domain") String domain,
-			@JsonProperty("release") @JsonDeserialize(using = CustomInstantDeserializer.class) Instant release, 
+			@JsonProperty("release") @JsonDeserialize(using = CustomInstantDeserializer.class) Instant release,
 			@JsonProperty("update") @JsonDeserialize(using = CustomInstantDeserializer.class) Instant update,
 			@JsonProperty("characteristics") @JsonDeserialize(using = CharacteristicDeserializer.class) Collection<Attribute> attributes,
 //			@JsonProperty("data") @JsonDeserialize(using = AbstractDataDeserializer.class) Collection<AbstractData> structuredData,
             @JsonProperty("data") Collection<AbstractData> structuredData,
 			@JsonProperty("relationships") Collection<Relationship> relationships,
 			@JsonProperty("externalReferences") Collection<ExternalReference> externalReferences,
-			@JsonProperty("organization") Collection<Organization> organizations, 
-			@JsonProperty("contact") Collection<Contact> contacts, 
+			@JsonProperty("organization") Collection<Organization> organizations,
+			@JsonProperty("contact") Collection<Contact> contacts,
 			@JsonProperty("publications") Collection<Publication> publications ) {
-    	
+
 		Sample sample = new Sample();
-		
+
 		if (accession != null) {
 			sample.accession = accession.trim();
 		}
-		
+
 		if (name == null ) throw new IllegalArgumentException("Sample name must be provided");
 		sample.name = name.trim();
-		
+
 		if (domain != null) {
 			sample.domain = domain.trim();
 		}
-		
+
 		if (update == null ) throw new IllegalArgumentException("Sample update must be provided");
 		sample.update = update;
-		
+
 		if (release == null ) throw new IllegalArgumentException("Sample release must be provided");
 		sample.release = release;
 

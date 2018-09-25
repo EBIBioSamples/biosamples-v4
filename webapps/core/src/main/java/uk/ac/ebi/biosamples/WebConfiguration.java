@@ -22,4 +22,5 @@ public class WebConfiguration extends WebMvcConfigurerAdapter{
         registry.addResourceHandler("/schemas/**")
                 .addResourceLocations("classpath:/schemas/");
     }
+
 }

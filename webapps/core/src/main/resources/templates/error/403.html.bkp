@@ -17,7 +17,7 @@
 <body>
 	<th:block th:include="fragments/header :: header"></th:block>
 	<div layout:fragment="content">
-		<div id="main-content-area" class="row">
+		<div id="main-content-area" class="row padding-top-xlarge">
 			<h2>Error processing your request</h2>
 			<h3>403 - forbidden access</h3>
 		</div>

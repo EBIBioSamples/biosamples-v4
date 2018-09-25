@@ -12,13 +12,12 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.ncbi.service.NcbiSampleConversionService;
 
 public class NcbiElementCallable implements Callable<Void> {
-	
+
 	private Logger log = LoggerFactory.getLogger(getClass());
 
 	private final Element sampleElem;
 
 	private final String domain;
-	
 	private final BioSamplesClient bioSamplesClient;
 
 	private final NcbiSampleConversionService ncbiSampleConversionService;
@@ -47,10 +46,10 @@ public class NcbiElementCallable implements Callable<Void> {
 		bioSamplesClient.persistSampleResource(sample);
 
 		log.trace("Element callable finished");
-		
+
 		return null;
 	}
-	
+
 	/**
 	 * Safe way to extract the taxonomy id from the string
 	 * @param value

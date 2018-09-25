@@ -13,8 +13,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
-import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.ols.OlsProcessor;
 import uk.ac.ebi.biosamples.service.CurationApplicationService;
@@ -23,12 +21,15 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URISyntaxException;
 
+import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
+import static uk.ac.ebi.biosamples.curation.SampleCurationCallable.NON_APPLICABLE_SYNONYMS;
+import static uk.ac.ebi.biosamples.curation.SampleCurationCallable.isNotApplicableSynonym;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = TestApplication.class)
@@ -87,5 +88,14 @@ public class SampleCurationCallableTest {
             }
         }
         return resultStringBuilder.toString();
+    }
+
+    @Test
+    public void test_non_applicable_synonyms() {
+        for (String nonApplicableSynonyms : NON_APPLICABLE_SYNONYMS) {
+            assertTrue(isNotApplicableSynonym(nonApplicableSynonyms));
+        }
+        assertTrue(isNotApplicableSynonym("not_applicable"));
+        assertFalse(isNotApplicableSynonym("rubbish"));
     }
 }
