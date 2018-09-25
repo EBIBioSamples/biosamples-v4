@@ -4,11 +4,14 @@
 
 	<artifactId>models-core</artifactId>
 	<packaging>jar</packaging>
+	<properties>
+	<protobuf.version>3.5.1</protobuf.version>
+	</properties>
 
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>4.1.2-SNAPSHOT</version>
+		<version>4.1.6-SNAPSHOT</version>
 		<relativePath>../../</relativePath>
 	</parent>
 

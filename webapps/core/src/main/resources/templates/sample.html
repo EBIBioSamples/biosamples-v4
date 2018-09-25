@@ -1,14 +1,14 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org"
 	xmlns:layout="http://www.w3.org/1999/xhtml">
-	
+
 <head th:replace="fragments/head :: head">
 	<title th:text="${sample.accession}+' &lt; BioSamples &lt; EMBL-EBI'">BioSamples &lt; EMBL-EBI</title>
 	<!-- A few keywords that relate to the content of THIS PAGE (not the whole project) -->
 	<meta name="keywords" content="biosamples, europe, EBI" />
 	<!-- Describe what this page is about -->
 	<meta name="description" content="EMBL-EBI" />
-	
+
 	<meta name="ebi:last-review" content="2016-12-20" />
 	<!-- The last time the content was reviewed -->
 	<meta name="ebi:expiry" content="2017-12-20" />
@@ -18,37 +18,40 @@
 
 <body>
 	<th:block th:include="fragments/header :: header"></th:block>
-	<div layout:fragment="content">
-		<div id="main-content-area" class="row">
-			<div>
-				<div class="float-left">
-					<h2 th:text="${sample.accession}">TEST</h2>
-					<h3 th:text="${sample.name}">name</h3>
-				</div>
-				<span class="float-right">
-                    <th:block th:include="fragments/sample :: serialisationsForm"></th:block>
-	            </span>
-            </div>   
-			
-			<table>
-				<tr>
-					<th>Release</th>
-					<td	th:text="${#temporals.format(release, 'yyyy / MM / dd HH:mm:ss','UTC')+' UTC'}">2001 / 02 / 02 12:00:00</td>
-				</tr>
-				<tr>
-					<th>Update</th>
-					<td	th:text="${#temporals.format(update, 'yyyy / MM / dd HH:mm:ss','UTC')+' UTC'}">2001 / 02 / 02 12:00:00</td>
-				</tr>
-			</table>
+	<div layout:fragment="content" id="content">
+		<th:block th:include="fragments/header :: masterhead"></th:block>
+		<div id="main-content-area" class="row padding-top-xlarge padding-right-xlarge padding-left-xlarge sample">
+			<div class="columns medium-12 large-10 s__header">
+				<h2 class="sh__title" th:text="${sample.accession}">TEST</h2>
+				<h3 class="sh__subtitle" th:text="${sample.name}">name</h3>
+				<table class="sh__datetimes">
+					<tr>
+						<th>Released on</th>
+						<td	th:text="${#temporals.format(release, 'yyyy / MM / dd HH:mm:ss','UTC')+' UTC'}">2001 / 02 / 02 12:00:00</td>
+					</tr>
+					<tr>
+						<th>Updated on</th>
+						<td	th:text="${#temporals.format(update, 'yyyy / MM / dd HH:mm:ss','UTC')+' UTC'}">2001 / 02 / 02 12:00:00</td>
+					</tr>
+				</table>
+			</div>
+			<div class="columns large-2 hide-for-medium-only">
+				<th:block th:include="fragments/sample :: serialisationDropDownMenu"></th:block>
+			</div>
 
-			<th:block th:include="fragments/sample :: contacts (${sample.contacts})"></th:block>
-			<th:block th:include="fragments/sample :: organizations (${sample.organizations})"></th:block>
-			<th:block th:include="fragments/sample :: publications (${sample.publications})"></th:block>
+			<div class="columns s__details">
+				<th:block th:include="fragments/sample :: contacts (${sample.contacts})"></th:block>
+				<th:block th:include="fragments/sample :: organizations (${sample.organizations})"></th:block>
+				<th:block th:include="fragments/sample :: publications (${sample.publications})"></th:block>
 
-			<th:block th:include="fragments/sample :: attributes (${sample.attributes})"></th:block>
-			<th:block th:include="fragments/sample :: relationships (${sample.relationships})"></th:block>
-			<th:block th:include="fragments/sample :: externalReferences (${sample.externalReferences})"></th:block>
+				<th:block th:include="fragments/sample :: attributes (${sample.attributes})"></th:block>
+				<th:block th:include="fragments/sample :: relationships (${sample.relationships})"></th:block>
+				<th:block th:include="fragments/sample :: externalReferences (${sample.externalReferences})"></th:block>
+			</div>
 
+			<div class="columns small-12 s__serialization show-for-medium-only">
+				<th:block th:include="fragments/sample :: serialisationDropDownMenu"></th:block>
+			</div>
 		</div>
 	</div>
 	<th:block th:include="fragments/footer :: footer"></th:block>

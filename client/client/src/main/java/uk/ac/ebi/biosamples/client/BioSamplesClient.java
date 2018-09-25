@@ -96,7 +96,8 @@ public class BioSamplesClient implements AutoCloseable {
 	public Optional<BioSamplesClient> getPublicClient() {
 		return this.publicClient;
 	}
-	
+
+
 	private static class AapClientHttpRequestInterceptor implements ClientHttpRequestInterceptor {
 		
 		private final AapClientService aapClientService;

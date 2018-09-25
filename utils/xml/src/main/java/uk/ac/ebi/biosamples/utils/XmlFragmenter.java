@@ -21,22 +21,23 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
- * 
+ *
  * Utility class that reads an input stream of XML (with SAX) and calls a
  * provided handler for each element of interest. The handler is given a DOM
  * populated element to do something with
- * 
- * 
+ *
+ *
  * @author faulcon
  *
  */
 @Service
-public class XmlFragmenter {
+public class
+XmlFragmenter {
 
 	private SAXParserFactory factory = SAXParserFactory.newInstance();
-	
+
 	private XmlFragmenter() {};
-	
+
 	public void handleStream(InputStream inputStream, String encoding, ElementCallback... callback)
 			throws ParserConfigurationException, SAXException, IOException {
 
@@ -45,9 +46,9 @@ public class XmlFragmenter {
 
 		DefaultHandler handler = new FragmentationHandler(callback);
 		SAXParser saxParser = factory.newSAXParser();
-		
+
 		saxParser.parse(isource, handler);
-		
+
 	}
 
 	private class FragmentationHandler extends DefaultHandler {
@@ -61,12 +62,12 @@ public class XmlFragmenter {
 
 		public FragmentationHandler(ElementCallback... callbacks) {
 			this.callbacks = Arrays.asList(callbacks);
-			
+
 			this.doc = new ArrayList<>(this.callbacks.size());
 			this.inRegion = new ArrayList<>(this.callbacks.size());
 			this.elementStack = new ArrayList<>(this.callbacks.size());
 			this.textBuffer = new ArrayList<>(this.callbacks.size());
-			
+
 			for (ElementCallback callback : callbacks) {
 				doc.add(null);
 				inRegion.add(false);
@@ -78,15 +79,15 @@ public class XmlFragmenter {
 		@Override
 		public void startElement(String uri, String localName, String qName, Attributes attributes)
 				throws SAXException {
-			for (int i = 0; i < callbacks.size(); i++) {			
+			for (int i = 0; i < callbacks.size(); i++) {
 				if (callbacks.get(i).isBlockStart(uri, localName, qName, attributes)) {
 					inRegion.set(i, true);
-					doc.set(i, DocumentHelper.createDocument());	
+					doc.set(i, DocumentHelper.createDocument());
 				}
 				if (inRegion.get(i)) {
 					addTextIfNeeded(i);
 					Element el;
-					if (elementStack.get(i).size() == 0) {	
+					if (elementStack.get(i).size() == 0) {
 						el = doc.get(i).addElement(qName);
 					} else {
 						el = elementStack.get(i).peek().addElement(qName);
@@ -101,11 +102,11 @@ public class XmlFragmenter {
 
 		@Override
 		public void endElement(String uri, String localName, String qName) {
-			for (int i = 0;i < callbacks.size(); i++) {		
+			for (int i = 0;i < callbacks.size(); i++) {
 				if (inRegion.get(i)) {
 					addTextIfNeeded(i);
 					elementStack.get(i).pop();
-	
+
 					if (elementStack.get(i).isEmpty()) {
 						// do something with the element
 						try {
@@ -113,7 +114,7 @@ public class XmlFragmenter {
 						} catch (Exception e) {
 							throw new RuntimeException(e);
 						}
-	
+
 						inRegion.set(i, false);
 						doc.set(i, null);
 					}
@@ -123,7 +124,7 @@ public class XmlFragmenter {
 
 		@Override
 		public void characters(char ch[], int start, int length) throws SAXException {
-			for (int i = 0;i < callbacks.size(); i++) {		
+			for (int i = 0;i < callbacks.size(); i++) {
 				if (inRegion.get(i)) {
 					textBuffer.get(i).append(ch, start, length);
 				}
@@ -143,16 +144,16 @@ public class XmlFragmenter {
 	public interface ElementCallback {
 		/**
 		 * This function is passed a DOM element of interest for further processing.
-		 * 
+		 *
 		 * @param e
-		 * @throws Exception 
+		 * @throws Exception
 		 */
 		public void handleElement(Element e) throws Exception;
 
 		/**
 		 * This functions determines if an element is of interest and should be handled
 		 * once parsing is complete.
-		 * 
+		 *
 		 * @param uri
 		 * @param localName
 		 * @param qName

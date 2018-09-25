@@ -19,6 +19,13 @@ import java.util.*;
 @Service
 public class EnaElementConverter implements Converter<Element, Sample> {
 
+    //Fields required by ENA content
+    private static final String ENA_ALIAS = "Alias";
+    private static final String ENA_SRA_ACCESSION = "SRA accession";
+    private static final String ENA_BROKER_NAME = "Broker name";
+    private static final String ENA_TITLE = "Title";
+    private static final String ENA_DESCRIPTION = "Description";
+
     private Logger log = LoggerFactory.getLogger(getClass());
 
     private static final String SAMPLE = "SAMPLE";
@@ -35,12 +42,11 @@ public class EnaElementConverter implements Converter<Element, Sample> {
     private static final String SAMPLE_ATTRIBUTE = "SAMPLE_ATTRIBUTE";
     private static final String SAMPLE_ATTRIBUTES = "SAMPLE_ATTRIBUTES";
     private static final String DESCRIPTION = "DESCRIPTION";
+    private static final String TITLE = "TITLE";
+
 
     @Autowired
     private TaxonomyService taxonomyService;
-
-    @Autowired
-    private EnaService enaService;
 
     @Override
     public Sample convert(Element root) {
@@ -53,6 +59,41 @@ public class EnaElementConverter implements Converter<Element, Sample> {
         SortedSet<ExternalReference> externalReferences = new TreeSet<>();
 
         log.trace("Converting " + name);
+
+        //ENA Specific fields
+
+        //ENA alias
+        if (XmlPathBuilder.of(root).path(SAMPLE).attributeExists("alias")) {
+            String alias = XmlPathBuilder.of(root).path(SAMPLE).attribute("alias").trim();
+            attributes.add(Attribute.build(ENA_ALIAS, alias));
+        }
+
+        //ENA sra accession
+        if (XmlPathBuilder.of(root).path(SAMPLE).attributeExists("accession")) {
+            String sraAccession = XmlPathBuilder.of(root).path(SAMPLE).attribute("accession").trim();
+            attributes.add(Attribute.build(ENA_SRA_ACCESSION, sraAccession));
+        }
+
+        //ENA broker name
+        if (XmlPathBuilder.of(root).path(SAMPLE).attributeExists("broker_name")) {
+            String brokerName = XmlPathBuilder.of(root).path(SAMPLE).attribute("broker_name").trim();
+            attributes.add(Attribute.build(ENA_BROKER_NAME, brokerName));
+        }
+
+        //ENA title
+        String title = "";
+        if (XmlPathBuilder.of(root).path(SAMPLE, TITLE).exists() && XmlPathBuilder.of(root).path(SAMPLE, TITLE).text().trim().length() > 0) {
+            title = XmlPathBuilder.of(root).path(SAMPLE, TITLE).text().trim();
+        } else if (XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, SCIENTIFIC_NAME).exists() && XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, SCIENTIFIC_NAME).text().trim().length() > 0) {
+            title = XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, SCIENTIFIC_NAME).text().trim();
+        }
+        attributes.add(Attribute.build(ENA_TITLE, title));
+
+        //ENA description
+        if (XmlPathBuilder.of(root).path(SAMPLE, DESCRIPTION).exists() && XmlPathBuilder.of(root).path(SAMPLE, DESCRIPTION).text().trim().length() > 0) {
+            String description = XmlPathBuilder.of(root).path(SAMPLE, DESCRIPTION).text().trim();
+            attributes.add(Attribute.build(ENA_DESCRIPTION, description));
+        }
 
         //put various other fields in as synonyms
         Set<String> synonyms = new HashSet<>();
@@ -87,13 +128,6 @@ public class EnaElementConverter implements Converter<Element, Sample> {
             if (!synonym.equals(name) && !synonym.equals(accession)) {
                 attributes.add(Attribute.build("synonym", synonym));
             }
-        }
-
-        //description
-        if (XmlPathBuilder.of(root).path(SAMPLE, DESCRIPTION).exists()
-                && XmlPathBuilder.of(root).path(SAMPLE, DESCRIPTION).text().trim().length() > 0) {
-            String description = XmlPathBuilder.of(root).path(SAMPLE, DESCRIPTION).text().trim();
-            attributes.add(Attribute.build("description", description));
         }
 
         //Do the organism attribute
@@ -155,29 +189,7 @@ public class EnaElementConverter implements Converter<Element, Sample> {
             }
         }
 
-        //external reference
-		/*
-		if (XmlPathBuilder.of(root).path(SAMPLE, "SAMPLE_LINKS", "SAMPLE_LINK").exists()) {
-			for (Element e : XmlPathBuilder.of(root).path(SAMPLE, "SAMPLE_LINKS").elements("SAMPLE_LINK")) {
-				if (XmlPathBuilder.of(e).path("XREF_LINK", "DB").exists() && XmlPathBuilder.of(e).path("XREF_LINK", "ID").exists()) {
-					String db = XmlPathBuilder.of(e).path("XREF_LINK", "DB").text();
-					String idGrouped = XmlPathBuilder.of(e).path("XREF_LINK", "ID").text();
-					//sometimes ids might be comma separated or a range joined by a dash
-					for (String id : enaService.splitIdentifiers(idGrouped)) {
-						if ("ENA-EXPERIMENT".equals(db)) {
-							//externalReferences.add(ExternalReference.build("https://www.ebi.ac.uk/ena/data/view/"+id));						
-						} else if ("ENA-ANALYSIS".equals(db)) {
-							//externalReferences.add(ExternalReference.build("https://www.ebi.ac.uk/ena/data/view/"+id));						
-						}
-						//TODO decide if link to samples, or to experiment+analysis
-					}
-				}				
-			}
-		}
-		*/
-
-//        return Sample.build(name, accession, null, Instant.now(), Instant.now(), attributes, relationships, externalReferences);
-		return new Sample.Builder(name, accession)
+        return new Sample.Builder(name, accession)
                 .withRelease(Instant.now()).withUpdate(Instant.now())
                 .withAttributes(attributes)
                 .withRelationships(relationships)

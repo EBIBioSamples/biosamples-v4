@@ -35,7 +35,6 @@ public class NcbiSampleConversionService {
     public Sample convertNcbiXmlElementToSample(Element sampleElem) {
         String accession = sampleElem.attributeValue("accession");
 
-
         SortedSet<Attribute> attrs = new TreeSet<>();
         SortedSet<Relationship> rels = new TreeSet<>();
         Set<ExternalReference> externalReferences = new TreeSet<>();
@@ -49,7 +48,7 @@ public class NcbiSampleConversionService {
                 //ignore ids from BioSample
             } else if ("SRA".equals(idElem.attributeValue("db"))) {
                 //INSDC SRA IDs get special treatment
-                attrs.add(Attribute.build("INSDC secondary accession", idElem.getTextTrim()));
+                attrs.add(Attribute.build("INSDC secondary accession",  idElem.getTextTrim()));
             } else if ("Sample name".equals(idElem.attributeValue("db_label"))) {
                 //original submitter identifier is stored as the alias to be used as the name
                 alias = idElem.getTextTrim();
@@ -58,7 +57,7 @@ public class NcbiSampleConversionService {
                 //GEO IDs get special treatment
                 geoAlias = idElem.getTextTrim();
             } else if (!accession.equals(idElem.getTextTrim())) {
-                attrs.add(Attribute.build("synonym", idElem.getTextTrim()));
+                attrs.add(Attribute.build("synonym",  idElem.getTextTrim()));
             }
         }
         if (alias == null && geoAlias != null) {
@@ -68,11 +67,11 @@ public class NcbiSampleConversionService {
         }
         if (geoAlias != null) {
             //if we still have a geo alias, store it as a synonym
-            attrs.add(Attribute.build("synonym", geoAlias));
+            attrs.add(Attribute.build("synonym",  geoAlias));
         }
 
         if (alias == null) {
-            log.warn("Unable to determine sample alias for " + accession + ", falling back to accession");
+            log.warn("Unable to determine sample alias for "+accession+", falling back to accession");
             alias = accession;
         }
 
@@ -85,7 +84,7 @@ public class NcbiSampleConversionService {
 
         if (centreName == null) {
             //throw new RuntimeException("Unable to determine centre name for "+accession);
-            log.warn("Unable to determine centre name for " + accession);
+            log.warn("Unable to determine centre name for "+accession);
         } else {
             //Note US spelling because NCBI
             attrs.add(Attribute.build("INSDC center name", centreName));
@@ -93,7 +92,7 @@ public class NcbiSampleConversionService {
 
         if (XmlPathBuilder.of(sampleElem).path("Description", "Title").exists()) {
             String value = XmlPathBuilder.of(sampleElem).path("Description", "Title").text();
-            attrs.add(Attribute.build("description title", value));
+            attrs.add(Attribute.build("description title",  value));
         }
 
         if (XmlPathBuilder.of(sampleElem).path("Description", "Comment", "Paragraph").exists()) {
@@ -104,12 +103,13 @@ public class NcbiSampleConversionService {
 				value = value.substring(0, 252)+"...";
 			}
 			*/
-            attrs.add(Attribute.build("description", value));
+            attrs.add(Attribute.build("description",  value));
         }
 
         // handle the organism
         String organismIri = null;
         String organismValue = null;
+        boolean hasOrganismInDescription = false;
         if (XmlPathBuilder.of(sampleElem).path("Description", "Organism").attributeExists("taxonomy_id")) {
             int taxonId = getTaxId(XmlPathBuilder.of(sampleElem).path("Description", "Organism").attribute("taxonomy_id"));
             organismIri = taxonomyService.getUriForTaxonId(taxonId);
@@ -119,7 +119,8 @@ public class NcbiSampleConversionService {
         }
 
         if (organismValue != null) {
-            attrs.add(Attribute.build("organism", organismValue, organismIri, null));
+            attrs.add(Attribute.build("organism", organismValue, organismIri,  null));
+            hasOrganismInDescription = true;
         }
 
 
@@ -136,9 +137,14 @@ public class NcbiSampleConversionService {
 				value = value.substring(0, 252)+"...";
 			}
 			*/
+            if (key.equalsIgnoreCase("organism") && hasOrganismInDescription) {
+                // Don't add a new organism attribute as it has already been added from the description
+                continue;
+            }
+
             //if its a gap accession add an external reference too
             if (value.matches("phs[0-9]+")) {
-                externalReferences.add(ExternalReference.build("https://www.ncbi.nlm.nih.gov/projects/gap/cgi-bin/study.cgi?study_id=" + value));
+                externalReferences.add(ExternalReference.build("https://www.ncbi.nlm.nih.gov/projects/gap/cgi-bin/study.cgi?study_id="+value));
             }
 
             //value is a sample accession, assume its a relationship
@@ -155,8 +161,8 @@ public class NcbiSampleConversionService {
         }
 
         // handle model and packages
-//disabled for the moment, do they really add anything? faulcon@2017/01/25
-//yes, ENA want them. But we can name them better. faulcon@2018/02/14
+        //disabled for the moment, do they really add anything? faulcon@2017/01/25
+        //yes, ENA want them. But we can name them better. faulcon@2018/02/14
         //TODO safetly access these - shouldn't ever be missing but....
         for (Element modelElem : XmlPathBuilder.of(sampleElem).path("Models").elements("Model")) {
             attrs.add(Attribute.build("NCBI submission model", modelElem.getTextTrim()));

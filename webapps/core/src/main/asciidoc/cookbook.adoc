@@ -1,0 +1,10 @@
+= [.ebi-color]#BioSamples Cookbook#
+:last-update-label!:
+
+Welcome to the BioSamples cookbook, a place where we collect a series of "recipes"
+or common tasks related to BioSamples.
+Contribution to recipes is welcome. Checkout our guide on https://github.com/EBIBioSamples/biosamples-v4[the BioSamples github page]
+for details on how to contribute
+
+Here the list of the current available recipes.
+

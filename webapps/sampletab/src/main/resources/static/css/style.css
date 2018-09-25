@@ -1,5 +1,9 @@
 .biosamples-button-row { margin-bottom: 1em; }
 
+.biosamples-button-row div {
+    margin-bottom: 1em;
+}
+
 .biosamples-card { text-align: center; border: 1px solid #007c82 /*EBI Color*/ ; min-height: 150px; padding: 1em; }
 
 .biosamples-card:hover { background-color: #007c82; }
@@ -61,4 +65,9 @@ div#elixir-banner-info { color: white; }
            transform: scaleY(1.0);
            -webkit-transform: scaleY(1.0);
        }
+}
+
+#errorsdiv .label {
+    margin-bottom: 1em;
+    white-space: normal;
 }

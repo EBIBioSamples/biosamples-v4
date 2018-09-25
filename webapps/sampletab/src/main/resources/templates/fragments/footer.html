@@ -1,11 +1,10 @@
-<!DOCTYPE html>
+<!DOCTYPE html><!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head>
 </head>
 <body>
 <div th:fragment="footer" >
-	<div id="elixir-banner" data-color="grey" data-name="BioSamples Database" data-description="BioSamples is an Elixir Deposition Database" data-more-information-link="https://www.elixir-europe.org/about-us/who-we-are/nodes/embl-ebi" data-use-basic-styles="false"></div>
 	<footer>
 		<!-- Optional local footer (insert citation / project-specific copyright / etc here -->
 		<!--
@@ -15,15 +14,15 @@
                 </div>
               </div>
          -->
+		<div id="elixir-banner" data-color="grey" data-name="BioSamples Database" data-description="BioSamples is an Elixir Deposition Database" data-more-information-link="https://www.elixir-europe.org/platforms/data/elixir-deposition-databases" data-use-basic-styles="false"></div>
 		<!-- End optional local footer -->
+		<div id="global-footer" class="global-footer">
 
-		<div id="global-footer">
-
-			<nav id="global-nav-expanded" class="row">
+			<nav id="global-nav-expanded" class="row global-nav-expanded">
 				<!-- Footer will be automatically inserted by footer.js -->
 			</nav>
 
-			<section id="ebi-footer-meta" class="row">
+			<section id="ebi-footer-meta" class="row ebi-footer-meta">
 				<!-- Footer meta will be automatically inserted by footer.js -->
 			</section>
 
@@ -41,8 +40,8 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 	<!-- Your custom JavaScript file scan go here... change names accordingly -->
 	<!--
-    <script defer="defer" src="//www.ebi.ac.uk/web_guidelines/js/plugins.js"></script>
-    <script defer="defer" src="//www.ebi.ac.uk/web_guidelines/js/script.js"></script>
+      <script defer="defer" src="//www.ebi.ac.uk/web_guidelines/js/plugins.js"></script>
+      <script defer="defer" src="//www.ebi.ac.uk/web_guidelines/js/script.js"></script>
     -->
 	<script defer="defer" src="https://ebi.emblstatic.net/web_guidelines/EBI-Framework/v1.3/js/elixirBanner.js"></script>
 	<script defer="defer" th:src="@{/js/jquery.autocomplete.min.js}" ></script>
@@ -85,16 +84,13 @@
 	</script>
 
 
-	<script defer="defer" src="https://www.ebi.ac.uk/web_guidelines/EBI-Framework/v1.1/js/cookiebanner.js"></script>
-	<script defer="defer" src="https://www.ebi.ac.uk/web_guidelines/EBI-Framework/v1.1/js/foot.js"></script>
-	<script defer="defer" src="https://www.ebi.ac.uk/web_guidelines/EBI-Framework/v1.1/js/script.js"></script>
+	<script defer="defer" src="https://ebi.emblstatic.net/web_guidelines/EBI-Framework/v1.3/js/script.js"></script>
 
 	<!-- The Foundation theme JavaScript -->
-	<script src="https://www.ebi.ac.uk/web_guidelines/EBI-Framework/v1.1/libraries/foundation-6/js/foundation.js"></script>
-	<script src="https://www.ebi.ac.uk/web_guidelines/EBI-Framework/v1.1/js/foundationExtendEBI.js"></script>
+	<script src="https://ebi.emblstatic.net/web_guidelines/EBI-Framework/v1.3/libraries/foundation-6/js/foundation.js"></script>
+	<script src="https://ebi.emblstatic.net/web_guidelines/EBI-Framework/v1.3/js/foundationExtendEBI.js"></script>
 	<script type="text/JavaScript">$(document).foundation();</script>
 	<script type="text/JavaScript">$(document).foundationExtendEBI();</script>
-	<script defer="defer" th:src="@{js/webaccession.js}" src="../../static/js/webaccession.js"></script>
 </div>
 </body>
 </html>

@@ -12,7 +12,9 @@ public class WebConfiguration extends WebMvcConfigurerAdapter{
     @Override
     public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
         configurer.mediaType("ldjson", new MediaType("application", "ld+json"));
-        configurer.mediaType("haljson", new MediaType("application", "hal+json"));        
+        configurer.mediaType("haljson", new MediaType("application", "hal+json"));
+        configurer.mediaType("pxf", new MediaType("application", "phenopacket+json"));
+
     }
 
     @Override
@@ -20,4 +22,5 @@ public class WebConfiguration extends WebMvcConfigurerAdapter{
         registry.addResourceHandler("/schemas/**")
                 .addResourceLocations("classpath:/schemas/");
     }
+
 }

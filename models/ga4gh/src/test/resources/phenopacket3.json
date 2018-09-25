@@ -1,0 +1,77 @@
+{
+   "individuals":[
+      {
+         "id":"SAMEA1534312-individual",
+         "sex":{
+
+         },
+         "taxonomy":{
+            "id":"NCBITaxon:9606",
+            "label":"Homo sapiens"
+         }
+      }
+   ],
+   "biosamples":[
+      {
+         "id":"SAMEA1534312",
+         "name":"source GSM996317 1",
+         "description":"South Africa patient blood",
+         "phenotypes":[
+            {
+               "type":{
+                  "id":"UBERON:0000178",
+                  "label":"blood"
+               }
+            },
+            {
+               "type":{
+                  "id":"EFO:0000296",
+                  "label":"blood"
+               }
+            }
+         ],
+         "created":"2012-09-30T23:00:00Z",
+         "updated":"2018-04-04T15:37:26.093Z",
+         "individualId":"SAMEA1534312-individual",
+         "taxonomy":{
+            "id":"NCBITaxon:9606",
+            "label":"Homo sapiens"
+         },
+         "individualAgeAtCollection":{
+
+         }
+      }
+   ],
+   "diseases":[
+      {
+         "label":"PTB"
+      }
+   ],
+   "metaData":{
+      "created":"2018-06-28T15:52:50.638Z",
+      "createdBy":"Biosamples phenopacket exporter",
+      "resources":[
+         {
+            "id":"ncbitaxon",
+            "name":"NCBI organismal classification",
+            "namespacePrefix":"NCBITAXON",
+            "url":"http://purl.obolibrary.org/obo/ncbitaxon.owl",
+            "version":"2018-07-27"
+         },
+         {
+            "id":"uberon",
+            "name":"Uber-anatomy ontology",
+            "namespacePrefix":"UBERON",
+            "url":"http://purl.obolibrary.org/obo/uberon.owl",
+            "version":"2018-09-10"
+         },
+         {
+            "id":"efo",
+            "name":"Experimental Factor Ontology",
+            "namespacePrefix":"EFO",
+            "url":"http://www.ebi.ac.uk/efo/efo.owl",
+            "version":"2.100"
+         }
+      ]
+   }
+}

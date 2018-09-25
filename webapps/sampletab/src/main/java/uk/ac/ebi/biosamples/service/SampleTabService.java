@@ -818,7 +818,7 @@ public class SampleTabService {
 		if (sampletabsContainingAccession == null) {
 			log.info("Null accession sample tabs for accession "+accession);
 		} else if (sampletabsContainingAccession.size() == 0) {
-			log.info("No accession sample tabs for accession "+accession);
+			log.info("No SampleTab contains accession "+accession);
 			if (!isSuperUser) {
 				throw new SampleTabWithUnacceptableAccessionException(accession);
 			}

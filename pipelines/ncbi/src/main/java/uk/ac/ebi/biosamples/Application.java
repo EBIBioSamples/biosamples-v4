@@ -4,6 +4,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Profile;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -13,7 +14,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableAsync
 @EnableScheduling
 public class Application {
-	
+
 	//this is needed to read nonstrings from properties files
 	//must be static for lifecycle reasons
 	@Bean

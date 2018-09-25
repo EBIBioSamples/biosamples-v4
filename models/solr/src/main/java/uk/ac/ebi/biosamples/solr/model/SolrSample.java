@@ -123,7 +123,6 @@ public class SolrSample {
 		return accession;
 	}
 
-
 	public String getName() {
 		return name;
 	}

@@ -30,7 +30,13 @@ public class Application {
 		SpringApplication.exit(SpringApplication.run(Application.class, args));
 	}
 
-	
+	@Bean
+	public RestTemplate restTemplate(RestTemplateCustomizer restTemplateCustomizer) {
+		RestTemplate restTemplate = new RestTemplate();
+		restTemplateCustomizer.customize(restTemplate);
+		return restTemplate;
+	}
+
 	@Bean
 	public RestTemplateCustomizer restTemplateCustomizer(BioSamplesProperties bioSamplesProperties, PipelinesProperties piplinesProperties) {
 		return new RestTemplateCustomizer() {

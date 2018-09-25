@@ -1,0 +1,57 @@
+
+= [.ebi-color]#How to add an external reference to a sample using the JSON API#
+:last-update-label!:
+
+== User requirements
+I want to link a BioSamples accession with an external repositories or an external resource
+
+== Requirements
+- You need an AAP account to proceed with this recipe
+- Your AAP account should be able to submit to the domain you're going to use in the curation object
+
+==  Steps
+
+=== 1. Get the Json Web Token from AAP
+Start by getting your JWT to use in your application
+
+You can do that in curl for example using the next command
+```
+TOKEN=$(curl --user <app-user>:<aap-password> https://api.aai.ebi.ac.uk/auth)
+```
+
+=== 2. Produce a JSON object like the next one filled with the proper content
+Use this as a template for the submission but change the required fields between `<>`
+```
+{
+  "sample" : <accession-of-the-interested-sample>,
+  "curation" : {
+    "attributesPre" : [ { } ],
+    "attributesPost" : [ { } ],
+    "externalReferencesPre" : [ { } ],
+    "externalReferencesPost" : [ {
+      "url" : <the-url-to-the-external-reference-you-want-to-add>
+    } ]
+  },
+  "domain" : <the-domain-you-want-to-associate-this-curation>
+}
+```
+
+=== 3. Submit the curation object using a POST request to the
+
+You can use any method to submit a POST request to BioSamples, where an example
+using cURL
+
+```
+$ curl 'https://www.ebi.ac.uk/biosamples/samples/{sample-accession}/curationlinks' -i -X POST -H 'Content-Type: application/json' -H 'Authorization: Bearer $TOKEN' -d '{
+  "sample" : <accession-of-the-interested-sample>,
+  "curation" : {
+    "attributesPre" : [ { } ],
+    "attributesPost" : [ { } ],
+    "externalReferencesPre" : [ { } ],
+    "externalReferencesPost" : [ {
+      "url" : <the-url-to-the-external-reference-you-want-to-add>
+    } ]
+  },
+  "domain" : <the-domain-you-want-to-associate-this-curation>
+}'
+```

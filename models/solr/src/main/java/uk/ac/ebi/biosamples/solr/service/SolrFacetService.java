@@ -8,14 +8,12 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
 
+import org.apache.solr.client.solrj.util.ClientUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.solr.core.query.Criteria;
-import org.springframework.data.solr.core.query.FacetQuery;
-import org.springframework.data.solr.core.query.FilterQuery;
-import org.springframework.data.solr.core.query.SimpleFacetQuery;
+import org.springframework.data.solr.core.query.*;
 import org.springframework.data.solr.core.query.result.FacetFieldEntry;
 import org.springframework.stereotype.Service;
 
@@ -88,7 +86,7 @@ public class SolrFacetService {
             2. _av_ss => regular facet
             3. _dt => range facet
          */
-        
+
         //TODO do this to properly account for different strategies - this is a dirty hack for performance!
         /*
         for (Entry<SolrSampleField, Long> fieldCountEntry: allFacetFields) {
@@ -100,14 +98,14 @@ public class SolrFacetService {
             optionalFacets.forEach(opt -> opt.ifPresent(facets::add));
         }
 		*/
-        
+
         if (allFacetFields.size() > 0) {
-	        allFacetFields.get(0).getKey().getFacetCollectionStrategy()
-	        	.fetchFacetsUsing(solrSampleRepository, query, allFacetFields, facetValuesPageInfo)
-	        	.forEach(opt -> opt.ifPresent(facets::add));
+            allFacetFields.get(0).getKey().getFacetCollectionStrategy()
+                    .fetchFacetsUsing(solrSampleRepository, query, allFacetFields, facetValuesPageInfo)
+                    .forEach(opt -> opt.ifPresent(facets::add));
         }
-        
-        
+
+
         // Return the list of facets
         Collections.sort(facets);
         Collections.reverse(facets);
