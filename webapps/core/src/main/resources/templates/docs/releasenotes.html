@@ -21,7 +21,7 @@
 		<th:block th:include="fragments/header :: masterhead"></th:block>
 		<div id="main-content-area" class="row padding-top-xlarge">
 			<div class="small-12 medium-9 columns" th:insert="asciidoc/releasenotes :: div"></div>
-			<div th:insert="fragments/help :: sidebar(active='release', recipes=${recipes}"></div>
+			<div th:insert="fragments/help :: sidebar(active='release', recipes=${recipes})"></div>
 		</div>
 	</div>
 	<div th:insert="fragments/footer :: footer"></div>
