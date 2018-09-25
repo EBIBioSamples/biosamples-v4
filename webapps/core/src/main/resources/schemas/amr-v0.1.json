@@ -3,40 +3,164 @@
   "title": "amr",
   "description": "Representation for an AMR table entry",
   "definitions": {
+    "is_dilution_method": {
+      "properties": {
+        "laboratory_typing_method.category": {
+          "enum":[
+            "dilution"
+          ]
+        }
+      }
+    },
     "amr_entry": {
       "$id": "#amr_entry",
       "type": "object",
       "properties": {
+        "species": {
+          "type": "string"
+        },
         "antibiotic": {
           "type": "string"
         },
-        "resistance_phenotype": {
+        "breakpoint version": {
           "type": "string"
+        },
+        "resistance_phenotype": {
+          "type": "string",
+          "enum":[
+            "intermediate",
+            "susceptible",
+            "sensitive",
+            "resistant",
+            "non-susceptible",
+            "not defined"
+          ]
         },
         "measurement_sign": {
-          "type": "string"
+          "type": "string",
+          "enum": [">", "<", "=", "<=", ">="]
         },
         "measurement": {
-          "type": "string"
+          "type": "number",
+          "if": {
+            "properties":{
+              "laboratory_typing_method.category": {
+                "enum": ["dilution"]
+              }
+            }
+          },
+          "then": {
+            "minimum": 0.01,
+            "maximum": 2048
+          },
+          "else": {
+            "minimum": 6,
+            "maximum": 99
+          }
         },
         "measurement_units": {
-          "type": "string"
+          "type": "string",
+          "if": {
+            "properties": {
+              "laboratory_typing_method.category": {
+                "enum": ["dilution"]
+              }
+            }
+          },
+          "then":  {
+            "enum":[
+              "mg/L"
+            ]
+          },
+          "else": {
+            "enum":[
+              "mm"
+            ]
+          }
         },
         "laboratory_typing_method": {
-          "type": "string"
+          "type": "object",
+          "properties": {
+              "category": {
+                  "enum": ["dilution", "diffusion"]
+              },
+              "method": {
+                "type": "string"
+              }
+          },
+          "required": [
+            "category", 
+            "method"
+          ],
+          "if": {
+              "properties": {
+                  "category": { "enum": ["dilution"] }
+              }   
+          },
+          "then": {
+            "properties": {
+                "method": {
+                  "enum": [
+                    "Broth dilution",
+                    "Microbroth dilution",
+                    "Agar dilution"
+                  ]
+                }
+            }
+          },
+          "else": {
+            "properties": {
+              "method": {
+                "enum": [
+                  "Disc-diffusion",
+                  "Neo-sensitabs",
+                  "Etest"
+                ]
+              }
+            }
+          }
         },
-        "laboratory_typing_platform": {
+        "platform": {
+          "type": "string",
+          "enum": [
+            "Microscan",
+            "Phoenix",
+            "Sensititre",
+            "Vitek"
+          ]
+        },
+        "laboratory_typing_method_version_or_reagent": {
           "type": "string"
         },
         "vendor": {
           "type": "string"
         },
-        "Laboratory_typing_method_version_or_reagent": {
-          "type": "string"
-        },
         "testing_standard": {
-          "type": "string"
-        }
+          "type": "string",
+          "enum": [
+            "CLSI",
+            "EUCAST",
+            "SFM",
+            "BSAC",
+            "DIN",
+            "SIR",
+            "WRG",
+            "NCCLS",
+            "missing"
+          ]
+        },
+        "ast standard": {
+          "type": "string",
+          "enum": [
+            "CLSI",
+            "EUCAST",
+            "CA-SFM",
+            "BSAC",
+            "DIN",
+            "SIR",
+            "WRG"
+          ]
+        },
       },
       "required": [
         "antibiotic",
@@ -48,7 +172,7 @@
         "vendor",
         "testing_standard"
       ]
-    }
+    },
   },
   "type": "array",
   "uniqueItems": true,
