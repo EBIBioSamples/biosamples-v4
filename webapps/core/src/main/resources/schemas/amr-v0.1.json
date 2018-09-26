@@ -22,7 +22,7 @@
         "antibiotic": {
           "type": "string"
         },
-        "breakpoint version": {
+        "breakpoint_version": {
           "type": "string"
         },
         "resistance_phenotype": {
@@ -33,7 +33,7 @@
             "sensitive",
             "resistant",
             "non-susceptible",
-            "not defined"
+            "not-defined"
           ]
         },
         "measurement_sign": {
@@ -42,13 +42,7 @@
         },
         "measurement": {
           "type": "number",
-          "if": {
-            "properties":{
-              "laboratory_typing_method.category": {
-                "enum": ["dilution"]
-              }
-            }
-          },
+          "if": { "$ref": "#/definitions/is_dilution_method"},
           "then": {
             "minimum": 0.01,
             "maximum": 2048
@@ -60,13 +54,7 @@
         },
         "measurement_units": {
           "type": "string",
-          "if": {
-            "properties": {
-              "laboratory_typing_method.category": {
-                "enum": ["dilution"]
-              }
-            }
-          },
+          "if": { "$ref": "#/definitions/is_dilution_method"},
           "then":  {
             "enum":[
               "mg/L"
@@ -81,31 +69,27 @@
         "laboratory_typing_method": {
           "type": "object",
           "properties": {
-              "category": {
-                  "enum": ["dilution", "diffusion"]
-              },
-              "method": {
-                "type": "string"
-              }
+            "category": {
+              "enum": ["dilution", "diffusion"]
+            },
+            "method": {
+              "type": "string"
+            }
           },
           "required": [
-            "category", 
+            "category",
             "method"
           ],
-          "if": {
-              "properties": {
-                  "category": { "enum": ["dilution"] }
-              }   
-          },
+          "if": { "$ref": "#/definitions/is_dilution_method"},
           "then": {
             "properties": {
-                "method": {
-                  "enum": [
-                    "Broth dilution",
-                    "Microbroth dilution",
-                    "Agar dilution"
-                  ]
-                }
+              "method": {
+                "enum": [
+                  "Broth dilution",
+                  "Microbroth dilution",
+                  "Agar dilution"
+                ]
+              }
             }
           },
           "else": {
@@ -125,7 +109,7 @@
           "enum": [
             "Microscan",
             "Phoenix",
-            "Sensititre",
+            "sensititer",
             "Vitek"
           ]
         },
@@ -149,7 +133,7 @@
             "missing"
           ]
         },
-        "ast standard": {
+        "ast_standard": {
           "type": "string",
           "enum": [
             "CLSI",
@@ -168,11 +152,9 @@
         "measurement_sign",
         "measurement",
         "measurement_units",
-        "laboratory_typing_method",
-        "vendor",
-        "testing_standard"
+        "laboratory_typing_method"
       ]
-    },
+    }
   },
   "type": "array",
   "uniqueItems": true,
