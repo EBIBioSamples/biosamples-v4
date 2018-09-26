@@ -18,7 +18,7 @@ public class JsonLDDataset implements BioschemasObject{
     private final String type = "Dataset";
 
     @JsonProperty("name")
-    private final String name = "Sample collection";
+    private final String name = "BioSamples collection";
 
     @JsonProperty("description")
     private final String description = "BioSamples stores and supplies descriptions and metadata about biological samples used in research and development by academia and industry. Samples are either 'reference' samples (e.g. from 1000 Genomes, HipSci, FAANG) or have been used in an assay database such as the European Nucleotide Archive (ENA) or ArrayExpress.";
