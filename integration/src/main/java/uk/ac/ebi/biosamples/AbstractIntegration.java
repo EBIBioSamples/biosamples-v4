@@ -9,7 +9,9 @@ import org.springframework.boot.ExitCodeGenerator;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 
 public abstract class AbstractIntegration implements ApplicationRunner, ExitCodeGenerator {
-	
+
+	protected final String defaultIntegrationSubmissionDomain = "self.BiosampleIntegrationTest";
+
 	protected abstract void phaseOne();
 	protected abstract void phaseTwo();
 	protected abstract void phaseThree();
@@ -18,15 +20,15 @@ public abstract class AbstractIntegration implements ApplicationRunner, ExitCode
 
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
-	
+
 	protected int exitCode = 1;
 
 	protected final BioSamplesClient client;
-	
+
 	public AbstractIntegration(BioSamplesClient client) {
 		this.client = client;
 	}
-	
+
 	@Override
 	public int getExitCode() {
 		return exitCode;
@@ -60,13 +62,13 @@ public abstract class AbstractIntegration implements ApplicationRunner, ExitCode
 			log.info("Starting phase five");
 			phaseFive();
 			log.info("Finished phase five");
-		}	
-		
+		}
+
 		close();
-		
+
 		exitCode = 0;
 	}
-	
+
 	public void close() {
 		//do nothing
 	}
