@@ -26,37 +26,37 @@ public class RestExternalReferenceIntegration extends AbstractIntegration {
 	@Override
 	protected void phaseOne() {
 		Sample sample = getSampleTest1();
-		client.persistSample(sample);		
+		client.persistSample(sample);
 	}
 
 	@Override
 	protected void phaseTwo() {
 		Sample sample = getSampleTest1();
-		
+
 		testExternalReferences();
 		//testSampleExternalReferences(sample, 10);
-		client.persistCuration(sample.getAccession(), 
-				Curation.build(null,  null, null, Arrays.asList(ExternalReference.build("http://www.ebi.ac.uk/ena/ERA123456"))), 
+		client.persistCuration(sample.getAccession(),
+				Curation.build(null,  null, null, Arrays.asList(ExternalReference.build("http://www.ebi.ac.uk/ena/ERA123456"))),
 				"self.BiosampleIntegrationTest");
-		
+
 	}
 
 	@Override
 	protected void phaseThree() {
 		Sample sample = getSampleTest1();
-		//testSampleExternalReferences(sample, 11);		
+		//testSampleExternalReferences(sample, 11);
 		//check there was no side-effects
-		client.fetchSample(sample.getAccession());		
+		client.fetchSample(sample.getAccession());
 	}
 
 	@Override
 	protected void phaseFour() {
-		
+
 	}
 
 	@Override
 	protected void phaseFive() {
-		
+
 	}
 	private void testExternalReferences() {
 /*
@@ -101,8 +101,8 @@ public class RestExternalReferenceIntegration extends AbstractIntegration {
 
 	private void testSampleExternalReferences(Sample sample, int expectedCount) {
 		sample = client.fetchSample(sample.getAccession()).get();
-		
-		
+
+
 		if (sample.getExternalReferences().size() != expectedCount) {
 			throw new RuntimeException("Expecting " + expectedCount + " external references, found "
 					+ sample.getExternalReferences().size());

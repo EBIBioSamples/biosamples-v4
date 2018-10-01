@@ -25,7 +25,7 @@ import java.util.*;
 
 @Component
 public class XmlSearchIntegration extends AbstractIntegration {
-    
+
     private final RestTemplate restTemplate;
     private final IntegrationProperties integrationProperties;
     private final XmlSearchTester xmlSearchTester;
@@ -215,12 +215,12 @@ public class XmlSearchIntegration extends AbstractIntegration {
             if (!responseEntity.getBody().contains(String.format("id=\"%s\"",test1.getAccession()))) {
                 throw new RuntimeException("Response body doesn't match expected sample");
             }
-            
+
             if (!responseEntity.getHeaders().containsKey("Access-Control-Allow-Origin")
             		|| !responseEntity.getHeaders().getAccessControlAllowOrigin().equals("foo.com")) {
                 throw new RuntimeException("Response doens't support CORS");
             }
-            
+
 
             assert responseEntity.getBody().equals(test1);
             log.info(String.format("Sample %s found using legacy xml api", test1.getAccession()));
