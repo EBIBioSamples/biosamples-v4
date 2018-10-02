@@ -21,7 +21,7 @@ public class JsonLDDataset implements BioschemasObject{
     private final String name = "EMBL-EBI BioSamples";
 
     @JsonProperty("description")
-    private final String description = "BioSamples stores and supplies descriptions and metadata about biological samples used in research and development by academia and industry. Samples are either 'reference' samples (e.g. from 1000 Genomes, HipSci, FAANG) or have been used in an assay database such as the European Nucleotide Archive (ENA) or ArrayExpress.";
+    private final String description = "The BioSamples database at EMBL-EBI provides a central hub for sample metadata storage and linkage to other EMBL-EBI resources. BioSamples contains just over 5 million samples in 2018. Fast, reciprocal data exchange is fully established between sister Biosample databases and other INSDC partners, enabling a worldwide common representation and centralisation of sample metadata. BioSamples plays a vital role in data coordination, acting as the sample metadata repository for many biomedical projects including the Functional Annotation of Animal Genomes (FAANG), the European Bank for induced pluripotent Stem Cells (EBiSC) and the {Human Induced Pluripotent Stem Cell Initiative (HipSci). Data growth is driven by the ever more important role BioSamples is playing as an ELIXIR data deposition database and as the EMBL-EBI hub for sample metadata. BioSamples is now the destination for samples from ELIXIR-EXCELERATE use case projects ranging from plant phenotyping to marine metagenomics, as well as several other community efforts including the Global Alliance for Genomics and Health (GA4GH) and the ELIXIR Bioschemas project.";
 
     private String url =  "https://www.ebi.ac.uk/biosamples/samples";
 
