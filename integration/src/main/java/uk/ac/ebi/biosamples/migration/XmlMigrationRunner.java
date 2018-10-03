@@ -43,7 +43,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import uk.ac.ebi.biosamples.service.XmlGroupToSampleConverter;
 import uk.ac.ebi.biosamples.service.XmlSampleToSampleConverter;
 
-//@Component
+@Component
 @Profile({"migration-xml"})
 public class XmlMigrationRunner implements ApplicationRunner, ExitCodeGenerator {
 
