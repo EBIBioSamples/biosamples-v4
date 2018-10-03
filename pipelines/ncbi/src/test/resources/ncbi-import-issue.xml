@@ -1,0 +1,40 @@
+<BioSampleSet>
+<BioSample access="public" publication_date="2018-09-18T00:00:00.000" last_update="2018-09-25T11:13:21.013" submission_date="2018-09-18T08:10:03.137" id="10081740" accession="SAMN10081740">
+  <Ids>
+    <Id db="BioSample" is_primary="1">SAMN10081741</Id>
+    <Id db_label="Sample name">Ovis aries Sperm RRBS20 6426</Id>
+    <Id db="SRA">SRS3819261</Id>
+  </Ids>
+  <Description>
+    <Title>Model organism or animal sample from Ovis aries</Title>
+    <Organism taxonomy_id="9940" taxonomy_name="Ovis aries">
+      <OrganismName>Ovis aries</OrganismName>
+    </Organism>
+  </Description>
+  <Owner>
+    <Name>IBBA CNR</Name>
+    <Contacts>
+      <Contact email="capra@ibba.cnr.it">
+        <Name>
+          <First>Emanuele</First>
+          <Last>Capra</Last>
+        </Name>
+      </Contact>
+    </Contacts>
+  </Owner>
+  <Models>
+    <Model>Model organism or animal</Model>
+  </Models>
+  <Package display_name="Model organism or animal; version 1.0">Model.organism.animal.1.0</Package>
+  <Attributes>
+    <Attribute attribute_name="breed" harmonized_name="breed" display_name="breed">Sardinian ewes</Attribute>
+    <Attribute attribute_name="dev_stage" harmonized_name="dev_stage" display_name="development stage">adult</Attribute>
+    <Attribute attribute_name="sex" harmonized_name="sex" display_name="sex">male</Attribute>
+    <Attribute attribute_name="tissue" harmonized_name="tissue" display_name="tissue">sperm</Attribute>
+  </Attributes>
+  <Links>
+    <Link type="entrez" target="bioproject" label="PRJNA491660">491660</Link>
+  </Links>
+  <Status status="live" when="2018-09-18T08:10:03.137"/>
+</BioSample>
+  </BioSampleSet>

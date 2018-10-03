@@ -1,10 +1,7 @@
 package uk.ac.ebi.biosamples.ncbi;
 
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -23,7 +20,6 @@ import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
@@ -41,7 +37,7 @@ public class NcbiElementCallableTest {
 
     @Before
     public void setup() throws Exception {
-        Element sampleSet = testUtils.readNcbiBiosampleSetFromFile("two_organism_ncbi_sample.xml");
+        Element sampleSet = testUtils.readNcbiBiosampleSetElementFromFile("two_organism_ncbi_sample.xml");
         sample = XmlPathBuilder.of(sampleSet).path("BioSample").element();
 
     }
