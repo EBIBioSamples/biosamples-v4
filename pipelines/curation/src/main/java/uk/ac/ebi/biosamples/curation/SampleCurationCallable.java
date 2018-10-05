@@ -276,11 +276,12 @@ public class SampleCurationCallable implements Callable<Void> {
                 || lcval.equals("decimaldegree")) {
             return "decimal degree";
         } else if (lcval.equals("celcius") || lcval.equals("degree celcius") || lcval.equals("degrees celcius")
-                || lcval.equals("degreecelcius") || lcval.equals("centigrade") || lcval.equals("degree centigrade")
+                || lcval.equals("degreecelcius") || lcval.equals("degree celsius") || lcval.equals("degrees celsius")
+                || lcval.equals("degreecelsius") || lcval.equals("centigrade") || lcval.equals("degree centigrade")
                 || lcval.equals("degrees centigrade") || lcval.equals("degreecentigrade") || lcval.equals("c")
                 || lcval.equals("??c") || lcval.equals("degree c") || lcval.equals("internationaltemperaturescale1990")
                 || lcval.equals("iternationaltemperaturescale1990")) {
-            return "Celcius";
+            return "Celsius";
         } else {
             // no change
             return unit;
