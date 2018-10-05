@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.model.structured;
+package uk.ac.ebi.biosamples.model.structured.amr;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -13,40 +13,45 @@ import java.util.Objects;
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class AMREntry implements Comparable<AMREntry>{
 
-    private final String antibiotic;
+    private final String antibioticName;
     private final String resistancePhenotype;
     private final String measurementSign;
     private final String measurementValue;
     private final String measurementUnits;
     private final String vendor;
     private final String laboratoryTypingMethod;
-    private final String laboratoryTypingPlatform;
+    private final String platform;
     private final String laboratoryTypingMethodVersionOrReagent;
-    private final String testingStandard;
+    private final String astStandard;
     private final String dstMedia;
     private final String dstMethod;
     private final String criticalConcentration;
+    private final String species;
+
+    private final String breakpointVersion;
 
 
-    private AMREntry(String antibiotic, String resistancePhenotype, String measurementSign, String measurementValue, String measurementUnits, String vendor, String laboratoryTypingMethod, String laboratoryTypingPlatform, String laboratoryTypingMethodVersionOrReagent, String testingStandard, String dstMedia, String dstMethod, String criticalConcentration) {
-        this.antibiotic = antibiotic;
+    private AMREntry(String antibioticName, String resistancePhenotype, String measurementSign, String measurementValue, String measurementUnits, String vendor, String laboratoryTypingMethod, String platform, String laboratoryTypingMethodVersionOrReagent, String astStandard, String dstMedia, String dstMethod, String criticalConcentration, String species, String breakpointVersion) {
+        this.antibioticName = antibioticName;
         this.resistancePhenotype = resistancePhenotype;
         this.measurementSign = measurementSign;
         this.measurementValue = measurementValue;
         this.measurementUnits = measurementUnits;
         this.vendor = vendor;
         this.laboratoryTypingMethod = laboratoryTypingMethod;
-        this.laboratoryTypingPlatform = laboratoryTypingPlatform;
+        this.platform = platform;
         this.laboratoryTypingMethodVersionOrReagent = laboratoryTypingMethodVersionOrReagent;
-        this.testingStandard = testingStandard;
+        this.astStandard = astStandard;
         this.dstMedia = dstMedia;
         this.dstMethod = dstMethod;
         this.criticalConcentration = criticalConcentration;
+        this.species = (species != null) ? species : "";
+        this.breakpointVersion = breakpointVersion;
     }
 
 
-    public String getAntibiotic() {
-        return antibiotic;
+    public String getAntibioticName() {
+        return antibioticName;
     }
 
     public String getResistancePhenotype() {
@@ -74,16 +79,16 @@ public class AMREntry implements Comparable<AMREntry>{
         return laboratoryTypingMethod;
     }
 
-    public String getLaboratoryTypingPlatform() {
-        return laboratoryTypingPlatform;
+    public String getPlatform() {
+        return platform;
     }
 
     public String getLaboratoryTypingMethodVersionOrReagent() {
         return laboratoryTypingMethodVersionOrReagent;
     }
 
-    public String getTestingStandard() {
-        return testingStandard;
+    public String getAstStandard() {
+        return astStandard;
     }
 
     public String getDstMedia() {
@@ -98,7 +103,15 @@ public class AMREntry implements Comparable<AMREntry>{
         return criticalConcentration;
     }
 
-    @Override
+    public String getSpecies() {
+        return species;
+    }
+
+    public String getBreakpointVersion() {
+        return breakpointVersion;
+    }
+
+
     public int compareTo(AMREntry other) {
         if (other == null) {
             return 1;
@@ -106,7 +119,7 @@ public class AMREntry implements Comparable<AMREntry>{
 
 
 
-        int comparison = nullSafeStringComparison(this.antibiotic, other.antibiotic);
+        int comparison = nullSafeStringComparison(this.antibioticName, other.antibioticName);
         if (comparison != 0) {
             return comparison;
         }
@@ -136,7 +149,7 @@ public class AMREntry implements Comparable<AMREntry>{
             return comparison;
         }
 
-        comparison = nullSafeStringComparison(this.laboratoryTypingPlatform, other.laboratoryTypingPlatform);
+        comparison = nullSafeStringComparison(this.platform, other.platform);
         if (comparison != 0) {
             return comparison;
         }
@@ -152,11 +165,20 @@ public class AMREntry implements Comparable<AMREntry>{
 
         comparison = nullSafeStringComparison(this.dstMedia, other.dstMedia);
         if (comparison != 0) {
-
+            return comparison;
         }
 
+        comparison = nullSafeStringComparison(this.species, other.species);
+        if (comparison != 0) {
+            return comparison;
+        }
 
-        return nullSafeStringComparison(this.testingStandard, other.testingStandard);
+        comparison = nullSafeStringComparison(this.breakpointVersion, other.breakpointVersion);
+        if (comparison != 0) {
+            return comparison;
+        }
+
+        return nullSafeStringComparison(this.astStandard, other.astStandard);
     }
 
     private int nullSafeStringComparison(String one, String two) {
@@ -180,48 +202,53 @@ public class AMREntry implements Comparable<AMREntry>{
         if (!(o instanceof AMREntry)) return false;
         AMREntry amrEntry = (AMREntry) o;
         return Objects.equals(getMeasurementValue(), amrEntry.getMeasurementValue()) &&
-                Objects.equals(getAntibiotic(), amrEntry.getAntibiotic()) &&
+                Objects.equals(getAntibioticName(), amrEntry.getAntibioticName()) &&
                 Objects.equals(getResistancePhenotype(), amrEntry.getResistancePhenotype()) &&
                 Objects.equals(getMeasurementSign(), amrEntry.getMeasurementSign()) &&
                 Objects.equals(getMeasurementUnits(), amrEntry.getMeasurementUnits()) &&
                 Objects.equals(getVendor(), amrEntry.getVendor()) &&
                 Objects.equals(getLaboratoryTypingMethod(), amrEntry.getLaboratoryTypingMethod()) &&
-                Objects.equals(getLaboratoryTypingPlatform(), amrEntry.getLaboratoryTypingPlatform()) &&
+                Objects.equals(getPlatform(), amrEntry.getPlatform()) &&
                 Objects.equals(getLaboratoryTypingMethodVersionOrReagent(), amrEntry.getLaboratoryTypingMethodVersionOrReagent()) &&
-                Objects.equals(getTestingStandard(), amrEntry.getTestingStandard()) &&
+                Objects.equals(getAstStandard(), amrEntry.getAstStandard()) &&
                 Objects.equals(getDstMedia(), amrEntry.getDstMedia()) &&
                 Objects.equals(getDstMethod(), amrEntry.getDstMethod()) &&
-                Objects.equals(getCriticalConcentration(), amrEntry.getCriticalConcentration());
+                Objects.equals(getCriticalConcentration(), amrEntry.getCriticalConcentration()) &&
+                Objects.equals(getSpecies(), amrEntry.getSpecies()) &&
+                Objects.equals(getBreakpointVersion(), amrEntry.getBreakpointVersion());
+
     }
 
     @Override
     public int hashCode() {
 
-        return Objects.hash(getAntibiotic(), getResistancePhenotype(), getMeasurementSign(), getMeasurementValue(), getMeasurementUnits(), getVendor(), getLaboratoryTypingMethod(), getTestingStandard());
+        return Objects.hash(getAntibioticName(), getResistancePhenotype(), getMeasurementSign(), getMeasurementValue(), getMeasurementUnits(), getVendor(), getLaboratoryTypingMethod(), getAstStandard(), getDstMedia(), getDstMethod(), getCriticalConcentration(), getSpecies(), getBreakpointVersion());
     }
 
     @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
     public static class Builder {
-        private String antibiotic;
+        private String antibioticName;
         private String resistancePhenotype;
         private String measurementSign;
         private String measurementValue;
         private String measurementUnits;
         private String vendor;
         private String laboratoryTypingMethod;
-        private String laboratoryTypingPlatform = "";
+        private String platform = "";
         private String laboratoryTypingMethodVersionOrReagent = "";
-        private String testingStandard;
+        private String astStandard;
         private String dstMedia;
         private String dstMethod;
         private String criticalConcentration;
+        private String species;
+        private String breakpointVersion;
 
         @JsonCreator
         public Builder() { }
 
         @JsonProperty
-        public Builder withAntibiotic(String antibiotic) {
-            this.antibiotic = antibiotic;
+        public Builder withAntibioticName(String antibiotic) {
+            this.antibioticName = antibiotic;
             return this;
         }
 
@@ -270,8 +297,8 @@ public class AMREntry implements Comparable<AMREntry>{
         }
 
         @JsonProperty
-        public Builder withLaboratoryTypingPlatform(String laboratoryTypingPlatform) {
-            this.laboratoryTypingPlatform = laboratoryTypingPlatform;
+        public Builder withPlatform(String laboratoryTypingPlatform) {
+            this.platform = laboratoryTypingPlatform;
             return this;
         }
 
@@ -282,8 +309,8 @@ public class AMREntry implements Comparable<AMREntry>{
         }
 
         @JsonProperty
-        public Builder withTestingStandard(String standard) {
-            this.testingStandard = standard;
+        public Builder withAstStandard(String standard) {
+            this.astStandard = standard;
             return this;
         }
 
@@ -298,15 +325,28 @@ public class AMREntry implements Comparable<AMREntry>{
             this.dstMethod = method;
             return this;
         }
+
         @JsonProperty
         public Builder withCriticalConcentration(String concentration) {
             this.criticalConcentration = concentration;
             return this;
         }
 
+        @JsonProperty
+        public Builder withSpecies(String species) {
+            this.species = species;
+            return this;
+        }
+
+        @JsonProperty
+        public Builder withBreakpointVersion(String breakpointVersion) {
+            this.breakpointVersion = breakpointVersion;
+            return this;
+        }
+
         public AMREntry build() {
-//            if (this.antibiotic == null || this.antibiotic.isEmpty()) {
-//                throw AMREntryBuldingException.createForMissingField("antibiotic");
+//            if (this.antibioticName == null || this.antibioticName.isEmpty()) {
+//                throw AMREntryBuldingException.createForMissingField("antibioticName");
 //            }
 //
 //            if (this.resistancePhenotype == null || this.resistancePhenotype.isEmpty()) {
@@ -331,15 +371,15 @@ public class AMREntry implements Comparable<AMREntry>{
 //                throw AMREntryBuldingException.createForMissingField("laboratory typing method");
 //            }
 //
-//            if (this.testingStandard == null || this.testingStandard.isEmpty()) {
+//            if (this.astStandard == null || this.astStandard.isEmpty()) {
 //                throw AMREntryBuldingException.createForMissingField("testing standard");
 //            }
 
 
-            return new AMREntry(this.antibiotic, this.resistancePhenotype, this.measurementSign, this.measurementValue,
-                    this.measurementUnits, this.vendor, this.laboratoryTypingMethod, this.laboratoryTypingPlatform,
-                    this.laboratoryTypingMethodVersionOrReagent, this.testingStandard,
-                    this.dstMedia, this.dstMethod, this.criticalConcentration);
+            return new AMREntry(this.antibioticName, this.resistancePhenotype, this.measurementSign, this.measurementValue,
+                    this.measurementUnits, this.vendor, this.laboratoryTypingMethod, this.platform,
+                    this.laboratoryTypingMethodVersionOrReagent, this.astStandard,
+                    this.dstMedia, this.dstMethod, this.criticalConcentration, this.species, this.breakpointVersion);
         }
 
     }

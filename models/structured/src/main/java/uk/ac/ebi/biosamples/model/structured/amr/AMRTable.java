@@ -1,9 +1,11 @@
-package uk.ac.ebi.biosamples.model.structured;
+package uk.ac.ebi.biosamples.model.structured.amr;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import uk.ac.ebi.biosamples.model.structured.AbstractData;
+import uk.ac.ebi.biosamples.model.structured.DataType;
 
 import java.net.URI;
 import java.util.*;

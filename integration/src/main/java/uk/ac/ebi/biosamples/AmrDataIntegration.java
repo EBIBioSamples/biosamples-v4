@@ -1,41 +1,27 @@
 package uk.ac.ebi.biosamples;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.dom4j.Document;
-import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.hateoas.Resource;
-import org.springframework.http.MediaType;
-import org.springframework.http.RequestEntity;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StreamUtils;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.structured.AMREntry;
-import uk.ac.ebi.biosamples.model.structured.AMRTable;
+import uk.ac.ebi.biosamples.model.structured.amr.AMREntry;
+import uk.ac.ebi.biosamples.model.structured.amr.AMRTable;
 import uk.ac.ebi.biosamples.model.structured.DataType;
 import uk.ac.ebi.biosamples.utils.TestUtilities;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.Optional;
-import java.util.Scanner;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.hamcrest.Matchers.*;
 
 @Component
 public class AmrDataIntegration extends AbstractIntegration {
@@ -92,12 +78,12 @@ public class AmrDataIntegration extends AbstractIntegration {
 
         // Assert there are only 2 entries with missing testing standard
         assertEquals(amrTable.getStructuredData().parallelStream()
-                .filter(entry -> entry.getTestingStandard().equalsIgnoreCase("missing"))
+                .filter(entry -> entry.getAstStandard().equalsIgnoreCase("missing"))
                 .collect(Collectors.toList()).size(), 2);
 
         log.info("Verifying AMREntry for ciprofloxacin is found and has certain values");
         Optional<AMREntry> optionalAmrEntry = amrTable.getStructuredData().parallelStream()
-                .filter(entry -> entry.getAntibiotic().equalsIgnoreCase("ciprofloxacin"))
+                .filter(entry -> entry.getAntibioticName().equalsIgnoreCase("ciprofloxacin"))
                 .findFirst();
         if (!optionalAmrEntry.isPresent()) {
             throw new RuntimeException("AMRentry for antibiotic ciprofloxacin should be present but is not");
@@ -109,10 +95,10 @@ public class AmrDataIntegration extends AbstractIntegration {
         assertEquals(ciprofloxacin.getMeasurementValue(), "0.015");
         assertEquals(ciprofloxacin.getMeasurementUnits(), "mg/L");
         assertEquals(ciprofloxacin.getLaboratoryTypingMethod(), "MIC");
-        assertEquals(ciprofloxacin.getLaboratoryTypingPlatform(), "");
+        assertEquals(ciprofloxacin.getPlatform(), "");
         assertEquals(ciprofloxacin.getLaboratoryTypingMethodVersionOrReagent(), "96-Well Plate");
         assertEquals(ciprofloxacin.getVendor(), "Trek");
-        assertEquals(ciprofloxacin.getTestingStandard(), "CLSI");
+        assertEquals(ciprofloxacin.getAstStandard(), "CLSI");
 
     }
 

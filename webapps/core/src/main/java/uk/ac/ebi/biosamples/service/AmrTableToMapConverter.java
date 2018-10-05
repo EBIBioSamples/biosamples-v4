@@ -1,8 +1,8 @@
 package uk.ac.ebi.biosamples.service;
 
 import org.springframework.core.convert.converter.Converter;
-import uk.ac.ebi.biosamples.model.structured.AMREntry;
-import uk.ac.ebi.biosamples.model.structured.AMRTable;
+import uk.ac.ebi.biosamples.model.structured.amr.AMREntry;
+import uk.ac.ebi.biosamples.model.structured.amr.AMRTable;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

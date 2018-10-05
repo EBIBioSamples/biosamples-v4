@@ -2,8 +2,8 @@ package uk.ac.ebi.biosamples.ncbi.service;
 
 import org.dom4j.Element;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.model.structured.AMREntry;
-import uk.ac.ebi.biosamples.model.structured.AMRTable;
+import uk.ac.ebi.biosamples.model.structured.amr.AMREntry;
+import uk.ac.ebi.biosamples.model.structured.amr.AMRTable;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
 import java.text.ParseException;
@@ -50,16 +50,16 @@ public class NcbiAmrConversionService {
 
         AMREntry.Builder amrEntryBuilder = new AMREntry.Builder();
 
-        getFieldIfAvailable(cells, fields, "Antibiotic").ifPresent(amrEntryBuilder::withAntibiotic);
+        getFieldIfAvailable(cells, fields, "Antibiotic").ifPresent(amrEntryBuilder::withAntibioticName);
         getFieldIfAvailable(cells, fields, "Resistance phenotype").ifPresent(amrEntryBuilder::withResistancePhenotype);
         getFieldIfAvailable(cells, fields, "Measurement sign").ifPresent(amrEntryBuilder::withMeasurementSign);
         getFieldIfAvailable(cells, fields, "Measurement").ifPresent(amrEntryBuilder::withMeasurementValue);
         getFieldIfAvailable(cells, fields, "Measurement units").ifPresent(amrEntryBuilder::withMeasurementUnits);
         getFieldIfAvailable(cells, fields, "Laboratory typing method").ifPresent(amrEntryBuilder::withLaboratoryTypingMethod);
-        getFieldIfAvailable(cells, fields, "Laboratory typing platform").ifPresent(amrEntryBuilder::withLaboratoryTypingPlatform);
+        getFieldIfAvailable(cells, fields, "Laboratory typing platform").ifPresent(amrEntryBuilder::withPlatform);
         getFieldIfAvailable(cells, fields, "Laboratory typing method version or reagent").ifPresent(amrEntryBuilder::withLaboratoryTypingMethodVersionOrReagent);
         getFieldIfAvailable(cells, fields, "Vendor").ifPresent(amrEntryBuilder::withVendor);
-        getFieldIfAvailable(cells, fields, "Testing standard").ifPresent(amrEntryBuilder::withTestingStandard);
+        getFieldIfAvailable(cells, fields, "Testing standard").ifPresent(amrEntryBuilder::withAstStandard);
 
         return amrEntryBuilder.build();
     }

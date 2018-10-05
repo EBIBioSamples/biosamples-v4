@@ -12,8 +12,8 @@ import org.springframework.boot.test.json.JacksonTester;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.biosamples.model.*;
-import uk.ac.ebi.biosamples.model.structured.AMREntry;
-import uk.ac.ebi.biosamples.model.structured.AMRTable;
+import uk.ac.ebi.biosamples.model.structured.amr.AMREntry;
+import uk.ac.ebi.biosamples.model.structured.amr.AMRTable;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.mongo.model.MongoExternalReference;
 import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
@@ -32,7 +32,7 @@ public class MongoSerializationTest {
 	private Logger log = LoggerFactory.getLogger(getClass());
 
 	private JacksonTester<MongoSample> json;
-	
+
     @Before
     public void setup() {
         ObjectMapper objectMapper = new ObjectMapper();
@@ -54,19 +54,19 @@ public class MongoSerializationTest {
 		Set<AbstractData> structuredData = new HashSet<>();
 		AMRTable amrTable = new AMRTable.Builder("http://test").
                 addEntry(new AMREntry.Builder()
-                        .withAntibiotic("ampicillin")
+                        .withAntibioticName("ampicillin")
                         .withResistancePhenotype("susceptible")
 						.withMeasure("==", "2", "mg/L")
 						.withVendor("in-house")
 						.withLaboratoryTypingMethod("MIC")
-						.withTestingStandard("CLSI")
+						.withAstStandard("CLSI")
 						.build()
 				).build();
 		structuredData.add(amrTable);
 
 		SortedSet<MongoRelationship> relationships = new TreeSet<>();
 		relationships.add(MongoRelationship.build("TEST1", "derived from", "TEST2"));
-		
+
 		SortedSet<MongoExternalReference> externalReferences = new TreeSet<>();
 		externalReferences.add(MongoExternalReference.build("http://www.google.com"));
 
@@ -98,7 +98,7 @@ public class MongoSerializationTest {
 				.pubmed_id("24265224")
 				.build());
 
-		return MongoSample.build(name, accession, "foozit", release, update, 
+		return MongoSample.build(name, accession, "foozit", release, update,
 				attributes, structuredData, relationships, externalReferences,
 				organizations, contacts, publications);
 	}
@@ -119,12 +119,12 @@ public class MongoSerializationTest {
 
         AMRTable amrTable = new AMRTable.Builder("http://test").
                 addEntry(new AMREntry.Builder()
-                        .withAntibiotic("ampicillin")
+                        .withAntibioticName("ampicillin")
                         .withResistancePhenotype("susceptible")
 						.withMeasure("==", "2", "mg/L")
 						.withVendor("in-house")
 						.withLaboratoryTypingMethod("MIC")
-						.withTestingStandard("CLSI")
+						.withAstStandard("CLSI")
 						.build()
 				).build();
 		data.add(amrTable);
@@ -151,7 +151,7 @@ public class MongoSerializationTest {
 		// Assert json contains data field
 		assertThat(this.json.write(details)).hasJsonPathArrayValue("@.data");
 		assertThat(this.json.write(details)).extractingJsonPathMapValue("@.data[0].content[0]").contains(
-				new AbstractMap.SimpleEntry<>("antibiotic", "ampicillin")
+				new AbstractMap.SimpleEntry<>("antibiotic_name", "ampicillin")
 		);
 
 	}
@@ -168,10 +168,10 @@ public class MongoSerializationTest {
 
 
 
-	
+
 	@Configuration
 	public static class TestConfig {
-		
+
 	}
 
 }

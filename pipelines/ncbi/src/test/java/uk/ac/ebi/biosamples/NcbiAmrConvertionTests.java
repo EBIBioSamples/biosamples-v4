@@ -4,8 +4,8 @@ import org.dom4j.Element;
 import org.junit.Before;
 import org.junit.Test;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.structured.AMREntry;
-import uk.ac.ebi.biosamples.model.structured.AMRTable;
+import uk.ac.ebi.biosamples.model.structured.amr.AMREntry;
+import uk.ac.ebi.biosamples.model.structured.amr.AMRTable;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.model.structured.DataType;
 import uk.ac.ebi.biosamples.ncbi.service.NcbiAmrConversionService;
@@ -53,16 +53,16 @@ public class NcbiAmrConvertionTests {
         AMRTable amrTable = (AMRTable) sampleToTest.getData().iterator().next();
         AMREntry amrEntry = amrTable.getStructuredData().iterator().next();
 
-        assertEquals(amrEntry.getAntibiotic(), "nalidixic acid");
+        assertEquals(amrEntry.getAntibioticName(), "nalidixic acid");
         assertEquals(amrEntry.getResistancePhenotype(), "intermediate");
         assertEquals(amrEntry.getMeasurementSign(), "==");
         assertEquals(amrEntry.getMeasurementValue(), "17");
         assertEquals(amrEntry.getMeasurementUnits(), "mm");
         assertEquals(amrEntry.getLaboratoryTypingMethod(), "disk diffusion");
-        assertEquals(amrEntry.getLaboratoryTypingPlatform(), "missing");
+        assertEquals(amrEntry.getPlatform(), "missing");
         assertEquals(amrEntry.getLaboratoryTypingMethodVersionOrReagent(), "missing");
         assertEquals(amrEntry.getVendor(), "Becton Dickinson");
-        assertEquals(amrEntry.getTestingStandard(), "CLSI");
+        assertEquals(amrEntry.getAstStandard(), "CLSI");
 
     }
 

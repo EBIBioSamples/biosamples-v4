@@ -2,11 +2,8 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>models-core</artifactId>
+	<artifactId>models-structured</artifactId>
 	<packaging>jar</packaging>
-	<properties>
-	<protobuf.version>3.5.1</protobuf.version>
-	</properties>
 
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
@@ -21,7 +18,7 @@
 			<artifactId>utils-xml</artifactId>
 			<version>${bsd2017.version}</version>
 		</dependency>
-
+		
 		<!-- need this for Jackson2ObjectMapperBuilder -->
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -53,12 +50,7 @@
 			<groupId>org.springframework.hateoas</groupId>
 			<artifactId>spring-hateoas</artifactId>
 		</dependency>
-		<dependency>
-            <groupId>uk.ac.ebi.biosamples</groupId>
-            <artifactId>models-structured</artifactId>
-            <version>4.1.6-SNAPSHOT</version>
-        </dependency>
-    </dependencies>
+	</dependencies>
 
 	<!-- lock transitive dependency version -->
 	<dependencyManagement>

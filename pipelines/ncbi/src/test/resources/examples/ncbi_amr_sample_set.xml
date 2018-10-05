@@ -440,7 +440,7 @@
             <Attribute attribute_name="lat_lon" display_name="latitude and longitude" harmonized_name="lat_lon">missing</Attribute>
             <Attribute attribute_name="num_replicons" display_name="number of replicons" harmonized_name="num_replicons">1</Attribute>
             <Attribute attribute_name="ref_biomaterial" display_name="reference for biomaterial" harmonized_name="ref_biomaterial">missing</Attribute>
-            <Attribute attribute_name="chem_administration" display_name="chemical administration" harmonized_name="chem_administration">macrolide antibiotic</Attribute>
+            <Attribute attribute_name="chem_administration" display_name="chemical administration" harmonized_name="chem_administration">macrolide antibioticName</Attribute>
             <Attribute attribute_name="estimated_size" display_name="estimated size" harmonized_name="estimated_size">2250000</Attribute>
             <Attribute attribute_name="health_state" display_name="health state" harmonized_name="health_state">alive</Attribute>
             <Attribute attribute_name="host_age" display_name="host age" harmonized_name="host_age">5-7 months</Attribute>
@@ -452,7 +452,7 @@
             <Attribute attribute_name="host_taxid" display_name="host taxonomy ID" harmonized_name="host_taxid">9913</Attribute>
             <Attribute attribute_name="host_tissue_sampled" display_name="host tissue sampled" harmonized_name="host_tissue_sampled">nasopharynx</Attribute>
             <Attribute attribute_name="misc_param" display_name="miscellaneous parameter" harmonized_name="misc_param">case animal, exhibited bovine respiratory disease sign during 29 day experiment on Day 22</Attribute>
-            <Attribute attribute_name="perturbation" display_name="perturbation" harmonized_name="perturbation">calf trailer transport from from USA:TN to USA:KS occurring between day 0 and day 1, macrolide antibiotic administered day 1 and 22</Attribute>
+            <Attribute attribute_name="perturbation" display_name="perturbation" harmonized_name="perturbation">calf trailer transport from from USA:TN to USA:KS occurring between day 0 and day 1, macrolide antibioticName administered day 1 and 22</Attribute>
             <Attribute attribute_name="samp_collect_device" display_name="sample collection device or method" harmonized_name="samp_collect_device">nasopharyngeal swab</Attribute>
             <Attribute attribute_name="samp_mat_process" display_name="sample material processing" harmonized_name="samp_mat_process">Swab samples from each nares were placed in 1 ml Amies transport medium, held at 4 C, and combined in lab to 2 ml.</Attribute>
             <Attribute attribute_name="samp_size" display_name="sample size" harmonized_name="samp_size">2 ml</Attribute>
