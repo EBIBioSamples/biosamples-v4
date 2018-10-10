@@ -9,6 +9,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * OLSDAtaRetriever is api class for working with EBI OLS. It fetchs specific (see methods of class) metadata for phenopackets.
@@ -19,6 +21,12 @@ import java.net.URLEncoder;
 public class OLSDataRetriever {
     private JsonNode node;
 
+    private final Map<String, String> ontologyPrefixMapping = new HashMap<>();
+
+    public OLSDataRetriever()
+    {
+        ontologyPrefixMapping.put("orphanet", "ordo");
+    }
     /**
      * Read json from OLS by iri provided in GA4GH sample
      * @param iri
@@ -39,6 +47,12 @@ public class OLSDataRetriever {
      * @param id
      */
     public void readResourceInfoFromUrl(String id) {
+
+        // Necessary for ontologies like orphanet, where the prefix is not orphanet but ordo
+        if (this.ontologyPrefixMapping.containsKey(id.toLowerCase())) {
+            id = ontologyPrefixMapping.get(id.toLowerCase());
+        }
+
         String linkToResourceInfo = null;
         //TODO move to application properties
         try {

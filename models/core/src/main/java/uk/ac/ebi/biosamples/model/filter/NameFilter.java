@@ -50,15 +50,15 @@ public class NameFilter implements Filter {
 
     public static class Builder implements Filter.Builder {
 
-        private String domain;
+        private String name;
 
-        public Builder(String domain) {
-            this.domain = domain;
+        public Builder(String name) {
+            this.name = name;
         }
 
         @Override
         public Filter build() {
-            return new NameFilter(this.domain);
+            return new NameFilter(this.name);
         }
 
         @Override

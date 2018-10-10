@@ -42,7 +42,7 @@ public class LegacyJsonMigrationRunner implements ApplicationRunner, ExitCodeGen
 		restTemplate = restTemplateBuilder.build();
 		legacyJSONConverter = legacyJsonConverter;
 	}
-	
+
 	@Override
 	public int getExitCode() {
 		return exitCode;
