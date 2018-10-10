@@ -33,7 +33,7 @@ public class SampleTabXmlSampleIntegration extends AbstractIntegration {
 	private final RestOperations restTemplate;
 
 	private final URI uri;
-	
+
 	public SampleTabXmlSampleIntegration(RestTemplateBuilder restTemplateBuilder, IntegrationProperties integrationProperties, BioSamplesClient client) {
         super(client);
 		this.restTemplate = restTemplateBuilder.build();
@@ -71,7 +71,7 @@ public class SampleTabXmlSampleIntegration extends AbstractIntegration {
 			log.info("PUTing to " + putUri);
 			RequestEntity<String> request = RequestEntity.put(putUri)
 					.contentType(MediaType.APPLICATION_XML)
-					.accept(MediaType.TEXT_PLAIN)					
+					.accept(MediaType.TEXT_PLAIN)
 					.body(sampleTabString);
 			ResponseEntity<String> response = null;
 			try {
@@ -89,7 +89,7 @@ public class SampleTabXmlSampleIntegration extends AbstractIntegration {
 			log.info("PUTing to " + putUriNcbi);
 			RequestEntity<String> request = RequestEntity.put(putUriNcbi)
 					.contentType(MediaType.APPLICATION_XML)
-					.accept(MediaType.TEXT_PLAIN)					
+					.accept(MediaType.TEXT_PLAIN)
 					.body(sampleTabString);
 			ResponseEntity<String> response = null;
 			try {
@@ -126,7 +126,7 @@ public class SampleTabXmlSampleIntegration extends AbstractIntegration {
 		log.info("POSTing to " + putUriNcbi);
 		RequestEntity<Void> request = RequestEntity.post(uriPostFoosiz)
 				//.contentType(MediaType.APPLICATION_XML)
-				.accept(MediaType.TEXT_PLAIN)					
+				.accept(MediaType.TEXT_PLAIN)
 				.build();
 		ResponseEntity<String> response = null;
 		try {
@@ -160,19 +160,19 @@ public class SampleTabXmlSampleIntegration extends AbstractIntegration {
 
 	@Override
 	protected void phaseThree() {
-		
+
 	}
 
 	@Override
 	protected void phaseFour() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	protected void phaseFive() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 

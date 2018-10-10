@@ -38,6 +38,7 @@ public class BigIntegration extends AbstractIntegration {
     private final BioSamplesProperties bioSamplesProperties;
 
     //must be over 1000
+    private final int firstInteger = 10000000;
     private final int noSamples = 5000;
 
     private static final int timeout = 100000;
@@ -68,17 +69,18 @@ public class BigIntegration extends AbstractIntegration {
     @Override
     protected void phaseOne() {
         List<Sample> samples = new ArrayList<>();
+
         //generate a root sample
-        Sample root = generateSample(0, Collections.emptyList(), null);
+        Sample root = generateSample(firstInteger, Collections.emptyList(), null);
         samples.add(root);
         //generate a large number of samples
         for (int i = 1; i < noSamples; i++) {
 
-            Sample sample = generateSample(i, Collections.emptyList(), root);
+            Sample sample = generateSample(firstInteger + i, Collections.emptyList(), root);
             samples.add(sample);
         }
         //generate one sample to rule them all
-        samples.add(generateSample(noSamples, samples, null));
+        samples.add(generateSample(firstInteger+noSamples, samples, null));
 
         //time how long it takes to submit them
 
@@ -103,7 +105,7 @@ public class BigIntegration extends AbstractIntegration {
         // time how long it takes to get the highly connected sample
 
         startTime = System.nanoTime();
-        client.fetchSample("SAMbig" + noSamples);
+        client.fetchSample("SAMEA" + (firstInteger + noSamples));
         endTime = System.nanoTime();
         elapsedMs = (int) ((endTime - startTime) / 1000000l);
         if (elapsedMs > timeout) {
@@ -112,7 +114,7 @@ public class BigIntegration extends AbstractIntegration {
         log.info("Took " + elapsedMs + "ms to fetch highly-connected sample SAMbig" + noSamples);
 
         startTime = System.nanoTime();
-        client.fetchSample("SAMbig" + 0);
+        client.fetchSample("SAMEA" + firstInteger);
         endTime = System.nanoTime();
         elapsedMs = (int) ((endTime - startTime) / 1000000l);
         if (elapsedMs > timeout) {
@@ -199,10 +201,10 @@ public class BigIntegration extends AbstractIntegration {
 
         SortedSet<Relationship> relationships = new TreeSet<>();
         for (Sample other : samples) {
-            relationships.add(Relationship.build("SAMbig" + i, "derived from", other.getAccession()));
+            relationships.add(Relationship.build("SAMEA" + i, "derived from", other.getAccession()));
         }
         if (root != null) {
-            relationships.add(Relationship.build("SAMbig" + i, "derived from", root.getAccession()));
+            relationships.add(Relationship.build("SAMEA" + i, "derived from", root.getAccession()));
         }
 
         Sample sample = new Sample.Builder("big sample " + i, "SAMbig" + i)

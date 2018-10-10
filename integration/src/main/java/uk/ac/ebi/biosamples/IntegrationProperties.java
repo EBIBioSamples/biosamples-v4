@@ -6,7 +6,7 @@ import java.net.URI;
 
 @Component
 public class IntegrationProperties {
-	
+
 	@Value("${biosamples.submissionuri.sampletab:http://localhost:8082}")
 	private URI biosampleSubmissionUriSampletab;
 
@@ -15,7 +15,7 @@ public class IntegrationProperties {
 
 	@Value("${biosamples.legacyjson.uri:http://localhost:8084}")
 	private URI biosamplesLegacyJSONUri;
-	
+
 	@Value("${biosamples.legacyapikey:#{null}}")
 	private String legacyApiKey;
 
@@ -26,7 +26,7 @@ public class IntegrationProperties {
 	public URI getBiosamplesLegacyXMLUri() {
 		return biosamplesLegacyXMLUri;
 	}
-	
+
 	public String getLegacyApiKey() {
 		return legacyApiKey;
 	}

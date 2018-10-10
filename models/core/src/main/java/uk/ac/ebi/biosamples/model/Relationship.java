@@ -10,12 +10,13 @@ public class Relationship implements Comparable<Relationship> {
 	private final String type;
 	private final String target;
 	private final String source;
-	
+
 	private Relationship(String type, String target, String source){
+
 		this.type = type;
 		this.target = target;
 		this.source = source;
-		
+
 	}
 
 	public String getType() {
@@ -38,16 +39,16 @@ public class Relationship implements Comparable<Relationship> {
             return false;
         }
         Relationship other = (Relationship) o;
-        return Objects.equals(this.type, other.type) 
+        return Objects.equals(this.type, other.type)
         		&& Objects.equals(this.target, other.target)
         		&& Objects.equals(this.source, other.source);
     }
-    
+
     @Override
     public int hashCode() {
     	return Objects.hash(type, target, source);
     }
-    
+
 	@Override
 	public int compareTo(Relationship other) {
 		if (other == null) {
@@ -85,15 +86,14 @@ public class Relationship implements Comparable<Relationship> {
     	sb.append(")");
     	return sb.toString();
     }
-    
+
     @JsonCreator
-    public static Relationship build(@JsonProperty("source") String source, 
+    public static Relationship build(@JsonProperty("source") String source,
     		@JsonProperty("type") String type,
     		@JsonProperty("target") String target) {
     	if (type == null || type.trim().length() == 0) throw new IllegalArgumentException("type cannot be empty");
     	if (target == null || target.trim().length() == 0) throw new IllegalArgumentException("target cannot be empty");
-    	Relationship rel = new Relationship(type, target, source);
-    	return rel;
+		return new Relationship(type, target, source);
     }
 
     public static class Builder {
