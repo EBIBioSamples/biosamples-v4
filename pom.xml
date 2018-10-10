@@ -6,6 +6,7 @@
 	<artifactId>biosamples</artifactId>
 	<version>4.1.6-SNAPSHOT</version>
 
+
 	<packaging>pom</packaging>
 
 	<parent>
@@ -189,3 +190,4 @@
 		</plugins>
 	</build>
 </project>
+
