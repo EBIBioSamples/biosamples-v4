@@ -68,8 +68,7 @@
 	</section>
 
 	<section th:fragment="externalReferences (externalReferences)">
-		<div th:unless="${#arrays.isEmpty(externalReferences)}"
-			 th:remove="tag">
+		<section th:unless="${#arrays.isEmpty(externalReferences)}">
 			<h3>External Links</h3>
 			<section th:each="externalReference : ${externalReferences}" >
 				<div class="small-1 columns">
@@ -79,7 +78,7 @@
 					<a th:href="${externalReference.url}" th:text="${@externalReferenceService.getNickname(externalReference)}"></a>
 				</div>
 			</section>
-		</div>
+        </section>
 	</section>
 
     <section th:fragment="publications (publications)">

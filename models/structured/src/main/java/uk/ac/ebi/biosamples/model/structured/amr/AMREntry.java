@@ -3,6 +3,7 @@ package uk.ac.ebi.biosamples.model.structured.amr;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -11,6 +12,20 @@ import java.util.Objects;
 
 @JsonDeserialize(builder = AMREntry.Builder.class)
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
+@JsonPropertyOrder({
+        "species",
+        "antibiotic_name",
+        "ast_standard",
+        "breakpoint_version",
+        "laboratory_typing_method",
+        "measurement_value",
+        "measurement_units",
+        "measurement_sign",
+        "resistance_phenotype",
+        "platform",
+        "vendor",
+        "laboratory_typing_method_version_or_reagent"
+})
 public class AMREntry implements Comparable<AMREntry>{
 
     private final String antibioticName;
@@ -27,7 +42,6 @@ public class AMREntry implements Comparable<AMREntry>{
     private final String dstMethod;
     private final String criticalConcentration;
     private final String species;
-
     private final String breakpointVersion;
 
 
