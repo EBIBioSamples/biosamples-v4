@@ -207,7 +207,7 @@ public class BigIntegration extends AbstractIntegration {
             relationships.add(Relationship.build("SAMEA" + i, "derived from", root.getAccession()));
         }
 
-        Sample sample = new Sample.Builder("big sample " + i, "SAMbig" + i)
+        Sample sample = new Sample.Builder("big sample " + i, "SAMEA" + i)
                 .withDomain(domain).withRelease(release).withUpdate(update)
                 .withAttributes(attributes).withRelationships(relationships).build();
 
