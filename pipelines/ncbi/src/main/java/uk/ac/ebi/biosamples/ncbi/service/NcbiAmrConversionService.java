@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 public class NcbiAmrConversionService {
 
 
-    public AMRTable convertElementToAmrTable(Element amrTableElement) throws AmrParsingException {
+    public AMRTable convertElementToAmrTable(Element amrTableElement, String organism) throws AmrParsingException {
             AMRTable.Builder amrTableBuilder = new AMRTable.Builder("test");
 
             List<String> fields = XmlPathBuilder.of(amrTableElement).path("Header").elements("Cell").stream()
@@ -23,7 +23,7 @@ public class NcbiAmrConversionService {
 
             for (Element tableRow: XmlPathBuilder.of(amrTableElement).path("Body").elements("Row")) {
 
-                AMREntry amrEntry = this.convertAmrEntry(tableRow, fields);
+                AMREntry amrEntry = this.convertAmrEntry(tableRow, fields, organism);
                 amrTableBuilder.addEntry(amrEntry);
             }
 
@@ -36,10 +36,11 @@ public class NcbiAmrConversionService {
      * Given a xml <Row> element correspondent to amr row, generate the AMR entry
      * @param amrRowElement the Row element
      * @param fields the corresponding headers from the table
+     * @param organism the organism associated with the AMR table
      * @return the AMR entry
      * @throws AmrParsingException
      */
-    private AMREntry convertAmrEntry(Element amrRowElement, List<String> fields) throws AmrParsingException {
+    private AMREntry convertAmrEntry(Element amrRowElement, List<String> fields, String organism) throws AmrParsingException {
 
         List<String> cells = XmlPathBuilder.of(amrRowElement).elements("Cell").stream()
                 .map(Element::getText).collect(Collectors.toList());
@@ -49,6 +50,7 @@ public class NcbiAmrConversionService {
         }
 
         AMREntry.Builder amrEntryBuilder = new AMREntry.Builder();
+        amrEntryBuilder.withSpecies(organism);
 
         getFieldIfAvailable(cells, fields, "Antibiotic").ifPresent(amrEntryBuilder::withAntibioticName);
         getFieldIfAvailable(cells, fields, "Resistance phenotype").ifPresent(amrEntryBuilder::withResistancePhenotype);

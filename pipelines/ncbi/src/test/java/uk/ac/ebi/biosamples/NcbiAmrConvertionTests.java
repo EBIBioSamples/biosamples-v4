@@ -70,11 +70,12 @@ public class NcbiAmrConvertionTests {
     public void it_extract_multiple_entries_from_a_table() throws NcbiAmrConversionService.AmrParsingException {
         Element sampleWithMultipleAmrEntries = getBioSampleFromAmrSampleSet("SAMN09492289");
         Element amrTableElement = XmlPathBuilder.of(sampleWithMultipleAmrEntries).path("Description", "Comment", "Table").element();
+        String organism = XmlPathBuilder.of(sampleWithMultipleAmrEntries).path("Description", "Organism", "OrganismName").text();
 
         AMRTable amrTable = null;
 
         try {
-            amrTable = amrConversionService.convertElementToAmrTable(amrTableElement);
+            amrTable = amrConversionService.convertElementToAmrTable(amrTableElement, organism);
         } catch (NcbiAmrConversionService.AmrParsingException e) {
             e.printStackTrace();
             throw e;

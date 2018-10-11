@@ -156,6 +156,9 @@ public class NcbiSampleConversionService {
                 }
             } else {
                 //its an attribute
+                if (key.equalsIgnoreCase("organism") && !hasOrganismInDescription) {
+                    organismValue = value;
+                }
                 attrs.add(Attribute.build(key, value));
             }
         }
@@ -200,7 +203,7 @@ public class NcbiSampleConversionService {
                 if (antibiogramClass != null && antibiogramClass.matches("^Antibiogram.*")) {
                     // AMR table found
                     try {
-                        AMRTable amrTable = amrConversionService.convertElementToAmrTable(element);
+                        AMRTable amrTable = amrConversionService.convertElementToAmrTable(element, organismValue);
                         structuredData.add(amrTable);
                     } catch (NcbiAmrConversionService.AmrParsingException ex) {
                         log.error("An error occurred while parsing AMR table", ex);
