@@ -24,7 +24,10 @@ import java.util.Objects;
         "resistance_phenotype",
         "platform",
         "vendor",
-        "laboratory_typing_method_version_or_reagent"
+        "laboratory_typing_method_version_or_reagent",
+        "dst_media",
+        "dst_method",
+        "critical_concentration"
 })
 public class AMREntry implements Comparable<AMREntry>{
 

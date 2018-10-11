@@ -302,7 +302,12 @@ public class SamplesRestController {
 			sample = sampleManipulationService.removeLegacyFields(sample);
 		}
 
-//			//TODO reanable the validation once the AMR schema is defined and we have the actual validator in place
+		if(!bioSamplesAapService.isWriteSuperUser()) {
+			// Clean the data if not a super user
+		    sample = Sample.Builder.fromSample(sample).withNoData().build();
+		}
+
+			//TODO reanable the validation once the AMR schema is defined and we have the actual validator in place
 //		if (!sample.getData().isEmpty()) {
 //			Optional<ResponseEntity<String>> optionalInvalidResponse = sample.getData()
 //					.parallelStream()
