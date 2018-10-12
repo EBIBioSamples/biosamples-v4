@@ -1,5 +1,16 @@
 package uk.ac.ebi.biosamples.mongo.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Scheduled;
+import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
+import uk.ac.ebi.biosamples.mongo.model.MongoSample;
+import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
+
+import javax.annotation.PostConstruct;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.SortedSet;
@@ -8,20 +19,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Stream;
 
-import javax.annotation.PostConstruct;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Scheduled;
-
 //this needs to be the spring exception, not the mongo one
-import org.springframework.dao.DuplicateKeyException;
-import org.springframework.data.domain.Sort;
-
-import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
-import uk.ac.ebi.biosamples.mongo.model.MongoSample;
-import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 
 
 public class MongoAccessionService {
@@ -93,7 +91,7 @@ public class MongoAccessionService {
 		}
 		sample = MongoSample.build(sample.getName(), accession, sample.getDomain(),
 				sample.getRelease(), sample.getUpdate(), 
-				sample.getAttributes(), newRelationships, sample.getExternalReferences(), 
+				sample.getAttributes(), sample.getData(), newRelationships, sample.getExternalReferences(),
 				sample.getOrganizations(), sample.getContacts(), sample.getPublications());
 		return sample;
 	}

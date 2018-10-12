@@ -473,9 +473,10 @@ public class SampleTabService {
 					relationships.add(Relationship.build(sample.getAccession(), "has member", sampleNode.getSampleAccession()));
 				}
 			}
-			sample = Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(),
-					sample.getRelease(), sample.getUpdate(), sample.getAttributes(), relationships, sample.getExternalReferences(),
-					sample.getOrganizations(), sample.getContacts(), sample.getPublications());
+//			sample = Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(),
+//					sample.getRelease(), sample.getUpdate(), sample.getAttributes(), relationships, sample.getExternalReferences(),
+//					sample.getOrganizations(), sample.getContacts(), sample.getPublications());
+            sample = Sample.Builder.fromSample(sample).withRelationships(relationships).build();
 
 			sample = bioSamplesClient.persistSampleResource(sample, setUpdateDate, true).getContent();
 			if (groupNode.getGroupAccession() == null) {
@@ -525,9 +526,14 @@ public class SampleTabService {
 		if (msi.submissionTitle != null && msi.submissionTitle.trim().length() > 0) {
 			attributes.add(Attribute.build("Submission title", msi.submissionTitle));
 		}
-		Sample sample = Sample.build(name, accession, domain, release, update,
-				attributes, relationships, externalReferences,
-				organizations, contacts, publications);
+//		Sample sample = Sample.build(name, accession, domain, release, update,
+//				attributes, relationships, externalReferences,
+//				organizations, contacts, publications);
+        Sample sample = new Sample.Builder(name, accession).withDomain(domain)
+				.withRelease(release).withUpdate(update)
+				.withAttributes(attributes).withRelationships(relationships).withExternalReferences(externalReferences)
+				.withOrganizations(organizations).withContacts(contacts).withPublications(publications)
+				.build();
 
 		return sample;
 	}
@@ -575,10 +581,16 @@ public class SampleTabService {
 			attributes.add(Attribute.build("Submission title", msi.submissionTitle));
 		}
 
-		Sample sample = Sample.build(name, accession, domain, release, update,
-				attributes, relationships, externalReferences,
-				organizations, contacts, publications);
-		return sample;
+
+//		Sample sample = Sample.build(name, accession, domain, release, update,
+//				attributes, relationships, externalReferences,
+//				organizations, contacts, publications);
+//		return sample;
+        return new Sample.Builder(name, accession).withDomain(domain)
+				.withRelease(release).withUpdate(update)
+				.withAttributes(attributes).withRelationships(relationships).withExternalReferences(externalReferences)
+				.withOrganizations(organizations).withContacts(contacts).withPublications(publications)
+				.build();
 	}
 
 	private SortedSet<ExternalReference> getExternalReferencesFromSampleNode(SampleNode sampleNode) {

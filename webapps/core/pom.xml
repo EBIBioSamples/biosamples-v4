@@ -157,12 +157,18 @@
 			<version>2.3.0</version>
 			<scope>runtime</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.jsoup</groupId>
-			<artifactId>jsoup</artifactId>
-			<version>1.8.3</version>
-		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>1.8.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-test</artifactId>
+            <version>1.4.0.RELEASE</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 	<build>
 		<plugins>
 			<plugin>
@@ -204,25 +210,25 @@
 					</attributes>
 				</configuration>
 			</plugin>
-			<plugin>
-				<groupId>com.github.joelittlejohn.embedmongo</groupId>
-				<artifactId>embedmongo-maven-plugin</artifactId>
-				<version>0.3.5</version>
-				<executions>
-					<execution>
-						<id>start</id>
-						<goals>
-							<goal>start</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>stop</id>
-						<goals>
-							<goal>stop</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
+			<!--<plugin>-->
+				<!--<groupId>com.github.joelittlejohn.embedmongo</groupId>-->
+				<!--<artifactId>embedmongo-maven-plugin</artifactId>-->
+				<!--<version>0.3.5</version>-->
+				<!--<executions>-->
+					<!--<execution>-->
+						<!--<id>start</id>-->
+						<!--<goals>-->
+							<!--<goal>start</goal>-->
+						<!--</goals>-->
+					<!--</execution>-->
+					<!--<execution>-->
+						<!--<id>stop</id>-->
+						<!--<goals>-->
+							<!--<goal>stop</goal>-->
+						<!--</goals>-->
+					<!--</execution>-->
+				<!--</executions>-->
+			<!--</plugin>-->
 		</plugins>
 	</build>
 </project>

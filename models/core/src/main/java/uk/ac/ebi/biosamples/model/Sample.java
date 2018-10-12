@@ -4,10 +4,21 @@ package uk.ac.ebi.biosamples.model;
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.service.CharacteristicDeserializer;
 import uk.ac.ebi.biosamples.service.CharacteristicSerializer;
 import uk.ac.ebi.biosamples.service.CustomInstantDeserializer;
 import uk.ac.ebi.biosamples.service.CustomInstantSerializer;
+import uk.ac.ebi.biosamples.service.structured.AbstractDataDeserializer;
+
+import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.TemporalAccessor;
+import java.util.*;
+
+import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
+import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
@@ -35,9 +46,10 @@ public class Sample implements Comparable<Sample> {
     protected Instant release;
     protected Instant update;
 
-    protected SortedSet<Attribute> attributes;
-    protected SortedSet<Relationship> relationships;
-    protected SortedSet<ExternalReference> externalReferences;
+	protected SortedSet<Attribute> attributes;
+	protected SortedSet<AbstractData> data;
+	protected SortedSet<Relationship> relationships;
+	protected SortedSet<ExternalReference> externalReferences;
 
     protected SortedSet<Organization> organizations;
     protected SortedSet<Contact> contacts;
@@ -137,10 +149,15 @@ public class Sample implements Comparable<Sample> {
         return attributes;
     }
 
-    @JsonProperty("relationships")
-    public SortedSet<Relationship> getRelationships() {
-        return relationships;
-    }
+	@JsonProperty("data")
+	public SortedSet<AbstractData> getData() {
+		return data;
+	}
+
+	@JsonProperty("relationships")
+	public SortedSet<Relationship> getRelationships() {
+		return relationships;
+	}
 
     @JsonProperty("externalReferences")
     public SortedSet<ExternalReference> getExternalReferences() {
@@ -175,15 +192,16 @@ public class Sample implements Comparable<Sample> {
         //dont use update date for comparisons, too volatile
 
         return Objects.equals(this.name, other.name)
-                && Objects.equals(this.accession, other.accession)
-                && Objects.equals(this.domain, other.domain)
-                && Objects.equals(this.release, other.release)
-                && Objects.equals(this.attributes, other.attributes)
-                && Objects.equals(this.relationships, other.relationships)
-                && Objects.equals(this.externalReferences, other.externalReferences)
-                && Objects.equals(this.organizations, other.organizations)
-                && Objects.equals(this.contacts, other.contacts)
-                && Objects.equals(this.publications, other.publications);
+        		&& Objects.equals(this.accession, other.accession)
+        		&& Objects.equals(this.domain, other.domain)
+        		&& Objects.equals(this.release, other.release)
+        		&& Objects.equals(this.attributes, other.attributes)
+				&& Objects.equals(this.data, other.data)
+        		&& Objects.equals(this.relationships, other.relationships)
+        		&& Objects.equals(this.externalReferences, other.externalReferences)
+        		&& Objects.equals(this.organizations, other.organizations)
+        		&& Objects.equals(this.contacts, other.contacts)
+        		&& Objects.equals(this.publications, other.publications);
     }
 
     @Override
@@ -294,7 +312,7 @@ public class Sample implements Comparable<Sample> {
     @Override
     public int hashCode() {
         //dont put update date in the hash because its not in comparison
-        return Objects.hash(name, accession, release, attributes, relationships, externalReferences, organizations, publications);
+        return Objects.hash(name, accession, release, attributes, data, relationships, externalReferences, organizations, publications);
     }
 
     @Override
@@ -326,49 +344,51 @@ public class Sample implements Comparable<Sample> {
         return sb.toString();
     }
 
-    public static Sample build(String name,
-                               String accession,
-                               String domain,
-                               Instant release,
-                               Instant update,
-                               Set<Attribute> attributes,
-                               Set<Relationship> relationships,
-                               Set<ExternalReference> externalReferences) {
-        return build(name, accession, domain, release, update, attributes, relationships, externalReferences, null, null, null);
+	public static Sample build( String name,
+			String accession,
+			String domain,
+			Instant release,
+			Instant update,
+			Set<Attribute> attributes,
+			Set<Relationship> relationships,
+			Set<ExternalReference> externalReferences) {
+    	return build(name, accession, domain, release, update, attributes, null, relationships, externalReferences, null, null, null);
     }
 
     //Used for deserializtion (JSON -> Java)
     @JsonCreator
-    public static Sample build(@JsonProperty("name") String name,
-                               @JsonProperty("accession") String accession,
-                               @JsonProperty("domain") String domain,
-                               @JsonProperty("release") @JsonDeserialize(using = CustomInstantDeserializer.class) Instant release,
-                               @JsonProperty("update") @JsonDeserialize(using = CustomInstantDeserializer.class) Instant update,
-                               @JsonProperty("characteristics") @JsonDeserialize(using = CharacteristicDeserializer.class) Collection<Attribute> attributes,
-                               @JsonProperty("relationships") Collection<Relationship> relationships,
-                               @JsonProperty("externalReferences") Collection<ExternalReference> externalReferences,
-                               @JsonProperty("organization") Collection<Organization> organizations,
-                               @JsonProperty("contact") Collection<Contact> contacts,
-                               @JsonProperty("publications") Collection<Publication> publications) {
+	public static Sample build(@JsonProperty("name") String name,
+			@JsonProperty("accession") String accession,
+			@JsonProperty("domain") String domain,
+			@JsonProperty("release") @JsonDeserialize(using = CustomInstantDeserializer.class) Instant release,
+			@JsonProperty("update") @JsonDeserialize(using = CustomInstantDeserializer.class) Instant update,
+			@JsonProperty("characteristics") @JsonDeserialize(using = CharacteristicDeserializer.class) Collection<Attribute> attributes,
+//			@JsonProperty("data") @JsonDeserialize(using = AbstractDataDeserializer.class) Collection<AbstractData> structuredData,
+            @JsonProperty("data") Collection<AbstractData> structuredData,
+			@JsonProperty("relationships") Collection<Relationship> relationships,
+			@JsonProperty("externalReferences") Collection<ExternalReference> externalReferences,
+			@JsonProperty("organization") Collection<Organization> organizations,
+			@JsonProperty("contact") Collection<Contact> contacts,
+			@JsonProperty("publications") Collection<Publication> publications ) {
 
-        Sample sample = new Sample();
+		Sample sample = new Sample();
 
-        if (accession != null) {
-            sample.accession = accession.trim();
-        }
+		if (accession != null) {
+			sample.accession = accession.trim();
+		}
 
-        if (name == null) throw new IllegalArgumentException("Sample name must be provided");
-        sample.name = name.trim();
+		if (name == null ) throw new IllegalArgumentException("Sample name must be provided");
+		sample.name = name.trim();
 
-        if (domain != null) {
-            sample.domain = domain.trim();
-        }
+		if (domain != null) {
+			sample.domain = domain.trim();
+		}
 
-        if (update == null) throw new IllegalArgumentException("Sample update must be provided");
-        sample.update = update;
+		if (update == null ) throw new IllegalArgumentException("Sample update must be provided");
+		sample.update = update;
 
-        if (release == null) throw new IllegalArgumentException("Sample release must be provided");
-        sample.release = release;
+		if (release == null ) throw new IllegalArgumentException("Sample release must be provided");
+		sample.release = release;
 
         sample.attributes = new TreeSet<>();
         if (attributes != null) {
@@ -400,8 +420,13 @@ public class Sample implements Comparable<Sample> {
             sample.publications.addAll(publications);
         }
 
-        return sample;
-    }
+		sample.data = new TreeSet<>();
+		if (structuredData != null) {
+			sample.data.addAll(structuredData);
+		}
+
+		return sample;
+	}
 
 
 	public static class Builder {
@@ -420,6 +445,7 @@ public class Sample implements Comparable<Sample> {
 		protected SortedSet<Organization> organizations = new TreeSet<>();
 		protected SortedSet<Contact> contacts = new TreeSet<>();
 		protected SortedSet<Publication> publications = new TreeSet<>();
+		protected Set<AbstractData> data = new TreeSet<>();
 
 		public Builder(String name, String accession) {
 			this.name = name;
@@ -480,8 +506,27 @@ public class Sample implements Comparable<Sample> {
 			return this;
 		}
 
+		/**
+		 * Replace builder structuredData with the provided structuredData collection
+		 * @param data
+		 * @return
+		 */
+		public Builder withData(Collection<AbstractData> data) {
+			this.data = new TreeSet<>(data);
+			return this;
+		}
 
-        /**
+		public Builder addData(AbstractData data) {
+			this.data.add(data);
+			return this;
+		}
+
+		public Builder addAllData(Collection<AbstractData> data) {
+			this.data.addAll(data);
+			return this;
+		}
+
+		/**
 		 * Replace builder's relationships with the provided relationships collection
 		 * @param relationships
 		 * @return
@@ -614,18 +659,27 @@ public class Sample implements Comparable<Sample> {
 			this.relationships = new TreeSet<>();
 			return this;
 		}
+
+		public Builder withNoData() {
+			this.data = new TreeSet<>();
+			return this;
+		}
+
 		public Builder withNoExternalReferences() {
 			this.externalReferences = new TreeSet<>();
 			return this;
 		}
+
 		public Builder withNoContacts() {
 			this.contacts = new TreeSet<>();
 			return this;
 		}
+
 		public Builder withNoOrganisations() {
 			this.organizations = new TreeSet<>();
 			return this;
 		}
+
 		public Builder withNoPublications() {
 			this.publications = new TreeSet<>();
 			return this;
@@ -633,7 +687,7 @@ public class Sample implements Comparable<Sample> {
 
 		public Sample build() {
 			return Sample.build(name, accession, domain, release, update,
-					attributes, relationships, externalReferences,
+					attributes, data, relationships, externalReferences,
 					organizations, contacts, publications);
 		}
 
@@ -659,7 +713,7 @@ public class Sample implements Comparable<Sample> {
 		public static Builder fromSample(Sample sample) {
 			return new Builder(sample.getName(), sample.getAccession()).withDomain(sample.getDomain())
 					.withRelease(sample.getRelease()).withUpdate(sample.getUpdate())
-					.withAttributes(sample.getAttributes())
+					.withAttributes(sample.getAttributes()).withData(sample.getData())
 					.withRelationships(sample.getRelationships()).withExternalReferences(sample.getExternalReferences())
 					.withOrganizations(sample.getOrganizations()).withPublications(sample.getPublications())
 					.withContacts(sample.getContacts());

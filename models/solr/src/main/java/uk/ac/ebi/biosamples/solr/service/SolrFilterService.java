@@ -18,23 +18,19 @@ import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.filter.AccessionFilter;
 import uk.ac.ebi.biosamples.model.filter.Filter;
-import uk.ac.ebi.biosamples.service.FacetToFilterConverter;
-import uk.ac.ebi.biosamples.solr.model.field.SolrFieldType;
 import uk.ac.ebi.biosamples.solr.model.field.SolrSampleField;
 
 @Service
 public class SolrFilterService {
 
     private final SolrFieldService solrFieldService;
-    private final FacetToFilterConverter facetFilterConverter;
     private final BioSamplesProperties bioSamplesProperties;
 
     private final DateTimeFormatter releaseFilterFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'23:59:59'Z'");
     
-    public SolrFilterService(SolrFieldService solrFieldService, FacetToFilterConverter facetFilterConverter, 
+    public SolrFilterService(SolrFieldService solrFieldService,
     		BioSamplesProperties bioSamplesProperties) {
         this.solrFieldService = solrFieldService;
-        this.facetFilterConverter = facetFilterConverter;
         this.bioSamplesProperties = bioSamplesProperties;
     }
 
@@ -46,19 +42,7 @@ public class SolrFilterService {
     public Optional<Criteria> getFilterCriteria(Filter filter) {
 
         //TODO rename to getFilterTargetField
-        SolrSampleField solrField = SolrFieldType.buildFromFilter(filter);
-//        String filterTargetField = solrFieldService.encodedField(filter.getLabel(), SolrFieldType.getFromFilterType(filter.getType()));
-//        Criteria filterCriteria;
-//        if (filter.getContent().isPresent()) {
-//            Object content = filter.getContent().get();
-//            if (filter instanceof DateRangeFilter) {
-//                filterCriteria = getDateRangeCriteriaOnField(filterTargetField, (DateRange) content);
-//            } else {
-//                filterCriteria = new Criteria(filterTargetField).is(content);
-//            }
-//        } else {
-//            filterCriteria = new Criteria(filterTargetField).isNotNull();
-//        }
+        SolrSampleField solrField = solrFieldService.getCompatibleField(filter);
         Criteria filterCriteria = solrField.getFilterCriteria(filter);
         return Optional.ofNullable(filterCriteria);
 

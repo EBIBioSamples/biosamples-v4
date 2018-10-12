@@ -28,5 +28,6 @@
 		<module>ga4gh</module>
 		<module>legacyxml</module>
 		<module>legacyjson</module>
+		<module>structured</module>
 	</modules>
 </project>

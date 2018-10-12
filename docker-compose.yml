@@ -57,7 +57,7 @@ services:
     - 8081:8080
     - 9090:9090
     - 8000:8000
-
+    
   biosamples-webapps-sampletab:
     image: biosamples:latest
     links:
@@ -97,7 +97,7 @@ services:
     - biosamples.webapp.core.uri=http://localhost:8081/biosamples
     ports:
     - 8082:8080
-
+  
   biosamples-webapps-legacyxml:
     image: biosamples:latest
     links:
@@ -339,6 +339,16 @@ services:
     #- BIOSAMPLES_CLIENT_AAP_USERNAME=override_in_docker-compose.override.yml
     #- BIOSAMPLES_CLIENT_AAP_PASSWORD=override_in_docker-compose.override.yml
     - BIOSAMPLES_LEGACYAPIKEY=fooqwerty
+
+  json-schema-validator:
+    volumes:
+    - logs:/logs
+    build: ./json-schema-validator
+    image: json-schema-validator:latest
+    links:
+    - biosamples-webapps-core
+    ports:
+    - 8085:3020
 
   mongo:
     image: mongo:3.2

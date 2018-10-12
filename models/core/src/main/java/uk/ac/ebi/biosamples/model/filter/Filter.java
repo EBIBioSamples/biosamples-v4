@@ -2,7 +2,6 @@ package uk.ac.ebi.biosamples.model.filter;
 
 import java.util.Optional;
 
-import uk.ac.ebi.biosamples.model.FacetFilterFieldType;
 import uk.ac.ebi.biosamples.model.facet.FacetType;
 
 public interface Filter {
@@ -32,9 +31,7 @@ public interface Filter {
      * Get the facet associated to the filter, if any is available
      * @return optional facet type
      */
-    public default Optional<FacetType> getAssociatedFacetType() {
-        return FacetFilterFieldType.getFacetForFilter(this.getType());
-    }
+    public FacetType getAssociatedFacetType();
 
     public interface Builder {
         public Filter build();

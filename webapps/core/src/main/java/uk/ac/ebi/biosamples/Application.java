@@ -20,6 +20,7 @@ import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.service.MongoAccessionService;
 import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
 import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
+import uk.ac.ebi.biosamples.service.AmrTableConverter;
 import uk.ac.ebi.biosamples.service.SampleAsXMLHttpMessageConverter;
 import uk.ac.ebi.biosamples.service.SampleToXmlConverter;
 
@@ -54,7 +55,7 @@ public class Application extends SpringBootServletInitializer {
     	ex.setQueueCapacity(2056);
     	return ex;
     }
-    
+
     @Bean
     public RepositoryDetectionStrategy repositoryDetectionStrategy() {
     	return RepositoryDetectionStrategy.RepositoryDetectionStrategies.ANNOTATED;
@@ -81,8 +82,13 @@ public class Application extends SpringBootServletInitializer {
     public MongoAccessionService mongoSampleAccessionService(MongoSampleRepository mongoSampleRepository, SampleToMongoSampleConverter sampleToMongoSampleConverter,
 			MongoSampleToSampleConverter mongoSampleToSampleConverter, MongoProperties mongoProperties) {
     	return new MongoAccessionService(mongoSampleRepository, sampleToMongoSampleConverter,
-    			mongoSampleToSampleConverter, mongoProperties.getAccessionPrefix(), 
+    			mongoSampleToSampleConverter, mongoProperties.getAccessionPrefix(),
     			mongoProperties.getAccessionMinimum(), mongoProperties.getAcessionQueueSize());
     }
+
+    @Bean
+    AmrTableConverter amrTableToMapConverter() {
+		return new AmrTableConverter();
+	}
 
 }

@@ -8,7 +8,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-import uk.ac.ebi.biosamples.model.FacetFilterFieldType;
 import uk.ac.ebi.biosamples.model.facet.content.FacetContent;
 import uk.ac.ebi.biosamples.model.filter.FilterType;
 
@@ -35,10 +34,13 @@ public interface Facet extends Comparable<Facet>{
 
     public FacetContent getContent();
 
+//    @JsonIgnore
+//    public default Optional<FilterType> getAssociatedFilterType() {
+//        return FacetFilterFieldType.getFilterForFacet(this.getType());
+//    }
+
     @JsonIgnore
-    public default Optional<FilterType> getAssociatedFilterType() {
-        return FacetFilterFieldType.getFilterForFacet(this.getType());
-    }
+    public Optional<FilterType> getAssociatedFilterType();
 
     /*
      * Builder interface to build Facets

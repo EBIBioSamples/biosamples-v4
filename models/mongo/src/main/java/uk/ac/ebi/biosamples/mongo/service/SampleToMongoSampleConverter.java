@@ -1,18 +1,17 @@
 package uk.ac.ebi.biosamples.mongo.service;
 
-import java.util.SortedSet;
-import java.util.TreeSet;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
-
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.mongo.model.MongoExternalReference;
 import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
+
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 @Service
 public class SampleToMongoSampleConverter implements Converter<Sample, MongoSample> {
@@ -42,7 +41,7 @@ public class SampleToMongoSampleConverter implements Converter<Sample, MongoSamp
 		
 		return MongoSample.build(sample.getName(), sample.getAccession(), sample.getDomain(), 
 				sample.getRelease(), sample.getUpdate(),
-				sample.getCharacteristics(), relationships, externalReferences, 
+				sample.getCharacteristics(), sample.getData(), relationships, externalReferences,
 				sample.getOrganizations(), sample.getContacts(), sample.getPublications());
 	}
 }
