@@ -7,6 +7,7 @@ This pages contains links to release notes for BioSamples for version 4.0.0 and 
 4.1.6
 ----
 
+* Addition of AMR structured data into BioSamples
 * Submission of samples with a relationship not targeting a valid accession now return an error
 * Fixed bug with Phenopacket export not able to extract medatada for Orphanet terms
 * Updated user interface to use the newer version of the EBI visual framework
