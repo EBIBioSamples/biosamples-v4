@@ -4,12 +4,22 @@
 This pages contains links to release notes for BioSamples for version 4.0.0 and higher. This release represents a comprehensive overhaul and therefore previous release notes are no longer applicable.
 
 [[section]]
+4.1.6
+----
+
+* Submission of samples with a relationship not targeting a valid accession now return an error
+* Fixed bug with Phenopacket export not able to extract medatada for Orphanet terms
+* Updated user interface to use the newer version of the EBI visual framework
+* Improved documentation navigation experience adopting a new menu style
+
+
+[[section]]
 4.1.5
 ----
 
 * Fixed bug that search failed when using a colon with a non-indexed field. e.g. taxon:9696
 * Added the BioSamples cookbook
-* Fixed issue where there are duplicate organism attributes with different cases
+* Fixed issue where there are duplicate organism attributes with different cases in a sample
 * Updated the error message in the SampleTab UI to take into account large submissions timeout
 
 
@@ -107,7 +117,7 @@ This is a bugfix release that addresses the following issues:
 This is a bugfix release that addresses the following issues:
 
 * Improved consistency of paged search results if any of the samples are added or modified whilst paging
-* Improved search update throughput by using Solr transaction log  
+* Improved search update throughput by using Solr transaction log
 * Updated JSON+LD format to the latest version
 * Correctly accept XML sample groups and their related samples
 * Fix issue related to search query terms not being applied to legacy XML and legacy JSON endpoints.
@@ -129,7 +139,7 @@ This is a bugfix release that addresses the following issues:
 * Removed residual test endpoints from legacy JSON API
 * Details relation in legacy JSON API now correctly resolves
 * Added informative and specific title to webpages
-* Added https://www.elixir-europe.org/platforms/data/elixir-deposition-databases[Elixir Deposition Database] banner 
+* Added https://www.elixir-europe.org/platforms/data/elixir-deposition-databases[Elixir Deposition Database] banner
 
 [[section]]
 4.0.3
@@ -139,8 +149,8 @@ This is a bugfix release that addresses the following issues:
 
 * Forward legacy group URLs /biosamples/groups/SAMEGxxxx to /biosamples/samples/SAMEGxxxxx
 * Missing or malformed update and release date on legacy XML group submission will default to current datetime. It is not recommended that users intentionally rely on this.
-* Index legacy XML group submissions, which was not happening due to an unexpected consequence of the interaction of components. 
-* Redirect /biosamples/sample and /biosamples/group URLs in case of typo 
+* Index legacy XML group submissions, which was not happening due to an unexpected consequence of the interaction of components.
+* Redirect /biosamples/sample and /biosamples/group URLs in case of typo
 
 [[section]]
 4.0.2
@@ -158,7 +168,7 @@ This is a bugfix release that addresses the following issues:
 
 This is a bugfix release that addresses the following issues:
 
-* Fix submission of new unaccessioned samples with relationships by inserting an assigned accession into the source of any relationships that are missing it. 
+* Fix submission of new unaccessioned samples with relationships by inserting an assigned accession into the source of any relationships that are missing it.
 * Fix curation pipeline of numeric organism iri to "http://purl.obolibrary.org/obo/NCBITaxon_+taxId" when it should be "http://purl.obolibrary.org/obo/NCBITaxon_"+taxId e.g. http://purl.obolibrary.org/obo/NCBITaxon_9606
 * Allow CORS requests for legacy XML APIs.
 * Updated homepage project sample links to use a filter search rather than a text search.
@@ -308,8 +318,8 @@ Acknowledgements
 This release has been made possible with the support of our funders:
 
 * EMBL-EBI Core Funds
-* EC -ELIXIR-EXCELERATE 
+* EC -ELIXIR-EXCELERATE
 * WT- HIPSCI
 * IMI - EBiSC
-* ELIXIR – Meta Data Implementation Study 
+* ELIXIR – Meta Data Implementation Study
 * WT-GA4GH
