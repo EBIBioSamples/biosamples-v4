@@ -512,7 +512,11 @@ public class Sample implements Comparable<Sample> {
 		 * @return
 		 */
 		public Builder withData(Collection<AbstractData> data) {
-			this.data = new TreeSet<>(data);
+		    if (data != null) {
+                this.data = new TreeSet<>(data);
+            } else {
+		        this.data = new TreeSet<>();
+            }
 			return this;
 		}
 
