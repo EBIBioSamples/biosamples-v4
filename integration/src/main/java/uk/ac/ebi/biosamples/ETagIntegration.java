@@ -20,6 +20,8 @@ import uk.ac.ebi.biosamples.model.Sample;
 
 import java.net.URI;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -69,6 +71,17 @@ public class ETagIntegration extends AbstractIntegration {
         if (!etag.equalsIgnoreCase(response.getHeaders().getETag())) {
             throw new RuntimeException("ETAG for the same object are not identical: " + etag + ", " + response.getHeaders().getETag());
         }
+
+        log.info("Verifying that using the ETAG in a conditional header will return 304 - Not modified");
+
+        RequestEntity.HeadersBuilder requestWithEtagHeader = prepareGetRequestBuilder(testSample);
+        RequestEntity etagRequestEntity = requestWithEtagHeader.header("If-None-Match", etag).build();
+
+        response = restTemplate.exchange(etagRequestEntity, String.class);
+        if (response.getStatusCode() != HttpStatus.NOT_MODIFIED) {
+            throw new RuntimeException("Request using ETAG on a non modified sample did not return the expected status code");
+        }
+
 
     }
 
@@ -168,7 +181,19 @@ public class ETagIntegration extends AbstractIntegration {
                 .asLink();
 
         return RequestEntity.get(URI.create(sampleLink.getHref()))
-                .accept(MediaTypes.HAL_JSON).build();
+                .accept(MediaTypes.HAL_JSON)
+                .build();
+    }
+
+    private RequestEntity.HeadersBuilder prepareGetRequestBuilder(Sample sample) {
+        Link sampleLink = new Traverson(bioSamplesProperties.getBiosamplesClientUri(), MediaTypes.HAL_JSON)
+                .follow("samples")
+                .follow(Hop.rel("sample").withParameter("accession", sample.getAccession()))
+                .asLink();
+
+        return RequestEntity.get(URI.create(sampleLink.getHref()))
+                .accept(MediaTypes.HAL_JSON);
+
     }
 
     private RequestEntity prepareGetRequestForRawSample(Sample sample) {
