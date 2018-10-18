@@ -13,7 +13,7 @@ to fetch the entire sample content
 
 === Quick solution - Not scalable
 Let's say that you want to monitor a bunch of samples in BioSamples and
-anytime a sample is updated you want to retrieve the new content into your system.
+whenever a sample is updated you want to retrieve the new content into your system.
 
 One way of doing this is to have a list of accession and at a scheduled interval
 retrieve the samples from BioSamples and check if the update date on the sample
@@ -26,21 +26,21 @@ increases to the order of thousands, this could be quite a slow process.
 
 === A smarter solution
 In the new version of BioSamples we provide ETAG functionality.
-This feature allow to provide a unique "fingerprint" of the sample that change
-as soon as the sample itself change or a curation to the sample is applied.
+This feature provides a unique "fingerprint" of the sample that changes
+as soon as the sample itself changes or a curation to the sample is applied.
 Basically the ETAG is like an hash of the sample.
 
 With the ETAG you can submit a conditional request to BioSamples using an
 `If-None-Match` header. Check out https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/If-None-Match[this link] to get more details on the `If-None-Match` HTTP header.
 
-If the provided ETAG matches the one in BioSamples for the sample, this means the sample didn't change and a `304 - Not Modified` status is returned to the user. Otherwise the new content is provided along side with a new ETAG.
+If the provided ETAG matches the one in BioSamples for the sample, this means the sample has not changed since last update and a `304 - Not Modified` status is returned to the user. Otherwise the new content is provided along side with a new ETAG.
 
-Going back to the original scenario, if for store the ETAG for all the samples you're interested in, now you can use that to quickly scan BioSamples and download the content of the samples that were actually updated.
+Going back to the original scenario, if the ETAGs for all samples you are interested in are stored locally, now you can use that to quickly scan BioSamples and download the content of the samples that have been actually updated.
 
 == Steps to reproduce
 
 For this demo I will use cURL here for simplicity, but you can use any HTTP client. Also, I'm going to use a real
-sample, but be aware that the ETAG may change since the time of writing this page.
+sample, but be aware that the ETAG value may differ to the value at the time of writing.
 
 === 1. Fetch the Sample and the corresponding ETAG
 
@@ -64,7 +64,7 @@ x-frame-options: DENY
 content-length: 1488
 ```
 
-=== 2. Submit a new GET request
+=== 2. Submit a new GET request including the ETAG
 
 Let's submit a new request with the `If-None-Match` header and the ETAG
 
@@ -85,6 +85,31 @@ etag: "06b2bf5fb11041e36ad4c29a77ff3be55"
 x-frame-options: DENY
 ```
 
+=== 3. Submit a GET request with an older ETAG
+
+Let's pretended that your locally stored ETAG is different, like "07b2dc735675d4f54f0dc3df82c34daa1".
+
+If you use that in the conditional request, you will get a 200 - OK response with the original sample content
+
+```
+curl -H "Accept: application/json" -H 'If-None-Match: "07b2dc735675d4f54f0dc3df82c34daa1"' -i https://www.ebi.ac.uk/biosamples/samples/SAMEA2614688
+```
+
+and here the response headers
+```
+HTTP/2 200
+cache-control: max-age=60, public
+content-type: application/json;charset=UTF-8
+strict-transport-security: max-age=0
+date: Thu, 18 Oct 2018 15:40:54 GMT
+x-application-context: application:8081
+x-xss-protection: 1; mode=block
+x-content-type-options: nosniff
+etag: "06b2bf5fb11041e36ad4c29a77ff3be55"
+x-frame-options: DENY
+content-length: 1488
+```
+
 == Template
 
 Here the template for the curl request for you to try to use the ETAG functionality
@@ -92,3 +117,7 @@ Here the template for the curl request for you to try to use the ETAG functional
 ```
 curl -H "Accept: application/json" -H 'If-None-Match: <sample-etag-with-quotes>' -i https://www.ebi.ac.uk/biosamples/samples/<sample-accession>
 ```
+
+
+
+Thanks to Jun Fan from the FAANG project for the contributions to this page
