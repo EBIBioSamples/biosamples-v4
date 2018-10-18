@@ -1,0 +1,85 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "id": "https://www.ebi.ac.uk/biosamples/schemas/core/sample.json",
+    "additionalProperties": false,
+    "required": [
+        "name",
+        "domain",
+        "release"
+    ],
+    "type": "object",
+    "properties": {
+        "name": {
+            "description": "The sample name, or an alias, or another id",
+            "type": "string"
+        },
+        "accession": {
+            "description": "Sample accession",
+            "type": "string",
+            "pattern": "^SAM(D|N|E([AG]?))[0-9]+$"
+        },
+        "domain": {
+            "description": "Sample AAP domain membership",
+            "type": "string"
+        },
+        "release": {
+            "description": "Sample relase date-time in ISO8601 format. Release date in the future means the sample is private",
+            "type": "string",
+            "format": "datetime"
+        },
+        "update": {
+            "description": "Sample last update date-time in ISO8601 format. This is automatically set from the server on submission",
+            "type": "string",
+            "format": "datetime"
+        },
+        "characteristics": {
+            "description": "All the characteristics associated to the sample",
+            "type": "object",
+            "additionalProperties": {
+                "$ref": "https://www.ebi.ac.uk/biosamples/schemas/core/characteristic.json"
+            }
+        },
+        "relationships": {
+            "description": "Sample relationships with other samples in BioSamples",
+            "type": "array",
+            "items": {
+                "$ref": "https://www.ebi.ac.uk/biosamples/schemas/core/relationship.json"
+            }
+        },
+        "externalReferences": {
+            "description": "Array of references to external resources",
+            "type": "array",
+            "items": {
+                "$ref": "https://www.ebi.ac.uk/biosamples/schemas/core/external_reference.json"
+            }
+        },
+        "organization": {
+            "description": "Organization information associated with the sample",
+            "type": "array",
+            "items": {
+                "$ref": "https://www.ebi.ac.uk/biosamples/schemas/core/organisation.json"
+            }
+        },
+        "contact": {
+            "description": "Contact information of the people associated with the sample",
+            "type": "array",
+            "items": {
+                "$ref": "https://www.ebi.ac.uk/biosamples/schemas/core/contact.json"
+            }
+        },
+        "publications": {
+            "description": "Pubblications associated with the sample",
+            "type": "array",
+            "items": {
+                "$ref": "https://www.ebi.ac.uk/biosamples/schemas/core/publication.json"
+            }
+        },
+        "data": {
+            "description": "Contains the structured data associated with a sample",
+            "type": "array",
+            "items":  {
+                "$ref": "https://www.ebi.ac.uk/biosamples/schemas/core/structured_data.json"
+            }
+        }
+    }
+}

@@ -1,0 +1,16 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "id": "https://www.ebi.ac.uk/biosamples/schemas/core/publication.json",
+    "title": "Publication",
+    "description": "Object representing a publication associated to the sample",
+    "additionalProperties": false,
+    "type": "object",
+    "properties": {
+        "doi": {
+            "type": "string"
+        },
+        "pubmed_id": {
+            "type":"string"
+        }
+    }
+}

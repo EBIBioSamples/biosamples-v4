@@ -1,0 +1,84 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "id": "https://www.ebi.ac.uk/biosamples/schemas/core/curation.json",
+    "title":"BioSamples curation object",
+    "description": "An object that is applied to a sample to update one or more attributes and/or one or more external references",
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+        "attributesPre",
+        "attributesPost",
+        "externalReferencesPre",
+        "externalReferencesPost"
+    ],
+    "properties": {
+        "attributesPre": {
+            "description": "The attribute to update, with it's type, value and iri. This need to match the sample in order for the curation to be applied",
+            "type": "array",
+            "items": {
+                "description": "Define the way attributes are described in a curation object",
+                "additionalProperties": false,
+                "type": "object",
+                "required": [ "type", "value" ],
+                "properties": {
+                    "type": { "type": "string" },
+                    "value": {"type": "string"},
+                    "iri": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "attributesPost": {
+            "description": "The updated version of the attribute",
+            "type": "array",
+            "items": {
+                "description": "Define the way attributes are described in a curation object",
+                "additionalProperties": false,
+                "type": "object",
+                "required": [ "type", "value" ],
+                "properties": {
+                    "type": { "type": "string" },
+                    "value": {"type": "string"},
+                    "iri": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "externalReferencesPre": {
+            "type": "array",
+            "description": "The external reference to update",
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["url"],
+                "properties": {
+                    "url": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "externalReferencesPost": {
+            "type": "array",
+            "description": "The updated value for the external reference",
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["url"],
+                "properties": {
+                    "url": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    }
+}

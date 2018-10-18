@@ -1,0 +1,16 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "id": "https://www.ebi.ac.uk/biosamples/schemas/core/curation_link.json",
+    "title": "BioSamples curation link",
+    "description": "Link together a curation object with a sample using a specific AAP domain as reference for the curation",
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+        "sample",
+        "curation",
+        "domain"
+    ],
+    "properties": {
+        "sample": {"type": "string"}
+    }
+}

@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "https://www.ebi.ac.uk/biosamples/schemas/core/relationship.json",
+  "title": "BioSamples relationship",
+  "description": "Relationship object connecting two BioSamples accessions",
+  "additionalProperties": false,
+  "type": "object",
+  "required": [
+    "source",
+    "type",
+    "target"
+  ],
+  "properties": {
+    "source": {
+      "description": "The sample accession where the relation starts from",
+      "type": "string",
+      "pattern": "^SAM(D|N|E([AG]?))[0-9]+$"        },
+    "type": {
+      "type": "string"
+    },
+    "target": {
+      "description": "The sample accession where the relation targets to",
+      "type": "string",
+      "pattern": "^SAM(D|N|E([AG]?))[0-9]+$"
+    }
+  }
+}

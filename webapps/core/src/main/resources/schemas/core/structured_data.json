@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "https://www.ebi.ac.uk/biosamples/schemas/core/structured_data.json",
+  "title": "BioSamples structured data item",
+  "description": "A structured data item, e.g. an antibiogram table",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "schema",
+    "content"
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "description": "The type of structured data this item is",
+      "type": "string",
+      "enum": [
+        "AMR"
+      ]
+    },
+    "schema": {
+      "description": "The URL reference to the schema",
+      "type": "string",
+      "pattern": "(http|https)://www(dev)?.ebi.ac.uk/biosamples/schemas/structured/.*"
+    },
+    "content": {
+      "type": [
+        "array",
+        "object"
+      ]
+    }
+  }
+}
