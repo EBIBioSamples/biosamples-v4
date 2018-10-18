@@ -175,3 +175,4 @@ $ curl 'https://www.ebi.ac.uk/biosamples/samples/SAMN08432304/curationlinks' -i 
 }
 ```
 
+Thanks to Jun Fan from the FAANG project for the contributions to this page
