@@ -171,4 +171,3 @@ $ curl 'https://www.ebi.ac.uk/biosamples/samples/{sample-accession}/curationlink
   "domain" : <the-domain-you-want-to-associate-this-curation>
 }
 ```
-
