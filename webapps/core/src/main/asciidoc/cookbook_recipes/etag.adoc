@@ -118,6 +118,5 @@ Here the template for the curl request for you to try to use the ETAG functional
 curl -H "Accept: application/json" -H 'If-None-Match: <sample-etag-with-quotes>' -i https://www.ebi.ac.uk/biosamples/samples/<sample-accession>
 ```
 
-
-
-Thanks to Jun Fan from the FAANG project for the contributions to this page
+==== Acknowledgements
+Thanks to Jun Fan from the FAANG team for the contributions to this page
