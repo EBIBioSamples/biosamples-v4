@@ -25,9 +25,9 @@ Use this as a template for the submission but change the required fields between
 {
   "sample" : <accession-of-the-interested-sample>,
   "curation" : {
-    "attributesPre" : [ { } ],
-    "attributesPost" : [ { } ],
-    "externalReferencesPre" : [ { } ],
+    "attributesPre" : [],
+    "attributesPost" : [],
+    "externalReferencesPre" : [],
     "externalReferencesPost" : [ {
       "url" : <the-url-to-the-external-reference-you-want-to-add>
     } ]
@@ -38,16 +38,41 @@ Use this as a template for the submission but change the required fields between
 
 === 3. Submit the curation object using a POST request to the
 
+<<<<<<< Updated upstream
 You can use any method to submit a POST request to BioSamples, where an example
 using cURL
+=======
+You can now submit a POST request to BioSamples, using any service/app you prefer.
+Here we are going to do that using cURL
+
+```
+$ curl 'https://www.ebi.ac.uk/biosamples/samples/SAMEA3219152/curationlinks' -i -X POST -H 'Content-Type: application/json' -H 'Authorization: Bearer $TOKEN' -d '{
+  "sample" : "SAMEA3219152",
+     "curation" : {
+       "attributesPre" : [],
+       "attributesPost" : [],
+       "externalReferencesPre" : [],
+       "externalReferencesPost" : [ {
+         "url" : "https://www.ebi.ac.uk/metagenomics/api/v1/samples/ERS645361"
+       } ]
+     },
+     "domain" : "self.MGnifyToBioSamplesLinkCreator"
+}'
+```
+
+If the response is successfull (2xx code), you should be able to see the new link available on the sample page
+at https://www.ebi.ac.uk/biosamples/samples/SAMEA3219152
+
+== Templates
+>>>>>>> Stashed changes
 
 ```
 $ curl 'https://www.ebi.ac.uk/biosamples/samples/{sample-accession}/curationlinks' -i -X POST -H 'Content-Type: application/json' -H 'Authorization: Bearer $TOKEN' -d '{
   "sample" : <accession-of-the-interested-sample>,
   "curation" : {
-    "attributesPre" : [ { } ],
-    "attributesPost" : [ { } ],
-    "externalReferencesPre" : [ { } ],
+    "attributesPre" : [],
+    "attributesPost" : [],
+    "externalReferencesPre" : [],
     "externalReferencesPost" : [ {
       "url" : <the-url-to-the-external-reference-you-want-to-add>
     } ]
