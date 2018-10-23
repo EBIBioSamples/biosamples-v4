@@ -104,7 +104,6 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 
         //put various other fields in as synonyms
         Set<String> synonyms = new HashSet<>();
-        synonyms.add(XmlPathBuilder.of(root).path(SAMPLE).attribute("alias"));
         if (XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS, SUBMITTER_ID).exists()) {
             String synonym = XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS, SUBMITTER_ID).text();
             synonyms.add(synonym);
