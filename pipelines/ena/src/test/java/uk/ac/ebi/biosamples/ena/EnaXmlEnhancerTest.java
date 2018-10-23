@@ -110,6 +110,12 @@ public class EnaXmlEnhancerTest {
     }
 
     @Test
+    public void test_taxon_fix_rule_fixes_applicable_xml_SAMN02356578() {
+        enaDatabaseSample = enaXmlEnhancer.getEnaDatabaseSample("SAMN02356578");
+        assertEquals(exampleSampleThatHasBeenTaxonFixedSAMN02356578, enaXmlEnhancer.applyRules(exampleSampleThatCanBeTaxonFixedSAMN02356578, enaDatabaseSample, TaxonRule.INSTANCE));
+    }
+
+    @Test
     public void test_pretty() {
         String pretty1 = pretty(expectedModifiedNcbiLinksRemoved);
         String pretty2 = pretty(pretty1);

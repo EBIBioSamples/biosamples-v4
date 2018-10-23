@@ -44,6 +44,51 @@ public class ExampleSamples {
             "   </SAMPLE>\n" +
             "</SAMPLE_SET>";
 
+    public static String exampleSampleThatCanBeTaxonFixedSAMN02356578 = "<SAMPLE_SET>\n" +
+            "   <SAMPLE center_name=\"Broad Institute\" alias=\"Acinetobacter lwoffii CIP64.10\" accession=\"SRS485026\">\n" +
+            "      <IDENTIFIERS>\n" +
+            "         <PRIMARY_ID>SRS485026</PRIMARY_ID>\n" +
+            "         <EXTERNAL_ID namespace=\"BioSample\">SAMN02356578</EXTERNAL_ID>\n" +
+            "         <EXTERNAL_ID namespace=\"Broad Institute\" label=\"Sample name\">Acinetobacter lwoffii CIP64.10</EXTERNAL_ID>\n" +
+            "      </IDENTIFIERS>\n" +
+            "      <TITLE>General Sample for Acinetobacter lwoffii NIPH 512</TITLE>\n" +
+            "      <SAMPLE_NAME>\n" +
+            "         <TAXON_ID>1400346</TAXON_ID>\n" +
+            "         <SCIENTIFIC_NAME>Acinetobacter lwoffii NIPH 512</SCIENTIFIC_NAME>\n" +
+            "      </SAMPLE_NAME>\n" +
+            "      <SAMPLE_LINKS>\n" +
+            "         <SAMPLE_LINK>\n" +
+            "            <XREF_LINK>\n" +
+            "               <DB>bioproject</DB>\n" +
+            "               <ID>219244</ID>\n" +
+            "            </XREF_LINK>\n" +
+            "         </SAMPLE_LINK>\n" +
+            "      </SAMPLE_LINKS>\n" +
+            "      <SAMPLE_ATTRIBUTES>\n" +
+            "         <SAMPLE_ATTRIBUTE>\n" +
+            "            <TAG>collection_date</TAG>\n" +
+            "            <VALUE>2011</VALUE>\n" +
+            "         </SAMPLE_ATTRIBUTE>\n" +
+            "         <SAMPLE_ATTRIBUTE>\n" +
+            "            <TAG>geo_loc_name</TAG>\n" +
+            "            <VALUE>Unknown</VALUE>\n" +
+            "         </SAMPLE_ATTRIBUTE>\n" +
+            "         <SAMPLE_ATTRIBUTE>\n" +
+            "            <TAG>specific_host</TAG>\n" +
+            "            <VALUE>Homo sapiens</VALUE>\n" +
+            "         </SAMPLE_ATTRIBUTE>\n" +
+            "         <SAMPLE_ATTRIBUTE>\n" +
+            "            <TAG>isolation_source</TAG>\n" +
+            "            <VALUE>Unknown</VALUE>\n" +
+            "         </SAMPLE_ATTRIBUTE>\n" +
+            "         <SAMPLE_ATTRIBUTE>\n" +
+            "            <TAG>strain</TAG>\n" +
+            "            <VALUE>NIPH 512</VALUE>\n" +
+            "         </SAMPLE_ATTRIBUTE>\n" +
+            "      </SAMPLE_ATTRIBUTES>\n" +
+            "   </SAMPLE>\n" +
+            "</SAMPLE_SET>";
+
     public static String exampleSampleThatCanBeTaxonFixed = "<SAMPLE_SET>\n" +
             "   <SAMPLE alias=\"BCM-DGRP301\" center_name=\"BCM\" accession=\"SRS003443\">\n" +
             "      <IDENTIFIERS>\n" +
@@ -736,6 +781,54 @@ public class ExampleSamples {
             "        <TAG>ENA-LAST-UPDATE</TAG>\n" +
             "        <VALUE>2015-06-23</VALUE>\n" +
             "      </SAMPLE_ATTRIBUTE>\n" +
+            "    </SAMPLE_ATTRIBUTES> \n" +
+            "  </SAMPLE> \n" +
+            "</SAMPLE_SET>\n";
+
+    public static String exampleSampleThatHasBeenTaxonFixedSAMN02356578 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "\n" +
+            "<SAMPLE_SET> \n" +
+            "  <SAMPLE center_name=\"Broad Institute\" alias=\"Acinetobacter lwoffii CIP64.10\" accession=\"SRS485026\"> \n" +
+            "    <IDENTIFIERS> \n" +
+            "      <PRIMARY_ID>SRS485026</PRIMARY_ID>  \n" +
+            "      <EXTERNAL_ID namespace=\"BioSample\">SAMN02356578</EXTERNAL_ID>  \n" +
+            "      <EXTERNAL_ID namespace=\"Broad Institute\" label=\"Sample name\">Acinetobacter lwoffii CIP64.10</EXTERNAL_ID> \n" +
+            "    </IDENTIFIERS>  \n" +
+            "    <TITLE>General Sample for Acinetobacter lwoffii NIPH 512</TITLE>  \n" +
+            "    <SAMPLE_NAME> \n" +
+            "      <TAXON_ID>981327</TAXON_ID>  \n" +
+            "      <SCIENTIFIC_NAME>Acinetobacter lwoffii NCTC 5866 = CIP 64.10 = NIPH 512</SCIENTIFIC_NAME>  \n" +
+            "      <COMMON_NAME/>\n" +
+            "    </SAMPLE_NAME>  \n" +
+            "    <SAMPLE_LINKS> \n" +
+            "      <SAMPLE_LINK> \n" +
+            "        <XREF_LINK> \n" +
+            "          <DB>bioproject</DB>  \n" +
+            "          <ID>219244</ID> \n" +
+            "        </XREF_LINK> \n" +
+            "      </SAMPLE_LINK> \n" +
+            "    </SAMPLE_LINKS>  \n" +
+            "    <SAMPLE_ATTRIBUTES> \n" +
+            "      <SAMPLE_ATTRIBUTE> \n" +
+            "        <TAG>collection_date</TAG>  \n" +
+            "        <VALUE>2011</VALUE> \n" +
+            "      </SAMPLE_ATTRIBUTE>  \n" +
+            "      <SAMPLE_ATTRIBUTE> \n" +
+            "        <TAG>geo_loc_name</TAG>  \n" +
+            "        <VALUE>Unknown</VALUE> \n" +
+            "      </SAMPLE_ATTRIBUTE>  \n" +
+            "      <SAMPLE_ATTRIBUTE> \n" +
+            "        <TAG>specific_host</TAG>  \n" +
+            "        <VALUE>Homo sapiens</VALUE> \n" +
+            "      </SAMPLE_ATTRIBUTE>  \n" +
+            "      <SAMPLE_ATTRIBUTE> \n" +
+            "        <TAG>isolation_source</TAG>  \n" +
+            "        <VALUE>Unknown</VALUE> \n" +
+            "      </SAMPLE_ATTRIBUTE>  \n" +
+            "      <SAMPLE_ATTRIBUTE> \n" +
+            "        <TAG>strain</TAG>  \n" +
+            "        <VALUE>NIPH 512</VALUE> \n" +
+            "      </SAMPLE_ATTRIBUTE> \n" +
             "    </SAMPLE_ATTRIBUTES> \n" +
             "  </SAMPLE> \n" +
             "</SAMPLE_SET>\n";
