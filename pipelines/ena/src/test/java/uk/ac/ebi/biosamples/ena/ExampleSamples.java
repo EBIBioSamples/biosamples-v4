@@ -613,7 +613,7 @@ public class ExampleSamples {
     public static String expectedModifiedCenterNameSampleXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
             "\n" +
             "<SAMPLE_SET> \n" +
-            "  <SAMPLE alias=\"K510\" center_name=\"expanded center name\" accession=\"ERS2295402\"> \n" +
+            "  <SAMPLE alias=\"K510\" center_name=\"expanded center name\" accession=\"ERS2295402\" center_alias=\"UNIBE-IG\"> \n" +
             "    <IDENTIFIERS> \n" +
             "      <PRIMARY_ID>ERS2295402</PRIMARY_ID>  \n" +
             "      <SUBMITTER_ID namespace=\"UNIBE-IG\">K510</SUBMITTER_ID> \n" +
@@ -714,7 +714,7 @@ public class ExampleSamples {
     public static String expectedFullSampleXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
             "\n" +
             "<SAMPLE_SET> \n" +
-            "  <SAMPLE center_name=\"1000G\" alias=\"NA18561\" accession=\"SRS000121\" broker_name=\"NCBI\"> \n" +
+            "  <SAMPLE center_name=\"1000G\" alias=\"NA18561\" accession=\"SRS000121\" broker_name=\"NCBI\" center_alias=\"1000G\"> \n" +
             "    <IDENTIFIERS> \n" +
             "      <PRIMARY_ID>SRS000121</PRIMARY_ID>  \n" +
             "      <EXTERNAL_ID namespace=\"BioSample\">SAMN00001603</EXTERNAL_ID>  \n" +

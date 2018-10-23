@@ -175,8 +175,10 @@ public class EnaXmlEnhancer {
             if (enaDatabaseSample.centreName != null) {
                 XmlPathBuilder xmlPathBuilder = XmlPathBuilder.of(sampleXml).path("SAMPLE");
                 if (xmlPathBuilder.attributeExists("center_name")) {
+                    xmlPathBuilder.element().setAttributeValue("center_alias", xmlPathBuilder.attribute("center_name"));
                     xmlPathBuilder.element().setAttributeValue("center_name", enaDatabaseSample.centreName);
                 }
+
             }
             return sampleXml;
         }
