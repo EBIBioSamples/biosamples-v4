@@ -26,9 +26,9 @@ public class RestAutocompleteIntegration extends AbstractIntegration {
 	private final IntegrationProperties integrationProperties;
 	private final BioSamplesProperties bioSamplesProperties;
 	private final RestOperations restTemplate;
-	
-	public RestAutocompleteIntegration(RestTemplateBuilder restTemplateBuilder, 
-			IntegrationProperties integrationProperties, 
+
+	public RestAutocompleteIntegration(RestTemplateBuilder restTemplateBuilder,
+			IntegrationProperties integrationProperties,
 			BioSamplesProperties bioSamplesProperties,
 			BioSamplesClient client) {
 		super(client);
@@ -36,7 +36,7 @@ public class RestAutocompleteIntegration extends AbstractIntegration {
 		this.integrationProperties = integrationProperties;
 		this.bioSamplesProperties = bioSamplesProperties;
 	}
-	
+
 	@Override
 	protected void phaseOne() {
 	}
@@ -58,7 +58,7 @@ public class RestAutocompleteIntegration extends AbstractIntegration {
 	}
 
 	@Override
-	protected void phaseThree() {		
+	protected void phaseThree() {
 	}
 
 	@Override

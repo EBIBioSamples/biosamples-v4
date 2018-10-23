@@ -37,13 +37,13 @@ public class RestSearchIntegration extends AbstractIntegration {;
 		if (!test1.equals(resource.getContent())) {
 			throw new RuntimeException("Expected response ("+resource.getContent()+") to equal submission ("+test1+")");
 		}
-		
+
 		//put a sample that refers to a non-existing sample
 		resource = client.persistSampleResource(test2);
 		if (!test2.equals(resource.getContent())) {
 			throw new RuntimeException("Expected response ("+resource.getContent()+") to equal submission ("+test2+")");
 		}
-		
+
 		resource = client.persistSampleResource(test4);
 		if (!test4.equals(resource.getContent())) {
 			throw new RuntimeException("Expected response ("+resource.getContent()+") to equal submission ("+test4+")");
@@ -65,6 +65,7 @@ public class RestSearchIntegration extends AbstractIntegration {;
 	@Override
 	protected void phaseTwo() {
 	    Sample test1 = getSampleTest1();
+	    Sample test2 = getSampleTest2();
 
 		List<Resource<Sample>> samples = new ArrayList<>();
 		for (Resource<Sample> sample : client.fetchSampleResourceAll()) {
@@ -82,18 +83,15 @@ public class RestSearchIntegration extends AbstractIntegration {;
 			if (resource.getContent().getAccession().equals(test1.getAccession())) {
 				throw new RuntimeException("Found non-public sample "+test1.getAccession()+" in search samples");
 			}
-			if (resource.getContent().getAccession().equals("TESTrestsearch3")) {
-				throw new RuntimeException("Found non-public sample TESTrestsearch3 in search samples");
-			}
 		}
-		
+
 		//TODO check OLS expansion by making sure we can find the submitted samples in results for Eukaryota
 		Set<String> accessions = new HashSet<>();
 		for (Resource<Sample> sample : client.fetchSampleResourceAll("Eukaryota")) {
 			accessions.add(sample.getContent().getAccession());
 		}
-		if (!accessions.contains("TESTrestsearch2")) {
-			throw new RuntimeException("TESTrestsearch2 not found in search results for Eukaryota");
+		if (!accessions.contains(test2.getAccession())) {
+			throw new RuntimeException(test2.getAccession() + " not found in search results for Eukaryota");
 		}
 	}
 
@@ -111,7 +109,7 @@ public class RestSearchIntegration extends AbstractIntegration {;
 		for (Resource<Sample> sample : client.fetchSampleResourceAll(sample2.getAccession())) {
 			sample2EffectiveSearchResults.add(sample.getContent().getAccession());
 		}
-		
+
 		if (sample2EffectiveSearchResults.size() <= 0) {
 			throw new RuntimeException("No search results found!");
 		}
@@ -165,7 +163,7 @@ public class RestSearchIntegration extends AbstractIntegration {;
 
 	private Sample getSampleTest2() {
 		String name = "Test Sample the second";
-		String accession = "TESTrestsearch2";
+		String accession = "SAMEA2";
 		String domain = "self.BiosampleIntegrationTest";
 		Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
 		Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
@@ -175,8 +173,8 @@ public class RestSearchIntegration extends AbstractIntegration {;
 				Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
 
 		SortedSet<Relationship> relationships = new TreeSet<>();
-		relationships.add(Relationship.build("TESTrestsearch2", "derived from", "TESTrestsearch3"));
-		
+		relationships.add(Relationship.build("SAMEA2", "derived from", "SAMEA3"));
+
 //		return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, relationships, new TreeSet<>(), null, null, null);
 		return new Sample.Builder(name, accession).withDomain(domain).withRelease(release).withUpdate(update)
 				.withAttributes(attributes).build();
@@ -184,7 +182,7 @@ public class RestSearchIntegration extends AbstractIntegration {;
 
 	private Sample getSampleTest4() {
 		String name = "Test Sample the fourth";
-		String accession = "TESTrestsearch4";
+		String accession = "SAMEA4";
 		String domain = "self.BiosampleIntegrationTest";
 		Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
 		Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
@@ -195,8 +193,8 @@ public class RestSearchIntegration extends AbstractIntegration {;
 
 		// TODO need to add inverse relationships later
 		SortedSet<Relationship> relationships = new TreeSet<>();
-		relationships.add(Relationship.build("TESTrestsearch4", "derived from", getSampleTest2().getAccession()));
-		relationships.add(Relationship.build("TESTrestsearch4", "derive to", getSampleTest5().getAccession()));
+		relationships.add(Relationship.build("SAMEA4", "derived from", getSampleTest2().getAccession()));
+		relationships.add(Relationship.build("SAMEA4", "derive to", getSampleTest5().getAccession()));
 
 //		return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, relationships, new TreeSet<>(), null, null, null);
 		return new Sample.Builder(name, accession).withDomain(domain).withRelease(release).withUpdate(update)
@@ -205,7 +203,7 @@ public class RestSearchIntegration extends AbstractIntegration {;
 
 	private Sample getSampleTest5() {
 		String name = "Test Sample the fifth";
-		String accession = "TESTrestsearch5";
+		String accession = "SAMEA5";
 		String domain = "self.BiosampleIntegrationTest";
 		Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
 		Instant release = Instant.parse("2016-04-01T11:36:57.00Z");

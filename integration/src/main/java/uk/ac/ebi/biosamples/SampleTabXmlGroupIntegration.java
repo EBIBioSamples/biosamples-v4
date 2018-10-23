@@ -32,7 +32,7 @@ public class SampleTabXmlGroupIntegration extends AbstractIntegration {
 	private final RestOperations restTemplate;
 
 	private final URI uri;
-	
+
 	public SampleTabXmlGroupIntegration(RestTemplateBuilder restTemplateBuilder, IntegrationProperties integrationProperties, BioSamplesClient client) {
         super(client);
 		this.restTemplate = restTemplateBuilder.build();
@@ -51,7 +51,7 @@ public class SampleTabXmlGroupIntegration extends AbstractIntegration {
 			log.info("POSTing to " + uri);
 			RequestEntity<String> request = RequestEntity.post(uri)
 					.contentType(MediaType.APPLICATION_XML)
-					.accept(MediaType.TEXT_PLAIN)					
+					.accept(MediaType.TEXT_PLAIN)
 					.body(sampleTabString);
 			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
 			String accession = response.getBody();
@@ -67,7 +67,7 @@ public class SampleTabXmlGroupIntegration extends AbstractIntegration {
 			if (group.get().getContent().getRelationships().size() == 0) {
 				throw new RuntimeException("No relationships on group "+accession);
 			}
-			
+
 		});
 
 		URI putUri = UriComponentsBuilder.fromUri(uri).pathSegment("SAMEG123").build().toUri();
@@ -75,7 +75,7 @@ public class SampleTabXmlGroupIntegration extends AbstractIntegration {
 			log.info("PUTing to " + putUri);
 			RequestEntity<String> request = RequestEntity.put(putUri)
 					.contentType(MediaType.APPLICATION_XML)
-					.accept(MediaType.TEXT_PLAIN)					
+					.accept(MediaType.TEXT_PLAIN)
 					.body(sampleTabString);
 			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
 			String accession = response.getBody();
@@ -92,29 +92,29 @@ public class SampleTabXmlGroupIntegration extends AbstractIntegration {
 				throw new RuntimeException("No relationships on group "+accession);
 			}
 		});
-		
+
 	}
 
 	@Override
 	protected void phaseTwo() {
-		
+
 	}
 
 	@Override
 	protected void phaseThree() {
-		
+
 	}
 
 	@Override
 	protected void phaseFour() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	protected void phaseFive() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 

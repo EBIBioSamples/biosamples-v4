@@ -1,31 +1,27 @@
 package uk.ac.ebi.biosamples.mongo.model;
 
-import java.time.Instant;
-import java.util.Objects;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Contact;
 import uk.ac.ebi.biosamples.model.Organization;
 import uk.ac.ebi.biosamples.model.Publication;
+import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.service.CustomInstantDeserializer;
 import uk.ac.ebi.biosamples.service.CustomInstantSerializer;
+
+import java.time.Instant;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Document
@@ -64,7 +60,10 @@ public class MongoSample {
 	protected SortedSet<Organization> organizations;
 	protected SortedSet<Contact> contacts;
 	protected SortedSet<Publication> publications;
-	
+
+	//	@JsonSerialize(using = AbstractDataSerializer.class)
+	protected Set<AbstractData> data;
+
 	@JsonIgnore
 	public boolean hasAccession() {
 		if ( accession != null && accession.trim().length() != 0) {
@@ -126,6 +125,10 @@ public class MongoSample {
 		return publications;
 	}
 
+	public Set<AbstractData> getData() {
+		return data;
+	}
+
 	@Override
     public boolean equals(Object o) {
 
@@ -178,6 +181,8 @@ public class MongoSample {
     	sb.append(contacts);
     	sb.append(",");
     	sb.append(publications);
+    	sb.append(",");
+    	sb.append(data);
     	sb.append(")");
     	return sb.toString();
     }
@@ -189,7 +194,8 @@ public class MongoSample {
 			@JsonProperty("domain") String domain,
     		@JsonProperty("release") Instant release, 
     		@JsonProperty("update") Instant update, 
-    		@JsonProperty("attributes") Set<Attribute> attributes, 
+    		@JsonProperty("attributes") Set<Attribute> attributes,
+    		@JsonProperty("data") Set<AbstractData> structuredData,
     		@JsonProperty("relationships") Set<MongoRelationship> relationships, 
     		@JsonProperty("externalReferences") SortedSet<MongoExternalReference> externalReferences, 
     		@JsonProperty("organizations") SortedSet<Organization> organizations, 
@@ -207,6 +213,11 @@ public class MongoSample {
 		sample.attributes = new TreeSet<>();
 		if (attributes != null && attributes.size() > 0) {
 			sample.attributes.addAll(attributes);
+		}
+
+		sample.data = new HashSet<>();
+		if (structuredData != null && structuredData.size() > 0) {
+			sample.data.addAll(structuredData);
 		}
 
 		sample.relationships = new TreeSet<>();

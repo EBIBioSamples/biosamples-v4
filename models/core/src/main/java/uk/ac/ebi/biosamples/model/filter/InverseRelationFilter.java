@@ -1,5 +1,7 @@
 package uk.ac.ebi.biosamples.model.filter;
 
+import uk.ac.ebi.biosamples.model.facet.FacetType;
+
 import java.util.Objects;
 import java.util.Optional;
 
@@ -28,6 +30,10 @@ public class InverseRelationFilter implements Filter {
         return Optional.ofNullable(this.value);
     }
 
+    @Override
+    public FacetType getAssociatedFacetType() {
+        return FacetType.INVERSE_RELATION_FACET;
+    }
 
     @Override
     public String getSerialization() {

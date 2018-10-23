@@ -8,7 +8,7 @@
     <div class="small-12 medium-3 columns sidebar">
         <div data-options="marginTop:4;">
             <ul class="vertical menu accordion-menu" data-accordion-menu>
-                <li><a th:classappend="${#strings.equals(active, 'overview')}" th:href="@{/docs/}">Overview</a></li>
+                <li><a th:classappend="${#strings.equals(active, 'overview')} ? 'active'" th:href="@{/docs/}">Overview</a></li>
                 <li><a th:classappend="${#strings.equals(active,'cookbook')} ? 'active'" th:href="@{/docs/cookbook/}">BioSamples Cookbook</a></li>
                 <li>
                     <a href="#">User guides</a>
@@ -46,10 +46,8 @@
                     </ul>
                 </li>
                 <li><a th:classappend="${#strings.equals(active, 'faq')} ? 'active'" th:href="@{/docs/faq}">FAQ</a></li>
-                <li><a th:classappend="${#strings.equals(active, 'releasehistory')} ? 'active'"
-                       th:href="@{/docs/releasenotes}">Release history</a></li>
-                <li><a th:classappend="${#strings.equals(active, 'contacts')} ? 'active'" th:href="@{/docs/contacts}">Contacts</a>
-                </li>
+                <li><a th:classappend="${#strings.equals(active, 'release')} ? 'active'" th:href="@{/docs/releasenotes}">Release history</a></li>
+                <li><a th:classappend="${#strings.equals(active, 'contacts')} ? 'active'" th:href="@{/docs/contacts}">Contacts</a></li>
             </ul>
         </div>
     </div>

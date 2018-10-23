@@ -112,7 +112,7 @@ code[class^="language"] {
    min-width: 150px;
 }
 
-@media screen and (min-width: 512px) and (max-width: 639px) {
+@media screen and (min-width: 512px) {
     .data-content__entry {
         flex-basis: 50%;
     }
@@ -162,3 +162,6 @@ code[class^="language"] {
     padding-bottom: 1em;
 }
 
+.menu.nested {
+    display: none;
+}

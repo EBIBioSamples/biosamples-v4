@@ -75,7 +75,7 @@ public class SolrFacetService {
         for(FacetFieldEntry ffe: facetFields) {
 
             Long facetFieldCount = ffe.getValueCount();
-            SolrSampleField solrSampleField = SolrFieldService.decodeField(ffe.getValue());
+            SolrSampleField solrSampleField = this.solrFieldService.decodeField(ffe.getValue());
             allFacetFields.add(new SimpleEntry<>(solrSampleField, facetFieldCount));
         }
 
@@ -99,7 +99,7 @@ public class SolrFacetService {
         }
 		*/
 
-        if (allFacetFields != null && allFacetFields.size() > 0) {
+        if (allFacetFields.size() > 0) {
             allFacetFields.get(0).getKey().getFacetCollectionStrategy()
                     .fetchFacetsUsing(solrSampleRepository, query, allFacetFields, facetValuesPageInfo)
                     .forEach(opt -> opt.ifPresent(facets::add));

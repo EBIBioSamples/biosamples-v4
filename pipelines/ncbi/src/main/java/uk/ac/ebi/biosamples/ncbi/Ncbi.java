@@ -73,12 +73,20 @@ public class Ncbi implements ApplicationRunner {
 			toDate = LocalDate.parse("3000-01-01", DateTimeFormatter.ISO_LOCAL_DATE);
 		}
 
+
 		log.info("Processing samples from "+DateTimeFormatter.ISO_LOCAL_DATE.format(fromDate));
 		log.info("Processing samples to "+DateTimeFormatter.ISO_LOCAL_DATE.format(toDate));
 		sampleCallback.setFromDate(fromDate);
 		sampleCallback.setToDate(toDate);
 
-		Path inputPath = Paths.get(pipelinesProperties.getNcbiFile());
+		String ncbiFile;
+		if (args.getOptionNames().contains("ncbi_file")) {
+			ncbiFile = args.getOptionValues("ncbi_file").get(0);
+		} else {
+			ncbiFile = pipelinesProperties.getNcbiFile();
+		}
+
+		Path inputPath = Paths.get(ncbiFile);
 		inputPath = inputPath.toAbsolutePath();
 
 		try (InputStream is = new GZIPInputStream(new BufferedInputStream(Files.newInputStream(inputPath)))) {

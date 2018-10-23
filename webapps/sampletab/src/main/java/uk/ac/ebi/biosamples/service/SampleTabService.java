@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
 public class SampleTabService {
 
 	private Logger log = LoggerFactory.getLogger(getClass());
-	
+
 	private final BioSamplesClient bioSamplesClient;
 	private final MongoSampleTabRepository mongoSampleTabRepository;
 	private final SampleTabIdService sampleTabIdSerivce;
@@ -52,10 +52,10 @@ public class SampleTabService {
 		this.sampleTabIdSerivce = sampleTabIdService;
 		this.mongoGroupAccessionService = mongoGroupAccessionService;
 	}
-	
+
 	public SampleData accessionSampleTab(SampleData sampleData, String domain, String jwt, boolean setUpdateDate)
 			throws SampleTabException {
-		
+
 		log.trace("Accessioning sampletab "+sampleData.msi.submissionIdentifier);
 
 		//release in 100 years time
@@ -63,7 +63,7 @@ public class SampleTabService {
 		Instant update = Instant.ofEpochMilli(sampleData.msi.submissionUpdateDate.getTime());
 
 		//put any existing accessions into the samplenode and groupnode objects
-		populateExistingAccessions(sampleData, domain, release, update);		
+		populateExistingAccessions(sampleData, domain, release, update);
 
 		//because we are only accessioning samples and groups, we don't care about submission ownership
 
@@ -75,20 +75,20 @@ public class SampleTabService {
 //			throw new SampletabAccessioningException("An error occurred producing the pre-accessioned sample placeholders");
 //		}
 
-				
+
 		//persist the samples and groups
 		//TODO only persist unaccessioned?
 		persistSamplesAndGroups(sampleData, domain, release, update, setUpdateDate);
-		
+
 		//because we are only accessioning samples and groups, do not persist sampletab itself
-		
+
 		return sampleData;
 	}
 
 
 	public SampleData saveSampleTab(SampleData sampleData, String domain, boolean superUser, boolean setUpdateDate, boolean setFullDetails)
 			throws SampleTabException {
-		
+
 		log.info("Saving sampletab "+sampleData.msi.submissionIdentifier);
 
 		rejectSampletabForInvalidRelationship(sampleData);
@@ -141,15 +141,15 @@ public class SampleTabService {
 		if (sampleData.msi.submissionIdentifier != null
 				&& sampleData.msi.submissionIdentifier.trim().length() > 0) {
 			//this is an update of an existing sampletab
-			//get old sampletab document	
+			//get old sampletab document
 			oldSampleTab = mongoSampleTabRepository.findOne(sampleData.msi.submissionIdentifier);
 
-			
+
 			if (oldSampleTab == null) {
 				//no previous submission with this Id
 				//if user is not super-user, abort
-				if (!superUser) {					
-					throw new AssertingSampleTabOwnershipException(sampleData.msi.submissionIdentifier); 					
+				if (!superUser) {
+					throw new AssertingSampleTabOwnershipException(sampleData.msi.submissionIdentifier);
 				}
 
 				//check samples are not owned by any others
@@ -162,12 +162,12 @@ public class SampleTabService {
 
 				// Extract all the accessions that will be made private
 				oldAccessions.removeAll(newAccessions);
-				
+
 				//check samples are owned by this sampletab and not any others
 				for (String accession : newAccessions) {
 					verifySampletabAccessionsUniqueOwnership(getSampletabSubmissionId(sampleData), accession, superUser);
 				}
-			
+
 				//make any samples/groups that were in the old version but not the latest one private
 				makeSamplesPrivate(oldAccessions, domain, update);
 			}
@@ -227,7 +227,7 @@ public class SampleTabService {
 			}
 
 		}
-		
+
 		//at this point, sampleData must have a sane submissionIdentifier
 		if (sampleData.msi.submissionIdentifier == null || sampleData.msi.submissionIdentifier.trim().length() == 0) {
 			throw new RuntimeException("Failed to find submission identifier");
@@ -247,7 +247,7 @@ public class SampleTabService {
 
 		//persist updated SampleTab so has all the associated accessions added
 		persistSampleTab(sampleData, domain);
-		
+
 		return sampleData;
 	}
 
@@ -264,7 +264,7 @@ public class SampleTabService {
 		//get the accessions in it
 		Set<String> sampletabAccessions = new HashSet<>();
 		for (SampleNode sampleNode : sampleData.scd.getNodes(SampleNode.class)) {
-			//don't associate accessions that belong to relationship tracking nodes 
+			//don't associate accessions that belong to relationship tracking nodes
 			if (!isDummy(sampleNode)) {
 				sampletabAccessions.add(sampleNode.getSampleAccession());
 			}
@@ -282,11 +282,11 @@ public class SampleTabService {
 			mongoSampleTab = sampleTabIdSerivce.accessionAndInsert(mongoSampleTab);
 			sampleData.msi.submissionIdentifier = mongoSampleTab.getId();
 			log.info("Generated new sampletab identifier "+mongoSampleTab.getId());
-		} else {			
+		} else {
 			log.info("Saving submission "+sampleData.msi.submissionIdentifier);
 			mongoSampleTab = mongoSampleTabRepository.save(mongoSampleTab);
 		}
-		
+
 	}
 
 
@@ -325,12 +325,12 @@ public class SampleTabService {
 		return sampleTab;
 
 	}
-	
+
 	/**
 	 * This will save each individual sample and group in the sampletab file
-	 * If they don't have accessions before, new ones will be assigned *AND STORED IN sampleData* 
+	 * If they don't have accessions before, new ones will be assigned *AND STORED IN sampleData*
 	 * Note THIS WORKS BY SIDE-EFFECT
-	 * 
+	 *
 	 * @param sampleData
 	 * @param domain
 	 * @param release
@@ -339,12 +339,19 @@ public class SampleTabService {
 	 */
 	private void persistSamplesAndGroups(SampleData sampleData, String domain, Instant release, Instant update, boolean setUpdateDate) {
 		Map<String, Future<Resource<Sample>>> futureMap = new TreeMap<>();
+		Map<String, Collection<Relationship>> relationshipsMap = new TreeMap<>();
+
+		// Submit samples the first time without relationships
 		for (SampleNode sampleNode : sampleData.scd.getNodes(SampleNode.class)) {
-			if (!isDummy(sampleNode)) {			
+			if (!isDummy(sampleNode)) {
 				Sample sample = sampleNodeToSample(sampleNode, sampleData.msi, domain, release, update);
-				
-				futureMap.put(sample.getName(), bioSamplesClient.persistSampleResourceAsync(sample, setUpdateDate, true));
-			}			
+				Collection<Relationship> sampleRelationship = sample.getRelationships();
+
+				Sample sampleWithoutRelationships = Sample.Builder.fromSample(sample).withNoRelationships().build();
+
+				relationshipsMap.put(sample.getName(), sampleRelationship);
+				futureMap.put(sample.getName(), bioSamplesClient.persistSampleResourceAsync(sampleWithoutRelationships, setUpdateDate, true));
+			}
 		}
 
 		//resolve futures for submitting samples
@@ -370,69 +377,74 @@ public class SampleTabService {
 				throw new RuntimeException(e);
 			}
 			boolean changed = false;
-			Collection<Relationship> addRelationships = new HashSet<>();
-			Collection<Relationship> removeRelationships = new HashSet<>();
-			for (Relationship relationship : sample.getRelationships()) {
-				if (relationship.getSource().equals(sample.getAccession())) {
-					if (!relationship.getTarget().matches("SAM[END][AG]?[0-9]+")) {
-						//this is a relationship that points to a non accessions
-						//check if any of the samples here  have a name that matches
-						//if so, update the relationship to use the accession
-						if (futureMap.keySet().contains(relationship.getTarget())) {							
-							Sample target;
-							try {
-								target = futureMap.get(relationship.getTarget()).get().getContent();
-							} catch (InterruptedException | ExecutionException e) {
-								throw new RuntimeException(e);
-							}							
-							removeRelationships.add(relationship);
-							addRelationships.add(Relationship.build(sample.getAccession(), 
-									relationship.getType(), target.getAccession()));
-							changed = true;
 
-							// Update also sampletab node entry
-							SampleNode sampleNode = sampleData.scd.getNode(futureName, SampleNode.class);
-							SCDNodeAttribute newRelationship = null;
+			Collection<Relationship> sampleRelationship = relationshipsMap.get(sample.getName());
+			Collection<Relationship> updatedRelationships = new TreeSet<>();
 
-							// Create the relationship node based on the relationship type
-							switch (relationship.getType()) {
-								case "derived from":
-									newRelationship = new DerivedFromAttribute(target.getAccession());
-									break;
-								case "same as":
-									newRelationship = new SameAsAttribute(target.getAccession());
-									break;
-								case "child of":
-									newRelationship = new ChildOfAttribute(target.getAccession());
-									break;
-							}
+			for (Relationship relationship: sampleRelationship) {
+				String relSource = relationship.getSource();
+				String relTarget = relationship.getTarget();
+				String relType = relationship.getType();
 
-							// Search for the corresponding attribute with
-							List<SCDNodeAttribute> nodeAttrList = sampleNode.getAttributes().stream()
-									.filter(attr -> attr.getAttributeType().equalsIgnoreCase(relationship.getType()))
-									.filter(attr -> attr.getAttributeValue().equals(relationship.getTarget()))
-									.collect(Collectors.toList());
-							if (nodeAttrList.size() == 1) {
-								SCDNodeAttribute nodeAttr = nodeAttrList.get(0);
-								sampleNode.removeAttribute(nodeAttr);
-								sampleNode.addAttribute(newRelationship);
-							} else {
-								// This should not happen at this stage of the process
-								throw new RuntimeException("Sample " + futureName + " has a relationship with " +
-										relationship.getTarget() + " which is not part of the same sampletab");
-							}
-						} else {
-							// This should not happen at this stage of the process
-							throw new RuntimeException("Sample " + futureName + " has a relationship with " +
-									relationship.getTarget() + " which is not part of the same sampletab");
-						}
-					}
+				if (relSource.equals(futureName)) {
+					relSource = sample.getAccession();
 				}
-			}
+                if (!relTarget.matches(AccessionType.ANY.getAccessionRegex())) {
+                    //this is a relationship that points to a non accessions
+                    //check if any of the samples here  have a name that matches
+                    //if so, update the relationship to use the accession
+                    if (futureMap.keySet().contains(relTarget)) {
+                        Sample target;
+                        try {
+                            target = futureMap.get(relationship.getTarget()).get().getContent();
+                        } catch (InterruptedException | ExecutionException e) {
+                            throw new RuntimeException(e);
+                        }
+                        updatedRelationships.add(Relationship.build(relSource,
+                                relType, target.getAccession()));
+                        changed = true;
+
+                        // Update also sampletab node entry
+                        SampleNode sampleNode = sampleData.scd.getNode(futureName, SampleNode.class);
+                        SCDNodeAttribute newRelationship = null;
+
+                        // Create the relationship node based on the relationship type
+                        switch (relType) {
+                            case "derived from":
+                                newRelationship = new DerivedFromAttribute(target.getAccession());
+                                break;
+                            case "same as":
+                                newRelationship = new SameAsAttribute(target.getAccession());
+                                break;
+                            case "child of":
+                                newRelationship = new ChildOfAttribute(target.getAccession());
+                                break;
+                        }
+
+                        // Search for the corresponding attribute with
+                        List<SCDNodeAttribute> nodeAttrList = sampleNode.getAttributes().stream()
+                                .filter(attr -> attr.getAttributeType().equalsIgnoreCase(relationship.getType()))
+                                .filter(attr -> attr.getAttributeValue().equals(relationship.getTarget()))
+                                .collect(Collectors.toList());
+                        if (nodeAttrList.size() == 1) {
+                            SCDNodeAttribute nodeAttr = nodeAttrList.get(0);
+                            sampleNode.removeAttribute(nodeAttr);
+                            sampleNode.addAttribute(newRelationship);
+                        } else {
+                            // This should not happen at this stage of the process
+                            throw new RuntimeException("Sample " + futureName + " has a relationship with " +
+                                    relationship.getTarget() + " which is not part of the same sampletab");
+                        }
+                    } else {
+                        // This should not happen at this stage of the process
+                        throw new RuntimeException("Sample " + futureName + " has a relationship with " +
+                                relationship.getTarget() + " which is not part of the same sampletab");
+                    }
+                }
+            }
 			if (changed) {
-				sample.getRelationships().removeAll(removeRelationships);
-				sample.getRelationships().addAll(addRelationships);
-				futureMap.put(sample.getName(), bioSamplesClient.persistSampleResourceAsync(sample, setUpdateDate, true));
+			    Sample updatedSample = Sample.Builder.fromSample(sample).withRelationships(updatedRelationships).build();
+				futureMap.put(updatedSample.getName(), bioSamplesClient.persistSampleResourceAsync(updatedSample, setUpdateDate, true));
 			}
 		}
 		//check any updated futures to make sure they are finished
@@ -444,7 +456,7 @@ public class SampleTabService {
 				throw new RuntimeException(e);
 			}
 		}
-		
+
 		for (GroupNode groupNode : sampleData.scd.getNodes(GroupNode.class)) {
 			Sample sample = groupNodeToSample(groupNode, sampleData.msi, domain, release, update);
 			//assign this fake sample a group accession *before* it is actually persisted
@@ -461,14 +473,15 @@ public class SampleTabService {
 					relationships.add(Relationship.build(sample.getAccession(), "has member", sampleNode.getSampleAccession()));
 				}
 			}
-			sample = Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(),
-					sample.getRelease(), sample.getUpdate(), sample.getAttributes(), relationships, sample.getExternalReferences(),
-					sample.getOrganizations(), sample.getContacts(), sample.getPublications());
+//			sample = Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(),
+//					sample.getRelease(), sample.getUpdate(), sample.getAttributes(), relationships, sample.getExternalReferences(),
+//					sample.getOrganizations(), sample.getContacts(), sample.getPublications());
+            sample = Sample.Builder.fromSample(sample).withRelationships(relationships).build();
 
 			sample = bioSamplesClient.persistSampleResource(sample, setUpdateDate, true).getContent();
 			if (groupNode.getGroupAccession() == null) {
 				groupNode.setGroupAccession(sample.getAccession());
-			}				
+			}
 		}
 	}
 
@@ -500,26 +513,31 @@ public class SampleTabService {
 
 		//beware, works by side-effect
 		populateAttributes(accession, groupNode.getAttributes(), attributes, relationships, externalReferences);
-		
-		if (groupNode.getGroupDescription() != null && 
+
+		if (groupNode.getGroupDescription() != null &&
 				groupNode.getGroupDescription().trim().length() > 0) {
 			attributes.add(Attribute.build("description", groupNode.getGroupDescription()));
-		}			
+		}
 		//add submission information
 		attributes.add(Attribute.build("Submission identifier", msi.submissionIdentifier));
 		if (msi.submissionDescription != null && msi.submissionDescription.trim().length() > 0) {
-			attributes.add(Attribute.build("Submission description", msi.submissionDescription));			
+			attributes.add(Attribute.build("Submission description", msi.submissionDescription));
 		}
 		if (msi.submissionTitle != null && msi.submissionTitle.trim().length() > 0) {
-			attributes.add(Attribute.build("Submission title", msi.submissionTitle));			
+			attributes.add(Attribute.build("Submission title", msi.submissionTitle));
 		}
-		Sample sample = Sample.build(name, accession, domain, release, update,
-				attributes, relationships, externalReferences,
-				organizations, contacts, publications);
+//		Sample sample = Sample.build(name, accession, domain, release, update,
+//				attributes, relationships, externalReferences,
+//				organizations, contacts, publications);
+        Sample sample = new Sample.Builder(name, accession).withDomain(domain)
+				.withRelease(release).withUpdate(update)
+				.withAttributes(attributes).withRelationships(relationships).withExternalReferences(externalReferences)
+				.withOrganizations(organizations).withContacts(contacts).withPublications(publications)
+				.build();
 
 		return sample;
 	}
-	
+
 	private Sample sampleNodeToSample(SampleNode sampleNode, MSI msi, String domain, Instant release, Instant update) {
 
 		String accession = sampleNode.getSampleAccession();
@@ -535,9 +553,17 @@ public class SampleTabService {
 
 		//beware, works by side-effect
 		populateAttributes(accession, sampleNode.getAttributes(), attributes, relationships, externalReferences);
-		
+
+		relationships = relationships.parallelStream().map(r -> {
+		    if (r.getSource() == null) {
+		    	return Relationship.build(name, r.getType(), r.getTarget());
+			} else {
+		    	return r;
+			}
+		}).collect(Collectors.toCollection(TreeSet::new));
+
 		//add description
-		if (sampleNode.getSampleDescription() != null && 
+		if (sampleNode.getSampleDescription() != null &&
 				sampleNode.getSampleDescription().trim().length() > 0) {
 			attributes.add(Attribute.build("description", sampleNode.getSampleDescription()));
 		}
@@ -548,17 +574,23 @@ public class SampleTabService {
 		}
 
 		if (msi.submissionDescription != null && msi.submissionDescription.trim().length() > 0) {
-			attributes.add(Attribute.build("Submission description", msi.submissionDescription));			
+			attributes.add(Attribute.build("Submission description", msi.submissionDescription));
 		}
 
 		if (msi.submissionTitle != null && msi.submissionTitle.trim().length() > 0) {
-			attributes.add(Attribute.build("Submission title", msi.submissionTitle));			
+			attributes.add(Attribute.build("Submission title", msi.submissionTitle));
 		}
 
-		Sample sample = Sample.build(name, accession, domain, release, update,
-				attributes, relationships, externalReferences,
-				organizations, contacts, publications);
-		return sample;
+
+//		Sample sample = Sample.build(name, accession, domain, release, update,
+//				attributes, relationships, externalReferences,
+//				organizations, contacts, publications);
+//		return sample;
+        return new Sample.Builder(name, accession).withDomain(domain)
+				.withRelease(release).withUpdate(update)
+				.withAttributes(attributes).withRelationships(relationships).withExternalReferences(externalReferences)
+				.withOrganizations(organizations).withContacts(contacts).withPublications(publications)
+				.build();
 	}
 
 	private SortedSet<ExternalReference> getExternalReferencesFromSampleNode(SampleNode sampleNode) {
@@ -601,17 +633,17 @@ public class SampleTabService {
 
 	/**
 	 * Works by side effect!
-	 * 
-	 * Takes the sampleData and looks up existing sample within that domain   
+	 *
+	 * Takes the sampleData and looks up existing sample within that domain
 	 *
 	 */
 	private void populateExistingAccessions(SampleData sampleData, String domain, Instant release, Instant update) throws DuplicateDomainSampleException {
 
 		String referenceGroupAccession = null;
 
-		for (SampleNode sampleNode : sampleData.scd.getNodes(SampleNode.class)) {			
+		for (SampleNode sampleNode : sampleData.scd.getNodes(SampleNode.class)) {
 			//only build a sample if there is at least one attribute or it has no "parent" node
-			//otherwise, it is just a group membership tracking dummy		
+			//otherwise, it is just a group membership tracking dummy
 			if (!isDummy(sampleNode)) {
 				if (sampleNode.getSampleAccession() == null) {
 					//if there was no accession provided, try to find an existing accession by name and domain
@@ -619,7 +651,7 @@ public class SampleTabService {
 					filterList.add(FilterBuilder.create().onName(sampleNode.getNodeName()).build());
 					filterList.add(FilterBuilder.create().onDomain(domain).build());
 					Iterator<Resource<Sample>> it = bioSamplesClient.fetchSampleResourceAll(null, filterList).iterator();
-	
+
 					Resource<Sample> first = null;
 					if (it.hasNext()) {
 						first = it.next();
@@ -654,12 +686,12 @@ public class SampleTabService {
 						}
 					}
 				}
-			}			
+			}
 		}
 
 
 		for (GroupNode groupNode : sampleData.scd.getNodes(GroupNode.class)) {
-			
+
 			Sample sample = groupNodeToSample(groupNode, sampleData.msi, domain, release, update);
 			if (groupNode.getGroupAccession() == null) {
 
@@ -833,62 +865,62 @@ public class SampleTabService {
 
 	/**
 	 * Works by side effect!
-	 * 
+	 *
 	 * Converts the List<SCDNodeAttribute> into the passed SortedSet objects.
-	 *   
-	 * 
+	 *
+	 *
 	 * @param scdNodeAttributes
 	 */
-	private void populateAttributes(String accession, List<SCDNodeAttribute> scdNodeAttributes, 
-			SortedSet<Attribute> attributes , SortedSet<Relationship> relationships, SortedSet<ExternalReference> externalReferences) {		
+	private void populateAttributes(String accession, List<SCDNodeAttribute> scdNodeAttributes,
+			SortedSet<Attribute> attributes , SortedSet<Relationship> relationships, SortedSet<ExternalReference> externalReferences) {
 		for (SCDNodeAttribute attribute : scdNodeAttributes) {
 			String type = null;
 			String value = null;
 			String unit = null;
-			
+
 			if (attribute instanceof CommentAttribute) {
-				CommentAttribute commentAttribute = (CommentAttribute) attribute;					
+				CommentAttribute commentAttribute = (CommentAttribute) attribute;
 				type = commentAttribute.type;
-				value = commentAttribute.getAttributeValue();					
-				if (commentAttribute.unit != null 
+				value = commentAttribute.getAttributeValue();
+				if (commentAttribute.unit != null
 						&& commentAttribute.unit.getAttributeValue() != null
 						&& commentAttribute.unit.getAttributeValue().trim().length() > 0) {
 					unit = commentAttribute.unit.getAttributeValue().trim();
-				}					
-				String termSourceId = commentAttribute.getTermSourceID();					
-				attributes.add(makeAttribute(type, value, termSourceId, unit));		
-				
+				}
+				String termSourceId = commentAttribute.getTermSourceID();
+				attributes.add(makeAttribute(type, value, termSourceId, unit));
+
 			} else if (attribute instanceof CharacteristicAttribute) {
-				CharacteristicAttribute characteristicAttribute = (CharacteristicAttribute) attribute;					
+				CharacteristicAttribute characteristicAttribute = (CharacteristicAttribute) attribute;
 				type = characteristicAttribute.type;
-				value = characteristicAttribute.getAttributeValue();					
-				if (characteristicAttribute.unit != null 
+				value = characteristicAttribute.getAttributeValue();
+				if (characteristicAttribute.unit != null
 						&& characteristicAttribute.unit.getAttributeValue() != null
 						&& characteristicAttribute.unit.getAttributeValue().trim().length() > 0) {
 					unit = characteristicAttribute.unit.getAttributeValue().trim();
-				}					
-				String termSourceId = characteristicAttribute.getTermSourceID();					
-				attributes.add(makeAttribute(type, value, termSourceId, unit));	
+				}
+				String termSourceId = characteristicAttribute.getTermSourceID();
+				attributes.add(makeAttribute(type, value, termSourceId, unit));
 
 			} else if (attribute instanceof AbstractNamedAttribute) {
-				AbstractNamedAttribute abstractNamedAttribute = (AbstractNamedAttribute) attribute;		
+				AbstractNamedAttribute abstractNamedAttribute = (AbstractNamedAttribute) attribute;
 				type = abstractNamedAttribute.getAttributeType();
-				value = abstractNamedAttribute.getAttributeValue();	
-				String termSourceId = abstractNamedAttribute.getTermSourceID();					
-				attributes.add(makeAttribute(type, value, termSourceId, null));				
+				value = abstractNamedAttribute.getAttributeValue();
+				String termSourceId = abstractNamedAttribute.getTermSourceID();
+				attributes.add(makeAttribute(type, value, termSourceId, null));
 			} else if (attribute instanceof DatabaseAttribute) {
 				DatabaseAttribute databaseAttribute = (DatabaseAttribute) attribute;
 				if (databaseAttribute.databaseURI != null) {
 					externalReferences.add(ExternalReference.build(databaseAttribute.databaseURI));
-				}				
+				}
 			} else if (attribute instanceof AbstractRelationshipAttribute) {
 				//this is a relationship, store appropriately
 				AbstractRelationshipAttribute abstractRelationshipAttribute = (AbstractRelationshipAttribute) attribute;
 				type = abstractRelationshipAttribute.getAttributeType().toLowerCase();
 				value = abstractRelationshipAttribute.getAttributeValue();
 				relationships.add(Relationship.build(accession, type, value));
-			}				
-		}		
+			}
+		}
 	}
 
 	/**

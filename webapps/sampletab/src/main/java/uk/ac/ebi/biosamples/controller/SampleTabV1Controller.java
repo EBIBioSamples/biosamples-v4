@@ -34,7 +34,8 @@ public class SampleTabV1Controller {
 	@Autowired
 	private SampleTabMultipartFileConverter sampleTabFileConverter;
 
-    @PostMapping(value = "/api/v1/json/va")
+	//FIXME 2018/10/02 - Permanently remove after sometime if no problem is reported
+//    @PostMapping(value = "/api/v1/json/va")
     public @ResponseBody Outcome doValidation(@RequestBody SampleTabRequest request) {
     	return parse(request);
     }
@@ -52,7 +53,8 @@ public class SampleTabV1Controller {
     	return parse(sampleTabFileConverter.convert(sampleTabFile));
 	}
 
-    @PostMapping(value = "/api/v1/json/ac")
+	//FIXME 2018/10/02 - Permanently remove after sometime if no problem is reported
+//    @PostMapping(value = "/api/v1/json/ac")
     public @ResponseBody Outcome doAccession(@RequestBody SampleTabRequest request, @RequestParam(value="apikey") String apiKey) {
     	//handle APIkey
     	if (apiKey == null) {
@@ -91,7 +93,8 @@ public class SampleTabV1Controller {
 		return doAccession(sampleTabFileConverter.convert(sampleTabFile), apiKey);
 	}
 
-    @PostMapping(value = "/api/v1/json/sb")
+	//FIXME 2018/10/02 - Permanently remove after sometime if no problem is reported
+//    @PostMapping(value = "/api/v1/json/sb")
     public @ResponseBody Outcome doSubmission(@RequestBody SampleTabRequest request,  @RequestParam(value="apikey") String apiKey) {
     	//handle APIkey
     	if (apiKey == null ) {

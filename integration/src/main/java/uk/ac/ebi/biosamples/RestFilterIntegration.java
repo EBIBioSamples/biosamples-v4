@@ -148,7 +148,7 @@ public class RestFilterIntegration extends AbstractIntegration{
         }
 
         log.info("Getting sample 1 and 2 using filter on accession");
-        Filter accessionFilter = FilterBuilder.create().onAccession("TestFilter[12]").build();
+        Filter accessionFilter = FilterBuilder.create().onAccession("SAMEA1[01]").build();
         samplePage = client.fetchPagedSampleResource("",
                 Collections.singletonList(accessionFilter),
                 0, 10);
@@ -242,7 +242,7 @@ public class RestFilterIntegration extends AbstractIntegration{
 
     public Sample getTestSample1() {
         String name = "Test Filter Sample 1";
-        String accession = "TestFilter1";
+        String accession = "SAMEA10";
         String domain = "self.BiosampleIntegrationTest";
         Instant update = Instant.parse("1999-12-25T11:36:57.00Z");
         Instant release = Instant.parse("1999-12-25T11:36:57.00Z");
@@ -261,7 +261,7 @@ public class RestFilterIntegration extends AbstractIntegration{
 
     public Sample getTestSample2() {
         String name = "Test Filter Sample 2";
-        String accession = "TestFilter2";
+        String accession = "SAMEA11";
         String domain = "self.BiosampleIntegrationTest";
         Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
         Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
@@ -279,13 +279,13 @@ public class RestFilterIntegration extends AbstractIntegration{
 
     public Sample getTestSample3() {
         String name = "Test Filter Sample 3";
-        String accession = "TestFilter3";
+        String accession = "SAMD0";
         String domain = "self.BiosampleIntegrationTest";
         Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
         Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
         SortedSet<Relationship> relations = new TreeSet<>();
-        relations.add(Relationship.build(accession, "parent of", "TestFilter2"));
+        relations.add(Relationship.build(accession, "parent of", "SAMEA11"));
 
 
 //        return Sample.build(name, accession, domain, release, update, null, relations, new TreeSet<>(), null, null, null);

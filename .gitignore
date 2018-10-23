@@ -92,3 +92,9 @@ fabric.properties
 pipelines/curation/curations.csv
 /pipelines/ena/export.json
 /pipelines/ena/export-random-50.json
+
+# Javascript
+.vscode
+.nyc_output
+**/coverage
+create_new_facets_and_filters.md

@@ -20,10 +20,10 @@ import java.util.TreeSet;
 public class RestFacetIntegration extends AbstractIntegration {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
-	
+
 	private final IntegrationProperties integrationProperties;
 	private final BioSamplesProperties bioSamplesProperties;
-	
+
 	public RestFacetIntegration(BioSamplesClient client, IntegrationProperties integrationProperties,
 			BioSamplesProperties bioSamplesProperties) {
 		super(client);
