@@ -3,6 +3,7 @@ package uk.ac.ebi.biosamples.service;
 import org.springframework.core.convert.converter.Converter;
 import uk.ac.ebi.biosamples.model.*;
 
+import java.net.URL;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -21,6 +22,7 @@ public class SampleToJsonLDSampleRecordConverter implements Converter<Sample, Js
 
         JsonLDSample jsonLD = new JsonLDSample();
         String[] identifiers = {getBioSamplesIdentifierDotOrg(sample.getAccession())};
+        jsonLD.setSameAs(getBioSamplesIdentifierDotOrgLink(sample.getAccession()));
         jsonLD.setIdentifiers(identifiers);
         jsonLD.setName(sample.getName());
 
@@ -89,7 +91,12 @@ public class SampleToJsonLDSampleRecordConverter implements Converter<Sample, Js
     }
 
     private String getBioSamplesIdentifierDotOrg(String accession) {
-        return "biosamples:"+accession;
+        return "biosample:"+accession;
+    }
+
+    //TODO change identifiers
+    private String getBioSamplesIdentifierDotOrgLink(String accession) {
+        return "http://identifiers.org/biosample/"+accession;
     }
 
 }
