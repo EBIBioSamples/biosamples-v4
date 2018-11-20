@@ -1,5 +1,6 @@
 package uk.ac.ebi.biosamples.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -10,7 +11,7 @@ import java.util.List;
 /**
  * Object representing BioSchema Sample entity
  */
-@JsonPropertyOrder({ "@context", "@type", "additionalType", "identifier", "name", "description", "url", "dataset", "additionalProperty"})
+@JsonPropertyOrder({ "@context", "@type", "additionalType", "@id", "identifier", "name", "description", "url", "dataset", "additionalProperty"})
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class JsonLDSample implements BioschemasObject {
 
@@ -23,6 +24,8 @@ public class JsonLDSample implements BioschemasObject {
     private final String[] type = {"BioChemEntity", "Sample"};
 
     //private final String additionalType = "http://www.ontobee.org/ontology/OBI?iri=http://purl.obolibrary.org/obo/OBI_0000747";
+    private String id;
+    private String sameAs;
     private String[] identifiers;
     private String name;
     private String description;
@@ -38,6 +41,7 @@ public class JsonLDSample implements BioschemasObject {
         sampleContext.addContext("Sample", sampleOntologyURI);
     }
 
+    @JsonIgnore
     public BioSchemasContext getContext() {
         return sampleContext;
     }
@@ -50,6 +54,26 @@ public class JsonLDSample implements BioschemasObject {
 //        return additionalType;
 //    }
 
+
+    @JsonProperty("@id")
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    @JsonProperty("sameAs")
+    public String getSameAs() {
+        return sameAs;
+    }
+
+    public void setSameAs(String sameAs) {
+        this.sameAs = sameAs;
+    }
+
+    @JsonProperty("identifier")
     public String[] getIdentifiers() {
         return identifiers;
     }
