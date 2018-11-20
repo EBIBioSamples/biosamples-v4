@@ -18,8 +18,8 @@ services:
     #AAP certificate
     - jwt.certificate=public.explore.der
     - security.basic.path=
-    - aap.domains.url=https://explore.api.aap.tsi.ebi.ac.uk
-    - aap.token.url=https://explore.api.aap.tsi.ebi.ac.uk/auth
+    - aap.domains.url=https://explore.api.aai.ebi.ac.uk
+    - aap.token.url=https://explore.api.aai.ebi.ac.uk/auth
     #configure other services
     - spring.data.solr.host=http://solr:8983/solr
     - spring.data.mongodb.uri=mongodb://mongo:27017/biosamples
@@ -57,7 +57,7 @@ services:
     - 8081:8080
     - 9090:9090
     - 8000:8000
-    
+
   biosamples-webapps-sampletab:
     image: biosamples:latest
     links:
@@ -97,7 +97,7 @@ services:
     - biosamples.webapp.core.uri=http://localhost:8081/biosamples
     ports:
     - 8082:8080
-  
+
   biosamples-webapps-legacyxml:
     image: biosamples:latest
     links:

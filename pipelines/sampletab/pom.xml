@@ -24,7 +24,7 @@
 			<version>${bsd2017.version}</version>
 		</dependency>
 	</dependencies>
-	
+
  	<build>
  		<plugins>
  			<plugin>

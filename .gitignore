@@ -96,3 +96,4 @@ pipelines/curation/curations.csv
 .nyc_output
 **/coverage
 create_new_facets_and_filters.md
+*.versionsBackup

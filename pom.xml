@@ -48,6 +48,10 @@
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
@@ -62,6 +66,11 @@
 			<artifactId>cglib</artifactId>
 			<version>2.2.2</version>
 		</dependency>
+		<dependency>
+			<groupId>de.siegmar</groupId>
+			<artifactId>logback-gelf</artifactId>
+			<version>1.1.0</version>
+		</dependency>
 	</dependencies>
 
 	<dependencyManagement>
@@ -75,7 +84,7 @@
 	</dependencyManagement>
 
 
-	<repositories>	
+	<repositories>
 		<!-- needed to EBI TSC AAP -->
 		<repository>
 			<id>ossrh</id>

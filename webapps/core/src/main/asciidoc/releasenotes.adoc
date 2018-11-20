@@ -4,6 +4,15 @@
 This pages contains links to release notes for BioSamples for version 4.0.0 and higher. This release represents a comprehensive overhaul and therefore previous release notes are no longer applicable.
 
 [[section]]
+4.1.7
+----
+* Added libraries to enable applications to use Graylog to allow configuration of aggregated logging
+* Switched to the AAP explore environment at https://explore.api.aai.ebi.ac.uk
+* Included sampletab template file in the sampletab documentation
+* Included ETAG and Curation Object recipes to the BioSamples cookbook
+
+
+[[section]]
 4.1.6
 ----
 
