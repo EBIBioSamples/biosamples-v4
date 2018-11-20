@@ -13,12 +13,15 @@ owner of the sample
 ==  Steps
 
 === 1. Get the JSON Web Token from AAP
-Start by getting your JWT to use in your application
+
+Start by getting your AAP JWT to use in your application.
 
 You can do that in curl for example using the next command
 ```
 TOKEN=$(curl --user <app-user>:<aap-password> https://api.aai.ebi.ac.uk/auth)
 ```
+
+For more details on AAP, check out https://aai.ebi.ac.uk[their website]
 
 === 2. Produce a BioSamples curation object in JSON format
 
@@ -102,13 +105,13 @@ we must create a curation object like this one
 ```
 We are now ready to submit the curation object to BioSamples
 
-=== 3. Submit the curation object using a POST request to the
+=== 3. Submit the curation object to BioSamples using a POST request
 
 You can now submit a POST request to BioSamples, using whatever service/app you like.
 Here we are going to submit our curation object using cURL
 
 ```
-$ curl 'https://www.ebi.ac.uk/biosamples/samples/{sample-accession}/curationlinks' -i -X POST -H 'Content-Type: application/json' -H 'Authorization: Bearer $TOKEN' -d '{
+$ curl 'https://www.ebi.ac.uk/biosamples/samples/SAMN08432304/curationlinks' -i -X POST -H 'Content-Type: application/json' -H 'Authorization: Bearer $TOKEN' -d '{
 "sample": "SAMN08432304",
 "curation": {
   "attributesPre": [
