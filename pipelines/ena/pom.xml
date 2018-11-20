@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>4.1.6-rc3-SNAPSHOT</version>
+		<version>4.1.7-SNAPSHOT</version>
 		<relativePath>../../</relativePath>
 	</parent>
 
@@ -23,7 +23,7 @@
 			<artifactId>utils-thread</artifactId>
 			<version>${bsd2017.version}</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-jdbc</artifactId>
@@ -59,7 +59,7 @@
 		</dependency>
 
 	</dependencies>
-	
+
 	<repositories>
 	  	<repository>
 			<id>maven.oracle.com</id>
