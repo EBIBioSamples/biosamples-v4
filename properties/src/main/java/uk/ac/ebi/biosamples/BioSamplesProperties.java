@@ -33,7 +33,7 @@ public class BioSamplesProperties {
 	@Value("${biosamples.client.threadcount.max:8}")
 	private int threadCountMax;
 	
-	@Value("${biosamples.client.aap.uri:https://explore.api.aap.tsi.ebi.ac.uk/auth}")
+	@Value("${biosamples.client.aap.uri:https://explore.api.aai.ebi.ac.uk/auth}")
 	private URI biosamplesClientAapUri;
 	
 	//can't use "null" because it will be a string
