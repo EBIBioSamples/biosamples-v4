@@ -35,9 +35,9 @@ and a AAP domain you want to use to identify the curation provenance (note the A
 {
   "sample" : "SAMEA3219152",
   "curation" : {
-    "attributesPre" : [ { } ],
-    "attributesPost" : [ { } ],
-    "externalReferencesPre" : [ { } ],
+    "attributesPre" : [],
+    "attributesPost" : [],
+    "externalReferencesPre" : [],
     "externalReferencesPost" : [ {
       "url" : "https://www.ebi.ac.uk/metagenomics/api/v1/samples/ERS645361"
     } ]
@@ -57,9 +57,9 @@ Here we are going to do that using cURL
 $ curl 'https://www.ebi.ac.uk/biosamples/samples/SAMEA3219152/curationlinks' -i -X POST -H 'Content-Type: application/json' -H 'Authorization: Bearer $TOKEN' -d '{
   "sample" : "SAMEA3219152",
      "curation" : {
-       "attributesPre" : [ { } ],
-       "attributesPost" : [ { } ],
-       "externalReferencesPre" : [ { } ],
+       "attributesPre" : [],
+       "attributesPost" : [],
+       "externalReferencesPre" : [],
        "externalReferencesPost" : [ {
          "url" : "https://www.ebi.ac.uk/metagenomics/api/v1/samples/ERS645361"
        } ]
@@ -80,9 +80,9 @@ Here the template for the curation object to add a new relation to a BioSamples 
 {
   "sample" : <accession-of-the-interested-sample>,
   "curation" : {
-    "attributesPre" : [ { } ],
-    "attributesPost" : [ { } ],
-    "externalReferencesPre" : [ { } ],
+    "attributesPre" : [],
+    "attributesPost" : [],
+    "externalReferencesPre" : [],
     "externalReferencesPost" : [ {
       "url" : <the-url-to-the-external-reference-you-want-to-add>
     } ]
