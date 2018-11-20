@@ -4,7 +4,7 @@
 
 	<groupId>uk.ac.ebi.biosamples</groupId>
 	<artifactId>biosamples</artifactId>
-	<version>4.1.7-rc1</version>
+	<version>4.1.7-SNAPSHOT</version>
 
 
 	<packaging>pom</packaging>
@@ -84,7 +84,7 @@
 	</dependencyManagement>
 
 
-	<repositories>	
+	<repositories>
 		<!-- needed to EBI TSC AAP -->
 		<repository>
 			<id>ossrh</id>

@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>4.1.7-rc1</version>
+		<version>4.1.7-SNAPSHOT</version>
 		<relativePath>../../</relativePath>
 	</parent>
 
@@ -26,23 +26,23 @@
 		</repository>
 	</repositories>
 
-	<dependencies>		
+	<dependencies>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>biosamples-spring-boot-starter</artifactId>
 			<version>${bsd2017.version}</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>utils-webapp</artifactId>
 			<version>${bsd2017.version}</version>
-		</dependency>	
+		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>models-legacyxml</artifactId>
 			<version>${bsd2017.version}</version>
-		</dependency>		
+		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>models-mongo</artifactId>
