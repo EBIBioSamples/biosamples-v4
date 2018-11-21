@@ -17,26 +17,11 @@ public class ContextSerializer extends StdSerializer<BioSchemasContext> {
 
     @Override
     public void serialize(BioSchemasContext bioSchemasContext, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
-        jsonGenerator.writeStartArray();
-
-        // Write the schema.org base namespace
-        jsonGenerator.writeString(bioSchemasContext.getSchemaOrgContext().toString());
 
         // Write the @base field -> Not sure why this is need, but following UNIPROT convention
         jsonGenerator.writeStartObject();
         jsonGenerator.writeStringField("@base", bioSchemasContext.getBaseContext().toString());
         jsonGenerator.writeEndObject();
 
-        // Write all the other contexts
-        jsonGenerator.writeStartObject();
-        for(Map.Entry<String, URI> contextEntry: bioSchemasContext.getOtherContext().entrySet()) {
-            jsonGenerator.writeFieldName(contextEntry.getKey());
-            jsonGenerator.writeStartObject();
-            jsonGenerator.writeStringField("@id", contextEntry.getValue().toString());
-            jsonGenerator.writeEndObject();
-        }
-        jsonGenerator.writeEndObject();
-
-        jsonGenerator.writeEndArray();
     }
 }

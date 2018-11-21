@@ -32,7 +32,6 @@ public class JsonLDDataRecord implements BioschemasObject{
     @JsonProperty("dateModified")
     private ZonedDateTime dateModified;
 
-    @JsonProperty("isPartOf")
     private Map partOf = getDatasetPartOf();
 
     public String getIdetifier() {
@@ -95,6 +94,7 @@ public class JsonLDDataRecord implements BioschemasObject{
     }
 
 
+    @JsonProperty("isPartOf")
     public Map getDatasetPartOf() {
         Map<String, String> datasetPartOf = new HashMap<>();
         datasetPartOf.put("@type", "Dataset");
