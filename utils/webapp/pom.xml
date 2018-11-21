@@ -12,7 +12,7 @@
 		<relativePath>../../</relativePath>
 	</parent>
 
-	<dependencies>		
+	<dependencies>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>models-core</artifactId>

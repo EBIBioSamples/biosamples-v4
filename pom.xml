@@ -84,7 +84,7 @@
 	</dependencyManagement>
 
 
-	<repositories>	
+	<repositories>
 		<!-- needed to EBI TSC AAP -->
 		<repository>
 			<id>ossrh</id>

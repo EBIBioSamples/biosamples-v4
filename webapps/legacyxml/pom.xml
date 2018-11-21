@@ -27,7 +27,7 @@
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>utils-webapp</artifactId>
 			<version>${bsd2017.version}</version>
-		</dependency>	
+		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>biosamples-spring-boot-starter</artifactId>

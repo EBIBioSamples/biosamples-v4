@@ -1,0 +1,176 @@
+
+= [.ebi-color]#How to curate a sample in BioSamples#
+:last-update-label!:
+
+== User requirements
+I want to improve the quality of metadata for a sample in BioSamples but I'm not the
+owner of the sample
+
+== Requirements
+- You need an AAP account to proceed with this recipe
+- Your AAP account should be able to submit to the domain you're going to use in the curation object
+
+==  Steps
+
+=== 1. Get the JSON Web Token from AAP
+
+Start by getting your AAP JWT to use in your application.
+
+You can do that in curl for example using the next command
+```
+TOKEN=$(curl --user <app-user>:<aap-password> https://api.aai.ebi.ac.uk/auth)
+```
+
+For more details on AAP, check out https://aai.ebi.ac.uk[their website]
+
+=== 2. Produce a BioSamples curation object in JSON format
+
+In order to update a field in a sample without being the sample owner
+you need to create a BIoSamples curation object and populate the
+`attributesPre` field with the value you want to change and
+the `attributesPost` field with the value you want to insert
+
+Let's start with a sample like this one (note that for simplicity
+we just reduced the number of attributes):
+```
+{
+  "name": "OAR_USU_Benz2616_LNG",
+  "accession": "SAMN08432304",
+  "domain": "self.BiosampleImportNCBI",
+  "release": "2018-01-29T00:00:00Z",
+  "update": "2018-06-08T16:22:08.220Z",
+  "characteristics": {
+    "breed": [
+      {
+        "text": "Rambouillet"
+      }
+    ],
+    "development stage": [
+      {
+        "text": "adult",
+      }
+    ]
+    ...
+  }
+}
+```
+
+Let's say for example we want add an ontology code to an attribute that doesn't have it, like
+the `development stage`.
+Here's the attribute how it looks like before our curation:
+
+```
+{
+    "type": "development stage",
+    "value": "adult"
+}
+```
+Here's the attribute how we want it to be:
+```
+{
+    "type": "development stage",
+    "value": "adult",
+    "iri": "iri": [
+      "http://www.ebi.ac.uk/efo/EFO_0001272"
+    ]
+}
+```
+
+In order to apply this curation to sample `SAMN08432304`,
+we must create a curation object like this one
+```
+{
+    "sample": "SAMN08432304",
+    "curation": {
+      "attributesPre": [
+        {
+          "type": "development stage",
+          "value": "adult"
+        }
+      ],
+      "attributesPost": [
+        {
+          "type": "development stage",
+          "value": "adult",
+          "iri": [
+            "http://www.ebi.ac.uk/efo/EFO_0001272"
+          ]
+        }
+      ],
+      "externalReferencesPre": [ ],
+      "externalReferencesPost": [ ],
+    },
+    "domain": "self.MyPersonalDomain"
+}
+```
+We are now ready to submit the curation object to BioSamples
+
+=== 3. Submit the curation object to BioSamples using a POST request
+
+You can now submit a POST request to BioSamples, using whatever service/app you like.
+Here we are going to submit our curation object using cURL
+
+```
+$ curl 'https://www.ebi.ac.uk/biosamples/samples/SAMN08432304/curationlinks' -i -X POST -H 'Content-Type: application/json' -H 'Authorization: Bearer $TOKEN' -d '{
+"sample": "SAMN08432304",
+"curation": {
+  "attributesPre": [
+    {
+      "type": "development stage",
+      "value": "adult"
+    }
+  ],
+  "attributesPost": [
+    {
+      "type": "development stage",
+      "value": "adult",
+      "iri": [
+        "http://www.ebi.ac.uk/efo/EFO_0001272"
+      ]
+    }
+  ],
+  "externalReferencesPre": [ ],
+  "externalReferencesPost": [ ],
+},
+"domain": "self.MyPersonalDomain"
+'
+```
+
+== Templates
+=== Attribute and external reference curation template
+```
+{
+  "sample" : <accession-of-the-interested-sample>,
+  "curation" : {
+    "attributesPre" : [
+        {
+            "type": <the-attribute-name>,
+            "value": <the-attribute-value>,
+            "iri": [ <iris-if-sample-already-has>, <...> ]
+        },
+        ...
+    ],
+    "attributesPost" : [
+        {
+            "type": <the-new-attribute-name>,
+            "value": <the-new-attribute-value>,
+            "iri": [ <new-iris-if-sample-already-has>, <...> ]
+        },
+        ...
+    ],
+    "externalReferencesPre" : [
+        {
+          "url" : <the-url-to-external-reference-you-want-to-replace>
+        },
+        ...
+    ],
+    "externalReferencesPost" : [
+        {
+          "url" : <the-new-url-to-the-external-reference-you-want-to-use>
+        },
+        ...
+    ]
+  },
+  "domain" : <the-domain-you-want-to-associate-this-curation>
+}
+```
