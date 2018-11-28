@@ -4,7 +4,7 @@
 
 	<groupId>uk.ac.ebi.biosamples</groupId>
 	<artifactId>biosamples-spring-boot-starter</artifactId>
-	<version>4.1.7-SNAPSHOT</version>
+	<version>4.1.7-rc2</version>
 
 	<packaging>jar</packaging>
 

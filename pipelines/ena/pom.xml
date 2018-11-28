@@ -16,12 +16,12 @@
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>utils-pipeline</artifactId>
-			<version>${bsd2017.version}</version>
+			<version>4.1.7-rc2</version>
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>utils-thread</artifactId>
-			<version>${bsd2017.version}</version>
+			<version>4.1.7-rc2</version>
 		</dependency>
 
 		<dependency>
