@@ -63,7 +63,7 @@
             "name":"Uber-anatomy ontology",
             "namespacePrefix":"UBERON",
             "url":"http://purl.obolibrary.org/obo/uberon.owl",
-            "version":"2018-10-14"
+            "version":"2018-11-25"
          },
          {
             "id":"efo",
