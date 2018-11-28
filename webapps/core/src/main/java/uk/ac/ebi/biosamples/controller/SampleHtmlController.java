@@ -31,9 +31,9 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Primary controller for HTML operations.
- * 
+ *
  * See {@link SampleRestController} for the equivalent REST controller.
- * 
+ *
  * @author faulcon
  *
  */
@@ -87,27 +87,41 @@ public class SampleHtmlController {
 	}
 
 
+	//TODO: 2018/10/29 Maintaining old method for legacy purpose, we can think of deleting this if no-one is actually using it
+//	@GetMapping(value = "/samples")
+//	public String oldSamples(Model model, @RequestParam(name="text", required=false) String text,
+//			@RequestParam(name="filter", required=false) String[] filtersArray,
+//			@RequestParam(name="start", defaultValue="0") Integer start,
+//			@RequestParam(name="rows", defaultValue="10") Integer rows,
+//			HttpServletRequest request, HttpServletResponse response) {
+//		return this.samples(model, text, filtersArray, start/rows, rows, request, response);
+//	}
+
 
 	@GetMapping(value = "/samples")
 	public String samples(Model model, @RequestParam(name="text", required=false) String text,
 			@RequestParam(name="filter", required=false) String[] filtersArray,
-			@RequestParam(name="start", defaultValue="0") Integer start,
-			@RequestParam(name="rows", defaultValue="10") Integer rows,
+			@RequestParam(name="page", defaultValue="1") Integer page,
+			@RequestParam(name="size", defaultValue="10") Integer size,
 			HttpServletRequest request, HttpServletResponse response) {
 
 		//force a minimum of 1 result
-		if (rows < 1) {
-			rows = 1;
+		if (size < 1) {
+			size = 1;
 		}
 		//cap it for our protection
-		if (rows > 1000) {
-			rows = 1000;
+		if (size > 1000) {
+			size = 1000;
+		}
+
+		if (page < 1) {
+			page = 1;
 		}
 
         Collection<Filter> filterCollection = filterService.getFiltersCollection(filtersArray);
 		Collection<String> domains = bioSamplesAapService.getDomains();
 
-		Pageable pageable = new PageRequest(start/rows, rows);
+		Pageable pageable = new PageRequest(page-1, size);
 		Page<Sample> pageSample = samplePageService.getSamplesByText(text, filterCollection, domains, pageable);
 
 		//default to getting 10 values from 10 facets
@@ -126,8 +140,7 @@ public class SampleHtmlController {
 		JsonLDDataset jsonLDDataset = jsonLDService.getBioSamplesDataset();
 
 		model.addAttribute("text", text);
-		model.addAttribute("start", start);
-		model.addAttribute("rows", rows);
+		model.addAttribute("start", (page-1)*size);
 		model.addAttribute("page", pageSample);
 		model.addAttribute("facets", sampleFacets);
 		model.addAttribute("filters", filtersList);
@@ -136,7 +149,7 @@ public class SampleHtmlController {
 
 		//TODO add "clear all facets" button
 		//TODO title of webpage
-		
+
 
 		//Note - EBI load balancer does cache but doesn't add age header, so clients could cache up to twice this age
 		CacheControl cacheControl = CacheControl.maxAge(bioSamplesProperties.getBiosamplesCorePageCacheMaxAge(), TimeUnit.SECONDS);
@@ -147,32 +160,32 @@ public class SampleHtmlController {
 		response.setHeader("Cache-Control", cacheControl.getHeaderValue());
 		return "samples";
 	}
-		
+
 	private Paginations getPaginations(Page<Sample> pageSample, UriComponentsBuilder uriBuilder) {
-		
+
 		int pageTotal = pageSample.getTotalPages();
-		int pageCurrent = pageSample.getNumber()+1;
-		
+		int pageCurrent = pageSample.getNumber() + 1;
+
 		Pagination previous = null;
 		if (pageCurrent > 1) {
 			previous = new Pagination(pageCurrent-1, false, pageCurrent, uriBuilder, pageSample);
 		}
-		
+
 		Pagination next = null;
 		if (pageCurrent < pageTotal) {
 			next = new Pagination(pageCurrent+1, false, pageCurrent, uriBuilder, pageSample);
 		}
 
 		Paginations paginations = new Paginations(pageCurrent, pageTotal, previous, next);
-		
+
 		if (pageTotal <=6) {
 			//few enough pages to fit onto a single bar
 			for (int i=1; i <= pageTotal; i++ ) {
 				paginations.add(new Pagination(i, false, pageCurrent, uriBuilder, pageSample));
 			}
 		} else {
-			//need at least one ellipsis		
-			//if we are in the first 4 or the last 4			
+			//need at least one ellipsis
+			//if we are in the first 4 or the last 4
 			if (pageCurrent <= 4 ) {
 				paginations.add(new Pagination(1, false, pageCurrent, uriBuilder, pageSample));
 				paginations.add(new Pagination(2, false, pageCurrent, uriBuilder, pageSample));
@@ -186,20 +199,20 @@ public class SampleHtmlController {
 				paginations.add(new Pagination(pageTotal-3, false, pageCurrent, uriBuilder, pageSample));
 				paginations.add(new Pagination(pageTotal-2, false, pageCurrent, uriBuilder, pageSample));
 				paginations.add(new Pagination(pageTotal-1, false, pageCurrent, uriBuilder, pageSample));
-				paginations.add(new Pagination(pageTotal, false, pageCurrent, uriBuilder, pageSample));			
+				paginations.add(new Pagination(pageTotal, false, pageCurrent, uriBuilder, pageSample));
 			} else {
 				//will need two sets of ellipsis
 				paginations.add(new Pagination(1, false, pageCurrent, uriBuilder, pageSample));
-				paginations.add(new Pagination(pageCurrent-1, true, pageCurrent, uriBuilder, pageSample));	
-				paginations.add(new Pagination(pageCurrent, false, pageCurrent, uriBuilder, pageSample));	
-				paginations.add(new Pagination(pageCurrent+1, false, pageCurrent, uriBuilder, pageSample));	
+				paginations.add(new Pagination(pageCurrent-1, true, pageCurrent, uriBuilder, pageSample));
+				paginations.add(new Pagination(pageCurrent, false, pageCurrent, uriBuilder, pageSample));
+				paginations.add(new Pagination(pageCurrent+1, false, pageCurrent, uriBuilder, pageSample));
 				paginations.add(new Pagination(pageTotal, true, pageCurrent, uriBuilder, pageSample));
 			}
 		}
-						
+
 		return paginations;
 	}
-	
+
 	private static class Paginations implements Iterable<Pagination> {
 
 		private final List<Pagination> paginations = new ArrayList<>();
@@ -207,41 +220,41 @@ public class SampleHtmlController {
 		public final Pagination next;
 		public final int current;
 		public final int total;
-		
+
 		public Paginations(int current, int total, Pagination previous, Pagination next) {
 			this.current = current;
 			this.total = total;
 			this.previous = previous;
 			this.next = next;
 		}
-		
+
 		public void add(Pagination pagination) {
 			paginations.add(pagination);
 		}
-		
+
 		@Override
 		public Iterator<Pagination> iterator() {
 			return paginations.iterator();
 		}
-		
+
 	}
-	
+
 	private static class Pagination {
 		public final int page;
 		public final String url;
 		public final boolean skip;
 		public final boolean current;
-		
+
 		public Pagination(int pageNo, boolean skip, int currentNo, UriComponentsBuilder uriBuilder, Page<Sample> pageSample) {
 			this.page = pageNo;
 			this.skip = skip;
 			this.current = (currentNo == pageNo);
 			this.url = uriBuilder.cloneBuilder()
-					.replaceQueryParam("start", (pageNo-1)*pageSample.getSize())
+					.replaceQueryParam("page", pageNo)
 					.build().toUriString();
 		}
 	}
-	
+
 	private URI getFilterUri(UriComponentsBuilder uriBuilder, List<String> filters, String filterAdd, String filterRemove) {
 		List<String> tempFiltersList = new ArrayList<>(filters);
 		if (filterAdd != null) {
@@ -273,8 +286,8 @@ public class SampleHtmlController {
 				.build(false).toUri();
 		return uri;
 	}
-	
-	
+
+
 
 	@GetMapping(value = "/samples/{accession}")
 	public String samplesAccession(Model model, @PathVariable String accession, HttpServletRequest request,
@@ -310,33 +323,33 @@ public class SampleHtmlController {
 
 		return "sample";
 	}
-	
+
 
     @GetMapping("/sample/{accession}")
     public String sampleAccession(@PathVariable String accession) {
         return "redirect:/samples/"+accession;
     }
-    
+
     @GetMapping("/sample")
     public String sample() {
         return "redirect:/samples";
-    }	
+    }
 
     @GetMapping("/group/{accession}")
     public String groupAccession(@PathVariable String accession) {
         return "redirect:/samples/"+accession;
     }
-    
+
     @GetMapping("/group")
     public String group() {
         return "redirect:/samples";
-    }	
+    }
 
     @GetMapping("/groups/{accession}")
     public String groupsAccession(@PathVariable String accession) {
         return "redirect:/samples/"+accession;
     }
-    
+
     @GetMapping("/groups")
     public String groups() {
         return "redirect:/samples";
