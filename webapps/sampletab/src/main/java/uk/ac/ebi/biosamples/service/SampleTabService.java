@@ -101,7 +101,10 @@ public class SampleTabService {
 
 		//put any existing accessions into the samplenode and groupnode objects
         //Not that the ownership of the accession is performed also during this step
-		populateExistingAccessions(sampleData, domain, release, update);
+
+		// This could cause duplication issues when the same user (APIkey/aapdomain) is using the same name
+		// for two different samples in two different submissions
+		// populateExistingAccessions(sampleData, domain, release, update);
 
 
 		MongoSampleTab oldSampleTab = null;
