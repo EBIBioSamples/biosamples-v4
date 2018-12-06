@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>4.1.7-rc2</version>
+		<version>4.1.7-rc3</version>
 		<relativePath>../../</relativePath>
 	</parent>
 
@@ -36,17 +36,17 @@
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>utils-webapp</artifactId>
-			<version>4.1.7-rc2</version>
+			<version>4.1.7-rc3</version>
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>models-legacyxml</artifactId>
-			<version>4.1.7-rc2</version>
+			<version>4.1.7-rc3</version>
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>models-mongo</artifactId>
-			<version>4.1.7-rc2</version>
+			<version>4.1.7-rc3</version>
 		</dependency>
 
 		<!-- use Thymleaf for HTML templating -->
