@@ -41,7 +41,7 @@ public class SampleToJsonLDSampleRecordConverter implements Converter<Sample, Js
             jsonLD.setSubjectOf(datasets);
         }
 
-        sampleRecord.idetifier(getBioSamplesIdentifierDotOrg(sample.getAccession()));
+        sampleRecord.identifier(getBioSamplesIdentifierDotOrg(sample.getAccession()));
         sampleRecord.mainEntity(jsonLD);
 
         return sampleRecord;
@@ -66,7 +66,7 @@ public class SampleToJsonLDSampleRecordConverter implements Converter<Sample, Js
                 for (String iri: attr.getIri()) {
                     JsonLDDefinedTerm valueReference = new JsonLDDefinedTerm();
                     if (iri.matches("^https?://.*")) {
-                        valueReference.setInDefinedTermSet(iri);
+                        valueReference.setId(iri);
                     } else {
                         valueReference.setTermCode(iri);
                     }

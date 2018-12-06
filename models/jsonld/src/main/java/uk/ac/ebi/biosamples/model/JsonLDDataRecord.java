@@ -2,6 +2,7 @@ package uk.ac.ebi.biosamples.model;
 
 import com.fasterxml.jackson.annotation.*;
 
+import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -10,19 +11,22 @@ import java.util.HashMap;
 import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder(value = {"@context",  "@type", "identifier", "dateCreated", "dateModified", "mainEntity", "isPartOf"})
+@JsonPropertyOrder(value = {"@context",  "@type", "@id", "identifier", "dateCreated", "dateModified", "mainEntity", "isPartOf"})
 public class JsonLDDataRecord implements BioschemasObject{
 
     private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 
+    @JsonProperty("@id")
+    private final String id = "biosample:SAMEA100000";
+
     @JsonProperty("@context")
-    private final String context = "http://schema.org";
+    private final BioSchemasContext context = new BioSchemasContext();
 
     @JsonProperty("@type")
     private final String type = "DataRecord";
 
     @JsonProperty("identifier")
-    private String idetifier;
+    private String identifier;
 
     @JsonProperty("mainEntity")
     private JsonLDSample mainEntity;
@@ -34,12 +38,20 @@ public class JsonLDDataRecord implements BioschemasObject{
 
     private Map partOf = getDatasetPartOf();
 
-    public String getIdetifier() {
-        return idetifier;
+    public String getId() {
+        return id;
     }
 
-    public JsonLDDataRecord idetifier(String idetifier) {
-        this.idetifier = idetifier;
+    public BioSchemasContext getContext() {
+        return context;
+    }
+
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public JsonLDDataRecord identifier(String identifier) {
+        this.identifier = identifier;
         return this;
     }
 

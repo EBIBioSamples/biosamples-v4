@@ -17,11 +17,11 @@ public class JsonLDSample implements BioschemasObject {
 
     private final URI sampleOntologyURI =  URI.create("http://purl.obolibrary.org/obo/OBI_0000747");
 
-    @JsonProperty("@context")
-    private final BioSchemasContext sampleContext = new BioSchemasContext();
+//    @JsonProperty("@context")
+//    private final BioSchemasContext sampleContext = new BioSchemasContext();
 
     @JsonProperty("@type")
-    private final String type = "Sample";
+    private final String[] type = {"Sample", "OBI:0000747"};
 
     //private final String additionalType = "http://www.ontobee.org/ontology/OBI?iri=http://purl.obolibrary.org/obo/OBI_0000747";
     private String id;
@@ -30,19 +30,19 @@ public class JsonLDSample implements BioschemasObject {
     private String name;
     private String description;
     private String url;
-    private final URI additionalType = URI.create("http://purl.obolibrary.org/obo/OBI_0000747");
+//    private final URI additionalType = URI.create("http://purl.obolibrary.org/obo/OBI_0000747");
 
     private List<String> subjectOf;
 
     @JsonProperty("additionalProperty")
     private List<JsonLDPropertyValue> additionalProperties;
 
-    @JsonIgnore
-    public BioSchemasContext getContext() {
-        return sampleContext;
-    }
+//    @JsonIgnore
+//    public BioSchemasContext getContext() {
+//        return sampleContext;
+//    }
 
-    public String getType() {
+    public String[] getType() {
         return type;
     }
 
@@ -119,8 +119,8 @@ public class JsonLDSample implements BioschemasObject {
     }
 
 
-    public URI getAdditionalType() {
-        return additionalType;
-    }
+//    public URI getAdditionalType() {
+//        return additionalType;
+//    }
 
 }
