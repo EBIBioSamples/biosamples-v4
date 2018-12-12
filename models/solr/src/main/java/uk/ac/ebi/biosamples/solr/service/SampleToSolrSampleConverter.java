@@ -16,6 +16,7 @@ import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.service.ExternalReferenceService;
 import uk.ac.ebi.biosamples.service.SampleRelationshipUtils;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
@@ -84,7 +85,21 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 					attributeUnits.get(key).add(attr.getUnit());
 				}
 			}
-		}	
+		}
+
+		//  Extract the abstract data type and add them as characteristics in solr
+		sample.getData().parallelStream()
+				.forEach(abstractData -> {
+					String key = SolrFieldService.encodeFieldName("structured data");
+
+					if (!attributeValues.containsKey(key)) {
+						attributeValues.put(key, new ArrayList<>());
+					}
+
+					attributeValues.get(key).add(abstractData.getDataType().name());
+				});
+
+
 		//turn external reference into additional attributes for facet & filter
 		for (ExternalReference externalReference : sample.getExternalReferences()) {
 			String externalReferenceNickname = externalReferenceService.getNickname(externalReference);

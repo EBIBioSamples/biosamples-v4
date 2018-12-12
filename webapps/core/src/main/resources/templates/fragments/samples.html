@@ -1,95 +1,120 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-
 <head>
 </head>
 <body>
-	<section th:fragment="facets (facets, filters)">
-		<div class="button-grid">
-            <div>
-				<input id="filter-apply" type="submit" th:form="local-search" class="button columns medium-12" value="Apply filters" disabled/>
-			</div>
-			<div th:each="facet: ${facets}"
-				 th:with="facetType = ${facet.getType().getFacetName()},
+<section th:fragment="facets (facets, filters)">
+    <div class="button-grid">
+        <div>
+            <input id="filter-apply" type="submit" th:form="local-search" class="button columns large-6"
+                   value="Apply filters" disabled/>
+            <input id="filter-clear" th:onclick="|clearFilters()|" type="button"
+                   th:form="local-search" class="button columns large-6"
+                   value="Clear filters" th:disabled="${filters.isEmpty()}"/>
+        </div>
+        <div th:each="facet: ${facets}"
+             th:with="facetType = ${facet.getType().getFacetName()},
 				 		  filterType=${facet.getAssociatedFilterType().get()},
 				 		  generalFilterName=${filterType.getSerialization() + ':' + facet.label}">
-                <div class="facet-container">
-                    <input th:form="local-search"
-                           class="facet-checkbox"
-                           th:id="${generalFilterName}"
-                           type="checkbox" name="filter"
-                           th:value="${generalFilterName}"
-                           th:checked="${#lists.contains(filters, generalFilterName)}" />
-                    <label th:for="${generalFilterName}" class="button columns medium-12 padding-top-small padding-bottom-small facet"
-						   th:classappend="${#lists.contains(filters, generalFilterName)} ? 'secondary'">
-                        <i class="icon icon-functional show-if-checked" data-icon="/"></i>
-						<th:block th:include="this :: facetTitle (facetLabel=${facet.label}, facetType=${facetType})"></th:block>
-						<div class="lead facet-count text-right" th:text="${facet.count}"></div>
-                    </label>
-				</div>
-                <div th:each="value : ${facet.content}"
-					  class="facet-container"
-					  th:with="valueFilterName=${generalFilterName + ':' + value.label}">
-                    <input th:form="local-search" th:with="filterName=${facetType + ':' + facet.label}"
-                           th:id="${valueFilterName}"
-                           class="facet-checkbox"
-                           type="checkbox" name="filter"
-                           th:value="${valueFilterName}"
-                           th:checked="${#lists.contains(filters, valueFilterName)}"
-                           />
-                    <label th:for="${valueFilterName}" class="button columns medium-12 padding-top-small padding-bottom-small facet"
-                           th:classappend="${#lists.contains(filters, valueFilterName)} ? 'secondary'">
-                        <i class="icon icon-functional show-if-checked" data-icon="/"></i>
-                        <span class="facet-name text-left" th:text="${value.label}"></span>
-                        <span class="facet-count text-right" th:text="${value.count}"></span>
-                    </label>
-				</div>
-			</div>
-		</div>
-	</section>
+            <div class="facet-container">
+                <input th:form="local-search"
+                       class="facet-checkbox"
+                       th:id="${generalFilterName}"
+                       type="checkbox" name="filter"
+                       th:value="${generalFilterName}"
+                       th:checked="${#lists.contains(filters, generalFilterName)}"/>
+                <label th:for="${generalFilterName}"
+                       class="button columns medium-12 padding-top-small padding-bottom-small facet"
+                       th:classappend="${#lists.contains(filters, generalFilterName)} ? 'secondary'">
+                    <i class="icon icon-spacer  icon-functional show-if-checked" data-icon="/"></i>
+                    <th:block
+                            th:include="this :: facetTitle (facetLabel=${facet.label}, facetType=${facetType})"></th:block>
+                    <div class="lead facet-count text-right" th:text="${facet.count}"></div>
+                </label>
+            </div>
+            <div th:each="value : ${facet.content}"
+                 class="facet-container"
+                 th:with="valueFilterName=${generalFilterName + ':' + value.label}">
+                <input th:form="local-search" th:with="filterName=${facetType + ':' + facet.label}"
+                       th:id="${valueFilterName}"
+                       class="facet-checkbox"
+                       type="checkbox" name="filter"
+                       th:value="${valueFilterName}"
+                       th:checked="${#lists.contains(filters, valueFilterName)}"
+                />
+                <label th:for="${valueFilterName}"
+                       class="button columns medium-12 padding-top-small padding-bottom-small facet"
+                       th:classappend="${#lists.contains(filters, valueFilterName)} ? 'secondary facet-item'">
+                    <i class="icon icon-spacer  icon-functional show-if-checked" data-icon="/"></i>
+                    <span class="facet-name text-left" th:text="${value.label}"></span>
+                    <span class="facet-count text-right" th:text="${value.count}"></span>
+                </label>
+            </div>
+        </div>
+        <script th:inline="javascript">
+            function clearFilters() {
+                let $filtersCheckboxes = $(".facet-checkbox");
+                filterForm = $("#local-search");
+                $filtersCheckboxes.each(function (index, elem) {
+                    elem.checked = false;
+                });
+                filterForm.submit();
+            }
+        </script>
+    </div>
+</section>
 
-	<section th:fragment="facetTitle (facetLabel, facetType)">
-		<th:block th:switch="${facetType}">
-			<div th:case="${'inverse relation'}">
-				<div class="lead facet-name text-left" th:text="${facetLabel + ' (reverse)'}"></div>
-			</div>
-			<div th:case="${'external reference data'}">
-				<div class="lead facet-name text-left" th:text="${facetLabel + ' (external data)'}"></div>
-			</div>
-			<div th:case="*">
-                <div class="lead facet-name text-left" th:text="${facetLabel}"></div>
-			</div>
-		</th:block>
-	</section>
+<section th:fragment="facetTitle (facetLabel, facetType)">
+    <th:block th:switch="${facetType}">
+        <div th:case="${'inverse relation'}">
+            <div class="lead facet-name text-left" th:text="${facetLabel + ' (reverse)'}"></div>
+        </div>
+        <div th:case="${'external reference data'}">
+            <div class="lead facet-name text-left" th:text="${facetLabel + ' (external data)'}"></div>
+        </div>
+        <div th:case="*">
+            <div class="lead facet-name text-left" th:text="${facetLabel}"></div>
+        </div>
+    </th:block>
+</section>
 
-	<section th:fragment="samples (page)" >
-		<div th:if="${page.getTotalElements() > 0}" >
-			<p th:text="'Showing '+(${start}+1)+' to '+(${start}+${page.getNumberOfElements()})+' of '+${page.getTotalElements()}+' results'">
-				Showing	1 to 10 of 6268 results
-			</p>
-			
-			<span th:replace=":: pagination (${paginations})"></span>
-			
-			<div class="button-grid" th:each="sample : ${page}" th:insert="fragments/samples :: result (${sample})"></div>
-			
-			<span th:replace=":: pagination (${paginations})"></span>
-		</div>
-		<div th:if="${page.getTotalElements() == 0}" >
-			<p>No results found</p>
-		</div>
-	</section>
+<section th:fragment="samples (page)">
+    <div th:if="${page.getTotalElements() > 0}">
+        <p th:text="'Showing '+(${start}+1)+' to '+(${start}+${page.getNumberOfElements()})+' of '+${page.getTotalElements()}+' results'">
+            Showing 1 to 10 of 6268 results
+        </p>
 
-	<div class="card columns medium-12 margin-bottom-small" th:fragment="result (sample)">
-		<span class="columns medium-12">
-			<span class="lead float-left text-left" th:text="${sample.name}">Sample</span>
-			<span class="lead float-right text-right" th:text="${sample.accession}">ACC1</span>
+        <span th:replace=":: pagination (${paginations})"></span>
+
+        <div class="button-grid" th:each="sample, iterStat : ${page}" th:insert="fragments/samples :: result (${sample},${iterStat})">
+        </div>
+
+        <span th:replace=":: pagination (${paginations})"></span>
+    </div>
+    <div th:if="${page.getTotalElements() == 0}">
+        <p>No results found</p>
+    </div>
+</section>
+
+<div class="card columns medium-12 biosamples-card" th:fragment="result(sample, iterStat)" th:style="${iterStat.odd} ? 'background: #f0f0f2;' : 'background: #ffffff;'">
+    <span class="columns medium-9">
+			<a th:href="@{'/samples/'+${sample.accession}}">
+				<span class="lead text-left" th:text="${sample.name}">Sample</span>
+			</a>
 		</span>
-		<span class="columns medium-12">
+    <span class="columns medium-3">
+			<span class="text-right float-right" th:text="${sample.accession}">ACC1</span>
+		</span>
+    <span class="column medium-12">
+			<p class="small">Updated on: <span th:include=":: datetime(${sample.update})"></span></p>
+		</span>
+    <span class="column medium-12">
 			<span th:each="attribute,iterStat  : ${sample.attributes}" th:remove="tag">
-				<span th:if="${iterstat &lt; 25}" th:replace=":: shield (${attribute.type}, ( ${attribute.unit} ? (${attribute.value}+' ('+${attribute.unit})+')' : ${attribute.value} ) )"></span>
+				<span th:if="${iterstat &lt; 25}"
+                      th:replace=":: shield (${attribute.type}, ( ${attribute.unit} ? (${attribute.value}+' ('+${attribute.unit})+')' : ${attribute.value} ) )"></span>
 			</span>
 			<span th:each="relationship : ${sample.relationships}" th:remove="tag">
-				<span th:if="${#strings.equals(relationship.source,sample.accession)}" th:remove="tag" >
+				<span th:if="${#strings.equals(relationship.source,sample.accession)}" th:remove="tag">
 					<span th:replace=":: shield (${relationship.type}, ( ${relationship.target} ) )"></span>
 				</span>
 				<span th:if="${#strings.equals(relationship.target,sample.accession)}" th:remove="tag">
@@ -100,34 +125,41 @@
 				<span th:replace=":: shield ('external link', ${@externalReferenceService.getNickname(extData)})"></span>
 			</span>
 		</span>
-		<a class="button readmore float-right" th:href="@{'/samples/'+${sample.accession}}"></a>
-        <span class="column medium-12" style="margin-bottom: 1em">
-            <i class="small">Updated on: <span th:include=":: datetime(${sample.update})"></span></i>
-        </span>
-	</div>
+</div>
 
-	<span th:fragment="shield (key, value)" class="shield">
-		<span class="shield__key" th:text="${#strings.abbreviate(key,25)}">key</span><span class="shield__value" th:text="${#strings.abbreviate(value,100)}">value</span>
+<span th:fragment="shield (key, value)" class="shield">
+		<span class="shield__key" th:text="${#strings.abbreviate(key,25)}">key</span><span class="shield__value"
+                                                                                           th:text="${#strings.abbreviate(value,100)}">value</span>
 	</span>
 
-	<section th:fragment="pagination (paginations)">
-		<!-- https://ebiwd.github.io/EBI-Pattern-library/sample-site/boilerplate/search-results.html -->
-		<ul class="pagination" role="navigation" aria-label="Pagination">
-			<li th:if="${paginations.previous}" class="pagination-previous"><a th:href="${paginations.previous.url}" aria-label="Previous page">Previous <span class="show-for-sr">page</span></a></li>
-			<li th:if="!${paginations.previous}" class="pagination-previous disabled">Previous <span class="show-for-sr" >page</span></li>
-			
-			<span th:each="pagination : ${paginations}" th:remove="tag">
-				<li class="ellipsis" aria-hidden="true" th:if="${pagination.skip} == true"></li>
-				<li th:if="!${pagination.current}"><a href="#" aria-label="Page 2" th:attr="aria-label='Page ${pagination.page}'" th:text="${pagination.page}" th:href="${pagination.url}">2</a></li>
-				<li class=current th:if="${pagination.current}"><span class="show-for-sr">You're on	page</span><span th:text=" ${pagination.page}" th:remove="tag"></span></li>
-			</span>
-			
-			<li th:if="${paginations.next}" class="pagination-next"><a th:href="${paginations.next.url}" aria-label="Next page">Next <span class="show-for-sr">page</span></a></li>
-			<li th:if="!${paginations.next}" class="pagination-next disabled">Next <span class="show-for-sr">page</span></li>
-		</ul>		
-	</section>
+<section th:fragment="pagination (paginations)">
+    <!-- https://ebiwd.github.io/EBI-Pattern-library/sample-site/boilerplate/search-results.html -->
+    <ul class="pagination" role="navigation" aria-label="Pagination">
+        <li th:if="${paginations.previous}" class="pagination-previous"><a th:href="${paginations.previous.url}"
+                                                                           aria-label="Previous page">Previous <span
+                class="show-for-sr">page</span></a></li>
+        <li th:if="!${paginations.previous}" class="pagination-previous disabled">Previous <span class="show-for-sr">page</span>
+        </li>
 
-	<span th:fragment="datetime (instant)">
+        <span th:each="pagination : ${paginations}" th:remove="tag">
+				<li class="ellipsis" aria-hidden="true" th:if="${pagination.skip} == true"></li>
+				<li th:if="!${pagination.current}"><a href="#" aria-label="Page 2"
+                                                      th:attr="aria-label='Page ${pagination.page}'"
+                                                      th:text="${pagination.page}"
+                                                      th:href="${pagination.url}">2</a></li>
+				<li class=current th:if="${pagination.current}"><span class="show-for-sr">You're on	page</span><span
+                        th:text=" ${pagination.page}" th:remove="tag"></span></li>
+			</span>
+
+        <li th:if="${paginations.next}" class="pagination-next"><a th:href="${paginations.next.url}"
+                                                                   aria-label="Next page">Next <span
+                class="show-for-sr">page</span></a></li>
+        <li th:if="!${paginations.next}" class="pagination-next disabled">Next <span class="show-for-sr">page</span>
+        </li>
+    </ul>
+</section>
+
+<span th:fragment="datetime (instant)">
 		<span th:text="${#dates.format(instant, 'dd-MM-yyyy HH:mm')}" th:remove="tag"></span>
 	</span>
 </body>

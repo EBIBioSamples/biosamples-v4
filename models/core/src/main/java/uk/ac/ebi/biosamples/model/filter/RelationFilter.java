@@ -1,5 +1,7 @@
 package uk.ac.ebi.biosamples.model.filter;
 
+import uk.ac.ebi.biosamples.model.facet.FacetType;
+
 import java.util.Objects;
 import java.util.Optional;
 
@@ -21,6 +23,11 @@ public class RelationFilter implements Filter {
     @Override
     public String getLabel() {
         return this.label;
+    }
+
+    @Override
+    public FacetType getAssociatedFacetType() {
+        return FacetType.RELATION_FACET;
     }
 
     @Override

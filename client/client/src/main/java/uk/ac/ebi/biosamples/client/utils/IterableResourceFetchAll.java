@@ -1,5 +1,22 @@
 package uk.ac.ebi.biosamples.client.utils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.client.Hop;
+import org.springframework.hateoas.client.Traverson;
+import org.springframework.hateoas.client.Traverson.TraversalBuilder;
+import org.springframework.http.RequestEntity;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestOperations;
+import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.web.util.UriTemplate;
+
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -10,23 +27,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.function.IntFunction;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.hateoas.Link;
-import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
-import org.springframework.web.util.UriTemplate;
-import org.springframework.hateoas.client.Hop;
 //import org.springframework.hateoas.UriTemplate;
-import org.springframework.hateoas.client.Traverson;
-import org.springframework.hateoas.client.Traverson.TraversalBuilder;
-import org.springframework.http.RequestEntity;
-import org.springframework.http.ResponseEntity;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestOperations;
-import org.springframework.web.util.UriComponentsBuilder;
 
 public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
 	
@@ -69,7 +70,7 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
 	 * @param traverson
 	 * @param restOperations
 	 * @param parameterizedTypeReference
-	 * @param rels
+     * @param hops
 	 */
 	public IterableResourceFetchAll(ExecutorService executor, Traverson traverson, RestOperations restOperations, 
 			ParameterizedTypeReference<PagedResources<Resource<T>>> parameterizedTypeReference,
@@ -96,7 +97,7 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
 		//get the first page
 		URI uri = UriComponentsBuilder.fromHttpUrl(traversonBuilder.asLink().getHref())
 				.queryParams(params).build().toUri();
-		RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
+        RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
 		ResponseEntity<PagedResources<Resource<T>>> responseEntity = restOperations.exchange(requestEntity,
 				parameterizedTypeReference);
 		return new IteratorResourceFetchAll<T>(responseEntity.getBody(), restOperations, parameterizedTypeReference, executor);

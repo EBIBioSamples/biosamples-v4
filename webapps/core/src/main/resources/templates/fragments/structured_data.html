@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+</head>
+<body>
+    <section th:fragment="amr_table(data)">
+             <!--th:with=}">-->
+        <!--<section th:with="headers=${ {'Species', 'Antibiotic Name', 'Ast Standard', 'Breakpoint Version',-->
+                <!--'Laboratory Typing Method', 'Measurement Value', 'Measurement Units', 'Measurement Sign',-->
+                <!--'Resistance Phenotype', 'Platform', 'Laboratory Typing Platform', 'Vendor',-->
+                <!--'Laboratory Typing Method Version Or Reagent'} }">-->
+        <section>
+            <h3>
+                Antibiogram data
+            </h3>
+            <div style="max-width: 100%; overflow-x: auto;">
+                <table>
+                    <th:block th:each="amrEntry,entryStat: ${@amrTableToMapConverter.convert(data)}">
+                        <th:block th:if="${entryStat.first}">
+                            <thead>
+                                <tr>
+                                    <th th:each="head: ${amrEntry}" th:text="${head}"></th>
+                                </tr>
+                            </thead>
+                        </th:block>
+                    </th:block>
+                    <tbody>
+                        <th:block th:each="amrEntry,entryStat: ${@amrTableToMapConverter.convert(data)}">
+                            <th:block th:unless="${entryStat.first}">
+                                <tr>
+                                    <td th:each="val: ${amrEntry}" th:text="${val}"></td>
+                                </tr>
+                            </th:block>
+                        </th:block>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </section>
+</body>
+</html>

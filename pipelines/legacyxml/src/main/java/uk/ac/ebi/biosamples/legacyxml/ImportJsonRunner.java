@@ -1,20 +1,5 @@
 package uk.ac.ebi.biosamples.legacyxml;
 
-import java.io.BufferedInputStream;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.zip.GZIPInputStream;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
@@ -22,18 +7,24 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
-
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.legacy.json.service.JSONSampleToSampleConverter;
-import uk.ac.ebi.biosamples.model.Contact;
-import uk.ac.ebi.biosamples.model.Organization;
-import uk.ac.ebi.biosamples.model.Publication;
-import uk.ac.ebi.biosamples.model.Relationship;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.JsonFragmenter;
 import uk.ac.ebi.biosamples.utils.JsonFragmenter.JsonCallback;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
+
+import java.io.BufferedInputStream;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.zip.GZIPInputStream;
 
 @Component
 public class ImportJsonRunner implements ApplicationRunner {
@@ -156,19 +147,32 @@ public class ImportJsonRunner implements ApplicationRunner {
 				SortedSet<Publication> publications = merge(xmlSample.getPublications(), sample.getPublications());
 
 
-			    sample = Sample.build(xmlSample.getName(), xmlSample.getAccession(), DOMAIN,
-						xmlSample.getRelease(), xmlSample.getUpdate(),
-						xmlSample.getAttributes(), relationships, xmlSample.getExternalReferences(),
-						organizations, contacts, publications);
+//			    sample = Sample.build(xmlSample.getName(), xmlSample.getAccession(), DOMAIN,
+//						xmlSample.getRelease(), xmlSample.getUpdate(),
+//						xmlSample.getAttributes(), relationships, xmlSample.getExternalReferences(),
+//						organizations, contacts, publications);
+                sample = Sample.Builder.fromSample(xmlSample).withDomain(DOMAIN)
+						.withRelationships(relationships)
+						.withOrganizations(organizations).withContacts(contacts).withPublications(publications)
+						.build();
+
+
 
 
 
 			} else {
                     //need to specify domain
-                 sample = Sample.build(sample.getName(), sample.getAccession(), DOMAIN,
-                            sample.getRelease(), sample.getUpdate(),
-                            new TreeSet<>(), sample.getRelationships(), new TreeSet<>(),
-                            sample.getOrganizations(), sample.getContacts(), sample.getPublications());
+//                 sample = Sample.build(sample.getName(), sample.getAccession(), DOMAIN,
+//                            sample.getRelease(), sample.getUpdate(),
+//                            new TreeSet<>(), sample.getRelationships(), new TreeSet<>(),
+//                            sample.getOrganizations(), sample.getContacts(), sample.getPublications());
+//                sample = new Sample.Builder(sample.getName(), sample.getAccession()).withDomain(DOMAIN)
+//						.withRelease(sample.getRelease()).withUpdate(sample.getUpdate())
+//						.withRelationships(sample.getRelationships())
+//						.withOrganizations(sample.getOrganizations()).withContacts(sample.getContacts())
+//						.withPublications(sample.getPublications()).build();
+                sample = Sample.Builder.fromSample(sample).withDomain(DOMAIN)
+						.withNoAttributes().withNoExternalReferences().build();
 			}
 			
 			client.persistSampleResource(sample, false, true);

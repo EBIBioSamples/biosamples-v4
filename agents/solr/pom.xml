@@ -1,13 +1,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  
+
 	<artifactId>agents-solr</artifactId>
 	<packaging>jar</packaging>
 
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>4.0.9-SNAPSHOT</version>
+		<version>4.1.8-SNAPSHOT</version>
 		<relativePath>../../</relativePath>
 	</parent>
 
@@ -15,22 +15,22 @@
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>properties</artifactId>
-			<version>${bsd2017.version}</version>
+			<version>4.1.8-SNAPSHOT</version>
 		</dependency>
 		<dependency>
-			<groupId>uk.ac.ebi.biosamples</groupId>			
+			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>models-solr</artifactId>
-			<version>${bsd2017.version}</version>
+			<version>4.1.8-SNAPSHOT</version>
 		</dependency>
 		<dependency>
-			<groupId>uk.ac.ebi.biosamples</groupId>			
+			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>messaging</artifactId>
-			<version>${bsd2017.version}</version>
+			<version>4.1.8-SNAPSHOT</version>
 		</dependency>
 		<dependency>
-			<groupId>uk.ac.ebi.biosamples</groupId>			
+			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>utils-ols</artifactId>
-			<version>${bsd2017.version}</version>
+			<version>4.1.8-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 		    <groupId>com.github.ben-manes.caffeine</groupId>
@@ -48,9 +48,9 @@
 			<!-- <version>${httpclient.version}</version> -->
 			<version>4.5.3</version>
 		</dependency>
-		
+
 	</dependencies>
-	
+
  	<build>
  		<plugins>
  			<plugin>

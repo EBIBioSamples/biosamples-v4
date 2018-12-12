@@ -1,11 +1,8 @@
 package uk.ac.ebi.biosamples;
 
-import java.net.URI;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.context.annotation.Profile;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
@@ -14,12 +11,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
-
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Autocomplete;
 
+import java.net.URI;
+
 @Component
 @Order(4)
+//@Profile({"default"})
 public class RestAutocompleteIntegration extends AbstractIntegration {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
@@ -27,9 +26,9 @@ public class RestAutocompleteIntegration extends AbstractIntegration {
 	private final IntegrationProperties integrationProperties;
 	private final BioSamplesProperties bioSamplesProperties;
 	private final RestOperations restTemplate;
-	
-	public RestAutocompleteIntegration(RestTemplateBuilder restTemplateBuilder, 
-			IntegrationProperties integrationProperties, 
+
+	public RestAutocompleteIntegration(RestTemplateBuilder restTemplateBuilder,
+			IntegrationProperties integrationProperties,
 			BioSamplesProperties bioSamplesProperties,
 			BioSamplesClient client) {
 		super(client);
@@ -37,7 +36,7 @@ public class RestAutocompleteIntegration extends AbstractIntegration {
 		this.integrationProperties = integrationProperties;
 		this.bioSamplesProperties = bioSamplesProperties;
 	}
-	
+
 	@Override
 	protected void phaseOne() {
 	}
@@ -59,7 +58,7 @@ public class RestAutocompleteIntegration extends AbstractIntegration {
 	}
 
 	@Override
-	protected void phaseThree() {		
+	protected void phaseThree() {
 	}
 
 	@Override

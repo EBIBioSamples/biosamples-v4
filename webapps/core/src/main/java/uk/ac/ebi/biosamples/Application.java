@@ -1,7 +1,6 @@
 package uk.ac.ebi.biosamples;
 
-import java.util.concurrent.Executor;
-
+import com.github.benmanes.caffeine.cache.CaffeineSpec;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
@@ -12,19 +11,21 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.xml.Jaxb2RootElementHttpMessageConverter;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.web.filter.ShallowEtagHeaderFilter;
 import org.thymeleaf.templateresolver.ITemplateResolver;
 import org.thymeleaf.templateresolver.UrlTemplateResolver;
-
-import com.github.benmanes.caffeine.cache.CaffeineSpec;
-
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.mongo.MongoProperties;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.service.MongoAccessionService;
 import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
 import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
+import uk.ac.ebi.biosamples.service.AmrTableConverter;
 import uk.ac.ebi.biosamples.service.SampleAsXMLHttpMessageConverter;
 import uk.ac.ebi.biosamples.service.SampleToXmlConverter;
+
+import javax.servlet.Filter;
+import java.util.concurrent.Executor;
 
 //import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 
@@ -35,6 +36,11 @@ public class Application extends SpringBootServletInitializer {
 
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);
+	}
+
+	@Bean
+	public Filter filter() {
+		return new ShallowEtagHeaderFilter();
 	}
 
 	@Bean
@@ -49,7 +55,7 @@ public class Application extends SpringBootServletInitializer {
     	ex.setQueueCapacity(2056);
     	return ex;
     }
-    
+
     @Bean
     public RepositoryDetectionStrategy repositoryDetectionStrategy() {
     	return RepositoryDetectionStrategy.RepositoryDetectionStrategies.ANNOTATED;
@@ -76,8 +82,13 @@ public class Application extends SpringBootServletInitializer {
     public MongoAccessionService mongoSampleAccessionService(MongoSampleRepository mongoSampleRepository, SampleToMongoSampleConverter sampleToMongoSampleConverter,
 			MongoSampleToSampleConverter mongoSampleToSampleConverter, MongoProperties mongoProperties) {
     	return new MongoAccessionService(mongoSampleRepository, sampleToMongoSampleConverter,
-    			mongoSampleToSampleConverter, mongoProperties.getAccessionPrefix(), 
+    			mongoSampleToSampleConverter, mongoProperties.getAccessionPrefix(),
     			mongoProperties.getAccessionMinimum(), mongoProperties.getAcessionQueueSize());
     }
+
+    @Bean
+    AmrTableConverter amrTableToMapConverter() {
+		return new AmrTableConverter();
+	}
 
 }

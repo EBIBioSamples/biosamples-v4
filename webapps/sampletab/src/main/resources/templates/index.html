@@ -17,8 +17,9 @@
 
 <body>
 	<th:block th:include="fragments/header :: header"></th:block>
-	<div layout:fragment="content">
-		<div id="main-content-area" class="row">
+	<div layout:fragment="content" id="content" >
+		<th:block th:include="fragments/header :: masterhead"></th:block>
+		<div id="main-content-area" class="row padding-top-xlarge padding-left-xlarge padding-right-xlarge">
 			<div class="row">
 				<h2>Web Services</h2>
 				<p>There are several services provided for programatically sending sample information to the <a href="/biosamples"></a>BioSamples Database</a>. These are: </p>
@@ -58,14 +59,14 @@
 				<p>Please note that assigned accession will be immediately return, though they will not be immediately
 					visibly in the web interface.</p>
 
-                <p>If you have any questions about these services or would like more information, please contact us at 
+                <p>If you have any questions about these services or would like more information, please contact us at
                 <a href="mailto:biosamples@ebi.ac.uk?Subject=SampleTab+Web+Services">biosamples@ebi.ac.uk</a>.</p>
-                
-                <p>This website requires cookies, and the limited processing of your personal data in order to 
-                function. By using the site you are agreeing to this as outlined in our 
+
+                <p>This website requires cookies, and the limited processing of your personal data in order to
+                function. By using the site you are agreeing to this as outlined in our
                 <a href="https://www.ebi.ac.uk/data-protection/privacy-notice/biosamples-submissions">Submission Privacy Notice</a>
                 and <a href="https://www.ebi.ac.uk/about/terms-of-use">Terms of Use.</a></p>
-                
+
 				</div>
 		</div>
 	</div>

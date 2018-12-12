@@ -1,26 +1,20 @@
 package uk.ac.ebi.biosamples;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
+import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.model.*;
+
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Profile;
-import org.springframework.core.annotation.Order;
-import org.springframework.stereotype.Component;
-
-import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Curation;
-import uk.ac.ebi.biosamples.model.ExternalReference;
-import uk.ac.ebi.biosamples.model.Relationship;
-import uk.ac.ebi.biosamples.model.Sample;
-
 @Component
 @Order(6)
-@Profile({ "default", "rest" })
+//@Profile({ "default", "rest" })
 public class RestExternalReferenceIntegration extends AbstractIntegration {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
@@ -32,37 +26,37 @@ public class RestExternalReferenceIntegration extends AbstractIntegration {
 	@Override
 	protected void phaseOne() {
 		Sample sample = getSampleTest1();
-		client.persistSample(sample);		
+		client.persistSample(sample);
 	}
 
 	@Override
 	protected void phaseTwo() {
 		Sample sample = getSampleTest1();
-		
+
 		testExternalReferences();
 		//testSampleExternalReferences(sample, 10);
-		client.persistCuration(sample.getAccession(), 
-				Curation.build(null,  null, null, Arrays.asList(ExternalReference.build("http://www.ebi.ac.uk/ena/ERA123456"))), 
+		client.persistCuration(sample.getAccession(),
+				Curation.build(null,  null, null, Arrays.asList(ExternalReference.build("http://www.ebi.ac.uk/ena/ERA123456"))),
 				"self.BiosampleIntegrationTest");
-		
+
 	}
 
 	@Override
 	protected void phaseThree() {
 		Sample sample = getSampleTest1();
-		//testSampleExternalReferences(sample, 11);		
+		//testSampleExternalReferences(sample, 11);
 		//check there was no side-effects
-		client.fetchSample(sample.getAccession());		
+		client.fetchSample(sample.getAccession());
 	}
 
 	@Override
 	protected void phaseFour() {
-		
+
 	}
 
 	@Override
 	protected void phaseFive() {
-		
+
 	}
 	private void testExternalReferences() {
 /*
@@ -107,8 +101,8 @@ public class RestExternalReferenceIntegration extends AbstractIntegration {
 
 	private void testSampleExternalReferences(Sample sample, int expectedCount) {
 		sample = client.fetchSample(sample.getAccession()).get();
-		
-		
+
+
 		if (sample.getExternalReferences().size() != expectedCount) {
 			throw new RuntimeException("Expecting " + expectedCount + " external references, found "
 					+ sample.getExternalReferences().size());
@@ -139,7 +133,11 @@ public class RestExternalReferenceIntegration extends AbstractIntegration {
 		externalReferences.add(ExternalReference.build("http://www.test.com/9"));
 		externalReferences.add(ExternalReference.build("http://www.test.com/0"));
 
-		return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences, null, null, null);
+//		return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences, null, null, null);
+		return new Sample.Builder(name, accession).withDomain(domain)
+				.withRelease(release).withUpdate(update)
+				.withAttributes(attributes).withRelationships(relationships).withExternalReferences(externalReferences)
+				.build();
 	}
 
 }

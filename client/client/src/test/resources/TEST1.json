@@ -1,5 +1,5 @@
 {
-	"accession": "TEST1",
+	"accession": "SAMEA1234",
 	"name": "Test Sample",
 	"domain": "abcde12345",
 	"update": "2016-05-05T11:36:57Z",
@@ -30,9 +30,9 @@
 	},
 	"relationships": [
 		{
-			"source": "TEST1",
+			"source": "SAMEA1234",
 			"type": "derived from",
-			"target": "TEST2"
+			"target": "SAMD4321"
 		}
 	],
 	"externalReferences": [

@@ -1,9 +1,9 @@
 package uk.ac.ebi.biosamples;
 
-import java.net.URI;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import java.net.URI;
 
 @Component
 public class BioSamplesProperties {
@@ -33,7 +33,7 @@ public class BioSamplesProperties {
 	@Value("${biosamples.client.threadcount.max:8}")
 	private int threadCountMax;
 	
-	@Value("${biosamples.client.aap.uri:https://explore.api.aap.tsi.ebi.ac.uk/auth}")
+	@Value("${biosamples.client.aap.uri:https://explore.api.aai.ebi.ac.uk/auth}")
 	private URI biosamplesClientAapUri;
 	
 	//can't use "null" because it will be a string
@@ -43,7 +43,16 @@ public class BioSamplesProperties {
 	//can't use "null" because it will be a string
 	@Value("${biosamples.client.aap.password:#{null}}")
 	private String biosamplesClientAapPassword;
-	
+
+	//max number of cache entries, 0 means no cache is used by the client
+	// This multiplied by the cache maxobjectsize value defines the max size of the cache
+	@Value("${biosamples.client.cache.maxentries:0}")
+	private int biosamplesClientCacheMaxEntries;
+
+	// Set each cache object maximum size, 1024*1024 = 1048576 = 1Mb
+	@Value("${biosamples.client.cache.maxobjectsize:1048576}")
+	private int biosamplesClientCacheMaxObjectSize;
+
 	@Value("${biosamples.aap.super.read:self.BiosampleSuperUserRead}")
 	private String biosamplesAapSuperRead;
 	
@@ -52,6 +61,12 @@ public class BioSamplesProperties {
 	
 	@Value("${biosamples.ols:https://wwwdev.ebi.ac.uk/ols}")
 	private String ols;
+
+	@Value("${biosamples.webapp.sampletab.uri:http://localhost:8082/biosamples/sampletab}")
+	private URI biosamplesWebappSampletabUri;
+
+	@Value("${biosamples.webapp.core.uri:http://localhost:8081/biosamples}")
+	private URI biosamplesWebappCoreUri;
 
 	@Value("${biosamples.webapp.core.page.threadcount:64}")
 	private int webappCorePageThreadCount;
@@ -63,6 +78,8 @@ public class BioSamplesProperties {
 	@Value("${biosamples.webapp.core.page.cache.maxage:300}")
 	private int webappCorePageCacheMaxAge;
 
+	@Value("${biosamples.schema.validator.uri:http://localhost:8085/validate}")
+	private URI biosamplesSchemaValidatorServiceUri;
 	
 	public URI getBiosamplesClientUri() {
 		return biosamplesClientUri;
@@ -103,7 +120,15 @@ public class BioSamplesProperties {
 	public String getBiosamplesClientAapPassword() {
 		return biosamplesClientAapPassword;
 	}
-	
+
+	public int getBiosamplesClientCacheMaxEntries() {
+		return biosamplesClientCacheMaxEntries;
+	}
+
+	public int getBiosamplesClientCacheMaxObjectSize() {
+		return biosamplesClientCacheMaxObjectSize;
+	}
+
 	public String getBiosamplesAapSuperRead() {
 		return biosamplesAapSuperRead;
 	}
@@ -131,5 +156,16 @@ public class BioSamplesProperties {
 	public int getBiosamplesCorePageCacheMaxAge() {
 		return webappCorePageCacheMaxAge;
 	}
-	
+
+	public URI getBiosamplesWebappCoreUri() {
+		return biosamplesWebappCoreUri;
+	}
+
+	public URI getBiosamplesWebappSampletabUri() {
+		return biosamplesWebappSampletabUri;
+	}
+
+	public URI getBiosamplesSchemaValidatorServiceUri() {
+		return biosamplesSchemaValidatorServiceUri;
+	}
 }

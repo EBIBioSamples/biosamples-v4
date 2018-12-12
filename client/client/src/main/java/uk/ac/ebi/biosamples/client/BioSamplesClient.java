@@ -70,7 +70,7 @@ public class BioSamplesClient implements AutoCloseable {
 			log.trace("Adding AapClientHttpRequestInterceptor");
 			restOperations.getInterceptors().add(new AapClientHttpRequestInterceptor(aapClientService));
 		} else {
-			log.trace("No AapClientService avaliable");
+			log.trace("No AapClientService available");
 		}
 		
 		Traverson traverson = new Traverson(uri, MediaTypes.HAL_JSON);
@@ -96,7 +96,8 @@ public class BioSamplesClient implements AutoCloseable {
 	public Optional<BioSamplesClient> getPublicClient() {
 		return this.publicClient;
 	}
-	
+
+
 	private static class AapClientHttpRequestInterceptor implements ClientHttpRequestInterceptor {
 		
 		private final AapClientService aapClientService;
@@ -120,6 +121,8 @@ public class BioSamplesClient implements AutoCloseable {
 		}
 		
 	}
+
+	//TODO: we can think of using an interceptor to remove the cache from the biosamples client
     
     @PreDestroy
     public void close() {
@@ -264,6 +267,7 @@ public class BioSamplesClient implements AutoCloseable {
 	}
 
 	public Resource<CurationLink> persistCuration(String accession, Curation curation, String domain) {
+		log.trace("Persisting curation "+curation+" on "+accession+" in "+domain);
 		return curationSubmissionService.submit(CurationLink.build(accession, curation, domain, null));
 	}
 	

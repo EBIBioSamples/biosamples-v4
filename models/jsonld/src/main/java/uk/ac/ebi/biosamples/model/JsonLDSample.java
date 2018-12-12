@@ -4,21 +4,25 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
+import java.net.URI;
 import java.util.List;
 
 /**
  * Object representing BioSchema Sample entity
  */
-@JsonPropertyOrder({ "@context", "@type", "identifier", "name", "description", "url", "dataset", "additionalProperty"})
+@JsonPropertyOrder({ "@context", "@type", "additionalType", "identifier", "name", "description", "url", "dataset", "additionalProperty"})
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class JsonLDSample implements BioschemasObject {
 
+    private final URI sampleOntologyURI =  URI.create("http://purl.obolibrary.org/obo/OBI_0000747");
+
     @JsonProperty("@context")
-    private final String context = "http://schema.org";
+    private final BioSchemasContext sampleContext;
 
     @JsonProperty("@type")
     private final String[] type = {"BioChemEntity", "Sample"};
 
+    //private final String additionalType = "http://www.ontobee.org/ontology/OBI?iri=http://purl.obolibrary.org/obo/OBI_0000747";
     private String[] identifiers;
     private String name;
     private String description;
@@ -29,13 +33,22 @@ public class JsonLDSample implements BioschemasObject {
     @JsonProperty("additionalProperty")
     private List<JsonLDPropertyValue> additionalProperties;
 
-    public String getContext() {
-        return context;
+    public JsonLDSample() {
+        sampleContext = new BioSchemasContext();
+        sampleContext.addContext("Sample", sampleOntologyURI);
+    }
+
+    public BioSchemasContext getContext() {
+        return sampleContext;
     }
 
     public String[] getType() {
         return type;
     }
+
+//    public String getAdditionalType() {
+//        return additionalType;
+//    }
 
     public String[] getIdentifiers() {
         return identifiers;

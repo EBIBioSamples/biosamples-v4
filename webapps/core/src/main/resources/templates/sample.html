@@ -1,14 +1,14 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org"
 	xmlns:layout="http://www.w3.org/1999/xhtml">
-	
+
 <head th:replace="fragments/head :: head">
 	<title th:text="${sample.accession}+' &lt; BioSamples &lt; EMBL-EBI'">BioSamples &lt; EMBL-EBI</title>
 	<!-- A few keywords that relate to the content of THIS PAGE (not the whole project) -->
 	<meta name="keywords" content="biosamples, europe, EBI" />
 	<!-- Describe what this page is about -->
 	<meta name="description" content="EMBL-EBI" />
-	
+
 	<meta name="ebi:last-review" content="2016-12-20" />
 	<!-- The last time the content was reviewed -->
 	<meta name="ebi:expiry" content="2017-12-20" />
@@ -18,110 +18,49 @@
 
 <body>
 	<th:block th:include="fragments/header :: header"></th:block>
-	<div layout:fragment="content">
-		<div id="main-content-area" class="row">
-			<div>
-				<div class="float-left">
-					<h2 th:text="${sample.accession}">TEST</h2>
-					<h3 th:text="${sample.name}">name</h3>
-				</div>
-				<span class="float-right">    
-					<a th:href="@{/samples/{xml_link}(xml_link=${sample.accession} + '.xml')}" class="button" title="XML">
-						<h3 class="icon icon-fileformats white-color" data-icon="x"></h3>
-					</a>
-		            <a th:href="@{/samples/{json_link}(json_link=${sample.accession}+'.json')}" class="button" title="JSON">
-		            	<h3 class="icon icon-fileformats white-color" data-icon="J"></h3>
-		            </a>   
-	            </span>
-            </div>   
-			
-			<table>
-				<tr>
-					<th>Release</th>
-					<td	th:text="${#temporals.format(release, 'yyyy / MM / dd HH:mm:ss','UTC')+' UTC'}">2001 / 02 / 02 12:00:00</td>
-				</tr>
-				<tr>
-					<th>Update</th>
-					<td	th:text="${#temporals.format(update, 'yyyy / MM / dd HH:mm:ss','UTC')+' UTC'}">2001 / 02 / 02 12:00:00</td>
-				</tr>
-			</table>
-
-			<th:block th:include="fragments/sample :: contacts (${sample.contacts})"></th:block>
-			<th:block th:include="fragments/sample :: organizations (${sample.organizations})"></th:block>
-			<th:block th:include="fragments/sample :: publications (${sample.publications})"></th:block>
-
-			<th:block th:include="fragments/sample :: attributes (${sample.attributes})"></th:block>
-			<th:block th:include="fragments/sample :: relationships (${sample.relationships})"></th:block>
-			<th:block th:include="fragments/sample :: externalReferences (${sample.externalReferences})"></th:block>
-
-			<!--
-			<th:section
-				th:if="${sample.attributes != null and #arrays.length(sample.attributes) > 0}"
-				th:remove="tag">
-				<h3>Attributes</h3>
-				<table class="hover">
+	<div layout:fragment="content" id="content">
+		<th:block th:include="fragments/header :: masterhead"></th:block>
+		<div id="main-content-area" class="row padding-top-xlarge padding-right-xlarge padding-left-xlarge sample">
+			<div class="columns medium-12 large-10 s__header">
+				<h2 class="sh__title" th:text="${sample.accession}">TEST</h2>
+				<h3 class="sh__subtitle" th:text="${sample.name}">name</h3>
+				<table class="sh__datetimes">
 					<tr>
-						<th>Type</th>
-						<th>Value</th>
+						<th>Released on</th>
+						<td	th:text="${#temporals.format(release, 'yyyy / MM / dd HH:mm:ss','UTC')+' UTC'}">2001 / 02 / 02 12:00:00</td>
 					</tr>
-					<tr th:each="attribute : ${sample.attributes}">
-						<td th:text="${attribute.type}">Attribute Type</td>
-
-						<td
-							th:if="${not #strings.isEmpty(attribute.getIriOls()) and #strings.isEmpty(attribute.unit)}"><a
-							th:href="${attribute.getIriOls()}" th:text="${attribute.value}"
-							target="_blank">attribute value<i class="icon icon-generic"
-								data-icon="x"></i></a></td>
-						<td
-							th:if="${#strings.isEmpty(attribute.getIriOls()) and #strings.isEmpty(attribute.unit)}"
-							th:text="${attribute.value}">attribute value</td>
-						<td
-							th:if="${not #strings.isEmpty(attribute.getIriOls()) and not #strings.isEmpty(attribute.unit)}"><th:span
-								th:text="${attribute.value}" th:remove="tag"></th:span> (<a
-							th:href="${attribute.getIriOls()}" th:text="${attribute.unit}"
-							target="_blank">unit<i class="icon icon-generic"
-								data-icon="x"></i></a>)</td>
-						<td
-							th:if="${#strings.isEmpty(attribute.getIriOls()) and not #strings.isEmpty(attribute.unit)}"
-							th:text="${attribute.value}+' ('+${attribute.unit}+')'">attribute
-							value (unit)</td>
+					<tr>
+						<th>Updated on</th>
+						<td	th:text="${#temporals.format(update, 'yyyy / MM / dd HH:mm:ss','UTC')+' UTC'}">2001 / 02 / 02 12:00:00</td>
 					</tr>
 				</table>
-			</th:section>
-
-			<th:section
-				th:if="${sample.relationships != null and #arrays.length(sample.relationships) > 0}"
-				th:remove="tag">
-				<h3>Relationships</h3>
-				<table>
-					<tr>
-						<th>Source</th>
-						<th>Type</th>
-						<th>Target</th>
-					</tr>
-					<tr th:each="relationship : ${sample.relationships}">
-						<td><a th:href="${relationship.source}"
-							th:text="${relationship.source}">source</a></td>
-						<td th:text="${relationship.type}">type</td>
-						<td><a th:href="${relationship.target}"
-							th:text="${relationship.target}">target</a></td>
-					</tr>
-				</table>
-			</th:section>  
-
-			<div th:if="${sample.externalReferences != null and #arrays.length(sample.externalReferences) > 0}"
-				th:remove="tag">
-				<h3>External Links</h3>
-				<th:section th:each="externalReference : ${sample.externalReferences}" >
-				<a th:href="${externalReference.url}" class="button">
-					<h3 class="icon icon-generic white-color" data-icon="L"></h3>
-				</a>
-				</th:section>
 			</div>
-			-->
+			<div class="columns large-2 hide-for-medium-only">
+				<th:block th:include="fragments/sample :: serialisationDropDownMenu"></th:block>
+			</div>
 
+			<div class="columns s__details">
+				<th:block th:include="fragments/sample :: contacts (${sample.contacts})"></th:block>
+				<th:block th:include="fragments/sample :: organizations (${sample.organizations})"></th:block>
+				<th:block th:include="fragments/sample :: publications (${sample.publications})"></th:block>
+
+				<th:block th:include="fragments/sample :: attributes (${sample.attributes})"></th:block>
+				<th:block th:include="fragments/sample :: relationships (${sample.relationships})"></th:block>
+
+				<th:block th:if="${sample.data.size() > 0}">
+					<th:block th:each="data: ${sample.data}" th:include="fragments/structured_data :: amr_table(${data})"></th:block>
+				</th:block>
+
+				<th:block th:include="fragments/sample :: externalReferences (${sample.externalReferences})"></th:block>
+
+			</div>
+
+
+			<div class="columns small-12 s__serialization show-for-medium-only">
+				<th:block th:include="fragments/sample :: serialisationDropDownMenu"></th:block>
+			</div>
 		</div>
 	</div>
-	<th:block th:include="fragments/footer :: footer"></th:block>	
+	<th:block th:include="fragments/footer :: footer"></th:block>
 </body>
 </html>

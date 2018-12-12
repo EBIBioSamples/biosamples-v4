@@ -1,22 +1,25 @@
 package uk.ac.ebi.biosamples.mongo.service;
 
-import java.util.Iterator;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import javax.annotation.PostConstruct;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Scheduled;
-
-//this needs to be the spring exception, not the mongo one
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Scheduled;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
+
+import javax.annotation.PostConstruct;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.stream.Stream;
+
+//this needs to be the spring exception, not the mongo one
 
 
 public class MongoAccessionService {
@@ -28,11 +31,11 @@ public class MongoAccessionService {
 	private final MongoSampleToSampleConverter mongoSampleToSampleConverter;
 	private final String prefix;
 	private final BlockingQueue<String> accessionCandidateQueue;;
-	private long accessionCandidateCounter;
+	private int accessionCandidateCounter;
 	
 	
 	public MongoAccessionService(MongoSampleRepository mongoSampleRepository, SampleToMongoSampleConverter sampleToMongoSampleConverter,
-			MongoSampleToSampleConverter mongoSampleToSampleConverter, String prefix, long minimumAccession, int queueSize) {
+			MongoSampleToSampleConverter mongoSampleToSampleConverter, String prefix, int minimumAccession, int queueSize) {
 		this.mongoSampleRepository = mongoSampleRepository;
 		this.sampleToMongoSampleConverter = sampleToMongoSampleConverter;
 		this.mongoSampleToSampleConverter = mongoSampleToSampleConverter;
@@ -88,7 +91,7 @@ public class MongoAccessionService {
 		}
 		sample = MongoSample.build(sample.getName(), accession, sample.getDomain(),
 				sample.getRelease(), sample.getUpdate(), 
-				sample.getAttributes(), newRelationships, sample.getExternalReferences(), 
+				sample.getAttributes(), sample.getData(), newRelationships, sample.getExternalReferences(),
 				sample.getOrganizations(), sample.getContacts(), sample.getPublications());
 		return sample;
 	}
@@ -96,40 +99,56 @@ public class MongoAccessionService {
 	@PostConstruct
 	@Scheduled(fixedDelay = 1000)
 	public synchronized void prepareAccessions() {	
+		long startTime = System.nanoTime();
+		
 		//check that all accessions are still available		
 		Iterator<String> itCandidate = accessionCandidateQueue.iterator();
 		while (itCandidate.hasNext()) {
 			String accessionCandidate = itCandidate.next();
-			MongoSample sample = mongoSampleRepository.findOne(accessionCandidate);
-			if (sample != null) {
+			if (mongoSampleRepository.exists(accessionCandidate)) {
 				log.warn("Removing accession "+accessionCandidate+" from queue because now assigned");
 				itCandidate.remove();
 			}
 		}
-//		
-//		try (Stream<MongoSample> stream = mongoSampleRepository.streamAll(new Sort(new Order(Direction.ASC,"accession")))) {
-//
-//			Iterator<MongoSample> itStream = stream.iterator();
-//			//TODO use this to try to initially populate this more effectively
-			
-			
-			while (accessionCandidateQueue.remainingCapacity() > 0) {
-				log.debug("Adding more accessions to queue");
-				
-				String accessionCandidate = prefix + accessionCandidateCounter;
-				// if the accession already exists, skip it
-				if (mongoSampleRepository.exists(accessionCandidate)) {
-					accessionCandidateCounter += 1;
-					// if the accession can't be put in the queue at this time
-					// (queue full), stop
-				} else if (!accessionCandidateQueue.offer(accessionCandidate)) {
-					return;
-				} else {
-					//put it into the queue, move on to next
-					accessionCandidateCounter += 1;
-				}
-				log.trace("Added more accessions to queue");
+		
+		Sort sort = new Sort(Sort.Direction.ASC, "accessionNumber");
+		try (Stream<MongoSample> stream = mongoSampleRepository.findByAccessionPrefixIsAndAccessionNumberGreaterThanEqual(prefix, accessionCandidateCounter, sort)) {
+			Iterator<MongoSample> streamIt = stream.iterator();
+			Integer streamAccessionNumber = null;
+			if (streamIt.hasNext()) {
+				streamAccessionNumber = streamIt.next().getAccessionNumber();
 			}
-//		}
+			while (accessionCandidateQueue.remainingCapacity() > 0) {
+				
+				
+				if (streamAccessionNumber == null
+						|| streamAccessionNumber > accessionCandidateCounter) {
+					String accessionCandidate = prefix + accessionCandidateCounter;
+					if (accessionCandidateQueue.offer(accessionCandidate)) {
+						//successfully added, move to next
+						log.trace("Added to accession pool "+accessionCandidate);
+						accessionCandidateCounter += 1;
+					} else {
+						//failed, queue full
+						break;
+					}
+				} else {
+					//update stream to next accession
+					try {
+						streamAccessionNumber = streamIt.next().getAccessionNumber();
+						accessionCandidateCounter += 1;
+						log.trace("Updating stream to "+prefix+streamAccessionNumber);
+					} catch (NoSuchElementException e) {
+						//end of stream
+						streamAccessionNumber = null;
+						log.trace("Reached end of stream");
+					}
+					//move back and try again
+				}
+			}
+		}
+		
+		long endTime = System.nanoTime();
+		log.trace("Populated accession pool in "+((endTime-startTime)/1000000)+"ms");
 	}
 }

@@ -21,10 +21,11 @@
 
 <body>
 <div th:insert="fragments/header :: header"></div>
-<div layout:fragment="content">
-    <div id="main-content-area" class="row">
+<div layout:fragment="content" id="content">
+    <th:block th:include="fragments/header :: masterhead"></th:block>
+    <div id="main-content-area" class="row padding-top-xlarge">
         <div class="small-12 medium-9 columns" th:insert="asciidoc/ref_filters :: div"></div>
-        <div th:insert="fragments/help :: sidebar(active='refs/filters')"></div>
+        <div th:insert="fragments/help :: sidebar(active='refs/filters', recipes=${recipes})"></div>
     </div>
 </div>
 <div th:insert="fragments/footer :: footer"></div>

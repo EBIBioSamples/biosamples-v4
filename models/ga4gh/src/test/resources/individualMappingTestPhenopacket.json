@@ -1,0 +1,50 @@
+{
+  "individuals": [
+    {
+      "id": "id-individual",
+      "sex": {
+        "id": "term id",
+        "label": "term label"
+      },
+      "taxonomy": {
+        "id": "term id",
+        "label": "term label"
+      }
+    }
+  ],
+  "biosamples": [
+    {
+      "id": "id",
+      "datasetId": "dataset_id",
+      "name": "name",
+      "description": "description",
+      "created": "2018-01-20T13:55:29.870Z",
+      "updated": "2018-01-20T13:55:29.870Z",
+      "individualId": "id-individual",
+      "taxonomy": {
+        "id": "term id",
+        "label": "term label"
+      },
+      "individualAgeAtCollection": {
+        "age": "0",
+        "ageClass": {
+          "id": "term id",
+          "label": "term label"
+        }
+      }
+    }
+  ],
+  "metaData": {
+    "created": "2018-07-30T14:33:18.284Z",
+    "createdBy": "Biosamples phenopacket exporter",
+    "resources": [
+      {
+        "id": "resource id",
+        "name": "resource name",
+        "namespacePrefix": "resource prefix",
+        "url": "url",
+        "version": "version"
+      }
+    ]
+  }
+}

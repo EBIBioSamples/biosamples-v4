@@ -16,7 +16,7 @@ public class MongoProperties {
 	private String accessionPrefix;
 
 	@Value("${biosamples.accession.min:100000}")
-	private long accessionMinimum;
+	private int accessionMinimum;
 
 	@Value("${biosamples.accession.queuesize:100}")
 	private int accessionQueueSize;
@@ -25,7 +25,7 @@ public class MongoProperties {
 		return accessionPrefix;
 	}
 	
-	public long getAccessionMinimum() {
+	public int getAccessionMinimum() {
 		return accessionMinimum;
 	}
 	

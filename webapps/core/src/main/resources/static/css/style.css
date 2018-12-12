@@ -6,8 +6,19 @@
 .autocomplete-group strong { display: block; border-bottom: 1px solid #000; }
 
 /* CARDS */
-/* This will target only pages where the body doesn't have a sampletab class*/
-body:not(.sampletab) .card { background-color:#999; color:#f8f8f8; }
+.card {
+    background-color: #fff;
+    color: #000;
+    border-top: 1px solid #cccccc;
+    border-left: 1px solid #cccccc;
+    border-right: 1px solid #cccccc;
+    padding-top: 1em;
+    padding-bottom: 1em;
+}
+
+.card a {
+    color: #007c82;
+}
 
 /* FACETS */
 .facet-checkbox {
@@ -28,7 +39,9 @@ label.facet > .show-if-checked { margin-right: 5px; }
 
 .facet-container [type='checkbox'] + label, [type='radio'] + label { margin: 0; }
 
-#filter-apply:disabled { background-color: #999; }
+#filter-apply:disabled { background-color: #007c82 !important}
+
+#filter-clear:disabled { background-color: #007c82 !important }
 
 /*
 #local-masthead.is-stuck .menu>li.sticky-search { display: inherit; }
@@ -39,12 +52,41 @@ label.facet > .show-if-checked { margin-right: 5px; }
 #main-content-area { margin-bottom: 3rem; }
 div#elixir-banner-info { color: white; }
 
+/* MENUs */
+.menu > li.is-accordion-submenu-parent > a {
+    position: relative;
+}
+
+.accordion-menu .is-accordion-submenu-parent:not(.has-submenu-toggle) > a::after {
+    display: block;
+    width: 0;
+    height: 0;
+    border: inset 6px;
+    content: '';
+    border-bottom-width: 0;
+    border-top-style: solid;
+    border-color: #007c82 transparent transparent;
+    position: absolute;
+    top: 50%;
+    margin-top: -3px;
+    right: 1rem;
+}
+
+.accordion-menu .is-accordion-submenu-parent[aria-expanded='true'] > a::after {
+    -webkit-transform: rotate(180deg);
+    -ms-transform: rotate(180deg);
+    transform: rotate(180deg);
+    -webkit-transform-origin: 50% 50%;
+    -ms-transform-origin: 50% 50%;
+    transform-origin: 50% 50%;
+}
+
 /* SHIELDS - FILTER BADGES */
-.shield { color: white; display: inline-block; margin: 0.2rem 0.0em; font-size: 0.9em; }
+.shield { color: white; display: inline-block; margin: 0.2rem 0.0em; font-size: 0.8em; border: 1px solid #ccc; border-radius: 3px; }
 /* This means a span element within an element with class shield */
-.shield span { padding: 0.1rem 0.2rem; }
-.shield .shield__key { background-color: #444; margin: 0 0 0 2px; }
-.shield .shield__value { background-color: #f27e3f; margin: 0 2px 0 0; }
+.shield span { padding: 0.2rem 0.4rem; }
+.shield .shield__key { color: #444; margin: 0 0 0 2px; }
+.shield .shield__value { color: #f27e3f; margin: 0 2px 0 0; }
 
 /* DOCS */
 pre.nowrap {
@@ -57,6 +99,73 @@ code[class^="language"] {
     border: none;
     background: none;
 }
+
+.data-content {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.data-content__entry {
+   padding-right: 1em;
+   flex: 0 1 100%;
+   min-width: 150px;
+}
+
+@media screen and (min-width: 512px) {
+    .data-content__entry {
+        flex-basis: 50%;
+    }
+}
+
+@media screen and (min-width: 640px) {
+    .data-content__entry {
+        flex-basis: 33%;
+    }
+}
+
+
+.search-results {
+    display: flex;
+    flex-wrap: wrap-reverse;
+}
+
+.sr__facets, .sr__results {
+    flex:1;
+    flex-basis: calc(100% - 1em);
+    margin-right: 1em;
+}
+
+
+@media screen and (min-width: 800px) {
+    .search-results {
+        justify-content: space-between;
+    }
+    .sr__facets {
+        flex-basis: calc(33% - 1em);
+    }
+
+    .sr__results {
+        flex-basis: calc(66% - 1em);
+    }
+}
+
+.s__serialization menu {
+    display: flex;
+}
+
+.s__serialization menu li {
+    margin-right: 1em;
+}
+
+.s__serialization, .s__header, .s__details  {
+    padding-bottom: 1em;
+}
+
+.menu.nested {
+    display: none;
+}
+
 
 /* SAMPLETAB */
 .sampletab .biosamples-button-row { margin-bottom: 1em; }

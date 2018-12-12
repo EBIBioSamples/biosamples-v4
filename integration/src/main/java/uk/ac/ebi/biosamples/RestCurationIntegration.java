@@ -1,18 +1,8 @@
 package uk.ac.ebi.biosamples;
 
-import java.net.URI;
-import java.time.Instant;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.context.annotation.Profile;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.annotation.Order;
 import org.springframework.hateoas.Link;
@@ -26,17 +16,16 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
-
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Curation;
-import uk.ac.ebi.biosamples.model.ExternalReference;
-import uk.ac.ebi.biosamples.model.Relationship;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.*;
+
+import java.net.URI;
+import java.time.Instant;
+import java.util.*;
 
 @Component
 @Order(6)
-@Profile({ "default", "rest" })
+//@Profile({ "default", "rest" })
 public class RestCurationIntegration extends AbstractIntegration {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
@@ -44,11 +33,11 @@ public class RestCurationIntegration extends AbstractIntegration {
 	private final IntegrationProperties integrationProperties;
 	private final BioSamplesProperties bioSamplesProperties;
 	private final RestOperations restTemplate;
-	
+
 	private final Sample sample = getSampleTest1();
-	
-	public RestCurationIntegration(RestTemplateBuilder restTemplateBuilder, 
-			IntegrationProperties integrationProperties, 
+
+	public RestCurationIntegration(RestTemplateBuilder restTemplateBuilder,
+			IntegrationProperties integrationProperties,
 			BioSamplesProperties bioSamplesProperties,
 			BioSamplesClient client) {
 		super(client);
@@ -59,7 +48,7 @@ public class RestCurationIntegration extends AbstractIntegration {
 
 	@Override
 	protected void phaseOne() {
-		client.persistSampleResource(sample);		
+		client.persistSampleResource(sample);
 	}
 
 	@Override
@@ -67,55 +56,60 @@ public class RestCurationIntegration extends AbstractIntegration {
 
 		Set<Attribute> attributesPre;
 		Set<Attribute> attributesPost;
-		
+
 		attributesPre = new HashSet<>();
 		attributesPre.add(Attribute.build("Organism", "9606"));
 		attributesPost = new HashSet<>();
-		attributesPost.add(Attribute.build("Organism", "Homo sapiens"));			
-		client.persistCuration(sample.getAccession(), 
+		attributesPost.add(Attribute.build("Organism", "Homo sapiens"));
+		client.persistCuration(sample.getAccession(),
 				Curation.build(attributesPre, attributesPost, null, null), "self.BiosampleIntegrationTest");
-		
+
 
 		attributesPre = new HashSet<>();
 		attributesPre.add(Attribute.build("Organism", "Homo sapiens"));
 		attributesPost = new HashSet<>();
-		attributesPost.add(Attribute.build("Organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));			
-		client.persistCuration(sample.getAccession(), 
+		attributesPost.add(Attribute.build("Organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
+		client.persistCuration(sample.getAccession(),
 				Curation.build(attributesPre, attributesPost, null, null), "self.BiosampleIntegrationTest");
 
-		
+		attributesPre = new HashSet<>();
+		attributesPre.add(Attribute.build("Weird", "\"\""));
+		attributesPost = new HashSet<>();
+		client.persistCuration(sample.getAccession(),
+				Curation.build(attributesPre, attributesPost, null, null), "self.BiosampleIntegrationTest");
+
 		//test alternative domain interpretations
 		attributesPre = new HashSet<>();
 		attributesPre.add(Attribute.build("CurationDomain", "original"));
 		attributesPost = new HashSet<>();
-		attributesPost.add(Attribute.build("CurationDomain", "A"));			
-		client.persistCuration(sample.getAccession(), 
+		attributesPost.add(Attribute.build("CurationDomain", "A"));
+		client.persistCuration(sample.getAccession(),
 				Curation.build(attributesPre, attributesPost, null, null), "self.BiosampleIntegrationTest");
 		attributesPre = new HashSet<>();
 		attributesPre.add(Attribute.build("CurationDomain", "original"));
 		attributesPost = new HashSet<>();
-		attributesPost.add(Attribute.build("CurationDomain", "B"));			
-		client.persistCuration(sample.getAccession(), 
+		attributesPost.add(Attribute.build("CurationDomain", "B"));
+		client.persistCuration(sample.getAccession(),
 				Curation.build(attributesPre, attributesPost, null, null), "self.BiosampleIntegrationTestAlternative");
 
 	}
 
 	@Override
 	protected void phaseThree() {
-		
+
 		// check /curations
 		testCurations();
-		
+
 		testSampleCurations(sample);
-		
+
 		//check there was no side-effects
 		client.fetchSampleResource(sample.getAccession());
-		
+
 		//check what the default alldomain conflicting result is
 		MultiValueMap<String, String> params;
 		params = new LinkedMultiValueMap<>();
 		testSampleCurationDomains(sample.getAccession(), "original", params);
-		//check what the no-domain result is 
+		//check what the no-domain result is
 		params = new LinkedMultiValueMap<>();
 		params.add("curationdomain", "");
 		testSampleCurationDomains(sample.getAccession(), "original", params);
@@ -126,19 +120,19 @@ public class RestCurationIntegration extends AbstractIntegration {
 		params = new LinkedMultiValueMap<>();
 		params.add("curationdomain", "self.BiosampleIntegrationTestAlternative");
 		testSampleCurationDomains(sample.getAccession(), "B", params);
-		
+
 	}
 
 	@Override
 	protected void phaseFour() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	protected void phaseFive() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	private void testCurations() {
@@ -146,7 +140,7 @@ public class RestCurationIntegration extends AbstractIntegration {
 		//TODO use client
 		URI uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUri())
 				.pathSegment("curations").build().toUri();
-		
+
 		log.info("GETting from " + uri);
 		RequestEntity<Void> request = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
 		ResponseEntity<PagedResources<Resource<Curation>>> response = restTemplate.exchange(request,
@@ -158,7 +152,7 @@ public class RestCurationIntegration extends AbstractIntegration {
 		log.info("GETted from " + uri);
 		PagedResources<Resource<Curation>> paged = response.getBody();
 
-		
+
 		if (paged.getValue().size() == 0) {
 			throw new RuntimeException("No curations in list");
 		}
@@ -180,7 +174,7 @@ public class RestCurationIntegration extends AbstractIntegration {
 					throw new RuntimeException("Unable to follow self link on "+curationResource);
 				}
 				log.info("GETted from " + uriLink);
-				
+
 			}
 
 			if (samplesLink == null) {
@@ -194,7 +188,7 @@ public class RestCurationIntegration extends AbstractIntegration {
 						});
 				if (!responseLink.getStatusCode().is2xxSuccessful()) {
 					throw new RuntimeException("Unable to follow samples link on "+curationResource);
-				}				
+				}
 				log.info("GETted from " + uriLink);
 			}
 		}
@@ -213,7 +207,7 @@ public class RestCurationIntegration extends AbstractIntegration {
 
 		PagedResources<Resource<Curation>> paged = response.getBody();
 
-		if (paged.getMetadata().getTotalElements() != 4) {
+		if (paged.getMetadata().getTotalElements() != 5) {
 			throw new RuntimeException(
 					"Expecting 4 curations, found " + paged.getMetadata().getTotalElements());
 		}
@@ -266,11 +260,16 @@ public class RestCurationIntegration extends AbstractIntegration {
 		SortedSet<Attribute> attributes = new TreeSet<>();
 		attributes.add(Attribute.build("Organism", "9606"));
 		attributes.add(Attribute.build("CurationDomain", "original"));
-		
+		attributes.add(Attribute.build("Weird", "\"\""));
+
 		SortedSet<Relationship> relationships = new TreeSet<>();
 
 		SortedSet<ExternalReference> externalReferences = new TreeSet<>();
 
-		return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences, null, null, null);
+//		return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences, null, null, null);
+        return new Sample.Builder(name, accession).withDomain(domain)
+				.withRelease(release).withUpdate(update)
+				.withAttributes(attributes).withRelationships(relationships).withExternalReferences(externalReferences)
+				.build();
 	}
 }

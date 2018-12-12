@@ -1,5 +1,5 @@
-https://www.codacy.com/app/afaulconbridge/biosamples-v4?utm_source=github.com&utm_medium=referral&utm_content=EBIBioSamples/biosamples-v4&utm_campaign=badger[image:https://api.codacy.com/project/badge/Grade/c2acf39bb65d4793ae3420c70ab51388[Codacy
-Badge]]
+image:https://api.codacy.com/project/badge/Grade/d1d650940b1f4a6286607c1d06573090["Codacy code quality", link="https://www.codacy.com/app/danielvaughan/biosamples-v4?utm_source=github.com&utm_medium=referral&utm_content=EBIBioSamples/biosamples-v4&utm_campaign=Badge_Grade"]
+image:https://quay.io/repository/ebibiosamples/biosamples-v4/status["Docker Repository on Quay", link="https://quay.io/repository/ebibiosamples/biosamples-v4"]
 
 [[quickstart]]
 Quickstart
@@ -105,6 +105,16 @@ Run the pipeline to send the data to the submission API via REST
 Note: You will need to mount the location that the XML dump was
 downloaded to within the docker container. A docker-compose.override.yml
 file is the easiest way to do that.
+
+[[ena]]
+ENA
+~~~~
+You can run the pipelines-ena to import ENA samples.
+In order to do that you will need to add some security settings to maven 
+to get access to oracle private driver repository.
+
+You can read more instructions about this at https://blogs.oracle.com/dev2dev/get-oracle-jdbc-drivers-and-ucp-from-oracle-maven-repository-without-ides
+
 
 [[developing]]
 Developing

@@ -12,7 +12,7 @@ We recommend all submissions to BioSamples be made in JSON via our JSON API.
 
 === 2. Legacy SampleTab format
 
-Legacy submissions to BioSamples Database should be in link:st[SampleTab file format]. This is a tab-separated spreadsheet-like text format compatible with popular office tools.
+Legacy submissions to BioSamples Database should be in link:../references/sampletab[SampleTab file format]. This is a tab-separated spreadsheet-like text format compatible with popular office tools.
 
 Once you have a SampleTab file, you can use the +++<a th:href="@{/sampletab/validation}">validation Service</a>+++ to ensure it is correct. This will also apply common corrections and ontology mappings that are used to standardise the data.
 

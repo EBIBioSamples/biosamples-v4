@@ -1,5 +1,7 @@
 package uk.ac.ebi.biosamples.model.filter;
 
+import uk.ac.ebi.biosamples.model.facet.FacetType;
+
 import java.util.Objects;
 import java.util.Optional;
 
@@ -27,6 +29,11 @@ public class AttributeFilter implements Filter{
     @Override
     public Optional<String> getContent() {
         return Optional.ofNullable(this.value);
+    }
+
+    @Override
+    public FacetType getAssociatedFacetType() {
+        return FacetType.ATTRIBUTE_FACET;
     }
 
     @Override

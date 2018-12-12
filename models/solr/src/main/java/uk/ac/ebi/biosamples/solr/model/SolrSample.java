@@ -12,7 +12,6 @@ import org.springframework.data.solr.core.mapping.Dynamic;
 import org.springframework.data.solr.core.mapping.Indexed;
 import org.springframework.data.solr.core.mapping.SolrDocument;
 
-import uk.ac.ebi.biosamples.solr.model.field.SolrFieldType;
 import uk.ac.ebi.biosamples.solr.service.SolrFieldService;
 
 
@@ -95,8 +94,7 @@ public class SolrSample {
 
 
 	/**
-	 * This field is required to get a list of attribute to use for faceting.
-	 * It includes attributes and relationships of the sample
+	 * This field is required to get a list of attribute to use for faceting. * It includes attributes and relationships of the sample
 	 * Since faceting does not require it to be stored, it wont be to save space.
 	 * 
 	 */
@@ -124,7 +122,6 @@ public class SolrSample {
 	public String getAccession() {
 		return accession;
 	}
-
 
 	public String getName() {
 		return name;
@@ -181,7 +178,6 @@ public class SolrSample {
 		return outgoingRelationships;
 	}
 
-
 	public List<String> getAutocompletes() {
 		return autocompleteTerms;
 	}
@@ -232,7 +228,7 @@ public class SolrSample {
 			Map<String, List<String>> attributeUnits,
 		    Map<String, List<String>> outgoingRelationships, 
 		    Map<String, List<String>> incomingRelationships,
-			Map<String, List<String>> externalReferencesData, 
+			Map<String, List<String>> externalReferencesData,
 			List<String> keywords) {
 
 		//TODO validate maps
@@ -266,38 +262,36 @@ public class SolrSample {
 		SortedSet<String> facetFieldSet = new TreeSet<>();
 		if (attributeValues != null && attributeValues.keySet().size() > 0) {
 			for (String attributeValueKey : attributeValues.keySet()) {
-				facetFieldSet.add(attributeValueKey+SolrFieldType.ATTRIBUTE.getSuffix());
+				facetFieldSet.add(attributeValueKey + "_av_ss");
 			}
 		}
 
 		if (outgoingRelationships != null && outgoingRelationships.keySet().size() > 0) {
 			for (String outgoingRelationshipsKey : outgoingRelationships.keySet()) {
-				facetFieldSet.add(outgoingRelationshipsKey+SolrFieldType.RELATION.getSuffix());
+				facetFieldSet.add(outgoingRelationshipsKey + "_or_ss");
 			}
 		}
 
 		if (incomingRelationships != null && incomingRelationships.keySet().size() > 0) {
 			for (String incomingRelationshipsKey : incomingRelationships.keySet()) {
-				facetFieldSet.add(incomingRelationshipsKey+SolrFieldType.INVERSE_RELATION.getSuffix());
+				facetFieldSet.add(incomingRelationshipsKey + "_ir_ss");
 			}
 		}
 
 		if (externalReferencesData != null && externalReferencesData.keySet().size() > 0) {
 			for (String externalReferencesDataKey : externalReferencesData.keySet()) {
-				facetFieldSet.add(externalReferencesDataKey+SolrFieldType.EXTERNAL_REFERENCE_DATA.getSuffix());
+				facetFieldSet.add(externalReferencesDataKey + "_erd_ss");
 			}
 		}
+
 		sample.facetFields = new ArrayList<>(facetFieldSet);
-		
-		
+
 		//copy into the other fields
 		//this should be done in a copyfield but that doesn't work for some reason?
 		sample.autocompleteTerms = new ArrayList<>();
-		if (attributeValues != null) {
-			for (String key : attributeValues.keySet()) {
-				sample.autocompleteTerms.add(SolrFieldService.decodeFieldName(key));
-				sample.autocompleteTerms.addAll(attributeValues.get(key));
-			}
+		for (String key : attributeValues.keySet()) {
+			sample.autocompleteTerms.add(SolrFieldService.decodeFieldName(key));
+			sample.autocompleteTerms.addAll(attributeValues.get(key));
 		}
 
 		sample.keywords = new ArrayList<>();

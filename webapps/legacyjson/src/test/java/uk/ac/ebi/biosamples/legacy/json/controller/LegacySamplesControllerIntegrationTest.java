@@ -335,7 +335,7 @@ public class LegacySamplesControllerIntegrationTest {
 				));
 
 	}
-	
+
 	@Test
 	public void testRetrieveAllSamplesAsPagedResources() throws Exception {
 		Sample sampleA = new TestSample("A").build();
@@ -429,16 +429,16 @@ public class LegacySamplesControllerIntegrationTest {
 				.andExpect(status().isNotFound());
 
 	}
-	
+
 	@Test
 	public void testFindByGroupFunctionality() throws Exception {
 		Sample sampleA = new TestSample("SAME2").withRelationship(
 				Relationship.build("SAMEG1", "has member", "SAME2")).build();
 		Sample sampleB = new TestSample("SAMN3").withRelationship(
-				Relationship.build("SAMEG1", "has member", "SMAN3")).build();
+				Relationship.build("SAMEG1", "has member", "SAMN3")).build();
 		Sample groupA = new TestSample("SAMEG1")
-				.withRelationship(Relationship.build("groupA", "has member", "SAME2"))
-				.withRelationship(Relationship.build("groupA", "has member", "SAMN3"))
+				.withRelationship(Relationship.build("SAMEG1", "has member", "SAME2"))
+				.withRelationship(Relationship.build("SAMEG1", "has member", "SAMN3"))
 				.build();
 
 		when(sampleRepository.findSamplesByGroup(eq("SAMEG1"), anyInt(), anyInt()))
@@ -470,7 +470,7 @@ public class LegacySamplesControllerIntegrationTest {
 		mockMvc.perform(get(groupRelationLink).accept(HAL_JSON))
 				.andExpect(jsonPath("$._embedded.groupsrelations[0].accession").value(groupA.getAccession()));
 	}
-	
+
 	@Test
 	public void testFindByAccessionFunctionality() throws Exception {
 	    /*TODO testFindByAccessionFunctionality*/
@@ -500,5 +500,5 @@ public class LegacySamplesControllerIntegrationTest {
 				))
 				.andExpect(jsonPath("$._embedded.samples").exists());
 	}
-	
+
 }

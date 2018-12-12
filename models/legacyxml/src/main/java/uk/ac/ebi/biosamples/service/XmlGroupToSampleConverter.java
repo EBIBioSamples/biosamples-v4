@@ -1,29 +1,17 @@
 package uk.ac.ebi.biosamples.service;
 
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
+import com.google.common.collect.Lists;
 import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
-
-import com.google.common.collect.Lists;
-
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Contact;
-import uk.ac.ebi.biosamples.model.ExternalReference;
-import uk.ac.ebi.biosamples.model.Organization;
-import uk.ac.ebi.biosamples.model.Publication;
-import uk.ac.ebi.biosamples.model.Relationship;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
+
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 @Service
 public class XmlGroupToSampleConverter implements Converter<Element, Sample>  {
@@ -102,9 +90,15 @@ public class XmlGroupToSampleConverter implements Converter<Element, Sample>  {
 		log.trace("attributes = "+attributes);
 		log.trace("relationships = "+relationships);
 		
-		return Sample.build(name, accession, null, release, update,
-				attributes, relationships, externalReferences,
-				organizations, contacts, publications);
+//		return Sample.build(name, accession, null, release, update,
+//				attributes, relationships, externalReferences,
+//				organizations, contacts, publications);
+        return new Sample.Builder(name, accession)
+                .withRelease(release).withUpdate(update)
+				.withAttributes(attributes).withRelationships(relationships)
+				.withExternalReferences(externalReferences).withOrganizations(organizations)
+				.withContacts(contacts).withPublications(publications)
+				.build();
 	}
 
 	private SortedSet<Contact> extractContacts(Element doc) {

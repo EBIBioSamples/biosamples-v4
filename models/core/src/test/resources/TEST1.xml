@@ -2,7 +2,7 @@
 <BioSample xmlns="http://www.ebi.ac.uk/biosamples/SampleGroupExport/1.0"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.ebi.ac.uk/biosamples/SampleGroupExport/1.0 http://www.ebi.ac.uk/biosamples/assets/xsd/v1.0/BioSDSchema.xsd"
-	id="TEST1" submissionUpdateDate="2016-05-05T11:36:57+00:00"
+	id="SAMEA1234" submissionUpdateDate="2016-05-05T11:36:57+00:00"
 	submissionReleaseDate="2016-04-01T11:36:57+00:00">
 	<Property class="Sample Name" characteristic="false" comment="false"
 		type="STRING">
@@ -47,7 +47,7 @@
 		</QualifiedValue>
 	</Property>
 
-	<derivedFrom>TEST2</derivedFrom>
+	<derivedFrom>SAMD4321</derivedFrom>
 
 	<Database>
 		<Name>other</Name>

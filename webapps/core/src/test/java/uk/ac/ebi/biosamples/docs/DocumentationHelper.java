@@ -29,7 +29,7 @@ public class DocumentationHelper {
             }
 
             usedAccession.add(sampleAccession);
-            Sample sample = new Sample.Builder(sampleAccession, "FakeSample").build();
+            Sample sample = new Sample.Builder( "FakeSample", sampleAccession).build();
 
             samples.add(sample);
         }
@@ -54,10 +54,10 @@ public class DocumentationHelper {
 //    public Sample.Builder getBuilderFromSample(Sample sample) {
 //        Sample.Builder sampleBuilder = new Sample.Builder(sample.getAccession(), sample.getName())
 //                .withDomain(sample.getDomain())
-//                .withReleaseDate(sample.getRelease())
-//                .withUpdateDate(sample.getUpdate());
+//                .withRelease(sample.getRelease())
+//                .withUpdate(sample.getUpdate());
 //
-//        sample.getAttributes().forEach(sampleBuilder::withAttribute);
+//        sample.getAttributes().forEach(sampleBuilder::addAttribute);
 //        sample.getRelationships().forEach(sampleBuilder::withRelationship);
 //        sample.getContacts().forEach(sampleBuilder::withContact);
 //        sample.getPublications().forEach(sampleBuilder::withPublication);
@@ -69,7 +69,7 @@ public class DocumentationHelper {
 //    }
 
     public Sample.Builder getExampleSampleBuilder() {
-        return new Sample.Builder("SAMFAKE123456", "FakeSample");
+        return new Sample.Builder( "FakeSample","SAMFAKE123456");
     }
 
     public Sample getExampleSample() {

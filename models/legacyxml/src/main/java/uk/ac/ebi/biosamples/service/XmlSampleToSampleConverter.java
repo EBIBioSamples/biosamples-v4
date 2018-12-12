@@ -1,22 +1,20 @@
 package uk.ac.ebi.biosamples.service;
 
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
-import java.util.Collection;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
+import com.google.common.collect.Lists;
 import org.dom4j.Element;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
-
-import com.google.common.collect.Lists;
-
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
+
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.util.Collection;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 @Service
 public class XmlSampleToSampleConverter implements Converter<Element, Sample>  {
@@ -87,7 +85,12 @@ public class XmlSampleToSampleConverter implements Converter<Element, Sample>  {
 		}
 		
 		
-		return Sample.build(name, accession, null, release, update, attributes, relationships, externalReferences, null, null, null);
+//		return Sample.build(name, accession, null, release, update, attributes, relationships, externalReferences, null, null, null);
+        return new Sample.Builder(name, accession)
+				.withRelease(release).withUpdate(update)
+				.withAttributes(attributes).withRelationships(relationships)
+				.withExternalReferences(externalReferences)
+				.build();
 	}
 
 }

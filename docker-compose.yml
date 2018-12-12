@@ -13,13 +13,13 @@ services:
     command:
     - java
     - -jar
-    - webapps-core-4.0.9-SNAPSHOT.war
+    - webapps-core-4.1.8-SNAPSHOT.war
     environment:
     #AAP certificate
     - jwt.certificate=public.explore.der
     - security.basic.path=
-    - aap.domains.url=https://explore.api.aap.tsi.ebi.ac.uk
-    - aap.token.url=https://explore.api.aap.tsi.ebi.ac.uk/auth
+    - aap.domains.url=https://explore.api.aai.ebi.ac.uk
+    - aap.token.url=https://explore.api.aai.ebi.ac.uk/auth
     #configure other services
     - spring.data.solr.host=http://solr:8983/solr
     - spring.data.mongodb.uri=mongodb://mongo:27017/biosamples
@@ -59,7 +59,7 @@ services:
     - 8081:8080
     - 9090:9090
     - 8000:8000
-    
+
   biosamples-webapps-sampletab:
     image: biosamples:latest
     links:
@@ -69,7 +69,7 @@ services:
     command:
     - java
     - -jar
-    - webapps-sampletab-4.0.9-SNAPSHOT.war
+    - webapps-sampletab-4.1.8-SNAPSHOT.war
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - SERVER_SERVLET_CONTEXT-PATH=/biosamples/sampletab
@@ -96,9 +96,10 @@ services:
     #- BIOSAMPLES_CLIENT_AAP_USERNAME=override_in_docker-compose.override.yml
     #- BIOSAMPLES_CLIENT_AAP_PASSWORD=override_in_docker-compose.override.yml
     - spring.data.mongodb.uri=mongodb://mongo:27017/biosamples
+    - biosamples.webapp.core.uri=http://localhost:8081/biosamples
     ports:
     - 8082:8080
-  
+
   biosamples-webapps-legacyxml:
     image: biosamples:latest
     links:
@@ -108,7 +109,7 @@ services:
     command:
     - java
     - -jar
-    - webapps-legacyxml-4.0.9-SNAPSHOT.war
+    - webapps-legacyxml-4.1.8-SNAPSHOT.war
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - SERVER_SERVLET_CONTEXT-PATH=/biosamples/xml
@@ -130,30 +131,30 @@ services:
   biosamples-webapps-legacyjson:
     image: biosamples:latest
     links:
-      - biosamples-webapps-core
+    - biosamples-webapps-core
     volumes:
-      - logs:/logs
+    - logs:/logs
     command:
-      - java
-      - -jar
-      - webapps-legacyjson-4.0.9-SNAPSHOT.war
+    - java
+    - -jar
+    - webapps-legacyjson-4.1.8-SNAPSHOT.war
     environment:
-      - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
-      - SERVER_SERVLET_CONTEXT-PATH=/biosamples/api
-      - SERVER_CONTEXT-PATH=/biosamples/api
-      - SPRING_JACKSON_SERIALIZATION_INDENT_OUTPUT=true
-      - LOGGING_FILE=/logs/webapps-legacyjson.log
-      - SERVER_TOMCAT_ACCESSLOG_ENABLED=true
-      - SERVER_TOMCAT_ACCESSLOG_DIRECTORY=/logs
-      - SERVER_TOMCAT_ACCESSLOG_PREFIX=webapps-legacyjson.access
-      - server.tomcat.accesslog.pattern=- %l %u %t \"%r\" %s %b %D %{Content-Type}o
-      - ENDPOINTS_SHUTDOWN_ENABLED=true
-      - ENDPOINTS_SHUTDOWN_SENSITIVE=false
-      # Provide AAP infos
-      # - BIOSAMPLES_CLIENT_AAP_USERNAME=override_in_docker-compose.override.yml
-      # - BIOSAMPLES_CLIENT_AAP_PASSWORD=override_in_docker-compose.override.yml
+    - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
+    - SERVER_SERVLET_CONTEXT-PATH=/biosamples/api
+    - SERVER_CONTEXT-PATH=/biosamples/api
+    - SPRING_JACKSON_SERIALIZATION_INDENT_OUTPUT=true
+    - LOGGING_FILE=/logs/webapps-legacyjson.log
+    - SERVER_TOMCAT_ACCESSLOG_ENABLED=true
+    - SERVER_TOMCAT_ACCESSLOG_DIRECTORY=/logs
+    - SERVER_TOMCAT_ACCESSLOG_PREFIX=webapps-legacyjson.access
+    - server.tomcat.accesslog.pattern=- %l %u %t \"%r\" %s %b %D %{Content-Type}o
+    - ENDPOINTS_SHUTDOWN_ENABLED=true
+    - ENDPOINTS_SHUTDOWN_SENSITIVE=false
+    # Provide AAP infos
+    # - BIOSAMPLES_CLIENT_AAP_USERNAME=override_in_docker-compose.override.yml
+    # - BIOSAMPLES_CLIENT_AAP_PASSWORD=override_in_docker-compose.override.yml
     ports:
-      - 8084:8080
+    - 8084:8080
 
   biosamples-agents-solr:
     image: biosamples:latest
@@ -165,7 +166,7 @@ services:
     command:
     - java
     - -jar
-    - agents-solr-4.0.9-SNAPSHOT.jar
+    - agents-solr-4.1.8-SNAPSHOT.jar
     environment:
     - SPRING_RABBITMQ_HOST=rabbitmq
     - SPRING_RABBITMQ_PUBLISHER-CONFIRMS=true
@@ -189,11 +190,11 @@ services:
     command:
     - java
     - -jar
-    - pipelines-ena-4.0.9-SNAPSHOT.jar
+    - pipelines-ena-4.1.8-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-ena.log
-    
+
   biosamples-pipelines-ncbi:
     image: biosamples:latest
     volumes:
@@ -203,11 +204,11 @@ services:
     command:
     - java
     - -jar
-    - pipelines-ncbi-4.0.9-SNAPSHOT.jar
+    - pipelines-ncbi-4.1.8-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-ncbi.log
-    
+
   biosamples-pipelines-accession:
     image: biosamples:latest
     volumes:
@@ -217,11 +218,11 @@ services:
     command:
     - java
     - -jar
-    - pipelines-accession-4.0.9-SNAPSHOT.jar
+    - pipelines-accession-4.1.8-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
-    - LOGGING_FILE=/logs/pipelines-accession.log      
-    
+    - LOGGING_FILE=/logs/pipelines-accession.log
+
   biosamples-pipelines-sampletab:
     image: biosamples:latest
     volumes:
@@ -231,11 +232,11 @@ services:
     command:
     - java
     - -jar
-    - pipelines-sampletab-4.0.9-SNAPSHOT.jar
+    - pipelines-sampletab-4.1.8-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_SAMPLETAB_URI=http://biosamples-webapps-sampletab:8080/biosamples/sampletab/v4
-    - LOGGING_FILE=/logs/pipelines-sampletab.log   
-    
+    - LOGGING_FILE=/logs/pipelines-sampletab.log
+
   biosamples-pipelines-copydown:
     image: biosamples:latest
     volumes:
@@ -245,11 +246,11 @@ services:
     command:
     - java
     - -jar
-    - pipelines-copydown-4.0.9-SNAPSHOT.jar
+    - pipelines-copydown-4.1.8-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
-    - LOGGING_FILE=/logs/pipelines-copydown.log  
-    
+    - LOGGING_FILE=/logs/pipelines-copydown.log
+
   biosamples-pipelines-curation:
     volumes:
     - logs:/logs
@@ -259,13 +260,13 @@ services:
     command:
     - java
     - -jar
-    - pipelines-curation-4.0.9-SNAPSHOT.jar
+    - pipelines-curation-4.1.8-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-curation.log
     - spring.cache.cache-names=ols_short
     - spring.cache.caffeine.spec=maximumSize=50000
-    
+
   biosamples-pipelines-zooma:
     volumes:
     - logs:/logs
@@ -275,13 +276,13 @@ services:
     command:
     - java
     - -jar
-    - pipelines-zooma-4.0.9-SNAPSHOT.jar
+    - pipelines-zooma-4.1.8-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-zooma.log
     - spring.cache.cache-names=zooma,ols_short
     - spring.cache.caffeine.spec=maximumSize=50000
-    
+
   biosamples-pipelines-reindex:
     volumes:
     - logs:/logs
@@ -291,13 +292,13 @@ services:
     command:
     - java
     - -jar
-    - pipelines-reindex-4.0.9-SNAPSHOT.jar
+    - pipelines-reindex-4.1.8-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-reindex.log
     - spring.data.mongodb.uri=mongodb://mongo/biosamples
     - SPRING_RABBITMQ_HOST=rabbitmq
-    
+
   biosamples-pipelines-export:
     volumes:
     - logs:/logs
@@ -308,13 +309,13 @@ services:
     command:
     - java
     - -jar
-    - pipelines-export-4.0.9-SNAPSHOT.jar
+    - pipelines-export-4.1.8-SNAPSHOT.jar
     - --gzip
     - /export/export.json.gzip
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-export.log
-           
+
   biosamples-integration:
     volumes:
     - logs:/logs
@@ -327,7 +328,7 @@ services:
     command:
     - java
     - -jar
-    - integration-4.0.9-SNAPSHOT.jar
+    - integration-4.1.8-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - BIOSAMPLES_SUBMISSIONURI=http://biosamples-webapps-sampletab:8080/biosamples/sampletab
@@ -340,7 +341,17 @@ services:
     #- BIOSAMPLES_CLIENT_AAP_USERNAME=override_in_docker-compose.override.yml
     #- BIOSAMPLES_CLIENT_AAP_PASSWORD=override_in_docker-compose.override.yml
     - BIOSAMPLES_LEGACYAPIKEY=fooqwerty
-       
+
+  json-schema-validator:
+    volumes:
+    - logs:/logs
+    build: ./json-schema-validator
+    image: json-schema-validator:latest
+    links:
+    - biosamples-webapps-core
+    ports:
+    - 8085:3020
+
   mongo:
     image: mongo:3.2
     volumes:
@@ -348,7 +359,7 @@ services:
     - ./docker/mongoarchive:/mongoarchive
     ports:
     - 27017:27017
-    
+
   rabbitmq:
     image: rabbitmq:3.6-management-alpine
     hostname: biosamples-rabbitmq
@@ -357,7 +368,7 @@ services:
     - 15672:15672
     volumes:
     - rabbitmq_data:/var/lib/rabbitmq/mnesia
-    
+
   solr:
     image: solr:6.6-alpine
     ports:
@@ -371,10 +382,9 @@ services:
     - docker-entrypoint.sh
     - solr-precreate
     - samples
-    
+
 volumes:
   solr_data: null
   mongo_data: null
   rabbitmq_data: null
   logs: null
-

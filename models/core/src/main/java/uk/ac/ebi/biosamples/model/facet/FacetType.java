@@ -8,7 +8,9 @@ public enum FacetType {
     ATTRIBUTE_FACET("attribute", AttributeFacet.Builder.class),
     INVERSE_RELATION_FACET("inverse relation", InverseRelationFacet.Builder.class),
     RELATION_FACET("relation", RelationFacet.Builder.class),
-    EXTERNAL_REFERENCE_DATA_FACET("external reference data", ExternalReferenceDataFacet.Builder.class);
+    EXTERNAL_REFERENCE_DATA_FACET("external reference data", ExternalReferenceDataFacet.Builder.class),
+    NO_TYPE("", null);
+
 
     private String name;
     private Class<? extends Facet.Builder> associatedClass;

@@ -4,11 +4,14 @@
 
 	<artifactId>models-core</artifactId>
 	<packaging>jar</packaging>
+	<properties>
+	<protobuf.version>3.5.1</protobuf.version>
+	</properties>
 
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>4.0.9-SNAPSHOT</version>
+		<version>4.1.8-SNAPSHOT</version>
 		<relativePath>../../</relativePath>
 	</parent>
 
@@ -16,9 +19,9 @@
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>utils-xml</artifactId>
-			<version>${bsd2017.version}</version>
+			<version>4.1.8-SNAPSHOT</version>
 		</dependency>
-		
+
 		<!-- need this for Jackson2ObjectMapperBuilder -->
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -50,7 +53,12 @@
 			<groupId>org.springframework.hateoas</groupId>
 			<artifactId>spring-hateoas</artifactId>
 		</dependency>
-	</dependencies>
+		<dependency>
+            <groupId>uk.ac.ebi.biosamples</groupId>
+            <artifactId>models-structured</artifactId>
+            <version>4.1.8-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
 
 	<!-- lock transitive dependency version -->
 	<dependencyManagement>

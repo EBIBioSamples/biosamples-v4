@@ -4,7 +4,6 @@ import com.google.common.collect.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.context.annotation.Profile;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.annotation.Order;
 import org.springframework.hateoas.Link;
@@ -30,15 +29,15 @@ import java.util.TreeSet;
 
 @Component
 @Order(2)
-@Profile({"default", "rest"})
+//@Profile({"default", "rest"})
 public class RestIntegration extends AbstractIntegration {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 	private final RestTemplate restTemplate;
 	private BioSamplesProperties clientProperties;
 	private final BioSamplesClient annonymousClient;
-	
-	
+
+
 	public RestIntegration(BioSamplesClient client, RestTemplateBuilder restTemplateBuilder, BioSamplesProperties clientProperties) {
 		super(client);
 		this.restTemplate = restTemplateBuilder.build();
@@ -78,16 +77,22 @@ public class RestIntegration extends AbstractIntegration {
 		//check the update date
 		if (Duration.between(sampleTest1.getUpdate(), optional.get().getContent().getUpdate())
 				.abs().getSeconds() < 60) {
-			throw new RuntimeException("Update date was not modified to within 60s as intended");			
+			throw new RuntimeException("Update date was not modified to within 60s as intended");
 		}
 		//disabled because not fully operational
 		//checkIfModifiedSince(optional.get());
 		//checkIfMatch(optional.get());
 
 		// put a version that is private
-		sampleTest1 = Sample.build(sampleTest1.getName(), sampleTest1.getAccession(), sampleTest1.getDomain(),
-				Instant.parse("2116-04-01T11:36:57.00Z"), sampleTest1.getUpdate(),
-				sampleTest1.getCharacteristics(), sampleTest1.getRelationships(), sampleTest1.getExternalReferences(), null, null, null);
+//		sampleTest1 = Sample.build(sampleTest1.getName(), sampleTest1.getAccession(), sampleTest1.getDomain(),
+//				Instant.parse("2116-04-01T11:36:57.00Z"), sampleTest1.getUpdate(),
+//				sampleTest1.getCharacteristics(), sampleTest1.getRelationships(), sampleTest1.getExternalReferences(), null, null, null);
+        sampleTest1 = new Sample.Builder(sampleTest1.getName(), sampleTest1.getAccession())
+				.withDomain(sampleTest1.getDomain()).withRelease("2116-04-01T11:36:57.00Z")
+				.withUpdate(sampleTest1.getUpdate()).withAttributes(sampleTest1.getCharacteristics())
+				.withRelationships(sampleTest1.getRelationships()).withExternalReferences(sampleTest1.getExternalReferences())
+				.build();
+
 		Resource<Sample> resource = client.persistSampleResource(sampleTest1);
 		if (!sampleTest1.equals(resource.getContent())) {
 			log.warn("expected: "+sampleTest1);
@@ -104,26 +109,29 @@ public class RestIntegration extends AbstractIntegration {
 		Sample sampleTest1 = getSampleTest1();
 		Sample sampleTest2 = getSampleTest2();
 		Optional<Resource<Sample>> optional;
-		
-		//check that it is private 
+
+		//check that it is private
 		optional = annonymousClient.fetchSampleResource(sampleTest1.getAccession());
 		if (optional.isPresent()) {
 			throw new RuntimeException("Can access private "+sampleTest1.getAccession()+" as annonymous");
 		}
-				
-		
+
+
 		//check that it is accessible, if authorised
 		optional = client.fetchSampleResource(sampleTest1.getAccession());
 		if (!optional.isPresent()) {
 			throw new RuntimeException("Cannot access private "+sampleTest1.getAccession());
 		}
-		
+
 		//put the second sample in
 		Resource<Sample> resource = client.persistSampleResource(sampleTest2, false, true);
-		sampleTest2 = Sample.build(sampleTest2.getName(), sampleTest2.getAccession(), "self.BiosampleIntegrationTest",
-				sampleTest2.getRelease(), sampleTest2.getUpdate(),
-				sampleTest2.getCharacteristics(), sampleTest1.getRelationships(), sampleTest2.getExternalReferences(),
-				null, null, null);
+//		sampleTest2 = Sample.build(sampleTest2.getName(), sampleTest2.getAccession(), "self.BiosampleIntegrationTest",
+//				sampleTest2.getRelease(), sampleTest2.getUpdate(),
+//				sampleTest2.getCharacteristics(), sampleTest1.getRelationships(), sampleTest2.getExternalReferences(),
+//				null, null, null);
+        sampleTest2 = Sample.Builder.fromSample(sampleTest2).withDomain("self.BiosampleIntegrationTest")
+				.withRelationships(sampleTest1.getRelationships())
+				.build();
 
 		if (!sampleTest2.equals(resource.getContent())) {
 			log.warn("expected: "+sampleTest2);
@@ -137,10 +145,13 @@ public class RestIntegration extends AbstractIntegration {
 		Sample sampleTest1 = getSampleTest1();
 		Sample sampleTest2 = getSampleTest2();
 		//at this point, the inverse relationship should have been added
-		
-		sampleTest2 = Sample.build(sampleTest2.getName(), sampleTest2.getAccession(), sampleTest2.getDomain(),
-				sampleTest2.getRelease(), sampleTest2.getUpdate(),
-				sampleTest2.getCharacteristics(), sampleTest1.getRelationships(), sampleTest2.getExternalReferences(), null, null, null);
+
+//		sampleTest2 = Sample.build(sampleTest2.getName(), sampleTest2.getAccession(), sampleTest2.getDomain(),
+//				sampleTest2.getRelease(), sampleTest2.getUpdate(),
+//				sampleTest2.getCharacteristics(), sampleTest1.getRelationships(), sampleTest2.getExternalReferences(), null, null, null);
+        sampleTest2 = Sample.Builder.fromSample(sampleTest2).withRelationships(sampleTest1.getRelationships())
+				.withNoOrganisations().withNoPublications().withNoContacts()
+				.build();
 
 		//check that it has the additional relationship added
 		// get to check it worked
@@ -163,23 +174,26 @@ public class RestIntegration extends AbstractIntegration {
 		if (!sampleTest2Rest.getUpdate().equals(sampleTest2.getUpdate())) {
 			log.info("sampleTest2Rest.getUpdate() = "+sampleTest2Rest.getUpdate());
 			log.info("sampleTest2.getUpdate() = "+sampleTest2.getUpdate());
-			throw new RuntimeException("Update date was modified when it shouldn't have been");			
+			throw new RuntimeException("Update date was modified when it shouldn't have been");
 		}
 		//now do another update to delete the relationship
-		sampleTest1 = Sample.build(sampleTest1.getName(), sampleTest1.getAccession(), sampleTest1.getDomain(),
-				Instant.parse("2116-04-01T11:36:57.00Z"), sampleTest1.getUpdate(),
-				sampleTest1.getCharacteristics(), new TreeSet<>(), sampleTest1.getExternalReferences(), null, null, null);
+//		sampleTest1 = Sample.build(sampleTest1.getName(), sampleTest1.getAccession(), sampleTest1.getDomain(),
+//				Instant.parse("2116-04-01T11:36:57.00Z"), sampleTest1.getUpdate(),
+//				sampleTest1.getCharacteristics(), new TreeSet<>(), sampleTest1.getExternalReferences(), null, null, null);
+        sampleTest1 = Sample.Builder.fromSample(sampleTest1).withRelease("2116-04-01T11:36:57.00Z")
+				.withNoRelationships().withNoContacts().withNoPublications().withNoOrganisations()
+				.build();
 		Resource<Sample> resource = client.persistSampleResource(sampleTest1);
 		if (!sampleTest1.equals(resource.getContent())) {
 			log.warn("expected: "+sampleTest1);
 			log.warn("found: "+resource.getContent());
 			throw new RuntimeException("Expected response to equal submission");
 		}
-		
+
 	}
-	
+
 	@Override
-	protected void phaseFive() {	
+	protected void phaseFive() {
 		//check that deleting the relationship actually deleted it
 		Sample sampleTest2 = getSampleTest2();
 		Optional<Resource<Sample>> optional = client.fetchSampleResource(sampleTest2.getAccession());
@@ -193,37 +207,37 @@ public class RestIntegration extends AbstractIntegration {
 			log.warn("found: "+sampleTest2Rest);
 			throw new RuntimeException("No matching "+sampleTest2.getAccession());
 		}
-		
+
 	}
 
 	private void checkIfModifiedSince(Resource<Sample> sample) {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setIfModifiedSince(0);
-		ResponseEntity<Resource<Sample>> response = restTemplate.exchange(sample.getLink(Link.REL_SELF).getHref(), 
-				HttpMethod.GET, new HttpEntity<Void>(headers), 
+		ResponseEntity<Resource<Sample>> response = restTemplate.exchange(sample.getLink(Link.REL_SELF).getHref(),
+				HttpMethod.GET, new HttpEntity<Void>(headers),
 				new ParameterizedTypeReference<Resource<Sample>>(){});
-		
+
 		if (!response.getStatusCode().equals(HttpStatus.NOT_MODIFIED)) {
 			throw new RuntimeException("Got something other than a 304 response");
 		}
 	}
-	
+
 	private void checkIfMatch(Resource<Sample> sample) {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setIfNoneMatch("W/\""+sample.getContent().hashCode()+"\"");
-		ResponseEntity<Resource<Sample>> response = restTemplate.exchange(sample.getLink(Link.REL_SELF).getHref(), 
-				HttpMethod.GET, new HttpEntity<Void>(headers), 
+		ResponseEntity<Resource<Sample>> response = restTemplate.exchange(sample.getLink(Link.REL_SELF).getHref(),
+				HttpMethod.GET, new HttpEntity<Void>(headers),
 				new ParameterizedTypeReference<Resource<Sample>>(){});
-		
+
 		if (!response.getStatusCode().equals(HttpStatus.NOT_MODIFIED)) {
 			throw new RuntimeException("Got something other than a 304 response");
 		}
 	}
-	
-	
+
+
 	private Sample getSampleTest1() {
 		String name = "Test Sample";
-		String accession = "TESTrest1";
+		String accession = "SAMN1";
         String domain = "self.BiosampleIntegrationTest";
 		Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
 		Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
@@ -237,7 +251,7 @@ public class RestIntegration extends AbstractIntegration {
 		attributes.add(Attribute.build("sex", "female", Sets.newHashSet("http://purl.obolibrary.org/obo/PATO_0000383","http://www.ebi.ac.uk/efo/EFO_0001265"), null));
 
 		SortedSet<Relationship> relationships = new TreeSet<>();
-		relationships.add(Relationship.build("TESTrest1", "derived from", "TESTrest2"));
+		relationships.add(Relationship.build("SAMN1", "derived from", "SAMN2"));
 		SortedSet<ExternalReference> externalReferences = new TreeSet<>();
 		externalReferences.add(ExternalReference.build("http://www.google.com"));
 
@@ -267,9 +281,15 @@ public class RestIntegration extends AbstractIntegration {
 				.pubmed_id("24265224")
 				.build());
 
-		return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences, organizations, contacts, publications);
+//		return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences, organizations, contacts, publications);
+        return new Sample.Builder(name, accession)
+				.withRelease(release).withUpdate(update).withDomain(domain)
+				.withAttributes(attributes)
+				.withRelationships(relationships).withExternalReferences(externalReferences)
+				.withOrganizations(organizations).withContacts(contacts).withPublications(publications)
+				.build();
 	}
-	
+
 	@PreDestroy
 	public void destroy() {
 		annonymousClient.close();
@@ -277,7 +297,7 @@ public class RestIntegration extends AbstractIntegration {
 
 	private Sample getSampleTest2() {
 		String name = "Test Sample the second";
-		String accession = "TESTrest2";
+		String accession = "SAMN2";
         String domain = "self.BiosampleIntegrationTest";
 		Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
 		Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
@@ -287,7 +307,9 @@ public class RestIntegration extends AbstractIntegration {
 				Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
 		attributes.add(Attribute.build("UTF-8 test", "αβ"));
 
-		return Sample.build(name, accession, domain, release, update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
+//		return Sample.build(name, accession, domain, release, update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
+		return new Sample.Builder(name, accession).withDomain(domain).withRelease(release).withUpdate(update)
+				.withAttributes(attributes).build();
 	}
 
 	private void postSampleWithAccessionShouldReturnABadRequestResponse() {

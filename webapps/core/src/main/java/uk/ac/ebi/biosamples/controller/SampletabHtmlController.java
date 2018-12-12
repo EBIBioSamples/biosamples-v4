@@ -1,7 +1,10 @@
 package uk.ac.ebi.biosamples.controller;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
+import uk.ac.ebi.biosamples.BioSamplesProperties;
 
 @Controller
 @RequestMapping("/sampletab")
@@ -26,4 +29,8 @@ public class SampletabHtmlController {
         return "sampletab/accession";
     }
 
+    @RequestMapping("/file_submit")
+    public String something() {
+        return "hello";
+    }
 }

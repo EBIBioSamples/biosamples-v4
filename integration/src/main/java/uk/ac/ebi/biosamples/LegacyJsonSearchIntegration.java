@@ -4,7 +4,6 @@ import com.jayway.jsonpath.JsonPath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.context.annotation.Profile;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.client.Hop;
 import org.springframework.hateoas.client.Traverson;
@@ -27,7 +26,7 @@ import static org.junit.Assert.*;
 import static org.springframework.hateoas.MediaTypes.HAL_JSON;
 
 @Component
-@Profile({"default"})
+//@Profile({"default"})
 public class LegacyJsonSearchIntegration extends AbstractIntegration {
 
     private final RestTemplate restTemplate;
@@ -37,8 +36,8 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
     Logger log = LoggerFactory.getLogger(getClass());
 
     public LegacyJsonSearchIntegration(BioSamplesClient client,
-                                RestTemplateBuilder restTemplateBuilder,
-                                IntegrationProperties integrationProperties) {
+                                       RestTemplateBuilder restTemplateBuilder,
+                                       IntegrationProperties integrationProperties) {
         super(client);
         this.restTemplate = restTemplateBuilder.build();
         this.integrationProperties = integrationProperties;
@@ -68,19 +67,19 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
 
     @Override
     protected void phaseThree() {
-         jsonSearchTester.itShouldBeAbleToMoveUsingLinks();
+        jsonSearchTester.itShouldBeAbleToMoveUsingLinks();
     }
 
     @Override
     protected void phaseFour() {
-         jsonSearchTester.itShouldFindSampleSearchingByAccession();
-         jsonSearchTester.itShouldFindSampleSearchingByFirstSampleInGroup();
-         jsonSearchTester.itShouldFindSampleSearchingByText();
-         jsonSearchTester.itShouldFindOnlySamplesWhenSearchingForSamples();
-         jsonSearchTester.itShouldFindSampleSearchingByAccessionAndGroup();
-         jsonSearchTester.itShouldFindGroupSearchingByAccession();
-         jsonSearchTester.itShouldFindGroupSearchingByText();
-         jsonSearchTester.itShouldFindOnlyGroupWhenSearchingForGroups();
+        jsonSearchTester.itShouldFindSampleSearchingByAccession();
+        jsonSearchTester.itShouldFindSampleSearchingByFirstSampleInGroup();
+        jsonSearchTester.itShouldFindSampleSearchingByText();
+        jsonSearchTester.itShouldFindOnlySamplesWhenSearchingForSamples();
+        jsonSearchTester.itShouldFindSampleSearchingByAccessionAndGroup();
+        jsonSearchTester.itShouldFindGroupSearchingByAccession();
+        jsonSearchTester.itShouldFindGroupSearchingByText();
+        jsonSearchTester.itShouldFindOnlyGroupWhenSearchingForGroups();
     }
 
     @Override
@@ -95,9 +94,9 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
         private final IntegrationProperties integrationProperties;
 
         public LegacyJsonSearchTester(Logger log,
-                               BioSamplesClient client,
-                               RestTemplate restTemplate,
-                               IntegrationProperties integrationProperties) {
+                                      BioSamplesClient client,
+                                      RestTemplate restTemplate,
+                                      IntegrationProperties integrationProperties) {
             this.log = log;
             this.client = client;
             this.restTemplate = restTemplate;
@@ -109,7 +108,7 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
             Sample groupContainegSAMEA911 = TestSampleGenerator.getGroupContainegSAMEA911();
             Optional<Resource<Sample>> optional = this.client.fetchSampleResource(groupContainegSAMEA911.getAccession());
             if (optional.isPresent()) {
-                throw new RuntimeException("Found existing "+groupContainegSAMEA911.getAccession());
+                throw new RuntimeException("Found existing " + groupContainegSAMEA911.getAccession());
             }
 
             Resource<Sample> groupResource = this.client.persistSampleResource(groupContainegSAMEA911);
@@ -119,11 +118,10 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
             }
 
 
-
             Sample sampleWithinGroup = TestSampleGenerator.getSampleMemberOfGroupWithExternalRelations();
             optional = this.client.fetchSampleResource(sampleWithinGroup.getAccession());
             if (optional.isPresent()) {
-                throw new RuntimeException("Found existing "+sampleWithinGroup.getAccession());
+                throw new RuntimeException("Found existing " + sampleWithinGroup.getAccession());
             }
 
             Resource<Sample> sampleWithinGroupResource = this.client.persistSampleResource(sampleWithinGroup);
@@ -133,10 +131,10 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
             }
 
 
-            Sample sampleWithFullDetails  = TestSampleGenerator.getSampleFullOfDetails();
+            Sample sampleWithFullDetails = TestSampleGenerator.getSampleFullOfDetails();
             optional = this.client.fetchSampleResource(sampleWithFullDetails.getAccession());
             if (optional.isPresent()) {
-                throw new RuntimeException("Found existing "+sampleWithFullDetails.getAccession());
+                throw new RuntimeException("Found existing " + sampleWithFullDetails.getAccession());
             }
 
             Resource<Sample> sampleWithFullDetailsResource = this.client.persistSampleResource(sampleWithFullDetails, false, true);
@@ -145,13 +143,13 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
                 throw new RuntimeException("Expected response to equal submission");
             }
 
-            Sample groupWithFullDetails  = TestSampleGenerator.getGroupFullOfDetails();
+            Sample groupWithFullDetails = TestSampleGenerator.getGroupFullOfDetails();
             optional = this.client.fetchSampleResource(groupWithFullDetails.getAccession());
             if (optional.isPresent()) {
-                throw new RuntimeException("Found existing "+groupWithFullDetails.getAccession());
+                throw new RuntimeException("Found existing " + groupWithFullDetails.getAccession());
             }
 
-            Resource<Sample> groupWithFullDetailsResource = this.client.persistSampleResource(groupWithFullDetails,false,true);
+            Resource<Sample> groupWithFullDetailsResource = this.client.persistSampleResource(groupWithFullDetails, false, true);
             // The result and the submitted will not be equal because of the new inverse relation created automatically
             if (!groupWithFullDetails.getAccession().equals(groupWithFullDetailsResource.getContent().getAccession())) {
                 throw new RuntimeException("Expected response to equal submission");
@@ -161,7 +159,7 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
         }
 
         public void itShouldFindTheSampleByAccessionUsingLegacyEndpoint() {
-
+            log.info("Find the sample by accession using legacy endpoint");
             Sample testSample = TestSampleGenerator.getSampleMemberOfGroupWithExternalRelations();
 
             log.info(String.format("Searching sample %s using legacy json api", testSample.getAccession()));
@@ -169,10 +167,10 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
             uriBuilder.pathSegment("samples", testSample.getAccession());
             given().accept("application/hal+json")
                     .when()
-                        .get(uriBuilder.toUriString())
+                    .get(uriBuilder.toUriString())
                     .then()
-                        .statusCode(200)
-                        .body("accession", equalTo(testSample.getAccession()));
+                    .statusCode(200)
+                    .body("accession", equalTo(testSample.getAccession()));
 
 
             log.info(String.format("Sample %s found correctly", testSample.getAccession()));
@@ -180,6 +178,7 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
         }
 
         public void itShouldFindGroupByAccessionUsingLegacyEndpoint() {
+            log.info("Find group by accession using legacy endpoint");
             Sample testGroup = TestSampleGenerator.getGroupContainegSAMEA911();
 
             log.info("Searching sample " + testGroup.getAccession() + " using legacy json api");
@@ -188,16 +187,17 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
 
             given().accept("application/hal+json")
                     .when()
-                        .get(uriBuilder.toUriString())
+                    .get(uriBuilder.toUriString())
                     .then()
-                        .statusCode(200)
-                        .body("accession", equalTo(testGroup.getAccession()));
+                    .statusCode(200)
+                    .body("accession", equalTo(testGroup.getAccession()));
 
             log.info("Group " + testGroup.getAccession() + " correctly found with the JSON legacy API");
 
         }
 
         public void itShoudlFindAllSampleDetailsInTheJSON() {
+            log.info("Find all sample details in the json");
             Sample testSample = TestSampleGenerator.getSampleMemberOfGroupWithExternalRelations();
 
             log.info("Verifying sample " + testSample.getAccession() + " contains all details in the legacy JSON api");
@@ -206,20 +206,21 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
 
             given().accept("application/hal+json")
                     .when()
-                        .get(uriBuilder.toUriString())
+                    .get(uriBuilder.toUriString())
                     .then()
-                        .statusCode(200)
-                        .body("$", allOf(
-                                hasKey("accession"),
-                                hasKey("characteristics"),
-                                hasKey("externalReferences"),
-                                hasKey("_links")));
+                    .statusCode(200)
+                    .body("$", allOf(
+                            hasKey("accession"),
+                            hasKey("characteristics"),
+                            hasKey("externalReferences"),
+                            hasKey("_links")));
 
             log.info("Sample " + testSample.getAccession() + " has all expected fields");
 
         }
 
         public void itShouldFindAllGroupDetailsInTheJSON() {
+            log.info("Find all group details in the json");
             Sample testGroup = TestSampleGenerator.getGroupContainegSAMEA911();
 
             log.info("Verifying group " + testGroup.getAccession() + " contains all details in the legacy JSON api");
@@ -243,7 +244,6 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
         }
 
         public void itShouldBeAbleToMoveUsingLinks() {
-
             Sample testSample = TestSampleGenerator.getSampleMemberOfGroupWithExternalRelations();
             Sample testGroup = TestSampleGenerator.getGroupContainegSAMEA911();
 
@@ -279,7 +279,7 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
             UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosamplesLegacyJSONUri());
 
             Traverson.TraversalBuilder traversalBuilder = new Traverson(uriBuilder.build().toUri(), HAL_JSON)
-                    .follow("samples","search").follow(Hop.rel("findByAccession").withParameter("accession", testSample.getAccession()));
+                    .follow("samples", "search").follow(Hop.rel("findByAccession").withParameter("accession", testSample.getAccession()));
 
             assertEquals(traversalBuilder.toObject("$._embedded.samples[0].accession"), testSample.getAccession());
             assertEquals((int) traversalBuilder.toObject("$.page.totalElements"), 1);
@@ -307,11 +307,11 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
             Traverson.TraversalBuilder traversalBuilder = new Traverson(integrationProperties.getBiosamplesLegacyJSONUri(), HAL_JSON)
                     .follow("samples", "search")
                     .follow(Hop.rel("findByText")
-                            .withParameter("text", "Homo sapiens")
+                            .withParameter("text", "Very special Homo Sapiens")
                             .withParameter("size", 100)
                     );
 
-            assertThat(traversalBuilder.toObject("$._embedded.samples[?(@.accession=='"+ testSample.getAccession() +"')].accession"), contains(testSample.getAccession()));
+            assertThat(traversalBuilder.toObject("$._embedded.samples[?(@.accession=='" + testSample.getAccession() + "')].accession"), contains(testSample.getAccession()));
 
         }
 
@@ -410,7 +410,7 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
 
             SortedSet<Attribute> attributes = new TreeSet<>();
             attributes.add(
-                    Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
+                    Attribute.build("organism", "Very special Homo Sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
             SortedSet<ExternalReference> externalReferences = new TreeSet<>();
             externalReferences.add(
                     ExternalReference.build("http://hPSCreg.eu/cell-lines/PZIF-001")
@@ -418,25 +418,34 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
             SortedSet<Relationship> relationships = new TreeSet<>();
             relationships.add(Relationship.build("SAMEG199", "has member", "SAMEA911"));
 
-            return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, relationships, externalReferences);
+//            return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, relationships, externalReferences);
+            return new Sample.Builder(name, accession).withDomain("self.BiosampleIntegrationTest")
+                    .withRelease(release).withUpdate(update)
+                    .withAttributes(attributes)
+                    .withRelationships(relationships)
+                    .withExternalReferences(externalReferences).build();
         }
 
         public static Sample getGroupContainegSAMEA911() {
             String name = "TestLegacyJsonGroup";
             String accession = "SAMEG199";
+            String domain = "self.BiosampleIntegrationTest";
             Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
             Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
             SortedSet<Attribute> attributes = new TreeSet<>();
-            attributes.add( Attribute.build("origin donor", "Some donor") );
-            attributes.add( Attribute.build("origin cell-line", "Some cell line") );
+            attributes.add(Attribute.build("origin donor", "Some donor"));
+            attributes.add(Attribute.build("origin cell-line", "Some cell line"));
 
             SortedSet<Relationship> relationships = new TreeSet<>();
             relationships.add(Relationship.build("SAMEG199", "has member", "SAMEA911"));
 
-            return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, 
-            		attributes, relationships, null, 
-            		null, null, null);
+//            return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update,
+//            		attributes, relationships, null,
+//            		null, null, null);
+            return new Sample.Builder(name, accession).withDomain(domain)
+                    .withRelease(release).withUpdate(update)
+                    .withAttributes(attributes).withRelationships(relationships).build();
 
         }
 
@@ -478,7 +487,12 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
                     .pubmed_id("24265224")
                     .build());
 
-            return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences, organizations, contacts, publications);
+//            return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences, organizations, contacts, publications);
+            return new Sample.Builder(name, accession).withDomain(domain)
+                    .withRelease(release).withUpdate(update)
+                    .withAttributes(attributes).withRelationships(relationships).withExternalReferences(externalReferences)
+                    .withOrganizations(organizations).withContacts(contacts).withPublications(publications)
+                    .build();
         }
 
 
@@ -520,7 +534,12 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
                     .pubmed_id("24265224")
                     .build());
 
-            return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences, organizations, contacts, publications);
+//            return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences, organizations, contacts, publications);
+            return new Sample.Builder(name, accession).withDomain(domain)
+                    .withRelease(release).withUpdate(update)
+                    .withAttributes(attributes).withRelationships(relationships).withExternalReferences(externalReferences)
+                    .withOrganizations(organizations).withContacts(contacts).withPublications(publications)
+                    .build();
         }
     }
 

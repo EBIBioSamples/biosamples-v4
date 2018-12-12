@@ -2,7 +2,6 @@ package uk.ac.ebi.biosamples;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Profile;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
@@ -20,8 +19,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 @Component
-@Profile({"default", "rest"})
-
+//@Profile({"default", "rest"})
 public class RestFilterIntegration extends AbstractIntegration{
 
     private Logger log = LoggerFactory.getLogger(this.getClass());
@@ -150,7 +148,7 @@ public class RestFilterIntegration extends AbstractIntegration{
         }
 
         log.info("Getting sample 1 and 2 using filter on accession");
-        Filter accessionFilter = FilterBuilder.create().onAccession("TestFilter[12]").build();
+        Filter accessionFilter = FilterBuilder.create().onAccession("SAMEA1[01]").build();
         samplePage = client.fetchPagedSampleResource("",
                 Collections.singletonList(accessionFilter),
                 0, 10);
@@ -244,7 +242,7 @@ public class RestFilterIntegration extends AbstractIntegration{
 
     public Sample getTestSample1() {
         String name = "Test Filter Sample 1";
-        String accession = "TestFilter1";
+        String accession = "SAMEA10";
         String domain = "self.BiosampleIntegrationTest";
         Instant update = Instant.parse("1999-12-25T11:36:57.00Z");
         Instant release = Instant.parse("1999-12-25T11:36:57.00Z");
@@ -254,12 +252,16 @@ public class RestFilterIntegration extends AbstractIntegration{
         attributes.add(Attribute.build("description", "Sequencing of barley BACs, that constitute the MTP of chromosome 7H. Sequencing was carried out by BGI China.8439"));
         attributes.add(Attribute.build("Submission title", "Regular Expression * risky (I know what I'm saying) [0-9]+?"));
 
-        return Sample.build(name, accession, domain, release, update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
+//        return Sample.build(name, accession, domain, release, update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
+        return new Sample.Builder(name, accession).withDomain(domain)
+                .withRelease(release).withUpdate(update)
+                .withAttributes(attributes)
+                .build();
     }
 
     public Sample getTestSample2() {
         String name = "Test Filter Sample 2";
-        String accession = "TestFilter2";
+        String accession = "SAMEA11";
         String domain = "self.BiosampleIntegrationTest";
         Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
         Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
@@ -268,21 +270,29 @@ public class RestFilterIntegration extends AbstractIntegration{
         attributes.add(
                 Attribute.build("testAttribute", "filterMe", "http://www.ebi.ac.uk/efo/EFO_0001071", null));
 
-        return Sample.build(name, accession, domain, release, update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
+//        return Sample.build(name, accession, domain, release, update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
+        return new Sample.Builder(name, accession).withDomain(domain)
+                .withRelease(release).withUpdate(update)
+                .withAttributes(attributes)
+                .build();
     }
 
     public Sample getTestSample3() {
         String name = "Test Filter Sample 3";
-        String accession = "TestFilter3";
+        String accession = "SAMD0";
         String domain = "self.BiosampleIntegrationTest";
         Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
         Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
         SortedSet<Relationship> relations = new TreeSet<>();
-        relations.add(Relationship.build(accession, "parent of", "TestFilter2"));
+        relations.add(Relationship.build(accession, "parent of", "SAMEA11"));
 
 
-        return Sample.build(name, accession, domain, release, update, null, relations, new TreeSet<>(), null, null, null);
+//        return Sample.build(name, accession, domain, release, update, null, relations, new TreeSet<>(), null, null, null);
+        return new Sample.Builder(name, accession).withDomain(domain)
+                .withRelease(release).withUpdate(update)
+                .withRelationships(relations)
+                .build();
     }
 
 }
