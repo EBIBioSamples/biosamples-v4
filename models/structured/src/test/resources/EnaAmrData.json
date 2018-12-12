@@ -1,0 +1,12 @@
+{
+  "antibiotic_name": "Ampicillin",
+  "ast_standard": "EUCAST",
+  "breakpoint_version": "not_determined",
+  "laboratory_typing_method": "Agar dilution",
+  "measurement": "8",
+  "measurement_sign": "=",
+  "measurement_units": "mg/L",
+  "platform": "-",
+  "resistance_phenotype": "not-defined",
+  "species": "Escherichia coli"
+}

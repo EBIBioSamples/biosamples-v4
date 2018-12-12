@@ -1,0 +1,78 @@
+<BioSampleSet>
+    <BioSample access="public" accession="SAMN06680397" id="6680397" last_update="2018-08-03T15:53:04.729" publication_date="2017-04-05T00:00:00.000" submission_date="2017-04-04T09:24:12.433">
+        <Ids>
+            <Id db="BioSample" is_primary="1">SAMN06680397</Id>
+            <Id db_label="Sample name">0000-0063-2280</Id>
+            <Id db="SRA">SRS2103330</Id>
+        </Ids>
+        <Description>
+            <Title>Pathogen: clinical or host-associated sample from Salmonella enterica</Title>
+            <Organism taxonomy_id="28901" taxonomy_name="Salmonella enterica">
+                <OrganismName>Salmonella enterica</OrganismName>
+            </Organism>
+            <Comment>
+                <Table class="Antibiogram.1.0">
+                    <Caption>Antibiogram</Caption>
+                    <Header>
+                        <Cell>Antibiotic</Cell>
+                        <Cell>Resistance phenotype</Cell>
+                        <Cell>Measurement sign</Cell>
+                        <Cell>Measurement</Cell>
+                        <Cell>Measurement units</Cell>
+                        <Cell>Laboratory typing method</Cell>
+                        <Cell>Laboratory typing platform</Cell>
+                        <Cell>Vendor</Cell>
+                        <Cell>Laboratory typing method version or reagent</Cell>
+                        <Cell>Testing standard</Cell>
+                    </Header>
+                    <Body>
+                        <Row>
+                            <Cell>nalidixic acid</Cell>
+                            <Cell>intermediate</Cell>
+                            <Cell>==</Cell>
+                            <Cell>17</Cell>
+                            <Cell>mm</Cell>
+                            <Cell>disk diffusion</Cell>
+                            <Cell>missing</Cell>
+                            <Cell>Becton Dickinson</Cell>
+                            <Cell>missing</Cell>
+                            <Cell>CLSI</Cell>
+                        </Row>
+                    </Body>
+                </Table>
+            </Comment>
+        </Description>
+        <Owner>
+            <Name>Brigham &amp; Women's Hospital</Name>
+            <Contacts>
+                <Contact email="xzhao7@partners.org">
+                    <Name>
+                        <First>Xiaomin</First>
+                        <Last>Zhao</Last>
+                    </Name>
+                </Contact>
+            </Contacts>
+        </Owner>
+        <Models>
+            <Model>Pathogen.cl</Model>
+        </Models>
+        <Package display_name="Pathogen: clinical or host-associated; version 1.0">Pathogen.cl.1.0</Package>
+        <Attributes>
+            <Attribute attribute_name="isolate" display_name="isolate" harmonized_name="isolate">334</Attribute>
+            <Attribute attribute_name="collected_by" display_name="collected by" harmonized_name="collected_by">Brigham and Women's Hospital</Attribute>
+            <Attribute attribute_name="collection_date" display_name="collection date" harmonized_name="collection_date">2016</Attribute>
+            <Attribute attribute_name="geo_loc_name" display_name="geographic location" harmonized_name="geo_loc_name">USA:Boston</Attribute>
+            <Attribute attribute_name="host" display_name="host" harmonized_name="host">Homo sapiens</Attribute>
+            <Attribute attribute_name="host_disease" display_name="host disease" harmonized_name="host_disease">Missing</Attribute>
+            <Attribute attribute_name="isolation_source" display_name="isolation source" harmonized_name="isolation_source">urine</Attribute>
+            <Attribute attribute_name="lat_lon" display_name="latitude and longitude" harmonized_name="lat_lon">Missing</Attribute>
+            <Attribute attribute_name="host_age" display_name="host age" harmonized_name="host_age">90</Attribute>
+            <Attribute attribute_name="host_sex" display_name="host sex" harmonized_name="host_sex">male</Attribute>
+            <Attribute attribute_name="host_subject_id" display_name="host subject id" harmonized_name="host_subject_id">SBJ-10007</Attribute>
+        </Attributes>
+        <Links>
+            <Link label="PRJNA278886" target="bioproject" type="entrez">278886</Link>
+        </Links>
+        <Status status="live" when="2017-04-05T17:00:29.826"/>
+    </BioSample>
+</BioSampleSet>

@@ -33,7 +33,7 @@ public class BioSamplesProperties {
 	@Value("${biosamples.client.threadcount.max:8}")
 	private int threadCountMax;
 	
-	@Value("${biosamples.client.aap.uri:https://explore.api.aap.tsi.ebi.ac.uk/auth}")
+	@Value("${biosamples.client.aap.uri:https://explore.api.aai.ebi.ac.uk/auth}")
 	private URI biosamplesClientAapUri;
 	
 	//can't use "null" because it will be a string
@@ -78,6 +78,8 @@ public class BioSamplesProperties {
 	@Value("${biosamples.webapp.core.page.cache.maxage:300}")
 	private int webappCorePageCacheMaxAge;
 
+	@Value("${biosamples.schema.validator.uri:http://localhost:8085/validate}")
+	private URI biosamplesSchemaValidatorServiceUri;
 	
 	public URI getBiosamplesClientUri() {
 		return biosamplesClientUri;
@@ -161,5 +163,9 @@ public class BioSamplesProperties {
 
 	public URI getBiosamplesWebappSampletabUri() {
 		return biosamplesWebappSampletabUri;
+	}
+
+	public URI getBiosamplesSchemaValidatorServiceUri() {
+		return biosamplesSchemaValidatorServiceUri;
 	}
 }

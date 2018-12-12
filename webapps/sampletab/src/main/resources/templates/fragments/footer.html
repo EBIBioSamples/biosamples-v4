@@ -45,6 +45,7 @@
     -->
 	<script defer="defer" src="https://ebi.emblstatic.net/web_guidelines/EBI-Framework/v1.3/js/elixirBanner.js"></script>
 	<script defer="defer" th:src="@{/js/jquery.autocomplete.min.js}" ></script>
+	<script defer="defer" th:src="@{/js/webaaccession.js}"></script>
 	<script th:inline="javascript">
         $(document).ready(function() {
             $('#local-searchbox').autocomplete({
@@ -84,13 +85,12 @@
 	</script>
 
 
-	<script defer="defer" src="https://ebi.emblstatic.net/web_guidelines/EBI-Framework/v1.3/js/script.js"></script>
-
-	<!-- The Foundation theme JavaScript -->
+	<script defer="defer" src="https://ebi.emblstatic.net/web_guidelines/EBI-Framework/v1.3/js/script.js"></script> <!-- The Foundation theme JavaScript -->
 	<script src="https://ebi.emblstatic.net/web_guidelines/EBI-Framework/v1.3/libraries/foundation-6/js/foundation.js"></script>
 	<script src="https://ebi.emblstatic.net/web_guidelines/EBI-Framework/v1.3/js/foundationExtendEBI.js"></script>
 	<script type="text/JavaScript">$(document).foundation();</script>
 	<script type="text/JavaScript">$(document).foundationExtendEBI();</script>
+	<script th:src="@{/js/webaccession.js}"></script>
 </div>
 </body>
 </html>

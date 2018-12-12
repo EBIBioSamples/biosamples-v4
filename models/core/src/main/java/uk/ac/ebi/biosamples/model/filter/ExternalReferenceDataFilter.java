@@ -1,5 +1,7 @@
 package uk.ac.ebi.biosamples.model.filter;
 
+import uk.ac.ebi.biosamples.model.facet.FacetType;
+
 import java.util.Objects;
 import java.util.Optional;
 
@@ -26,6 +28,11 @@ public class ExternalReferenceDataFilter implements Filter{
     @Override
     public Optional<String> getContent() {
         return Optional.ofNullable(this.value);
+    }
+
+    @Override
+    public FacetType getAssociatedFacetType() {
+        return FacetType.EXTERNAL_REFERENCE_DATA_FACET;
     }
 
     @Override

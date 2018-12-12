@@ -12,6 +12,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.ncbi.service.NcbiSampleConversionService;
 import uk.ac.ebi.biosamples.utils.TaxonomyService;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
@@ -51,7 +52,8 @@ public class NcbiElementCallableTest {
         ArgumentCaptor<Sample> generatedSample = ArgumentCaptor.forClass(Sample.class);
         when(bioSamplesClient.persistSampleResource(generatedSample.capture())).thenReturn(null);
 
-        NcbiElementCallable callable = new NcbiElementCallable(taxonService, bioSamplesClient, sample, "test");
+        NcbiSampleConversionService ncbiSampleConversionService = new NcbiSampleConversionService(taxonService);
+        NcbiElementCallable callable = new NcbiElementCallable(ncbiSampleConversionService, bioSamplesClient, sample, "test");
         callable.call();
 
         Sample sample = generatedSample.getValue();

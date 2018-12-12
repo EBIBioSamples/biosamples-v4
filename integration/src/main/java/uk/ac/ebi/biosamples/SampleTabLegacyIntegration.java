@@ -47,11 +47,12 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 	private final Pattern accessionPattern;
 
 
-	private final URI uriSb;
-	private final URI uriVa;
-	private final URI uriAc;
+//	private final URI uriSb;
+//	private final URI uriVa;
+//	private final URI uriAc;
 	private final URI fileUriSb;
 	private final URI fileUriAc;
+	private final URI fileUriVa;
 
 	public SampleTabLegacyIntegration(RestTemplateBuilder restTemplateBuilder, IntegrationProperties integrationProperties, BioSamplesClient client) {
         super(client);
@@ -61,18 +62,18 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 		sampleUtils = new SampleUtils();
 		accessionPattern = Pattern.compile(sampleUtils.getAccessionPattern(), Pattern.MULTILINE);
 
-		uriVa = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUriSampleTab())
-				.pathSegment("api", "v1", "json", "va").build().toUri();
-
-		uriAc = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUriSampleTab())
-				.pathSegment("api", "v1", "json", "ac")
-				.queryParam("apikey", integrationProperties.getLegacyApiKey())
-				.build().toUri();
-
-		uriSb = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUriSampleTab())
-				.pathSegment("api", "v1", "json", "sb")
-				.queryParam("apikey", integrationProperties.getLegacyApiKey())
-				.build().toUri();
+//		uriVa = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUriSampleTab())
+//				.pathSegment("api", "v1", "json", "va").build().toUri();
+//
+//		uriAc = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUriSampleTab())
+//				.pathSegment("api", "v1", "json", "ac")
+//				.queryParam("apikey", integrationProperties.getLegacyApiKey())
+//				.build().toUri();
+//
+//		uriSb = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUriSampleTab())
+//				.pathSegment("api", "v1", "json", "sb")
+//				.queryParam("apikey", integrationProperties.getLegacyApiKey())
+//				.build().toUri();
 
 		fileUriAc = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUriSampleTab())
 				.pathSegment("api", "v1", "file", "ac")
@@ -84,31 +85,51 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 				.queryParam("apikey", integrationProperties.getLegacyApiKey())
 				.build().toUri();
 
+		fileUriVa = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUriSampleTab())
+				.pathSegment("api", "v1", "file", "va")
+				.queryParam("apikey", integrationProperties.getLegacyApiKey())
+				.build().toUri();
+
 
 	}
 
 	@Override
 	protected void phaseOne() {
-		log.info("Testing SampleTab JSON validation");
-		runCallableOnSampleTabResource("/GSB-32.json", sampleTabString -> {
-			log.info("POSTing to " + uriVa);
-			RequestEntity<String> request = RequestEntity.post(uriVa).contentType(MediaType.APPLICATION_JSON)
-					.body(sampleTabString);
-			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+
+//		TODO: 2018/10/04 - REMOVE JSON ENDPOINT
+//		log.info("Testing SampleTab JSON validation");
+//		runCallableOnSampleTabResource("/GSB-32.json", sampleTabString -> {
+//			log.info("POSTing to " + uriVa);
+//			RequestEntity<String> request = RequestEntity.post(uriVa).contentType(MediaType.APPLICATION_JSON)
+//					.body(sampleTabString);
+//			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+//			log.info(""+response.getBody());
+//		});
+        log.info("Testing SampleTab File validation");
+		runCallableOnSampleTabFile("/GSB-32.txt", sampletabFile -> {
+			ResponseEntity<String> response = validateSampletabFile(sampletabFile);
 			log.info(""+response.getBody());
+
 		});
 
-		log.info("Testing SampleTab JSON accession");
-		runCallableOnSampleTabResource("/GSB-32.json", sampleTabString -> {
-			log.info("POSTing to " + uriAc);
-			RequestEntity<String> request = RequestEntity.post(uriAc).contentType(MediaType.APPLICATION_JSON)
-					.body(sampleTabString);
-			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+//		TODO: 2018/10/04 - REMOVE JSON ENDPOINT
+//		log.info("Testing SampleTab JSON accession");
+//		runCallableOnSampleTabResource("/GSB-32.json", sampleTabString -> {
+//			log.info("POSTing to " + uriAc);
+//			RequestEntity<String> request = RequestEntity.post(uriAc).contentType(MediaType.APPLICATION_JSON)
+//					.body(sampleTabString);
+//			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+//			log.info(""+response.getBody());
+//
+//			if (!response.getBody().contains("SAMEA2186845")) {
+//				throw new RuntimeException("Response does not have expected accession SAMEA2186845");
+//			}
+//		});
+		log.info("Testing SampleTab File accession");
+		runCallableOnSampleTabFile("/GSB-32.txt", sampletabFile -> {
+			ResponseEntity<String> response = accessionSampletabFile(sampletabFile);
 			log.info(""+response.getBody());
 
-			if (!response.getBody().contains("SAMEA2186845")) {
-				throw new RuntimeException("Response does not have expected accession SAMEA2186845");
-			}
 		});
 
 		// Can't submit this now because the agent didnt run yet and will return an ownership error
@@ -125,28 +146,28 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 //			}
 //		});
 
-		log.info("Testing unaccessioned SampleTab JSON submission ");
-		runCallableOnSampleTabResource("/GSB-new.json", sampleTabString -> {
-			log.info("POSTing to " + uriSb);
-			RequestEntity<String> request = RequestEntity.post(uriSb).contentType(MediaType.APPLICATION_JSON)
-					.body(sampleTabString);
-			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
-			//TODO do this check better
-			if (!response.getBody().contains("GSB-")) {
-				throw new RuntimeException("Response does not have expected submission identifier");
-			}
+//		TODO: 2018/10/04 - REMOVE JSON ENDPOINT
+//		log.info("Testing unaccessioned SampleTab JSON submission ");
+//		runCallableOnSampleTabResource("/GSB-new.json", sampleTabString -> {
+//			log.info("POSTing to " + uriSb);
+//			RequestEntity<String> request = RequestEntity.post(uriSb).contentType(MediaType.APPLICATION_JSON)
+//					.body(sampleTabString);
+//			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+//			//TODO do this check better
+//			if (!response.getBody().contains("GSB-")) {
+//				throw new RuntimeException("Response does not have expected submission identifier");
+//			}
+//			log.info(""+response.getBody());
+//		});
+		log.info("Testing unaccessioned SampleTab File submission ");
+		runCallableOnSampleTabFile("/GSB-new.txt", sampletabFile -> {
+			ResponseEntity<String> response = submitSampletabFile(sampletabFile);
 			log.info(""+response.getBody());
 		});
 
 		log.info("Testing submission of sampletab with valid implicit relationship");
 		runCallableOnSampleTabFile("/Implicit_relationship_sampletab.tab", sampletabFile -> {
-			log.info("POSTing to " + fileUriSb);
-			LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
-			map.add("file", sampletabFile);
-			RequestEntity<LinkedMultiValueMap> request = RequestEntity.post(fileUriSb).contentType(MediaType.MULTIPART_FORM_DATA)
-					.body(map);
-
-			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+			ResponseEntity<String> response = submitSampletabFile(sampletabFile);
 			if (!response.getBody().contains("GSB-")) {
 				log.error(response.toString());
 				throw new RuntimeException("Response does not have expected submission identifier");
@@ -156,13 +177,7 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 
 		log.info("Testing pre-accessioning of SampleTab with valid implicit relationship");
 		runCallableOnSampleTabFile("/accessioned_sampletab_with_implicit_relationships.tab", sampletabFile -> {
-			LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
-			map.add("file", sampletabFile);
-		    log.info("POSTing to " + fileUriAc + " to pre-accession the samples in order to get ownership on the accession");
-			RequestEntity<LinkedMultiValueMap> request = RequestEntity.post(fileUriAc).contentType(MediaType.MULTIPART_FORM_DATA)
-					.body(map);
-
-			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+			ResponseEntity<String> response = accessionSampletabFile(sampletabFile);
             Stream.of("SAMEA7231988", "SAMEA7231987", "SAMEA7231986", "SAMEA7231985")
 			.forEach(acc -> {
 				if (!response.getBody().contains(acc)) {
@@ -186,12 +201,7 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 
 		log.info("Testing rejection submission of sampletab with invalid implicit relationship");
 		runCallableOnSampleTabFile("/Invalid_implicit_relationship_sampletab.txt", sampletabFile -> {
-			log.info("POSTing to " + fileUriSb);
-			LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
-			map.add("file", sampletabFile);
-			RequestEntity<LinkedMultiValueMap> request = RequestEntity.post(fileUriSb).contentType(MediaType.MULTIPART_FORM_DATA) .body(map);
-
-			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+			ResponseEntity<String> response = submitSampletabFile(sampletabFile);
 			if (!response.getBody().contains("Unable to accession")) {
 				log.error(response.toString());
 				throw new RuntimeException("Response does not have expected submission identifier");
@@ -202,33 +212,20 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 
 		log.info("Testing SampleTab file submission with DatabaseURI");
 		runCallableOnSampleTabFile("/GSB-52.txt", sampletabFile -> {
-			log.info("POSTing to " + fileUriSb);
-			LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
-			map.add("file", sampletabFile);
-
-			RequestEntity<LinkedMultiValueMap> request = RequestEntity.post(fileUriSb).contentType(MediaType.MULTIPART_FORM_DATA) .body(map);
-
-			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+			ResponseEntity<String> response = submitSampletabFile(sampletabFile);
 
 			if (!response.getBody().contains("GSB-")) {
 				log.error(response.toString());
 				throw new RuntimeException("Response does not have expected submission identifier");
 			}
 			log.info("SampleTab with invalid relation has been rejected as expected");
-			log.info(""+response.getBody());
 			log.info(""+response.getBody());
 
 		});
 
 		log.info("Testing SampleTab file submission with new line character");
 		runCallableOnSampleTabFile("/sampletab_with_escaped_newline.txt", sampletabFile -> {
-			log.info("POSTing to " + fileUriSb);
-			LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
-			map.add("file", sampletabFile);
-
-			RequestEntity<LinkedMultiValueMap> request = RequestEntity.post(fileUriSb).contentType(MediaType.MULTIPART_FORM_DATA) .body(map);
-
-			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+			ResponseEntity<String> response = submitSampletabFile(sampletabFile);
 
 			if (!response.getBody().contains("GSB-")) {
 				log.error(response.toString());
@@ -236,10 +233,8 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 			}
 			log.info("SampleTab with invalid relation has been rejected as expected");
 			log.info(""+response.getBody());
-			log.info(""+response.getBody());
 
 		});
-
 
 	}
 
@@ -303,62 +298,6 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 				.filter(accession -> !accession.startsWith("SAMEG"))
 				.collect(Collectors.toList());
 
-//		log.info("Testing SampleTab JSON re-accession unaccessioned");
-//		runCallableOnSampleTabResource("/GSB-new.json", sampleTabString -> {
-//			log.info("POSTing to " + uriAc);
-//			RequestEntity<String> request = RequestEntity.post(uriAc).contentType(MediaType.APPLICATION_JSON)
-//					.body(sampleTabString);
-//			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
-//			log.info(""+response.getBody());
-//
-//			for(String acc: submissionAccessions) {
-//				if (!response.getBody().contains(acc)) {
-//					throw new RuntimeException("Response for accession service does not have expected accession " + acc);
-//				}
-//			}
-//		});
-//
-//		log.info("Testing SampleTab JSON submission unaccessioned");
-//		runCallableOnSampleTabResource("/GSB-new.json", sampleTabString -> {
-//			log.info("POSTing to " + uriSb);
-//			RequestEntity<String> request = RequestEntity.post(uriSb).contentType(MediaType.APPLICATION_JSON)
-//					.body(sampleTabString);
-//			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
-//			log.info(""+response.getBody());
-//
-//			for(String acc: submissionAccessions) {
-//				if (!response.getBody().contains(acc)) {
-//					throw new RuntimeException("Response for submission service does not have expected accession " + acc);
-//				}
-//			}
-//		});
-
-		log.info("Testing SampleTab JSON accession unaccessioned");
-		runCallableOnSampleTabResource("/GSB-32_unaccession.json", sampleTabString -> {
-			log.info("POSTing to " + uriAc);
-			RequestEntity<String> request = RequestEntity.post(uriAc).contentType(MediaType.APPLICATION_JSON)
-					.body(sampleTabString);
-			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
-			log.info(""+response.getBody());
-
-			if (!response.getBody().contains("SAMEA2186845")) {
-				throw new RuntimeException("Response does not have expected accession SAMEA2186845");
-			}
-
-		});
-
-		log.info("Testing SampleTab JSON submission unaccessioned");
-		runCallableOnSampleTabResource("/GSB-32_unaccession.json", sampleTabString -> {
-			log.info("POSTing to " + uriSb);
-			RequestEntity<String> request = RequestEntity.post(uriSb).contentType(MediaType.APPLICATION_JSON)
-					.body(sampleTabString);
-			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
-			log.info(""+response.getBody());
-
-			if (!response.getBody().contains("SAMEA2186845")) {
-				throw new RuntimeException("Response does not have expected accession SAMEA2186845");
-			}
-		});
 	}
 
 	@Override
@@ -366,12 +305,7 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 
 		log.info("Testing submission of pre-accessioned SampleTab with valid implicit relationship");
 		runCallableOnSampleTabFile("/accessioned_sampletab_with_implicit_relationships.tab", sampletabFile -> {
-			LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
-			map.add("file", sampletabFile);
-			RequestEntity<LinkedMultiValueMap> request = RequestEntity.post(fileUriSb).contentType(MediaType.MULTIPART_FORM_DATA)
-					.body(map);
-
-			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+			ResponseEntity<String> response = submitSampletabFile(sampletabFile);
 			// Check the returned sampletab contains the expected accessions
 			Stream.of("SAMEA7231988", "SAMEA7231987", "SAMEA7231986", "SAMEA7231985")
 					.forEach(str -> {
@@ -386,12 +320,24 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 			}
 		});
 
-		log.info("Testing SampleTab JSON with pre-acessioned samples");
-		runCallableOnSampleTabResource("/GSB-32.json", sampleTabString -> {
-			log.info("POSTing to " + uriSb);
-			RequestEntity<String> request = RequestEntity.post(uriSb).contentType(MediaType.APPLICATION_JSON)
-					.body(sampleTabString);
-			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+//		TODO: 2018/10/04 - REMOVE JSON ENDPOINT
+//		log.info("Testing SampleTab JSON with pre-acessioned samples");
+//		runCallableOnSampleTabResource("/GSB-32.txt", sampleTabString -> {
+//
+//			log.info("POSTing to " + uriSb);
+//			RequestEntity<String> request = RequestEntity.post(uriSb).contentType(MediaType.APPLICATION_JSON)
+//					.body(sampleTabString);
+//			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+//			log.info(""+response.getBody());
+//
+//			Optional<Resource<Sample>> clientSample = client.fetchSampleResource("SAMEA2186844");
+//			if (!clientSample.isPresent()) {
+//				throw new RuntimeException("Couldn't find pre-accessioned sample SAMEA2186844 after submission");
+//			}
+//		});
+		log.info("Testing SampleTab file with pre-acessioned samples");
+		runCallableOnSampleTabFile("/GSB-32.txt", sampletabFile -> {
+			ResponseEntity<String> response = submitSampletabFile(sampletabFile);
 			log.info(""+response.getBody());
 
 			Optional<Resource<Sample>> clientSample = client.fetchSampleResource("SAMEA2186844");
@@ -400,27 +346,54 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 			}
 		});
 
-		log.info("Testing SampleTab JSON submission deleted");
-		runCallableOnSampleTabResource("/GSB-32_deleted.json", sampleTabString -> {
-			log.info("POSTing to " + uriSb);
-			RequestEntity<String> request = RequestEntity.post(uriSb).contentType(MediaType.APPLICATION_JSON)
-					.body(sampleTabString);
-			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+
+//		TODO: 2018/10/04 - REMOVE JSON ENDPOINT
+//		log.info("Testing SampleTab JSON submission deleted");
+//		runCallableOnSampleTabResource("/GSB-32_deleted.json", sampleTabString -> {
+//			log.info("POSTing to " + uriSb);
+//			RequestEntity<String> request = RequestEntity.post(uriSb).contentType(MediaType.APPLICATION_JSON)
+//					.body(sampleTabString);
+//			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+//			log.info(""+response.getBody());
+//
+//			Optional<Resource<Sample>> clientSample = client.fetchSampleResource("SAMEA2186844");
+//			if (clientSample.isPresent()) {
+//				throw new RuntimeException("Found deleted sample SAMEA2186844");
+//			}
+//		});
+
+		log.info("Testing SampleTab file submission deleted");
+		runCallableOnSampleTabFile("/GSB-32_deleted.txt", sampleTabFile -> {
+			ResponseEntity<String> response = submitSampletabFile(sampleTabFile);
 			log.info(""+response.getBody());
-			
+
 			Optional<Resource<Sample>> clientSample = client.fetchSampleResource("SAMEA2186844");
 			if (clientSample.isPresent()) {
 				throw new RuntimeException("Found deleted sample SAMEA2186844");
 			}
-		});	
-		
-		log.info("Testing SampleTab JSON accession in multiple samples");
-		runCallableOnSampleTabResource("/GSB-44_ownership.json", sampleTabString -> {
-			log.info(sampleTabString);
-			log.info("POSTing to " + uriSb);
-			RequestEntity<String> request = RequestEntity.post(uriSb).contentType(MediaType.APPLICATION_JSON)
-					.body(sampleTabString);
-			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+		});
+
+//		TODO: 2018/10/04 - REMOVE JSON ENDPOINT
+//		log.info("Testing SampleTab JSON accession in multiple samples");
+//		runCallableOnSampleTabResource("/GSB-44_ownership.json", sampleTabString -> {
+//			log.info(sampleTabString);
+//			log.info("POSTing to " + uriSb);
+//			RequestEntity<String> request = RequestEntity.post(uriSb).contentType(MediaType.APPLICATION_JSON)
+//					.body(sampleTabString);
+//			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+//			log.info(response.getBody());
+//			//response is a JSON object of stuff
+//			//just try to match the error message for now - messy but quick
+//			if (!response.getBody().contains("was previously described in")) {
+//				//TODO do this properly once it is all fixed up
+//				throw new RuntimeException("Unable to recognize duplicate sample");
+//			}
+//			log.info(""+response.getBody());
+//		});
+
+		log.info("Testing SampleTab file accession in multiple samples");
+		runCallableOnSampleTabFile("/GSB-44_ownership.txt", sampletabFile -> {
+			ResponseEntity<String> response = submitSampletabFile(sampletabFile);
 			log.info(response.getBody());
 			//response is a JSON object of stuff
 			//just try to match the error message for now - messy but quick
@@ -429,37 +402,11 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 				throw new RuntimeException("Unable to recognize duplicate sample");
 			}
 			log.info(""+response.getBody());
-		});	
+		});
 	}
 
 	@Override
 	protected void phaseFour() {
-		// Find Sample
-//		Filter nameFilter = FilterBuilder.create().onName("JJSample").build();
-//		PagedResources<Resource<Sample>> samplePage = client.fetchPagedSampleResource("*:*",
-//				Collections.singleton(nameFilter), 0, 1);
-//		assert samplePage.getMetadata().getTotalElements() == 1;
-//
-//		Sample jjSample = samplePage.getContent().iterator().next().getContent();
-		//TODO do this better
-//		assertThat(jjSample.getContacts(), hasSize(2));
-//		assertThat(jjSample.getOrganizations(), hasSize(2));
-//		assertThat(jjSample.getPublications(), hasSize(2));
-//
-//		assertThat(jjSample.getPublications().first().getPubMedId(), notNullValue());
-
-		// Find Group
-//		nameFilter  = FilterBuilder.create().onName("JJGroup").build();
-//		samplePage = client.fetchPagedSampleResource("*:*",
-//				Collections.singleton(nameFilter), 0, 1);
-//		assert samplePage.getMetadata().getTotalElements() == 1;
-//
-//		Sample jjGroup = samplePage.getContent().iterator().next().getContent();
-//		assertThat(jjGroup.getContacts(), hasSize(2));
-//		assertThat(jjGroup.getOrganizations(), hasSize(2));
-//		assertThat(jjGroup.getPublications(), hasSize(2));
-//
-//		assertThat(jjGroup.getPublications().first().getPubMedId(), notNullValue());
 
 		verify_external_references_was_picked_up_from_sampletab();
 
@@ -474,32 +421,56 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 
 	@Override
 	protected void phaseFive() {
-		
+
 	}
 
 
-	private interface SampleTabStringCallback {
-		public void callback(String sampleTabString);
-	}
 
-	private interface SampleTabFileCallback {
-		public void callback(ClassPathResource sampletabFile);
-	}
+//	private interface SampleTabStringCallback {
+//		public void callback(String sampleTabString);
+//	}
 
-	private void runCallableOnSampleTabResource(String resource, SampleTabStringCallback callback) {
-		URL url = Resources.getResource(resource);
-		String text = null;
-		try {
-			text = Resources.toString(url, Charsets.UTF_8);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		} finally {
-			callback.callback(text);			
-		}
-	}
+//	private void runCallableOnSampleTabResource(String resource, SampleTabStringCallback callback) {
+//		URL url = Resources.getResource(resource);
+//		String text = null;
+//		try {
+//			text = Resources.toString(url, Charsets.UTF_8);
+//		} catch (IOException e) {
+//			throw new RuntimeException(e);
+//		} finally {
+//			callback.callback(text);
+//		}
+//	}
+
+    private interface SampleTabFileCallback {
+        public void callback(ClassPathResource sampletabFile);
+    }
 
 	private void runCallableOnSampleTabFile(String resource, SampleTabFileCallback callback) {
 	    callback.callback(new ClassPathResource(resource));
+	}
+
+	private ResponseEntity<String> postFileToUrl(ClassPathResource resource, URI uri) {
+		log.info("POSTing to " + uri);
+		LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
+		map.add("file", resource);
+
+		RequestEntity<LinkedMultiValueMap> request = RequestEntity.post(uri).contentType(MediaType.MULTIPART_FORM_DATA) .body(map);
+
+		return restTemplate.exchange(request, String.class);
+
+	}
+
+	private ResponseEntity<String> submitSampletabFile(ClassPathResource resource) {
+		return postFileToUrl(resource, fileUriSb);
+	}
+
+	private ResponseEntity<String> accessionSampletabFile(ClassPathResource resource) {
+		return postFileToUrl(resource, fileUriAc);
+	}
+
+	private ResponseEntity<String> validateSampletabFile(ClassPathResource resource) {
+		return postFileToUrl(resource, fileUriVa);
 	}
 
 	private void verify_relationships_in_accessioned_sampletab_are_exported_correctly() {

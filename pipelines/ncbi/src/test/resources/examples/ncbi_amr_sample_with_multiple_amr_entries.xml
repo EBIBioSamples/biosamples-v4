@@ -1,0 +1,153 @@
+<BioSampleSet>
+	<BioSample access="public" accession="SAMN08379130" id="8379130" last_update="2018-01-21T05:31:17.897" publication_date="2019-08-31T00:00:00.000" submission_date="2018-01-19T10:48:08.057">
+		<Ids>
+			<Id db="BioSample" is_primary="1">SAMN08379130</Id>
+			<Id db_label="Sample name">vp_17802</Id>
+			<Id db="SRA">SRS2848078</Id>
+		</Ids>
+		<Description>
+			<Title>Pathogen: environmental/food/other sample from Vibrio parahaemolyticus</Title>
+			<Organism taxonomy_id="670" taxonomy_name="Vibrio parahaemolyticus">
+				<OrganismName>Vibrio parahaemolyticus</OrganismName>
+			</Organism>
+			<Comment>
+				<Table class="Antibiogram.1.0">
+					<Caption>Antibiogram</Caption>
+					<Header>
+						<Cell>Antibiotic</Cell>
+						<Cell>Resistance phenotype</Cell>
+						<Cell>Measurement sign</Cell>
+						<Cell>Measurement</Cell>
+						<Cell>Measurement units</Cell>
+						<Cell>Laboratory typing method</Cell>
+						<Cell>Laboratory typing platform</Cell>
+						<Cell>Vendor</Cell>
+						<Cell>Laboratory typing method version or reagent</Cell>
+						<Cell>Testing standard</Cell>
+					</Header>
+					<Body>
+						<Row>
+							<Cell>ampicillin</Cell>
+							<Cell>resistant</Cell>
+							<Cell>==</Cell>
+							<Cell>6</Cell>
+							<Cell>mm</Cell>
+							<Cell>agar dilution</Cell>
+							<Cell/>
+							<Cell/>
+							<Cell>missing</Cell>
+							<Cell>CLSI</Cell>
+						</Row>
+						<Row>
+							<Cell>chloramphenicol</Cell>
+							<Cell>resistant</Cell>
+							<Cell>==</Cell>
+							<Cell>12</Cell>
+							<Cell>mm</Cell>
+							<Cell>agar dilution</Cell>
+							<Cell/>
+							<Cell/>
+							<Cell>missing</Cell>
+							<Cell>CLSI</Cell>
+						</Row>
+						<Row>
+							<Cell>tetracycline</Cell>
+							<Cell>susceptible</Cell>
+							<Cell>==</Cell>
+							<Cell>10</Cell>
+							<Cell>mm</Cell>
+							<Cell>agar dilution</Cell>
+							<Cell/>
+							<Cell/>
+							<Cell>missing</Cell>
+							<Cell>CLSI</Cell>
+						</Row>
+						<Row>
+							<Cell>gentamicin</Cell>
+							<Cell>susceptible</Cell>
+							<Cell>==</Cell>
+							<Cell>20</Cell>
+							<Cell>mm</Cell>
+							<Cell>agar dilution</Cell>
+							<Cell/>
+							<Cell/>
+							<Cell>missing</Cell>
+							<Cell>CLSI</Cell>
+						</Row>
+					</Body>
+				</Table>
+				<Table class="Antibiogram.mycobacterial.1.0">
+					<Caption>Antibiogram</Caption>
+					<Header>
+						<Cell>Antibiotic</Cell>
+						<Cell>Resistance phenotype</Cell>
+						<Cell>DST Media</Cell>
+						<Cell>DST Method</Cell>
+						<Cell>Critical Concentration</Cell>
+						<Cell>Testing standard</Cell>
+					</Header>
+					<Body>
+						<Row>
+							<Cell>ampicillin</Cell>
+							<Cell>resistant</Cell>
+							<Cell>solid</Cell>
+							<Cell>Agar proportion</Cell>
+							<Cell>6</Cell>
+							<Cell>CLSI</Cell>
+						</Row>
+						<Row>
+							<Cell>chloramphenicol</Cell>
+							<Cell>resistant</Cell>
+							<Cell>solid</Cell>
+							<Cell>Agar proportion</Cell>
+							<Cell>12</Cell>
+							<Cell>CLSI</Cell>
+						</Row>
+						<Row>
+							<Cell>tetracycline</Cell>
+							<Cell>susceptible</Cell>
+							<Cell>solid</Cell>
+							<Cell>Agar proportion</Cell>
+							<Cell>10</Cell>
+							<Cell>CLSI</Cell>
+						</Row>
+						<Row>
+							<Cell>gentamicin</Cell>
+							<Cell>susceptible</Cell>
+							<Cell>solid</Cell>
+							<Cell>Agar proportion</Cell>
+							<Cell>20</Cell>
+							<Cell>CLSI</Cell>
+						</Row>
+					</Body>
+				</Table>
+			</Comment>
+		</Description>
+		<Owner>
+			<Name>Zhejiang Gongshang University</Name>
+			<Contacts>
+				<Contact email="fenglifang705@126.com">
+					<Name>
+						<First>Lifang</First>
+						<Last>Feng</Last>
+					</Name>
+				</Contact>
+			</Contacts>
+		</Owner>
+		<Models>
+			<Model>Pathogen.env</Model>
+		</Models>
+		<Package display_name="Pathogen: environmental/food/other; version 1.0">Pathogen.env.1.0</Package>
+		<Attributes>
+			<Attribute attribute_name="strain" display_name="strain" harmonized_name="strain">ATCC 17802</Attribute>
+			<Attribute attribute_name="collected_by" display_name="collected by" harmonized_name="collected_by">Lifang Feng</Attribute>
+			<Attribute attribute_name="collection_date" display_name="collection date" harmonized_name="collection_date">31-Aug-2011</Attribute>
+			<Attribute attribute_name="geo_loc_name" display_name="geographic location" harmonized_name="geo_loc_name">China:Hangzhou</Attribute>
+			<Attribute attribute_name="isolation_source" display_name="isolation source" harmonized_name="isolation_source">Chinese General Microbiological Culture Collection Center</Attribute>
+			<Attribute attribute_name="lat_lon" display_name="latitude and longitude" harmonized_name="lat_lon">30.26 N 120.19 E</Attribute>
+			<Attribute attribute_name="type-material">type strain of Vibrio parahaemolyticus</Attribute>
+		</Attributes>
+		<Links/>
+		<Status status="live" when="2018-01-19T13:12:34.050"/>
+	</BioSample>
+</BioSampleSet>

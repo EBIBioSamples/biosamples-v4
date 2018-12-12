@@ -2,12 +2,27 @@ package uk.ac.ebi.biosamples.solr.model.field;
 
 import org.springframework.data.solr.core.query.Criteria;
 
+import org.springframework.stereotype.Component;
+import uk.ac.ebi.biosamples.model.facet.ExternalReferenceDataFacet;
+import uk.ac.ebi.biosamples.model.facet.Facet;
 import uk.ac.ebi.biosamples.model.filter.ExternalReferenceDataFilter;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.solr.model.strategy.FacetFetchStrategy;
 import uk.ac.ebi.biosamples.solr.model.strategy.RegularFacetFetchStrategy;
 
+import java.util.Optional;
+import java.util.regex.Pattern;
+
+@Component
 public class SolrSampleExternalReferenceDataField extends SolrSampleField{
+
+    public SolrSampleExternalReferenceDataField() {
+        super();
+    }
+
+    public SolrSampleExternalReferenceDataField(String readableLabel) {
+        super(readableLabel);
+    }
 
     /**
      * All subclasses should implement this constructor.
@@ -20,8 +35,33 @@ public class SolrSampleExternalReferenceDataField extends SolrSampleField{
     }
 
     @Override
-    public SolrFieldType getSolrFieldType() {
-        return SolrFieldType.EXTERNAL_REFERENCE_DATA;
+    public Pattern getSolrFieldPattern() {
+        return Pattern.compile("^(?<fieldname>[A-Z0-9_]+)(?<fieldsuffix>"+getSolrFieldSuffix()+")$");
+    }
+
+    @Override
+    public String getSolrFieldSuffix() {
+        return "_erd_ss";
+    }
+
+    @Override
+    public boolean isEncodedField() {
+        return true;
+    }
+
+    @Override
+    public boolean isCompatibleWith(Filter filter) {
+        return filter instanceof ExternalReferenceDataFilter;
+    }
+
+    @Override
+    public boolean canGenerateFacets() {
+        return true;
+    }
+
+    @Override
+    public Facet.Builder getFacetBuilder(String facetLabel, Long facetCount) {
+        return new ExternalReferenceDataFacet.Builder(facetLabel, facetCount);
     }
 
     @Override
@@ -35,7 +75,7 @@ public class SolrSampleExternalReferenceDataField extends SolrSampleField{
 
         if (filter instanceof ExternalReferenceDataFilter) {
 
-            filterCriteria = new Criteria(getSolrDocumentFieldName());
+            filterCriteria = new Criteria(getSolrLabel());
 
             ExternalReferenceDataFilter extRefFilter = (ExternalReferenceDataFilter) filter;
             if (extRefFilter.getContent().isPresent()) {

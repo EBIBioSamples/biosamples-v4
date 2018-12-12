@@ -37,7 +37,7 @@ public class ResourceSerializationTest {
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 
 	private JacksonTester<Resource<Sample>> json;
-	
+
     @Before
     public void setup() {
         ObjectMapper objectMapper = new ObjectMapper();
@@ -46,7 +46,7 @@ public class ResourceSerializationTest {
 
 	private Sample getSimpleSample() throws URISyntaxException {
 		String name = "Test Sample";
-		String accession = "TEST1";
+		String accession = "SAMEA1234";
 		String domain = "abcde12345";
 		Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
 		Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
@@ -56,10 +56,10 @@ public class ResourceSerializationTest {
 		attributes.add(Attribute.build("age", "3", Collections.emptyList(), "year"));
 		attributes.add(Attribute.build("organism part", "lung"));
 		attributes.add(Attribute.build("organism part", "heart"));
-		
+
 		SortedSet<Relationship> relationships = new TreeSet<>();
-		relationships.add(Relationship.build("TEST1", "derived from", "TEST2"));
-		
+		relationships.add(Relationship.build("SAMEA1234", "derived from", "SAMD4321"));
+
 		SortedSet<ExternalReference> externalReferences = new TreeSet<>();
 		externalReferences.add(ExternalReference.build("http://www.google.com"));
 
@@ -79,7 +79,7 @@ public class ResourceSerializationTest {
 
 		// Use JSON path based assertions
 		assertThat(this.json.write(details)).hasJsonPathStringValue("@.accession");
-		assertThat(this.json.write(details)).extractingJsonPathStringValue("@.accession").isEqualTo("TEST1");
+		assertThat(this.json.write(details)).extractingJsonPathStringValue("@.accession").isEqualTo("SAMEA1234");
 
 		// Assert against a `.json` file in the same package as the test
 		assertThat(this.json.write(details)).isEqualToJson("/TEST1.json");
@@ -93,10 +93,10 @@ public class ResourceSerializationTest {
 		log.info("simpleSample = "+simpleSample);
 		// Use JSON path based assertions
 		assertThat(fileSample.getContent().getName()).isEqualTo("Test Sample");
-		assertThat(fileSample.getContent().getAccession()).isEqualTo("TEST1");
+		assertThat(fileSample.getContent().getAccession()).isEqualTo("SAMEA1234");
 		// Assert against a `.json` file
 		assertThat(fileSample).isEqualTo(simpleSample);
-		
+
 		//check that a specific attribute exists
 		assertThat(fileSample.getContent().getCharacteristics().contains(Attribute.build("organism part", "heart")));
 	}
@@ -105,14 +105,14 @@ public class ResourceSerializationTest {
 	public void testRoundTrip() throws Exception {
 		Resource<Sample> sample = new Resource<>(getSimpleSample());
 		log.info("roundTrip sample = "+sample);
-		
+
 		String json = this.json.write(sample).getJson();
 		log.info("roundTrip json = "+json);
-		
+
 		InputStream inputStream = new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
 		Resource<Sample> sampleRedux = this.json.readObject(inputStream);
 		log.info("roundTrip sampleRedux = "+sampleRedux);
-		
+
 		String jsonRedux = this.json.write(sampleRedux).getJson();
 		log.info("roundTrip jsonRedux = "+jsonRedux);
 
@@ -125,16 +125,16 @@ public class ResourceSerializationTest {
         }
         br.close();
         String jsonFile = stringBuilder.toString();
-		
+
 		assertThat(sample.equals(sampleRedux));
 		assertThat(sample.equals(jsonFile));
 		assertThat(json.equals(jsonRedux));
 		assertThat(json.equals(jsonFile));
 	}
-	
+
 	@SpringBootConfiguration
 	public static class TestConfig {
-		
+
 	}
-	
+
 }

@@ -21,7 +21,7 @@ import org.springframework.web.client.RestTemplate;
 
 import uk.ac.ebi.biosamples.legacy.json.service.JSONSampleToSampleConverter;
 
-@Component
+//@Component
 @Profile({"migration-json"})
 public class LegacyJsonMigrationRunner implements ApplicationRunner, ExitCodeGenerator {
 
@@ -42,7 +42,7 @@ public class LegacyJsonMigrationRunner implements ApplicationRunner, ExitCodeGen
 		restTemplate = restTemplateBuilder.build();
 		legacyJSONConverter = legacyJsonConverter;
 	}
-	
+
 	@Override
 	public int getExitCode() {
 		return exitCode;

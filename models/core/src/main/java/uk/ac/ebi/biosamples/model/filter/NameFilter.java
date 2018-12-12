@@ -1,5 +1,7 @@
 package uk.ac.ebi.biosamples.model.filter;
 
+import uk.ac.ebi.biosamples.model.facet.FacetType;
+
 import java.util.Objects;
 import java.util.Optional;
 
@@ -27,6 +29,11 @@ public class NameFilter implements Filter {
     }
 
     @Override
+    public FacetType getAssociatedFacetType() {
+        return FacetType.NO_TYPE;
+    }
+
+    @Override
     public String getSerialization() {
         return this.getType().getSerialization() + ":" + this.name;
     }
@@ -50,15 +57,15 @@ public class NameFilter implements Filter {
 
     public static class Builder implements Filter.Builder {
 
-        private String domain;
+        private String name;
 
-        public Builder(String domain) {
-            this.domain = domain;
+        public Builder(String name) {
+            this.name = name;
         }
 
         @Override
         public Filter build() {
-            return new NameFilter(this.domain);
+            return new NameFilter(this.name);
         }
 
         @Override

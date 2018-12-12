@@ -307,7 +307,7 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
             Traverson.TraversalBuilder traversalBuilder = new Traverson(integrationProperties.getBiosamplesLegacyJSONUri(), HAL_JSON)
                     .follow("samples", "search")
                     .follow(Hop.rel("findByText")
-                            .withParameter("text", "Homo sapiens")
+                            .withParameter("text", "Very special Homo Sapiens")
                             .withParameter("size", 100)
                     );
 
@@ -410,7 +410,7 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
 
             SortedSet<Attribute> attributes = new TreeSet<>();
             attributes.add(
-                    Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
+                    Attribute.build("organism", "Very special Homo Sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
             SortedSet<ExternalReference> externalReferences = new TreeSet<>();
             externalReferences.add(
                     ExternalReference.build("http://hPSCreg.eu/cell-lines/PZIF-001")

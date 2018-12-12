@@ -1,0 +1,593 @@
+<BioSampleSet>
+    <BioSample access="public" accession="SAMN06680397" id="6680397" last_update="2018-08-03T15:53:04.729" publication_date="2017-04-05T00:00:00.000" submission_date="2017-04-04T09:24:12.433">
+        <Ids>
+            <Id db="BioSample" is_primary="1">SAMN06680397</Id>
+            <Id db_label="Sample name">0000-0063-2280</Id>
+            <Id db="SRA">SRS2103330</Id>
+        </Ids>
+        <Description>
+            <Title>Pathogen: clinical or host-associated sample from Salmonella enterica</Title>
+            <Organism taxonomy_id="28901" taxonomy_name="Salmonella enterica">
+                <OrganismName>Salmonella enterica</OrganismName>
+            </Organism>
+            <Comment>
+                <Table class="Antibiogram.1.0">
+                    <Caption>Antibiogram</Caption>
+                    <Header>
+                        <Cell>Antibiotic</Cell>
+                        <Cell>Resistance phenotype</Cell>
+                        <Cell>Measurement sign</Cell>
+                        <Cell>Measurement</Cell>
+                        <Cell>Measurement units</Cell>
+                        <Cell>Laboratory typing method</Cell>
+                        <Cell>Laboratory typing platform</Cell>
+                        <Cell>Vendor</Cell>
+                        <Cell>Laboratory typing method version or reagent</Cell>
+                        <Cell>Testing standard</Cell>
+                    </Header>
+                    <Body>
+                        <Row>
+                            <Cell>nalidixic acid</Cell>
+                            <Cell>intermediate</Cell>
+                            <Cell>==</Cell>
+                            <Cell>17</Cell>
+                            <Cell>mm</Cell>
+                            <Cell>disk diffusion</Cell>
+                            <Cell>missing</Cell>
+                            <Cell>Becton Dickinson</Cell>
+                            <Cell>missing</Cell>
+                            <Cell>CLSI</Cell>
+                        </Row>
+                    </Body>
+                </Table>
+            </Comment>
+        </Description>
+        <Owner>
+            <Name>Brigham &amp; Women's Hospital</Name>
+            <Contacts>
+                <Contact email="xzhao7@partners.org">
+                    <Name>
+                        <First>Xiaomin</First>
+                        <Last>Zhao</Last>
+                    </Name>
+                </Contact>
+            </Contacts>
+        </Owner>
+        <Models>
+            <Model>Pathogen.cl</Model>
+        </Models>
+        <Package display_name="Pathogen: clinical or host-associated; version 1.0">Pathogen.cl.1.0</Package>
+        <Attributes>
+            <Attribute attribute_name="isolate" display_name="isolate" harmonized_name="isolate">334</Attribute>
+            <Attribute attribute_name="collected_by" display_name="collected by" harmonized_name="collected_by">Brigham and Women's Hospital</Attribute>
+            <Attribute attribute_name="collection_date" display_name="collection date" harmonized_name="collection_date">2016</Attribute>
+            <Attribute attribute_name="geo_loc_name" display_name="geographic location" harmonized_name="geo_loc_name">USA:Boston</Attribute>
+            <Attribute attribute_name="host" display_name="host" harmonized_name="host">Homo sapiens</Attribute>
+            <Attribute attribute_name="host_disease" display_name="host disease" harmonized_name="host_disease">Missing</Attribute>
+            <Attribute attribute_name="isolation_source" display_name="isolation source" harmonized_name="isolation_source">urine</Attribute>
+            <Attribute attribute_name="lat_lon" display_name="latitude and longitude" harmonized_name="lat_lon">Missing</Attribute>
+            <Attribute attribute_name="host_age" display_name="host age" harmonized_name="host_age">90</Attribute>
+            <Attribute attribute_name="host_sex" display_name="host sex" harmonized_name="host_sex">male</Attribute>
+            <Attribute attribute_name="host_subject_id" display_name="host subject id" harmonized_name="host_subject_id">SBJ-10007</Attribute>
+        </Attributes>
+        <Links>
+            <Link label="PRJNA278886" target="bioproject" type="entrez">278886</Link>
+        </Links>
+        <Status status="live" when="2017-04-05T17:00:29.826"/>
+    </BioSample>
+    <BioSample access="public" accession="SAMN09492289" id="9492289" last_update="2018-06-26T16:39:18.063" publication_date="2018-06-26T00:00:00.000" submission_date="2018-06-26T16:30:14.767">
+        <Ids>
+            <Id db="BioSample" is_primary="1">SAMN09492289</Id>
+            <Id db_label="Sample name">BC10-Mtb026</Id>
+            <Id db="SRA">SRS3466847</Id>
+        </Ids>
+        <Description>
+            <Title>BC10-Mtb026</Title>
+            <Organism taxonomy_id="1773" taxonomy_name="Mycobacterium tuberculosis">
+                <OrganismName>Mycobacterium tuberculosis</OrganismName>
+            </Organism>
+            <Comment>
+                <Table class="Antibiogram.mycobacterial.1.0">
+                    <Caption>Antibiogram</Caption>
+                    <Header>
+                        <Cell>Antibiotic</Cell>
+                        <Cell>Resistance phenotype</Cell>
+                        <Cell>DST Media</Cell>
+                        <Cell>DST Method</Cell>
+                        <Cell>Critical Concentration</Cell>
+                        <Cell>Testing standard</Cell>
+                    </Header>
+                    <Body>
+                        <Row>
+                            <Cell>ethambutol</Cell>
+                            <Cell>susceptible</Cell>
+                            <Cell>liquid</Cell>
+                            <Cell>MGIT960</Cell>
+                            <Cell>5</Cell>
+                            <Cell>CLSI</Cell>
+                        </Row>
+                        <Row>
+                            <Cell>isoniazid</Cell>
+                            <Cell>susceptible</Cell>
+                            <Cell>liquid</Cell>
+                            <Cell>MGIT960</Cell>
+                            <Cell>0.1</Cell>
+                            <Cell>CLSI</Cell>
+                        </Row>
+                        <Row>
+                            <Cell>rifampin</Cell>
+                            <Cell>susceptible</Cell>
+                            <Cell>liquid</Cell>
+                            <Cell>MGIT960</Cell>
+                            <Cell>1</Cell>
+                            <Cell>CLSI</Cell>
+                        </Row>
+                        <Row>
+                            <Cell>streptomycin</Cell>
+                            <Cell>susceptible</Cell>
+                            <Cell>liquid</Cell>
+                            <Cell>MGIT960</Cell>
+                            <Cell>1</Cell>
+                            <Cell>CLSI</Cell>
+                        </Row>
+                    </Body>
+                </Table>
+            </Comment>
+        </Description>
+        <Owner>
+            <Name url="http://www.bccdc.ca">BC Centre for Disease Control Public Health Laboratory</Name>
+            <Contacts>
+                <Contact email="jennifer.gardy@bccdc.ca">
+                    <Name>
+                        <First>Jennifer</First>
+                        <Last>Gardy</Last>
+                    </Name>
+                </Contact>
+            </Contacts>
+        </Owner>
+        <Models>
+            <Model>Pathogen.cl</Model>
+        </Models>
+        <Package display_name="Pathogen: clinical or host-associated; version 1.0">Pathogen.cl.1.0</Package>
+        <Attributes>
+            <Attribute attribute_name="isolate" display_name="isolate" harmonized_name="isolate">BC10-Mtb026</Attribute>
+            <Attribute attribute_name="collected_by" display_name="collected by" harmonized_name="collected_by">British Columbia Centre for Disease Control Public Health Laboratory</Attribute>
+            <Attribute attribute_name="collection_date" display_name="collection date" harmonized_name="collection_date">2010</Attribute>
+            <Attribute attribute_name="geo_loc_name" display_name="geographic location" harmonized_name="geo_loc_name">Canada: British Columbia</Attribute>
+            <Attribute attribute_name="host" display_name="host" harmonized_name="host">Homo sapiens</Attribute>
+            <Attribute attribute_name="host_disease" display_name="host disease" harmonized_name="host_disease">pulmonary tuberculosis</Attribute>
+            <Attribute attribute_name="isolation_source" display_name="isolation source" harmonized_name="isolation_source">culture</Attribute>
+            <Attribute attribute_name="lat_lon" display_name="latitude and longitude" harmonized_name="lat_lon">49.15 N 123.7 W</Attribute>
+            <Attribute attribute_name="genotype" display_name="genotype" harmonized_name="genotype">Euro-American</Attribute>
+        </Attributes>
+        <Links>
+            <Link label="PRJNA413593" target="bioproject" type="entrez">413593</Link>
+        </Links>
+        <Status status="live" when="2018-06-26T16:30:14.765"/>
+    </BioSample>
+    <BioSample access="public" accession="SAMN04622945" id="4622945" last_update="2018-06-14T09:48:58.386" publication_date="2016-04-07T00:00:00.000" submission_date="2016-04-07T14:55:05.000">
+        <Ids>
+            <Id db="BioSample" is_primary="1">SAMN04622945</Id>
+            <Id db_label="Sample name">USDA-ARS-USMARC-60714</Id>
+        </Ids>
+        <Description>
+            <Title>Pasteurella multocida from Case Animal 204 on Day 22</Title>
+            <Organism taxonomy_id="747" taxonomy_name="Pasteurella multocida">
+                <OrganismName>Pasteurella multocida</OrganismName>
+            </Organism>
+            <Comment>
+                <Paragraph>Morbidity Day 0</Paragraph>
+                <Table class="Antibiogram.1.0">
+                    <Caption>Antibiogram</Caption>
+                    <Header>
+                        <Cell>Antibiotic</Cell>
+                        <Cell>Resistance phenotype</Cell>
+                        <Cell>Measurement sign</Cell>
+                        <Cell>Measurement</Cell>
+                        <Cell>Measurement units</Cell>
+                        <Cell>Laboratory typing method</Cell>
+                        <Cell>Laboratory typing platform</Cell>
+                        <Cell>Vendor</Cell>
+                        <Cell>Laboratory typing method version or reagent</Cell>
+                        <Cell>Testing standard</Cell>
+                    </Header>
+                    <Body>
+                        <Row>
+                            <Cell>ampicillin</Cell>
+                            <Cell>not defined</Cell>
+                            <Cell>&lt;=</Cell>
+                            <Cell>0.25</Cell>
+                            <Cell>mg/L</Cell>
+                            <Cell>MIC</Cell>
+                            <Cell>Sensititre</Cell>
+                            <Cell>TREK Diagnostic Systems</Cell>
+                            <Cell>Plate: BOPO6F;  Host: Cattle; Body Site: Respiratory</Cell>
+                            <Cell>CLSI</Cell>
+                        </Row>
+                        <Row>
+                            <Cell>ceftiofur</Cell>
+                            <Cell>susceptible</Cell>
+                            <Cell>&lt;=</Cell>
+                            <Cell>0.25</Cell>
+                            <Cell>mg/L</Cell>
+                            <Cell>MIC</Cell>
+                            <Cell>Sensititre</Cell>
+                            <Cell>TREK Diagnostic Systems</Cell>
+                            <Cell>Plate: BOPO6F;  Host: Cattle; Body Site: Respiratory</Cell>
+                            <Cell>CLSI</Cell>
+                        </Row>
+                        <Row>
+                            <Cell>chlortetracycline</Cell>
+                            <Cell>intermediate</Cell>
+                            <Cell>==</Cell>
+                            <Cell>4</Cell>
+                            <Cell>mg/L</Cell>
+                            <Cell>MIC</Cell>
+                            <Cell>Sensititre</Cell>
+                            <Cell>TREK Diagnostic Systems</Cell>
+                            <Cell>Plate: BOPO6F;  Host: Cattle; Body Site: Respiratory</Cell>
+                            <Cell>CLSI</Cell>
+                        </Row>
+                        <Row>
+                            <Cell>clindamycin</Cell>
+                            <Cell>not defined</Cell>
+                            <Cell>&gt;</Cell>
+                            <Cell>16</Cell>
+                            <Cell>mg/L</Cell>
+                            <Cell>MIC</Cell>
+                            <Cell>Sensititre</Cell>
+                            <Cell>TREK Diagnostic Systems</Cell>
+                            <Cell>Plate: BOPO6F;  Host: Cattle; Body Site: Respiratory</Cell>
+                            <Cell>CLSI</Cell>
+                        </Row>
+                        <Row>
+                            <Cell>danofloxacin</Cell>
+                            <Cell>susceptible</Cell>
+                            <Cell>==</Cell>
+                            <Cell>0.25</Cell>
+                            <Cell>mg/L</Cell>
+                            <Cell>MIC</Cell>
+                            <Cell>Sensititre</Cell>
+                            <Cell>TREK Diagnostic Systems</Cell>
+                            <Cell>Plate: BOPO6F;  Host: Cattle; Body Site: Respiratory</Cell>
+                            <Cell>CLSI</Cell>
+                        </Row>
+                        <Row>
+                            <Cell>enrofloxacin</Cell>
+                            <Cell>susceptible</Cell>
+                            <Cell>&lt;=</Cell>
+                            <Cell>0.12</Cell>
+                            <Cell>mg/L</Cell>
+                            <Cell>MIC</Cell>
+                            <Cell>Sensititre</Cell>
+                            <Cell>TREK Diagnostic Systems</Cell>
+                            <Cell>Plate: BOPO6F;  Host: Cattle; Body Site: Respiratory</Cell>
+                            <Cell>CLSI</Cell>
+                        </Row>
+                        <Row>
+                            <Cell>florfenicol</Cell>
+                            <Cell>resistant</Cell>
+                            <Cell>==</Cell>
+                            <Cell>8</Cell>
+                            <Cell>mg/L</Cell>
+                            <Cell>MIC</Cell>
+                            <Cell>Sensititre</Cell>
+                            <Cell>TREK Diagnostic Systems</Cell>
+                            <Cell>Plate: BOPO6F;  Host: Cattle; Body Site: Respiratory</Cell>
+                            <Cell>CLSI</Cell>
+                        </Row>
+                        <Row>
+                            <Cell>gentamicin</Cell>
+                            <Cell>not defined</Cell>
+                            <Cell>&gt;</Cell>
+                            <Cell>16</Cell>
+                            <Cell>mg/L</Cell>
+                            <Cell>MIC</Cell>
+                            <Cell>Sensititre</Cell>
+                            <Cell>TREK Diagnostic Systems</Cell>
+                            <Cell>Plate: BOPO6F;  Host: Cattle; Body Site: Respiratory</Cell>
+                            <Cell>CLSI</Cell>
+                        </Row>
+                        <Row>
+                            <Cell>neomycin</Cell>
+                            <Cell>not defined</Cell>
+                            <Cell>&gt;</Cell>
+                            <Cell>32</Cell>
+                            <Cell>mg/L</Cell>
+                            <Cell>MIC</Cell>
+                            <Cell>Sensititre</Cell>
+                            <Cell>TREK Diagnostic Systems</Cell>
+                            <Cell>Plate: BOPO6F;  Host: Cattle; Body Site: Respiratory</Cell>
+                            <Cell>CLSI</Cell>
+                        </Row>
+                        <Row>
+                            <Cell>oxytetracycline</Cell>
+                            <Cell>resistant</Cell>
+                            <Cell>&gt;</Cell>
+                            <Cell>8</Cell>
+                            <Cell>mg/L</Cell>
+                            <Cell>MIC</Cell>
+                            <Cell>Sensititre</Cell>
+                            <Cell>TREK Diagnostic Systems</Cell>
+                            <Cell>Plate: BOPO6F;  Host: Cattle; Body Site: Respiratory</Cell>
+                            <Cell>CLSI</Cell>
+                        </Row>
+                        <Row>
+                            <Cell>penicillin</Cell>
+                            <Cell>susceptible</Cell>
+                            <Cell>==</Cell>
+                            <Cell>0.25</Cell>
+                            <Cell>mg/L</Cell>
+                            <Cell>MIC</Cell>
+                            <Cell>Sensititre</Cell>
+                            <Cell>TREK Diagnostic Systems</Cell>
+                            <Cell>Plate: BOPO6F;  Host: Cattle; Body Site: Respiratory</Cell>
+                            <Cell>CLSI</Cell>
+                        </Row>
+                        <Row>
+                            <Cell>spectinomycin</Cell>
+                            <Cell>intermediate</Cell>
+                            <Cell>&gt;</Cell>
+                            <Cell>64</Cell>
+                            <Cell>mg/L</Cell>
+                            <Cell>MIC</Cell>
+                            <Cell>Sensititre</Cell>
+                            <Cell>TREK Diagnostic Systems</Cell>
+                            <Cell>Plate: BOPO6F;  Host: Cattle; Body Site: Respiratory</Cell>
+                            <Cell>CLSI</Cell>
+                        </Row>
+                        <Row>
+                            <Cell>sulfadimethoxine</Cell>
+                            <Cell>not defined</Cell>
+                            <Cell>&gt;</Cell>
+                            <Cell>256</Cell>
+                            <Cell>mg/L</Cell>
+                            <Cell>MIC</Cell>
+                            <Cell>Sensititre</Cell>
+                            <Cell>TREK Diagnostic Systems</Cell>
+                            <Cell>Plate: BOPO6F;  Host: Cattle; Body Site: Respiratory</Cell>
+                            <Cell>CLSI</Cell>
+                        </Row>
+                        <Row>
+                            <Cell>tiamulin</Cell>
+                            <Cell>not defined</Cell>
+                            <Cell>==</Cell>
+                            <Cell>32</Cell>
+                            <Cell>mg/L</Cell>
+                            <Cell>MIC</Cell>
+                            <Cell>Sensititre</Cell>
+                            <Cell>TREK Diagnostic Systems</Cell>
+                            <Cell>Plate: BOPO6F;  Host: Cattle; Body Site: Respiratory</Cell>
+                            <Cell>CLSI</Cell>
+                        </Row>
+                        <Row>
+                            <Cell>tilmicosin</Cell>
+                            <Cell>not defined</Cell>
+                            <Cell>==</Cell>
+                            <Cell>32</Cell>
+                            <Cell>mg/L</Cell>
+                            <Cell>MIC</Cell>
+                            <Cell>Sensititre</Cell>
+                            <Cell>TREK Diagnostic Systems</Cell>
+                            <Cell>Plate: BOPO6F;  Host: Cattle; Body Site: Respiratory</Cell>
+                            <Cell>CLSI</Cell>
+                        </Row>
+                        <Row>
+                            <Cell>trimethoprim-sulfamethoxazole</Cell>
+                            <Cell>not defined</Cell>
+                            <Cell>&lt;=</Cell>
+                            <Cell>2/32</Cell>
+                            <Cell>mg/L</Cell>
+                            <Cell>MIC</Cell>
+                            <Cell>Sensititre</Cell>
+                            <Cell>TREK Diagnostic Systems</Cell>
+                            <Cell>Plate: BOPO6F;  Host: Cattle; Body Site: Respiratory</Cell>
+                            <Cell>CLSI</Cell>
+                        </Row>
+                        <Row>
+                            <Cell>tulathromycin</Cell>
+                            <Cell>resistant</Cell>
+                            <Cell>==</Cell>
+                            <Cell>64</Cell>
+                            <Cell>mg/L</Cell>
+                            <Cell>MIC</Cell>
+                            <Cell>Sensititre</Cell>
+                            <Cell>TREK Diagnostic Systems</Cell>
+                            <Cell>Plate: BOPO6F;  Host: Cattle; Body Site: Respiratory</Cell>
+                            <Cell>CLSI</Cell>
+                        </Row>
+                        <Row>
+                            <Cell>tylosin</Cell>
+                            <Cell>not defined</Cell>
+                            <Cell>&gt;</Cell>
+                            <Cell>32</Cell>
+                            <Cell>mg/L</Cell>
+                            <Cell>MIC</Cell>
+                            <Cell>Sensititre</Cell>
+                            <Cell>TREK Diagnostic Systems</Cell>
+                            <Cell>Plate: BOPO6F;  Host: Cattle; Body Site: Respiratory</Cell>
+                            <Cell>CLSI</Cell>
+                        </Row>
+                    </Body>
+                </Table>
+            </Comment>
+        </Description>
+        <Owner>
+            <Name>USDA-ARS-USMARC</Name>
+            <Contacts>
+                <Contact email="gregory.harhay@ars.usda.gov">
+                    <Name>
+                        <First>Gregory</First>
+                        <Last>Harhay</Last>
+                        <Middle>Paul</Middle>
+                    </Name>
+                </Contact>
+            </Contacts>
+        </Owner>
+        <Models>
+            <Model>Pathogen.env</Model>
+        </Models>
+        <Package display_name="Pathogen: environmental/food/other; version 1.0">Pathogen.env.1.0</Package>
+        <Attributes>
+            <Attribute attribute_name="strain" display_name="strain" harmonized_name="strain">USDA-ARS-USMARC-60714</Attribute>
+            <Attribute attribute_name="collection_date" display_name="collection date" harmonized_name="collection_date">16-Oct-2013</Attribute>
+            <Attribute attribute_name="env_biome" display_name="environment biome" harmonized_name="env_biome">livestock-associated habitat</Attribute>
+            <Attribute attribute_name="env_feature" display_name="environment feature" harmonized_name="env_feature">feedlot</Attribute>
+            <Attribute attribute_name="env_material" display_name="environment material" harmonized_name="env_material">mucus</Attribute>
+            <Attribute attribute_name="geo_loc_name" display_name="geographic location" harmonized_name="geo_loc_name">USA:Kansas</Attribute>
+            <Attribute attribute_name="host" display_name="host" harmonized_name="host">Bos taurus</Attribute>
+            <Attribute attribute_name="isol_growth_condt" display_name="isolation and growth condition" harmonized_name="isol_growth_condt">missing</Attribute>
+            <Attribute attribute_name="lat_lon" display_name="latitude and longitude" harmonized_name="lat_lon">missing</Attribute>
+            <Attribute attribute_name="num_replicons" display_name="number of replicons" harmonized_name="num_replicons">1</Attribute>
+            <Attribute attribute_name="ref_biomaterial" display_name="reference for biomaterial" harmonized_name="ref_biomaterial">missing</Attribute>
+            <Attribute attribute_name="chem_administration" display_name="chemical administration" harmonized_name="chem_administration">macrolide antibioticName</Attribute>
+            <Attribute attribute_name="estimated_size" display_name="estimated size" harmonized_name="estimated_size">2250000</Attribute>
+            <Attribute attribute_name="health_state" display_name="health state" harmonized_name="health_state">alive</Attribute>
+            <Attribute attribute_name="host_age" display_name="host age" harmonized_name="host_age">5-7 months</Attribute>
+            <Attribute attribute_name="host_body_habitat" display_name="host body habitat" harmonized_name="host_body_habitat">nasopharynx</Attribute>
+            <Attribute attribute_name="host_body_temp" display_name="host body temperature" harmonized_name="host_body_temp">40.5</Attribute>
+            <Attribute attribute_name="host_disease" display_name="host disease" harmonized_name="host_disease">pneumonia</Attribute>
+            <Attribute attribute_name="host_life_stage" display_name="host life stage" harmonized_name="host_life_stage">calf</Attribute>
+            <Attribute attribute_name="host_subject_id" display_name="host subject id" harmonized_name="host_subject_id">204</Attribute>
+            <Attribute attribute_name="host_taxid" display_name="host taxonomy ID" harmonized_name="host_taxid">9913</Attribute>
+            <Attribute attribute_name="host_tissue_sampled" display_name="host tissue sampled" harmonized_name="host_tissue_sampled">nasopharynx</Attribute>
+            <Attribute attribute_name="misc_param" display_name="miscellaneous parameter" harmonized_name="misc_param">case animal, exhibited bovine respiratory disease sign during 29 day experiment on Day 22</Attribute>
+            <Attribute attribute_name="perturbation" display_name="perturbation" harmonized_name="perturbation">calf trailer transport from from USA:TN to USA:KS occurring between day 0 and day 1, macrolide antibioticName administered day 1 and 22</Attribute>
+            <Attribute attribute_name="samp_collect_device" display_name="sample collection device or method" harmonized_name="samp_collect_device">nasopharyngeal swab</Attribute>
+            <Attribute attribute_name="samp_mat_process" display_name="sample material processing" harmonized_name="samp_mat_process">Swab samples from each nares were placed in 1 ml Amies transport medium, held at 4 C, and combined in lab to 2 ml.</Attribute>
+            <Attribute attribute_name="samp_size" display_name="sample size" harmonized_name="samp_size">2 ml</Attribute>
+            <Attribute attribute_name="samp_store_temp" display_name="sample storage temperature" harmonized_name="samp_store_temp">-80 C</Attribute>
+            <Attribute attribute_name="source_material_id" display_name="source material identifiers" harmonized_name="source_material_id">28114</Attribute>
+            <Attribute attribute_name="collected_by" display_name="collected by" harmonized_name="collected_by">missing</Attribute>
+            <Attribute attribute_name="isolation_source" display_name="isolation source" harmonized_name="isolation_source">missing</Attribute>
+        </Attributes>
+        <Links>
+            <Link label="PRJNA281531" target="bioproject" type="entrez">281531</Link>
+        </Links>
+        <Status status="live" when="2016-04-07T14:55:05.718"/>
+    </BioSample>
+    <BioSample access="public" accession="SAMN05463122" id="5463122" last_update="2018-08-03T15:53:04.592" publication_date="2016-08-11T00:00:00.000" submission_date="2016-07-29T09:39:07.363">
+        <Ids>
+            <Id db="BioSample" is_primary="1">SAMN05463122</Id>
+            <Id db_label="Sample name">0000-0058-2892</Id>
+            <Id db="SRA">SRS1610045</Id>
+        </Ids>
+        <Description>
+            <Title>Pathogen: clinical or host-associated sample from Salmonella enterica</Title>
+            <Organism taxonomy_id="28901" taxonomy_name="Salmonella enterica">
+                <OrganismName>Salmonella enterica</OrganismName>
+            </Organism>
+            <Comment>
+                <Table class="Antibiogram.1.0">
+                    <Caption>Antibiogram</Caption>
+                    <Header>
+                        <Cell>Antibiotic</Cell>
+                        <Cell>Resistance phenotype</Cell>
+                        <Cell>Measurement sign</Cell>
+                        <Cell>Measurement</Cell>
+                        <Cell>Measurement units</Cell>
+                        <Cell>Laboratory typing method</Cell>
+                        <Cell>Laboratory typing platform</Cell>
+                        <Cell>Vendor</Cell>
+                        <Cell>Laboratory typing method version or reagent</Cell>
+                        <Cell>Testing standard</Cell>
+                    </Header>
+                    <Body>
+                        <Row>
+                            <Cell>ampicillin</Cell>
+                            <Cell>susceptible</Cell>
+                            <Cell>&lt;</Cell>
+                            <Cell>8</Cell>
+                            <Cell>mg/L</Cell>
+                            <Cell>MIC</Cell>
+                            <Cell>Vitek</Cell>
+                            <Cell>BiomŽrieux</Cell>
+                            <Cell>missing</Cell>
+                            <Cell>CLSI</Cell>
+                        </Row>
+                        <Row>
+                            <Cell>ciprofloxacin</Cell>
+                            <Cell>susceptible</Cell>
+                            <Cell>&lt;</Cell>
+                            <Cell>1</Cell>
+                            <Cell>mg/L</Cell>
+                            <Cell>MIC</Cell>
+                            <Cell>Vitek</Cell>
+                            <Cell>BiomŽrieux</Cell>
+                            <Cell>missing</Cell>
+                            <Cell>CLSI</Cell>
+                        </Row>
+                        <Row>
+                            <Cell>tigecycline</Cell>
+                            <Cell>susceptible</Cell>
+                            <Cell>&lt;</Cell>
+                            <Cell>2</Cell>
+                            <Cell>mg/L</Cell>
+                            <Cell>MIC</Cell>
+                            <Cell>Vitek</Cell>
+                            <Cell>BiomŽrieux</Cell>
+                            <Cell>missing</Cell>
+                            <Cell>CLSI</Cell>
+                        </Row>
+                        <Row>
+                            <Cell>trimethoprim-sulfamethoxazole</Cell>
+                            <Cell>susceptible</Cell>
+                            <Cell>&lt;</Cell>
+                            <Cell>2/38</Cell>
+                            <Cell>mg/L</Cell>
+                            <Cell>MIC</Cell>
+                            <Cell>Vitek</Cell>
+                            <Cell>BiomŽrieux</Cell>
+                            <Cell>missing</Cell>
+                            <Cell>CLSI</Cell>
+                        </Row>
+                        <Row>
+                            <Cell>levofloxacin</Cell>
+                            <Cell>susceptible</Cell>
+                            <Cell>&lt;</Cell>
+                            <Cell>2</Cell>
+                            <Cell>mg/L</Cell>
+                            <Cell>MIC</Cell>
+                            <Cell>Vitek</Cell>
+                            <Cell>BiomŽrieux</Cell>
+                            <Cell>missing</Cell>
+                            <Cell>CLSI</Cell>
+                        </Row>
+                    </Body>
+                </Table>
+            </Comment>
+        </Description>
+        <Owner>
+            <Name>Brigham &amp; Women's Hospital</Name>
+            <Contacts>
+                <Contact email="xzhao7@partners.org">
+                    <Name>
+                        <First>Xiaomin</First>
+                        <Last>Zhao</Last>
+                    </Name>
+                </Contact>
+            </Contacts>
+        </Owner>
+        <Models>
+            <Model>Pathogen.cl</Model>
+        </Models>
+        <Package display_name="Pathogen: clinical or host-associated; version 1.0">Pathogen.cl.1.0</Package>
+        <Attributes>
+            <Attribute attribute_name="isolate" display_name="isolate" harmonized_name="isolate">NWH-11</Attribute>
+            <Attribute attribute_name="collected_by" display_name="collected by" harmonized_name="collected_by">Brigham and Women's Hospital</Attribute>
+            <Attribute attribute_name="collection_date" display_name="collection date" harmonized_name="collection_date">2016</Attribute>
+            <Attribute attribute_name="geo_loc_name" display_name="geographic location" harmonized_name="geo_loc_name">USA:Boston</Attribute>
+            <Attribute attribute_name="host" display_name="host" harmonized_name="host">Homo sapiens</Attribute>
+            <Attribute attribute_name="host_disease" display_name="host disease" harmonized_name="host_disease">Missing</Attribute>
+            <Attribute attribute_name="isolation_source" display_name="isolation source" harmonized_name="isolation_source">stool</Attribute>
+            <Attribute attribute_name="lat_lon" display_name="latitude and longitude" harmonized_name="lat_lon">Missing</Attribute>
+            <Attribute attribute_name="host_age" display_name="host age" harmonized_name="host_age">77</Attribute>
+            <Attribute attribute_name="host_sex" display_name="host sex" harmonized_name="host_sex">female</Attribute>
+            <Attribute attribute_name="host_subject_id" display_name="host subject id" harmonized_name="host_subject_id">SBJ-9953</Attribute>
+        </Attributes>
+        <Links>
+            <Link label="PRJNA278886" target="bioproject" type="entrez">278886</Link>
+        </Links>
+        <Status status="live" when="2016-08-11T09:43:35.783"/>
+    </BioSample>
+</BioSampleSet>
