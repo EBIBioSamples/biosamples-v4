@@ -1,6 +1,7 @@
 = [.ebi-color]#SampleTab file#
 :last-update-label!:
 :imagesdir: static/images/
+:linkattrs:
 :toc:
 
 == Overview
@@ -21,6 +22,13 @@ SampleTab files are composed of two sections - <<MSI,MSI section>> and <<SCD, SC
 * If the first character on a line is #, then that line is ignored. Use of # characters elsewhere is allowed, but discouraged.
 * The use of only alphanumeric characters (upper and lowercase A-Z and 0-9, no accents or other symbols) is preferred.
 * Files should be UTF-8 encoded.
+
+[#Template]
+== SampleTab template
+If you need to submit a new SampleTab file from scratch, download a SampleTab empty template from here
+and follow the instructions on how to fill the various sections of the document
+
+link:/biosamples/sampletab/template.tsv[Download the SampleTab template file, opts=download]
 
 [#MSI]
 == MSI file section
