@@ -14,8 +14,7 @@ bsd_version() {
 
 while getopts "f:v:h" opt; do
   case ${opt} in
-    v)
-      NEW_VERSION=$OPTARG
+    v) NEW_VERSION=$OPTARG
       echo "New BioSamples project version: $NEW_VERSION"
       ;;
     f)
@@ -57,6 +56,7 @@ fi
 
 ## invoke maven versions plugin to increment project structure versions
 mvn versions:set -DgroupId="uk.ac.ebi.biosamples" -DoldVersion="$LAST_VERSION" -DnewVersion="$NEW_VERSION"  || exit 1
+mvn versions:set -DartifactId="biosamples-spring-boot-starter" -DoldVersion="$LAST_VERSION" -DnewVersion="$NEW_VERSION" || exit 1
 
 # updates all the docker files and the shell scripts
 echo " "
