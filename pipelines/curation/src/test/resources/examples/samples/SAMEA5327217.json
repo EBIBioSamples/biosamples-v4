@@ -1,0 +1,95 @@
+{
+  "name" : "ExomeCapture-Bakhatwa",
+  "accession" : "SAMEA5327217",
+  "domain" : "self.0f9fe79ca54edbd012adcdc9e208dbf094dfe9f6aa1d492c1c74a5d20fc7ef3f",
+  "release" : "2018-12-10T00:00:00Z",
+  "update" : "2018-12-11T16:59:39.120Z",
+  "taxId" : 4565,
+  "characteristics" : {
+    "Ancestory" : [ {
+      "text" : "."
+    } ],
+    "Common Name" : [ {
+      "text" : "bread wheat"
+    } ],
+    "Organism" : [ {
+      "text" : "Triticum aestivum subsp. aestivum",
+      "ontologyTerms" : [ "4565" ]
+    } ],
+    "Scientific Name" : [ {
+      "text" : "Triticum aestivum subsp. aestivum"
+    } ],
+    "Submission description" : [ {
+      "text" : "The exome sequenced hexaploid wheat accessions were selected from a worldwide population of landraces and cultivars obtained from the USDA National Small Grains Collection and the Australian Grains Genebank (formally the Australian Winter Cereal Collection). The worldwide population comprised 3990 accessions from 106 countries that were genotyped using the Infinium iSelect 90K SNP wheat bead chip array40. The MCG method41 was used to select accessions for exome sequencing. This method uses a genetic relationship matrix calculated from genotype data to iteratively chose and arbitrary number of accessions (in the case of this study 20% of the accessions) that collectively explain the largest proportion of variance in genetic relationships among the whole set. Genomic DNA was extracted from leaf tissue for each accession using the Agencourt DNAdvance Genomic DNA Isolation Kit (Beckman Coulter) and subjected to sequence capture using the NimbleGen SeqCap EZ wheat whole genome assay12. In brief, 1 µg of DNA was fragmented with the Covaris S2 instrument to obtain an average fragment length of 300 bp. Shorter fragments were removed using Agencourt AMPure XP beads (Beckman Coulter). The KAPA Library Preparation Kit (Kapa Biosystems) and adapters supplied in the NimbleGen SeqCap EZ Reagent Kit Plus v2 (Roche) were used to prepare sample libraries for the capture assay, according to the KAPA protocol but excluding steps 8.1-8.22. The quality and yield of each sample library was assessed using an Agilent 2200 TapeStation (Agilent Technologies) before proceeding to the sequence capture assay following the Roche protocol. Each target capture sequence enriched sample library was sequenced on an Illumina HiSeq2000 instrument (Illumina) to generate about 30 million reads per accession."
+    } ],
+    "Submission identifier" : [ {
+      "text" : "GSB-711"
+    } ],
+    "Submission title" : [ {
+      "text" : "Exome sequencing reveals the role of historic wild relative introgressions in shaping the adaptive landscape of the wheat genome"
+    } ],
+    "cultivar" : [ {
+      "text" : "."
+    } ],
+    "description" : [ {
+      "text" : "exome sequences of ExomeCapture-Bakhatwa - ."
+    } ],
+    "dev_stage" : [ {
+      "text" : "2 week old"
+    } ],
+    "ecotype" : [ {
+      "text" : "spring wheat"
+    } ],
+    "geographic location (country and/or sea)" : [ {
+      "text" : "not provided"
+    } ],
+    "isolate" : [ {
+      "text" : "."
+    } ],
+    "lab_host" : [ {
+      "text" : "by Eduard Akhunov"
+    } ],
+    "sub_species" : [ {
+      "text" : "subsp. aestivum"
+    } ],
+    "tissue_type" : [ {
+      "text" : "leaf"
+    } ],
+    "variety" : [ {
+      "text" : "."
+    } ]
+  },
+  "relationships" : [ {
+    "source" : "SAMEG4750769",
+    "type" : "has member",
+    "target" : "SAMEA5327217"
+  } ],
+  "releaseDate" : "2018-12-10",
+  "updateDate" : "2018-12-11",
+  "organization" : [ {
+    "Name" : "Eduard Akhunov",
+    "Address" : "1712 Claflin Road, Manhattan, KS 66506, USA"
+  } ],
+  "contact" : [ {
+    "FirstName" : "Fei",
+    "LastName" : "He",
+    "E-mail" : "feihe@ksu.edu",
+    "Name" : "Fei He"
+  } ],
+  "_links" : {
+    "self" : {
+      "href" : "https://www.ebi.ac.uk/biosamples/samples/SAMEA5327217?curationdomain"
+    },
+    "curationDomain" : {
+      "href" : "https://www.ebi.ac.uk/biosamples/samples/SAMEA5327217?curationdomain{&curationdomain}",
+      "templated" : true
+    },
+    "curationLinks" : {
+      "href" : "https://www.ebi.ac.uk/biosamples/samples/SAMEA5327217/curationlinks"
+    },
+    "curationLink" : {
+      "href" : "https://www.ebi.ac.uk/biosamples/samples/SAMEA5327217/curationlinks/{hash}",
+      "templated" : true
+    }
+  }
+}
