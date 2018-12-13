@@ -78,6 +78,11 @@ public class SampleCurationCallableTest {
         assertEquals(expectedCuratedSample, curatedSample);
     }
 
+    @Test
+    public void given_sample_ensure_organism_is_not_removed() throws Exception {
+        String filePath = "/examples/samples/SAMEA103887543.json";
+    }
+
     private String readFile(String filePath) throws IOException {
         InputStream inputStream = SampleCurationCallableTest.class.getResourceAsStream(filePath);
         StringBuilder resultStringBuilder = new StringBuilder();
