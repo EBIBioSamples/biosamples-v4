@@ -8,14 +8,14 @@
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>4.1.9-SNAPSHOT</version>
+		<version>4.1.8-RC1</version>
 	</parent>
 
 	<dependencies>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>models-core</artifactId>
-			<version>4.1.9-SNAPSHOT</version>
+			<version>4.1.8-RC1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
