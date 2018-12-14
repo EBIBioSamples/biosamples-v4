@@ -7,6 +7,7 @@ This pages contains links to release notes for BioSamples for version 4.0.0 and 
 4.1.8
 ----
 * Corrected error in curation pipeline which caused sample characteristics to be removed erroneously
+* Added holiday message
 
 
 [[section]]
