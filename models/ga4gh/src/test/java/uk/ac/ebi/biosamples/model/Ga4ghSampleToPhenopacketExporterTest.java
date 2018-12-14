@@ -23,7 +23,6 @@ import java.io.InputStreamReader;
 /**
  * Integration Test of phenopacket exporter. For test performing you need to have access to https://www.ebi.ac.uk/ols/api.
  */
-@Ignore
 public class Ga4ghSampleToPhenopacketExporterTest {
     final String biosample1Path = "/biosample1.json";
     final String biosample2Path = "/biosamples2.json";
