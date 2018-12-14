@@ -1,10 +1,12 @@
 package uk.ac.ebi.biosamples.model;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import uk.ac.ebi.biosamples.service.OLSDataRetriever;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
+@Ignore
 public class OLSDataRetrieverTest {
     @Test
     public void id_retrieving_test() {
