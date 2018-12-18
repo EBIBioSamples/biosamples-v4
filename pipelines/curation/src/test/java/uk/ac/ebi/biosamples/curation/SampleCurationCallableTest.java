@@ -13,6 +13,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
+import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.ols.OlsProcessor;
 import uk.ac.ebi.biosamples.service.CurationApplicationService;
@@ -21,6 +22,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Set;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
@@ -76,6 +78,41 @@ public class SampleCurationCallableTest {
         String curatedFilePath = "/examples/samples/SAMEA103887543-curated.json";
         Sample expectedCuratedSample = objectMapper.readValue(SampleCurationCallableTest.class.getResourceAsStream(curatedFilePath), Sample.class);
         assertEquals(expectedCuratedSample, curatedSample);
+    }
+
+    @Test
+    public void given_sample_ensure_Ancestory_is_removed() throws Exception {
+        String filePath = "/examples/samples/SAMEA5327217.json";
+        String attributeName = "Ancestory";
+        Sample sample = objectMapper.readValue(SampleCurationCallableTest.class.getResourceAsStream(filePath), Sample.class);
+        assertTrue(hasAttribute(sample.getAttributes(), attributeName));
+        SampleCurationCallable sampleCurationCallable = new SampleCurationCallable(mockBioSamplesClient, sample, olsProcessor, curationApplicationService, null);
+        sampleCurationCallable.call();
+        Sample curatedSample = curationApplicationService.applyAllCurationToSample(sample, mockBioSamplesClient.getCurations(sample.getAccession()));
+        assertFalse(hasAttribute(curatedSample.getAttributes(), attributeName));
+    }
+
+    @Test
+    public void given_sample_ensure_organism_is_not_removed() throws Exception {
+        String filePath = "/examples/samples/SAMEA5327217.json";
+        String attributeName = "Organism";
+        Sample sample = objectMapper.readValue(SampleCurationCallableTest.class.getResourceAsStream(filePath), Sample.class);
+        assertTrue(hasAttribute(sample.getAttributes(), attributeName));
+        SampleCurationCallable sampleCurationCallable = new SampleCurationCallable(mockBioSamplesClient, sample, olsProcessor, curationApplicationService, null);
+        sampleCurationCallable.call();
+        Sample curatedSample = curationApplicationService.applyAllCurationToSample(sample, mockBioSamplesClient.getCurations(sample.getAccession()));
+        assertTrue(hasAttribute(curatedSample.getAttributes(), attributeName));
+    }
+
+    private boolean hasAttribute(Set<Attribute> attributes, String name) {
+        boolean found = false;
+        for (Attribute attribute : attributes) {
+            if (attribute.getType() == name) {
+                found = true;
+                break;
+            }
+        }
+        return found;
     }
 
     private String readFile(String filePath) throws IOException {

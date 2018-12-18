@@ -2,6 +2,7 @@ package uk.ac.ebi.biosamples.model;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONException;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -22,7 +23,6 @@ import java.io.InputStreamReader;
 /**
  * Integration Test of phenopacket exporter. For test performing you need to have access to https://www.ebi.ac.uk/ols/api.
  */
-
 public class Ga4ghSampleToPhenopacketExporterTest {
     final String biosample1Path = "/biosample1.json";
     final String biosample2Path = "/biosamples2.json";
