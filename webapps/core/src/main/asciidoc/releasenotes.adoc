@@ -7,7 +7,7 @@ This pages contains links to release notes for BioSamples for version 4.0.0 and 
 4.1.9
 ----
 * Added a Curation Undo Pipeline to allow for removal of erroneous curations.
-* Fix an issue where long attributes break the sample box UI. 
+* Fix an issue where long attributes break the sample box UI.
 
 
 [[section]]
