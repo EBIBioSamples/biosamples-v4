@@ -32,5 +32,10 @@
 			<groupId>com.fasterxml.jackson.module</groupId>
 			<artifactId>jackson-module-jaxb-annotations</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>uk.ac.ebi.biosamples</groupId>
+			<artifactId>properties</artifactId>
+			<version>4.1.10-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
 </project>
