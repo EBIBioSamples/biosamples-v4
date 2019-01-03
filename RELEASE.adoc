@@ -4,6 +4,13 @@
 This pages contains links to release notes for BioSamples for version 4.0.0 and higher. This release represents a comprehensive overhaul and therefore previous release notes are no longer applicable.
 
 [[section]]
+4.1.10
+----
+* Remove the holiday message
+* Fix submit tab link in error pages
+
+
+[[section]]
 4.1.9
 ----
 * Added a Curation Undo Pipeline to allow for removal of erroneous curations.
