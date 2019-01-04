@@ -67,11 +67,6 @@ public class SampleHtmlController {
 		this.bioSamplesProperties = bioSamplesProperties;
 	}
 
-	//TODO: Convert this to use ControllerAdvice
-	@ModelAttribute
-	public void addCoreLink(Model model) {
-		model.addAttribute("sampletabUrl", bioSamplesProperties.getBiosamplesWebappSampletabUri());
-	}
 
 	@GetMapping(value = "/")
 	public String index(Model model) {
