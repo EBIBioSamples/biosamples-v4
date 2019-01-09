@@ -17,8 +17,6 @@ import java.util.Set;
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertFalse;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
 public class MessageHandlerSolrTest {
 
     @Test
