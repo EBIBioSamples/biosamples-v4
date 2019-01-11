@@ -387,8 +387,9 @@ public class Sample implements Comparable<Sample> {
 		if (update == null ) throw new IllegalArgumentException("Sample update must be provided");
 		sample.update = update;
 
-		if (release == null ) throw new IllegalArgumentException("Sample release must be provided");
-		sample.release = release;
+//		if (release == null ) throw new IllegalArgumentException("Sample release must be provided");
+//		sample.release = release;
+		sample.release = release == null ? Instant.now() : release;
 
         sample.attributes = new TreeSet<>();
         if (attributes != null) {

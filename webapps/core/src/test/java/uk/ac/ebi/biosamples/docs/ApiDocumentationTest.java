@@ -193,6 +193,94 @@ public class ApiDocumentationTest {
                         preprocessResponse(prettyPrint())));
     }
 
+    /**
+     * Accessioning service to generate accession
+     */
+    @Test
+    public void postToGenerateAccession() throws Exception {
+        Sample sample = this.faker.getExampleSample();
+        Sample sampleWithDomain = this.faker.getExampleSampleWithDomain();
+
+        String sampleToSubmit = "{ " +
+                "\"name\" : \"" + sample.getName() + "\", " +
+                "\"update\" : \"" + dateTimeFormatter.format(sample.getUpdate().atOffset(ZoneOffset.UTC)) + "\", " +
+//                "\"release\" : \"" +dateTimeFormatter.format(sample.getRelease().atOffset(ZoneOffset.UTC)) + "\", " +
+                "\"domain\" : \"self.ExampleDomain\" " +
+                "}";
+
+
+        when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(sampleWithDomain);
+        when(sampleService.store(any(Sample.class))).thenReturn(sampleWithDomain);
+
+        this.mockMvc.perform(
+                post("/biosamples/samples/accession")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(sampleToSubmit)
+                        .header("Authorization", "Bearer $TOKEN"))
+                .andExpect(status().is2xxSuccessful())
+                .andDo(document("post-sample",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint())));
+    }
+
+    /**
+     * Accessioning service to generate accession
+     */
+    @Test
+    public void post_for_accessioning_with_accession_should_get_error() throws Exception {
+        Sample sample = this.faker.getExampleSample();
+        Sample sampleWithDomain = this.faker.getExampleSampleWithDomain();
+
+        String sampleToSubmit = "{ " +
+                "\"accession\" : \"" + "FakeAccession" + "\", " +
+                "\"name\" : \"" + sample.getName() + "\", " +
+                "\"update\" : \"" + dateTimeFormatter.format(sample.getUpdate().atOffset(ZoneOffset.UTC)) + "\", " +
+                "\"release\" : \"" +dateTimeFormatter.format(sample.getRelease().atOffset(ZoneOffset.UTC)) + "\", " +
+                "\"domain\" : \"self.ExampleDomain\" " +
+                "}";
+
+
+        when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(sampleWithDomain);
+        when(sampleService.store(any(Sample.class))).thenReturn(sampleWithDomain);
+
+        this.mockMvc.perform(
+                post("/biosamples/samples/accession")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(sampleToSubmit)
+                        .header("Authorization", "Bearer $TOKEN"))
+                .andExpect(status().is4xxClientError())
+                .andDo(document("post-sample",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint())));
+    }
+
+    /**
+     * validation service to validate basic fields
+     */
+    @Test
+    public void post_for_validation() throws Exception {
+        Sample sample = this.faker.getExampleSample();
+        Sample sampleWithDomain = this.faker.getExampleSampleWithDomain();
+
+        String sampleToSubmit = "{ " +
+                "\"accession\" : \"" + "FakeAccession" + "\", " +
+                "\"name\" : \"" + sample.getName() + "\", " +
+                "\"update\" : \"" + dateTimeFormatter.format(sample.getUpdate().atOffset(ZoneOffset.UTC)) + "\", " +
+                "\"release\" : \"" +dateTimeFormatter.format(sample.getRelease().atOffset(ZoneOffset.UTC)) + "\", " +
+                "\"domain\" : \"self.ExampleDomain\" " +
+                "}";
+
+        this.mockMvc.perform(
+                post("/biosamples/samples/validate")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(sampleToSubmit)
+                        .header("Authorization", "Bearer $TOKEN"))
+                .andExpect(status().is2xxSuccessful())
+                .andDo(document("post-sample",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint())));
+    }
+
     @Test
     public void putSample() throws Exception {
 
