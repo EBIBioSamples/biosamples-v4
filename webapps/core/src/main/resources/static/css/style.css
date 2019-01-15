@@ -86,7 +86,7 @@ div#elixir-banner-info { color: white; }
 /* This means a span element within an element with class shield */
 .shield span { padding: 0.2rem 0.4rem; }
 .shield .shield__key { color: #444; margin: 0 0 0 2px; }
-.shield .shield__value { color: #f27e3f; margin: 0 2px 0 0; }
+.shield .shield__value { color: #f27e3f; margin: 0 2px 0 0; word-break: break-all; }
 
 /* DOCS */
 pre.nowrap {

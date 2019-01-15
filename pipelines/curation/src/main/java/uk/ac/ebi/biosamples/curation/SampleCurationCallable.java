@@ -210,7 +210,7 @@ public class SampleCurationCallable implements Callable<Void> {
     }
 
     private static boolean stringContainsItemFromList(String value, String[] items) {
-        return Arrays.stream(items).parallel().anyMatch(value::contains);
+        return Arrays.stream(items).parallel().anyMatch(value::equals);
     }
 
     public static boolean isNotApplicableSynonym(String string) {
