@@ -25,6 +25,8 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.*;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
@@ -200,6 +202,8 @@ public class ApiDocumentationTest {
     public void postToGenerateAccession() throws Exception {
         Sample sample = this.faker.getExampleSample();
         Sample sampleWithDomain = this.faker.getExampleSampleWithDomain();
+        Instant release = Instant.ofEpochSecond(LocalDateTime.now(ZoneOffset.UTC).plusYears(100).toEpochSecond(ZoneOffset.UTC));
+        Sample sampleWithUpdatedDate = Sample.Builder.fromSample(sampleWithDomain).withRelease(release).build();
 
         String sampleToSubmit = "{ " +
                 "\"name\" : \"" + sample.getName() + "\", " +
@@ -209,8 +213,8 @@ public class ApiDocumentationTest {
                 "}";
 
 
-        when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(sampleWithDomain);
-        when(sampleService.store(any(Sample.class))).thenReturn(sampleWithDomain);
+        when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(sampleWithUpdatedDate);
+        when(sampleService.store(any(Sample.class))).thenReturn(sampleWithUpdatedDate);
 
         this.mockMvc.perform(
                 post("/biosamples/samples/accession")
@@ -218,7 +222,7 @@ public class ApiDocumentationTest {
                         .content(sampleToSubmit)
                         .header("Authorization", "Bearer $TOKEN"))
                 .andExpect(status().is2xxSuccessful())
-                .andDo(document("post-sample",
+                .andDo(document("accession-sample",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint())));
     }
@@ -248,10 +252,7 @@ public class ApiDocumentationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(sampleToSubmit)
                         .header("Authorization", "Bearer $TOKEN"))
-                .andExpect(status().is4xxClientError())
-                .andDo(document("post-sample",
-                        preprocessRequest(prettyPrint()),
-                        preprocessResponse(prettyPrint())));
+                .andExpect(status().is4xxClientError());
     }
 
     /**
@@ -263,7 +264,6 @@ public class ApiDocumentationTest {
         Sample sampleWithDomain = this.faker.getExampleSampleWithDomain();
 
         String sampleToSubmit = "{ " +
-                "\"accession\" : \"" + "FakeAccession" + "\", " +
                 "\"name\" : \"" + sample.getName() + "\", " +
                 "\"update\" : \"" + dateTimeFormatter.format(sample.getUpdate().atOffset(ZoneOffset.UTC)) + "\", " +
                 "\"release\" : \"" +dateTimeFormatter.format(sample.getRelease().atOffset(ZoneOffset.UTC)) + "\", " +
@@ -276,7 +276,7 @@ public class ApiDocumentationTest {
                         .content(sampleToSubmit)
                         .header("Authorization", "Bearer $TOKEN"))
                 .andExpect(status().is2xxSuccessful())
-                .andDo(document("post-sample",
+                .andDo(document("validate-sample",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint())));
     }
