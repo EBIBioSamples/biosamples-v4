@@ -10,6 +10,12 @@
 
 .biosamples-card:hover * { color: white; }
 
+.biosamples-card-trailing {
+    text-align: center;
+    margin-top: -1em;
+    font-size: smaller;
+}
+
 div#elixir-banner-info { color: white; }
 
 .spinner-container {

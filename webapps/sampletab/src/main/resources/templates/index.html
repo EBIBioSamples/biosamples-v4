@@ -29,36 +29,45 @@
 				<h2>Web Services</h2>
 				<p>There are several services provided for programatically sending sample information to the <a href="/biosamples"></a>BioSamples Database</a>. These are: </p>
                 <div class="row biosamples-button-row">
-					<a th:href="@{/submission}" href="submission.html">
-						<div class="large-4 columns">
+					<div class="large-4 columns">
+					<a th:href="@{{baseUrl}/submit(baseUrl=${usiUrl})}" href="submission.html">
+						<div>
 							<div class="card biosamples-card">
 								<h3>Submission Service</h3>
 								<div class="card-section">
-									<p>For submitting SampleTab files</p>
+									<p>Submit through JSON API</p>
 								</div>
 							</div>
 						</div>
 					</a>
-					<a th:href="@{/accession}" href="accession">
-						<div class="large-4 columns">
+						<div class="biosamples-card-trailing"><a th:href="@{/submission}" href="submission.html">Submit SampleTab</a></div>
+					</div>
+					<div class="large-4 columns">
+					<a th:href="@{{baseUrl}/submit(baseUrl=${usiUrl})}" href="accession">
+						<div>
 							<div class="card biosamples-card">
 								<h3>Accessioning Service</h3>
 								<div class="card-section">
-									<p>For assigning accessions to samples and groups</p>
+									<p>Assign accessions through JSON API</p>
 								</div>
 							</div>
 						</div>
 					</a>
-					<a th:href="@{/validation}" href="validation">
-						<div class="large-4 columns">
+						<div class="biosamples-card-trailing"><a th:href="@{/accession}" href="submission.html">Accession SampleTab</a></div>
+					</div>
+					<div class="large-4 columns">
+					<a th:href="@{{baseUrl}/submit(baseUrl=${usiUrl})}" href="validation">
+						<div>
 							<div class="card biosamples-card">
 								<h3>Validation Service</h3>
 								<div class="card-section">
-									<p>For validating SampleTab files without submitting them</p>
+									<p>Validate without submitting through JSON API</p>
 								</div>
 							</div>
 						</div>
 					</a>
+						<div class="biosamples-card-trailing"><a th:href="@{/validation}" href="submission.html">Validate SampleTab</a></div>
+					</div>
 				</div>
 
 				<p>Please note that assigned accession will be immediately return, though they will not be immediately

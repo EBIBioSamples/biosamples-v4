@@ -20,6 +20,11 @@ public class SubmissionServicesController {
         model.addAttribute("coreUrl", bioSamplesProperties.getBiosamplesWebappCoreUri());
     }
 
+    @ModelAttribute
+    public void addUsiLink(Model model) {
+        model.addAttribute("usiUrl", bioSamplesProperties.getUsiCoreUri());
+    }
+
     @RequestMapping("/")
     public String index(){
         return "index";
@@ -34,6 +39,7 @@ public class SubmissionServicesController {
     public String validationService() {
         return "validation";
     }
+
     @RequestMapping("/accession")
     public String accessionService() {
         return "accession";

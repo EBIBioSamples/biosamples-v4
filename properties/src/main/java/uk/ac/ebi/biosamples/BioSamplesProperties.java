@@ -68,6 +68,9 @@ public class BioSamplesProperties {
 	@Value("${biosamples.webapp.core.uri:http://localhost:8081/biosamples}")
 	private URI biosamplesWebappCoreUri;
 
+	@Value("${biosamples.usi.core.uri:http://localhost:8081/biosamples/docs/references/api}")
+	private URI usiCoreUri;
+
 	@Value("${biosamples.webapp.core.page.threadcount:64}")
 	private int webappCorePageThreadCount;
 
@@ -163,6 +166,10 @@ public class BioSamplesProperties {
 
 	public URI getBiosamplesWebappSampletabUri() {
 		return biosamplesWebappSampletabUri;
+	}
+
+	public URI getUsiCoreUri() {
+		return usiCoreUri;
 	}
 
 	public URI getBiosamplesSchemaValidatorServiceUri() {
