@@ -34,9 +34,7 @@ public class SampleValidator {
 		if (sampleAsMap.get("release") == null) {
 			errors.add("Must provide release date in format YYYY-MM-DDTHH:MM:SS");
 		}
-		if (sampleAsMap.get("update") == null) {
-			errors.add("Must provide update date in format YYYY-MM-DDTHH:MM:SS");
-		}
+
 		if (sampleAsMap.get("name") == null) {
 			errors.add("Must provide name");
 		}
@@ -57,9 +55,7 @@ public class SampleValidator {
 		if (sample.getRelease() == null) {
 			errors.add("Must provide release date in format YYYY-MM-DDTHH:MM:SS");
 		}
-		if (sample.getUpdate() == null) {
-			errors.add("Must provide update date in format YYYY-MM-DDTHH:MM:SS");
-		}
+
 		if (sample.getName() == null) {
 			errors.add("Must provide name");
 		}
