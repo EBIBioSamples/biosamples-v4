@@ -6,6 +6,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -75,6 +76,9 @@ public class ApiDocumentationTest {
     @MockBean
     private BioSamplesAapService aapService;
 
+    @MockBean
+    private Logger log;
+
     private DocumentationHelper faker;
 
     private MockMvc mockMvc;
@@ -136,6 +140,11 @@ public class ApiDocumentationTest {
     @Test
     public void postSampleMinimalInfo() throws Exception {
         String wrongSampleSerialized = "{\"name\": \"Sample without minimum information\" }";
+        Sample wrongSample = Sample.build("Sample without minimum information", null, null, null, null, null, null, null);
+
+        when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(wrongSample);
+        when(sampleService.store(wrongSample)).thenCallRealMethod();
+
 
         this.mockMvc.perform(
                 post("/biosamples/samples")

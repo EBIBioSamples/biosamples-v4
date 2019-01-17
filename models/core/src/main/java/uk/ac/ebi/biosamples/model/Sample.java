@@ -384,12 +384,12 @@ public class Sample implements Comparable<Sample> {
 			sample.domain = domain.trim();
 		}
 
-		if (update == null ) throw new IllegalArgumentException("Sample update must be provided");
-		sample.update = update;
+        //Instead of validation failure, if null set it to now
+        sample.update = update == null ? Instant.now() : update;
 
 //		if (release == null ) throw new IllegalArgumentException("Sample release must be provided");
-//		sample.release = release;
-		sample.release = release == null ? Instant.now() : release;
+        //Validation moved to a later stage, to capture the error (SampleService.store())
+		sample.release = release;
 
         sample.attributes = new TreeSet<>();
         if (attributes != null) {
