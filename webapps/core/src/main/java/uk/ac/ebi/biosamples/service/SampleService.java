@@ -30,7 +30,7 @@ import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
 @Service
 public class SampleService {
 
-	private Logger log = LoggerFactory.getLogger(getClass());
+	private static Logger log = LoggerFactory.getLogger(SampleService.class);
 	
 	//TODO use constructor injection
 	
