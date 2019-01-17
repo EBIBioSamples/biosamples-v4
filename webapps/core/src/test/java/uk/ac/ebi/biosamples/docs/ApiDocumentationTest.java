@@ -76,9 +76,6 @@ public class ApiDocumentationTest {
     @MockBean
     private BioSamplesAapService aapService;
 
-    @MockBean
-    private Logger log;
-
     private DocumentationHelper faker;
 
     private MockMvc mockMvc;
