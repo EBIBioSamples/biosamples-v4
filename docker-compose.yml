@@ -4,7 +4,7 @@ services:
   biosamples-webapps-core:
     build: .
     image: biosamples:latest
-    mem_limit: 1500m
+    mem_limit: 1g
     links:
     - solr
     - mongo
@@ -368,7 +368,7 @@ services:
 
   mongo:
     image: mongo:3.2
-    mem_limit: 1g
+    mem_limit: 2g
     volumes:
     - mongo_data:/data/db
     - ./docker/mongoarchive:/mongoarchive
@@ -387,7 +387,7 @@ services:
 
   solr:
     image: solr:6.6-alpine
-    mem_limit: 1500m
+    mem_limit: 1g
     ports:
     - 8983:8983
     volumes:
