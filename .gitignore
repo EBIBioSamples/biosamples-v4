@@ -100,3 +100,4 @@ create_new_facets_and_filters.md
 /pipelines/ncbi/ncbi-export-with-dbGap-sample.json
 /pipelines/ncbi/ncbi-export-no-dbGap-sample.json
 /pipelines/ncbi/ncbi-import.json
+/ncbi.xml.small.gz
