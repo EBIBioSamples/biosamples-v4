@@ -52,6 +52,7 @@ public class LiveListRunner implements ApplicationRunner {
                     if (Instant.now().isAfter(sample.getRelease())) {
                         liveListWriter.write(LiveListUtils.createLiveListString(sample));
                         liveListWriter.write("\n");
+                        liveListWriter.flush();
                         sampleCount++;
                     }
                     if (sampleCount % 10000 == 0) {
