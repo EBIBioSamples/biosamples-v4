@@ -1,0 +1,64 @@
+<BioSampleSet>
+    <BioSample access="controlled-access" publication_date="2012-09-22T03:37:30.820"
+               last_update="2012-09-22T03:37:30.820" submission_date="2012-09-22T03:37:30.820" id="1553882"
+               accession="SAMN01553882">
+        <Ids>
+            <Id db="BioSample" is_primary="1">SAMN01553882</Id>
+            <Id db="dbGaP" db_label="Sample name" is_hidden="1">149-5495</Id>
+        </Ids>
+        <Description>
+            <Title>DNA sample from a human female participant in the dbGaP study "Framingham SHARe Medications Data"
+            </Title>
+            <Organism taxonomy_id="9606" taxonomy_name="Homo sapiens"/>
+        </Description>
+        <Owner>
+            <Name abbreviation="NCBI"/>
+        </Owner>
+        <Models>
+            <Model>Generic</Model>
+        </Models>
+        <Package display_name="Generic">Generic.1.0</Package>
+        <Attributes>
+            <Attribute attribute_name="gap_accession" harmonized_name="gap_accession" display_name="gap accession">
+                phs000149
+            </Attribute>
+            <Attribute attribute_name="submitter handle" harmonized_name="submitter_handle"
+                       display_name="submitter handle">Framingham_SHARe
+            </Attribute>
+            <Attribute attribute_name="biospecimen repository" harmonized_name="biospecimen_repository"
+                       display_name="biospecimen repository">Framingham_SHARe
+            </Attribute>
+            <Attribute attribute_name="study name" harmonized_name="study_name" display_name="study name">Framingham
+                SHARe Medications Data
+            </Attribute>
+            <Attribute attribute_name="biospecimen repository sample id"
+                       harmonized_name="biospecimen_repository_sample_id"
+                       display_name="biospecimen repository sample id">5495
+            </Attribute>
+            <Attribute attribute_name="submitted sample id" harmonized_name="submitted_sample_id"
+                       display_name="submitted sample id">5495
+            </Attribute>
+            <Attribute attribute_name="submitted subject id" harmonized_name="submitted_subject_id"
+                       display_name="submitted subject id">5495
+            </Attribute>
+            <Attribute attribute_name="gap_sample_id" harmonized_name="gap_sample_id" display_name="gap sample id">
+                107165
+            </Attribute>
+            <Attribute attribute_name="gap_subject_id" harmonized_name="gap_subject_id" display_name="gap subject id">
+                19816
+            </Attribute>
+            <Attribute attribute_name="sex" harmonized_name="sex" display_name="sex">female</Attribute>
+            <Attribute attribute_name="analyte type" harmonized_name="analyte_type" display_name="analyte type">DNA
+            </Attribute>
+            <Attribute attribute_name="subject is affected" harmonized_name="subject_is_affected"
+                       display_name="subject is affected"></Attribute>
+            <Attribute attribute_name="gap_consent_code" harmonized_name="gap_consent_code"
+                       display_name="gap consent code">1
+            </Attribute>
+            <Attribute attribute_name="gap_consent_short_name" harmonized_name="gap_consent_short_name"
+                       display_name="gap consent short name">GRU
+            </Attribute>
+        </Attributes>
+        <Status status="suppressed" when="2012-09-22T03:37:30.820"/>
+    </BioSample>
+</BioSampleSet>

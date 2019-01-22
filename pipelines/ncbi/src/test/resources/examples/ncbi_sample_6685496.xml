@@ -1,0 +1,67 @@
+<BioSampleSet>
+    <BioSample access="controlled-access" publication_date="2017-04-04T15:45:31.480"
+               last_update="2018-04-11T11:02:39.663" submission_date="2017-04-04T15:45:31.480" id="6685496"
+               accession="SAMN06685496">
+        <Ids>
+            <Id db="BioSample" is_primary="1">SAMN06685496</Id>
+            <Id db="dbGaP" db_label="Sample name" is_hidden="1">1272-180CJ_DP_1</Id>
+            <Id db="SRA">SRS2200634</Id>
+        </Ids>
+        <Description>
+            <Title>DNA sample from a human male participant in the dbGaP study "Broad Institute Center for Mendelian
+                Genomics"
+            </Title>
+            <Organism taxonomy_id="9606" taxonomy_name="Homo sapiens"/>
+        </Description>
+        <Owner>
+            <Name abbreviation="NCBI"/>
+        </Owner>
+        <Models>
+            <Model>Generic</Model>
+        </Models>
+        <Package display_name="Generic">Generic.1.0</Package>
+        <Attributes>
+            <Attribute attribute_name="gap_accession" harmonized_name="gap_accession" display_name="gap accession">
+                phs001272
+            </Attribute>
+            <Attribute attribute_name="submitter handle" harmonized_name="submitter_handle"
+                       display_name="submitter handle">NHGRI Broad CMG
+            </Attribute>
+            <Attribute attribute_name="biospecimen repository" harmonized_name="biospecimen_repository"
+                       display_name="biospecimen repository">NHGRI Broad CMG
+            </Attribute>
+            <Attribute attribute_name="study name" harmonized_name="study_name" display_name="study name">Broad
+                Institute Center for Mendelian Genomics
+            </Attribute>
+            <Attribute attribute_name="study design" harmonized_name="study_design" display_name="study design">
+                Family/Twin/Trios
+            </Attribute>
+            <Attribute attribute_name="biospecimen repository sample id"
+                       harmonized_name="biospecimen_repository_sample_id"
+                       display_name="biospecimen repository sample id">180CJ_DP_1
+            </Attribute>
+            <Attribute attribute_name="submitted sample id" harmonized_name="submitted_sample_id"
+                       display_name="submitted sample id">180CJ_DP_1
+            </Attribute>
+            <Attribute attribute_name="submitted subject id" harmonized_name="submitted_subject_id"
+                       display_name="submitted subject id">180CJ_DP
+            </Attribute>
+            <Attribute attribute_name="gap_sample_id" harmonized_name="gap_sample_id" display_name="gap sample id">
+                2388872
+            </Attribute>
+            <Attribute attribute_name="gap_subject_id" harmonized_name="gap_subject_id" display_name="gap subject id">
+                2003674
+            </Attribute>
+            <Attribute attribute_name="sex" harmonized_name="sex" display_name="sex">male</Attribute>
+            <Attribute attribute_name="study disease" harmonized_name="study_disease" display_name="study disease">
+                Genetic Diseases, Inborn
+            </Attribute>
+            <Attribute attribute_name="analyte type" harmonized_name="analyte_type" display_name="analyte type">DNA
+            </Attribute>
+            <Attribute attribute_name="subject is affected" harmonized_name="subject_is_affected"
+                       display_name="subject is affected">Yes
+            </Attribute>
+        </Attributes>
+        <Status status="live" when="2018-04-11T10:57:20"/>
+    </BioSample>
+</BioSampleSet>

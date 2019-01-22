@@ -4,6 +4,15 @@
 This pages contains links to release notes for BioSamples for version 4.0.0 and higher. This release represents a comprehensive overhaul and therefore previous release notes are no longer applicable.
 
 [[section]]
+4.1.11
+----
+* Added support for suppressed samples to enable dbGap data loading
+* Fix confusion between supressed and private samples in dbGap data
+* Livelist file: adding flush to make sure file is written
+* Add validation and accessioning service
+* Fix SampleTab template download link
+
+[[section]]
 4.1.10
 ----
 * Remove the holiday message

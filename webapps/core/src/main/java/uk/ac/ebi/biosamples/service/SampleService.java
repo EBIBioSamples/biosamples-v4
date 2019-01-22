@@ -1,8 +1,6 @@
 package uk.ac.ebi.biosamples.service;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +30,7 @@ import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
 @Service
 public class SampleService {
 
-	private Logger log = LoggerFactory.getLogger(getClass());
+	private static Logger log = LoggerFactory.getLogger(SampleService.class);
 	
 	//TODO use constructor injection
 	
@@ -112,6 +110,18 @@ public class SampleService {
 		//return the sample in case we have modified it i.e accessioned
 		//do a fetch to return it with curation objects and inverse relationships
 		return fetch(sample.getAccession(), Optional.empty()).get();
+	}
+
+	public void validateSample(Map sampleAsMap) {
+		List<String> errors = sampleValidator.validate(sampleAsMap);
+		StringBuilder sb = new StringBuilder();
+		if (errors.size() > 0) {
+			for (String error : errors) {
+				sb.append(error).append("; ");
+			}
+
+			throw new SampleValidationException(sb.toString());
+		}
 	}
 
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
