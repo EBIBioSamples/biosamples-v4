@@ -4,6 +4,7 @@ services:
   biosamples-webapps-core:
     build: .
     image: biosamples:latest
+    mem_limit: 1g
     links:
     - solr
     - mongo
@@ -60,6 +61,7 @@ services:
 
   biosamples-webapps-sampletab:
     image: biosamples:latest
+    mem_limit: 500m
     links:
     - biosamples-webapps-core
     volumes:
@@ -100,6 +102,7 @@ services:
 
   biosamples-webapps-legacyxml:
     image: biosamples:latest
+    mem_limit: 500m
     links:
     - biosamples-webapps-core
     volumes:
@@ -128,6 +131,7 @@ services:
 
   biosamples-webapps-legacyjson:
     image: biosamples:latest
+    mem_limit: 500m
     links:
     - biosamples-webapps-core
     volumes:
@@ -156,6 +160,7 @@ services:
 
   biosamples-agents-solr:
     image: biosamples:latest
+    mem_limit: 500m
     links:
     - solr
     - rabbitmq
@@ -181,6 +186,7 @@ services:
 
   biosamples-pipelines-ena:
     image: biosamples:latest
+    mem_limit: 500m
     volumes:
     - logs:/logs
     links:
@@ -195,6 +201,7 @@ services:
 
   biosamples-pipelines-ncbi:
     image: biosamples:latest
+    mem_limit: 500m
     volumes:
     - logs:/logs
     links:
@@ -209,6 +216,7 @@ services:
 
   biosamples-pipelines-accession:
     image: biosamples:latest
+    mem_limit: 500m
     volumes:
     - logs:/logs
     links:
@@ -223,6 +231,7 @@ services:
 
   biosamples-pipelines-sampletab:
     image: biosamples:latest
+    mem_limit: 500m
     volumes:
     - logs:/logs
     links:
@@ -237,6 +246,7 @@ services:
 
   biosamples-pipelines-copydown:
     image: biosamples:latest
+    mem_limit: 500m
     volumes:
     - logs:/logs
     links:
@@ -253,6 +263,7 @@ services:
     volumes:
     - logs:/logs
     image: biosamples:latest
+    mem_limit: 500m
     links:
     - biosamples-webapps-core
     command:
@@ -269,6 +280,7 @@ services:
     volumes:
     - logs:/logs
     image: biosamples:latest
+    mem_limit: 500m
     links:
     - biosamples-webapps-core
     command:
@@ -285,6 +297,7 @@ services:
     volumes:
     - logs:/logs
     image: biosamples:latest
+    mem_limit: 500m
     links:
     - biosamples-webapps-core
     command:
@@ -302,6 +315,7 @@ services:
     - logs:/logs
     - ./docker/export:/export
     image: biosamples:latest
+    mem_limit: 500m
     links:
     - biosamples-webapps-core
     command:
@@ -318,6 +332,7 @@ services:
     volumes:
     - logs:/logs
     image: biosamples:latest
+    mem_limit: 500m
     links:
     - biosamples-webapps-core
     - biosamples-webapps-sampletab
@@ -345,6 +360,7 @@ services:
     - logs:/logs
     build: ./json-schema-validator
     image: json-schema-validator:latest
+    mem_limit: 250m
     links:
     - biosamples-webapps-core
     ports:
@@ -352,6 +368,7 @@ services:
 
   mongo:
     image: mongo:3.2
+    mem_limit: 2g
     volumes:
     - mongo_data:/data/db
     - ./docker/mongoarchive:/mongoarchive
@@ -360,6 +377,7 @@ services:
 
   rabbitmq:
     image: rabbitmq:3.6-management-alpine
+    mem_limit: 1g
     hostname: biosamples-rabbitmq
     ports:
     - 5672:5672
@@ -369,13 +387,14 @@ services:
 
   solr:
     image: solr:6.6-alpine
+    mem_limit: 1g
     ports:
     - 8983:8983
     volumes:
     - solr_data:/opt/solr/server/solr/mycores
     environment:
     - VERBOSE=yes
-    - SOLR_HEAP=2g
+    - SOLR_HEAP=1g
     entrypoint:
     - docker-entrypoint.sh
     - solr-precreate

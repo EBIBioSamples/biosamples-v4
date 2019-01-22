@@ -85,7 +85,7 @@ public class MessageHandlerSolr {
             if (attribute.getType().equals("INSDC status")) {
                 List<String> publicStatuses = Arrays.asList("public", "live");
                 if (!publicStatuses.contains(attribute.getValue())) {
-                    LOGGER.info(String.format("not indexing %s as INSDC status is not public", sample.getAccession()));
+                    LOGGER.info(String.format("not indexing %s as INSDC status is %s", sample.getAccession(), attribute.getValue()));
                     return false;
                 }
             }

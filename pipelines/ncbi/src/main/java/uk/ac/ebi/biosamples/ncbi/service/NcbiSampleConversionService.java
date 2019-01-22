@@ -190,10 +190,11 @@ public class NcbiSampleConversionService {
         if (XmlPathBuilder.of(sampleElem).path("Status").attributeExists("status")) {
             String status = XmlPathBuilder.of(sampleElem).path("Status").attribute("status").trim();
             attrs.add(Attribute.build("INSDC status", status));
-            if (!"live".equals(status.toLowerCase())) {
-                //not a live sample, hide
+            List<String> nonHiddenStatuses = Arrays.asList("live", "suppressed");
+            if (!nonHiddenStatuses.contains(status.toLowerCase())) {
+                //not a live or suppressed sample, hide
                 publicationDate = publicationDate.atZone(ZoneOffset.UTC).plus(1000, ChronoUnit.YEARS).toInstant();
-            }
+        }
         }
 
         //handle amr data
