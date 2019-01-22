@@ -28,7 +28,7 @@ SampleTab files are composed of two sections - <<MSI,MSI section>> and <<SCD, SC
 If you need to submit a new SampleTab file from scratch, download a SampleTab empty template from here
 and follow the instructions on how to fill the various sections of the document
 
-link:/biosamples/sampletab/template.tsv[Download the SampleTab template file, opts=download]
+link:/biosamples/download/sampletab.tsv[Download the SampleTab template file, opts=download]
 
 [#MSI]
 == MSI file section

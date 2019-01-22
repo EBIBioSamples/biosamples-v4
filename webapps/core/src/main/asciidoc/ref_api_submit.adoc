@@ -85,3 +85,29 @@ include::{snippets}/post-curation/http-response.adoc[]
 === Links
 For all the links available in BioSamples check the link:../api/links[Links Reference]
 
+
+== Accession a sample
+`POST` a sample for accessioning. Accessioned sample is saved as a private sample.
+
+=== Request
+include::{snippets}/accession-sample/http-request.adoc[]
+
+=== Response
+include::{snippets}/accession-sample/http-response.adoc[]
+
+=== Links
+For all the links available in BioSamples check the link:../api/links[Links Reference]
+
+
+== Validate sample fields
+`POST` a sample to validate its basic fields before submission.
+
+=== Request
+include::{snippets}/validate-sample/http-request.adoc[]
+
+=== Response
+include::{snippets}/validate-sample/http-response.adoc[]
+
+=== Links
+For all the links available in BioSamples check the link:../api/links[Links Reference]
+
