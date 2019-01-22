@@ -25,7 +25,7 @@ public class SampleCurationCallable implements Callable<Void> {
 
     public static final String[] NON_APPLICABLE_SYNONYMS = {"n/a", "na", "n.a", "none",
             "unknown", "--", ".", "null", "missing", "[not reported]",
-            "[not requested]", "not applicable", "not_applicable", "not collected", "not specified", "not known", "not reported"};
+            "[not requested]", "not applicable", "not_applicable", "not collected", "not specified", "not known", "not reported", "missing: not provided"};
 
     public static final ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<String>();
 
