@@ -27,8 +27,11 @@ import uk.ac.ebi.biosamples.utils.LinkUtils;
 
 import java.net.URI;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -269,6 +272,34 @@ public class SamplesRestController {
 		return new Link(builder.toUriString(), rel);
 	}
 
+	@PostMapping({ MediaType.APPLICATION_JSON_VALUE })
+	@RequestMapping("/validate")
+	public ResponseEntity<Map> validateSample(@RequestBody Map sampleAsMap) {
+		sampleService.validateSample(sampleAsMap);
+		return ResponseEntity.ok(sampleAsMap);
+	}
+
+	@PreAuthorize("isAuthenticated()")
+	@PostMapping(consumes = { MediaType.APPLICATION_JSON_VALUE })
+	@RequestMapping("/accession")
+	public ResponseEntity<Resource<Sample>> accessionSample(@RequestBody Sample sample) {
+		log.debug("Received POST for accessioning " + sample);
+		if (sample.hasAccession()) {
+			throw new SampleWithAccessionSumbissionException();
+		}
+		sample = bioSamplesAapService.handleSampleDomain(sample);
+
+		Instant release = Instant.ofEpochSecond(LocalDateTime.now(ZoneOffset.UTC).plusYears(100).toEpochSecond(ZoneOffset.UTC));
+		Instant update = sample.getUpdate();
+		if (update == null) {
+			update = Instant.now();
+		}
+		sample = Sample.Builder.fromSample(sample).withRelease(release).withUpdate(update).build();
+
+		sample = sampleService.store(sample);
+		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
+		return ResponseEntity.created(URI.create(sampleResource.getLink("self").getHref())).body(sampleResource);
+	}
 
 
 	@PreAuthorize("isAuthenticated()")

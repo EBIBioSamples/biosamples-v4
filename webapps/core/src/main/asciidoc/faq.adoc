@@ -4,6 +4,10 @@
 
 If you cannot find the answer to your question in this FAQ or the link:../docs[help pages] then please email us at biosamples@ebi.ac.uk.
 
+== How to cite BioSamples? ==
+Please use Mélanie Courtot, Luca Cherubin, Adam Faulconbridge, Daniel Vaughan, Matthew Green, David Richardson, Peter Harrison, Patricia L Whetzel, Helen Parkinson, Tony Burdett; BioSamples database: an updated sample metadata hub, Nucleic Acids Research, Volume 47, Issue D1, 8 January 2019, Pages D1172–D1178, https://doi.org/10.1093/nar/gky1061[https://doi.org/10.1093/nar/gky1061]
+
+
 == How frequent are updates to BioSamples' data?
 BioSamples content is updated daily. Information directly submitted or updated in a source should be reflected within 48 hours. However, occasionally daily updates may be missed due to unexpected circumstances.
 

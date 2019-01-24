@@ -52,6 +52,14 @@ div#elixir-banner-info { color: white; }
     animation-delay: -0.8s;
 }
 
+.warning-msg {
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 3px 3px 3px 3px;
+    color: #9F6000;
+    background-color: #FEEFB3;
+}
+
 @-webkit-keyframes sk-stretchdelay {
     0%, 40%, 100% { -webkit-transform: scaleY(0.4) }
     20% { -webkit-transform: scaleY(1.0) }
