@@ -10,7 +10,7 @@ import uk.ac.ebi.biosamples.client.BioSamplesClient;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-//@ActiveProfiles("test")
+@ActiveProfiles("test")
 public class CertificationCallableTest {
 
     @Test

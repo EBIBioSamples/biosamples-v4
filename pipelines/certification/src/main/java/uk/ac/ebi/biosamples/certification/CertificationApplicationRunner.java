@@ -2,9 +2,9 @@ package uk.ac.ebi.biosamples.certification;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -19,6 +19,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
 @Component
+@Profile("!test")
 public class CertificationApplicationRunner implements ApplicationRunner {
 
     private Logger log = LoggerFactory.getLogger(getClass());
@@ -39,9 +40,11 @@ public class CertificationApplicationRunner implements ApplicationRunner {
             Map<String, Future<Void>> futures = new HashMap<>();
             long samplesQueued = 0;
             long startTime = System.currentTimeMillis();
+            long limit = 1L;
             try {
                 for (Resource<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll("", Collections.emptyList())) {
-                    Sample sample = sampleResource.getContent();samplesQueued++;
+                    Sample sample = sampleResource.getContent();
+                    samplesQueued++;
                     boolean canary = (samplesQueued % 1000 == 0);
                     Callable<Void> task = new CertificationCallable(restTemplate, sample);
                     futures.put(sample.getAccession(), executorService.submit(task));
@@ -49,6 +52,9 @@ public class CertificationApplicationRunner implements ApplicationRunner {
                         long endTime = System.currentTimeMillis();
                         long duration = (endTime - startTime);
                         log.info("PROCESSED: samples:" + samplesQueued + " rate: " + samplesQueued / ((duration / 1000) + 1) + " samples per second");
+                    }
+                    if (samplesQueued >= limit) {
+                        break;
                     }
                 }
             } catch (IllegalStateException e) {
