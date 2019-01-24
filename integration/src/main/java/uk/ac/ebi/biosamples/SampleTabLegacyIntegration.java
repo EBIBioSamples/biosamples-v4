@@ -298,58 +298,6 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 				.filter(accession -> !accession.startsWith("SAMEG"))
 				.collect(Collectors.toList());
 
-//		log.info("Testing SampleTab JSON re-accession unaccessioned");
-//		runCallableOnSampleTabResource("/GSB-new.json", sampleTabString -> {
-//			log.info("POSTing to " + uriAc);
-//			RequestEntity<String> request = RequestEntity.post(uriAc).contentType(MediaType.APPLICATION_JSON)
-//					.body(sampleTabString);
-//			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
-//			log.info(""+response.getBody());
-//
-//			for(String acc: submissionAccessions) {
-//				if (!response.getBody().contains(acc)) {
-//					throw new RuntimeException("Response for accession service does not have expected accession " + acc);
-//				}
-//			}
-//		});
-//
-//		log.info("Testing SampleTab JSON submission unaccessioned");
-//		runCallableOnSampleTabResource("/GSB-new.json", sampleTabString -> {
-//			log.info("POSTing to " + uriSb);
-//			RequestEntity<String> request = RequestEntity.post(uriSb).contentType(MediaType.APPLICATION_JSON)
-//					.body(sampleTabString);
-//			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
-//			log.info(""+response.getBody());
-//
-//			for(String acc: submissionAccessions) {
-//				if (!response.getBody().contains(acc)) {
-//					throw new RuntimeException("Response for submission service does not have expected accession " + acc);
-//				}
-//			}
-//		});
-
-		log.info("Testing SampleTab accession unaccessioned");
-		runCallableOnSampleTabFile("/GSB-32_unaccession.txt", sampletabFile -> {
-
-			ResponseEntity<String> response = accessionSampletabFile(sampletabFile);
-			log.info(""+response.getBody());
-
-			if (!response.getBody().contains("SAMEA2186845")) {
-				throw new RuntimeException("Response does not have expected accession SAMEA2186845");
-			}
-
-		});
-
-		log.info("Testing SampleTab JSON submission unaccessioned");
-		runCallableOnSampleTabFile("/GSB-32_unaccession.txt", sampletabFile -> {
-
-		    ResponseEntity<String> response = submitSampletabFile(sampletabFile);
-			log.info(""+response.getBody());
-
-			if (!response.getBody().contains("SAMEA2186845")) {
-				throw new RuntimeException("Response does not have expected accession SAMEA2186845");
-			}
-		});
 	}
 
 	@Override
@@ -459,32 +407,6 @@ public class SampleTabLegacyIntegration extends AbstractIntegration {
 
 	@Override
 	protected void phaseFour() {
-		// Find Sample
-//		Filter nameFilter = FilterBuilder.create().onName("JJSample").build();
-//		PagedResources<Resource<Sample>> samplePage = client.fetchPagedSampleResource("*:*",
-//				Collections.singleton(nameFilter), 0, 1);
-//		assert samplePage.getMetadata().getTotalElements() == 1;
-//
-//		Sample jjSample = samplePage.getContent().iterator().next().getContent();
-		//TODO do this better
-//		assertThat(jjSample.getContacts(), hasSize(2));
-//		assertThat(jjSample.getOrganizations(), hasSize(2));
-//		assertThat(jjSample.getPublications(), hasSize(2));
-//
-//		assertThat(jjSample.getPublications().first().getPubMedId(), notNullValue());
-
-		// Find Group
-//		nameFilter  = FilterBuilder.create().onName("JJGroup").build();
-//		samplePage = client.fetchPagedSampleResource("*:*",
-//				Collections.singleton(nameFilter), 0, 1);
-//		assert samplePage.getMetadata().getTotalElements() == 1;
-//
-//		Sample jjGroup = samplePage.getContent().iterator().next().getContent();
-//		assertThat(jjGroup.getContacts(), hasSize(2));
-//		assertThat(jjGroup.getOrganizations(), hasSize(2));
-//		assertThat(jjGroup.getPublications(), hasSize(2));
-//
-//		assertThat(jjGroup.getPublications().first().getPubMedId(), notNullValue());
 
 		verify_external_references_was_picked_up_from_sampletab();
 

@@ -4,10 +4,10 @@
 
 	<groupId>uk.ac.ebi.biosamples</groupId>
 	<artifactId>biosamples-spring-boot-starter</artifactId>
-	<version>4.1.7-SNAPSHOT</version>
+	<version>4.1.10</version>
 
 	<packaging>jar</packaging>
-	
+
 	<properties>
 	    <maven.compiler.source>1.7</maven.compiler.source>
 	    <maven.compiler.target>1.7</maven.compiler.target>
@@ -17,7 +17,7 @@
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>client</artifactId>
-			<version>4.1.7-SNAPSHOT</version>
+			<version>4.1.10</version>
 		</dependency>
 
 		<dependency>

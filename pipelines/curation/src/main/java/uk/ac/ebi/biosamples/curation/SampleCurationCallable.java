@@ -25,7 +25,7 @@ public class SampleCurationCallable implements Callable<Void> {
 
     public static final String[] NON_APPLICABLE_SYNONYMS = {"n/a", "na", "n.a", "none",
             "unknown", "--", ".", "null", "missing", "[not reported]",
-            "[not requested]", "not applicable", "not_applicable", "not collected", "not specified", "not known", "not reported"};
+            "[not requested]", "not applicable", "not_applicable", "not collected", "not specified", "not known", "not reported", "missing: not provided"};
 
     public static final ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<String>();
 
@@ -210,7 +210,7 @@ public class SampleCurationCallable implements Callable<Void> {
     }
 
     private static boolean stringContainsItemFromList(String value, String[] items) {
-        return Arrays.stream(items).parallel().anyMatch(value::contains);
+        return Arrays.stream(items).parallel().anyMatch(value::equals);
     }
 
     public static boolean isNotApplicableSynonym(String string) {

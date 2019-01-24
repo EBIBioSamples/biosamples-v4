@@ -4,6 +4,38 @@
 This pages contains links to release notes for BioSamples for version 4.0.0 and higher. This release represents a comprehensive overhaul and therefore previous release notes are no longer applicable.
 
 [[section]]
+4.1.10
+----
+* Remove the holiday message
+* Fix submit tab link in error pages
+
+
+[[section]]
+4.1.9
+----
+* Added a Curation Undo Pipeline to allow for removal of erroneous curations.
+* Fix an issue where long attributes break the sample box UI.
+
+
+[[section]]
+4.1.8
+----
+* Corrected error in curation pipeline which caused sample characteristics to be removed erroneously
+* Added holiday message
+
+
+[[section]]
+4.1.7
+----
+* Added libraries to enable applications to use Graylog to allow configuration of aggregated logging
+* Switched to the AAP explore environment at https://explore.api.aai.ebi.ac.uk
+* Updated the default AAP URL used by the BioSamples client
+* Included sampletab template file in the sampletab documentation
+* Included ETAG and Curation Object recipes to the BioSamples cookbook
+* Removed name and API key lookup functionality from SampleTab process
+
+
+[[section]]
 4.1.6
 ----
 

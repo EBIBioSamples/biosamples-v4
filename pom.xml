@@ -4,7 +4,7 @@
 
 	<groupId>uk.ac.ebi.biosamples</groupId>
 	<artifactId>biosamples</artifactId>
-	<version>4.1.7-SNAPSHOT</version>
+	<version>4.1.11-SNAPSHOT</version>
 
 
 	<packaging>pom</packaging>
@@ -16,7 +16,6 @@
 	</parent>
 
 	<properties>
-		<bsd2017.version>4.1.7-SNAPSHOT</bsd2017.version>
 		<java.version>1.8</java.version>
 		<thymeleaf.version>3.0.2.RELEASE</thymeleaf.version>
 		<thymeleaf-layout-dialect.version>2.1.2</thymeleaf-layout-dialect.version>
@@ -48,6 +47,10 @@
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
@@ -62,11 +65,10 @@
 			<artifactId>cglib</artifactId>
 			<version>2.2.2</version>
 		</dependency>
-
 		<dependency>
-			<groupId>jaxen</groupId>
-			<artifactId>jaxen</artifactId>
-			<version>1.1.6</version>
+			<groupId>de.siegmar</groupId>
+			<artifactId>logback-gelf</artifactId>
+			<version>1.1.0</version>
 		</dependency>
 	</dependencies>
 
@@ -81,7 +83,7 @@
 	</dependencyManagement>
 
 
-	<repositories>	
+	<repositories>
 		<!-- needed to EBI TSC AAP -->
 		<repository>
 			<id>ossrh</id>
@@ -139,14 +141,6 @@
 	</pluginRepositories>
 
 	<distributionManagement>
-		<!-- <repository>
-			<id>ossrh</id>
-			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-		</repository>
-		<snapshotRepository>
-			<id>ossrh</id>
-			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
-		</snapshotRepository> -->
 		<repository>
 			<id>spotnexus</id>
 			<url>https://www.ebi.ac.uk/spot/nexus/repository/maven-releases/</url>
@@ -166,17 +160,13 @@
 					<compilerArgument>-parameters</compilerArgument>
 				</configuration>
 			</plugin>
-			<!-- <plugin>
-				<groupId>org.sonatype.plugins</groupId>
-				<artifactId>nexus-staging-maven-plugin</artifactId>
-				<version>1.6.7</version>
-				<extensions>true</extensions>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
 				<configuration>
-					<serverId>ossrh</serverId>
-					<nexusUrl>https://oss.sonatype.org/</nexusUrl>
-					<autoReleaseAfterClose>true</autoReleaseAfterClose>
+					<ignoreNonCompile>true</ignoreNonCompile>
 				</configuration>
-			</plugin> -->
+			</plugin>
 			<plugin>
 				<groupId>pl.project13.maven</groupId>
 				<artifactId>git-commit-id-plugin</artifactId>

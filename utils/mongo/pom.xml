@@ -8,25 +8,25 @@
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>4.1.7-SNAPSHOT</version>
+		<version>4.1.10</version>
 		<relativePath>../../</relativePath>
 	</parent>
 
 	<dependencies>
 		<dependency>
-			<groupId>uk.ac.ebi.biosamples</groupId>			
+			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>models-mongo</artifactId>
-			<version>${bsd2017.version}</version>
+			<version>4.1.10</version>
 		</dependency>
 		<dependency>
-			<groupId>uk.ac.ebi.biosamples</groupId>			
+			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>properties</artifactId>
-			<version>${bsd2017.version}</version>
+			<version>4.1.10</version>
 		</dependency>
 		<dependency>
-			<groupId>uk.ac.ebi.biosamples</groupId>			
+			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>utils-thread</artifactId>
-			<version>${bsd2017.version}</version>
+			<version>4.1.10</version>
 		</dependency>
 	</dependencies>
 
