@@ -45,6 +45,7 @@ public class Sample implements Comparable<Sample> {
 
     protected Instant release;
     protected Instant update;
+    protected SubmittedViaType submittedVia;
 
 	protected SortedSet<Attribute> attributes;
 	protected SortedSet<AbstractData> data;
@@ -177,6 +178,11 @@ public class Sample implements Comparable<Sample> {
     @JsonProperty("publications")
     public SortedSet<Publication> getPublications() {
         return publications;
+    }
+
+    @JsonProperty("submittedVia")
+    public SubmittedViaType getSubmittedVia() {
+        return submittedVia;
     }
 
 
@@ -340,6 +346,8 @@ public class Sample implements Comparable<Sample> {
         sb.append(contacts);
         sb.append(",");
         sb.append(publications);
+        sb.append(",");
+        sb.append(submittedVia);
         sb.append(")");
         return sb.toString();
     }
@@ -352,7 +360,14 @@ public class Sample implements Comparable<Sample> {
 			Set<Attribute> attributes,
 			Set<Relationship> relationships,
 			Set<ExternalReference> externalReferences) {
-    	return build(name, accession, domain, release, update, attributes, null, relationships, externalReferences, null, null, null);
+    	return build(name, accession, domain, release, update, attributes, null, relationships, externalReferences, null, null, null, null);
+    }
+
+    public static Sample build(String name, String accession, String domain, Instant release, Instant update,
+                               Set<Attribute> attributes, Set<Relationship> relationships,
+                               Set<ExternalReference> externalReferences,
+                               SubmittedViaType submittedVia) {
+        return build(name, accession, domain, release, update, attributes, null, relationships, externalReferences, null, null, null, submittedVia);
     }
 
     //Used for deserializtion (JSON -> Java)
@@ -369,7 +384,8 @@ public class Sample implements Comparable<Sample> {
 			@JsonProperty("externalReferences") Collection<ExternalReference> externalReferences,
 			@JsonProperty("organization") Collection<Organization> organizations,
 			@JsonProperty("contact") Collection<Contact> contacts,
-			@JsonProperty("publications") Collection<Publication> publications ) {
+			@JsonProperty("publications") Collection<Publication> publications,
+            @JsonProperty("submittedVia") SubmittedViaType submittedVia) {
 
 		Sample sample = new Sample();
 
@@ -425,6 +441,12 @@ public class Sample implements Comparable<Sample> {
 			sample.data.addAll(structuredData);
 		}
 
+		if (submittedVia != null) {
+            sample.submittedVia = submittedVia;
+        } else {
+		    submittedVia = SubmittedViaType.JSONAPI;
+        }
+
 		return sample;
 	}
 
@@ -438,6 +460,8 @@ public class Sample implements Comparable<Sample> {
 
 		protected Instant release = Instant.now();
 		protected Instant update = Instant.now();
+
+		protected SubmittedViaType submittedVia;
 
 		protected SortedSet<Attribute> attributes = new TreeSet<>();
 		protected SortedSet<Relationship> relationships = new TreeSet<>();
@@ -483,6 +507,11 @@ public class Sample implements Comparable<Sample> {
 
 		public Builder withUpdate(String update) {
 			this.update = parseDateTime(update).toInstant();
+			return this;
+		}
+
+		public Builder withSubmittedVia(SubmittedViaType submittedVia) {
+			this.submittedVia = submittedVia;
 			return this;
 		}
 
@@ -692,7 +721,7 @@ public class Sample implements Comparable<Sample> {
 		public Sample build() {
 			return Sample.build(name, accession, domain, release, update,
 					attributes, data, relationships, externalReferences,
-					organizations, contacts, publications);
+					organizations, contacts, publications, submittedVia);
 		}
 
 		private ZonedDateTime parseDateTime(String datetimeString) {
@@ -720,7 +749,8 @@ public class Sample implements Comparable<Sample> {
 					.withAttributes(sample.getAttributes()).withData(sample.getData())
 					.withRelationships(sample.getRelationships()).withExternalReferences(sample.getExternalReferences())
 					.withOrganizations(sample.getOrganizations()).withPublications(sample.getPublications())
-					.withContacts(sample.getContacts());
+					.withContacts(sample.getContacts())
+                    .withSubmittedVia(sample.getSubmittedVia());
 		}
 
 		private DateTimeFormatter getFormatter() {
