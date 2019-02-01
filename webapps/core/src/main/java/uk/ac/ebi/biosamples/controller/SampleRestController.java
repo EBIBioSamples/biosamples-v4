@@ -12,6 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.exception.SampleNotFoundException;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.service.*;
 import uk.ac.ebi.biosamples.utils.LinkUtils;
 
@@ -171,44 +172,42 @@ public class SampleRestController {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @PutMapping(consumes = { MediaType.APPLICATION_JSON_VALUE })
-    public Resource<Sample> put(@PathVariable String accession, 
-                    @RequestBody Sample sample,
-                    @RequestParam(name = "setupdatedate", required = false, defaultValue="true") boolean setUpdateDate,
-                    @RequestParam(name = "setfulldetails", required = false, defaultValue="false") boolean setFullDetails) {
-    
-    if (sample.getAccession() == null || !sample.getAccession().equals(accession)) {
-                    // if the accession in the body is different to the accession in the
-                    // datasetUrl, throw an error
-                    // TODO create proper exception with right http error code
-                    throw new SampleAccessionMismatchException();
-            }		
-            
-            log.debug("Recieved PUT for " + accession);
-            sample = bioSamplesAapService.handleSampleDomain(sample);		
-            
-            //TODO limit use of this method to write super-users only
-            //if (bioSamplesAapService.isWriteSuperUser() && setUpdateDate) {
-            if (setUpdateDate) {
-//			sample = Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(),
-//				sample.getRelease(), Instant.now(),
-//				sample.getCharacteristics(), sample.getRelationships(), sample.getExternalReferences(),
-//				sample.getOrganizations(), sample.getContacts(), sample.getPublications());
-        sample = Sample.Builder.fromSample(sample).withUpdate(Instant.now()).build();
-            }
+    @PutMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
+    public Resource<Sample> put(@PathVariable String accession,
+                                @RequestBody Sample sample,
+                                @RequestParam(name = "setupdatedate", required = false, defaultValue = "true") boolean setUpdateDate,
+                                @RequestParam(name = "setfulldetails", required = false, defaultValue = "false") boolean setFullDetails) {
 
-            if (!setFullDetails) {
-                    log.trace("Removing contact legacy fields for " + accession);
-                    sample = sampleManipulationService.removeLegacyFields(sample);
-            }
-            
-            sample = sampleService.store(sample);
+        if (sample.getAccession() == null || !sample.getAccession().equals(accession)) {
+            // if the accession in the body is different to the accession in the
+            // datasetUrl, throw an error
+            // TODO create proper exception with right http error code
+            throw new SampleAccessionMismatchException();
+        }
 
-            // assemble a resource to return
-            Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
-            
-            // create the response object with the appropriate status
-            return sampleResource;
+        log.debug("Recieved PUT for " + accession);
+        sample = bioSamplesAapService.handleSampleDomain(sample);
+
+        //update date is system generated field
+        Instant update = Instant.now();
+        SubmittedViaType submittedVia =
+                sample.getSubmittedVia() == null ? SubmittedViaType.JSONAPI : sample.getSubmittedVia();
+        sample = Sample.Builder.fromSample(sample)
+                .withUpdate(update)
+                .withSubmittedVia(submittedVia).build();
+
+        if (!setFullDetails) {
+            log.trace("Removing contact legacy fields for " + accession);
+            sample = sampleManipulationService.removeLegacyFields(sample);
+        }
+
+        sample = sampleService.store(sample);
+
+        // assemble a resource to return
+        Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
+
+        // create the response object with the appropriate status
+        return sampleResource;
     }
 
 
