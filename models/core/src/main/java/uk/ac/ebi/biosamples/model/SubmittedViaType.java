@@ -4,7 +4,7 @@ public enum SubmittedViaType {
     USI,
     MIGRATION,
     SAMPLETAB,
-    JSONAPI,
+    JSON_API,
     NCBI_IMPORT,
     DDBJ_IMPORT
 }

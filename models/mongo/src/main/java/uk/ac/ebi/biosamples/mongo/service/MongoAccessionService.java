@@ -92,7 +92,8 @@ public class MongoAccessionService {
 		sample = MongoSample.build(sample.getName(), accession, sample.getDomain(),
 				sample.getRelease(), sample.getUpdate(), 
 				sample.getAttributes(), sample.getData(), newRelationships, sample.getExternalReferences(),
-				sample.getOrganizations(), sample.getContacts(), sample.getPublications());
+				sample.getOrganizations(), sample.getContacts(), sample.getPublications(),
+				sample.getSubmittedVia());
 		return sample;
 	}
 

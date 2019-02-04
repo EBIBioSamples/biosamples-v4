@@ -31,7 +31,7 @@ import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
 
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-@JsonPropertyOrder({"name", "accession", "domain", "release", "update", "taxId", "characteristics", "relationships", "externalReferences", "releaseDate", "updateDate"})
+@JsonPropertyOrder({"name", "accession", "domain", "release", "update", "taxId", "characteristics", "relationships", "externalReferences", "releaseDate", "updateDate", "submittedVia"})
 public class Sample implements Comparable<Sample> {
 
     protected String accession;
@@ -45,7 +45,6 @@ public class Sample implements Comparable<Sample> {
 
     protected Instant release;
     protected Instant update;
-    protected SubmittedViaType submittedVia;
 
 	protected SortedSet<Attribute> attributes;
 	protected SortedSet<AbstractData> data;
@@ -55,6 +54,8 @@ public class Sample implements Comparable<Sample> {
     protected SortedSet<Organization> organizations;
     protected SortedSet<Contact> contacts;
     protected SortedSet<Publication> publications;
+
+    protected SubmittedViaType submittedVia;
 
     protected Sample() {
 
@@ -195,7 +196,7 @@ public class Sample implements Comparable<Sample> {
         }
         Sample other = (Sample) o;
 
-        //dont use update date for comparisons, too volatile
+        //dont use update date for comparisons, too volatile. SubmittedVia doesnt contain information for comparison
 
         return Objects.equals(this.name, other.name)
         		&& Objects.equals(this.accession, other.accession)
@@ -444,7 +445,7 @@ public class Sample implements Comparable<Sample> {
 		if (submittedVia != null) {
             sample.submittedVia = submittedVia;
         } else {
-		    submittedVia = SubmittedViaType.JSONAPI;
+		    sample.submittedVia = SubmittedViaType.JSON_API;
         }
 
 		return sample;
