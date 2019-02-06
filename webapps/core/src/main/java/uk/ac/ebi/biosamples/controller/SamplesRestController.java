@@ -293,7 +293,7 @@ public class SamplesRestController {
 		Instant release = Instant.ofEpochSecond(LocalDateTime.now(ZoneOffset.UTC).plusYears(100).toEpochSecond(ZoneOffset.UTC));
 		Instant update = Instant.now();
 		SubmittedViaType submittedVia =
-				sample.getSubmittedVia() == null ? SubmittedViaType.JSONAPI : sample.getSubmittedVia();
+				sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
 
 		sample = Sample.Builder.fromSample(sample)
 				.withRelease(release)
@@ -323,7 +323,7 @@ public class SamplesRestController {
 		//update date is system generated field
 		Instant update = Instant.now();
 		SubmittedViaType submittedVia =
-				sample.getSubmittedVia() == null ? SubmittedViaType.JSONAPI : sample.getSubmittedVia();
+				sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
 		sample = Sample.Builder.fromSample(sample)
 				.withUpdate(update)
 				.withSubmittedVia(submittedVia).build();
