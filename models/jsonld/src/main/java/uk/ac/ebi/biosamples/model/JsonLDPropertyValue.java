@@ -27,7 +27,8 @@ public class JsonLDPropertyValue implements BioschemasObject{
 //    @JsonProperty("valueReference")
 //    private List<JsonLDStructuredValue> valueReference;
 
-    private List<JsonLDCategoryCode> valueReference;
+    private List<JsonLDDefinedTerm> valueReference;
+    private List<JsonLDDefinedTerm> propertyId;
 
     public String getType() {
         return type;
@@ -47,11 +48,11 @@ public class JsonLDPropertyValue implements BioschemasObject{
         this.value = value;
     }
 
-    public List<JsonLDCategoryCode> getValueReference() {
+    public List<JsonLDDefinedTerm> getValueReference() {
         return valueReference;
     }
 
-    public void setValueReference(List<JsonLDCategoryCode> valueReference) {
+    public void setValueReference(List<JsonLDDefinedTerm> valueReference) {
         this.valueReference = valueReference;
     }
 
