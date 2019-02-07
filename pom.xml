@@ -4,7 +4,7 @@
 
 	<groupId>uk.ac.ebi.biosamples</groupId>
 	<artifactId>biosamples</artifactId>
-	<version>4.1.8-SNAPSHOT</version>
+	<version>4.1.12-SNAPSHOT</version>
 
 
 	<packaging>pom</packaging>
@@ -141,14 +141,6 @@
 	</pluginRepositories>
 
 	<distributionManagement>
-		<!-- <repository>
-			<id>ossrh</id>
-			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-		</repository>
-		<snapshotRepository>
-			<id>ossrh</id>
-			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
-		</snapshotRepository> -->
 		<repository>
 			<id>spotnexus</id>
 			<url>https://www.ebi.ac.uk/spot/nexus/repository/maven-releases/</url>
@@ -168,17 +160,13 @@
 					<compilerArgument>-parameters</compilerArgument>
 				</configuration>
 			</plugin>
-			<!-- <plugin>
-				<groupId>org.sonatype.plugins</groupId>
-				<artifactId>nexus-staging-maven-plugin</artifactId>
-				<version>1.6.7</version>
-				<extensions>true</extensions>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
 				<configuration>
-					<serverId>ossrh</serverId>
-					<nexusUrl>https://oss.sonatype.org/</nexusUrl>
-					<autoReleaseAfterClose>true</autoReleaseAfterClose>
+					<ignoreNonCompile>true</ignoreNonCompile>
 				</configuration>
-			</plugin> -->
+			</plugin>
 			<plugin>
 				<groupId>pl.project13.maven</groupId>
 				<artifactId>git-commit-id-plugin</artifactId>

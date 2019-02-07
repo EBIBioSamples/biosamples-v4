@@ -2,7 +2,9 @@ package uk.ac.ebi.biosamples.model;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONException;
+import org.junit.Ignore;
 import org.junit.Test;
+import org.skyscreamer.jsonassert.ArrayValueMatcher;
 import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
@@ -22,7 +24,6 @@ import java.io.InputStreamReader;
 /**
  * Integration Test of phenopacket exporter. For test performing you need to have access to https://www.ebi.ac.uk/ols/api.
  */
-
 public class Ga4ghSampleToPhenopacketExporterTest {
     final String biosample1Path = "/biosample1.json";
     final String biosample2Path = "/biosamples2.json";
@@ -50,8 +51,14 @@ public class Ga4ghSampleToPhenopacketExporterTest {
         Ga4ghSample ga4ghSample = SampleToGa4ghSampleConverter.convert(sample);
         String actualJson = biosampleToPhenopacketExporter.getJsonFormattedPhenopacket(ga4ghSample);
         String expectedJson = getJsonString(phenopacket1Path);
+
+        ArrayValueMatcher<Object> arrayValueMatcher = new ArrayValueMatcher<>(new CustomComparator(
+                JSONCompareMode.NON_EXTENSIBLE,
+                new Customization("metaData.resources[1].version", (o1, o2) -> true)));
+
         JSONAssert.assertEquals(expectedJson, actualJson, new CustomComparator(JSONCompareMode.LENIENT,
-                new Customization("metaData.created", (o1, o2) -> true)));
+                new Customization("metaData.created", (o1, o2) -> true),
+                new Customization("metaData.resources", arrayValueMatcher)));
     }
 
     @Test
@@ -61,8 +68,14 @@ public class Ga4ghSampleToPhenopacketExporterTest {
         Ga4ghSample ga4ghSample = SampleToGa4ghSampleConverter.convert(sample);
         String actualJson = biosampleToPhenopacketExporter.getJsonFormattedPhenopacket(ga4ghSample);
         String expectedJson = getJsonString(phenopacket2Path);
+
+        ArrayValueMatcher<Object> arrayValueMatcher = new ArrayValueMatcher<>(new CustomComparator(
+                JSONCompareMode.NON_EXTENSIBLE,
+                new Customization("metaData.resources[1].version", (o1, o2) -> true)));
+
         JSONAssert.assertEquals(expectedJson, actualJson, new CustomComparator(JSONCompareMode.LENIENT,
-                new Customization("metaData.created", (o1, o2) -> true)));
+                new Customization("metaData.created", (o1, o2) -> true),
+                new Customization("metaData.resources", arrayValueMatcher)));
     }
 
     @Test
@@ -72,8 +85,14 @@ public class Ga4ghSampleToPhenopacketExporterTest {
         Ga4ghSample ga4ghSample = SampleToGa4ghSampleConverter.convert(sample);
         String actualJson = biosampleToPhenopacketExporter.getJsonFormattedPhenopacket(ga4ghSample);
         String expectedJson = getJsonString(phenopacket3Path);
+
+        ArrayValueMatcher<Object> arrayValueMatcher = new ArrayValueMatcher<>(new CustomComparator(
+                JSONCompareMode.NON_EXTENSIBLE,
+                new Customization("metaData.resources[2].version", (o1, o2) -> true)));
+
         JSONAssert.assertEquals(expectedJson, actualJson, new CustomComparator(JSONCompareMode.LENIENT,
-                new Customization("metaData.created", (o1, o2) -> true)));
+                new Customization("metaData.created", (o1, o2) -> true),
+                new Customization("metaData.resources", arrayValueMatcher)));
 
     }
 

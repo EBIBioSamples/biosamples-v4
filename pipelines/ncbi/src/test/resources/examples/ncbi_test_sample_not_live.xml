@@ -37,6 +37,6 @@
         <Links>
             <Link label="PRJNA325589" target="bioproject" type="entrez">325589</Link>
         </Links>
-        <Status status="suppressed" when="2018-07-01T00:50:05.513"/>
+        <Status status="private" when="2018-07-01T00:50:05.513"/>
     </BioSample>
 </BioSampleSet>

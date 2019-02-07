@@ -97,3 +97,8 @@ pipelines/curation/curations.csv
 **/coverage
 create_new_facets_and_filters.md
 *.versionsBackup
+/pipelines/ncbi/ncbi-export-with-dbGap-sample.json
+/pipelines/ncbi/ncbi-export-no-dbGap-sample.json
+/pipelines/ncbi/ncbi-import.json
+/ncbi.*.gz
+/ncbi_*.*.gz

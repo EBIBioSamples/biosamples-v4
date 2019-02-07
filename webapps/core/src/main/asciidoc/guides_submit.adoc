@@ -8,7 +8,7 @@ We support two submission methods:
 
 === 1. JSON API (recommended)
 
-We recommend all submissions to BioSamples be made in JSON via our JSON API.
+We recommend all submissions to BioSamples be made in JSON via our link:../references/api/submit[JSON API].
 
 === 2. Legacy SampleTab format
 

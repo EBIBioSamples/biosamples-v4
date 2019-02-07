@@ -6,6 +6,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -25,6 +26,8 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.*;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
@@ -134,6 +137,11 @@ public class ApiDocumentationTest {
     @Test
     public void postSampleMinimalInfo() throws Exception {
         String wrongSampleSerialized = "{\"name\": \"Sample without minimum information\" }";
+        Sample wrongSample = Sample.build("Sample without minimum information", null, null, null, null, null, null, null);
+
+        when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(wrongSample);
+        when(sampleService.store(wrongSample)).thenCallRealMethod();
+
 
         this.mockMvc.perform(
                 post("/biosamples/samples")
@@ -189,6 +197,92 @@ public class ApiDocumentationTest {
                         .header("Authorization", "Bearer $TOKEN"))
                 .andExpect(status().is2xxSuccessful())
                 .andDo(document("post-sample",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint())));
+    }
+
+    /**
+     * Accessioning service to generate accession
+     */
+    @Test
+    public void postToGenerateAccession() throws Exception {
+        Sample sample = this.faker.getExampleSample();
+        Sample sampleWithDomain = this.faker.getExampleSampleWithDomain();
+        Instant release = Instant.ofEpochSecond(LocalDateTime.now(ZoneOffset.UTC).plusYears(100).toEpochSecond(ZoneOffset.UTC));
+        Sample sampleWithUpdatedDate = Sample.Builder.fromSample(sampleWithDomain).withRelease(release).build();
+
+        String sampleToSubmit = "{ " +
+                "\"name\" : \"" + sample.getName() + "\", " +
+                "\"update\" : \"" + dateTimeFormatter.format(sample.getUpdate().atOffset(ZoneOffset.UTC)) + "\", " +
+//                "\"release\" : \"" +dateTimeFormatter.format(sample.getRelease().atOffset(ZoneOffset.UTC)) + "\", " +
+                "\"domain\" : \"self.ExampleDomain\" " +
+                "}";
+
+
+        when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(sampleWithUpdatedDate);
+        when(sampleService.store(any(Sample.class))).thenReturn(sampleWithUpdatedDate);
+
+        this.mockMvc.perform(
+                post("/biosamples/samples/accession")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(sampleToSubmit)
+                        .header("Authorization", "Bearer $TOKEN"))
+                .andExpect(status().is2xxSuccessful())
+                .andDo(document("accession-sample",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint())));
+    }
+
+    /**
+     * Accessioning service to generate accession
+     */
+    @Test
+    public void post_for_accessioning_with_accession_should_get_error() throws Exception {
+        Sample sample = this.faker.getExampleSample();
+        Sample sampleWithDomain = this.faker.getExampleSampleWithDomain();
+
+        String sampleToSubmit = "{ " +
+                "\"accession\" : \"" + "FakeAccession" + "\", " +
+                "\"name\" : \"" + sample.getName() + "\", " +
+                "\"update\" : \"" + dateTimeFormatter.format(sample.getUpdate().atOffset(ZoneOffset.UTC)) + "\", " +
+                "\"release\" : \"" +dateTimeFormatter.format(sample.getRelease().atOffset(ZoneOffset.UTC)) + "\", " +
+                "\"domain\" : \"self.ExampleDomain\" " +
+                "}";
+
+
+        when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(sampleWithDomain);
+        when(sampleService.store(any(Sample.class))).thenReturn(sampleWithDomain);
+
+        this.mockMvc.perform(
+                post("/biosamples/samples/accession")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(sampleToSubmit)
+                        .header("Authorization", "Bearer $TOKEN"))
+                .andExpect(status().is4xxClientError());
+    }
+
+    /**
+     * validation service to validate basic fields
+     */
+    @Test
+    public void post_for_validation() throws Exception {
+        Sample sample = this.faker.getExampleSample();
+        Sample sampleWithDomain = this.faker.getExampleSampleWithDomain();
+
+        String sampleToSubmit = "{ " +
+                "\"name\" : \"" + sample.getName() + "\", " +
+                "\"update\" : \"" + dateTimeFormatter.format(sample.getUpdate().atOffset(ZoneOffset.UTC)) + "\", " +
+                "\"release\" : \"" +dateTimeFormatter.format(sample.getRelease().atOffset(ZoneOffset.UTC)) + "\", " +
+                "\"domain\" : \"self.ExampleDomain\" " +
+                "}";
+
+        this.mockMvc.perform(
+                post("/biosamples/samples/validate")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(sampleToSubmit)
+                        .header("Authorization", "Bearer $TOKEN"))
+                .andExpect(status().is2xxSuccessful())
+                .andDo(document("validate-sample",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint())));
     }

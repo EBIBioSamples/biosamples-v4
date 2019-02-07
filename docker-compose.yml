@@ -4,6 +4,7 @@ services:
   biosamples-webapps-core:
     build: .
     image: biosamples:latest
+    mem_limit: 1g
     links:
     - solr
     - mongo
@@ -13,7 +14,7 @@ services:
     command:
     - java
     - -jar
-    - webapps-core-4.1.8-SNAPSHOT.war
+    - webapps-core-4.1.12-SNAPSHOT.war
     environment:
     #AAP certificate
     - jwt.certificate=public.explore.der
@@ -60,6 +61,7 @@ services:
 
   biosamples-webapps-sampletab:
     image: biosamples:latest
+    mem_limit: 500m
     links:
     - biosamples-webapps-core
     volumes:
@@ -67,7 +69,7 @@ services:
     command:
     - java
     - -jar
-    - webapps-sampletab-4.1.8-SNAPSHOT.war
+    - webapps-sampletab-4.1.12-SNAPSHOT.war
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - SERVER_SERVLET_CONTEXT-PATH=/biosamples/sampletab
@@ -100,6 +102,7 @@ services:
 
   biosamples-webapps-legacyxml:
     image: biosamples:latest
+    mem_limit: 500m
     links:
     - biosamples-webapps-core
     volumes:
@@ -107,7 +110,7 @@ services:
     command:
     - java
     - -jar
-    - webapps-legacyxml-4.1.8-SNAPSHOT.war
+    - webapps-legacyxml-4.1.12-SNAPSHOT.war
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - SERVER_SERVLET_CONTEXT-PATH=/biosamples/xml
@@ -128,6 +131,7 @@ services:
 
   biosamples-webapps-legacyjson:
     image: biosamples:latest
+    mem_limit: 500m
     links:
     - biosamples-webapps-core
     volumes:
@@ -135,7 +139,7 @@ services:
     command:
     - java
     - -jar
-    - webapps-legacyjson-4.1.8-SNAPSHOT.war
+    - webapps-legacyjson-4.1.12-SNAPSHOT.war
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - SERVER_SERVLET_CONTEXT-PATH=/biosamples/api
@@ -156,6 +160,7 @@ services:
 
   biosamples-agents-solr:
     image: biosamples:latest
+    mem_limit: 500m
     links:
     - solr
     - rabbitmq
@@ -164,7 +169,7 @@ services:
     command:
     - java
     - -jar
-    - agents-solr-4.1.8-SNAPSHOT.jar
+    - agents-solr-4.1.12-SNAPSHOT.jar
     environment:
     - SPRING_RABBITMQ_HOST=rabbitmq
     - SPRING_RABBITMQ_PUBLISHER-CONFIRMS=true
@@ -181,6 +186,7 @@ services:
 
   biosamples-pipelines-ena:
     image: biosamples:latest
+    mem_limit: 500m
     volumes:
     - logs:/logs
     links:
@@ -188,13 +194,14 @@ services:
     command:
     - java
     - -jar
-    - pipelines-ena-4.1.8-SNAPSHOT.jar
+    - pipelines-ena-4.1.12-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-ena.log
 
   biosamples-pipelines-ncbi:
     image: biosamples:latest
+    mem_limit: 500m
     volumes:
     - logs:/logs
     links:
@@ -202,13 +209,14 @@ services:
     command:
     - java
     - -jar
-    - pipelines-ncbi-4.1.8-SNAPSHOT.jar
+    - pipelines-ncbi-4.1.12-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-ncbi.log
 
   biosamples-pipelines-accession:
     image: biosamples:latest
+    mem_limit: 500m
     volumes:
     - logs:/logs
     links:
@@ -216,13 +224,14 @@ services:
     command:
     - java
     - -jar
-    - pipelines-accession-4.1.8-SNAPSHOT.jar
+    - pipelines-accession-4.1.12-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-accession.log
 
   biosamples-pipelines-sampletab:
     image: biosamples:latest
+    mem_limit: 500m
     volumes:
     - logs:/logs
     links:
@@ -230,13 +239,14 @@ services:
     command:
     - java
     - -jar
-    - pipelines-sampletab-4.1.8-SNAPSHOT.jar
+    - pipelines-sampletab-4.1.12-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_SAMPLETAB_URI=http://biosamples-webapps-sampletab:8080/biosamples/sampletab/v4
     - LOGGING_FILE=/logs/pipelines-sampletab.log
 
   biosamples-pipelines-copydown:
     image: biosamples:latest
+    mem_limit: 500m
     volumes:
     - logs:/logs
     links:
@@ -244,7 +254,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-copydown-4.1.8-SNAPSHOT.jar
+    - pipelines-copydown-4.1.12-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-copydown.log
@@ -253,12 +263,13 @@ services:
     volumes:
     - logs:/logs
     image: biosamples:latest
+    mem_limit: 500m
     links:
     - biosamples-webapps-core
     command:
     - java
     - -jar
-    - pipelines-curation-4.1.8-SNAPSHOT.jar
+    - pipelines-curation-4.1.12-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-curation.log
@@ -269,12 +280,13 @@ services:
     volumes:
     - logs:/logs
     image: biosamples:latest
+    mem_limit: 500m
     links:
     - biosamples-webapps-core
     command:
     - java
     - -jar
-    - pipelines-zooma-4.1.8-SNAPSHOT.jar
+    - pipelines-zooma-4.1.12-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-zooma.log
@@ -285,12 +297,13 @@ services:
     volumes:
     - logs:/logs
     image: biosamples:latest
+    mem_limit: 500m
     links:
     - biosamples-webapps-core
     command:
     - java
     - -jar
-    - pipelines-reindex-4.1.8-SNAPSHOT.jar
+    - pipelines-reindex-4.1.12-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-reindex.log
@@ -302,12 +315,13 @@ services:
     - logs:/logs
     - ./docker/export:/export
     image: biosamples:latest
+    mem_limit: 500m
     links:
     - biosamples-webapps-core
     command:
     - java
     - -jar
-    - pipelines-export-4.1.8-SNAPSHOT.jar
+    - pipelines-export-4.1.12-SNAPSHOT.jar
     - --gzip
     - /export/export.json.gzip
     environment:
@@ -318,6 +332,7 @@ services:
     volumes:
     - logs:/logs
     image: biosamples:latest
+    mem_limit: 500m
     links:
     - biosamples-webapps-core
     - biosamples-webapps-sampletab
@@ -326,7 +341,7 @@ services:
     command:
     - java
     - -jar
-    - integration-4.1.8-SNAPSHOT.jar
+    - integration-4.1.12-SNAPSHOT.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - BIOSAMPLES_SUBMISSIONURI=http://biosamples-webapps-sampletab:8080/biosamples/sampletab
@@ -345,6 +360,7 @@ services:
     - logs:/logs
     build: ./json-schema-validator
     image: json-schema-validator:latest
+    mem_limit: 250m
     links:
     - biosamples-webapps-core
     ports:
@@ -352,6 +368,7 @@ services:
 
   mongo:
     image: mongo:3.2
+    mem_limit: 2g
     volumes:
     - mongo_data:/data/db
     - ./docker/mongoarchive:/mongoarchive
@@ -360,6 +377,7 @@ services:
 
   rabbitmq:
     image: rabbitmq:3.6-management-alpine
+    mem_limit: 1g
     hostname: biosamples-rabbitmq
     ports:
     - 5672:5672
@@ -369,13 +387,14 @@ services:
 
   solr:
     image: solr:6.6-alpine
+    mem_limit: 1g
     ports:
     - 8983:8983
     volumes:
     - solr_data:/opt/solr/server/solr/mycores
     environment:
     - VERBOSE=yes
-    - SOLR_HEAP=2g
+    - SOLR_HEAP=1g
     entrypoint:
     - docker-entrypoint.sh
     - solr-precreate
