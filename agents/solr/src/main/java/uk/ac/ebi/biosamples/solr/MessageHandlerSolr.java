@@ -78,6 +78,11 @@ public class MessageHandlerSolr {
             solrSample = repository.saveWithoutCommit(solrSample);
             LOGGER.info(String.format("indexing %s", sample.getAccession()));
         }
+        else
+        {
+            repository.delete(sample.getAccession());
+            LOGGER.info(String.format("removing %s from index", sample.getAccession()));
+        }
     }
 
     static boolean isIndexingCandidate(Sample sample) {

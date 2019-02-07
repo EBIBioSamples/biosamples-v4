@@ -26,7 +26,7 @@ public class EraProDao {
 
     private Logger log = LoggerFactory.getLogger(getClass());
 
-    private static final String STATUS_CLAUS = "STATUS_ID IN (4, 5, 6, 7, 8)";
+    private static final String STATUS_CLAUSE = "STATUS_ID IN (4, 5, 6, 7, 8)";
 
     /**
      * Return a set of BioSamples accessions that have been updated or made public within
@@ -51,7 +51,7 @@ select * from cv_status;
         //once it has been public, it can only be suppressed and killed and can't go back to public again
 
         String query = "SELECT BIOSAMPLE_ID FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND EGA_ID IS NULL AND BIOSAMPLE_AUTHORITY= 'N' "
-                + "AND " + STATUS_CLAUS + " AND ((LAST_UPDATED BETWEEN ? AND ?) OR (FIRST_PUBLIC BETWEEN ? AND ?)) ORDER BY BIOSAMPLE_ID ASC";
+                + "AND " + STATUS_CLAUSE + " AND ((LAST_UPDATED BETWEEN ? AND ?) OR (FIRST_PUBLIC BETWEEN ? AND ?)) ORDER BY BIOSAMPLE_ID ASC";
 
         SortedSet<String> samples = new TreeSet<>();
         Date minDateOld = java.sql.Date.valueOf(minDate);
@@ -64,7 +64,7 @@ select * from cv_status;
 
     public void doSampleCallback(LocalDate minDate, LocalDate maxDate, RowCallbackHandler rch) {
         String query = "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND EGA_ID IS NULL AND BIOSAMPLE_AUTHORITY= 'N' "
-                + "AND " + STATUS_CLAUS + " AND ((LAST_UPDATED BETWEEN ? AND ?) OR (FIRST_PUBLIC BETWEEN ? AND ?)) ORDER BY BIOSAMPLE_ID ASC";
+                + "AND " + STATUS_CLAUSE + " AND ((LAST_UPDATED BETWEEN ? AND ?) OR (FIRST_PUBLIC BETWEEN ? AND ?)) ORDER BY BIOSAMPLE_ID ASC";
 
         Date minDateOld = java.sql.Date.valueOf(minDate);
         Date maxDateOld = java.sql.Date.valueOf(maxDate);
@@ -73,14 +73,14 @@ select * from cv_status;
 
     public void getSingleSample(String bioSampleId, RowCallbackHandler rch) {
         String query = "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND EGA_ID IS NULL AND BIOSAMPLE_AUTHORITY= 'N' "
-                + "AND " + STATUS_CLAUS + " AND BIOSAMPLE_ID=? ORDER BY BIOSAMPLE_ID ASC";
+                + "AND " + STATUS_CLAUSE + " AND BIOSAMPLE_ID=? ORDER BY BIOSAMPLE_ID ASC";
         jdbcTemplate.query(query, rch, bioSampleId);
     }
 
     public void getNcbiCallback(LocalDate minDate, LocalDate maxDate, RowCallbackHandler rch) {
 
         String query = "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID FROM SAMPLE WHERE (BIOSAMPLE_ID LIKE 'SAMN%' OR BIOSAMPLE_ID LIKE 'SAMD%' ) "
-                + "AND " + STATUS_CLAUS + " AND ((LAST_UPDATED BETWEEN ? AND ?) OR (FIRST_PUBLIC BETWEEN ? AND ?)) ORDER BY BIOSAMPLE_ID ASC";
+                + "AND " + STATUS_CLAUSE + " AND ((LAST_UPDATED BETWEEN ? AND ?) OR (FIRST_PUBLIC BETWEEN ? AND ?)) ORDER BY BIOSAMPLE_ID ASC";
 
         Date minDateOld = java.sql.Date.valueOf(minDate);
         Date maxDateOld = java.sql.Date.valueOf(maxDate);
