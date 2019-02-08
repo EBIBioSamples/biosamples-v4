@@ -45,6 +45,7 @@ public class TestConversion {
     private EnaXmlEnhancer enaXmlEnhancer;
 
     @Test
+    @Ignore
     public void test_over_all_samples() {
         RowCallbackHandler rowCallbackHandler = new RowCallbackHandler() {
             @Override

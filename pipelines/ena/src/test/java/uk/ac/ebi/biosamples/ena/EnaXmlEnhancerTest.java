@@ -9,7 +9,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.biosamples.ena.EnaXmlEnhancer.*;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 import static uk.ac.ebi.biosamples.ena.EnaXmlUtil.pretty;
 import static uk.ac.ebi.biosamples.ena.ExampleSamples.*;
 
@@ -24,7 +23,18 @@ public class EnaXmlEnhancerTest {
 
     @Before
     public void setup() {
-        enaDatabaseSample = enaXmlEnhancer.getEnaDatabaseSample("SAMN00001603");
+        enaDatabaseSample = new EnaDatabaseSample();
+        enaDatabaseSample.lastUpdated = "2015-06-23";
+        enaDatabaseSample.firstPublic = "2010-02-26";
+        enaDatabaseSample.brokerName = null;
+        enaDatabaseSample.bioSamplesId = "SAMN00001603";
+        enaDatabaseSample.centreName = "1000G";
+        enaDatabaseSample.fixed = "N";
+        enaDatabaseSample.taxId = "9606";
+        enaDatabaseSample.scientificName = "Homo sapiens";
+        enaDatabaseSample.fixedTaxId = null;
+        enaDatabaseSample.fixedCommonName = null;
+        enaDatabaseSample.fixedScientificName = null;
     }
 
     @Test
