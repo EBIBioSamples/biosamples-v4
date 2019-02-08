@@ -90,6 +90,8 @@ fabric.properties
 /livelist-prod.txt
 .gradle/
 pipelines/curation/curations.csv
+/pipelines/ena/export.json
+/pipelines/ena/export-random-50.json
 
 # Javascript
 .vscode

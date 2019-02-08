@@ -41,13 +41,16 @@ public class TestConversion {
     @Autowired
     private EnaElementConverter enaElementConverter;
 
+    @Autowired
+    private EnaXmlEnhancer enaXmlEnhancer;
+
     @Test
     public void test_over_all_samples() {
         RowCallbackHandler rowCallbackHandler = new RowCallbackHandler() {
             @Override
             public void processRow(ResultSet resultSet) throws SQLException {
                 String sampleAccession = resultSet.getString("BIOSAMPLE_ID");
-                EnaCallable enaCallable = new EnaCallable(sampleAccession, bioSamplesClient, enaElementConverter, eraProDao, "test");
+                EnaCallable enaCallable = new EnaCallable(sampleAccession, bioSamplesClient, enaXmlEnhancer, enaElementConverter, eraProDao, "test");
                 try {
                     enaCallable.call();
                 } catch (Exception e) {
@@ -66,7 +69,7 @@ public class TestConversion {
             @Override
             public void processRow(ResultSet resultSet) throws SQLException {
                 String sampleAccession = resultSet.getString("BIOSAMPLE_ID");
-                EnaCallable enaCallable = new EnaCallable(sampleAccession, bioSamplesClient, enaElementConverter, eraProDao, "test");
+                EnaCallable enaCallable = new EnaCallable(sampleAccession, bioSamplesClient, enaXmlEnhancer, enaElementConverter, eraProDao, "test");
                 try {
                     enaCallable.call();
                 } catch (Exception e) {

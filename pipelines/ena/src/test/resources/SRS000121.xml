@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ROOT request="download accessions">
+<SAMPLE center_name="1000G" alias="NA18561" accession="SRS000121" broker_name="NCBI">
+     <IDENTIFIERS>
+          <PRIMARY_ID>SRS000121</PRIMARY_ID>
+          <EXTERNAL_ID namespace="BioSample">SAMN00001603</EXTERNAL_ID>
+          <EXTERNAL_ID namespace="Coriell">GM18561</EXTERNAL_ID>
+          <SUBMITTER_ID namespace="1000G">NA18561</SUBMITTER_ID>
+     </IDENTIFIERS>
+     <TITLE>Coriell GM18561</TITLE>
+     <SAMPLE_NAME>
+          <TAXON_ID>9606</TAXON_ID>
+          <SCIENTIFIC_NAME>Homo sapiens</SCIENTIFIC_NAME>
+     </SAMPLE_NAME>
+     <DESCRIPTION>Human HapMap individual Coriell catalog ID NA18561</DESCRIPTION>
+     <SAMPLE_LINKS>
+          <SAMPLE_LINK>
+               <XREF_LINK>
+                    <DB>ENA-STUDY</DB>
+                    <ID>ERP012319,SRP000031,SRP000033,SRP000546,SRP003652,SRP004231,SRP004364,SRP027257,SRP048601,SRP078362</ID>
+               </XREF_LINK>
+          </SAMPLE_LINK>
+          <SAMPLE_LINK>
+               <XREF_LINK>
+                    <DB>ENA-EXPERIMENT</DB>
+                    <ID>ERX000052,ERX000434,ERX002599,ERX012022,ERX226435-ERX226436,ERX1124530-ERX1124547,SRX027411,SRX031793,SRX031799,SRX320542,SRX724287,SRX726133,SRX1937792-SRX1937793</ID>
+               </XREF_LINK>
+          </SAMPLE_LINK>
+          <SAMPLE_LINK>
+               <XREF_LINK>
+                    <DB>ENA-RUN</DB>
+                    <ID>ERR000300,ERR000334,ERR000394,ERR000519-ERR000522,ERR001124-ERR001125,ERR004071,ERR005156,ERR005180-ERR005183,ERR009002,ERR009042,ERR031858,ERR251901-ERR251902,ERR1044239-ERR1044256,SRR066864,SRR066868,SRR066890,SRR066905,SRR066921,SRR066942,SRR066956,SRR066962,SRR067007,SRR067015,SRR067031,SRR067036,SRR067055-SRR067056,SRR067068,SRR067086,SRR067113,SRR067122,SRR067141,SRR067147,SRR067163,SRR067202,SRR067204,SRR067219,SRR192547,SRR192549-SRR192552,SRR932313,SRR1601955,SRR1604790,SRR3881579-SRR3881580</ID>
+               </XREF_LINK>
+          </SAMPLE_LINK>
+          <SAMPLE_LINK>
+               <XREF_LINK>
+                    <DB>ENA-SUBMISSION</DB>
+                    <ID>SRA000288</ID>
+               </XREF_LINK>
+          </SAMPLE_LINK>
+          <SAMPLE_LINK>
+               <XREF_LINK>
+                    <DB>ENA-FASTQ-FILES</DB>
+                    <ID><![CDATA[http://www.ebi.ac.uk/ena/data/warehouse/filereport?accession=SRS000121&result=read_run&fields=run_accession,fastq_ftp,fastq_md5,fastq_bytes]]></ID>
+               </XREF_LINK>
+          </SAMPLE_LINK>
+          <SAMPLE_LINK>
+               <XREF_LINK>
+                    <DB>ENA-SUBMITTED-FILES</DB>
+                    <ID><![CDATA[http://www.ebi.ac.uk/ena/data/warehouse/filereport?accession=SRS000121&result=read_run&fields=run_accession,submitted_ftp,submitted_md5,submitted_bytes,submitted_format]]></ID>
+               </XREF_LINK>
+          </SAMPLE_LINK>
+     </SAMPLE_LINKS>
+     <SAMPLE_ATTRIBUTES>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>DNA-ID</TAG>
+               <VALUE>NA18561</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>Super Population Code</TAG>
+               <VALUE>EAS</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>population</TAG>
+               <VALUE>CHB</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>Super Population Description</TAG>
+               <VALUE>East Asian</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>Coriell plate</TAG>
+               <VALUE>HAPMAPPT02</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>Coriell panel</TAG>
+               <VALUE>MGP00017</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>Population Description</TAG>
+               <VALUE>Han Chinese in Beijing, China</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>sex</TAG>
+               <VALUE>male</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>HapMap sample ID</TAG>
+               <VALUE>NA18561</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>culture_collection</TAG>
+               <VALUE>Coriell:GM18561</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>BioSampleModel</TAG>
+               <VALUE>HapMap</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ENA-SPOT-COUNT</TAG>
+               <VALUE>2012757925</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ENA-BASE-COUNT</TAG>
+               <VALUE>358938231877</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ENA-FIRST-PUBLIC</TAG>
+               <VALUE>2010-02-26</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ENA-LAST-UPDATE</TAG>
+               <VALUE>2015-06-23</VALUE>
+          </SAMPLE_ATTRIBUTE>
+     </SAMPLE_ATTRIBUTES>
+</SAMPLE>
+</ROOT>
