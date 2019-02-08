@@ -71,7 +71,19 @@ public class EnaXmlEnhancerTest {
 
     @Test
     public void test_broker_rule_does_not_change_non_applicable_xml() {
-        assertEquals(pretty(exampleSampleXml), enaXmlEnhancer.applyRules(exampleSampleXml, enaXmlEnhancer.getEnaDatabaseSample(""), BrokerRule.INSTANCE));
+        enaDatabaseSample = new EnaDatabaseSample();
+        enaDatabaseSample.lastUpdated = "2015-06-23";
+        enaDatabaseSample.firstPublic = "2010-02-26";
+        enaDatabaseSample.brokerName = null;
+        enaDatabaseSample.bioSamplesId = "";
+        enaDatabaseSample.centreName = "1000G";
+        enaDatabaseSample.fixed = "N";
+        enaDatabaseSample.taxId = "9606";
+        enaDatabaseSample.scientificName = "Homo sapiens";
+        enaDatabaseSample.fixedTaxId = null;
+        enaDatabaseSample.fixedCommonName = null;
+        enaDatabaseSample.fixedScientificName = null;
+        assertEquals(pretty(exampleSampleXml), enaXmlEnhancer.applyRules(exampleSampleXml, enaDatabaseSample, BrokerRule.INSTANCE));
     }
 
     @Test
