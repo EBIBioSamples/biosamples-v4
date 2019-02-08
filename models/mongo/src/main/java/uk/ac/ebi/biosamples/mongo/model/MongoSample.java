@@ -10,10 +10,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Contact;
-import uk.ac.ebi.biosamples.model.Organization;
-import uk.ac.ebi.biosamples.model.Publication;
+import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.service.CustomInstantDeserializer;
 import uk.ac.ebi.biosamples.service.CustomInstantSerializer;
@@ -63,6 +60,8 @@ public class MongoSample {
 
 	//	@JsonSerialize(using = AbstractDataSerializer.class)
 	protected Set<AbstractData> data;
+
+	protected SubmittedViaType submittedVia;
 
 	@JsonIgnore
 	public boolean hasAccession() {
@@ -129,6 +128,10 @@ public class MongoSample {
 		return data;
 	}
 
+	public SubmittedViaType getSubmittedVia() {
+		return submittedVia;
+	}
+
 	@Override
     public boolean equals(Object o) {
 
@@ -147,7 +150,8 @@ public class MongoSample {
         		&& Objects.equals(this.externalReferences, other.externalReferences)
         		&& Objects.equals(this.organizations,  other.organizations)
         		&& Objects.equals(this.contacts,  other.contacts)
-        		&& Objects.equals(this.publications,  other.publications);
+        		&& Objects.equals(this.publications,  other.publications)
+        		&& Objects.equals(this.submittedVia,  other.submittedVia);
     }
     
     @Override
@@ -183,6 +187,8 @@ public class MongoSample {
     	sb.append(publications);
     	sb.append(",");
     	sb.append(data);
+    	sb.append(",");
+    	sb.append(submittedVia);
     	sb.append(")");
     	return sb.toString();
     }
@@ -200,8 +206,9 @@ public class MongoSample {
     		@JsonProperty("externalReferences") SortedSet<MongoExternalReference> externalReferences, 
     		@JsonProperty("organizations") SortedSet<Organization> organizations, 
     		@JsonProperty("contacts") SortedSet<Contact> contacts,
-    		@JsonProperty("publications") SortedSet<Publication> publications) {
-		
+    		@JsonProperty("publications") SortedSet<Publication> publications,
+    		@JsonProperty("submittedVia") SubmittedViaType submittedVia) {
+
 		MongoSample sample = new MongoSample();
 		
 		sample.accession = accession;		
@@ -244,6 +251,8 @@ public class MongoSample {
 		if (publications != null && publications.size() > 0) {
 			sample.publications.addAll(publications);
 		}
+
+		sample.submittedVia = submittedVia;
 		
 		//split accession into prefix & number, if possible
         Pattern r = Pattern.compile("^(\\D+)(\\d+)$");
