@@ -6,8 +6,6 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import uk.ac.ebi.biosamples.model.BioSchemasContext;
 
 import java.io.IOException;
-import java.net.URI;
-import java.util.Map;
 
 public class ContextSerializer extends StdSerializer<BioSchemasContext> {
 
@@ -17,25 +15,21 @@ public class ContextSerializer extends StdSerializer<BioSchemasContext> {
 
     @Override
     public void serialize(BioSchemasContext bioSchemasContext, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
+
+        // Write the @base field -> Not sure why this is need, but following UNIPROT convention
+        //jsonGenerator.writeStartObject();
+        //jsonGenerator.writeStringField("@base", bioSchemasContext.getBaseContext().toString());
+        //jsonGenerator.writeEndObject();
+
         jsonGenerator.writeStartArray();
 
         // Write the schema.org base namespace
         jsonGenerator.writeString(bioSchemasContext.getSchemaOrgContext().toString());
 
-        // Write the @base field -> Not sure why this is need, but following UNIPROT convention
-        jsonGenerator.writeStartObject();
-        jsonGenerator.writeStringField("@base", bioSchemasContext.getBaseContext().toString());
-        jsonGenerator.writeEndObject();
-
         // Write all the other contexts
-        jsonGenerator.writeStartObject();
-        for(Map.Entry<String, URI> contextEntry: bioSchemasContext.getOtherContext().entrySet()) {
-            jsonGenerator.writeFieldName(contextEntry.getKey());
-            jsonGenerator.writeStartObject();
-            jsonGenerator.writeStringField("@id", contextEntry.getValue().toString());
-            jsonGenerator.writeEndObject();
+        if (!bioSchemasContext.getOtherContexts().isEmpty()) {
+            jsonGenerator.writeObject(bioSchemasContext.getOtherContexts());
         }
-        jsonGenerator.writeEndObject();
 
         jsonGenerator.writeEndArray();
     }

@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.*;
 import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
@@ -290,11 +291,14 @@ public class SamplesRestController {
 		sample = bioSamplesAapService.handleSampleDomain(sample);
 
 		Instant release = Instant.ofEpochSecond(LocalDateTime.now(ZoneOffset.UTC).plusYears(100).toEpochSecond(ZoneOffset.UTC));
-		Instant update = sample.getUpdate();
-		if (update == null) {
-			update = Instant.now();
-		}
-		sample = Sample.Builder.fromSample(sample).withRelease(release).withUpdate(update).build();
+		Instant update = Instant.now();
+		SubmittedViaType submittedVia =
+				sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
+
+		sample = Sample.Builder.fromSample(sample)
+				.withRelease(release)
+				.withUpdate(update)
+				.withSubmittedVia(submittedVia).build();
 
 		sample = sampleService.store(sample);
 		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
@@ -316,18 +320,13 @@ public class SamplesRestController {
 
 		sample = bioSamplesAapService.handleSampleDomain(sample);
 
-		//TODO disallow previously accessioned samples - BSD-1186
-
-		//TODO disallow previously accessioned samples - BSD-1186
-
-		//limit use of this method to write super-users only
-		if (bioSamplesAapService.isWriteSuperUser() && setUpdateDate) {
-//			sample = Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(),
-//					sample.getRelease(), Instant.now(),
-//					sample.getCharacteristics(), sample.getRelationships(), sample.getExternalReferences(),
-//					sample.getOrganizations(), sample.getContacts(), sample.getPublications());
-            sample = Sample.Builder.fromSample(sample).withUpdate(Instant.now()).build();
-		}
+		//update date is system generated field
+		Instant update = Instant.now();
+		SubmittedViaType submittedVia =
+				sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
+		sample = Sample.Builder.fromSample(sample)
+				.withUpdate(update)
+				.withSubmittedVia(submittedVia).build();
 
 		if (!setFullDetails) {
 			sample = sampleManipulationService.removeLegacyFields(sample);
