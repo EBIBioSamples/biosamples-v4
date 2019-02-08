@@ -68,10 +68,8 @@ public class EnaRunner implements ApplicationRunner {
             EraRowCallbackHandler eraRowCallbackHandler = new EraRowCallbackHandler(null, enaCallableFactory, futures);
             eraProDao.doSampleCallback(fromDate, toDate, eraRowCallbackHandler);
 
-            /*
             NcbiRowCallbackHandler ncbiRowCallbackHandler = new NcbiRowCallbackHandler(null, ncbiCallableFactory, futures);
             eraProDao.getNcbiCallback(fromDate, toDate, ncbiRowCallbackHandler);
-            */
         } else {
 
             try (AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, false,
