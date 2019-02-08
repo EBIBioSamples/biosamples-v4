@@ -38,7 +38,7 @@ public class MessageHandlerSolr {
     public void handle(MessageContent messageContent) throws Exception {
 
         if (messageContent.getSample() == null) {
-            LOGGER.warn("Recieved message without sample");
+            LOGGER.warn("received message without sample");
             return;
         }
 
