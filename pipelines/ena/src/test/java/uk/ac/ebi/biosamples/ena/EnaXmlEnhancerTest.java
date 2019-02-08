@@ -109,19 +109,51 @@ public class EnaXmlEnhancerTest {
 
     @Test
     public void test_title_rule_fixes_applicable_xml() {
-        enaDatabaseSample = enaXmlEnhancer.getEnaDatabaseSample("SAMEA749880");
+        enaDatabaseSample = new EnaDatabaseSample();
+        enaDatabaseSample.lastUpdated = "2018-03-09";
+        enaDatabaseSample.firstPublic = "2010-02-26";
+        enaDatabaseSample.brokerName = null;
+        enaDatabaseSample.bioSamplesId = "'SAMEA749880'";
+        enaDatabaseSample.centreName = "Wellcome Sanger Institute";
+        enaDatabaseSample.fixed = "N";
+        enaDatabaseSample.taxId = "'580240'";
+        enaDatabaseSample.scientificName = "Saccharomyces cerevisiae W303";
+        enaDatabaseSample.fixedTaxId = null;
+        enaDatabaseSample.fixedCommonName = null;
+        enaDatabaseSample.fixedScientificName = null;
         assertEquals(exampleSampleWithTitleAddedXml, enaXmlEnhancer.applyRules(exampleSampleWithoutTitleXml, enaDatabaseSample, TitleRule.INSTANCE));
     }
 
     @Test
     public void test_taxon_fix_rule_fixes_applicable_xml() {
-        enaDatabaseSample = enaXmlEnhancer.getEnaDatabaseSample("SAMN00014227");
+        enaDatabaseSample = new EnaDatabaseSample();
+        enaDatabaseSample.lastUpdated = "2015-06-23";
+        enaDatabaseSample.firstPublic = "2010-02-26";
+        enaDatabaseSample.brokerName = null;
+        enaDatabaseSample.bioSamplesId = "'SAMN00014227'";
+        enaDatabaseSample.centreName = "Baylor College of Medicine";
+        enaDatabaseSample.fixed = "Y";
+        enaDatabaseSample.taxId = "'7227'";
+        enaDatabaseSample.scientificName = null;
+        enaDatabaseSample.fixedTaxId = "7227";
+        enaDatabaseSample.fixedCommonName = null;
+        enaDatabaseSample.fixedScientificName = "Drosophila melanogaster";
         assertEquals(exampleSampleThatHasBeenTaxonFixed, enaXmlEnhancer.applyRules(exampleSampleThatCanBeTaxonFixed, enaDatabaseSample, TaxonRule.INSTANCE));
     }
 
     @Test
     public void test_taxon_fix_rule_fixes_applicable_xml_SAMN02356578() {
-        enaDatabaseSample = enaXmlEnhancer.getEnaDatabaseSample("SAMN02356578");
+        enaDatabaseSample.lastUpdated = "2015-06-23";
+        enaDatabaseSample.firstPublic = "2013-09-25";
+        enaDatabaseSample.brokerName = null;
+        enaDatabaseSample.bioSamplesId = "'SAMN02356578'";
+        enaDatabaseSample.centreName = "Broad Institute";
+        enaDatabaseSample.fixed = "Y";
+        enaDatabaseSample.taxId = "'1400346'";
+        enaDatabaseSample.scientificName = "Acinetobacter lwoffii NIPH 512";
+        enaDatabaseSample.fixedTaxId = "981327";
+        enaDatabaseSample.fixedCommonName = null;
+        enaDatabaseSample.fixedScientificName = "Acinetobacter lwoffii NCTC 5866 = CIP 64.10 = NIPH 512";
         assertEquals(exampleSampleThatHasBeenTaxonFixedSAMN02356578, enaXmlEnhancer.applyRules(exampleSampleThatCanBeTaxonFixedSAMN02356578, enaDatabaseSample, TaxonRule.INSTANCE));
     }
 
