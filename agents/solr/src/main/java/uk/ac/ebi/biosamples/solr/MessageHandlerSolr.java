@@ -38,7 +38,7 @@ public class MessageHandlerSolr {
     public void handle(MessageContent messageContent) throws Exception {
 
         if (messageContent.getSample() == null) {
-            LOGGER.warn("Recieved message without sample");
+            LOGGER.warn("received message without sample");
             return;
         }
 
@@ -77,6 +77,11 @@ public class MessageHandlerSolr {
 
             solrSample = repository.saveWithoutCommit(solrSample);
             LOGGER.info(String.format("indexing %s", sample.getAccession()));
+        }
+        else
+        {
+            repository.delete(sample.getAccession());
+            LOGGER.info(String.format("removing %s from index", sample.getAccession()));
         }
     }
 

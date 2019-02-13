@@ -170,11 +170,11 @@ public class RestIntegration extends AbstractIntegration {
 		if (!sampleTest2Rest.getCharacteristics().contains(Attribute.build("UTF-8 test", "αβ"))) {
 			throw new RuntimeException("Unable to find UTF-8 characters");
 		}
-		//check the update date
-		if (!sampleTest2Rest.getUpdate().equals(sampleTest2.getUpdate())) {
+		//check the update date is updated by the system
+		if (sampleTest2Rest.getUpdate().equals(sampleTest2.getUpdate())) {
 			log.info("sampleTest2Rest.getUpdate() = "+sampleTest2Rest.getUpdate());
 			log.info("sampleTest2.getUpdate() = "+sampleTest2.getUpdate());
-			throw new RuntimeException("Update date was modified when it shouldn't have been");
+			throw new RuntimeException("Instead of using provided update date, it should be set by the system, ");
 		}
 		//now do another update to delete the relationship
 //		sampleTest1 = Sample.build(sampleTest1.getName(), sampleTest1.getAccession(), sampleTest1.getDomain(),

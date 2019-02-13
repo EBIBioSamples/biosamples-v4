@@ -49,9 +49,9 @@ public class MockBioSamplesClient extends BioSamplesClient {
         count++;
         String sampleJson = "";
         try {
-            objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+            //objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
             sampleJson = objectMapper.writeValueAsString(sample);
-            System.out.println(sampleJson);
+            //System.out.println(sampleJson);
         } catch (JsonProcessingException e) {
 
         }

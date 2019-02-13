@@ -13,31 +13,25 @@ import java.util.Map;
 @JsonDeserialize(using = ContextDeserializer.class)
 public class BioSchemasContext {
 
-    private final URI schemaOrgContext= URI.create("http://schema.org");
-    private final URI schemaOrgBaseContext = schemaOrgContext;
+    private final URI schemaOrgContext;
     private final Map<String, URI> otherContexts;
 
     public BioSchemasContext() {
-        this.otherContexts = new HashMap<>();
-    }
-
-    public BioSchemasContext(Map<String, URI> otherContexts) {
-        this.otherContexts = otherContexts;
-    }
-
-    public void addContext(String name, URI id) {
-        this.otherContexts.put(name, id);
+        schemaOrgContext = URI.create("http://schema.org");
+        otherContexts = new HashMap<>();
+        otherContexts.put("OBI", URI.create("http://purl.obolibrary.org/obo/OBI_"));
+        otherContexts.put("biosample", URI.create("http://identifiers.org/biosample"));
     }
 
     public URI getSchemaOrgContext() {
         return schemaOrgContext;
     }
 
-    public URI getBaseContext() {
-        return schemaOrgBaseContext;
+    public Map<String, URI> getOtherContexts() {
+        return otherContexts;
     }
 
-    public Map<String, URI> getOtherContext() {
-        return otherContexts;
+    public void addOtherContexts(String name, URI id) {
+        this.otherContexts.put(name, id);
     }
 }
