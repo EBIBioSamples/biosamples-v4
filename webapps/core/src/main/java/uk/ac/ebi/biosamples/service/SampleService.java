@@ -23,7 +23,7 @@ import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
  * Service layer business logic for centralising repository access and
  * conversions between different controller. Use this instead of linking to
  * repositories directly.
- * 
+ *
  * @author faulcon
  *
  */
@@ -31,34 +31,34 @@ import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
 public class SampleService {
 
 	private static Logger log = LoggerFactory.getLogger(SampleService.class);
-	
+
 	//TODO use constructor injection
-	
+
 	@Autowired
 	private MongoAccessionService mongoAccessionService;
 	@Autowired
-	private MongoSampleRepository mongoSampleRepository;			
+	private MongoSampleRepository mongoSampleRepository;
 	@Autowired
 	private MongoSampleToSampleConverter mongoSampleToSampleConverter;
 	@Autowired
-	private SampleToMongoSampleConverter sampleToMongoSampleConverter;	
-	
-	
-	@Autowired 
+	private SampleToMongoSampleConverter sampleToMongoSampleConverter;
+
+
+	@Autowired
 	private SampleValidator sampleValidator;
-	
+
 	@Autowired
 	private SolrSampleService solrSampleService;
-	
+
 	@Autowired
 	private SampleReadService sampleReadService;
-	
+
 	@Autowired
 	private MessagingService messagingSerivce;
-	
+
 	/**
-	 * Throws an IllegalArgumentException of no sample with that accession exists
-	 * 
+	 * Throws an IllegalArgumentException of no sample with that accession exists`
+	 *
 	 * @param accession
 	 * @return
 	 * @throws IllegalArgumentException
@@ -68,21 +68,21 @@ public class SampleService {
 	public Optional<Sample> fetch(String accession, Optional<List<String>> curationDomains) {
 		return sampleReadService.fetch(accession, curationDomains);
 	}
-	
-	
+
+
 	public Autocomplete getAutocomplete(String autocompletePrefix, Collection<Filter> filters, int noSuggestions) {
 		return solrSampleService.getAutocomplete(autocompletePrefix, filters, noSuggestions);
 	}
 
 	//because the fetchUsing caches the sample, if an updated version is stored, we need to make sure that any cached version
-	//is removed. 
+	//is removed.
 	//Note, pages of samples will not be cache busted, only single-accession sample retrieval
 	//@CacheEvict(cacheNames=WebappProperties.fetchUsing, key="#result.accession")
 	public Sample store(Sample sample) {
 		// TODO check if there is an existing copy and if there are any changes
 
 		//do validation
-		// TODO validate that relationships have this sample as the source 
+		// TODO validate that relationships have this sample as the source
 		Collection<String> errors = sampleValidator.validate(sample);
 		if (errors.size() > 0) {
 			//TODO no validation information is provided to users
@@ -102,11 +102,11 @@ public class SampleService {
 		} else {
 			//assign it a new accession
 			sample = mongoAccessionService.generateAccession(sample);
-			
+
 			//send a message for storage and further processing
 			messagingSerivce.fetchThenSendMessage(sample.getAccession());
 		}
-		
+
 		//return the sample in case we have modified it i.e accessioned
 		//do a fetch to return it with curation objects and inverse relationships
 		return fetch(sample.getAccession(), Optional.empty()).get();

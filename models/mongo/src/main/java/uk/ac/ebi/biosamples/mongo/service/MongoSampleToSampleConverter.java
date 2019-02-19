@@ -20,15 +20,15 @@ public class MongoSampleToSampleConverter implements Converter<MongoSample, Samp
 	private MongoExternalReferenceToExternalReferenceConverter mongoExternalReferenceToExternalReferenceConverter;
 	@Autowired
 	private MongoRelationshipToRelationshipConverter mongoRelationshipToRelationshipConverter;
-	
+
 	@Override
 	public Sample convert(MongoSample sample) {
-		
+
 		SortedSet<ExternalReference> externalReferences = new TreeSet<>();
 		for (MongoExternalReference mongoExternalReference : sample.getExternalReferences()) {
 			externalReferences.add(mongoExternalReferenceToExternalReferenceConverter.convert(mongoExternalReference));
 		}
-		
+
 		SortedSet<Relationship> relationships = new TreeSet<>();
 		for (MongoRelationship mongoRelationship : sample.getRelationships()) {
 			relationships.add(mongoRelationshipToRelationshipConverter.convert(mongoRelationship));
@@ -36,9 +36,9 @@ public class MongoSampleToSampleConverter implements Converter<MongoSample, Samp
 
 		//when we convert to a MongoSample then the Sample *must* have a domain
 		if (sample.getDomain() == null) {
-			throw new RuntimeException("sample does not have domain "+sample);
+			throw new RuntimeException("sample does not have domain " + sample);
 		}
-		
+
 		return new Sample.Builder(sample.getName(), sample.getAccession()).withDomain(sample.getDomain())
 				.withRelease(sample.getRelease()).withUpdate(sample.getUpdate())
 				.withAttributes(sample.getAttributes()).withRelationships(relationships)
@@ -46,7 +46,5 @@ public class MongoSampleToSampleConverter implements Converter<MongoSample, Samp
 				.withExternalReferences(externalReferences).withOrganizations(sample.getOrganizations())
 				.withContacts(sample.getContacts()).withPublications(sample.getPublications())
 				.build();
-//		return Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(), sample.getRelease(), sample.getUpdate(),
-//				sample.getAttributes(), relationships, externalReferences, sample.getOrganizations(), sample.getContacts(), sample.getPublications());
 	}
 }
