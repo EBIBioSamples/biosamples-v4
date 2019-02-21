@@ -9,7 +9,8 @@ This pages contains links to release notes for BioSamples for version 4.0.0 and 
 * Replicate required ENA XML Dump functionality in the ENA pipeline
 * Added an annotation 'submitted via USI' to USI samples
 * Added support for suppressed samples imported theough ENA pipeline
-* Added user  documentation of JSON schema
+* Added user documentation of JSON schema
+* Added logging and retry logic for reindexing pipeline
 
 [[section]]
 4.1.11
