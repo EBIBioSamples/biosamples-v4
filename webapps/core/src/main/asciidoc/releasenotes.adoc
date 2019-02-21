@@ -11,6 +11,7 @@ This pages contains links to release notes for BioSamples for version 4.0.0 and 
 * Added support for suppressed samples imported theough ENA pipeline
 * Added user documentation of JSON schema
 * Added logging and retry logic for reindexing pipeline
+* Refined ncbi pipeline to check suppressed samples are in solr index before removing
 
 [[section]]
 4.1.11
