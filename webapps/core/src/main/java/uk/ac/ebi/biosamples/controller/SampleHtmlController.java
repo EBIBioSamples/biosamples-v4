@@ -81,6 +81,11 @@ public class SampleHtmlController {
 		return "about";
 	}
 
+	@GetMapping(value = "/submit")
+	public String submit() {
+		return "submit";
+	}
+
 
 	//TODO: 2018/10/29 Maintaining old method for legacy purpose, we can think of deleting this if no-one is actually using it
 //	@GetMapping(value = "/samples")

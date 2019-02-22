@@ -48,7 +48,7 @@
 							data-description="navigational">
 							<li class=""><a th:href="@{${coreUrl}}">Home</a></li>
 							<li class=""><a th:href="@{{baseUrl}/samples(baseUrl=${coreUrl})}">Search</a></li>
-							<li class=""><a th:href="@{/}">Submit</a></li>
+							<li class=""><a th:href="@{{baseUrl}/submit(baseUrl=${coreUrl})}">Submit</a></li>
 							<li class=""><a th:href="@{{baseUrl}/docs(baseUrl=${coreUrl})}">Documentation</a></li>
 							<li class=""><a th:href="@{{baseUrl}/about(baseUrl=${coreUrl})}">About</a></li>
 						</ul>

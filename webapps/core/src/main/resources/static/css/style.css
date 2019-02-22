@@ -165,3 +165,23 @@ code[class^="language"] {
 .menu.nested {
     display: none;
 }
+
+.biosamples-button-row { margin-bottom: 1em; }
+
+.biosamples-button-row div {
+    margin-bottom: 1em;
+}
+
+.biosamples-card { text-align: center; border: 1px solid #007c82 /*EBI Color*/ ; min-height: 150px; padding: 1em; }
+
+.biosamples-card:hover { background-color: #007c82; }
+
+.biosamples-card:hover * { color: white; }
+
+.warning-msg {
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 3px 3px 3px 3px;
+    color: #9F6000;
+    background-color: #FEEFB3;
+}
