@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 import uk.ac.ebi.biosamples.controller.SampleHtmlController;
+import uk.ac.ebi.biosamples.controller.SampleRestController;
 import uk.ac.ebi.biosamples.model.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -45,9 +46,10 @@ public class JsonLDService {
         JsonLDSample jsonLDSample = jsonLDDataRecord.getMainEntity();
 
         try {
-            Method method = SampleHtmlController.class.getMethod("sampleAccession", String.class);
+            Method method = SampleRestController.class.getMethod("getSampleHal", String.class, String.class, String[].class);
             String sampleUrl = linkTo(method, sample.getAccession()).toUri().toString();
             jsonLDSample.setUrl(sampleUrl);
+            jsonLDSample.setId(sampleUrl);
         } catch (NoSuchMethodException e) {
             e.printStackTrace();
         }

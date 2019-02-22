@@ -1,16 +1,5 @@
 package uk.ac.ebi.biosamples;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.AmqpTemplate;
@@ -21,87 +10,119 @@ import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.util.CloseableIterator;
 import org.springframework.stereotype.Component;
-
-import uk.ac.ebi.biosamples.MessageContent;
-import uk.ac.ebi.biosamples.Messaging;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.service.SampleReadService;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
+
+import java.util.*;
+import java.util.concurrent.*;
 
 
 /**
  * This runner will get a list of accessions from mongo directly, query
  * the API to get the latest information, and then send that information
  * to Rabbit for the Solr Agent to reindex it into Solr.
- *
+ * <p>
  * Mongo is queried instead of the API because the API is driven by Solr,
  * and if Solr is incorrect (which it will be because why else would you
  * run this) then it won't get the right information from the API.
  *
  * @author faulcon
- *
  */
 @Component
 public class ReindexRunner implements ApplicationRunner {
-	private Logger log = LoggerFactory.getLogger(getClass());
 
-	@Autowired
-	private AmqpTemplate amqpTemplate;
-	
-	@Autowired
-	private SampleReadService sampleReadService;
-	
-	@Autowired
-	MongoOperations mongoOperations;
+    private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationRunner.class);
 
-	@Override
-	public void run(ApplicationArguments args) throws Exception {	
-		Map<String, Future<Void>> futures =  new HashMap<>();
-		
-		ExecutorService executor = null;
-		try {
-			executor = Executors.newFixedThreadPool(128);
+    private final AmqpTemplate amqpTemplate;
 
-			try (CloseableIterator<MongoSample> it = mongoOperations.stream(new Query(), MongoSample.class)) {
-				while (it.hasNext()) {
-					MongoSample mongoSample = it.next();
-					String accession = mongoSample.getAccession();
-					log.info("handling sample "+accession);
-					futures.put(accession, 
-						executor.submit(
-							new AccessionCallable(accession, sampleReadService, amqpTemplate)));
-					ThreadUtils.checkFutures(futures, 1000);
-				}
-			}
-			ThreadUtils.checkFutures(futures, 0);
-		} finally {
-			executor.shutdown();
-			executor.awaitTermination(24, TimeUnit.HOURS);
-		}
-	}
-	
-	private static class AccessionCallable implements Callable<Void> {
-		@SuppressWarnings("unused")
-		private Logger log = LoggerFactory.getLogger(getClass());
-		
-		private final String accession;
-		private final SampleReadService sampleReadService;
-		private final AmqpTemplate amqpTemplate;
-		private static final List<Sample> related = new ArrayList<>();
-		
-		public AccessionCallable(String accession, SampleReadService sampleReadService, AmqpTemplate amqpTemplate) {
-			this.accession = accession;
-			this.sampleReadService = sampleReadService;
-			this.amqpTemplate = amqpTemplate;
-		}
+    private final SampleReadService sampleReadService;
 
-		@Override
-		public Void call() throws Exception {
-			amqpTemplate.convertAndSend(Messaging.exchangeForIndexingSolr, "", 
-					MessageContent.build(sampleReadService.fetch(accession, Optional.empty()).get(), null, related, false));
-			return null;
-		}
-	}
+    private final MongoOperations mongoOperations;
+
+    @Autowired
+    public ReindexRunner(AmqpTemplate amqpTemplate, SampleReadService sampleReadService, MongoOperations mongoOperations) {
+        this.amqpTemplate = amqpTemplate;
+        this.sampleReadService = sampleReadService;
+        this.mongoOperations = mongoOperations;
+    }
+
+    @Override
+    public void run(ApplicationArguments args) throws Exception {
+        Map<String, Future<Void>> futures = new HashMap<>();
+
+        ExecutorService executor = null;
+        try {
+            executor = Executors.newFixedThreadPool(128);
+
+            try (CloseableIterator<MongoSample> it = mongoOperations.stream(new Query(), MongoSample.class)) {
+                while (it.hasNext()) {
+                    MongoSample mongoSample = it.next();
+                    String accession = mongoSample.getAccession();
+                    LOGGER.info("handling sample " + accession);
+                    futures.put(accession,
+                            executor.submit(
+                                    new AccessionCallable(accession, sampleReadService, amqpTemplate)));
+                    ThreadUtils.checkFutures(futures, 1000);
+                }
+            }
+            ThreadUtils.checkFutures(futures, 0);
+        } finally {
+            executor.shutdown();
+            executor.awaitTermination(24, TimeUnit.HOURS);
+        }
+    }
+
+    private static class AccessionCallable implements Callable<Void> {
+
+        private final String accession;
+        private final SampleReadService sampleReadService;
+        private final AmqpTemplate amqpTemplate;
+        private static final List<Sample> related = new ArrayList<>();
+
+        public AccessionCallable(String accession, SampleReadService sampleReadService, AmqpTemplate amqpTemplate) {
+            this.accession = accession;
+            this.sampleReadService = sampleReadService;
+            this.amqpTemplate = amqpTemplate;
+        }
+
+        @Override
+        public Void call() throws Exception {
+            if (!fetchSampleAndSendMessage(false)) {
+                fetchSampleAndSendMessage(true);
+            }
+            return null;
+        }
+
+        private boolean fetchSampleAndSendMessage(boolean isRetry) {
+            if (isRetry) {
+                try {
+                    TimeUnit.SECONDS.sleep(1);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+            Optional<Sample> opt = sampleReadService.fetch(accession, Optional.empty());
+            if (opt.isPresent()) {
+                try {
+                    Sample sample = opt.get();
+                    MessageContent messageContent = MessageContent.build(sample, null, related, false);
+                    amqpTemplate.convertAndSend(Messaging.exchangeForIndexingSolr, "", messageContent);
+                    return true;
+                } catch (Exception e) {
+                    LOGGER.error(String.format("failed to convert sample to message and send to queue for %s", accession));
+                    return false;
+                }
+            } else {
+                if (isRetry) {
+                    LOGGER.error(String.format("failed to fetch sample after retrying for %s", accession));
+                } else {
+                    LOGGER.warn(String.format("failed to fetch sample for %s", accession));
+                }
+                return false;
+            }
+        }
+    }
 
 }
