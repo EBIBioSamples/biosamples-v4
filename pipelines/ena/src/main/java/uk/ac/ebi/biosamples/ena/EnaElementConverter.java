@@ -23,6 +23,8 @@ public class EnaElementConverter implements Converter<Element, Sample> {
     private static final String ENA_ALIAS = "Alias";
     private static final String ENA_SRA_ACCESSION = "SRA accession";
     private static final String ENA_BROKER_NAME = "Broker name";
+    private static final String INSDC_CENTER_NAME = "INSDC center name";
+    private static final String INSDC_CENTER_ALIAS = "INSDC center alias";
     private static final String ENA_TITLE = "Title";
     private static final String ENA_DESCRIPTION = "Description";
 
@@ -80,6 +82,18 @@ public class EnaElementConverter implements Converter<Element, Sample> {
             attributes.add(Attribute.build(ENA_BROKER_NAME, brokerName));
         }
 
+        //ENA center name
+        if (XmlPathBuilder.of(root).path(SAMPLE).attributeExists("center_name")) {
+            String centerName = XmlPathBuilder.of(root).path(SAMPLE).attribute("center_name").trim();
+            attributes.add(Attribute.build(INSDC_CENTER_NAME, centerName));
+        }
+
+        //ENA center alias
+        if (XmlPathBuilder.of(root).path(SAMPLE).attributeExists("center_alias")) {
+            String centerAlias = XmlPathBuilder.of(root).path(SAMPLE).attribute("center_alias").trim();
+            attributes.add(Attribute.build(INSDC_CENTER_ALIAS, centerAlias));
+        }
+
         //ENA title
         String title = "";
         if (XmlPathBuilder.of(root).path(SAMPLE, TITLE).exists() && XmlPathBuilder.of(root).path(SAMPLE, TITLE).text().trim().length() > 0) {
@@ -97,7 +111,6 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 
         //put various other fields in as synonyms
         Set<String> synonyms = new HashSet<>();
-        synonyms.add(XmlPathBuilder.of(root).path(SAMPLE).attribute("alias"));
         if (XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS, SUBMITTER_ID).exists()) {
             String synonym = XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS, SUBMITTER_ID).text();
             synonyms.add(synonym);

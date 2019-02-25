@@ -21,6 +21,7 @@ public class SampleToJsonLDSampleRecordConverter implements Converter<Sample, Js
 
         JsonLDSample jsonLD = new JsonLDSample();
         String[] identifiers = {getBioSamplesIdentifierDotOrg(sample.getAccession())};
+        jsonLD.setSameAs(getBioSamplesIdentifierDotOrgLink(sample.getAccession()));
         jsonLD.setIdentifiers(identifiers);
         jsonLD.setName(sample.getName());
 
@@ -37,10 +38,10 @@ public class SampleToJsonLDSampleRecordConverter implements Converter<Sample, Js
 
         List<String> datasets = getDatasets(sample);
         if (!datasets.isEmpty()) {
-            jsonLD.setDataset(datasets);
+            jsonLD.setSubjectOf(datasets);
         }
 
-        sampleRecord.idetifier(getBioSamplesIdentifierDotOrg(sample.getAccession()));
+        sampleRecord.identifier(getBioSamplesIdentifierDotOrg(sample.getAccession()));
         sampleRecord.mainEntity(jsonLD);
 
         return sampleRecord;
@@ -57,17 +58,17 @@ public class SampleToJsonLDSampleRecordConverter implements Converter<Sample, Js
             if(attr.getIri().size() > 0) {
             	//this only puts the first IRI in
 //                JsonLDMedicalCode medicalCode = new JsonLDMedicalCode();
-//                medicalCode.setCodeValue(attr.getIri().iterator().next());
+//                medicalCode.setTermCode(attr.getIri().iterator().next());
 
                 // Assuming that if the iri is not starting with a http[s] is
                 // probably a CURIE
-                List<JsonLDCategoryCode> valueReferences = new ArrayList<>();
+                List<JsonLDDefinedTerm> valueReferences = new ArrayList<>();
                 for (String iri: attr.getIri()) {
-                    JsonLDCategoryCode valueReference = new JsonLDCategoryCode();
+                    JsonLDDefinedTerm valueReference = new JsonLDDefinedTerm();
                     if (iri.matches("^https?://.*")) {
-                        valueReference.setUrl(iri);
+                        valueReference.setId(iri);
                     } else {
-                        valueReference.setCodeValue(iri);
+                        valueReference.setTermCode(iri);
                     }
                     valueReferences.add(valueReference);
                 }
@@ -89,7 +90,12 @@ public class SampleToJsonLDSampleRecordConverter implements Converter<Sample, Js
     }
 
     private String getBioSamplesIdentifierDotOrg(String accession) {
-        return "biosamples:"+accession;
+        return "biosample:"+accession;
+    }
+
+    //TODO change identifiers
+    private String getBioSamplesIdentifierDotOrgLink(String accession) {
+        return "http://identifiers.org/biosample/"+accession;
     }
 
 }

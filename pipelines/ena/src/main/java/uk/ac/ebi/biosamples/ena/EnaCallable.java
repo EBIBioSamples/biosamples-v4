@@ -1,24 +1,22 @@
 package uk.ac.ebi.biosamples.ena;
 
+import org.dom4j.Document;
+import org.dom4j.Element;
+import org.dom4j.io.SAXReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.ExternalReference;
+import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
+
 import java.io.StringReader;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentLinkedQueue;
-
-import org.dom4j.Document;
-import org.dom4j.Element;
-import org.dom4j.io.SAXReader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.dao.EmptyResultDataAccessException;
-import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.ExternalReference;
-import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
 public class EnaCallable implements Callable<Void> {
 
@@ -26,14 +24,16 @@ public class EnaCallable implements Callable<Void> {
 
 	private final String sampleAccession;
 	private final BioSamplesClient bioSamplesClient;
+	private final EnaXmlEnhancer enaXmlEnhancer;
 	private final EnaElementConverter enaElementConverter;
 	private final EraProDao eraProDao;
 	private final String domain;
 	
 	public EnaCallable(String sampleAccession, BioSamplesClient bioSamplesClient,
-			EnaElementConverter enaElementConverter, EraProDao eraProDao, String domain) {
+			EnaXmlEnhancer enaXmlEnhancer, EnaElementConverter enaElementConverter, EraProDao eraProDao, String domain) {
 		this.sampleAccession = sampleAccession;
 		this.bioSamplesClient = bioSamplesClient;
+		this.enaXmlEnhancer = enaXmlEnhancer;
 		this.enaElementConverter = enaElementConverter;
 		this.eraProDao = eraProDao;
 		this.domain = domain;
@@ -44,10 +44,11 @@ public class EnaCallable implements Callable<Void> {
 		log.trace("HANDLING " + sampleAccession);
 		
 		String xmlString = eraProDao.getSampleXml(sampleAccession);
-		// System.out.println(xmlString);
+
 		SAXReader reader = new SAXReader();
 		Document xml = reader.read(new StringReader(xmlString));
-		Element root = xml.getRootElement();
+		Element root = enaXmlEnhancer.applyAllRules(xml.getRootElement(), enaXmlEnhancer.getEnaDatabaseSample(sampleAccession));
+
 		// check that we got some content
 		if (XmlPathBuilder.of(root).path("SAMPLE").exists()) {
 			Sample sample = enaElementConverter.convert(root);
@@ -71,12 +72,7 @@ public class EnaCallable implements Callable<Void> {
 				attributes.add(Attribute.build("INSDC last update", 
 					DateTimeFormatter.ISO_INSTANT.format(update)));
 			}
-			String centreName = eraProDao.getCentreName(sampleAccession);
-			if (centreName == null) {
-				log.warn("Unable to retrieve centre name for "+sampleAccession);
-			} else {
-				attributes.add(Attribute.build("INSDC center name", centreName));				
-			}
+
 			String checklist = eraProDao.getChecklist(sampleAccession);
 			if (checklist == null) {
 				log.warn("Unable to retrieve checklist for "+sampleAccession);

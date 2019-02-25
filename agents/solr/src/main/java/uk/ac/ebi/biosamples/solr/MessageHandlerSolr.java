@@ -38,7 +38,7 @@ public class MessageHandlerSolr {
     public void handle(MessageContent messageContent) throws Exception {
 
         if (messageContent.getSample() == null) {
-            LOGGER.warn("Recieved message without sample");
+            LOGGER.warn("received message without sample");
             return;
         }
 
@@ -55,7 +55,6 @@ public class MessageHandlerSolr {
             SolrSample solrSample = sampleToSolrSampleConverter.convert(sample);
             //add the modified time to the solrSample
             String indexedTime = ZonedDateTime.now(ZoneOffset.UTC)
-                    //.format(DateTimeFormatter.ofPattern("yyyy-mm-dd'T'HH:mm:ss.SSSX"));
                     .format(DateTimeFormatter.ISO_INSTANT);
 
             solrSample = SolrSample.build(solrSample.getName(), solrSample.getAccession(), solrSample.getDomain(),
@@ -73,10 +72,13 @@ public class MessageHandlerSolr {
                 }
             }
 
-            //TODO expand by following relationships
-
             solrSample = repository.saveWithoutCommit(solrSample);
-            LOGGER.info(String.format("indexing %s", sample.getAccession()));
+            LOGGER.info(String.format("added %s to index", sample.getAccession()));
+        } else {
+            if (repository.exists(sample.getAccession())) {
+                repository.delete(sample.getAccession());
+                LOGGER.info(String.format("removed %s from index", sample.getAccession()));
+            }
         }
     }
 
@@ -85,7 +87,7 @@ public class MessageHandlerSolr {
             if (attribute.getType().equals("INSDC status")) {
                 List<String> publicStatuses = Arrays.asList("public", "live");
                 if (!publicStatuses.contains(attribute.getValue())) {
-                    LOGGER.info(String.format("not indexing %s as INSDC status is %s", sample.getAccession(), attribute.getValue()));
+                    LOGGER.debug(String.format("not indexing %s as INSDC status is %s", sample.getAccession(), attribute.getValue()));
                     return false;
                 }
             }

@@ -44,6 +44,7 @@ public class MongoSerializationTest {
 		String accession = "TEST1";
 		Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
 		Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
+		SubmittedViaType submittedVia = SubmittedViaType.JSON_API;
 
 		SortedSet<Attribute> attributes = new TreeSet<>();
 		attributes.add(Attribute.build("organism", "Homo sapiens", Lists.newArrayList("http://purl.obolibrary.org/obo/NCBITaxon_9606"), null));
@@ -100,7 +101,7 @@ public class MongoSerializationTest {
 
 		return MongoSample.build(name, accession, "foozit", release, update,
 				attributes, structuredData, relationships, externalReferences,
-				organizations, contacts, publications);
+				organizations, contacts, publications, submittedVia);
 	}
 
 	private MongoSample getAMRMongoSample() {
@@ -109,6 +110,7 @@ public class MongoSerializationTest {
 		String domain = "foozit";
 		Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
 		Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
+		SubmittedViaType submittedVia = SubmittedViaType.JSON_API;
 		SortedSet<Attribute> attributes = new TreeSet<>();
 		SortedSet<MongoRelationship> relationships = new TreeSet<>();
 		SortedSet<MongoExternalReference> externalReferences = new TreeSet<>();
@@ -131,7 +133,7 @@ public class MongoSerializationTest {
 
 		return MongoSample.build(name, accession, domain, release, update,
 				attributes, data, relationships, externalReferences, organizations,
-				contacts, publications);
+				contacts, publications, submittedVia);
 
 	}
 	@Test
