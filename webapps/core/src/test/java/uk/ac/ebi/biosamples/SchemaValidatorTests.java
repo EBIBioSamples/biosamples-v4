@@ -39,6 +39,7 @@ public class SchemaValidatorTests {
     }
 
     @Test
+    @Ignore
     public void expect_schemas_to_exist_and_return_json_file_with_title_amr() throws Exception {
         mockMvc.perform(get("/schemas/amr.json"))
                 .andExpect(status().is2xxSuccessful())
@@ -106,6 +107,6 @@ public class SchemaValidatorTests {
 
 
     }
-    
+
 
 }

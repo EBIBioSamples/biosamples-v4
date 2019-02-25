@@ -31,29 +31,29 @@ public class Attribute implements Comparable<Attribute> {
 	private String value;
 	private SortedSet<String> iri;
 	private String unit;
-	
+
 	private Attribute(){
-		
+
 	}
-	
-	@JsonProperty("type") 
+
+	@JsonProperty("type")
     public String getType() {
 		return type;
 	}
 
-	@JsonProperty("value") 
+	@JsonProperty("value")
 	public String getValue() {
 		return value;
 	}
 
-	@JsonProperty("iri") 
+	@JsonProperty("iri")
 	public SortedSet<String> getIri() {
 		return iri;
 	}
-	
+
 	/**
 	 * This returns a string representation of the URL to lookup the associated ontology term iri in
-	 * EBI OLS. 
+	 * EBI OLS.
 	 * @return
 	 */
 	@JsonIgnore
@@ -62,7 +62,7 @@ public class Attribute implements Comparable<Attribute> {
 		if (iri == null || iri.size() == 0) return null;
 
 		String displayIri = iri.first();
-		
+
 		//check this is a sane iri
 		try {
 			UriComponents iriComponents = UriComponentsBuilder.fromUriString(displayIri).build(true);
@@ -77,7 +77,7 @@ public class Attribute implements Comparable<Attribute> {
 			log.error("An error occurred while trying to build OLS iri for " + displayIri, e);
 			return null;
 		}
-		
+
 		try {
 			//TODO application.properties this
 			//TODO use https
@@ -85,11 +85,11 @@ public class Attribute implements Comparable<Attribute> {
 		} catch (UnsupportedEncodingException e) {
 			//should never get here
 			throw new RuntimeException(e);
-		}		
-			
+		}
+
 	}
-	
-	@JsonProperty("unit") 
+
+	@JsonProperty("unit")
 	public String getUnit() {
 		return unit;
 	}
@@ -102,12 +102,12 @@ public class Attribute implements Comparable<Attribute> {
             return false;
         }
         Attribute other = (Attribute) o;
-        return Objects.equals(this.type, other.type) 
+        return Objects.equals(this.type, other.type)
         		&& Objects.equals(this.value, other.value)
         		&& Objects.equals(this.iri, other.iri)
         		&& Objects.equals(this.unit, other.unit);
     }
-    
+
     @Override
     public int hashCode() {
     	return Objects.hash(type, value, iri, unit);
@@ -155,7 +155,7 @@ public class Attribute implements Comparable<Attribute> {
 				}
 			}
 		}
-		
+
 //		if (this.unit == null && other.unit != null) {
 //			return -1;
 //		}
@@ -200,7 +200,7 @@ public class Attribute implements Comparable<Attribute> {
     	sb.append(")");
     	return sb.toString();
     }
-    
+
 	static public Attribute build(String type, String value) {
 		return build(type, value, Lists.newArrayList(), null);
 	}
@@ -209,13 +209,13 @@ public class Attribute implements Comparable<Attribute> {
 		if (iri == null) iri = "";
 		return build(type,value, Lists.newArrayList(iri), unit);
 	}
-	
+
     @JsonCreator
-	static public Attribute build(@JsonProperty("type") String type, @JsonProperty("value") String value, 
+	static public Attribute build(@JsonProperty("type") String type, @JsonProperty("value") String value,
 			@JsonProperty("iri") Collection<String> iri, @JsonProperty("unit") String unit) {
     	//check for nulls
-    	if (type == null) { 
-    		throw new IllegalArgumentException("type must not be null");    	
+    	if (type == null) {
+    		throw new IllegalArgumentException("type must not be null");
     	}
     	if (value == null) {
     		throw new IllegalArgumentException("value must not be null");
