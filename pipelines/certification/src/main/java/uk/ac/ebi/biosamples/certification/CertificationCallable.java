@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.model.CertificationResponse;
 import uk.ac.ebi.biosamples.model.Sample;
 
@@ -17,15 +18,18 @@ public class CertificationCallable implements Callable<Void> {
 
     private final Sample sample;
 
-    public CertificationCallable(RestTemplate restTemplate, Sample sample) {
+    private final PipelinesProperties piplinesProperties;
+
+    public CertificationCallable(RestTemplate restTemplate, Sample sample, PipelinesProperties piplinesProperties) {
         this.restTemplate = restTemplate;
         this.sample = sample;
+        this.piplinesProperties = piplinesProperties;
     }
 
     @Override
     public Void call() throws Exception {
         try {
-            CertificationResponse certificationResponse = restTemplate.postForObject("http://localhost:8080/certify", sample, CertificationResponse.class);
+            CertificationResponse certificationResponse = restTemplate.postForObject(piplinesProperties.getCertificationUri(), sample, CertificationResponse.class);
             log.info(certificationResponse.toString());
         } catch (RestClientException e) {
             e.printStackTrace();

@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
@@ -26,11 +27,12 @@ public class CertificationApplicationRunner implements ApplicationRunner {
 
     private final BioSamplesClient bioSamplesClient;
     private final RestTemplate restTemplate;
+    private final PipelinesProperties pipelinesProperties;
 
-
-    public CertificationApplicationRunner(BioSamplesClient bioSamplesClient, RestTemplate restTemplate) {
+    public CertificationApplicationRunner(BioSamplesClient bioSamplesClient, RestTemplate restTemplate, PipelinesProperties pipelinesProperties) {
         this.bioSamplesClient = bioSamplesClient;
         this.restTemplate = restTemplate;
+        this.pipelinesProperties = pipelinesProperties;
     }
 
     @Override
@@ -40,13 +42,13 @@ public class CertificationApplicationRunner implements ApplicationRunner {
             Map<String, Future<Void>> futures = new HashMap<>();
             long samplesQueued = 0;
             long startTime = System.currentTimeMillis();
-            long limit = 1L;
+            long limit = 10L;
             try {
                 for (Resource<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll("", Collections.emptyList())) {
                     Sample sample = sampleResource.getContent();
                     samplesQueued++;
                     boolean canary = (samplesQueued % 1000 == 0);
-                    Callable<Void> task = new CertificationCallable(restTemplate, sample);
+                    Callable<Void> task = new CertificationCallable(restTemplate, sample, pipelinesProperties);
                     futures.put(sample.getAccession(), executorService.submit(task));
                     if (canary) {
                         long endTime = System.currentTimeMillis();
