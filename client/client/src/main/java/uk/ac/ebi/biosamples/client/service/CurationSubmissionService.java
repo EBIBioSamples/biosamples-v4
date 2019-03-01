@@ -10,6 +10,7 @@ import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.client.Hop;
 import org.springframework.hateoas.client.Traverson;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +21,7 @@ import uk.ac.ebi.biosamples.model.CurationLink;
 
 public class CurationSubmissionService {
 
-	private Logger log = LoggerFactory.getLogger(getClass());
+	private static final Logger LOGGER = LoggerFactory.getLogger(CurationSubmissionService.class);
 
 	private final Traverson traverson;
 	private final ExecutorService executor;
@@ -34,32 +35,50 @@ public class CurationSubmissionService {
 	}
 
 	public Resource<CurationLink> submit(CurationLink curationLink) throws RestClientException {
+		return persistCuration(curationLink, null);
+	}
 
+	public Resource<CurationLink> persistCuration(CurationLink curationLink, String jwt) throws RestClientException {
 		URI target = URI.create(traverson.follow("samples")
 				.follow(Hop.rel("sample").withParameter("accession", curationLink.getSample()))
 				.follow("curationLinks")
 				.asLink().getHref());
 
-		log.trace("POSTing to " + target + " " + curationLink);
-		
+		LOGGER.trace("POSTing to {} {}", target, curationLink);
+
 		RequestEntity<CurationLink> requestEntity = RequestEntity.post(target)
 				.contentType(MediaType.APPLICATION_JSON).accept(MediaTypes.HAL_JSON).body(curationLink);
+		if (jwt != null) {
+			requestEntity.getHeaders().set(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
+		}
+
 		ResponseEntity<Resource<CurationLink>> responseEntity = restOperations.exchange(requestEntity,
 				new ParameterizedTypeReference<Resource<CurationLink>>() {
 				});
 
 		return responseEntity.getBody();
+
 	}
 
 	public void deleteCurationLink(String sample, String hash) {
+		deleteCurationLink(sample, hash, null);
+	}
+
+	public void deleteCurationLink(String sample, String hash, String jwt) {
 
 		URI target = URI.create(traverson
 				.follow("samples")
 				.follow(Hop.rel("sample").withParameter("accession", sample))
 				.follow(Hop.rel("curationLink").withParameter("hash", hash))
 				.asLink().getHref());
-		log.trace("DELETEing " + target);
-		
-		restOperations.exchange(RequestEntity.delete(target).build(), Void.class);
+		LOGGER.trace("DELETEing {}", target);
+
+		RequestEntity requestEntity = RequestEntity.delete(target).build();
+		if (jwt != null) {
+			requestEntity.getHeaders().set(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
+		}
+		restOperations.exchange(requestEntity, Void.class);
 	}
+
+
 }

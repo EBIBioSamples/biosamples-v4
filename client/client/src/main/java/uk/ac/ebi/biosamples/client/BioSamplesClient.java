@@ -41,7 +41,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class BioSamplesClient implements AutoCloseable {
 
-	private Logger log = LoggerFactory.getLogger(getClass());
+	private static final Logger LOGGER = LoggerFactory.getLogger(BioSamplesClient.class);
 	
 	private final SampleRetrievalService sampleRetrievalService;
 	private final SamplePageRetrievalService samplePageRetrievalService;
@@ -67,10 +67,10 @@ public class BioSamplesClient implements AutoCloseable {
 		RestTemplate restOperations = restTemplateBuilder.build();
 				
 		if (aapClientService != null) {		
-			log.trace("Adding AapClientHttpRequestInterceptor");
+			LOGGER.trace("Adding AapClientHttpRequestInterceptor");
 			restOperations.getInterceptors().add(new AapClientHttpRequestInterceptor(aapClientService));
 		} else {
-			log.trace("No AapClientService available");
+			LOGGER.trace("No AapClientService available");
 		}
 		
 		Traverson traverson = new Traverson(uri, MediaTypes.HAL_JSON);
@@ -230,7 +230,7 @@ public class BioSamplesClient implements AutoCloseable {
 		//validate client-side before submission
 		Collection<String> errors = sampleValidator.validate(sample);		
 		if (errors.size() > 0) {
-			log.error("Errors : "+errors);
+			LOGGER.error("Errors : "+errors);
 			throw new IllegalArgumentException("Sample not valid");
 		}
 		return sampleSubmissionService.submitAsync(sample, setUpdateDate, setFullDetails);
@@ -267,7 +267,7 @@ public class BioSamplesClient implements AutoCloseable {
 	}
 
 	public Resource<CurationLink> persistCuration(String accession, Curation curation, String domain) {
-		log.trace("Persisting curation "+curation+" on "+accession+" in "+domain);
+		LOGGER.trace("Persisting curation "+curation+" on "+accession+" in "+domain);
 		return curationSubmissionService.submit(CurationLink.build(accession, curation, domain, null));
 	}
 	
@@ -278,4 +278,69 @@ public class BioSamplesClient implements AutoCloseable {
 	public void deleteCurationLink(CurationLink content) {
 		curationSubmissionService.deleteCurationLink(content.getSample(), content.getHash());
 	}
+
+	//services including JWT to utilize original submission user credentials
+	public Optional<Resource<Sample>> fetchSampleResource(String accession, String jwt) throws RestClientException {
+		return fetchSampleResource(accession, Optional.empty(), jwt);
+	}
+
+	public Optional<Resource<Sample>> fetchSampleResource(String accession,
+														  Optional<List<String>> curationDomains, String jwt) throws RestClientException {
+		try {
+			return sampleRetrievalService.fetch(accession, curationDomains, jwt).get();
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		} catch (ExecutionException e) {
+			throw new RuntimeException(e.getCause());
+		}
+	}
+
+	public Iterable<Optional<Resource<Sample>>> fetchSampleResourceAll(Iterable<String> accessions, String jwt) throws RestClientException {
+		return sampleRetrievalService.fetchAll(accessions, jwt);
+	}
+
+	public Iterable<Resource<Sample>> fetchSampleResourceAll(String text, Collection<Filter> filters, String jwt) {
+		return sampleCursorRetrievalService.fetchAll(text, filters, jwt);
+	}
+
+	public PagedResources<Resource<Sample>> fetchPagedSampleResource(String text, Collection<Filter> filters, int page, int size, String jwt) {
+		return samplePageRetrievalService.search(text, filters, page, size, jwt);
+	}
+
+	public Resource<Sample> persistSampleResource(Sample sample, String jwt) {
+		try {
+			return persistSampleResourceAsync(sample, jwt, false).get();
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		} catch (ExecutionException e) {
+			throw new RuntimeException(e.getCause());
+		}
+	}
+
+	public Future<Resource<Sample>> persistSampleResourceAsync(Sample sample, String jwt, boolean setFullDetails) {
+		Collection<String> errors = sampleValidator.validate(sample);
+		if (!errors.isEmpty()) {
+			LOGGER.error("Errors : {}", errors);
+			throw new IllegalArgumentException("Sample not valid");
+		}
+		return sampleSubmissionService.submitAsync(sample, jwt, setFullDetails);
+	}
+
+	public Iterable<Resource<Curation>> fetchCurationResourceAll(String jwt) {
+		return curationRetrievalService.fetchAll(jwt);
+	}
+
+	public Resource<CurationLink> persistCuration(String accession, Curation curation, String domain, String jwt) {
+		LOGGER.trace("Persisting curation {} on {} in {}", curation, accession, domain);
+		return curationSubmissionService.persistCuration(CurationLink.build(accession, curation, domain, null), jwt);
+	}
+
+	public Iterable<Resource<CurationLink>> fetchCurationLinksOfSample(String accession, String jwt) {
+		return curationRetrievalService.fetchCurationLinksOfSample(accession, jwt);
+	}
+
+	public void deleteCurationLink(CurationLink content, String jwt) {
+		curationSubmissionService.deleteCurationLink(content.getSample(), content.getHash(), jwt);
+	}
+
 }
