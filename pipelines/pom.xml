@@ -28,6 +28,7 @@
 		<module>curation</module>
 		<module>zooma</module>
 		<module>sampletab</module>
+		<module>sampletest</module>
 		<module>legacyxml</module>
 		<module>reindex</module>
 		<module>export</module>
