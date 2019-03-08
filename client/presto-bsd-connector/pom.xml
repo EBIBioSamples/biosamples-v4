@@ -1,0 +1,170 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>presto-bsd-connector</artifactId>
+    <packaging>jar</packaging>
+
+    <parent>
+        <groupId>uk.ac.ebi.biosamples</groupId>
+        <artifactId>biosamples</artifactId>
+        <version>4.1.13-SNAPSHOT</version>
+        <relativePath>../../</relativePath>
+    </parent>
+
+    <name>presto-bsd-connector</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>uk.ac.ebi.biosamples</groupId>
+            <artifactId>client</artifactId>
+            <version>4.1.13-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.airlift</groupId>
+            <artifactId>bootstrap</artifactId>
+            <version>0.178</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.airlift</groupId>
+            <artifactId>json</artifactId>
+            <version>0.178</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.airlift</groupId>
+            <artifactId>log</artifactId>
+            <version>0.178</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.airlift</groupId>
+            <artifactId>configuration</artifactId>
+            <version>0.178</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>24.1-jre</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.inject</groupId>
+            <artifactId>guice</artifactId>
+            <version>4.2.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+            <version>1.1.0.Final</version>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.inject</groupId>
+            <artifactId>javax.inject</artifactId>
+            <version>1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.9.7</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.9.7</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>2.9.7</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient-cache</artifactId>
+            <!-- this doenst work because dependencies is a dependencyManagement not a parent -->
+            <!-- <version>${httpclient.version}</version> -->
+            <version>4.5.3</version>
+        </dependency>
+
+        <!-- Presto SPI -->
+        <dependency>
+            <!--<groupId>com.facebook.presto</groupId>-->
+            <groupId>io.prestosql</groupId>
+            <artifactId>presto-spi</artifactId>
+            <!--<version>0.218-SNAPSHOT</version>-->
+            <version>304</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.airlift</groupId>
+            <artifactId>slice</artifactId>
+            <version>0.36</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.airlift</groupId>
+            <artifactId>units</artifactId>
+            <version>1.3</version>
+            <scope>provided</scope>
+        </dependency>
+
+
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>io.prestosql</groupId>
+                <artifactId>presto-maven-plugin</artifactId>
+                <version>5</version>
+                <extensions>true</extensions>
+                <executions>
+                    <execution>
+                        <id>default-generate-service-descriptor</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>generate-service-descriptor</goal>
+                        </goals>
+                        <configuration>
+                            <spiGroupId>io.prestosql</spiGroupId>
+                            <pluginClassName>io.prestosql.spi.Plugin</pluginClassName>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>default-check-spi-dependencies</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>check-spi-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <spiGroupId>io.prestosql</spiGroupId>
+                            <pluginClassName>io.prestosql.spi.Plugin</pluginClassName>
+                        </configuration>
+                    </execution>
+                </executions>
+                <configuration>
+                    <spiGroupId>io.prestosql</spiGroupId>
+                    <pluginClassName>io.prestosql.spi.Plugin</pluginClassName>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

@@ -16,5 +16,6 @@
 	<modules>
 		<module>client</module>
 		<module>starter</module>
+		<module>presto-bsd-connector</module>
 	</modules>
 </project>
