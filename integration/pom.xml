@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>4.1.12-RC5</version>
+		<version>4.1.12</version>
 		<relativePath>../</relativePath>
 	</parent>
 
@@ -14,17 +14,17 @@
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>biosamples-spring-boot-starter</artifactId>
-			<version>4.1.12-RC5</version>
+			<version>4.1.12</version>
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>models-sitemap</artifactId>
-			<version>4.1.12-RC5</version>
+			<version>4.1.12</version>
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>models-jsonld</artifactId>
-			<version>4.1.12-RC5</version>
+			<version>4.1.12</version>
 		</dependency>
 		<!--<dependency> -->
 		<!--<groupId>org.seleniumhq.selenium</groupId> -->
@@ -49,12 +49,12 @@
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>models-legacyxml</artifactId>
-			<version>4.1.12-RC5</version>
+			<version>4.1.12</version>
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>models-legacyjson</artifactId>
-			<version>4.1.12-RC5</version>
+			<version>4.1.12</version>
 		</dependency>
         <dependency>
             <groupId>org.hamcrest</groupId>
