@@ -68,7 +68,7 @@ public class BioSamplesProperties {
 	@Value("${biosamples.webapp.core.uri:http://localhost:8081/biosamples}")
 	private URI biosamplesWebappCoreUri;
 
-	@Value("${biosamples.usi.core.uri:https://submission-dev.ebi.ac.uk/api/docs}")
+	@Value("${biosamples.usi.core.uri:https://submission-dev.ebi.ac.uk/api/docs/guide_getting_started.html}")
 	private URI usiCoreUri;
 
 	@Value("${biosamples.webapp.core.page.threadcount:64}")
