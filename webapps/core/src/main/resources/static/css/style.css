@@ -85,7 +85,7 @@ div#elixir-banner-info { color: white; }
 .shield { color: white; display: inline-block; margin: 0.2rem 0.0em; font-size: 0.8em; border: 1px solid #ccc; border-radius: 3px; }
 /* This means a span element within an element with class shield */
 .shield span { padding: 0.2rem 0.4rem; }
-.shield .shield__key { color: #444; margin: 0 0 0 2px; }
+.shield .shield__key { color: #444; margin: 0 0 0 2px; word-break: break-all; }
 .shield .shield__value { color: #f27e3f; margin: 0 2px 0 0; word-break: break-all; }
 
 /* DOCS */
@@ -164,6 +164,10 @@ code[class^="language"] {
 
 .menu.nested {
     display: none;
+}
+
+.text-left {
+    word-break: break-all;
 }
 
 .biosamples-button-row { margin-bottom: 1em; }
