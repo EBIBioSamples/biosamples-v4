@@ -60,36 +60,41 @@ public class BioSamplesClient implements AutoCloseable {
 			SampleValidator sampleValidator, AapClientService aapClientService, 
 			BioSamplesProperties bioSamplesProperties) {
 		
-		threadPoolExecutor = AdaptiveThreadPoolExecutor.create(100, 10000, true, 
+		this(uri, restTemplateBuilder.build(), sampleValidator, aapClientService, bioSamplesProperties);
+	}
+
+	public BioSamplesClient(URI uri, RestTemplate restOperations,
+			SampleValidator sampleValidator, AapClientService aapClientService,
+			BioSamplesProperties bioSamplesProperties) {
+
+		threadPoolExecutor = AdaptiveThreadPoolExecutor.create(100, 10000, true,
 				bioSamplesProperties.getBiosamplesClientThreadCount(),
 				bioSamplesProperties.getBiosamplesClientThreadCountMax());
-		
-		RestTemplate restOperations = restTemplateBuilder.build();
-				
-		if (aapClientService != null) {		
+
+		if (aapClientService != null) {
 			log.trace("Adding AapClientHttpRequestInterceptor");
 			restOperations.getInterceptors().add(new AapClientHttpRequestInterceptor(aapClientService));
 		} else {
 			log.trace("No AapClientService available");
 		}
-		
+
 		Traverson traverson = new Traverson(uri, MediaTypes.HAL_JSON);
 		traverson.setRestOperations(restOperations);
-		
+
 		sampleRetrievalService = new SampleRetrievalService(restOperations, traverson, threadPoolExecutor);
 		samplePageRetrievalService = new SamplePageRetrievalService(restOperations, traverson, threadPoolExecutor, bioSamplesProperties.getBiosamplesClientPagesize());
 		sampleCursorRetrievalService = new SampleCursorRetrievalService(restOperations, traverson, threadPoolExecutor, bioSamplesProperties.getBiosamplesClientPagesize());
-		
+
 		sampleSubmissionService = new SampleSubmissionService(restOperations, traverson, threadPoolExecutor);
 		curationRetrievalService = new CurationRetrievalService(restOperations, traverson, threadPoolExecutor, bioSamplesProperties.getBiosamplesClientPagesize());
 		curationSubmissionService = new CurationSubmissionService(restOperations, traverson, threadPoolExecutor);
-		
+
 		this.sampleValidator = sampleValidator;
-		
+
 		if (aapClientService == null ) {
 			this.publicClient = Optional.empty();
 		} else {
-			this.publicClient = Optional.of(new BioSamplesClient(uri, restTemplateBuilder, sampleValidator, null, bioSamplesProperties));
+			this.publicClient = Optional.of(new BioSamplesClient(uri, restOperations, sampleValidator, null, bioSamplesProperties));
 		}
 	}
 

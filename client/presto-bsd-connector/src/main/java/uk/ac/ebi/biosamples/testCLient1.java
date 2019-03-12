@@ -68,12 +68,12 @@ public class testCLient1 {
             FieldUtils.writeField(bioSamplesProperties, "biosamplesClientCacheMaxObjectSize", 1048576, true);
 
 
-            RestTemplateBuilder restTemplateBuilder = new RestTemplateBuilder();
+//            RestTemplateBuilder restTemplateBuilder = new RestTemplateBuilder();
 //            restTemplateBuilder.customizers(restTemplateCustomizer(bioSamplesProperties));
 //
 //
-//            restTemplateBuilder.requestFactory(new BufferingClientHttpRequestFactory(new SimpleClientHttpRequestFactory()));
-//            restTemplateBuilder.additionalInterceptors(interceptors);
+////            restTemplateBuilder.requestFactory(new BufferingClientHttpRequestFactory(new SimpleClientHttpRequestFactory()));
+////            restTemplateBuilder.additionalInterceptors(interceptors);
 //
 //
 //            List<HttpMessageConverter<?>> converters = new ArrayList<>();
@@ -92,11 +92,22 @@ public class testCLient1 {
             interceptors.add(new LoggingRequestInterceptor());
             restTemplate.setInterceptors(interceptors);
 
+            List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new Jackson2HalModule());
+            mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            MappingJackson2HttpMessageConverter halConverter = new TypeConstrainedMappingJackson2HttpMessageConverter(ResourceSupport.class);
+            halConverter.setObjectMapper(mapper);
+            halConverter.setSupportedMediaTypes(Arrays.asList(MediaTypes.HAL_JSON));
+            //make sure this is inserted first
+            converters.add(0, halConverter);
+            restTemplate.setMessageConverters(converters);
+//
+//
+//            restTemplateBuilder = new RestTemplateBuilder();
+//            restTemplateBuilder.configure(restTemplate);
 
-            restTemplateBuilder = new RestTemplateBuilder();
-            restTemplateBuilder.configure(restTemplate);
-
-            client = new BioSamplesClient(uri, restTemplateBuilder,
+            client = new BioSamplesClient(uri, restTemplate,
                     sampleValidator, aapClientService, bioSamplesProperties);
 
             List<String> accessionList = new ArrayList<>();
@@ -107,12 +118,12 @@ public class testCLient1 {
             System.out.println(pagedResources.getContent().size());
 
             for (Optional<Resource<Sample>> sampleResource : client.fetchSampleResourceAll(accessionList)) {
-                Sample sample = sampleResource.get().getContent();
-                System.out.println("from list: " + sample.getAccession());
+                String sample = sampleResource.isPresent() ? sampleResource.get().getContent().getName() : null;
+                System.out.println("from list: " + sample);
             }
 
             Optional<Sample> sample = client.fetchSample("SAMEA470888");
-            System.out.println(sample.get().getAccession());
+            System.out.println(sample.get().getName());
 
 
             System.out.println("Trying fetchall");

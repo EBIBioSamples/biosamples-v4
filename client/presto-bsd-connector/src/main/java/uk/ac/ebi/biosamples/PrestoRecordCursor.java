@@ -1,25 +1,12 @@
-/*
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package uk.ac.ebi.biosamples;
 
-import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import io.airlift.slice.Slice;
 import io.airlift.slice.Slices;
 import io.prestosql.spi.connector.RecordCursor;
 import io.prestosql.spi.type.Type;
 import org.springframework.hateoas.Resource;
+import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
 
 import java.util.ArrayList;
@@ -35,18 +22,14 @@ import static io.prestosql.spi.type.DoubleType.DOUBLE;
 import static io.prestosql.spi.type.VarcharType.createUnboundedVarcharType;
 
 public class PrestoRecordCursor implements RecordCursor {
-    private static final Splitter LINE_SPLITTER = Splitter.on(",").trimResults();
 
     private final List<PrestoColumnHandle> columnHandles;
     private final int[] fieldToColumnIndex;
-
-//    private final Iterator<String> lines;
     private final long totalBytes;
 
     private List<String> fields;
 
     private final Iterator<Resource<Sample>> samplesIterator;
-    private final Iterator<String> samplesIterator1;
 
     public PrestoRecordCursor(List<PrestoColumnHandle> columnHandles, Iterable<Resource<Sample>> sampleResourceIterable) {
         this.columnHandles = columnHandles;
@@ -57,19 +40,7 @@ public class PrestoRecordCursor implements RecordCursor {
             fieldToColumnIndex[i] = columnHandle.getOrdinalPosition();
         }
         samplesIterator = sampleResourceIterable.iterator();
-        totalBytes = 100;
-
-        List<String> testList = new ArrayList<>();
-        testList.add("1");
-        testList.add("2");
-        samplesIterator1 = testList.iterator();
-
-//        try (CountingInputStream input = new CountingInputStream(byteSource.openStream())) {
-//            lines = byteSource.asCharSource(UTF_8).readLines().iterator();
-//            totalBytes = input.getCount();
-//        } catch (IOException e) {
-//            throw new UncheckedIOException(e);
-//        }
+        totalBytes = 100;//todo
     }
 
     @Override
@@ -90,18 +61,18 @@ public class PrestoRecordCursor implements RecordCursor {
 
     @Override
     public boolean advanceNextPosition() {
-        System.out.println("Advancing to the next position");
-        if (!samplesIterator1.hasNext()) {
+        if (!samplesIterator.hasNext()) {
             return false;
         }
 
-        String sample = samplesIterator1.next();
-        System.out.println("Sample data: " + sample);
-        fields = new ArrayList<>(Arrays.asList(sample, sample + " hello"));
-//        Sample sample = samplesIterator.next().getContent();
-//        System.out.println("Sample data: " + sample.getAccession());
-//        fields = new ArrayList<>(Arrays.asList(sample.getAccession(), sample.getName()));
-
+        Sample sample = samplesIterator.next().getContent();
+        String sex = null;
+        for (Attribute attribute : sample.getCharacteristics()) {
+            if (attribute.getType().equalsIgnoreCase("sex")) {
+                sex = attribute.getValue();
+            }
+        }
+        fields = new ArrayList<>(Arrays.asList(sample.getAccession(), sample.getName(), sex));
 
         return true;
     }

@@ -17,6 +17,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import io.prestosql.spi.connector.*;
+import uk.ac.ebi.biosamples.schema.PrestoSchemaMetadata;
 
 import javax.inject.Inject;
 import java.util.List;
@@ -30,12 +31,12 @@ import static java.util.Objects.requireNonNull;
 public class PrestoMetadata implements ConnectorMetadata {
     private final String connectorId;
 
-    private final PrestoClient exampleClient;
+    private final PrestoSchemaMetadata schemaMetadata;
 
     @Inject
-    public PrestoMetadata(PrestoConnectorId connectorId, PrestoClient exampleClient) {
+    public PrestoMetadata(PrestoConnectorId connectorId, PrestoSchemaMetadata schemaMetadata) {
         this.connectorId = requireNonNull(connectorId, "connectorId is null").toString();
-        this.exampleClient = requireNonNull(exampleClient, "client is null");
+        this.schemaMetadata = requireNonNull(schemaMetadata, "client is null");
     }
 
     @Override
@@ -44,7 +45,7 @@ public class PrestoMetadata implements ConnectorMetadata {
     }
 
     public List<String> listSchemaNames() {
-        return ImmutableList.copyOf(exampleClient.getSchemaNames());
+        return ImmutableList.copyOf(schemaMetadata.getSchemaNames());
     }
 
     @Override
@@ -53,7 +54,7 @@ public class PrestoMetadata implements ConnectorMetadata {
             return null;
         }
 
-        PrestoTable table = exampleClient.getTable(tableName.getSchemaName(), tableName.getTableName());
+        PrestoTable table = schemaMetadata.getTable(tableName.getSchemaName(), tableName.getTableName());
         if (table == null) {
             return null;
         }
@@ -64,7 +65,7 @@ public class PrestoMetadata implements ConnectorMetadata {
     @Override
     public List<ConnectorTableLayoutResult> getTableLayouts(ConnectorSession session, ConnectorTableHandle table, Constraint<ColumnHandle> constraint, Optional<Set<ColumnHandle>> desiredColumns) {
         PrestoTableHandle tableHandle = (PrestoTableHandle) table;
-        ConnectorTableLayout layout = new ConnectorTableLayout(new PrestoTableLayoutHandle(tableHandle));
+        ConnectorTableLayout layout = new ConnectorTableLayout(new PrestoTableLayoutHandle(tableHandle, constraint.getSummary()));
         return ImmutableList.of(new ConnectorTableLayoutResult(layout, constraint.getSummary()));
     }
 
@@ -85,11 +86,11 @@ public class PrestoMetadata implements ConnectorMetadata {
     @Override
     public List<SchemaTableName> listTables(ConnectorSession session, Optional<String> optionalSchemaName) {
         Set<String> schemaNames = optionalSchemaName.map(ImmutableSet::of)
-                .orElseGet(() -> ImmutableSet.copyOf(exampleClient.getSchemaNames()));
+                .orElseGet(() -> ImmutableSet.copyOf(schemaMetadata.getSchemaNames()));
 
         ImmutableList.Builder<SchemaTableName> builder = ImmutableList.builder();
         for (String schemaName : schemaNames) {
-            for (String tableName : exampleClient.getTableNames(schemaName)) {
+            for (String tableName : schemaMetadata.getTableNames(schemaName)) {
                 builder.add(new SchemaTableName(schemaName, tableName));
             }
         }
@@ -101,7 +102,7 @@ public class PrestoMetadata implements ConnectorMetadata {
         PrestoTableHandle exampleTableHandle = (PrestoTableHandle) tableHandle;
         checkArgument(exampleTableHandle.getConnectorId().equals(connectorId), "tableHandle is not for this connector");
 
-        PrestoTable table = exampleClient.getTable(exampleTableHandle.getSchemaName(), exampleTableHandle.getTableName());
+        PrestoTable table = schemaMetadata.getTable(exampleTableHandle.getSchemaName(), exampleTableHandle.getTableName());
         if (table == null) {
             throw new TableNotFoundException(exampleTableHandle.toSchemaTableName());
         }
@@ -134,7 +135,7 @@ public class PrestoMetadata implements ConnectorMetadata {
             return null;
         }
 
-        PrestoTable table = exampleClient.getTable(tableName.getSchemaName(), tableName.getTableName());
+        PrestoTable table = schemaMetadata.getTable(tableName.getSchemaName(), tableName.getTableName());
         if (table == null) {
             return null;
         }

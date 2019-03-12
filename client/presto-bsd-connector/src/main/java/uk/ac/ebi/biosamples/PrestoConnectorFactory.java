@@ -20,6 +20,8 @@ import io.prestosql.spi.connector.ConnectorContext;
 import io.prestosql.spi.connector.ConnectorFactory;
 import io.prestosql.spi.connector.ConnectorHandleResolver;
 import org.apache.commons.lang3.reflect.FieldUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.ResourceSupport;
@@ -33,19 +35,19 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.client.service.AapClientService;
+import uk.ac.ebi.biosamples.schema.PrestoSchemaMetadata;
 import uk.ac.ebi.biosamples.service.AttributeValidator;
 import uk.ac.ebi.biosamples.service.SampleValidator;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static java.util.Objects.requireNonNull;
 
 public class PrestoConnectorFactory implements ConnectorFactory {
+    private Logger logger = LoggerFactory.getLogger(getClass());
+
     @Override
     public String getName() {
         return "biosamples";
@@ -60,33 +62,30 @@ public class PrestoConnectorFactory implements ConnectorFactory {
     public Connector create(String catalogName, Map<String, String> requiredConfig, ConnectorContext context) {
         requireNonNull(requiredConfig, "requiredConfig is null");
 
-
-
+        PrestoConfig prestoConfig = new PrestoConfig(requiredConfig);
 
         BioSamplesClient client = null;
+        BioSamplesProperties bioSamplesProperties = new BioSamplesProperties();
         try {
-            String clientUrl = "https://wwwdev.ebi.ac.uk/biosamples";
-//            String clientUrl = "http://localhost:8090";
-            URI uri = new URI(clientUrl);
-            RestTemplateBuilder restTemplateBuilder = new RestTemplateBuilder();
             SampleValidator sampleValidator = new SampleValidator(new AttributeValidator());
             AapClientService aapClientService = null;
-            BioSamplesProperties bioSamplesProperties = new BioSamplesProperties();
 
 
-            List<HttpMessageConverter<?>> converters = new ArrayList<>();
+            RestTemplate restTemplate = new RestTemplate(new BufferingClientHttpRequestFactory(new SimpleClientHttpRequestFactory()));
+
+            List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();
             ObjectMapper mapper = new ObjectMapper();
             mapper.registerModule(new Jackson2HalModule());
             mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             MappingJackson2HttpMessageConverter halConverter = new TypeConstrainedMappingJackson2HttpMessageConverter(ResourceSupport.class);
             halConverter.setObjectMapper(mapper);
-            halConverter.setSupportedMediaTypes(Arrays.asList(MediaTypes.HAL_JSON));
+            halConverter.setSupportedMediaTypes(Collections.singletonList(MediaTypes.HAL_JSON));
             //make sure this is inserted first
             converters.add(0, halConverter);
-            restTemplateBuilder.messageConverters(converters);
+            restTemplate.setMessageConverters(converters);
 
-            FieldUtils.writeField(bioSamplesProperties, "biosamplesClientUri", uri, true);
-            FieldUtils.writeField(bioSamplesProperties, "biosamplesClientPagesize", 10, true);
+            FieldUtils.writeField(bioSamplesProperties, "biosamplesClientUri", prestoConfig.getBioSamplesClientUri(), true);
+            FieldUtils.writeField(bioSamplesProperties, "biosamplesClientPagesize", 5, true);
             FieldUtils.writeField(bioSamplesProperties, "biosamplesClientTimeout", 60000, true);
             FieldUtils.writeField(bioSamplesProperties, "connectionCountMax", 8, true);
             FieldUtils.writeField(bioSamplesProperties, "connectionCountDefault", 8, true);
@@ -99,33 +98,21 @@ public class PrestoConnectorFactory implements ConnectorFactory {
             FieldUtils.writeField(bioSamplesProperties, "biosamplesClientCacheMaxObjectSize", 1048576, true);
 
 
-            client = new BioSamplesClient(uri, restTemplateBuilder,
+            client = new BioSamplesClient(prestoConfig.getBioSamplesClientUri(), restTemplate,
                     sampleValidator, aapClientService, bioSamplesProperties);
         } catch (URISyntaxException | IllegalAccessException e) {
-            e.printStackTrace();
+            logger.error("Failed to create biosamples-client", e);
         }
 
 
-        PrestoConfig exampleConfig = new PrestoConfig(requiredConfig);
         PrestoConnectorId connectorId = new PrestoConnectorId(catalogName);
-        PrestoClient exampleClient = new PrestoClient(exampleConfig);
-        PrestoMetadata metadata = new PrestoMetadata(connectorId, exampleClient);
-        PrestoSplitManager splitManager = new PrestoSplitManager(connectorId, exampleClient);
+        PrestoSchemaMetadata schemaMetadata = new PrestoSchemaMetadata(prestoConfig);
+        PrestoMetadata metadata = new PrestoMetadata(connectorId, schemaMetadata);
+        PrestoSplitManager splitManager = new PrestoSplitManager(connectorId, schemaMetadata);
         PrestoRecordSetProvider recordSetProvider = new PrestoRecordSetProvider(connectorId, client, metadata);
+        PrestoPageSourceProvider prestoPageSourceProvider = new PrestoPageSourceProvider(recordSetProvider, bioSamplesProperties.getBiosamplesClientPagesize());
 
-
-        return new PrestoConnector(metadata, splitManager, recordSetProvider);
-
-
+        return new PrestoConnector(metadata, splitManager, recordSetProvider, prestoPageSourceProvider);
     }
 
-//    public static void main(String[] args) throws Exception {
-//        BioSamplesProperties bioSamplesProperties = new BioSamplesProperties();
-//        FieldUtils.writeField(bioSamplesProperties, "biosamplesClientPagesize", 10, true);
-//        FieldUtils.writeField(bioSamplesProperties, "biosamplesClientTimeout", 60000, true);
-//        FieldUtils.writeField(bioSamplesProperties, "connectionCountMax", 8, true);
-//        FieldUtils.writeField(bioSamplesProperties, "connectionCountDefault", 8, true);
-//
-//        System.out.println(bioSamplesProperties.getBiosamplesClientAapUri());
-//    }
 }

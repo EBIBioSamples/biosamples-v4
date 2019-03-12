@@ -28,15 +28,18 @@ public class PrestoConnector implements Connector {
     private final PrestoMetadata metadata;
     private final PrestoSplitManager splitManager;
     private final PrestoRecordSetProvider recordSetProvider;
+    private final PrestoPageSourceProvider pageSourceProvider;
 
     @Inject
     public PrestoConnector(
             PrestoMetadata metadata,
             PrestoSplitManager splitManager,
-            PrestoRecordSetProvider recordSetProvider) {
+            PrestoRecordSetProvider recordSetProvider,
+            PrestoPageSourceProvider pageSourceProvider) {
         this.metadata = requireNonNull(metadata, "metadata is null");
         this.splitManager = requireNonNull(splitManager, "splitManager is null");
         this.recordSetProvider = requireNonNull(recordSetProvider, "recordSetProvider is null");
+        this.pageSourceProvider = requireNonNull(pageSourceProvider, "pageSourceProvider is null");
     }
 
     @Override
@@ -57,6 +60,11 @@ public class PrestoConnector implements Connector {
     @Override
     public ConnectorRecordSetProvider getRecordSetProvider() {
         return recordSetProvider;
+    }
+
+    @Override
+    public PrestoPageSourceProvider getPageSourceProvider() {
+        return pageSourceProvider;
     }
 
     @Override
