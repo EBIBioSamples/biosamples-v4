@@ -21,13 +21,12 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import uk.ac.ebi.biosamples.client.utils.IterableResourceFetchAll;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 
 public class SamplePageRetrievalService {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(SamplePageRetrievalService.class);
+	private final Logger log = LoggerFactory.getLogger(getClass());
 	
 	public static final DateTimeFormatter solrFormatter = DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss'Z'");
 
@@ -68,7 +67,7 @@ public class SamplePageRetrievalService {
 				.queryParams(params)
 				.build()
 				.toUri();
-		LOGGER.trace("GETing {}", uri);
+		log.trace("GETing " + uri);
 
 		RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
 		if (jwt != null) {
@@ -82,7 +81,7 @@ public class SamplePageRetrievalService {
 		if (!responseEntity.getStatusCode().is2xxSuccessful()) {
 			throw new RuntimeException("Problem GETing samples");
 		}
-		LOGGER.trace("GETted {}", uri);
+		log.trace("GETted " + uri);
 
 		return responseEntity.getBody();
 	}

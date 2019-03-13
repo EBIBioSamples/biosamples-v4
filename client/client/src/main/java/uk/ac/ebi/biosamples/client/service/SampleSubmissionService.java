@@ -25,7 +25,7 @@ import java.util.concurrent.Future;
 
 public class SampleSubmissionService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SampleSubmissionService.class);
+    private final Logger log = LoggerFactory.getLogger(getClass());
 
     private final Traverson traverson;
     private final ExecutorService executor;
@@ -120,12 +120,12 @@ public class SampleSubmissionService {
                         });
                 Link sampleLink = pagedSamples.getLink("sample");
                 if (sampleLink == null) {
-                    LOGGER.warn("Problem handling page {}", pagedSamples);
+                    log.warn("Problem handling page " + pagedSamples);
                     throw new NullPointerException("Unable to find sample link");
                 }
                 sampleLink = sampleLink.expand(sample.getAccession());
                 URI uri = getSamplePersistURI(sampleLink);
-                LOGGER.trace("PUTing to {} {}", uri, sample);
+                log.trace("PUTing to " + uri + " " + sample);
 
                 RequestEntity<Sample> requestEntity = RequestEntity.put(uri)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -142,7 +142,7 @@ public class SampleSubmissionService {
                             new ParameterizedTypeReference<Resource<Sample>>() {
                             });
                 } catch (RestClientResponseException e) {
-                    LOGGER.error("Unable to PUT to {} body {} got response {}", uri, sample, e.getResponseBodyAsString());
+                    log.error("Unable to PUT to "+uri+" body "+sample+" got response "+e.getResponseBodyAsString());
                     throw e;
                 }
                 return responseEntity.getBody();
@@ -151,7 +151,7 @@ public class SampleSubmissionService {
                 // samples without an existing accession should be POST
                 Link sampleLink = traverson.follow("samples").asLink();
                 URI uri = getSamplePersistURI(sampleLink);
-                LOGGER.trace("POSTing to {} {}", uri, sample);
+                log.trace("POSTing to " + uri + " " + sample);
 
                 RequestEntity<Sample> requestEntity = RequestEntity.post(uri)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -168,7 +168,7 @@ public class SampleSubmissionService {
                             new ParameterizedTypeReference<Resource<Sample>>() {
                             });
                 } catch (RestClientResponseException e) {
-                    LOGGER.error("Unable to POST to {} body {} got response {}", uri, sample, e.getResponseBodyAsString());
+                    log.error("Unable to POST to "+uri+" body "+sample+" got response "+e.getResponseBodyAsString());
                     throw e;
                 }
 

@@ -21,7 +21,7 @@ import uk.ac.ebi.biosamples.model.CurationLink;
 
 public class CurationSubmissionService {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(CurationSubmissionService.class);
+	private final Logger log = LoggerFactory.getLogger(getClass());
 
 	private final Traverson traverson;
 	private final ExecutorService executor;
@@ -44,7 +44,7 @@ public class CurationSubmissionService {
 				.follow("curationLinks")
 				.asLink().getHref());
 
-		LOGGER.trace("POSTing to {} {}", target, curationLink);
+		log.trace("POSTing to " + target + " " + curationLink);
 
 		RequestEntity<CurationLink> requestEntity = RequestEntity.post(target)
 				.contentType(MediaType.APPLICATION_JSON).accept(MediaTypes.HAL_JSON).body(curationLink);
@@ -71,7 +71,7 @@ public class CurationSubmissionService {
 				.follow(Hop.rel("sample").withParameter("accession", sample))
 				.follow(Hop.rel("curationLink").withParameter("hash", hash))
 				.asLink().getHref());
-		LOGGER.trace("DELETEing {}", target);
+		log.trace("DELETEing " + target);
 
 		RequestEntity requestEntity = RequestEntity.delete(target).build();
 		if (jwt != null) {

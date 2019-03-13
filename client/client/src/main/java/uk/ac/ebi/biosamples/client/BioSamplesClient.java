@@ -41,7 +41,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class BioSamplesClient implements AutoCloseable {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(BioSamplesClient.class);
+	private final Logger log = LoggerFactory.getLogger(getClass());
 	
 	private final SampleRetrievalService sampleRetrievalService;
 	private final SamplePageRetrievalService samplePageRetrievalService;
@@ -67,10 +67,10 @@ public class BioSamplesClient implements AutoCloseable {
 		RestTemplate restOperations = restTemplateBuilder.build();
 				
 		if (aapClientService != null) {		
-			LOGGER.trace("Adding AapClientHttpRequestInterceptor");
+			log.trace("Adding AapClientHttpRequestInterceptor");
 			restOperations.getInterceptors().add(new AapClientHttpRequestInterceptor(aapClientService));
 		} else {
-			LOGGER.trace("No AapClientService available");
+			log.trace("No AapClientService available");
 		}
 		
 		Traverson traverson = new Traverson(uri, MediaTypes.HAL_JSON);
@@ -230,7 +230,7 @@ public class BioSamplesClient implements AutoCloseable {
 		//validate client-side before submission
 		Collection<String> errors = sampleValidator.validate(sample);		
 		if (errors.size() > 0) {
-			LOGGER.error("Errors : "+errors);
+			log.error("Errors : "+errors);
 			throw new IllegalArgumentException("Sample not valid");
 		}
 		return sampleSubmissionService.submitAsync(sample, setUpdateDate, setFullDetails);
@@ -267,7 +267,7 @@ public class BioSamplesClient implements AutoCloseable {
 	}
 
 	public Resource<CurationLink> persistCuration(String accession, Curation curation, String domain) {
-		LOGGER.trace("Persisting curation "+curation+" on "+accession+" in "+domain);
+		log.trace("Persisting curation "+curation+" on "+accession+" in "+domain);
 		return curationSubmissionService.submit(CurationLink.build(accession, curation, domain, null));
 	}
 	
@@ -320,7 +320,7 @@ public class BioSamplesClient implements AutoCloseable {
 	public Future<Resource<Sample>> persistSampleResourceAsync(Sample sample, String jwt, boolean setFullDetails) {
 		Collection<String> errors = sampleValidator.validate(sample);
 		if (!errors.isEmpty()) {
-			LOGGER.error("Errors : {}", errors);
+			log.error("Errors : {}", errors);
 			throw new IllegalArgumentException("Sample not valid");
 		}
 		return sampleSubmissionService.submitAsync(sample, jwt, setFullDetails);
@@ -331,7 +331,7 @@ public class BioSamplesClient implements AutoCloseable {
 	}
 
 	public Resource<CurationLink> persistCuration(String accession, Curation curation, String domain, String jwt) {
-		LOGGER.trace("Persisting curation {} on {} in {}", curation, accession, domain);
+		log.trace("Persisting curation {} on {} in {}", curation, accession, domain);
 		return curationSubmissionService.persistCuration(CurationLink.build(accession, curation, domain, null), jwt);
 	}
 

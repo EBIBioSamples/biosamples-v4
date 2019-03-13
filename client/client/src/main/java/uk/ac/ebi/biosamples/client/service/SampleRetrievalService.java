@@ -32,7 +32,7 @@ import uk.ac.ebi.biosamples.model.Sample;
 
 public class SampleRetrievalService {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(SampleRetrievalService.class);
+	private final Logger log = LoggerFactory.getLogger(getClass());
 	
 	public static final DateTimeFormatter solrFormatter = DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss'Z'");
 
@@ -98,8 +98,8 @@ public class SampleRetrievalService {
 				}
 				uri = URI.create(traversalBuilder.asLink().getHref());	
 			}
-			
-			LOGGER.trace("GETing {}", uri);
+
+			log.trace("GETing " + uri);
 
 			RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
 			if (jwt != null) {
@@ -119,7 +119,7 @@ public class SampleRetrievalService {
 					throw e;
 				}
 			}
-			LOGGER.trace("GETted {}", uri);
+			log.trace("GETted " + uri);
 
 			return Optional.of(responseEntity.getBody());
 		}
@@ -182,7 +182,7 @@ public class SampleRetrievalService {
 
 				// fill up the queue if possible
 				while (queue.size() < queueMaxSize && accessions.hasNext()) {
-					LOGGER.trace("Queue size is {}", queue.size());
+					log.trace("Queue size is " + queue.size());
 					String nextAccession = accessions.next();
 					queue.add(fetch(nextAccession, Optional.empty(), jwt));
 				}
