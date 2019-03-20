@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BioSampleSet>
+    <BioSample access="public" publication_date="2019-03-14T00:00:00.000" last_update="2019-03-14T02:20:21.380"
+               submission_date="2018-09-14T15:02:11.530" id="10063314" accession="SAMN10063314">
+        <Ids>
+            <Id db="BioSample" is_primary="1">SAMN10063314</Id>
+            <Id db="SRA">SRS3776088</Id>
+            <Id db="GEO">GSM3391084</Id>
+        </Ids>
+        <Description>
+            <Title>S_R6_C27</Title>
+            <Organism taxonomy_id="10090" taxonomy_name="Mus musculus">
+                <OrganismName>Mus musculus</OrganismName>
+            </Organism>
+        </Description>
+        <Owner>
+            <Name>Biostatistics, Ducan Cancer Center, Baylor College of Medicine</Name>
+            <Contacts>
+                <Contact email="creighto@bcm.tmc.edu">
+                    <Name>
+                        <First>Chad</First>
+                        <Last>Creighton</Last>
+                    </Name>
+                </Contact>
+            </Contacts>
+        </Owner>
+        <Models>
+            <Model>Generic</Model>
+        </Models>
+        <Package display_name="Generic">Generic.1.0</Package>
+        <Attributes>
+            <Attribute attribute_name="source_name" harmonized_name="source_name" display_name="source name">mouse
+                prostate cells
+            </Attribute>
+            <Attribute attribute_name="tissue" harmonized_name="tissue" display_name="tissue">prostate</Attribute>
+            <Attribute attribute_name="strain" harmonized_name="strain" display_name="strain">C57BL/6</Attribute>
+            <Attribute attribute_name="age" harmonized_name="age" display_name="age">8-10 weeks</Attribute>
+        </Attributes>
+        <Links>
+            <Link type="url" label="GEO Sample GSM3391084">
+                https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM3391084
+            </Link>
+            <Link type="entrez" target="bioproject" label="PRJNA491097">491097</Link>
+        </Links>
+        <Status status="live" when="2019-03-14T02:17:07.752"/>
+    </BioSample>
+    <BioSample access="public" publication_date="2019-03-14T00:00:00.000" last_update="2019-03-14T01:56:34.663"
+               submission_date="2018-09-14T14:27:14.263" id="10061669" accession="SAMN10061669">
+        <Ids>
+            <Id db="BioSample" is_primary="1">SAMN10061669</Id>
+            <Id db="SRA">SRS3776433</Id>
+            <Id db="GEO">GSM3390020</Id>
+        </Ids>
+        <Description>
+            <Title>Pos Ctrl_R4_C33</Title>
+            <Organism taxonomy_id="10090" taxonomy_name="Mus musculus">
+                <OrganismName>Mus musculus</OrganismName>
+            </Organism>
+        </Description>
+        <Owner>
+            <Name>Biostatistics, Ducan Cancer Center, Baylor College of Medicine</Name>
+            <Contacts>
+                <Contact email="creighto@bcm.tmc.edu">
+                    <Name>
+                        <First>Chad</First>
+                        <Last>Creighton</Last>
+                    </Name>
+                </Contact>
+            </Contacts>
+        </Owner>
+        <Models>
+            <Model>Generic</Model>
+        </Models>
+        <Package display_name="Generic">Generic.1.0</Package>
+        <Attributes>
+            <Attribute attribute_name="source_name" harmonized_name="source_name" display_name="source name">mouse
+                prostate cells
+            </Attribute>
+            <Attribute attribute_name="tissue" harmonized_name="tissue" display_name="tissue">prostate</Attribute>
+            <Attribute attribute_name="strain" harmonized_name="strain" display_name="strain">C57BL/6</Attribute>
+            <Attribute attribute_name="age" harmonized_name="age" display_name="age">8-10 weeks</Attribute>
+        </Attributes>
+        <Links>
+            <Link type="url" label="GEO Sample GSM3390020">
+                https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM3390020
+            </Link>
+            <Link type="entrez" target="bioproject" label="PRJNA491097">491097</Link>
+        </Links>
+        <Status status="live" when="2019-03-14T01:56:06.781"/>
+    </BioSample>
+</BioSampleSet>

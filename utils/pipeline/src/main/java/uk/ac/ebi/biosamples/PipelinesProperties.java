@@ -54,6 +54,9 @@ public class PipelinesProperties {
     @Value("${biosamples.pipelines.certification.uri:http://localhost:8080/certify}")
     private String certificationUri;
 
+    @Value("${biosamples.pipelines.copydown.domain:self.BiosampleCertification}")
+    private String certificationDomain;
+
     public String getNcbiFile() {
         return ncbiFile;
     }
@@ -116,5 +119,9 @@ public class PipelinesProperties {
 
     public String getCertificationUri() {
         return certificationUri;
+    }
+
+    public String getCertificationDomain() {
+        return certificationDomain;
     }
 }

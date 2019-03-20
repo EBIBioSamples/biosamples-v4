@@ -42,22 +42,22 @@ public class CertificationApplicationRunner implements ApplicationRunner {
             Map<String, Future<Void>> futures = new HashMap<>();
             long samplesQueued = 0;
             long startTime = System.currentTimeMillis();
-            long limit = 10000000L;
+            long limit = 100_000_000L;
             try {
                 for (Resource<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll("", Collections.emptyList())) {
-                    Sample sample = sampleResource.getContent();
-                    samplesQueued++;
-                    boolean canary = (samplesQueued % 1000 == 0);
-                    Callable<Void> task = new CertificationCallable(restTemplate, sample, pipelinesProperties);
-                    futures.put(sample.getAccession(), executorService.submit(task));
-                    if (canary) {
-                        long endTime = System.currentTimeMillis();
-                        long duration = (endTime - startTime);
-                        log.info("PROCESSED: samples:" + samplesQueued + " rate: " + samplesQueued / ((duration / 1000) + 1) + " samples per second");
-                    }
-                    if (samplesQueued >= limit) {
-                        break;
-                    }
+                        Sample sample = sampleResource.getContent();
+                        samplesQueued++;
+                        boolean canary = (samplesQueued % 1000 == 0);
+                        Callable<Void> task = new CertificationCallable(bioSamplesClient, restTemplate, sample, pipelinesProperties);
+                        futures.put(sample.getAccession(), executorService.submit(task));
+                        if (canary) {
+                            long endTime = System.currentTimeMillis();
+                            long duration = (endTime - startTime);
+                            log.info("PROCESSED: samples:" + samplesQueued + " rate: " + samplesQueued / ((duration / 1000) + 1) + " samples per second");
+                        }
+                        if (samplesQueued >= limit) {
+                            break;
+                        }
                 }
             } catch (IllegalStateException e) {
                 log.error("Error", e);

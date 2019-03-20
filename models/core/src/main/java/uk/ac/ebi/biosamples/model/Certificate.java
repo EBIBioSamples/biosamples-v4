@@ -118,7 +118,7 @@ public class Certificate {
         }
     }
 
-    static class CertificateCuration {
+    public static class CertificateCuration {
 
         private String characteristic;
 
