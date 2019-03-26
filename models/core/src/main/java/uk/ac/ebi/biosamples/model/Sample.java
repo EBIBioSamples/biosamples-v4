@@ -56,6 +56,7 @@ public class Sample implements Comparable<Sample> {
     protected SortedSet<Publication> publications;
 
     protected SubmittedViaType submittedVia;
+//    protected SortedSet<String> duoCodes;
 
     protected Sample() {
 
@@ -185,6 +186,11 @@ public class Sample implements Comparable<Sample> {
     public SubmittedViaType getSubmittedVia() {
         return submittedVia;
     }
+
+//    @JsonProperty("duoCodes")
+//    public SortedSet<String> getDuoCodes() {
+//        return duoCodes;
+//    }
 
 
     @Override
