@@ -42,7 +42,7 @@ public class CertificationApplicationRunner implements ApplicationRunner {
             Map<String, Future<Void>> futures = new HashMap<>();
             long samplesQueued = 0;
             long startTime = System.currentTimeMillis();
-            long limit = 100_000_000L;
+            long limit = 1000_000_000L;
             try {
                 for (Resource<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll("", Collections.emptyList())) {
                         Sample sample = sampleResource.getContent();

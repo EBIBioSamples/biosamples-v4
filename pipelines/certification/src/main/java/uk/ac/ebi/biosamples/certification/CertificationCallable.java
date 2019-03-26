@@ -39,7 +39,7 @@ public class CertificationCallable implements Callable<Void> {
             CertificationResponse certificationResponse = restTemplate.postForObject(piplinesProperties.getCertificationUri(), sample, CertificationResponse.class);
             submitCurations(certificationResponse);
         } catch (RestClientException e) {
-            e.printStackTrace();
+            log.error(String.format("certification of %s by %s failed with %s", sample.getAccession(), piplinesProperties.getCertificationUri(), e.getMessage()));
         }
         return null;
     }
