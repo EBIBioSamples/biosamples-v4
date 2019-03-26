@@ -42,6 +42,10 @@ public class SampleCursorRetrievalService {
 	}
 
 	public Iterable<Resource<Sample>> fetchAll(String text, Collection<Filter> filterCollection) {
+		return fetchAll(text, filterCollection, null);
+	}
+
+	public Iterable<Resource<Sample>> fetchAll(String text, Collection<Filter> filterCollection, String jwt) {
 		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();
 		params.add("text", text);
 		for (Filter filter: filterCollection) {
@@ -52,7 +56,7 @@ public class SampleCursorRetrievalService {
 		params = encodePlusInQueryParameters(params);
 
 		return new IterableResourceFetchAll<Sample>(executor, traverson, restOperations,
-				parameterizedTypeReferencePagedResourcesSample,
+				parameterizedTypeReferencePagedResourcesSample, jwt,
 				params,	"samples", "cursor");
 
 	}

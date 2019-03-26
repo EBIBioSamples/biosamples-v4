@@ -1,10 +1,7 @@
 package uk.ac.ebi.biosamples.ena;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -27,6 +24,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+
+import static org.junit.Assert.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = TestApplication.class, properties = {"job.autorun.enabled=false"})
@@ -75,9 +74,46 @@ public class TestConversion {
                     enaCallable.call();
                 } catch (Exception e) {
                     e.printStackTrace();
+                    fail();
                 }
             }
         };
         eraProDao.getSingleSample("SAMEA100000168", rowCallbackHandler);
+    }
+
+    @Test
+    public void test_with_suppressed() {
+        RowCallbackHandler rowCallbackHandler = new RowCallbackHandler() {
+            @Override
+            public void processRow(ResultSet resultSet) throws SQLException {
+                String sampleAccession = resultSet.getString("BIOSAMPLE_ID");
+                EnaCallable enaCallable = new EnaCallable(sampleAccession, bioSamplesClient, enaXmlEnhancer, enaElementConverter, eraProDao, "test");
+                try {
+                    enaCallable.call();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    fail();
+                }
+            }
+        };
+        eraProDao.getSingleSample("SAMEA1930638", rowCallbackHandler);
+    }
+
+    @Test
+    public void test_with_killed() {
+        RowCallbackHandler rowCallbackHandler = new RowCallbackHandler() {
+            @Override
+            public void processRow(ResultSet resultSet) throws SQLException {
+                String sampleAccession = resultSet.getString("BIOSAMPLE_ID");
+                EnaCallable enaCallable = new EnaCallable(sampleAccession, bioSamplesClient, enaXmlEnhancer, enaElementConverter, eraProDao, "test");
+                try {
+                    enaCallable.call();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    fail();
+                }
+            }
+        };
+        eraProDao.getSingleSample("SAMEA1935107", rowCallbackHandler);
     }
 }
