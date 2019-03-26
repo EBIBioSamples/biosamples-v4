@@ -1,16 +1,3 @@
-/*
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package uk.ac.ebi.biosamples;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -27,8 +14,7 @@ import java.util.List;
 import static java.util.Objects.requireNonNull;
 
 public class PrestoSplit
-        implements ConnectorSplit
-{
+        implements ConnectorSplit {
     private final String connectorId;
     private final String schemaName;
     private final String tableName;
@@ -43,8 +29,7 @@ public class PrestoSplit
             @JsonProperty("schemaName") String schemaName,
             @JsonProperty("tableName") String tableName,
             @JsonProperty("uri") URI uri,
-            @JsonProperty("tupleDomain") TupleDomain<ColumnHandle> tupleDomain)
-    {
+            @JsonProperty("tupleDomain") TupleDomain<ColumnHandle> tupleDomain) {
         this.schemaName = requireNonNull(schemaName, "schema name is null");
         this.connectorId = requireNonNull(connectorId, "connector id is null");
         this.tableName = requireNonNull(tableName, "table name is null");
@@ -57,51 +42,43 @@ public class PrestoSplit
     }
 
     @JsonProperty
-    public String getConnectorId()
-    {
+    public String getConnectorId() {
         return connectorId;
     }
 
     @JsonProperty
-    public String getSchemaName()
-    {
+    public String getSchemaName() {
         return schemaName;
     }
 
     @JsonProperty
-    public String getTableName()
-    {
+    public String getTableName() {
         return tableName;
     }
 
     @JsonProperty
-    public URI getUri()
-    {
+    public URI getUri() {
         return uri;
     }
 
     @JsonProperty
-    public TupleDomain<ColumnHandle> getTupleDomain()
-    {
+    public TupleDomain<ColumnHandle> getTupleDomain() {
         return tupleDomain;
     }
 
     @Override
-    public boolean isRemotelyAccessible()
-    {
+    public boolean isRemotelyAccessible() {
         // only http or https is remotely accessible
         return remotelyAccessible;
     }
 
     @Override
-    public List<HostAddress> getAddresses()
-    {
+    public List<HostAddress> getAddresses() {
         return addresses;
     }
 
     @Override
-    public Object getInfo()
-    {
+    public Object getInfo() {
         return this;
     }
 }
