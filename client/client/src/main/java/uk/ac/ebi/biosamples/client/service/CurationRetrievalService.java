@@ -34,21 +34,29 @@ public class CurationRetrievalService {
 	}
 
 	public Iterable<Resource<Curation>> fetchAll() {
+		return fetchAll(null);
+	}
+
+	public Iterable<Resource<Curation>> fetchAll(String jwt) {
 		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();
 		params.add("size", Integer.toString(pageSize));
 		return new IterableResourceFetchAll<Curation>(executor, traverson, restOperations,
-				new ParameterizedTypeReference<PagedResources<Resource<Curation>>>() {}, 
-				params, "curations");
+				new ParameterizedTypeReference<PagedResources<Resource<Curation>>>() {},
+				jwt, params, "curations");
 	}
 
 	public Iterable<Resource<CurationLink>> fetchCurationLinksOfSample(String accession) {
+		return fetchCurationLinksOfSample(accession, null);
+	}
+
+	public Iterable<Resource<CurationLink>> fetchCurationLinksOfSample(String accession, String jwt) {
 		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();
 		params.add("size", Integer.toString(pageSize));
 		return new IterableResourceFetchAll<CurationLink>(executor, traverson, restOperations,
-				new ParameterizedTypeReference<PagedResources<Resource<CurationLink>>>() {}, 
-				params, 
-				Hop.rel("samples"), 
-				Hop.rel("sample").withParameter("accession", accession), 
+				new ParameterizedTypeReference<PagedResources<Resource<CurationLink>>>() {},
+				jwt, params,
+				Hop.rel("samples"),
+				Hop.rel("sample").withParameter("accession", accession),
 				Hop.rel("curationLinks"));
 	}
 }
