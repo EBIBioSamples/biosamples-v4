@@ -28,18 +28,20 @@ public class EGAImportRunner implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
-        String accession = "";
-        Optional<Resource<Sample>> sampleResource = bioSamplesClient.fetchSampleResource(accession);
-        if (sampleResource.isPresent()) {
-            System.out.println(sampleResource.get().getContent());
-        } else {
-            System.out.println("Cant find the sample");
-        }
+//        String accession = "SAMEA5648975";
+//        String jwt = "eyJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJodHRwczovL2V4cGxvcmUuYWFpLmViaS5hYy51ay9zcCIsImp0aSI6IkUxSFE3SDFrME1ldjR3SGFnSUtvT0EiLCJpYXQiOjE1NTM2MTc3NDksInN1YiI6InVzci04NjYyYmEwNS0xMzRhLTRiMTQtODViMC04ZTUyY2I5ZmVlOGQiLCJlbWFpbCI6ImlzdXJ1QGViaS5hYy51ayIsIm5pY2tuYW1lIjoiaXN1cnVsIiwibmFtZSI6IklzdXJ1IExpeWFuYWdlIiwiZG9tYWlucyI6WyJzZWxmLklzdXJ1MSIsInN1YnMudGVzdC10ZWFtLTIzIiwic3Vicy5kZXYtdGVhbS0xNDAiXSwiZXhwIjoxNTUzNjIxMzQ5fQ.gOkxhArFcACn77_qieX0VA9gNsVyYjqK0VRN3ygGOEwN6_roPyajyPuLmePqC14FgzXcQDEwyYNmKN0LG8oUB7xncNifqblBmYQ29rneK3_e5nUnZEPKoHNkJeLo4VORS1TUVUhCm3VrILrbbX-wL5W3gh3vwH9nCUieL1LSNHjebeXomEz0unLl573iEdrVi-F7SpVkRFYiPZ0kCaoyEJ1YsYGP9pp18GmOfmWtxBXCPaEh9zvpY1_HL-F7TOV9Fb93EYcoVpRuZYpZH4pV-CRTNmOc6mz-yjhc1EOP9KmlS6sIryJhVG10IS-nnZWjj3-MdQBmlNseo1wVfWAdJw";
+//        Optional<Resource<Sample>> sampleResource = bioSamplesClient.fetchSampleResource(accession, jwt);
+//        if (sampleResource.isPresent()) {
+//            System.out.println(sampleResource.get().getContent());
+//        } else {
+//            System.out.println("Cant find the sample");
+//        }
 
 
-        /*String dataFolderUrl = "/home/isuru/BioSamples/EGA_Import/";
+        String dataFolderUrl = "/home/isuru/BioSamples/EGA_Import/";
         String datasetDuoUrl = dataFolderUrl + "datasets_duo.csv";
         String sampleDataUrl = dataFolderUrl + "sanger_released_samples.csv";
+        String egaUrl = "https://www.ebi.ac.uk/ega/datasets/";
 
         Map<String, List<String>> datasetToDuoCodesMap = new HashMap<>();
         try (BufferedReader br = new BufferedReader(new FileReader(datasetDuoUrl))) {
@@ -58,7 +60,7 @@ public class EGAImportRunner implements ApplicationRunner {
 
 
         try (BufferedReader br = new BufferedReader(new FileReader(sampleDataUrl))) {
-            String line = br.readLine();
+            String line = br.readLine(); //ignore header
             while ((line = br.readLine()) != null) {
                 String[] sampleValues = line.split(",");
                 String accession = sampleValues[0];
@@ -73,19 +75,20 @@ public class EGAImportRunner implements ApplicationRunner {
 
                     Sample updatedSample = Sample.Builder.fromSample(sample)
                             .addAttribute(Attribute.build("phenotype", phenotype))
-                            .addAttribute(Attribute.build("ega_dataset", datasetId))
-                            .addExternalReference(ExternalReference.build(egaId))
+                            .addAttribute(Attribute.build("ega dataset id", datasetId))
+                            .addAttribute(Attribute.build("ega sample id", egaId))
+                            .addExternalReference(ExternalReference.build(egaUrl + datasetId))
+                            .addAllDuoCodes(duoCodes)
                             .build();
 
-                    sample.getCharacteristics().add(Attribute.build("phenotype", phenotype));
-
+//                    bioSamplesClient.persistSampleResource(updatedSample);
                 } else {
                     LOG.warn("Sample not present in biosamples: {}", accession);
                 }
             }
 
         } catch (IOException e) {
-            LOG.error("Coulnt read file: {}", datasetDuoUrl);
+            LOG.error("Couldn't read file: {}", datasetDuoUrl);
         }
 
 
@@ -95,7 +98,7 @@ public class EGAImportRunner implements ApplicationRunner {
             System.out.println(sampleResource.get().getContent());
         } else {
             System.out.println("Cant find the sample");
-        }*/
+        }
 
 
 //        try (BufferedWriter writer = new BufferedWriter(new FileWriter("not-founds.txt"))) {
