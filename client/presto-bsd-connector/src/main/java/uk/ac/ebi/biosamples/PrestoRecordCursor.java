@@ -66,13 +66,25 @@ public class PrestoRecordCursor implements RecordCursor {
         }
 
         Sample sample = samplesIterator.next().getContent();
-        String sex = null;
+        String phenotype = null;
+        String datasetId = null;
+        String duoCodes = null;
         for (Attribute attribute : sample.getCharacteristics()) {
-            if (attribute.getType().equalsIgnoreCase("sex")) {
-                sex = attribute.getValue();
+            if (attribute.getType().equalsIgnoreCase("phenotype")) {
+                phenotype = attribute.getValue();
+                continue;
+            }
+            if (attribute.getType().equalsIgnoreCase("ega dataset id")) {
+                datasetId = attribute.getValue();
+                continue;
             }
         }
-        fields = new ArrayList<>(Arrays.asList(sample.getAccession(), sample.getName(), sex));
+
+//        if (sample.getDuoCodes() != null && !sample.getDuoCodes().isEmpty()) {
+//
+//        }
+
+        fields = new ArrayList<>(Arrays.asList(sample.getAccession(), sample.getName(), phenotype, datasetId, duoCodes));
 
         return true;
     }
