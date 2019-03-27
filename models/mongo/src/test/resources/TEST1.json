@@ -59,5 +59,6 @@
 			"pubmed_id": "24265224"
 		}
 	],
-	"submittedVia": "JSON_API"
+	"submittedVia": "JSON_API",
+	"duoCodes": ["0000005"]
 }

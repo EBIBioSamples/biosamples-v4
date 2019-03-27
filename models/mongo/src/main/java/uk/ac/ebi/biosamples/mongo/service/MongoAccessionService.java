@@ -93,7 +93,7 @@ public class MongoAccessionService {
 				sample.getRelease(), sample.getUpdate(), 
 				sample.getAttributes(), sample.getData(), newRelationships, sample.getExternalReferences(),
 				sample.getOrganizations(), sample.getContacts(), sample.getPublications(),
-				sample.getSubmittedVia());
+				sample.getSubmittedVia(), sample.getDuoCodes());
 		return sample;
 	}
 

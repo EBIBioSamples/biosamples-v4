@@ -56,7 +56,7 @@ public class Sample implements Comparable<Sample> {
     protected SortedSet<Publication> publications;
 
     protected SubmittedViaType submittedVia;
-//    protected SortedSet<String> duoCodes;
+    protected SortedSet<String> duoCodes;
 
     protected Sample() {
 
@@ -187,10 +187,10 @@ public class Sample implements Comparable<Sample> {
         return submittedVia;
     }
 
-//    @JsonProperty("duoCodes")
-//    public SortedSet<String> getDuoCodes() {
-//        return duoCodes;
-//    }
+    @JsonProperty("duoCodes")
+    public SortedSet<String> getDuoCodes() {
+        return duoCodes;
+    }
 
 
     @Override
@@ -214,7 +214,8 @@ public class Sample implements Comparable<Sample> {
         		&& Objects.equals(this.externalReferences, other.externalReferences)
         		&& Objects.equals(this.organizations, other.organizations)
         		&& Objects.equals(this.contacts, other.contacts)
-        		&& Objects.equals(this.publications, other.publications);
+        		&& Objects.equals(this.publications, other.publications)
+                && Objects.equals(this.duoCodes, other.duoCodes);
     }
 
     @Override
@@ -319,6 +320,20 @@ public class Sample implements Comparable<Sample> {
                 }
             }
         }
+        if (!this.duoCodes.equals(other.duoCodes)) {
+            if (this.duoCodes.size() < other.duoCodes.size()) {
+                return -1;
+            } else if (this.duoCodes.size() > other.duoCodes.size()) {
+                return 1;
+            } else {
+                Iterator<String> thisIt = this.duoCodes.iterator();
+                Iterator<String> otherIt = other.duoCodes.iterator();
+                while (thisIt.hasNext() && otherIt.hasNext()) {
+                    int val = thisIt.next().compareTo(otherIt.next());
+                    if (val != 0) return val;
+                }
+            }
+        }
         return 0;
     }
 
@@ -354,6 +369,8 @@ public class Sample implements Comparable<Sample> {
         sb.append(",");
         sb.append(publications);
         sb.append(",");
+        sb.append(duoCodes);
+        sb.append(",");
         sb.append(submittedVia);
         sb.append(")");
         return sb.toString();
@@ -367,14 +384,14 @@ public class Sample implements Comparable<Sample> {
 			Set<Attribute> attributes,
 			Set<Relationship> relationships,
 			Set<ExternalReference> externalReferences) {
-    	return build(name, accession, domain, release, update, attributes, null, relationships, externalReferences, null, null, null, null);
+    	return build(name, accession, domain, release, update, attributes, null, relationships, externalReferences, null, null, null, null, null);
     }
 
     public static Sample build(String name, String accession, String domain, Instant release, Instant update,
                                Set<Attribute> attributes, Set<Relationship> relationships,
                                Set<ExternalReference> externalReferences,
                                SubmittedViaType submittedVia) {
-        return build(name, accession, domain, release, update, attributes, null, relationships, externalReferences, null, null, null, submittedVia);
+        return build(name, accession, domain, release, update, attributes, null, relationships, externalReferences, null, null, null, submittedVia, null);
     }
 
     //Used for deserializtion (JSON -> Java)
@@ -392,7 +409,8 @@ public class Sample implements Comparable<Sample> {
 			@JsonProperty("organization") Collection<Organization> organizations,
 			@JsonProperty("contact") Collection<Contact> contacts,
 			@JsonProperty("publications") Collection<Publication> publications,
-            @JsonProperty("submittedVia") SubmittedViaType submittedVia) {
+            @JsonProperty("submittedVia") SubmittedViaType submittedVia,
+            @JsonProperty("duoCodes") Collection<String> duoCodes) {
 
 		Sample sample = new Sample();
 
@@ -448,6 +466,11 @@ public class Sample implements Comparable<Sample> {
 			sample.data.addAll(structuredData);
 		}
 
+		sample.duoCodes = new TreeSet<>();
+		if (duoCodes != null) {
+			sample.duoCodes.addAll(duoCodes);
+		}
+
 		if (submittedVia != null) {
             sample.submittedVia = submittedVia;
         } else {
@@ -476,6 +499,7 @@ public class Sample implements Comparable<Sample> {
 		protected SortedSet<Organization> organizations = new TreeSet<>();
 		protected SortedSet<Contact> contacts = new TreeSet<>();
 		protected SortedSet<Publication> publications = new TreeSet<>();
+		protected SortedSet<String> duoCodes = new TreeSet<>();
 		protected Set<AbstractData> data = new TreeSet<>();
 
 		public Builder(String name, String accession) {
@@ -677,6 +701,36 @@ public class Sample implements Comparable<Sample> {
 			return this;
 		}
 
+		/**
+		 * Replace the DuoCodes with the provided collections
+		 * @param duoCodes
+		 * @return
+		 */
+		public Builder withDuoCodes(Collection<String> duoCodes) {
+			this.duoCodes = new TreeSet<>(duoCodes);
+			return this;
+		}
+
+		/**
+		 * Add a DuoCode to the list of builder DuoCodes
+		 * @param duoCode
+		 * @return
+		 */
+		public Builder addDuoCode(String duoCode) {
+			this.duoCodes.add(duoCode);
+			return this;
+		}
+
+		/**
+		 * Add all DuoCodes in the provided collection to the builder DuoCodes
+		 * @param duoCodes
+		 * @return
+		 */
+		public Builder addAllDuoCodes(Collection<String> duoCodes) {
+			this.duoCodes.addAll(duoCodes);
+			return this;
+		}
+
 		// Clean accession field
 		public Builder withNoAccession() {
 			this.accession = null;
@@ -728,7 +782,7 @@ public class Sample implements Comparable<Sample> {
 		public Sample build() {
 			return Sample.build(name, accession, domain, release, update,
 					attributes, data, relationships, externalReferences,
-					organizations, contacts, publications, submittedVia);
+					organizations, contacts, publications, submittedVia, duoCodes);
 		}
 
 		private ZonedDateTime parseDateTime(String datetimeString) {
@@ -757,7 +811,8 @@ public class Sample implements Comparable<Sample> {
 					.withRelationships(sample.getRelationships()).withExternalReferences(sample.getExternalReferences())
 					.withOrganizations(sample.getOrganizations()).withPublications(sample.getPublications())
 					.withContacts(sample.getContacts())
-                    .withSubmittedVia(sample.getSubmittedVia());
+                    .withSubmittedVia(sample.getSubmittedVia())
+                    .withDuoCodes(sample.getDuoCodes());
 		}
 
 		private DateTimeFormatter getFormatter() {

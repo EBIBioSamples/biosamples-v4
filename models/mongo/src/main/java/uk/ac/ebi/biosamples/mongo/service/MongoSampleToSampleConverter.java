@@ -50,6 +50,7 @@ public class MongoSampleToSampleConverter implements Converter<MongoSample, Samp
                 .withData(sample.getData())
                 .withExternalReferences(externalReferences).withOrganizations(sample.getOrganizations())
                 .withContacts(sample.getContacts()).withPublications(sample.getPublications())
+                .withDuoCodes(sample.getDuoCodes())
                 .build();
 //		return Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(), sample.getRelease(), sample.getUpdate(),
 //				sample.getAttributes(), relationships, externalReferences, sample.getOrganizations(), sample.getContacts(), sample.getPublications());

@@ -99,9 +99,12 @@ public class MongoSerializationTest {
 				.pubmed_id("24265224")
 				.build());
 
+		SortedSet<String> duoCodes = new TreeSet<>();
+		duoCodes.add("0000005");
+
 		return MongoSample.build(name, accession, "foozit", release, update,
 				attributes, structuredData, relationships, externalReferences,
-				organizations, contacts, publications, submittedVia);
+				organizations, contacts, publications, submittedVia, duoCodes);
 	}
 
 	private MongoSample getAMRMongoSample() {
@@ -118,6 +121,7 @@ public class MongoSerializationTest {
 		SortedSet<Organization> organizations = new TreeSet<>();
 		SortedSet<Contact> contacts = new TreeSet<>();
 		Set<AbstractData> data = new HashSet<>();
+		SortedSet<String> duoCodes = new TreeSet<>();
 
         AMRTable amrTable = new AMRTable.Builder("http://test").
                 addEntry(new AMREntry.Builder()
@@ -133,7 +137,7 @@ public class MongoSerializationTest {
 
 		return MongoSample.build(name, accession, domain, release, update,
 				attributes, data, relationships, externalReferences, organizations,
-				contacts, publications, submittedVia);
+				contacts, publications, submittedVia, duoCodes);
 
 	}
 	@Test
