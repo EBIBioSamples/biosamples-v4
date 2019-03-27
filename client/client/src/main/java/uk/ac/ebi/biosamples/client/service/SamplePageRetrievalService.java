@@ -13,6 +13,7 @@ import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.client.Traverson;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
@@ -20,13 +21,12 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import uk.ac.ebi.biosamples.client.utils.IterableResourceFetchAll;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 
 public class SamplePageRetrievalService {
 
-	private Logger log = LoggerFactory.getLogger(getClass());
+	private final Logger log = LoggerFactory.getLogger(getClass());
 	
 	public static final DateTimeFormatter solrFormatter = DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss'Z'");
 
@@ -46,9 +46,12 @@ public class SamplePageRetrievalService {
 		this.executor = executor;
 		this.pageSize = pageSize;
 	}
-
 	
 	public PagedResources<Resource<Sample>> search(String text, Collection<Filter> filters, int page, int size) {
+		return search(text, filters, page, size, null);
+	}
+
+	public PagedResources<Resource<Sample>> search(String text, Collection<Filter> filters, int page, int size, String jwt) {
 		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();
 		//TODO use shared constants here
 		params.add("page", Integer.toString(page));
@@ -64,10 +67,13 @@ public class SamplePageRetrievalService {
 				.queryParams(params)
 				.build()
 				.toUri();
-
 		log.trace("GETing " + uri);
 
 		RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
+		if (jwt != null) {
+			requestEntity.getHeaders().set(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
+		}
+
 		ResponseEntity<PagedResources<Resource<Sample>>> responseEntity = restOperations.exchange(requestEntity,
 				new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {
 				});
@@ -75,12 +81,11 @@ public class SamplePageRetrievalService {
 		if (!responseEntity.getStatusCode().is2xxSuccessful()) {
 			throw new RuntimeException("Problem GETing samples");
 		}
-
-
 		log.trace("GETted " + uri);
 
 		return responseEntity.getBody();
 	}
+
 
     // TODO to keep the + in a (not encoded) query parameter is to force encoding
 	private MultiValueMap<String, String> encodePlusInQueryParameters(MultiValueMap<String, String> queryParameters) {

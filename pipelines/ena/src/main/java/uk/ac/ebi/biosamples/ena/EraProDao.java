@@ -128,6 +128,9 @@ select * from cv_status;
     public Instant getReleaseDateTime(String biosampleAccession) {
         String sql = "SELECT to_char(FIRST_PUBLIC, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') FROM SAMPLE WHERE BIOSAMPLE_ID = ? AND BIOSAMPLE_AUTHORITY='N' AND SAMPLE_ID LIKE 'ERS%'";
         String dateString = jdbcTemplate.queryForObject(sql, String.class, biosampleAccession);
+        if (dateString == null) {
+            return null;
+        }
         log.trace("Release date of \"+biosampleAccession+\"is " + dateString);
         return Instant.parse(dateString);
     }

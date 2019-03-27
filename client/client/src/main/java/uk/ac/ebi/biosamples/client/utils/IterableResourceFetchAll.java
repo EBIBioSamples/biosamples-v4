@@ -10,6 +10,7 @@ import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.client.Hop;
 import org.springframework.hateoas.client.Traverson;
 import org.springframework.hateoas.client.Traverson.TraversalBuilder;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
@@ -39,6 +40,7 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
 	private final ParameterizedTypeReference<PagedResources<Resource<T>>> parameterizedTypeReference;
 	private final MultiValueMap<String,String> params;
 	private final ExecutorService executor;
+	private final String jwt;
 
 	/**
 	 * ParameterizedTypeReference must be ParameterizedTypeReference<PagedResources<Resource<T>>> but this
@@ -81,6 +83,31 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
 		this.hops = hops;
 		this.parameterizedTypeReference = parameterizedTypeReference;
 		this.params = params;
+		this.jwt = null;
+	}
+
+	public IterableResourceFetchAll(ExecutorService executor, Traverson traverson, RestOperations restOperations,
+									ParameterizedTypeReference<PagedResources<Resource<T>>> parameterizedTypeReference,
+									String jwt, MultiValueMap<String,String> params, String... rels) {
+		this(executor, traverson, restOperations, parameterizedTypeReference, jwt, params,
+				Arrays.stream(rels).map(rel -> Hop.rel(rel)).toArray(new IntFunction<Hop[]>(){
+					@Override
+					public Hop[] apply(int value) {
+						return new Hop[value];
+					}
+				}));
+	}
+
+	public IterableResourceFetchAll(ExecutorService executor, Traverson traverson, RestOperations restOperations,
+									ParameterizedTypeReference<PagedResources<Resource<T>>> parameterizedTypeReference,
+									String jwt, MultiValueMap<String,String> params, Hop... hops) {
+		this.executor = executor;
+		this.traverson = traverson;
+		this.restOperations = restOperations;
+		this.hops = hops;
+		this.parameterizedTypeReference = parameterizedTypeReference;
+		this.params = params;
+		this.jwt = jwt;
 	}
 	
 	public Iterator<Resource<T>> iterator() {
@@ -98,9 +125,13 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
 		URI uri = UriComponentsBuilder.fromHttpUrl(traversonBuilder.asLink().getHref())
 				.queryParams(params).build().toUri();
         RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
+		if (jwt != null) {
+			requestEntity.getHeaders().set(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
+		}
+
 		ResponseEntity<PagedResources<Resource<T>>> responseEntity = restOperations.exchange(requestEntity,
 				parameterizedTypeReference);
-		return new IteratorResourceFetchAll<T>(responseEntity.getBody(), restOperations, parameterizedTypeReference, executor);
+		return new IteratorResourceFetchAll<T>(responseEntity.getBody(), restOperations, parameterizedTypeReference, executor, jwt);
 	}
 
 	private static class IteratorResourceFetchAll<U> implements Iterator<Resource<U>> {
@@ -113,16 +144,24 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
 		private PagedResources<Resource<U>> page;
 		private Iterator<Resource<U>> pageIterator;
 		private Future<PagedResources<Resource<U>>> nextPageFuture;
+		private final String jwt;
 		
 		public IteratorResourceFetchAll(PagedResources<Resource<U>> page, RestOperations restOperations, 
 				ParameterizedTypeReference<PagedResources<Resource<U>>> parameterizedTypeReference,
 				ExecutorService executor) {
+			this(page, restOperations, parameterizedTypeReference, executor, null);
+		}
+
+		public IteratorResourceFetchAll(PagedResources<Resource<U>> page, RestOperations restOperations,
+				ParameterizedTypeReference<PagedResources<Resource<U>>> parameterizedTypeReference,
+				ExecutorService executor, String jwt) {
 
 			this.page = page;
 			this.pageIterator = page.iterator();
 			this.restOperations = restOperations;
 			this.executor = executor;
 			this.parameterizedTypeReference = parameterizedTypeReference;
+			this.jwt = jwt;
 		}
 		
 		@Override
@@ -140,7 +179,7 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
 				}
 				log.trace("getting next page uri "+uri);
 				
-				nextPageFuture = executor.submit(new NextPageCallable<U>(restOperations, parameterizedTypeReference, uri));
+				nextPageFuture = executor.submit(new NextPageCallable<U>(restOperations, parameterizedTypeReference, uri, jwt));
 			}
 			
 			if (pageIterator.hasNext()) {
@@ -195,6 +234,7 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
 			private final RestOperations restOperations;
 			private final URI uri;
 			private final ParameterizedTypeReference<PagedResources<Resource<V>>> parameterizedTypeReference;
+			private final String jwt;
 			
 			public NextPageCallable(RestOperations restOperations, 
 					ParameterizedTypeReference<PagedResources<Resource<V>>> parameterizedTypeReference,
@@ -202,11 +242,25 @@ public class IterableResourceFetchAll<T> implements Iterable<Resource<T>> {
 				this.restOperations = restOperations;
 				this.uri = uri;
 				this.parameterizedTypeReference = parameterizedTypeReference;
+				this.jwt = null;
+			}
+
+			public NextPageCallable(RestOperations restOperations,
+					ParameterizedTypeReference<PagedResources<Resource<V>>> parameterizedTypeReference,
+					URI uri, String jwt) {
+				this.restOperations = restOperations;
+				this.uri = uri;
+				this.parameterizedTypeReference = parameterizedTypeReference;
+				this.jwt = jwt;
 			}
 			
 			@Override
 			public PagedResources<Resource<V>> call() throws Exception {
 				RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
+				if (jwt != null) {
+					requestEntity.getHeaders().set(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
+				}
+
 				ResponseEntity<PagedResources<Resource<V>>> responseEntity = restOperations.exchange(requestEntity,
 						parameterizedTypeReference);
 				return responseEntity.getBody();				
