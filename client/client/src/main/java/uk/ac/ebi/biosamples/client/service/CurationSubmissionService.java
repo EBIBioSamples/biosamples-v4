@@ -46,11 +46,13 @@ public class CurationSubmissionService {
 
 		log.trace("POSTing to " + target + " " + curationLink);
 
-		RequestEntity<CurationLink> requestEntity = RequestEntity.post(target)
-				.contentType(MediaType.APPLICATION_JSON).accept(MediaTypes.HAL_JSON).body(curationLink);
+		RequestEntity.BodyBuilder bodyBuilder = RequestEntity.post(target)
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaTypes.HAL_JSON);
 		if (jwt != null) {
-			requestEntity.getHeaders().set(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
+			bodyBuilder.header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
 		}
+		RequestEntity<CurationLink> requestEntity = bodyBuilder.body(curationLink);
 
 		ResponseEntity<Resource<CurationLink>> responseEntity = restOperations.exchange(requestEntity,
 				new ParameterizedTypeReference<Resource<CurationLink>>() {

@@ -127,14 +127,13 @@ public class SampleSubmissionService {
                 URI uri = getSamplePersistURI(sampleLink);
                 log.trace("PUTing to " + uri + " " + sample);
 
-                RequestEntity<Sample> requestEntity = RequestEntity.put(uri)
+                RequestEntity.BodyBuilder bodyBuilder = RequestEntity.put(uri)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaTypes.HAL_JSON)
-                        .body(sample);
-
+                        .accept(MediaTypes.HAL_JSON);
                 if (jwt != null) {
-                    requestEntity.getHeaders().set(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
+                    bodyBuilder.header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
                 }
+                RequestEntity<Sample> requestEntity = bodyBuilder.body(sample);
 
                 ResponseEntity<Resource<Sample>> responseEntity;
                 try {
