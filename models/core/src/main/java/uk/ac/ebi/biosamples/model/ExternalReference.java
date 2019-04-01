@@ -11,9 +11,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.hash.Hashing;
 
 public class ExternalReference implements Comparable<ExternalReference> {
-	
-	private final String url;	
-	private final String hash;	
+
+	private final String url;
+	private final String hash;
 
 	private ExternalReference(String url, String hash) {
 		this.url = url;

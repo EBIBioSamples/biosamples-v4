@@ -53,8 +53,7 @@ public class CurationApplicationService {
 		
 		return Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(), 
 				sample.getRelease(), sample.getUpdate(), attributes, sample.getData(), sample.getRelationships(), externalReferences,
-				sample.getOrganizations(), sample.getContacts(), sample.getPublications(), sample.getSubmittedVia(),
-				sample.getDuoCodes());
+				sample.getOrganizations(), sample.getContacts(), sample.getPublications(), sample.getSubmittedVia());
 	}
 	
 	public Sample applyAllCurationToSample(Sample sample, Collection<Curation> curations) {

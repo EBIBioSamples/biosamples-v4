@@ -62,7 +62,6 @@ public class MongoSample {
 	protected Set<AbstractData> data;
 
 	protected SubmittedViaType submittedVia;
-	protected SortedSet<String> duoCodes;
 
 	@JsonIgnore
 	public boolean hasAccession() {
@@ -133,10 +132,6 @@ public class MongoSample {
 		return submittedVia;
 	}
 
-	public SortedSet<String> getDuoCodes() {
-		return duoCodes;
-	}
-
 	@Override
     public boolean equals(Object o) {
 
@@ -156,13 +151,12 @@ public class MongoSample {
         		&& Objects.equals(this.organizations,  other.organizations)
         		&& Objects.equals(this.contacts,  other.contacts)
         		&& Objects.equals(this.publications,  other.publications)
-        		&& Objects.equals(this.submittedVia,  other.submittedVia)
-        		&& Objects.equals(this.duoCodes, other.duoCodes);
+        		&& Objects.equals(this.submittedVia,  other.submittedVia);
     }
     
     @Override
     public int hashCode() {
-    	return Objects.hash(name, accession, domain, release, update, attributes, relationships, externalReferences, organizations, contacts, publications, duoCodes);
+    	return Objects.hash(name, accession, domain, release, update, attributes, relationships, externalReferences, organizations, contacts, publications);
     }
     
 
@@ -195,8 +189,6 @@ public class MongoSample {
     	sb.append(data);
     	sb.append(",");
     	sb.append(submittedVia);
-    	sb.append(",");
-    	sb.append(duoCodes);
     	sb.append(")");
     	return sb.toString();
     }
@@ -215,8 +207,7 @@ public class MongoSample {
     		@JsonProperty("organizations") SortedSet<Organization> organizations, 
     		@JsonProperty("contacts") SortedSet<Contact> contacts,
     		@JsonProperty("publications") SortedSet<Publication> publications,
-    		@JsonProperty("submittedVia") SubmittedViaType submittedVia,
-    		@JsonProperty("duoCodes") SortedSet<String> duoCodes) {
+    		@JsonProperty("submittedVia") SubmittedViaType submittedVia) {
 
 		MongoSample sample = new MongoSample();
 		
@@ -262,11 +253,6 @@ public class MongoSample {
 		}
 
 		sample.submittedVia = submittedVia;
-
-		sample.duoCodes = new TreeSet<>();
-		if (duoCodes != null && !duoCodes.isEmpty()) {
-			sample.duoCodes.addAll(duoCodes);
-		}
 		
 		//split accession into prefix & number, if possible
         Pattern r = Pattern.compile("^(\\D+)(\\d+)$");

@@ -83,7 +83,7 @@ public class EGAImportRunner implements ApplicationRunner {
                             .addAttribute(Attribute.build("ega dataset id", datasetId))
                             .addAttribute(Attribute.build("ega sample id", egaId))
                             .addExternalReference(ExternalReference.build(egaUrl + datasetId))
-                            .addAllDuoCodes(duoCodes)
+//                            .addAllDuoCodes(duoCodes)
                             .build();
 
                     LOG.info("Original sample: {}", jsonMapper.writeValueAsString(sample));
