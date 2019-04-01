@@ -1,5 +1,7 @@
 package uk.ac.ebi.biosamples;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,16 +40,18 @@ public class EGAImportRunner implements ApplicationRunner {
 //        }
 
 
-        String dataFolderUrl = "/home/isuru/BioSamples/EGA_Import/";
-        String datasetDuoUrl = dataFolderUrl + "datasets_duo.csv";
-        String sampleDataUrl = dataFolderUrl + "sanger_released_samples.csv";
-        String egaUrl = "https://www.ebi.ac.uk/ega/datasets/";
+        final String dataFolderUrl = "/home/isuru/BioSamples/EGA_Import/";
+        final String datasetDuoUrl = dataFolderUrl + "datasets_duo.csv";
+        final String sampleDataUrl = dataFolderUrl + "sanger_released_samples.csv";
+        final String egaUrl = "https://www.ebi.ac.uk/ega/datasets/";
+        final ObjectMapper jsonMapper = new ObjectMapper();
 
         Map<String, List<String>> datasetToDuoCodesMap = new HashMap<>();
         try (BufferedReader br = new BufferedReader(new FileReader(datasetDuoUrl))) {
-            String line = br.readLine();
-            while ((line = br.readLine()) != null) {
-                String[] record = line.replaceAll("[\"\\[\\]]", "").split(",");
+            String line = br.readLine(); //ignore header
+            LOG.info("Reading file: {}, headers: {}", datasetDuoUrl, line);
+            while ((line = br.readLine()) != null && !line.isEmpty()) {
+                String[] record = line.replaceAll("[\"\\[\\] ]", "").split(",");
                 String datasetId = record[0];
                 String[] duoCodes = Arrays.copyOfRange(record, 1, record.length);
 
@@ -55,13 +59,14 @@ public class EGAImportRunner implements ApplicationRunner {
             }
 
         } catch (IOException e) {
-            LOG.error("Coulnt read file: {}", datasetDuoUrl);
+            LOG.error("couldn't read file: " + datasetDuoUrl, e);
         }
 
 
         try (BufferedReader br = new BufferedReader(new FileReader(sampleDataUrl))) {
             String line = br.readLine(); //ignore header
-            while ((line = br.readLine()) != null) {
+            LOG.info("Reading file: {}, headers: {}", sampleDataUrl, line);
+            while ((line = br.readLine()) != null && !line.isEmpty()) {
                 String[] sampleValues = line.split(",");
                 String accession = sampleValues[0];
                 String egaId = sampleValues[1];
@@ -81,51 +86,19 @@ public class EGAImportRunner implements ApplicationRunner {
                             .addAllDuoCodes(duoCodes)
                             .build();
 
-//                    bioSamplesClient.persistSampleResource(updatedSample);
+                    LOG.info("Original sample: {}", jsonMapper.writeValueAsString(sample));
+                    LOG.info("Updated sample: {}", jsonMapper.writeValueAsString(updatedSample));
+
+                    bioSamplesClient.persistSampleResource(updatedSample);
                 } else {
                     LOG.warn("Sample not present in biosamples: {}", accession);
                 }
             }
 
+        } catch (JsonProcessingException e) {
+            LOG.error("JSON conversion failure", e);
         } catch (IOException e) {
-            LOG.error("Couldn't read file: {}", datasetDuoUrl);
+            LOG.error("Couldn't read file: " + datasetDuoUrl, e);
         }
-
-
-        String accession = "SAMEA2062883";
-        Optional<Resource<Sample>> sampleResource = bioSamplesClient.fetchSampleResource(accession);
-        if (sampleResource.isPresent()) {
-            System.out.println(sampleResource.get().getContent());
-        } else {
-            System.out.println("Cant find the sample");
-        }
-
-
-//        try (BufferedWriter writer = new BufferedWriter(new FileWriter("not-founds.txt"))) {
-//            long count = 0;
-//            long startTime = System.currentTimeMillis();
-//
-//            for (Resource<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll("", Collections.emptyList())) {
-//                try {
-//                    String accession = sampleResource.getContent().getAccession();
-//                    log.debug(String.format("got %s", accession));
-//                    count++;
-//                    boolean canary = (count % 1000 == 0);
-//                    {
-//                        if (canary) {
-//                            long endTime = System.currentTimeMillis();
-//                            long duration = (endTime - startTime);
-//                            log.info("PROCESSED: samples:" + count + " rate: " + count / ((duration / 1000) + 1) + " samples per second");
-//                        }
-//                    }
-//                } catch (Exception e) {
-//                    log.error("failed after: " + count);
-//                    log.error("Error getting individual sample resource: " + sampleResource.toString(), e);
-//                    writer.write(e.getMessage());
-//                }
-//            }
-//        } catch (Exception e) {
-//            log.error("Error getting samples resources", e);
-//        }
     }
 }
