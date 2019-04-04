@@ -57,11 +57,14 @@ public class PrestoRecordSet implements RecordSet {
                     case "phenotype":
                         filters.add(FilterBuilder.create().onAttribute("phenotype").withValue(value).build());
                         break;
+                    case "sex":
+                        filters.add(FilterBuilder.create().onAttribute("sex").withValue(value).build());
+                        break;
                     case "dataset":
                         filters.add(FilterBuilder.create().onAttribute("ega dataset id").withValue(value).build());
                         break;
                     default:
-                        LOG.info("No such a column as: {}", columnName);
+                        LOG.warn("No such a column as: {}", columnName);
                 }
             }
         }

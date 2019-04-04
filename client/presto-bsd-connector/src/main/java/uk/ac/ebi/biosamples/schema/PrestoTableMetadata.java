@@ -24,6 +24,7 @@ public class PrestoTableMetadata {
                 new PrestoColumn("id", VarcharType.VARCHAR),
                 new PrestoColumn("name", VarcharType.VARCHAR),
                 new PrestoColumn("phenotype", VarcharType.VARCHAR),
+                new PrestoColumn("sex", VarcharType.VARCHAR),
                 new PrestoColumn("dataset", VarcharType.VARCHAR),
                 new PrestoColumn("duo_codes", VarcharType.VARCHAR));
         List<URI> sources = Collections.singletonList(config.getBioSamplesClientUri());

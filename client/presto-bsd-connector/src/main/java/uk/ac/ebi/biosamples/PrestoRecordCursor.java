@@ -1,18 +1,18 @@
 package uk.ac.ebi.biosamples;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import io.airlift.slice.Slice;
 import io.airlift.slice.Slices;
 import io.prestosql.spi.connector.RecordCursor;
 import io.prestosql.spi.type.Type;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.hateoas.Resource;
 import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Sample;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
@@ -67,24 +67,35 @@ public class PrestoRecordCursor implements RecordCursor {
 
         Sample sample = samplesIterator.next().getContent();
         String phenotype = null;
+        String gender = null;
         String datasetId = null;
         String duoCodes = null;
         for (Attribute attribute : sample.getCharacteristics()) {
-            if (attribute.getType().equalsIgnoreCase("phenotype")) {
-                phenotype = attribute.getValue();
-                continue;
-            }
-            if (attribute.getType().equalsIgnoreCase("ega dataset id")) {
-                datasetId = attribute.getValue();
-                continue;
+            String type = attribute.getType().toLowerCase();
+            switch (type) {
+                case "phenotype":
+                    phenotype = attribute.getValue();
+                    break;
+                case "sex":
+                    gender = attribute.getValue();
+                    break;
+                case "ega dataset id":
+                    datasetId = attribute.getValue();
+                    break;
             }
         }
 
-//        if (sample.getDuoCodes() != null && !sample.getDuoCodes().isEmpty()) {
-//
-//        }
+        /*Set<String> duoCodeSet = new TreeSet<>();
+        if (sample.getExternalReferences() != null && !sample.getExternalReferences().isEmpty()) {
+            for (ExternalReference ref : sample.getExternalReferences()) {
+                if (ref.getDuo() != null && !ref.getDuo().isEmpty()) {
+                    duoCodeSet.addAll(ref.getDuo());
+                }
+            }
+        }
+        duoCodes = StringUtils.join(duoCodeSet, ",");*/
 
-        fields = new ArrayList<>(Arrays.asList(sample.getAccession(), sample.getName(), phenotype, datasetId, duoCodes));
+        fields = new ArrayList<>(Arrays.asList(sample.getAccession(), sample.getName(), phenotype, gender, datasetId, duoCodes));
 
         return true;
     }
