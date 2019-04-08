@@ -1,6 +1,5 @@
 package uk.ac.ebi.biosamples;
 
-import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import io.airlift.slice.Slice;
 import io.airlift.slice.Slices;
@@ -40,7 +39,7 @@ public class PrestoRecordCursor implements RecordCursor {
             fieldToColumnIndex[i] = columnHandle.getOrdinalPosition();
         }
         samplesIterator = sampleResourceIterable.iterator();
-        totalBytes = 100;//todo
+        totalBytes = 100;//todo check and remove this
     }
 
     @Override
@@ -85,7 +84,7 @@ public class PrestoRecordCursor implements RecordCursor {
             }
         }
 
-        /*Set<String> duoCodeSet = new TreeSet<>();
+        Set<String> duoCodeSet = new TreeSet<>();
         if (sample.getExternalReferences() != null && !sample.getExternalReferences().isEmpty()) {
             for (ExternalReference ref : sample.getExternalReferences()) {
                 if (ref.getDuo() != null && !ref.getDuo().isEmpty()) {
@@ -93,7 +92,7 @@ public class PrestoRecordCursor implements RecordCursor {
                 }
             }
         }
-        duoCodes = StringUtils.join(duoCodeSet, ",");*/
+        duoCodes = StringUtils.join(duoCodeSet, ",");
 
         fields = new ArrayList<>(Arrays.asList(sample.getAccession(), sample.getName(), phenotype, gender, datasetId, duoCodes));
 
