@@ -1,11 +1,6 @@
 package uk.ac.ebi.biosamples.mongo.model;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Objects;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -210,13 +205,23 @@ public class MongoCuration implements Comparable<MongoCuration>{
     	}
     	for (ExternalReference a : sortedPreExternal) {
     		hasher.putUnencodedChars(a.getUrl());
+    		if (a.getDuo() != null) {
+    			for (String duo : a.getDuo()) {
+    				hasher.putUnencodedChars(duo);
+				}
+			}
     	}
     	for (ExternalReference a : sortedPostExternal) {
     		hasher.putUnencodedChars(a.getUrl());
+			if (a.getDuo() != null) {
+				for (String duo : a.getDuo()) {
+					hasher.putUnencodedChars(duo);
+				}
+			}
     	}
     	String hash = hasher.hash().toString();
 		
 		return new MongoCuration(sortedPreAttributes, sortedPostAttributes, sortedPreExternal, sortedPostExternal, hash);
-	}    
+	}
 }
 
