@@ -116,4 +116,23 @@ public class TestConversion {
         };
         eraProDao.getSingleSample("SAMEA1935107", rowCallbackHandler);
     }
+
+    @Test
+    public void test_with_failing() {
+        RowCallbackHandler rowCallbackHandler = new RowCallbackHandler() {
+            @Override
+            public void processRow(ResultSet resultSet) throws SQLException {
+                String sampleAccession = resultSet.getString("BIOSAMPLE_ID");
+                EnaCallable enaCallable = new EnaCallable(sampleAccession, bioSamplesClient, enaXmlEnhancer, enaElementConverter, eraProDao, "test");
+                try {
+                    enaCallable.call();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    fail();
+                }
+            }
+        };
+        eraProDao.getSingleSample("SAMEA104371999", rowCallbackHandler);
+    }
+
 }

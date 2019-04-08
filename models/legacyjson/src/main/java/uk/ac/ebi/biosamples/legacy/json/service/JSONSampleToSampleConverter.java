@@ -215,26 +215,31 @@ public class JSONSampleToSampleConverter implements Converter<String, Sample> {
      * @return the set of external resources found in the JSON
      */
     private SortedSet<ExternalReference> getEmbeddedExternalReferences(DocumentContext json) {
-        SortedSet<ExternalReference> embeddedExternalReferences = new TreeSet<>();
+        SortedSet<ExternalReference> externalReferences = new TreeSet<>();
         Object testValue = json.read("$.externalReferences");
         if (testValue != null) {
             if (testValue instanceof String) {
                 String serializedEmbeddedReferences = (String) testValue;
                 List<String> embeddedReferences = JsonPath.read(serializedEmbeddedReferences, "$..URL");
                 if (embeddedReferences != null) {
-                    for (String url : embeddedReferences) {
-                        embeddedExternalReferences.add(ExternalReference.build(url));
+                    for (String referenceUrl : embeddedReferences) {
+                        externalReferences.add(ExternalReference.build(referenceUrl));
                     }
                 }
             } else {
-                List<Map<String, String>> externalReferences = (List<Map<String, String>>) testValue;
-                for (Map<String, String> externalRef : externalReferences) {
-                    embeddedExternalReferences.add(ExternalReference.build(externalRef.get("url")));
+                List<Map<String, Object>> externalReferenceList = (List<Map<String, Object>>) testValue;
+                for (Map<String, Object> extRef : externalReferenceList) {
+                    String url = (String) extRef.get("url");
+                    SortedSet<String> duoCodes = extRef.get("duo") != null ?
+                            new TreeSet<>((List<String>) extRef.get("duo")) : new TreeSet<>();
+
+                    externalReferences.add(ExternalReference.build(url, duoCodes));
                 }
 
             }
         }
-        return embeddedExternalReferences;
+
+        return externalReferences;
     }
 
     private SortedSet<ExternalReference> getExternalReferences(String json) {

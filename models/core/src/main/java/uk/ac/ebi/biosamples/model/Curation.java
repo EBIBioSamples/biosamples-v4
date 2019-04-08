@@ -199,9 +199,15 @@ public class Curation implements Comparable<Curation> {
     	}
     	for (ExternalReference a : sortedPreExternal) {
     		hasher.putUnencodedChars(a.getUrl());
+    		for (String s :a.getDuo()) {
+    			hasher.putUnencodedChars(s);
+			}
     	}
     	for (ExternalReference a : sortedPostExternal) {
     		hasher.putUnencodedChars(a.getUrl());
+			for (String s :a.getDuo()) {
+				hasher.putUnencodedChars(s);
+			}
     	}
     	String hash = hasher.hash().toString();
 		
