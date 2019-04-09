@@ -14,6 +14,7 @@ import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.client.Traverson;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
@@ -69,10 +70,12 @@ public class SamplePageRetrievalService {
 				.toUri();
 		log.trace("GETing " + uri);
 
-		RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
+		MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+		headers.add(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON.toString());
 		if (jwt != null) {
-			requestEntity.getHeaders().set(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
+			headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
 		}
+		RequestEntity<Void> requestEntity = new RequestEntity<>(headers, HttpMethod.GET, uri);
 
 		ResponseEntity<PagedResources<Resource<Sample>>> responseEntity = restOperations.exchange(requestEntity,
 				new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {
