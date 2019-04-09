@@ -75,10 +75,14 @@ public class CurationSubmissionService {
 				.asLink().getHref());
 		log.trace("DELETEing " + target);
 
-		RequestEntity requestEntity = RequestEntity.delete(target).build();
+		RequestEntity requestEntity;
 		if (jwt != null) {
-			requestEntity.getHeaders().set(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
+			requestEntity = RequestEntity.delete(target)
+					.header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt).build();
+		} else {
+			requestEntity = RequestEntity.delete(target).build();
 		}
+
 		restOperations.exchange(requestEntity, Void.class);
 	}
 
