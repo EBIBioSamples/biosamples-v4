@@ -105,11 +105,19 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 			String externalReferenceNickname = externalReferenceService.getNickname(externalReference);
 			String externalReferenceNicknameKey = SolrFieldService.encodeFieldName(externalReferenceNickname);
 			String key = SolrFieldService.encodeFieldName("external reference");
-					
+			String keyDuo = SolrFieldService.encodeFieldName("data use conditions");
+
 			if (!attributeValues.containsKey(key)) {
 				attributeValues.put(key, new ArrayList<>());
 			}
 			attributeValues.get(key).add(externalReferenceNickname);
+
+			if (externalReference.getDuo() != null && !externalReference.getDuo().isEmpty()) {
+				if (!attributeValues.containsKey(keyDuo)) {
+					attributeValues.put(keyDuo, new ArrayList<>());
+				}
+				attributeValues.get(keyDuo).addAll(externalReference.getDuo());
+			}
 
 			// Add the external reference data id
 			Optional<String> externalReferenceDataId = externalReferenceService.getDataId(externalReference);

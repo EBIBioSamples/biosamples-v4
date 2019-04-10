@@ -22,10 +22,9 @@ import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.client.Hop;
 import org.springframework.hateoas.client.Traverson;
 import org.springframework.hateoas.client.Traverson.TraversalBuilder;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.RequestEntity;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestOperations;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -101,11 +100,13 @@ public class SampleRetrievalService {
 
 			log.trace("GETing " + uri);
 
-			RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
+			MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+			headers.add(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON.toString());
 			if (jwt != null) {
-				requestEntity.getHeaders().set(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
+				headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
 			}
-			
+			RequestEntity<Void> requestEntity = new RequestEntity<>(headers, HttpMethod.GET, uri);
+
 			ResponseEntity<Resource<Sample>> responseEntity = null;
 			try {
 				responseEntity = restOperations.exchange(requestEntity,

@@ -1,3 +1,4 @@
+
 package uk.ac.ebi.biosamples.mongo.model;
 
 import java.util.Collection;
