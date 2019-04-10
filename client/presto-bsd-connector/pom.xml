@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>presto-bsd-connector</artifactId>
-    <packaging>jar</packaging>
+    <packaging>presto-plugin</packaging>
 
     <parent>
         <groupId>uk.ac.ebi.biosamples</groupId>
