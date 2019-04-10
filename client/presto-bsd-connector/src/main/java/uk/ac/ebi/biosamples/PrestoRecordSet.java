@@ -63,6 +63,9 @@ public class PrestoRecordSet implements RecordSet {
                     case "dataset":
                         filters.add(FilterBuilder.create().onAttribute("ega dataset id").withValue(value).build());
                         break;
+                    case "duo_codes":
+                        filters.add(FilterBuilder.create().onAttribute("data use conditions").withValue(value).build());
+                        break;
                     default:
                         LOG.warn("No such a column as: {}", columnName);
                 }
