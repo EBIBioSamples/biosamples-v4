@@ -19,6 +19,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class EGAImportRunner implements ApplicationRunner {
@@ -42,7 +43,7 @@ public class EGAImportRunner implements ApplicationRunner {
         final String dataFolderUrl = args.getSourceArgs()[0];
         final String datasetDuoUrl = dataFolderUrl + "datasets_duo.csv";
         final String sampleDataUrl = dataFolderUrl + "sanger_released_samples.csv";
-        final String egaUrl = "https://www.ebi.ac.uk/ega/datasets/";
+        final String egaUrl = "https://ega-archive.org/datasets/";
         final ObjectMapper jsonMapper = new ObjectMapper();
 
 
@@ -55,7 +56,8 @@ public class EGAImportRunner implements ApplicationRunner {
                 String datasetId = record[0];
                 String[] duoCodes = Arrays.copyOfRange(record, 1, record.length);
 
-                datasetToDuoCodesMap.put(datasetId, new TreeSet<>(Arrays.asList(duoCodes)));
+                datasetToDuoCodesMap.put(datasetId,
+                        new TreeSet<>(Arrays.stream(duoCodes).map(s -> "DUO:" + s).collect(Collectors.toList())));
             }
 
         } catch (IOException e) {
