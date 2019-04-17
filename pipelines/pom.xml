@@ -35,5 +35,6 @@
 		<module>copydown</module>
 		<module>livelist</module>
 		<module>curationundo</module>
+		<module>curami</module>
 	</modules>
 </project>
