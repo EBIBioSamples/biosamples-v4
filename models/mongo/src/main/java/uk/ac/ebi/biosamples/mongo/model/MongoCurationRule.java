@@ -12,6 +12,7 @@ import java.util.Objects;
 public class MongoCurationRule implements Comparable<MongoCurationRule> {
 
     @Id
+    private String id;
     private String attributePre;
     private String attributePost;
     private final Instant created;
@@ -19,9 +20,14 @@ public class MongoCurationRule implements Comparable<MongoCurationRule> {
     private MongoCurationRule(String attributePre, String attributePost) {
         this.attributePre = attributePre;
         this.attributePost = attributePost;
+        id = attributePre;
         created = Instant.now();
     }
 
+    @JsonProperty("id")
+    public String getId() {
+        return id;
+    }
 
     @JsonProperty("attributePre")
     public String getAttributePre() {

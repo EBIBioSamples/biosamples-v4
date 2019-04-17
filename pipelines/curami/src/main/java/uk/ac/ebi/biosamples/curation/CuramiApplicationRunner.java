@@ -16,6 +16,9 @@ import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.ArgUtils;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.HashMap;
@@ -47,6 +50,8 @@ public class CuramiApplicationRunner implements ApplicationRunner {
     public void run(ApplicationArguments args) throws Exception {
         Collection<Filter> filters = ArgUtils.getDateFilters(args);
 
+        loadCurationRulesFromFileToDb(getFileNameFromArgs(args));
+
         try (AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true,
                 pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax())) {
 
@@ -72,7 +77,7 @@ public class CuramiApplicationRunner implements ApplicationRunner {
             LOG.info("waiting for futures");
             ThreadUtils.checkFutures(futures, 0);
         } finally {
-            LOG.error("Pipeline finished at {}", Instant.now());
+            LOG.info("Pipeline finished at {}", Instant.now());
         }
     }
 
@@ -80,6 +85,28 @@ public class CuramiApplicationRunner implements ApplicationRunner {
         List<MongoCurationRule> mongoCurationRules = repository.findAll();
         return mongoCurationRules.stream()
                 .collect(Collectors.toMap(MongoCurationRule::getAttributePre, MongoCurationRule::getAttributePost));
+    }
+
+    private void loadCurationRulesFromFileToDb(String filePath) {
+        try (BufferedReader bf = new BufferedReader(new FileReader(filePath))) {
+            String line = bf.readLine();
+            LOG.info("Reading file with headers: {}", line);
+            while ((line = bf.readLine()) != null) {
+                String[] curationRule = line.split(",");
+                MongoCurationRule mongoCurationRule = MongoCurationRule.build(curationRule[0].trim(), curationRule[1].trim());
+                repository.save(mongoCurationRule);
+            }
+        } catch (IOException e) {
+            LOG.error("Could not find file in {}", filePath, e);
+        }
+    }
+
+    private String getFileNameFromArgs(ApplicationArguments args) {
+        String curationRulesFiles = "curation_rules.csv";
+        if (args.getOptionNames().contains("file")) {
+            curationRulesFiles = args.getOptionValues("file").get(0);
+        }
+        return curationRulesFiles;
     }
 
 }

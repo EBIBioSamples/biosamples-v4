@@ -35,7 +35,6 @@ public class CurationRulesRestController {
         return ResponseEntity.ok().body(curationRulesService.getCurationRules());
     }
 
-//    @RequestMapping("/save")
     @PostMapping(produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity saveCurationRule(@RequestBody CurationRule curationRule) {
         LOG.info("POST request, save curation rule: {}", curationRule);
@@ -62,16 +61,3 @@ public class CurationRulesRestController {
         return ResponseEntity.ok().body(sampleResourceAssembler.toResource(curationRulesService.saveRuleBasedCurations(sample)));
     }
 }
-
-//class CurationRule {
-//    private String attributePre;
-//    private String attributePost;
-//
-//    public String getAttributePre() {
-//        return attributePre;
-//    }
-//
-//    public String getAttributePost() {
-//        return attributePost;
-//    }
-//}
