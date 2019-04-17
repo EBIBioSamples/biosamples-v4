@@ -13,6 +13,7 @@ import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.ols.OlsProcessor;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -24,12 +25,16 @@ import java.util.stream.Collectors;
 @Component
 public class EGAImportRunner implements ApplicationRunner {
     private static final Logger LOG = LoggerFactory.getLogger(EGAImportRunner.class);
+    private static final String EGA_DATASET_BASE_URL = "https://ega-archive.org/datasets/";
+    private static final String EGA_SAMPLE_BASE_URL = "https://ega-archive.org/metadata/v2/samples/";
 
     private final BioSamplesClient bioSamplesClient;
+    private final OlsProcessor olsProcessor;
 
     @Autowired
-    public EGAImportRunner(BioSamplesClient bioSamplesClient) {
+    public EGAImportRunner(BioSamplesClient bioSamplesClient, OlsProcessor olsProcessor) {
         this.bioSamplesClient = bioSamplesClient;
+        this.olsProcessor = olsProcessor;
     }
 
     @Override
@@ -43,7 +48,6 @@ public class EGAImportRunner implements ApplicationRunner {
         final String dataFolderUrl = args.getSourceArgs()[0];
         final String datasetDuoUrl = dataFolderUrl + "datasets_duo.csv";
         final String sampleDataUrl = dataFolderUrl + "sanger_released_samples.csv";
-        final String egaUrl = "https://ega-archive.org/datasets/";
         final ObjectMapper jsonMapper = new ObjectMapper();
 
 
@@ -78,18 +82,52 @@ public class EGAImportRunner implements ApplicationRunner {
                 Optional<Resource<Sample>> sampleResource = bioSamplesClient.fetchSampleResource(accession);
                 if (sampleResource.isPresent()) {
                     Sample sample = sampleResource.get().getContent();
+                    LOG.info("Original sample: {}", jsonMapper.writeValueAsString(sample));
+                    if (sample.getAttributes().size() != 2) {
+                        LOG.info("Attributes size != 2, Attributes {}", sample.getAttributes());
+                    }
+
+                    //remove extra attributes from migration (deleted and other-migrated from....)
+                    List<Attribute> attributesToRemove = new ArrayList<>();
+                    for (Attribute attribute : sample.getAttributes()) {
+                        if (attribute.getType().equals("deleted") ||
+                                (attribute.getType().equals("other") && attribute.getValue().startsWith("migrated from"))) {
+                            attributesToRemove.add(attribute);
+                        } else if (attribute.getType().equals("phenotype")) {
+                            LOG.warn("Removing attribute phenotype={} from original sample", attribute.getValue());
+                            attributesToRemove.add(attribute);
+                        }
+                    }
+                    for (Attribute attribute : attributesToRemove) {
+                        sample.getAttributes().remove(attribute);
+                    }
+
+                    /*Optional<String> olsPhenotype = getOlsMappedTerm(phenotype);
+                    Attribute attributePhenotype;
+                    if (olsPhenotype.isPresent()) {
+                        attributePhenotype = Attribute.build("phenotype", phenotype, olsPhenotype.get(), null);
+                    } else {
+                        attributePhenotype = Attribute.build("phenotype", phenotype);
+                    }*/
+
+                    Optional<OlsProcessor.OlsResult> olsPhenotype = getOlsMappedTerm(phenotype);
+                    Attribute attributePhenotype;
+                    if (olsPhenotype.isPresent()) {
+                        attributePhenotype = Attribute.build("phenotype", olsPhenotype.get().getLabel(), olsPhenotype.get().getIri(), null);
+                    } else {
+                        attributePhenotype = Attribute.build("phenotype", phenotype);
+                    }
 
                     Sample updatedSample = Sample.Builder.fromSample(sample)
-                            .addAttribute(Attribute.build("phenotype", phenotype))
+                            .addAttribute(attributePhenotype)
                             .addAttribute(Attribute.build("ega dataset id", datasetId))
                             .addAttribute(Attribute.build("ega sample id", egaId))
-                            .addExternalReference(ExternalReference.build(egaUrl + datasetId, duoCodes))
+                            .addExternalReference(ExternalReference.build(EGA_DATASET_BASE_URL + datasetId, duoCodes))
+                            .addExternalReference(ExternalReference.build(EGA_SAMPLE_BASE_URL + egaId))
                             .withRelease(Instant.now())
                             .build();
 
-                    LOG.info("Original sample: {}", jsonMapper.writeValueAsString(sample));
                     LOG.info("Updated sample: {}", jsonMapper.writeValueAsString(updatedSample));
-
                     bioSamplesClient.persistSampleResource(updatedSample);
                 } else {
                     LOG.warn("Sample not present in biosamples: {}", accession);
@@ -101,5 +139,27 @@ public class EGAImportRunner implements ApplicationRunner {
         } catch (IOException e) {
             LOG.error("Couldn't read file: " + datasetDuoUrl, e);
         }
+    }
+
+
+//    private Optional<String> getOlsMappedTerm(String termToMap) {
+//        Optional<String> olsMappedTerm = Optional.empty();
+//        if (termToMap.matches("^[A-Za-z]+[_:\\-][0-9]+$")) {
+//            olsMappedTerm = olsProcessor.queryOlsForShortcode(termToMap);
+//            olsMappedTerm.ifPresent(o -> LOG.info("OLS mapped term {} into {}", termToMap, o));
+//        }
+//
+//        return olsMappedTerm;
+//    }
+
+
+    private Optional<OlsProcessor.OlsResult> getOlsMappedTerm(String termToMap) {
+        Optional<OlsProcessor.OlsResult> olsMappedTerm = Optional.empty();
+        if (termToMap.matches("^[A-Za-z]+[_:\\-][0-9]+$")) {
+            olsMappedTerm = olsProcessor.queryForOlsObject(termToMap);
+            olsMappedTerm.ifPresent(o -> LOG.info("OLS mapped term {} into {}", termToMap, o.getIri()));
+        }
+
+        return olsMappedTerm;
     }
 }

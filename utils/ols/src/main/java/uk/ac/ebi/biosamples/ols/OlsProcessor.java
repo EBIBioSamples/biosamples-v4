@@ -172,4 +172,63 @@ public class OlsProcessor {
         }
         return Optional.ofNullable(iri);
     }
+
+
+    public Optional<OlsResult> queryForOlsObject(String shortcode) {
+        UriComponents uriComponents = UriComponentsBuilder.fromUriString(bioSamplesProperties.getOls() + "/api/terms?id={shortcode}&size=500").build();
+        URI uri = uriComponents.expand(shortcode).encode().toUri();
+
+        log.trace("OLS query for shortcode {} against {}", shortcode, uri);
+
+        RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaType.APPLICATION_JSON).build();
+        ResponseEntity<ObjectNode> responseEntity = restTemplate.exchange(requestEntity,
+                new ParameterizedTypeReference<ObjectNode>() {
+                });
+
+        //non-200 status code or empty body
+        if (!responseEntity.getStatusCode().is2xxSuccessful() || responseEntity.getBody() == null) {
+            log.trace("Http status: {}, Body: {}", responseEntity.getStatusCodeValue(), responseEntity.getBody());
+            return Optional.empty();
+        }
+
+        ObjectNode node = responseEntity.getBody();
+
+        OlsResult olsResult = null;
+        if (node.has("_embedded") && node.get("_embedded").has("terms")) {
+            for (JsonNode term : node.get("_embedded").get("terms")) {
+                if (term.has("iri") && term.has("is_defining_ontology")) {
+                    //if we don't have an iri use this but if there is a defining ontoloy use this in preference
+                    if (olsResult == null || term.get("is_defining_ontology").booleanValue()) {
+                        //if this term is obsolete get the most upto-date one
+                        if (term.get("is_obsolete").booleanValue()) {
+                            String[] replaceTermArray = term.get("term_replaced_by").asText().split("/");
+                            String replaceTerm = replaceTermArray[replaceTermArray.length - 1];
+                            return queryForOlsObject(replaceTerm);
+                        }
+
+                        olsResult = new OlsResult(term.get("label").asText(), term.get("iri").asText());
+                    }
+                }
+            }
+        }
+        return Optional.ofNullable(olsResult);
+    }
+
+    public class OlsResult {
+        private String label;
+        private String iri;
+
+        OlsResult(String label, String iri) {
+            this.label = label;
+            this.iri = iri;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+
+        public String getIri() {
+            return iri;
+        }
+    }
 }
