@@ -14,6 +14,7 @@ import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.ols.OlsProcessor;
+import uk.ac.ebi.biosamples.ols.OlsResult;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -30,7 +31,10 @@ public class EGAImportRunner implements ApplicationRunner {
     private static final Set<String> UNKNOWN_TERMS = new HashSet<>(Arrays.asList("n/a", "na", "n.a", "none",
             "unknown", "--", ".", "null", "missing", "[not reported]", "[not requested]", "not applicable",
             "not_applicable", "not collected", "not specified", "not known", "not reported", "missing: not provided"));
+    private static final String ATTRIBUTE_PHENOTYPE = "phenotype";
+    private static final String ATTRIBUTE_SEX = "sex";
 
+    private final Attribute organism;
     private final BioSamplesClient bioSamplesClient;
     private final OlsProcessor olsProcessor;
 
@@ -38,6 +42,8 @@ public class EGAImportRunner implements ApplicationRunner {
     public EGAImportRunner(BioSamplesClient bioSamplesClient, OlsProcessor olsProcessor) {
         this.bioSamplesClient = bioSamplesClient;
         this.olsProcessor = olsProcessor;
+
+        organism = Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null);
     }
 
     @Override
@@ -47,14 +53,14 @@ public class EGAImportRunner implements ApplicationRunner {
             throw new IllegalArgumentException("Please specify a data folder as a program argument");
         }
 
-//        final String dataFolderUrl = "/home/isuru/BioSamples/EGA_Import/";
         final String dataFolderUrl = args.getSourceArgs()[0];
         final String datasetDuoUrl = dataFolderUrl + "datasets_duo.csv";
         final String sampleDataUrl = dataFolderUrl + "sanger_released_samples.csv";
         final String phenotypeIriFile = dataFolderUrl + "sanger_datasets_public_phenotype_hpo.csv";
 
         Map<String, SortedSet<String>> datasetToDuoCodesMap = loadDuoCodeMap(datasetDuoUrl);
-        Map<String, List<OlsProcessor.OlsResult>> phenotypeIriMap = loadPhenotypeIriMap(phenotypeIriFile);
+//        Map<String, List<OlsResult>> phenotypeIriMap = loadPhenotypeIriMap(phenotypeIriFile);
+        Map<String, List<OlsResult>> phenotypeIriMap = new HashMap<>();
 
         try (BufferedReader br = new BufferedReader(new FileReader(sampleDataUrl))) {
             String line = br.readLine(); //ignore header
@@ -65,12 +71,12 @@ public class EGAImportRunner implements ApplicationRunner {
                 String egaId = sampleValues[1];
                 String datasetId = sampleValues[2];
                 String phenotype = sampleValues[3];
+                String sex = sampleValues[4];
                 SortedSet<String> duoCodes = datasetToDuoCodesMap.get(datasetId);
-                List<OlsProcessor.OlsResult> phenotypeIris = phenotypeIriMap.get(phenotype);
+                List<OlsResult> phenotypeIris = phenotypeIriMap.get(phenotype);
 
-                processSampleRecord(accession, egaId, datasetId, phenotype, duoCodes, phenotypeIris);
+                processSampleRecord(accession, egaId, datasetId, phenotype, sex, duoCodes, phenotypeIris);
             }
-
         } catch (JsonProcessingException e) {
             LOG.error("JSON conversion failure", e);
         } catch (IOException e) {
@@ -78,8 +84,8 @@ public class EGAImportRunner implements ApplicationRunner {
         }
     }
 
-    private void processSampleRecord(String accession, String egaId, String datasetId, String phenotype,
-                                     SortedSet<String> duoCodes, List<OlsProcessor.OlsResult> phenotypeIris)
+    private void processSampleRecord(String accession, String egaId, String datasetId, String phenotype, String sex,
+                                     SortedSet<String> duoCodes, List<OlsResult> phenotypeIris)
             throws JsonProcessingException {
 
         final ObjectMapper jsonMapper = new ObjectMapper();
@@ -88,7 +94,7 @@ public class EGAImportRunner implements ApplicationRunner {
             Sample sample = sampleResource.get().getContent();
             LOG.info("Original sample: {}", jsonMapper.writeValueAsString(sample));
             if (sample.getAttributes().size() != 2) {
-                LOG.info("Attributes size != 2, Attributes {}", sample.getAttributes());
+                LOG.warn("Attributes size != 2, Attributes {}", sample.getAttributes());
             }
 
             //remove extra attributes from migration (deleted and other-migrated from....)
@@ -97,6 +103,7 @@ public class EGAImportRunner implements ApplicationRunner {
             Sample.Builder sampleBuilder = Sample.Builder.fromSample(sample)
                     .addAttribute(Attribute.build("ega dataset id", datasetId))
                     .addAttribute(Attribute.build("ega sample id", egaId))
+                    .addAttribute(organism)
                     .addExternalReference(ExternalReference.build(EGA_DATASET_BASE_URL + datasetId, duoCodes))
                     .addExternalReference(ExternalReference.build(EGA_SAMPLE_BASE_URL + egaId))
                     .withRelease(Instant.now());
@@ -105,8 +112,14 @@ public class EGAImportRunner implements ApplicationRunner {
             if (UNKNOWN_TERMS.contains(phenotype.toLowerCase())) {
                 LOG.info("Ignoring phenotype as it contains {}", phenotype);
             } else {
-                Attribute attributePhenotype = populateAttribute(phenotype, phenotypeIris);
+                Attribute attributePhenotype = populateAttribute(phenotype, phenotypeIris, ATTRIBUTE_PHENOTYPE);
                 sampleBuilder.addAttribute(attributePhenotype);
+            }
+            if (UNKNOWN_TERMS.contains(sex.toLowerCase())) {
+                LOG.info("Ignoring sex as it contains {}", sex);
+            } else {
+                Attribute attributeSex = populateAttribute(sex, getSexOntology(sex), ATTRIBUTE_SEX);
+                sampleBuilder.addAttribute(attributeSex);
             }
 
             Sample updatedSample = sampleBuilder.build();
@@ -139,8 +152,8 @@ public class EGAImportRunner implements ApplicationRunner {
         return datasetToDuoCodesMap;
     }
 
-    private Map<String, List<OlsProcessor.OlsResult>> loadPhenotypeIriMap(String phenotypeIriFile) {
-        Map<String, List<OlsProcessor.OlsResult>> phenotypeIriMap = new HashMap<>();
+    private Map<String, List<OlsResult>> loadPhenotypeIriMap(String phenotypeIriFile) {
+        Map<String, List<OlsResult>> phenotypeIriMap = new HashMap<>();
 
         try (BufferedReader br = new BufferedReader(new FileReader(phenotypeIriFile))) {
             String line = br.readLine(); //ignore header
@@ -151,14 +164,14 @@ public class EGAImportRunner implements ApplicationRunner {
                 String mappedPhenotype = record[1];
                 String hpoId = record[2];
                 String efoId = record[3];
-                List<OlsProcessor.OlsResult> iriSet = new ArrayList<>();
+                List<OlsResult> iriSet = new ArrayList<>();
 
                 if (hpoId != null && !"".equals(hpoId)) {
-                    Optional<OlsProcessor.OlsResult> olsResult = getOlsMappedTerm(hpoId);
+                    Optional<OlsResult> olsResult = getOlsMappedTerm(hpoId);
                     olsResult.ifPresent(iriSet::add);
                 }
                 if (efoId != null && !"".equals(efoId)) {
-                    Optional<OlsProcessor.OlsResult> olsResult = getOlsMappedTerm(efoId);
+                    Optional<OlsResult> olsResult = getOlsMappedTerm(efoId);
                     olsResult.ifPresent(iriSet::add);
                 }
 
@@ -177,9 +190,16 @@ public class EGAImportRunner implements ApplicationRunner {
             if (attribute.getType().equals("deleted") ||
                     (attribute.getType().equals("other") && attribute.getValue().startsWith("migrated from"))) {
                 attributesToRemove.add(attribute);
+                LOG.info("Removing attribute {}={} from original sample: {}", attribute.getType(), attribute.getValue(), sample.getAccession());
             } else if (attribute.getType().equals("phenotype")) {
-                LOG.warn("Removing attribute phenotype={} from original sample", attribute.getValue());
                 attributesToRemove.add(attribute);
+                LOG.warn("Removing attribute phenotype={} from original sample: {}", attribute.getValue(), sample.getAccession());
+            } else if (attribute.getType().equals("organism")) {
+                attributesToRemove.add(attribute);
+                LOG.warn("Removing attribute organism={} from original sample: {}", attribute.getValue(), sample.getAccession());
+            } else if (attribute.getType().equals("sex")) {
+                attributesToRemove.add(attribute);
+                LOG.warn("Removing attribute sex={} from original sample: {}", attribute.getValue(), sample.getAccession());
             }
         }
         for (Attribute attribute : attributesToRemove) {
@@ -187,29 +207,29 @@ public class EGAImportRunner implements ApplicationRunner {
         }
     }
 
-    private Attribute populateAttribute(String phenotype, List<OlsProcessor.OlsResult> phenotypeIris) {
-        Optional<OlsProcessor.OlsResult> olsPhenotype = getOlsMappedTerm(phenotype);
-        Attribute attributePhenotype;
+    private Attribute populateAttribute(String phenotype, List<OlsResult> attributeIris, String attributeType) {
+        Optional<OlsResult> olsMappedTerm = getOlsMappedTerm(phenotype);
+        Attribute attribute;
 
         List<String> iris = new ArrayList<>();
-        if (phenotypeIris != null && !phenotypeIris.isEmpty()) {
-            for (OlsProcessor.OlsResult o : phenotypeIris) {
+        if (attributeIris != null && !attributeIris.isEmpty()) {
+            for (OlsResult o : attributeIris) {
                 iris.add(o.getIri());
             }
         }
 
-        if (olsPhenotype.isPresent()) {
-            iris.add(olsPhenotype.get().getIri());
-            attributePhenotype = Attribute.build("phenotype", olsPhenotype.get().getLabel(), iris, null);
+        if (olsMappedTerm.isPresent()) {
+            iris.add(olsMappedTerm.get().getIri());
+            attribute = Attribute.build(attributeType, olsMappedTerm.get().getLabel(), iris, null);
         } else {
-            attributePhenotype = Attribute.build("phenotype", phenotype, iris, null);
+            attribute = Attribute.build(attributeType, phenotype, iris, null);
         }
 
-        return attributePhenotype;
+        return attribute;
     }
 
-    private Optional<OlsProcessor.OlsResult> getOlsMappedTerm(String termToMap) {
-        Optional<OlsProcessor.OlsResult> olsMappedTerm = Optional.empty();
+    private Optional<OlsResult> getOlsMappedTerm(String termToMap) {
+        Optional<OlsResult> olsMappedTerm = Optional.empty();
         if (termToMap.matches("^[A-Za-z]+[_:\\-][0-9]+$")) {
             olsMappedTerm = olsProcessor.queryForOlsObject(termToMap);
 
@@ -221,5 +241,21 @@ public class EGAImportRunner implements ApplicationRunner {
         }
 
         return olsMappedTerm;
+    }
+
+    private List<OlsResult> getSexOntology(String sex) {
+        List<OlsResult> olsResults;
+        switch(sex.toLowerCase()) {
+            case "male":
+                olsResults = Collections.singletonList(new OlsResult("male", "http://purl.obolibrary.org/obo/PATO_0000384"));
+                break;
+            case "female":
+                olsResults = Collections.singletonList(new OlsResult("female", "http://purl.obolibrary.org/obo/PATO_0000383"));
+                break;
+            default:
+                olsResults = null;
+                break;
+        }
+        return olsResults;
     }
 }

@@ -21,8 +21,10 @@ public class ExternalReferenceService {
 			return "hPSCreg";
 		} else if (externalReference.getUrl().contains("ncbi.nlm.nih.gov/projects/gap")) {
 			return "dbGaP";
-		} else if (externalReference.getUrl().contains("ega-archive.org")) {
-			return "EGA";
+		} else if (externalReference.getUrl().contains("ega-archive.org/datasets")) {
+			return "EGA Dataset";
+		}  else if (externalReference.getUrl().contains("ega-archive.org/metadata")) {
+			return "EGA Sample";
 		} else {
 			return "other";
 		}

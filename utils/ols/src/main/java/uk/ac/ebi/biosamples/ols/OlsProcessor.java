@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
@@ -214,21 +213,5 @@ public class OlsProcessor {
         return Optional.ofNullable(olsResult);
     }
 
-    public class OlsResult {
-        private String label;
-        private String iri;
 
-        OlsResult(String label, String iri) {
-            this.label = label;
-            this.iri = iri;
-        }
-
-        public String getLabel() {
-            return label;
-        }
-
-        public String getIri() {
-            return iri;
-        }
-    }
 }
