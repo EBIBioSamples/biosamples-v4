@@ -60,7 +60,7 @@ public class EGAImportRunner implements ApplicationRunner {
 
         Map<String, SortedSet<String>> datasetToDuoCodesMap = loadDuoCodeMap(datasetDuoUrl);
 //        Map<String, List<OlsResult>> phenotypeIriMap = loadPhenotypeIriMap(phenotypeIriFile);
-        Map<String, List<OlsResult>> phenotypeIriMap = new HashMap<>();
+        Map<String, List<OlsResult>> phenotypeIriMap = new HashMap<>();//todo remove this and uncomment above
 
         try (BufferedReader br = new BufferedReader(new FileReader(sampleDataUrl))) {
             String line = br.readLine(); //ignore header
