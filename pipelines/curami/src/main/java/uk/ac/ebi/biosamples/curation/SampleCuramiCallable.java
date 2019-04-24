@@ -30,7 +30,8 @@ public class SampleCuramiCallable implements Callable<Void> {
 
     @Override
     public Void call() {
-        getRuleBasedCurations(sample);
+        List<Curation> curations = getRuleBasedCurations(sample);
+        LOG.info("{} curations added for sample {}", curations.size(), sample.getAccession());
         return null;
     }
 
@@ -38,10 +39,11 @@ public class SampleCuramiCallable implements Callable<Void> {
         SortedSet<Attribute> attributes = sample.getAttributes();
         List<Curation> curations = new ArrayList<>();
         for (Attribute a : attributes) {
-            if (curationRules.containsKey(a.getType())) {
+            String processedAttribute = getCleanedAttribute(a.getType());
+            if (curationRules.containsKey(processedAttribute)) {
                 Curation curation = Curation.build(
                         Attribute.build(a.getType(), a.getValue(), a.getIri(), a.getUnit()),
-                        Attribute.build(curationRules.get(a.getType()), a.getValue(), a.getIri(), a.getUnit()));
+                        Attribute.build(curationRules.get(processedAttribute), a.getValue(), a.getIri(), a.getUnit()));
                 bioSamplesClient.persistCuration(sample.getAccession(), curation, domain);
                 LOG.info("New curation found {}", curation);
                 curations.add(curation);
@@ -49,5 +51,13 @@ public class SampleCuramiCallable implements Callable<Void> {
         }
 
         return curations;
+    }
+
+    //todo add further processing identified in the analysis
+    private String getCleanedAttribute(String attribute) {
+        String cleanedAttribute = attribute.toLowerCase();
+        cleanedAttribute = cleanedAttribute.replaceAll("-", " ");
+
+        return cleanedAttribute;
     }
 }
