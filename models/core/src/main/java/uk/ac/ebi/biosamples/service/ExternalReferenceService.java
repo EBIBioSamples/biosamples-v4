@@ -33,7 +33,8 @@ public class ExternalReferenceService {
 	public Optional<String> getDataId(ExternalReference externalReference) {
 		
 		String nickname = getNickname(externalReference);		
-		if ("ENA".equals(nickname) || "ArrayExpress".equals(nickname) || "hPSCreg".equals(nickname) || "EGA".equals(nickname)) {
+		if ("ENA".equals(nickname) || "ArrayExpress".equals(nickname) || "hPSCreg".equals(nickname)
+				|| "EGA Dataset".equals(nickname) || "EGA Sample".equals(nickname)) {
 			UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(externalReference.getUrl()).build();
 			String lastPathSegment = uriComponents.getPathSegments().get(uriComponents.getPathSegments().size()-1);
 			return Optional.of(lastPathSegment);
