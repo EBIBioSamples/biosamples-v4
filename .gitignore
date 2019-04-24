@@ -18,6 +18,8 @@ docker-agents.sh
 run_env.sh
 docker-clean.sh
 docker-restart.sh
+docker-servers.sh
+not-founds.txt
 
 *.backup
 .ideavimrc

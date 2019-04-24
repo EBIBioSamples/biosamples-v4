@@ -9,6 +9,7 @@ import uk.ac.ebi.biosamples.model.*;
 
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -122,8 +123,9 @@ public class RestExternalReferenceIntegration extends AbstractIntegration {
 		SortedSet<Relationship> relationships = new TreeSet<>();
 
 		SortedSet<ExternalReference> externalReferences = new TreeSet<>();
-		externalReferences.add(ExternalReference.build("http://www.test.com/1"));
-		externalReferences.add(ExternalReference.build("http://www.test.com/2"));
+		externalReferences.add(ExternalReference.build("http://www.test.com/1", new TreeSet<>(Collections.singleton("000005"))));
+		externalReferences.add(ExternalReference.build("http://www.test.com/2",
+				new TreeSet<>(Arrays.asList("DUO:000005", "DUO:000001","DUO:000007"))));
 		externalReferences.add(ExternalReference.build("http://www.test.com/3"));
 		externalReferences.add(ExternalReference.build("http://www.test.com/4"));
 		externalReferences.add(ExternalReference.build("http://www.test.com/5"));

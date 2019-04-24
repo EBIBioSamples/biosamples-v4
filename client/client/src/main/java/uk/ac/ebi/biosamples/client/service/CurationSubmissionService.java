@@ -46,11 +46,13 @@ public class CurationSubmissionService {
 
 		log.trace("POSTing to " + target + " " + curationLink);
 
-		RequestEntity<CurationLink> requestEntity = RequestEntity.post(target)
-				.contentType(MediaType.APPLICATION_JSON).accept(MediaTypes.HAL_JSON).body(curationLink);
+		RequestEntity.BodyBuilder bodyBuilder = RequestEntity.post(target)
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaTypes.HAL_JSON);
 		if (jwt != null) {
-			requestEntity.getHeaders().set(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
+			bodyBuilder.header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
 		}
+		RequestEntity<CurationLink> requestEntity = bodyBuilder.body(curationLink);
 
 		ResponseEntity<Resource<CurationLink>> responseEntity = restOperations.exchange(requestEntity,
 				new ParameterizedTypeReference<Resource<CurationLink>>() {
@@ -73,10 +75,14 @@ public class CurationSubmissionService {
 				.asLink().getHref());
 		log.trace("DELETEing " + target);
 
-		RequestEntity requestEntity = RequestEntity.delete(target).build();
+		RequestEntity requestEntity;
 		if (jwt != null) {
-			requestEntity.getHeaders().set(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
+			requestEntity = RequestEntity.delete(target)
+					.header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt).build();
+		} else {
+			requestEntity = RequestEntity.delete(target).build();
 		}
+
 		restOperations.exchange(requestEntity, Void.class);
 	}
 
