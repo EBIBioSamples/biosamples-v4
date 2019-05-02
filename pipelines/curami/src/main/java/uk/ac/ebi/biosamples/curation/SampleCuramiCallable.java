@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.concurrent.Callable;
 
-public class SampleCuramiCallable implements Callable<Void> {
+public class SampleCuramiCallable implements Callable<Integer> {
     private static final Logger LOG = LoggerFactory.getLogger(CuramiApplicationRunner.class);
     private final Sample sample;
     private final BioSamplesClient bioSamplesClient;
@@ -29,10 +29,12 @@ public class SampleCuramiCallable implements Callable<Void> {
     }
 
     @Override
-    public Void call() {
+    public Integer call() {
         List<Curation> curations = getRuleBasedCurations(sample);
-        LOG.info("{} curations added for sample {}", curations.size(), sample.getAccession());
-        return null;
+        if (!curations.isEmpty()) {
+            LOG.info("{} curations added for sample {}", curations.size(), sample.getAccession());
+        }
+        return curations.size();
     }
 
     private List<Curation> getRuleBasedCurations(Sample sample) {

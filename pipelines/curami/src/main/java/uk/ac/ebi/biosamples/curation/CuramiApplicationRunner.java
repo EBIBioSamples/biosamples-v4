@@ -19,6 +19,7 @@ import uk.ac.ebi.biosamples.utils.ThreadUtils;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.HashMap;
@@ -49,14 +50,17 @@ public class CuramiApplicationRunner implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) throws Exception {
         Collection<Filter> filters = ArgUtils.getDateFilters(args);
+        Instant startTime = Instant.now();
+        LOG.info("Pipeline started at {}", startTime);
+        long curationCount = 0;
+        long sampleCount = 0;
 
         loadCurationRulesFromFileToDb(getFileNameFromArgs(args));
 
         try (AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true,
                 pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax())) {
 
-            Map<String, Future<Void>> futures = new HashMap<>();
-            long sampleCount = 0;
+            Map<String, Future<Integer>> futures = new HashMap<>();
             for (Resource<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll("", filters)) {
                 LOG.trace("Handling {}", sampleResource);
                 Sample sample = sampleResource.getContent();
@@ -65,7 +69,7 @@ public class CuramiApplicationRunner implements ApplicationRunner {
                             "This could be due to network error or data inconsistency");
                 }
 
-                Callable<Void> task = new SampleCuramiCallable(
+                Callable<Integer> task = new SampleCuramiCallable(
                         bioSamplesClient, sample, pipelinesProperties.getCurationDomain(), curationRules);
                 sampleCount++;
                 if (sampleCount % 500 == 0) {
@@ -75,9 +79,13 @@ public class CuramiApplicationRunner implements ApplicationRunner {
             }
 
             LOG.info("waiting for futures");
-            ThreadUtils.checkFutures(futures, 0);
+            ThreadUtils.checkAndCallbackFutures(futures, 0, new CurationCountCallback(curationCount));
         } finally {
-            LOG.info("Pipeline finished at {}", Instant.now());
+            Instant endTime = Instant.now();
+            LOG.info("Total samples processed {}", sampleCount);
+            LOG.info("Total curation objects added {}", curationCount);
+            LOG.info("Pipeline finished at {}", endTime);
+            LOG.info("Pipeline total running time {} seconds", Duration.between(startTime, endTime).getSeconds());
         }
     }
 
@@ -90,7 +98,7 @@ public class CuramiApplicationRunner implements ApplicationRunner {
     private void loadCurationRulesFromFileToDb(String filePath) {
         try (BufferedReader bf = new BufferedReader(new FileReader(filePath))) {
             String line = bf.readLine();
-            LOG.info("Reading file with headers: {}", line);
+            LOG.info("Reading file: {} with headers: {}", filePath, line);
             while ((line = bf.readLine()) != null) {
                 String[] curationRule = line.split(",");
                 MongoCurationRule mongoCurationRule = MongoCurationRule.build(curationRule[0].trim(), curationRule[1].trim());
@@ -107,6 +115,18 @@ public class CuramiApplicationRunner implements ApplicationRunner {
             curationRulesFiles = args.getOptionValues("file").get(0);
         }
         return curationRulesFiles;
+    }
+
+    public class CurationCountCallback implements ThreadUtils.Callback<Integer> {
+        private Long totalCount;
+
+        CurationCountCallback(Long totalCount) {
+            this.totalCount = totalCount;
+        }
+
+        public void call(Integer count) {
+            totalCount = totalCount + count;
+        }
     }
 
 }
