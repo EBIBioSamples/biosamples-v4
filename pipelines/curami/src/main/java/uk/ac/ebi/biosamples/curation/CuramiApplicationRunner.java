@@ -44,7 +44,8 @@ public class CuramiApplicationRunner implements ApplicationRunner {
         this.bioSamplesClient = bioSamplesClient;
         this.pipelinesProperties = pipelinesProperties;
         this.repository = repository;
-        this.curationRules = loadCurationRulesToMemory();
+//        this.curationRules = loadCurationRulesToMemory();
+        this.curationRules = new HashMap<>();
     }
 
     @Override
@@ -56,6 +57,7 @@ public class CuramiApplicationRunner implements ApplicationRunner {
         long sampleCount = 0;
 
         loadCurationRulesFromFileToDb(getFileNameFromArgs(args));
+        curationRules.putAll(loadCurationRulesToMemory());
 
         try (AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true,
                 pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax())) {

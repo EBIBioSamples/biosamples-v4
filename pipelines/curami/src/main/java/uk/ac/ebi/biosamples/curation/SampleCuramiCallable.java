@@ -60,6 +60,12 @@ public class SampleCuramiCallable implements Callable<Integer> {
         String cleanedAttribute = attribute.toLowerCase();
         cleanedAttribute = cleanedAttribute.replaceAll("-", " ");
 
+
+        //camel to snake
+        //whitespace around paranthesis
+        //Fancy characters same as python analysis
+        //
+
         return cleanedAttribute;
     }
 }
