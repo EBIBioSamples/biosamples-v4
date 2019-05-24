@@ -4,8 +4,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>curami</artifactId>
-    <name>curami</name>
+    <artifactId>pipelines-curami</artifactId>
+    <name>pipelines-curami</name>
     <packaging>jar</packaging>
 
 
