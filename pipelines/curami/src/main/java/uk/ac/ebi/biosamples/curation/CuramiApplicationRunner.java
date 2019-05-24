@@ -44,7 +44,6 @@ public class CuramiApplicationRunner implements ApplicationRunner {
         this.bioSamplesClient = bioSamplesClient;
         this.pipelinesProperties = pipelinesProperties;
         this.repository = repository;
-//        this.curationRules = loadCurationRulesToMemory();
         this.curationRules = new HashMap<>();
     }
 
