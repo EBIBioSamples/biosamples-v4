@@ -20,7 +20,7 @@ public class BioSchemasContext {
         schemaOrgContext = URI.create("http://schema.org");
         otherContexts = new HashMap<>();
         otherContexts.put("OBI", URI.create("http://purl.obolibrary.org/obo/OBI_"));
-        otherContexts.put("biosample", URI.create("http://identifiers.org/biosample"));
+        otherContexts.put("biosample", URI.create("http://identifiers.org/biosample/"));
     }
 
     public URI getSchemaOrgContext() {
