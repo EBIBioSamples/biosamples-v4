@@ -15,7 +15,7 @@ public class ContextSerializerTest {
     @Test
     public void testSerialize() {
         String expectedSerializedContext = "[\"http://schema.org\",{\"OBI\":\"http://purl.obolibrary.org/obo/OBI_\"," +
-                "\"biosample\":\"http://identifiers.org/biosample\"}]";
+                "\"biosample\":\"http://identifiers.org/biosample/\"}]";
         BioSchemasContext context = new BioSchemasContext();
         ObjectMapper mapper = new ObjectMapper();
         String serializedContext = null;
