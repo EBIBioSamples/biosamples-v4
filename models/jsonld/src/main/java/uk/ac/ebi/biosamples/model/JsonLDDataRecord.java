@@ -17,7 +17,7 @@ public class JsonLDDataRecord implements BioschemasObject{
     private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 
     @JsonProperty("@id")
-    private final String id = "biosample:SAMEA100000";
+    private String id;
 
     @JsonProperty("@context")
     private final BioSchemasContext context = new BioSchemasContext();
@@ -52,6 +52,7 @@ public class JsonLDDataRecord implements BioschemasObject{
 
     public JsonLDDataRecord identifier(String identifier) {
         this.identifier = identifier;
+        this.id = identifier;
         return this;
     }
 
