@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.PipelinesProperties;
@@ -16,10 +17,7 @@ import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.ArgUtils;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
@@ -57,6 +55,7 @@ public class CuramiApplicationRunner implements ApplicationRunner {
         long sampleCount = 0;
 
         loadCurationRulesFromFileToDb(getFileNameFromArgs(args));
+//        loadInitialCurationRules();
         curationRules.putAll(loadCurationRulesToMemory());
 
         try (AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true,
@@ -97,30 +96,64 @@ public class CuramiApplicationRunner implements ApplicationRunner {
                 .collect(Collectors.toMap(MongoCurationRule::getAttributePre, MongoCurationRule::getAttributePost));
     }
 
-    private void loadCurationRulesFromFileToDb(String filePath) {
-
-
-
-        try (BufferedReader bf = new BufferedReader(new FileReader(filePath))) {
+    /*private void loadInitialCurationRules() {
+        InputStream in;
+        try {
+            ClassPathResource resource = new ClassPathResource("curation_rules.csv");
+            in = resource.getInputStream();
+        } catch (IOException e) {
+            LOG.error("Could not find file in classpath", e);
+            return;
+        }
+//        InputStream in = getClass().getClassLoader().getResourceAsStream("curation_rules.csv");
+        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+        try (BufferedReader bf = new BufferedReader(reader)) {
             String line = bf.readLine();
-            LOG.info("Reading file: {} with headers: {}", filePath, line);
+            LOG.info("Reading file: {} with headers: {}", "curation_rules.csv", line);
             while ((line = bf.readLine()) != null) {
                 String[] curationRule = line.split(",");
                 MongoCurationRule mongoCurationRule = MongoCurationRule.build(curationRule[0].trim(), curationRule[1].trim());
                 repository.save(mongoCurationRule);
             }
         } catch (IOException e) {
-            LOG.error("Could not find file in {}", filePath, e);
+            LOG.error("Could not find file in {}", "resources", e);
+        }
+    }*/
+
+    private void loadCurationRulesFromFileToDb(String filePath) {
+        Reader reader;
+        //read it from given filepath, else read it from classpath
+        try {
+            if (filePath == null || filePath.isEmpty()) {
+                ClassPathResource resource = new ClassPathResource("curation_rules.csv");
+                reader = new InputStreamReader(resource.getInputStream());
+            } else {
+                reader = new FileReader(filePath);
+            }
+        } catch (IOException e) {
+            LOG.error("Could not find specified file in {} or classpath", filePath, e);
+            return;
+        }
+
+        try (BufferedReader bf = new BufferedReader(reader)) {
+            String line = bf.readLine();
+            LOG.info("Reading file with headers: {}", line);
+            while ((line = bf.readLine()) != null) {
+                String[] curationRule = line.split(",");
+                MongoCurationRule mongoCurationRule = MongoCurationRule.build(curationRule[0].trim(), curationRule[1].trim());
+                repository.save(mongoCurationRule);
+            }
+        } catch (IOException e) {
+            LOG.error("Could not find file in {} or classpath", filePath, e);
         }
     }
 
     private String getFileNameFromArgs(ApplicationArguments args) {
-        String curationRulesFile;
+        String curationRulesFile = null;
         if (args.getOptionNames().contains("file")) {
             curationRulesFile = args.getOptionValues("file").get(0);
-        } else {
-            curationRulesFile = this.getClass().getClassLoader().getResource("curation_rules.csv").getFile();
         }
+
         return curationRulesFile;
     }
 
