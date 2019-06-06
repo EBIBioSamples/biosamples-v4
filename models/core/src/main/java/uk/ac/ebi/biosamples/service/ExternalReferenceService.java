@@ -23,8 +23,10 @@ public class ExternalReferenceService {
 			return "dbGaP";
 		} else if (externalReference.getUrl().contains("ega-archive.org/datasets")) {
 			return "EGA Dataset";
-		}  else if (externalReference.getUrl().contains("ega-archive.org/metadata")) {
+		} else if (externalReference.getUrl().contains("ega-archive.org/metadata")) {
 			return "EGA Sample";
+		} else if (externalReference.getUrl().contains("ebi.ac.uk/biostudies")) {
+			return "BioStudies";
 		} else {
 			return "other";
 		}
@@ -34,7 +36,7 @@ public class ExternalReferenceService {
 		
 		String nickname = getNickname(externalReference);		
 		if ("ENA".equals(nickname) || "ArrayExpress".equals(nickname) || "hPSCreg".equals(nickname)
-				|| "EGA Dataset".equals(nickname) || "EGA Sample".equals(nickname)) {
+				|| "EGA Dataset".equals(nickname) || "EGA Sample".equals(nickname) || "BioStudies".equals(nickname)) {
 			UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(externalReference.getUrl()).build();
 			String lastPathSegment = uriComponents.getPathSegments().get(uriComponents.getPathSegments().size()-1);
 			return Optional.of(lastPathSegment);
