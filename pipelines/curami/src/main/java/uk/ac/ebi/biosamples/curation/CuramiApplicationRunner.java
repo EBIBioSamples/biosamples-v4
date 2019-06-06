@@ -17,6 +17,7 @@ import uk.ac.ebi.biosamples.utils.ArgUtils;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.time.Duration;
@@ -97,6 +98,9 @@ public class CuramiApplicationRunner implements ApplicationRunner {
     }
 
     private void loadCurationRulesFromFileToDb(String filePath) {
+
+
+
         try (BufferedReader bf = new BufferedReader(new FileReader(filePath))) {
             String line = bf.readLine();
             LOG.info("Reading file: {} with headers: {}", filePath, line);
@@ -111,11 +115,13 @@ public class CuramiApplicationRunner implements ApplicationRunner {
     }
 
     private String getFileNameFromArgs(ApplicationArguments args) {
-        String curationRulesFiles = "curation_rules.csv";
+        String curationRulesFile;
         if (args.getOptionNames().contains("file")) {
-            curationRulesFiles = args.getOptionValues("file").get(0);
+            curationRulesFile = args.getOptionValues("file").get(0);
+        } else {
+            curationRulesFile = this.getClass().getClassLoader().getResource("curation_rules.csv").getFile();
         }
-        return curationRulesFiles;
+        return curationRulesFile;
     }
 
     public class CurationCountCallback implements ThreadUtils.Callback<Integer> {
