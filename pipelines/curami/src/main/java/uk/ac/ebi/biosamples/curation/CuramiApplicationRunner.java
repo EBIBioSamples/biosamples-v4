@@ -55,8 +55,8 @@ public class CuramiApplicationRunner implements ApplicationRunner {
         long sampleCount = 0;
 
         loadCurationRulesFromFileToDb(getFileNameFromArgs(args));
-//        loadInitialCurationRules();
         curationRules.putAll(loadCurationRulesToMemory());
+        LOG.info("Found {} curation rules", curationRules.size());
 
         try (AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true,
                 pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax())) {
@@ -95,30 +95,6 @@ public class CuramiApplicationRunner implements ApplicationRunner {
         return mongoCurationRules.stream()
                 .collect(Collectors.toMap(MongoCurationRule::getAttributePre, MongoCurationRule::getAttributePost));
     }
-
-    /*private void loadInitialCurationRules() {
-        InputStream in;
-        try {
-            ClassPathResource resource = new ClassPathResource("curation_rules.csv");
-            in = resource.getInputStream();
-        } catch (IOException e) {
-            LOG.error("Could not find file in classpath", e);
-            return;
-        }
-//        InputStream in = getClass().getClassLoader().getResourceAsStream("curation_rules.csv");
-        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-        try (BufferedReader bf = new BufferedReader(reader)) {
-            String line = bf.readLine();
-            LOG.info("Reading file: {} with headers: {}", "curation_rules.csv", line);
-            while ((line = bf.readLine()) != null) {
-                String[] curationRule = line.split(",");
-                MongoCurationRule mongoCurationRule = MongoCurationRule.build(curationRule[0].trim(), curationRule[1].trim());
-                repository.save(mongoCurationRule);
-            }
-        } catch (IOException e) {
-            LOG.error("Could not find file in {}", "resources", e);
-        }
-    }*/
 
     private void loadCurationRulesFromFileToDb(String filePath) {
         Reader reader;

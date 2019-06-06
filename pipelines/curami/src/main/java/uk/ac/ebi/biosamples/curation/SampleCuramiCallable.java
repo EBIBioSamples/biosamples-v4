@@ -14,7 +14,8 @@ import java.util.SortedSet;
 import java.util.concurrent.Callable;
 
 public class SampleCuramiCallable implements Callable<Integer> {
-    private static final Logger LOG = LoggerFactory.getLogger(CuramiApplicationRunner.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SampleCuramiCallable.class);
+
     private final Sample sample;
     private final BioSamplesClient bioSamplesClient;
     private final String domain;
