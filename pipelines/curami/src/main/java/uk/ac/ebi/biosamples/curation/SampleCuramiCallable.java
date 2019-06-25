@@ -58,7 +58,7 @@ public class SampleCuramiCallable implements Callable<Integer> {
 
     //todo add further processing identified in the analysis
     private String getCleanedAttribute(String attribute) {
-        String cleanedAttribute = attribute.toLowerCase();
+        /*String cleanedAttribute = attribute.toLowerCase();
         cleanedAttribute = cleanedAttribute.replaceAll("-", " ");
 
 
@@ -67,6 +67,7 @@ public class SampleCuramiCallable implements Callable<Integer> {
         //Fancy characters same as python analysis
         //
 
-        return cleanedAttribute;
+        return cleanedAttribute;*/
+        return attribute; // add all transformation as rules
     }
 }

@@ -37,6 +37,8 @@ public class CuramiApplicationRunner implements ApplicationRunner {
     private final Map<String, String> curationRules;
     private final MongoCurationRuleRepository repository;
 
+    private final CurationCountCallback curationCountCallback;
+
     public CuramiApplicationRunner(BioSamplesClient bioSamplesClient,
                                    PipelinesProperties pipelinesProperties,
                                    MongoCurationRuleRepository repository) {
@@ -44,6 +46,7 @@ public class CuramiApplicationRunner implements ApplicationRunner {
         this.pipelinesProperties = pipelinesProperties;
         this.repository = repository;
         this.curationRules = new HashMap<>();
+        this.curationCountCallback = new CurationCountCallback();
     }
 
     @Override
@@ -51,7 +54,6 @@ public class CuramiApplicationRunner implements ApplicationRunner {
         Collection<Filter> filters = ArgUtils.getDateFilters(args);
         Instant startTime = Instant.now();
         LOG.info("Pipeline started at {}", startTime);
-        long curationCount = 0;
         long sampleCount = 0;
 
         loadCurationRulesFromFileToDb(getFileNameFromArgs(args));
@@ -80,11 +82,11 @@ public class CuramiApplicationRunner implements ApplicationRunner {
             }
 
             LOG.info("waiting for futures");
-            ThreadUtils.checkAndCallbackFutures(futures, 0, new CurationCountCallback(curationCount));
+            ThreadUtils.checkAndCallbackFutures(futures, 0, curationCountCallback);
         } finally {
             Instant endTime = Instant.now();
             LOG.info("Total samples processed {}", sampleCount);
-            LOG.info("Total curation objects added {}", curationCount);
+            LOG.info("Total curation objects added {}", curationCountCallback.getTotalCount());
             LOG.info("Pipeline finished at {}", endTime);
             LOG.info("Pipeline total running time {} seconds", Duration.between(startTime, endTime).getSeconds());
         }
@@ -134,14 +136,14 @@ public class CuramiApplicationRunner implements ApplicationRunner {
     }
 
     public class CurationCountCallback implements ThreadUtils.Callback<Integer> {
-        private Long totalCount;
-
-        CurationCountCallback(Long totalCount) {
-            this.totalCount = totalCount;
-        }
+        private long totalCount = 0;
 
         public void call(Integer count) {
             totalCount = totalCount + count;
+        }
+
+        long getTotalCount() {
+            return totalCount;
         }
     }
 
