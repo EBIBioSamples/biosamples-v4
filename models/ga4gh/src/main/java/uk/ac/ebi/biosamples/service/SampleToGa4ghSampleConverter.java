@@ -290,9 +290,11 @@ public class SampleToGa4ghSampleConverter implements Converter<Sample, Ga4ghSamp
             SortedSet<String> namesOfFields = new TreeSet<>(objectFieldsAndValues.keySet());
             for (String key : namesOfFields) {
 
-                String object = (String) objectFieldsAndValues.get(key);
-                if (object != null) {
-                    attributesFromField.addSingleAttribute(key, new AttributeValue(object));
+                if (objectFieldsAndValues.get(key) instanceof String) {
+                    String object = (String) objectFieldsAndValues.get(key);
+                    if (object != null) {
+                        attributesFromField.addSingleAttribute(key, new AttributeValue(object));
+                    }
                 }
             }
             attributes.add(new AttributeValue(attributesFromField));
