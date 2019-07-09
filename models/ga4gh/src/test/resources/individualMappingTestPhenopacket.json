@@ -2,7 +2,6 @@
   "subject":
     {
       "id": "id-individual",
-      "sex": "OTHER_SEX",
       "taxonomy": {
         "id": "term id",
         "label": "term label"
