@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>4.1.14</version>
+		<version>4.1.15-SNAPSHOT</version>
 		<relativePath>../../</relativePath>
 	</parent>
 
@@ -21,22 +21,22 @@
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>models-core</artifactId>
-			<version>4.1.14</version>
+			<version>4.1.15-SNAPSHOT</version>
 		</dependency>
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
-            <version>3.5.1</version>
+            <version>3.8.0</version>
         </dependency>
 		<dependency>
 			<groupId>com.google.protobuf</groupId>
 			<artifactId>protobuf-java-util</artifactId>
-			<version>3.5.1</version>
+			<version>3.8.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.phenopackets</groupId>
 			<artifactId>phenopacket-schema</artifactId>
-			<version>0.0.7</version>
+			<version>1.0.0-RC2</version>
 		</dependency>
 	</dependencies>
 

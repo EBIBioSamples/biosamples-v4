@@ -4,16 +4,16 @@ import com.google.common.collect.ImmutableList;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import com.google.protobuf.util.Timestamps;
-import org.phenopackets.schema.v1.PhenoPacket;
+import org.phenopackets.schema.v1.Phenopacket;
 import org.phenopackets.schema.v1.core.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.ga4gh.AttributeValue;
 import uk.ac.ebi.biosamples.model.ga4gh.*;
 
-import java.text.ParseException;
 import java.util.*;
 
 /**
@@ -23,7 +23,9 @@ import java.util.*;
  * @see "https://github.com/phenopackets/phenopacket-schema"
  */
 @Service
-public class Ga4ghSampleToPhenopacketConverter implements Converter<Ga4ghSample, PhenoPacket> {
+public class Ga4ghSampleToPhenopacketConverter implements Converter<Ga4ghSample, Phenopacket> {
+    private static final Logger LOG = LoggerFactory.getLogger(Ga4ghSampleToPhenopacketConverter.class);
+
     private SampleToGa4ghSampleConverter mapper;
     private OLSDataRetriever olsApiretreiver;
     private final ImmutableList<String> stopList = ImmutableList.of("treatment", "isolate");
@@ -38,21 +40,23 @@ public class Ga4ghSampleToPhenopacketConverter implements Converter<Ga4ghSample,
 
     /**
      * Generates phenopacket json string from ga4gh sample object
+     *
      * @param ga4ghSample
      * @return phenopacket encoded in json string
      */
     public String getJsonFormattedPhenopacket(Ga4ghSample ga4ghSample) {
-        PhenoPacket phenoPacket = convert(ga4ghSample);
+        Phenopacket phenopacket = convert(ga4ghSample);
         try {
-            return JsonFormat.printer().print(phenoPacket);
+            return JsonFormat.printer().print(phenopacket);
         } catch (InvalidProtocolBufferException e) {
-            e.printStackTrace();
+            LOG.error("Failed to convert to proto buff", e);
         }
         return "Invalid Protobuffer. Impossible to create phenopacket";
     }
 
     /**
      * Generates phenopacket json string from sample(Biosamples)
+     *
      * @param sample
      * @return phenopacket encoded in json string
      */
@@ -62,22 +66,23 @@ public class Ga4ghSampleToPhenopacketConverter implements Converter<Ga4ghSample,
     }
 
     @Override
-    public PhenoPacket convert(Ga4ghSample ga4ghSample) {
-        PhenoPacket.Builder phenoPacket = PhenoPacket.newBuilder();
-        phenoPacket.addIndividuals(mapIndividual(ga4ghSample));
-        phenoPacket.addBiosamples(mapBiosample(ga4ghSample));
+    public Phenopacket convert(Ga4ghSample ga4ghSample) {
+        Phenopacket.Builder phenopacket = Phenopacket.newBuilder();
+        phenopacket.setId(ga4ghSample.getId());
+        phenopacket.setSubject(mapIndividual(ga4ghSample));
+        phenopacket.addBiosamples(mapBiosample(ga4ghSample));
         Disease disease = mapDisease(ga4ghSample.getBio_characteristic(), ga4ghSample.getAttributes());
         if (disease != null) {
-            phenoPacket.addDiseases(disease);
+            phenopacket.addDiseases(disease);
         }
-        phenoPacket.setMetaData(createMetaData(ga4ghSample.getBio_characteristic()));
-        return phenoPacket.build();
+        phenopacket.setMetaData(createMetaData(ga4ghSample.getBio_characteristic()));
+        return phenopacket.build();
     }
 
     private Individual mapIndividual(Ga4ghSample ga4ghSample) {
         Individual.Builder individualBuilder = Individual.newBuilder();
         individualBuilder.setId(ga4ghSample.getId() + "-individual");
-        OntologyClass.Builder ontologyBuilder = OntologyClass.newBuilder();
+
         Ga4ghOntologyTerm sex = null;
         Ga4ghOntologyTerm organism = null;
         for (Ga4ghBiocharacteristics term : ga4ghSample.getBio_characteristic()) {
@@ -89,10 +94,19 @@ public class Ga4ghSampleToPhenopacketConverter implements Converter<Ga4ghSample,
             }
         }
         if (sex != null) {
-            ontologyBuilder.setId(sex.getTerm_id());
-            ontologyBuilder.setLabel(sex.getTerm_label());
+            switch (sex.getTerm_label().toLowerCase()) {
+                case "male":
+                    individualBuilder.setSex(Sex.MALE);
+                    break;
+                case "female":
+                    individualBuilder.setSex(Sex.FEMALE);
+                    break;
+                default:
+                    individualBuilder.setSex(Sex.UNKNOWN_SEX);
+                    break;
+            }
         }
-        individualBuilder.setSex(ontologyBuilder.build());
+
         if (organism != null) {
             individualBuilder.setTaxonomy(mapOntologyTerm(organism));
         }
@@ -108,13 +122,6 @@ public class Ga4ghSampleToPhenopacketConverter implements Converter<Ga4ghSample,
         Biosample.Builder biosampleBuilder = Biosample.newBuilder();
         biosampleBuilder.setId(ga4GhGa4ghSample.getId());
 
-
-        try {
-            biosampleBuilder.setCreated(Timestamps.parse(ga4GhGa4ghSample.getReleasedDate()));
-            biosampleBuilder.setUpdated(Timestamps.parse(ga4GhGa4ghSample.getUpdatedDate()));
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
         if (ga4GhGa4ghSample.getDataset_id() != null) {
             biosampleBuilder.setDatasetId(ga4GhGa4ghSample.getDataset_id());
         }
@@ -138,27 +145,25 @@ public class Ga4ghSampleToPhenopacketConverter implements Converter<Ga4ghSample,
                 phenopacketAgeBuilder.setAgeClass(mapOntologyTerm(age.getAge_class()));
             }
         }
-        biosampleBuilder.setIndividualAgeAtCollection(phenopacketAgeBuilder.build());
+        biosampleBuilder.setAgeOfIndividualAtCollection(phenopacketAgeBuilder.build());
         biosampleBuilder.setIndividualId(ga4GhGa4ghSample.getId() + "-individual");
-        if (ga4GhGa4ghSample.getName() != null) {
-            biosampleBuilder.setName(ga4GhGa4ghSample.getName());
-        }
-        biosampleBuilder.addAllPhenotypes(mapBiocharacteristics(ga4GhGa4ghSample.getBio_characteristic()));
+
+        biosampleBuilder.addAllPhenotypicFeatures(mapBiocharacteristics(ga4GhGa4ghSample.getBio_characteristic()));
         return biosampleBuilder.build();
     }
 
-    private Iterable<Phenotype> mapBiocharacteristics(SortedSet<Ga4ghBiocharacteristics> biocharacteristics) {
-        Iterable<Phenotype> phenotypes = new ArrayList<>();
+    private Iterable<PhenotypicFeature> mapBiocharacteristics(SortedSet<Ga4ghBiocharacteristics> biocharacteristics) {
+        Iterable<PhenotypicFeature> phenotypes = new ArrayList<>();
         for (Ga4ghBiocharacteristics biocharacteristic : biocharacteristics) {
             if (isBiocharacteristicRelatedToPhenotype(biocharacteristic) && !stopList.contains(biocharacteristic.getDescription())) {
                 for (Ga4ghOntologyTerm characteristic : biocharacteristic.getOntology_terms()) {
-                    Phenotype.Builder phenotypeBuilder = Phenotype.newBuilder();
+                    PhenotypicFeature.Builder phenotypeBuilder = PhenotypicFeature.newBuilder();
                     OntologyClass.Builder typeBuilder = OntologyClass.newBuilder();
                     typeBuilder.setId(characteristic.getTerm_id());
                     typeBuilder.setLabel(characteristic.getTerm_label());
                     phenotypeBuilder.setType(typeBuilder.build());
                     phenotypeBuilder.setNegated(false); //biosamples doesnt contain negated ontology terms
-                    ((ArrayList<Phenotype>) phenotypes).add(phenotypeBuilder.build());
+                    ((ArrayList<PhenotypicFeature>) phenotypes).add(phenotypeBuilder.build());
                 }
             }
         }
@@ -194,9 +199,11 @@ public class Ga4ghSampleToPhenopacketConverter implements Converter<Ga4ghSample,
             String description = biocharacteristic.getDescription();
             if (description.equals("disease") || description.equals("Disease") || description.equals("disease state")) {
                 Ga4ghOntologyTerm term = biocharacteristic.getOntology_terms().first();
-                diseaseBuilder.setId(term.getTerm_id());
-                diseaseBuilder.setLabel(term.getTerm_label());
-                resultDisease = diseaseBuilder.build();
+
+                OntologyClass.Builder diseaseOntologyBuilder = OntologyClass.newBuilder();
+                diseaseOntologyBuilder.setId(term.getTerm_id());
+                diseaseOntologyBuilder.setLabel(term.getTerm_label());
+                resultDisease = diseaseBuilder.setTerm(diseaseOntologyBuilder).build();
             }
         }
         if (resultDisease == null) {
@@ -209,8 +216,12 @@ public class Ga4ghSampleToPhenopacketConverter implements Converter<Ga4ghSample,
             }
             if (attributeValues != null) {
                 AttributeValue disease = attributeValues.get(0);
-                diseaseBuilder.setLabel((String) disease.getValue()); //disease attribute in biosamples in this case will be definetely without ontology term and will contain only one value with name of disease
-                resultDisease = diseaseBuilder.build();
+                String diseaseLabel = (String) disease.getValue(); //disease attribute in biosamples in this case will be definetely without ontology term and will contain only one value with name of disease
+
+                OntologyClass.Builder diseaseOntologyBuilder = OntologyClass.newBuilder();
+                diseaseOntologyBuilder.setId(""); //todo set id from ols
+                diseaseOntologyBuilder.setLabel(diseaseLabel);
+                resultDisease = diseaseBuilder.setTerm(diseaseOntologyBuilder).build();
             }
         }
 
@@ -228,6 +239,7 @@ public class Ga4ghSampleToPhenopacketConverter implements Converter<Ga4ghSample,
 
     /**
      * Build a @link{Resource} object querying the OLS api to expand an ontology iri
+     *
      * @param id the iri of the ontology
      * @return the expanded ontology Resource
      */
