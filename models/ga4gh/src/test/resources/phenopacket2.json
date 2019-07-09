@@ -1,64 +1,57 @@
 {
-   "individuals":[
-      {
-         "id":"SAMEA182635-individual",
-         "sex":{
-
-         },
-         "taxonomy":{
-            "id":"NCBITaxon:9606",
-            "label":"Homo sapiens"
-         }
+  "subject": {
+    "id": "SAMEA182635-individual",
+    "taxonomy": {
+      "id": "NCBITaxon:9606",
+      "label": "Homo sapiens"
+    }
+  },
+  "biosamples": [
+    {
+      "id": "SAMEA182635",
+      "description": "A643MNP1",
+      "phenotypicFeatures": [
+        {
+          "type": {
+            "id": "EFO:0000361",
+            "label": "obsolete_colon"
+          }
+        }
+      ],
+      "individualId": "SAMEA182635-individual",
+      "taxonomy": {
+        "id": "NCBITaxon:9606",
+        "label": "Homo sapiens"
+      },
+      "ageOfIndividualAtCollection": {
       }
-   ],
-   "biosamples":[
-      {
-         "id":"SAMEA182635",
-         "name":"source GSM498707 1",
-         "description":"A643MNP1",
-         "phenotypes":[
-            {
-               "type":{
-                  "id":"EFO:0000361",
-                  "label":"obsolete_colon"
-               }
-            }
-         ],
-         "created":"2010-12-01T00:00:00Z",
-         "updated":"2018-04-04T15:56:20.902Z",
-         "individualId":"SAMEA182635-individual",
-         "taxonomy":{
-            "id":"NCBITaxon:9606",
-            "label":"Homo sapiens"
-         },
-         "individualAgeAtCollection":{
-
-         }
+    }
+  ],
+  "diseases": [
+    {
+      "term": {
+        "label": "hyperplastic polyposis syndrome (HPPS)"
       }
-   ],
-   "diseases":[
+    }
+  ],
+  "metaData": {
+    "created": "2018-06-28T15:50:05.007Z",
+    "createdBy": "Biosamples phenopacket exporter",
+    "resources": [
       {
-         "label":"hyperplastic polyposis syndrome (HPPS)"
+        "id": "ncbitaxon",
+        "name": "NCBI organismal classification",
+        "namespacePrefix": "NCBITAXON",
+        "url": "http://purl.obolibrary.org/obo/ncbitaxon.owl",
+        "version": "2018-07-27"
+      },
+      {
+        "id": "efo",
+        "name": "Experimental Factor Ontology",
+        "namespacePrefix": "EFO",
+        "url": "http://www.ebi.ac.uk/efo/efo.owl",
+        "version": "2.104"
       }
-   ],
-   "metaData":{
-      "created":"2018-06-28T15:50:05.007Z",
-      "createdBy":"Biosamples phenopacket exporter",
-      "resources":[
-         {
-            "id":"ncbitaxon",
-            "name":"NCBI organismal classification",
-            "namespacePrefix":"NCBITAXON",
-            "url":"http://purl.obolibrary.org/obo/ncbitaxon.owl",
-            "version":"2018-07-27"
-         },
-         {
-            "id":"efo",
-            "name":"Experimental Factor Ontology",
-            "namespacePrefix":"EFO",
-            "url":"http://www.ebi.ac.uk/efo/efo.owl",
-            "version":"2.104"
-         }
-      ]
-   }
+    ]
+  }
 }
