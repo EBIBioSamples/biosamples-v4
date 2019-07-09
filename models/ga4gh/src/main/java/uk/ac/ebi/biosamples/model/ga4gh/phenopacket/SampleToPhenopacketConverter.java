@@ -14,6 +14,7 @@ import uk.ac.ebi.biosamples.model.Sample;
 import java.util.HashMap;
 import java.util.Map;
 
+// this class to replace complete ga4gh model and phenopacket conversion, for now this is not used
 public class SampleToPhenopacketConverter {
     private static final Logger LOG = LoggerFactory.getLogger(SampleToPhenopacketConverter.class);
 

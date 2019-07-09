@@ -12,10 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.ga4gh.AttributeValue;
 import uk.ac.ebi.biosamples.model.ga4gh.*;
 
-import java.text.ParseException;
 import java.util.*;
 
 /**
@@ -42,6 +40,7 @@ public class Ga4ghSampleToPhenopacketConverter implements Converter<Ga4ghSample,
 
     /**
      * Generates phenopacket json string from ga4gh sample object
+     *
      * @param ga4ghSample
      * @return phenopacket encoded in json string
      */
@@ -57,6 +56,7 @@ public class Ga4ghSampleToPhenopacketConverter implements Converter<Ga4ghSample,
 
     /**
      * Generates phenopacket json string from sample(Biosamples)
+     *
      * @param sample
      * @return phenopacket encoded in json string
      */
@@ -68,7 +68,7 @@ public class Ga4ghSampleToPhenopacketConverter implements Converter<Ga4ghSample,
     @Override
     public Phenopacket convert(Ga4ghSample ga4ghSample) {
         Phenopacket.Builder phenopacket = Phenopacket.newBuilder();
-        phenopacket.setId(ga4ghSample.getId() + "-phenopacket");
+        phenopacket.setId(ga4ghSample.getId());
         phenopacket.setSubject(mapIndividual(ga4ghSample));
         phenopacket.addBiosamples(mapBiosample(ga4ghSample));
         Disease disease = mapDisease(ga4ghSample.getBio_characteristic(), ga4ghSample.getAttributes());
@@ -102,7 +102,7 @@ public class Ga4ghSampleToPhenopacketConverter implements Converter<Ga4ghSample,
                     individualBuilder.setSex(Sex.FEMALE);
                     break;
                 default:
-                    individualBuilder.setSex(Sex.OTHER_SEX);
+                    individualBuilder.setSex(Sex.UNKNOWN_SEX);
                     break;
             }
         }
@@ -239,6 +239,7 @@ public class Ga4ghSampleToPhenopacketConverter implements Converter<Ga4ghSample,
 
     /**
      * Build a @link{Resource} object querying the OLS api to expand an ontology iri
+     *
      * @param id the iri of the ontology
      * @return the expanded ontology Resource
      */
