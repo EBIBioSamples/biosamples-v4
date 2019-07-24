@@ -235,7 +235,7 @@ public class BioSamplesClient implements AutoCloseable {
 		//validate client-side before submission
 		Collection<String> errors = sampleValidator.validate(sample);		
 		if (!errors.isEmpty()) {
-			log.error("Errors : {}", errors);
+            log.error("Sample failed validation : {}", errors);
 			throw new IllegalArgumentException("Sample not valid: " + String.join(", ", errors));
 		}
 		return sampleSubmissionService.submitAsync(sample, setUpdateDate, setFullDetails);
@@ -325,7 +325,7 @@ public class BioSamplesClient implements AutoCloseable {
 	public Future<Resource<Sample>> persistSampleResourceAsync(Sample sample, String jwt, boolean setFullDetails) {
 		Collection<String> errors = sampleValidator.validate(sample);
 		if (!errors.isEmpty()) {
-			log.error("Errors : {}", errors);
+			log.error("Sample failed validation : {}", errors);
 			throw new IllegalArgumentException("Sample not valid: " + String.join(", ", errors));
 		}
 		return sampleSubmissionService.submitAsync(sample, jwt, setFullDetails);
