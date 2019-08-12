@@ -166,31 +166,5 @@ public class CurationReadService {
 
 		return sample;
 	}
-	
-	Set<CurationLink> filterConflictingCurationLinks(Set<CurationLink> curationLinks) {
-		Set<CurationLink> filteredCurationLinks = new HashSet<>();
-		for (CurationLink curationLink : curationLinks) {
-			boolean conflicts = false;
-			for (CurationLink otherCurationLink : curationLinks) {
-				if (otherCurationLink.equals(curationLink)) {
-					continue;
-				}
-				
-				log.trace("Comparing  "+curationLink.getCuration().getAttributesPre()+" with "+otherCurationLink.getCuration().getAttributesPre());
-				
-				Set<Attribute> intersection = new HashSet<>(curationLink.getCuration().getAttributesPre());
-				intersection.retainAll(otherCurationLink.getCuration().getAttributesPre());
-				if (intersection.size() > 0) {
-					conflicts = true;
-					break;
-				}
-			}
-			if (!conflicts) {
-				log.trace("Adding curationLink "+curationLink);
-				filteredCurationLinks.add(curationLink);
-			}
-		}
-		return filteredCurationLinks;
-	}
 
 }
