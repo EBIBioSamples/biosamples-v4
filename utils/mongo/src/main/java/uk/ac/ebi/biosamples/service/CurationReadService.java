@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.mongo.model.MongoCuration;
@@ -78,34 +79,34 @@ public class CurationReadService {
 	 * @return
 	 */
 	public Sample applyCurationLinkToSample(Sample sample, CurationLink curationLink) {
-		log.trace("Applying curation "+curationLink+" to sample "+sample.getAccession());
+		log.trace("Applying curation " + curationLink + " to sample " + sample.getAccession());
 		Curation curation = curationLink.getCuration();
 		
-		SortedSet<Attribute> attributes = new TreeSet<Attribute>(sample.getAttributes());
-		SortedSet<ExternalReference> externalReferences = new TreeSet<ExternalReference>(sample.getExternalReferences());
+		SortedSet<Attribute> attributes = new TreeSet<>(sample.getAttributes());
+		SortedSet<ExternalReference> externalReferences = new TreeSet<>(sample.getExternalReferences());
 		//remove pre-curation things
 		for (Attribute attribute : curation.getAttributesPre()) {
 			if (!attributes.contains(attribute)) {
-				throw new IllegalArgumentException("Attempting to apply curation "+curation+" to sample "+sample);
+				throw new IllegalArgumentException("Failed to apply curation " + curation + " to sample " + sample);
 			}
 			attributes.remove(attribute);
 		}
 		for (ExternalReference externalReference : curation.getExternalReferencesPre()) {
 			if (!externalReferences.contains(externalReference)) {
-				throw new IllegalArgumentException("Attempting to apply curation "+curation+" to sample "+sample);
+				throw new IllegalArgumentException("Failed to apply curation " + curation + " to sample " + sample);
 			}
 			externalReferences.remove(externalReference);
 		}
 		//add post-curation things
 		for (Attribute attribute : curation.getAttributesPost()) {
 			if (attributes.contains(attribute)) {
-				throw new IllegalArgumentException("Attempting to apply curation "+curation+" to sample "+sample);
+				throw new IllegalArgumentException("Failed to apply curation " + curation + " to sample " + sample);
 			}
 			attributes.add(attribute);
 		}
 		for (ExternalReference externalReference : curation.getExternalReferencesPost()) {
 			if (externalReferences.contains(externalReference)) {
-				throw new IllegalArgumentException("Attempting to apply curation "+curation+" to sample "+sample);
+				throw new IllegalArgumentException("Failed to apply curation " + curation + " to sample " + sample);
 			}
 			externalReferences.add(externalReference);
 		}
@@ -115,10 +116,7 @@ public class CurationReadService {
 		if (curationLink.getCreated().isAfter(update)) {
 			update = curationLink.getCreated();
 		}
-		
-//		return Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(),
-//				sample.getRelease(), update, attributes, sample.getRelationships(), externalReferences,
-//				sample.getOrganizations(), sample.getContacts(), sample.getPublications());
+
         return Sample.Builder.fromSample(sample)
 				.withUpdate(update)
 				.withAttributes(attributes)
@@ -132,7 +130,7 @@ public class CurationReadService {
 			return sample;
 		}
 		
-		Set<CurationLink> curationLinks = new HashSet<>();
+		Set<CurationLink> curationLinks = new LinkedHashSet<>();
 		int pageNo = 0;
 		Page<CurationLink> page;
 		do {
@@ -152,34 +150,24 @@ public class CurationReadService {
 			pageNo += 1;
 		} while(pageNo < page.getTotalPages());
 
-		//filter curation links to remove conflicts
-		curationLinks = filterConflictingCurationLinks(curationLinks);
-
-		boolean curationApplied = true;
-		while (curationApplied && curationLinks.size() > 0) {
-			Iterator<CurationLink> it = curationLinks.iterator();
-			curationApplied = false;
-			while (it.hasNext()) {
-				CurationLink curationLink = it.next();
-				try {
-					sample = applyCurationLinkToSample(sample, curationLink);
-					it.remove();
-					curationApplied = true;
-				} catch (IllegalArgumentException e) {
-					//do nothing, will try again next loop
-				}
+		boolean failedCuration = false;
+		for(CurationLink curation : curationLinks) {
+			try {
+				sample = applyCurationLinkToSample(sample, curation);
+			} catch (IllegalArgumentException e) {
+				failedCuration = true;
+				log.trace(e.getMessage());
 			}
 		}
-		if (!curationApplied) {
-			//we stopped because we didn't apply any curation
-			//therefore we have some curations that can't be applied
-			//this is a warning
-			log.warn("Unapplied curation on "+sample.getAccession());
+
+		if (failedCuration) {
+			log.warn("Unapplied curation on sample: {}", sample.getAccession());
 		}
+
 		return sample;
 	}
 	
-	private Set<CurationLink> filterConflictingCurationLinks(Set<CurationLink> curationLinks) {
+	Set<CurationLink> filterConflictingCurationLinks(Set<CurationLink> curationLinks) {
 		Set<CurationLink> filteredCurationLinks = new HashSet<>();
 		for (CurationLink curationLink : curationLinks) {
 			boolean conflicts = false;
