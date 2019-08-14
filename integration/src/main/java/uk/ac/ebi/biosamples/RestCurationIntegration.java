@@ -108,7 +108,7 @@ public class RestCurationIntegration extends AbstractIntegration {
 		//check what the default alldomain conflicting result is
 		MultiValueMap<String, String> params;
 		params = new LinkedMultiValueMap<>();
-		testSampleCurationDomains(sample.getAccession(), "original", params);
+		testSampleCurationDomains(sample.getAccession(), "A", params);
 		//check what the no-domain result is
 		params = new LinkedMultiValueMap<>();
 		params.add("curationdomain", "");
