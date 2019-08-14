@@ -129,7 +129,9 @@ public class CurationReadService {
 		if (curationDomains.isPresent() && curationDomains.get().size()==0) {
 			return sample;
 		}
-		
+
+		//Try to apply curations in the order of creation date.
+		//Because of the index in creation date mongo returns in that order
 		Set<CurationLink> curationLinks = new LinkedHashSet<>();
 		int pageNo = 0;
 		Page<CurationLink> page;
