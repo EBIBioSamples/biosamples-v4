@@ -26,12 +26,12 @@ public class MongoSampleRepositoryImpl implements MongoSampleRepositoryCustom {
 	}
 
 	@Override
-	public void insertSample(MongoSample sample, MongoSampleStaticViews collectionName) {
-		mongoOperations.insert(sample, collectionName.getCollectionName());
+	public void insertSampleToCollection(MongoSample sample, MongoSampleStaticViews collectionName) {
+		mongoOperations.save(sample, collectionName.getCollectionName());
 	}
 
 	@Override
-	public MongoSample readSample(String accession, MongoSampleStaticViews collectionName) {
+	public MongoSample findSampleFromCollection(String accession, MongoSampleStaticViews collectionName) {
 		return mongoOperations.findById(accession, MongoSample.class, collectionName.getCollectionName());
 	}
 }

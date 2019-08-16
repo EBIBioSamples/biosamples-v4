@@ -16,6 +16,9 @@ import uk.ac.ebi.biosamples.Messaging;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.mongo.model.MongoSampleStaticViews;
+import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
+import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
 
 @Service
 public class MessagingService {
@@ -23,19 +26,29 @@ public class MessagingService {
 
 	private final SampleReadService sampleReadService;
 	private final AmqpTemplate amqpTemplate;
+	private final MongoSampleRepository mongoSampleRepository;
+	private final SampleToMongoSampleConverter sampleToMongoSampleConverter;
 	
-	public MessagingService(SampleReadService sampleReadService, AmqpTemplate amqpTemplate) {
+	public MessagingService(SampleReadService sampleReadService,
+							AmqpTemplate amqpTemplate,
+							MongoSampleRepository mongoSampleRepository,
+							SampleToMongoSampleConverter sampleToMongoSampleConverter) {
 		this.sampleReadService = sampleReadService;
 		this.amqpTemplate = amqpTemplate;
+		this.mongoSampleRepository = mongoSampleRepository;
+		this.sampleToMongoSampleConverter = sampleToMongoSampleConverter;
 	}
 	
 	public void fetchThenSendMessage(String accession) {
 		if (accession == null) throw new IllegalArgumentException("accession cannot be null");
 		if (accession.trim().length() == 0) throw new IllegalArgumentException("accession cannot be empty");
 		
-		
 		Optional<Sample> sample = sampleReadService.fetch(accession, Optional.empty());
 		if (sample.isPresent()) {
+			//save sample with curations and relationships in static view collection
+			mongoSampleRepository.insertSampleToCollection(
+					sampleToMongoSampleConverter.convert(sample.get()), MongoSampleStaticViews.MONGO_SAMPLE_CURATED);
+
 			
 			//for each sample we have a relationship to, update it to index this sample as an inverse relationship	
 			//TODO do this async

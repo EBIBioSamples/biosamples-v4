@@ -28,6 +28,6 @@ public class CuratedViewCallable implements Callable<Void> {
 
     private void persistSamplesToStaticViewCollection() {
         MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);
-        mongoSampleRepository.insertSample(mongoSample, MongoSampleStaticViews.MONGO_SAMPLE_CURATED);
+        mongoSampleRepository.insertSampleToCollection(mongoSample, MongoSampleStaticViews.MONGO_SAMPLE_CURATED);
     }
 }
