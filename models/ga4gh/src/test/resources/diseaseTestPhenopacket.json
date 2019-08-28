@@ -5,15 +5,10 @@
   "biosamples": [
     {
       "id": "id",
-      "datasetId": "dataset_id",
       "description": "description",
       "individualId": "id-individual",
       "ageOfIndividualAtCollection": {
-        "age": "0",
-        "ageClass": {
-          "id": "term id",
-          "label": "term label"
-        }
+        "age": "0"
       }
     }
   ],

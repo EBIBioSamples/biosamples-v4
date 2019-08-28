@@ -122,9 +122,9 @@ public class Ga4ghSampleToPhenopacketConverter implements Converter<Ga4ghSample,
         Biosample.Builder biosampleBuilder = Biosample.newBuilder();
         biosampleBuilder.setId(ga4GhGa4ghSample.getId());
 
-        if (ga4GhGa4ghSample.getDataset_id() != null) {
-            biosampleBuilder.setDatasetId(ga4GhGa4ghSample.getDataset_id());
-        }
+//        if (ga4GhGa4ghSample.getDataset_id() != null) {
+//            biosampleBuilder.setDatasetId(ga4GhGa4ghSample.getDataset_id());
+//        }
         if (ga4GhGa4ghSample.getDescription() != null) {
             biosampleBuilder.setDescription(ga4GhGa4ghSample.getDescription());
         }
@@ -141,9 +141,9 @@ public class Ga4ghSampleToPhenopacketConverter implements Converter<Ga4ghSample,
         Age.Builder phenopacketAgeBuilder = Age.newBuilder();
         if (age != null) {
             phenopacketAgeBuilder.setAge(age.getAge());
-            if (age.getAge_class() != null) {
-                phenopacketAgeBuilder.setAgeClass(mapOntologyTerm(age.getAge_class()));
-            }
+//            if (age.getAge_class() != null) {
+//                phenopacketAgeBuilder.setAgeClass(mapOntologyTerm(age.getAge_class()));
+//            }
         }
         biosampleBuilder.setAgeOfIndividualAtCollection(phenopacketAgeBuilder.build());
         biosampleBuilder.setIndividualId(ga4GhGa4ghSample.getId() + "-individual");
