@@ -33,7 +33,6 @@ import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -90,6 +89,7 @@ public class SamplesRestController {
 			@RequestParam(name = "page", required = false) final Integer page,
 			@RequestParam(name = "size", required = false) final Integer size,
 			@RequestParam(name = "sort", required = false) final String[] sort,
+			@RequestParam(name = "curationrepo", required = false) final String curationRepo,
 			PagedResourcesAssembler<Sample> pageAssembler) {
 
 
@@ -126,19 +126,19 @@ public class SamplesRestController {
 		if (cursor != null) {
 
 			log.trace("This cursor = "+decodedCursor);
-			CursorArrayList<Sample> samples = samplePageService.getSamplesByText(decodedText, filters,
-				domains, decodedCursor, effectiveSize);
+			CursorArrayList<Sample> samples =
+					samplePageService.getSamplesByText(decodedText, filters, domains, decodedCursor, effectiveSize, curationRepo);
 			log.trace("Next cursor = "+samples.getNextCursorMark());
 
 			Resources<Resource<Sample>>  resources = new Resources<>(samples.stream()
-					.map(s -> s != null ? sampleResourceAssembler.toResource(s) : null)
+					.map(s -> s != null ? sampleResourceAssembler.toResource(s, SampleRestController.class) : null)
 				.collect(Collectors.toList()));
 
-			resources.add(getCursorLink(decodedText, decodedFilter, decodedCursor, effectiveSize, Link.REL_SELF));
+			resources.add(getCursorLink(decodedText, decodedFilter, decodedCursor, effectiveSize, Link.REL_SELF, this.getClass()));
 			//only display the next link if there is a next cursor to go to
 			if (!LinkUtils.decodeText(samples.getNextCursorMark()).equals(decodedCursor)
 					&& !samples.getNextCursorMark().equals("*")) {
-				resources.add(getCursorLink(decodedText, decodedFilter, samples.getNextCursorMark(), effectiveSize, Link.REL_NEXT));
+				resources.add(getCursorLink(decodedText, decodedFilter, samples.getNextCursorMark(), effectiveSize, Link.REL_NEXT, this.getClass()));
 			}
 
 			//Note - EBI load balancer does cache but doesn't add age header, so clients could cache up to twice this age
@@ -158,43 +158,52 @@ public class SamplesRestController {
 			Sort pageSort = new Sort(Arrays.stream(effectiveSort).map(this::parseSort).collect(Collectors.toList()));
 			Pageable pageable = new PageRequest(effectivePage, effectiveSize, pageSort);
 
-			Page<Sample> pageSample = samplePageService.getSamplesByText(text, filters, domains, pageable);
+			Page<Sample> pageSample = samplePageService.getSamplesByText(text, filters, domains, pageable, curationRepo);
+
+			Resources<Resource<Sample>> resources = populateResources(pageSample, effectiveSize, effectivePage, decodedText, decodedFilter, sort);
+
+			return ResponseEntity.ok()
+					.cacheControl(cacheControl)
+					.body(resources);
+		}
+	}
+
+	private Resources<Resource<Sample>> populateResources(Page<Sample> pageSample, int effectiveSize, int effectivePage,
+														  String decodedText, String[] decodedFilter, String[] sort) {
+		PageMetadata pageMetadata = new PageMetadata(effectiveSize,
+				pageSample.getNumber(), pageSample.getTotalElements(), pageSample.getTotalPages());
+
+		Resources<Resource<Sample>> resources = new PagedResources<>(pageSample.getContent().stream()
+				.map(s -> s != null ? sampleResourceAssembler.toResource(s, SampleRestController.class) : null)
+				.collect(Collectors.toList()), pageMetadata);
 
 
-			PageMetadata pageMetadata = new PageMetadata(effectiveSize,
-					pageSample.getNumber(), pageSample.getTotalElements(), pageSample.getTotalPages());
+		//if theres more than one page, link to first and last
+		if (pageSample.getTotalPages() > 1) {
+			resources.add(getPageLink(decodedText, decodedFilter, 0, effectiveSize, sort, Link.REL_FIRST, this.getClass()));
+		}
+		//if there was a previous page, link to it
+		if (effectivePage > 0) {
+			resources.add(getPageLink(decodedText, decodedFilter, effectivePage-1, effectiveSize, sort, Link.REL_PREVIOUS, this.getClass()));
+		}
+		resources.add(getPageLink(decodedText, decodedFilter, effectivePage, effectiveSize, sort, Link.REL_SELF, this.getClass()));
 
-			Resources<Resource<Sample>> resources = new PagedResources<>(pageSample.getContent().stream()
-					.map(s -> s != null ? sampleResourceAssembler.toResource(s) : null)
-					.collect(Collectors.toList()), pageMetadata);
+		//if there is a next page, link to it
+		if (effectivePage < pageSample.getTotalPages()-1) {
+			resources.add(getPageLink(decodedText, decodedFilter, effectivePage+1, effectiveSize, sort, Link.REL_NEXT, this.getClass()));
+		}
+		//if theres more than one page, link to first and last
+		if (pageSample.getTotalPages() > 1) {
+			resources.add(getPageLink(decodedText, decodedFilter, pageSample.getTotalPages(), effectiveSize, sort, Link.REL_LAST, this.getClass()));
+		}
 
+		//if we are on the first page and not sorting
+		if (effectivePage==0 && (sort==null || sort.length==0)) {
+			resources.add(getCursorLink(decodedText, decodedFilter, "*", effectiveSize, "cursor", this.getClass()));
+		}
 
-			//if theres more than one page, link to first and last
-			if (pageSample.getTotalPages() > 1) {
-				resources.add(getPageLink(decodedText, decodedFilter, 0, effectiveSize, sort, Link.REL_FIRST));
-			}
-			//if there was a previous page, link to it
-			if (effectivePage > 0) {
-				resources.add(getPageLink(decodedText, decodedFilter, effectivePage-1, effectiveSize, sort, Link.REL_PREVIOUS));
-			}
-			resources.add(getPageLink(decodedText, decodedFilter, effectivePage, effectiveSize, sort, Link.REL_SELF));
-
-			//if there is a next page, link to it
-			if (effectivePage < pageSample.getTotalPages()-1) {
-				resources.add(getPageLink(decodedText, decodedFilter, effectivePage+1, effectiveSize, sort, Link.REL_NEXT));
-			}
-			//if theres more than one page, link to first and last
-			if (pageSample.getTotalPages() > 1) {
-				resources.add(getPageLink(decodedText, decodedFilter, pageSample.getTotalPages(), effectiveSize, sort, Link.REL_LAST));
-			}
-
-			//if we are on the first page and not sorting
-			if (effectivePage==0 && (sort==null || sort.length==0)) {
-				resources.add(getCursorLink(decodedText, decodedFilter, "*", effectiveSize, "cursor"));
-			}
-
-			//if there is no search term, and on first page, add a link to use search
-			//TODO
+		//if there is no search term, and on first page, add a link to use search
+		//TODO
 //			if (text.trim().length() == 0 && page == 0) {
 //				resources.add(LinkUtils.cleanLink(ControllerLinkBuilder
 //					.linkTo(ControllerLinkBuilder.methodOn(SamplesRestController.class)
@@ -202,17 +211,14 @@ public class SamplesRestController {
 //					.withRel("search")));
 //			}
 
-			resources.add(SampleAutocompleteRestController.getLink(decodedText, decodedFilter, null, "autocomplete"));
+		resources.add(SampleAutocompleteRestController.getLink(decodedText, decodedFilter, null, "autocomplete"));
 
 
-			UriComponentsBuilder uriComponentsBuilder = ControllerLinkBuilder.linkTo(SamplesRestController.class).toUriComponentsBuilder();
-			//This is a bit of a hack, but best we can do for now...
-			resources.add(new Link(uriComponentsBuilder.build(true).toUriString()+"/{accession}", "sample"));
+		UriComponentsBuilder uriComponentsBuilder = ControllerLinkBuilder.linkTo(SamplesRestController.class).toUriComponentsBuilder();
+		//This is a bit of a hack, but best we can do for now...
+		resources.add(new Link(uriComponentsBuilder.build(true).toUriString()+"/{accession}", "sample"));
 
-			return ResponseEntity.ok()
-					.cacheControl(cacheControl)
-					.body(resources);
-		}
+		return resources;
 	}
 
 	private Order parseSort(String sort) {
@@ -236,9 +242,8 @@ public class SamplesRestController {
 	 * @param rel
 	 * @return
 	 */
-	public static Link getCursorLink(String text, String[] filter, String cursor, int size, String rel) {
-		UriComponentsBuilder builder = ControllerLinkBuilder.linkTo(SamplesRestController.class)
-				.toUriComponentsBuilder();
+	public static Link getCursorLink(String text, String[] filter, String cursor, int size, String rel, Class controllerClass) {
+		UriComponentsBuilder builder = ControllerLinkBuilder.linkTo(controllerClass).toUriComponentsBuilder();
 		if (text != null && text.trim().length() > 0) {
 			builder.queryParam("text", text);
 		}
@@ -252,9 +257,8 @@ public class SamplesRestController {
 		return new Link(builder.toUriString(), rel);
 	}
 
-	public static Link getPageLink(String text, String[] filter, int page, int size, String[] sort, String rel) {
-		UriComponentsBuilder builder = ControllerLinkBuilder.linkTo(SamplesRestController.class)
-				.toUriComponentsBuilder();
+	public static Link getPageLink(String text, String[] filter, int page, int size, String[] sort, String rel, Class controllerClass) {
+		UriComponentsBuilder builder = ControllerLinkBuilder.linkTo(controllerClass).toUriComponentsBuilder();
 		if (text != null && text.trim().length() > 0) {
 			builder.queryParam("text", text);
 		}
@@ -354,7 +358,7 @@ public class SamplesRestController {
 		sample = sampleService.store(sample);
 
 		// assemble a resource to return
-		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
+		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample, this.getClass());
 
 		// create the response object with the appropriate status
 		//TODO work out how to avoid using ResponseEntity but also set location header

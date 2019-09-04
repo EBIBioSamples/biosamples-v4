@@ -117,7 +117,7 @@ public class ApiDocumentationTest {
     public void getSamples() throws Exception {
         Sample fakeSample = this.faker.getExampleSample();
         Page<Sample> samplePage = new PageImpl<>(Collections.singletonList(fakeSample), getDefaultPageable(), 100);
-        when(samplePageService.getSamplesByText(any(String.class), anyCollectionOf(Filter.class), anyCollectionOf(String.class), isA(Pageable.class)))
+        when(samplePageService.getSamplesByText(any(String.class), anyCollectionOf(Filter.class), anyCollectionOf(String.class), isA(Pageable.class), any(String.class)))
                 .thenReturn(samplePage);
         this.mockMvc.perform(get("/biosamples/samples").accept(MediaTypes.HAL_JSON))
                 .andExpect(status().isOk())
@@ -292,7 +292,7 @@ public class ApiDocumentationTest {
 
         Sample sampleWithDomain = this.faker.getExampleSampleWithDomain();
 
-        when(sampleService.fetch(eq(sampleWithDomain.getAccession()), eq(Optional.empty())))
+        when(sampleService.fetch(eq(sampleWithDomain.getAccession()), eq(Optional.empty()), any(String.class)))
         	.thenReturn(Optional.of(sampleWithDomain));
         when(sampleService.store(eq(sampleWithDomain)))
         	.thenReturn(sampleWithDomain);
@@ -322,7 +322,7 @@ public class ApiDocumentationTest {
     @Test
     public void getSample() throws Exception {
         Sample sample = this.faker.getExampleSampleBuilder().withDomain(this.faker.getExampleDomain()).build();
-        when(sampleService.fetch(sample.getAccession(), Optional.empty())).thenReturn(Optional.of(sample));
+        when(sampleService.fetch(sample.getAccession(), Optional.empty(), null)).thenReturn(Optional.of(sample));
         doNothing().when(aapService).checkAccessible(isA(Sample.class));
 
         this.mockMvc.perform(

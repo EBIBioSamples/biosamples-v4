@@ -64,7 +64,7 @@ public class SampleAutocompleteRestController {
     	Resource<Autocomplete> resource = new Resource<>(autocomplete);
 
     	resource.add(getLink(text, filter, rows, Link.REL_SELF));
-    	resource.add(SamplesRestController.getPageLink(text, filter, 0, 20, null, "samples"));
+    	resource.add(SamplesRestController.getPageLink(text, filter, 0, 20, null, "samples", SamplesRestController.class));
 		return ResponseEntity.ok().body(resource);
 	}
     

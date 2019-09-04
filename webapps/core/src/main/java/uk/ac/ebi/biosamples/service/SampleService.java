@@ -1,23 +1,25 @@
 package uk.ac.ebi.biosamples.service;
 
-import java.util.*;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.ResponseStatus;
-
 import uk.ac.ebi.biosamples.model.Autocomplete;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.StaticViews;
 import uk.ac.ebi.biosamples.model.filter.Filter;
+import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.service.MongoAccessionService;
+import uk.ac.ebi.biosamples.mongo.service.MongoInverseRelationshipService;
 import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
 import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
 import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
+
+import java.util.*;
 
 /**
  * Service layer business logic for centralising repository access and
@@ -41,7 +43,9 @@ public class SampleService {
 	@Autowired
 	private MongoSampleToSampleConverter mongoSampleToSampleConverter;
 	@Autowired
-	private SampleToMongoSampleConverter sampleToMongoSampleConverter;	
+	private SampleToMongoSampleConverter sampleToMongoSampleConverter;
+	@Autowired
+	private MongoInverseRelationshipService mongoInverseRelationshipService;
 	
 	
 	@Autowired 
@@ -65,10 +69,10 @@ public class SampleService {
 	 */
 	//can't use a sync cache because we need to use CacheEvict
 	//@Cacheable(cacheNames=WebappProperties.fetchUsing, key="#root.args[0]")
-	public Optional<Sample> fetch(String accession, Optional<List<String>> curationDomains) {
-		return sampleReadService.fetch(accession, curationDomains);
+	public Optional<Sample> fetch(String accession, Optional<List<String>> curationDomains, String curationRepo) {
+		StaticViews.MongoSampleStaticViews staticView = StaticViews.getStaticView(curationDomains.orElse(null), curationRepo);
+		return sampleReadService.fetch(accession, curationDomains, staticView);
 	}
-	
 	
 	public Autocomplete getAutocomplete(String autocompletePrefix, Collection<Filter> filters, int noSuggestions) {
 		return solrSampleService.getAutocomplete(autocompletePrefix, filters, noSuggestions);
@@ -91,25 +95,23 @@ public class SampleService {
 		}
 
 		if (sample.hasAccession()) {
-
 			// TODO compare to existing version to check if changes
+			List<String> existingRelationshipTargets = getExistingRelationshipTargets(sample.getAccession());
+
 			MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);
 			mongoSample = mongoSampleRepository.save(mongoSample);
 			sample = mongoSampleToSampleConverter.convert(mongoSample);
 
-			// send a message for storage and further processing
-			messagingSerivce.fetchThenSendMessage(sample.getAccession());
+			//send a message for storage and further processing, send relationship targets to identify deleted relationships
+			messagingSerivce.fetchThenSendMessage(sample.getAccession(), existingRelationshipTargets);
 		} else {
-			//assign it a new accession
 			sample = mongoAccessionService.generateAccession(sample);
-			
-			//send a message for storage and further processing
 			messagingSerivce.fetchThenSendMessage(sample.getAccession());
 		}
 		
 		//return the sample in case we have modified it i.e accessioned
 		//do a fetch to return it with curation objects and inverse relationships
-		return fetch(sample.getAccession(), Optional.empty()).get();
+		return fetch(sample.getAccession(), Optional.empty(), null).get();
 	}
 
 	public void validateSample(Map sampleAsMap) {
@@ -149,6 +151,22 @@ public class SampleService {
 			super(cause);
 		}
 	}
+
+	private List<String> getExistingRelationshipTargets(String accession) {
+		List<String> oldRelationshipTargets = new ArrayList<>();
+		MongoSample mongoOldSample = mongoSampleRepository.findOne(accession);
+		if (mongoOldSample != null) {
+			for (MongoRelationship relationship : mongoOldSample.getRelationships()) {
+				if (relationship.getSource().equals(accession)) {
+					oldRelationshipTargets.add(relationship.getTarget());
+				}
+			}
+		}
+
+		return oldRelationshipTargets;
+	}
+
+
 	/*
 	//this code recursively follows relationships
 	//TODO finish

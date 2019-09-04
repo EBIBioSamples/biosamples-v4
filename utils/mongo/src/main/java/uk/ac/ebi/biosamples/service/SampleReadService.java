@@ -5,8 +5,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.StaticViews;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
-import uk.ac.ebi.biosamples.mongo.model.MongoSampleStaticViews;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.service.MongoInverseRelationshipService;
 import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
@@ -97,25 +97,34 @@ public class SampleReadService {
 
     }
 
+    public Optional<Sample> fetch(
+            String accession, Optional<List<String>> curationDomains, StaticViews.MongoSampleStaticViews staticViews) {
+
+        Sample sample;
+        MongoSample mongoSample = mongoSampleRepository.findSampleFromCollection(accession, staticViews);
+
+        if (mongoSample == null) {
+            LOGGER.warn("failed to retrieve sample with accession {}", accession);
+            sample = null;
+        } else if (staticViews.equals(StaticViews.MongoSampleStaticViews.MONGO_SAMPLE_DYNAMIC)) {
+            mongoSample = mongoInverseRelationshipService.addInverseRelationships(mongoSample);
+            sample = mongoSampleToSampleConverter.convert(mongoSample);
+            sample = curationReadService.applyAllCurationToSample(sample, curationDomains);
+        } else {
+//            mongoSample = mongoInverseRelationshipService.addInverseRelationships(mongoSample);
+            sample = mongoSampleToSampleConverter.convert(mongoSample);
+        }
+
+        return sample == null ? Optional.empty() : Optional.of(sample);
+    }
+
     public Future<Optional<Sample>> fetchAsync(String accession, Optional<List<String>> curationDomains) {
         return executorService.submit(new FetchCallable(accession, this, curationDomains));
     }
 
-    public Optional<Sample> fetchFromStaticView(String accession) {
-        Optional<Sample> sample;
-        MongoSample mongoSample = mongoSampleRepository.findSampleFromCollection(accession, MongoSampleStaticViews.MONGO_SAMPLE_CURATED);
-        if (mongoSample == null) {
-            LOGGER.warn("failed to retrieve sample with accession {}", accession);
-            sample = Optional.empty();
-        } else {
-            sample = Optional.of(mongoSampleToSampleConverter.convert(mongoSample));
-        }
-
-        return sample;
-    }
-
-    public Future<Optional<Sample>> fetchFromStaticViewAsync(String accession) {
-        return executorService.submit(() -> fetchFromStaticView(accession));
+    public Future<Optional<Sample>> fetchAsync(
+            String accession, Optional<List<String>> curationDomains, StaticViews.MongoSampleStaticViews staticViews) {
+        return executorService.submit(() -> fetch(accession, curationDomains, staticViews));
     }
 
     private static class FetchCallable implements Callable<Optional<Sample>> {
