@@ -5,7 +5,7 @@ image:https://quay.io/repository/ebibiosamples/biosamples-v4/status["Docker Repo
 
 BioSamples https://www.ebi.ac.uk/biosamples/ stores and supplies descriptions and metadata about biological samples used in research and development by academia and industry. Samples are either 'reference' samples (e.g. from 1000 Genomes, HipSci, FAANG) or have been used in an assay database such as the European Nucleotide Archive (ENA) or ArrayExpress. 
 
-BioSamples also synchronize data with the NCBI BioSample database and import data from ENA.
+BioSamples also synchronizes data with the NCBI BioSample database and imports data from ENA.
 
 This document provides information about the local installation, development environment setup  instructions of BioSamples database. 
 
@@ -85,6 +85,28 @@ Please run `+sudo docker-compose up+` instead.
 . Now you can access the public interface at
 http://localhost:8081/biosamples/. So far, there is no data in the local
 sample.
+. Creat AAP account for API authentication and data upload
++ 
+An AAP account is required to upload data through API.
+The API account can be registered at
+https://explore.aai.ebi.ac.uk/registerUser. A detailed instruction about user account and authentication can be
+found on https://www.ebi.ac.uk/biosamples/docs/guides/authentication.
++
+*Please replace ALL 'https://aai.ebi.ac.uk' in the authentication guide with 'https://explore.aai.ebi.ac.uk'
+to use the local BioSamples API.*
+. Upload first test data 
++
+[source,sh]
+----
+TOKEN=$(curl -u Username https://explore.api.aai.ebi.ac.uk/auth)
+
+curl 'http://localhost:8081/biosamples/samples' -i -X POST -H "Content-Type: application/json;charset=UTF-8" -H "Accept: application/hal+json" -H "Authorization: Bearer $TOKEN" -d '{
+ "name" : "FakeSample",
+ "update" : "2019-07-16T09:47:20.003Z",
+ "release" : "2019-07-16T09:47:20.003Z",
+ "domain" : "self.ExampleDomain"
+}'
+----
 
 == Data import
 
