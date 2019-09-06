@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.StaticViews;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
@@ -55,7 +56,7 @@ public class CuratedViewApplicationRunner implements ApplicationRunner {
                 pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax())) {
 
             Map<String, Future<Void>> futures = new HashMap<>();
-            for (Resource<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll("", filters)) {
+            for (Resource<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll("", filters, null, StaticViews.MongoSampleStaticViews.MONGO_SAMPLE_DYNAMIC)) {
                 LOG.trace("Handling {}", sampleResource);
                 Sample sample = sampleResource.getContent();
                 Objects.requireNonNull(sample);

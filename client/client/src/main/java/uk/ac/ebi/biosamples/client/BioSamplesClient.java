@@ -19,6 +19,7 @@ import uk.ac.ebi.biosamples.client.service.*;
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.StaticViews;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.SampleValidator;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
@@ -300,12 +301,28 @@ public class BioSamplesClient implements AutoCloseable {
 		}
 	}
 
+	public Optional<Resource<Sample>> fetchSampleResource(String accession,
+														  Optional<List<String>> curationDomains, String jwt,
+														  StaticViews.MongoSampleStaticViews staticView) throws RestClientException {
+		try {
+			return sampleRetrievalService.fetch(accession, curationDomains, jwt, staticView).get();
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		} catch (ExecutionException e) {
+			throw new RuntimeException(e.getCause());
+		}
+	}
+
 	public Iterable<Optional<Resource<Sample>>> fetchSampleResourceAll(Iterable<String> accessions, String jwt) throws RestClientException {
 		return sampleRetrievalService.fetchAll(accessions, jwt);
 	}
 
 	public Iterable<Resource<Sample>> fetchSampleResourceAll(String text, Collection<Filter> filters, String jwt) {
 		return sampleCursorRetrievalService.fetchAll(text, filters, jwt);
+	}
+
+	public Iterable<Resource<Sample>> fetchSampleResourceAll(String text, Collection<Filter> filters, String jwt, StaticViews.MongoSampleStaticViews staticView) {
+		return sampleCursorRetrievalService.fetchAll(text, filters, jwt, staticView);
 	}
 
 	public PagedResources<Resource<Sample>> fetchPagedSampleResource(String text, Collection<Filter> filters, int page, int size, String jwt) {
