@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.StaticViews;
+import uk.ac.ebi.biosamples.model.StaticViewWrapper;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.service.MongoInverseRelationshipService;
@@ -98,7 +98,7 @@ public class SampleReadService {
     }
 
     public Optional<Sample> fetch(
-            String accession, Optional<List<String>> curationDomains, StaticViews.MongoSampleStaticViews staticViews) {
+            String accession, Optional<List<String>> curationDomains, StaticViewWrapper.StaticView staticViews) {
 
         Sample sample;
         MongoSample mongoSample = mongoSampleRepository.findSampleFromCollection(accession, staticViews);
@@ -106,7 +106,7 @@ public class SampleReadService {
         if (mongoSample == null) {
             LOGGER.warn("failed to retrieve sample with accession {}", accession);
             sample = null;
-        } else if (staticViews.equals(StaticViews.MongoSampleStaticViews.MONGO_SAMPLE_DYNAMIC)) {
+        } else if (staticViews.equals(StaticViewWrapper.StaticView.SAMPLES_DYNAMIC)) {
             mongoSample = mongoInverseRelationshipService.addInverseRelationships(mongoSample);
             sample = mongoSampleToSampleConverter.convert(mongoSample);
             sample = curationReadService.applyAllCurationToSample(sample, curationDomains);
@@ -123,7 +123,7 @@ public class SampleReadService {
     }
 
     public Future<Optional<Sample>> fetchAsync(
-            String accession, Optional<List<String>> curationDomains, StaticViews.MongoSampleStaticViews staticViews) {
+            String accession, Optional<List<String>> curationDomains, StaticViewWrapper.StaticView staticViews) {
         return executorService.submit(() -> fetch(accession, curationDomains, staticViews));
     }
 

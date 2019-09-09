@@ -7,7 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.StaticViews;
+import uk.ac.ebi.biosamples.model.StaticViewWrapper;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.mongo.model.MongoCurationLink;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
@@ -76,7 +76,7 @@ public class SamplePageService {
 
 		startTime = System.nanoTime();
 		Page<Future<Optional<Sample>>> pageFutureSample;
-		StaticViews.MongoSampleStaticViews staticViews = StaticViews.getStaticView(domains, curationRepo);
+		StaticViewWrapper.StaticView staticViews = StaticViewWrapper.getStaticView(domains, curationRepo);
 		pageFutureSample = pageSolrSample.map(ss -> sampleService.fetchAsync(ss.getAccession(), Optional.empty(), staticViews));
 
 		Page<Sample> pageSample = pageFutureSample.map(ss->{
@@ -105,7 +105,7 @@ public class SamplePageService {
 		CursorArrayList<SolrSample> cursorSolrSample =
 				solrSampleService.fetchSolrSampleByText(text, filters, domains, cursorMark, size);
 
-		StaticViews.MongoSampleStaticViews staticViews = StaticViews.getStaticView(domains, curationRepo);
+		StaticViewWrapper.StaticView staticViews = StaticViewWrapper.getStaticView(domains, curationRepo);
 		List<Future<Optional<Sample>>> listFutureSample;
 		listFutureSample = cursorSolrSample.stream()
 				.map(s -> sampleService.fetchAsync(s.getAccession(), Optional.empty(), staticViews))

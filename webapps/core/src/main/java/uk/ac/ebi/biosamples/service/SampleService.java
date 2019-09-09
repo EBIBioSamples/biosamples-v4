@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import uk.ac.ebi.biosamples.model.Autocomplete;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.StaticViews;
+import uk.ac.ebi.biosamples.model.StaticViewWrapper;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
@@ -70,7 +70,7 @@ public class SampleService {
 	//can't use a sync cache because we need to use CacheEvict
 	//@Cacheable(cacheNames=WebappProperties.fetchUsing, key="#root.args[0]")
 	public Optional<Sample> fetch(String accession, Optional<List<String>> curationDomains, String curationRepo) {
-		StaticViews.MongoSampleStaticViews staticView = StaticViews.getStaticView(curationDomains.orElse(null), curationRepo);
+		StaticViewWrapper.StaticView staticView = StaticViewWrapper.getStaticView(curationDomains.orElse(null), curationRepo);
 		return sampleReadService.fetch(accession, curationDomains, staticView);
 	}
 	

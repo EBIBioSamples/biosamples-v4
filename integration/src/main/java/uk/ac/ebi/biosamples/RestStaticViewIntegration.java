@@ -150,8 +150,8 @@ public class RestStaticViewIntegration extends AbstractIntegration {
     }
 
     private void testDynamicAndStaticView(String accession) {
-        Sample dynamicSample = client.fetchSampleResource(accession, Optional.empty(), null, StaticViews.MongoSampleStaticViews.MONGO_SAMPLE_DYNAMIC).get().getContent();
-        Sample staticSample = client.fetchSampleResource(accession, Optional.empty(), null, StaticViews.MongoSampleStaticViews.MONGO_SAMPLE_CURATED).get().getContent();
+        Sample dynamicSample = client.fetchSampleResource(accession, Optional.empty(), null, StaticViewWrapper.StaticView.SAMPLES_DYNAMIC).get().getContent();
+        Sample staticSample = client.fetchSampleResource(accession, Optional.empty(), null, StaticViewWrapper.StaticView.SAMPLES_CURATED).get().getContent();
         Sample sample = client.fetchSampleResource(accession).get().getContent();
 
         if (!dynamicSample.equals(staticSample) || !staticSample.equals(sample)) {

@@ -28,7 +28,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestOperations;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.StaticViews;
+import uk.ac.ebi.biosamples.model.StaticViewWrapper;
 
 public class SampleRetrievalService {
 
@@ -63,7 +63,7 @@ public class SampleRetrievalService {
 		return executor.submit(new FetchCallable(accession, curationDomains, jwt));
 	}
 
-	public Future<Optional<Resource<Sample>>> fetch(String accession, Optional<List<String>> curationDomains, String jwt, StaticViews.MongoSampleStaticViews staticView) {
+	public Future<Optional<Resource<Sample>>> fetch(String accession, Optional<List<String>> curationDomains, String jwt, StaticViewWrapper.StaticView staticView) {
 		return executor.submit(new FetchCallable(accession, curationDomains, jwt, staticView));
 	}
 
@@ -72,23 +72,23 @@ public class SampleRetrievalService {
 		private final String accession;
 		private final Optional<List<String>> curationDomains;
 		private final String jwt;
-		private final StaticViews.MongoSampleStaticViews staticView;
+		private final StaticViewWrapper.StaticView staticView;
 
 		public FetchCallable(String accession, Optional<List<String>> curationDomains) {
 			this.accession = accession;
 			this.curationDomains = curationDomains;
 			this.jwt = null;
-			this.staticView = StaticViews.MongoSampleStaticViews.MONGO_SAMPLE_CURATED;
+			this.staticView = StaticViewWrapper.StaticView.SAMPLES_CURATED;
 		}
 
 		public FetchCallable(String accession, Optional<List<String>> curationDomains, String jwt) {
 			this.accession = accession;
 			this.curationDomains = curationDomains;
 			this.jwt = jwt;
-			this.staticView = StaticViews.MongoSampleStaticViews.MONGO_SAMPLE_CURATED;
+			this.staticView = StaticViewWrapper.StaticView.SAMPLES_CURATED;
 		}
 
-		public FetchCallable(String accession, Optional<List<String>> curationDomains, String jwt, StaticViews.MongoSampleStaticViews staticView) {
+		public FetchCallable(String accession, Optional<List<String>> curationDomains, String jwt, StaticViewWrapper.StaticView staticView) {
 			this.accession = accession;
 			this.curationDomains = curationDomains;
 			this.jwt = jwt;

@@ -1,7 +1,7 @@
 package uk.ac.ebi.biosamples.curatedview;
 
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.StaticViews;
+import uk.ac.ebi.biosamples.model.StaticViewWrapper;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
@@ -28,6 +28,6 @@ public class CuratedViewCallable implements Callable<Void> {
 
     private void persistSamplesToStaticViewCollection() {
         MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);
-        mongoSampleRepository.insertSampleToCollection(mongoSample, StaticViews.MongoSampleStaticViews.MONGO_SAMPLE_CURATED);
+        mongoSampleRepository.insertSampleToCollection(mongoSample, StaticViewWrapper.StaticView.SAMPLES_CURATED);
     }
 }

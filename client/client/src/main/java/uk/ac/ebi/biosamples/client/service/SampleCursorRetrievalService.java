@@ -16,7 +16,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestOperations;
 import uk.ac.ebi.biosamples.client.utils.IterableResourceFetchAll;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.StaticViews;
+import uk.ac.ebi.biosamples.model.StaticViewWrapper;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 
 public class SampleCursorRetrievalService {
@@ -51,7 +51,7 @@ public class SampleCursorRetrievalService {
 
 	}
 
-	public Iterable<Resource<Sample>> fetchAll(String text, Collection<Filter> filterCollection, String jwt, StaticViews.MongoSampleStaticViews staticView) {
+	public Iterable<Resource<Sample>> fetchAll(String text, Collection<Filter> filterCollection, String jwt, StaticViewWrapper.StaticView staticView) {
 
 		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();
 		params.add("text", text);

@@ -9,7 +9,7 @@ import uk.ac.ebi.biosamples.Messaging;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.StaticViews;
+import uk.ac.ebi.biosamples.model.StaticViewWrapper;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
 
@@ -48,7 +48,7 @@ public class MessagingService {
 		if (sample.isPresent()) {
 			//save sample with curations and relationships in static view collection
 			mongoSampleRepository.insertSampleToCollection(
-					sampleToMongoSampleConverter.convert(sample.get()), StaticViews.MongoSampleStaticViews.MONGO_SAMPLE_CURATED);
+					sampleToMongoSampleConverter.convert(sample.get()), StaticViewWrapper.StaticView.SAMPLES_CURATED);
 
 			
 			//for each sample we have a relationship to, update it to index this sample as an inverse relationship	
@@ -86,7 +86,7 @@ public class MessagingService {
 					related.add(optionalSample.get());
 					//todo if we  add inverse relationships we also have to think about deleting them
 					mongoSampleRepository.insertSampleToCollection(
-							sampleToMongoSampleConverter.convert(optionalSample.get()), StaticViews.MongoSampleStaticViews.MONGO_SAMPLE_CURATED);
+							sampleToMongoSampleConverter.convert(optionalSample.get()), StaticViewWrapper.StaticView.SAMPLES_CURATED);
 				}
 			} catch (InterruptedException e) {
 				log.warn("Interrupted fetching future relationships", e);
