@@ -64,7 +64,8 @@ public class SampleRestController {
     @GetMapping(produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public Resource<Sample> getSampleHal(@PathVariable String accession,
                                          @RequestParam(name = "legacydetails", required = false) String legacydetails,
-                                         @RequestParam(name = "curationdomain", required = false) String[] curationdomain) {
+                                         @RequestParam(name = "curationdomain", required = false) String[] curationdomain,
+                                         @RequestParam(name = "curationrepo", required = false) String curationRepo) {
         log.trace("starting call");
 
         // decode percent-encoding from curation domains
@@ -77,7 +78,7 @@ public class SampleRestController {
         }
 
         // convert it into the format to return
-        Optional<Sample> sample = sampleService.fetch(accession, decodedCurationDomains);
+        Optional<Sample> sample = sampleService.fetch(accession, decodedCurationDomains, curationRepo);
         if (!sample.isPresent()) {
             throw new SampleNotFoundException();
         }
@@ -100,7 +101,8 @@ public class SampleRestController {
     @GetMapping()
     public String getSamplePhenopacket(@PathVariable String accession,
                                        @RequestParam(name = "legacydetails", required = false) String legacydetails,
-                                       @RequestParam(name = "curationdomain", required = false) String[] curationdomain) {
+                                       @RequestParam(name = "curationdomain", required = false) String[] curationdomain,
+                                       @RequestParam(name = "curationrepo", required = false) final String curationRepo) {
         log.trace("starting call");
 
         // decode percent-encoding from curation domains
@@ -113,7 +115,7 @@ public class SampleRestController {
         }
 
         // convert it into the format to return
-        Optional<Sample> sample = sampleService.fetch(accession, decodedCurationDomains);
+        Optional<Sample> sample = sampleService.fetch(accession, decodedCurationDomains, curationRepo);
         if (!sample.isPresent()) {
             throw new SampleNotFoundException();
         }
@@ -134,8 +136,9 @@ public class SampleRestController {
     @PreAuthorize("isAuthenticated()")
     @CrossOrigin(methods = RequestMethod.GET)
     @GetMapping(produces = { MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE })
-    public Sample getSampleXml(@PathVariable String accession) {
-            Sample sample = this.getSampleHal(accession, "true", null).getContent();
+    public Sample getSampleXml(@PathVariable String accession,
+                               @RequestParam(name = "curationrepo", required = false) final String curationRepo) {
+            Sample sample = this.getSampleHal(accession, "true", null, curationRepo).getContent();
             if (!sample.getAccession().matches("SAMEG\\d+")) {
 //			sample = Sample.build(sample.getName(),sample.getAccession(), sample.getDomain(),
 //					sample.getRelease(), sample.getUpdate(), sample.getCharacteristics(), sample.getRelationships(),

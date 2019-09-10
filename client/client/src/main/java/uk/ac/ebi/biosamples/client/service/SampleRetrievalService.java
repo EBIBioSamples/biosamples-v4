@@ -28,6 +28,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestOperations;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.StaticViewWrapper;
 
 public class SampleRetrievalService {
 
@@ -62,22 +63,36 @@ public class SampleRetrievalService {
 		return executor.submit(new FetchCallable(accession, curationDomains, jwt));
 	}
 
+	public Future<Optional<Resource<Sample>>> fetch(String accession, Optional<List<String>> curationDomains, String jwt, StaticViewWrapper.StaticView staticView) {
+		return executor.submit(new FetchCallable(accession, curationDomains, jwt, staticView));
+	}
+
 	private class FetchCallable implements Callable<Optional<Resource<Sample>>> {
 
 		private final String accession;
 		private final Optional<List<String>> curationDomains;
 		private final String jwt;
+		private final StaticViewWrapper.StaticView staticView;
 
 		public FetchCallable(String accession, Optional<List<String>> curationDomains) {
 			this.accession = accession;
 			this.curationDomains = curationDomains;
 			this.jwt = null;
+			this.staticView = StaticViewWrapper.StaticView.SAMPLES_CURATED;
 		}
 
 		public FetchCallable(String accession, Optional<List<String>> curationDomains, String jwt) {
 			this.accession = accession;
 			this.curationDomains = curationDomains;
 			this.jwt = jwt;
+			this.staticView = StaticViewWrapper.StaticView.SAMPLES_CURATED;
+		}
+
+		public FetchCallable(String accession, Optional<List<String>> curationDomains, String jwt, StaticViewWrapper.StaticView staticView) {
+			this.accession = accession;
+			this.curationDomains = curationDomains;
+			this.jwt = jwt;
+			this.staticView = staticView;
 		}
 
 		@Override
@@ -87,13 +102,16 @@ public class SampleRetrievalService {
 			
 			if (!curationDomains.isPresent()) {
 				uri = URI.create(traverson.follow("samples")
-						.follow(Hop.rel("sample").withParameter("accession", accession))
+						.follow(Hop.rel("sample")
+								.withParameter("accession", accession)
+								.withParameter("curationrepo", staticView.getCurationRepositoryName()))
 						.asLink().getHref());
 			} else {
 				TraversalBuilder traversalBuilder = traverson.follow("samples")
 						.follow(Hop.rel("sample").withParameter("accession", accession));
 				for (String curationDomain : curationDomains.get()) {
-					traversalBuilder.follow(Hop.rel("curationDomain").withParameter("curationdomain", curationDomain));
+					traversalBuilder.follow(Hop.rel("curationDomain")
+							.withParameter("curationdomain", curationDomain));
 				}
 				uri = URI.create(traversalBuilder.asLink().getHref());	
 			}

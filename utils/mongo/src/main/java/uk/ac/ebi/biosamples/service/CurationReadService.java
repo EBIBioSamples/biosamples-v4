@@ -126,7 +126,7 @@ public class CurationReadService {
 	
 	public Sample applyAllCurationToSample(Sample sample, Optional<List<String>> curationDomains) {
         //short-circuit if no curation domains specified
-		if (curationDomains.isPresent() && curationDomains.get().size()==0) {
+		if (curationDomains.isPresent() && curationDomains.get().isEmpty()) {
 			return sample;
 		}
 
@@ -136,7 +136,7 @@ public class CurationReadService {
 		int pageNo = 0;
 		Page<CurationLink> page;
 		do {
-			Pageable pageable = new PageRequest(pageNo, 1000);
+			Pageable pageable = new PageRequest(pageNo, 1000, Sort.Direction.ASC, "created");
 			page = getCurationLinksForSample(sample.getAccession(), pageable);
 			for (CurationLink curationLink : page) {
 				if (curationDomains.isPresent()) {

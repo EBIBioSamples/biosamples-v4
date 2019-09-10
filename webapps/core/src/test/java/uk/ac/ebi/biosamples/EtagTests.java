@@ -20,6 +20,7 @@ import uk.ac.ebi.biosamples.service.SampleService;
 
 import java.util.Optional;
 
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -48,7 +49,7 @@ public class EtagTests {
                 .addAttribute(new Attribute.Builder("Organism", "Homo sapiens").build())
                 .build();
 
-        when(sampleService.fetch(Matchers.eq(sampleAccession), Matchers.any(Optional.class))).thenReturn(Optional.of(testSample));
+        when(sampleService.fetch(Matchers.eq(sampleAccession), Matchers.any(Optional.class), any(String.class))).thenReturn(Optional.of(testSample));
         when(bioSamplesAapService.handleSampleDomain(testSample)).thenReturn(testSample);
 
         MvcResult sampleRequestResult = mockMvc.perform(get("/samples/{accession}", sampleAccession).accept(MediaType.APPLICATION_JSON))

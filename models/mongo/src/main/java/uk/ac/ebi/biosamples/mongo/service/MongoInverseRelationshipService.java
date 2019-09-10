@@ -8,6 +8,9 @@ import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 public class MongoInverseRelationshipService {
 
@@ -32,5 +35,19 @@ public class MongoInverseRelationshipService {
 			}
 		}
 		return mongoSample;
+	}
+
+	public List<String> getInverseRelationshipsTargets(String accession) {
+		List<String> relTargetAccessionList = new ArrayList<>();
+		Query query = new BasicQuery("{'relationships.target':'"+accession+"'}","{'relationships.$':1}");
+		for (MongoSample other : mongoTemplate.find(query, MongoSample.class)) {
+			for (MongoRelationship relationship : other.getRelationships()) {
+				if (relationship.getTarget().equals(accession)) {
+					relTargetAccessionList.add(relationship.getSource());
+				}
+			}
+		}
+
+		return relTargetAccessionList;
 	}
 }

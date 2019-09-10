@@ -6,7 +6,6 @@
   "biosamples": [
     {
     "id": "id",
-    "datasetId": "dataset_id",
     "description": "description",
     "phenotypicFeatures": [{
       "type": {
@@ -16,11 +15,7 @@
     }],
     "individualId": "id-individual",
     "ageOfIndividualAtCollection": {
-      "age": "0",
-      "ageClass": {
-        "id": "term id",
-        "label": "term label"
-      }
+      "age": "0"
     }
   }],
   "metaData": {

@@ -100,7 +100,7 @@ public class AMRTest {
     public void givenSample_whenGetSample_thenReturnJsonObject() throws Exception {
         Sample sample = getTestSampleBuilder().build();
 
-        when(sampleService.fetch(eq(sample.getAccession()), any())).thenReturn(Optional.of(sample));
+        when(sampleService.fetch(eq(sample.getAccession()), any(), any(String.class))).thenReturn(Optional.of(sample));
         when(bioSamplesAapService.isWriteSuperUser()).thenReturn(true);
 
 
@@ -120,7 +120,7 @@ public class AMRTest {
 
 
         Sample sample = getTestSampleBuilder().addData(amrTable).build();
-        when(sampleService.fetch(eq(sample.getAccession()), any())).thenReturn(Optional.of(sample));
+        when(sampleService.fetch(eq(sample.getAccession()), any(), any(String.class))).thenReturn(Optional.of(sample));
         when(bioSamplesAapService.isWriteSuperUser()).thenReturn(true);
 
         mockMvc.perform(get("/samples/{accession}", sample.getAccession()).accept(MediaType.APPLICATION_JSON))

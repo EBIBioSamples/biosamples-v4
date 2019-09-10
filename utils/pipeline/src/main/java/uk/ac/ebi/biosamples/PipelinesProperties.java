@@ -26,6 +26,9 @@ public class PipelinesProperties {
 	
 	@Value("${biosamples.pipelines.connectioncount.zooma:1}")
 	private int connectionCountZooma;
+
+	@Value("${biosamples.pipelines.connectiontimeout:60}")
+	private int connectionTimeout;
 	
 	@Value("${biosamples.pipelines.zooma:https://wwwdev.ebi.ac.uk/spot/zooma}")
 	private String zooma;
@@ -98,6 +101,10 @@ public class PipelinesProperties {
 
 	public int getConnectionCountZooma() {
 		return connectionCountZooma;
+	}
+
+	public int getConnectionTimeout() {
+		return connectionTimeout;
 	}
 	
 	public String getZooma() {
