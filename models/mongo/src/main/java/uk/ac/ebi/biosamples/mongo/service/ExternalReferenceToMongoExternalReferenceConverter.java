@@ -13,6 +13,6 @@ public class ExternalReferenceToMongoExternalReferenceConverter implements Conve
 
 	@Override
 	public MongoExternalReference convert(ExternalReference externalReference) {
-		return MongoExternalReference.build(externalReference.getUrl());
+		return MongoExternalReference.build(externalReference.getUrl(), externalReference.getDuo());
 	}
 }

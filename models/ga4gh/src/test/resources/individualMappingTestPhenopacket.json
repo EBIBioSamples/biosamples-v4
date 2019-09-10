@@ -1,31 +1,24 @@
 {
-  "individuals": [
+  "subject":
     {
       "id": "id-individual",
-      "sex": {
-        "id": "term id",
-        "label": "term label"
-      },
       "taxonomy": {
         "id": "term id",
         "label": "term label"
       }
     }
-  ],
+  ,
   "biosamples": [
     {
       "id": "id",
       "datasetId": "dataset_id",
-      "name": "name",
       "description": "description",
-      "created": "2018-01-20T13:55:29.870Z",
-      "updated": "2018-01-20T13:55:29.870Z",
       "individualId": "id-individual",
       "taxonomy": {
         "id": "term id",
         "label": "term label"
       },
-      "individualAgeAtCollection": {
+      "ageOfIndividualAtCollection": {
         "age": "0",
         "ageClass": {
           "id": "term id",

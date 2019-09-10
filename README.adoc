@@ -1,98 +1,118 @@
 image:https://api.codacy.com/project/badge/Grade/d1d650940b1f4a6286607c1d06573090["Codacy code quality", link="https://www.codacy.com/app/danielvaughan/biosamples-v4?utm_source=github.com&utm_medium=referral&utm_content=EBIBioSamples/biosamples-v4&utm_campaign=Badge_Grade"]
 image:https://quay.io/repository/ebibiosamples/biosamples-v4/status["Docker Repository on Quay", link="https://quay.io/repository/ebibiosamples/biosamples-v4"]
 
-[[quickstart]]
-Quickstart
-----------
+= BioSamples
 
-Install Maven and JDK 8 Install docker-compose
-https://docs.docker.com/compose/
+BioSamples https://www.ebi.ac.uk/biosamples/ stores and supplies descriptions and metadata about biological samples used in research and development by academia and industry. Samples are either 'reference' samples (e.g. from 1000 Genomes, HipSci, FAANG) or have been used in an assay database such as the European Nucleotide Archive (ENA) or ArrayExpress. 
 
-MacOS: Install Docker for Mac from https://www.docker.com/docker-mac
+BioSamples also synchronizes data with the NCBI BioSample database and imports data from ENA.
 
-`mvn package`
+This document provides information about the local installation, development environment setup  instructions of BioSamples database. 
 
-`docker-compose build`
+== Table of contents
 
-`docker-compose up biosamples-webapps-core`
+<<Softwares>>
 
-Note: this will download around 1GB of docker containers
+<<Setup>>
 
-public interface at http://localhost:8081/biosamples/beta
+<<Data import>>
 
-An example of the JSON format that can be sent by POST to
-http://localhost:8081/biosamples/beta/samples is at
-https://github.com/EBIBioSamples/biosamples-v4/blob/master/models/core/src/test/resources/TEST1.json
+<<Developing>>
 
-[[client-useage]]
-Client useage
--------------
+<<Client useage>>
 
-There is a spring client, and a spring-boot starter module, for use with
-BioSamples. To use these in a maven project, add the following to the
-appropriate sections:
+<<Issues and troubleshooting>>
 
-....
-<dependencies>      
-    <dependency>
-        <groupId>uk.ac.ebi.biosamples</groupId>
-        <artifactId>biosamples-spring-boot-starter</artifactId>
-        <version>4.0.4</version>
-    </dependency>
-</dependencies>
-....
-....
-<repositories>
-    <repository>
-      <id>spotnexus</id>
-      <url>https://www.ebi.ac.uk/spot/nexus/repository/maven-releases/</url>
-    </repository>
-</repositories>
-....
+<<License>>
 
-This can then be configured by several spring application.properties
-including biosamples.client.uri to specify the base URI of the
-BioSamples instance to use.
+== Softwares
 
-[[development-getting-started]]
-Development getting started
----------------------------
+* Git 2.17.1
+* Java 8
+* JDK 8
+* Maven 3.6.0
+* Docker 18.6
 
-To checkout and compile the code, you will need Git, Maven, and a JDK 8.
-On ubuntu-based Linux distributions (16.04 or higher) you can do this
-with:
+== Setup
 
-`sudo apt-get install maven git default-jdk`
+[arabic]
+. Run this in terminal to install the dependent softwares.
++
+[source,sh]
+----
+sudo apt-get update
+sudo apt-get install openjdk-8-jdk maven git docker
+----
+. Please make sure the software versions are correct.
++
+[source,sh]
+----
+mvn -v
+# Output: 
+# Apache Maven 3.6.0
 
-Then you can check out and compile the code with:
+docker -v 
+# Output
+# Docker version 18.06.1-ce
 
-`git clone https://github.com/EBIBioSamples/biosamples-v4 biosamples`
-`cd biosamples` `mvn -T 2C package`
+java -version
+# Output
+# openjdk version "1.8.0_222"
+----
+. Install BioSamples on your computer.
++
+This process sets up a local compiled version of all biosamples tools.
+It requires a large download of Spring dependencies and uses up to two
+threads per core of your machine. The installation might take several
+minutes.
++
+[source,sh]
+----
+git clone https://github.com/EBIBioSamples/biosamples-v4.git
+cd biosamples-v4
+mvn -T 2C package
+----
+. Start Biosamples on your own machine
++
+[source,sh]
+----
+docker-compose up
+----
++
+If it returns
+`+ERROR: Couldn't connect to Docker daemon - you might need to run docker-machine start default+`.
+Please run `+sudo docker-compose up+` instead.
+. Now you can access the public interface at
+http://localhost:8081/biosamples/. So far, there is no data in the local
+sample.
+. Creat AAP account for API authentication and data upload
++ 
+An AAP account is required to upload data through API.
+The API account can be registered at
+https://explore.aai.ebi.ac.uk/registerUser. A detailed instruction about user account and authentication can be
+found on https://www.ebi.ac.uk/biosamples/docs/guides/authentication.
++
+*Please replace ALL 'https://aai.ebi.ac.uk' in the authentication guide with 'https://explore.aai.ebi.ac.uk'
+to use the local BioSamples API.*
+. Upload first test data 
++
+[source,sh]
+----
+TOKEN=$(curl -u Username https://explore.api.aai.ebi.ac.uk/auth)
 
-Note: This will require a large download of Spring dependencies. Note:
-This uses up to two threads per core of your machine.
+curl 'http://localhost:8081/biosamples/samples' -i -X POST -H "Content-Type: application/json;charset=UTF-8" -H "Accept: application/hal+json" -H "Authorization: Bearer $TOKEN" -d '{
+ "name" : "FakeSample",
+ "update" : "2019-07-16T09:47:20.003Z",
+ "release" : "2019-07-16T09:47:20.003Z",
+ "domain" : "self.ExampleDomain"
+}'
+----
 
-At that point, you will have a local compiled version of all the
-biosamples tools.
+== Data import
 
-To start a copy running on the local machine (e.g. to test any changes
-you have made) you can use Docker and Docker-compose.
-https://docs.docker.com/compose/
+An example of the JSON format that can be sent by POST to http://localhost:8081/biosamples/beta/samples is at https://github.com/EBIBioSamples/biosamples-v4/blob/master/models/core/src/test/resources/TEST1.json
 
-You can use `docker-compose up` to start all the services, or you can
-bring them up individually. See docker-compose.yml file for more
-information on service names and dependencies.
-
-To update the code you are running you will need to 
-1. `git pull` the latest version
-2. Recompile the java classes by running `docker-webapp.sh`
-
-By default, the pipelines will not be run. They can be manually
-triggered as follows:
-
-[[ncbi]]
-NCBI
-~~~~
+=== NCBI
 
 Download the XML dump (~400Mb) to the current directory:
 
@@ -106,19 +126,20 @@ Note: You will need to mount the location that the XML dump was
 downloaded to within the docker container. A docker-compose.override.yml
 file is the easiest way to do that.
 
-[[ena]]
-ENA
-~~~~
+=== ENA
+
 You can run the pipelines-ena to import ENA samples.
 In order to do that you will need to add some security settings to maven 
 to get access to oracle private driver repository.
 
 You can read more instructions about this at https://blogs.oracle.com/dev2dev/get-oracle-jdbc-drivers-and-ucp-from-oracle-maven-repository-without-ides
 
+=== MongoDB notes
 
-[[developing]]
-Developing
-----------
+Cross-platform easy to use mongodb management tool
+http://www.mongoclient.com
+
+== Developing
 
 Docker can be run from within a virtual machine e.g VirtualBox. This is
 useful if it causes any problems for your machine or if you have an OS
@@ -188,16 +209,37 @@ To delete all docker images use:
 
 NOTE: this will remove everything not just things for this project
 
-[[mongodb-notes]]
-MongoDB notes
--------------
+== Client useage
 
-Cross-platform easy to use mongodb management tool
-http://www.mongoclient.com
+There is a spring client, and a spring-boot starter module, for use with
+BioSamples. To use these in a maven project, add the following to the
+appropriate sections:
 
-[[problems-with-spring-data-rest]]
-Problems with spring-data-rest
-------------------------------
+....
+<dependencies>      
+    <dependency>
+        <groupId>uk.ac.ebi.biosamples</groupId>
+        <artifactId>biosamples-spring-boot-starter</artifactId>
+        <version>4.0.4</version>
+    </dependency>
+</dependencies>
+....
+....
+<repositories>
+    <repository>
+      <id>spotnexus</id>
+      <url>https://www.ebi.ac.uk/spot/nexus/repository/maven-releases/</url>
+    </repository>
+</repositories>
+....
+
+This can then be configured by several spring application.properties
+including biosamples.client.uri to specify the base URI of the
+BioSamples instance to use.
+
+== Issues and troubleshooting
+
+=== Problems with spring-data-rest
 
 This was originally using spring-data-rest to expose rest API for the
 repositories. But there are a number of problems with this (see below)
@@ -213,10 +255,12 @@ optional components, the optional parts can become mixed if the list
 ordering changes. Maybe this can be remedied by using map of attribute
 types instead?
 
-[[known-issues]]
-Known issues
-------------
+=== Known issues
 
 Solr has a limit on the field size (technically the term vector).
 Therefore the attribute values over 255 characters are not indexed in
 solr.
+
+=== License
+
+link:https://github.com/EBIBioSamples/biosamples-v4}/LICENSE[Apache 2.0]

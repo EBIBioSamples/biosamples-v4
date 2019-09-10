@@ -11,6 +11,7 @@ import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Sample;
 
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -153,7 +154,8 @@ public class RestFacetIntegration extends AbstractIntegration {
 		Instant release = Instant.parse("2015-03-22T08:30:23.00Z");
 
 		SortedSet<ExternalReference> externalReferences = new TreeSet<>();
-		externalReferences.add(ExternalReference.build("https://www.ebi.ac.uk/ena/ERA123123"));
+		externalReferences.add(ExternalReference.build("https://www.ebi.ac.uk/ena/ERA123123",
+				new TreeSet<>(Arrays.asList("DUO:000005", "DUO:000001","DUO:000007"))));
 		externalReferences.add(ExternalReference.build("http://www.ebi.ac.uk/arrayexpress/experiments/E-MTAB-09123"));
 
 //		return Sample.build(name, accession, domain, release, update, null, null, externalReferences, null, null, null);

@@ -22,16 +22,16 @@ import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.client.Hop;
 import org.springframework.hateoas.client.Traverson;
 import org.springframework.hateoas.client.Traverson.TraversalBuilder;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.RequestEntity;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestOperations;
 import uk.ac.ebi.biosamples.model.Sample;
 
 public class SampleRetrievalService {
 
-	private Logger log = LoggerFactory.getLogger(getClass());
+	private final Logger log = LoggerFactory.getLogger(getClass());
 	
 	public static final DateTimeFormatter solrFormatter = DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss'Z'");
 
@@ -58,14 +58,26 @@ public class SampleRetrievalService {
 		return executor.submit(new FetchCallable(accession, curationDomains));
 	}
 
+	public Future<Optional<Resource<Sample>>> fetch(String accession, Optional<List<String>> curationDomains, String jwt) {
+		return executor.submit(new FetchCallable(accession, curationDomains, jwt));
+	}
+
 	private class FetchCallable implements Callable<Optional<Resource<Sample>>> {
 
 		private final String accession;
 		private final Optional<List<String>> curationDomains;
+		private final String jwt;
 
 		public FetchCallable(String accession, Optional<List<String>> curationDomains) {
 			this.accession = accession;
 			this.curationDomains = curationDomains;
+			this.jwt = null;
+		}
+
+		public FetchCallable(String accession, Optional<List<String>> curationDomains, String jwt) {
+			this.accession = accession;
+			this.curationDomains = curationDomains;
+			this.jwt = jwt;
 		}
 
 		@Override
@@ -85,11 +97,16 @@ public class SampleRetrievalService {
 				}
 				uri = URI.create(traversalBuilder.asLink().getHref());	
 			}
-			
+
 			log.trace("GETing " + uri);
 
-			RequestEntity<Void> requestEntity = RequestEntity.get(uri).accept(MediaTypes.HAL_JSON).build();
-			
+			MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+			headers.add(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON.toString());
+			if (jwt != null) {
+				headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
+			}
+			RequestEntity<Void> requestEntity = new RequestEntity<>(headers, HttpMethod.GET, uri);
+
 			ResponseEntity<Resource<Sample>> responseEntity = null;
 			try {
 				responseEntity = restOperations.exchange(requestEntity,
@@ -113,12 +130,23 @@ public class SampleRetrievalService {
 		return new IterableResourceFetch(accessions);
 	}
 
+	public Iterable<Optional<Resource<Sample>>> fetchAll(Iterable<String> accessions, String jwt) {
+		return new IterableResourceFetch(accessions);
+	}
+
 	private class IterableResourceFetch implements Iterable<Optional<Resource<Sample>>> {
 
 		private final Iterable<String> accessions;
+		private final String jwt;
 
 		public IterableResourceFetch(Iterable<String> accessions) {
 			this.accessions = accessions;
+			this.jwt = null;
+		}
+
+		public IterableResourceFetch(Iterable<String> accessions, String jwt) {
+			this.accessions = accessions;
+			this.jwt = jwt;
 		}
 
 		@Override
@@ -157,7 +185,7 @@ public class SampleRetrievalService {
 				while (queue.size() < queueMaxSize && accessions.hasNext()) {
 					log.trace("Queue size is " + queue.size());
 					String nextAccession = accessions.next();
-					queue.add(fetch(nextAccession, Optional.empty()));
+					queue.add(fetch(nextAccession, Optional.empty(), jwt));
 				}
 
 				// get the end of the queue and wait for it to finish if needed

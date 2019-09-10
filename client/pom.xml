@@ -9,12 +9,13 @@
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>4.1.13-SNAPSHOT</version>
+		<version>4.1.16-SNAPSHOT</version>
 		<relativePath>../</relativePath>
 	</parent>
 
 	<modules>
 		<module>client</module>
 		<module>starter</module>
+		<module>presto-bsd-connector</module>
 	</modules>
 </project>

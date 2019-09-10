@@ -4,6 +4,26 @@
 This pages contains links to release notes for BioSamples for version 4.0.0 and higher. This release represents a comprehensive overhaul and therefore previous release notes are no longer applicable.
 
 [[section]]
+4.1.15
+----
+* Update phenopacket version
+* Add curami pipeline to curate biosamples attributes
+
+[[section]]
+4.1.14
+----
+* Add DUO attribute to external reference class
+* Add script to import EGA data
+* Add presto connector as a BioSamples client module
+
+
+[[section]]
+4.1.13
+----
+* Added API in biosamples-client to utilize JWT tokens
+* Resolved issue where ENA pipeline failed if FIRST_PUBLIC date is not available
+
+[[section]]
 4.1.12
 ----
 * Replicate required ENA XML Dump functionality in the ENA pipeline
