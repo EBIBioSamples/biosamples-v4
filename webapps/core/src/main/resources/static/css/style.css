@@ -9,9 +9,7 @@
 .card {
     background-color: #fff;
     color: #000;
-    border-top: 1px solid #cccccc;
-    border-left: 1px solid #cccccc;
-    border-right: 1px solid #cccccc;
+    border: 1px solid #cccccc;
     padding-top: 1em;
     padding-bottom: 1em;
 }

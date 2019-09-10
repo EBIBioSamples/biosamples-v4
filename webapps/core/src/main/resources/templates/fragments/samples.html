@@ -96,7 +96,7 @@
     </div>
 </section>
 
-<div class="card columns medium-12 biosamples-card" th:fragment="result(sample, iterStat)" th:style="${iterStat.odd} ? 'background: #f0f0f2;' : 'background: #ffffff;'">
+<div class="card columns medium-12" th:fragment="result(sample, iterStat)" th:style="${iterStat.odd} ? 'background: #f0f0f2;' : 'background: #ffffff;'">
     <span class="columns medium-9">
 			<a th:href="@{'/samples/'+${sample.accession}}">
 				<span class="lead text-left" th:text="${sample.name}">Sample</span>
