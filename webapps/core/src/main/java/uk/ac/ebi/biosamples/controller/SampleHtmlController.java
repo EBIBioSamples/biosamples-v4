@@ -103,6 +103,7 @@ public class SampleHtmlController {
 			@RequestParam(name="filter", required=false) String[] filtersArray,
 			@RequestParam(name="page", defaultValue="1") Integer page,
 			@RequestParam(name="size", defaultValue="10") Integer size,
+		  	@RequestParam(name = "curationrepo", defaultValue="none") final String curationRepo,
 			HttpServletRequest request, HttpServletResponse response) {
 
 		//force a minimum of 1 result
@@ -122,7 +123,7 @@ public class SampleHtmlController {
 		Collection<String> domains = bioSamplesAapService.getDomains();
 
 		Pageable pageable = new PageRequest(page-1, size);
-		Page<Sample> pageSample = samplePageService.getSamplesByText(text, filterCollection, domains, pageable);
+		Page<Sample> pageSample = samplePageService.getSamplesByText(text, filterCollection, domains, pageable, curationRepo);
 
 		//default to getting 10 values from 10 facets
 		List<Facet> sampleFacets = facetService.getFacets(text, filterCollection, domains, 10, 10);
@@ -290,10 +291,12 @@ public class SampleHtmlController {
 
 
 	@GetMapping(value = "/samples/{accession}")
-	public String samplesAccession(Model model, @PathVariable String accession, HttpServletRequest request,
+	public String samplesAccession(Model model, @PathVariable String accession,
+								   @RequestParam(name = "curationrepo", required = false) final String curationRepo,
+								   HttpServletRequest request,
 			HttpServletResponse response) {
 		//TODO allow curation domain specification
-		Optional<Sample> sample = sampleService.fetch(accession, Optional.empty());
+		Optional<Sample> sample = sampleService.fetch(accession, Optional.empty(), curationRepo);
 		if (!sample.isPresent()) {
 			// did not exist, throw 404
 			//TODO do as an exception

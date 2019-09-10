@@ -36,5 +36,6 @@
 		<module>livelist</module>
 		<module>curationundo</module>
 		<module>curami</module>
-	</modules>
+        <module>curatedview</module>
+    </modules>
 </project>

@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.StaticViewWrapper;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.service.MongoInverseRelationshipService;
@@ -96,8 +97,34 @@ public class SampleReadService {
 
     }
 
+    public Optional<Sample> fetch(
+            String accession, Optional<List<String>> curationDomains, StaticViewWrapper.StaticView staticViews) {
+
+        Sample sample;
+        MongoSample mongoSample = mongoSampleRepository.findSampleFromCollection(accession, staticViews);
+
+        if (mongoSample == null) {
+            LOGGER.warn("failed to retrieve sample with accession {}", accession);
+            sample = null;
+        } else if (staticViews.equals(StaticViewWrapper.StaticView.SAMPLES_DYNAMIC)) {
+            mongoSample = mongoInverseRelationshipService.addInverseRelationships(mongoSample);
+            sample = mongoSampleToSampleConverter.convert(mongoSample);
+            sample = curationReadService.applyAllCurationToSample(sample, curationDomains);
+        } else {
+//            mongoSample = mongoInverseRelationshipService.addInverseRelationships(mongoSample);
+            sample = mongoSampleToSampleConverter.convert(mongoSample);
+        }
+
+        return sample == null ? Optional.empty() : Optional.of(sample);
+    }
+
     public Future<Optional<Sample>> fetchAsync(String accession, Optional<List<String>> curationDomains) {
         return executorService.submit(new FetchCallable(accession, this, curationDomains));
+    }
+
+    public Future<Optional<Sample>> fetchAsync(
+            String accession, Optional<List<String>> curationDomains, StaticViewWrapper.StaticView staticViews) {
+        return executorService.submit(() -> fetch(accession, curationDomains, staticViews));
     }
 
     private static class FetchCallable implements Callable<Optional<Sample>> {
