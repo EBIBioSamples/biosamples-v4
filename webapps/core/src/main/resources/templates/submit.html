@@ -23,8 +23,8 @@
 			<div class="row">
 				<div class="warning-msg">
 					<i class="icon icon-common icon-exclamation-triangle"></i>
-					This page is now pointing to JSON API submission service via USI. USI API is the recommended way for submitting samples to BioSamples.
-					You can access SampleTab services <a th:href="@{${sampletabUrl}}">here</a>. Please note that SampleTab services are deprecated and will be retired from 31/07/2019.
+					SampleTab services are deprecated and will be retired from 01/04/2020. You can still access SampleTab services <a th:href="@{${sampletabUrl}}">here</a> until 01/04/2020.
+					Links in this page now point to <a th:href="@{{baseUrl}(baseUrl=${usiUrl})}">Data Submission Portal</a>. Data Submission Portal is the recommended way for submitting samples to BioSamples.
 				</div>
 				<h2>Web Services</h2>
 				<p>There are several services provided for programatically sending sample information to the <a href="/biosamples"></a>BioSamples Database</a>. These are: </p>
