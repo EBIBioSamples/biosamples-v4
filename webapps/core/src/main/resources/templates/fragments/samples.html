@@ -103,8 +103,10 @@
 			</a>
 		</span>
     <span class="columns medium-3">
+    	<a th:href="@{'/samples/'+${sample.accession}}">
 			<span class="text-right float-right" th:text="${sample.accession}">ACC1</span>
-		</span>
+		</a>
+	</span>
     <span class="column medium-12">
 			<p class="small">Updated on: <span th:include=":: datetime(${sample.update})"></span></p>
 		</span>
