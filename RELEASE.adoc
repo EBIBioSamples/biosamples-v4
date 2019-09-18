@@ -4,6 +4,14 @@
 This pages contains links to release notes for BioSamples for version 4.0.0 and higher. This release represents a comprehensive overhaul and therefore previous release notes are no longer applicable.
 
 [[section]]
+4.2.0
+----
+* Deprecation of SampleTab submission format.
+* Adding static collection for samples+curations. 
+* Modify applying order for the curation objects.
+* Add link to sample accession.
+
+[[section]]
 4.1.15
 ----
 * Update phenopacket version
