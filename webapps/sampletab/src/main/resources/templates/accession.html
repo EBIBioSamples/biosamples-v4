@@ -21,11 +21,11 @@
 		<th:block th:include="fragments/header :: masterhead"></th:block>
 		<div id="main-content-area" class="row padding-top-xlarge padding-left-xlarge">
 			<div class="row columns">
-				<!--<div class="warning-msg">
+				<div class="warning-msg">
 					<i class="icon icon-common icon-exclamation-triangle"></i>
-					Please note that the use of SampleTab format for submission is discouraged and will be removed in near future.
-					Please use <a th:href="@{{baseUrl}/docs/references/api/submit(baseUrl=${coreUrl})}">JSON API</a> for all future submissions.
-				</div>-->
+					SampleTab services are deprecated and will be removed from 01/04/2020.
+					Please use <a th:href="@{{baseUrl}(baseUrl=${usiUrl})}">Data Submission Portal</a> for all future submissions.
+				</div>
 				<h2>Accessions</h2>
 				<p>This webpage provides a service for assigning accessions to
 					SampleTab format submissions as used by the BioSample Database.</p>

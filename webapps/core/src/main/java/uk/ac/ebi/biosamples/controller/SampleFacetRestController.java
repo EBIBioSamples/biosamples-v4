@@ -76,7 +76,7 @@ public class SampleFacetRestController {
 
 		resources.add(LinkUtils.cleanLink(ControllerLinkBuilder.linkTo(
 			ControllerLinkBuilder.methodOn(SamplesRestController.class)
-					.searchHal(text, filter, null, null, null, null, null))
+					.searchHal(text, filter, null, null, null, null, null, null))
                 .withRel("samples")));
 		
 		

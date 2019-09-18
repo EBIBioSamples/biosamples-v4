@@ -20,10 +20,7 @@ import uk.ac.ebi.biosamples.utils.ThreadUtils;
 import java.io.*;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
@@ -67,22 +64,22 @@ public class CuramiApplicationRunner implements ApplicationRunner {
             for (Resource<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll("", filters)) {
                 LOG.trace("Handling {}", sampleResource);
                 Sample sample = sampleResource.getContent();
-                if (sample == null) {
-                    throw new RuntimeException("Null sample found while traversing through all samples. " +
-                            "This could be due to network error or data inconsistency");
-                }
+                Objects.requireNonNull(sample);
 
                 Callable<Integer> task = new SampleCuramiCallable(
                         bioSamplesClient, sample, pipelinesProperties.getCurationDomain(), curationRules);
-                sampleCount++;
-                if (sampleCount % 500 == 0) {
+                futures.put(sample.getAccession(), executorService.submit(task));
+
+                if (++sampleCount % 5000 == 0) {
                     LOG.info("Scheduled sample count {}", sampleCount);
                 }
-                futures.put(sample.getAccession(), executorService.submit(task));
             }
 
-            LOG.info("waiting for futures");
+            LOG.info("Waiting for all scheduled tasks to finish");
             ThreadUtils.checkAndCallbackFutures(futures, 0, curationCountCallback);
+        } catch (Exception e) {
+            LOG.error("Pipeline failed to finish successfully", e);
+            throw e;
         } finally {
             Instant endTime = Instant.now();
             LOG.info("Total samples processed {}", sampleCount);

@@ -77,7 +77,7 @@ public class SitemapController {
     public XmlUrlSet createSampleSitemapPage(@PathVariable("id") int pageNumber, HttpServletRequest request) throws ParseException {
         final long startTime = System.currentTimeMillis();
         Pageable pageRequest = new PageRequest(pageNumber - 1, sitemapPageSize);
-        Page<Sample> samplePage = samplePageService.getSamplesByText("", Collections.emptyList(), Collections.emptyList(),  pageRequest);
+        Page<Sample> samplePage = samplePageService.getSamplesByText("", Collections.emptyList(), Collections.emptyList(),  pageRequest, null);
         XmlUrlSet xmlUrlSet = new XmlUrlSet();
         for(Sample sample: samplePage.getContent()) {
             String location = generateBaseUrl(request) + String.format("/samples/%s", sample.getAccession());
@@ -114,7 +114,7 @@ public class SitemapController {
         Pageable pageable = new PageRequest(0, 1);
         Collection<Filter> filters = Collections.emptyList();
         Collection<String> domains = Collections.emptyList();
-        Page<Sample> samplePage = samplePageService.getSamplesByText("", filters, domains, pageable);
+        Page<Sample> samplePage = samplePageService.getSamplesByText("", filters, domains, pageable, null);
         return samplePage.getTotalElements();
     }
 }
