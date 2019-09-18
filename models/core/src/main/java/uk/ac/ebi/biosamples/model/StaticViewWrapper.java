@@ -14,7 +14,7 @@ public class StaticViewWrapper {
         if (domains != null) {
             staticView = StaticView.SAMPLES_DYNAMIC;
         } else if (curationRepo == null || curationRepo.isEmpty()) {
-            staticView = StaticView.SAMPLES_CURATED;
+            staticView = StaticView.SAMPLES_DYNAMIC;
         } else if (SAMPLE_PRIMARY_REPO.equalsIgnoreCase(curationRepo)) {
             staticView = StaticView.SAMPLES_DYNAMIC;
         } else if (SAMPLE_CURATED_REPO.equalsIgnoreCase(curationRepo)) {
