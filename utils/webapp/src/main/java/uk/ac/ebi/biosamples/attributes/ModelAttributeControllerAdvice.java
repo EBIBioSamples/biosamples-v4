@@ -19,4 +19,9 @@ public class ModelAttributeControllerAdvice {
     public URI addLink() {
         return bioSamplesProperties.getBiosamplesWebappSampletabUri();
     }
+
+    @ModelAttribute("usiUrl")
+    public URI addLinkUsi() {
+        return bioSamplesProperties.getUsiCoreUri();
+    }
 }
