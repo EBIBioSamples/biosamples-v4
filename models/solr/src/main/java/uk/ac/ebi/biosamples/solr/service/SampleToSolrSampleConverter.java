@@ -172,7 +172,7 @@ public class SampleToSolrSampleConverter implements Converter<Sample, SolrSample
 		});
 
 		sample.getPublications().forEach(pub -> {
-			keywords.addAll(Arrays.asList(pub.getDoi(), pub.getDoi()));
+			keywords.addAll(Arrays.asList(pub.getDoi(), pub.getPubMedId()));
 		});
 				
 		return SolrSample.build(sample.getName(), sample.getAccession(), sample.getDomain(), 
