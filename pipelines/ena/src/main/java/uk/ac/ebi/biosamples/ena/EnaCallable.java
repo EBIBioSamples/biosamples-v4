@@ -1,22 +1,27 @@
 package uk.ac.ebi.biosamples.ena;
 
+import java.io.StringReader;
+import java.sql.SQLException;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.util.Optional;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.concurrent.Callable;
+
 import org.dom4j.Document;
+import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.hateoas.Resource;
+
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
-
-import java.io.StringReader;
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.concurrent.Callable;
 
 public class EnaCallable implements Callable<Void> {
 
@@ -28,6 +33,7 @@ public class EnaCallable implements Callable<Void> {
     private final EnaElementConverter enaElementConverter;
     private final EraProDao eraProDao;
     private final String domain;
+    private boolean suppressionHandler;
 
     public EnaCallable(String sampleAccession, BioSamplesClient bioSamplesClient,
                        EnaXmlEnhancer enaXmlEnhancer, EnaElementConverter enaElementConverter, EraProDao eraProDao, String domain) {
@@ -39,9 +45,29 @@ public class EnaCallable implements Callable<Void> {
         this.domain = domain;
     }
 
-    @Override
+    public EnaCallable(String sampleAccession, BioSamplesClient bioSamplesClient, EnaXmlEnhancer enaXmlEnhancer,
+			EnaElementConverter enaElementConverter, EraProDao eraProDao, String domain,
+			boolean suppressionHandler) {
+    	this.sampleAccession = sampleAccession;
+        this.bioSamplesClient = bioSamplesClient;
+        this.enaXmlEnhancer = enaXmlEnhancer;
+        this.enaElementConverter = enaElementConverter;
+        this.eraProDao = eraProDao;
+        this.domain = domain;
+        this.suppressionHandler = suppressionHandler;
+	}
+
+	@Override
     public Void call() throws Exception {
-        log.trace("HANDLING " + sampleAccession);
+		if (suppressionHandler) {
+			return checkAndUpdateSuppressedSample(sampleAccession);
+		} else {
+			return enrichAndPersistEnaSample();
+		}
+    }
+
+	private Void enrichAndPersistEnaSample() throws SQLException, DocumentException {
+		log.trace("HANDLING " + sampleAccession);
 
         String xmlString = eraProDao.getSampleXml(sampleAccession);
 
@@ -79,11 +105,17 @@ public class EnaCallable implements Callable<Void> {
             } else {
                 attributes.add(Attribute.build("ENA checklist", checklist));
             }
-            String status = eraProDao.getStatus(sampleAccession);
-            if (status == null) {
-                log.warn("Unable to retrieve status for " + sampleAccession);
+
+            if(!suppressionHandler) {
+	            String status = eraProDao.getStatus(sampleAccession);
+
+	            if (status == null) {
+	                log.warn("Unable to retrieve status for " + sampleAccession);
+	            } else {
+	                attributes.add(Attribute.build("INSDC status", status));
+	            }
             } else {
-                attributes.add(Attribute.build("INSDC status", status));
+            	attributes.add(Attribute.build("INSDC status", "suppressed"));
             }
 
             //add external reference
@@ -97,6 +129,33 @@ public class EnaCallable implements Callable<Void> {
         }
         log.trace("HANDLED " + sampleAccession);
         return null;
-    }
+	}
 
+	private Void checkAndUpdateSuppressedSample(String sampleAccession)
+			throws InterruptedException, SQLException, DocumentException {
+		System.out.println("In here.. waiting for async flow");
+		final Optional<Resource<Sample>> optionalSampleResource = bioSamplesClient.fetchSampleResource(sampleAccession);
+		if (optionalSampleResource.isPresent()) {
+			final Sample sample = optionalSampleResource.get().getContent();
+			boolean persistRequired = true;
+			for (Attribute attribute : sample.getAttributes()) {
+				if (attribute.getType().equals("INSDC status") && attribute.getValue().equals("suppressed")) {
+					System.out.println("Already suppressed");
+					persistRequired = false;
+					break;
+				}
+			}
+
+			if (persistRequired) {
+				sample.getAttributes().removeIf(attr -> attr.getType().contains("INSDC status"));
+				sample.getAttributes().add(Attribute.build("INSDC status", "suppressed"));
+				System.out.println("Updating status to suppressed");
+				bioSamplesClient.persistSampleResource(sample);
+			}
+		} else {
+			return enrichAndPersistEnaSample();
+		}
+
+		return null;
+	}
 }

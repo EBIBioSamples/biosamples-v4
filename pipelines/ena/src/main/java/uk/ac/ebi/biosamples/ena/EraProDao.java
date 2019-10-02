@@ -71,6 +71,12 @@ select * from cv_status;
         jdbcTemplate.query(query, rch, minDateOld, maxDateOld, minDateOld, maxDateOld);
     }
 
+    public void doGetSuppressedSamples(RowCallbackHandler rch) {
+        String query = "SELECT UNIQUE(BIOSAMPLE_ID) FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND STATUS_ID = 5 AND BIOSAMPLE_AUTHORITY= 'N'";
+
+        jdbcTemplate.query(query, rch);
+    }
+
     public void getSingleSample(String bioSampleId, RowCallbackHandler rch) {
         String query = "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND EGA_ID IS NULL AND BIOSAMPLE_AUTHORITY= 'N' "
                 + "AND " + STATUS_CLAUSE + " AND BIOSAMPLE_ID=? ORDER BY BIOSAMPLE_ID ASC";
