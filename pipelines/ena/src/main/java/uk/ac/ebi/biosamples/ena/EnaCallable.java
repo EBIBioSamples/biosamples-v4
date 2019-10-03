@@ -89,7 +89,7 @@ public class EnaCallable implements Callable<Void> {
             //add external reference
             externalReferences.add(ExternalReference.build("https://www.ebi.ac.uk/ena/data/view/" + sampleAccession));
 
-            sample = Sample.build(sample.getName(), sampleAccession, domain, release, update, attributes,
+            sample = Sample.build(sample.getName(), sampleAccession, domain, release, update, update, attributes,
                     sample.getRelationships(), externalReferences);
             bioSamplesClient.persistSampleResource(sample);
         } else {

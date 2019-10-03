@@ -33,6 +33,7 @@ public class JSONSampleToSampleConverter implements Converter<String, Sample> {
         String sampleName = jsonDoc.read("$.name");
         String updateDate = jsonDoc.read("$.updateDate");
         String releaseDate = jsonDoc.read("$.releaseDate");
+        String createDate = jsonDoc.read("$.createDate");
         String description = jsonDoc.read( "$.description");
 
         SortedSet<Attribute> attributes = getAttributes(jsonDoc);
@@ -42,9 +43,12 @@ public class JSONSampleToSampleConverter implements Converter<String, Sample> {
         SortedSet<Organization> organizations = getOrganizations(jsonDoc);
         SortedSet<ExternalReference> embeddedExternalReferences = getEmbeddedExternalReferences(jsonDoc);
 
+        createDate = createDate == null || createDate.trim().isEmpty() ? updateDate : createDate;
+
         Sample.Builder sampleBuilder = new Sample.Builder(sampleName, accession)
                 .withUpdate(updateDate)
                 .withRelease(releaseDate)
+                .withCreate(createDate)
                 .withAttributes(attributes)
                 .addAllAttributes(submissionInfo)
                 .withContacts(contacts).withPublications(publications).withOrganizations(organizations)

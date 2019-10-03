@@ -78,6 +78,6 @@ public class MessageHandlerSolrTest {
         for (Attribute attribute : attributes) {
             attributeSet.add(attribute);
         }
-        return Sample.build("", accession, "", Instant.now(), Instant.now(), attributeSet, Collections.emptySet(), Collections.emptySet());
+        return Sample.build("", accession, "", Instant.now(), Instant.now(), Instant.now(), attributeSet, Collections.emptySet(), Collections.emptySet());
     }
 }

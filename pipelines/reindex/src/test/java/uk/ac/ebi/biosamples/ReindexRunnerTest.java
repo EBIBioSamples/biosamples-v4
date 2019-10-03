@@ -60,8 +60,8 @@ public class ReindexRunnerTest {
                 return sample;
             }
         };
-        Sample sample1 = Sample.build("", "ACCESSION1", "", null, null, null, Collections.EMPTY_SET, Collections.EMPTY_SET);
-        Sample sample3 = Sample.build("", "ACCESSION3", "", null, null, null, Collections.EMPTY_SET, Collections.EMPTY_SET);
+        Sample sample1 = Sample.build("", "ACCESSION1", "", null, null, null, null, Collections.EMPTY_SET, Collections.EMPTY_SET);
+        Sample sample3 = Sample.build("", "ACCESSION3", "", null, null, null, null, Collections.EMPTY_SET, Collections.EMPTY_SET);
         when(mongoOperations.stream(new Query(), MongoSample.class)).thenReturn(samples);
         when(sampleReadService.fetch("ACCESSION1", Optional.empty())).thenReturn(Optional.of(sample1));
         when(sampleReadService.fetch("ACCESSION2", Optional.empty())).thenReturn(Optional.empty());

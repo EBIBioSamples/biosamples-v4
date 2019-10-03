@@ -43,6 +43,7 @@ public class MongoSerializationTest {
 		String name = "Test Sample";
 		String accession = "TEST1";
 		Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
+		Instant create = Instant.parse("2016-05-05T11:36:57.00Z");
 		Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 		SubmittedViaType submittedVia = SubmittedViaType.JSON_API;
 
@@ -99,7 +100,7 @@ public class MongoSerializationTest {
 				.pubmed_id("24265224")
 				.build());
 
-		return MongoSample.build(name, accession, "foozit", release, update,
+		return MongoSample.build(name, accession, "foozit", release, update, create,
 				attributes, structuredData, relationships, externalReferences,
 				organizations, contacts, publications, submittedVia);
 	}
@@ -109,6 +110,7 @@ public class MongoSerializationTest {
 		String accession = "TEST1";
 		String domain = "foozit";
 		Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
+		Instant create = Instant.parse("2016-05-05T11:36:57.00Z");
 		Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 		SubmittedViaType submittedVia = SubmittedViaType.JSON_API;
 		SortedSet<Attribute> attributes = new TreeSet<>();
@@ -131,7 +133,7 @@ public class MongoSerializationTest {
 				).build();
 		data.add(amrTable);
 
-		return MongoSample.build(name, accession, domain, release, update,
+		return MongoSample.build(name, accession, domain, release, update, create,
 				attributes, data, relationships, externalReferences, organizations,
 				contacts, publications, submittedVia);
 

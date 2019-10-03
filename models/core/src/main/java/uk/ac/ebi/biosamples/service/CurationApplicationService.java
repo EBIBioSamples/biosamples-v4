@@ -52,7 +52,8 @@ public class CurationApplicationService {
 		}
 		
 		return Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(), 
-				sample.getRelease(), sample.getUpdate(), attributes, sample.getData(), sample.getRelationships(), externalReferences,
+				sample.getRelease(), sample.getUpdate(), sample.getCreate(),
+				attributes, sample.getData(), sample.getRelationships(), externalReferences,
 				sample.getOrganizations(), sample.getContacts(), sample.getPublications(), sample.getSubmittedVia());
 	}
 	

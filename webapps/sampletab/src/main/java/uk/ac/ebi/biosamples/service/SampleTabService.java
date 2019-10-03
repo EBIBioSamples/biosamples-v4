@@ -1006,8 +1006,9 @@ public class SampleTabService {
 			Optional<Resource<Sample>> oldSample = bioSamplesClient.fetchSampleResource(sampleToMakePrivate);
 			if (oldSample.isPresent()) {
 				//don't do a hard-delete, instead mark it as public in 100 years
+				//Since we are deprecating SampleTab, setting create = update, otherwise need to read old sample
 				Sample sample = Sample.build(oldSample.get().getContent().getName(), sampleToMakePrivate, domain,
-						ZonedDateTime.now(ZoneOffset.UTC).plusYears(100).toInstant(), update,
+						ZonedDateTime.now(ZoneOffset.UTC).plusYears(100).toInstant(), update, update,
 						new TreeSet<>(), new TreeSet<>(), new TreeSet<>());
 				bioSamplesClient.persistSampleResource(sample, true,true ).getContent();
 			}
