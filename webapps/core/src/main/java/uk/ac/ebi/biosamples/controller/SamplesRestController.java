@@ -324,12 +324,13 @@ public class SamplesRestController {
 
 		sample = bioSamplesAapService.handleSampleDomain(sample);
 
-		//update date is system generated field
-		Instant update = Instant.now();
+		//update, create date are system generated fields
+		Instant create = Instant.now();
 		SubmittedViaType submittedVia =
 				sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
 		sample = Sample.Builder.fromSample(sample)
-				.withUpdate(update)
+				.withCreate(create)
+				.withUpdate(create)
 				.withSubmittedVia(submittedVia).build();
 
 		if (!setFullDetails) {
