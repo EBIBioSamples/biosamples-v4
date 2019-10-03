@@ -64,7 +64,7 @@ public class EnaRunner implements ApplicationRunner {
 			toDate = LocalDate.parse("3000-01-01", DateTimeFormatter.ISO_LOCAL_DATE);
 		}
 
-		//importEraSamples(fromDate, toDate);
+		importEraSamples(fromDate, toDate);
 		// handler for suppressed ENA samples
 		handleSuppressedEnaSamples();
 		// handler for suppressed NCBI/DDBJ samples - using separate

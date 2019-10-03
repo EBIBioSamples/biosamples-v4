@@ -52,17 +52,16 @@ public class NcbiCurationCallable implements Callable<Void> {
 		ExternalReference exRef = ExternalReference.build("https://www.ebi.ac.uk/ena/data/view/" + accession);
 		Curation curation = Curation.build(null, null, null, Collections.singleton(exRef));
 
-		// get the sample to make sure it exists first
 		if (suppressionHandler) {
 			checkAndUpdateSuppressedSample(accession);
-		}
-
-		if (bioSamplesClient.fetchSampleResource(accession).isPresent()) {
-			bioSamplesClient.persistCuration(accession, curation, domain);
 		} else {
-			log.warn("Unable to find " + accession);
+			// get the sample to make sure it exists first
+			if (bioSamplesClient.fetchSampleResource(accession).isPresent()) {
+				bioSamplesClient.persistCuration(accession, curation, domain);
+			} else {
+				log.warn("Unable to find " + accession);
+			}
 		}
-
 		log.trace("HANDLED " + accession);
 		return null;
 	}
@@ -79,6 +78,7 @@ public class NcbiCurationCallable implements Callable<Void> {
 		if (optionalSampleResource.isPresent()) {
 			final Sample sample = optionalSampleResource.get().getContent();
 			boolean persistRequired = true;
+
 			for (Attribute attribute : sample.getAttributes()) {
 				if (attribute.getType().equals("INSDC status") && attribute.getValue().equals(SUPPRESSED)) {
 					persistRequired = false;
