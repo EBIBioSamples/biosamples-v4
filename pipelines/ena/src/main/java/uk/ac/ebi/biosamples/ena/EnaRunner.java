@@ -1,18 +1,5 @@
 package uk.ac.ebi.biosamples.ena;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.jdbc.core.RowCallbackHandler;
-import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpClientErrorException;
-import uk.ac.ebi.biosamples.PipelinesProperties;
-import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
-import uk.ac.ebi.biosamples.utils.ThreadUtils;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -24,10 +11,23 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.jdbc.core.RowCallbackHandler;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
+
+import uk.ac.ebi.biosamples.PipelinesProperties;
+import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
+import uk.ac.ebi.biosamples.utils.ThreadUtils;
+
 @Component
 @ConditionalOnProperty(prefix = "job.autorun", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class EnaRunner implements ApplicationRunner {
-
 	private final static Logger log = LoggerFactory.getLogger(EnaRunner.class);
 
 	@Autowired
@@ -46,9 +46,7 @@ public class EnaRunner implements ApplicationRunner {
 
 	@Override
 	public void run(ApplicationArguments args) throws Exception {
-
 		log.info("Processing ENA pipeline...");
-
 		// date format is YYYY-mm-dd
 		LocalDate fromDate = null;
 		if (args.getOptionNames().contains("from")) {
@@ -66,6 +64,16 @@ public class EnaRunner implements ApplicationRunner {
 			toDate = LocalDate.parse("3000-01-01", DateTimeFormatter.ISO_LOCAL_DATE);
 		}
 
+		//importEraSamples(fromDate, toDate);
+		// handler for suppressed ENA samples
+		handleSuppressedEnaSamples();
+		// handler for suppressed NCBI/DDBJ samples - using separate
+		// AdaptiveThreadPoolExecutor for not putting too much load on the ThreadPool
+		handleSuppressedNcbiDdbjSamples();
+	}
+
+	private void importEraSamples(LocalDate fromDate, LocalDate toDate)
+			throws InterruptedException, ExecutionException, Exception {
 		if (pipelinesProperties.getThreadCount() == 0) {
 			EraRowCallbackHandler eraRowCallbackHandler = new EraRowCallbackHandler(null, enaCallableFactory, futures);
 			eraProDao.doSampleCallback(fromDate, toDate, eraRowCallbackHandler);
@@ -90,26 +98,56 @@ public class EnaRunner implements ApplicationRunner {
 				ThreadUtils.checkFutures(futures, 0);
 			}
 		}
+	}
 
-		// handler for suppressed samples
+	/**
+	 * Handler for suppressed ENA samples. If status of sample is different in BioSamples, status will be updated so SUPPRESSED.
+	 * If sample doesn't exist it will be created
+	 * 
+	 * @throws Exception in case of failures
+	 */
+	private void handleSuppressedEnaSamples() throws Exception {
+		log.info("Fetching all suppressed ENA samples. "
+				+ "If they exist in BioSamples with different status, their status will be updated. If the sample don't exist at all it will be POSTed to BioSamples client");
+
 		try (final AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, false,
 				pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax())) {
 
-			EraSuppressedSamplesCallbackHandler eraRowCallbackHandler = new EraSuppressedSamplesCallbackHandler(
+			final EnaSuppressedSamplesCallbackHandler enaSuppressedSamplesCallbackHandler = new EnaSuppressedSamplesCallbackHandler(
 					executorService, enaCallableFactory, futures);
-			eraProDao.doGetSuppressedSamples(eraRowCallbackHandler);
-
-			log.info("waiting for futures"); // wait for anything to finish
-			// ThreadUtils.checkFutures(futures, 0);
+			eraProDao.doGetSuppressedEnaSamples(enaSuppressedSamplesCallbackHandler);
 		}
 	}
 
-	private static class EraSuppressedSamplesCallbackHandler implements RowCallbackHandler {
+	/**
+	 * Handler for suppressed NCBI/DDBJ samples. If status of sample is different in BioSamples, status will be updated to SUPPRESSED
+	 * 
+	 * @throws Exception in case of failures
+	 */
+	private void handleSuppressedNcbiDdbjSamples() throws Exception {
+		log.info("Fetching all suppressed NCBI/DDBJ samples. "
+				+ "If they exist in BioSamples with different status, their status will be updated. If the sample don't exist at all it will be POSTed to BioSamples client");
+
+		try (final AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, false,
+				pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax())) {
+
+			final NcbiDdbjSuppressedSamplesCallbackHandler ncbiDdbjSuppressedSamplesCallbackHandler = new NcbiDdbjSuppressedSamplesCallbackHandler(
+					executorService, ncbiCallableFactory, futures);
+			eraProDao.doGetSuppressedNcbiDdbjSamples(ncbiDdbjSuppressedSamplesCallbackHandler);
+		}
+	}
+
+	/**
+	 * @author dgupta
+	 * 
+	 * {@link RowCallbackHandler} for suppressed ENA samples
+	 */
+	private static class EnaSuppressedSamplesCallbackHandler implements RowCallbackHandler {
 		private final AdaptiveThreadPoolExecutor executorService;
 		private final EnaCallableFactory enaCallableFactory;
 		private final Map<String, Future<Void>> futures;
 
-		public EraSuppressedSamplesCallbackHandler(final AdaptiveThreadPoolExecutor executorService,
+		public EnaSuppressedSamplesCallbackHandler(final AdaptiveThreadPoolExecutor executorService,
 				final EnaCallableFactory enaCallableFactory, final Map<String, Future<Void>> futures) {
 			this.executorService = executorService;
 			this.enaCallableFactory = enaCallableFactory;
@@ -121,9 +159,45 @@ public class EnaRunner implements ApplicationRunner {
 			final String sampleAccession = rs.getString("BIOSAMPLE_ID");
 			final boolean suppressionHandler = true;
 
-			log.info(String.format("%s is being handled as status is %s", sampleAccession, "SUPPRESSED"));
-			// update if sample already exists else import
 			Callable<Void> callable = enaCallableFactory.build(sampleAccession, suppressionHandler);
+			if (executorService == null) {
+				try {
+					callable.call();
+				} catch (RuntimeException e) {
+					throw e;
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+			} else {
+				futures.put(sampleAccession, executorService.submit(callable));
+			}
+		}
+	}
+
+	/**
+	 * @author dgupta
+	 * 
+	 * {@link RowCallbackHandler} for suppressed NCBI/DDBJ samples
+	 */
+	private static class NcbiDdbjSuppressedSamplesCallbackHandler implements RowCallbackHandler {
+		private final AdaptiveThreadPoolExecutor executorService;
+		private final NcbiCurationCallableFactory ncbiCurationCallableFactory;
+		private final Map<String, Future<Void>> futures;
+
+		public NcbiDdbjSuppressedSamplesCallbackHandler(final AdaptiveThreadPoolExecutor executorService,
+				final NcbiCurationCallableFactory ncbiCurationCallableFactory,
+				final Map<String, Future<Void>> futures) {
+			this.executorService = executorService;
+			this.ncbiCurationCallableFactory = ncbiCurationCallableFactory;
+			this.futures = futures;
+		}
+
+		@Override
+		public void processRow(ResultSet rs) throws SQLException {
+			final String sampleAccession = rs.getString("BIOSAMPLE_ID");
+			final boolean suppressionHandler = true;
+
+			Callable<Void> callable = ncbiCurationCallableFactory.build(sampleAccession, suppressionHandler);
 			if (executorService == null) {
 				try {
 					callable.call();
@@ -183,7 +257,7 @@ public class EnaRunner implements ApplicationRunner {
 			case TEMPORARY_SUPPRESSED:
 				log.info(String.format("%s is being handled as status is %s", sampleAccession, enaStatus.name()));
 				// update if sample already exists else import
-				Callable<Void> callable = enaCallableFactory.build(sampleAccession, false);
+				Callable<Void> callable = enaCallableFactory.build(sampleAccession);
 				if (executorService == null) {
 					try {
 						callable.call();

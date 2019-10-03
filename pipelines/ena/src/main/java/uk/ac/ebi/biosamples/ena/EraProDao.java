@@ -71,8 +71,26 @@ select * from cv_status;
         jdbcTemplate.query(query, rch, minDateOld, maxDateOld, minDateOld, maxDateOld);
     }
 
-    public void doGetSuppressedSamples(RowCallbackHandler rch) {
-        String query = "SELECT UNIQUE(BIOSAMPLE_ID) FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND STATUS_ID = 5 AND BIOSAMPLE_AUTHORITY= 'N'";
+    /**
+     * Returns SUPPRESSED ENA samples
+     * 
+     * @param rch
+     * 		{@link RowCallbackHandler}
+     */
+    public void doGetSuppressedEnaSamples(RowCallbackHandler rch) {
+        String query = "SELECT UNIQUE(BIOSAMPLE_ID) FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND BIOSAMPLE_AUTHORITY= 'N' AND STATUS_ID = 5";
+
+        jdbcTemplate.query(query, rch);
+    }
+
+    /**
+     * Returns SUPPRESSED NCBI/DDBJ samples
+     * 
+     * @param rch
+     * 		{@link RowCallbackHandler}
+     */
+    public void doGetSuppressedNcbiDdbjSamples(RowCallbackHandler rch) {
+        String query = "SELECT UNIQUE(BIOSAMPLE_ID) FROM SAMPLE WHERE (BIOSAMPLE_ID LIKE 'SAMN%' OR BIOSAMPLE_ID LIKE 'SAMD%' ) AND BIOSAMPLE_AUTHORITY= 'N' AND STATUS_ID = 5";
 
         jdbcTemplate.query(query, rch);
     }

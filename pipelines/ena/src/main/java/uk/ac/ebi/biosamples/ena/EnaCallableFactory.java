@@ -1,5 +1,7 @@
 package uk.ac.ebi.biosamples.ena;
 
+import java.util.concurrent.Callable;
+
 import org.springframework.stereotype.Service;
 
 import uk.ac.ebi.biosamples.PipelinesProperties;
@@ -23,6 +25,20 @@ public class EnaCallableFactory {
         this.domain = pipelinesProperties.getEnaDomain();
     }
 
+    public Callable<Void> build(String accession) {
+		 return new EnaCallable(accession, bioSamplesClient, enaXmlEnhancer,
+	                enaElementConverter, eraProDao, domain);
+	}
+
+    /**
+	 * Builds a callable for dealing samples that are SUPPRESSED
+	 * 
+	 * @param accession
+	 * 			The accession passed
+	 * @param suppressionHandler
+	 * 			true for this case
+	 * @return the callable, {@link EnaCallable}
+	 */
     public EnaCallable build(String accession, boolean suppressionHandler) {
         return new EnaCallable(accession, bioSamplesClient, enaXmlEnhancer,
                 enaElementConverter, eraProDao, domain, suppressionHandler);
