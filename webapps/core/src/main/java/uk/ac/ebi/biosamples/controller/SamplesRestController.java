@@ -314,7 +314,7 @@ public class SamplesRestController {
 	@PostMapping(consumes = { MediaType.APPLICATION_JSON_VALUE })
 	public ResponseEntity<Resource<Sample>> post(@RequestBody Sample sample,
 			@RequestParam(name = "setupdatedate", required = false, defaultValue="true") boolean setUpdateDate,
-            @RequestParam(name = "setfulldetails", required = false, defaultValue = "false") boolean setFullDetails) {
+            @RequestParam(name = "setfulldetails", required = false, defaultValue = "true") boolean setFullDetails) {
 
 		log.debug("Recieved POST for "+sample);
 		if (sample.hasAccession() && !bioSamplesAapService.isWriteSuperUser()) {

@@ -119,6 +119,14 @@
                         <td th:width="200">E-mail</td>
                         <td th:text="${contact.email}"></td>
                     </tr>
+                     <tr th:unless="${#strings.isEmpty(contact.affiliation)}">
+                        <td th:width="200">Affiliation</td>
+                        <td th:text="${contact.affiliation}"></td>
+                    </tr>
+                    <tr th:unless="${#strings.isEmpty(contact.url)}">
+                        <td th:width="200">URL</td>
+                        <td th:text="${contact.url}"></td>
+                    </tr>
 				</tbody>
 			</table>
 		</section>
