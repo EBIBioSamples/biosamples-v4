@@ -163,7 +163,7 @@ public class CurationReadService {
 		}
 
 		if (failedCuration) {
-			log.warn("Unapplied curation on sample: {}", sample.getAccession());
+			log.debug("Unapplied curation on sample: {}", sample.getAccession());
 		}
 
 		return sample;
