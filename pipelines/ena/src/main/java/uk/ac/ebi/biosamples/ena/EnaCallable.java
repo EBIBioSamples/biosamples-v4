@@ -4,6 +4,7 @@ import java.io.StringReader;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -163,7 +164,7 @@ public class EnaCallable implements Callable<Void> {
 	 */
 	private Void checkAndUpdateSuppressedSample(String sampleAccession)
 			throws InterruptedException, SQLException, DocumentException {
-		final Optional<Resource<Sample>> optionalSampleResource = bioSamplesClient.fetchSampleResource(sampleAccession, Optional.empty());
+		final Optional<Resource<Sample>> optionalSampleResource = bioSamplesClient.fetchSampleResource(sampleAccession, Optional.of(new ArrayList<String>()));
 		if (optionalSampleResource.isPresent()) {
 			final Sample sample = optionalSampleResource.get().getContent();
 			boolean persistRequired = true;

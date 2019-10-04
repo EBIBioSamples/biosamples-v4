@@ -1,5 +1,6 @@
 package uk.ac.ebi.biosamples.ena;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.concurrent.Callable;
@@ -73,7 +74,7 @@ public class NcbiCurationCallable implements Callable<Void> {
 	 * 				The accession passed
 	 */
 	private void checkAndUpdateSuppressedSample(String sampleAccession) {
-		final Optional<Resource<Sample>> optionalSampleResource = bioSamplesClient.fetchSampleResource(sampleAccession, Optional.empty());
+		final Optional<Resource<Sample>> optionalSampleResource = bioSamplesClient.fetchSampleResource(sampleAccession, Optional.of(new ArrayList<String>()));
 
 		if (optionalSampleResource.isPresent()) {
 			final Sample sample = optionalSampleResource.get().getContent();
