@@ -98,7 +98,7 @@ public class Sample implements Comparable<Sample> {
         return update;
     }
 
-    @JsonIgnore
+    @JsonSerialize(using = CustomInstantSerializer.class)
     public Instant getCreate() {
         return create;
     }
@@ -111,11 +111,6 @@ public class Sample implements Comparable<Sample> {
     @JsonProperty(value = "updateDate", access = JsonProperty.Access.READ_ONLY)
     public String getUpdateDate() {
         return ZonedDateTime.ofInstant(update, ZoneOffset.UTC).format(ISO_LOCAL_DATE);
-    }
-
-    @JsonProperty(value = "createDate", access = JsonProperty.Access.READ_ONLY)
-    public String getCreateDate() {
-        return ZonedDateTime.ofInstant(create, ZoneOffset.UTC).format(ISO_LOCAL_DATE);
     }
 
     @JsonProperty(value = "taxId", access = JsonProperty.Access.READ_ONLY)
