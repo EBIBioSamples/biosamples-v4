@@ -163,7 +163,7 @@ public class EnaCallable implements Callable<Void> {
 	 */
 	private Void checkAndUpdateSuppressedSample(String sampleAccession)
 			throws InterruptedException, SQLException, DocumentException {
-		final Optional<Resource<Sample>> optionalSampleResource = bioSamplesClient.fetchSampleResource(sampleAccession);
+		final Optional<Resource<Sample>> optionalSampleResource = bioSamplesClient.fetchSampleResource(sampleAccession, Optional.empty());
 		if (optionalSampleResource.isPresent()) {
 			final Sample sample = optionalSampleResource.get().getContent();
 			boolean persistRequired = true;
