@@ -73,7 +73,7 @@ public class NcbiCurationCallable implements Callable<Void> {
 	 * 				The accession passed
 	 */
 	private void checkAndUpdateSuppressedSample(String sampleAccession) {
-		final Optional<Resource<Sample>> optionalSampleResource = bioSamplesClient.fetchSampleResource(sampleAccession);
+		final Optional<Resource<Sample>> optionalSampleResource = bioSamplesClient.fetchSampleResource(sampleAccession, Optional.empty());
 
 		if (optionalSampleResource.isPresent()) {
 			final Sample sample = optionalSampleResource.get().getContent();
