@@ -49,6 +49,8 @@ public class EnaRunner implements ApplicationRunner {
 		log.info("Processing ENA pipeline...");
 		// date format is YYYY-mm-dd
 		LocalDate fromDate = null;
+		boolean suppressionRunner = true;
+
 		if (args.getOptionNames().contains("from")) {
 			fromDate = LocalDate.parse(args.getOptionValues("from").iterator().next(),
 					DateTimeFormatter.ISO_LOCAL_DATE);
@@ -64,12 +66,23 @@ public class EnaRunner implements ApplicationRunner {
 			toDate = LocalDate.parse("3000-01-01", DateTimeFormatter.ISO_LOCAL_DATE);
 		}
 
+		if (args.getOptionNames().contains("suppressionRunner")) {
+			if (args.getOptionValues("suppressionRunner").iterator().next().equalsIgnoreCase("false")) {
+				suppressionRunner = false;
+			}
+		}
+
+		log.info("Suppression Runner is to be executed: " + suppressionRunner);
+
 		importEraSamples(fromDate, toDate);
-		// handler for suppressed ENA samples
-		handleSuppressedEnaSamples();
-		// handler for suppressed NCBI/DDBJ samples - using separate
-		// AdaptiveThreadPoolExecutor for not putting too much load on the ThreadPool
-		handleSuppressedNcbiDdbjSamples();
+
+		if (suppressionRunner) {
+			// handler for suppressed ENA samples
+			handleSuppressedEnaSamples();
+			// handler for suppressed NCBI/DDBJ samples - using separate
+			// AdaptiveThreadPoolExecutor for not putting too much load on the ThreadPool
+			handleSuppressedNcbiDdbjSamples();
+		}
 	}
 
 	private void importEraSamples(LocalDate fromDate, LocalDate toDate)
@@ -101,8 +114,9 @@ public class EnaRunner implements ApplicationRunner {
 	}
 
 	/**
-	 * Handler for suppressed ENA samples. If status of sample is different in BioSamples, status will be updated so SUPPRESSED.
-	 * If sample doesn't exist it will be created
+	 * Handler for suppressed ENA samples. If status of sample is different in
+	 * BioSamples, status will be updated so SUPPRESSED. If sample doesn't exist it
+	 * will be created
 	 * 
 	 * @throws Exception in case of failures
 	 */
@@ -120,7 +134,8 @@ public class EnaRunner implements ApplicationRunner {
 	}
 
 	/**
-	 * Handler for suppressed NCBI/DDBJ samples. If status of sample is different in BioSamples, status will be updated to SUPPRESSED
+	 * Handler for suppressed NCBI/DDBJ samples. If status of sample is different in
+	 * BioSamples, status will be updated to SUPPRESSED
 	 * 
 	 * @throws Exception in case of failures
 	 */
@@ -140,7 +155,7 @@ public class EnaRunner implements ApplicationRunner {
 	/**
 	 * @author dgupta
 	 * 
-	 * {@link RowCallbackHandler} for suppressed ENA samples
+	 *         {@link RowCallbackHandler} for suppressed ENA samples
 	 */
 	private static class EnaSuppressedSamplesCallbackHandler implements RowCallbackHandler {
 		private final AdaptiveThreadPoolExecutor executorService;
@@ -177,7 +192,7 @@ public class EnaRunner implements ApplicationRunner {
 	/**
 	 * @author dgupta
 	 * 
-	 * {@link RowCallbackHandler} for suppressed NCBI/DDBJ samples
+	 *         {@link RowCallbackHandler} for suppressed NCBI/DDBJ samples
 	 */
 	private static class NcbiDdbjSuppressedSamplesCallbackHandler implements RowCallbackHandler {
 		private final AdaptiveThreadPoolExecutor executorService;
