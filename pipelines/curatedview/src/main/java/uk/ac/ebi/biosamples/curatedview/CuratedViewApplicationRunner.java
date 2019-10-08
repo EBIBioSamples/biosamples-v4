@@ -4,25 +4,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.hateoas.Resource;
+import org.springframework.data.mongodb.core.MongoOperations;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.util.CloseableIterator;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.StaticViewWrapper;
-import uk.ac.ebi.biosamples.model.filter.Filter;
+import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
-import uk.ac.ebi.biosamples.utils.ArgUtils;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
@@ -34,20 +31,23 @@ public class CuratedViewApplicationRunner implements ApplicationRunner {
     private final PipelinesProperties pipelinesProperties;
     private final MongoSampleRepository repository;
     private final SampleToMongoSampleConverter sampleToMongoSampleConverter;
+    private final MongoOperations mongoOperations;
 
     public CuratedViewApplicationRunner(BioSamplesClient bioSamplesClient,
                                         PipelinesProperties pipelinesProperties,
                                         MongoSampleRepository repository,
-                                        SampleToMongoSampleConverter sampleToMongoSampleConverter) {
+                                        SampleToMongoSampleConverter sampleToMongoSampleConverter,
+                                        MongoOperations mongoOperations) {
         this.bioSamplesClient = bioSamplesClient;
         this.pipelinesProperties = pipelinesProperties;
         this.repository = repository;
         this.sampleToMongoSampleConverter = sampleToMongoSampleConverter;
+        this.mongoOperations = mongoOperations;
     }
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        Collection<Filter> filters = ArgUtils.getDateFilters(args);
+        Map<String, Future<Void>> futures = new HashMap<>();
         Instant startTime = Instant.now();
         LOG.info("Pipeline started at {}", startTime);
         long sampleCount = 0;
@@ -55,22 +55,23 @@ public class CuratedViewApplicationRunner implements ApplicationRunner {
         try (AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true,
                 pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax())) {
 
-            Map<String, Future<Void>> futures = new HashMap<>();
-            for (Resource<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll("", filters, null, StaticViewWrapper.StaticView.SAMPLES_DYNAMIC)) {
-                LOG.trace("Handling {}", sampleResource);
-                Sample sample = sampleResource.getContent();
-                Objects.requireNonNull(sample);
+            try (CloseableIterator<MongoSample> it = mongoOperations.stream(new Query(), MongoSample.class)) {
+                while (it.hasNext()) {
+                    MongoSample mongoSample = it.next();
+                    String accession = mongoSample.getAccession();
+                    LOG.trace("Handling {}", accession);
 
-                Callable<Void> task = new CuratedViewCallable(sample, repository, sampleToMongoSampleConverter);
-                futures.put(sample.getAccession(), executorService.submit(task));
+                    Callable<Void> task = new CuratedViewCallable(accession, repository, sampleToMongoSampleConverter, bioSamplesClient);
+                    futures.put(accession, executorService.submit(task));
 
-                if (++sampleCount % 5000 == 0) {
-                    LOG.info("Scheduled {} samples for processing", sampleCount);
+                    if (++sampleCount % 5000 == 0) {
+                        LOG.info("Scheduled {} samples for processing", sampleCount);
+                    }
                 }
+                LOG.info("Waiting for all scheduled tasks to finish");
+                ThreadUtils.checkFutures(futures, 0);
             }
 
-            LOG.info("Waiting for all scheduled tasks to finish");
-            ThreadUtils.checkFutures(futures, 0);
         } catch (Exception e) {
             LOG.error("Pipeline failed to finish successfully", e);
             throw e;
