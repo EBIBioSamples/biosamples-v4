@@ -62,8 +62,9 @@
 					"description":"data use ontology",					
 					"type":"array",
 					"items":{
-						"description":"DUO ID",
-						"type":"string"
+						"description":"Data use condition https://ega-archive.org/data-use-conditions",
+						"type":"string",
+						"pattern":"^DUO:[0-9]{7}$"
 						}
 					}
 				}
