@@ -59,11 +59,15 @@
 					"type": "string"
 				},
 				"duo":{
-					"anyOf":[{"type":"string"},
-						 {"type":"null"}]
+					"description":"data use ontology",					
+					"type":"array",
+					"items":{
+						"description":"DUO ID",
+						"type":"string"
+						}
+					}
 				}
-			}
-		},
+			},
 		"organisation": {
 			"title": "Organisation",
 			"description": "Object representing an organization related to the sample in some way",
@@ -184,8 +188,8 @@
 			"format": "date-time"
 		},
 		"taxId": {
-			"type": "integer",
-			"minimum": 1.0
+			"description": "Sample NCBI taxonID.",
+			"type": "integer"
 				},
 		"characteristics": {
 			"description": "All the characteristics associated to the sample",
