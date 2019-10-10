@@ -8,10 +8,7 @@ import com.google.common.hash.Hashing;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.Iterator;
-import java.util.Objects;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 
 public class ExternalReference implements Comparable<ExternalReference> {
     private final String url;
@@ -118,6 +115,8 @@ public class ExternalReference implements Comparable<ExternalReference> {
             for (String s : duo) {
                 hasher.putUnencodedChars(s);
             }
+        } else {
+            duo = Collections.emptySortedSet();
         }
 
         return new ExternalReference(url, hasher.hash().toString(), duo);
