@@ -78,7 +78,7 @@ public class CurationApplicationService {
 			//we stopped because we didn't apply any curation
 			//therefore we have some curations that can't be applied
 			//this is a warning
-			log.warn("Unapplied curation on "+sample.getAccession());
+			log.debug("Unapplied curation on {}", sample.getAccession());
 		}
 		return sample;
 	}

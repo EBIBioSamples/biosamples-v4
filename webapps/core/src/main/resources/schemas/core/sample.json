@@ -57,6 +57,10 @@
 			"properties": {
 				"url": {
 					"type": "string"
+				},
+				"duo":{
+					"anyOf":[{"type":"string"},
+						 {"type":"null"}]
 				}
 			}
 		},
@@ -179,6 +183,10 @@
 			"type": "string",
 			"format": "date-time"
 		},
+		"taxId": {
+			"type": "integer",
+			"minimum": 1.0
+				},
 		"characteristics": {
 			"description": "All the characteristics associated to the sample",
 			"type": "object",
