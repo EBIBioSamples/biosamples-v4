@@ -155,7 +155,7 @@ public class RestFacetIntegration extends AbstractIntegration {
 
 		SortedSet<ExternalReference> externalReferences = new TreeSet<>();
 		externalReferences.add(ExternalReference.build("https://www.ebi.ac.uk/ena/ERA123123",
-				new TreeSet<>(Arrays.asList("DUO:000005", "DUO:000001","DUO:000007"))));
+				new TreeSet<>(Arrays.asList("DUO:0000005", "DUO:0000001","DUO:0000007"))));
 		externalReferences.add(ExternalReference.build("http://www.ebi.ac.uk/arrayexpress/experiments/E-MTAB-09123"));
 
 //		return Sample.build(name, accession, domain, release, update, null, null, externalReferences, null, null, null);
