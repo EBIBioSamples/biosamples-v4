@@ -174,11 +174,8 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 
                 //log.info("Attribute "+tag+" : "+value+" : "+unit);
 
-                // skip artificial attributes
+                // skip attributes prefixed with ENA
                 if (tag != null && tag.startsWith("ENA-")) {
-                    continue;
-                }
-                if (tag != null && tag.startsWith("ArrayExpress-")) {
                     continue;
                 }
 
