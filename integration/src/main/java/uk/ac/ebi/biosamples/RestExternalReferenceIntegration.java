@@ -123,15 +123,15 @@ public class RestExternalReferenceIntegration extends AbstractIntegration {
 		SortedSet<Relationship> relationships = new TreeSet<>();
 
 		SortedSet<ExternalReference> externalReferences = new TreeSet<>();
-		externalReferences.add(ExternalReference.build("http://www.ega-archive.org/datasets/1", new TreeSet<>(Collections.singleton("DUO:0000007"))));
-		externalReferences.add(ExternalReference.build("http://www.ega-archive.org/metadata/2",
+		externalReferences.add(ExternalReference.build("http://ega-archive.org/datasets/1", new TreeSet<>(Collections.singleton("DUO:0000007"))));
+		externalReferences.add(ExternalReference.build("http://ega-archive.org/metadata/2",
 				new TreeSet<>(Arrays.asList("DUO:0000005", "DUO:0000001", "DUO:0000007"))));
 		externalReferences.add(ExternalReference.build("http://www.hpscreg.eu/3"));
 		externalReferences.add(ExternalReference.build("http://www.test.com/4"));
 		externalReferences.add(ExternalReference.build("http://www.ebi.ac.uk/arrayexpress/5"));
 		externalReferences.add(ExternalReference.build("http://www.test.com/6"));
 		externalReferences.add(ExternalReference.build("http://www.ebi.ac.uk/biostudies/7"));
-		externalReferences.add(ExternalReference.build("http://www.ega-archive.org/datasets/EGAD00001001600",
+		externalReferences.add(ExternalReference.build("http://ega-archive.org/datasets/EGAD00001001600",
 				new TreeSet<>(Arrays.asList("DUO:0000005", "DUO:0000014", "DUO:0000019", "DUO:0000026", "DUO:0000028"))));
 
 		return new Sample.Builder(name, accession).withDomain(domain)
