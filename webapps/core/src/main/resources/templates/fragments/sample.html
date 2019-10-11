@@ -5,72 +5,67 @@
 </head>
 <body>
 
-<section th:fragment="attributes (attributes)">
-    <section th:unless="${#arrays.isEmpty(attributes)}">
-        <h3>Attributes</h3>
-        <table class="hover">
-            <thead>
-            <tr>
-                <th>Type</th>
-                <th>Value</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="attribute : ${attributes}">
-                <td th:text="${attribute.type}">Attribute Type</td>
+	<section th:fragment="attributes (attributes)">
+		<section th:unless="${#arrays.isEmpty(attributes)}">
+			<h3>Attributes</h3>
+			<table class="hover">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Value</th>
+                    </tr>
+				</thead>
+                <tbody>
+                    <tr th:each="attribute : ${attributes}">
+                        <td th:text="${attribute.type}">Attribute Type</td>
 
-                <td
-                        th:if="${not #strings.isEmpty(attribute.getIriOls()) and #strings.isEmpty(attribute.unit)}"><a
-                        th:href="${attribute.getIriOls()}" th:text="${attribute.value}"
-                        target="_blank">attribute value<i class="icon icon-spacer  icon-generic"
-                                                          data-icon="x"></i></a></td>
-                <td
-                        th:if="${#strings.isEmpty(attribute.getIriOls()) and #strings.isEmpty(attribute.unit)}"
-                        th:text="${attribute.value}">attribute value
-                </td>
-                <td
-                        th:if="${not #strings.isEmpty(attribute.getIriOls()) and not #strings.isEmpty(attribute.unit)}">
-                    <th:span
-                            th:text="${attribute.value}" th:remove="tag"></th:span>
-                    (<a
-                        th:href="${attribute.getIriOls()}" th:text="${attribute.unit}"
-                        target="_blank">unit<i class="icon icon-spacer  icon-generic"
-                                               data-icon="x"></i></a>)
-                </td>
-                <td
-                        th:if="${#strings.isEmpty(attribute.getIriOls()) and not #strings.isEmpty(attribute.unit)}"
-                        th:text="${attribute.value}+' ('+${attribute.unit}+')'">attribute
-                    value (unit)
-                </td>
-            </tr>
-            </tbody>
-        </table>
-    </section>
-</section>
+                        <td
+                                th:if="${not #strings.isEmpty(attribute.getIriOls()) and #strings.isEmpty(attribute.unit)}"><a
+                                th:href="${attribute.getIriOls()}" th:text="${attribute.value}"
+                                target="_blank">attribute value<i class="icon icon-spacer  icon-generic"
+                                                                  data-icon="x"></i></a></td>
+                        <td
+                                th:if="${#strings.isEmpty(attribute.getIriOls()) and #strings.isEmpty(attribute.unit)}"
+                                th:text="${attribute.value}">attribute value</td>
+                        <td
+                                th:if="${not #strings.isEmpty(attribute.getIriOls()) and not #strings.isEmpty(attribute.unit)}"><th:span
+                                th:text="${attribute.value}" th:remove="tag"></th:span> (<a
+                                th:href="${attribute.getIriOls()}" th:text="${attribute.unit}"
+                                target="_blank">unit<i class="icon icon-spacer  icon-generic"
+                                                       data-icon="x"></i></a>)</td>
+                        <td
+                                th:if="${#strings.isEmpty(attribute.getIriOls()) and not #strings.isEmpty(attribute.unit)}"
+                                th:text="${attribute.value}+' ('+${attribute.unit}+')'">attribute
+                            value (unit)</td>
+                    </tr>
+				</tbody>
+			</table>
+		</section>
+	</section>
 
-<section th:fragment="relationships (relationships)">
-    <section th:unless="${#arrays.isEmpty(relationships)}">
-        <h3>Relationships</h3>
-        <table>
-            <thead>
-            <tr>
-                <th>Source</th>
-                <th>Type</th>
-                <th>Target</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="relationship : ${relationships}">
-                <td><a th:href="${relationship.source}"
-                       th:text="${relationship.source}">source</a></td>
-                <td th:text="${relationship.type}">type</td>
-                <td><a th:href="${relationship.target}"
-                       th:text="${relationship.target}">target</a></td>
-            </tr>
-            </tbody>
-        </table>
-    </section>
-</section>
+	<section th:fragment="relationships (relationships)">
+		<section th:unless="${#arrays.isEmpty(relationships)}">
+			<h3>Relationships</h3>
+			<table>
+				<thead>
+                    <tr>
+                        <th>Source</th>
+                        <th>Type</th>
+                        <th>Target</th>
+                    </tr>
+				</thead>
+				<tbody>
+                    <tr th:each="relationship : ${relationships}">
+                        <td><a th:href="${relationship.source}"
+                               th:text="${relationship.source}">source</a></td>
+                        <td th:text="${relationship.type}">type</td>
+                        <td><a th:href="${relationship.target}"
+                               th:text="${relationship.target}">target</a></td>
+                    </tr>
+				</tbody>
+			</table>
+		</section>
+	</section>
 
 <section th:fragment="externalReferences (externalReferences)">
     <section th:unless="${#arrays.isEmpty(externalReferences)}">
@@ -99,127 +94,130 @@
     </section>
 </section>
 
-<section th:fragment="publications (publications)">
-    <section th:unless="${#arrays.isEmpty(publications)}">
-        <h3>Publications</h3>
-        <table>
-            <thead>
-            <tr>
-                <th>DOI</th>
-                <th>PubMedId</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="publication : ${publications}">
-                <td th:text="${#strings.defaultString(publication.doi, 'No DOI available')}"></td>
-                <td th:text="${#strings.defaultString(publication.pubMedId, 'No Pubmed ID available')}"></td>
-            </tr>
-            </tbody>
-        </table>
-    </section>
-</section>
+    <section th:fragment="publications (publications)">
+		<section th:unless="${#arrays.isEmpty(publications)}">
+			<h3>Publications</h3>
+			<table>
+				<thead>
+				<tr>
+					<th>DOI</th>
+					<th>PubMedId</th>
+				</tr>
+				</thead>
+				<tbody>
+                	<tr th:each = "publication : ${publications}">
+						<td th:text="${#strings.defaultString(publication.doi, 'No DOI available')}"></td>
+						<td th:text="${#strings.defaultString(publication.pubMedId, 'No Pubmed ID available')}"></td>
+					</tr>
+				</tbody>
+			</table>
+		</section>
+	</section>
 
-<section th:fragment="contacts (contacts)">
-    <section th:unless="${#arrays.isEmpty(contacts)}">
-        <h3>Contacts</h3>
-        <table th:each="contact : ${contacts}">
-            <thead>
-            <tr>
-                <th th:colspan="2" th:text="${#strings.defaultString(contact.name, 'No name provided')}">Contact name
-                </th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:unless="${#strings.isEmpty(contact.role)}">
-                <td th:width="200">role</td>
-                <td th:text="${contact.role}"></td>
-            </tr>
-            <tr th:unless="${#strings.isEmpty(contact.email)}">
-                <td th:width="200">E-mail</td>
-                <td th:text="${contact.email}"></td>
-            </tr>
-            </tbody>
-        </table>
-    </section>
-</section>
+	<section th:fragment="contacts (contacts)">
+		<section th:unless="${#arrays.isEmpty(contacts)}">
+			<h3>Contacts</h3>
+			<table th:each = "contact : ${contacts}">
+				<thead>
+                    <tr>
+                        <th th:colspan="2" th:text="${#strings.defaultString(contact.name, 'No name provided')}">Contact name</th>
+                    </tr>
+				</thead>
+				<tbody>
+                    <tr th:unless="${#strings.isEmpty(contact.role)}">
+                        <td th:width="200">role</td>
+                        <td th:text="${contact.role}"></td>
+                    </tr>
+                    <tr th:unless="${#strings.isEmpty(contact.email)}">
+                        <td th:width="200">E-mail</td>
+                        <td th:text="${contact.email}"></td>
+                    </tr>
+                     <tr th:unless="${#strings.isEmpty(contact.affiliation)}">
+                        <td th:width="200">Affiliation</td>
+                        <td th:text="${contact.affiliation}"></td>
+                    </tr>
+                    <tr th:unless="${#strings.isEmpty(contact.url)}">
+                        <td th:width="200">URL</td>
+                        <td th:text="${contact.url}"></td>
+                    </tr>
+				</tbody>
+			</table>
+		</section>
+	</section>
 
-<section th:fragment="organizations (organizations)">
-    <section th:unless="${#arrays.isEmpty(organizations)}">
-        <h3>Organizations</h3>
-        <table th:each="organization : ${organizations}">
-            <thead>
-            <tr>
-                <th th:colspan="2" th:text="${#strings.defaultString(organization.name, 'No name provided')}">
-                    Organization name
-                </th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:unless="${#strings.isEmpty(organization.role)}">
-                <td th:width="200">Role</td>
-                <td th:text="${organization.role}"></td>
-            </tr>
-            <tr th:unless="${#strings.isEmpty(organization.email)}">
-                <td th:width="200">E-mail</td>
-                <td th:text="${organization.email}"></td>
-            </tr>
-            <tr th:unless="${#strings.isEmpty(organization.address)}">
-                <td th:width="200">Address</td>
-                <td th:text="${organization.address}"></td>
-            </tr>
-            <tr th:unless="${#strings.isEmpty(organization.url)}">
-                <td th:width="200">Url</td>
-                <td th:text="${organization.url}"></td>
-            </tr>
-            </tbody>
-        </table>
-    </section>
-</section>
+	<section th:fragment="organizations (organizations)" >
+		<section th:unless="${#arrays.isEmpty(organizations)}">
+			<h3>Organizations</h3>
+			<table th:each = "organization : ${organizations}">
+				<thead>
+                    <tr>
+                        <th th:colspan="2" th:text="${#strings.defaultString(organization.name, 'No name provided')}">Organization name</th>
+                    </tr>
+				</thead>
+				<tbody>
+                    <tr th:unless="${#strings.isEmpty(organization.role)}">
+                        <td th:width="200">Role</td>
+                        <td th:text="${organization.role}"></td>
+                    </tr>
+                    <tr th:unless="${#strings.isEmpty(organization.email)}">
+                        <td th:width="200">E-mail</td>
+                        <td th:text="${organization.email}"></td>
+                    </tr>
+                    <tr th:unless="${#strings.isEmpty(organization.address)}">
+                        <td th:width="200">Address</td>
+                        <td th:text="${organization.address}"></td>
+                    </tr>
+                    <tr th:unless="${#strings.isEmpty(organization.url)}">
+                        <td th:width="200">Url</td>
+                        <td th:text="${organization.url}"></td>
+                    </tr>
+				</tbody>
+			</table>
+		</section>
+	</section>
 
-<section th:fragment="serialisationsForm">
-    <form>
-        <label><h4>Export as:</h4>
-            <select onchange="goToPage(this.options[this.selectedIndex].value)">
-                <option selected value="">Choose one...</option>
-                <option th:value="@{/samples/{xml}(xml=${sample.accession} + '.xml')}">XML</option>
-                <option th:value="@{/samples/{json}(json=${sample.accession} + '.json')}">JSON</option>
-                <option th:value="@{/samples/{ldjson}(ldjson=${sample.accession} + '.ldjson')}">BioSchemas</option>
-                <option th:value="@{/samples/{phenopacket}(phenopacket=${sample.accession}+'.pxf')}">Phenopacket
-                </option>
-            </select>
-        </label>
-    </form>
-    <script id="chooseSerialisationScript">
-        function goToPage(url) {
-            if (url !== "") {
-                newWindow = window.open();
-                newWindow.location.href = url
+	<section th:fragment="serialisationsForm">
+        <form>
+            <label><h4>Export as:</h4>
+                <select onchange="goToPage(this.options[this.selectedIndex].value)">
+                    <option selected value="">Choose one...</option>
+                    <option th:value="@{/samples/{xml}(xml=${sample.accession} + '.xml')}">XML</option>
+                    <option th:value="@{/samples/{json}(json=${sample.accession} + '.json')}">JSON</option>
+                    <option th:value="@{/samples/{ldjson}(ldjson=${sample.accession} + '.ldjson')}">BioSchemas</option>
+					<option th:value="@{/samples/{phenopacket}(phenopacket=${sample.accession}+'.pxf')}">Phenopacket</option>
+                </select>
+            </label>
+        </form>
+		<script id="chooseSerialisationScript">
+            function goToPage(url) {
+                if (url !== "") {
+                    newWindow = window.open();
+                    newWindow.location.href = url
+                }
             }
-        }
-    </script>
-</section>
+		</script>
+	</section>
 
-<section th:fragment="serialisationDropDownMenu">
-    <h4>Download as:</h4>
-    <ul class="vertical dropdown menu">
-        <li><a th:href="@{/samples/{xml}(xml=${sample.accession} + '.xml')}" download>XML</a></li>
-        <li><a th:href="@{/samples/{json}(json=${sample.accession} + '.json')}" download>JSON</a></li>
-        <li><a th:href="@{/samples/{ldjson}(ldjson=${sample.accession} + '.ldjson')}" download>Bioschemas</a></li>
-        <li><a th:href="@{/samples/{phenopacket}(phenopacket=${sample.accession}+'.pxf')}" download>Phenopacket</a></li>
-    </ul>
-</section>
+	<section th:fragment="serialisationDropDownMenu">
+		<h4>Download as:</h4>
+		<ul class="vertical dropdown menu">
+			<li><a th:href="@{/samples/{xml}(xml=${sample.accession} + '.xml')}" download>XML</a></li>
+			<li><a th:href="@{/samples/{json}(json=${sample.accession} + '.json')}" download>JSON</a></li>
+			<li><a th:href="@{/samples/{ldjson}(ldjson=${sample.accession} + '.ldjson')}" download>Bioschemas</a></li>
+			<li><a th:href="@{/samples/{phenopacket}(phenopacket=${sample.accession}+'.pxf')}" download>Phenopacket</a></li>
+		</ul>
+	</section>
 
-<section th:fragment="serialisationIcons">
-    <a th:href="@{/samples/{xml_link}(xml_link=${sample.accession} + '.xml')}" class="button" title="XML">
-        <h3 class="icon icon-spacer  icon-fileformats white-color" data-icon="x"></h3>
-    </a>
-    <a th:href="@{/samples/{json_link}(json_link=${sample.accession}+'.json')}" class="button" title="JSON">
-        <h3 class="icon icon-spacer  icon-fileformats white-color" data-icon="J"></h3>
-    </a>
-    <a th:href="@{/samples/{bioschemas_link}(bioschemas_link=${sample.accession}+'.ldjson')}" class="button"
-       title="Bioschemas">
-        <img th:src="@{/images/logo_bioschemas.png}" alt="BioSchemas logo" width="60px">
-    </a>
-</section>
+	<section th:fragment="serialisationIcons">
+		<a th:href="@{/samples/{xml_link}(xml_link=${sample.accession} + '.xml')}" class="button" title="XML">
+			<h3 class="icon icon-spacer  icon-fileformats white-color" data-icon="x"></h3>
+		</a>
+		<a th:href="@{/samples/{json_link}(json_link=${sample.accession}+'.json')}" class="button" title="JSON">
+			<h3 class="icon icon-spacer  icon-fileformats white-color" data-icon="J"></h3>
+		</a>
+		<a th:href="@{/samples/{bioschemas_link}(bioschemas_link=${sample.accession}+'.ldjson')}" class="button" title="Bioschemas">
+			<img th:src="@{/images/logo_bioschemas.png}" alt="BioSchemas logo" width="60px">
+		</a>
+	</section>
 </body>
 </html>
