@@ -54,7 +54,7 @@ public class EnaCallable implements Callable<Void> {
 
 	/**
 	 * Construction for SUPPRESSED samples
-	 * 
+	 *
 	 * @param sampleAccession
 	 * @param bioSamplesClient
 	 * @param enaXmlEnhancer
@@ -85,9 +85,9 @@ public class EnaCallable implements Callable<Void> {
 
 	/**
 	 * Enrich the ENA sample with specific attributes and persist using {@link BioSamplesClient}
-	 * 
+	 *
 	 * @return nothing its {@link Void}
-	 * 
+	 *
 	 * @throws SQLException if it fails in queries
 	 * @throws DocumentException if it fails in XML transformation
 	 */
@@ -141,20 +141,20 @@ public class EnaCallable implements Callable<Void> {
 			// add external reference
 			externalReferences.add(ExternalReference.build("https://www.ebi.ac.uk/ena/data/view/" + sampleAccession));
 
-			sample = Sample.build(sample.getName(), sampleAccession, domain, release, update, attributes,
-					sample.getRelationships(), externalReferences);
-			bioSamplesClient.persistSampleResource(sample);
-		} else {
-			log.warn("Unable to find SAMPLE element for " + sampleAccession);
-		}
-		log.trace("HANDLED " + sampleAccession);
-		return null;
-	}
+            sample = Sample.build(sample.getName(), sampleAccession, domain, release, update, update, attributes,
+                    sample.getRelationships(), externalReferences);
+            bioSamplesClient.persistSampleResource(sample);
+        } else {
+            log.warn("Unable to find SAMPLE element for " + sampleAccession);
+        }
+        log.trace("HANDLED " + sampleAccession);
+        return null;
+    }
 
 	/**
 	 * Checks samples from ENA which is SUPPRESSED and takes necessary action, i.e. update status if status is different in BioSamples,
 	 * else persist
-	 * 
+	 *
 	 * @param sampleAccession
 	 * 			The accession passed
 	 * @return {@link Void}
@@ -193,7 +193,7 @@ public class EnaCallable implements Callable<Void> {
 
 	/**
 	 * True if NCBI/DDBJ sample
-	 * 
+	 *
 	 * @param sampleAccession
 	 * 			The accession passed to the method
 	 * @return true if NCBI/DDBJ sample

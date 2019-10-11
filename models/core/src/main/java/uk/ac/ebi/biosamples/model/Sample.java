@@ -45,6 +45,7 @@ public class Sample implements Comparable<Sample> {
 
     protected Instant release;
     protected Instant update;
+    protected Instant create;
 
 	protected SortedSet<Attribute> attributes;
 	protected SortedSet<AbstractData> data;
@@ -95,6 +96,11 @@ public class Sample implements Comparable<Sample> {
     @JsonSerialize(using = CustomInstantSerializer.class)
     public Instant getUpdate() {
         return update;
+    }
+
+    @JsonSerialize(using = CustomInstantSerializer.class)
+    public Instant getCreate() {
+        return create;
     }
 
     @JsonProperty(value = "releaseDate", access = JsonProperty.Access.READ_ONLY)
@@ -336,6 +342,8 @@ public class Sample implements Comparable<Sample> {
         sb.append(",");
         sb.append(update);
         sb.append(",");
+        sb.append(create);
+        sb.append(",");
         sb.append(attributes);
         sb.append(",");
         sb.append(relationships);
@@ -358,17 +366,21 @@ public class Sample implements Comparable<Sample> {
 			String domain,
 			Instant release,
 			Instant update,
+			Instant create,
 			Set<Attribute> attributes,
 			Set<Relationship> relationships,
 			Set<ExternalReference> externalReferences) {
-    	return build(name, accession, domain, release, update, attributes, null, relationships, externalReferences, null, null, null, null);
+    	return build(name, accession, domain, release, update, create, attributes, null,
+                relationships, externalReferences, null, null, null, null);
     }
 
-    public static Sample build(String name, String accession, String domain, Instant release, Instant update,
+    public static Sample build(String name, String accession, String domain,
+                               Instant release, Instant update, Instant create,
                                Set<Attribute> attributes, Set<Relationship> relationships,
                                Set<ExternalReference> externalReferences,
                                SubmittedViaType submittedVia) {
-        return build(name, accession, domain, release, update, attributes, null, relationships, externalReferences, null, null, null, submittedVia);
+        return build(name, accession, domain, release, update, create, attributes, null,
+                relationships, externalReferences, null, null, null, submittedVia);
     }
 
     //Used for deserializtion (JSON -> Java)
@@ -378,6 +390,7 @@ public class Sample implements Comparable<Sample> {
 			@JsonProperty("domain") String domain,
 			@JsonProperty("release") @JsonDeserialize(using = CustomInstantDeserializer.class) Instant release,
 			@JsonProperty("update") @JsonDeserialize(using = CustomInstantDeserializer.class) Instant update,
+			@JsonProperty("create") @JsonDeserialize(using = CustomInstantDeserializer.class) Instant create,
 			@JsonProperty("characteristics") @JsonDeserialize(using = CharacteristicDeserializer.class) Collection<Attribute> attributes,
 //			@JsonProperty("data") @JsonDeserialize(using = AbstractDataDeserializer.class) Collection<AbstractData> structuredData,
             @JsonProperty("data") Collection<AbstractData> structuredData,
@@ -403,6 +416,8 @@ public class Sample implements Comparable<Sample> {
 
         //Instead of validation failure, if null, set it to now
         sample.update = update == null ? Instant.now() : update;
+
+        sample.create = create == null ? sample.update : create;
 
         //Validation moved to a later stage, to capture the error (SampleService.store())
 		sample.release = release;
@@ -461,6 +476,7 @@ public class Sample implements Comparable<Sample> {
 
 		protected Instant release = Instant.now();
 		protected Instant update = Instant.now();
+		protected Instant create = Instant.now();
 
 		protected SubmittedViaType submittedVia;
 
@@ -508,6 +524,16 @@ public class Sample implements Comparable<Sample> {
 
 		public Builder withUpdate(String update) {
 			this.update = parseDateTime(update).toInstant();
+			return this;
+		}
+
+		public Builder withCreate(Instant create) {
+			this.create = create;
+			return this;
+		}
+
+		public Builder withCreate(String create) {
+			this.create = parseDateTime(create).toInstant();
 			return this;
 		}
 
@@ -720,7 +746,7 @@ public class Sample implements Comparable<Sample> {
 		}
 
 		public Sample build() {
-			return Sample.build(name, accession, domain, release, update,
+			return Sample.build(name, accession, domain, release, update, create,
 					attributes, data, relationships, externalReferences,
 					organizations, contacts, publications, submittedVia);
 		}
@@ -746,7 +772,7 @@ public class Sample implements Comparable<Sample> {
 		 */
 		public static Builder fromSample(Sample sample) {
 			return new Builder(sample.getName(), sample.getAccession()).withDomain(sample.getDomain())
-					.withRelease(sample.getRelease()).withUpdate(sample.getUpdate())
+					.withRelease(sample.getRelease()).withUpdate(sample.getUpdate()).withCreate(sample.getCreate())
 					.withAttributes(sample.getAttributes()).withData(sample.getData())
 					.withRelationships(sample.getRelationships()).withExternalReferences(sample.getExternalReferences())
 					.withOrganizations(sample.getOrganizations()).withPublications(sample.getPublications())

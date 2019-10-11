@@ -148,7 +148,7 @@ public class BioSamplesClient implements AutoCloseable {
 	public Optional<Resource<Sample>> fetchSampleResource(String accession) throws RestClientException {
 		return fetchSampleResource(accession, Optional.empty());
 	}
-	public Optional<Resource<Sample>> fetchSampleResource(String accession, 
+	public Optional<Resource<Sample>> fetchSampleResource(String accession,
 			Optional<List<String>> curationDomains) throws RestClientException {
 		try {
 			return sampleRetrievalService.fetch(accession, curationDomains).get();

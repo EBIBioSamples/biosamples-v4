@@ -19,152 +19,167 @@ import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
 import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
 import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
 
+import java.time.Instant;
 import java.util.*;
 
 /**
  * Service layer business logic for centralising repository access and
  * conversions between different controller. Use this instead of linking to
  * repositories directly.
- * 
- * @author faulcon
  *
+ * @author faulcon
  */
 @Service
 public class SampleService {
 
-	private static Logger log = LoggerFactory.getLogger(SampleService.class);
-	
-	//TODO use constructor injection
-	
-	@Autowired
-	private MongoAccessionService mongoAccessionService;
-	@Autowired
-	private MongoSampleRepository mongoSampleRepository;			
-	@Autowired
-	private MongoSampleToSampleConverter mongoSampleToSampleConverter;
-	@Autowired
-	private SampleToMongoSampleConverter sampleToMongoSampleConverter;
-	@Autowired
-	private MongoInverseRelationshipService mongoInverseRelationshipService;
-	
-	
-	@Autowired 
-	private SampleValidator sampleValidator;
-	
-	@Autowired
-	private SolrSampleService solrSampleService;
-	
-	@Autowired
-	private SampleReadService sampleReadService;
-	
-	@Autowired
-	private MessagingService messagingSerivce;
-	
-	/**
-	 * Throws an IllegalArgumentException of no sample with that accession exists
-	 * 
-	 * @param accession
-	 * @return
-	 * @throws IllegalArgumentException
-	 */
-	//can't use a sync cache because we need to use CacheEvict
-	//@Cacheable(cacheNames=WebappProperties.fetchUsing, key="#root.args[0]")
-	public Optional<Sample> fetch(String accession, Optional<List<String>> curationDomains, String curationRepo) {
-		StaticViewWrapper.StaticView staticView = StaticViewWrapper.getStaticView(curationDomains.orElse(null), curationRepo);
-		return sampleReadService.fetch(accession, curationDomains, staticView);
-	}
-	
-	public Autocomplete getAutocomplete(String autocompletePrefix, Collection<Filter> filters, int noSuggestions) {
-		return solrSampleService.getAutocomplete(autocompletePrefix, filters, noSuggestions);
-	}
+    private static Logger log = LoggerFactory.getLogger(SampleService.class);
 
-	//because the fetchUsing caches the sample, if an updated version is stored, we need to make sure that any cached version
-	//is removed. 
-	//Note, pages of samples will not be cache busted, only single-accession sample retrieval
-	//@CacheEvict(cacheNames=WebappProperties.fetchUsing, key="#result.accession")
-	public Sample store(Sample sample) {
-		// TODO check if there is an existing copy and if there are any changes
+    //TODO use constructor injection
 
-		//do validation
-		// TODO validate that relationships have this sample as the source 
-		Collection<String> errors = sampleValidator.validate(sample);
-		if (errors.size() > 0) {
-			//TODO no validation information is provided to users
-			log.error("Found errors : "+errors);
-			throw new SampleValidationException();
-		}
+    @Autowired
+    private MongoAccessionService mongoAccessionService;
+    @Autowired
+    private MongoSampleRepository mongoSampleRepository;
+    @Autowired
+    private MongoSampleToSampleConverter mongoSampleToSampleConverter;
+    @Autowired
+    private SampleToMongoSampleConverter sampleToMongoSampleConverter;
+    @Autowired
+    private MongoInverseRelationshipService mongoInverseRelationshipService;
 
-		if (sample.hasAccession()) {
-			// TODO compare to existing version to check if changes
-			List<String> existingRelationshipTargets = getExistingRelationshipTargets(sample.getAccession());
 
-			MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);
-			mongoSample = mongoSampleRepository.save(mongoSample);
-			sample = mongoSampleToSampleConverter.convert(mongoSample);
+    @Autowired
+    private SampleValidator sampleValidator;
 
-			//send a message for storage and further processing, send relationship targets to identify deleted relationships
-			messagingSerivce.fetchThenSendMessage(sample.getAccession(), existingRelationshipTargets);
-		} else {
-			sample = mongoAccessionService.generateAccession(sample);
-			messagingSerivce.fetchThenSendMessage(sample.getAccession());
-		}
-		
-		//return the sample in case we have modified it i.e accessioned
-		//do a fetch to return it with curation objects and inverse relationships
-		return fetch(sample.getAccession(), Optional.empty(), null).get();
-	}
+    @Autowired
+    private SolrSampleService solrSampleService;
 
-	public void validateSample(Map sampleAsMap) {
-		List<String> errors = sampleValidator.validate(sampleAsMap);
-		StringBuilder sb = new StringBuilder();
-		if (errors.size() > 0) {
-			for (String error : errors) {
-				sb.append(error).append("; ");
-			}
+    @Autowired
+    private SampleReadService sampleReadService;
 
-			throw new SampleValidationException(sb.toString());
-		}
-	}
+    @Autowired
+    private MessagingService messagingSerivce;
 
-	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	public class SampleValidationException extends RuntimeException {
-		private static final long serialVersionUID = -7937033504537036300L;
+    /**
+     * Throws an IllegalArgumentException of no sample with that accession exists
+     *
+     * @param accession
+     * @return
+     * @throws IllegalArgumentException
+     */
+    //can't use a sync cache because we need to use CacheEvict
+    //@Cacheable(cacheNames=WebappProperties.fetchUsing, key="#root.args[0]")
+    public Optional<Sample> fetch(String accession, Optional<List<String>> curationDomains, String curationRepo) {
+        StaticViewWrapper.StaticView staticView = StaticViewWrapper.getStaticView(curationDomains.orElse(null), curationRepo);
+        return sampleReadService.fetch(accession, curationDomains, staticView);
+    }
 
-		public SampleValidationException() {
-			super();
-		}
+    public Autocomplete getAutocomplete(String autocompletePrefix, Collection<Filter> filters, int noSuggestions) {
+        return solrSampleService.getAutocomplete(autocompletePrefix, filters, noSuggestions);
+    }
 
-		public SampleValidationException(String message, Throwable cause, boolean enableSuppression,
-				boolean writableStackTrace) {
-			super(message, cause, enableSuppression, writableStackTrace);
-		}
+    //because the fetchUsing caches the sample, if an updated version is stored, we need to make sure that any cached version
+    //is removed.
+    //Note, pages of samples will not be cache busted, only single-accession sample retrieval
+    //@CacheEvict(cacheNames=WebappProperties.fetchUsing, key="#result.accession")
+    public Sample store(Sample sample) {
 
-		public SampleValidationException(String message, Throwable cause) {
-			super(message, cause);
-		}
+        //do validation
+        // TODO validate that relationships have this sample as the source
+        Collection<String> errors = sampleValidator.validate(sample);
+        if (errors.size() > 0) {
+            //TODO no validation information is provided to users
+            log.error("Found errors : " + errors);
+            throw new SampleValidationException();
+        }
 
-		public SampleValidationException(String message) {
-			super(message);
-		}
+        if (sample.hasAccession()) {
+            MongoSample mongoOldSample = mongoSampleRepository.findOne(sample.getAccession());
+            List<String> existingRelationshipTargets = new ArrayList<>();
+            if (mongoOldSample != null) {
+                Sample oldSample = mongoSampleToSampleConverter.convert(mongoOldSample);
+                existingRelationshipTargets = getExistingRelationshipTargets(sample.getAccession(), mongoOldSample);
+                sample = compareWithExistingAndUpdateSample(sample, oldSample);
+            } else {
+                log.warn("Trying to update sample not in database, accession: {}", sample.getAccession());
+            }
 
-		public SampleValidationException(Throwable cause) {
-			super(cause);
-		}
-	}
+            MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);
+            mongoSample = mongoSampleRepository.save(mongoSample);
+            sample = mongoSampleToSampleConverter.convert(mongoSample);
 
-	private List<String> getExistingRelationshipTargets(String accession) {
-		List<String> oldRelationshipTargets = new ArrayList<>();
-		MongoSample mongoOldSample = mongoSampleRepository.findOne(accession);
-		if (mongoOldSample != null) {
-			for (MongoRelationship relationship : mongoOldSample.getRelationships()) {
-				if (relationship.getSource().equals(accession)) {
-					oldRelationshipTargets.add(relationship.getTarget());
-				}
-			}
-		}
+            //send a message for storage and further processing, send relationship targets to identify deleted relationships
+            messagingSerivce.fetchThenSendMessage(sample.getAccession(), existingRelationshipTargets);
+        } else {
+            sample = mongoAccessionService.generateAccession(sample);
+            messagingSerivce.fetchThenSendMessage(sample.getAccession());
+        }
 
-		return oldRelationshipTargets;
-	}
+        //return the sample in case we have modified it i.e accessioned
+        //do a fetch to return it with curation objects and inverse relationships
+        return fetch(sample.getAccession(), Optional.empty(), null).get();
+    }
+
+    public void validateSample(Map sampleAsMap) {
+        List<String> errors = sampleValidator.validate(sampleAsMap);
+        StringBuilder sb = new StringBuilder();
+        if (errors.size() > 0) {
+            for (String error : errors) {
+                sb.append(error).append("; ");
+            }
+
+            throw new SampleValidationException(sb.toString());
+        }
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public class SampleValidationException extends RuntimeException {
+        private static final long serialVersionUID = -7937033504537036300L;
+
+        public SampleValidationException() {
+            super();
+        }
+
+        public SampleValidationException(String message, Throwable cause, boolean enableSuppression,
+                                         boolean writableStackTrace) {
+            super(message, cause, enableSuppression, writableStackTrace);
+        }
+
+        public SampleValidationException(String message, Throwable cause) {
+            super(message, cause);
+        }
+
+        public SampleValidationException(String message) {
+            super(message);
+        }
+
+        public SampleValidationException(Throwable cause) {
+            super(cause);
+        }
+    }
+
+    private List<String> getExistingRelationshipTargets(String accession, MongoSample mongoOldSample) {
+        List<String> oldRelationshipTargets = new ArrayList<>();
+        for (MongoRelationship relationship : mongoOldSample.getRelationships()) {
+            if (relationship.getSource().equals(accession)) {
+                oldRelationshipTargets.add(relationship.getTarget());
+            }
+        }
+
+        return oldRelationshipTargets;
+    }
+
+    private Sample compareWithExistingAndUpdateSample(Sample sampleToUpdate, Sample oldSample) {
+        //compare with existing version and check what fields have changed
+        if (sampleToUpdate.equals(oldSample)) {
+            log.info("New sample is similar to the old sample, accession: {}", oldSample.getAccession());
+        }
+
+        //Keep the create date as existing sample
+        Instant create = oldSample.getCreate() != null ? oldSample.getCreate() : oldSample.getUpdate();
+        return Sample.Builder.fromSample(sampleToUpdate)
+                .withCreate(create).build();
+    }
 
 
 	/*

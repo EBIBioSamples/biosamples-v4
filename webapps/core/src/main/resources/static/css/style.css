@@ -187,3 +187,7 @@ code[class^="language"] {
     color: #9F6000;
     background-color: #FEEFB3;
 }
+
+.sh__datetimes {
+    text-align: left;
+}

@@ -49,6 +49,9 @@ public class MongoSample {
 	@LastModifiedDate
 	@Indexed(background=true)
 	protected Instant update;
+	@JsonSerialize(using = CustomInstantSerializer.class)
+	@JsonDeserialize(using = CustomInstantDeserializer.class)
+	protected Instant create;
 
 	protected SortedSet<Attribute> attributes;
 	protected SortedSet<MongoRelationship> relationships;
@@ -100,6 +103,10 @@ public class MongoSample {
 		return update;
 	}
 
+	public Instant getCreate() {
+		return create;
+	}
+
 	public SortedSet<Attribute> getAttributes() {
 		return attributes;
 	}
@@ -145,6 +152,7 @@ public class MongoSample {
         		&& Objects.equals(this.domain, other.domain)
         		&& Objects.equals(this.release, other.release)
         		&& Objects.equals(this.update, other.update)
+        		&& Objects.equals(this.create, other.create)
         		&& Objects.equals(this.attributes, other.attributes)
         		&& Objects.equals(this.relationships, other.relationships)
         		&& Objects.equals(this.externalReferences, other.externalReferences)
@@ -156,7 +164,7 @@ public class MongoSample {
     
     @Override
     public int hashCode() {
-    	return Objects.hash(name, accession, domain, release, update, attributes, relationships, externalReferences, organizations, contacts, publications);
+    	return Objects.hash(name, accession, domain, release, update, create, attributes, relationships, externalReferences, organizations, contacts, publications);
     }
     
 
@@ -173,6 +181,8 @@ public class MongoSample {
     	sb.append(release);
     	sb.append(",");
     	sb.append(update);
+    	sb.append(",");
+    	sb.append(create);
     	sb.append(",");
     	sb.append(attributes);
     	sb.append(",");
@@ -200,6 +210,7 @@ public class MongoSample {
 			@JsonProperty("domain") String domain,
     		@JsonProperty("release") Instant release, 
     		@JsonProperty("update") Instant update, 
+    		@JsonProperty("create") Instant create,
     		@JsonProperty("attributes") Set<Attribute> attributes,
     		@JsonProperty("data") Set<AbstractData> structuredData,
     		@JsonProperty("relationships") Set<MongoRelationship> relationships, 
@@ -216,6 +227,7 @@ public class MongoSample {
 		sample.domain = domain;
 		sample.release = release;
 		sample.update = update;
+		sample.create = create;
 
 		sample.attributes = new TreeSet<>();
 		if (attributes != null && attributes.size() > 0) {
