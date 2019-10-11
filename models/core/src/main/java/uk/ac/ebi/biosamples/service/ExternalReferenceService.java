@@ -10,22 +10,30 @@ import uk.ac.ebi.biosamples.model.ExternalReference;
 
 @Service
 public class ExternalReferenceService {
-	
+	public static final String ENA_BASE_URL_FRAGMENT = "www.ebi.ac.uk/ena";
+	public static final String ARRAYEXPRESS_BASE_URL_FRAGMENT = "www.ebi.ac.uk/arrayexpress";
+	public static final String HPSCREG_URL_FRAGMENT = "hpscreg.eu/";
+	public static final String DBGAP_BASE_URL_FRAGMENT = "ncbi.nlm.nih.gov/projects/gap";
+	public static final String EGA_DATASET_BASE_URL_FRAGMENT = "ega-archive.org/datasets";
+	public static final String EGA_SAMPLE_BASE_URL_FRAGMENT = "ega-archive.org/metadata";
+	public static final String BIOSTUDIES_BASE_URL_FRAGMENT = "ebi.ac.uk/biostudies";
+	public static final String DUO_BASE_URL = "http://purl.obolibrary.org/obo/";
+
 	public String getNickname(ExternalReference externalReference) {
 		//TODO make this more configurable
-		if (externalReference.getUrl().contains("www.ebi.ac.uk/ena")) {
+		if (externalReference.getUrl().contains(ENA_BASE_URL_FRAGMENT)) {
 			return "ENA";
-		} else if (externalReference.getUrl().contains("www.ebi.ac.uk/arrayexpress")) {
+		} else if (externalReference.getUrl().contains(ARRAYEXPRESS_BASE_URL_FRAGMENT)) {
 			return "ArrayExpress";
-		} else if (externalReference.getUrl().contains("hpscreg.eu/")) {
+		} else if (externalReference.getUrl().contains(HPSCREG_URL_FRAGMENT)) {
 			return "hPSCreg";
-		} else if (externalReference.getUrl().contains("ncbi.nlm.nih.gov/projects/gap")) {
+		} else if (externalReference.getUrl().contains(DBGAP_BASE_URL_FRAGMENT)) {
 			return "dbGaP";
-		} else if (externalReference.getUrl().contains("ega-archive.org/datasets")) {
+		} else if (externalReference.getUrl().contains(EGA_DATASET_BASE_URL_FRAGMENT)) {
 			return "EGA Dataset";
-		} else if (externalReference.getUrl().contains("ega-archive.org/metadata")) {
+		} else if (externalReference.getUrl().contains(EGA_SAMPLE_BASE_URL_FRAGMENT)) {
 			return "EGA Sample";
-		} else if (externalReference.getUrl().contains("ebi.ac.uk/biostudies")) {
+		} else if (externalReference.getUrl().contains(BIOSTUDIES_BASE_URL_FRAGMENT)) {
 			return "BioStudies";
 		} else {
 			return "other";
@@ -46,5 +54,9 @@ public class ExternalReferenceService {
 			return Optional.of(studyId);
 		}
 		return Optional.empty();
+	}
+
+	public String getDuoUrl(String duoCode) {
+		return DUO_BASE_URL + duoCode.replace(":", "_");
 	}
 }
