@@ -191,3 +191,21 @@ code[class^="language"] {
 .sh__datetimes {
     text-align: left;
 }
+
+.external-reference-td {
+    width: 70px;
+}
+
+.external-reference-img {
+    width: 30px;
+    height: 30px;
+}
+
+.duo-badge, .duo-badge a, .duo-badge a.visited {
+    color: #4c4c4c;
+    margin: 0 3px;
+    padding: 0 2px;
+    float: left;
+    text-decoration: none;
+    border: 1px solid #007b82;
+}

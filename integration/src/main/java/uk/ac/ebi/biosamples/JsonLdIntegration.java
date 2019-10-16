@@ -125,7 +125,7 @@ public class JsonLdIntegration extends AbstractIntegration {
         SortedSet<ExternalReference> externalReferences = new TreeSet<>();
         externalReferences.add(
                 ExternalReference.build("www.google.com",
-                        new TreeSet<>(Arrays.asList("DUO:000005", "DUO:000001","DUO:000007")))
+                        new TreeSet<>(Arrays.asList("DUO:0000005", "DUO:0000001","DUO:0000007")))
         );
 //        return Sample.build(name, accession, domain, release, update,
 //                attributes,null,externalReferences, null, null, null);
