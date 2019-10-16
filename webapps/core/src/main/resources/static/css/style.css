@@ -201,9 +201,11 @@ code[class^="language"] {
     height: 30px;
 }
 
-.duo-badge {
-    color: darkorange;
-    margin: 0 2px;
+.duo-badge, .duo-badge a, .duo-badge a.visited {
+    color: #4c4c4c;
+    margin: 0 3px;
     padding: 0 2px;
     float: left;
+    text-decoration: none;
+    border: 1px solid #007b82;
 }

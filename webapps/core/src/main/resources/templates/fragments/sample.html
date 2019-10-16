@@ -83,7 +83,7 @@
                        th:text="${@externalReferenceService.getNickname(externalReference)}"></a>
                 </td>
                 <td>
-                    <div class="duo-badge" th:each="duo : ${externalReference.duo}">
+                    <div th:each="duo : ${externalReference.duo}">
                         <a class="duo-badge shield" th:href="${@externalReferenceService.getDuoUrl(duo)}"
                            th:text="${duo}"></a>
                     </div>
