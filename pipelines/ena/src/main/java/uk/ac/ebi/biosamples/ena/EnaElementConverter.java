@@ -1,11 +1,19 @@
 package uk.ac.ebi.biosamples.ena;
 
+import java.time.Instant;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
 import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
+
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
@@ -13,13 +21,10 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.utils.TaxonomyService;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
-import java.time.Instant;
-import java.util.*;
-
 @Service
 public class EnaElementConverter implements Converter<Element, Sample> {
+	private static final String ALIAS = "alias";
 	// Fields required by ENA content
-	private static final String ENA_ALIAS = "Alias";
 	private static final String ENA_SRA_ACCESSION = "SRA accession";
 	private static final String ENA_BROKER_NAME = "Broker name";
 	private static final String INSDC_CENTER_NAME = "INSDC center name";
@@ -60,19 +65,14 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 		// alias (top-attribute) in ENA XML
 		final String primaryId = XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS, PRIMARY_ID).text();
 
-		if (XmlPathBuilder.of(root).path(SAMPLE).attributeExists("alias")) {
-			name = XmlPathBuilder.of(root).path(SAMPLE).attribute("alias").trim();
+		if (XmlPathBuilder.of(root).path(SAMPLE).attributeExists(ALIAS)) {
+			name = XmlPathBuilder.of(root).path(SAMPLE).attribute(ALIAS).trim();
 		} else {
 			// if and only if alias is not present, then name would be equal to primaryId
 			name = primaryId;
 		}
 
 		log.trace("Converting ENA sample with PRIMARY_ID as " + primaryId);
-
-		if (XmlPathBuilder.of(root).path(SAMPLE).attributeExists("alias")) {
-			String alias = XmlPathBuilder.of(root).path(SAMPLE).attribute("alias").trim();
-			attributes.add(Attribute.build(ENA_ALIAS, alias));
-		}
 
 		// ENA sra accession
 		if (XmlPathBuilder.of(root).path(SAMPLE).attributeExists("accession")) {
@@ -181,8 +181,6 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 					unit = XmlPathBuilder.of(e).path("UNITS").text().trim();
 				}
 
-				// log.info("Attribute "+tag+" : "+value+" : "+unit);
-
 				// skip attributes prefixed with ENA
 				if (tag != null && tag.startsWith("ENA-")) {
 					continue;
@@ -198,8 +196,15 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 						attributes.add(Attribute.build(tag, "unknown", Collections.emptyList(), unit));
 					}
 				}
+
+				// BSD-1742 Requirement#2 characteristics/alias in BioSamples should always map to SAMPLE_ATTRIBUTE/alias in ENA XML 
+				// Although the sample attribute mappings will already set the alias attribute. This is just to be double sure. 
+				if(tag != null && tag.equalsIgnoreCase(ALIAS)) {
+					attributes.add(Attribute.build(tag, value));
+				}
 			}
 		}
+
 		if (XmlPathBuilder.of(root).path(SAMPLE, "SAMPLE_LINKS", "URI_LINK").exists()) {
 			for (Element e : XmlPathBuilder.of(root).path(SAMPLE, "SAMPLE_LINKS").elements("URI_LINK")) {
 				String key = XmlPathBuilder.of(e).attribute("LABEL");
