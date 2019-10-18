@@ -2,8 +2,6 @@ package uk.ac.ebi.biosamples.ena;
 
 import java.time.Instant;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -23,6 +21,9 @@ import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
 @Service
 public class EnaElementConverter implements Converter<Element, Sample> {
+	// Fields required by ENA content - some are for JSON building and some for
+	// equality checks with ENA XML
+	private static final String UUID_JSON = "uuid";
 	private static final String INDIVIDUAL_NAME_JSON = "individual_name";
 	private static final String ANONYMIZED_NAME_JSON = "anonymized_name";
 	private static final String BIO_SAMPLE = "BioSample";
@@ -31,7 +32,6 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 	private static final String SUBMITTER_ID_JSON = "Submitter Id";
 	private static final String EXTERNAL_ID_JSON = "External Id";
 	private static final String ALIAS = "alias";
-	// Fields required by ENA content
 	private static final String ENA_SRA_ACCESSION = "SRA accession";
 	private static final String ENA_BROKER_NAME = "Broker name";
 	private static final String INSDC_CENTER_NAME = "INSDC center name";
@@ -107,8 +107,7 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 
 		// ENA title
 		String title = "";
-		if (XmlPathBuilder.of(root).path(SAMPLE, TITLE).exists()
-				&& XmlPathBuilder.of(root).path(SAMPLE, TITLE).text().trim().length() > 0) {
+		if (XmlPathBuilder.of(root).path(SAMPLE, TITLE).exists() && XmlPathBuilder.of(root).path(SAMPLE, TITLE).text().trim().length() > 0) {
 			title = XmlPathBuilder.of(root).path(SAMPLE, TITLE).text().trim();
 		} else if (XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, SCIENTIFIC_NAME).exists()
 				&& XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, SCIENTIFIC_NAME).text().trim().length() > 0) {
@@ -116,30 +115,31 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 		}
 		attributes.add(Attribute.build(ENA_TITLE, title));
 
-		// ENA description
+		// ENA description - BSD-1743
 		if (XmlPathBuilder.of(root).path(SAMPLE, DESCRIPTION).exists()
 				&& XmlPathBuilder.of(root).path(SAMPLE, DESCRIPTION).text().trim().length() > 0) {
 			String description = XmlPathBuilder.of(root).path(SAMPLE, DESCRIPTION).text().trim();
 			attributes.add(Attribute.build(ENA_DESCRIPTION, description));
 		}
 
-		// SUBMITTER_ID
+		// ENA SUBMITTER_ID - BSD-1743
 		final XmlPathBuilder submitterIdPathBuilder = XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS, SUBMITTER_ID);
 
 		if (submitterIdPathBuilder.exists()) {
 			final String submitterId = submitterIdPathBuilder.text();
-			attributes.add(Attribute.build(SUBMITTER_ID_JSON, submitterId, ENA_NAMESPACE_TAG + submitterIdPathBuilder.attribute(NAMESPACE), Collections.emptyList(), null));
+			attributes.add(Attribute.build(SUBMITTER_ID_JSON, submitterId, ENA_NAMESPACE_TAG + submitterIdPathBuilder.attribute(NAMESPACE),
+					Collections.emptyList(), null));
 		}
 
-		// EXTERNAL_ID
+		// ENA EXTERNAL_ID - BSD-1743
 		final XmlPathBuilder externalIdPathBuilder = XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS, EXTERNAL_ID);
 
 		if (externalIdPathBuilder.exists()) {
 			for (final Element element : XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS).elements(EXTERNAL_ID)) {
 				final String externalIdElement = XmlPathBuilder.of(element).text();
 
-				attributes.add(Attribute.build(EXTERNAL_ID_JSON, externalIdElement,
-						ENA_NAMESPACE_TAG + externalIdPathBuilder.attribute(NAMESPACE), Collections.emptyList(), null));
+				attributes.add(Attribute.build(EXTERNAL_ID_JSON, externalIdElement, ENA_NAMESPACE_TAG + externalIdPathBuilder.attribute(NAMESPACE),
+						Collections.emptyList(), null));
 
 				if (BIO_SAMPLE.equals(element.attributeValue(NAMESPACE))) {
 					accession = externalIdElement;
@@ -147,30 +147,24 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 			}
 		}
 
-		//ANONYMIZED_NAME
-		if (XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, ANONYMIZED_NAME).exists()) {
-			attributes.add(Attribute.build(ANONYMIZED_NAME_JSON,
-			XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, ANONYMIZED_NAME).text()));
+		// ENA ANONYMIZED_NAME - BSD-1743
+		final XmlPathBuilder anonymizedNamePathBuilder = XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, ANONYMIZED_NAME);
+
+		if (anonymizedNamePathBuilder.exists()) {
+			attributes.add(Attribute.build(ANONYMIZED_NAME_JSON, anonymizedNamePathBuilder.text()));
 		}
 
-		//INDIVIDUAL_NAME
-		if (XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, INDIVIDUAL_NAME).exists()) {
-			attributes.add(Attribute.build(INDIVIDUAL_NAME_JSON,
-			XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, INDIVIDUAL_NAME).text()));
+		// ENA INDIVIDUAL_NAME - BSD-1743
+		final XmlPathBuilder individualNamePathBuider = XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, INDIVIDUAL_NAME);
+
+		if (individualNamePathBuider.exists()) {
+			attributes.add(Attribute.build(INDIVIDUAL_NAME_JSON, individualNamePathBuider.text()));
 		}
 
-		//UUID
+		// ENA UUID - BSD-1743
 		if (XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS, UUID).exists()) {
 			for (Element element : XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS).elements(UUID)) {
-				attributes.add(Attribute.build("uuid", element.getTextTrim()));
-			}
-		}
-
-		Set<String> synonyms = new HashSet<>();
-
-		for (String synonym : synonyms) {
-			if (!synonym.equals(name) && !synonym.equals(accession)) {
-				attributes.add(Attribute.build("synonym", synonym));
+				attributes.add(Attribute.build(UUID_JSON, element.getTextTrim()));
 			}
 		}
 
@@ -186,20 +180,21 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 
 		if (XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_ATTRIBUTES).exists()) {
 			for (Element e : XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_ATTRIBUTES).elements(SAMPLE_ATTRIBUTE)) {
-
 				String tag = null;
-				if (XmlPathBuilder.of(e).path("TAG").exists()
-						&& XmlPathBuilder.of(e).path("TAG").text().trim().length() > 0) {
+
+				if (XmlPathBuilder.of(e).path("TAG").exists() && XmlPathBuilder.of(e).path("TAG").text().trim().length() > 0) {
 					tag = XmlPathBuilder.of(e).path("TAG").text().trim();
 				}
+
 				String value = null;
-				if (XmlPathBuilder.of(e).path("VALUE").exists()
-						&& XmlPathBuilder.of(e).path("VALUE").text().trim().length() > 0) {
+
+				if (XmlPathBuilder.of(e).path("VALUE").exists() && XmlPathBuilder.of(e).path("VALUE").text().trim().length() > 0) {
 					value = XmlPathBuilder.of(e).path("VALUE").text().trim();
 				}
+
 				String unit = null;
-				if (XmlPathBuilder.of(e).path("UNITS").exists()
-						&& XmlPathBuilder.of(e).path("UNITS").text().trim().length() > 0) {
+
+				if (XmlPathBuilder.of(e).path("UNITS").exists() && XmlPathBuilder.of(e).path("UNITS").text().trim().length() > 0) {
 					unit = XmlPathBuilder.of(e).path("UNITS").text().trim();
 				}
 
@@ -218,12 +213,6 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 						attributes.add(Attribute.build(tag, "unknown", null, Collections.emptyList(), unit));
 					}
 				}
-
-				// BSD-1742 Requirement#2 characteristics/alias in BioSamples should always map to SAMPLE_ATTRIBUTE/alias in ENA XML 
-				// Although the sample attribute mappings will already set the alias attribute. This is just to be double sure. 
-				if(tag != null && tag.equalsIgnoreCase(ALIAS)) {
-					attributes.add(Attribute.build(tag, value));
-				}
 			}
 		}
 
@@ -235,9 +224,8 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 			}
 		}
 
-		return new Sample.Builder(name, accession).withRelease(Instant.now()).withUpdate(Instant.now())
-				.withAttributes(attributes).withRelationships(relationships).withExternalReferences(externalReferences)
-				.build();
+		return new Sample.Builder(name, accession).withRelease(Instant.now()).withUpdate(Instant.now()).withAttributes(attributes)
+				.withRelationships(relationships).withExternalReferences(externalReferences).build();
 	}
 
 }
