@@ -23,6 +23,13 @@ import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
 @Service
 public class EnaElementConverter implements Converter<Element, Sample> {
+	private static final String INDIVIDUAL_NAME_JSON = "individual_name";
+	private static final String ANONYMIZED_NAME_JSON = "anonymized_name";
+	private static final String BIO_SAMPLE = "BioSample";
+	private static final String NAMESPACE = "namespace";
+	private static final String ENA_NAMESPACE_TAG = "ENANamespace:";
+	private static final String SUBMITTER_ID_JSON = "Submitter Id";
+	private static final String EXTERNAL_ID_JSON = "External Id";
 	private static final String ALIAS = "alias";
 	// Fields required by ENA content
 	private static final String ENA_SRA_ACCESSION = "SRA accession";
@@ -117,41 +124,50 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 		}
 
 		// SUBMITTER_ID
-		if (XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS, SUBMITTER_ID).exists()) {
-			XmlPathBuilder submitterIdPathBuilder = XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS, SUBMITTER_ID);
-			String submitterId = submitterIdPathBuilder.text();
-			attributes.add(Attribute.build("Submitter_Id", submitterId, "ENANamespace:" + submitterIdPathBuilder.attribute("namespace"), Collections.emptyList(), null));
+		final XmlPathBuilder submitterIdPathBuilder = XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS, SUBMITTER_ID);
+
+		if (submitterIdPathBuilder.exists()) {
+			final String submitterId = submitterIdPathBuilder.text();
+			attributes.add(Attribute.build(SUBMITTER_ID_JSON, submitterId, ENA_NAMESPACE_TAG + submitterIdPathBuilder.attribute(NAMESPACE), Collections.emptyList(), null));
 		}
 
-		Set<String> synonyms = new HashSet<>();
-		if (XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS, SUBMITTER_ID).exists()) {
-			String synonym = XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS, SUBMITTER_ID).text();
-			synonyms.add(synonym);
-		}
-		if (XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS, EXTERNAL_ID).exists()) {
-			for (Element e : XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS).elements(EXTERNAL_ID)) {
-				if ("BioSample".equals(e.attributeValue("namespace"))) {
-					accession = XmlPathBuilder.of(e).text();
-				} else {
-					synonyms.add(XmlPathBuilder.of(e).text());
+		// EXTERNAL_ID
+		final XmlPathBuilder externalIdPathBuilder = XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS, EXTERNAL_ID);
+
+		if (externalIdPathBuilder.exists()) {
+			for (final Element element : XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS).elements(EXTERNAL_ID)) {
+				final String externalIdElement = XmlPathBuilder.of(element).text();
+
+				attributes.add(Attribute.build(EXTERNAL_ID_JSON, externalIdElement,
+						ENA_NAMESPACE_TAG + externalIdPathBuilder.attribute(NAMESPACE), Collections.emptyList(), null));
+
+				if (BIO_SAMPLE.equals(element.attributeValue(NAMESPACE))) {
+					accession = externalIdElement;
 				}
 			}
 		}
+
+		//ANONYMIZED_NAME
+		if (XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, ANONYMIZED_NAME).exists()) {
+			attributes.add(Attribute.build(ANONYMIZED_NAME_JSON,
+			XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, ANONYMIZED_NAME).text()));
+		}
+
+		//INDIVIDUAL_NAME
+		if (XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, INDIVIDUAL_NAME).exists()) {
+			attributes.add(Attribute.build(INDIVIDUAL_NAME_JSON,
+			XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, INDIVIDUAL_NAME).text()));
+		}
+
+		//UUID
 		if (XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS, UUID).exists()) {
-			for (Element e : XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS).elements(UUID)) {
-				synonyms.add(e.getTextTrim());
+			for (Element element : XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS).elements(UUID)) {
+				attributes.add(Attribute.build("uuid", element.getTextTrim()));
 			}
 		}
-		if (XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, ANONYMIZED_NAME).exists()) {
-			synonyms.add(XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, ANONYMIZED_NAME).text().trim());
-			// attributes.add(Attribute.build("anonymized name",
-			// XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, ANONYMIZED_NAME).text()));
-		}
-		if (XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, INDIVIDUAL_NAME).exists()) {
-			synonyms.add(XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, INDIVIDUAL_NAME).text().trim());
-			// attributes.add(Attribute.build("individual name",
-			// XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, INDIVIDUAL_NAME).text()));
-		}
+
+		Set<String> synonyms = new HashSet<>();
+
 		for (String synonym : synonyms) {
 			if (!synonym.equals(name) && !synonym.equals(accession)) {
 				attributes.add(Attribute.build("synonym", synonym));
