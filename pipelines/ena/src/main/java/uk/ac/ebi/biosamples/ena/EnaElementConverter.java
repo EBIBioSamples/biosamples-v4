@@ -21,6 +21,8 @@ import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
 @Service
 public class EnaElementConverter implements Converter<Element, Sample> {
+	private static final String DESCRIPTION_SAMPLE_ATTRIBUTE = "attribute";
+	private static final String DESCRIPTION_CORE = "core";
 	// Fields required by ENA content - some are for JSON building and some for
 	// equality checks with ENA XML
 	private static final String UUID_JSON = "uuid";
@@ -115,11 +117,13 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 		}
 		attributes.add(Attribute.build(ENA_TITLE, title));
 
-		// ENA description
-		if (XmlPathBuilder.of(root).path(SAMPLE, DESCRIPTION).exists()
-				&& XmlPathBuilder.of(root).path(SAMPLE, DESCRIPTION).text().trim().length() > 0) {
-			String description = XmlPathBuilder.of(root).path(SAMPLE, DESCRIPTION).text().trim();
-			attributes.add(Attribute.build(ENA_DESCRIPTION, description));
+		// ENA description - BSD-1744 - Deal with multiple descriptions in ENA XML
+		final XmlPathBuilder descriptionPathBuilder = XmlPathBuilder.of(root).path(SAMPLE, DESCRIPTION);
+
+		if (descriptionPathBuilder.exists() && descriptionPathBuilder.text().trim().length() > 0) {
+			final String description = descriptionPathBuilder.text().trim();
+
+			attributes.add(Attribute.build(ENA_DESCRIPTION, description, DESCRIPTION_CORE, Collections.emptyList(), null));
 		}
 
 		// ENA SUBMITTER_ID - BSD-1743 - Untag core attributes and sample attributes from synonyms
@@ -127,6 +131,7 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 
 		if (submitterIdPathBuilder.exists()) {
 			final String submitterId = submitterIdPathBuilder.text();
+
 			attributes.add(Attribute.build(SUBMITTER_ID_JSON, submitterId, ENA_NAMESPACE_TAG + submitterIdPathBuilder.attribute(NAMESPACE),
 					Collections.emptyList(), null));
 		}
@@ -205,12 +210,18 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 
 				// TODO handle relationships
 
+				// BSD-1744 - Deal with multiple descriptions in ENA XML
+				if(tag != null && tag.equalsIgnoreCase(ENA_DESCRIPTION)) {
+					attributes.add(Attribute.build(ENA_DESCRIPTION, value, DESCRIPTION_SAMPLE_ATTRIBUTE, Collections.emptyList(), null));
+					continue;
+				}
+
 				if (tag != null) {
 					if (value != null) {
 						attributes.add(Attribute.build(tag, value, null, Collections.emptyList(), unit));
 					} else {
 						// no value supplied
-						attributes.add(Attribute.build(tag, "unknown", null, Collections.emptyList(), unit));
+						attributes.add(Attribute.build(tag, "", null, Collections.emptyList(), unit));
 					}
 				}
 			}
