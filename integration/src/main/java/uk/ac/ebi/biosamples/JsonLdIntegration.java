@@ -114,6 +114,7 @@ public class JsonLdIntegration extends AbstractIntegration {
                 Attribute.build(
                         "MultiCategoryCodeField",
                         "heart and lung",
+                        null,
                         Arrays.asList(
                                 "http://purl.obolibrary.org/obo/UBERON_0002048",
                                 "http://purl.obolibrary.org/obo/UBERON_0002045",

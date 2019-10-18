@@ -70,7 +70,7 @@ public class XmlSampleToSampleConverter implements Converter<Element, Sample>  {
 					unit = XmlPathBuilder.of(property).path("QualifiedValue", "Unit").text();
 				}
 				
-				attributes.add(Attribute.build(type, value, iri, unit));				
+				attributes.add(Attribute.build(type, value, null, iri, unit));				
 			}
 		}
 		for (Element derivedFrom : XmlPathBuilder.of(doc).elements("derivedFrom")) {

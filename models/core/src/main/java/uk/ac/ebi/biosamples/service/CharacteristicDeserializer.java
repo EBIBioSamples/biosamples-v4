@@ -56,7 +56,7 @@ public class CharacteristicDeserializer extends StdDeserializer<SortedSet> {
 		Map<String, List<LegacyAttribute>> characteristics = p.readValueAs(new TypeReference<Map<String, List<LegacyAttribute>>>(){});
 		for (String type : characteristics.keySet()) {
 			for (LegacyAttribute legacy : characteristics.get(type)) {	
-				attributes.add(Attribute.build(type, legacy.text, legacy.ontologyTerms, legacy.unit));
+				attributes.add(Attribute.build(type, legacy.text, legacy.tag, legacy.ontologyTerms, legacy.unit));
 			}
 		}
 		
@@ -74,6 +74,7 @@ public class CharacteristicDeserializer extends StdDeserializer<SortedSet> {
 		
 		public String text;
 		public List<String> ontologyTerms;
+		public String tag;
 		public String unit;
  		
 		

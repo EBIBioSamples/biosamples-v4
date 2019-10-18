@@ -116,7 +116,13 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 			attributes.add(Attribute.build(ENA_DESCRIPTION, description));
 		}
 
-		// put various other fields in as synonyms
+		// SUBMITTER_ID
+		if (XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS, SUBMITTER_ID).exists()) {
+			XmlPathBuilder submitterIdPathBuilder = XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS, SUBMITTER_ID);
+			String submitterId = submitterIdPathBuilder.text();
+			attributes.add(Attribute.build("Submitter_Id", submitterId, "ENANamespace:" + submitterIdPathBuilder.attribute("namespace"), Collections.emptyList(), null));
+		}
+
 		Set<String> synonyms = new HashSet<>();
 		if (XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS, SUBMITTER_ID).exists()) {
 			String synonym = XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS, SUBMITTER_ID).text();
@@ -190,10 +196,10 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 
 				if (tag != null) {
 					if (value != null) {
-						attributes.add(Attribute.build(tag, value, Collections.emptyList(), unit));
+						attributes.add(Attribute.build(tag, value, null, Collections.emptyList(), unit));
 					} else {
 						// no value supplied
-						attributes.add(Attribute.build(tag, "unknown", Collections.emptyList(), unit));
+						attributes.add(Attribute.build(tag, "unknown", null, Collections.emptyList(), unit));
 					}
 				}
 

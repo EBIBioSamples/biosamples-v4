@@ -970,7 +970,7 @@ public class SampleTabService {
 		if (termSourceId != null && termSourceId.trim().length() > 0) {
 			iris.add(termSourceId);
 		}
-		return Attribute.build(type, value, iris, unit);
+		return Attribute.build(type, value, null, iris, unit);
 	}
 
 	private void rejectSampletabForInvalidRelationship(SampleData sampleData) throws UnexpectedSampleTabRelationshipException {
