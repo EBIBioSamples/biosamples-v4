@@ -26,7 +26,7 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 	private static final String UUID_JSON = "uuid";
 	private static final String INDIVIDUAL_NAME_JSON = "individual_name";
 	private static final String ANONYMIZED_NAME_JSON = "anonymized_name";
-	private static final String BIO_SAMPLE = "BioSample";
+	private static final String BIOSAMPLE = "BioSample";
 	private static final String NAMESPACE = "namespace";
 	private static final String ENA_NAMESPACE_TAG = "ENANamespace:";
 	private static final String SUBMITTER_ID_JSON = "Submitter Id";
@@ -115,14 +115,14 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 		}
 		attributes.add(Attribute.build(ENA_TITLE, title));
 
-		// ENA description - BSD-1743
+		// ENA description
 		if (XmlPathBuilder.of(root).path(SAMPLE, DESCRIPTION).exists()
 				&& XmlPathBuilder.of(root).path(SAMPLE, DESCRIPTION).text().trim().length() > 0) {
 			String description = XmlPathBuilder.of(root).path(SAMPLE, DESCRIPTION).text().trim();
 			attributes.add(Attribute.build(ENA_DESCRIPTION, description));
 		}
 
-		// ENA SUBMITTER_ID - BSD-1743
+		// ENA SUBMITTER_ID - BSD-1743 - Untag core attributes and sample attributes from synonyms
 		final XmlPathBuilder submitterIdPathBuilder = XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS, SUBMITTER_ID);
 
 		if (submitterIdPathBuilder.exists()) {
@@ -131,7 +131,7 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 					Collections.emptyList(), null));
 		}
 
-		// ENA EXTERNAL_ID - BSD-1743
+		// ENA EXTERNAL_ID - BSD-1743 - Untag core attributes and sample attributes from synonyms
 		final XmlPathBuilder externalIdPathBuilder = XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS, EXTERNAL_ID);
 
 		if (externalIdPathBuilder.exists()) {
@@ -141,27 +141,27 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 				attributes.add(Attribute.build(EXTERNAL_ID_JSON, externalIdElement, ENA_NAMESPACE_TAG + externalIdPathBuilder.attribute(NAMESPACE),
 						Collections.emptyList(), null));
 
-				if (BIO_SAMPLE.equals(element.attributeValue(NAMESPACE))) {
+				if (BIOSAMPLE.equals(element.attributeValue(NAMESPACE))) {
 					accession = externalIdElement;
 				}
 			}
 		}
 
-		// ENA ANONYMIZED_NAME - BSD-1743
+		// ENA ANONYMIZED_NAME - BSD-1743 - Untag core attributes and sample attributes from synonyms
 		final XmlPathBuilder anonymizedNamePathBuilder = XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, ANONYMIZED_NAME);
 
 		if (anonymizedNamePathBuilder.exists()) {
 			attributes.add(Attribute.build(ANONYMIZED_NAME_JSON, anonymizedNamePathBuilder.text()));
 		}
 
-		// ENA INDIVIDUAL_NAME - BSD-1743
+		// ENA INDIVIDUAL_NAME - BSD-1743 - Untag core attributes and sample attributes from synonyms
 		final XmlPathBuilder individualNamePathBuider = XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, INDIVIDUAL_NAME);
 
 		if (individualNamePathBuider.exists()) {
 			attributes.add(Attribute.build(INDIVIDUAL_NAME_JSON, individualNamePathBuider.text()));
 		}
 
-		// ENA UUID - BSD-1743
+		// ENA UUID - BSD-1743 - Untag core attributes and sample attributes from synonyms
 		if (XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS, UUID).exists()) {
 			for (Element element : XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS).elements(UUID)) {
 				attributes.add(Attribute.build(UUID_JSON, element.getTextTrim()));

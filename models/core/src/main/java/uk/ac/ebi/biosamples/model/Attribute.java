@@ -23,7 +23,6 @@ import com.google.common.collect.Lists;
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class Attribute implements Comparable<Attribute> {
-
     //TODO: This needs to be public static otherwise spring-data-mongo goes crazy
 	public static Logger log = LoggerFactory.getLogger(Attribute.class);
 
@@ -199,6 +198,8 @@ public class Attribute implements Comparable<Attribute> {
     	sb.append(type);
     	sb.append(",");
     	sb.append(value);
+    	sb.append(",");
+    	sb.append(tag);
     	sb.append(",");
     	sb.append(iri);
     	sb.append(",");
