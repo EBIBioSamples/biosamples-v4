@@ -201,11 +201,6 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 					unit = XmlPathBuilder.of(e).path("UNITS").text().trim();
 				}
 
-				// skip attributes prefixed with ENA
-				if (tag != null && tag.startsWith("ENA-")) {
-					continue;
-				}
-
 				// TODO handle relationships
 
 				// BSD-1744 - Deal with multiple descriptions in ENA XML
