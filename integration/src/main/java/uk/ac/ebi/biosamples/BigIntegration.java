@@ -197,7 +197,7 @@ public class BigIntegration extends AbstractIntegration {
 
         SortedSet<Attribute> attributes = new TreeSet<>();
         attributes.add(
-                Attribute.build("organism", "Homo sapiens", Lists.newArrayList("http://purl.obolibrary.org/obo/NCBITaxon_9606"), null));
+                Attribute.build("organism", "Homo sapiens", null, Lists.newArrayList("http://purl.obolibrary.org/obo/NCBITaxon_9606"), null));
 
         SortedSet<Relationship> relationships = new TreeSet<>();
         for (Sample other : samples) {

@@ -102,7 +102,7 @@ public class JSONSampleToSampleConverter implements Converter<String, Sample> {
                     List<String> ontologyTerms = (List<String>) value.get("ontologyTerms");
                     String unit = (String) value.get("unit");
 
-                    attributes.add(Attribute.build(attributeType, attributeValue, ontologyTerms, unit));
+                    attributes.add(Attribute.build(attributeType, attributeValue, null, ontologyTerms, unit));
 
                 }
 

@@ -79,7 +79,7 @@ public class SampleCurationCallable implements Callable<Void> {
 
 
             if (!attribute.getType().equals(newType) || !attribute.getValue().equals(newValue)) {
-                Attribute newAttribute = Attribute.build(newType, newValue, attribute.getIri(),
+                Attribute newAttribute = Attribute.build(newType, newValue, null, attribute.getIri(),
                         attribute.getUnit());
                 Curation curation = Curation.build(attribute, newAttribute);
                 bioSamplesClient.persistCuration(sample.getAccession(), curation, domain);
@@ -101,7 +101,7 @@ public class SampleCurationCallable implements Callable<Void> {
                 String newUnit = correctUnit(attribute.getUnit());
                 if (!attribute.getUnit().equals(newUnit)) {
                     Attribute newAttribute = Attribute.build(attribute.getType(), attribute.getValue(),
-                            attribute.getIri(), newUnit);
+                            null, attribute.getIri(), newUnit);
                     Curation curation = Curation.build(attribute, newAttribute);
                     bioSamplesClient.persistCuration(sample.getAccession(),
                             curation, domain);
@@ -123,7 +123,7 @@ public class SampleCurationCallable implements Callable<Void> {
                     iris.add("http://purl.obolibrary.org/obo/NCBITaxon_" + taxId);
                     //TODO check this IRI exists via OLS
 
-                    Attribute newAttribute = Attribute.build(attribute.getType(), attribute.getValue(),
+                    Attribute newAttribute = Attribute.build(attribute.getType(), attribute.getValue(), null, 
                             iris, attribute.getUnit());
                     Curation curation = Curation.build(attribute, newAttribute);
                     bioSamplesClient.persistCuration(sample.getAccession(),

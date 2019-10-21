@@ -52,8 +52,8 @@ public class ResourceSerializationTest {
 		Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
 		SortedSet<Attribute> attributes = new TreeSet<>();
-		attributes.add(Attribute.build("organism", "Homo sapiens", Lists.newArrayList("http://purl.obolibrary.org/obo/NCBITaxon_9606"), null));
-		attributes.add(Attribute.build("age", "3", Collections.emptyList(), "year"));
+		attributes.add(Attribute.build("organism", "Homo sapiens", null, Lists.newArrayList("http://purl.obolibrary.org/obo/NCBITaxon_9606"), null));
+		attributes.add(Attribute.build("age", "3", null, Collections.emptyList(), "year"));
 		attributes.add(Attribute.build("organism part", "lung"));
 		attributes.add(Attribute.build("organism part", "heart"));
 

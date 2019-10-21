@@ -45,8 +45,8 @@ public class SampleCuramiCallable implements Callable<Integer> {
             String processedAttribute = getCleanedAttribute(a.getType());
             if (curationRules.containsKey(processedAttribute)) {
                 Curation curation = Curation.build(
-                        Attribute.build(a.getType(), a.getValue(), a.getIri(), a.getUnit()),
-                        Attribute.build(curationRules.get(processedAttribute), a.getValue(), a.getIri(), a.getUnit()));
+                        Attribute.build(a.getType(), a.getValue(), null, a.getIri(), a.getUnit()),
+                        Attribute.build(curationRules.get(processedAttribute), a.getValue(), null, a.getIri(), a.getUnit()));
                 bioSamplesClient.persistCuration(sample.getAccession(), curation, domain);
                 LOG.info("New curation found {}", curation);
                 curations.add(curation);

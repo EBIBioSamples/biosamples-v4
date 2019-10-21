@@ -220,9 +220,9 @@ public class EGAImportRunner implements ApplicationRunner {
 
         if (olsMappedTerm.isPresent()) {
             iris.add(olsMappedTerm.get().getIri());
-            attribute = Attribute.build(attributeType, olsMappedTerm.get().getLabel(), iris, null);
+            attribute = Attribute.build(attributeType, olsMappedTerm.get().getLabel(), null, iris, null);
         } else {
-            attribute = Attribute.build(attributeType, phenotype, iris, null);
+            attribute = Attribute.build(attributeType, phenotype, null, iris, null);
         }
 
         return attribute;
