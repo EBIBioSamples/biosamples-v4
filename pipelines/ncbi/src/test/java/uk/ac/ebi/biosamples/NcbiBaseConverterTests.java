@@ -1,17 +1,11 @@
 package uk.ac.ebi.biosamples;
 
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.DocumentHelper;
-import org.dom4j.Element;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.test.context.junit4.SpringRunner;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.ncbi.service.NcbiSampleConversionService;
-import uk.ac.ebi.biosamples.utils.TaxonomyService;
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -23,8 +17,19 @@ import java.util.SortedSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.*;
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.DocumentHelper;
+import org.dom4j.Element;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.test.context.junit4.SpringRunner;
+
+import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.ncbi.service.NcbiSampleConversionService;
+import uk.ac.ebi.biosamples.utils.TaxonomyService;
 
 @RunWith(SpringRunner.class)
 public class NcbiBaseConverterTests {
@@ -44,6 +49,14 @@ public class NcbiBaseConverterTests {
         Sample sampleToTest = this.conversionService.convertNcbiXmlElementToSample(this.testNcbiBioSamples);
         assertEquals(sampleToTest.getAccession(), "SAMN05246317");
         assertEquals(sampleToTest.getName(), "GF.26.AL.R");
+    }
+
+    @Test
+    public void it_extracts_external_Ids() {
+        Sample sampleToTest = this.conversionService.convertNcbiXmlElementToSample(this.testNcbiBioSamples);
+
+        List<Attribute> expectedAttribute = sampleToTest.getAttributes().stream().filter(attr -> attr.getType().equals("External Id")).collect(Collectors.toList());
+        assertTrue(expectedAttribute.size() == 3);
     }
 
     @Test

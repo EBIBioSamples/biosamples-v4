@@ -60,7 +60,6 @@ public class NcbiSampleConversionService {
 	private static final String DB_LABEL = "db_label";
 	private static final String SAMPLE_NAME = "Sample name";
 	private static final String SRA = "SRA";
-	private static final String BIOSAMPLE = "BioSample";
 	private static final String DB = "db";
 	private static final String EXTERNAL_ID_JSON = "External Id";
 	private static final String INSDC_SECONDARY_ACCESSION = "INSDC secondary accession";
