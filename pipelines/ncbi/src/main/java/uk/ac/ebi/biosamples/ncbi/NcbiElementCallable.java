@@ -6,7 +6,6 @@ import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.springframework.hateoas.Resource;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.ncbi.service.NcbiSampleConversionService;
@@ -55,6 +54,7 @@ public class NcbiElementCallable implements Callable<Void> {
 	 * @param value
 	 * @return
 	 */
+	@SuppressWarnings("unused")
 	private int getTaxId(String value) {
 		if (value == null) {
 			throw new RuntimeException("Unable to extract tax id from a null value");
