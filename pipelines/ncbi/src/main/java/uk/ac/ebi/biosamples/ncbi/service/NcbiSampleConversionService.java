@@ -21,6 +21,8 @@ import java.util.*;
 
 @Service
 public class NcbiSampleConversionService {
+	private static final String COMMON_NAME = "Common Name";
+	private static final String GENBANK = "GenBank";
 	private static final String SUPPRESSED = "suppressed";
 	private static final String LIVE = "live";
 	private static final String INSDC_STATUS = "INSDC status";
@@ -59,7 +61,7 @@ public class NcbiSampleConversionService {
 	private static final String SAMPLE_NAME = "Sample name";
 	private static final String SRA = "SRA";
 	private static final String BIOSAMPLE = "BioSample";
-	private static final String DBTAG = "db";
+	private static final String DB = "db";
 	private static final String EXTERNAL_ID_JSON = "External Id";
 	private static final String INSDC_SECONDARY_ACCESSION = "INSDC secondary accession";
 	private static final String SRA_ACCESSION = "SRA accession";
@@ -96,27 +98,29 @@ public class NcbiSampleConversionService {
 		boolean hasOrganismInDescription = false;
 
 		for (Element idElem : XmlPathBuilder.of(sampleElem).path(IDS).elements(ID)) {
-			if (BIOSAMPLE.equals(idElem.attributeValue(DBTAG))) {
-				// ignore ids from BioSample
-			} else if (SRA.equals(idElem.attributeValue(DBTAG))) {
+			final String attributeValueIdElementDb = idElem.attributeValue(DB);
+
+			if (SRA.equals(attributeValueIdElementDb)) {
 				// INSDC SRA IDs get special treatment
 				// BSD-1747 - PRIMARY_ID will be mapped to characteristics/SRA accession for
 				// NCBI/DDBJ samples, in sync with ENA samples
 				attrs.add(Attribute.build(SRA_ACCESSION, idElem.getTextTrim()));
 				attrs.add(Attribute.build(INSDC_SECONDARY_ACCESSION, idElem.getTextTrim()));
+			} else if (GENBANK.equalsIgnoreCase(attributeValueIdElementDb)) {
+				attrs.add(Attribute.build(COMMON_NAME, idElem.getTextTrim()));
 			} else if (SAMPLE_NAME.equals(idElem.attributeValue(DB_LABEL))) {
 				// original submitter identifier is stored as the alias to be used as the name
 				alias = idElem.getTextTrim();
-				centreName = idElem.attributeValue(DBTAG);
-			} else if (GEO.equalsIgnoreCase(idElem.attributeValue(DBTAG))) {
+				centreName = attributeValueIdElementDb;
+			} else if (GEO.equalsIgnoreCase(attributeValueIdElementDb)) {
 				// GEO IDs get special treatment
-				geoTag = idElem.attributeValue(DBTAG);
+				geoTag = attributeValueIdElementDb;
 				geoAlias = idElem.getTextTrim();
 			}
 			// BSD-1765 - Remove synonym tagging of external id's
-			else if (ifSomeOtherId(idElem)) {
-				attrs.add(Attribute.build(EXTERNAL_ID_JSON, idElem.getTextTrim(), NAMESPACE_TAG + idElem.attributeValue(DBTAG),
-						Collections.emptyList(), null));
+			else if (ifSomeOtherIdExists(attributeValueIdElementDb)) {
+				attrs.add(Attribute.build(EXTERNAL_ID_JSON, idElem.getTextTrim(), NAMESPACE_TAG + attributeValueIdElementDb, Collections.emptyList(),
+						null));
 			}
 		}
 
@@ -202,7 +206,7 @@ public class NcbiSampleConversionService {
 				continue;
 			}
 
-			if(key.equalsIgnoreCase(DESCRIPTION)) {
+			if (key.equalsIgnoreCase(DESCRIPTION)) {
 				attrs.add(Attribute.build(DESCRIPTION, value, DESCRIPTION_SAMPLE_ATTRIBUTE, Collections.emptyList(), null));
 				continue;
 			}
@@ -258,7 +262,7 @@ public class NcbiSampleConversionService {
 			final List<String> nonHiddenStatuses = Arrays.asList(LIVE, SUPPRESSED);
 
 			attrs.add(Attribute.build(INSDC_STATUS, status));
-			
+
 			if (!nonHiddenStatuses.contains(status.toLowerCase())) {
 				// not a live or suppressed sample, hide
 				publicationDate = publicationDate.atZone(ZoneOffset.UTC).plus(1000, ChronoUnit.YEARS).toInstant();
@@ -289,8 +293,8 @@ public class NcbiSampleConversionService {
 		// attrs, rels, externalReferences);
 	}
 
-	private boolean ifSomeOtherId(Element idElem) {
-		return !(BIOSAMPLE.equals(idElem.attributeValue(DBTAG)) || SRA.equals(idElem.attributeValue(DBTAG)));
+	private boolean ifSomeOtherIdExists(String idElementValue) {
+		return idElementValue != null && !idElementValue.isEmpty();
 	}
 
 	private int getTaxId(String value) {
