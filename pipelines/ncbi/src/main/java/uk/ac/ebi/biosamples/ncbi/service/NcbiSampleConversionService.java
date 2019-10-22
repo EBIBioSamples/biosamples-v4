@@ -60,11 +60,11 @@ public class NcbiSampleConversionService {
 	private static final String SRA = "SRA";
 	private static final String BIOSAMPLE = "BioSample";
 	private static final String DBTAG = "db";
-	private static final String EXTERNAL_ID = "External Id";
+	private static final String EXTERNAL_ID_JSON = "External Id";
 	private static final String INSDC_SECONDARY_ACCESSION = "INSDC secondary accession";
 	private static final String SRA_ACCESSION = "SRA accession";
 	private static final String NCBI_TITLE = TITLE;
-	private static final String ENA_NAMESPACE_TAG = "Namespace:";
+	private static final String NAMESPACE_TAG = "Namespace:";
 	private static final String DESCRIPTION_CORE = "core";
 	private static final String DESCRIPTION_SAMPLE_ATTRIBUTE = "attribute";
 
@@ -115,7 +115,7 @@ public class NcbiSampleConversionService {
 			}
 			// BSD-1765 - Remove synonym tagging of external id's
 			else if (ifSomeOtherId(idElem)) {
-				attrs.add(Attribute.build(EXTERNAL_ID, idElem.getTextTrim(), ENA_NAMESPACE_TAG + idElem.attributeValue(DBTAG),
+				attrs.add(Attribute.build(EXTERNAL_ID_JSON, idElem.getTextTrim(), NAMESPACE_TAG + idElem.attributeValue(DBTAG),
 						Collections.emptyList(), null));
 			}
 		}
@@ -179,7 +179,7 @@ public class NcbiSampleConversionService {
 		}
 
 		if (organismValue != null) {
-			attrs.add(Attribute.build(ORGANISM_LOWER_CASE, organismValue, organismIri, null));
+			attrs.add(Attribute.build(ORGANISM, organismValue, organismIri, null));
 			hasOrganismInDescription = true;
 		}
 

@@ -21,6 +21,7 @@ import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
 @Service
 public class EnaElementConverter implements Converter<Element, Sample> {
+	private static final String ORGANISM = "Organism";
 	private static final String DESCRIPTION_SAMPLE_ATTRIBUTE = "attribute";
 	private static final String DESCRIPTION_CORE = "core";
 	// Fields required by ENA content - some are for JSON building and some for
@@ -30,7 +31,7 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 	private static final String ANONYMIZED_NAME_JSON = "anonymized_name";
 	private static final String BIOSAMPLE = "BioSample";
 	private static final String NAMESPACE = "namespace";
-	private static final String ENA_NAMESPACE_TAG = "Namespace:";
+	private static final String NAMESPACE_TAG = "Namespace:";
 	private static final String SUBMITTER_ID_JSON = "Submitter Id";
 	private static final String EXTERNAL_ID_JSON = "External Id";
 	private static final String ALIAS = "alias";
@@ -130,7 +131,7 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 		final XmlPathBuilder submitterIdPathBuilder = XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS, SUBMITTER_ID);
 
 		if (submitterIdPathBuilder.exists()) {
-			attributes.add(Attribute.build(SUBMITTER_ID_JSON, submitterIdPathBuilder.text(), ENA_NAMESPACE_TAG + submitterIdPathBuilder.attribute(NAMESPACE),
+			attributes.add(Attribute.build(SUBMITTER_ID_JSON, submitterIdPathBuilder.text(), NAMESPACE_TAG + submitterIdPathBuilder.attribute(NAMESPACE),
 					Collections.emptyList(), null));
 		}
 
@@ -141,7 +142,7 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 			for (final Element element : XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS).elements(EXTERNAL_ID)) {
 				final String externalIdElement = XmlPathBuilder.of(element).text();
 
-				attributes.add(Attribute.build(EXTERNAL_ID_JSON, externalIdElement, ENA_NAMESPACE_TAG + externalIdPathBuilder.attribute(NAMESPACE),
+				attributes.add(Attribute.build(EXTERNAL_ID_JSON, externalIdElement, NAMESPACE_TAG + externalIdPathBuilder.attribute(NAMESPACE),
 						Collections.emptyList(), null));
 
 				if (BIOSAMPLE.equals(element.attributeValue(NAMESPACE))) {
@@ -179,7 +180,7 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 			organismName = XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, SCIENTIFIC_NAME).text();
 		}
 		// ideally this should be lowercase, but backwards compatibilty...
-		attributes.add(Attribute.build("Organism", organismName, organismUri, null));
+		attributes.add(Attribute.build(ORGANISM, organismName, organismUri, null));
 
 		if (XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_ATTRIBUTES).exists()) {
 			for (Element e : XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_ATTRIBUTES).elements(SAMPLE_ATTRIBUTE)) {
