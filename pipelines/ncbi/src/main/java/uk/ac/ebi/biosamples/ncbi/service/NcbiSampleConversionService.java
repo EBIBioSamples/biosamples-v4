@@ -50,6 +50,7 @@ public class NcbiSampleConversionService {
 	private static final String COMMENT = "Comment";
 	private static final String TITLE = "Title";
 	private static final String DESCRIPTION = "Description";
+	private static final String DESCRIPTION_LOWER_CASE = "description";
 	private static final String INSDC_CENTER_NAME = "INSDC center name";
 	private static final String NAME = "Name";
 	private static final String OWNER = "Owner";
@@ -169,7 +170,7 @@ public class NcbiSampleConversionService {
 			 * log.warn("Truncating attribute "+key+" for length on "+accession); value =
 			 * value.substring(0, 252)+"..."; }
 			 */
-			attrs.add(Attribute.build(DESCRIPTION, value, DESCRIPTION_CORE, Collections.emptyList(), null));
+			attrs.add(Attribute.build(DESCRIPTION_LOWER_CASE, value, DESCRIPTION_CORE, Collections.emptyList(), null));
 		}
 
 		if (XmlPathBuilder.of(sampleElem).path(DESCRIPTION, ORGANISM).attributeExists(TAXONOMY_ID)) {
@@ -206,7 +207,7 @@ public class NcbiSampleConversionService {
 			}
 
 			if (key.equalsIgnoreCase(DESCRIPTION)) {
-				attrs.add(Attribute.build(DESCRIPTION, value, DESCRIPTION_SAMPLE_ATTRIBUTE, Collections.emptyList(), null));
+				attrs.add(Attribute.build(DESCRIPTION_LOWER_CASE, value, DESCRIPTION_SAMPLE_ATTRIBUTE, Collections.emptyList(), null));
 				continue;
 			}
 
@@ -235,7 +236,7 @@ public class NcbiSampleConversionService {
 		// handle model and packages
 		// disabled for the moment, do they really add anything? faulcon@2017/01/25
 		// yes, ENA want them. But we can name them better. faulcon@2018/02/14
-		// TODO safetly access these - shouldn't ever be missing but....
+		// TODO safely access these - shouldn't ever be missing but....
 		for (Element modelElem : XmlPathBuilder.of(sampleElem).path(MODELS).elements(MODEL)) {
 			attrs.add(Attribute.build(NCBI_SUBMISSION_MODEL, modelElem.getTextTrim()));
 		}

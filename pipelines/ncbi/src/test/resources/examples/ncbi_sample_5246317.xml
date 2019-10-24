@@ -9,7 +9,8 @@
 			<Id db="SRA">SRS1524325</Id>
 			<Id db="Coriell">GM18582</Id>
 			<Id db="1000G">NA18582</Id>
-			<Id db="HapMap">NA18582</Id>
+			<Id db="HapMap">NA18583</Id>
+			<Id db="GenBank">gb|AMGQ00000000.1</Id>
 		</Ids>
 		<Description>
 			<Title>Metagenome or environmental sample from soil metagenome
@@ -18,6 +19,9 @@
 				taxonomy_name="soil metagenome">
 				<OrganismName>soil metagenome</OrganismName>
 			</Organism>
+			<Comment>
+				<Paragraph>Human HapMap individual Coriell catalog ID NA18582</Paragraph>
+			</Comment>
 		</Description>
 		<Owner>
 			<Name url="http://www.cec.lu.se/">Lund University</Name>
@@ -38,7 +42,8 @@
 		<Attributes>
 			<Attribute attribute_name="isolation_source"
 				display_name="isolation source" harmonized_name="isolation_source">Alseis blackiana
-				roots</Attribute>
+				roots
+			</Attribute>
 			<Attribute attribute_name="collection_date"
 				display_name="collection date" harmonized_name="collection_date">Sep-2012</Attribute>
 			<Attribute attribute_name="geo_loc_name"
@@ -46,7 +51,8 @@
 			</Attribute>
 			<Attribute attribute_name="lat_lon"
 				display_name="latitude and longitude" harmonized_name="lat_lon">9.110057 N
-				79.8434 W</Attribute>
+				79.8434 W
+			</Attribute>
 			<Attribute attribute_name="Fert_treat">unfertilized</Attribute>
 			<Attribute attribute_name="plot">GF_26</Attribute>
 		</Attributes>

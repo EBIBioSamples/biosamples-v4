@@ -21,6 +21,7 @@ import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
 @Service
 public class EnaElementConverter implements Converter<Element, Sample> {
+	private static final String COMMON_NAME = "COMMON_NAME";
 	private static final String ORGANISM = "Organism";
 	private static final String DESCRIPTION_SAMPLE_ATTRIBUTE = "attribute";
 	private static final String DESCRIPTION_CORE = "core";
@@ -36,11 +37,11 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 	private static final String EXTERNAL_ID_JSON = "External Id";
 	private static final String ALIAS = "alias";
 	private static final String ENA_SRA_ACCESSION = "SRA accession";
-	private static final String ENA_BROKER_NAME = "Broker name";
+	private static final String ENA_BROKER_NAME = "broker name";
 	private static final String INSDC_CENTER_NAME = "INSDC center name";
 	private static final String INSDC_CENTER_ALIAS = "INSDC center alias";
 	private static final String ENA_TITLE = "Title";
-	private static final String ENA_DESCRIPTION = "Description";
+	private static final String ENA_DESCRIPTION = "description";
 	private static final String SAMPLE = "SAMPLE";
 	private static final String IDENTIFIERS = "IDENTIFIERS";
 	private static final String PRIMARY_ID = "PRIMARY_ID";
@@ -176,11 +177,17 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 		int organismTaxId = Integer.parseInt(XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, TAXON_ID).text());
 		String organismUri = taxonomyService.getUriForTaxonId(organismTaxId);
 		String organismName = "" + organismTaxId;
+
 		if (XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, SCIENTIFIC_NAME).exists()) {
 			organismName = XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, SCIENTIFIC_NAME).text();
 		}
 		// ideally this should be lowercase, but backwards compatibilty...
 		attributes.add(Attribute.build(ORGANISM, organismName, organismUri, null));
+
+		if (XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, COMMON_NAME).exists()) {
+			final String commonName = XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, COMMON_NAME).text();
+			attributes.add(Attribute.build(COMMON_NAME, commonName));
+		}
 
 		if (XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_ATTRIBUTES).exists()) {
 			for (Element e : XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_ATTRIBUTES).elements(SAMPLE_ATTRIBUTE)) {
