@@ -21,6 +21,8 @@ import java.util.*;
 
 @Service
 public class NcbiSampleConversionService {
+	private static final String COMMON_NAME = "common name";
+	private static final String GENBANK = "GenBank";
 	private static final String SUPPRESSED = "suppressed";
 	private static final String LIVE = "live";
 	private static final String INSDC_STATUS = "INSDC status";
@@ -48,6 +50,7 @@ public class NcbiSampleConversionService {
 	private static final String COMMENT = "Comment";
 	private static final String TITLE = "Title";
 	private static final String DESCRIPTION = "Description";
+	private static final String DESCRIPTION_LOWER_CASE = "description";
 	private static final String INSDC_CENTER_NAME = "INSDC center name";
 	private static final String NAME = "Name";
 	private static final String OWNER = "Owner";
@@ -58,8 +61,7 @@ public class NcbiSampleConversionService {
 	private static final String DB_LABEL = "db_label";
 	private static final String SAMPLE_NAME = "Sample name";
 	private static final String SRA = "SRA";
-	private static final String BIOSAMPLE = "BioSample";
-	private static final String DBTAG = "db";
+	private static final String DB = "db";
 	private static final String EXTERNAL_ID_JSON = "External Id";
 	private static final String INSDC_SECONDARY_ACCESSION = "INSDC secondary accession";
 	private static final String SRA_ACCESSION = "SRA accession";
@@ -67,6 +69,7 @@ public class NcbiSampleConversionService {
 	private static final String NAMESPACE_TAG = "Namespace:";
 	private static final String DESCRIPTION_CORE = "core";
 	private static final String DESCRIPTION_SAMPLE_ATTRIBUTE = "attribute";
+	private static final String SECONDARY_ID_JSON = "Secondary Id";
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 
@@ -96,27 +99,31 @@ public class NcbiSampleConversionService {
 		boolean hasOrganismInDescription = false;
 
 		for (Element idElem : XmlPathBuilder.of(sampleElem).path(IDS).elements(ID)) {
-			if (BIOSAMPLE.equals(idElem.attributeValue(DBTAG))) {
-				// ignore ids from BioSample
-			} else if (SRA.equals(idElem.attributeValue(DBTAG))) {
+			final String attributeValueIdElementDb = idElem.attributeValue(DB);
+
+			if (SRA.equals(attributeValueIdElementDb)) {
 				// INSDC SRA IDs get special treatment
 				// BSD-1747 - PRIMARY_ID will be mapped to characteristics/SRA accession for
 				// NCBI/DDBJ samples, in sync with ENA samples
 				attrs.add(Attribute.build(SRA_ACCESSION, idElem.getTextTrim()));
 				attrs.add(Attribute.build(INSDC_SECONDARY_ACCESSION, idElem.getTextTrim()));
+				attrs.add(Attribute.build(SECONDARY_ID_JSON, idElem.getTextTrim(), NAMESPACE_TAG + attributeValueIdElementDb, Collections.emptyList(),
+						null));
+			} else if (GENBANK.equalsIgnoreCase(attributeValueIdElementDb)) {
+				attrs.add(Attribute.build(COMMON_NAME, idElem.getTextTrim()));
 			} else if (SAMPLE_NAME.equals(idElem.attributeValue(DB_LABEL))) {
 				// original submitter identifier is stored as the alias to be used as the name
 				alias = idElem.getTextTrim();
-				centreName = idElem.attributeValue(DBTAG);
-			} else if (GEO.equalsIgnoreCase(idElem.attributeValue(DBTAG))) {
+				centreName = attributeValueIdElementDb;
+			} else if (GEO.equalsIgnoreCase(attributeValueIdElementDb)) {
 				// GEO IDs get special treatment
-				geoTag = idElem.attributeValue(DBTAG);
+				geoTag = attributeValueIdElementDb;
 				geoAlias = idElem.getTextTrim();
 			}
 			// BSD-1765 - Remove synonym tagging of external id's
-			else if (ifSomeOtherId(idElem)) {
-				attrs.add(Attribute.build(EXTERNAL_ID_JSON, idElem.getTextTrim(), NAMESPACE_TAG + idElem.attributeValue(DBTAG),
-						Collections.emptyList(), null));
+			else if (ifSomeOtherIdExists(attributeValueIdElementDb)) {
+				attrs.add(Attribute.build(EXTERNAL_ID_JSON, idElem.getTextTrim(), NAMESPACE_TAG + attributeValueIdElementDb, Collections.emptyList(),
+						null));
 			}
 		}
 
@@ -166,7 +173,7 @@ public class NcbiSampleConversionService {
 			 * log.warn("Truncating attribute "+key+" for length on "+accession); value =
 			 * value.substring(0, 252)+"..."; }
 			 */
-			attrs.add(Attribute.build(DESCRIPTION, value, DESCRIPTION_CORE, Collections.emptyList(), null));
+			attrs.add(Attribute.build(DESCRIPTION_LOWER_CASE, value, DESCRIPTION_CORE, Collections.emptyList(), null));
 		}
 
 		if (XmlPathBuilder.of(sampleElem).path(DESCRIPTION, ORGANISM).attributeExists(TAXONOMY_ID)) {
@@ -202,8 +209,8 @@ public class NcbiSampleConversionService {
 				continue;
 			}
 
-			if(key.equalsIgnoreCase(DESCRIPTION)) {
-				attrs.add(Attribute.build(DESCRIPTION, value, DESCRIPTION_SAMPLE_ATTRIBUTE, Collections.emptyList(), null));
+			if (key.equalsIgnoreCase(DESCRIPTION)) {
+				attrs.add(Attribute.build(DESCRIPTION_LOWER_CASE, value, DESCRIPTION_SAMPLE_ATTRIBUTE, Collections.emptyList(), null));
 				continue;
 			}
 
@@ -232,7 +239,7 @@ public class NcbiSampleConversionService {
 		// handle model and packages
 		// disabled for the moment, do they really add anything? faulcon@2017/01/25
 		// yes, ENA want them. But we can name them better. faulcon@2018/02/14
-		// TODO safetly access these - shouldn't ever be missing but....
+		// TODO safely access these - shouldn't ever be missing but....
 		for (Element modelElem : XmlPathBuilder.of(sampleElem).path(MODELS).elements(MODEL)) {
 			attrs.add(Attribute.build(NCBI_SUBMISSION_MODEL, modelElem.getTextTrim()));
 		}
@@ -258,7 +265,7 @@ public class NcbiSampleConversionService {
 			final List<String> nonHiddenStatuses = Arrays.asList(LIVE, SUPPRESSED);
 
 			attrs.add(Attribute.build(INSDC_STATUS, status));
-			
+
 			if (!nonHiddenStatuses.contains(status.toLowerCase())) {
 				// not a live or suppressed sample, hide
 				publicationDate = publicationDate.atZone(ZoneOffset.UTC).plus(1000, ChronoUnit.YEARS).toInstant();
@@ -289,8 +296,8 @@ public class NcbiSampleConversionService {
 		// attrs, rels, externalReferences);
 	}
 
-	private boolean ifSomeOtherId(Element idElem) {
-		return !(BIOSAMPLE.equals(idElem.attributeValue(DBTAG)) || SRA.equals(idElem.attributeValue(DBTAG)));
+	private boolean ifSomeOtherIdExists(String idElementValue) {
+		return idElementValue != null && !idElementValue.isEmpty();
 	}
 
 	private int getTaxId(String value) {

@@ -1,42 +1,64 @@
 <BioSampleSet>
-    <BioSample access="public" accession="SAMN05246317" id="5246317" last_update="2018-07-01T00:50:05.513" publication_date="2018-07-01T00:50:05.513" submission_date="2016-06-14T13:47:08.137">
-        <Ids>
-            <Id db="BioSample" is_primary="1">SAMN05246317</Id>
-            <Id db_label="Sample name">GF.26.AL.R</Id>
-            <Id db="SRA">SRS1524325</Id>
-        </Ids>
-        <Description>
-            <Title>Metagenome or environmental sample from soil metagenome</Title>
-            <Organism taxonomy_id="410658" taxonomy_name="soil metagenome">
-                <OrganismName>soil metagenome</OrganismName>
-            </Organism>
-        </Description>
-        <Owner>
-            <Name url="http://www.cec.lu.se/">Lund University</Name>
-            <Contacts>
-                <Contact email="rosenstockn@gmail.com">
-                    <Name>
-                        <First>Nicholas</First>
-                        <Last>Rosenstock</Last>
-                    </Name>
-                </Contact>
-            </Contacts>
-        </Owner>
-        <Models>
-            <Model>Metagenome or environmental</Model>
-        </Models>
-        <Package display_name="Metagenome or environmental; version 1.0">Metagenome.environmental.2.0</Package>
-        <Attributes>
-            <Attribute attribute_name="isolation_source" display_name="isolation source" harmonized_name="isolation_source">Alseis blackiana roots</Attribute>
-            <Attribute attribute_name="collection_date" display_name="collection date" harmonized_name="collection_date">Sep-2012</Attribute>
-            <Attribute attribute_name="geo_loc_name" display_name="geographic location" harmonized_name="geo_loc_name">Panama:Gigante_peninsula</Attribute>
-            <Attribute attribute_name="lat_lon" display_name="latitude and longitude" harmonized_name="lat_lon">9.110057 N 79.8434 W</Attribute>
-            <Attribute attribute_name="Fert_treat">unfertilized</Attribute>
-            <Attribute attribute_name="plot">GF_26</Attribute>
-        </Attributes>
-        <Links>
-            <Link label="PRJNA325589" target="bioproject" type="entrez">325589</Link>
-        </Links>
-        <Status status="live" when="2018-07-01T00:50:05.513"/>
-    </BioSample>
+	<BioSample access="public" accession="SAMN05246317"
+		id="5246317" last_update="2018-07-01T00:50:05.513"
+		publication_date="2018-07-01T00:50:05.513"
+		submission_date="2016-06-14T13:47:08.137">
+		<Ids>
+			<Id db="BioSample" is_primary="1">SAMN05246317</Id>
+			<Id db_label="Sample name">GF.26.AL.R</Id>
+			<Id db="SRA">SRS1524325</Id>
+			<Id db="Coriell">GM18582</Id>
+			<Id db="1000G">NA18582</Id>
+			<Id db="HapMap">NA18583</Id>
+			<Id db="GenBank">gb|AMGQ00000000.1</Id>
+		</Ids>
+		<Description>
+			<Title>Metagenome or environmental sample from soil metagenome
+			</Title>
+			<Organism taxonomy_id="410658"
+				taxonomy_name="soil metagenome">
+				<OrganismName>soil metagenome</OrganismName>
+			</Organism>
+			<Comment>
+				<Paragraph>Human HapMap individual Coriell catalog ID NA18582</Paragraph>
+			</Comment>
+		</Description>
+		<Owner>
+			<Name url="http://www.cec.lu.se/">Lund University</Name>
+			<Contacts>
+				<Contact email="rosenstockn@gmail.com">
+					<Name>
+						<First>Nicholas</First>
+						<Last>Rosenstock</Last>
+					</Name>
+				</Contact>
+			</Contacts>
+		</Owner>
+		<Models>
+			<Model>Metagenome or environmental</Model>
+		</Models>
+		<Package
+			display_name="Metagenome or environmental; version 1.0">Metagenome.environmental.2.0</Package>
+		<Attributes>
+			<Attribute attribute_name="isolation_source"
+				display_name="isolation source" harmonized_name="isolation_source">Alseis blackiana
+				roots
+			</Attribute>
+			<Attribute attribute_name="collection_date"
+				display_name="collection date" harmonized_name="collection_date">Sep-2012</Attribute>
+			<Attribute attribute_name="geo_loc_name"
+				display_name="geographic location" harmonized_name="geo_loc_name">Panama:Gigante_peninsula
+			</Attribute>
+			<Attribute attribute_name="lat_lon"
+				display_name="latitude and longitude" harmonized_name="lat_lon">9.110057 N
+				79.8434 W
+			</Attribute>
+			<Attribute attribute_name="Fert_treat">unfertilized</Attribute>
+			<Attribute attribute_name="plot">GF_26</Attribute>
+		</Attributes>
+		<Links>
+			<Link label="PRJNA325589" target="bioproject" type="entrez">325589</Link>
+		</Links>
+		<Status status="live" when="2018-07-01T00:50:05.513" />
+	</BioSample>
 </BioSampleSet>
