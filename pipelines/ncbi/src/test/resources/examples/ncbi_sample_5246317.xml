@@ -2,7 +2,7 @@
 	<BioSample access="public" accession="SAMN05246317"
 		id="5246317" last_update="2018-07-01T00:50:05.513"
 		publication_date="2018-07-01T00:50:05.513"
-		submission_date="2016-06-14T13:47:08.137">
+		submission_date="2010-06-14T13:47:08.137">
 		<Ids>
 			<Id db="BioSample" is_primary="1">SAMN05246317</Id>
 			<Id db_label="Sample name">GF.26.AL.R</Id>

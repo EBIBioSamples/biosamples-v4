@@ -21,6 +21,7 @@ import java.util.*;
 
 @Service
 public class NcbiSampleConversionService {
+	private static final String SUBMISSION_DATE = "submission_date";
 	private static final String COMMON_NAME = "common name";
 	private static final String GENBANK = "GenBank";
 	private static final String SUPPRESSED = "suppressed";
@@ -249,6 +250,7 @@ public class NcbiSampleConversionService {
 		// handle dates
 		Instant lastUpdate = Instant.parse(sampleElem.attributeValue(LAST_UPDATE) + Z);
 		Instant publicationDate = Instant.parse(sampleElem.attributeValue(PUBLICATION_DATE) + Z);
+		Instant submissionDate = Instant.parse(sampleElem.attributeValue(SUBMISSION_DATE) + Z);
 
 		Instant latestDate = lastUpdate;
 
@@ -289,7 +291,7 @@ public class NcbiSampleConversionService {
 			}
 		}
 
-		return new Sample.Builder(alias, accession).withRelease(publicationDate).withUpdate(lastUpdate).withAttributes(attrs).withRelationships(rels)
+		return new Sample.Builder(alias, accession).withRelease(publicationDate).withUpdate(lastUpdate).withCreate(submissionDate).withAttributes(attrs).withRelationships(rels)
 				.withData(structuredData).withExternalReferences(externalReferences).build();
 
 		// return Sample.build(alias, accession, domain, publicationDate, lastUpdate,
