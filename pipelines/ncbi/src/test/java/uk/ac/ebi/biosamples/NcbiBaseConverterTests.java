@@ -106,7 +106,7 @@ public class NcbiBaseConverterTests {
 	@Test
 	public void it_extracts_common_name() {
 		Sample sampleToTest = this.conversionService.convertNcbiXmlElementToSample(this.testNcbiBioSamples);
-		Optional<Attribute> expectedAttribute = sampleToTest.getAttributes().stream().filter(attr -> attr.getType().equals("Common Name"))
+		Optional<Attribute> expectedAttribute = sampleToTest.getAttributes().stream().filter(attr -> attr.getType().equals("common name"))
 				.findFirst();
 		assertTrue(expectedAttribute.isPresent());
 

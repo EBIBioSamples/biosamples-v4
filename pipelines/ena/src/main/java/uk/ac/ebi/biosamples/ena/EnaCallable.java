@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -110,38 +111,56 @@ public class EnaCallable implements Callable<Void> {
 
 			// add dates etc from database
 			// add some INSDC things for standardisation with NCBI import
-			Instant release = eraProDao.getReleaseDateTime(sampleAccession);
-			if (release == null) {
-				log.warn("Unable to retrieve release date for " + sampleAccession + " defaulting to now");
-				release = Instant.now();
+			final List<INSDCBean> insdcList = eraProDao.getAllINSDCData(sampleAccession);
+			INSDCBean insdcBean = null;
+			Instant release = null;
+			Instant update = null;
+			Instant create = null;
+			
+			if(insdcList != null && !insdcList.isEmpty()) {
+				insdcBean = insdcList.get(0);
 			}
-			attributes.add(Attribute.build("INSDC first public", DateTimeFormatter.ISO_INSTANT.format(release)));
-			Instant update = eraProDao.getUpdateDateTime(sampleAccession);
-			if (update == null) {
-				log.warn("Unable to retrieve update date for " + sampleAccession);
-			} else {
-				attributes.add(Attribute.build("INSDC last update", DateTimeFormatter.ISO_INSTANT.format(update)));
+			
+			if (insdcBean != null) {
+				final String lastUpdated = insdcBean.getLastUpdate();
+				final String firstPublic = insdcBean.getFirstPublic();
+				final String firstCreated = insdcBean.getFirstCreated();
+				final String status = handleStatus(insdcBean.getStatus());
+
+				if (lastUpdated != null) {
+					update = Instant.parse(lastUpdated);
+					attributes.add(Attribute.build("INSDC last update", DateTimeFormatter.ISO_INSTANT.format(update)));
+				}
+
+				if (firstPublic != null) {
+					release = Instant.parse(firstPublic);
+					attributes.add(Attribute.build("INSDC first public", DateTimeFormatter.ISO_INSTANT.format(release)));
+				} else {
+					release = Instant.now();
+				}
+
+				if(firstCreated != null) {
+					create = Instant.parse(firstCreated);
+				}
+
+				if(status != null) {
+					attributes.add(Attribute.build("INSDC status", status));
+				}
 			}
 
-			String checklist = eraProDao.getChecklist(sampleAccession);
-			if (checklist == null) {
-				log.warn("Unable to retrieve checklist for " + sampleAccession);
-			} else {
-				attributes.add(Attribute.build("ENA checklist", checklist));
-			}
+			/*String status = eraProDao.getStatus(sampleAccession);
 
-			String status = eraProDao.getStatus(sampleAccession);
-
-			if (status == null) {
-				log.warn("Unable to retrieve status for " + sampleAccession);
-			} else {
-				attributes.add(Attribute.build("INSDC status", status));
-			}
+			/*
+			 * if (status == null) { log.warn("Unable to retrieve status for " +
+			 * sampleAccession); } else { attributes.add(Attribute.build("INSDC status",
+			 * status)); }
+			 */
 
 			// add external reference
 			externalReferences.add(ExternalReference.build("https://www.ebi.ac.uk/ena/data/view/" + sampleAccession));
 
-            sample = Sample.build(sample.getName(), sampleAccession, domain, release, update, update, attributes,
+			//Although update date is passed here, its system generated to time now by webapps-core
+            sample = Sample.build(sample.getName(), sampleAccession, domain, release, update, create, attributes,
                     sample.getRelationships(), externalReferences);
             bioSamplesClient.persistSampleResource(sample);
         } else {
@@ -151,20 +170,41 @@ public class EnaCallable implements Callable<Void> {
         return null;
     }
 
+	private String handleStatus(int statusId) {
+		if (1 == statusId) {
+            return "draft";
+        } else if (2 == statusId) {
+            return "private";
+        } else if (3 == statusId) {
+            return "cancelled";
+        } else if (4 == statusId) {
+            return "public";
+        } else if (5 == statusId) {
+            return "suppressed";
+        } else if (6 == statusId) {
+            return "killed";
+        } else if (7 == statusId) {
+            return "temporary_suppressed";
+        } else if (8 == statusId) {
+            return "temporary_killed";
+        }
+
+        throw new RuntimeException("Unrecognised statusid " + statusId);
+	}
+
 	/**
-	 * Checks samples from ENA which is SUPPRESSED and takes necessary action, i.e. update status if status is different in BioSamples,
-	 * else persist
+	 * Checks samples from ENA which is SUPPRESSED and takes necessary action, i.e.
+	 * update status if status is different in BioSamples, else persist
 	 *
-	 * @param sampleAccession
-	 * 			The accession passed
-	 * @return {@link Void}
+	 * @param  sampleAccession      The accession passed
+	 * @return                      {@link Void}
 	 * @throws InterruptedException if thread is interrupted
-	 * @throws SQLException if failure in SQL
-	 * @throws DocumentException if failure in document parsing
+	 * @throws SQLException         if failure in SQL
+	 * @throws DocumentException    if failure in document parsing
 	 */
-	private Void checkAndUpdateSuppressedSample(String sampleAccession)
-			throws InterruptedException, SQLException, DocumentException {
-		final Optional<Resource<Sample>> optionalSampleResource = bioSamplesClient.fetchSampleResource(sampleAccession, Optional.of(new ArrayList<String>()));
+	private Void checkAndUpdateSuppressedSample(String sampleAccession) throws InterruptedException, SQLException, DocumentException {
+		final Optional<Resource<Sample>> optionalSampleResource = bioSamplesClient.fetchSampleResource(sampleAccession,
+				Optional.of(new ArrayList<String>()));
 		if (optionalSampleResource.isPresent()) {
 			final Sample sample = optionalSampleResource.get().getContent();
 			boolean persistRequired = true;
@@ -194,9 +234,8 @@ public class EnaCallable implements Callable<Void> {
 	/**
 	 * True if NCBI/DDBJ sample
 	 *
-	 * @param sampleAccession
-	 * 			The accession passed to the method
-	 * @return true if NCBI/DDBJ sample
+	 * @param  sampleAccession The accession passed to the method
+	 * @return                 true if NCBI/DDBJ sample
 	 */
 	private boolean ifNcbiDdbj(String sampleAccession) {
 		return sampleAccession.startsWith(NCBI_SAMPLE_PREFIX) || sampleAccession.startsWith(DDBJ_SAMPLE_PREFIX);

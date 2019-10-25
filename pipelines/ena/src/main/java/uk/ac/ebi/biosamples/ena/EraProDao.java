@@ -1,13 +1,5 @@
 package uk.ac.ebi.biosamples.ena;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowCallbackHandler;
-import org.springframework.stereotype.Service;
-
 import java.sql.SQLException;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -15,6 +7,15 @@ import java.util.Date;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowCallbackHandler;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Service;
 
 @Service
 public class EraProDao {
@@ -118,6 +119,15 @@ select * from cv_status;
         return Instant.parse(dateString);
     }
 
+    public List<INSDCBean> getAllINSDCData(String biosampleAccession) {
+        String sql = "SELECT to_char(LAST_UPDATED, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS LAST_UPDATED, to_char(FIRST_PUBLIC, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS FIRST_PUBLIC,  "
+        		+ " to_char(FIRST_CREATED, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS FIRST_CREATED, STATUS_ID FROM SAMPLE "
+        		+ "WHERE BIOSAMPLE_ID = ? AND BIOSAMPLE_AUTHORITY='N' AND SAMPLE_ID LIKE 'ERS%'";
+        List<INSDCBean> insdcData = jdbcTemplate.query(sql, insdcRowMapper, biosampleAccession);
+        //log.trace("Update date of \"+biosampleAccession+\"is " + dateString);
+        return insdcData;
+    }
+
     public String getChecklist(String biosampleAccession) {
         String sql = "SELECT CHECKLIST_ID FROM SAMPLE WHERE BIOSAMPLE_ID = ? AND BIOSAMPLE_AUTHORITY='N' AND SAMPLE_ID LIKE 'ERS%'";
         String checklist = jdbcTemplate.queryForObject(sql, String.class, biosampleAccession);
@@ -187,4 +197,15 @@ select * from cv_status;
                 "where BIOSAMPLE_ID = ?";
         jdbcTemplate.query(query, rch, enaAccession);
     }
+
+   RowMapper<INSDCBean> insdcRowMapper = (rs, rowNum) -> {
+			final INSDCBean insdcBean = new INSDCBean();
+
+			insdcBean.setFirstPublic(rs.getString("FIRST_PUBLIC"));
+			insdcBean.setLastUpdate(rs.getString("LAST_UPDATED"));
+			insdcBean.setFirstCreated(rs.getString("FIRST_CREATED"));
+			insdcBean.setStatus(rs.getInt("STATUS_ID"));
+
+			return insdcBean;
+    };
 }

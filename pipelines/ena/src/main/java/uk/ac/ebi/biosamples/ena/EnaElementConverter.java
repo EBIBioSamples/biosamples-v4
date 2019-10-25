@@ -21,6 +21,7 @@ import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
 @Service
 public class EnaElementConverter implements Converter<Element, Sample> {
+	private static final String SECONDARY_ID = "SECONDARY_ID";
 	private static final String COMMON_NAME = "COMMON_NAME";
 	private static final String ORGANISM = "Organism";
 	private static final String DESCRIPTION_SAMPLE_ATTRIBUTE = "attribute";
@@ -35,6 +36,7 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 	private static final String NAMESPACE_TAG = "Namespace:";
 	private static final String SUBMITTER_ID_JSON = "Submitter Id";
 	private static final String EXTERNAL_ID_JSON = "External Id";
+	private static final String SECONDARY_ID_JSON = "Secondary Id";
 	private static final String ALIAS = "alias";
 	private static final String ENA_SRA_ACCESSION = "SRA accession";
 	private static final String ENA_BROKER_NAME = "broker name";
@@ -57,6 +59,7 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 	private static final String SAMPLE_ATTRIBUTES = "SAMPLE_ATTRIBUTES";
 	private static final String DESCRIPTION = "DESCRIPTION";
 	private static final String TITLE = "TITLE";
+	private static final String COMMON_NAME_JSON = "common name";
 	private Logger log = LoggerFactory.getLogger(getClass());
 
 	@Autowired
@@ -152,6 +155,22 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 			}
 		}
 
+		// ENA SECONDARY_ID
+		final XmlPathBuilder secondaryIdPathBuilder = XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS, SECONDARY_ID);
+
+		if (secondaryIdPathBuilder.exists()) {
+			for (final Element element : XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS).elements(SECONDARY_ID)) {
+				final String secondaryIdElement = XmlPathBuilder.of(element).text();
+
+				attributes.add(Attribute.build(SECONDARY_ID_JSON, secondaryIdElement, NAMESPACE_TAG + secondaryIdPathBuilder.attribute(NAMESPACE),
+						Collections.emptyList(), null));
+
+				if (BIOSAMPLE.equals(element.attributeValue(NAMESPACE))) {
+					accession = secondaryIdElement;
+				}
+			}
+		}
+
 		// ENA ANONYMIZED_NAME - BSD-1743 - Un-tag core attributes and sample attributes from synonyms
 		final XmlPathBuilder anonymizedNamePathBuilder = XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, ANONYMIZED_NAME);
 
@@ -186,7 +205,7 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 
 		if (XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, COMMON_NAME).exists()) {
 			final String commonName = XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, COMMON_NAME).text();
-			attributes.add(Attribute.build(COMMON_NAME, commonName));
+			attributes.add(Attribute.build(COMMON_NAME_JSON, commonName));
 		}
 
 		if (XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_ATTRIBUTES).exists()) {
