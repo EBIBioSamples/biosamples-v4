@@ -139,20 +139,15 @@ public class EnaCallable implements Callable<Void> {
 	 */
 	private void enrichEnaSample(final SampleDBBean sampleDBBean, final Element root) {
 		Sample sample = enaElementConverter.convert(root);
-
-		SortedSet<Attribute> attributes = new TreeSet<>(sample.getCharacteristics());
-		SortedSet<ExternalReference> externalReferences = new TreeSet<>(sample.getExternalReferences());
-
-		// add dates etc from database
-		// add some INSDC things for standardisation with NCBI import
-		Instant release = null;
-		Instant update = null;
-		Instant create = null;
-
+		final SortedSet<Attribute> attributes = new TreeSet<>(sample.getCharacteristics());
+		final SortedSet<ExternalReference> externalReferences = new TreeSet<>(sample.getExternalReferences());
 		final String lastUpdated = sampleDBBean.getLastUpdate();
 		final String firstPublic = sampleDBBean.getFirstPublic();
 		final String firstCreated = sampleDBBean.getFirstCreated();
 		final String status = handleStatus(sampleDBBean.getStatus());
+		Instant release = null;
+		Instant update = null;
+		Instant create = null;
 
 		if (lastUpdated != null) {
 			update = Instant.parse(lastUpdated);
