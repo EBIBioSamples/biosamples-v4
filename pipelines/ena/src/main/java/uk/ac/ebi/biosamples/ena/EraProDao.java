@@ -119,13 +119,19 @@ select * from cv_status;
         return Instant.parse(dateString);
     }
 
-    public List<INSDCBean> getAllINSDCData(String biosampleAccession) {
-        String sql = "SELECT to_char(LAST_UPDATED, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS LAST_UPDATED, to_char(FIRST_PUBLIC, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS FIRST_PUBLIC,  "
-        		+ " to_char(FIRST_CREATED, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS FIRST_CREATED, STATUS_ID FROM SAMPLE "
-        		+ "WHERE BIOSAMPLE_ID = ? AND BIOSAMPLE_AUTHORITY='N' AND SAMPLE_ID LIKE 'ERS%'";
-        List<INSDCBean> insdcData = jdbcTemplate.query(sql, insdcRowMapper, biosampleAccession);
+    public SampleDBBean getAllSampleData(String biosampleAccession) {
+        String sql = "SELECT SAMPLE_XML, "
+        		+ "to_char(LAST_UPDATED, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS LAST_UPDATED, "
+        		+ "to_char(FIRST_PUBLIC, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS FIRST_PUBLIC,  "
+        		+ " to_char(FIRST_CREATED, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS FIRST_CREATED, "
+        		+ "STATUS_ID "
+        		+ "FROM SAMPLE "
+        		+ "WHERE BIOSAMPLE_ID = ? "
+        		+ "AND BIOSAMPLE_AUTHORITY='N' "
+        		+ "AND SAMPLE_ID LIKE 'ERS%'";
+        SampleDBBean sampleData = jdbcTemplate.queryForObject(sql, insdcRowMapper, biosampleAccession);
         //log.trace("Update date of \"+biosampleAccession+\"is " + dateString);
-        return insdcData;
+        return sampleData;
     }
 
     public String getChecklist(String biosampleAccession) {
@@ -198,14 +204,15 @@ select * from cv_status;
         jdbcTemplate.query(query, rch, enaAccession);
     }
 
-   RowMapper<INSDCBean> insdcRowMapper = (rs, rowNum) -> {
-			final INSDCBean insdcBean = new INSDCBean();
+   RowMapper<SampleDBBean> insdcRowMapper = (rs, rowNum) -> {
+			final SampleDBBean sampleBean = new SampleDBBean();
 
-			insdcBean.setFirstPublic(rs.getString("FIRST_PUBLIC"));
-			insdcBean.setLastUpdate(rs.getString("LAST_UPDATED"));
-			insdcBean.setFirstCreated(rs.getString("FIRST_CREATED"));
-			insdcBean.setStatus(rs.getInt("STATUS_ID"));
+			sampleBean.setSampleXml(rs.getString("SAMPLE_XML"));
+			sampleBean.setFirstPublic(rs.getString("FIRST_PUBLIC"));
+			sampleBean.setLastUpdate(rs.getString("LAST_UPDATED"));
+			sampleBean.setFirstCreated(rs.getString("FIRST_CREATED"));
+			sampleBean.setStatus(rs.getInt("STATUS_ID"));
 
-			return insdcBean;
+			return sampleBean;
     };
 }

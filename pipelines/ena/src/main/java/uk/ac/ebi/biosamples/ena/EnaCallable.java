@@ -5,7 +5,6 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -26,23 +25,28 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
 public class EnaCallable implements Callable<Void> {
-
 	private static final String DDBJ_SAMPLE_PREFIX = "SAMD";
-
 	private static final String NCBI_SAMPLE_PREFIX = "SAMN";
-
 	private static final String SUPPRESSED = "suppressed";
-
-	private Logger log = LoggerFactory.getLogger(getClass());
-
 	private final String sampleAccession;
 	private final BioSamplesClient bioSamplesClient;
 	private final EnaXmlEnhancer enaXmlEnhancer;
 	private final EnaElementConverter enaElementConverter;
 	private final EraProDao eraProDao;
 	private final String domain;
+	private Logger log = LoggerFactory.getLogger(getClass());
 	private boolean suppressionHandler;
 
+	/**
+	 * Construction for all ENA samples
+	 * 
+	 * @param sampleAccession
+	 * @param bioSamplesClient
+	 * @param enaXmlEnhancer
+	 * @param enaElementConverter
+	 * @param eraProDao
+	 * @param domain
+	 */
 	public EnaCallable(String sampleAccession, BioSamplesClient bioSamplesClient, EnaXmlEnhancer enaXmlEnhancer,
 			EnaElementConverter enaElementConverter, EraProDao eraProDao, String domain) {
 		this.sampleAccession = sampleAccession;
@@ -78,118 +82,128 @@ public class EnaCallable implements Callable<Void> {
 	@Override
 	public Void call() throws Exception {
 		if (suppressionHandler) {
-			return checkAndUpdateSuppressedSample(sampleAccession);
+			return checkAndUpdateSuppressedSample();
 		} else {
 			return enrichAndPersistEnaSample();
 		}
 	}
 
 	/**
-	 * Enrich the ENA sample with specific attributes and persist using {@link BioSamplesClient}
+	 * Enrich the ENA sample with specific attributes and persist using
+	 * {@link BioSamplesClient}
 	 *
-	 * @return nothing its {@link Void}
+	 * @return                   nothing its {@link Void}
 	 *
-	 * @throws SQLException if it fails in queries
+	 * @throws SQLException      if it fails in queries
 	 * @throws DocumentException if it fails in XML transformation
 	 */
 	private Void enrichAndPersistEnaSample() throws SQLException, DocumentException {
 		log.info("HANDLING " + sampleAccession);
 
-		String xmlString = eraProDao.getSampleXml(sampleAccession);
+		final SampleDBBean sampleDBBean = eraProDao.getAllSampleData(this.sampleAccession);
+		if (sampleDBBean != null) {
+			handleEnaSample(sampleDBBean);
+		}
 
-		SAXReader reader = new SAXReader();
-		Document xml = reader.read(new StringReader(xmlString));
-		Element root = enaXmlEnhancer.applyAllRules(xml.getRootElement(),
-				enaXmlEnhancer.getEnaDatabaseSample(sampleAccession));
+		return null;
+	}
+
+	/**
+	 * Handles one ENA sample
+	 * 
+	 * @param  sampleDBBean      {@link SampleDBBean}
+	 * 
+	 * @throws DocumentException in case of parse errors
+	 */
+	private void handleEnaSample(final SampleDBBean sampleDBBean) throws DocumentException {
+		final String xmlString = sampleDBBean.getSampleXml();
+		final SAXReader reader = new SAXReader();
+		final Document xml = reader.read(new StringReader(xmlString));
+		final Element root = enaXmlEnhancer.applyAllRules(xml.getRootElement(), enaXmlEnhancer.getEnaDatabaseSample(sampleAccession));
 
 		// check that we got some content
 		if (XmlPathBuilder.of(root).path("SAMPLE").exists()) {
-			Sample sample = enaElementConverter.convert(root);
+			enrichEnaSample(sampleDBBean, root);
+		} else {
+			log.warn("Unable to find SAMPLE element for " + sampleAccession);
+		}
 
-			SortedSet<Attribute> attributes = new TreeSet<>(sample.getCharacteristics());
-			SortedSet<ExternalReference> externalReferences = new TreeSet<>(sample.getExternalReferences());
+		log.trace("HANDLED " + sampleAccession);
+	}
 
-			// add dates etc from database
-			// add some INSDC things for standardisation with NCBI import
-			final List<INSDCBean> insdcList = eraProDao.getAllINSDCData(sampleAccession);
-			INSDCBean insdcBean = null;
-			Instant release = null;
-			Instant update = null;
-			Instant create = null;
-			
-			if(insdcList != null && !insdcList.isEmpty()) {
-				insdcBean = insdcList.get(0);
-			}
-			
-			if (insdcBean != null) {
-				final String lastUpdated = insdcBean.getLastUpdate();
-				final String firstPublic = insdcBean.getFirstPublic();
-				final String firstCreated = insdcBean.getFirstCreated();
-				final String status = handleStatus(insdcBean.getStatus());
+	/**
+	 * Enriches one ENA sample
+	 * 
+	 * @param sampleDBBean {@link SampleDBBean}
+	 * @param root         The XML {@link Element}
+	 */
+	private void enrichEnaSample(final SampleDBBean sampleDBBean, final Element root) {
+		Sample sample = enaElementConverter.convert(root);
 
-				if (lastUpdated != null) {
-					update = Instant.parse(lastUpdated);
-					attributes.add(Attribute.build("INSDC last update", DateTimeFormatter.ISO_INSTANT.format(update)));
-				}
+		SortedSet<Attribute> attributes = new TreeSet<>(sample.getCharacteristics());
+		SortedSet<ExternalReference> externalReferences = new TreeSet<>(sample.getExternalReferences());
 
-				if (firstPublic != null) {
-					release = Instant.parse(firstPublic);
-					attributes.add(Attribute.build("INSDC first public", DateTimeFormatter.ISO_INSTANT.format(release)));
-				} else {
-					release = Instant.now();
-				}
+		// add dates etc from database
+		// add some INSDC things for standardisation with NCBI import
+		Instant release = null;
+		Instant update = null;
+		Instant create = null;
 
-				if(firstCreated != null) {
-					create = Instant.parse(firstCreated);
-				}
+		final String lastUpdated = sampleDBBean.getLastUpdate();
+		final String firstPublic = sampleDBBean.getFirstPublic();
+		final String firstCreated = sampleDBBean.getFirstCreated();
+		final String status = handleStatus(sampleDBBean.getStatus());
 
-				if(status != null) {
-					attributes.add(Attribute.build("INSDC status", status));
-				}
-			}
+		if (lastUpdated != null) {
+			update = Instant.parse(lastUpdated);
+			attributes.add(Attribute.build("INSDC last update", DateTimeFormatter.ISO_INSTANT.format(update)));
+		}
 
-			/*String status = eraProDao.getStatus(sampleAccession);
+		if (firstPublic != null) {
+			release = Instant.parse(firstPublic);
+			attributes.add(Attribute.build("INSDC first public", DateTimeFormatter.ISO_INSTANT.format(release)));
+		} else {
+			release = Instant.now();
+		}
 
-			/*
-			 * if (status == null) { log.warn("Unable to retrieve status for " +
-			 * sampleAccession); } else { attributes.add(Attribute.build("INSDC status",
-			 * status)); }
-			 */
+		if (firstCreated != null) {
+			create = Instant.parse(firstCreated);
+		}
 
-			// add external reference
-			externalReferences.add(ExternalReference.build("https://www.ebi.ac.uk/ena/data/view/" + sampleAccession));
+		if (status != null) {
+			attributes.add(Attribute.build("INSDC status", status));
+		}
 
-			//Although update date is passed here, its system generated to time now by webapps-core
-            sample = Sample.build(sample.getName(), sampleAccession, domain, release, update, create, attributes,
-                    sample.getRelationships(), externalReferences);
-            bioSamplesClient.persistSampleResource(sample);
-        } else {
-            log.warn("Unable to find SAMPLE element for " + sampleAccession);
-        }
-        log.trace("HANDLED " + sampleAccession);
-        return null;
-    }
+		// add external reference
+		externalReferences.add(ExternalReference.build("https://www.ebi.ac.uk/ena/data/view/" + this.sampleAccession));
+
+		// Although update date is passed here, its system generated to time now by
+		// webapps-core
+		sample = Sample.build(sample.getName(), this.sampleAccession, domain, release, update, create, attributes, sample.getRelationships(),
+				externalReferences);
+		bioSamplesClient.persistSampleResource(sample);
+	}
 
 	private String handleStatus(int statusId) {
 		if (1 == statusId) {
-            return "draft";
-        } else if (2 == statusId) {
-            return "private";
-        } else if (3 == statusId) {
-            return "cancelled";
-        } else if (4 == statusId) {
-            return "public";
-        } else if (5 == statusId) {
-            return "suppressed";
-        } else if (6 == statusId) {
-            return "killed";
-        } else if (7 == statusId) {
-            return "temporary_suppressed";
-        } else if (8 == statusId) {
-            return "temporary_killed";
-        }
+			return "draft";
+		} else if (2 == statusId) {
+			return "private";
+		} else if (3 == statusId) {
+			return "cancelled";
+		} else if (4 == statusId) {
+			return "public";
+		} else if (5 == statusId) {
+			return "suppressed";
+		} else if (6 == statusId) {
+			return "killed";
+		} else if (7 == statusId) {
+			return "temporary_suppressed";
+		} else if (8 == statusId) {
+			return "temporary_killed";
+		}
 
-        throw new RuntimeException("Unrecognised statusid " + statusId);
+		throw new RuntimeException("Unrecognised statusid " + statusId);
 	}
 
 	/**
@@ -202,9 +216,10 @@ public class EnaCallable implements Callable<Void> {
 	 * @throws SQLException         if failure in SQL
 	 * @throws DocumentException    if failure in document parsing
 	 */
-	private Void checkAndUpdateSuppressedSample(String sampleAccession) throws InterruptedException, SQLException, DocumentException {
-		final Optional<Resource<Sample>> optionalSampleResource = bioSamplesClient.fetchSampleResource(sampleAccession,
+	private Void checkAndUpdateSuppressedSample() throws InterruptedException, SQLException, DocumentException {
+		final Optional<Resource<Sample>> optionalSampleResource = bioSamplesClient.fetchSampleResource(this.sampleAccession,
 				Optional.of(new ArrayList<String>()));
+
 		if (optionalSampleResource.isPresent()) {
 			final Sample sample = optionalSampleResource.get().getContent();
 			boolean persistRequired = true;
@@ -218,12 +233,12 @@ public class EnaCallable implements Callable<Void> {
 			if (persistRequired) {
 				sample.getAttributes().removeIf(attr -> attr.getType().contains("INSDC status"));
 				sample.getAttributes().add(Attribute.build("INSDC status", SUPPRESSED));
-				log.info("Updating status to suppressed of sample: " + sampleAccession);
+				log.info("Updating status to suppressed of sample: " + this.sampleAccession);
 				bioSamplesClient.persistSampleResource(sample);
 			}
 		} else {
-			if (!ifNcbiDdbj(sampleAccession)) {
-				log.info("Accession doesn't exist " + sampleAccession + " creating the same");
+			if (!ifNcbiDdbj()) {
+				log.info("Accession doesn't exist " + this.sampleAccession + " creating the same");
 				return enrichAndPersistEnaSample();
 			}
 		}
@@ -237,7 +252,7 @@ public class EnaCallable implements Callable<Void> {
 	 * @param  sampleAccession The accession passed to the method
 	 * @return                 true if NCBI/DDBJ sample
 	 */
-	private boolean ifNcbiDdbj(String sampleAccession) {
-		return sampleAccession.startsWith(NCBI_SAMPLE_PREFIX) || sampleAccession.startsWith(DDBJ_SAMPLE_PREFIX);
+	private boolean ifNcbiDdbj() {
+		return this.sampleAccession.startsWith(NCBI_SAMPLE_PREFIX) || this.sampleAccession.startsWith(DDBJ_SAMPLE_PREFIX);
 	}
 }
