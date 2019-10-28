@@ -194,6 +194,7 @@ public class NcbiSampleConversionService {
 		// handle attributes
 		for (Element attrElem : XmlPathBuilder.of(sampleElem).path(ATTRIBUTES).elements(ATTRIBUTE)) {
 			String key = attrElem.attributeValue(DISPLAY_NAME);
+
 			if (key == null || key.length() == 0) {
 				key = attrElem.attributeValue(ATTRIBUTE_NAME);
 			}
