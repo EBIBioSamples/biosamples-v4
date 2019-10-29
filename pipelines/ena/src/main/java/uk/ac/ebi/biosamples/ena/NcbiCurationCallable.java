@@ -49,21 +49,22 @@ public class NcbiCurationCallable implements Callable<Void> {
 
 	@Override
 	public Void call() throws Exception {
-		log.trace("HANDLING " + accession);
-		ExternalReference exRef = ExternalReference.build("https://www.ebi.ac.uk/ena/data/view/" + accession);
+		log.trace("HANDLING " + this.accession);
+		ExternalReference exRef = ExternalReference.build("https://www.ebi.ac.uk/ena/data/view/" + this.accession);
 		Curation curation = Curation.build(null, null, null, Collections.singleton(exRef));
 
 		if (suppressionHandler) {
-			checkAndUpdateSuppressedSample(accession);
+			checkAndUpdateSuppressedSample();
 		} else {
 			// get the sample to make sure it exists first
-			if (bioSamplesClient.fetchSampleResource(accession, Optional.of(new ArrayList<String>())).isPresent()) {
-				bioSamplesClient.persistCuration(accession, curation, domain);
+			if (bioSamplesClient.fetchSampleResource(this.accession, Optional.of(new ArrayList<String>())).isPresent()) {
+				bioSamplesClient.persistCuration(this.accession, curation, domain);
 			} else {
-				log.warn("Unable to find " + accession);
+				log.warn("Unable to find " + this.accession);
 			}
 		}
-		log.trace("HANDLED " + accession);
+		log.trace("HANDLED " + this.accession);
+
 		return null;
 	}
 
@@ -73,8 +74,8 @@ public class NcbiCurationCallable implements Callable<Void> {
 	 * @param sampleAccession
 	 * 				The accession passed
 	 */
-	private void checkAndUpdateSuppressedSample(String sampleAccession) {
-		final Optional<Resource<Sample>> optionalSampleResource = bioSamplesClient.fetchSampleResource(sampleAccession, Optional.of(new ArrayList<String>()));
+	private void checkAndUpdateSuppressedSample() {
+		final Optional<Resource<Sample>> optionalSampleResource = bioSamplesClient.fetchSampleResource(this.accession, Optional.of(new ArrayList<String>()));
 
 		if (optionalSampleResource.isPresent()) {
 			final Sample sample = optionalSampleResource.get().getContent();
@@ -90,7 +91,7 @@ public class NcbiCurationCallable implements Callable<Void> {
 			if (persistRequired) {
 				sample.getAttributes().removeIf(attr -> attr.getType().contains("INSDC status"));
 				sample.getAttributes().add(Attribute.build("INSDC status", SUPPRESSED));
-				log.info("Updating status to suppressed of sample: " + sampleAccession);
+				log.info("Updating status to suppressed of sample: " + this.accession);
 				bioSamplesClient.persistSampleResource(sample);
 			}
 		}

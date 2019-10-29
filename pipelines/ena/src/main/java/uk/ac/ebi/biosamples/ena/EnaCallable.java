@@ -218,6 +218,7 @@ public class EnaCallable implements Callable<Void> {
 		if (optionalSampleResource.isPresent()) {
 			final Sample sample = optionalSampleResource.get().getContent();
 			boolean persistRequired = true;
+
 			for (Attribute attribute : sample.getAttributes()) {
 				if (attribute.getType().equals("INSDC status") && attribute.getValue().equals(SUPPRESSED)) {
 					persistRequired = false;
