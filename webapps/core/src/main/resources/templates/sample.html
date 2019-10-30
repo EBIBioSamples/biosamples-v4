@@ -30,6 +30,10 @@
 						<td	th:text="${#temporals.format(release, 'yyyy / MM / dd HH:mm:ss','UTC')+' UTC'}">2001 / 02 / 02 12:00:00</td>
 					</tr>
 					<tr>
+						<th>Created on</th>
+						<td	th:text="${#temporals.format(create, 'yyyy / MM / dd HH:mm:ss','UTC')+' UTC'}">2001 / 02 / 02 12:00:00</td>
+					</tr>
+					<tr>
 						<th>Updated on</th>
 						<td	th:text="${#temporals.format(update, 'yyyy / MM / dd HH:mm:ss','UTC')+' UTC'}">2001 / 02 / 02 12:00:00</td>
 					</tr>

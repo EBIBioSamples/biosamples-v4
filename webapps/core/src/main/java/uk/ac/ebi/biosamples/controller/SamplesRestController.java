@@ -314,7 +314,7 @@ public class SamplesRestController {
 	@PostMapping(consumes = { MediaType.APPLICATION_JSON_VALUE })
 	public ResponseEntity<Resource<Sample>> post(@RequestBody Sample sample,
 			@RequestParam(name = "setupdatedate", required = false, defaultValue="true") boolean setUpdateDate,
-            @RequestParam(name = "setfulldetails", required = false, defaultValue = "false") boolean setFullDetails) {
+            @RequestParam(name = "setfulldetails", required = false, defaultValue = "true") boolean setFullDetails) {
 
 		log.debug("Recieved POST for "+sample);
 		if (sample.hasAccession() && !bioSamplesAapService.isWriteSuperUser()) {
@@ -324,12 +324,13 @@ public class SamplesRestController {
 
 		sample = bioSamplesAapService.handleSampleDomain(sample);
 
-		//update date is system generated field
-		Instant update = Instant.now();
+		//update, create date are system generated fields
+		Instant create = Instant.now();
 		SubmittedViaType submittedVia =
 				sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
 		sample = Sample.Builder.fromSample(sample)
-				.withUpdate(update)
+				.withCreate(create)
+				.withUpdate(create)
 				.withSubmittedVia(submittedVia).build();
 
 		if (!setFullDetails) {

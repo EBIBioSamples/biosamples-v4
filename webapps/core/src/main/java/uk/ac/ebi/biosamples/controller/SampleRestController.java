@@ -179,7 +179,7 @@ public class SampleRestController {
     public Resource<Sample> put(@PathVariable String accession,
                                 @RequestBody Sample sample,
                                 @RequestParam(name = "setupdatedate", required = false, defaultValue = "true") boolean setUpdateDate,
-                                @RequestParam(name = "setfulldetails", required = false, defaultValue = "false") boolean setFullDetails) {
+                                @RequestParam(name = "setfulldetails", required = false, defaultValue = "true") boolean setFullDetails) {
 
         if (sample.getAccession() == null || !sample.getAccession().equals(accession)) {
             // if the accession in the body is different to the accession in the

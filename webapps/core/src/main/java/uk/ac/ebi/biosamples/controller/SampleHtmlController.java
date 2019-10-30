@@ -323,6 +323,7 @@ public class SampleHtmlController {
 		//we need to do the conversion
 		model.addAttribute("update", sample.get().getUpdate().atOffset(ZoneOffset.UTC));
 		model.addAttribute("release", sample.get().getRelease().atOffset(ZoneOffset.UTC));
+		model.addAttribute("create", sample.get().getCreate().atOffset(ZoneOffset.UTC));
 
 		return "sample";
 	}

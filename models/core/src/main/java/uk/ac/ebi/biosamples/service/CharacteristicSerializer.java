@@ -61,7 +61,7 @@ public class CharacteristicSerializer extends StdSerializer<SortedSet> {
 				if (!attributeMap.containsKey(attribute.getType())) {
 					attributeMap.put(attribute.getType(), new TreeMap<>());
 				}
-				attributeMap.get(attribute.getType()).put(attribute.getValue(), Attribute.build(attribute.getType(), attribute.getValue(), attribute.getIri(), attribute.getUnit()));			
+				attributeMap.get(attribute.getType()).put(attribute.getValue(), Attribute.build(attribute.getType(), attribute.getValue(), attribute.getTag(), attribute.getIri(), attribute.getUnit()));			
 			}
 
 	        for (String type : attributeMap.keySet()) {
@@ -79,6 +79,9 @@ public class CharacteristicSerializer extends StdSerializer<SortedSet> {
 	            	}
 	            	if (attributeMap.get(type).get(value).getUnit() != null) {
 	            		gen.writeStringField("unit", attributeMap.get(type).get(value).getUnit());		
+	            	}
+	            	if (attributeMap.get(type).get(value).getTag() != null) {
+	            		gen.writeStringField("tag", attributeMap.get(type).get(value).getTag());		
 	            	}
 	            	gen.writeEndObject();
 	            }

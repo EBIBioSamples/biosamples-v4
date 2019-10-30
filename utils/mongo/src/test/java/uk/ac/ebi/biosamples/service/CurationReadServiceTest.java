@@ -206,7 +206,7 @@ public class CurationReadServiceTest {
         externalReferences.add(ExternalReference.build("www.ebi.ac.uk/test/2"));
 
         return Sample.build("SAMN0001_NAME", "SAMN0001", "self.TestDomain",
-                Instant.now(), Instant.now(), attributes, relationships, externalReferences, SubmittedViaType.JSON_API);
+                Instant.now(), Instant.now(), Instant.now(), attributes, relationships, externalReferences, SubmittedViaType.JSON_API);
     }
 
     private List<MongoCurationLink> convertToMongoCurationList(List<CurationLink> curations) {

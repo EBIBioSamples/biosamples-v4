@@ -150,7 +150,7 @@ public class RestIntegration extends AbstractIntegration {
 //				sampleTest2.getRelease(), sampleTest2.getUpdate(),
 //				sampleTest2.getCharacteristics(), sampleTest1.getRelationships(), sampleTest2.getExternalReferences(), null, null, null);
         sampleTest2 = Sample.Builder.fromSample(sampleTest2).withRelationships(sampleTest1.getRelationships())
-				.withNoOrganisations().withNoPublications().withNoContacts()
+				.withNoOrganisations().withNoContacts()
 				.build();
 
 		//check that it has the additional relationship added
@@ -245,10 +245,10 @@ public class RestIntegration extends AbstractIntegration {
 		SortedSet<Attribute> attributes = new TreeSet<>();
 		attributes.add(
 				Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
-		attributes.add(Attribute.build("age", "3", Collections.emptyList(), "year"));
+		attributes.add(Attribute.build("age", "3", null, Collections.emptyList(), "year"));
 		attributes.add(Attribute.build("organism part", "lung"));
 		attributes.add(Attribute.build("organism part", "heart"));
-		attributes.add(Attribute.build("sex", "female", Sets.newHashSet("http://purl.obolibrary.org/obo/PATO_0000383","http://www.ebi.ac.uk/efo/EFO_0001265"), null));
+		attributes.add(Attribute.build("sex", "female", null, Sets.newHashSet("http://purl.obolibrary.org/obo/PATO_0000383","http://www.ebi.ac.uk/efo/EFO_0001265"), null));
 
 		SortedSet<Relationship> relationships = new TreeSet<>();
 		relationships.add(Relationship.build("SAMN1", "derived from", "SAMN2"));
@@ -302,6 +302,8 @@ public class RestIntegration extends AbstractIntegration {
 		Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
 		Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
+		Publication publication = new Publication.Builder().doi("doi").pubmed_id("pubmed_id").build();
+
 		SortedSet<Attribute> attributes = new TreeSet<>();
 		attributes.add(
 				Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
@@ -309,6 +311,7 @@ public class RestIntegration extends AbstractIntegration {
 
 //		return Sample.build(name, accession, domain, release, update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
 		return new Sample.Builder(name, accession).withDomain(domain).withRelease(release).withUpdate(update)
+				.withPublications(Collections.singletonList(publication))
 				.withAttributes(attributes).build();
 	}
 

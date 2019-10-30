@@ -43,12 +43,13 @@ public class MongoSerializationTest {
 		String name = "Test Sample";
 		String accession = "TEST1";
 		Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
+		Instant create = Instant.parse("2016-05-05T11:36:57.00Z");
 		Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 		SubmittedViaType submittedVia = SubmittedViaType.JSON_API;
 
 		SortedSet<Attribute> attributes = new TreeSet<>();
-		attributes.add(Attribute.build("organism", "Homo sapiens", Lists.newArrayList("http://purl.obolibrary.org/obo/NCBITaxon_9606"), null));
-		attributes.add(Attribute.build("age", "3", Collections.emptyList(), "year"));
+		attributes.add(Attribute.build("organism", "Homo sapiens", null, Lists.newArrayList("http://purl.obolibrary.org/obo/NCBITaxon_9606"), null));
+		attributes.add(Attribute.build("age", "3", null, Collections.emptyList(), "year"));
 		attributes.add(Attribute.build("organism part", "lung"));
 		attributes.add(Attribute.build("organism part", "heart"));
 
@@ -99,7 +100,7 @@ public class MongoSerializationTest {
 				.pubmed_id("24265224")
 				.build());
 
-		return MongoSample.build(name, accession, "foozit", release, update,
+		return MongoSample.build(name, accession, "foozit", release, update, create,
 				attributes, structuredData, relationships, externalReferences,
 				organizations, contacts, publications, submittedVia);
 	}
@@ -109,6 +110,7 @@ public class MongoSerializationTest {
 		String accession = "TEST1";
 		String domain = "foozit";
 		Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
+		Instant create = Instant.parse("2016-05-05T11:36:57.00Z");
 		Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 		SubmittedViaType submittedVia = SubmittedViaType.JSON_API;
 		SortedSet<Attribute> attributes = new TreeSet<>();
@@ -131,7 +133,7 @@ public class MongoSerializationTest {
 				).build();
 		data.add(amrTable);
 
-		return MongoSample.build(name, accession, domain, release, update,
+		return MongoSample.build(name, accession, domain, release, update, create,
 				attributes, data, relationships, externalReferences, organizations,
 				contacts, publications, submittedVia);
 

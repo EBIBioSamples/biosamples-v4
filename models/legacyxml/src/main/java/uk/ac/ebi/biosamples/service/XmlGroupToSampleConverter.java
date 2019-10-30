@@ -61,7 +61,7 @@ public class XmlGroupToSampleConverter implements Converter<Element, Sample>  {
 						unit = XmlPathBuilder.of(qualifiedValue).path("TermSourceREF", "Unit").text();
 					}
 					
-					attributes.add(Attribute.build(type, value, iri, unit));		
+					attributes.add(Attribute.build(type, value, null, iri, unit));		
 				}
 			}
 		}

@@ -1,13 +1,5 @@
 package uk.ac.ebi.biosamples.ena;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowCallbackHandler;
-import org.springframework.stereotype.Service;
-
 import java.sql.SQLException;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -15,6 +7,15 @@ import java.util.Date;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowCallbackHandler;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Service;
 
 @Service
 public class EraProDao {
@@ -71,6 +72,30 @@ select * from cv_status;
         jdbcTemplate.query(query, rch, minDateOld, maxDateOld, minDateOld, maxDateOld);
     }
 
+    /**
+     * Returns SUPPRESSED ENA samples
+     * 
+     * @param rch
+     * 		{@link RowCallbackHandler}
+     */
+    public void doGetSuppressedEnaSamples(RowCallbackHandler rch) {
+        String query = "SELECT UNIQUE(BIOSAMPLE_ID) FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND BIOSAMPLE_AUTHORITY= 'N' AND STATUS_ID = 5";
+
+        jdbcTemplate.query(query, rch);
+    }
+
+    /**
+     * Returns SUPPRESSED NCBI/DDBJ samples
+     * 
+     * @param rch
+     * 		{@link RowCallbackHandler}
+     */
+    public void doGetSuppressedNcbiDdbjSamples(RowCallbackHandler rch) {
+        String query = "SELECT UNIQUE(BIOSAMPLE_ID) FROM SAMPLE WHERE (BIOSAMPLE_ID LIKE 'SAMN%' OR BIOSAMPLE_ID LIKE 'SAMD%' ) AND BIOSAMPLE_AUTHORITY= 'N' AND STATUS_ID = 5";
+
+        jdbcTemplate.query(query, rch);
+    }
+
     public void getSingleSample(String bioSampleId, RowCallbackHandler rch) {
         String query = "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND EGA_ID IS NULL AND BIOSAMPLE_AUTHORITY= 'N' "
                 + "AND " + STATUS_CLAUSE + " AND BIOSAMPLE_ID=? ORDER BY BIOSAMPLE_ID ASC";
@@ -92,6 +117,21 @@ select * from cv_status;
         String dateString = jdbcTemplate.queryForObject(sql, String.class, biosampleAccession);
         log.trace("Update date of \"+biosampleAccession+\"is " + dateString);
         return Instant.parse(dateString);
+    }
+
+    public SampleDBBean getAllSampleData(String biosampleAccession) {
+        String sql = "SELECT SAMPLE_XML, "
+        		+ "to_char(LAST_UPDATED, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS LAST_UPDATED, "
+        		+ "to_char(FIRST_PUBLIC, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS FIRST_PUBLIC,  "
+        		+ " to_char(FIRST_CREATED, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS FIRST_CREATED, "
+        		+ "STATUS_ID "
+        		+ "FROM SAMPLE "
+        		+ "WHERE BIOSAMPLE_ID = ? "
+        		+ "AND BIOSAMPLE_AUTHORITY='N' "
+        		+ "AND SAMPLE_ID LIKE 'ERS%'";
+        SampleDBBean sampleData = jdbcTemplate.queryForObject(sql, insdcRowMapper, biosampleAccession);
+        //log.trace("Update date of \"+biosampleAccession+\"is " + dateString);
+        return sampleData;
     }
 
     public String getChecklist(String biosampleAccession) {
@@ -163,4 +203,16 @@ select * from cv_status;
                 "where BIOSAMPLE_ID = ?";
         jdbcTemplate.query(query, rch, enaAccession);
     }
+
+   RowMapper<SampleDBBean> insdcRowMapper = (rs, rowNum) -> {
+			final SampleDBBean sampleBean = new SampleDBBean();
+
+			sampleBean.setSampleXml(rs.getString("SAMPLE_XML"));
+			sampleBean.setFirstPublic(rs.getString("FIRST_PUBLIC"));
+			sampleBean.setLastUpdate(rs.getString("LAST_UPDATED"));
+			sampleBean.setFirstCreated(rs.getString("FIRST_CREATED"));
+			sampleBean.setStatus(rs.getInt("STATUS_ID"));
+
+			return sampleBean;
+    };
 }

@@ -17,6 +17,7 @@ import uk.ac.ebi.biosamples.service.ApiKeyService;
 import uk.ac.ebi.biosamples.service.FilterBuilder;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.*;
@@ -72,9 +73,9 @@ public class XmlV2Controller {
 		}
 		
 		//if no sample was provided, create one as a dummy with far future release date
-		Sample sample = Sample.build(sourceid, null, null, ZonedDateTime.now(ZoneOffset.UTC).plusYears(1000).toInstant(), 
-				ZonedDateTime.now(ZoneOffset.UTC).toInstant(), 
-				new TreeSet<>(), new TreeSet<>(), new TreeSet<>());
+		Instant createDate = ZonedDateTime.now(ZoneOffset.UTC).toInstant();
+		Sample sample = Sample.build(sourceid, null, null, ZonedDateTime.now(ZoneOffset.UTC).plusYears(1000).toInstant(),
+				createDate, createDate, new TreeSet<>(), new TreeSet<>(), new TreeSet<>());
 
 		//update the sample to have the appropriate domain
 		Optional<String> domain = apiKeyService.getDomainForApiKey(apikey);
@@ -93,7 +94,7 @@ public class XmlV2Controller {
 		//update the sample object with the domain
 		//TODO support contact/publication/organization
 		sample = Sample.build(sample.getName(), sample.getAccession(), domain.get(), 
-					sample.getRelease(), sample.getUpdate(), sample.getAttributes(), sample.getRelationships(), sample.getExternalReferences());
+					sample.getRelease(), sample.getUpdate(), sample.getCreate(), sample.getAttributes(), sample.getRelationships(), sample.getExternalReferences());
 
 		//now actually do the submission
 		sample = bioSamplesClient.persistSample(sample);
@@ -131,9 +132,9 @@ public class XmlV2Controller {
 		
 		//if no sample was provided, create one as a dummy with far future release date
 		if (sample == null) {
-			sample = Sample.build(sourceid, null, null, ZonedDateTime.now(ZoneOffset.UTC).plusYears(1000).toInstant(), 
-					ZonedDateTime.now(ZoneOffset.UTC).toInstant(), 
-					new TreeSet<>(), new TreeSet<>(), new TreeSet<>());
+			Instant createDate = ZonedDateTime.now(ZoneOffset.UTC).toInstant();
+			sample = Sample.build(sourceid, null, null, ZonedDateTime.now(ZoneOffset.UTC).plusYears(1000).toInstant(),
+					createDate, createDate, new TreeSet<>(), new TreeSet<>(), new TreeSet<>());
 		} 
 		
 		//update the sample to have the appropriate domain
@@ -153,7 +154,7 @@ public class XmlV2Controller {
 		//update the sample object with the domain
 		//TODO support contact/publication/organization
 		sample = Sample.build(sample.getName(), sample.getAccession(), domain.get(), 
-					sample.getRelease(), sample.getUpdate(), sample.getAttributes(), sample.getRelationships(), sample.getExternalReferences());
+					sample.getRelease(), sample.getUpdate(), sample.getCreate(), sample.getAttributes(), sample.getRelationships(), sample.getExternalReferences());
 
 		//now actually do the submission
 		sample = bioSamplesClient.persistSample(sample);
@@ -214,7 +215,7 @@ public class XmlV2Controller {
 					return new ResponseEntity<String>("Multiple samples with name "+sourceid+" in domain "+domain.get(), HttpStatus.BAD_REQUEST);	
 				} else {
 					sample = Sample.build(sample.getName(), first.getContent().getAccession(), null,
-							 first.getContent().getRelease(),  first.getContent().getUpdate(), 
+							 first.getContent().getRelease(),  first.getContent().getUpdate(), first.getContent().getCreate(),
 							 first.getContent().getAttributes(), first.getContent().getRelationships(), first.getContent().getExternalReferences());
 				}
 			}
@@ -222,7 +223,7 @@ public class XmlV2Controller {
 
 		//update the sample object with the domain
 		sample = Sample.build(sample.getName(), sample.getAccession(), domain.get(), 
-					sample.getRelease(), sample.getUpdate(), sample.getAttributes(), sample.getRelationships(), sample.getExternalReferences());
+					sample.getRelease(), sample.getUpdate(), sample.getCreate(), sample.getAttributes(), sample.getRelationships(), sample.getExternalReferences());
 
 		//now actually do the submission
 		sample = bioSamplesClient.persistSample(sample);
@@ -309,9 +310,9 @@ public class XmlV2Controller {
 		
 		//if no sample was provided, create one as a dummy with far future release date
 		if (group == null) {
-			group = Sample.build(sourceid, null, null, ZonedDateTime.now(ZoneOffset.UTC).plusYears(1000).toInstant(), 
-					ZonedDateTime.now(ZoneOffset.UTC).toInstant(), 
-					new TreeSet<>(), new TreeSet<>(), new TreeSet<>());
+			Instant createDate = ZonedDateTime.now(ZoneOffset.UTC).toInstant();
+			group = Sample.build(sourceid, null, null, ZonedDateTime.now(ZoneOffset.UTC).plusYears(1000).toInstant(),
+					createDate, createDate, new TreeSet<>(), new TreeSet<>(), new TreeSet<>());
 		} 
 		
 		//update the sample to have the appropriate domain
@@ -330,7 +331,7 @@ public class XmlV2Controller {
 		
 		//update the sample object with the domain
 		group = Sample.build(group.getName(), group.getAccession(), domain.get(), 
-				group.getRelease(), group.getUpdate(), group.getAttributes(), group.getRelationships(), group.getExternalReferences());
+				group.getRelease(), group.getUpdate(), group.getCreate(), group.getAttributes(), group.getRelationships(), group.getExternalReferences());
 		
 		//if accession is null, assign a new group accession		
 		if (group.getAccession() == null) {
@@ -395,7 +396,7 @@ public class XmlV2Controller {
 
 		//update the sample object with the domain
 		group = Sample.build(group.getName(), group.getAccession(), domain.get(), 
-				group.getRelease(), group.getUpdate(), group.getAttributes(), group.getRelationships(), group.getExternalReferences());
+				group.getRelease(), group.getUpdate(), group.getCreate(), group.getAttributes(), group.getRelationships(), group.getExternalReferences());
 
 		//now actually do the submission
 		group = bioSamplesClient.persistSample(group);
