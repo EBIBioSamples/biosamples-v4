@@ -135,11 +135,12 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 		final XmlPathBuilder submitterIdPathBuilder = XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS, SUBMITTER_ID);
 
 		if (submitterIdPathBuilder.exists()) {
-			attributes.add(Attribute.build(SUBMITTER_ID_JSON, submitterIdPathBuilder.text(), NAMESPACE_TAG + submitterIdPathBuilder.attribute(NAMESPACE),
-					Collections.emptyList(), null));
+			attributes.add(Attribute.build(SUBMITTER_ID_JSON, submitterIdPathBuilder.text(),
+					NAMESPACE_TAG + submitterIdPathBuilder.attribute(NAMESPACE), Collections.emptyList(), null));
 		}
 
-		// ENA EXTERNAL_ID - BSD-1743 - Un-tag core attributes and sample attributes from synonyms
+		// ENA EXTERNAL_ID - BSD-1743 - Un-tag core attributes and sample attributes
+		// from synonyms
 		final XmlPathBuilder externalIdPathBuilder = XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS, EXTERNAL_ID);
 
 		if (externalIdPathBuilder.exists()) {
@@ -171,21 +172,24 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 			}
 		}
 
-		// ENA ANONYMIZED_NAME - BSD-1743 - Un-tag core attributes and sample attributes from synonyms
+		// ENA ANONYMIZED_NAME - BSD-1743 - Un-tag core attributes and sample attributes
+		// from synonyms
 		final XmlPathBuilder anonymizedNamePathBuilder = XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, ANONYMIZED_NAME);
 
 		if (anonymizedNamePathBuilder.exists()) {
 			attributes.add(Attribute.build(ANONYMIZED_NAME_JSON, anonymizedNamePathBuilder.text()));
 		}
 
-		// ENA INDIVIDUAL_NAME - BSD-1743 - Un-tag core attributes and sample attributes from synonyms
+		// ENA INDIVIDUAL_NAME - BSD-1743 - Un-tag core attributes and sample attributes
+		// from synonyms
 		final XmlPathBuilder individualNamePathBuider = XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, INDIVIDUAL_NAME);
 
 		if (individualNamePathBuider.exists()) {
 			attributes.add(Attribute.build(INDIVIDUAL_NAME_JSON, individualNamePathBuider.text()));
 		}
 
-		// ENA UUID - BSD-1743 - Un-tag core attributes and sample attributes from synonyms
+		// ENA UUID - BSD-1743 - Un-tag core attributes and sample attributes from
+		// synonyms
 		if (XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS, UUID).exists()) {
 			for (Element element : XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS).elements(UUID)) {
 				attributes.add(Attribute.build(UUID_JSON, element.getTextTrim()));
@@ -231,8 +235,10 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 				// TODO handle relationships
 
 				// BSD-1744 - Deal with multiple descriptions in ENA XML
-				if(tag != null && tag.equalsIgnoreCase(ENA_DESCRIPTION)) {
-					attributes.add(Attribute.build(ENA_DESCRIPTION, value, DESCRIPTION_SAMPLE_ATTRIBUTE, Collections.emptyList(), null));
+				if (tag != null && tag.equalsIgnoreCase(ENA_DESCRIPTION)) {
+					if (value != null) {
+						attributes.add(Attribute.build(ENA_DESCRIPTION, value, DESCRIPTION_SAMPLE_ATTRIBUTE, Collections.emptyList(), null));
+					}
 					continue;
 				}
 
