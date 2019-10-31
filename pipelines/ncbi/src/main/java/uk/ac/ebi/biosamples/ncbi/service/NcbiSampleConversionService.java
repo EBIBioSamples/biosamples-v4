@@ -212,7 +212,9 @@ public class NcbiSampleConversionService {
 			}
 
 			if (key.equalsIgnoreCase(DESCRIPTION)) {
-				attrs.add(Attribute.build(DESCRIPTION_LOWER_CASE, value, DESCRIPTION_SAMPLE_ATTRIBUTE, Collections.emptyList(), null));
+				if (value != null) {
+					attrs.add(Attribute.build(DESCRIPTION_LOWER_CASE, value, DESCRIPTION_SAMPLE_ATTRIBUTE, Collections.emptyList(), null));
+				}
 				continue;
 			}
 
@@ -292,8 +294,8 @@ public class NcbiSampleConversionService {
 			}
 		}
 
-		return new Sample.Builder(alias, accession).withRelease(publicationDate).withUpdate(lastUpdate).withCreate(submissionDate).withAttributes(attrs).withRelationships(rels)
-				.withData(structuredData).withExternalReferences(externalReferences).build();
+		return new Sample.Builder(alias, accession).withRelease(publicationDate).withUpdate(lastUpdate).withCreate(submissionDate)
+				.withAttributes(attrs).withRelationships(rels).withData(structuredData).withExternalReferences(externalReferences).build();
 
 		// return Sample.build(alias, accession, domain, publicationDate, lastUpdate,
 		// attrs, rels, externalReferences);
