@@ -231,8 +231,10 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 				// TODO handle relationships
 
 				// BSD-1744 - Deal with multiple descriptions in ENA XML
-				if(tag != null && tag.equalsIgnoreCase(ENA_DESCRIPTION)) {
-					attributes.add(Attribute.build(ENA_DESCRIPTION, value, DESCRIPTION_SAMPLE_ATTRIBUTE, Collections.emptyList(), null));
+				if (tag != null && tag.equalsIgnoreCase(ENA_DESCRIPTION)) {
+					if (value != null) {
+						attributes.add(Attribute.build(ENA_DESCRIPTION, value, DESCRIPTION_SAMPLE_ATTRIBUTE, Collections.emptyList(), null));
+					}
 					continue;
 				}
 

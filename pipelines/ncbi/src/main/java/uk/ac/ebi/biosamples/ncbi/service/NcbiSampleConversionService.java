@@ -212,7 +212,9 @@ public class NcbiSampleConversionService {
 			}
 
 			if (key.equalsIgnoreCase(DESCRIPTION)) {
-				attrs.add(Attribute.build(DESCRIPTION_LOWER_CASE, value, DESCRIPTION_SAMPLE_ATTRIBUTE, Collections.emptyList(), null));
+				if (value != null) {
+					attrs.add(Attribute.build(DESCRIPTION_LOWER_CASE, value, DESCRIPTION_SAMPLE_ATTRIBUTE, Collections.emptyList(), null));
+				}
 				continue;
 			}
 
