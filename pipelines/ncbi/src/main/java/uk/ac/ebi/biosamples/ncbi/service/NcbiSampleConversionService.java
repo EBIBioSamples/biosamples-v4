@@ -251,19 +251,29 @@ public class NcbiSampleConversionService {
 		attrs.add(Attribute.build(NCBI_SUBMISSION_PACKAGE, XmlPathBuilder.of(sampleElem).path(PACKAGE).text()));
 
 		// handle dates
-		Instant lastUpdate = Instant.parse(sampleElem.attributeValue(LAST_UPDATE) + Z);
-		Instant publicationDate = Instant.parse(sampleElem.attributeValue(PUBLICATION_DATE) + Z);
-		Instant submissionDate = Instant.parse(sampleElem.attributeValue(SUBMISSION_DATE) + Z);
+		Instant submissionDate = null;
+		Instant publicationDate = null;
+		Instant lastUpdate = null;
 
-		Instant latestDate = lastUpdate;
+		final String submission = sampleElem.attributeValue(SUBMISSION_DATE);
+		final String publication = sampleElem.attributeValue(PUBLICATION_DATE);
+		final String update = sampleElem.attributeValue(LAST_UPDATE);
 
-		if (publicationDate.isAfter(latestDate)) {
-			latestDate = publicationDate;
+		if (submission != null && !submission.isEmpty()) {
+			submissionDate = Instant.parse(submission + Z);
 		}
 
-		// add some INSDC things for standardisation with ENA import
-		attrs.add(Attribute.build(INSDC_FIRST_PUBLIC, DateTimeFormatter.ISO_INSTANT.format(publicationDate)));
-		attrs.add(Attribute.build(INSDC_LAST_UPDATE, DateTimeFormatter.ISO_INSTANT.format(lastUpdate)));
+		if (publication != null && !publication.isEmpty()) {
+			publicationDate = Instant.parse(publication + Z);
+			// add some INSDC things for standardisation with ENA import
+			attrs.add(Attribute.build(INSDC_FIRST_PUBLIC, DateTimeFormatter.ISO_INSTANT.format(publicationDate)));
+		}
+
+		if (update != null && !update.isEmpty()) {
+			lastUpdate = Instant.parse(update + Z);
+			// add some INSDC things for standardisation with ENA import
+			attrs.add(Attribute.build(INSDC_LAST_UPDATE, DateTimeFormatter.ISO_INSTANT.format(lastUpdate)));
+		}
 
 		if (XmlPathBuilder.of(sampleElem).path(STATUS).attributeExists(STATUS_LOWER_CASE)) {
 			final String status = XmlPathBuilder.of(sampleElem).path(STATUS).attribute(STATUS_LOWER_CASE).trim();
@@ -294,8 +304,8 @@ public class NcbiSampleConversionService {
 			}
 		}
 
-		return new Sample.Builder(alias, accession).withRelease(publicationDate).withUpdate(lastUpdate).withCreate(submissionDate).withAttributes(attrs).withRelationships(rels)
-				.withData(structuredData).withExternalReferences(externalReferences).build();
+		return new Sample.Builder(alias, accession).withRelease(publicationDate).withUpdate(lastUpdate).withCreate(submissionDate)
+				.withAttributes(attrs).withRelationships(rels).withData(structuredData).withExternalReferences(externalReferences).build();
 
 		// return Sample.build(alias, accession, domain, publicationDate, lastUpdate,
 		// attrs, rels, externalReferences);
