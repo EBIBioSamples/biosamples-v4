@@ -1,5 +1,9 @@
 package uk.ac.ebi.biosamples.controller;
 
+import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.EntityLinks;
@@ -8,17 +12,29 @@ import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
 import uk.ac.ebi.biosamples.exception.SampleNotFoundException;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
-import uk.ac.ebi.biosamples.service.*;
+import uk.ac.ebi.biosamples.service.BioSamplesAapService;
+import uk.ac.ebi.biosamples.service.Ga4ghSampleToPhenopacketConverter;
+import uk.ac.ebi.biosamples.service.SampleManipulationService;
+import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
+import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.utils.LinkUtils;
-
-import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
 
 /**
  * Primary controller for REST operations both in JSON and XML and both read and
@@ -36,13 +52,9 @@ public class SampleRestController {
     private final SampleService sampleService;
     private final BioSamplesAapService bioSamplesAapService;
     private final SampleManipulationService sampleManipulationService;
-
     private final SampleResourceAssembler sampleResourceAssembler;
-
     private final EntityLinks entityLinks;
     private Ga4ghSampleToPhenopacketConverter phenopacketExporter;
-
-
     private Logger log = LoggerFactory.getLogger(getClass());
 
     public SampleRestController(SampleService sampleService,
@@ -95,6 +107,41 @@ public class SampleRestController {
         //TODO cache control
         return sampleResource;
     }
+
+	@PreAuthorize("isAuthenticated()")
+	@CrossOrigin(methods = RequestMethod.GET)
+	@GetMapping(produces = MediaType.TEXT_PLAIN_VALUE)
+	public @ResponseBody ResponseEntity<String> getSampleAccessionOnly(@PathVariable final String accession,
+			@RequestParam(name = "legacydetails", required = false) final String legacydetails,
+			@RequestParam(name = "curationdomain", required = false) final String[] curationdomain,
+			@RequestParam(name = "curationrepo", required = false) final String curationRepo) {
+		log.trace("starting call");
+
+		// decode percent-encoding from curation domains
+		final Optional<List<String>> decodedCurationDomains = LinkUtils.decodeTextsToArray(curationdomain);
+		final Optional<Boolean> decodedLegacyDetails;
+
+		if (legacydetails != null && "true".equals(legacydetails)) {
+			decodedLegacyDetails = Optional.ofNullable(Boolean.TRUE);
+		} else {
+			decodedLegacyDetails = Optional.empty();
+		}
+
+		// convert it into the format to return
+		Optional<Sample> sample = sampleService.fetch(accession, decodedCurationDomains, curationRepo);
+
+		if (!sample.isPresent()) {
+			return new ResponseEntity<String>("Not recognized", HttpStatus.NOT_FOUND);
+		}
+
+		bioSamplesAapService.checkAccessible(sample.get());
+
+		// TODO cache control
+		return new ResponseEntity<String>(
+				sampleResourceAssembler.toResource(sample.get(), decodedLegacyDetails, decodedCurationDomains).getContent().getAccession(),
+				HttpStatus.OK);
+	}
+
     @RequestMapping(produces = "application/phenopacket+json")
     @PreAuthorize("isAuthenticated()")
     @CrossOrigin(methods = RequestMethod.GET)
