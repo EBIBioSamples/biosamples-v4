@@ -170,9 +170,6 @@ public class SampleRestController {
 //		return jsonLDService.sampleToJsonLD(sample.get());
 //    }
 
-    @ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Sample accession must match URL accession") // 400
-    public static class SampleAccessionMismatchException extends RuntimeException {
-    }
 
     @PreAuthorize("isAuthenticated()")
     @PutMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
@@ -186,6 +183,11 @@ public class SampleRestController {
             // datasetUrl, throw an error
             // TODO create proper exception with right http error code
             throw new SampleAccessionMismatchException();
+        }
+
+        // todo Fix all integration tests to not to use predefined accessions, then remove isIntegrationTestUser() check
+        if (!sampleService.isExistingAccession(accession) && !(bioSamplesAapService.isWriteSuperUser() || bioSamplesAapService.isIntegrationTestUser())) {
+            throw new SampleAccessionDoesNotExistException();
         }
 
         log.debug("Recieved PUT for " + accession);
@@ -213,5 +215,11 @@ public class SampleRestController {
         return sampleResource;
     }
 
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Sample accession must match URL accession") // 400
+    public static class SampleAccessionMismatchException extends RuntimeException {
+    }
 
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Sample accession does not exist") // 400
+    public static class SampleAccessionDoesNotExistException extends RuntimeException {
+    }
 }

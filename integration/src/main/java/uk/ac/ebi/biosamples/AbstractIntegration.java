@@ -6,7 +6,16 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.ExitCodeGenerator;
 
+import org.springframework.hateoas.Resource;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.filter.Filter;
+import uk.ac.ebi.biosamples.service.FilterBuilder;
+import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
+
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Optional;
 
 public abstract class AbstractIntegration implements ApplicationRunner, ExitCodeGenerator {
 
@@ -71,6 +80,25 @@ public abstract class AbstractIntegration implements ApplicationRunner, ExitCode
 
 	public void close() {
 		//do nothing
+	}
+
+	//For the purpose of unit testing we will consider name is unique, so we can fetch sample uniquely from name
+	Optional<Sample> fetchUniqueSampleByName(String name) {
+		Optional<Sample> optionalSample;
+		Filter nameFilter = FilterBuilder.create().onName(name).build();
+		Iterator<Resource<Sample>> resourceIterator = client.fetchSampleResourceAll(Collections.singletonList(nameFilter)).iterator();
+
+		if (resourceIterator.hasNext()) {
+			optionalSample = Optional.of(resourceIterator.next().getContent());
+		} else {
+			optionalSample = Optional.empty();
+		}
+
+		if (resourceIterator.hasNext()) {
+			throw new IntegrationTestFailException("More than one sample present with the given name");
+		}
+
+		return optionalSample;
 	}
 
 }
