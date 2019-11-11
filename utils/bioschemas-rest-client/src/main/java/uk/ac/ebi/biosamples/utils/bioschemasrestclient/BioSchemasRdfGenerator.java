@@ -15,7 +15,7 @@ import java.util.Scanner;
 import java.util.concurrent.Callable;
 
 public class BioSchemasRdfGenerator implements Callable<Void> {
-    private static final String FILE_PATH = "c:\\users\\dgupta\\file_4.ttl";
+    private static final String FILE_PATH = "c:\\users\\dgupta\\file_8.ttl";
     private static File file;
     private static int sampleCount = 0;
     private final URL url;
@@ -75,16 +75,20 @@ public class BioSchemasRdfGenerator implements Callable<Void> {
     private static String graphToString(final Collection<Statement> myGraph) {
         final StringWriter out = new StringWriter();
         final RDFWriter writer = Rio.createWriter(RDFFormat.TURTLE, out);
+        final TurtleWriterCustom turtleWriterCustom = new TurtleWriterCustom(out);
 
-        return writeRdfTurtle(myGraph, out, writer);
+        return writeRdfTurtle(myGraph, out, turtleWriterCustom);
     }
 
-    private static String writeRdfTurtle(Collection<Statement> myGraph, StringWriter out, RDFWriter writer) {
+    private static String writeRdfTurtle(Collection<Statement> myGraph, StringWriter out, TurtleWriterCustom writer) {
         try {
             writer.startRDF();
             handleNamespaces(writer);
 
             for (Statement st : myGraph) {
+                if(st.getObject().stringValue().contains("biosample")) {
+                    System.out.println("TRUEE");
+                }
                 writer.handleStatement(st);
             }
 
@@ -96,8 +100,8 @@ public class BioSchemasRdfGenerator implements Callable<Void> {
         return out.getBuffer().toString();
     }
 
-    private static void handleNamespaces(RDFWriter writer) {
-        writer.handleNamespace("NAME", "http://schema.org/Sample");
+    private static void handleNamespaces(TurtleWriterCustom writer) {
+        writer.handleNamespace("SCHEMA", "http://schema.org/");
         writer.handleNamespace("PURL", "http://purl.obolibrary.org/");
     }
 
