@@ -92,8 +92,8 @@ public class BioSchemasRdfGenerator implements Callable<Void> {
             handleNamespaces(writer);
 
             for (Statement st : myGraph) {
-                if(st.getObject().stringValue().contains("biosample")) {
-                    System.out.println("TRUEE");
+                if(st.getObject().stringValue().contains("biosample:SAM")) {
+                    System.out.println("TRUE");
                 }
                 writer.handleStatement(st);
             }
@@ -108,7 +108,7 @@ public class BioSchemasRdfGenerator implements Callable<Void> {
 
     private static void handleNamespaces(TurtleWriterCustom writer) {
         writer.handleNamespace("SCHEMA", "http://schema.org/");
-        writer.handleNamespace("PURL", "http://purl.obolibrary.org/");
+        writer.handleNamespace("PURL", "http://purl.obolibrary.org/obo/");
     }
 
 
