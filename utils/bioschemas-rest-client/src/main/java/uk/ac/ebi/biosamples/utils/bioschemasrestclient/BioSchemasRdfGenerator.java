@@ -1,18 +1,24 @@
 package uk.ac.ebi.biosamples.utils.bioschemasrestclient;
 
-import org.apache.commons.io.FileUtils;
-import org.eclipse.rdf4j.model.Statement;
-import org.eclipse.rdf4j.rio.*;
-import org.eclipse.rdf4j.rio.helpers.StatementCollector;
-import org.eclipse.rdf4j.rio.turtle.TurtleWriter;
-
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
+
+import org.apache.commons.io.FileUtils;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.rio.RDFFormat;
+import org.eclipse.rdf4j.rio.RDFHandlerException;
+import org.eclipse.rdf4j.rio.RDFParser;
+import org.eclipse.rdf4j.rio.Rio;
+import org.eclipse.rdf4j.rio.helpers.StatementCollector;
 
 public class BioSchemasRdfGenerator implements Callable<Void> {
     private static final String FILE_PATH = "c:\\users\\dgupta\\file_8.ttl";
@@ -74,7 +80,7 @@ public class BioSchemasRdfGenerator implements Callable<Void> {
      */
     private static String graphToString(final Collection<Statement> myGraph) {
         final StringWriter out = new StringWriter();
-        final RDFWriter writer = Rio.createWriter(RDFFormat.TURTLE, out);
+        //final RDFWriter writer = Rio.createWriter(RDFFormat.TURTLE, out);
         final TurtleWriterCustom turtleWriterCustom = new TurtleWriterCustom(out);
 
         return writeRdfTurtle(myGraph, out, turtleWriterCustom);
