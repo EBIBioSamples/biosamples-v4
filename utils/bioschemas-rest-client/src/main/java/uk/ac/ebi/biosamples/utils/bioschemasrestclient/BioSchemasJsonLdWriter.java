@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.utils;
+package uk.ac.ebi.biosamples.utils.bioschemasrestclient;
 
 import java.io.File;
 import java.io.FileWriter;
