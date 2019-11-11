@@ -298,7 +298,7 @@ public class ApiDocumentationTest {
         	.thenReturn(sampleWithDomain);
         when(aapService.handleSampleDomain(sampleWithDomain))
         	.thenReturn(sampleWithDomain);
-        when(aapService.isIntegrationTestUser())
+        when(aapService.isWriteSuperUser())
                 .thenReturn(true);
         doNothing().when(aapService).checkAccessible(isA(Sample.class));
 

@@ -18,14 +18,14 @@ import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.*;
+import uk.ac.ebi.biosamples.model.filter.Filter;
+import uk.ac.ebi.biosamples.service.FilterBuilder;
+import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 
 import javax.annotation.PreDestroy;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Collections;
-import java.util.Optional;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 
 @Component
 @Order(2)
@@ -47,19 +47,20 @@ public class RestIntegration extends AbstractIntegration {
 
 	@Override
 	protected void phaseOne() {
-		Sample sampleTest1 = getSampleTest1();
-		// get and check that nothing exists already
-		Optional<Resource<Sample>> optional = client.fetchSampleResource(sampleTest1.getAccession());
-		if (optional.isPresent()) {
-			throw new RuntimeException("Found existing "+sampleTest1.getAccession());
-		}
+		Sample testSample = getSampleTest1();
+		Optional<Sample> optionalSample = fetchUniqueSampleByName(testSample.getName());
 
-		// put a sample
-		Resource<Sample> resource = client.persistSampleResource(sampleTest1, true, true);
-		if (!sampleTest1.equals(resource.getContent())) {
-			log.warn("expected: "+sampleTest1);
-			log.warn("found: "+resource.getContent());
-			throw new RuntimeException("Expected response to equal submission");
+		if (optionalSample.isPresent()) {
+			throw new IntegrationTestFailException("RestIntegration test sample should not be available during phase 1", Phase.ONE);
+		} else {
+			Resource<Sample> resource = client.persistSampleResource(testSample);
+			Sample testSampleWithAccession = Sample.Builder.fromSample(testSample)
+					.withAccession(resource.getContent().getAccession())
+					.build();
+
+			if (!testSampleWithAccession.equals(resource.getContent())) {
+				throw new IntegrationTestFailException("Expected response (" + resource.getContent() + ") to equal submission (" + testSample + ")");
+			}
 		}
 	}
 
@@ -70,35 +71,20 @@ public class RestIntegration extends AbstractIntegration {
 
 		Sample sampleTest1 = getSampleTest1();
 		// get to check it worked
-		Optional<Resource<Sample>> optional = client.fetchSampleResource(sampleTest1.getAccession());
-		if (!optional.isPresent()) {
-			throw new RuntimeException("No existing "+sampleTest1.getAccession());
+		Optional<Sample> optionalSample = fetchUniqueSampleByName(sampleTest1.getName());
+		if (!optionalSample.isPresent()) {
+			throw new IntegrationTestFailException("Cant find sample " + sampleTest1.getName(), Phase.TWO);
 		}
 		//check the update date
-		if (Duration.between(sampleTest1.getUpdate(), optional.get().getContent().getUpdate())
-				.abs().getSeconds() < 60) {
-			throw new RuntimeException("Update date was not modified to within 60s as intended");
+		if (Duration.between(Instant.now(), optionalSample.get().getUpdate()).abs().getSeconds() > 300) {
+			throw new IntegrationTestFailException("Update date was not modified to within 300s as intended, " +
+					"expected: " + Instant.now() + "actual: " + optionalSample.get().getUpdate() + "", Phase.TWO);
 		}
 		//disabled because not fully operational
 		//checkIfModifiedSince(optional.get());
 		//checkIfMatch(optional.get());
 
-		// put a version that is private
-//		sampleTest1 = Sample.build(sampleTest1.getName(), sampleTest1.getAccession(), sampleTest1.getDomain(),
-//				Instant.parse("2116-04-01T11:36:57.00Z"), sampleTest1.getUpdate(),
-//				sampleTest1.getCharacteristics(), sampleTest1.getRelationships(), sampleTest1.getExternalReferences(), null, null, null);
-        sampleTest1 = new Sample.Builder(sampleTest1.getName(), sampleTest1.getAccession())
-				.withDomain(sampleTest1.getDomain()).withRelease("2116-04-01T11:36:57.00Z")
-				.withUpdate(sampleTest1.getUpdate()).withAttributes(sampleTest1.getCharacteristics())
-				.withRelationships(sampleTest1.getRelationships()).withExternalReferences(sampleTest1.getExternalReferences())
-				.build();
 
-		Resource<Sample> resource = client.persistSampleResource(sampleTest1);
-		if (!sampleTest1.equals(resource.getContent())) {
-			log.warn("expected: "+sampleTest1);
-			log.warn("found: "+resource.getContent());
-			throw new RuntimeException("Expected response to equal submission");
-		}
 
 		//TODO check If-Unmodified-Since
 		//TODO check If-None-Match
@@ -108,35 +94,59 @@ public class RestIntegration extends AbstractIntegration {
 	protected void phaseThree() {
 		Sample sampleTest1 = getSampleTest1();
 		Sample sampleTest2 = getSampleTest2();
-		Optional<Resource<Sample>> optional;
 
-		//check that it is private
-		optional = annonymousClient.fetchSampleResource(sampleTest1.getAccession());
-		if (optional.isPresent()) {
-			throw new RuntimeException("Can access private "+sampleTest1.getAccession()+" as annonymous");
+		Optional<Sample> optionalSample = fetchUniqueSampleByName(sampleTest1.getName());
+		if (!optionalSample.isPresent()) {
+			throw new IntegrationTestFailException("Cannot access private " + sampleTest1.getName(), Phase.THREE);
+		} else {
+			sampleTest1 = Sample.Builder.fromSample(sampleTest1).withAccession(optionalSample.get().getAccession()).build();
 		}
 
+
+		//put the second sample in
+		Resource<Sample> resource = client.persistSampleResource(sampleTest2, false, true);
+		String sample2Accession = resource.getContent().getAccession();
+
+
+		// put a version that is private and also update relationships
+		SortedSet<Relationship> relationships = new TreeSet<>();
+		relationships.add(Relationship.build(sampleTest1.getAccession(), "derived from", resource.getContent().getAccession()));
+		sampleTest1 = new Sample.Builder(sampleTest1.getName(), sampleTest1.getAccession())
+				.withDomain(sampleTest1.getDomain()).withRelease("2116-04-01T11:36:57.00Z")
+				.withUpdate(sampleTest1.getUpdate()).withAttributes(sampleTest1.getCharacteristics())
+				.withRelationships(relationships).withExternalReferences(sampleTest1.getExternalReferences())
+				.build();
+
+		resource = client.persistSampleResource(sampleTest1);
+		if (!sampleTest1.equals(resource.getContent())) {
+			throw new IntegrationTestFailException("Expected response (" + resource.getContent() + ") to equal submission (" + sampleTest1 + ")", Phase.THREE);
+		}
+
+		//check that it is private
+		Optional<Resource<Sample>> optional = annonymousClient.fetchSampleResource(sampleTest1.getAccession());
+		if (optional.isPresent()) {
+			throw new IntegrationTestFailException("Can access private " + sampleTest1.getAccession() + " as annonymous", Phase.THREE);
+		}
 
 		//check that it is accessible, if authorised
 		optional = client.fetchSampleResource(sampleTest1.getAccession());
 		if (!optional.isPresent()) {
-			throw new RuntimeException("Cannot access private "+sampleTest1.getAccession());
+			throw new IntegrationTestFailException("Cannot access private " + sampleTest1.getAccession(), Phase.THREE);
 		}
 
-		//put the second sample in
-		Resource<Sample> resource = client.persistSampleResource(sampleTest2, false, true);
-//		sampleTest2 = Sample.build(sampleTest2.getName(), sampleTest2.getAccession(), "self.BiosampleIntegrationTest",
-//				sampleTest2.getRelease(), sampleTest2.getUpdate(),
-//				sampleTest2.getCharacteristics(), sampleTest1.getRelationships(), sampleTest2.getExternalReferences(),
-//				null, null, null);
-        sampleTest2 = Sample.Builder.fromSample(sampleTest2).withDomain("self.BiosampleIntegrationTest")
+
+        sampleTest2 = Sample.Builder.fromSample(sampleTest2)
+				.withAccession(sample2Accession)
 				.withRelationships(sampleTest1.getRelationships())
 				.build();
 
-		if (!sampleTest2.equals(resource.getContent())) {
-			log.warn("expected: "+sampleTest2);
-			log.warn("found: "+resource.getContent());
-			throw new RuntimeException("Expected response to equal submission");
+		optional = client.fetchSampleResource(sampleTest2.getAccession());
+		if (!optional.isPresent()) {
+			throw new IntegrationTestFailException("Cannot access private " + sampleTest2.getAccession(), Phase.THREE);
+		}
+
+		if (!sampleTest2.equals(optional.get().getContent())) {
+			throw new IntegrationTestFailException("Expected response (" + resource.getContent() + ") to equal submission (" + sampleTest2 + ")", Phase.TWO);
 		}
 	}
 
@@ -144,11 +154,20 @@ public class RestIntegration extends AbstractIntegration {
 	protected void phaseFour() {
 		Sample sampleTest1 = getSampleTest1();
 		Sample sampleTest2 = getSampleTest2();
-		//at this point, the inverse relationship should have been added
 
-//		sampleTest2 = Sample.build(sampleTest2.getName(), sampleTest2.getAccession(), sampleTest2.getDomain(),
-//				sampleTest2.getRelease(), sampleTest2.getUpdate(),
-//				sampleTest2.getCharacteristics(), sampleTest1.getRelationships(), sampleTest2.getExternalReferences(), null, null, null);
+		Optional<Sample> optionalSample = fetchUniqueSampleByName(sampleTest2.getName());
+		if (!optionalSample.isPresent()) {
+			throw new IntegrationTestFailException("Cannot access private " + sampleTest2.getName(), Phase.FOUR);
+		} else {
+			sampleTest2 = Sample.Builder.fromSample(sampleTest2).withAccession(optionalSample.get().getAccession()).build();
+
+			SortedSet<Relationship> relationships = new TreeSet<>();
+			relationships.add(Relationship.build(optionalSample.get().getRelationships().first().getSource(), "derived from", optionalSample.get().getAccession()));
+			sampleTest1 = Sample.Builder.fromSample(sampleTest1).withRelationships(relationships)
+					.withAccession(optionalSample.get().getRelationships().first().getSource()).build();
+		}
+
+		//at this point, the inverse relationship should have been added
         sampleTest2 = Sample.Builder.fromSample(sampleTest2).withRelationships(sampleTest1.getRelationships())
 				.withNoOrganisations().withNoContacts()
 				.build();
@@ -157,37 +176,29 @@ public class RestIntegration extends AbstractIntegration {
 		// get to check it worked
 		Optional<Resource<Sample>> optional = client.fetchSampleResource(sampleTest2.getAccession());
 		if (!optional.isPresent()) {
-			throw new RuntimeException("No existing "+sampleTest2.getAccession());
+			throw new IntegrationTestFailException("No existing "+sampleTest2.getName(), Phase.FOUR);
 		}
 		Sample sampleTest2Rest = optional.get().getContent();
 		//check other details i.e relationship
 		if (!sampleTest2.equals(sampleTest2Rest)) {
-			log.warn("expected: "+sampleTest2);
-			log.warn("found: "+sampleTest2Rest);
-			throw new RuntimeException("No matching "+sampleTest2.getAccession());
+			throw new IntegrationTestFailException("Expected response (" + sampleTest2Rest + ") to equal submission (" + sampleTest2 + ")", Phase.FOUR);
 		}
 		//check utf -8
 		if (!sampleTest2Rest.getCharacteristics().contains(Attribute.build("UTF-8 test", "αβ"))) {
-			throw new RuntimeException("Unable to find UTF-8 characters");
+			throw new IntegrationTestFailException("Unable to find UTF-8 characters", Phase.FOUR);
 		}
 		//check the update date is updated by the system
 		if (sampleTest2Rest.getUpdate().equals(sampleTest2.getUpdate())) {
-			log.info("sampleTest2Rest.getUpdate() = "+sampleTest2Rest.getUpdate());
-			log.info("sampleTest2.getUpdate() = "+sampleTest2.getUpdate());
-			throw new RuntimeException("Instead of using provided update date, it should be set by the system, ");
+			throw new IntegrationTestFailException("Instead of using provided update date, it should be set by the system", Phase.FOUR);
 		}
+
 		//now do another update to delete the relationship
-//		sampleTest1 = Sample.build(sampleTest1.getName(), sampleTest1.getAccession(), sampleTest1.getDomain(),
-//				Instant.parse("2116-04-01T11:36:57.00Z"), sampleTest1.getUpdate(),
-//				sampleTest1.getCharacteristics(), new TreeSet<>(), sampleTest1.getExternalReferences(), null, null, null);
         sampleTest1 = Sample.Builder.fromSample(sampleTest1).withRelease("2116-04-01T11:36:57.00Z")
 				.withNoRelationships().withNoContacts().withNoPublications().withNoOrganisations()
 				.build();
 		Resource<Sample> resource = client.persistSampleResource(sampleTest1);
 		if (!sampleTest1.equals(resource.getContent())) {
-			log.warn("expected: "+sampleTest1);
-			log.warn("found: "+resource.getContent());
-			throw new RuntimeException("Expected response to equal submission");
+			throw new IntegrationTestFailException("Expected response (" + resource.getContent() + ") to equal submission (" + sampleTest1 + ")", Phase.FOUR);
 		}
 
 	}
@@ -196,16 +207,15 @@ public class RestIntegration extends AbstractIntegration {
 	protected void phaseFive() {
 		//check that deleting the relationship actually deleted it
 		Sample sampleTest2 = getSampleTest2();
-		Optional<Resource<Sample>> optional = client.fetchSampleResource(sampleTest2.getAccession());
-		if (!optional.isPresent()) {
-			throw new RuntimeException("No existing "+sampleTest2.getAccession());
+		Optional<Sample> optionalSample = fetchUniqueSampleByName(sampleTest2.getName());
+		if (!optionalSample.isPresent()) {
+			throw new IntegrationTestFailException("Cannot access private " + sampleTest2.getName(), Phase.FOUR);
+		} else {
+			sampleTest2 = Sample.Builder.fromSample(sampleTest2).withAccession(optionalSample.get().getAccession()).build();
 		}
-		Sample sampleTest2Rest = optional.get().getContent();
-		//check other details i.e relationship
-		if (!sampleTest2.equals(sampleTest2Rest)) {
-			log.warn("expected: "+sampleTest2);
-			log.warn("found: "+sampleTest2Rest);
-			throw new RuntimeException("No matching "+sampleTest2.getAccession());
+
+		if (!sampleTest2.equals(optionalSample.get())) {
+			throw new IntegrationTestFailException("Expected response (" + optionalSample.get() + ") to equal submission (" + sampleTest2 + ")", Phase.FIVE);
 		}
 
 	}
@@ -236,9 +246,7 @@ public class RestIntegration extends AbstractIntegration {
 
 
 	private Sample getSampleTest1() {
-		String name = "Test Sample";
-		String accession = "SAMN1";
-        String domain = "self.BiosampleIntegrationTest";
+		String name = "RestIntegration_sample_1";
 		Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
 		Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
@@ -251,12 +259,10 @@ public class RestIntegration extends AbstractIntegration {
 		attributes.add(Attribute.build("sex", "female", null, Sets.newHashSet("http://purl.obolibrary.org/obo/PATO_0000383","http://www.ebi.ac.uk/efo/EFO_0001265"), null));
 
 		SortedSet<Relationship> relationships = new TreeSet<>();
-		relationships.add(Relationship.build("SAMN1", "derived from", "SAMN2"));
 		SortedSet<ExternalReference> externalReferences = new TreeSet<>();
 		externalReferences.add(ExternalReference.build("http://www.google.com"));
 
 		SortedSet<Organization> organizations = new TreeSet<>();
-//		organizations.add(Organization.build("Jo Bloggs Inc", "user", "help@jobloggs.com", "http://www.jobloggs.com"));
 		organizations.add(new Organization.Builder()
 				.name("Jo Bloggs Inc")
 				.role("user")
@@ -265,25 +271,20 @@ public class RestIntegration extends AbstractIntegration {
 				.build());
 
 		SortedSet<Contact> contacts = new TreeSet<>();
-//		contacts.add(Contact.build("Joe Bloggs","Jo Bloggs Inc", "http://www.jobloggs.com/joe"));
 		contacts.add(new Contact.Builder()
-//				.firstName("Jo")
-//				.lastName("Bloggs")
                 .name("Joe Bloggs")
 				.role("Submitter")
 				.email("jobloggs@joblogs.com")
 				.build());
 
 		SortedSet<Publication> publications = new TreeSet<>();
-//		publications.add(Publication.build("10.1093/nar/gkt1081", "24265224"));
 		publications.add(new Publication.Builder()
 				.doi("10.1093/nar/gkt1081")
 				.pubmed_id("24265224")
 				.build());
 
-//		return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences, organizations, contacts, publications);
-        return new Sample.Builder(name, accession)
-				.withRelease(release).withUpdate(update).withDomain(domain)
+        return new Sample.Builder(name)
+				.withRelease(release).withDomain(defaultIntegrationSubmissionDomain)
 				.withAttributes(attributes)
 				.withRelationships(relationships).withExternalReferences(externalReferences)
 				.withOrganizations(organizations).withContacts(contacts).withPublications(publications)
@@ -296,9 +297,7 @@ public class RestIntegration extends AbstractIntegration {
 	}
 
 	private Sample getSampleTest2() {
-		String name = "Test Sample the second";
-		String accession = "SAMN2";
-        String domain = "self.BiosampleIntegrationTest";
+		String name = "RestIntegration_sample_2";
 		Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
 		Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
@@ -309,21 +308,18 @@ public class RestIntegration extends AbstractIntegration {
 				Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
 		attributes.add(Attribute.build("UTF-8 test", "αβ"));
 
-//		return Sample.build(name, accession, domain, release, update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
-		return new Sample.Builder(name, accession).withDomain(domain).withRelease(release).withUpdate(update)
+		return new Sample.Builder(name).withDomain(defaultIntegrationSubmissionDomain).withRelease(release).withUpdate(update)
 				.withPublications(Collections.singletonList(publication))
 				.withAttributes(attributes).build();
 	}
 
 	private void postSampleWithAccessionShouldReturnABadRequestResponse() {
-
-
 		Traverson traverson = new Traverson(this.clientProperties.getBiosamplesClientUri(), MediaTypes.HAL_JSON);
 		Traverson.TraversalBuilder builder = traverson.follow("samples");
 		log.info("POSTing sample with accession from " + builder.asLink().getHref());
 
 		MultiValueMap<String, String> sample= new LinkedMultiValueMap<String, String>();
-		sample.add("name", "test_sample");
+		sample.add("name", "RestIntegration_sample_3");
 		sample.add("accession", "SAMEA09123842");
 		sample.add("domain", "self.BiosampleIntegrationTest");
 		sample.add("release", "2016-05-05T11:36:57.00Z");
