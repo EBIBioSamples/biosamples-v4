@@ -6,6 +6,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import org.bson.Document;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
@@ -21,14 +22,14 @@ import java.util.function.Consumer;
 public class BioSchemasRestClientRunner implements ApplicationRunner {
     private static final String LDJSON = ".ldjson";
     private static final String BIOSAMPLES_BASE_URI = "https://www.ebi.ac.uk/biosamples/samples/";
-    private static final String MONGO_DB_CONNECT_STRING = "mongodb://biosd:TkL51qjIt81aKQ@mongodb-hxvm-009.ebi.ac.uk:27017," +
-            "mongodb-hhvm-008.ebi.ac.uk:27017/biosamples?replicaSet=biosrs003&readPreference=nearest&authSource=admin&w=majority";
     private static final String BIOSAMPLES = "biosamples";
     private static final String MONGO_SAMPLE = "mongoSample";
+    @Value("${spring.data.mongodb.uri}")
+    private String mongoUri;
     
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        final MongoClientURI uri = new MongoClientURI(MONGO_DB_CONNECT_STRING);
+        final MongoClientURI uri = new MongoClientURI(mongoUri);
         final MongoClient mongoClient = new MongoClient(uri);
         final MongoDatabase db = mongoClient.getDatabase(BIOSAMPLES);
         final MongoCollection<Document> coll = db.getCollection(MONGO_SAMPLE);
@@ -59,7 +60,7 @@ public class BioSchemasRestClientRunner implements ApplicationRunner {
     private static List<String> getAllDocuments(final MongoCollection<Document> col) throws Exception {
         final List<String> listOfAccessions = new ArrayList<>();
 
-        col.find().forEach((Consumer<? super Document>) doc -> {
+        col.find(Filters.eq("_id", "SAMEA6032091")).forEach((Consumer<? super Document>) doc -> {
             listOfAccessions.add(doc.getString("_id"));
         });
 

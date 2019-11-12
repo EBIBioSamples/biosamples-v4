@@ -7,6 +7,7 @@ import org.eclipse.rdf4j.rio.RDFHandlerException;
 import org.eclipse.rdf4j.rio.RDFParser;
 import org.eclipse.rdf4j.rio.Rio;
 import org.eclipse.rdf4j.rio.helpers.StatementCollector;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -17,13 +18,14 @@ import java.util.Scanner;
 import java.util.concurrent.Callable;
 
 public class BioSchemasRdfGenerator implements Callable<Void> {
-    private static final String FILE_PATH = "c:\\users\\dgupta\\validation.ttl";
     private static File file;
     private static int sampleCount = 0;
     private final URL url;
+    @Value("${bioschemas.export.filePath}")
+    private static String filePath;
 
     static {
-        file = new File(FILE_PATH);
+        file = new File(filePath);
     }
 
     BioSchemasRdfGenerator(final URL url) {
