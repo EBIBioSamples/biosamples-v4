@@ -25,4 +25,3 @@ public class Application {
         SpringApplication.exit(SpringApplication.run(Application.class, args));
     }
 }
-

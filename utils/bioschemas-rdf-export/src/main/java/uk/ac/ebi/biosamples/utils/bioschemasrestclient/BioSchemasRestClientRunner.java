@@ -59,7 +59,7 @@ public class BioSchemasRestClientRunner implements ApplicationRunner {
     private static List<String> getAllDocuments(final MongoCollection<Document> col) throws Exception {
         final List<String> listOfAccessions = new ArrayList<>();
 
-        col.find(Filters.eq("_id", "SAMEA6032091")).forEach((Consumer<? super Document>) doc -> {
+        col.find().forEach((Consumer<? super Document>) doc -> {
             listOfAccessions.add(doc.getString("_id"));
         });
 
