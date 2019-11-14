@@ -7,6 +7,8 @@ import org.eclipse.rdf4j.rio.RDFHandlerException;
 import org.eclipse.rdf4j.rio.RDFParser;
 import org.eclipse.rdf4j.rio.Rio;
 import org.eclipse.rdf4j.rio.helpers.StatementCollector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.io.*;
@@ -18,6 +20,7 @@ import java.util.Scanner;
 import java.util.concurrent.Callable;
 
 public class BioSchemasRdfGenerator implements Callable<Void> {
+    private Logger log = LoggerFactory.getLogger(getClass());
     private static File file;
     private static int sampleCount = 0;
     private final URL url;
@@ -27,7 +30,7 @@ public class BioSchemasRdfGenerator implements Callable<Void> {
     }
 
     BioSchemasRdfGenerator(final URL url) {
-        System.out.println("HANDLING " + url.toString() + " sample count: " + ++sampleCount);
+        log.info("HANDLING " + url.toString() + " and the current sample count is: " + ++sampleCount);
         this.url = url;
     }
 
