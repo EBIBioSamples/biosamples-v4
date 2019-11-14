@@ -23,12 +23,11 @@ public class BioSchemasJsonLdWriter {
     private static final String BIOSAMPLES_BASE_URI = "https://www.ebi.ac.uk/biosamples/samples/";
     private static final String BIOSAMPLES = "biosamples";
     private static final String MONGO_SAMPLE = "mongoSample";
-    private static final String MONGO_DB_CONNECT_STRING = "mongodb://biosd:TkL51qjIt81aKQ@mongodb-hxvm-009.ebi.ac.uk:27017," +
-            "mongodb-hhvm-008.ebi.ac.uk:27017/biosamples?replicaSet=biosrs003&readPreference=nearest&authSource=admin&w=majority";
+    private static final String MONGO_DB_CONNECT_STRING = "";
     static File file;
 
     static {
-        file = new File("c:\\users\\dgupta\\samples_bioschemas_1_mongo.ldjson");
+        file = new File("");
     }
 
     public static void main(String[] args) throws IOException {

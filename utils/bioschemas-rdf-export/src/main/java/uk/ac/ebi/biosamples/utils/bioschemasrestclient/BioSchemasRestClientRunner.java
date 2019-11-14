@@ -1,22 +1,23 @@
 package uk.ac.ebi.biosamples.utils.bioschemasrestclient;
 
-import com.mongodb.MongoClient;
-import com.mongodb.MongoClientURI;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.Filters;
-import org.bson.Document;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
-import org.springframework.stereotype.Component;
-import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
-
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+
+import org.bson.Document;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.stereotype.Component;
+
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+
+import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 
 @Component
 public class BioSchemasRestClientRunner implements ApplicationRunner {
@@ -26,6 +27,7 @@ public class BioSchemasRestClientRunner implements ApplicationRunner {
     private static final String MONGO_SAMPLE = "mongoSample";
     @Value("${spring.data.mongodb.uri}")
     private String mongoUri;
+    private static String filePath;
     
     @Override
     public void run(ApplicationArguments args) throws Exception {
@@ -33,6 +35,11 @@ public class BioSchemasRestClientRunner implements ApplicationRunner {
         final MongoClient mongoClient = new MongoClient(uri);
         final MongoDatabase db = mongoClient.getDatabase(BIOSAMPLES);
         final MongoCollection<Document> coll = db.getCollection(MONGO_SAMPLE);
+
+        if(args.getOptionNames().contains("filePath")) {
+            filePath = args.getOptionValues("filePath").stream().findFirst().get();
+            BioSchemasRdfGenerator.setFilePath(filePath);
+        }
 
         final List<String> listOfAccessions = getAllDocuments(coll);
         System.out.println("List size is : " + listOfAccessions.size());
@@ -60,7 +67,7 @@ public class BioSchemasRestClientRunner implements ApplicationRunner {
     private static List<String> getAllDocuments(final MongoCollection<Document> col) throws Exception {
         final List<String> listOfAccessions = new ArrayList<>();
 
-        col.find(Filters.eq("_id", "SAMEA6032091")).forEach((Consumer<? super Document>) doc -> {
+        col.find().forEach((Consumer<? super Document>) doc -> {
             listOfAccessions.add(doc.getString("_id"));
         });
 

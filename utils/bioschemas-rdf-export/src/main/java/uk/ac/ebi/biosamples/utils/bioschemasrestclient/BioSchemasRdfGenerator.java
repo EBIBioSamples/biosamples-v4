@@ -21,10 +21,8 @@ public class BioSchemasRdfGenerator implements Callable<Void> {
     private static File file;
     private static int sampleCount = 0;
     private final URL url;
-    @Value("${bioschemas.export.filePath}")
-    private static String filePath;
 
-    static {
+    public static void setFilePath(String filePath) {
         file = new File(filePath);
     }
 
@@ -148,10 +146,10 @@ public class BioSchemasRdfGenerator implements Callable<Void> {
     }
 
     private static void handleNamespaces(TurtleWriterCustom writer) {
-        writer.handleNamespace("SCHEMA", "http://schema.org/");
-        writer.handleNamespace("IRI", "http://purl.obolibrary.org/obo/");
+        writer.handleNamespace("schema", "http://schema.org/");
+        writer.handleNamespace("obo", "http://purl.obolibrary.org/obo/");
         writer.handleNamespace("EBI_BIOSAMPLES", "https://www.ebi.ac.uk/biosamples/");
-        writer.handleNamespace("BIOSAMPLES_IDENTIFIER", "http://identifiers.org/biosample/");
+        writer.handleNamespace("biosample", "http://identifiers.org/biosample/");
     }
 }
 
