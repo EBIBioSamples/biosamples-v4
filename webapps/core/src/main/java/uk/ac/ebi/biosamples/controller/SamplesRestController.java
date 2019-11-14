@@ -1,31 +1,5 @@
 package uk.ac.ebi.biosamples.controller;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Order;
-import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.*;
-import org.springframework.hateoas.PagedResources.PageMetadata;
-import org.springframework.hateoas.mvc.ControllerLinkBuilder;
-import org.springframework.http.CacheControl;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.util.UriComponentsBuilder;
-import uk.ac.ebi.biosamples.BioSamplesProperties;
-import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.SubmittedViaType;
-import uk.ac.ebi.biosamples.model.filter.Filter;
-import uk.ac.ebi.biosamples.service.*;
-import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
-import uk.ac.ebi.biosamples.utils.LinkUtils;
-
 import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -35,6 +9,53 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Order;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.ExposesResourceFor;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.PagedResources.PageMetadata;
+import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.Resources;
+import org.springframework.hateoas.mvc.ControllerLinkBuilder;
+import org.springframework.http.CacheControl;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import uk.ac.ebi.biosamples.BioSamplesProperties;
+import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.SubmittedViaType;
+import uk.ac.ebi.biosamples.model.filter.Filter;
+import uk.ac.ebi.biosamples.service.BioSamplesAapService;
+import uk.ac.ebi.biosamples.service.FilterService;
+import uk.ac.ebi.biosamples.service.SampleManipulationService;
+import uk.ac.ebi.biosamples.service.SamplePageService;
+import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
+import uk.ac.ebi.biosamples.service.SampleService;
+import uk.ac.ebi.biosamples.service.SchemaValidatorService;
+import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
+import uk.ac.ebi.biosamples.utils.LinkUtils;
 
 /**
  * Primary controller for REST operations both in JSON and XML and both read and
@@ -81,7 +102,7 @@ public class SamplesRestController {
 
 	//must return a ResponseEntity so that cache headers can be set
 	@CrossOrigin(methods = RequestMethod.GET)
-	@GetMapping(produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
+	@GetMapping(produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
 	public ResponseEntity<Resources<Resource<Sample>>> searchHal(
 			@RequestParam(name = "text", required = false) String text,
 			@RequestParam(name = "filter", required = false) String[] filter,
@@ -165,6 +186,43 @@ public class SamplesRestController {
 			return ResponseEntity.ok()
 					.cacheControl(cacheControl)
 					.body(resources);
+		}
+	}
+
+	// must return a ResponseEntity so that cache headers can be set
+	@CrossOrigin(methods = RequestMethod.GET)
+	@GetMapping(produces = { MediaType.TEXT_PLAIN_VALUE })
+	public @ResponseBody ResponseEntity<String> searchByAccession(@RequestParam(name = "text", required = false) final String text,
+			@RequestParam(name = "filter", required = false) final String[] filter,
+			@RequestParam(name = "cursor", required = false) final String cursor, @RequestParam(name = "page", required = false) final Integer page,
+			@RequestParam(name = "size", required = false) final Integer size, @RequestParam(name = "sort", required = false) final String[] sort,
+			@RequestParam(name = "curationrepo", required = false) final String curationRepo, final PagedResourcesAssembler<Sample> pageAssembler) {
+		// Need to decode the %20 and similar from the parameters
+		// this is *not* needed for the html controller
+		final String decodedText = LinkUtils.decodeText(text);
+		final String[] decodedFilter = LinkUtils.decodeTexts(filter);
+		final String decodedCursor = LinkUtils.decodeText(cursor);
+		final Collection<Filter> filters = filterService.getFiltersCollection(decodedFilter);
+		final Collection<String> domains = bioSamplesAapService.getDomains();
+
+		// Note - EBI load balancer does cache but doesn't add age header, so clients
+		// could cache up to twice this age
+		final CacheControl cacheControl = CacheControl.maxAge(bioSamplesProperties.getBiosamplesCorePageCacheMaxAge(), TimeUnit.SECONDS);
+		// if the user has access to any domains, then mark the response as private as
+		// must be using AAP and responses will be different
+		if (domains.size() > 0) {
+			cacheControl.cachePrivate();
+		}
+
+		final CursorArrayList<Sample> samples = samplePageService.getSamplesByText(decodedText, filters, domains, decodedCursor, 20, curationRepo);
+		final int returnedSamplesSize = samples.size();
+
+		if (returnedSamplesSize > 1) {
+			return new ResponseEntity<String>("Multiple samples fetched with this request URI", HttpStatus.BAD_REQUEST);
+		} else if (returnedSamplesSize == 1) {
+			return ResponseEntity.ok().cacheControl(cacheControl).body(samples.get(0).getAccession());
+		} else {
+			return new ResponseEntity<String>("SourceId passed is not recognized", HttpStatus.NOT_FOUND);
 		}
 	}
 
