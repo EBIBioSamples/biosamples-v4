@@ -46,13 +46,39 @@ public class RestSearchIntegration extends AbstractIntegration {
             throw new IntegrationTestFailException("Expected response (" + resource.getContent() + ") to equal submission (" + test2 + ")", Phase.ONE);
         }
 
-        resource = client.persistSampleResource(test5);
-        test5 = Sample.Builder.fromSample(test5).withAccession(resource.getContent().getAccession()).build();
-
         resource = client.persistSampleResource(test4);
         test4 = Sample.Builder.fromSample(test4).withAccession(resource.getContent().getAccession()).build();
         if (!test4.equals(resource.getContent())) {
             throw new IntegrationTestFailException("Expected response (" + resource.getContent() + ") to equal submission (" + test4 + ")", Phase.ONE);
+        }
+
+        resource = client.persistSampleResource(test5);
+    }
+
+    @Override
+    protected void phaseTwo() {
+        Sample test2 = getSampleTest2();
+        Optional<Sample> optionalSample = fetchUniqueSampleByName(test2.getName());
+        if (optionalSample.isPresent()) {
+            test2 = optionalSample.get();
+        } else {
+            throw new IntegrationTestFailException("Sample does not exist, sample name: " + test2.getName(), Phase.TWO);
+        }
+
+        Sample test4 = getSampleTest4();
+        optionalSample = fetchUniqueSampleByName(test4.getName());
+        if (optionalSample.isPresent()) {
+            test4 = optionalSample.get();
+        } else {
+            throw new IntegrationTestFailException("Sample does not exist, sample name: " + test4.getName(), Phase.TWO);
+        }
+
+        Sample test5 = getSampleTest5();
+        optionalSample = fetchUniqueSampleByName(test5.getName());
+        if (optionalSample.isPresent()) {
+            test5 = optionalSample.get();
+        } else {
+            throw new IntegrationTestFailException("Sample does not exist, sample name: " + test5.getName(), Phase.TWO);
         }
 
         //submit test4 again with relationships
@@ -60,7 +86,11 @@ public class RestSearchIntegration extends AbstractIntegration {
         relationships.add(Relationship.build(test4.getAccession(), "derived from", test2.getAccession()));
         relationships.add(Relationship.build(test4.getAccession(), "derive to", test5.getAccession()));
         test4 = Sample.Builder.fromSample(test4).withRelationships(relationships).build();
-        client.persistSampleResource(test4);
+        Resource<Sample> resource = client.persistSampleResource(test4);
+        if (!test4.equals(resource.getContent())) {
+            throw new IntegrationTestFailException("Expected response (" + resource.getContent() + ") to equal submission (" + test4 + ")", Phase.TWO);
+        }
+
 
         //Build inverse relationships for sample5
         relationships = test5.getRelationships();
@@ -70,15 +100,15 @@ public class RestSearchIntegration extends AbstractIntegration {
         if (optionalResource.isPresent()) {
             resource = optionalResource.get();
         } else {
-            throw new IntegrationTestFailException("Sample not present, name: " + test5.getName(), Phase.ONE);
+            throw new IntegrationTestFailException("Sample not present, name: " + test5.getName(), Phase.TWO);
         }
         if (!test5.equals(resource.getContent())) {
-            throw new IntegrationTestFailException("Expected response (" + resource.getContent() + ") to equal submission (" + test5 + ")", Phase.ONE);
+            throw new IntegrationTestFailException("Expected response (" + resource.getContent() + ") to equal submission (" + test5 + ")", Phase.TWO);
         }
     }
 
     @Override
-    protected void phaseTwo() {
+    protected void phaseThree() {
         Sample test1 = getSampleTest1();
         Optional<Sample> optionalSample = fetchUniqueSampleByName(test1.getName());
         if (optionalSample.isPresent()) {
@@ -121,32 +151,27 @@ public class RestSearchIntegration extends AbstractIntegration {
     }
 
     @Override
-    protected void phaseThree() {
-        //not doing anything here
-    }
-
-    @Override
     protected void phaseFour() {
         Sample sample2 = getSampleTest2();
         Optional<Sample> optionalSample = fetchUniqueSampleByName(sample2.getName());
         if (optionalSample.isPresent()) {
             sample2 = optionalSample.get();
         } else {
-            throw new IntegrationTestFailException("Sample does not exist, sample name: " + sample2.getName(), Phase.TWO);
+            throw new IntegrationTestFailException("Sample does not exist, sample name: " + sample2.getName(), Phase.FOUR);
         }
         Sample sample4 = getSampleTest4();
         optionalSample = fetchUniqueSampleByName(sample4.getName());
         if (optionalSample.isPresent()) {
             sample4 = optionalSample.get();
         } else {
-            throw new IntegrationTestFailException("Sample does not exist, sample name: " + sample4.getName(), Phase.TWO);
+            throw new IntegrationTestFailException("Sample does not exist, sample name: " + sample4.getName(), Phase.FOUR);
         }
         Sample sample5 = getSampleTest5();
         optionalSample = fetchUniqueSampleByName(sample5.getName());
         if (optionalSample.isPresent()) {
             sample5 = optionalSample.get();
         } else {
-            throw new IntegrationTestFailException("Sample does not exist, sample name: " + sample5.getName(), Phase.TWO);
+            throw new IntegrationTestFailException("Sample does not exist, sample name: " + sample5.getName(), Phase.FOUR);
         }
 
         List<String> sample2ExpectedSearchResults = Arrays.asList(sample2.getAccession(), sample4.getAccession());
@@ -159,11 +184,11 @@ public class RestSearchIntegration extends AbstractIntegration {
         }
 
         if (sample2EffectiveSearchResults.isEmpty()) {
-            throw new IntegrationTestFailException("No search results found!", Phase.THREE);
+            throw new IntegrationTestFailException("No search results found!", Phase.FOUR);
         }
 
         if (!sample2EffectiveSearchResults.containsAll(sample2ExpectedSearchResults)) {
-            throw new IntegrationTestFailException("Search results for " + sample2.getAccession() + " does not contains all expected samples", Phase.THREE);
+            throw new IntegrationTestFailException("Search results for " + sample2.getAccession() + " does not contains all expected samples", Phase.FOUR);
         }
 
         // Get results for sample4
@@ -173,7 +198,7 @@ public class RestSearchIntegration extends AbstractIntegration {
         }
 
         if (sample4EffectiveSearchResults.isEmpty()) {
-            throw new IntegrationTestFailException("No search results found!", Phase.THREE);
+            throw new IntegrationTestFailException("No search results found!", Phase.FOUR);
         }
 
 

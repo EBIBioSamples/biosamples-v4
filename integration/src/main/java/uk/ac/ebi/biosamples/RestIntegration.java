@@ -110,7 +110,7 @@ public class RestIntegration extends AbstractIntegration {
 
 		// put a version that is private and also update relationships
 		SortedSet<Relationship> relationships = new TreeSet<>();
-		relationships.add(Relationship.build(sampleTest1.getAccession(), "derived from", resource.getContent().getAccession()));
+		relationships.add(Relationship.build(sampleTest1.getAccession(), "derived from", sample2Accession));
 		sampleTest1 = new Sample.Builder(sampleTest1.getName(), sampleTest1.getAccession())
 				.withDomain(sampleTest1.getDomain()).withRelease("2116-04-01T11:36:57.00Z")
 				.withUpdate(sampleTest1.getUpdate()).withAttributes(sampleTest1.getCharacteristics())
@@ -133,7 +133,6 @@ public class RestIntegration extends AbstractIntegration {
 		if (!optional.isPresent()) {
 			throw new IntegrationTestFailException("Cannot access private " + sampleTest1.getAccession(), Phase.THREE);
 		}
-
 
         sampleTest2 = Sample.Builder.fromSample(sampleTest2)
 				.withAccession(sample2Accession)
@@ -284,6 +283,7 @@ public class RestIntegration extends AbstractIntegration {
 				.build());
 
         return new Sample.Builder(name)
+				.withUpdate(update)
 				.withRelease(release).withDomain(defaultIntegrationSubmissionDomain)
 				.withAttributes(attributes)
 				.withRelationships(relationships).withExternalReferences(externalReferences)
