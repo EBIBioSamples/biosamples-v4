@@ -53,6 +53,10 @@ public class RestSearchIntegration extends AbstractIntegration {
         }
 
         resource = client.persistSampleResource(test5);
+        test5 = Sample.Builder.fromSample(test5).withAccession(resource.getContent().getAccession()).build();
+        if (!test5.equals(resource.getContent())) {
+            throw new IntegrationTestFailException("Expected response (" + resource.getContent() + ") to equal submission (" + test5 + ")", Phase.ONE);
+        }
     }
 
     @Override

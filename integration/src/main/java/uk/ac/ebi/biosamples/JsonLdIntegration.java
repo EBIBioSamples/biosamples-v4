@@ -93,21 +93,14 @@ public class JsonLdIntegration extends AbstractIntegration {
     }
 
     private Sample getTestSample() {
-        String name = "Test ld+json";
-        String domain = "self.BiosampleIntegrationTest";
+        String name = "JsonLdIntegration_sample_1";
         Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
         Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
         SortedSet<Attribute> attributes = new TreeSet<>();
-        attributes.add(
-                Attribute.build("Organism Part", "Lung", "http://purl.obolibrary.org/obo/UBERON_0002048", null)
-        );
-        attributes.add(
-                Attribute.build("test_Type", "test_value")
-        );
-        attributes.add(
-                Attribute.build("Description", "Test description")
-        );
+        attributes.add(Attribute.build("Organism Part", "Lung", "http://purl.obolibrary.org/obo/UBERON_0002048", null));
+        attributes.add(Attribute.build("test_Type", "test_value"));
+        attributes.add( Attribute.build("Description", "Test description"));
         attributes.add(
                 Attribute.build(
                         "MultiCategoryCodeField",
@@ -124,10 +117,9 @@ public class JsonLdIntegration extends AbstractIntegration {
         SortedSet<ExternalReference> externalReferences = new TreeSet<>();
         externalReferences.add(
                 ExternalReference.build("www.google.com",
-                        new TreeSet<>(Arrays.asList("DUO:0000005", "DUO:0000001", "DUO:0000007")))
-        );
+                        new TreeSet<>(Arrays.asList("DUO:0000005", "DUO:0000001", "DUO:0000007"))));
 
-        return new Sample.Builder(name).withDomain(domain)
+        return new Sample.Builder(name).withDomain(defaultIntegrationSubmissionDomain)
                 .withRelease(release).withUpdate(update)
                 .withAttributes(attributes).withExternalReferences(externalReferences).build();
     }
