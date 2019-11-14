@@ -27,17 +27,16 @@ public class BioSchemasRestClientRunner implements ApplicationRunner {
     private static final String MONGO_SAMPLE = "mongoSample";
     @Value("${spring.data.mongodb.uri}")
     private String mongoUri;
-    private static String filePath;
-    
+
     @Override
-    public void run(ApplicationArguments args) throws Exception {
+    public void run(ApplicationArguments args) {
         final MongoClientURI uri = new MongoClientURI(mongoUri);
         final MongoClient mongoClient = new MongoClient(uri);
         final MongoDatabase db = mongoClient.getDatabase(BIOSAMPLES);
         final MongoCollection<Document> coll = db.getCollection(MONGO_SAMPLE);
 
         if(args.getOptionNames().contains("filePath")) {
-            filePath = args.getOptionValues("filePath").stream().findFirst().get();
+            String filePath = args.getOptionValues("filePath").stream().findFirst().get();
             BioSchemasRdfGenerator.setFilePath(filePath);
         }
 
@@ -64,12 +63,10 @@ public class BioSchemasRestClientRunner implements ApplicationRunner {
         return new URL(BIOSAMPLES_BASE_URI + accession + LDJSON);
     }
 
-    private static List<String> getAllDocuments(final MongoCollection<Document> col) throws Exception {
+    private static List<String> getAllDocuments(final MongoCollection<Document> col) {
         final List<String> listOfAccessions = new ArrayList<>();
 
-        col.find().forEach((Consumer<? super Document>) doc -> {
-            listOfAccessions.add(doc.getString("_id"));
-        });
+        col.find().forEach((Consumer<? super Document>) doc -> listOfAccessions.add(doc.getString("_id")));
 
         return listOfAccessions;
     }
