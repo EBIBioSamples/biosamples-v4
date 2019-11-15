@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.utils.bioschemasrestclient;
+package uk.ac.ebi.biosamples.rdfgenerator;
 
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.rio.turtle.TurtleWriter;

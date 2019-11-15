@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.utils.bioschemasrestclient;
+package uk.ac.ebi.biosamples.rdfgenerator;
 
 import org.apache.commons.io.FileUtils;
 import org.eclipse.rdf4j.model.Statement;
@@ -9,7 +9,6 @@ import org.eclipse.rdf4j.rio.Rio;
 import org.eclipse.rdf4j.rio.helpers.StatementCollector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.io.*;
 import java.net.HttpURLConnection;
