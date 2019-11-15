@@ -37,5 +37,6 @@
 		<module>curationundo</module>
 		<module>curami</module>
         <module>curatedview</module>
+		<module>bioschemas-rdf-export</module>
     </modules>
 </project>

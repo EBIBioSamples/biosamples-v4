@@ -21,6 +21,5 @@
 		<module>json</module>
 		<module>xml</module>
 		<module>client</module>
-		<module>bioschemas-rdf-export</module>
 	</modules>
 </project>

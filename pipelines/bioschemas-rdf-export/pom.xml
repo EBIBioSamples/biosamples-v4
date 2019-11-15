@@ -2,14 +2,14 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>utils-bioschemas-rdf-export</artifactId>
+	<artifactId>pipelines-bioschemas-rdf-export</artifactId>
 	<packaging>jar</packaging>
 
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
 		<version>4.2.2-SNAPSHOT</version>
-		<relativePath>../../</relativePath>
+		<relativePath>../..</relativePath>
 	</parent>
 	<dependencies>
 		<dependency>
@@ -37,10 +37,6 @@
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpcore</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
