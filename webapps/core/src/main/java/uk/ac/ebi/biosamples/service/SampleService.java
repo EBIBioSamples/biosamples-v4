@@ -101,7 +101,7 @@ public class SampleService {
                 existingRelationshipTargets = getExistingRelationshipTargets(sample.getAccession(), mongoOldSample);
                 sample = compareWithExistingAndUpdateSample(sample, oldSample);
             } else {
-                log.warn("Trying to update sample not in database, accession: {}", sample.getAccession());
+                log.error("Trying to update sample not in database, accession: {}", sample.getAccession());
             }
 
             MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);
@@ -130,6 +130,10 @@ public class SampleService {
 
             throw new SampleValidationException(sb.toString());
         }
+    }
+
+    public boolean isExistingAccession(String accession) {
+        return mongoSampleRepository.findOne(accession) != null;
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)

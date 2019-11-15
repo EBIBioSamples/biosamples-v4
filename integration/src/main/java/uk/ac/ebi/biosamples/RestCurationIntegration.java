@@ -18,6 +18,7 @@ import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.*;
+import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 
 import java.net.URI;
 import java.time.Instant;
@@ -34,8 +35,6 @@ public class RestCurationIntegration extends AbstractIntegration {
 	private final BioSamplesProperties bioSamplesProperties;
 	private final RestOperations restTemplate;
 
-	private final Sample sample = getSampleTest1();
-
 	public RestCurationIntegration(RestTemplateBuilder restTemplateBuilder,
 			IntegrationProperties integrationProperties,
 			BioSamplesProperties bioSamplesProperties,
@@ -48,11 +47,19 @@ public class RestCurationIntegration extends AbstractIntegration {
 
 	@Override
 	protected void phaseOne() {
+		Sample sample = getSampleTest1();
 		client.persistSampleResource(sample);
 	}
 
 	@Override
 	protected void phaseTwo() {
+		Sample sample = getSampleTest1();
+		Optional<Sample> optionalSample = fetchUniqueSampleByName(sample.getName());
+		if (optionalSample.isPresent()) {
+			sample = optionalSample.get();
+		} else {
+			throw new IntegrationTestFailException("Sample does not exist, sample name: " + sample.getName(), Phase.TWO);
+		}
 
 		Set<Attribute> attributesPre;
 		Set<Attribute> attributesPost;
@@ -96,6 +103,14 @@ public class RestCurationIntegration extends AbstractIntegration {
 
 	@Override
 	protected void phaseThree() {
+		Sample sample = getSampleTest1();
+		Optional<Sample> optionalSample = fetchUniqueSampleByName(sample.getName());
+		if (optionalSample.isPresent()) {
+			sample = Sample.Builder.fromSample(sample).withAccession(optionalSample.get().getAccession()).build();
+		} else {
+			throw new IntegrationTestFailException("Sample does not exist, sample name: " + sample.getName(), Phase.TWO);
+		}
+
 
 		// check /curations
 		testCurations();
@@ -251,9 +266,7 @@ public class RestCurationIntegration extends AbstractIntegration {
 
 
 	private Sample getSampleTest1() {
-		String name = "Test Sample";
-		String accession = "TESTCur1";
-        String domain = "self.BiosampleIntegrationTest";
+		String name = "RestCurationIntegration_sample_1";
 		Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
 		Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
@@ -263,11 +276,9 @@ public class RestCurationIntegration extends AbstractIntegration {
 		attributes.add(Attribute.build("Weird", "\"\""));
 
 		SortedSet<Relationship> relationships = new TreeSet<>();
-
 		SortedSet<ExternalReference> externalReferences = new TreeSet<>();
 
-//		return Sample.build(name, accession, domain, release, update, attributes, relationships, externalReferences, null, null, null);
-        return new Sample.Builder(name, accession).withDomain(domain)
+        return new Sample.Builder(name).withDomain(defaultIntegrationSubmissionDomain)
 				.withRelease(release).withUpdate(update)
 				.withAttributes(attributes).withRelationships(relationships).withExternalReferences(externalReferences)
 				.build();

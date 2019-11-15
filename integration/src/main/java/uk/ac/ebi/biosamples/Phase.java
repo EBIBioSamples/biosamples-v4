@@ -46,15 +46,14 @@ public enum Phase {
     public int getCode() {
         return this.phaseCode;
     }
-    
-    static public Phase readPhaseFromArguments(ApplicationArguments args) {
+
+    public static Phase readPhaseFromArguments(ApplicationArguments args) {
         if (args.containsOption("phase")) {
             int phaseCode = Integer.parseInt(args.getOptionValues("phase").get(0));
             Phase phase = phaseLookup.getOrDefault(phaseCode, Phase.UNKNOWN);
             if (phase.equals(UNKNOWN)) {
                 throw new IllegalArgumentException(String.format("Unknown phase %d", phaseCode));
             } else {
-            	log.info("reading arguments for phase "+phase);
                 return phase;
             }
         }
