@@ -189,43 +189,6 @@ public class SamplesRestController {
 		}
 	}
 
-	// must return a ResponseEntity so that cache headers can be set
-	@CrossOrigin(methods = RequestMethod.GET)
-	@GetMapping(produces = { MediaType.TEXT_PLAIN_VALUE })
-	public @ResponseBody ResponseEntity<String> searchByAccession(@RequestParam(name = "text", required = false) final String text,
-			@RequestParam(name = "filter", required = false) final String[] filter,
-			@RequestParam(name = "cursor", required = false) final String cursor, @RequestParam(name = "page", required = false) final Integer page,
-			@RequestParam(name = "size", required = false) final Integer size, @RequestParam(name = "sort", required = false) final String[] sort,
-			@RequestParam(name = "curationrepo", required = false) final String curationRepo, final PagedResourcesAssembler<Sample> pageAssembler) {
-		// Need to decode the %20 and similar from the parameters
-		// this is *not* needed for the html controller
-		final String decodedText = LinkUtils.decodeText(text);
-		final String[] decodedFilter = LinkUtils.decodeTexts(filter);
-		final String decodedCursor = LinkUtils.decodeText(cursor);
-		final Collection<Filter> filters = filterService.getFiltersCollection(decodedFilter);
-		final Collection<String> domains = bioSamplesAapService.getDomains();
-
-		// Note - EBI load balancer does cache but doesn't add age header, so clients
-		// could cache up to twice this age
-		final CacheControl cacheControl = CacheControl.maxAge(bioSamplesProperties.getBiosamplesCorePageCacheMaxAge(), TimeUnit.SECONDS);
-		// if the user has access to any domains, then mark the response as private as
-		// must be using AAP and responses will be different
-		if (domains.size() > 0) {
-			cacheControl.cachePrivate();
-		}
-
-		final CursorArrayList<Sample> samples = samplePageService.getSamplesByText(decodedText, filters, domains, decodedCursor, 20, curationRepo);
-		final int returnedSamplesSize = samples.size();
-
-		if (returnedSamplesSize > 1) {
-			return new ResponseEntity<String>("Multiple samples fetched with this request URI", HttpStatus.BAD_REQUEST);
-		} else if (returnedSamplesSize == 1) {
-			return ResponseEntity.ok().cacheControl(cacheControl).body(samples.get(0).getAccession());
-		} else {
-			return new ResponseEntity<String>("SourceId passed is not recognized", HttpStatus.NOT_FOUND);
-		}
-	}
-
 	private Resources<Resource<Sample>> populateResources(Page<Sample> pageSample, int effectiveSize, int effectivePage,
 														  String decodedText, String[] decodedFilter, String[] sort) {
 		PageMetadata pageMetadata = new PageMetadata(effectiveSize,
@@ -343,18 +306,20 @@ public class SamplesRestController {
 	}
 
 	@PreAuthorize("isAuthenticated()")
-	@PostMapping(consumes = { MediaType.APPLICATION_JSON_VALUE })
+	@PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_PLAIN_VALUE})
 	@RequestMapping("/accession")
-	public ResponseEntity<Resource<Sample>> accessionSample(@RequestBody Sample sample) {
+	public ResponseEntity<Object> accessionSample(@RequestBody Sample sample,
+												  @RequestParam(name = "preAccessioning", required = false, defaultValue = "false") final boolean preAccessioning) {
 		log.debug("Received POST for accessioning " + sample);
 		if (sample.hasAccession()) {
 			throw new SampleWithAccessionSumbissionException();
 		}
+
 		sample = bioSamplesAapService.handleSampleDomain(sample);
 
-		Instant release = Instant.ofEpochSecond(LocalDateTime.now(ZoneOffset.UTC).plusYears(100).toEpochSecond(ZoneOffset.UTC));
-		Instant update = Instant.now();
-		SubmittedViaType submittedVia =
+		final Instant release = Instant.ofEpochSecond(LocalDateTime.now(ZoneOffset.UTC).plusYears(100).toEpochSecond(ZoneOffset.UTC));
+		final Instant update = Instant.now();
+		final SubmittedViaType submittedVia =
 				sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
 
 		sample = Sample.Builder.fromSample(sample)
@@ -363,10 +328,13 @@ public class SamplesRestController {
 				.withSubmittedVia(submittedVia).build();
 
 		sample = sampleService.store(sample);
-		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
-		return ResponseEntity.created(URI.create(sampleResource.getLink("self").getHref())).body(sampleResource);
-	}
 
+		final Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
+
+		if (preAccessioning) return ResponseEntity.ok(sampleResource.getContent().getAccession());
+
+		else return ResponseEntity.created(URI.create(sampleResource.getLink("self").getHref())).body(sampleResource);
+	}
 
 	@PreAuthorize("isAuthenticated()")
 	@PostMapping(consumes = { MediaType.APPLICATION_JSON_VALUE })

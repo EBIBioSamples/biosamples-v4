@@ -108,40 +108,6 @@ public class SampleRestController {
         return sampleResource;
     }
 
-	@PreAuthorize("isAuthenticated()")
-	@CrossOrigin(methods = RequestMethod.GET)
-	@GetMapping(produces = MediaType.TEXT_PLAIN_VALUE)
-	public @ResponseBody ResponseEntity<String> getSampleAccessionOnly(@PathVariable final String accession,
-			@RequestParam(name = "legacydetails", required = false) final String legacydetails,
-			@RequestParam(name = "curationdomain", required = false) final String[] curationdomain,
-			@RequestParam(name = "curationrepo", required = false) final String curationRepo) {
-		log.trace("starting call");
-
-		// decode percent-encoding from curation domains
-		final Optional<List<String>> decodedCurationDomains = LinkUtils.decodeTextsToArray(curationdomain);
-		final Optional<Boolean> decodedLegacyDetails;
-
-		if (legacydetails != null && "true".equals(legacydetails)) {
-			decodedLegacyDetails = Optional.ofNullable(Boolean.TRUE);
-		} else {
-			decodedLegacyDetails = Optional.empty();
-		}
-
-		// convert it into the format to return
-		Optional<Sample> sample = sampleService.fetch(accession, decodedCurationDomains, curationRepo);
-
-		if (!sample.isPresent()) {
-			return new ResponseEntity<String>("Not recognized", HttpStatus.NOT_FOUND);
-		}
-
-		bioSamplesAapService.checkAccessible(sample.get());
-
-		// TODO cache control
-		return new ResponseEntity<String>(
-				sampleResourceAssembler.toResource(sample.get(), decodedLegacyDetails, decodedCurationDomains).getContent().getAccession(),
-				HttpStatus.OK);
-	}
-
     @RequestMapping(produces = "application/phenopacket+json")
     @PreAuthorize("isAuthenticated()")
     @CrossOrigin(methods = RequestMethod.GET)
