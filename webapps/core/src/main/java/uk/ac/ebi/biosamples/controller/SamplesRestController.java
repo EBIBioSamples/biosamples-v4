@@ -311,9 +311,7 @@ public class SamplesRestController {
 	public ResponseEntity<Object> accessionSample(@RequestBody Sample sample,
 												  @RequestParam(name = "preAccessioning", required = false, defaultValue = "false") final boolean preAccessioning) {
 		log.debug("Received POST for accessioning " + sample);
-		if (sample.hasAccession()) {
-			throw new SampleWithAccessionSumbissionException();
-		}
+		if (sample.hasAccession()) throw new SampleWithAccessionSumbissionException();
 
 		sample = bioSamplesAapService.handleSampleDomain(sample);
 
