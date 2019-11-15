@@ -150,8 +150,8 @@ public class BioSchemasRdfGenerator implements Callable<Void> {
     private static void handleNamespaces(TurtleWriterCustom writer) {
         writer.handleNamespace("schema", "http://schema.org/");
         writer.handleNamespace("obo", "http://purl.obolibrary.org/obo/");
-        writer.handleNamespace("EBI_BIOSAMPLES", "https://www.ebi.ac.uk/biosamples/");
-        writer.handleNamespace("biosample", "http://identifiers.org/biosample/");
+        writer.handleNamespace("ebi-bsd", "https://www.ebi.ac.uk/biosamples/");
+        writer.handleNamespace("biosamples", "http://identifiers.org/biosample/");
     }
 }
 
