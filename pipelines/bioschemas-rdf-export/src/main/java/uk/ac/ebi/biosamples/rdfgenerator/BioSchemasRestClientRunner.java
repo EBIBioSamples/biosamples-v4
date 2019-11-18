@@ -1,20 +1,29 @@
 package uk.ac.ebi.biosamples.rdfgenerator;
 
-import com.mongodb.*;
-import com.mongodb.operation.OrderBy;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
-import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
+import com.mongodb.QueryBuilder;
+import com.mongodb.operation.OrderBy;
+
+import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 
 @Component
 public class BioSchemasRestClientRunner implements ApplicationRunner {
@@ -26,7 +35,8 @@ public class BioSchemasRestClientRunner implements ApplicationRunner {
     @Value("${spring.data.mongodb.uri}")
     private String mongoUri;
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
     public void run(ApplicationArguments args) {
         final MongoClientURI uri = new MongoClientURI(mongoUri);
         final MongoClient mongoClient = new MongoClient(uri);
@@ -46,7 +56,9 @@ public class BioSchemasRestClientRunner implements ApplicationRunner {
                 1, 10)) {
             listOfAccessions.forEach(accession -> {
                 try {
-                    executorService.submit(new BioSchemasRdfGenerator(fetchUrlFromAccession(accession)));
+                    final URL url = fetchUrlFromAccession(accession);
+
+                    executorService.submit(new BioSchemasRdfGenerator(url));
                 } catch (final Exception e) {
                     throw new RuntimeException(e);
                 }

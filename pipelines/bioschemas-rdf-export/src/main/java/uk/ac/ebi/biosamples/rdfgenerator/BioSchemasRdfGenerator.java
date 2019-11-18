@@ -1,15 +1,5 @@
 package uk.ac.ebi.biosamples.rdfgenerator;
 
-import org.apache.commons.io.FileUtils;
-import org.eclipse.rdf4j.model.Statement;
-import org.eclipse.rdf4j.rio.RDFFormat;
-import org.eclipse.rdf4j.rio.RDFHandlerException;
-import org.eclipse.rdf4j.rio.RDFParser;
-import org.eclipse.rdf4j.rio.Rio;
-import org.eclipse.rdf4j.rio.helpers.StatementCollector;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
@@ -21,18 +11,33 @@ import java.util.Collection;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
 
+import org.apache.commons.io.FileUtils;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.rio.RDFFormat;
+import org.eclipse.rdf4j.rio.RDFHandlerException;
+import org.eclipse.rdf4j.rio.RDFParser;
+import org.eclipse.rdf4j.rio.Rio;
+import org.eclipse.rdf4j.rio.helpers.StatementCollector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class BioSchemasRdfGenerator implements Callable<Void> {
     private Logger log = LoggerFactory.getLogger(getClass());
     private static File file;
     private static int sampleCount = 0;
     private final URL url;
 
-    static void setFilePath(String filePath) {
+    public static void setFilePath(String filePath) {
         file = new File(filePath);
     }
 
     BioSchemasRdfGenerator(final URL url) {
-        log.info("HANDLING " + url.toString() + " and the current sample count is: " + ++sampleCount);
+        ++sampleCount;
+
+        if(sampleCount % 10 == 0) {
+            log.info("HANDLING " + url.toString() + " and the current sample count is: " + sampleCount);
+        }
+
         this.url = url;
     }
 
@@ -63,15 +68,15 @@ public class BioSchemasRdfGenerator implements Callable<Void> {
     }
 
     private static void handleSuccessResponses(final URL url) {
-        try (final Scanner sc = new Scanner(url.openStream())) {
+        try (Scanner sc = new Scanner(url.openStream())) {
             final StringBuilder sb = new StringBuilder();
 
             while (sc.hasNext()) {
                 sb.append(sc.nextLine());
             }
 
-            try (final InputStream in = new ByteArrayInputStream(sb.toString().getBytes(StandardCharsets.UTF_8))) {
-                final String dataAsRdf = readRdfToString(in);
+            try (InputStream in = new ByteArrayInputStream(sb.toString().getBytes(StandardCharsets.UTF_8))) {
+                String dataAsRdf = readRdfToString(in);
 
                 write(dataAsRdf);
             } catch (final Exception e) {
