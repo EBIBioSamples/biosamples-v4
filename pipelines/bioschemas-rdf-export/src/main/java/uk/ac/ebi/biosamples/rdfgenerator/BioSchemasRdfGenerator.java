@@ -1,5 +1,15 @@
 package uk.ac.ebi.biosamples.rdfgenerator;
 
+import org.apache.commons.io.FileUtils;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.rio.RDFFormat;
+import org.eclipse.rdf4j.rio.RDFHandlerException;
+import org.eclipse.rdf4j.rio.RDFParser;
+import org.eclipse.rdf4j.rio.Rio;
+import org.eclipse.rdf4j.rio.helpers.StatementCollector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
@@ -10,16 +20,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
-
-import org.apache.commons.io.FileUtils;
-import org.eclipse.rdf4j.model.Statement;
-import org.eclipse.rdf4j.rio.RDFFormat;
-import org.eclipse.rdf4j.rio.RDFHandlerException;
-import org.eclipse.rdf4j.rio.RDFParser;
-import org.eclipse.rdf4j.rio.Rio;
-import org.eclipse.rdf4j.rio.helpers.StatementCollector;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class BioSchemasRdfGenerator implements Callable<Void> {
     private Logger log = LoggerFactory.getLogger(getClass());
@@ -34,7 +34,7 @@ public class BioSchemasRdfGenerator implements Callable<Void> {
     BioSchemasRdfGenerator(final URL url) {
         ++sampleCount;
 
-        if(sampleCount % 10 == 0) {
+        if(sampleCount % 1000 == 0) {
             log.info("HANDLING " + url.toString() + " and the current sample count is: " + sampleCount);
         }
 

@@ -1,29 +1,19 @@
 package uk.ac.ebi.biosamples.rdfgenerator;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
+import com.mongodb.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
-
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
-import com.mongodb.MongoClient;
-import com.mongodb.MongoClientURI;
-import com.mongodb.QueryBuilder;
-import com.mongodb.operation.OrderBy;
-
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 @Component
 public class BioSchemasRestClientRunner implements ApplicationRunner {
@@ -52,8 +42,8 @@ public class BioSchemasRestClientRunner implements ApplicationRunner {
         log.info("Total number of samples to be dumped is : " + listOfAccessions.size());
         mongoClient.close();
 
-        try (final AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true,
-                1, 10)) {
+        try (final AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(300, 10000, true,
+                1, 30)) {
             listOfAccessions.forEach(accession -> {
                 try {
                     final URL url = fetchUrlFromAccession(accession);
@@ -76,9 +66,9 @@ public class BioSchemasRestClientRunner implements ApplicationRunner {
     private static List<String> getAllDocuments(final DBCollection col) {
         final List<String> listOfAccessions = new ArrayList<>();
         final DBObject query = QueryBuilder.start().put("release").lessThanEquals(new Date()).get();
-        final DBCursor cursor = col.find(query).sort(new BasicDBObject("release", OrderBy.ASC.getIntRepresentation()));
+        //final DBCursor cursor = col.find(query).sort(new BasicDBObject("release", OrderBy.ASC.getIntRepresentation()));
 
-        cursor.forEach(elem -> listOfAccessions.add(elem.get("_id").toString()));
+        col.find(query).forEach(elem -> listOfAccessions.add(elem.get("_id").toString()));
 
         return listOfAccessions;
     }
