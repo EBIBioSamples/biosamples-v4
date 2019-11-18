@@ -40,7 +40,7 @@ public class BioSchemasJsonLdWriter {
 
         try {
             getAllDocuments(coll);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             e.printStackTrace();
         } finally {
             mongoClient.close();
@@ -59,7 +59,7 @@ public class BioSchemasJsonLdWriter {
             if (responsecode == 200) {
                 handleSuccessResponses(inline, url);
             }
-        } catch (Exception e) {
+        } catch (final Exception e) {
             e.printStackTrace();
             System.out.println("URI Not found");
         } finally {
@@ -67,7 +67,7 @@ public class BioSchemasJsonLdWriter {
         }
     }
 
-    private static void handleSuccessResponses(String inline, final URL url) throws IOException, Exception {
+    private static void handleSuccessResponses(final String inline, final URL url) throws IOException, Exception {
         final Scanner sc = new Scanner(url.openStream());
 
         try {
@@ -85,7 +85,7 @@ public class BioSchemasJsonLdWriter {
         }
     }
 
-    private static void getAllDocuments(MongoCollection<Document> col) throws Exception {
+    private static void getAllDocuments(final MongoCollection<Document> col) throws Exception {
         final List<String> sampleAccessionList = new ArrayList<>();
         final String inline = "";
 
@@ -98,7 +98,6 @@ public class BioSchemasJsonLdWriter {
         col.find().forEach((Consumer<? super Document>) doc -> {
             final String id = doc.getString("_id");
             sampleAccessionList.add(id);
-            System.out.println("List size: " + sampleAccessionList.size());
         });
 
         sampleAccessionList.forEach(id -> {
@@ -108,7 +107,7 @@ public class BioSchemasJsonLdWriter {
                 try {
                     url = new URL(BIOSAMPLES_BASE_URI + id + LDJSON);
                     requestHTTPAndHandle(inline, url);
-                } catch (Exception e) {
+                } catch (final Exception e) {
                     e.printStackTrace();
                 }
             }

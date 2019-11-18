@@ -46,13 +46,12 @@ public class BioSchemasRestClientRunner implements ApplicationRunner {
                 1, 10)) {
             listOfAccessions.forEach(accession -> {
                 try {
-                    final URL url = fetchUrlFromAccession(accession);
-                    executorService.submit(new BioSchemasRdfGenerator(url));
-                } catch (Exception e) {
-                    e.printStackTrace();
+                    executorService.submit(new BioSchemasRdfGenerator(fetchUrlFromAccession(accession)));
+                } catch (final Exception e) {
+                    throw new RuntimeException(e);
                 }
             });
-        } catch (Exception e) {
+        } catch (final Exception e) {
             log.error("Something has broken", e);
             log.error(e.getMessage());
         }
