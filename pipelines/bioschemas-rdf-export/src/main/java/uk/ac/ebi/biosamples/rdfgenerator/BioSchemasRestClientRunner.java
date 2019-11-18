@@ -1,11 +1,5 @@
 package uk.ac.ebi.biosamples.rdfgenerator;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
 import com.mongodb.*;
 import com.mongodb.operation.OrderBy;
 import org.slf4j.Logger;
@@ -14,8 +8,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
-
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 @Component
 public class BioSchemasRestClientRunner implements ApplicationRunner {
@@ -47,13 +46,12 @@ public class BioSchemasRestClientRunner implements ApplicationRunner {
                 1, 10)) {
             listOfAccessions.forEach(accession -> {
                 try {
-                    final URL url = fetchUrlFromAccession(accession);
-                    executorService.submit(new BioSchemasRdfGenerator(url));
-                } catch (Exception e) {
-                    e.printStackTrace();
+                    executorService.submit(new BioSchemasRdfGenerator(fetchUrlFromAccession(accession)));
+                } catch (final Exception e) {
+                    throw new RuntimeException(e);
                 }
             });
-        } catch (Exception e) {
+        } catch (final Exception e) {
             log.error("Something has broken", e);
             log.error(e.getMessage());
         }

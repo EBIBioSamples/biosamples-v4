@@ -10,7 +10,10 @@ import org.eclipse.rdf4j.rio.helpers.StatementCollector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.InputStream;
+import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -24,7 +27,7 @@ public class BioSchemasRdfGenerator implements Callable<Void> {
     private static int sampleCount = 0;
     private final URL url;
 
-    public static void setFilePath(String filePath) {
+    static void setFilePath(String filePath) {
         file = new File(filePath);
     }
 
@@ -36,6 +39,7 @@ public class BioSchemasRdfGenerator implements Callable<Void> {
     @Override
     public Void call() throws Exception {
         requestHTTPAndHandle(this.url);
+
         return null;
     }
 
@@ -51,7 +55,7 @@ public class BioSchemasRdfGenerator implements Callable<Void> {
             if (response == 200) {
                 handleSuccessResponses(url);
             }
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new RuntimeException(e);
         } finally {
             conn.disconnect();
@@ -59,16 +63,18 @@ public class BioSchemasRdfGenerator implements Callable<Void> {
     }
 
     private static void handleSuccessResponses(final URL url) {
-        try (Scanner sc = new Scanner(url.openStream())) {
+        try (final Scanner sc = new Scanner(url.openStream())) {
             final StringBuilder sb = new StringBuilder();
+
             while (sc.hasNext()) {
                 sb.append(sc.nextLine());
             }
 
-            try (InputStream in = new ByteArrayInputStream(sb.toString().getBytes(StandardCharsets.UTF_8))) {
-                String dataAsRdf = readRdfToString(in);
+            try (final InputStream in = new ByteArrayInputStream(sb.toString().getBytes(StandardCharsets.UTF_8))) {
+                final String dataAsRdf = readRdfToString(in);
+
                 write(dataAsRdf);
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 throw new RuntimeException(e);
             }
         } catch (final Exception e) {
@@ -115,7 +121,6 @@ public class BioSchemasRdfGenerator implements Callable<Void> {
      */
     private static String graphToString(final Collection<Statement> myGraph) {
         final StringWriter out = new StringWriter();
-        //final RDFWriter writer = Rio.createWriter(RDFFormat.TURTLE, out);
         final TurtleWriterCustom turtleWriterCustom = new TurtleWriterCustom(out);
 
         return modifyIdentifier(writeRdfInTurtleFormat(myGraph, out, turtleWriterCustom));
@@ -129,29 +134,29 @@ public class BioSchemasRdfGenerator implements Callable<Void> {
         return rdfString;
     }
 
-    private static String writeRdfInTurtleFormat(Collection<Statement> myGraph, StringWriter out, TurtleWriterCustom writer) {
+    private static String writeRdfInTurtleFormat(final Collection<Statement> myGraph, final StringWriter out, final TurtleWriterCustom writer) {
         try {
             writer.startRDF();
             handleNamespaces(writer);
 
-            for (Statement st : myGraph) {
+            for (final Statement st : myGraph) {
                 writer.handleStatement(st);
                 //writer.writeValue(st.getObject(), true);
             }
 
             writer.endRDF();
-        } catch (RDFHandlerException e) {
+        } catch (final RDFHandlerException e) {
             throw new RuntimeException(e);
         }
 
         return out.getBuffer().toString();
     }
 
-    private static void handleNamespaces(TurtleWriterCustom writer) {
+    private static void handleNamespaces(final TurtleWriterCustom writer) {
         writer.handleNamespace("schema", "http://schema.org/");
         writer.handleNamespace("obo", "http://purl.obolibrary.org/obo/");
-        writer.handleNamespace("EBI_BIOSAMPLES", "https://www.ebi.ac.uk/biosamples/");
-        writer.handleNamespace("biosample", "http://identifiers.org/biosample/");
+        writer.handleNamespace("ebi-bsd", "https://www.ebi.ac.uk/biosamples/");
+        writer.handleNamespace("biosamples", "http://identifiers.org/biosample/");
     }
 }
 
