@@ -24,7 +24,7 @@ import java.util.concurrent.Callable;
 public class BioSchemasRdfGenerator implements Callable<Void> {
     private Logger log = LoggerFactory.getLogger(getClass());
     private static File file;
-    private static int sampleCount = 0;
+    private static long sampleCount = 0;
     private final URL url;
 
     public static void setFilePath(String filePath) {
@@ -32,11 +32,7 @@ public class BioSchemasRdfGenerator implements Callable<Void> {
     }
 
     BioSchemasRdfGenerator(final URL url) {
-        ++sampleCount;
-
-        if(sampleCount % 1000 == 0) {
-            log.info("HANDLING " + url.toString() + " and the current sample count is: " + sampleCount);
-        }
+        log.info("HANDLING " + url.toString() + " and the current sample count is: " + ++sampleCount);
 
         this.url = url;
     }
@@ -132,21 +128,21 @@ public class BioSchemasRdfGenerator implements Callable<Void> {
     }
 
     private static String modifyIdentifier(String rdfString) {
-        //System.out.println(rdfString);
         if (rdfString != null)
             rdfString = rdfString.replaceAll("biosample:", "");
 
         return rdfString;
     }
 
-    private static String writeRdfInTurtleFormat(final Collection<Statement> myGraph, final StringWriter out, final TurtleWriterCustom writer) {
+    private static String writeRdfInTurtleFormat(Collection<Statement> myGraph, StringWriter out, TurtleWriterCustom writer) {
         try {
             writer.startRDF();
             handleNamespaces(writer);
 
-            for (final Statement st : myGraph) {
+            for (Statement st : myGraph) {
                 writer.handleStatement(st);
-                //writer.writeValue(st.getObject(), true);
+                //below line is commented: for short RDF
+                //writer.writeValue(st.getObject(),O true);
             }
 
             writer.endRDF();

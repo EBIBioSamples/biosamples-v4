@@ -1,6 +1,7 @@
 package uk.ac.ebi.biosamples.rdfgenerator;
 
 import com.mongodb.*;
+import com.mongodb.operation.OrderBy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,8 +43,8 @@ public class BioSchemasRestClientRunner implements ApplicationRunner {
         log.info("Total number of samples to be dumped is : " + listOfAccessions.size());
         mongoClient.close();
 
-        try (final AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(300, 10000, true,
-                1, 30)) {
+        try (final AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true,
+                1, 10)) {
             listOfAccessions.forEach(accession -> {
                 try {
                     final URL url = fetchUrlFromAccession(accession);
@@ -66,9 +67,9 @@ public class BioSchemasRestClientRunner implements ApplicationRunner {
     private static List<String> getAllDocuments(final DBCollection col) {
         final List<String> listOfAccessions = new ArrayList<>();
         final DBObject query = QueryBuilder.start().put("release").lessThanEquals(new Date()).get();
-        //final DBCursor cursor = col.find(query).sort(new BasicDBObject("release", OrderBy.ASC.getIntRepresentation()));
+        final DBCursor cursor = col.find(query).sort(new BasicDBObject("release", OrderBy.ASC.getIntRepresentation()));
 
-        col.find(query).forEach(elem -> listOfAccessions.add(elem.get("_id").toString()));
+        cursor.forEach(elem -> listOfAccessions.add(elem.get("_id").toString()));
 
         return listOfAccessions;
     }
