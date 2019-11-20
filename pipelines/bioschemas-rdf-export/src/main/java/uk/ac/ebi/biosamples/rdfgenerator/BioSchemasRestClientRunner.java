@@ -26,7 +26,8 @@ public class BioSchemasRestClientRunner implements ApplicationRunner {
     @Value("${spring.data.mongodb.uri}")
     private String mongoUri;
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
     public void run(ApplicationArguments args) {
         final MongoClientURI uri = new MongoClientURI(mongoUri);
         final MongoClient mongoClient = new MongoClient(uri);
@@ -46,7 +47,9 @@ public class BioSchemasRestClientRunner implements ApplicationRunner {
                 1, 10)) {
             listOfAccessions.forEach(accession -> {
                 try {
-                    executorService.submit(new BioSchemasRdfGenerator(fetchUrlFromAccession(accession)));
+                    final URL url = fetchUrlFromAccession(accession);
+
+                    executorService.submit(new BioSchemasRdfGenerator(url));
                 } catch (final Exception e) {
                     throw new RuntimeException(e);
                 }

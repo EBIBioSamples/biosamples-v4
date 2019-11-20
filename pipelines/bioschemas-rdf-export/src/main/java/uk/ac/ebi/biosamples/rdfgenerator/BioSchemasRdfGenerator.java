@@ -24,15 +24,16 @@ import java.util.concurrent.Callable;
 public class BioSchemasRdfGenerator implements Callable<Void> {
     private Logger log = LoggerFactory.getLogger(getClass());
     private static File file;
-    private static int sampleCount = 0;
+    private static long sampleCount = 0;
     private final URL url;
 
-    static void setFilePath(String filePath) {
+    public static void setFilePath(String filePath) {
         file = new File(filePath);
     }
 
     BioSchemasRdfGenerator(final URL url) {
         log.info("HANDLING " + url.toString() + " and the current sample count is: " + ++sampleCount);
+
         this.url = url;
     }
 
@@ -63,15 +64,15 @@ public class BioSchemasRdfGenerator implements Callable<Void> {
     }
 
     private static void handleSuccessResponses(final URL url) {
-        try (final Scanner sc = new Scanner(url.openStream())) {
+        try (Scanner sc = new Scanner(url.openStream())) {
             final StringBuilder sb = new StringBuilder();
 
             while (sc.hasNext()) {
                 sb.append(sc.nextLine());
             }
 
-            try (final InputStream in = new ByteArrayInputStream(sb.toString().getBytes(StandardCharsets.UTF_8))) {
-                final String dataAsRdf = readRdfToString(in);
+            try (InputStream in = new ByteArrayInputStream(sb.toString().getBytes(StandardCharsets.UTF_8))) {
+                String dataAsRdf = readRdfToString(in);
 
                 write(dataAsRdf);
             } catch (final Exception e) {
@@ -127,21 +128,21 @@ public class BioSchemasRdfGenerator implements Callable<Void> {
     }
 
     private static String modifyIdentifier(String rdfString) {
-        //System.out.println(rdfString);
         if (rdfString != null)
             rdfString = rdfString.replaceAll("biosample:", "");
 
         return rdfString;
     }
 
-    private static String writeRdfInTurtleFormat(final Collection<Statement> myGraph, final StringWriter out, final TurtleWriterCustom writer) {
+    private static String writeRdfInTurtleFormat(Collection<Statement> myGraph, StringWriter out, TurtleWriterCustom writer) {
         try {
             writer.startRDF();
             handleNamespaces(writer);
 
-            for (final Statement st : myGraph) {
+            for (Statement st : myGraph) {
                 writer.handleStatement(st);
-                //writer.writeValue(st.getObject(), true);
+                //below line is commented: for short RDF
+                //writer.writeValue(st.getObject(),O true);
             }
 
             writer.endRDF();
