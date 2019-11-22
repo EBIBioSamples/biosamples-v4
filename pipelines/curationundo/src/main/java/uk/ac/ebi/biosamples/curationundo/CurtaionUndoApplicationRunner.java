@@ -30,6 +30,8 @@ public class CurtaionUndoApplicationRunner implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
+        boolean isPassed = true;
+
         try (AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, Runtime.getRuntime().availableProcessors(),
                 Runtime.getRuntime().availableProcessors() * 2)) {
             Map<String, Future<Void>> futures = new HashMap<>();
@@ -47,12 +49,12 @@ public class CurtaionUndoApplicationRunner implements ApplicationRunner {
                         long duration = (endTime - startTime);
                         log.info("PROCESSED: samples:" + samplesQueued + " rate: " + samplesQueued / ((duration / 1000) + 1) + " samples per second");
                     }
-
-                    MailSender.sendEmail("Curated View", null, true);
                 }
             } catch (IllegalStateException e) {
                 log.error("Pipeline failed to finish successfully", e);
-                MailSender.sendEmail("Curated View", null, false);
+                isPassed = false;
+            } finally {
+                MailSender.sendEmail("Curation undo", null, isPassed);
             }
         }
     }

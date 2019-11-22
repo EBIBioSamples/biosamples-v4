@@ -9,6 +9,7 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
+import uk.ac.ebi.biosamples.utils.MailSender;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -17,7 +18,7 @@ import java.util.Date;
 import java.util.List;
 
 @Component
-public class BioSchemasRestClientRunner implements ApplicationRunner {
+public class BioSchemasRdfRunner implements ApplicationRunner {
     private Logger log = LoggerFactory.getLogger(getClass());
     private static final String LDJSON = ".ldjson";
     private static final String BIOSAMPLES_BASE_URI = "https://www.ebi.ac.uk/biosamples/samples/";
@@ -33,6 +34,7 @@ public class BioSchemasRestClientRunner implements ApplicationRunner {
         final MongoClient mongoClient = new MongoClient(uri);
         final DB db = mongoClient.getDB(BIOSAMPLES);
         final DBCollection coll = db.getCollection(MONGO_SAMPLE);
+        boolean isPassed = true;
 
         if(args.getOptionNames().contains("filePath")) {
             String filePath = args.getOptionValues("filePath").stream().findFirst().get();
@@ -57,6 +59,9 @@ public class BioSchemasRestClientRunner implements ApplicationRunner {
         } catch (final Exception e) {
             log.error("Something has broken", e);
             log.error(e.getMessage());
+            isPassed = false;
+        } finally {
+            MailSender.sendEmail("RDF exporter", null, isPassed);
         }
     }
 

@@ -47,6 +47,8 @@ public class EnaRunner implements ApplicationRunner {
 
 	@Override
 	public void run(ApplicationArguments args) {
+		boolean isPassed = true;
+
 		try {
 			log.info("Processing ENA pipeline...");
 			// date format is YYYY-mm-dd
@@ -85,11 +87,11 @@ public class EnaRunner implements ApplicationRunner {
 				// AdaptiveThreadPoolExecutor for not putting too much load on the ThreadPool
 				handleSuppressedNcbiDdbjSamples();
 			}
-
-			MailSender.sendEmail("Curated View", null, true);
 		} catch(final Exception e) {
 			log.error("Pipeline failed to finish successfully", e);
-			MailSender.sendEmail("Curated View", null, false);
+			isPassed = false;
+		} finally {
+			MailSender.sendEmail("ENA", null, isPassed);
 		}
 	}
 

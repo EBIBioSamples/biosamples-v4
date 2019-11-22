@@ -53,6 +53,7 @@ public class CuramiApplicationRunner implements ApplicationRunner {
         Instant startTime = Instant.now();
         LOG.info("Pipeline started at {}", startTime);
         long sampleCount = 0;
+        boolean isPassed = true;
 
         loadCurationRulesFromFileToDb(getFileNameFromArgs(args));
         curationRules.putAll(loadCurationRulesToMemory());
@@ -78,10 +79,9 @@ public class CuramiApplicationRunner implements ApplicationRunner {
 
             LOG.info("Waiting for all scheduled tasks to finish");
             ThreadUtils.checkAndCallbackFutures(futures, 0, curationCountCallback);
-            MailSender.sendEmail("Curated View", null, true);
         } catch (Exception e) {
             LOG.error("Pipeline failed to finish successfully", e);
-            MailSender.sendEmail("Curated View", null, false);
+            isPassed = false;
             throw e;
         } finally {
             Instant endTime = Instant.now();
@@ -89,6 +89,7 @@ public class CuramiApplicationRunner implements ApplicationRunner {
             LOG.info("Total curation objects added {}", curationCountCallback.getTotalCount());
             LOG.info("Pipeline finished at {}", endTime);
             LOG.info("Pipeline total running time {} seconds", Duration.between(startTime, endTime).getSeconds());
+            MailSender.sendEmail("Curami", null, isPassed);
         }
     }
 

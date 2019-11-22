@@ -58,6 +58,8 @@ public class Ncbi implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
+        boolean isPassed = true;
+
         try {
             log.info("Processing NCBI pipeline...");
 
@@ -132,10 +134,11 @@ public class Ncbi implements ApplicationRunner {
             log.info("Number of samples to make private = " + toRemoveAccessions.size());
             makePrivate(toRemoveAccessions);
             log.info("Processed NCBI pipeline");
-            MailSender.sendEmail("Curated View", null, true);
         } catch (final Exception e) {
             log.error("Pipeline failed to finish successfully", e);
-            MailSender.sendEmail("Curated View", null, false);
+            isPassed = false;
+        } finally {
+            MailSender.sendEmail("NCBI", null, isPassed);
         }
     }
 

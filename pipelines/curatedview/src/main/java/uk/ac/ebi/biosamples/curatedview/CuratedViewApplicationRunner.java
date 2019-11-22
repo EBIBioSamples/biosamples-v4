@@ -52,6 +52,7 @@ public class CuratedViewApplicationRunner implements ApplicationRunner {
         Instant startTime = Instant.now();
         LOG.info("Pipeline started at {}", startTime);
         long sampleCount = 0;
+        boolean isPassed = true;
 
         try (AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true,
                 pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax())) {
@@ -71,14 +72,14 @@ public class CuratedViewApplicationRunner implements ApplicationRunner {
                 }
                 LOG.info("Waiting for all scheduled tasks to finish");
                 ThreadUtils.checkFutures(futures, 0);
-                MailSender.sendEmail("Curated view", null, true);
             }
 
         } catch (Exception e) {
             LOG.error("Pipeline failed to finish successfully", e);
-            MailSender.sendEmail("Curated view", null, false);
+            isPassed = false;
             throw e;
         } finally {
+            MailSender.sendEmail("Curated view", null, isPassed);
             logPipelineStat(startTime, sampleCount);
         }
     }
