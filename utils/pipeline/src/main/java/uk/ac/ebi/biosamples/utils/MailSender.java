@@ -11,13 +11,13 @@ public class MailSender {
     public static final String BODY_PART_FAIL = " failed execution on ";
     private static Logger log = LoggerFactory.getLogger("MailSender");
     public static final String MAILX = "mailx";
-    public static final String SUBJECT = "-s Email from copy-down pipeline";
+    public static final String SUBJECT = "-s Email from pipeline ";
     public static final String RECIPIENT = "biosamples-tech@ebi.ac.uk";
     public static final String BODY_PART_SUCCESS = " pipeline execution successful for ";
 
     public static void sendEmail(String pipelineName, String failures, boolean isPassed) {
         try {
-            final String[] cmd = {MAILX, SUBJECT, RECIPIENT};
+            final String[] cmd = {MAILX, SUBJECT + pipelineName, RECIPIENT};
             final Process p = Runtime.getRuntime().exec(cmd);
             final OutputStreamWriter osw = new OutputStreamWriter(p.getOutputStream());
 
