@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
+import uk.ac.ebi.biosamples.utils.MailSender;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -46,9 +47,12 @@ public class CurtaionUndoApplicationRunner implements ApplicationRunner {
                         long duration = (endTime - startTime);
                         log.info("PROCESSED: samples:" + samplesQueued + " rate: " + samplesQueued / ((duration / 1000) + 1) + " samples per second");
                     }
+
+                    MailSender.sendEmail("Curated View", null, true);
                 }
             } catch (IllegalStateException e) {
-                log.error("Error", e);
+                log.error("Pipeline failed to finish successfully", e);
+                MailSender.sendEmail("Curated View", null, false);
             }
         }
     }

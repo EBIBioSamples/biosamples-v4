@@ -12,6 +12,7 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.ArgUtils;
+import uk.ac.ebi.biosamples.utils.MailSender;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 
 import java.util.*;
@@ -34,6 +35,7 @@ public class CopydownApplicationRunner implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) throws Exception {
         final Collection<Filter> filters = ArgUtils.getDateFilters(args);
+        boolean isPassed = true;
 
         try (final AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true,
                 pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax())) {
@@ -56,6 +58,10 @@ public class CopydownApplicationRunner implements ApplicationRunner {
             log.info("waiting for futures");
             // wait for anything to finish
             ThreadUtils.checkFutures(futures, 0);
+        } catch (Exception e) {
+            log.error("Pipeline failed to finish successfully", e);
+            isPassed = false;
+            throw e;
         } finally {
             //now print a list of things that failed
             if (SampleCopydownCallable.failedQueue.size() > 0) {
@@ -67,7 +73,10 @@ public class CopydownApplicationRunner implements ApplicationRunner {
                     fails.add(SampleCopydownCallable.failedQueue.poll());
                 }
 
-                log.info("Failed files (" + fails.size() + ") " + String.join(" , ", fails));
+                final String failures = "Failed files (" + fails.size() + ") " + String.join(" , ", fails);
+
+                log.info(failures);
+                MailSender.sendEmail("Copy-down", failures, isPassed);
             }
         }
         //TODO re-check existing curations

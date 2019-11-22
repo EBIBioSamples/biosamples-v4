@@ -15,6 +15,7 @@ import uk.ac.ebi.biosamples.mongo.model.MongoCurationRule;
 import uk.ac.ebi.biosamples.mongo.repo.MongoCurationRuleRepository;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.ArgUtils;
+import uk.ac.ebi.biosamples.utils.MailSender;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 
 import java.io.*;
@@ -77,8 +78,10 @@ public class CuramiApplicationRunner implements ApplicationRunner {
 
             LOG.info("Waiting for all scheduled tasks to finish");
             ThreadUtils.checkAndCallbackFutures(futures, 0, curationCountCallback);
+            MailSender.sendEmail("Curated View", null, true);
         } catch (Exception e) {
             LOG.error("Pipeline failed to finish successfully", e);
+            MailSender.sendEmail("Curated View", null, false);
             throw e;
         } finally {
             Instant endTime = Instant.now();

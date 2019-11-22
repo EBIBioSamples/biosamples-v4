@@ -23,6 +23,7 @@ import org.springframework.web.client.HttpClientErrorException;
 
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
+import uk.ac.ebi.biosamples.utils.MailSender;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 
 @Component
@@ -45,43 +46,50 @@ public class EnaRunner implements ApplicationRunner {
 	private Map<String, Future<Void>> futures = new LinkedHashMap<>();
 
 	@Override
-	public void run(ApplicationArguments args) throws Exception {
-		log.info("Processing ENA pipeline...");
-		// date format is YYYY-mm-dd
-		LocalDate fromDate = null;
-		boolean suppressionRunner = true;
+	public void run(ApplicationArguments args) {
+		try {
+			log.info("Processing ENA pipeline...");
+			// date format is YYYY-mm-dd
+			LocalDate fromDate = null;
+			boolean suppressionRunner = true;
 
-		if (args.getOptionNames().contains("from")) {
-			fromDate = LocalDate.parse(args.getOptionValues("from").iterator().next(),
-					DateTimeFormatter.ISO_LOCAL_DATE);
-		} else {
-			fromDate = LocalDate.parse("1000-01-01", DateTimeFormatter.ISO_LOCAL_DATE);
-		}
-
-		LocalDate toDate = null;
-
-		if (args.getOptionNames().contains("until")) {
-			toDate = LocalDate.parse(args.getOptionValues("until").iterator().next(), DateTimeFormatter.ISO_LOCAL_DATE);
-		} else {
-			toDate = LocalDate.parse("3000-01-01", DateTimeFormatter.ISO_LOCAL_DATE);
-		}
-
-		if (args.getOptionNames().contains("suppressionRunner")) {
-			if (args.getOptionValues("suppressionRunner").iterator().next().equalsIgnoreCase("false")) {
-				suppressionRunner = false;
+			if (args.getOptionNames().contains("from")) {
+				fromDate = LocalDate.parse(args.getOptionValues("from").iterator().next(),
+						DateTimeFormatter.ISO_LOCAL_DATE);
+			} else {
+				fromDate = LocalDate.parse("1000-01-01", DateTimeFormatter.ISO_LOCAL_DATE);
 			}
-		}
 
-		log.info("Suppression Runner is to be executed: " + suppressionRunner);
+			LocalDate toDate = null;
 
-		importEraSamples(fromDate, toDate);
+			if (args.getOptionNames().contains("until")) {
+				toDate = LocalDate.parse(args.getOptionValues("until").iterator().next(), DateTimeFormatter.ISO_LOCAL_DATE);
+			} else {
+				toDate = LocalDate.parse("3000-01-01", DateTimeFormatter.ISO_LOCAL_DATE);
+			}
 
-		if (suppressionRunner) {
-			// handler for suppressed ENA samples
-			handleSuppressedEnaSamples();
-			// handler for suppressed NCBI/DDBJ samples - using separate
-			// AdaptiveThreadPoolExecutor for not putting too much load on the ThreadPool
-			handleSuppressedNcbiDdbjSamples();
+			if (args.getOptionNames().contains("suppressionRunner")) {
+				if (args.getOptionValues("suppressionRunner").iterator().next().equalsIgnoreCase("false")) {
+					suppressionRunner = false;
+				}
+			}
+
+			log.info("Suppression Runner is to be executed: " + suppressionRunner);
+
+			importEraSamples(fromDate, toDate);
+
+			if (suppressionRunner) {
+				// handler for suppressed ENA samples
+				handleSuppressedEnaSamples();
+				// handler for suppressed NCBI/DDBJ samples - using separate
+				// AdaptiveThreadPoolExecutor for not putting too much load on the ThreadPool
+				handleSuppressedNcbiDdbjSamples();
+			}
+
+			MailSender.sendEmail("Curated View", null, true);
+		} catch(final Exception e) {
+			log.error("Pipeline failed to finish successfully", e);
+			MailSender.sendEmail("Curated View", null, false);
 		}
 	}
 

@@ -14,6 +14,7 @@ import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
+import uk.ac.ebi.biosamples.utils.MailSender;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 
 import java.time.Duration;
@@ -70,10 +71,12 @@ public class CuratedViewApplicationRunner implements ApplicationRunner {
                 }
                 LOG.info("Waiting for all scheduled tasks to finish");
                 ThreadUtils.checkFutures(futures, 0);
+                MailSender.sendEmail("Curated view", null, true);
             }
 
         } catch (Exception e) {
             LOG.error("Pipeline failed to finish successfully", e);
+            MailSender.sendEmail("Curated view", null, false);
             throw e;
         } finally {
             logPipelineStat(startTime, sampleCount);
