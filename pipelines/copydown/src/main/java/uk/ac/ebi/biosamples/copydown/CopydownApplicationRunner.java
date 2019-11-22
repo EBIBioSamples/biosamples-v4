@@ -17,6 +17,7 @@ import uk.ac.ebi.biosamples.utils.ThreadUtils;
 
 import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Future;
 
 @Component
@@ -64,13 +65,15 @@ public class CopydownApplicationRunner implements ApplicationRunner {
             throw e;
         } finally {
             //now print a list of things that failed
-            if (SampleCopydownCallable.failedQueue.size() > 0) {
+            final ConcurrentLinkedQueue<String> failedQueue = SampleCopydownCallable.failedQueue;
+
+            if (failedQueue.size() > 0) {
                 //put the first ones on the queue into a list
                 //limit the size of list to avoid overload
                 final List<String> fails = new LinkedList<>();
 
-                while (fails.size() < 100 && SampleCopydownCallable.failedQueue.peek() != null) {
-                    fails.add(SampleCopydownCallable.failedQueue.poll());
+                while (failedQueue.peek() != null) {
+                    fails.add(failedQueue.poll());
                 }
 
                 final String failures = "Failed files (" + fails.size() + ") " + String.join(" , ", fails);

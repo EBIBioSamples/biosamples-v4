@@ -19,6 +19,7 @@ import uk.ac.ebi.biosamples.utils.ThreadUtils;
 
 import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Future;
 
 @Component
@@ -77,19 +78,20 @@ public class CurationApplicationRunner implements ApplicationRunner {
             throw e;
         } finally {
             //now print a list of things that failed
-            if (SampleCurationCallable.failedQueue.size() > 0) {
+            final ConcurrentLinkedQueue<String> failedQueue = SampleCurationCallable.failedQueue;
+
+            if (failedQueue.size() > 0) {
                 //put the first ones on the queue into a list
                 //limit the size of list to avoid overload
                 List<String> fails = new LinkedList<>();
-                while (fails.size() < 100 && SampleCurationCallable.failedQueue.peek() != null) {
-                    fails.add(SampleCurationCallable.failedQueue.poll());
+                while (failedQueue.peek() != null) {
+                    fails.add(failedQueue.poll());
                 }
 
-                final String failures = "Failed files (" + SampleCurationCallable.failedQueue.size() + ") " + String.join(" , ", fails);
+                final String failures = "Failed files (" + failedQueue.size() + ") " + String.join(" , ", fails);
                 log.info(failures);
                 MailSender.sendEmail("Curation", failures, isPassed);
             }
         }
     }
-
 }

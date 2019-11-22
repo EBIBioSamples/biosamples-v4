@@ -20,8 +20,11 @@ import uk.ac.ebi.biosamples.utils.ThreadUtils;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Future;
 
 @Component
@@ -79,7 +82,19 @@ public class CuratedViewApplicationRunner implements ApplicationRunner {
             isPassed = false;
             throw e;
         } finally {
-            MailSender.sendEmail("Curated view", null, isPassed);
+            final ConcurrentLinkedQueue<String> failureQueue = CuratedViewCallable.failedQueue;
+            if (failureQueue.size() > 0) {
+                final List<String> fails = new LinkedList<>();
+
+                while (failureQueue.peek() != null) {
+                    fails.add(failureQueue.poll());
+                }
+
+                final String failures = "Failed files (" + fails.size() + ") " + String.join(" , ", fails);
+
+                MailSender.sendEmail("Copy-down", failures, isPassed);
+            }
+
             logPipelineStat(startTime, sampleCount);
         }
     }

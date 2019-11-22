@@ -8,14 +8,14 @@ import java.io.OutputStreamWriter;
 import java.util.Date;
 
 public class MailSender {
-    public static final String BODY_PART_FAIL = " failed execution on ";
+    private static final String BODY_PART_FAIL = " failed execution on ";
+    private static final String MAILX = "mailx";
+    private static final String SUBJECT = "-s Email from pipeline ";
+    private static final String RECIPIENT = "biosamples-tech@ebi.ac.uk";
+    private static final String BODY_PART_SUCCESS = " pipeline execution successful for ";
     private static Logger log = LoggerFactory.getLogger("MailSender");
-    public static final String MAILX = "mailx";
-    public static final String SUBJECT = "-s Email from pipeline ";
-    public static final String RECIPIENT = "biosamples-tech@ebi.ac.uk";
-    public static final String BODY_PART_SUCCESS = " pipeline execution successful for ";
 
-    public static void sendEmail(String pipelineName, String failures, boolean isPassed) {
+    public static void sendEmail(final String pipelineName, final String failures, final boolean isPassed) {
         try {
             final String[] cmd = {MAILX, SUBJECT + pipelineName, RECIPIENT};
             final Process p = Runtime.getRuntime().exec(cmd);
@@ -26,13 +26,11 @@ public class MailSender {
                     osw.write(pipelineName + BODY_PART_SUCCESS + new Date() + " " + failures);
                 else
                     osw.write(pipelineName + BODY_PART_SUCCESS + new Date());
-            } else {
-                osw.write(pipelineName + BODY_PART_FAIL + new Date());
-            }
+            } else osw.write(pipelineName + BODY_PART_FAIL + new Date());
 
             osw.close();
         } catch (final IOException ioe) {
-            log.error("Email send failed : ", ioe);
+            log.error("Email send failed");
         }
     }
 }
