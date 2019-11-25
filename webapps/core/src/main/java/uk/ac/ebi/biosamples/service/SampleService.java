@@ -83,7 +83,6 @@ public class SampleService {
     //Note, pages of samples will not be cache busted, only single-accession sample retrieval
     //@CacheEvict(cacheNames=WebappProperties.fetchUsing, key="#result.accession")
     public Sample store(Sample sample) {
-
         //do validation
         // TODO validate that relationships have this sample as the source
         Collection<String> errors = sampleValidator.validate(sample);
@@ -118,6 +117,13 @@ public class SampleService {
         //return the sample in case we have modified it i.e accessioned
         //do a fetch to return it with curation objects and inverse relationships
         return fetch(sample.getAccession(), Optional.empty(), null).get();
+    }
+
+    public boolean searchSampleByDomainAndName(final String domain, final String name) {
+        if (mongoSampleRepository.findByDomainAndName(domain, name).size() > 0)
+            return true;
+        else
+            return false;
     }
 
     public void validateSample(Map sampleAsMap) {

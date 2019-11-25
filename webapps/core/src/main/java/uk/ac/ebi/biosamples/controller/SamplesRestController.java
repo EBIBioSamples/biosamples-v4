@@ -325,13 +325,23 @@ public class SamplesRestController {
 				.withUpdate(update)
 				.withSubmittedVia(submittedVia).build();
 
-		sample = sampleService.store(sample);
+		/*Pre accessioning is done by other archives to get a BioSamples accession before processing their own pipelines. It is better to check duplicates in pre-accessioning cases
+		* The original case of accession remains unchanged*/
+		if (preAccessioning) {
+			if (sampleService.searchSampleByDomainAndName(sample.getDomain(), sample.getName())) {
+				return new ResponseEntity<>("POST must be a new submission, use PUT for updates", HttpStatus.BAD_REQUEST);
+			} else {
+				sample = sampleService.store(sample);
+				final Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
 
-		final Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
+				return ResponseEntity.ok(sampleResource.getContent().getAccession());
+			}
+		} else {
+			sample = sampleService.store(sample);
+			final Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
 
-		if (preAccessioning) return ResponseEntity.ok(sampleResource.getContent().getAccession());
-
-		else return ResponseEntity.created(URI.create(sampleResource.getLink("self").getHref())).body(sampleResource);
+			return ResponseEntity.created(URI.create(sampleResource.getLink("self").getHref())).body(sampleResource);
+		}
 	}
 
 	@PreAuthorize("isAuthenticated()")
