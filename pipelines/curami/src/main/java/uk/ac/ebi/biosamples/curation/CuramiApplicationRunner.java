@@ -15,6 +15,7 @@ import uk.ac.ebi.biosamples.mongo.model.MongoCurationRule;
 import uk.ac.ebi.biosamples.mongo.repo.MongoCurationRuleRepository;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.ArgUtils;
+import uk.ac.ebi.biosamples.utils.MailSender;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 
 import java.io.*;
@@ -52,6 +53,7 @@ public class CuramiApplicationRunner implements ApplicationRunner {
         Instant startTime = Instant.now();
         LOG.info("Pipeline started at {}", startTime);
         long sampleCount = 0;
+        boolean isPassed = true;
 
         loadCurationRulesFromFileToDb(getFileNameFromArgs(args));
         curationRules.putAll(loadCurationRulesToMemory());
@@ -77,8 +79,9 @@ public class CuramiApplicationRunner implements ApplicationRunner {
 
             LOG.info("Waiting for all scheduled tasks to finish");
             ThreadUtils.checkAndCallbackFutures(futures, 0, curationCountCallback);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             LOG.error("Pipeline failed to finish successfully", e);
+            isPassed = false;
             throw e;
         } finally {
             Instant endTime = Instant.now();
@@ -86,6 +89,7 @@ public class CuramiApplicationRunner implements ApplicationRunner {
             LOG.info("Total curation objects added {}", curationCountCallback.getTotalCount());
             LOG.info("Pipeline finished at {}", endTime);
             LOG.info("Pipeline total running time {} seconds", Duration.between(startTime, endTime).getSeconds());
+            MailSender.sendEmail("Curami", null, isPassed);
         }
     }
 

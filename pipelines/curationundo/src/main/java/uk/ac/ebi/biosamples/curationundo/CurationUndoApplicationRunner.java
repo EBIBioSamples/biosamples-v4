@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
+import uk.ac.ebi.biosamples.utils.MailSender;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -17,18 +18,20 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
 @Component
-public class CurtaionUndoApplicationRunner implements ApplicationRunner {
+public class CurationUndoApplicationRunner implements ApplicationRunner {
 
     private Logger log = LoggerFactory.getLogger(getClass());
 
     private final BioSamplesClient bioSamplesClient;
 
-    public CurtaionUndoApplicationRunner(BioSamplesClient bioSamplesClient) {
+    public CurationUndoApplicationRunner(BioSamplesClient bioSamplesClient) {
         this.bioSamplesClient = bioSamplesClient;
     }
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
+        boolean isPassed = true;
+
         try (AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, Runtime.getRuntime().availableProcessors(),
                 Runtime.getRuntime().availableProcessors() * 2)) {
             Map<String, Future<Void>> futures = new HashMap<>();
@@ -47,8 +50,11 @@ public class CurtaionUndoApplicationRunner implements ApplicationRunner {
                         log.info("PROCESSED: samples:" + samplesQueued + " rate: " + samplesQueued / ((duration / 1000) + 1) + " samples per second");
                     }
                 }
-            } catch (IllegalStateException e) {
-                log.error("Error", e);
+            } catch (final Exception e) {
+                log.error("Pipeline failed to finish successfully", e);
+                isPassed = false;
+            } finally {
+                MailSender.sendEmail("Curation undo", null, isPassed);
             }
         }
     }

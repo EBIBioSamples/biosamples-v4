@@ -71,6 +71,16 @@ public class NcbiBaseConverterTests {
 	}
 
 	@Test
+	public void given_ncbi_biosamples_it_generates_and_insdc_first_public_attribute() {
+		Sample sampleToTest = this.conversionService.convertNcbiXmlElementToSample(this.testNcbiBioSamples);
+		Optional<Attribute> expectedAttribute = sampleToTest.getAttributes().stream()
+				.filter(attr -> attr.getType().equals("INSDC first public")).findFirst();
+
+		Attribute secondaryAccession = expectedAttribute.get();
+		assertEquals(secondaryAccession.getValue(), "2018-07-01T00:50:05.513Z");
+	}
+
+	@Test
 	public void given_ncbi_biosamples_it_generates_and_sra_accession_attribute() {
 		Sample sampleToTest = this.conversionService.convertNcbiXmlElementToSample(this.testNcbiBioSamples);
 		Optional<Attribute> expectedAttribute = sampleToTest.getAttributes().stream().filter(attr -> attr.getType().equals("SRA accession"))

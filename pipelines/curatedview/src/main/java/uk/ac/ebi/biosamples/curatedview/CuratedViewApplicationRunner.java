@@ -14,13 +14,17 @@ import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
+import uk.ac.ebi.biosamples.utils.MailSender;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Future;
 
 @Component
@@ -51,6 +55,7 @@ public class CuratedViewApplicationRunner implements ApplicationRunner {
         Instant startTime = Instant.now();
         LOG.info("Pipeline started at {}", startTime);
         long sampleCount = 0;
+        boolean isPassed = true;
 
         try (AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true,
                 pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax())) {
@@ -72,10 +77,24 @@ public class CuratedViewApplicationRunner implements ApplicationRunner {
                 ThreadUtils.checkFutures(futures, 0);
             }
 
-        } catch (Exception e) {
+        } catch (final Exception e) {
             LOG.error("Pipeline failed to finish successfully", e);
+            isPassed = false;
             throw e;
         } finally {
+            final ConcurrentLinkedQueue<String> failureQueue = CuratedViewCallable.failedQueue;
+            if (failureQueue.size() > 0) {
+                final List<String> fails = new LinkedList<>();
+
+                while (failureQueue.peek() != null) {
+                    fails.add(failureQueue.poll());
+                }
+
+                final String failures = "Failed files (" + fails.size() + ") " + String.join(" , ", fails);
+
+                MailSender.sendEmail("Curated View", failures, isPassed);
+            }
+
             logPipelineStat(startTime, sampleCount);
         }
     }

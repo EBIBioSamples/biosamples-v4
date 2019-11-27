@@ -8,6 +8,7 @@ import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.utils.MailSender;
 
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
@@ -34,6 +35,8 @@ public class LiveListRunner implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) throws Exception {
         String liveListFilename = "livelist.txt";
+        boolean isPassed = true;
+
         if (args.getNonOptionArgs().size() > 0) {
             liveListFilename = args.getNonOptionArgs().get(0);
         }
@@ -61,10 +64,13 @@ public class LiveListRunner implements ApplicationRunner {
                 }
             } finally {
             }
+        } catch (final Exception e) {
+            LOGGER.error("Pipeline failed to finish successfully", e);
+            isPassed = false;
         } finally {
+            MailSender.sendEmail("Live list", null, isPassed);
+            long elapsed = System.nanoTime() - startTime;
+            LOGGER.info("Completed live list export:  " + sampleCount + " samples exported in " + (elapsed / 1000000000l) + "s");
         }
-        long elapsed = System.nanoTime() - startTime;
-        LOGGER.info("Completed live list export:  " + sampleCount + " samples exported in " + (elapsed / 1000000000l) + "s");
     }
-
 }

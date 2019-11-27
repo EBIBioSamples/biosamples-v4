@@ -283,7 +283,9 @@ public class NcbiSampleConversionService {
 
 			if (!nonHiddenStatuses.contains(status.toLowerCase())) {
 				// not a live or suppressed sample, hide
-				publicationDate = publicationDate.atZone(ZoneOffset.UTC).plus(1000, ChronoUnit.YEARS).toInstant();
+				if(publicationDate != null) {
+					publicationDate = publicationDate.atZone(ZoneOffset.UTC).plus(1000, ChronoUnit.YEARS).toInstant();
+				}
 			}
 		}
 
