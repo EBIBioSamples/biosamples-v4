@@ -79,7 +79,7 @@ public class CuramiApplicationRunner implements ApplicationRunner {
 
             LOG.info("Waiting for all scheduled tasks to finish");
             ThreadUtils.checkAndCallbackFutures(futures, 0, curationCountCallback);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             LOG.error("Pipeline failed to finish successfully", e);
             isPassed = false;
             throw e;

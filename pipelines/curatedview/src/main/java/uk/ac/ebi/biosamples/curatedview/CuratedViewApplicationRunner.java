@@ -77,7 +77,7 @@ public class CuratedViewApplicationRunner implements ApplicationRunner {
                 ThreadUtils.checkFutures(futures, 0);
             }
 
-        } catch (Exception e) {
+        } catch (final Exception e) {
             LOG.error("Pipeline failed to finish successfully", e);
             isPassed = false;
             throw e;
@@ -92,7 +92,7 @@ public class CuratedViewApplicationRunner implements ApplicationRunner {
 
                 final String failures = "Failed files (" + fails.size() + ") " + String.join(" , ", fails);
 
-                MailSender.sendEmail("Copy-down", failures, isPassed);
+                MailSender.sendEmail("Curated View", failures, isPassed);
             }
 
             logPipelineStat(startTime, sampleCount);

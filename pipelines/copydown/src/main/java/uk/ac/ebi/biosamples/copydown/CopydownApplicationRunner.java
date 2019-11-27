@@ -59,7 +59,7 @@ public class CopydownApplicationRunner implements ApplicationRunner {
             log.info("waiting for futures");
             // wait for anything to finish
             ThreadUtils.checkFutures(futures, 0);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             log.error("Pipeline failed to finish successfully", e);
             isPassed = false;
             throw e;

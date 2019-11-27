@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.utils.MailSender;
 
 @Component
 public class ExportRunner implements ApplicationRunner {
@@ -38,6 +39,7 @@ public class ExportRunner implements ApplicationRunner {
 		String jsonSampleFilename = args.getNonOptionArgs().get(0);
 		long oldTime = System.nanoTime();	
 		int sampleCount = 0;
+		boolean isPassed = true;
 		try {
 			boolean first = true;
 			try (
@@ -62,10 +64,13 @@ public class ExportRunner implements ApplicationRunner {
 				jsonSampleWriter.write("\n]");
 			} finally {
 			}
-		} finally {			
+		} catch (final Exception e) {
+			isPassed = false;
 		}
-		long elapsed = System.nanoTime()-oldTime;
-		log.info("Exported "+sampleCount+" samples in "+(elapsed/1000000000l)+"s");
+		finally {
+			MailSender.sendEmail("Export", null, isPassed);
+			long elapsed = System.nanoTime()-oldTime;
+			log.info("Exported "+sampleCount+" samples in "+(elapsed/1000000000l)+"s");
+		}
 	}
-	
 }

@@ -143,36 +143,43 @@ public class Ncbi implements ApplicationRunner {
     }
 
     private Set<String> getExistingPublicNcbiAccessions() {
-        log.info("getting existing public ncbi accessions");
-        long startTime = System.nanoTime();
-        //make sure to only get the public samples
-        Set<String> existingAccessions = new TreeSet<>();
-        for (Resource<Sample> sample : bioSamplesClient.getPublicClient().get().fetchSampleResourceAll(
-                Collections.singleton(FilterBuilder.create().onAccession("SAM[^E].*").build()))) {
-            existingAccessions.add(sample.getContent().getAccession());
+        try {
+            log.info("getting existing public ncbi accessions");
+            long startTime = System.nanoTime();
+            //make sure to only get the public samples
+            Set<String> existingAccessions = new TreeSet<>();
+            for (Resource<Sample> sample : bioSamplesClient.getPublicClient().get().fetchSampleResourceAll(
+                    Collections.singleton(FilterBuilder.create().onAccession("SAM[^E].*").build()))) {
+                existingAccessions.add(sample.getContent().getAccession());
+            }
+            long endTime = System.nanoTime();
+            double intervalSec = ((double) (endTime - startTime)) / 1000000000.0;
+            log.debug("Took " + intervalSec + "s to get " + existingAccessions.size() + " existing public ncbi accessions");
+            return existingAccessions;
+        } catch (final Exception publicNcbiAccessionFetchException) {
+            throw new RuntimeException(publicNcbiAccessionFetchException);
         }
-        long endTime = System.nanoTime();
-        double intervalSec = ((double) (endTime - startTime)) / 1000000000.0;
-        log.debug("Took " + intervalSec + "s to get " + existingAccessions.size() + " existing public ncbi accessions");
-        return existingAccessions;
     }
 
     private void makePrivate(Set<String> toRemoveAccessions) {
         //TODO make this multithreaded for performance
-        for (String accession : toRemoveAccessions) {
-            // this must get the ORIGINAL sample without curation
-            Optional<Resource<Sample>> sampleOptional = bioSamplesClient.fetchSampleResource(accession, Optional.empty());
-            if (sampleOptional.isPresent()) {
-                Sample sample = sampleOptional.get().getContent();
-                //set the release date to 1000 years in the future to make it private again
-                Sample newSample = Sample.Builder.fromSample(sample)
-                        .withRelease(ZonedDateTime.now(ZoneOffset.UTC).plusYears(1000).toInstant())
-                        .build();
-                //persist the now private sample
-                log.info("Making private " + sample.getAccession());
-                bioSamplesClient.persistSampleResource(newSample);
+        try {
+            for (String accession : toRemoveAccessions) {
+                // this must get the ORIGINAL sample without curation
+                Optional<Resource<Sample>> sampleOptional = bioSamplesClient.fetchSampleResource(accession, Optional.empty());
+                if (sampleOptional.isPresent()) {
+                    Sample sample = sampleOptional.get().getContent();
+                    //set the release date to 1000 years in the future to make it private again
+                    Sample newSample = Sample.Builder.fromSample(sample)
+                            .withRelease(ZonedDateTime.now(ZoneOffset.UTC).plusYears(1000).toInstant())
+                            .build();
+                    //persist the now private sample
+                    log.info("Making private " + sample.getAccession());
+                    bioSamplesClient.persistSampleResource(newSample);
+                }
             }
+        } catch (final Exception sampleMakePrivateException) {
+            throw new RuntimeException(sampleMakePrivateException);
         }
     }
-
 }

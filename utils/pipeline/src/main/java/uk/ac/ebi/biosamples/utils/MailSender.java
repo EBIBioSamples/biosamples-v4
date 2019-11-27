@@ -13,6 +13,7 @@ public class MailSender {
     private static final String SUBJECT = "-s Email from pipeline ";
     private static final String RECIPIENT = "biosamples-tech@ebi.ac.uk";
     private static final String BODY_PART_SUCCESS = " pipeline execution successful for ";
+    public static final String FAILED_FILES_ARE = " Failed files are: ";
     private static Logger log = LoggerFactory.getLogger("MailSender");
 
     public static void sendEmail(final String pipelineName, final String failures, final boolean isPassed) {
@@ -23,7 +24,7 @@ public class MailSender {
 
             if (isPassed) {
                 if (failures != null && !failures.isEmpty())
-                    osw.write(pipelineName + BODY_PART_SUCCESS + new Date() + " " + failures);
+                    osw.write(pipelineName + BODY_PART_SUCCESS + new Date() + FAILED_FILES_ARE + failures);
                 else
                     osw.write(pipelineName + BODY_PART_SUCCESS + new Date());
             } else osw.write(pipelineName + BODY_PART_FAIL + new Date());

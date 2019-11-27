@@ -18,13 +18,13 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
 @Component
-public class CurtaionUndoApplicationRunner implements ApplicationRunner {
+public class CurationUndoApplicationRunner implements ApplicationRunner {
 
     private Logger log = LoggerFactory.getLogger(getClass());
 
     private final BioSamplesClient bioSamplesClient;
 
-    public CurtaionUndoApplicationRunner(BioSamplesClient bioSamplesClient) {
+    public CurationUndoApplicationRunner(BioSamplesClient bioSamplesClient) {
         this.bioSamplesClient = bioSamplesClient;
     }
 
@@ -50,7 +50,7 @@ public class CurtaionUndoApplicationRunner implements ApplicationRunner {
                         log.info("PROCESSED: samples:" + samplesQueued + " rate: " + samplesQueued / ((duration / 1000) + 1) + " samples per second");
                     }
                 }
-            } catch (IllegalStateException e) {
+            } catch (final Exception e) {
                 log.error("Pipeline failed to finish successfully", e);
                 isPassed = false;
             } finally {
