@@ -84,7 +84,8 @@ public class ZoomaApplicationRunner implements ApplicationRunner {
 				while (fails.size() < 100 && SampleZoomaCallable.failedQueue.peek() != null) {
 					fails.add(SampleZoomaCallable.failedQueue.poll());
 				}
-				final String failures = "Failed files ("+SampleZoomaCallable.failedQueue.size()+") "+String.join(" , ", fails);
+
+				final String failures = "Failed files ("+fails.size()+") "+String.join(" , ", fails);
 
 				log.info(failures);
 				MailSender.sendEmail("Zooma", failures, isPassed);
