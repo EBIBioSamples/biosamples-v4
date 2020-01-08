@@ -14,9 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor implements AutoCloseable {
-
     private Logger log = LoggerFactory.getLogger(this.getClass());
-
 	private AtomicInteger completedJobs = new AtomicInteger(0);
 
 	private AdaptiveThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit,
@@ -28,6 +26,7 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor implements Au
 
 	protected void afterExecute(Runnable r, Throwable t) {
 		if (t != null) return;
+
 		completedJobs.incrementAndGet();
 	}
 
@@ -57,31 +56,26 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor implements Au
 	}
 
 	public static AdaptiveThreadPoolExecutor create(int maxQueueSize, int pollInterval, boolean fairness, int initialPoolSize, int maxThreads) {
-
 		//default to the number of processors
 		int corePoolSize = initialPoolSize;
 		int maximumPoolSize = corePoolSize;
-
 		//keep alive is not relevant, since core == maximum
 		long keepAliveTime = 1;
 		TimeUnit unit = TimeUnit.DAYS;
-
 		// a queue constructed with fairness set to true grants threads access
 		// in FIFO order.
 		// Fairness generally decreases throughput but reduces variability and
 		// avoids starvation.
 		BlockingQueue<Runnable> workQueue = new ArrayBlockingQueue<>(maxQueueSize, fairness);
-
 		// A handler for rejected tasks that runs the rejected task directly in
 		// the calling thread of the execute method,
 		// unless the executor has been shut down, in which case the task is
 		// discarded.
 		RejectedExecutionHandler rejectedExecutionHandler = new ThreadPoolExecutor.CallerRunsPolicy();
-
 		AdaptiveThreadPoolExecutor threadPool = new AdaptiveThreadPoolExecutor(corePoolSize, maximumPoolSize,
 				keepAliveTime, unit, workQueue, rejectedExecutionHandler);
-
 		Thread monitorThread = new Thread(new PoolMonitor(threadPool, pollInterval, maxThreads));
+
 		monitorThread.setDaemon(true);
 		monitorThread.start();
 
@@ -96,9 +90,7 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor implements Au
 	 *
 	 */
 	private static class PoolMonitor implements Runnable {
-
 	    private Logger log = LoggerFactory.getLogger(this.getClass());
-
 		private final AdaptiveThreadPoolExecutor pool;
 		private final int pollInterval;
 		private final Map<Integer, Double> threadsScores = new HashMap<>();
@@ -115,6 +107,7 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor implements Au
 		@Override
 		public void run() {
 			long lastStep = System.nanoTime();
+
 			while (!pool.isTerminated()) {
 				//wait for it to do stuff
 				try {
@@ -134,19 +127,16 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor implements Au
 
 				int currentThreads = pool.getMaximumPoolSize();
 				int doneJobs = pool.completedJobs.getAndSet(0);
-
 				//number of jobs per sec
 				double score = (((double)doneJobs)*1000000000.0d)/(interval);
 
 				log.trace("Completed "+doneJobs+" in "+interval+"ns using "+currentThreads+" threads : score = "+score);
-
-
 				//store the result of this score
 				threadsScores.put(currentThreads, score);
 				threadsTime.put(currentThreads, now);
-
 				//remove any scores that are too old
 				Iterator<Integer> iterator = threadsTime.keySet().iterator();
+
 				while (iterator.hasNext()) {
 					int testThreads = iterator.next();
 					long testTime = threadsTime.get(testThreads);
@@ -162,8 +152,10 @@ public class AdaptiveThreadPoolExecutor extends ThreadPoolExecutor implements Au
 				//work out what the best number of threads is
 				double bestScore = score;
 				int bestThreads = currentThreads;
+
 				for (int testThreads : threadsScores.keySet()) {
 					double testScore = threadsScores.get(testThreads);
+					
 					if (testScore > bestScore) {
 						bestScore = testScore;
 						bestThreads = testThreads;
