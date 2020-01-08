@@ -48,8 +48,8 @@
 		<!-- this is not in public repos due to Oracle license -->
 		<dependency>
 			<groupId>com.oracle.jdbc</groupId>
-			<artifactId>ojdbc8</artifactId>
-			<version>12.2.0.1</version>
+			<artifactId>ojdbc10</artifactId>
+			<version>19.3.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.oracle.jdbc</groupId>
@@ -59,7 +59,7 @@
 		<dependency>
 			<groupId>com.oracle.jdbc</groupId>
 			<artifactId>xmlparserv2</artifactId>
-			<version>12.2.0.1</version>
+			<version>19.3.0.0</version>
 		</dependency>
 
 	</dependencies>
