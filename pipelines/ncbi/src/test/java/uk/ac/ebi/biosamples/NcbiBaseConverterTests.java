@@ -11,6 +11,7 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.SortedSet;
@@ -104,13 +105,12 @@ public class NcbiBaseConverterTests {
 	@Test
 	public void it_extracts_description_text_and_tag() {
 		Sample sampleToTest = this.conversionService.convertNcbiXmlElementToSample(this.testNcbiBioSamples);
-		Optional<Attribute> expectedAttributeType = sampleToTest.getAttributes().stream().filter(attr -> attr.getType().equals("description"))
+		Optional<Attribute> expectedAttributeType = sampleToTest.getAttributes().stream().filter(attr -> attr.getType().equals("Description"))
 				.findFirst();
 		assertTrue(expectedAttributeType.isPresent());
 
 		Attribute description = expectedAttributeType.get();
 		assertEquals(description.getValue(), "Human HapMap individual Coriell catalog ID NA18582");
-		assertEquals(description.getTag(), "core");
 	}
 
 	@Test
@@ -160,12 +160,18 @@ public class NcbiBaseConverterTests {
 	public void it_extracts_attributes() {
 		Sample sampleToTest = this.conversionService.convertNcbiXmlElementToSample(this.testNcbiBioSamples);
 		SortedSet<Attribute> sampleAttributes = sampleToTest.getAttributes();
+
+		List<Attribute> attrWithTag = sampleAttributes.stream().filter(attribute -> attribute.getTag() != null && attribute.getTag().equals("attribute")).collect(Collectors.toList());
+
+		// 6 user provided attributes at this moment so its hardcoded in the test
+		assertTrue(attrWithTag.size() == 6);
+
 		List<Attribute> expectedAttributes = Stream.of(Attribute.build("isolation source", "Alseis blackiana roots"),
-				Attribute.build("collection date", "Sep-2012"), Attribute.build("geographic location", "Panama:Gigante_peninsula"),
+				Attribute.build("collection date", "Sep-2012"), Attribute.build("geographic location", "Panama:Gigante_peninsula", "attribute", Collections.emptyList(), null),
 				Attribute.build("latitude and longitude", "9.110057 N 79.8434 W"), Attribute.build("Fert_treat", "unfertilized"),
 				Attribute.build("plot", "GF_26")).collect(Collectors.toList());
-
 		Optional<Attribute> attributesNotMatching = expectedAttributes.stream().filter(attr -> !sampleAttributes.contains(attr)).findAny();
+
 		assertTrue(!attributesNotMatching.isPresent());
 
 	}
