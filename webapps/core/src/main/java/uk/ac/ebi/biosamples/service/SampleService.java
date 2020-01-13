@@ -185,12 +185,16 @@ public class SampleService {
             log.info("New sample is similar to the old sample, accession: {}", oldSample.getAccession());
         }
 
-        //Keep the create date as existing sample
-        Instant create = oldSample.getCreate() != null ? oldSample.getCreate() : oldSample.getUpdate();
+        //Keep the create date as existing sample -- earlier
+        //13/01/2020 - if the sample has a date, acknowledge it. It can be the actual create date from NCBI, ENA.
+        Instant create = defineCreateDate(sampleToUpdate, oldSample);
         return Sample.Builder.fromSample(sampleToUpdate)
                 .withCreate(create).build();
     }
 
+    private Instant defineCreateDate(final Sample sampleToUpdate, final Sample oldSample) {
+        return sampleToUpdate.getCreate() != null ? sampleToUpdate.getCreate() : (oldSample.getCreate() != null ? oldSample.getCreate() : oldSample.getUpdate());
+    }
 
 	/*
 	//this code recursively follows relationships
