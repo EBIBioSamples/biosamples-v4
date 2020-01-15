@@ -81,7 +81,7 @@ public class SamplesRestController {
 
 	//must return a ResponseEntity so that cache headers can be set
 	@CrossOrigin(methods = RequestMethod.GET)
-	@GetMapping(produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
+	@GetMapping(produces = { MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
 	public ResponseEntity<Resources<Resource<Sample>>> searchHal(
 			@RequestParam(name = "text", required = false) String text,
 			@RequestParam(name = "filter", required = false) String[] filter,
@@ -285,18 +285,18 @@ public class SamplesRestController {
 	}
 
 	@PreAuthorize("isAuthenticated()")
-	@PostMapping(consumes = { MediaType.APPLICATION_JSON_VALUE })
+	@PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_PLAIN_VALUE})
 	@RequestMapping("/accession")
-	public ResponseEntity<Resource<Sample>> accessionSample(@RequestBody Sample sample) {
+	public ResponseEntity<Object> accessionSample(@RequestBody Sample sample,
+												  @RequestParam(name = "preAccessioning", required = false, defaultValue = "false") final boolean preAccessioning) {
 		log.debug("Received POST for accessioning " + sample);
-		if (sample.hasAccession()) {
-			throw new SampleWithAccessionSumbissionException();
-		}
+		if (sample.hasAccession()) throw new SampleWithAccessionSumbissionException();
+
 		sample = bioSamplesAapService.handleSampleDomain(sample);
 
-		Instant release = Instant.ofEpochSecond(LocalDateTime.now(ZoneOffset.UTC).plusYears(100).toEpochSecond(ZoneOffset.UTC));
-		Instant update = Instant.now();
-		SubmittedViaType submittedVia =
+		final Instant release = Instant.ofEpochSecond(LocalDateTime.now(ZoneOffset.UTC).plusYears(100).toEpochSecond(ZoneOffset.UTC));
+		final Instant update = Instant.now();
+		final SubmittedViaType submittedVia =
 				sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
 
 		sample = Sample.Builder.fromSample(sample)
@@ -304,11 +304,24 @@ public class SamplesRestController {
 				.withUpdate(update)
 				.withSubmittedVia(submittedVia).build();
 
-		sample = sampleService.store(sample);
-		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
-		return ResponseEntity.created(URI.create(sampleResource.getLink("self").getHref())).body(sampleResource);
-	}
+		/*Pre accessioning is done by other archives to get a BioSamples accession before processing their own pipelines. It is better to check duplicates in pre-accessioning cases
+		* The original case of accession remains unchanged*/
+		if (preAccessioning) {
+			if (sampleService.searchSampleByDomainAndName(sample.getDomain(), sample.getName())) {
+				return new ResponseEntity<>("Sample already exists, use POST only for new submissions", HttpStatus.BAD_REQUEST);
+			} else {
+				sample = sampleService.store(sample);
+				final Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
 
+				return ResponseEntity.ok(sampleResource.getContent().getAccession());
+			}
+		} else {
+			sample = sampleService.store(sample);
+			final Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
+
+			return ResponseEntity.created(URI.create(sampleResource.getLink("self").getHref())).body(sampleResource);
+		}
+	}
 
 	@PreAuthorize("isAuthenticated()")
 	@PostMapping(consumes = { MediaType.APPLICATION_JSON_VALUE })
@@ -325,12 +338,11 @@ public class SamplesRestController {
 		sample = bioSamplesAapService.handleSampleDomain(sample);
 
 		//update, create date are system generated fields
-		Instant create = Instant.now();
 		SubmittedViaType submittedVia =
 				sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
 		sample = Sample.Builder.fromSample(sample)
-				.withCreate(create)
-				.withUpdate(create)
+				.withCreate(defineCreateDate(sample))
+				.withUpdate(Instant.now())
 				.withSubmittedVia(submittedVia).build();
 
 		if (!setFullDetails) {
@@ -366,6 +378,12 @@ public class SamplesRestController {
 		return ResponseEntity.created(URI.create(sampleResource.getLink("self").getHref())).body(sampleResource);
 	}
 
+	private Instant defineCreateDate(final Sample sample) {
+		final Instant now = Instant.now();
+
+		return sample.getDomain().equalsIgnoreCase("self.BiosampleImportNCBI") ? (sample.getCreate() != null ? sample.getCreate() : now) : now;
+	}
+
 	@ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "New sample submission should not contain an accession") // 400
 	public static class SampleWithAccessionSumbissionException extends RuntimeException {
 	}
@@ -379,7 +397,5 @@ public class SamplesRestController {
 		    super(validationError);
 			this.validation = validationError;
 		}
-
 	}
-
 }

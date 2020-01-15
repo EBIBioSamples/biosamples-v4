@@ -51,7 +51,7 @@ public class Application extends SpringBootServletInitializer {
 		Map<String, Object> props = new HashMap<>();
 		props.put(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
 		props.put(Marshaller.JAXB_SCHEMA_LOCATION,"http://www.ebi.ac.uk/biosamples/SampleGroupExport/1.0 http://www.ebi.ac.uk/biosamples/assets/xsd/v1.0/ResultQuerySampleSchema.xsd");
-		props.put("com.sun.xml.internal.bind.xmlHeaders", String.format("\n<!-- %s -->", documentComment));
+		props.put("com.sun.xml.bind.xmlHeaders", String.format("\n<!-- %s -->", documentComment));
 		Jaxb2Marshaller jaxb2Marshaller = new Jaxb2Marshaller();
 		jaxb2Marshaller.setPackagesToScan("uk.ac.ebi.biosamples.model");
 		jaxb2Marshaller.setMarshallerProperties(props);

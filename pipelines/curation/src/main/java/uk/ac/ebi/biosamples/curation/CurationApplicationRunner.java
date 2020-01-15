@@ -14,10 +14,12 @@ import uk.ac.ebi.biosamples.ols.OlsProcessor;
 import uk.ac.ebi.biosamples.service.CurationApplicationService;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.ArgUtils;
+import uk.ac.ebi.biosamples.utils.MailSender;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 
 import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Future;
 
 @Component
@@ -44,6 +46,7 @@ public class CurationApplicationRunner implements ApplicationRunner {
     public void run(ApplicationArguments args) throws Exception {
 
         Collection<Filter> filters = ArgUtils.getDateFilters(args);
+        boolean isPassed = true;
 
         try (AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true,
                 pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax())) {
@@ -69,18 +72,26 @@ public class CurationApplicationRunner implements ApplicationRunner {
             log.info("waiting for futures");
             // wait for anything to finish
             ThreadUtils.checkFutures(futures, 0);
+        } catch(final Exception e) {
+            log.error("Pipeline failed to finish successfully", e);
+            isPassed = false;
+            throw e;
         } finally {
             //now print a list of things that failed
-            if (SampleCurationCallable.failedQueue.size() > 0) {
+            final ConcurrentLinkedQueue<String> failedQueue = SampleCurationCallable.failedQueue;
+
+            if (failedQueue.size() > 0) {
                 //put the first ones on the queue into a list
                 //limit the size of list to avoid overload
                 List<String> fails = new LinkedList<>();
-                while (fails.size() < 100 && SampleCurationCallable.failedQueue.peek() != null) {
-                    fails.add(SampleCurationCallable.failedQueue.poll());
+                while (failedQueue.peek() != null) {
+                    fails.add(failedQueue.poll());
                 }
-                log.info("Failed files (" + SampleCurationCallable.failedQueue.size() + ") " + String.join(" , ", fails));
+
+                final String failures = "Failed files (" + failedQueue.size() + ") " + String.join(" , ", fails);
+                log.info(failures);
+                MailSender.sendEmail("Curation", failures, isPassed);
             }
         }
     }
-
 }

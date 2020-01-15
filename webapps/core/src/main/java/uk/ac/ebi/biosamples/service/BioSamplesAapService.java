@@ -185,6 +185,10 @@ public class BioSamplesAapService {
 	public boolean isWriteSuperUser() {
 		return getDomains().contains(bioSamplesProperties.getBiosamplesAapSuperWrite());
 	}
+
+	public boolean isIntegrationTestUser() {
+		return getDomains().contains("self.BiosampleIntegrationTest");
+	}
 	
 	public void checkAccessible(Sample sample) throws SampleNotAccessibleException {
 		//TODO throw different exceptions in different situations

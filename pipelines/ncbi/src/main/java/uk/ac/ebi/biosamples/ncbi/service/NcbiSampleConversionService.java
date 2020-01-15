@@ -51,7 +51,6 @@ public class NcbiSampleConversionService {
 	private static final String COMMENT = "Comment";
 	private static final String TITLE = "Title";
 	private static final String DESCRIPTION = "Description";
-	private static final String DESCRIPTION_LOWER_CASE = "description";
 	private static final String INSDC_CENTER_NAME = "INSDC center name";
 	private static final String NAME = "Name";
 	private static final String OWNER = "Owner";
@@ -68,8 +67,7 @@ public class NcbiSampleConversionService {
 	private static final String SRA_ACCESSION = "SRA accession";
 	private static final String NCBI_TITLE = TITLE;
 	private static final String NAMESPACE_TAG = "Namespace:";
-	private static final String DESCRIPTION_CORE = "core";
-	private static final String DESCRIPTION_SAMPLE_ATTRIBUTE = "attribute";
+	private static final String SAMPLE_ATTRIBUTE = "attribute";
 	private static final String SECONDARY_ID_JSON = "Secondary Id";
 
 	private Logger log = LoggerFactory.getLogger(getClass());
@@ -174,7 +172,7 @@ public class NcbiSampleConversionService {
 			 * log.warn("Truncating attribute "+key+" for length on "+accession); value =
 			 * value.substring(0, 252)+"..."; }
 			 */
-			attrs.add(Attribute.build(DESCRIPTION_LOWER_CASE, value, DESCRIPTION_CORE, Collections.emptyList(), null));
+			attrs.add(Attribute.build(DESCRIPTION, value));
 		}
 
 		if (XmlPathBuilder.of(sampleElem).path(DESCRIPTION, ORGANISM).attributeExists(TAXONOMY_ID)) {
@@ -213,7 +211,7 @@ public class NcbiSampleConversionService {
 
 			if (key.equalsIgnoreCase(DESCRIPTION)) {
 				if (value != null) {
-					attrs.add(Attribute.build(DESCRIPTION_LOWER_CASE, value, DESCRIPTION_SAMPLE_ATTRIBUTE, Collections.emptyList(), null));
+					attrs.add(Attribute.build(key, value, SAMPLE_ATTRIBUTE, Collections.emptyList(), null));
 				}
 				continue;
 			}
@@ -236,7 +234,7 @@ public class NcbiSampleConversionService {
 					organismValue = value;
 				}
 
-				attrs.add(Attribute.build(key, value));
+				attrs.add(Attribute.build(key, value, SAMPLE_ATTRIBUTE, Collections.emptyList(), null));
 			}
 		}
 
@@ -283,7 +281,9 @@ public class NcbiSampleConversionService {
 
 			if (!nonHiddenStatuses.contains(status.toLowerCase())) {
 				// not a live or suppressed sample, hide
-				publicationDate = publicationDate.atZone(ZoneOffset.UTC).plus(1000, ChronoUnit.YEARS).toInstant();
+				if(publicationDate != null) {
+					publicationDate = publicationDate.atZone(ZoneOffset.UTC).plus(1000, ChronoUnit.YEARS).toInstant();
+				}
 			}
 		}
 

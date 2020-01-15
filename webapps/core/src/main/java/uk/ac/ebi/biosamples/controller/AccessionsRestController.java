@@ -19,10 +19,12 @@ public class AccessionsRestController {
     @CrossOrigin(methods = RequestMethod.GET)
     @GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE})
     public List<String> getAccessions(
-            @RequestParam(name = "project", required = false, defaultValue = "") String project,
-            @RequestParam(name = "limit", required = false, defaultValue = "10") int limit
+            @RequestParam(name = "text", required = false) String text,
+            @RequestParam(name = "filter", required = false) String[] filter,
+            @RequestParam(name = "page", required = false) final Integer page,
+            @RequestParam(name = "size", required = false) final Integer size
     ) {
-        return accessionsService.getAccessions(project, limit);
+        return accessionsService.getAccessions(text, filter, page, size);
     }
 
 }

@@ -2,6 +2,7 @@ package uk.ac.ebi.biosamples.ena;
 
 import java.time.Instant;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -24,8 +25,7 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 	private static final String SECONDARY_ID = "SECONDARY_ID";
 	private static final String COMMON_NAME = "COMMON_NAME";
 	private static final String ORGANISM = "Organism";
-	private static final String DESCRIPTION_SAMPLE_ATTRIBUTE = "attribute";
-	private static final String DESCRIPTION_CORE = "core";
+	private static final String TAG_SAMPLE_ATTRIBUTE = "attribute";
 	// Fields required by ENA content - some are for JSON building and some for
 	// equality checks with ENA XML
 	private static final String UUID_JSON = "uuid";
@@ -70,7 +70,7 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 		final SortedSet<Attribute> attributes = new TreeSet<>();
 		final SortedSet<Relationship> relationships = new TreeSet<>();
 		final SortedSet<ExternalReference> externalReferences = new TreeSet<>();
-		String name = null;
+		String name;
 		String accession = null;
 
 		// ENA Specific fields
@@ -128,64 +128,42 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 		if (descriptionPathBuilder.exists() && descriptionPathBuilder.text().trim().length() > 0) {
 			final String description = descriptionPathBuilder.text().trim();
 
-			attributes.add(Attribute.build(ENA_DESCRIPTION, description, DESCRIPTION_CORE, Collections.emptyList(), null));
+			attributes.add(Attribute.build(ENA_DESCRIPTION, description));
 		}
 
 		// ENA SUBMITTER_ID - BSD-1743 - Un-tag core attributes and sample attributes from synonyms
 		final XmlPathBuilder submitterIdPathBuilder = XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS, SUBMITTER_ID);
 
 		if (submitterIdPathBuilder.exists()) {
-			attributes.add(Attribute.build(SUBMITTER_ID_JSON, submitterIdPathBuilder.text(), NAMESPACE_TAG + submitterIdPathBuilder.attribute(NAMESPACE),
-					Collections.emptyList(), null));
+			attributes.add(Attribute.build(SUBMITTER_ID_JSON, submitterIdPathBuilder.text(),
+					NAMESPACE_TAG + submitterIdPathBuilder.attribute(NAMESPACE), Collections.emptyList(), null));
 		}
 
-		// ENA EXTERNAL_ID - BSD-1743 - Un-tag core attributes and sample attributes from synonyms
-		final XmlPathBuilder externalIdPathBuilder = XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS, EXTERNAL_ID);
-
-		if (externalIdPathBuilder.exists()) {
-			for (final Element element : XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS).elements(EXTERNAL_ID)) {
-				final String externalIdElement = XmlPathBuilder.of(element).text();
-
-				attributes.add(Attribute.build(EXTERNAL_ID_JSON, externalIdElement, NAMESPACE_TAG + externalIdPathBuilder.attribute(NAMESPACE),
-						Collections.emptyList(), null));
-
-				if (BIOSAMPLE.equals(element.attributeValue(NAMESPACE))) {
-					accession = externalIdElement;
-				}
-			}
-		}
+		// ENA EXTERNAL_ID - BSD-1743 - Un-tag core attributes and sample attributes
+		// from synonyms
+		accession = getString(root, attributes, accession, EXTERNAL_ID, EXTERNAL_ID_JSON);
 
 		// ENA SECONDARY_ID
-		final XmlPathBuilder secondaryIdPathBuilder = XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS, SECONDARY_ID);
+		accession = getString(root, attributes, accession, SECONDARY_ID, SECONDARY_ID_JSON);
 
-		if (secondaryIdPathBuilder.exists()) {
-			for (final Element element : XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS).elements(SECONDARY_ID)) {
-				final String secondaryIdElement = XmlPathBuilder.of(element).text();
-
-				attributes.add(Attribute.build(SECONDARY_ID_JSON, secondaryIdElement, NAMESPACE_TAG + secondaryIdPathBuilder.attribute(NAMESPACE),
-						Collections.emptyList(), null));
-
-				if (BIOSAMPLE.equals(element.attributeValue(NAMESPACE))) {
-					accession = secondaryIdElement;
-				}
-			}
-		}
-
-		// ENA ANONYMIZED_NAME - BSD-1743 - Un-tag core attributes and sample attributes from synonyms
+		// ENA ANONYMIZED_NAME - BSD-1743 - Un-tag core attributes and sample attributes
+		// from synonyms
 		final XmlPathBuilder anonymizedNamePathBuilder = XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, ANONYMIZED_NAME);
 
 		if (anonymizedNamePathBuilder.exists()) {
 			attributes.add(Attribute.build(ANONYMIZED_NAME_JSON, anonymizedNamePathBuilder.text()));
 		}
 
-		// ENA INDIVIDUAL_NAME - BSD-1743 - Un-tag core attributes and sample attributes from synonyms
+		// ENA INDIVIDUAL_NAME - BSD-1743 - Un-tag core attributes and sample attributes
+		// from synonyms
 		final XmlPathBuilder individualNamePathBuider = XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, INDIVIDUAL_NAME);
 
 		if (individualNamePathBuider.exists()) {
 			attributes.add(Attribute.build(INDIVIDUAL_NAME_JSON, individualNamePathBuider.text()));
 		}
 
-		// ENA UUID - BSD-1743 - Un-tag core attributes and sample attributes from synonyms
+		// ENA UUID - BSD-1743 - Un-tag core attributes and sample attributes from
+		// synonyms
 		if (XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS, UUID).exists()) {
 			for (Element element : XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS).elements(UUID)) {
 				attributes.add(Attribute.build(UUID_JSON, element.getTextTrim()));
@@ -233,18 +211,21 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 				// BSD-1744 - Deal with multiple descriptions in ENA XML
 				if (tag != null && tag.equalsIgnoreCase(ENA_DESCRIPTION)) {
 					if (value != null) {
-						attributes.add(Attribute.build(ENA_DESCRIPTION, value, DESCRIPTION_SAMPLE_ATTRIBUTE, Collections.emptyList(), null));
+						attributes.add(Attribute.build(ENA_DESCRIPTION, value, TAG_SAMPLE_ATTRIBUTE, Collections.emptyList(), null));
+					}
+					continue;
+				}
+
+				// BSD-1813 - Deal with multiple titles in ENA XML
+				if (tag != null && tag.equalsIgnoreCase(ENA_TITLE)) {
+					if (value != null) {
+						attributes.add(Attribute.build(ENA_TITLE, value, TAG_SAMPLE_ATTRIBUTE, Collections.emptyList(), null));
 					}
 					continue;
 				}
 
 				if (tag != null) {
-					if (value != null) {
-						attributes.add(Attribute.build(tag, value, null, Collections.emptyList(), unit));
-					} else {
-						// no value supplied
-						attributes.add(Attribute.build(tag, "", null, Collections.emptyList(), unit));
-					}
+					attributes.add(Attribute.build(tag, Objects.requireNonNullElse(value, ""), TAG_SAMPLE_ATTRIBUTE, Collections.emptyList(), unit));
 				}
 			}
 		}
@@ -259,6 +240,25 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 
 		return new Sample.Builder(name, accession).withRelease(Instant.now()).withUpdate(Instant.now()).withAttributes(attributes)
 				.withRelationships(relationships).withExternalReferences(externalReferences).build();
+	}
+
+	private String getString(Element root, SortedSet<Attribute> attributes, String accession, String externalId, String externalIdJson) {
+		final XmlPathBuilder idPathBuilder = XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS, externalId);
+
+		if (idPathBuilder.exists()) {
+			for (final Element element : XmlPathBuilder.of(root).path(SAMPLE, IDENTIFIERS).elements(externalId)) {
+				final String externalIdElement = XmlPathBuilder.of(element).text();
+
+				attributes.add(Attribute.build(externalIdJson, externalIdElement, NAMESPACE_TAG + idPathBuilder.attribute(NAMESPACE),
+						Collections.emptyList(), null));
+
+				if (BIOSAMPLE.equals(element.attributeValue(NAMESPACE))) {
+					accession = externalIdElement;
+				}
+			}
+		}
+
+		return accession;
 	}
 
 }

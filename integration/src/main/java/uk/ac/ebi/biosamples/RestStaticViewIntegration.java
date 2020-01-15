@@ -6,15 +6,14 @@ import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.*;
+import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 
 import java.time.Instant;
 import java.util.*;
 
 @Component
 public class RestStaticViewIntegration extends AbstractIntegration {
-
     private Logger log = LoggerFactory.getLogger(this.getClass());
-
 
     public RestStaticViewIntegration(BioSamplesClient client) {
         super(client);
@@ -29,19 +28,57 @@ public class RestStaticViewIntegration extends AbstractIntegration {
 
         //put a private sample
         Resource<Sample> resource = client.persistSampleResource(test1);
+        test1 = Sample.Builder.fromSample(test1).withAccession(resource.getContent().getAccession()).build();
         if (!test1.equals(resource.getContent())) {
-            throw new RuntimeException("Expected response (" + resource.getContent() + ") to equal submission (" + test1 + ")");
+            throw new IntegrationTestFailException("Expected response (" + resource.getContent() + ") to equal submission (" + test1 + ")", Phase.ONE);
         }
 
-        //put a sample that refers to a non-existing sample
+        //put a sample that refers to a non-existing sample, Should this fail???
         resource = client.persistSampleResource(test2);
+        test2 = Sample.Builder.fromSample(test2).withAccession(resource.getContent().getAccession()).build();
         if (!test2.equals(resource.getContent())) {
-            throw new RuntimeException("Expected response (" + resource.getContent() + ") to equal submission (" + test2 + ")");
+            throw new IntegrationTestFailException("Expected response (" + resource.getContent() + ") to equal submission (" + test2 + ")", Phase.ONE);
         }
 
         resource = client.persistSampleResource(test4);
+        test4 = Sample.Builder.fromSample(test4).withAccession(resource.getContent().getAccession()).build();
         if (!test4.equals(resource.getContent())) {
-            throw new RuntimeException("Expected response (" + resource.getContent() + ") to equal submission (" + test4 + ")");
+            throw new IntegrationTestFailException("Expected response (" + resource.getContent() + ") to equal submission (" + test4 + ")", Phase.ONE);
+        }
+
+        resource = client.persistSampleResource(test5);
+        test5 = Sample.Builder.fromSample(test5).withAccession(resource.getContent().getAccession()).build();
+        if (!test5.equals(resource.getContent())) {
+            throw new IntegrationTestFailException("Expected response (" + resource.getContent() + ") to equal submission (" + test5 + ")", Phase.ONE);
+        }
+
+    }
+
+    @Override
+    protected void phaseTwo() {
+        Sample test2 = getSampleTest2();
+        Sample test4 = getSampleTest4();
+        Sample test5 = getSampleTest5();
+
+        Optional<Sample> optionalSample = fetchUniqueSampleByName(test2.getName());
+        if (optionalSample.isPresent()) {
+            test2 = optionalSample.get();
+        } else {
+            throw new IntegrationTestFailException("Sample does not exist, sample name: " + test2.getName(), Phase.TWO);
+        }
+
+        optionalSample = fetchUniqueSampleByName(test4.getName());
+        if (optionalSample.isPresent()) {
+            test4 = optionalSample.get();
+        } else {
+            throw new IntegrationTestFailException("Sample does not exist, sample name: " + test4.getName(), Phase.TWO);
+        }
+
+        optionalSample = fetchUniqueSampleByName(test5.getName());
+        if (optionalSample.isPresent()) {
+            test5 = optionalSample.get();
+        } else {
+            throw new IntegrationTestFailException("Sample does not exist, sample name: " + test5.getName(), Phase.TWO);
         }
 
         Set<Attribute> attributesPre;
@@ -52,121 +89,162 @@ public class RestStaticViewIntegration extends AbstractIntegration {
         attributesPost = new HashSet<>();
         attributesPost.add(Attribute.build("organism", "Homo sapiens"));
         client.persistCuration(test2.getAccession(),
-                Curation.build(attributesPre, attributesPost, null, null), "self.BiosampleIntegrationTest");
-
+                Curation.build(attributesPre, attributesPost, null, null), defaultIntegrationSubmissionDomain);
 
         attributesPre = new HashSet<>();
         attributesPre.add(Attribute.build("organism", "Homo sapiens"));
         attributesPost = new HashSet<>();
         attributesPost.add(Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
         client.persistCuration(test2.getAccession(),
-                Curation.build(attributesPre, attributesPost, null, null), "self.BiosampleIntegrationTest");
-
+                Curation.build(attributesPre, attributesPost, null, null), defaultIntegrationSubmissionDomain);
 
         SortedSet<Relationship> relationships = new TreeSet<>();
-        relationships.add(Relationship.build("SAMEA648208574", "derived from", getSampleTest2().getAccession()));
-        relationships.add(Relationship.build("SAMEA648208574", "derive to", getSampleTest5().getAccession()));
+        relationships.add(Relationship.build(test4.getAccession(), "derived from", test2.getAccession()));
+        relationships.add(Relationship.build(test4.getAccession(), "derive to", test5.getAccession()));
         Sample sample4WithRelationships = Sample.Builder.fromSample(test4).withRelationships(relationships).build();
-        resource = client.persistSampleResource(sample4WithRelationships);
+        Resource<Sample> resource = client.persistSampleResource(sample4WithRelationships);
         if (!sample4WithRelationships.equals(resource.getContent())) {
-            throw new RuntimeException("Expected response (" + resource.getContent() + ") to equal submission (" + sample4WithRelationships + ")");
+            throw new IntegrationTestFailException("Expected response (" + resource.getContent() + ") to equal submission (" + sample4WithRelationships + ")", Phase.TWO);
         }
 
-        resource = client.persistSampleResource(test5);
+        optionalSample = fetchUniqueSampleByName(test5.getName());
+        if (!optionalSample.isPresent()) {
+            throw new IntegrationTestFailException("Sample does not exist, sample name: " + test5.getName(), Phase.TWO);
+        }
+
         // Build inverse relationships for sample5
         SortedSet<Relationship> test5AllRelationships = test5.getRelationships();
         test5AllRelationships.add(Relationship.build(test4.getAccession(), "derive to", test5.getAccession()));
         test5 = Sample.Builder.fromSample(test5).withRelationships(test5AllRelationships).build();
-        if (!test5.equals(resource.getContent())) {
-            throw new RuntimeException("Expected response (" + resource.getContent() + ") to equal submission (" + test5 + ")");
+        if (!test5.equals(optionalSample.get())) {
+            throw new IntegrationTestFailException("Expected response (" + resource.getContent() + ") to equal submission (" + test5 + ")", Phase.TWO);
         }
 
         relationships = new TreeSet<>();
-        relationships.add(Relationship.build("SAMEA648208575", "derived from", getSampleTest2().getAccession()));
+        relationships.add(Relationship.build(test5.getAccession(), "derived from", test2.getAccession()));
         Sample sample5WithRelationships = Sample.Builder.fromSample(test5).withRelationships(relationships).build();
         resource = client.persistSampleResource(sample5WithRelationships);
 
-        relationships = new TreeSet<>();
-        relationships.add(Relationship.build(test4.getAccession(), "derive to", test5.getAccession()));//inverse relationship
-        relationships.add(Relationship.build("SAMEA648208575", "derived from", getSampleTest2().getAccession()));
         Sample sample5WithInverseRelationships = Sample.Builder.fromSample(sample5WithRelationships)
                 .addRelationship(Relationship.build(test4.getAccession(), "derive to", test5.getAccession()))
                 .build();
 
         if (!sample5WithInverseRelationships.equals(resource.getContent())) {
-            throw new RuntimeException("Expected response (" + resource.getContent() + ") to equal submission (" + sample5WithRelationships + ")");
+            throw new IntegrationTestFailException("Expected response (" + resource.getContent() + ") to equal submission (" + sample5WithRelationships + ")", Phase.TWO);
         }
     }
 
     @Override
-    protected void phaseTwo() {
+    protected void phaseThree() {
         Sample test1 = getSampleTest1();
         Sample test2 = getSampleTest2();
         Sample test4 = getSampleTest4();
-        Sample test5 = getSampleTest4();
+        Sample test5 = getSampleTest5();
+
+        Optional<Sample> optionalSample = fetchUniqueSampleByName(test2.getName());
+        if (optionalSample.isPresent()) {
+            test2 = optionalSample.get();
+        } else {
+            throw new IntegrationTestFailException("Sample does not exist, sample name: " + test2.getName(), Phase.THREE);
+        }
+
+        optionalSample = fetchUniqueSampleByName(test4.getName());
+        if (optionalSample.isPresent()) {
+            test4 = optionalSample.get();
+        } else {
+            throw new IntegrationTestFailException("Sample does not exist, sample name: " + test4.getName(), Phase.THREE);
+        }
+
+        optionalSample = fetchUniqueSampleByName(test5.getName());
+        if (optionalSample.isPresent()) {
+            test5 = optionalSample.get();
+        } else {
+            throw new IntegrationTestFailException("Sample does not exist, sample name: " + test5.getName(), Phase.THREE);
+        }
 
         List<Resource<Sample>> samples = new ArrayList<>();
         for (Resource<Sample> sample : client.fetchSampleResourceAll()) {
             samples.add(sample);
         }
 
-        if (samples.size() <= 0) {
-            throw new RuntimeException("No search results found!");
+        if (samples.isEmpty()) {
+            throw new IntegrationTestFailException("No search results found!", Phase.THREE);
         }
 
         //check that the private sample is not in search results
         //check that the referenced non-existing sample not in search result
         for (Resource<Sample> resource : client.fetchSampleResourceAll()) {
-            log.trace("" + resource);
-            if (resource.getContent().getAccession().equals(test1.getAccession())) {
-                throw new RuntimeException("Found non-public sample " + test1.getAccession() + " in search samples");
+            if (resource.getContent().getAccession().equals(test1.getName())) {
+                throw new IntegrationTestFailException("Found non-public sample " + test1.getName() + " in search samples", Phase.THREE);
             }
         }
 
         testDynamicAndStaticView(test2.getAccession());
-        testDynamicAndStaticView(test5.getAccession());
         testDynamicAndStaticView(test4.getAccession());
+        testDynamicAndStaticView(test5.getAccession());
 
+        test4 = Sample.Builder.fromSample(getSampleTest4()).withAccession(test4.getAccession()).build();
         //delete relationships again
         Resource<Sample> resource = client.persistSampleResource(test4);
         if (!test4.equals(resource.getContent())) {
-            throw new RuntimeException("Expected response (" + resource.getContent() + ") to equal submission (" + test4 + ")");
+            throw new IntegrationTestFailException("Expected response (" + resource.getContent() + ") to equal submission (" + test4 + ")");
         }
     }
 
     @Override
-    protected void phaseThree() {
-        Sample test4 = getSampleTest4();
-        testDynamicAndStaticView(test4.getAccession());
-    }
-
-    @Override
     protected void phaseFour() {
+        Sample test4 = getSampleTest4();
+        Optional<Sample> optionalSample = fetchUniqueSampleByName(test4.getName());
+        if (optionalSample.isPresent()) {
+            test4 = optionalSample.get();
+        } else {
+            throw new IntegrationTestFailException("Sample does not exist, sample name: " + test4.getName(), Phase.THREE);
+        }
+        testDynamicAndStaticView(test4.getAccession());
     }
 
 
     @Override
     protected void phaseFive() {
+        //nothing to do here
     }
 
     private void testDynamicAndStaticView(String accession) {
-        Sample dynamicSample = client.fetchSampleResource(accession, Optional.empty(), null, StaticViewWrapper.StaticView.SAMPLES_DYNAMIC).get().getContent();
-        Sample staticSample = client.fetchSampleResource(accession, Optional.empty(), null, StaticViewWrapper.StaticView.SAMPLES_CURATED).get().getContent();
-        Sample sample = client.fetchSampleResource(accession).get().getContent();
-
-        if (!dynamicSample.equals(staticSample) || !staticSample.equals(sample)) {
-            throw new RuntimeException("Expected response (" + dynamicSample + ") to equal submission (" + staticSample + ")");
+        Sample dynamicSample;
+        Optional<Resource<Sample>> optionalSample = client.fetchSampleResource(accession, Optional.empty(), null, StaticViewWrapper.StaticView.SAMPLES_DYNAMIC);
+        if (optionalSample.isPresent()) {
+            dynamicSample = optionalSample.get().getContent();
+        } else {
+            throw new IntegrationTestFailException("Sample does not exist, sample accession: " + accession);
         }
 
-        if (!dynamicSample.equals(staticSample) || !sample.equals(sample)) {
-            throw new RuntimeException("Expected response (" + dynamicSample + ") to equal submission (" + sample + ")");
+        Sample staticSample;
+        optionalSample = client.fetchSampleResource(accession, Optional.empty(), null, StaticViewWrapper.StaticView.SAMPLES_CURATED);
+        if (optionalSample.isPresent()) {
+            staticSample = optionalSample.get().getContent();
+        } else {
+            throw new IntegrationTestFailException("Sample does not exist, sample accession: " + accession);
+        }
+
+        Sample sample;
+        optionalSample = client.fetchSampleResource(accession);
+        if (optionalSample.isPresent()) {
+            sample = optionalSample.get().getContent();
+        } else {
+            throw new IntegrationTestFailException("Sample does not exist, sample accession: " + accession);
+        }
+
+        if (!dynamicSample.equals(staticSample)) {
+            throw new IntegrationTestFailException("Expected response (" + dynamicSample + ") to equal submission (" + staticSample + ")");
+        }
+
+        if (!dynamicSample.equals(sample)) {
+            throw new IntegrationTestFailException("Expected response (" + dynamicSample + ") to equal submission (" + sample + ")");
         }
     }
 
     private Sample getSampleTest1() {
-        String name = "Test Sample";
-        String accession = "SAMEA648208571";
-        String domain = "self.BiosampleIntegrationTest";
+        String name = "RestStaticViewIntegration_sample_1";
         Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
         Instant release = Instant.parse("2116-04-01T11:36:57.00Z");
 
@@ -174,34 +252,30 @@ public class RestStaticViewIntegration extends AbstractIntegration {
         attributes.add(
                 Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
 
-//		return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
-        return new Sample.Builder(name, accession).withDomain(domain).withRelease(release).withUpdate(update)
+        return new Sample.Builder(name).withDomain(defaultIntegrationSubmissionDomain).withRelease(release).withUpdate(update)
                 .withAttributes(attributes).build();
     }
 
     private Sample getSampleTest2() {
-        String name = "Test Sample the second";
-        String accession = "SAMEA648208572";
-        String domain = "self.BiosampleIntegrationTest";
+        String name = "RestStaticViewIntegration_sample_2";
         Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
         Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
         SortedSet<Attribute> attributes = new TreeSet<>();
-        attributes.add(
-                Attribute.build("organism", "9606"));
+        attributes.add(Attribute.build("organism", "9606"));
 
         SortedSet<Relationship> relationships = new TreeSet<>();
         relationships.add(Relationship.build("SAMEA648208572", "derived from", "SAMEA648208573"));
 
-//		return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, relationships, new TreeSet<>(), null, null, null);
-        return new Sample.Builder(name, accession).withDomain(domain).withRelease(release).withUpdate(update)
+        return new Sample.Builder(name).withDomain(defaultIntegrationSubmissionDomain)
+                .withRelease(release)
+                .withUpdate(update)
+                .withRelationships(relationships)
                 .withAttributes(attributes).build();
     }
 
     private Sample getSampleTest4() {
-        String name = "Test Sample the fourth";
-        String accession = "SAMEA648208574";
-        String domain = "self.BiosampleIntegrationTest";
+        String name = "RestStaticViewIntegration_sample_4";
         Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
         Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
@@ -209,22 +283,13 @@ public class RestStaticViewIntegration extends AbstractIntegration {
         attributes.add(
                 Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
 
-        // TODO need to add inverse relationships later
-//        SortedSet<Relationship> relationships = new TreeSet<>();
-//        relationships.add(Relationship.build("SAMEA648208574", "derived from", getSampleTest2().getAccession()));
-//        relationships.add(Relationship.build("SAMEA648208574", "derive to", getSampleTest5().getAccession()));
-
-//		return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, relationships, new TreeSet<>(), null, null, null);
-        return new Sample.Builder(name, accession).withDomain(domain).withRelease(release).withUpdate(update)
+        return new Sample.Builder(name).withDomain(defaultIntegrationSubmissionDomain).withRelease(release).withUpdate(update)
                 .withAttributes(attributes)
-//                .withRelationships(relationships)
                 .build();
     }
 
     private Sample getSampleTest5() {
-        String name = "Test Sample the fifth";
-        String accession = "SAMEA648208575";
-        String domain = "self.BiosampleIntegrationTest";
+        String name = "RestStaticViewIntegration_sample_5";
         Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
         Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
@@ -232,12 +297,7 @@ public class RestStaticViewIntegration extends AbstractIntegration {
         attributes.add(
                 Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
 
-        // TODO need to add inverse relationships later
-        SortedSet<Relationship> relationships = new TreeSet<>();
-
-//		return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, relationships, new TreeSet<>(), null, null, null);
-        return new Sample.Builder(name, accession).withDomain(domain).withRelease(release).withUpdate(update)
+        return new Sample.Builder(name).withDomain(defaultIntegrationSubmissionDomain).withRelease(release).withUpdate(update)
                 .withAttributes(attributes).build();
     }
-
 }

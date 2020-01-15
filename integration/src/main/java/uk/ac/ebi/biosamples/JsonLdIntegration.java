@@ -11,6 +11,7 @@ import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.*;
+import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 
 import java.time.Instant;
 import java.util.Arrays;
@@ -20,18 +21,11 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-//import org.openqa.selenium.By;
-//import org.openqa.selenium.WebDriver;
-//import org.openqa.selenium.WebElement;
-//import org.openqa.selenium.chrome.ChromeDriver;
-
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
-//@Profile({"default", "selenium"})
 public class JsonLdIntegration extends AbstractIntegration {
     private final Environment env;
     private final RestOperations restTemplate;
-//    private WebDriver chromeDriver;
     private final IntegrationProperties integrationProperties;
     private final BioSamplesProperties bioSamplesProperties;
 
@@ -51,14 +45,19 @@ public class JsonLdIntegration extends AbstractIntegration {
     @Override
     protected void phaseOne() {
         Sample testSample = getTestSample();
+        Optional<Sample> optionalSample = fetchUniqueSampleByName(testSample.getName());
 
-        Optional<Resource<Sample>> optionalSample = client.fetchSampleResource(testSample.getAccession());
-        if(optionalSample.isPresent()) {
-            throw new RuntimeException("JsonLD test sample should not be available during phase 1");
-        }
-        Resource<Sample> resource = client.persistSampleResource(testSample);
-        if (!testSample.equals(resource.getContent())) {
-			throw new RuntimeException("Expected response ("+resource.getContent()+") to equal submission ("+testSample+")");
+        if (optionalSample.isPresent()) {
+            throw new IntegrationTestFailException("JsonLD test sample should not be available during phase 1", Phase.ONE);
+        } else {
+            Resource<Sample> resource = client.persistSampleResource(testSample);
+            Sample testSampleWithAccession = Sample.Builder.fromSample(testSample)
+                    .withAccession(resource.getContent().getAccession())
+                    .build();
+
+            if (!testSampleWithAccession.equals(resource.getContent())) {
+                throw new IntegrationTestFailException("Expected response (" + resource.getContent() + ") to equal submission (" + testSample + ")");
+            }
         }
     }
 
@@ -66,10 +65,10 @@ public class JsonLdIntegration extends AbstractIntegration {
     protected void phaseTwo() {
         Sample testSample = getTestSample();
         // Check if selenium profile is activate
-        if(isSeleniumTestRequired(env)) {
+        if (isSeleniumTestRequired(env)) {
 //            checkPresenceOnWebPage(testSample);
         }
-        checkPresenceWithRest(testSample);
+        checkPresenceWithRest(testSample.getName());
 
     }
 
@@ -94,22 +93,14 @@ public class JsonLdIntegration extends AbstractIntegration {
     }
 
     private Sample getTestSample() {
-        String accession = "SAMEA99332211";
-        String name = "Test ld+json";
-        String domain = "self.BiosampleIntegrationTest";
-		Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
-		Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
+        String name = "JsonLdIntegration_sample_1";
+        Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
+        Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
         SortedSet<Attribute> attributes = new TreeSet<>();
-        attributes.add(
-                Attribute.build("Organism Part","Lung", "http://purl.obolibrary.org/obo/UBERON_0002048", null)
-        );
-        attributes.add(
-                Attribute.build("test_Type", "test_value")
-        );
-        attributes.add(
-                Attribute.build("Description", "Test description")
-        );
+        attributes.add(Attribute.build("Organism Part", "Lung", "http://purl.obolibrary.org/obo/UBERON_0002048", null));
+        attributes.add(Attribute.build("test_Type", "test_value"));
+        attributes.add( Attribute.build("Description", "Test description"));
         attributes.add(
                 Attribute.build(
                         "MultiCategoryCodeField",
@@ -126,11 +117,9 @@ public class JsonLdIntegration extends AbstractIntegration {
         SortedSet<ExternalReference> externalReferences = new TreeSet<>();
         externalReferences.add(
                 ExternalReference.build("www.google.com",
-                        new TreeSet<>(Arrays.asList("DUO:0000005", "DUO:0000001","DUO:0000007")))
-        );
-//        return Sample.build(name, accession, domain, release, update,
-//                attributes,null,externalReferences, null, null, null);
-        return new Sample.Builder(name, accession).withDomain(domain)
+                        new TreeSet<>(Arrays.asList("DUO:0000005", "DUO:0000001", "DUO:0000007"))));
+
+        return new Sample.Builder(name).withDomain(defaultIntegrationSubmissionDomain)
                 .withRelease(release).withUpdate(update)
                 .withAttributes(attributes).withExternalReferences(externalReferences).build();
     }
@@ -139,40 +128,18 @@ public class JsonLdIntegration extends AbstractIntegration {
         return Pattern.compile("\"identifier\"\\s*:\\s*\"" + accession + "\",").matcher(jsonLDContent).find();
     }
 
-    /*
-    private void checkPresenceOnWebPage(Sample sample) {
-        try {
-            this.chromeDriver = new ChromeDriver();
-            Optional<Resource<Sample>> optionalSample = client.fetchSampleResource(sample.getAccession());
-            if (optionalSample.isPresent()) {
-                Resource<Sample> sampleResource = optionalSample.get();
-                String sampleAccession = sampleResource.getValue().getAccession();
-                UriComponents sampleURI = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUri()).pathSegment("samples", sampleAccession).build();
-                chromeDriver.get(sampleURI.toString());
-                WebElement jsonLDScript = chromeDriver.findElement(By.cssSelector("script[type='application/ld+json']"));
-                if (jsonLDScript == null) {
-                    throw new RuntimeException("The ld+json script has not been found in the page for sample " + sampleAccession);
-                }
-                String jsonLDContent = jsonLDScript.getAttribute("innerHTML");
-                if (jsonLDIsEmpty(jsonLDContent)) {
-                    throw new RuntimeException("The ld+json content is empty");
-                }
-                if (!jsonLDHasAccession(jsonLDContent,sample.getAccession())) {
-                    throw new RuntimeException("The ld+json doesn't have the correct identifier");
-                }
-            } else {
-                throw new RuntimeException("No sample has been found to check for jsonld content");
-            }
-        } finally {
-            chromeDriver.close();
+
+    private void checkPresenceWithRest(String sampleName) {
+        Sample sample;
+        Optional<Sample> optionalSample = fetchUniqueSampleByName(sampleName);
+        if (optionalSample.isPresent()) {
+            sample = optionalSample.get();
+        } else {
+            throw new IntegrationTestFailException("JsonLD test sample not present in db");
         }
 
-    }
-    */
-
-    private void checkPresenceWithRest(Sample sample) {
         UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(bioSamplesProperties.getBiosamplesClientUri());
-        uriBuilder.pathSegment("samples", sample.getAccession()+".ldjson");
+        uriBuilder.pathSegment("samples", sample.getAccession() + ".ldjson");
         ResponseEntity<JsonLDDataRecord> responseEntity = restTemplate.getForEntity(uriBuilder.toUriString(), JsonLDDataRecord.class);
         if (!responseEntity.getStatusCode().is2xxSuccessful()) {
             throw new RuntimeException("Error retrieving sample in application/ld+json format from the webapp");

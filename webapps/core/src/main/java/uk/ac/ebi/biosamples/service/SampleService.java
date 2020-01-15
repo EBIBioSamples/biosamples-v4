@@ -83,7 +83,6 @@ public class SampleService {
     //Note, pages of samples will not be cache busted, only single-accession sample retrieval
     //@CacheEvict(cacheNames=WebappProperties.fetchUsing, key="#result.accession")
     public Sample store(Sample sample) {
-
         //do validation
         // TODO validate that relationships have this sample as the source
         Collection<String> errors = sampleValidator.validate(sample);
@@ -101,7 +100,7 @@ public class SampleService {
                 existingRelationshipTargets = getExistingRelationshipTargets(sample.getAccession(), mongoOldSample);
                 sample = compareWithExistingAndUpdateSample(sample, oldSample);
             } else {
-                log.warn("Trying to update sample not in database, accession: {}", sample.getAccession());
+                log.error("Trying to update sample not in database, accession: {}", sample.getAccession());
             }
 
             MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);
@@ -120,6 +119,13 @@ public class SampleService {
         return fetch(sample.getAccession(), Optional.empty(), null).get();
     }
 
+    public boolean searchSampleByDomainAndName(final String domain, final String name) {
+        if (mongoSampleRepository.findByDomainAndName(domain, name).size() > 0)
+            return true;
+        else
+            return false;
+    }
+
     public void validateSample(Map sampleAsMap) {
         List<String> errors = sampleValidator.validate(sampleAsMap);
         StringBuilder sb = new StringBuilder();
@@ -130,6 +136,10 @@ public class SampleService {
 
             throw new SampleValidationException(sb.toString());
         }
+    }
+
+    public boolean isExistingAccession(String accession) {
+        return mongoSampleRepository.findOne(accession) != null;
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -175,12 +185,18 @@ public class SampleService {
             log.info("New sample is similar to the old sample, accession: {}", oldSample.getAccession());
         }
 
-        //Keep the create date as existing sample
-        Instant create = oldSample.getCreate() != null ? oldSample.getCreate() : oldSample.getUpdate();
+        //Keep the create date as existing sample -- earlier
+        //13/01/2020 - if the sample has a date, acknowledge it. It can be the actual create date from NCBI, ENA.
         return Sample.Builder.fromSample(sampleToUpdate)
-                .withCreate(create).build();
+                .withCreate(defineCreateDate(sampleToUpdate, oldSample)).build();
     }
 
+    private Instant defineCreateDate(final Sample sampleToUpdate, final Sample oldSample) {
+        return (sampleToUpdate.getDomain().equalsIgnoreCase("self.BiosampleImportNCBI") &&
+                sampleToUpdate.getCreate() != null)
+                ? sampleToUpdate.getCreate()
+                : (oldSample.getCreate() != null ? oldSample.getCreate() : oldSample.getUpdate());
+    }
 
 	/*
 	//this code recursively follows relationships

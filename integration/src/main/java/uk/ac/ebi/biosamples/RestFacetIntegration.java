@@ -9,6 +9,7 @@ import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 
 import java.time.Instant;
 import java.util.Arrays;
@@ -37,20 +38,24 @@ public class RestFacetIntegration extends AbstractIntegration {
 		Sample sampleTest1 = getSampleTest1();
 		Sample enaSampleTest = getEnaSampleTest();
 		Sample aeSampleTest = getArrayExpressSampleTest();
+
 		// put a sample
 		Resource<Sample> resource = client.persistSampleResource(sampleTest1);
+		sampleTest1 = Sample.Builder.fromSample(sampleTest1).withAccession(resource.getContent().getAccession()).build();
 		if (!sampleTest1.equals(resource.getContent())) {
-			throw new RuntimeException("Expected response to equal submission");
+			throw new IntegrationTestFailException("Expected response (" + resource.getContent() + ") to equal submission (" + sampleTest1 + ")", Phase.ONE);
 		}
 
 		resource = client.persistSampleResource(enaSampleTest);
+		enaSampleTest = Sample.Builder.fromSample(enaSampleTest).withAccession(resource.getContent().getAccession()).build();
 		if (!enaSampleTest.equals(resource.getContent())) {
-			throw new RuntimeException("Expected response to equal submission");
+			throw new IntegrationTestFailException("Expected response (" + resource.getContent() + ") to equal submission (" + enaSampleTest + ")", Phase.ONE);
 		}
 
 		resource = client.persistSampleResource(aeSampleTest);
+		aeSampleTest = Sample.Builder.fromSample(aeSampleTest).withAccession(resource.getContent().getAccession()).build();
 		if (!aeSampleTest.equals(resource.getContent())) {
-			throw new RuntimeException("Expected response to equal submission");
+			throw new IntegrationTestFailException("Expected response (" + resource.getContent() + ") to equal submission (" + aeSampleTest + ")", Phase.ONE);
 		}
 	}
 
@@ -127,9 +132,7 @@ public class RestFacetIntegration extends AbstractIntegration {
 	}
 
 	private Sample getSampleTest1() {
-		String name = "Test Sample";
-		String accession = "TESTrestfacet1";
-		String domain = "self.BiosampleIntegrationTest";
+		String name = "RestFacetIntegration_testRestFacet";
 		Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
 		Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
@@ -139,17 +142,14 @@ public class RestFacetIntegration extends AbstractIntegration {
 		//use non alphanumeric characters in type
 		attributes.add(Attribute.build("geographic location (country and/or sea)", "Land of Oz"));
 
-//		return Sample.build(name, accession, domain, release, update, attributes, null, null, null, null, null);
-		return new Sample.Builder(name, accession).withDomain(domain)
+		return new Sample.Builder(name).withDomain(defaultIntegrationSubmissionDomain)
 				.withRelease(release).withUpdate(update)
 				.withAttributes(attributes)
 				.build();
 	}
 
 	private Sample getEnaSampleTest() {
-		String name = "Test ENA reference Sample";
-		String accession = "TestEnaRestFacet";
-		String domain = "self.BiosampleIntegrationTest";
+		String name = "RestFacetIntegration_testEnaRestFacet";
 		Instant update = Instant.parse("2015-03-22T08:30:23.00Z");
 		Instant release = Instant.parse("2015-03-22T08:30:23.00Z");
 
@@ -158,25 +158,21 @@ public class RestFacetIntegration extends AbstractIntegration {
 				new TreeSet<>(Arrays.asList("DUO:0000005", "DUO:0000001","DUO:0000007"))));
 		externalReferences.add(ExternalReference.build("http://www.ebi.ac.uk/arrayexpress/experiments/E-MTAB-09123"));
 
-//		return Sample.build(name, accession, domain, release, update, null, null, externalReferences, null, null, null);
-		return new Sample.Builder(name, accession).withDomain(domain)
+		return new Sample.Builder(name).withDomain(defaultIntegrationSubmissionDomain)
 				.withRelease(release).withUpdate(update)
 				.withExternalReferences(externalReferences)
 				.build();
 	}
 
 	private Sample getArrayExpressSampleTest() {
-		String name = "Test ArrayExpress reference Sample";
-		String accession = "TestArrayExpressRestFacet";
-		String domain = "self.BiosampleIntegrationTest";
+		String name = "RestFacetIntegration_testArrayExpressRestFacet";
 		Instant update = Instant.parse("2015-03-22T08:30:23.00Z");
 		Instant release = Instant.parse("2015-03-22T08:30:23.00Z");
 
 		SortedSet<ExternalReference> externalReferences = new TreeSet<>();
 		externalReferences.add(ExternalReference.build("http://www.ebi.ac.uk/arrayexpress/experiments/E-MTAB-5277"));
 
-//		return Sample.build(name, accession, domain, release, update, null, null, externalReferences, null, null, null);
-		return new Sample.Builder(name, accession).withDomain(domain)
+		return new Sample.Builder(name).withDomain(defaultIntegrationSubmissionDomain)
 				.withRelease(release).withUpdate(update)
 				.withExternalReferences(externalReferences)
 				.build();

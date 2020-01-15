@@ -1,0 +1,53 @@
+<BioSampleSet>
+<BioSample access="public" publication_date="2019-05-30T00:00:00.000" last_update="2019-11-29T13:12:34.104" submission_date="2019-05-30T14:12:04.443"
+           id="11893677" accession="SAMN11893677">
+    <Ids>
+        <Id db="BioSample" is_primary="1">SAMN11893677</Id>
+        <Id db_label="Sample name">RS0007</Id>
+        <Id db="SRA">SRS4847471</Id>   </Ids>
+    <Description>
+        <Title>HuH-7_2</Title>
+        <Organism taxonomy_id="9606" taxonomy_name="Homo sapiens">
+            <OrganismName>Homo sapiens</OrganismName>
+        </Organism>
+    </Description>
+    <Owner>
+        <Name>Research Center for Molecular Medicine of the Austrian Academy of Sciences</Name>
+        <Contacts>
+            <Contact email="sedlyarov@gmail.com">
+                <Name>
+                    <First>Vitaly</First>
+                    <Last>Sedlyarov</Last>
+                </Name>
+            </Contact>
+        </Contacts>
+    </Owner>
+    <Models>
+        <Model>Human</Model>
+    </Models>
+    <Package display_name="Human; version 1.0">Human.1.0</Package>
+    <Attributes>
+        <Attribute attribute_name="isolate" harmonized_name="isolate" display_name="isolate">cell line</Attribute>
+        <Attribute attribute_name="age" harmonized_name="age" display_name="age">57</Attribute>
+        <Attribute attribute_name="biomaterial_provider" harmonized_name="biomaterial_provider" display_name="biomaterial provider">JCRB</Attribute>
+        <Attribute attribute_name="sex" harmonized_name="sex" display_name="sex">male</Attribute>
+        <Attribute attribute_name="tissue" harmonized_name="tissue" display_name="tissue">liver</Attribute>
+        <Attribute attribute_name="cell_line" harmonized_name="cell_line" display_name="cell line">HuH-7</Attribute>
+        <Attribute attribute_name="cell line strain">HuH-7</Attribute>
+        <Attribute attribute_name="cell line replicate">2</Attribute>
+        <Attribute attribute_name="cell line name">HuH-7_2</Attribute>
+        <Attribute attribute_name="cell line category">cancer cell line</Attribute>
+        <Attribute attribute_name="cell line source">JCRB</Attribute>
+        <Attribute attribute_name="cell culture">DMEM;10% FCS; Pen-Strep</Attribute>
+        <Attribute attribute_name="cell line genotype">Wild type (WT)</Attribute>
+        <Attribute attribute_name="license">CC BY 4.0</Attribute>
+        <Attribute attribute_name="cell line additional info">Quality control tested for mycoplasma,STR profiling was performed for all cell lines to confirm identity.</Attribute>
+        <Attribute attribute_name="cell line Cellosaurus ID">CVCL 0336</Attribute>
+        <Attribute attribute_name="disease" harmonized_name="disease" display_name="disease">Hepatocellular carcinoma</Attribute>
+    </Attributes>
+    <Links>
+        <Link type="entrez" target="bioproject" label="PRJNA545487">545487</Link>
+    </Links>
+    <Status status="live" when="2019-05-30T14:12:04.445"/>
+</BioSample>
+</BioSampleSet>

@@ -17,10 +17,10 @@ then
 	#remove any images, in case of out-of-date or corrupt images
 	#docker-compose down --volumes --remove-orphans
 	docker-compose down --volumes --rmi local --remove-orphans
-	mvn -T 2C -P embl-ebi clean package -Dembedmongo.wait
+	mvn -T 2C -P embl-ebi clean package -Dembedmongo.wait -Dtest=!uk.ac.ebi.biosamples.ols -DfailIfNoTests=false
 else
 	docker-compose down --rmi local --remove-orphans
-	mvn -T 2C -P embl-ebi package -Dembedmongo.wait
+	mvn -T 2C -P embl-ebi clean package -Dembedmongo.wait -Dtest=!uk.ac.ebi.biosamples.ols -DfailIfNoTests=false
 fi
 set -e
 
@@ -40,7 +40,7 @@ echo "checking json-schema-validator is up"
 
 
 #configure solr
-curl http://localhost:8983/solr/samples/config -H 'Content-type:application/json' -d'{"set-property" : {"updateHandler.autoCommit.maxTime":5000, "updateHandler.autoCommit.openSearcher":"true", "query.documentCache.size":1024, "query.filterCache.size":1024, "query.filterCache.autowarmCount":128, "query.queryResultCache.size":1024, "query.queryResultCache.autowarmCount":128}}'
+curl http://localhost:8983/solr/samples/config -H 'Content-type:application/json' -d'{"set-property" : {"updateHandler.autoCommit.maxTime":1000, "updateHandler.autoCommit.openSearcher":"true", "updateHandler.autoSoftCommit.maxDocs":1, "query.documentCache.size":1024, "query.filterCache.size":1024, "query.filterCache.autowarmCount":128, "query.queryResultCache.size":1024, "query.queryResultCache.autowarmCount":128}}'
 
 #create an api key for submitting test sampletab documents
 docker-compose run --rm mongo mongo --eval 'db.mongoSampleTabApiKey.insert({"_id" : "fooqwerty", "_class" : "uk.ac.ebi.biosamples.mongo.model.MongoSampleTabApiKey", "userName" : "BioSamples", "publicEmail" : "", "publicUrl" : "", "contactName" : "", "contactEmail" : "", "aapDomain" : "123456789abcdef" });' mongo:27017/biosamples

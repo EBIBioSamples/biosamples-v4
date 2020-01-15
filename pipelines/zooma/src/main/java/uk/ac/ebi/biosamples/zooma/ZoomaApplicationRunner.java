@@ -22,6 +22,7 @@ import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.CurationApplicationService;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.ArgUtils;
+import uk.ac.ebi.biosamples.utils.MailSender;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 
 @Component
@@ -47,8 +48,8 @@ public class ZoomaApplicationRunner implements ApplicationRunner {
 	
 	@Override
 	public void run(ApplicationArguments args) throws Exception {
-		
 		Collection<Filter> filters = ArgUtils.getDateFilters(args);
+		boolean isPassed = true;
 
 		try (AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, 
 				pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax())) {
@@ -71,6 +72,9 @@ public class ZoomaApplicationRunner implements ApplicationRunner {
 			log.info("waiting for futures");
 			// wait for anything to finish
 			ThreadUtils.checkFutures(futures, 0);
+		} catch (final Exception e) {
+			log.error("Pipeline failed to finish successfully", e);
+			isPassed = false;
 		} finally {
 			//now print a list of things that failed
 			if (SampleZoomaCallable.failedQueue.size() > 0) {
@@ -80,7 +84,11 @@ public class ZoomaApplicationRunner implements ApplicationRunner {
 				while (fails.size() < 100 && SampleZoomaCallable.failedQueue.peek() != null) {
 					fails.add(SampleZoomaCallable.failedQueue.poll());
 				}
-				log.info("Failed files ("+SampleZoomaCallable.failedQueue.size()+") "+String.join(" , ", fails));
+
+				final String failures = "Failed files ("+fails.size()+") "+String.join(" , ", fails);
+
+				log.info(failures);
+				MailSender.sendEmail("Zooma", failures, isPassed);
 			}
 		}
 	}

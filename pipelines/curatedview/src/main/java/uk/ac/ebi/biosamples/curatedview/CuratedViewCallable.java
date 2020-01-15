@@ -12,6 +12,7 @@ import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
 
 import java.util.Optional;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class CuratedViewCallable implements Callable<Void> {
     private static final Logger LOG = LoggerFactory.getLogger(CuratedViewCallable.class);
@@ -20,6 +21,7 @@ public class CuratedViewCallable implements Callable<Void> {
     private final MongoSampleRepository mongoSampleRepository;
     private final SampleToMongoSampleConverter sampleToMongoSampleConverter;
     private final BioSamplesClient bioSamplesClient;
+    static final ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<>();
 
     CuratedViewCallable(String accession, MongoSampleRepository mongoSampleRepository,
                         SampleToMongoSampleConverter sampleToMongoSampleConverter,
@@ -44,6 +46,7 @@ public class CuratedViewCallable implements Callable<Void> {
             mongoSampleRepository.insertSampleToCollection(mongoSample, StaticViewWrapper.StaticView.SAMPLES_CURATED);
         } else {
             LOG.warn("Failed to read sample from service, accession: {}", accession);
+            failedQueue.add(accession);
         }
     }
 }

@@ -13,7 +13,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import uk.ac.ebi.biosamples.controller.SampleCurationLinksRestController;
 import uk.ac.ebi.biosamples.controller.SampleRestController;
-import uk.ac.ebi.biosamples.controller.SamplesRestController;
 import uk.ac.ebi.biosamples.model.Sample;
 
 /**

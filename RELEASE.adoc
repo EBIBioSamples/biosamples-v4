@@ -4,6 +4,30 @@
 This pages contains links to release notes for BioSamples for version 4.0.0 and higher. This release represents a comprehensive overhaul and therefore previous release notes are no longer applicable.
 
 [[section]]
+v4.2.2 Release notes
+--------------------
+New features
+------------
+1. Modification of /accessions POST endpoint to improve the pre-accessioning performance. Pre-accession of samples is used by ENA and ENA was using our Sample Tab API’s in the past. Sample tab is going to get deprecated from April 01, 2020 and the new improved /accessions POST endpoint can been used for pre-accessioning.
+2. Improvements in the /accessions GET endpoint, added search filters, pagination and sizing to this endpoint to comply with such requests from NCBI. In this case NCBI was using BioSamples legacy-xml endpoints and before the legacy-xml endpoints gets deprecated the alternate accessions REST endpoint required these improvements so that similar functionality can be provided to NCBI.
+3. RDF release pipeline has been added to BioSamples for continuous RDF release. The frequency of the release can be configured.
+4. Improvement of BioSamples pipeline to report back error statuses and log correct error messages and failure cases.
+5. Below recommendations from ENA presentation to easily identify top level attributes and user provided attributes and to leave out any attribute that doesn’t make sense to them. This comes in effect for all ENA and NCBI samples imported to BioSamples and is related to the topic of ENA Presentation querying BioSamples API’s for samples metadata:
+5.1. to have the tag “attribute” for all user provided attributes .
+5.2. to remove the tag “core” from specific top-level attributes (description as an example).
+6. BioSamples will retain create date of NCBI samples that are being imported. Currently it overrides the create date and replaces it with the date and time when the sample is saved in BioSamples.
+
+
+Bug Fixes
+----------
+1. Bug fix to handle null dates in NCBI samples while being imported to BioSamples.
+
+
+Platform upgrades
+-----------------
+1. BioSamples now runs on Java 11 (Open JDK 11).
+
+[[section]]
 v4.2.1 Release Notes
 ----------------------------
 New features:
@@ -43,7 +67,7 @@ Short description of the changes done are given below:
 Bug fixes:
 -------------
 1.	UI bugfix to display contact role. Earlier it used to show name instead of role.
-2.  Change curation-view pipeline to read samples from MongDB. To crawl all the samples available in BIoSamples, we can’t use biosamples-client get all samples method as it will not return non-indexed samples (eg. suppressed samples)
+2.	Change curation-view pipeline to read samples from MongDB. To crawl all the samples available in BIoSamples, we can’t use biosamples-client get all samples method as it will not return non-indexed samples (eg. suppressed samples)
 
 
 [[section]]
@@ -330,7 +354,7 @@ e.g. "geographic location (country and/or sea)"
 facet, fixed re-use and re-distribution of search URLs. This will be
 expanded in future with additional facet types where appropriate.
 * Support and recommend the use
-of https://developer.mozilla.org/en-US/docs/Web/HTTP/Content_negotiation[content
+of https://developer.mozilla.org/en-US/docs/Web/HTTP/Content_negotiation[content
 negotiation] to accessing multiple formats at the same URIs. In addition
 to the content (HTML vs XML vs JSON) this also supports
 https://developer.mozilla.org/en-US/docs/Web/HTTP/Compression[compression]
@@ -348,8 +372,8 @@ Data content
 ~~~~~~~~~~~~
 
 * Ontology terms Numeric tax IDs (e.g. 9606) and short ontology terms
-(e.g. PATO:0000384) are being replaced with full IRIs (e.g.
-http://purl.obolibrary.org/obo/NCBITaxon_9606 and http://purl.obolibrary.org/obo/PATO_0000384 )
+(e.g. PATO:0000384) are being replaced with full IRIs (e.g.
+http://purl.obolibrary.org/obo/NCBITaxon_9606 and http://purl.obolibrary.org/obo/PATO_0000384 )
 in many places, eventually everywhere.
 * Groups will continue to exist for backwards compatibility purposes.
 However, we are investigating future development to reduce or remove
@@ -358,32 +382,32 @@ external link, or delegating grouping of samples to other EMBL-EBI
 archives such as https://www.ebi.ac.uk/biostudies[BioStudies].
 
 [[jsonbiosamples]]
-JSON `/biosamples`
+JSON `/biosamples`
 ~~~~~~~~~~~~~~~~~~
 
 This is the preferred API for use, and uses the same URIs as the HTML
-pages, and utilising content negotiation to provide a JSON response.
+pages, and utilising content negotiation to provide a JSON response.
 This is designed as
-a https://en.wikipedia.org/wiki/Hypertext_Application_Language[hypermedia
-as the engine of application state (HATEOS) API] and therefore we
+a https://en.wikipedia.org/wiki/Hypertext_Application_Language[hypermedia
+as the engine of application state (HATEOS) API] and therefore we
 recommend users do not use specific URLs but rather follow relationships
 between API endpoints, much like a user would use links between HTML
-pages. It is similar to the `/biosamples/api` JSON format, with a few
+pages. It is similar to the `/biosamples/api` JSON format, with a few
 critical differences:
 
-* added __release__ in full ISO 8601 format including time. The
-backwards-compatible __releaseDate__ exists but should be considered
+* added __release__ in full ISO 8601 format including time. The
+backwards-compatible __releaseDate__ exists but should be considered
 deprecated and will be removed in a future release.
-* added __update__ in full ISO 8601 format including time.
-The backwards-compatible __updateDate__ exists but should be considered
+* added __update__ in full ISO 8601 format including time.
+The backwards-compatible __updateDate__ exists but should be considered
 deprecated and will be removed in a future release.
-* removed __description__ as a separate field, is now available as
-a __characteristic__. 
-* remove **relations** rel link; equivalent information is now embedded
-in sample in __relationships__ and __externalReferences__ lists.
-* remove **sample** rel link; with relations now embedded, this link
+* removed __description__ as a separate field, is now available as
+a __characteristic__. 
+* remove **relations** rel link; equivalent information is now embedded
+in sample in __relationships__ and __externalReferences__ lists.
+* remove **sample** rel link; with relations now embedded, this link
 serves no purpose.
-* added **curationLinks** rel link.
+* added **curationLinks** rel link.
 * ordering may be different.
 * fields are not displayed if empty or null.
 * characteristic names accurately reflect what was submitted and may now
@@ -394,7 +418,7 @@ characters removed.
 * external references directly embedded in the samples and the groups.
 
 [[xmlbiosamplesxml]]
-XML `/biosamples/xml`
+XML `/biosamples/xml`
 ~~~~~~~~~~~~~~~~~~~~~
 
 We are maintaining this for backwards compatibility. Later in 2018 we
@@ -419,7 +443,7 @@ behaviour and lack of usage.
 JSON `/biosamples/api`
 ~~~~~~~~~~~~~~~~~~~~~~
 
-This API should be considered **deprecated** and we will aim to remove
+This API should be considered **deprecated** and we will aim to remove
 it by 2019. Any users of this should move to using the `/biosamples`
 URIs to retrieve JSON representations with an improved schema via
 content negotiation. Further announcements will be made in future for

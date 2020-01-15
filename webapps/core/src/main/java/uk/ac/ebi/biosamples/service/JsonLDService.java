@@ -46,7 +46,7 @@ public class JsonLDService {
         JsonLDSample jsonLDSample = jsonLDDataRecord.getMainEntity();
 
         try {
-            Method method = SampleRestController.class.getMethod("getSampleHal", String.class, String.class, String[].class);
+            Method method = SampleRestController.class.getMethod("getSampleHal", String.class, String.class, String[].class, String.class);
             String sampleUrl = linkTo(method, sample.getAccession()).toUri().toString();
             jsonLDSample.setUrl(sampleUrl);
             jsonLDSample.setId(sampleUrl);

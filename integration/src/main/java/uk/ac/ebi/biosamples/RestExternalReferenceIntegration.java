@@ -3,15 +3,14 @@ package uk.ac.ebi.biosamples;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
+import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.*;
+import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 
 @Component
 @Order(6)
@@ -27,15 +26,20 @@ public class RestExternalReferenceIntegration extends AbstractIntegration {
 	@Override
 	protected void phaseOne() {
 		Sample sample = getSampleTest1();
-		client.persistSample(sample);
+		client.persistSampleResource(sample);
 	}
 
 	@Override
 	protected void phaseTwo() {
 		Sample sample = getSampleTest1();
+		Optional<Sample> optionalSample = fetchUniqueSampleByName(sample.getName());
+		if (optionalSample.isPresent()) {
+			sample = Sample.Builder.fromSample(sample).withAccession(optionalSample.get().getAccession()).build();
+		} else {
+			throw new IntegrationTestFailException("Private sample in name search, sample name: " + sample.getName(), Phase.TWO);
+		}
 
 		testExternalReferences();
-		//testSampleExternalReferences(sample, 10);
 		client.persistCuration(sample.getAccession(),
 				Curation.build(null,  null, null, Arrays.asList(ExternalReference.build("http://www.ebi.ac.uk/ena/ERA123456"))),
 				"self.BiosampleIntegrationTest");
@@ -45,9 +49,8 @@ public class RestExternalReferenceIntegration extends AbstractIntegration {
 	@Override
 	protected void phaseThree() {
 		Sample sample = getSampleTest1();
-		//testSampleExternalReferences(sample, 11);
 		//check there was no side-effects
-		client.fetchSample(sample.getAccession());
+		Optional<Sample> optionalSample = fetchUniqueSampleByName(sample.getName());
 	}
 
 	@Override
@@ -112,9 +115,7 @@ public class RestExternalReferenceIntegration extends AbstractIntegration {
 	}
 
 	private Sample getSampleTest1() {
-		String name = "Test Sample";
-		String accession = "TESTExRef1";
-        String domain = "self.BiosampleIntegrationTest";
+		String name = "RestExternalReferenceIntegration_sample_1";
 		Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
 		Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
@@ -134,7 +135,7 @@ public class RestExternalReferenceIntegration extends AbstractIntegration {
 		externalReferences.add(ExternalReference.build("http://ega-archive.org/datasets/EGAD00001001600",
 				new TreeSet<>(Arrays.asList("DUO:0000005", "DUO:0000014", "DUO:0000019", "DUO:0000026", "DUO:0000028"))));
 
-		return new Sample.Builder(name, accession).withDomain(domain)
+		return new Sample.Builder(name).withDomain(defaultIntegrationSubmissionDomain)
 				.withRelease(release).withUpdate(update)
 				.withAttributes(attributes).withRelationships(relationships).withExternalReferences(externalReferences)
 				.build();

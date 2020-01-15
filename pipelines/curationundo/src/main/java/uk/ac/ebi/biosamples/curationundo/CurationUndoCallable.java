@@ -65,7 +65,6 @@ public class CurationUndoCallable implements Callable<Void> {
                         log.info("Sample: " + accession + "\t" + pre + " > " + post);
                     }
                     bioSamplesClient.deleteCurationLink(cl.getContent());
-                    System.out.print(".");
                 }
             }
         }
