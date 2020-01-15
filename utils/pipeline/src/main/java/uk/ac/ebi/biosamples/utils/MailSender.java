@@ -11,7 +11,7 @@ public class MailSender {
     private static final String BODY_PART_FAIL = " failed execution on ";
     private static final String MAILX = "mailx";
     private static final String SUBJECT = "-s Email from pipeline ";
-    private static final String RECIPIENT = "biosamples-tech@ebi.ac.uk";
+    private static final String RECIPIENT = "biosamples-dev@ebi.ac.uk";
     private static final String BODY_PART_SUCCESS = " pipeline execution successful for ";
     public static final String FAILED_FILES_ARE = " Failed files are: ";
     private static Logger log = LoggerFactory.getLogger("MailSender");
