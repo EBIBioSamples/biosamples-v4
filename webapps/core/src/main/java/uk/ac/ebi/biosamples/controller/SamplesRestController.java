@@ -338,12 +338,11 @@ public class SamplesRestController {
 		sample = bioSamplesAapService.handleSampleDomain(sample);
 
 		//update, create date are system generated fields
-		Instant create = Instant.now();
 		SubmittedViaType submittedVia =
 				sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
 		sample = Sample.Builder.fromSample(sample)
-				.withCreate(create)
-				.withUpdate(create)
+				.withCreate(defineCreateDate(sample))
+				.withUpdate(Instant.now())
 				.withSubmittedVia(submittedVia).build();
 
 		if (!setFullDetails) {
@@ -379,6 +378,12 @@ public class SamplesRestController {
 		return ResponseEntity.created(URI.create(sampleResource.getLink("self").getHref())).body(sampleResource);
 	}
 
+	private Instant defineCreateDate(final Sample sample) {
+		final Instant now = Instant.now();
+
+		return sample.getDomain().equalsIgnoreCase("self.BiosampleImportNCBI") ? (sample.getCreate() != null ? sample.getCreate() : now) : now;
+	}
+
 	@ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "New sample submission should not contain an accession") // 400
 	public static class SampleWithAccessionSumbissionException extends RuntimeException {
 	}
@@ -392,7 +397,5 @@ public class SamplesRestController {
 		    super(validationError);
 			this.validation = validationError;
 		}
-
 	}
-
 }
