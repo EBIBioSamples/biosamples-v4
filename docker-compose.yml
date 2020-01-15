@@ -14,7 +14,7 @@ services:
     command:
     - java
     - -jar
-    - webapps-core-4.2.2-RC2.war
+    - webapps-core-4.2.2-RC3.war
     environment:
     #AAP certificate
     - jwt.certificate=public.explore.der
@@ -69,7 +69,7 @@ services:
     command:
     - java
     - -jar
-    - webapps-sampletab-4.2.2-RC2.war
+    - webapps-sampletab-4.2.2-RC3.war
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - SERVER_SERVLET_CONTEXT-PATH=/biosamples/sampletab
@@ -110,7 +110,7 @@ services:
     command:
     - java
     - -jar
-    - webapps-legacyxml-4.2.2-RC2.war
+    - webapps-legacyxml-4.2.2-RC3.war
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - SERVER_SERVLET_CONTEXT-PATH=/biosamples/xml
@@ -139,7 +139,7 @@ services:
     command:
     - java
     - -jar
-    - webapps-legacyjson-4.2.2-RC2.war
+    - webapps-legacyjson-4.2.2-RC3.war
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - SERVER_SERVLET_CONTEXT-PATH=/biosamples/api
@@ -169,7 +169,7 @@ services:
     command:
     - java
     - -jar
-    - agents-solr-4.2.2-RC2.jar
+    - agents-solr-4.2.2-RC3.jar
     environment:
     - SPRING_RABBITMQ_HOST=rabbitmq
     - SPRING_RABBITMQ_PUBLISHER-CONFIRMS=true
@@ -194,7 +194,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-ena-4.2.2-RC2.jar
+    - pipelines-ena-4.2.2-RC3.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-ena.log
@@ -209,7 +209,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-ncbi-4.2.2-RC2.jar
+    - pipelines-ncbi-4.2.2-RC3.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-ncbi.log
@@ -224,7 +224,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-accession-4.2.2-RC2.jar
+    - pipelines-accession-4.2.2-RC3.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-accession.log
@@ -239,7 +239,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-sampletab-4.2.2-RC2.jar
+    - pipelines-sampletab-4.2.2-RC3.jar
     environment:
     - BIOSAMPLES_SAMPLETAB_URI=http://biosamples-webapps-sampletab:8080/biosamples/sampletab/v4
     - LOGGING_FILE=/logs/pipelines-sampletab.log
@@ -254,7 +254,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-copydown-4.2.2-RC2.jar
+    - pipelines-copydown-4.2.2-RC3.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-copydown.log
@@ -269,7 +269,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-curation-4.2.2-RC2.jar
+    - pipelines-curation-4.2.2-RC3.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-curation.log
@@ -286,7 +286,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-zooma-4.2.2-RC2.jar
+    - pipelines-zooma-4.2.2-RC3.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-zooma.log
@@ -303,7 +303,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-reindex-4.2.2-RC2.jar
+    - pipelines-reindex-4.2.2-RC3.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - LOGGING_FILE=/logs/pipelines-reindex.log
@@ -321,7 +321,7 @@ services:
     command:
     - java
     - -jar
-    - pipelines-export-4.2.2-RC2.jar
+    - pipelines-export-4.2.2-RC3.jar
     - --gzip
     - /export/export.json.gzip
     environment:
@@ -341,7 +341,7 @@ services:
     command:
     - java
     - -jar
-    - integration-4.2.2-RC2.jar
+    - integration-4.2.2-RC3.jar
     environment:
     - BIOSAMPLES_CLIENT_URI=http://biosamples-webapps-core:8080/biosamples
     - BIOSAMPLES_SUBMISSIONURI=http://biosamples-webapps-sampletab:8080/biosamples/sampletab
