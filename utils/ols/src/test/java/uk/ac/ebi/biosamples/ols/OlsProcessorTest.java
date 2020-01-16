@@ -107,13 +107,12 @@ public class OlsProcessorTest {
     }
 
     @Test
-    @Ignore
-    public void test_OlsProcessor_returns_correct_value_for_example_terms() throws IOException {
+    /*public void test_OlsProcessor_returns_correct_value_for_example_terms() throws IOException {
         for (Map.Entry<String, String> entry : expectedValues.entrySet()) {
             Optional<String> result = performQuery(entry.getKey());
             assertTrue(result.isPresent());
             assertEquals(entry.getValue(), result.get());
         }
 
-    }
+    }*/
 }
