@@ -106,8 +106,8 @@ public class OlsProcessorTest {
         assertEquals("http://purl.obolibrary.org/obo/FBcv_0003016", result.get());
     }
 
-    @Test
-    /*public void test_OlsProcessor_returns_correct_value_for_example_terms() throws IOException {
+    /*@Test
+    public void test_OlsProcessor_returns_correct_value_for_example_terms() throws IOException {
         for (Map.Entry<String, String> entry : expectedValues.entrySet()) {
             Optional<String> result = performQuery(entry.getKey());
             assertTrue(result.isPresent());
