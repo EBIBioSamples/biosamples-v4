@@ -1,5 +1,5 @@
 #!/bin/bash
 set -e
 
-docker-compose run --rm --service-ports biosamples-agents-solr java -jar agents-solr-4.2.2-RC9.jar
+docker-compose run --rm --service-ports biosamples-agents-solr java -jar agents-solr-4.2.2-RC10.jar
 echo "Successfully runned agents"

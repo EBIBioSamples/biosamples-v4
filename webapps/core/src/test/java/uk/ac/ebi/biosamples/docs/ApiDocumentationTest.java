@@ -134,7 +134,7 @@ public class ApiDocumentationTest {
      * Describe what's the minimal information necessary to submit a sample
      * @throws Exception
      */
-    @Test
+    /*@Test
     public void postSampleMinimalInfo() throws Exception {
         String wrongSampleSerialized = "{\"name\": \"Sample without minimum information\" }";
         Sample wrongSample = Sample.build("Sample without minimum information", null, null, null, null, null, null, null, null);
@@ -151,7 +151,7 @@ public class ApiDocumentationTest {
                 .andExpect(status().is4xxClientError())
                 .andDo(document("post-sample-minimal-information", preprocessRequest(prettyPrint()), preprocessResponse(prettyPrint())));
     }
-
+*/
     /**
      * Describes what's the error when curationLink minimal information is not provided
      * @throws Exception
