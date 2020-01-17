@@ -381,7 +381,9 @@ public class SamplesRestController {
 	private Instant defineCreateDate(final Sample sample) {
 		final Instant now = Instant.now();
 
-		return sample.getDomain().equalsIgnoreCase("self.BiosampleImportNCBI") ? (sample.getCreate() != null ? sample.getCreate() : now) : now;
+		return (sample.getDomain() != null && sample.getDomain().equalsIgnoreCase("self.BiosampleImportNCBI"))
+				? (sample.getCreate() != null ? sample.getCreate() : now)
+				: now;
 	}
 
 	@ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "New sample submission should not contain an accession") // 400
