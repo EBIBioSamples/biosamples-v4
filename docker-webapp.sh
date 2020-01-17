@@ -17,10 +17,10 @@ then
 	#remove any images, in case of out-of-date or corrupt images
 	#docker-compose down --volumes --remove-orphans
 	docker-compose down --volumes --rmi local --remove-orphans
-	mvn -T 2C -P embl-ebi clean package -Dembedmongo.wait -Dtest=!uk.ac.ebi.biosamples.ols -DfailIfNoTests=false
+	mvn -T 2C -P embl-ebi clean package -Dembedmongo.wait
 else
 	docker-compose down --rmi local --remove-orphans
-	mvn -T 2C -P embl-ebi clean package -Dembedmongo.wait -Dtest=!uk.ac.ebi.biosamples.ols -DfailIfNoTests=false
+	mvn -T 2C -P embl-ebi clean package -Dembedmongo.wait
 fi
 set -e
 
