@@ -88,7 +88,7 @@ public class CurationApplicationRunner implements ApplicationRunner {
                     fails.add(failedQueue.poll());
                 }
 
-                final String failures = "Failed files (" + failedQueue.size() + ") " + String.join(" , ", fails);
+                final String failures = "Failed files (" + fails.size() + ") " + String.join(" , ", fails);
                 log.info(failures);
                 MailSender.sendEmail("Curation", failures, isPassed);
             }
