@@ -23,6 +23,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
@@ -89,7 +90,8 @@ public class CuramiApplicationRunner implements ApplicationRunner {
             LOG.info("Total curation objects added {}", curationCountCallback.getTotalCount());
             LOG.info("Pipeline finished at {}", endTime);
             LOG.info("Pipeline total running time {} seconds", Duration.between(startTime, endTime).getSeconds());
-            MailSender.sendEmail("Curami", null, isPassed);
+
+            MailSender.sendEmail("Curami", handleFailedSamples(), isPassed);
         }
     }
 
@@ -134,6 +136,22 @@ public class CuramiApplicationRunner implements ApplicationRunner {
         }
 
         return curationRulesFile;
+    }
+
+    private String handleFailedSamples() {
+        final ConcurrentLinkedQueue<String> failedQueue = SampleCuramiCallable.failedQueue;
+        String failures = null;
+        if (!failedQueue.isEmpty()) {
+            List<String> fails = new LinkedList<>();
+            while (failedQueue.peek() != null) {
+                fails.add(failedQueue.poll());
+            }
+            failures = "Failed files (" + failedQueue.size() + ") " + String.join(" , ", fails);
+            LOG.warn(failures);
+        } else {
+            LOG.info("Pipeline completed without any failures");
+        }
+        return failures;
     }
 
     public class CurationCountCallback implements ThreadUtils.Callback<Integer> {
