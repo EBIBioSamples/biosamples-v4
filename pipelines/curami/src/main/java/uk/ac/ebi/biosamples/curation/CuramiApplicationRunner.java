@@ -146,7 +146,7 @@ public class CuramiApplicationRunner implements ApplicationRunner {
             while (failedQueue.peek() != null) {
                 fails.add(failedQueue.poll());
             }
-            failures = "Failed files (" + failedQueue.size() + ") " + String.join(" , ", fails);
+            failures = "Failed files (" + fails.size() + ") " + String.join(" , ", fails);
             LOG.warn(failures);
         } else {
             LOG.info("Pipeline completed without any failures");
