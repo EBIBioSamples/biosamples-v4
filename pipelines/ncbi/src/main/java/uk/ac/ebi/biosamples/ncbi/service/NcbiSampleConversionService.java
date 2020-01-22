@@ -68,7 +68,6 @@ public class NcbiSampleConversionService {
 	private static final String NCBI_TITLE = TITLE;
 	private static final String NAMESPACE_TAG = "Namespace:";
 	private static final String SAMPLE_ATTRIBUTE = "attribute";
-	private static final String SECONDARY_ID_JSON = "Secondary Id";
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 
@@ -106,8 +105,6 @@ public class NcbiSampleConversionService {
 				// NCBI/DDBJ samples, in sync with ENA samples
 				attrs.add(Attribute.build(SRA_ACCESSION, idElem.getTextTrim()));
 				attrs.add(Attribute.build(INSDC_SECONDARY_ACCESSION, idElem.getTextTrim()));
-				attrs.add(Attribute.build(SECONDARY_ID_JSON, idElem.getTextTrim(), NAMESPACE_TAG + attributeValueIdElementDb, Collections.emptyList(),
-						null));
 			} else if (GENBANK.equalsIgnoreCase(attributeValueIdElementDb)) {
 				attrs.add(Attribute.build(COMMON_NAME, idElem.getTextTrim()));
 			} else if (SAMPLE_NAME.equals(idElem.attributeValue(DB_LABEL))) {
