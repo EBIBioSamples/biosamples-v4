@@ -38,5 +38,6 @@
 		<module>curami</module>
         <module>curatedview</module>
 		<module>bioschemas-rdf-export</module>
+		<module>ena-amr</module>
     </modules>
 </project>
