@@ -200,11 +200,13 @@ public class NcbiSampleConversionService {
 			 * log.warn("Truncating attribute "+key+" for length on "+accession); value =
 			 * value.substring(0, 252)+"..."; }
 			 */
-			if (key.equalsIgnoreCase(ORGANISM_LOWER_CASE) && hasOrganismInDescription) {
+			// Dont ignore organism in attributes - ENA Presentation (27.01.2020)
+
+			/*if (key.equalsIgnoreCase(ORGANISM_LOWER_CASE) && hasOrganismInDescription) {
 				// Don't add a new organism attribute as it has already been added from the
 				// description
 				continue;
-			}
+			}*/
 
 			if (key.equalsIgnoreCase(DESCRIPTION)) {
 				if (value != null) {
