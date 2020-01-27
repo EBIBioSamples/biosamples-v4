@@ -55,8 +55,8 @@ public class SampleCuramiCallable implements Callable<Integer> {
             //values to curation endpoint. Curation endpoint translate empty values as null values and throw an exception.
             if (curationRules.containsKey(a.getType()) && !a.getValue().isEmpty()) {
                 Curation curation = Curation.build(
-                        Attribute.build(a.getType(), a.getValue(), null, a.getIri(), a.getUnit()),
-                        Attribute.build(curationRules.get(a.getType()), a.getValue(), null, a.getIri(), a.getUnit()));
+                        Attribute.build(a.getType(), a.getValue(), a.getTag(), a.getIri(), a.getUnit()),
+                        Attribute.build(curationRules.get(a.getType()), a.getValue(), a.getTag(), a.getIri(), a.getUnit()));
                 LOG.info("New curation found {}", curation);
                 bioSamplesClient.persistCuration(sample.getAccession(), curation, domain);
                 curations.add(curation);
