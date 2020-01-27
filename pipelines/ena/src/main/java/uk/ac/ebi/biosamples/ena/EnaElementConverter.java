@@ -211,7 +211,7 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 				// BSD-1744 - Deal with multiple descriptions in ENA XML
 				if (tag != null && tag.equalsIgnoreCase(ENA_DESCRIPTION)) {
 					if (value != null) {
-						attributes.add(Attribute.build(ENA_DESCRIPTION, value, TAG_SAMPLE_ATTRIBUTE, Collections.emptyList(), null));
+						attributes.add(Attribute.build(tag, value, TAG_SAMPLE_ATTRIBUTE, Collections.emptyList(), null));
 					}
 					continue;
 				}
@@ -219,7 +219,7 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 				// BSD-1813 - Deal with multiple titles in ENA XML
 				if (tag != null && tag.equalsIgnoreCase(ENA_TITLE)) {
 					if (value != null) {
-						attributes.add(Attribute.build(ENA_TITLE, value, TAG_SAMPLE_ATTRIBUTE, Collections.emptyList(), null));
+						attributes.add(Attribute.build(tag, value, TAG_SAMPLE_ATTRIBUTE, Collections.emptyList(), null));
 					}
 					continue;
 				}
