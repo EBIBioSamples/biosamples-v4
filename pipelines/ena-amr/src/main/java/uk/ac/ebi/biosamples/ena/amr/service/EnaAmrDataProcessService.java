@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class EnaAmrDataProcessService {
@@ -50,5 +51,9 @@ public class EnaAmrDataProcessService {
 
     private String removeBioSampleId(String line) {
         return line.substring(line.indexOf('\t'), line.length());
+    }
+
+    public List<String> processAmrLines(BufferedReader bufferedReader) {
+        return bufferedReader.lines().skip(1).map(line -> removeBioSampleId(line)).collect(Collectors.toList());
     }
 }
