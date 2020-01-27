@@ -42,7 +42,7 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 	private static final String ENA_BROKER_NAME = "broker name";
 	private static final String INSDC_CENTER_NAME = "INSDC center name";
 	private static final String INSDC_CENTER_ALIAS = "INSDC center alias";
-	private static final String ENA_TITLE = "Title";
+	private static final String ENA_TITLE = "title";
 	private static final String ENA_DESCRIPTION = "description";
 	private static final String SAMPLE = "SAMPLE";
 	private static final String IDENTIFIERS = "IDENTIFIERS";
@@ -70,6 +70,7 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 		final SortedSet<Attribute> attributes = new TreeSet<>();
 		final SortedSet<Relationship> relationships = new TreeSet<>();
 		final SortedSet<ExternalReference> externalReferences = new TreeSet<>();
+		final Attribute organismAttribute;
 		String name;
 		String accession = null;
 
@@ -179,7 +180,9 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 			organismName = XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, SCIENTIFIC_NAME).text();
 		}
 		// ideally this should be lowercase, but backwards compatibilty...
-		attributes.add(Attribute.build(ORGANISM, organismName, organismUri, null));
+		organismAttribute = Attribute.build(ORGANISM, organismName, organismUri, null);
+
+		attributes.add(organismAttribute);
 
 		if (XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, COMMON_NAME).exists()) {
 			final String commonName = XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, COMMON_NAME).text();
@@ -220,6 +223,15 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 				if (tag != null && tag.equalsIgnoreCase(ENA_TITLE)) {
 					if (value != null) {
 						attributes.add(Attribute.build(tag, value, TAG_SAMPLE_ATTRIBUTE, Collections.emptyList(), null));
+					}
+					continue;
+				}
+
+				if ((tag != null && tag.equalsIgnoreCase(ORGANISM)) && value != null) {
+					if (tag.equals(organismAttribute.getType()) && value.equalsIgnoreCase(organismAttribute.getValue())) {
+						attributes.add(Attribute.build(organismAttribute.getType(), organismAttribute.getValue(), TAG_SAMPLE_ATTRIBUTE, organismAttribute.getIri(), organismAttribute.getUnit()));
+					} else {
+						attributes.add(Attribute.build(ORGANISM, value, TAG_SAMPLE_ATTRIBUTE, organismAttribute.getIri(), null));
 					}
 					continue;
 				}

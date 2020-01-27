@@ -166,10 +166,13 @@ public class NcbiBaseConverterTests {
 		// 6 user provided attributes at this moment so its hardcoded in the test
 		assertTrue(attrWithTag.size() == 6);
 
-		List<Attribute> expectedAttributes = Stream.of(Attribute.build("isolation source", "Alseis blackiana roots"),
-				Attribute.build("collection date", "Sep-2012"), Attribute.build("geographic location", "Panama:Gigante_peninsula", "attribute", Collections.emptyList(), null),
-				Attribute.build("latitude and longitude", "9.110057 N 79.8434 W"), Attribute.build("Fert_treat", "unfertilized"),
-				Attribute.build("plot", "GF_26")).collect(Collectors.toList());
+		List<Attribute> expectedAttributes = Stream.of(Attribute.build("isolation source", "Alseis blackiana roots", "attribute", Collections.emptyList(), null),
+				Attribute.build("collection date", "Sep-2012", "attribute", Collections.emptyList(), null),
+				Attribute.build("geographic location", "Panama:Gigante_peninsula", "attribute", Collections.emptyList(), null),
+				Attribute.build("latitude and longitude", "9.110057 N 79.8434 W", "attribute", Collections.emptyList(), null),
+				Attribute.build("Fert_treat", "unfertilized", "attribute", Collections.emptyList(), null),
+				Attribute.build("plot", "GF_26", "attribute", Collections.emptyList(), null))
+				.collect(Collectors.toList());
 		Optional<Attribute> attributesNotMatching = expectedAttributes.stream().filter(attr -> !sampleAttributes.contains(attr)).findAny();
 
 		assertTrue(!attributesNotMatching.isPresent());
