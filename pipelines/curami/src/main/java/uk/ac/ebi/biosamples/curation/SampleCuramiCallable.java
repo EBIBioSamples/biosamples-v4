@@ -60,7 +60,6 @@ public class SampleCuramiCallable implements Callable<Integer> {
                 bioSamplesClient.persistCuration(sample.getAccession(), curation, domain);
 
                 LOG.info("New curation found {}", curation);
-                bioSamplesClient.persistCuration(sample.getAccession(), curation, domain);
                 curations.add(curation);
             }
         }
