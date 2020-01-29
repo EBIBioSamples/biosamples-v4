@@ -74,7 +74,7 @@ public class AmrRunner implements ApplicationRunner {
             if (sample.isPresent()) {
                 List<String> amrLines = enaAmrDataProcessService.processAmrLines(bufferedReader);
                 System.out.println(amrLines.size());
-                enaAmrDataProcessService.processAmrRows(bufferedReader, accession, sample.get().getContent(), bioSamplesClient);
+                enaAmrDataProcessService.processAmrRows(amrLines, accession, sample.get().getContent(), bioSamplesClient);
             } else {
                 System.out.println(accession + " doesn't exist");
             }

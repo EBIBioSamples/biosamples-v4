@@ -20,16 +20,15 @@ import java.util.stream.Collectors;
 
 @Service
 public class EnaAmrDataProcessService {
-    public void processAmrRows(BufferedReader reader, String accession, Sample sample, BioSamplesClient client) {
+    public void processAmrRows(List<String> lines, String accession, Sample sample, BioSamplesClient client) {
         Set<AbstractData> structuredData = new HashSet<>();
         AMRTable.Builder amrTableBuilder = new AMRTable.Builder("test");
-        List<AMREntry> amrEntryList = new ArrayList<>();
         String[] dilutionMethods = new String[]{"Broth dilution", "Microbroth dilution", "Agar dilution"};
         String[] diffusionMethods = new String[]{"Disc-diffusion", "Neo-sensitabs", "Etest"};
 
         List<AMREntry> listOfEntries = new ArrayList<>();
 
-        reader.lines().skip(1).forEach(line -> {
+        lines.forEach(line -> {
             //line = removeBioSampleId(line);
             CsvMapper mapper = new CsvMapper();
             CsvSchema schema = mapper.schemaFor(AMREntry.class).withColumnSeparator('\t');
