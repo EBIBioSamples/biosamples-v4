@@ -4,7 +4,7 @@ public class AccessionFtpUrlPair {
     String accession;
     String ftpUrl;
 
-    public AccessionFtpUrlPair(String accession, String ftpUrl) {
+    public AccessionFtpUrlPair(final String accession, final String ftpUrl) {
         this.accession = accession;
         this.ftpUrl = ftpUrl;
     }
@@ -13,11 +13,11 @@ public class AccessionFtpUrlPair {
 
     }
 
-    public void setAccession(String accession) {
+    public void setAccession(final String accession) {
         this.accession = accession;
     }
 
-    public void setFtpUrl(String ftpUrl) {
+    public void setFtpUrl(final String ftpUrl) {
         this.ftpUrl = ftpUrl;
     }
 
