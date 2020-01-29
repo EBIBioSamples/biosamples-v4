@@ -16,9 +16,7 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 
 import uk.ac.ebi.biosamples.model.Attribute;
-
 /*
-
 "characteristics": {
     "material": [
       {
@@ -34,16 +32,12 @@ import uk.ac.ebi.biosamples.model.Attribute;
         "unit": "YYYY-MM"
       }
     ],
-
  */
 public class CharacteristicDeserializer extends StdDeserializer<SortedSet> {
-
 	private Logger log = LoggerFactory.getLogger(this.getClass());
-
 	public CharacteristicDeserializer(){
 		this(SortedSet.class);
 	}
-
 	public CharacteristicDeserializer(Class<SortedSet> t) {
 		super(t);
 	}
@@ -51,9 +45,9 @@ public class CharacteristicDeserializer extends StdDeserializer<SortedSet> {
 	@Override
 	public SortedSet deserialize(JsonParser p, DeserializationContext ctxt)
 			throws IOException, JsonProcessingException {
-		
 		SortedSet<Attribute> attributes = new TreeSet<>();
 		Map<String, List<LegacyAttribute>> characteristics = p.readValueAs(new TypeReference<Map<String, List<LegacyAttribute>>>(){});
+
 		for (String type : characteristics.keySet()) {
 			for (LegacyAttribute legacy : characteristics.get(type)) {	
 				attributes.add(Attribute.build(type, legacy.text, legacy.tag, legacy.ontologyTerms, legacy.unit));
@@ -71,13 +65,9 @@ public class CharacteristicDeserializer extends StdDeserializer<SortedSet> {
 	 *
 	 */
 	private static class LegacyAttribute {
-		
 		public String text;
 		public List<String> ontologyTerms;
 		public String tag;
 		public String unit;
- 		
-		
 	}
-	
 }

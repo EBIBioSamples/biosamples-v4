@@ -45,6 +45,11 @@
             <artifactId>models-structured</artifactId>
             <version>4.2.3-SNAPSHOT</version>
         </dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-collections4</artifactId>
+			<version>4.1</version>
+		</dependency>
     </dependencies>
 
 	<!-- lock transitive dependency version -->

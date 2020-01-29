@@ -24,7 +24,7 @@ import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 public class EnaElementConverter implements Converter<Element, Sample> {
 	private static final String SECONDARY_ID = "SECONDARY_ID";
 	private static final String COMMON_NAME = "COMMON_NAME";
-	private static final String ORGANISM = "Organism";
+	private static final String ORGANISM = "organism";
 	private static final String TAG_SAMPLE_ATTRIBUTE = "attribute";
 	// Fields required by ENA content - some are for JSON building and some for
 	// equality checks with ENA XML
@@ -213,26 +213,13 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 
 				// BSD-1744 - Deal with multiple descriptions in ENA XML
 				if (tag != null && tag.equalsIgnoreCase(ENA_DESCRIPTION)) {
-					if (value != null) {
-						attributes.add(Attribute.build(tag, value, TAG_SAMPLE_ATTRIBUTE, Collections.emptyList(), null));
-					}
+					attributes.add(Attribute.build(tag, Objects.requireNonNullElse(value, ""), TAG_SAMPLE_ATTRIBUTE, Collections.emptyList(), null));
 					continue;
 				}
 
 				// BSD-1813 - Deal with multiple titles in ENA XML
 				if (tag != null && tag.equalsIgnoreCase(ENA_TITLE)) {
-					if (value != null) {
-						attributes.add(Attribute.build(tag, value, TAG_SAMPLE_ATTRIBUTE, Collections.emptyList(), null));
-					}
-					continue;
-				}
-
-				if ((tag != null && tag.equalsIgnoreCase(ORGANISM)) && value != null) {
-					if (tag.equals(organismAttribute.getType()) && value.equalsIgnoreCase(organismAttribute.getValue())) {
-						attributes.add(Attribute.build(organismAttribute.getType(), organismAttribute.getValue(), TAG_SAMPLE_ATTRIBUTE, organismAttribute.getIri(), organismAttribute.getUnit()));
-					} else {
-						attributes.add(Attribute.build(ORGANISM, value, TAG_SAMPLE_ATTRIBUTE, organismAttribute.getIri(), null));
-					}
+					attributes.add(Attribute.build(tag, Objects.requireNonNullElse(value, ""), TAG_SAMPLE_ATTRIBUTE, Collections.emptyList(), null));
 					continue;
 				}
 
