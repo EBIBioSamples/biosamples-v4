@@ -59,7 +59,7 @@ public class EnaAmrDataProcessService {
     }
 
     private String dealWithExtraTabs(String line) {
-        while (line.endsWith("\t")) {
+        while (line.endsWith(AmrRunner.TAB)) {
             line = line.substring(0, line.length() - 1);
         }
 

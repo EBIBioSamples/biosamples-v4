@@ -33,6 +33,7 @@ import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -355,18 +356,17 @@ public class SamplesRestController {
 		}
 
 			//TODO reanable the validation once the AMR schema is defined and we have the actual validator in place
-//		if (!sample.getData().isEmpty()) {
-//			Optional<ResponseEntity<String>> optionalInvalidResponse = sample.getData()
-//					.parallelStream()
-//					.map(abstractData -> schemaValidatorService.validate(abstractData.getStructuredData(), abstractData.getSchema()))
-//                    .filter(response -> !response.getBody().equalsIgnoreCase("[]"))
-//                    .findAny();
-//			if (optionalInvalidResponse.isPresent()) {
-//				throw new SampleWithInvalidStructuredData(optionalInvalidResponse.get().getBody());
-//			}
-//
-//		}
+		if (!sample.getData().isEmpty()) {
+			Optional<ResponseEntity<String>> optionalInvalidResponse = sample.getData()
+					.parallelStream()
+					.map(abstractData -> schemaValidatorService.validate(abstractData.getStructuredData(), abstractData.getSchema()))
+                    .filter(response -> !response.getBody().equalsIgnoreCase("[]"))
+                    .findAny();
+			if (optionalInvalidResponse.isPresent()) {
+				throw new SampleWithInvalidStructuredData(optionalInvalidResponse.get().getBody());
+			}
 
+		}
 
 		sample = sampleService.store(sample);
 

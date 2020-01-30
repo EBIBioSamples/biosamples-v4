@@ -28,11 +28,12 @@ public class AmrRunner implements ApplicationRunner {
     private static final String FTP = "ftp";
     private static final String MD_5 = "md5";
     private static final String HTTP = "http://";
-    public static final String TAB = "\t";
     private static final String antibiogram = "\"AMR_ANTIBIOGRAM\"";
     private static final String URL = "https://www.ebi.ac.uk/ena/portal/api/search?result=analysis&query=analysis_type=" + antibiogram + "&dataPortal=pathogen&dccDataOnly=false&fields=analysis_accession,country,region,scientific_name,location,sample_accession,tax_id,submitted_ftp,first_public,last_updated&sortFields=scientific_name,country&limit=0";
     private final static Logger log = LoggerFactory.getLogger(AmrRunner.class);
     private final static Map<String, Future<Void>> futures = new LinkedHashMap<>();
+
+    public static final String TAB = "\t";
 
     @Autowired
     EnaAmrDataProcessService enaAmrDataProcessService;
