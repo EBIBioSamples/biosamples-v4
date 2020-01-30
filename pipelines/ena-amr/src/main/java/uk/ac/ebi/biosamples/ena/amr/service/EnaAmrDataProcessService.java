@@ -51,10 +51,18 @@ public class EnaAmrDataProcessService {
     }
 
     private String removeBioSampleId(String line) {
-        return line.substring(line.indexOf(AmrRunner.TAB));
+        return line.substring(line.indexOf(AmrRunner.TAB) + 1);
     }
 
     public List<String> processAmrLines(BufferedReader bufferedReader) {
-        return bufferedReader.lines().skip(1).map(this::removeBioSampleId).collect(Collectors.toList());
+        return bufferedReader.lines().skip(1).map(this::removeBioSampleId).map(this::dealWithExtraTabs).collect(Collectors.toList());
+    }
+
+    private String dealWithExtraTabs(String line) {
+        while (line.endsWith("\t")) {
+            line = line.substring(0, line.length() - 1);
+        }
+
+        return line;
     }
 }
