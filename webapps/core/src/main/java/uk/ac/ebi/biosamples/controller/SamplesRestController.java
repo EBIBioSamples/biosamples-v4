@@ -354,19 +354,17 @@ public class SamplesRestController {
 		    sample = Sample.Builder.fromSample(sample).withNoData().build();
 		}
 
-			//TODO reanable the validation once the AMR schema is defined and we have the actual validator in place
-//		if (!sample.getData().isEmpty()) {
-//			Optional<ResponseEntity<String>> optionalInvalidResponse = sample.getData()
-//					.parallelStream()
-//					.map(abstractData -> schemaValidatorService.validate(abstractData.getStructuredData(), abstractData.getSchema()))
-//                    .filter(response -> !response.getBody().equalsIgnoreCase("[]"))
-//                    .findAny();
-//			if (optionalInvalidResponse.isPresent()) {
-//				throw new SampleWithInvalidStructuredData(optionalInvalidResponse.get().getBody());
-//			}
-//
-//		}
-
+		/*	//TODO reanable the validation once the AMR schema is defined and we have the actual validator in place
+		if (!sample.getData().isEmpty()) {
+			Optional<ResponseEntity<String>> optionalInvalidResponse = sample.getData()
+					.parallelStream()
+					.map(abstractData -> schemaValidatorService.validate(abstractData.getStructuredData(), abstractData.getSchema()))
+                    .filter(response -> !response.getBody().equalsIgnoreCase("[]"))
+                    .findAny();
+			if (optionalInvalidResponse.isPresent()) {
+				throw new SampleWithInvalidStructuredData(optionalInvalidResponse.get().getBody());
+			}
+		}*/
 
 		sample = sampleService.store(sample);
 
