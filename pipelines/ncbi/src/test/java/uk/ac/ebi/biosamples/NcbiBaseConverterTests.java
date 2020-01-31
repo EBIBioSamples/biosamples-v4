@@ -105,7 +105,7 @@ public class NcbiBaseConverterTests {
 	@Test
 	public void it_extracts_description_text_and_tag() {
 		Sample sampleToTest = this.conversionService.convertNcbiXmlElementToSample(this.testNcbiBioSamples);
-		Optional<Attribute> expectedAttributeType = sampleToTest.getAttributes().stream().filter(attr -> attr.getType().equals("Description"))
+		Optional<Attribute> expectedAttributeType = sampleToTest.getAttributes().stream().filter(attr -> attr.getType().equals("description"))
 				.findFirst();
 		assertTrue(expectedAttributeType.isPresent());
 
@@ -135,7 +135,7 @@ public class NcbiBaseConverterTests {
 	@Test
 	public void it_extracts_organism_attribute() {
 		Sample sampleToTest = this.conversionService.convertNcbiXmlElementToSample(this.testNcbiBioSamples);
-		Optional<Attribute> expectedAttribute = sampleToTest.getAttributes().stream().filter(attr -> attr.getType().equals("Organism")).findFirst();
+		Optional<Attribute> expectedAttribute = sampleToTest.getAttributes().stream().filter(attr -> attr.getType().equals("organism")).findFirst();
 
 		assertTrue(expectedAttribute.isPresent());
 
@@ -147,7 +147,7 @@ public class NcbiBaseConverterTests {
 	@Test
 	public void it_extracts_description_title() {
 		Sample sampleToTest = this.conversionService.convertNcbiXmlElementToSample(this.testNcbiBioSamples);
-		Optional<Attribute> expectedAttribute = sampleToTest.getAttributes().stream().filter(attr -> attr.getType().equals("Title")).findFirst();
+		Optional<Attribute> expectedAttribute = sampleToTest.getAttributes().stream().filter(attr -> attr.getType().equals("title")).findFirst();
 
 		assertTrue(expectedAttribute.isPresent());
 

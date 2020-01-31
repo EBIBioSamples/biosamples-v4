@@ -65,8 +65,8 @@ public class NcbiElementCallableTest {
                 .filter(attr -> attr.getType().equalsIgnoreCase("organism"))
                 .collect(Collectors.toList());
         assertThat(organisms).hasSize(2);
-        assertThat(organisms.get(0).getValue()).isEqualTo("Oryza sativa Japonica Group");
-        assertThat(organisms.get(1).getValue()).isEqualTo("Oryza sativa");
 
+        assertThat(organisms.stream().anyMatch(organism -> organism.getValue().equals("Oryza sativa Japonica Group")));
+        assertThat(organisms.stream().anyMatch(organism -> organism.getValue().equals("Oryza sativa")));
     }
 }
