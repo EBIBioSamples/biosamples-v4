@@ -355,7 +355,7 @@ public class SamplesRestController {
 		    sample = Sample.Builder.fromSample(sample).withNoData().build();
 		}
 
-			//TODO reanable the validation once the AMR schema is defined and we have the actual validator in place
+		/*	//TODO reanable the validation once the AMR schema is defined and we have the actual validator in place
 		if (!sample.getData().isEmpty()) {
 			Optional<ResponseEntity<String>> optionalInvalidResponse = sample.getData()
 					.parallelStream()
@@ -365,8 +365,7 @@ public class SamplesRestController {
 			if (optionalInvalidResponse.isPresent()) {
 				throw new SampleWithInvalidStructuredData(optionalInvalidResponse.get().getBody());
 			}
-
-		}
+		}*/
 
 		sample = sampleService.store(sample);
 
