@@ -145,7 +145,7 @@
             "SIR",
             "WRG"
           ]
-        },
+        }
       },
       "required": [
         "antibiotic",

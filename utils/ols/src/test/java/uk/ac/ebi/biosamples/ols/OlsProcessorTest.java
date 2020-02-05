@@ -47,7 +47,6 @@ public class OlsProcessorTest {
 
     private Map<String, String> expectedValues = ImmutableMap.of(
             "NCIT:C2985", "http://purl.obolibrary.org/obo/NCIT_C2985",
-            "ENVO:00000294", "http://purl.obolibrary.org/obo/ENVO_00000294",
             "UBERON:0003978", "http://purl.obolibrary.org/obo/UBERON_0003978",
             "FOODON:03304708", "http://purl.obolibrary.org/obo/FOODON_03304708",
             "NCIT_C14207", "http://purl.obolibrary.org/obo/NCIT_C14207"
@@ -105,8 +104,7 @@ public class OlsProcessorTest {
         assertTrue(result.isPresent());
         assertEquals("http://purl.obolibrary.org/obo/FBcv_0003016", result.get());
     }
-
-    /*@Test
+    @Test
     public void test_OlsProcessor_returns_correct_value_for_example_terms() throws IOException {
         for (Map.Entry<String, String> entry : expectedValues.entrySet()) {
             Optional<String> result = performQuery(entry.getKey());
@@ -114,5 +112,5 @@ public class OlsProcessorTest {
             assertEquals(entry.getValue(), result.get());
         }
 
-    }*/
+    }
 }

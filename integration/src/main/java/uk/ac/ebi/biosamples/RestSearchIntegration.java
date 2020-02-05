@@ -146,7 +146,7 @@ public class RestSearchIntegration extends AbstractIntegration {
 
         //TODO check OLS expansion by making sure we can find the submitted samples in results for Eukaryota
         Set<String> accessions = new HashSet<>();
-        for (Resource<Sample> sample : client.fetchSampleResourceAll("Eukaryota")) {
+        for (Resource<Sample> sample : client.fetchSampleResourceAll("Homo Sapiens")) {
             accessions.add(sample.getContent().getAccession());
         }
         if (!accessions.contains(test2.getAccession())) {

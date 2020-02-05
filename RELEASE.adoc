@@ -4,6 +4,49 @@
 This pages contains links to release notes for BioSamples for version 4.0.0 and higher. This release represents a comprehensive overhaul and therefore previous release notes are no longer applicable.
 
 [[section]]
+v4.2.3 Release notes
+--------------------
+New features
+------------
+1.Incorporation of AMR structured data support in BioSamples and addition of the new ENA-AMR import pipeline. The ENA-AMR import pipeline queries the ENA API for AMR data of samples. It received back the samples having AMR information and the FTP links to the AMR information. It then attempts to get the AMR data from the FTP links and adds it to the sample and updates the sample in BioSamples. In case of NCBI AMR data, it comes as a part of the NCBI Sample XML and BioSample imports it while the NCBI pipeline executes.
+
+2. Below recommendations from ENA presentation has been implemented in order to achieve the BioSamples support for ENA Presentation use case,
+
+2.1 BioSamples JSON will have core attributes like description, title and organism in lower case
+2.2 If a user provided attribute of the same name exists and are in upper case, then they will be treated as separate attributes in the BioSamples JSON
+
+			"Description" : [ {      "text" : "user provided description in ENA sample”,
+			 "tag" : "attribute"
+				} ]
+			"description" : [ {
+				  "text" : "core description in ENA sample"                                         - 
+				} ]
+
+2.3 If a user-attributes of the same exists and is also in lower case, then it will be an array of elements within an attribute in the BioSamples JSON
+			"description" : [ { "text" : "core description in ENA sample"
+				}, {                                                                                                      
+				  "text" : "user provided description in ENA sample",
+				  "tag" : "attribute"
+				} ]
+				
+Bug Fixes
+---------
+1. Fixing the curami pipeline to deal with attributes having blank values
+
+2. Fixing the curami pipeline to deal with attributes having tag. Curami pipeline was removing the tags while creating curation objects.
+
+	Please note:  “tag” is used to specify any additional information about the attribute, like for example a namespace of an external id or a submitter id or to represent if an attribute has been provided specifically by the user. Couple of examples below:
+			"Submitter Id" : [ {
+				  "text" : "E-MTAB-565:FOXK2_Dox_treated",
+				  "tag" : "Namespace:UNIVERSITY OF MANCHESTER"
+				} ],
+
+				"DiseaseState" : [ {
+						  "text" : "Osteosarcoma",
+						  "tag" : "attribute" ------------- indicates an user provided attribute
+					} ]
+
+[[section]]
 v4.2.2 Release notes
 --------------------
 New features

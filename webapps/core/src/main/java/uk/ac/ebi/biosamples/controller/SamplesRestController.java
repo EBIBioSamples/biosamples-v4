@@ -354,19 +354,17 @@ public class SamplesRestController {
 		    sample = Sample.Builder.fromSample(sample).withNoData().build();
 		}
 
-			//TODO reanable the validation once the AMR schema is defined and we have the actual validator in place
-//		if (!sample.getData().isEmpty()) {
-//			Optional<ResponseEntity<String>> optionalInvalidResponse = sample.getData()
-//					.parallelStream()
-//					.map(abstractData -> schemaValidatorService.validate(abstractData.getStructuredData(), abstractData.getSchema()))
-//                    .filter(response -> !response.getBody().equalsIgnoreCase("[]"))
-//                    .findAny();
-//			if (optionalInvalidResponse.isPresent()) {
-//				throw new SampleWithInvalidStructuredData(optionalInvalidResponse.get().getBody());
-//			}
-//
-//		}
-
+		/*	//TODO reanable the validation once the AMR schema is defined and we have the actual validator in place
+		if (!sample.getData().isEmpty()) {
+			Optional<ResponseEntity<String>> optionalInvalidResponse = sample.getData()
+					.parallelStream()
+					.map(abstractData -> schemaValidatorService.validate(abstractData.getStructuredData(), abstractData.getSchema()))
+                    .filter(response -> !response.getBody().equalsIgnoreCase("[]"))
+                    .findAny();
+			if (optionalInvalidResponse.isPresent()) {
+				throw new SampleWithInvalidStructuredData(optionalInvalidResponse.get().getBody());
+			}
+		}*/
 
 		sample = sampleService.store(sample);
 
@@ -381,7 +379,9 @@ public class SamplesRestController {
 	private Instant defineCreateDate(final Sample sample) {
 		final Instant now = Instant.now();
 
-		return sample.getDomain().equalsIgnoreCase("self.BiosampleImportNCBI") ? (sample.getCreate() != null ? sample.getCreate() : now) : now;
+		return (sample.getDomain() != null && sample.getDomain().equalsIgnoreCase("self.BiosampleImportNCBI"))
+				? (sample.getCreate() != null ? sample.getCreate() : now)
+				: now;
 	}
 
 	@ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "New sample submission should not contain an accession") // 400

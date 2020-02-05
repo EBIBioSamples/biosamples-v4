@@ -52,7 +52,7 @@ public class NcbiElementCallableTest {
     }
 
     @Test
-    public void should_not_extract_double_organism_if_organism_is_in_description() throws Exception {
+    public void should_extract_double_organism_if_organism_is_in_description() throws Exception {
         ArgumentCaptor<Sample> generatedSample = ArgumentCaptor.forClass(Sample.class);
         when(bioSamplesClient.persistSampleResource(generatedSample.capture())).thenReturn(null);
 
@@ -64,8 +64,9 @@ public class NcbiElementCallableTest {
         List<Attribute> organisms = sample.getAttributes().stream()
                 .filter(attr -> attr.getType().equalsIgnoreCase("organism"))
                 .collect(Collectors.toList());
-        assertThat(organisms).hasSize(1);
-        assertThat(organisms.get(0).getValue()).isEqualTo("Oryza sativa Japonica Group");
+        assertThat(organisms).hasSize(2);
 
+        assertThat(organisms.stream().anyMatch(organism -> organism.getValue().equals("Oryza sativa Japonica Group")));
+        assertThat(organisms.stream().anyMatch(organism -> organism.getValue().equals("Oryza sativa")));
     }
 }

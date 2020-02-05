@@ -24,7 +24,7 @@ import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 public class EnaElementConverter implements Converter<Element, Sample> {
 	private static final String SECONDARY_ID = "SECONDARY_ID";
 	private static final String COMMON_NAME = "COMMON_NAME";
-	private static final String ORGANISM = "Organism";
+	private static final String ORGANISM = "organism";
 	private static final String TAG_SAMPLE_ATTRIBUTE = "attribute";
 	// Fields required by ENA content - some are for JSON building and some for
 	// equality checks with ENA XML
@@ -42,7 +42,7 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 	private static final String ENA_BROKER_NAME = "broker name";
 	private static final String INSDC_CENTER_NAME = "INSDC center name";
 	private static final String INSDC_CENTER_ALIAS = "INSDC center alias";
-	private static final String ENA_TITLE = "Title";
+	private static final String ENA_TITLE = "title";
 	private static final String ENA_DESCRIPTION = "description";
 	private static final String SAMPLE = "SAMPLE";
 	private static final String IDENTIFIERS = "IDENTIFIERS";
@@ -70,6 +70,7 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 		final SortedSet<Attribute> attributes = new TreeSet<>();
 		final SortedSet<Relationship> relationships = new TreeSet<>();
 		final SortedSet<ExternalReference> externalReferences = new TreeSet<>();
+		final Attribute organismAttribute;
 		String name;
 		String accession = null;
 
@@ -179,7 +180,9 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 			organismName = XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, SCIENTIFIC_NAME).text();
 		}
 		// ideally this should be lowercase, but backwards compatibilty...
-		attributes.add(Attribute.build(ORGANISM, organismName, organismUri, null));
+		organismAttribute = Attribute.build(ORGANISM, organismName, organismUri, null);
+
+		attributes.add(organismAttribute);
 
 		if (XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, COMMON_NAME).exists()) {
 			final String commonName = XmlPathBuilder.of(root).path(SAMPLE, SAMPLE_NAME, COMMON_NAME).text();
@@ -210,17 +213,13 @@ public class EnaElementConverter implements Converter<Element, Sample> {
 
 				// BSD-1744 - Deal with multiple descriptions in ENA XML
 				if (tag != null && tag.equalsIgnoreCase(ENA_DESCRIPTION)) {
-					if (value != null) {
-						attributes.add(Attribute.build(ENA_DESCRIPTION, value, TAG_SAMPLE_ATTRIBUTE, Collections.emptyList(), null));
-					}
+					attributes.add(Attribute.build(tag, Objects.requireNonNullElse(value, ""), TAG_SAMPLE_ATTRIBUTE, Collections.emptyList(), null));
 					continue;
 				}
 
 				// BSD-1813 - Deal with multiple titles in ENA XML
 				if (tag != null && tag.equalsIgnoreCase(ENA_TITLE)) {
-					if (value != null) {
-						attributes.add(Attribute.build(ENA_TITLE, value, TAG_SAMPLE_ATTRIBUTE, Collections.emptyList(), null));
-					}
+					attributes.add(Attribute.build(tag, Objects.requireNonNullElse(value, ""), TAG_SAMPLE_ATTRIBUTE, Collections.emptyList(), null));
 					continue;
 				}
 

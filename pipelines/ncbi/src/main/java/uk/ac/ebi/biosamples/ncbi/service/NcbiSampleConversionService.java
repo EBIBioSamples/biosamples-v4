@@ -43,14 +43,16 @@ public class NcbiSampleConversionService {
 	private static final String DISPLAY_NAME = "display_name";
 	private static final String ATTRIBUTE = "Attribute";
 	private static final String ATTRIBUTES = "Attributes";
-	private static final String ORGANISM_LOWER_CASE = "organism";
 	private static final String TAXONOMY_NAME = "taxonomy_name";
 	private static final String TAXONOMY_ID = "taxonomy_id";
 	private static final String ORGANISM = "Organism";
+	private static final String NCBI_JSON_CORE_ORGANISM = "organism";
 	private static final String PARAGRAPH = "Paragraph";
 	private static final String COMMENT = "Comment";
 	private static final String TITLE = "Title";
+	private static final String NCBI_JSON_CORE_TITLE = "title";
 	private static final String DESCRIPTION = "Description";
+	private static final String NCBI_JSON_CORE_DESCRIPTION = "description";
 	private static final String INSDC_CENTER_NAME = "INSDC center name";
 	private static final String NAME = "Name";
 	private static final String OWNER = "Owner";
@@ -65,10 +67,8 @@ public class NcbiSampleConversionService {
 	private static final String EXTERNAL_ID_JSON = "External Id";
 	private static final String INSDC_SECONDARY_ACCESSION = "INSDC secondary accession";
 	private static final String SRA_ACCESSION = "SRA accession";
-	private static final String NCBI_TITLE = TITLE;
 	private static final String NAMESPACE_TAG = "Namespace:";
 	private static final String SAMPLE_ATTRIBUTE = "attribute";
-	private static final String SECONDARY_ID_JSON = "Secondary Id";
 
 	private Logger log = LoggerFactory.getLogger(getClass());
 
@@ -86,6 +86,7 @@ public class NcbiSampleConversionService {
 		SortedSet<Relationship> rels = new TreeSet<>();
 		Set<ExternalReference> externalReferences = new TreeSet<>();
 		Set<AbstractData> structuredData = new HashSet<>();
+		Attribute organismAttribute;
 
 		String alias = null; // this will be the ENA alias of the sample
 		String geoAlias = null;
@@ -106,8 +107,6 @@ public class NcbiSampleConversionService {
 				// NCBI/DDBJ samples, in sync with ENA samples
 				attrs.add(Attribute.build(SRA_ACCESSION, idElem.getTextTrim()));
 				attrs.add(Attribute.build(INSDC_SECONDARY_ACCESSION, idElem.getTextTrim()));
-				attrs.add(Attribute.build(SECONDARY_ID_JSON, idElem.getTextTrim(), NAMESPACE_TAG + attributeValueIdElementDb, Collections.emptyList(),
-						null));
 			} else if (GENBANK.equalsIgnoreCase(attributeValueIdElementDb)) {
 				attrs.add(Attribute.build(COMMON_NAME, idElem.getTextTrim()));
 			} else if (SAMPLE_NAME.equals(idElem.attributeValue(DB_LABEL))) {
@@ -162,7 +161,7 @@ public class NcbiSampleConversionService {
 		// mapping to title for sync with ENA
 		if (XmlPathBuilder.of(sampleElem).path(DESCRIPTION, TITLE).exists()) {
 			String value = XmlPathBuilder.of(sampleElem).path(DESCRIPTION, TITLE).text();
-			attrs.add(Attribute.build(NCBI_TITLE, value));
+			attrs.add(Attribute.build(NCBI_JSON_CORE_TITLE, value));
 		}
 
 		if (XmlPathBuilder.of(sampleElem).path(DESCRIPTION, COMMENT, PARAGRAPH).exists()) {
@@ -172,21 +171,24 @@ public class NcbiSampleConversionService {
 			 * log.warn("Truncating attribute "+key+" for length on "+accession); value =
 			 * value.substring(0, 252)+"..."; }
 			 */
-			attrs.add(Attribute.build(DESCRIPTION, value));
+			attrs.add(Attribute.build(NCBI_JSON_CORE_DESCRIPTION, value));
 		}
 
-		if (XmlPathBuilder.of(sampleElem).path(DESCRIPTION, ORGANISM).attributeExists(TAXONOMY_ID)) {
-			int taxonId = getTaxId(XmlPathBuilder.of(sampleElem).path(DESCRIPTION, ORGANISM).attribute(TAXONOMY_ID));
-			organismIri = taxonomyService.getUriForTaxonId(taxonId);
-		}
+		if (XmlPathBuilder.of(sampleElem).path(DESCRIPTION, ORGANISM).exists()) {
+			if (XmlPathBuilder.of(sampleElem).path(DESCRIPTION, ORGANISM).attributeExists(TAXONOMY_ID)) {
+				int taxonId = getTaxId(XmlPathBuilder.of(sampleElem).path(DESCRIPTION, ORGANISM).attribute(TAXONOMY_ID));
+				organismIri = taxonomyService.getUriForTaxonId(taxonId);
+			}
 
-		if (XmlPathBuilder.of(sampleElem).path(DESCRIPTION, ORGANISM).attributeExists(TAXONOMY_NAME)) {
-			organismValue = XmlPathBuilder.of(sampleElem).path(DESCRIPTION, ORGANISM).attribute(TAXONOMY_NAME);
-		}
+			if (XmlPathBuilder.of(sampleElem).path(DESCRIPTION, ORGANISM).attributeExists(TAXONOMY_NAME)) {
+				organismValue = XmlPathBuilder.of(sampleElem).path(DESCRIPTION, ORGANISM).attribute(TAXONOMY_NAME);
+			}
 
-		if (organismValue != null) {
-			attrs.add(Attribute.build(ORGANISM, organismValue, organismIri, null));
-			hasOrganismInDescription = true;
+			if (organismValue != null) {
+				organismAttribute = Attribute.build(NCBI_JSON_CORE_ORGANISM, organismValue, organismIri, null);
+				attrs.add(organismAttribute);
+				hasOrganismInDescription = true;
+			}
 		}
 
 		// handle attributes
@@ -203,16 +205,10 @@ public class NcbiSampleConversionService {
 			 * log.warn("Truncating attribute "+key+" for length on "+accession); value =
 			 * value.substring(0, 252)+"..."; }
 			 */
-			if (key.equalsIgnoreCase(ORGANISM_LOWER_CASE) && hasOrganismInDescription) {
-				// Don't add a new organism attribute as it has already been added from the
-				// description
-				continue;
-			}
+			// Dont ignore organism in attributes - ENA Presentation (27.01.2020)
 
 			if (key.equalsIgnoreCase(DESCRIPTION)) {
-				if (value != null) {
-					attrs.add(Attribute.build(key, value, SAMPLE_ATTRIBUTE, Collections.emptyList(), null));
-				}
+				attrs.add(Attribute.build(key, Objects.requireNonNullElse(value, ""), SAMPLE_ATTRIBUTE, Collections.emptyList(), null));
 				continue;
 			}
 
@@ -230,11 +226,11 @@ public class NcbiSampleConversionService {
 				}
 			} else {
 				// its an attribute
-				if (key.equalsIgnoreCase(ORGANISM_LOWER_CASE) && !hasOrganismInDescription) {
+				if (key.equalsIgnoreCase(ORGANISM) && !hasOrganismInDescription) {
 					organismValue = value;
 				}
 
-				attrs.add(Attribute.build(key, value, SAMPLE_ATTRIBUTE, Collections.emptyList(), null));
+				attrs.add(Attribute.build(key, Objects.requireNonNullElse(value, ""), SAMPLE_ATTRIBUTE, Collections.emptyList(), null));
 			}
 		}
 

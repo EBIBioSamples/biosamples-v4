@@ -192,7 +192,8 @@ public class SampleService {
     }
 
     private Instant defineCreateDate(final Sample sampleToUpdate, final Sample oldSample) {
-        return (sampleToUpdate.getDomain().equalsIgnoreCase("self.BiosampleImportNCBI") &&
+        return (sampleToUpdate.getDomain() != null &&
+                sampleToUpdate.getDomain().equalsIgnoreCase("self.BiosampleImportNCBI") &&
                 sampleToUpdate.getCreate() != null)
                 ? sampleToUpdate.getCreate()
                 : (oldSample.getCreate() != null ? oldSample.getCreate() : oldSample.getUpdate());

@@ -109,13 +109,14 @@ public class Attribute implements Comparable<Attribute> {
         Attribute other = (Attribute) o;
         return Objects.equals(this.type, other.type) 
         		&& Objects.equals(this.value, other.value)
+				&& Objects.equals(this.tag, other.tag)
         		&& Objects.equals(this.iri, other.iri)
         		&& Objects.equals(this.unit, other.unit);
     }
     
     @Override
     public int hashCode() {
-    	return Objects.hash(type, value, iri, unit);
+    	return Objects.hash(type, value, tag, iri, unit);
     }
 
 	@Override
@@ -136,6 +137,11 @@ public class Attribute implements Comparable<Attribute> {
 //			return this.value.compareTo(other.value);
 //		}
         comparison = nullSafeStringComparison(this.value, other.value);
+		if (comparison != 0) {
+			return comparison;
+		}
+
+		comparison = nullSafeStringComparison(this.tag, other.tag);
 		if (comparison != 0) {
 			return comparison;
 		}
