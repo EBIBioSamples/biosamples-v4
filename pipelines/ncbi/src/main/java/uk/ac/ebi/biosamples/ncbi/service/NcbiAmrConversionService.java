@@ -55,7 +55,7 @@ public class NcbiAmrConversionService {
         getFieldIfAvailable(cells, fields, "Antibiotic").ifPresent(amrEntryBuilder::withAntibioticName);
         getFieldIfAvailable(cells, fields, "Resistance phenotype").ifPresent(amrEntryBuilder::withResistancePhenotype);
         getFieldIfAvailable(cells, fields, "Measurement sign").ifPresent(amrEntryBuilder::withMeasurementSign);
-        getFieldIfAvailable(cells, fields, "Measurement").ifPresent(amrEntryBuilder::withMeasurementValue);
+        getFieldIfAvailable(cells, fields, "Measurement").ifPresent(amrEntryBuilder::withMeasurement);
         getFieldIfAvailable(cells, fields, "Measurement units").ifPresent(amrEntryBuilder::withMeasurementUnits);
         getFieldIfAvailable(cells, fields, "Laboratory typing method").ifPresent(amrEntryBuilder::withLaboratoryTypingMethod);
         getFieldIfAvailable(cells, fields, "Laboratory typing platform").ifPresent(amrEntryBuilder::withPlatform);

@@ -56,7 +56,7 @@ public class NcbiAmrConvertionTests {
         assertEquals(amrEntry.getAntibioticName(), "nalidixic acid");
         assertEquals(amrEntry.getResistancePhenotype(), "intermediate");
         assertEquals(amrEntry.getMeasurementSign(), "==");
-        assertEquals(amrEntry.getMeasurementValue(), "17");
+        assertEquals(amrEntry.getMeasurement(), "17");
         assertEquals(amrEntry.getMeasurementUnits(), "mm");
         assertEquals(amrEntry.getLaboratoryTypingMethod(), "disk diffusion");
         assertEquals(amrEntry.getPlatform(), "missing");
