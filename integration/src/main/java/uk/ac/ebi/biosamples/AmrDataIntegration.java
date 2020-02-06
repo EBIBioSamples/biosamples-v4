@@ -92,7 +92,7 @@ public class AmrDataIntegration extends AbstractIntegration {
         AMREntry ciprofloxacin = optionalAmrEntry.get();
         assertEquals(ciprofloxacin.getResistancePhenotype(), "susceptible");
         assertEquals(ciprofloxacin.getMeasurementSign(), "<=");
-        assertEquals(ciprofloxacin.getMeasurementValue(), "0.015");
+        assertEquals(ciprofloxacin.getMeasurement(), "0.015");
         assertEquals(ciprofloxacin.getMeasurementUnits(), "mg/L");
         assertEquals(ciprofloxacin.getLaboratoryTypingMethod(), "MIC");
         assertEquals(ciprofloxacin.getPlatform(), "");

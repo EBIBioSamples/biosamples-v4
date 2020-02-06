@@ -142,7 +142,7 @@ public class AMRTest {
                         hasEntry("ast_standard", amrEntry.getAstStandard())
                         )))
                 .andExpect(jsonPath("$.data[0].content[0]").value(
-                        hasEntry("measurement", amrEntry.getMeasurementValue()) // This needs to go here because the the hasEntry has a different signature - Only one having a number as a value. allOf wants all matchers of the same type
+                        hasEntry("measurement", amrEntry.getMeasurement()) // This needs to go here because the the hasEntry has a different signature - Only one having a number as a value. allOf wants all matchers of the same type
                 ));
 
     }

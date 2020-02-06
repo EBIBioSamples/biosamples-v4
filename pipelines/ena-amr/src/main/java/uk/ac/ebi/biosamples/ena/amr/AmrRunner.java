@@ -24,6 +24,7 @@ import java.util.concurrent.Future;
 
 @Component
 public class AmrRunner implements ApplicationRunner {
+    private static final String SAMEA = "SAMEA";
     private static final String BSD_SAMPLE_PREFIX = "SA";
     private static final String FTP = "ftp";
     private static final String MD_5 = "md5";
@@ -47,6 +48,10 @@ public class AmrRunner implements ApplicationRunner {
 
         try {
             pairList = requestHttpAndGetAccessionFtpUrlPairs();
+
+            if(pairList.size() == 0) {
+                log.info("Unable to fetch ENA-AMR Antibiogram data from ENA API, Timed out waiting for connection");
+            }
         } catch (Exception e) {
             log.info("An exception occured while fetching AMR data from ENA API " + e.getMessage());
         }
@@ -137,7 +142,10 @@ public class AmrRunner implements ApplicationRunner {
 
             pairList.forEach(pair -> {
                 try {
-                    executorService.submit(new EnaAmrCallable(new URL(pair.getFtpUrl()), pair.getAccession()));
+                    String accession = pair.getAccession();
+
+                    if(accession != null && accession.startsWith(SAMEA))
+                        executorService.submit(new EnaAmrCallable(new URL(pair.getFtpUrl()), accession));
                 } catch (MalformedURLException e) {
                     log.info("FTP URL not correctly formed " + pair.getFtpUrl());
                 }

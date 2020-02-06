@@ -1,17 +1,12 @@
 package uk.ac.ebi.biosamples.service;
 
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import org.springframework.core.convert.converter.Converter;
 import uk.ac.ebi.biosamples.model.structured.amr.AMREntry;
 import uk.ac.ebi.biosamples.model.structured.amr.AMRTable;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.*;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class AmrTableConverter implements Converter<AMRTable, List<List<String>>> {
 
@@ -74,8 +69,8 @@ public class AmrTableConverter implements Converter<AMRTable, List<List<String>>
     public class HtmlAmrTable {
         public final String[] headers = {
                 "Species", "Antibiotic Name", "Ast Standard", "Breakpoint Version",
-                "Laboratory Typing Method", "Measurement Value", "Measurement Units", "Measurement Sign",
-                "Resistance Phenotype", "Platform", "Laboratory Typing Platform"
+                "Laboratory Typing Method", "Measurement", "Measurement Units", "Measurement Sign",
+                "Resistance Phenotype", "Platform"
         };
 
         private final List<List<String>> content;

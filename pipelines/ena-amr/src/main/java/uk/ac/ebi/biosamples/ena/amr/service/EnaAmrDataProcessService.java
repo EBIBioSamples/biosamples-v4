@@ -26,7 +26,7 @@ public class EnaAmrDataProcessService {
 
     public void processAmrRows(final List<String> lines, final Sample sample, final BioSamplesClient client) {
         final Set<AbstractData> structuredData = new HashSet<>();
-        final AMRTable.Builder amrTableBuilder = new AMRTable.Builder("test");
+        final AMRTable.Builder amrTableBuilder = new AMRTable.Builder("http://localhost:8081/biosamples/schemas/amr.json");
         /*String[] dilutionMethods = new String[]{"Broth dilution", "Microbroth dilution", "Agar dilution"};
         String[] diffusionMethods = new String[]{"Disc-diffusion", "Neo-sensitabs", "Etest"};*/
 
@@ -39,7 +39,7 @@ public class EnaAmrDataProcessService {
                 AMREntry amrEntry = r.readValue(line);
                 amrTableBuilder.addEntry(amrEntry);
             } catch (IOException e) {
-                e.printStackTrace();
+                log.error("Error in parsing AMR data for sample ", sample.getAccession());
             }
         });
 
