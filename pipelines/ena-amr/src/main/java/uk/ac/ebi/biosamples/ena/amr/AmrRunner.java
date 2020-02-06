@@ -48,6 +48,10 @@ public class AmrRunner implements ApplicationRunner {
 
         try {
             pairList = requestHttpAndGetAccessionFtpUrlPairs();
+
+            if(pairList.size() == 0) {
+                log.info("Unable to fetch ENA-AMR Antibiogram data from ENA API, Timed out waiting for connection");
+            }
         } catch (Exception e) {
             log.info("An exception occured while fetching AMR data from ENA API " + e.getMessage());
         }
