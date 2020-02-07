@@ -1,6 +1,8 @@
 package uk.ac.ebi.biosamples.deduplication;
 
 import io.reactivex.Observable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -18,9 +20,9 @@ import java.util.SortedSet;
 
 @Component
 public class DeduplicationRunner implements ApplicationRunner {
+    private Logger log = LoggerFactory.getLogger(DeduplicationRunner.class);
     @Autowired
     private DeduplicationDao deduplicationDao;
-
     @Autowired
     private BioSamplesClient bioSamplesClient;
 
@@ -47,13 +49,14 @@ public class DeduplicationRunner implements ApplicationRunner {
                 mergeSamples(first, second, pair);
             }
         } else {
-            System.out.println("No sample for this ERS " + enaId);
+            log.info("No sample for this ERS ", enaId);
         }
     }
 
     private void mergeSamples(final Resource<Sample> first, final Resource<Sample> second, final DeduplicationDao.RowMapping pair) {
         final Sample firstSample = first.getContent();
         final Sample secondSample = second.getContent();
+        SortedSet<Attribute> allAttributes;
         Sample sampleToSave = null;
         Sample sampleToPrivate = null;
         boolean useFirst = false;
@@ -62,7 +65,14 @@ public class DeduplicationRunner implements ApplicationRunner {
             useFirst = true;
         }
 
-        SortedSet<Attribute> allAttributes = resolveAttributes(first, second);
+        mergeAttributesAndSubmit(first.getContent(), second.getContent(), useFirst);
+    }
+
+    private void mergeAttributesAndSubmit(final Sample firstSample, final Sample secondSample, final boolean useFirst) {
+        SortedSet<Attribute> allAttributes;
+        Sample sampleToSave;
+        Sample sampleToPrivate;
+        allAttributes = resolveAttributes(firstSample, secondSample);
 
         if(useFirst) {
             sampleToSave = Sample.Builder.fromSample(firstSample).withAttributes(allAttributes).build();
@@ -73,12 +83,14 @@ public class DeduplicationRunner implements ApplicationRunner {
         }
 
         bioSamplesClient.persistSampleResource(sampleToSave);
+        log.info("Submitted sample " + sampleToSave.getAccession());
         bioSamplesClient.persistSampleResource(sampleToPrivate);
+        log.info("Private sample " + sampleToPrivate.getAccession());
     }
 
-    private SortedSet<Attribute> resolveAttributes(final Resource<Sample> first, final Resource<Sample> second) {
-        final SortedSet<Attribute> firstAttributes = first.getContent().getAttributes();
-        firstAttributes.addAll(second.getContent().getAttributes());
+    private SortedSet<Attribute> resolveAttributes(final Sample first, final Sample second) {
+        final SortedSet<Attribute> firstAttributes = first.getAttributes();
+        firstAttributes.addAll(second.getAttributes());
 
         return firstAttributes;
     }

@@ -20,7 +20,8 @@ public class DeduplicationDao {
     private Logger log = LoggerFactory.getLogger(getClass());
 
     public List<RowMapping> getAllSamples() {
-        String query = "SELECT SAMPLE_ID, BIOSAMPLE_ID FROM SAMPLE WHERE SAMPLE_ID LIKE 'ERS%'";
+        final String query = "SELECT SAMPLE_ID, BIOSAMPLE_ID FROM SAMPLE WHERE SAMPLE_ID LIKE 'ERS%'";
+
         return jdbcTemplate.query(query, mapper);
     }
 
@@ -45,7 +46,7 @@ public class DeduplicationDao {
         }
     }
 
-    RowMapper<RowMapping> mapper = (rs, rowNum) -> {
+    final RowMapper<RowMapping> mapper = (rs, rowNum) -> {
         RowMapping rowMapping = new RowMapping();
 
         rowMapping.setBioSampleId(rs.getString("BIOSAMPLE_ID"));
