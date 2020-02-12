@@ -12,6 +12,7 @@ import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
 
+import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Iterator;
@@ -34,34 +35,38 @@ public class DeduplicationRunner implements ApplicationRunner {
         observable.subscribe(this::checkDuplicates);
     }
 
+
     private void checkDuplicates(final DeduplicationDao.RowMapping pair) {
         final String enaId = pair.getEnaId();
         //List<Filter> filterList = new ArrayList<>(2);
         //filterList.add(FilterBuilder.create().onAttribute("SRA accession").withValue(pair.getEnaId()).build());
         final Iterator<Resource<Sample>> it = bioSamplesClient.fetchSampleResourceAll(enaId).iterator();
-        Resource<Sample> first, second;
+        Sample firstSample, secondSample;
 
         if (it.hasNext()) {
-            first = it.next();
+            firstSample = it.next().getContent();
 
             if (it.hasNext()) {
-                second = it.next();
-                mergeSamples(first, second, pair);
+                secondSample = it.next().getContent();
+
+                if (firstSample.getRelease().isAfter(Instant.now()) || secondSample.getRelease().isAfter(Instant.now()))
+                    log.info("Already set to private, no action required");
+                else
+                    mergeSamples(firstSample, secondSample, pair);
             }
         } else {
             log.info("No sample for this ERS ", enaId);
         }
     }
 
-    private void mergeSamples(final Resource<Sample> first, final Resource<Sample> second, final DeduplicationDao.RowMapping pair) {
-        final Sample firstSample = first.getContent();
+    private void mergeSamples(final Sample firstSample, final Sample secondSample, final DeduplicationDao.RowMapping pair) {
         boolean useFirst = false;
 
-        if(firstSample.getAccession().equals(pair.getBioSampleId())) {
+        if (firstSample.getAccession().equals(pair.getBioSampleId())) {
             useFirst = true;
         }
 
-        mergeAttributesAndSubmit(first.getContent(), second.getContent(), useFirst);
+        mergeAttributesAndSubmit(firstSample, secondSample, useFirst);
     }
 
     private void mergeAttributesAndSubmit(final Sample firstSample, final Sample secondSample, final boolean useFirst) {
@@ -70,7 +75,7 @@ public class DeduplicationRunner implements ApplicationRunner {
         Sample sampleToPrivate;
         allAttributes = resolveAttributes(firstSample, secondSample);
 
-        if(useFirst) {
+        if (useFirst) {
             sampleToSave = Sample.Builder.fromSample(firstSample).withAttributes(allAttributes).build();
             sampleToPrivate = Sample.Builder.fromSample(secondSample).withRelease(ZonedDateTime.now(ZoneOffset.UTC).plusYears(1000).toInstant()).build();
         } else {
