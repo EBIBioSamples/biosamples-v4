@@ -27,11 +27,11 @@ public class DeduplicationRunner implements ApplicationRunner {
     private BioSamplesClient bioSamplesClient;
 
     @Override
-    public void run(final ApplicationArguments args) throws Exception {
+    public void run(final ApplicationArguments args) {
         final List<DeduplicationDao.RowMapping> mappingList = deduplicationDao.getAllSamples();
         final Observable<DeduplicationDao.RowMapping> observable = Observable.fromIterable(mappingList);
 
-        observable.subscribe(mapping -> checkDuplicates(mapping));
+        observable.subscribe(this::checkDuplicates);
     }
 
     private void checkDuplicates(final DeduplicationDao.RowMapping pair) {
@@ -39,7 +39,7 @@ public class DeduplicationRunner implements ApplicationRunner {
         //List<Filter> filterList = new ArrayList<>(2);
         //filterList.add(FilterBuilder.create().onAttribute("SRA accession").withValue(pair.getEnaId()).build());
         final Iterator<Resource<Sample>> it = bioSamplesClient.fetchSampleResourceAll(enaId).iterator();
-        Resource<Sample> first, second = null;
+        Resource<Sample> first, second;
 
         if (it.hasNext()) {
             first = it.next();
@@ -55,10 +55,6 @@ public class DeduplicationRunner implements ApplicationRunner {
 
     private void mergeSamples(final Resource<Sample> first, final Resource<Sample> second, final DeduplicationDao.RowMapping pair) {
         final Sample firstSample = first.getContent();
-        final Sample secondSample = second.getContent();
-        SortedSet<Attribute> allAttributes;
-        Sample sampleToSave = null;
-        Sample sampleToPrivate = null;
         boolean useFirst = false;
 
         if(firstSample.getAccession().equals(pair.getBioSampleId())) {
@@ -83,9 +79,10 @@ public class DeduplicationRunner implements ApplicationRunner {
         }
 
         bioSamplesClient.persistSampleResource(sampleToSave);
-        log.info("Submitted sample " + sampleToSave.getAccession());
+        log.info("Submitted sample with accession - " + sampleToSave.getAccession());
+
         bioSamplesClient.persistSampleResource(sampleToPrivate);
-        log.info("Private sample " + sampleToPrivate.getAccession());
+        log.info("Private sample with accession - " + sampleToPrivate.getAccession());
     }
 
     private SortedSet<Attribute> resolveAttributes(final Sample first, final Sample second) {
