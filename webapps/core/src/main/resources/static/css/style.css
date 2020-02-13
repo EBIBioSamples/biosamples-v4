@@ -209,3 +209,12 @@ code[class^="language"] {
     text-decoration: none;
     border: 1px solid #007b82;
 }
+
+.serialisation-menu {
+    font-size: 80%;
+    list-style-type: none;
+}
+
+.serialisation-menu > li > a {
+    padding: 0.5rem !important;
+}
