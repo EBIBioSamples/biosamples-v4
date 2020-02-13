@@ -19,6 +19,7 @@
 			<id>embl-ebi</id>
 			<modules>
 				<module>ena</module>
+				<module>deduplication</module>
 			</modules>
 		</profile>
 	</profiles>
