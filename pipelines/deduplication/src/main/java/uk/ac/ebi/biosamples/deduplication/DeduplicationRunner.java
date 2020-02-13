@@ -12,12 +12,11 @@ import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.Iterator;
-import java.util.List;
-import java.util.SortedSet;
+import java.util.*;
 
 @Component
 public class DeduplicationRunner implements ApplicationRunner {
@@ -28,12 +27,31 @@ public class DeduplicationRunner implements ApplicationRunner {
     private BioSamplesClient bioSamplesClient;
 
     @Override
-    public void run(final ApplicationArguments args) {
+    public void run(final ApplicationArguments args) throws IOException {
+        //makePrivateUtility();
+
         final List<DeduplicationDao.RowMapping> mappingList = deduplicationDao.getAllSamples();
         final Observable<DeduplicationDao.RowMapping> observable = Observable.fromIterable(mappingList);
 
         observable.subscribe(this::checkDuplicates);
     }
+
+    /* Utility method to bulk private samples */
+   /* private void makePrivateUtility() throws IOException {
+        final List<String> privateSampleList = CsvReader.readCsv();
+
+        log.info(String.valueOf(privateSampleList.size()));
+
+        privateSampleList.forEach(sample -> {
+            Optional<Resource<Sample>> sampleToBePrivate = bioSamplesClient.fetchSampleResource(sample);
+
+            if(sampleToBePrivate.isPresent()) {
+                final Sample privateSample = Sample.Builder.fromSample(sampleToBePrivate.get().getContent()).withRelease(ZonedDateTime.now(ZoneOffset.UTC).plusYears(1000).toInstant()).build();
+                bioSamplesClient.persistSampleResource(privateSample);
+                log.info("Sample made private is " + privateSample.getAccession());
+            }
+        });
+    }*/
 
 
     private void checkDuplicates(final DeduplicationDao.RowMapping pair) {
@@ -51,11 +69,12 @@ public class DeduplicationRunner implements ApplicationRunner {
 
                 if (firstSample.getRelease().isAfter(Instant.now()) || secondSample.getRelease().isAfter(Instant.now()))
                     log.info("Already set to private, no action required");
-                else
+                else {
                     mergeSamples(firstSample, secondSample, pair);
+                }
             }
         } else {
-            log.info("No sample for this ERS ", enaId);
+            log.info("No sample for this ERS " + enaId);
         }
     }
 
@@ -70,16 +89,14 @@ public class DeduplicationRunner implements ApplicationRunner {
     }
 
     private void mergeAttributesAndSubmit(final Sample firstSample, final Sample secondSample, final boolean useFirst) {
-        SortedSet<Attribute> allAttributes;
         Sample sampleToSave;
         Sample sampleToPrivate;
-        allAttributes = resolveAttributes(firstSample, secondSample);
 
         if (useFirst) {
-            sampleToSave = Sample.Builder.fromSample(firstSample).withAttributes(allAttributes).build();
+            sampleToSave = Sample.Builder.fromSample(firstSample).withAttributes(resolveAttributes(firstSample.getAttributes(), secondSample.getAttributes())).build();
             sampleToPrivate = Sample.Builder.fromSample(secondSample).withRelease(ZonedDateTime.now(ZoneOffset.UTC).plusYears(1000).toInstant()).build();
         } else {
-            sampleToSave = Sample.Builder.fromSample(secondSample).withAttributes(allAttributes).build();
+            sampleToSave = Sample.Builder.fromSample(secondSample).withAttributes(resolveAttributes(firstSample.getAttributes(), secondSample.getAttributes())).build();
             sampleToPrivate = Sample.Builder.fromSample(firstSample).withRelease(ZonedDateTime.now(ZoneOffset.UTC).plusYears(1000).toInstant()).build();
         }
 
@@ -90,10 +107,11 @@ public class DeduplicationRunner implements ApplicationRunner {
         log.info("Private sample with accession - " + sampleToPrivate.getAccession());
     }
 
-    private SortedSet<Attribute> resolveAttributes(final Sample first, final Sample second) {
-        final SortedSet<Attribute> firstAttributes = first.getAttributes();
-        firstAttributes.addAll(second.getAttributes());
+    private Set<Attribute> resolveAttributes(final SortedSet<Attribute> first, final SortedSet<Attribute> second) {
+        final Set<Attribute> setOfAttributes = new HashSet<>();
+        setOfAttributes.addAll(first);
+        setOfAttributes.addAll(second);
 
-        return firstAttributes;
+        return setOfAttributes;
     }
 }
