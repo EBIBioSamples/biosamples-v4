@@ -24,6 +24,30 @@
 			<div class="columns medium-12 large-10 s__header">
 				<h2 class="sh__title" th:text="${sample.accession}">TEST</h2>
 				<h3 class="sh__subtitle" th:text="${sample.name}">name</h3>
+
+			</div>
+			<div class="columns large-2 hide-for-medium-only">
+				<th:block th:include="fragments/sample :: serialisationDropDownMenu"></th:block>
+			</div>
+
+			<div class="columns s__details">
+				<th:block th:include="fragments/sample :: attributes (${sample.attributes})"></th:block>
+
+				<th:block th:include="fragments/sample :: contacts (${sample.contacts})"></th:block>
+				<th:block th:include="fragments/sample :: organizations (${sample.organizations})"></th:block>
+				<th:block th:include="fragments/sample :: publications (${sample.publications})"></th:block>
+
+				<th:block th:include="fragments/sample :: relationships (${sample.relationships})"></th:block>
+
+				<th:block th:if="${sample.data.size() > 0}">
+					<th:block th:each="data: ${sample.data}" th:include="fragments/structured_data :: amr_table(${data})"></th:block>
+				</th:block>
+
+				<th:block th:include="fragments/sample :: externalReferences (${sample.externalReferences})"></th:block>
+
+			</div>
+
+			<div class="columns s_details">
 				<table class="sh__datetimes">
 					<tr>
 						<th>Released on</th>
@@ -38,25 +62,6 @@
 						<td	th:text="${#temporals.format(update, 'yyyy / MM / dd HH:mm:ss','UTC')+' UTC'}">2001 / 02 / 02 12:00:00</td>
 					</tr>
 				</table>
-			</div>
-			<div class="columns large-2 hide-for-medium-only">
-				<th:block th:include="fragments/sample :: serialisationDropDownMenu"></th:block>
-			</div>
-
-			<div class="columns s__details">
-				<th:block th:include="fragments/sample :: contacts (${sample.contacts})"></th:block>
-				<th:block th:include="fragments/sample :: organizations (${sample.organizations})"></th:block>
-				<th:block th:include="fragments/sample :: publications (${sample.publications})"></th:block>
-
-				<th:block th:include="fragments/sample :: attributes (${sample.attributes})"></th:block>
-				<th:block th:include="fragments/sample :: relationships (${sample.relationships})"></th:block>
-
-				<th:block th:if="${sample.data.size() > 0}">
-					<th:block th:each="data: ${sample.data}" th:include="fragments/structured_data :: amr_table(${data})"></th:block>
-				</th:block>
-
-				<th:block th:include="fragments/sample :: externalReferences (${sample.externalReferences})"></th:block>
-
 			</div>
 
 
