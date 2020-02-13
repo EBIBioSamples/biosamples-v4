@@ -40,6 +40,5 @@
         <module>curatedview</module>
 		<module>bioschemas-rdf-export</module>
 		<module>ena-amr</module>
-		<module>mongo-utilities</module>
     </modules>
 </project>
