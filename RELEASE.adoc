@@ -4,33 +4,29 @@
 This pages contains links to release notes for BioSamples for version 4.0.0 and higher. This release represents a comprehensive overhaul and therefore previous release notes are no longer applicable.
 
 [[section]]
-v4.2.3 Release notes
---------------------
-New features
-------------
+== v4.2.3 Release notes
+=== New features
 1.Incorporation of AMR structured data support in BioSamples and addition of the new ENA-AMR import pipeline. The ENA-AMR import pipeline queries the ENA API for AMR data of samples. It received back the samples having AMR information and the FTP links to the AMR information. It then attempts to get the AMR data from the FTP links and adds it to the sample and updates the sample in BioSamples. In case of NCBI AMR data, it comes as a part of the NCBI Sample XML and BioSample imports it while the NCBI pipeline executes.
-
 2. Below recommendations from ENA presentation has been implemented in order to achieve the BioSamples support for ENA Presentation use case,
 
-2.1 BioSamples JSON will have core attributes like description, title and organism in lower case
-2.2 If a user provided attribute of the same name exists and are in upper case, then they will be treated as separate attributes in the BioSamples JSON
+.   BioSamples JSON will have core attributes like description, title and organism in lower case
+.   If a user provided attribute of the same name exists and are in upper case, then they will be treated as separate attributes in the BioSamples JSON
 
 			"Description" : [ {      "text" : "user provided description in ENA sample”,
 			 "tag" : "attribute"
 				} ]
 			"description" : [ {
-				  "text" : "core description in ENA sample"                                         - 
+				  "text" : "core description in ENA sample"                                         -
 				} ]
 
-2.3 If a user-attributes of the same exists and is also in lower case, then it will be an array of elements within an attribute in the BioSamples JSON
+.   If a user-attributes of the same exists and is also in lower case, then it will be an array of elements within an attribute in the BioSamples JSON
 			"description" : [ { "text" : "core description in ENA sample"
-				}, {                                                                                                      
+				}, {
 				  "text" : "user provided description in ENA sample",
 				  "tag" : "attribute"
 				} ]
-				
-Bug Fixes
----------
+
+=== Bug Fixes
 1. Fixing the curami pipeline to deal with attributes having blank values
 
 2. Fixing the curami pipeline to deal with attributes having tag. Curami pipeline was removing the tags while creating curation objects.
@@ -47,10 +43,8 @@ Bug Fixes
 					} ]
 
 [[section]]
-v4.2.2 Release notes
---------------------
-New features
-------------
+== v4.2.2 Release notes
+===  New features
 1. Modification of /accessions POST endpoint to improve the pre-accessioning performance. Pre-accession of samples is used by ENA and ENA was using our Sample Tab API’s in the past. Sample tab is going to get deprecated from April 01, 2020 and the new improved /accessions POST endpoint can been used for pre-accessioning.
 2. Improvements in the /accessions GET endpoint, added search filters, pagination and sizing to this endpoint to comply with such requests from NCBI. In this case NCBI was using BioSamples legacy-xml endpoints and before the legacy-xml endpoints gets deprecated the alternate accessions REST endpoint required these improvements so that similar functionality can be provided to NCBI.
 3. RDF release pipeline has been added to BioSamples for continuous RDF release. The frequency of the release can be configured.
@@ -61,29 +55,25 @@ New features
 6. BioSamples will retain create date of NCBI samples that are being imported. Currently it overrides the create date and replaces it with the date and time when the sample is saved in BioSamples.
 
 
-Bug Fixes
-----------
+=== Bug Fixes
 1. Bug fix to handle null dates in NCBI samples while being imported to BioSamples.
 
 
-Platform upgrades
------------------
+=== Platform upgrades
 1. BioSamples now runs on Java 11 (Open JDK 11).
 
 [[section]]
-v4.2.1 Release Notes
-----------------------------
-New features:
--------------------
+== v4.2.1 Release Notes
+=== New features:
 1. Handler added to check and update sample status in BioSamples for SUPPRESSED samples in ENA/NCBI. SUPPRESSED samples that exist in ENA and not in BioSamples are created in BioSamples. This helps to have a consistent view of the samples in ENA and BioSamples.
 2. Contact full details will be saved and displayed by default, which includes name, role, email, affiliation etc. Request param -setfulldetails if set false and passed in the request URI, full details of contact won’t be saved.
 3. ENA BioSamples integration changes has been done in this release. This will enable ENA presentation to query BioSamples API for the samples metadata.
 Short description of the changes done are given below:
-	1. Retaining of ArrayExpress elements in ENA imported samples
-	2. Mapping of alias in ENA sample XML to name (top-attribute) in BioSamples JSON
-	3. Mapping of SAMPLE_ATTRIBUTE/alias in ENA sample XML to characteristics/alias in BioSamples JSON
-	4. Removing tagging of core attributes from Synonyms for ENA/NCBI/DDBJ samples. SUBMITTER_ID, EXTERNAL_ID, UUID, ANONYMIZED_NAME, INDIVIDUAL_NAME attributes were earlier mapped to synonyms. With this release they are mapped to individual attributes under characteristics in BioSamples JSON, like characteristics/External Id, characteristics/Submitter Id and so on
-	5. Introduction of tag in BioSamples JSON for mapping namespace values in ENA/NCBI/DDBJ samples. An example below:
+.   Retaining of ArrayExpress elements in ENA imported samples
+.   Mapping of alias in ENA sample XML to name (top-attribute) in BioSamples JSON
+.   Mapping of SAMPLE_ATTRIBUTE/alias in ENA sample XML to characteristics/alias in BioSamples JSON
+.   Removing tagging of core attributes from Synonyms for ENA/NCBI/DDBJ samples. SUBMITTER_ID, EXTERNAL_ID, UUID, ANONYMIZED_NAME, INDIVIDUAL_NAME attributes were earlier mapped to synonyms. With this release they are mapped to individual attributes under characteristics in BioSamples JSON, like characteristics/External Id, characteristics/Submitter Id and so on
+.   Introduction of tag in BioSamples JSON for mapping namespace values in ENA/NCBI/DDBJ samples. An example below:
 	External_id" : [{
 	"text" : "GM18582",
 	“tag” : “Namespace: Coriell”
@@ -93,57 +83,51 @@ Short description of the changes done are given below:
       	"tag" : "Namespace:SC"
     	} ]
 
-	6. Handling for multiple descriptions (core description and SAMPLE_ATTRIBUTE description) for ENA/NCBI/DDBJ samples. An example below. Reusing of tag to show if the description is of core or sample attributes
+.   Handling for multiple descriptions (core description and SAMPLE_ATTRIBUTE description) for ENA/NCBI/DDBJ samples. An example below. Reusing of tag to show if the description is of core or sample attributes
 	"Description" : [
 	{ "text" : "Protocols: U2OS cells .....)", "tag" : "core" },
 	{ "text" : "This sample has been re-named", "tag" : "attribute" }
 	]
 
-	7. Removing characteristics/synonym from BioSamples JSON for ENA/NCBI/DDBJ samples. All attributes that were tagged under synonyms now has individual attributes under characteristics and hence synonym is not required. Alias is now mapped to name too and hence it makes synonym redundant
-	8. PRIMARY_ID of NCBI/DDBJ samples mapped to characteristics/SRA accession in BioSamples JSON. This will bring samples metadata in BioSamples in sync for ENA/NCBI/DDBJ samples.
-	9. Title was mapped to characteristics/Title (for ENA samples) and characteristics/description title (for NCBI/DDBJ samples). Title is now mapped to characteristics/Title for all ENA/NCBI/DDBJ samples
-	10. GenBank common name handled in characteristics/Common Name for NCBI/DDBJ samples. Provision is kept for ENA samples too if such an attribute exists.
-	11. Performance improvements of ENA pipeline
-	12. Create date added for ENA/NCBI/DDBJ samples
-	13. Retaining of ENA prefixed attributes in BioSamples JSON
+.   Removing characteristics/synonym from BioSamples JSON for ENA/NCBI/DDBJ samples. All attributes that were tagged under synonyms now has individual attributes under characteristics and hence synonym is not required. Alias is now mapped to name too and hence it makes synonym redundant
+.   PRIMARY_ID of NCBI/DDBJ samples mapped to characteristics/SRA accession in BioSamples JSON. This will bring samples metadata in BioSamples in sync for ENA/NCBI/DDBJ samples.
+.   Title was mapped to characteristics/Title (for ENA samples) and characteristics/description title (for NCBI/DDBJ samples). Title is now mapped to characteristics/Title for all ENA/NCBI/DDBJ samples
+.   GenBank common name handled in characteristics/Common Name for NCBI/DDBJ samples. Provision is kept for ENA samples too if such an attribute exists.
+.   Performance improvements of ENA pipeline
+.   Create date added for ENA/NCBI/DDBJ samples
+.   Retaining of ENA prefixed attributes in BioSamples JSON
 
-Bug fixes:
--------------
+=== Bug fixes:
 1.	UI bugfix to display contact role. Earlier it used to show name instead of role.
 2.	Change curation-view pipeline to read samples from MongDB. To crawl all the samples available in BIoSamples, we can’t use biosamples-client get all samples method as it will not return non-indexed samples (eg. suppressed samples)
 
 
 [[section]]
-4.2.0
-----
+== 4.2.0
 * Deprecation of SampleTab submission format.
 * Adding static collection for samples+curations.
 * Modify applying order for the curation objects.
 * Add link to sample accession.
 
 [[section]]
-4.1.15
-----
+== 4.1.15
 * Update phenopacket version
 * Add curami pipeline to curate biosamples attributes
 
 [[section]]
-4.1.14
-----
+== 4.1.14
 * Add DUO attribute to external reference class
 * Add script to import EGA data
 * Add presto connector as a BioSamples client module
 
 
 [[section]]
-4.1.13
-----
+== 4.1.13
 * Added API in biosamples-client to utilize JWT tokens
 * Resolved issue where ENA pipeline failed if FIRST_PUBLIC date is not available
 
 [[section]]
-4.1.12
-----
+== 4.1.12
 * Replicate required ENA XML Dump functionality in the ENA pipeline
 * Added an annotation 'submitted via USI' to USI samples
 * Added support for suppressed samples imported theough ENA pipeline
@@ -152,8 +136,7 @@ Bug fixes:
 * Refined ncbi pipeline to check suppressed samples are in solr index before removing
 
 [[section]]
-4.1.11
-----
+== 4.1.11
 * Added support for suppressed samples to enable dbGap data loading
 * Fix confusion between supressed and private samples in dbGap data
 * Livelist file: adding flush to make sure file is written
@@ -161,29 +144,25 @@ Bug fixes:
 * Fix SampleTab template download link
 
 [[section]]
-4.1.10
-----
+== 4.1.10
 * Remove the holiday message
 * Fix submit tab link in error pages
 
 
 [[section]]
-4.1.9
-----
+== 4.1.9
 * Added a Curation Undo Pipeline to allow for removal of erroneous curations.
 * Fix an issue where long attributes break the sample box UI.
 
 
 [[section]]
-4.1.8
-----
+== 4.1.8
 * Corrected error in curation pipeline which caused sample characteristics to be removed erroneously
 * Added holiday message
 
 
 [[section]]
-4.1.7
-----
+== 4.1.7
 * Added libraries to enable applications to use Graylog to allow configuration of aggregated logging
 * Switched to the AAP explore environment at https://explore.api.aai.ebi.ac.uk
 * Updated the default AAP URL used by the BioSamples client
@@ -193,8 +172,7 @@ Bug fixes:
 
 
 [[section]]
-4.1.6
-----
+== 4.1.6
 
 * Addition of AMR structured data into BioSamples
 * Submission of samples with a relationship not targeting a valid accession now return an error
@@ -204,8 +182,7 @@ Bug fixes:
 
 
 [[section]]
-4.1.5
-----
+== 4.1.5
 
 * Fixed bug that search failed when using a colon with a non-indexed field. e.g. taxon:9696
 * Added the BioSamples cookbook
@@ -214,8 +191,7 @@ Bug fixes:
 
 
 [[section]]
-4.1.4
-----
+== 4.1.4
 
 * As part of curation pipeline attributes with the value "not_applicable" are removed
 * Date titles on the sample page are now "Releases on" and "Updated on" rather than "Release" and "Update"
@@ -225,8 +201,7 @@ Bug fixes:
 
 
 [[section]]
-4.1.3
-----
+== 4.1.3
 
 * Additional sample attributes required by ENA are now available including a single, top-level taxId field
 * The export box for a sample is now renamed download and contains a list of serialisations that always download as a file fixing a blocked popups issue in Safari
@@ -234,8 +209,7 @@ Bug fixes:
 
 
 [[section]]
-4.1.2
-----
+== 4.1.2
 
 * Sample JSON now contains a numeric taxId field at the top level
 * IRI of ontology terms now resolve to the defining ontology when they are available in multiple ontologies
@@ -245,8 +219,7 @@ Bug fixes:
 
 
 [[section]]
-4.1.1
-----
+== 4.1.1
 
 * Expose the BioSchemas markup with enhanced context and Sample ontology code
 * SampleTab submission pipeline has been rewritten for better robustness
@@ -255,10 +228,9 @@ Bug fixes:
 
 
 [[section]]
-4.1.0
-----
+== 4.1.0
 
-### New features
+=== New features
 
 * GDPR:
 ** SampleTab submissions enforce explicit acceptance of the terms of service and the privacy information
@@ -266,7 +238,7 @@ Bug fixes:
 * SampleTab where targets of relationships are neither sample name nor sample accession are now rejected, providing user additional information on the problematic data
 * *Bioschema.org* entities are exported in BioSamples and available both in the UI - embedded in a script tag - and through the API
 
-### Bug fixes
+=== Bug fixes
 * Solved issues with wrong header’s hyperlinks
 * Solved issue with resolving relationship by name in SampleTab submissions
 * Solved issue with converting DatabaseURI to external references in SampleTab submissions
@@ -274,8 +246,7 @@ Bug fixes:
 
 
 [[section]]
-4.0.7
------
+== 4.0.7
 
 This is a bugfix release that addresses the following issues:
 
@@ -283,8 +254,7 @@ This is a bugfix release that addresses the following issues:
 * Update format of the Sitemap file
 
 [[section]]
-4.0.6
------
+== 4.0.6
 
 This is a bugfix release that addresses the following issues:
 
@@ -301,8 +271,7 @@ This is a bugfix release that addresses the following issues:
 * Add copy down pipeline
 
 [[section]]
-4.0.5
------
+== 4.0.5
 
 This is a bugfix release that addresses the following issues:
 
@@ -319,8 +288,7 @@ This is a bugfix release that addresses the following issues:
 * Reduce load on OLS by ensuring Zooma does not requery OLS as any results from OLS would not be used by BioSamples
 
 [[section]]
-4.0.4
------
+== 4.0.4
 
 This is a bugfix release that addresses the following issues:
 
@@ -332,8 +300,7 @@ This is a bugfix release that addresses the following issues:
 * Added https://www.elixir-europe.org/platforms/data/elixir-deposition-databases[Elixir Deposition Database] banner
 
 [[section]]
-4.0.3
------
+== 4.0.3
 
 This is a bugfix release that addresses the following issues:
 
@@ -343,8 +310,7 @@ This is a bugfix release that addresses the following issues:
 * Redirect /biosamples/sample and /biosamples/group URLs in case of typo
 
 [[section]]
-4.0.2
------
+== 4.0.2
 
 This is a bugfix release that addresses the following issues:
 
@@ -353,8 +319,7 @@ This is a bugfix release that addresses the following issues:
 * Fix for storage of relationships source on new samples
 
 [[section]]
-4.0.1
------
+== 4.0.1
 
 This is a bugfix release that addresses the following issues:
 
@@ -364,8 +329,7 @@ This is a bugfix release that addresses the following issues:
 * Updated homepage project sample links to use a filter search rather than a text search.
 
 [[section]]
-4.0.0
------
+== 4.0.0
 
 Version v4.0.0 represents a re-architecture and re-engineering of the
 BioSamples software stack. It is now based on the Java
@@ -411,8 +375,7 @@ easier to run a local version for client development or for local
 storage of sample information.
 
 [[data-content]]
-Data content
-~~~~~~~~~~~~
+=== Data content
 
 * Ontology terms Numeric tax IDs (e.g. 9606) and short ontology terms
 (e.g. PATO:0000384) are being replaced with full IRIs (e.g.
@@ -425,8 +388,7 @@ external link, or delegating grouping of samples to other EMBL-EBI
 archives such as https://www.ebi.ac.uk/biostudies[BioStudies].
 
 [[jsonbiosamples]]
-JSON `/biosamples`
-~~~~~~~~~~~~~~~~~~
+=== JSON `/biosamples`
 
 This is the preferred API for use, and uses the same URIs as the HTML
 pages, and utilising content negotiation to provide a JSON response.
@@ -461,8 +423,7 @@ characters removed.
 * external references directly embedded in the samples and the groups.
 
 [[xmlbiosamplesxml]]
-XML `/biosamples/xml`
-~~~~~~~~~~~~~~~~~~~~~
+=== XML `/biosamples/xml`
 
 We are maintaining this for backwards compatibility. Later in 2018 we
 will be consulting about future development of this API, particularly in
@@ -483,8 +444,7 @@ provided.
 behaviour and lack of usage.
 
 [[json-biosamplesapi]]
-JSON `/biosamples/api`
-~~~~~~~~~~~~~~~~~~~~~~
+=== JSON `/biosamples/api`
 
 This API should be considered **deprecated** and we will aim to remove
 it by 2019. Any users of this should move to using the `/biosamples`
@@ -502,8 +462,7 @@ usage.
 not JSON strings.
 
 [[acknowledgements]]
-Acknowledgements
-~~~~~~~~~~~~~~~~
+=== Acknowledgements
 
 This release has been made possible with the support of our funders:
 
