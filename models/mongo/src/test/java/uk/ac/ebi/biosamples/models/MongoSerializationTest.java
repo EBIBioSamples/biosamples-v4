@@ -155,11 +155,11 @@ public class MongoSerializationTest {
 
 		// Assert json contains data field
 		assertThat(this.json.write(details)).hasJsonPathArrayValue("@.data");
-		assertThat(this.json.write(details)).extractingJsonPathMapValue("@.data[0].content[0].antibiotic_name").contains(
+		assertThat(this.json.write(details)).extractingJsonPathMapValue("@.data[0].content[0].antibiotic").contains(
 				new AbstractMap.SimpleEntry<>("value", "ampicillin")
 		);
 
-		assertThat(this.json.write(details)).extractingJsonPathMapValue("@.data[0].content[0].antibiotic_name").contains(
+		assertThat(this.json.write(details)).extractingJsonPathMapValue("@.data[0].content[0].antibiotic").contains(
 				new AbstractMap.SimpleEntry<>("iri", "")
 		);
 
