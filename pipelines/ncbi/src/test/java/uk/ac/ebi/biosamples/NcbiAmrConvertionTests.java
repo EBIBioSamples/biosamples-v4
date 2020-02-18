@@ -53,7 +53,7 @@ public class NcbiAmrConvertionTests {
         AMRTable amrTable = (AMRTable) sampleToTest.getData().iterator().next();
         AMREntry amrEntry = amrTable.getStructuredData().iterator().next();
 
-        assertEquals(amrEntry.getAntibioticName(), "nalidixic acid");
+        assertEquals(amrEntry.getAntibiotic().getValue(), "nalidixic acid");
         assertEquals(amrEntry.getResistancePhenotype(), "intermediate");
         assertEquals(amrEntry.getMeasurementSign(), "==");
         assertEquals(amrEntry.getMeasurement(), "17");

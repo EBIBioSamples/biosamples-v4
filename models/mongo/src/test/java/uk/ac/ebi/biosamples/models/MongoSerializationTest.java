@@ -15,6 +15,7 @@ import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.model.structured.amr.AMREntry;
 import uk.ac.ebi.biosamples.model.structured.amr.AMRTable;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
+import uk.ac.ebi.biosamples.model.structured.amr.AmrPair;
 import uk.ac.ebi.biosamples.mongo.model.MongoExternalReference;
 import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
@@ -56,7 +57,7 @@ public class MongoSerializationTest {
 		Set<AbstractData> structuredData = new HashSet<>();
 		AMRTable amrTable = new AMRTable.Builder("http://test").
                 addEntry(new AMREntry.Builder()
-                        .withAntibioticName("ampicillin")
+                        .withAntibiotic(new AmrPair("ampicillin", ""))
                         .withResistancePhenotype("susceptible")
 						.withMeasure("==", "2", "mg/L")
 						.withVendor("in-house")
@@ -123,7 +124,7 @@ public class MongoSerializationTest {
 
         AMRTable amrTable = new AMRTable.Builder("http://test").
                 addEntry(new AMREntry.Builder()
-                        .withAntibioticName("ampicillin")
+                        .withAntibiotic(new AmrPair("ampicillin",""))
                         .withResistancePhenotype("susceptible")
 						.withMeasure("==", "2", "mg/L")
 						.withVendor("in-house")
@@ -154,8 +155,12 @@ public class MongoSerializationTest {
 
 		// Assert json contains data field
 		assertThat(this.json.write(details)).hasJsonPathArrayValue("@.data");
-		assertThat(this.json.write(details)).extractingJsonPathMapValue("@.data[0].content[0]").contains(
-				new AbstractMap.SimpleEntry<>("antibiotic_name", "ampicillin")
+		assertThat(this.json.write(details)).extractingJsonPathMapValue("@.data[0].content[0].antibiotic_name").contains(
+				new AbstractMap.SimpleEntry<>("value", "ampicillin")
+		);
+
+		assertThat(this.json.write(details)).extractingJsonPathMapValue("@.data[0].content[0].antibiotic_name").contains(
+				new AbstractMap.SimpleEntry<>("iri", "")
 		);
 
 	}

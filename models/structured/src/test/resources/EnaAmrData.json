@@ -1,5 +1,5 @@
 {
-  "antibiotic_name": "Ampicillin",
+  "antibiotic": "Ampicillin",
   "ast_standard": "EUCAST",
   "breakpoint_version": "not_determined",
   "laboratory_typing_method": "Agar dilution",

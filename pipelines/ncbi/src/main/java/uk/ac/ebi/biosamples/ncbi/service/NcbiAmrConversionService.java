@@ -4,6 +4,7 @@ import org.dom4j.Element;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.structured.amr.AMREntry;
 import uk.ac.ebi.biosamples.model.structured.amr.AMRTable;
+import uk.ac.ebi.biosamples.model.structured.amr.AmrPair;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
 import java.text.ParseException;
@@ -52,7 +53,7 @@ public class NcbiAmrConversionService {
         AMREntry.Builder amrEntryBuilder = new AMREntry.Builder();
         amrEntryBuilder.withSpecies(organism);
 
-        getFieldIfAvailable(cells, fields, "Antibiotic").ifPresent(amrEntryBuilder::withAntibioticName);
+        getFieldIfAvailable(cells, fields, "Antibiotic").ifPresent(antibiotic -> amrEntryBuilder.withAntibiotic(new AmrPair(antibiotic, "")));
         getFieldIfAvailable(cells, fields, "Resistance phenotype").ifPresent(amrEntryBuilder::withResistancePhenotype);
         getFieldIfAvailable(cells, fields, "Measurement sign").ifPresent(amrEntryBuilder::withMeasurementSign);
         getFieldIfAvailable(cells, fields, "Measurement").ifPresent(amrEntryBuilder::withMeasurement);

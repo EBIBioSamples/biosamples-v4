@@ -8,7 +8,7 @@
     "schema": "test",
     "content": [
       {
-        "antibiotic_name":"ampicillin",
+        "antibiotic":{"value":"ampicillin", "iri": "test.org"},
         "resistance_phenotype":"susceptible",
         "measurement_sign":"==",
         "measurement": "2",

@@ -83,7 +83,7 @@ public class AmrDataIntegration extends AbstractIntegration {
 
         log.info("Verifying AMREntry for ciprofloxacin is found and has certain values");
         Optional<AMREntry> optionalAmrEntry = amrTable.getStructuredData().parallelStream()
-                .filter(entry -> entry.getAntibioticName().equalsIgnoreCase("ciprofloxacin"))
+                .filter(entry -> entry.getAntibiotic().getValue().equalsIgnoreCase("ciprofloxacin"))
                 .findFirst();
         if (!optionalAmrEntry.isPresent()) {
             throw new RuntimeException("AMRentry for antibiotic ciprofloxacin should be present but is not");

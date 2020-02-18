@@ -21,6 +21,7 @@ import org.springframework.util.StreamUtils;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.structured.amr.AMREntry;
 import uk.ac.ebi.biosamples.model.structured.amr.AMRTable;
+import uk.ac.ebi.biosamples.model.structured.amr.AmrPair;
 import uk.ac.ebi.biosamples.service.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.SchemaValidatorService;
@@ -71,7 +72,7 @@ public class AMRTest {
 
     private AMREntry getAMREntry() {
         return new AMREntry.Builder()
-                .withAntibioticName("ampicillin")
+                .withAntibiotic(new AmrPair("ampicillin",""))
                 .withResistancePhenotype("susceptible")
                 .withMeasure("==", "10", "mg/L")
                 .withVendor("in-house")
@@ -133,7 +134,6 @@ public class AMRTest {
                         hasKey("content"))))
                 .andExpect(jsonPath("$.data[0].content").isArray())
                 .andExpect(jsonPath("$.data[0].content[0]").value(allOf(
-                        hasEntry("antibiotic_name", amrEntry.getAntibioticName()),
                         hasEntry("resistance_phenotype", amrEntry.getResistancePhenotype()),
                         hasEntry("measurement_sign", amrEntry.getMeasurementSign()),
                         hasEntry("measurement_units", amrEntry.getMeasurementUnits()),
@@ -141,6 +141,7 @@ public class AMRTest {
                         hasEntry("laboratory_typing_method", amrEntry.getLaboratoryTypingMethod()),
                         hasEntry("ast_standard", amrEntry.getAstStandard())
                         )))
+                .andExpect(jsonPath("$.data[0].content[0].antibiotic").value(hasEntry("value", amrEntry.getAntibiotic().getValue())))
                 .andExpect(jsonPath("$.data[0].content[0]").value(
                         hasEntry("measurement", amrEntry.getMeasurement()) // This needs to go here because the the hasEntry has a different signature - Only one having a number as a value. allOf wants all matchers of the same type
                 ));
@@ -155,7 +156,7 @@ public class AMRTest {
 
         JsonNode jsonAmr = jsonSample.at("/data/0/content/0");
         AMREntry amrEntry = new AMREntry.Builder()
-                .withAntibioticName(jsonAmr.get("antibiotic_name").asText())
+                .withAntibiotic(new AmrPair(jsonAmr.get("antibiotic").asText(), ""))
                 .withResistancePhenotype(jsonAmr.get("resistance_phenotype").asText())
                 .withMeasure(jsonAmr.get("measurement_sign").asText(), jsonAmr.get("measurement").asText(), jsonAmr.get("measurement_units").asText())
                 .withVendor(jsonAmr.get("vendor").asText())
@@ -192,7 +193,7 @@ public class AMRTest {
 
         JsonNode jsonAmr = jsonSample.at("/data/0/content/0");
         AMREntry amrEntry = new AMREntry.Builder()
-                .withAntibioticName(jsonAmr.get("antibiotic_name").asText())
+                .withAntibiotic(new AmrPair(jsonAmr.get("antibiotic").asText(), ""))
                 .withResistancePhenotype(jsonAmr.get("resistance_phenotype").asText())
                 .withMeasure(jsonAmr.get("measurement_sign").asText(), jsonAmr.get("measurement").asText(), jsonAmr.get("measurement_units").asText())
                 .withVendor(jsonAmr.get("vendor").asText())
