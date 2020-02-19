@@ -3,7 +3,7 @@
     "schema": "test",
     "content": [
         {
-            "antibiotic_name":"ampicillin",
+            "antibiotic_name": "ampicillin",
             "resistance_phenotype":"susceptible",
             "measurement_sign":"==",
             "measurement": "2",

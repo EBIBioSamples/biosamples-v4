@@ -3,6 +3,7 @@ package uk.ac.ebi.biosamples.service;
 import org.springframework.core.convert.converter.Converter;
 import uk.ac.ebi.biosamples.model.structured.amr.AMREntry;
 import uk.ac.ebi.biosamples.model.structured.amr.AMRTable;
+import uk.ac.ebi.biosamples.model.structured.amr.AmrPair;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -29,8 +30,17 @@ public class AmrTableConverter implements Converter<AMRTable, List<List<String>>
             Map<String, String> amrTableRow = new HashMap<>();
             for ( String h: htmlAmrTable.headers ) {
                 String methodName = getMethodFromHeader(h);
+                String value = "";
                 try {
-                    String value = (String) AMREntry.class.getDeclaredMethod(methodName).invoke(amrEntry);
+                    Object returnValue = AMREntry.class.getDeclaredMethod(methodName).invoke(amrEntry);
+
+                    if(returnValue instanceof AmrPair) {
+                        AmrPair amrPair = (AmrPair) returnValue;
+                        value = amrPair.getValue();
+                    } else {
+                        value = (String) returnValue;
+                    }
+
                     if (value != null && !value.isEmpty()) {
                         amrTableRow.put(h, value);
                     }
@@ -68,7 +78,7 @@ public class AmrTableConverter implements Converter<AMRTable, List<List<String>>
 
     public class HtmlAmrTable {
         public final String[] headers = {
-                "Species", "Antibiotic Name", "Ast Standard", "Breakpoint Version",
+                "Species", "Antibiotic", "Ast Standard", "Breakpoint Version",
                 "Laboratory Typing Method", "Measurement", "Measurement Units", "Measurement Sign",
                 "Resistance Phenotype", "Platform"
         };

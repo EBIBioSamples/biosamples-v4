@@ -6,15 +6,224 @@
   "release": "2015-05-04T10:30:00Z",
   "characteristics": {
     "description": [{
-        "text": "This is an AMR sample containing an AMR table"
-      }
-    ]
+      "text": "This is an AMR sample containing an AMR table"
+    }]
   },
-  "data": [
-    {
-      "type": "AMR",
-      "schema": "test",
-      "content":[{"antibiotic_name": "amoxicillin-clavulanic acid", "resistance_phenotype": "susceptible", "measurement_sign": "<=", "measurement": "1/0.5", "measurement_units": "mg/L", "laboratory_typing_method": "MIC", "platform": "", "vendor": "Trek", "laboratory_typing_method_version_or_reagent": "96-Well Plate", "ast_standard": "CLSI"}, {"antibiotic_name": "ampicillin", "resistance_phenotype": "susceptible", "measurement_sign": "<=", "measurement": "1", "measurement_units": "mg/L", "laboratory_typing_method": "MIC", "platform": "", "vendor": "Trek", "laboratory_typing_method_version_or_reagent": "96-Well Plate", "ast_standard": "CLSI"}, {"antibiotic_name": "azithromycin", "resistance_phenotype": "susceptible", "measurement_sign": "==", "measurement": "4", "measurement_units": "mg/L", "laboratory_typing_method": "MIC", "platform": "", "vendor": "Trek", "laboratory_typing_method_version_or_reagent": "96-Well Plate", "ast_standard": "missing"}, {"antibiotic_name": "cefoxitin", "resistance_phenotype": "susceptible", "measurement_sign": "==", "measurement": "2", "measurement_units": "mg/L", "laboratory_typing_method": "MIC", "platform": "", "vendor": "Trek", "laboratory_typing_method_version_or_reagent": "96-Well Plate", "ast_standard": "CLSI"}, {"antibiotic_name": "ceftiofur", "resistance_phenotype": "susceptible", "measurement_sign": "==", "measurement": "1", "measurement_units": "mg/L", "laboratory_typing_method": "MIC", "platform": "", "vendor": "Trek", "laboratory_typing_method_version_or_reagent": "96-Well Plate", "ast_standard": "CLSI"}, {"antibiotic_name": "ceftriaxone", "resistance_phenotype": "susceptible", "measurement_sign": "<=", "measurement": "0.25", "measurement_units": "mg/L", "laboratory_typing_method": "MIC", "platform": "", "vendor": "Trek", "laboratory_typing_method_version_or_reagent": "96-Well Plate", "ast_standard": "CLSI"}, {"antibiotic_name": "chloramphenicol", "resistance_phenotype": "susceptible", "measurement_sign": "==", "measurement": "8", "measurement_units": "mg/L", "laboratory_typing_method": "MIC", "platform": "", "vendor": "Trek", "laboratory_typing_method_version_or_reagent": "96-Well Plate", "ast_standard": "CLSI"}, {"antibiotic_name": "ciprofloxacin", "resistance_phenotype": "susceptible", "measurement_sign": "<=", "measurement": "0.015", "measurement_units": "mg/L", "laboratory_typing_method": "MIC", "platform": "", "vendor": "Trek", "laboratory_typing_method_version_or_reagent": "96-Well Plate", "ast_standard": "CLSI"}, {"antibiotic_name": "gentamicin", "resistance_phenotype": "susceptible", "measurement_sign": "==", "measurement": "1", "measurement_units": "mg/L", "laboratory_typing_method": "MIC", "platform": "", "vendor": "Trek", "laboratory_typing_method_version_or_reagent": "96-Well Plate", "ast_standard": "CLSI"}, {"antibiotic_name": "kanamycin", "resistance_phenotype": "susceptible", "measurement_sign": "<=", "measurement": "8", "measurement_units": "mg/L", "laboratory_typing_method": "MIC", "platform": "", "vendor": "Trek", "laboratory_typing_method_version_or_reagent": "96-Well Plate", "ast_standard": "CLSI"}, {"antibiotic_name": "nalidixic acid", "resistance_phenotype": "susceptible", "measurement_sign": "==", "measurement": "4", "measurement_units": "mg/L", "laboratory_typing_method": "MIC", "platform": "", "vendor": "Trek", "laboratory_typing_method_version_or_reagent": "96-Well Plate", "ast_standard": "CLSI"}, {"antibiotic_name": "streptomycin", "resistance_phenotype": "susceptible", "measurement_sign": "<=", "measurement": "32", "measurement_units": "mg/L", "laboratory_typing_method": "MIC", "platform": "", "vendor": "Trek", "laboratory_typing_method_version_or_reagent": "96-Well Plate", "ast_standard": "missing"}, {"antibiotic_name": "sulfisoxazole", "resistance_phenotype": "susceptible", "measurement_sign": "<=", "measurement": "16", "measurement_units": "mg/L", "laboratory_typing_method": "MIC", "platform": "", "vendor": "Trek", "laboratory_typing_method_version_or_reagent": "96-Well Plate", "ast_standard": "CLSI"}, {"antibiotic_name": "tetracycline", "resistance_phenotype": "susceptible", "measurement_sign": "<=", "measurement": "4", "measurement_units": "mg/L", "laboratory_typing_method": "MIC", "platform": "", "vendor": "Trek", "laboratory_typing_method_version_or_reagent": "96-Well Plate", "ast_standard": "CLSI"}, {"antibiotic_name": "trimethoprim-sulfamethoxazole", "resistance_phenotype": "susceptible", "measurement_sign": "<=", "measurement": "0.12/2.38", "measurement_units": "mg/L", "laboratory_typing_method": "MIC", "platform": "", "vendor": "Trek", "laboratory_typing_method_version_or_reagent": "96-Well Plate", "ast_standard": "CLSI"}]
-    }
-  ]
+  "data": [{
+    "type": "AMR",
+    "schema": "test",
+    "content": [{
+      "antibiotic_name": {"value":"amoxicillin-clavulanic acid",
+        "iri": "test.org"},
+      "resistance_phenotype": "susceptible",
+      "measurement_sign": "<=",
+      "measurement": "1/0.5",
+      "measurement_units": "mg/L",
+      "laboratory_typing_method": "MIC",
+      "platform": "",
+      "vendor": "Trek",
+      "laboratory_typing_method_version_or_reagent": "96-Well Plate",
+      "ast_standard": "CLSI",
+      "species": {"value": "Escherichia coli",
+        "iri": ""
+      }
+    }, {
+      "antibiotic_name": {"value":"ampicillin",
+        "iri" : "test.org"},
+      "resistance_phenotype": "susceptible",
+      "measurement_sign": "<=",
+      "measurement": "1",
+      "measurement_units": "mg/L",
+      "laboratory_typing_method": "MIC",
+      "platform": "",
+      "vendor": "Trek",
+      "laboratory_typing_method_version_or_reagent": "96-Well Plate",
+      "ast_standard": "CLSI",
+      "species": {"value": "Escherichia coli",
+        "iri": ""
+      }
+    }, {
+      "antibiotic_name": "azithromycin",
+      "resistance_phenotype": "susceptible",
+      "measurement_sign": "==",
+      "measurement": "4",
+      "measurement_units": "mg/L",
+      "laboratory_typing_method": "MIC",
+      "platform": "",
+      "vendor": "Trek",
+      "laboratory_typing_method_version_or_reagent": "96-Well Plate",
+      "ast_standard": "missing",
+      "species": {"value": "Escherichia coli",
+        "iri": ""
+      }
+    }, {
+      "antibiotic_name": "cefoxitin",
+      "resistance_phenotype": "susceptible",
+      "measurement_sign": "==",
+      "measurement": "2",
+      "measurement_units": "mg/L",
+      "laboratory_typing_method": "MIC",
+      "platform": "",
+      "vendor": "Trek",
+      "laboratory_typing_method_version_or_reagent": "96-Well Plate",
+      "ast_standard": "CLSI",
+      "species": {"value": "Escherichia coli",
+        "iri": ""
+      }
+    }, {
+      "antibiotic_name": "ceftiofur",
+      "resistance_phenotype": "susceptible",
+      "measurement_sign": "==",
+      "measurement": "1",
+      "measurement_units": "mg/L",
+      "laboratory_typing_method": "MIC",
+      "platform": "",
+      "vendor": "Trek",
+      "laboratory_typing_method_version_or_reagent": "96-Well Plate",
+      "ast_standard": "CLSI",
+      "species": {"value": "Escherichia coli",
+        "iri": ""
+      }
+    }, {
+      "antibiotic_name": "ceftriaxone",
+      "resistance_phenotype": "susceptible",
+      "measurement_sign": "<=",
+      "measurement": "0.25",
+      "measurement_units": "mg/L",
+      "laboratory_typing_method": "MIC",
+      "platform": "",
+      "vendor": "Trek",
+      "laboratory_typing_method_version_or_reagent": "96-Well Plate",
+      "ast_standard": "CLSI",
+      "species": {"value": "Escherichia coli",
+        "iri": ""
+      }
+    }, {
+      "antibiotic_name": "chloramphenicol",
+      "resistance_phenotype": "susceptible",
+      "measurement_sign": "==",
+      "measurement": "8",
+      "measurement_units": "mg/L",
+      "laboratory_typing_method": "MIC",
+      "platform": "",
+      "vendor": "Trek",
+      "laboratory_typing_method_version_or_reagent": "96-Well Plate",
+      "ast_standard": "CLSI",
+      "species": {"value": "Escherichia coli",
+        "iri": ""
+      }
+    }, {
+      "antibiotic_name": "ciprofloxacin",
+      "resistance_phenotype": "susceptible",
+      "measurement_sign": "<=",
+      "measurement": "0.015",
+      "measurement_units": "mg/L",
+      "laboratory_typing_method": "MIC",
+      "platform": "",
+      "vendor": "Trek",
+      "laboratory_typing_method_version_or_reagent": "96-Well Plate",
+      "ast_standard": "CLSI",
+      "species": {"value": "Escherichia coli",
+        "iri": ""
+      }
+    }, {
+      "antibiotic_name": "gentamicin",
+      "resistance_phenotype": "susceptible",
+      "measurement_sign": "==",
+      "measurement": "1",
+      "measurement_units": "mg/L",
+      "laboratory_typing_method": "MIC",
+      "platform": "",
+      "vendor": "Trek",
+      "laboratory_typing_method_version_or_reagent": "96-Well Plate",
+      "ast_standard": "CLSI",
+      "species": {"value": "Escherichia coli",
+        "iri": ""
+      }
+    }, {
+      "antibiotic_name": "kanamycin",
+      "resistance_phenotype": "susceptible",
+      "measurement_sign": "<=",
+      "measurement": "8",
+      "measurement_units": "mg/L",
+      "laboratory_typing_method": "MIC",
+      "platform": "",
+      "vendor": "Trek",
+      "laboratory_typing_method_version_or_reagent": "96-Well Plate",
+      "ast_standard": "CLSI",
+      "species": {"value": "Escherichia coli",
+        "iri": ""
+      }
+    }, {
+      "antibiotic_name": "nalidixic acid",
+      "resistance_phenotype": "susceptible",
+      "measurement_sign": "==",
+      "measurement": "4",
+      "measurement_units": "mg/L",
+      "laboratory_typing_method": "MIC",
+      "platform": "",
+      "vendor": "Trek",
+      "laboratory_typing_method_version_or_reagent": "96-Well Plate",
+      "ast_standard": "CLSI",
+      "species": {"value": "Escherichia coli",
+        "iri": ""
+      }
+    }, {
+      "antibiotic_name": "streptomycin",
+      "resistance_phenotype": "susceptible",
+      "measurement_sign": "<=",
+      "measurement": "32",
+      "measurement_units": "mg/L",
+      "laboratory_typing_method": "MIC",
+      "platform": "",
+      "vendor": "Trek",
+      "laboratory_typing_method_version_or_reagent": "96-Well Plate",
+      "ast_standard": "missing",
+      "species": {"value": "Escherichia coli",
+        "iri": ""
+      }
+    }, {
+      "antibiotic_name": "sulfisoxazole",
+      "resistance_phenotype": "susceptible",
+      "measurement_sign": "<=",
+      "measurement": "16",
+      "measurement_units": "mg/L",
+      "laboratory_typing_method": "MIC",
+      "platform": "",
+      "vendor": "Trek",
+      "laboratory_typing_method_version_or_reagent": "96-Well Plate",
+      "ast_standard": "CLSI",
+      "species": {"value": "Escherichia coli",
+        "iri": ""
+      }
+    }, {
+      "antibiotic_name": "tetracycline",
+      "resistance_phenotype": "susceptible",
+      "measurement_sign": "<=",
+      "measurement": "4",
+      "measurement_units": "mg/L",
+      "laboratory_typing_method": "MIC",
+      "platform": "",
+      "vendor": "Trek",
+      "laboratory_typing_method_version_or_reagent": "96-Well Plate",
+      "ast_standard": "CLSI",
+      "species": {"value": "Escherichia coli",
+        "iri": ""
+      }
+    }, {
+      "antibiotic_name": "trimethoprim-sulfamethoxazole",
+      "resistance_phenotype": "susceptible",
+      "measurement_sign": "<=",
+      "measurement": "0.12/2.38",
+      "measurement_units": "mg/L",
+      "laboratory_typing_method": "MIC",
+      "platform": "",
+      "vendor": "Trek",
+      "laboratory_typing_method_version_or_reagent": "96-Well Plate",
+      "ast_standard": "CLSI",
+      "species": {"value": "Escherichia coli",
+        "iri": ""
+      }
+    }]
+  }]
 }

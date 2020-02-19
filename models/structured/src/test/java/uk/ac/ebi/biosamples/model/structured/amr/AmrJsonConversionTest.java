@@ -33,7 +33,7 @@ public class AmrJsonConversionTest {
     @Test
     public void testAmrEntrySerializer() throws IOException {
         AMREntry entry = new AMREntry.Builder()
-                .withAntibioticName("A")
+                .withAntibioticName(new AmrPair("A",""))
                 .withResistancePhenotype("Something")
                 .withMeasure("==", "2", "mg/L")
                 .withVendor("in-house")
@@ -45,14 +45,14 @@ public class AmrJsonConversionTest {
 
         log.info(json.getJson());
 
-        assertThat(json).hasJsonPathStringValue("@.antibiotic_name", "A");
+        assertThat(json).hasJsonPathStringValue("@.antibiotic_name.value", "A");
     }
 
     @Test
     public void testAmrTableSerializer() throws IOException {
         AMRTable.Builder tableBuilder = new AMRTable.Builder("http://some-fake-schema.com");
         tableBuilder.addEntry(new AMREntry.Builder()
-                .withAntibioticName("A")
+                .withAntibioticName(new AmrPair("A"))
                 .withResistancePhenotype("Something")
                 .withMeasure("==", "14", "mg/L")
                 .withVendor("in-house")
@@ -61,7 +61,7 @@ public class AmrJsonConversionTest {
                 .build());
 
         tableBuilder.addEntry(new AMREntry.Builder()
-                .withAntibioticName("B")
+                .withAntibioticName(new AmrPair("B",""))
                 .withResistancePhenotype("pectine")
                 .withMeasure(">=", "14", "mg/L")
                 .withVendor("GSKey")
@@ -93,7 +93,7 @@ public class AmrJsonConversionTest {
     public void testAMRDeserialization() throws Exception{
         AMRTable.Builder tableBuilder = new AMRTable.Builder("test");
         tableBuilder.addEntry(new AMREntry.Builder()
-                .withAntibioticName("ampicillin")
+                .withAntibioticName(new AmrPair("ampicillin","test.org"))
                 .withResistancePhenotype("susceptible")
                 .withMeasure("==", "2", "mg/L")
                 .withVendor("in-house")
@@ -111,14 +111,14 @@ public class AmrJsonConversionTest {
     @Test
     public void testDeserializationEnaAMR() throws Exception {
         AMREntry entry = new AMREntry.Builder()
-                .withAntibioticName("Ampicillin")
+                .withAntibioticName(new AmrPair("Ampicillin","test.org"))
                 .withAstStandard("EUCAST")
                 .withBreakpointVersion("not_determined")
                 .withLaboratoryTypingMethod("Agar dilution")
                 .withMeasure("=", "8", "mg/L")
                 .withPlatform("-")
                 .withResistancePhenotype("not-defined")
-                .withSpecies("Escherichia coli")
+                .withSpecies(new AmrPair("Escherichia coli"))
                 .build();
 
         assertThat(this.amrEntryJacksonTester.readObject("/EnaAmrData.json")).isEqualTo(entry);
