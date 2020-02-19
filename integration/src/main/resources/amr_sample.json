@@ -23,7 +23,10 @@
       "platform": "",
       "vendor": "Trek",
       "laboratory_typing_method_version_or_reagent": "96-Well Plate",
-      "ast_standard": "CLSI"
+      "ast_standard": "CLSI",
+      "species": {"value": "Escherichia coli",
+        "iri": ""
+      }
     }, {
       "antibiotic": {"value":"ampicillin",
         "iri" : "test.org"},
@@ -35,7 +38,10 @@
       "platform": "",
       "vendor": "Trek",
       "laboratory_typing_method_version_or_reagent": "96-Well Plate",
-      "ast_standard": "CLSI"
+      "ast_standard": "CLSI",
+      "species": {"value": "Escherichia coli",
+        "iri": ""
+      }
     }, {
       "antibiotic": "azithromycin",
       "resistance_phenotype": "susceptible",
@@ -46,7 +52,10 @@
       "platform": "",
       "vendor": "Trek",
       "laboratory_typing_method_version_or_reagent": "96-Well Plate",
-      "ast_standard": "missing"
+      "ast_standard": "missing",
+      "species": {"value": "Escherichia coli",
+        "iri": ""
+      }
     }, {
       "antibiotic": "cefoxitin",
       "resistance_phenotype": "susceptible",
@@ -57,7 +66,10 @@
       "platform": "",
       "vendor": "Trek",
       "laboratory_typing_method_version_or_reagent": "96-Well Plate",
-      "ast_standard": "CLSI"
+      "ast_standard": "CLSI",
+      "species": {"value": "Escherichia coli",
+        "iri": ""
+      }
     }, {
       "antibiotic": "ceftiofur",
       "resistance_phenotype": "susceptible",
@@ -68,7 +80,10 @@
       "platform": "",
       "vendor": "Trek",
       "laboratory_typing_method_version_or_reagent": "96-Well Plate",
-      "ast_standard": "CLSI"
+      "ast_standard": "CLSI",
+      "species": {"value": "Escherichia coli",
+        "iri": ""
+      }
     }, {
       "antibiotic": "ceftriaxone",
       "resistance_phenotype": "susceptible",
@@ -79,7 +94,10 @@
       "platform": "",
       "vendor": "Trek",
       "laboratory_typing_method_version_or_reagent": "96-Well Plate",
-      "ast_standard": "CLSI"
+      "ast_standard": "CLSI",
+      "species": {"value": "Escherichia coli",
+        "iri": ""
+      }
     }, {
       "antibiotic": "chloramphenicol",
       "resistance_phenotype": "susceptible",
@@ -90,7 +108,10 @@
       "platform": "",
       "vendor": "Trek",
       "laboratory_typing_method_version_or_reagent": "96-Well Plate",
-      "ast_standard": "CLSI"
+      "ast_standard": "CLSI",
+      "species": {"value": "Escherichia coli",
+        "iri": ""
+      }
     }, {
       "antibiotic": "ciprofloxacin",
       "resistance_phenotype": "susceptible",
@@ -101,7 +122,10 @@
       "platform": "",
       "vendor": "Trek",
       "laboratory_typing_method_version_or_reagent": "96-Well Plate",
-      "ast_standard": "CLSI"
+      "ast_standard": "CLSI",
+      "species": {"value": "Escherichia coli",
+        "iri": ""
+      }
     }, {
       "antibiotic": "gentamicin",
       "resistance_phenotype": "susceptible",
@@ -112,7 +136,10 @@
       "platform": "",
       "vendor": "Trek",
       "laboratory_typing_method_version_or_reagent": "96-Well Plate",
-      "ast_standard": "CLSI"
+      "ast_standard": "CLSI",
+      "species": {"value": "Escherichia coli",
+        "iri": ""
+      }
     }, {
       "antibiotic": "kanamycin",
       "resistance_phenotype": "susceptible",
@@ -123,7 +150,10 @@
       "platform": "",
       "vendor": "Trek",
       "laboratory_typing_method_version_or_reagent": "96-Well Plate",
-      "ast_standard": "CLSI"
+      "ast_standard": "CLSI",
+      "species": {"value": "Escherichia coli",
+        "iri": ""
+      }
     }, {
       "antibiotic": "nalidixic acid",
       "resistance_phenotype": "susceptible",
@@ -134,7 +164,10 @@
       "platform": "",
       "vendor": "Trek",
       "laboratory_typing_method_version_or_reagent": "96-Well Plate",
-      "ast_standard": "CLSI"
+      "ast_standard": "CLSI",
+      "species": {"value": "Escherichia coli",
+        "iri": ""
+      }
     }, {
       "antibiotic": "streptomycin",
       "resistance_phenotype": "susceptible",
@@ -145,7 +178,10 @@
       "platform": "",
       "vendor": "Trek",
       "laboratory_typing_method_version_or_reagent": "96-Well Plate",
-      "ast_standard": "missing"
+      "ast_standard": "missing",
+      "species": {"value": "Escherichia coli",
+        "iri": ""
+      }
     }, {
       "antibiotic": "sulfisoxazole",
       "resistance_phenotype": "susceptible",
@@ -156,7 +192,10 @@
       "platform": "",
       "vendor": "Trek",
       "laboratory_typing_method_version_or_reagent": "96-Well Plate",
-      "ast_standard": "CLSI"
+      "ast_standard": "CLSI",
+      "species": {"value": "Escherichia coli",
+        "iri": ""
+      }
     }, {
       "antibiotic": "tetracycline",
       "resistance_phenotype": "susceptible",
@@ -167,7 +206,10 @@
       "platform": "",
       "vendor": "Trek",
       "laboratory_typing_method_version_or_reagent": "96-Well Plate",
-      "ast_standard": "CLSI"
+      "ast_standard": "CLSI",
+      "species": {"value": "Escherichia coli",
+        "iri": ""
+      }
     }, {
       "antibiotic": "trimethoprim-sulfamethoxazole",
       "resistance_phenotype": "susceptible",
@@ -178,7 +220,10 @@
       "platform": "",
       "vendor": "Trek",
       "laboratory_typing_method_version_or_reagent": "96-Well Plate",
-      "ast_standard": "CLSI"
+      "ast_standard": "CLSI",
+      "species": {"value": "Escherichia coli",
+        "iri": ""
+      }
     }]
   }]
 }

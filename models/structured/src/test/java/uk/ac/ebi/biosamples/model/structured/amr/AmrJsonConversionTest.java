@@ -118,7 +118,7 @@ public class AmrJsonConversionTest {
                 .withMeasure("=", "8", "mg/L")
                 .withPlatform("-")
                 .withResistancePhenotype("not-defined")
-                .withSpecies("Escherichia coli")
+                .withSpecies(new AmrPair("Escherichia coli"))
                 .build();
 
         assertThat(this.amrEntryJacksonTester.readObject("/EnaAmrData.json")).isEqualTo(entry);

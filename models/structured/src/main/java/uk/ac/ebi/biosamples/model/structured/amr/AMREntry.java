@@ -44,11 +44,15 @@ public class AMREntry implements Comparable<AMREntry>{
     private final String dstMedia;
     private final String dstMethod;
     private final String criticalConcentration;
-    private final String species;
+    private final AmrPair species;
     private final String breakpointVersion;
 
 
-    private AMREntry(AmrPair antibiotic, String resistancePhenotype, String measurementSign, String measurement, String measurementUnits, String vendor, String laboratoryTypingMethod, String platform, String laboratoryTypingMethodVersionOrReagent, String astStandard, String dstMedia, String dstMethod, String criticalConcentration, String species, String breakpointVersion) {
+    private AMREntry(AmrPair antibiotic, String resistancePhenotype, String measurementSign, String measurement, String measurementUnits, String vendor,
+                     String laboratoryTypingMethod, String platform,
+                     String laboratoryTypingMethodVersionOrReagent, String astStandard,
+                     String dstMedia, String dstMethod, String criticalConcentration,
+                     AmrPair species, String breakpointVersion) {
         this.antibiotic = antibiotic;
         this.resistancePhenotype = resistancePhenotype;
         this.measurementSign = measurementSign;
@@ -62,7 +66,7 @@ public class AMREntry implements Comparable<AMREntry>{
         this.dstMedia = dstMedia;
         this.dstMethod = dstMethod;
         this.criticalConcentration = criticalConcentration;
-        this.species = (species != null) ? species : "";
+        this.species = (species != null) ? species : new AmrPair("");
         this.breakpointVersion = breakpointVersion;
     }
 
@@ -121,7 +125,7 @@ public class AMREntry implements Comparable<AMREntry>{
         return criticalConcentration;
     }
 
-    public String getSpecies() {
+    public AmrPair getSpecies() {
         return species;
     }
 
@@ -186,7 +190,7 @@ public class AMREntry implements Comparable<AMREntry>{
             return comparison;
         }
 
-        comparison = nullSafeStringComparison(this.species, other.species);
+        comparison = nullSafeStringComparison(this.species.getValue(), other.species.getValue());
         if (comparison != 0) {
             return comparison;
         }
@@ -258,7 +262,7 @@ public class AMREntry implements Comparable<AMREntry>{
         private String dstMedia;
         private String dstMethod;
         private String criticalConcentration;
-        private String species;
+        private AmrPair species;
         private String breakpointVersion;
 
         @JsonCreator
@@ -349,7 +353,7 @@ public class AMREntry implements Comparable<AMREntry>{
         }
 
         @JsonProperty
-        public Builder withSpecies(String species) {
+        public Builder withSpecies(AmrPair species) {
             this.species = species;
             return this;
         }
