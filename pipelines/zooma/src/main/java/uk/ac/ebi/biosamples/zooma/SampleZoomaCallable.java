@@ -200,13 +200,13 @@ public class SampleZoomaCallable implements Callable<Void> {
 
                 Set<AMREntry> amrEntries = table.getStructuredData().stream().map(amrEntry -> {
                     final AMREntry newAmrEntry = amrEntry;
-                    final Optional<String> antibioticIri = zoomaProcessor.queryZooma("", amrEntry.getAntibiotic().getValue());
+                    final Optional<String> antibioticIri = zoomaProcessor.queryZooma("", amrEntry.getAntibioticName().getValue());
                     final Optional<String> organismIri = zoomaProcessor.queryZooma("", amrEntry.getSpecies().getValue());
 
                     if (antibioticIri.isPresent()) {
-                        log.info("Mapped " + amrEntry.getAntibiotic().getValue() + " to " + antibioticIri.get());
+                        log.info("Mapped " + amrEntry.getAntibioticName().getValue() + " to " + antibioticIri.get());
 
-                        newAmrEntry.getAntibiotic().setIri(antibioticIri.get());
+                        newAmrEntry.getAntibioticName().setIri(antibioticIri.get());
                         iriUpdate.set(true);
                     }
 

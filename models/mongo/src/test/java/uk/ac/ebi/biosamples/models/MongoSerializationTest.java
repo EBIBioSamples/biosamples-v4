@@ -57,7 +57,7 @@ public class MongoSerializationTest {
 		Set<AbstractData> structuredData = new HashSet<>();
 		AMRTable amrTable = new AMRTable.Builder("http://test").
                 addEntry(new AMREntry.Builder()
-                        .withAntibiotic(new AmrPair("ampicillin", ""))
+                        .withAntibioticName(new AmrPair("ampicillin", ""))
                         .withResistancePhenotype("susceptible")
 						.withMeasure("==", "2", "mg/L")
 						.withVendor("in-house")
@@ -124,7 +124,7 @@ public class MongoSerializationTest {
 
         AMRTable amrTable = new AMRTable.Builder("http://test").
                 addEntry(new AMREntry.Builder()
-                        .withAntibiotic(new AmrPair("ampicillin",""))
+                        .withAntibioticName(new AmrPair("ampicillin",""))
                         .withResistancePhenotype("susceptible")
 						.withMeasure("==", "2", "mg/L")
 						.withVendor("in-house")
@@ -155,11 +155,11 @@ public class MongoSerializationTest {
 
 		// Assert json contains data field
 		assertThat(this.json.write(details)).hasJsonPathArrayValue("@.data");
-		assertThat(this.json.write(details)).extractingJsonPathMapValue("@.data[0].content[0].antibiotic").contains(
+		assertThat(this.json.write(details)).extractingJsonPathMapValue("@.data[0].content[0].antibiotic_name").contains(
 				new AbstractMap.SimpleEntry<>("value", "ampicillin")
 		);
 
-		assertThat(this.json.write(details)).extractingJsonPathMapValue("@.data[0].content[0].antibiotic").contains(
+		assertThat(this.json.write(details)).extractingJsonPathMapValue("@.data[0].content[0].antibiotic_name").contains(
 				new AbstractMap.SimpleEntry<>("iri", "")
 		);
 

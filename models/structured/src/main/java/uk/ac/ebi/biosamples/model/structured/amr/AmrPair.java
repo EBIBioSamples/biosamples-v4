@@ -23,7 +23,7 @@ public class AmrPair implements Comparable<AmrPair> {
 
     @Override
     public String toString() {
-        return "antibiotic{" +
+        return "antibiotic_name{" +
                 "value='" + value + '\'' +
                 ", iri='" + iri + '\'' +
                 '}';

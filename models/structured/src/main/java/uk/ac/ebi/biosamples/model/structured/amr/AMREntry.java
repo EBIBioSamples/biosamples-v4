@@ -31,7 +31,7 @@ import java.util.Objects;
 })
 public class AMREntry implements Comparable<AMREntry>{
 
-    private final AmrPair antibiotic;
+    private final AmrPair antibioticName;
     private final String resistancePhenotype;
     private final String measurementSign;
     private final String measurement;
@@ -48,12 +48,12 @@ public class AMREntry implements Comparable<AMREntry>{
     private final String breakpointVersion;
 
 
-    private AMREntry(AmrPair antibiotic, String resistancePhenotype, String measurementSign, String measurement, String measurementUnits, String vendor,
+    private AMREntry(AmrPair antibioticName, String resistancePhenotype, String measurementSign, String measurement, String measurementUnits, String vendor,
                      String laboratoryTypingMethod, String platform,
                      String laboratoryTypingMethodVersionOrReagent, String astStandard,
                      String dstMedia, String dstMethod, String criticalConcentration,
                      AmrPair species, String breakpointVersion) {
-        this.antibiotic = antibiotic;
+        this.antibioticName = antibioticName;
         this.resistancePhenotype = resistancePhenotype;
         this.measurementSign = measurementSign;
         this.measurement = measurement;
@@ -73,8 +73,8 @@ public class AMREntry implements Comparable<AMREntry>{
 
     //@JsonSerialize(using = AmrPairSerializer.class)
     //@JsonProperty("antibiotic_name")
-    public AmrPair getAntibiotic() {
-        return antibiotic;
+    public AmrPair getAntibioticName() {
+        return antibioticName;
     }
 
     public String getResistancePhenotype() {
@@ -141,7 +141,7 @@ public class AMREntry implements Comparable<AMREntry>{
 
 
 
-        int comparison = nullSafeStringComparison(this.antibiotic.getValue(), other.antibiotic.getValue());
+        int comparison = nullSafeStringComparison(this.antibioticName.getValue(), other.antibioticName.getValue());
         if (comparison != 0) {
             return comparison;
         }
@@ -224,7 +224,7 @@ public class AMREntry implements Comparable<AMREntry>{
         if (!(o instanceof AMREntry)) return false;
         AMREntry amrEntry = (AMREntry) o;
         return Objects.equals(getMeasurement(), amrEntry.getMeasurement()) &&
-                Objects.equals(getAntibiotic().getValue(), amrEntry.getAntibiotic().getValue()) &&
+                Objects.equals(getAntibioticName().getValue(), amrEntry.getAntibioticName().getValue()) &&
                 Objects.equals(getResistancePhenotype(), amrEntry.getResistancePhenotype()) &&
                 Objects.equals(getMeasurementSign(), amrEntry.getMeasurementSign()) &&
                 Objects.equals(getMeasurementUnits(), amrEntry.getMeasurementUnits()) &&
@@ -244,12 +244,12 @@ public class AMREntry implements Comparable<AMREntry>{
     @Override
     public int hashCode() {
 
-        return Objects.hash(getAntibiotic().getValue(), getResistancePhenotype(), getMeasurementSign(), getMeasurement(), getMeasurementUnits(), getVendor(), getLaboratoryTypingMethod(), getAstStandard(), getDstMedia(), getDstMethod(), getCriticalConcentration(), getSpecies(), getBreakpointVersion());
+        return Objects.hash(getAntibioticName().getValue(), getResistancePhenotype(), getMeasurementSign(), getMeasurement(), getMeasurementUnits(), getVendor(), getLaboratoryTypingMethod(), getAstStandard(), getDstMedia(), getDstMethod(), getCriticalConcentration(), getSpecies(), getBreakpointVersion());
     }
 
     @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
     public static class Builder {
-        private AmrPair antibiotic;
+        private AmrPair antibioticName;
         private String resistancePhenotype;
         private String measurementSign;
         private String measurement;
@@ -268,8 +268,9 @@ public class AMREntry implements Comparable<AMREntry>{
         @JsonCreator
         public Builder() { }
 
-        public Builder withAntibiotic(AmrPair antibiotic) {
-            this.antibiotic = antibiotic;
+        @JsonProperty
+        public Builder withAntibioticName(AmrPair antibioticName) {
+            this.antibioticName = antibioticName;
             return this;
         }
 
@@ -396,7 +397,7 @@ public class AMREntry implements Comparable<AMREntry>{
 //            }
 
 
-            return new AMREntry(this.antibiotic, this.resistancePhenotype, this.measurementSign, this.measurement,
+            return new AMREntry(this.antibioticName, this.resistancePhenotype, this.measurementSign, this.measurement,
                     this.measurementUnits, this.vendor, this.laboratoryTypingMethod, this.platform,
                     this.laboratoryTypingMethodVersionOrReagent, this.astStandard,
                     this.dstMedia, this.dstMethod, this.criticalConcentration, this.species, this.breakpointVersion);

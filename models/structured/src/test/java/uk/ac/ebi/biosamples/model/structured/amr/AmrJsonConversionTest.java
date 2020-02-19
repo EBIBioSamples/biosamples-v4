@@ -33,7 +33,7 @@ public class AmrJsonConversionTest {
     @Test
     public void testAmrEntrySerializer() throws IOException {
         AMREntry entry = new AMREntry.Builder()
-                .withAntibiotic(new AmrPair("A",""))
+                .withAntibioticName(new AmrPair("A",""))
                 .withResistancePhenotype("Something")
                 .withMeasure("==", "2", "mg/L")
                 .withVendor("in-house")
@@ -45,14 +45,14 @@ public class AmrJsonConversionTest {
 
         log.info(json.getJson());
 
-        assertThat(json).hasJsonPathStringValue("@.antibiotic.value", "A");
+        assertThat(json).hasJsonPathStringValue("@.antibiotic_name.value", "A");
     }
 
     @Test
     public void testAmrTableSerializer() throws IOException {
         AMRTable.Builder tableBuilder = new AMRTable.Builder("http://some-fake-schema.com");
         tableBuilder.addEntry(new AMREntry.Builder()
-                .withAntibiotic(new AmrPair("A"))
+                .withAntibioticName(new AmrPair("A"))
                 .withResistancePhenotype("Something")
                 .withMeasure("==", "14", "mg/L")
                 .withVendor("in-house")
@@ -61,7 +61,7 @@ public class AmrJsonConversionTest {
                 .build());
 
         tableBuilder.addEntry(new AMREntry.Builder()
-                .withAntibiotic(new AmrPair("B",""))
+                .withAntibioticName(new AmrPair("B",""))
                 .withResistancePhenotype("pectine")
                 .withMeasure(">=", "14", "mg/L")
                 .withVendor("GSKey")
@@ -82,7 +82,7 @@ public class AmrJsonConversionTest {
         assertThat(json).extractingJsonPathArrayValue("@.content").hasOnlyElementsOfType(LinkedHashMap.class);
 
         assertThat(json).extractingJsonPathMapValue("@.content[1]").containsKeys(
-                "antibiotic", "resistance_phenotype", "ast_standard", "vendor", "measurement_units",
+                "antibiotic_name", "resistance_phenotype", "ast_standard", "vendor", "measurement_units",
                 "laboratory_typing_method", "measurement_sign", "measurement"
         );
         assertThat(json).extractingJsonPathMapValue("@.content[1]").containsEntry("measurement", "14");
@@ -93,7 +93,7 @@ public class AmrJsonConversionTest {
     public void testAMRDeserialization() throws Exception{
         AMRTable.Builder tableBuilder = new AMRTable.Builder("test");
         tableBuilder.addEntry(new AMREntry.Builder()
-                .withAntibiotic(new AmrPair("ampicillin","test.org"))
+                .withAntibioticName(new AmrPair("ampicillin","test.org"))
                 .withResistancePhenotype("susceptible")
                 .withMeasure("==", "2", "mg/L")
                 .withVendor("in-house")
@@ -111,7 +111,7 @@ public class AmrJsonConversionTest {
     @Test
     public void testDeserializationEnaAMR() throws Exception {
         AMREntry entry = new AMREntry.Builder()
-                .withAntibiotic(new AmrPair("Ampicillin","test.org"))
+                .withAntibioticName(new AmrPair("Ampicillin","test.org"))
                 .withAstStandard("EUCAST")
                 .withBreakpointVersion("not_determined")
                 .withLaboratoryTypingMethod("Agar dilution")

@@ -72,7 +72,7 @@ public class AMRTest {
 
     private AMREntry getAMREntry() {
         return new AMREntry.Builder()
-                .withAntibiotic(new AmrPair("ampicillin",""))
+                .withAntibioticName(new AmrPair("ampicillin",""))
                 .withResistancePhenotype("susceptible")
                 .withMeasure("==", "10", "mg/L")
                 .withVendor("in-house")
@@ -141,7 +141,7 @@ public class AMRTest {
                         hasEntry("laboratory_typing_method", amrEntry.getLaboratoryTypingMethod()),
                         hasEntry("ast_standard", amrEntry.getAstStandard())
                         )))
-                .andExpect(jsonPath("$.data[0].content[0].antibiotic").value(hasEntry("value", amrEntry.getAntibiotic().getValue())))
+                .andExpect(jsonPath("$.data[0].content[0].antibiotic_name").value(hasEntry("value", amrEntry.getAntibioticName().getValue())))
                 .andExpect(jsonPath("$.data[0].content[0]").value(
                         hasEntry("measurement", amrEntry.getMeasurement()) // This needs to go here because the the hasEntry has a different signature - Only one having a number as a value. allOf wants all matchers of the same type
                 ));
@@ -156,7 +156,7 @@ public class AMRTest {
 
         JsonNode jsonAmr = jsonSample.at("/data/0/content/0");
         AMREntry amrEntry = new AMREntry.Builder()
-                .withAntibiotic(new AmrPair(jsonAmr.get("antibiotic").asText(), ""))
+                .withAntibioticName(new AmrPair(jsonAmr.get("antibiotic_name").asText(), ""))
                 .withResistancePhenotype(jsonAmr.get("resistance_phenotype").asText())
                 .withMeasure(jsonAmr.get("measurement_sign").asText(), jsonAmr.get("measurement").asText(), jsonAmr.get("measurement_units").asText())
                 .withVendor(jsonAmr.get("vendor").asText())
@@ -193,7 +193,7 @@ public class AMRTest {
 
         JsonNode jsonAmr = jsonSample.at("/data/0/content/0");
         AMREntry amrEntry = new AMREntry.Builder()
-                .withAntibiotic(new AmrPair(jsonAmr.get("antibiotic").asText(), ""))
+                .withAntibioticName(new AmrPair(jsonAmr.get("antibiotic_name").asText(), ""))
                 .withResistancePhenotype(jsonAmr.get("resistance_phenotype").asText())
                 .withMeasure(jsonAmr.get("measurement_sign").asText(), jsonAmr.get("measurement").asText(), jsonAmr.get("measurement_units").asText())
                 .withVendor(jsonAmr.get("vendor").asText())

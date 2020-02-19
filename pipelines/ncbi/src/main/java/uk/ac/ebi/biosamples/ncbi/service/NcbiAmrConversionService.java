@@ -53,7 +53,7 @@ public class NcbiAmrConversionService {
         AMREntry.Builder amrEntryBuilder = new AMREntry.Builder();
         amrEntryBuilder.withSpecies(new AmrPair(organism));
 
-        getFieldIfAvailable(cells, fields, "Antibiotic").ifPresent(antibiotic -> amrEntryBuilder.withAntibiotic(new AmrPair(antibiotic, "")));
+        getFieldIfAvailable(cells, fields, "Antibiotic").ifPresent(antibiotic -> amrEntryBuilder.withAntibioticName(new AmrPair(antibiotic, "")));
         getFieldIfAvailable(cells, fields, "Resistance phenotype").ifPresent(amrEntryBuilder::withResistancePhenotype);
         getFieldIfAvailable(cells, fields, "Measurement sign").ifPresent(amrEntryBuilder::withMeasurementSign);
         getFieldIfAvailable(cells, fields, "Measurement").ifPresent(amrEntryBuilder::withMeasurement);
