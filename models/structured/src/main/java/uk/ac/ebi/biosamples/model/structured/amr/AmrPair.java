@@ -63,6 +63,6 @@ public class AmrPair implements Comparable<AmrPair> {
 
     @Override
     public int compareTo(AmrPair o) {
-        return 1;
+        return this.getValue().compareTo(o.getValue());
     }
 }

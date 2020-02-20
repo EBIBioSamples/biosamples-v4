@@ -19,6 +19,7 @@ public class AbstractDataSerializer extends StdSerializer<Set> {
         Set<AbstractData> abstractDataSet = (Set<AbstractData>) rawData;
 
         jsonGenerator.writeStartObject();
+
         for (AbstractData data: abstractDataSet) {
             jsonGenerator.writeFieldName(data.getDataType().toString());
             jsonGenerator.writeStartObject();
@@ -27,7 +28,7 @@ public class AbstractDataSerializer extends StdSerializer<Set> {
             jsonGenerator.writeEndObject();
 
         }
-        jsonGenerator.writeEndObject();
 
+        jsonGenerator.writeEndObject();
     }
 }

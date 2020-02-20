@@ -23,15 +23,12 @@ import uk.ac.ebi.biosamples.model.structured.amr.AMRTable;
 import uk.ac.ebi.biosamples.service.CurationApplicationService;
 
 public class SampleZoomaCallable implements Callable<Void> {
-
     private Logger log = LoggerFactory.getLogger(getClass());
-
     private final Sample sample;
     private final BioSamplesClient bioSamplesClient;
     private final ZoomaProcessor zoomaProcessor;
     private final CurationApplicationService curationApplicationService;
     private final String domain;
-
     public static final ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<>();
 
     public SampleZoomaCallable(BioSamplesClient bioSamplesClient, Sample sample,
@@ -49,6 +46,7 @@ public class SampleZoomaCallable implements Callable<Void> {
         try {
             Sample last;
             Sample curated = sample;
+
             do {
                 last = curated;
                 curated = zooma(last);
@@ -79,7 +77,6 @@ public class SampleZoomaCallable implements Callable<Void> {
                 } catch (Exception e) {
                     //TODO do this sensibly
                     //do nothing
-
                 }
 
                 if (iriComponents != null) {
@@ -181,8 +178,10 @@ public class SampleZoomaCallable implements Callable<Void> {
         if (sample.getData() != null) {
             Set<AbstractData> annotatedAmrData = annotateAmr(sample);
 
-            Sample.Builder.fromSample(sample).withData(annotatedAmrData).build();
-            bioSamplesClient.persistSampleResource(sample);
+            if (annotatedAmrData != null) {
+                Sample.Builder.fromSample(sample).withData(annotatedAmrData).build();
+                bioSamplesClient.persistSampleResource(sample);
+            }
         }
 
         return sample;
@@ -190,7 +189,6 @@ public class SampleZoomaCallable implements Callable<Void> {
 
     private Set<AbstractData> annotateAmr(Sample sample) {
         AtomicBoolean iriUpdate = new AtomicBoolean(false);
-        log.info(String.valueOf(sample.getData().size()));
 
         return sample.getData().stream().map(data -> {
             AMRTable table = null;
@@ -204,14 +202,14 @@ public class SampleZoomaCallable implements Callable<Void> {
                     final Optional<String> organismIri = zoomaProcessor.queryZooma("", amrEntry.getSpecies().getValue());
 
                     if (antibioticIri.isPresent()) {
-                        log.info("Mapped " + amrEntry.getAntibioticName().getValue() + " to " + antibioticIri.get());
+                        log.trace("Mapped " + amrEntry.getAntibioticName().getValue() + " to " + antibioticIri.get());
 
                         newAmrEntry.getAntibioticName().setIri(antibioticIri.get());
                         iriUpdate.set(true);
                     }
 
                     if (organismIri.isPresent()) {
-                        log.info("Mapped " + amrEntry.getSpecies().getValue() + " to " + organismIri.get());
+                        log.trace("Mapped " + amrEntry.getSpecies().getValue() + " to " + organismIri.get());
 
                         newAmrEntry.getSpecies().setIri(organismIri.get());
                         iriUpdate.set(true);
@@ -228,7 +226,7 @@ public class SampleZoomaCallable implements Callable<Void> {
                 table.getStructuredData().addAll(amrEntries);
             }
 
-            return table;
+            return table != null ? table : null;
 
         }).collect(Collectors.toSet());
     }

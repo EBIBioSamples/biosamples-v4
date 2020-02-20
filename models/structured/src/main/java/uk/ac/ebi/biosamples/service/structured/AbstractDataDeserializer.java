@@ -1,22 +1,20 @@
 package uk.ac.ebi.biosamples.service.structured;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import uk.ac.ebi.biosamples.model.structured.amr.AMREntry;
-import uk.ac.ebi.biosamples.model.structured.amr.AMRTable;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.model.structured.DataType;
+import uk.ac.ebi.biosamples.model.structured.amr.AMREntry;
+import uk.ac.ebi.biosamples.model.structured.amr.AMRTable;
 
 import java.io.IOException;
 import java.net.URI;
 import java.util.Iterator;
 
 public class AbstractDataDeserializer extends StdDeserializer<AbstractData> {
-
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     protected AbstractDataDeserializer() {
@@ -28,8 +26,7 @@ public class AbstractDataDeserializer extends StdDeserializer<AbstractData> {
     }
 
     @Override
-    public AbstractData deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
-
+    public AbstractData deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
         JsonNode rootNode = p.getCodec().readTree(p);
         URI schema = URI.create(rootNode.get("schema").asText());
         DataType type = DataType.valueOf(rootNode.get("type").asText());
@@ -41,8 +38,8 @@ public class AbstractDataDeserializer extends StdDeserializer<AbstractData> {
         // what the content look like
 
         if (type == DataType.AMR) {
-
             AMRTable.Builder tableBuilder = new AMRTable.Builder(schema);
+
             for (Iterator<JsonNode> it = content.elements(); it.hasNext(); ) {
                 JsonNode amrRowObject = it.next();
                 AMREntry entry = this.objectMapper.treeToValue(amrRowObject, AMREntry.class);
@@ -51,7 +48,6 @@ public class AbstractDataDeserializer extends StdDeserializer<AbstractData> {
 
             return tableBuilder.build();
         }
-
 
         return null;
     }
