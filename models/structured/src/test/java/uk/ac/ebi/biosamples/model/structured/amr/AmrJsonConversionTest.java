@@ -18,9 +18,7 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
 @JsonTest
 @TestPropertySource(properties={"spring.jackson.serialization.INDENT_OUTPUT=true"})
 public class AmrJsonConversionTest {
-
     Logger log = LoggerFactory.getLogger(getClass());
-
     JacksonTester<AMREntry> amrEntryJacksonTester;
     JacksonTester<AMRTable> amrTableJacksonTester;
 
@@ -85,6 +83,7 @@ public class AmrJsonConversionTest {
                 "antibiotic_name", "resistance_phenotype", "ast_standard", "vendor", "measurement_units",
                 "laboratory_typing_method", "measurement_sign", "measurement"
         );
+
         assertThat(json).extractingJsonPathMapValue("@.content[1]").containsEntry("measurement", "14");
 
     }
@@ -102,7 +101,6 @@ public class AmrJsonConversionTest {
                 .build());
         AMRTable table = tableBuilder.build();
         // Assert sample with AMR table entry
-
         assertThat(this.amrTableJacksonTester.readObject("/AmrData.json")).isEqualTo(table);
 
 
@@ -123,6 +121,4 @@ public class AmrJsonConversionTest {
 
         assertThat(this.amrEntryJacksonTester.readObject("/EnaAmrData.json")).isEqualTo(entry);
     }
-
-
 }

@@ -19,7 +19,7 @@ public class AmrPairDeserializer extends StdDeserializer<AmrPair> {
     }
 
     @Override
-    public AmrPair deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+    public AmrPair deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
         return p.readValueAs(AmrPair.class);
     }
 }
