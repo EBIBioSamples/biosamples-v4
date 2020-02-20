@@ -67,7 +67,7 @@ public class SolrSampleAccessionField extends SolrSampleField {
 
             AccessionFilter accessionFilter = (AccessionFilter) filter;
             if (accessionFilter.getContent().isPresent())
-                filterCriteria = filterCriteria.expression(accessionFilter.getContent().get());
+                filterCriteria = filterCriteria.expression(String.format("/%s/",accessionFilter.getContent().get()));
             else
                 filterCriteria = filterCriteria.isNotNull();
         }
