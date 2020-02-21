@@ -142,16 +142,15 @@ public class SampleHtmlController {
 		model.addAttribute("text", text);
 		model.addAttribute("start", (page-1)*size);
 		model.addAttribute("page", pageSample);
-		//model.addAttribute("facets", sampleFacets);
+		model.addAttribute("filters", filtersList);
+		model.addAttribute("paginations", getPaginations(pageSample, uriBuilder));
+		model.addAttribute("jsonLD", jsonLDService.jsonLDToString(jsonLDDataset));
 		model.addAttribute("facets", new LazyContextVariable<List<Facet>>() {
 			@Override
 			protected List<Facet> loadValue() {
 				return facetService.getFacets(text, filterCollection, domains, 10, 10);
 			}
 		});
-		model.addAttribute("filters", filtersList);
-		model.addAttribute("paginations", getPaginations(pageSample, uriBuilder));
-		model.addAttribute("jsonLD", jsonLDService.jsonLDToString(jsonLDDataset));
 
 		//TODO add "clear all facets" button
 		//TODO title of webpage
@@ -168,37 +167,21 @@ public class SampleHtmlController {
 	}
 
 	@GetMapping(value = "/facets")
-	public String facets(Model model, @RequestParam(name="text", required=false) String text,
-						  @RequestParam(name="filter", required=false) String[] filtersArray,
-						  @RequestParam(name="page", defaultValue="1") Integer page,
-						  @RequestParam(name="size", defaultValue="10") Integer size,
-						  @RequestParam(name = "curationrepo", defaultValue="none") final String curationRepo,
-						  HttpServletRequest request, HttpServletResponse response) {
-
-		//force a minimum of 1 result
-		if (size < 1) {
-			size = 1;
-		}
-		//cap it for our protection
-		if (size > 1000) {
-			size = 1000;
-		}
-
-		if (page < 1) {
-			page = 1;
-		}
-
+	public String facets(Model model, @RequestParam(name = "text", required = false) String text,
+						 @RequestParam(name = "filter", required = false) String[] filtersArray,
+						 HttpServletResponse response) {
 		Collection<Filter> filterCollection = filterService.getFiltersCollection(filtersArray);
 		Collection<String> domains = bioSamplesAapService.getDomains();
 		//default to getting 10 values from 10 facets
 		//List<Facet> sampleFacets = facetService.getFacets(text, filterCollection, domains, 10, 10);
 
 		//build URLs for the facets depending on if they are enabled or not
-		UriComponentsBuilder uriBuilder = ServletUriComponentsBuilder.fromRequest(request);
 		List<String> filtersList = new ArrayList<>();
+
 		if (filtersArray != null) {
 			filtersList.addAll(Arrays.asList(filtersArray));
 		}
+
 		Collections.sort(filtersList);
 
 		model.addAttribute("facets", new LazyContextVariable<List<Facet>>() {
@@ -219,6 +202,7 @@ public class SampleHtmlController {
 		if (domains.size() > 0) {
 			cacheControl.cachePrivate();
 		}
+
 		response.setHeader("Cache-Control", cacheControl.getHeaderValue());
 		return "facets";
 	}
