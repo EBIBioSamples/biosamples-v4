@@ -7,6 +7,7 @@
 You can use BioSamples filters are to filter resources based on their characteristics.
 BioSamples filters are generally composed by a `type`, a `field` and a `value` combined as `<type>:<field>:<value>`
 Note that if a `value` is not provided, the filter will check for existence of the provided field.
+You can use search filters in both sample and accession search endpoints.
 
 
 
@@ -79,6 +80,8 @@ Filter based on samples' accession
 
 ==== Examples
 - link:/biosamples/samples?filter=acc:SAMEA341514[`filter=acc:SAMEA341514`, window='_blank']
+- link:/biosamples/samples?filter=acc:SAMN.\*[`filter=acc:SAMN.*`, window='_blank'] (Get only NCBI samples)
+- link:/biosamples/accessions?filter=acc:SAMD.\*[`filter=acc:SAMD.*`, window='_blank'] (Get only DDBJ accessions)
 
 === Relationship
 Filter based on samples relationship source
