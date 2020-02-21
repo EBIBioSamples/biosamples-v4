@@ -14,21 +14,24 @@ import uk.ac.ebi.biosamples.model.structured.amr.AMREntry;
 import uk.ac.ebi.biosamples.model.structured.amr.AMRTable;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
 @Service
 public class EnaAmrDataProcessService {
     private final static Logger log = LoggerFactory.getLogger(EnaAmrDataProcessService.class);
+    public final static ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<String>();
 
     public void processAmrRows(final List<String> lines, final Sample sample, final BioSamplesClient client) {
         final Set<AbstractData> structuredData = new HashSet<>();
         final AMRTable.Builder amrTableBuilder = new AMRTable.Builder("http://localhost:8081/biosamples/schemas/amr.json");
         /*String[] dilutionMethods = new String[]{"Broth dilution", "Microbroth dilution", "Agar dilution"};
         String[] diffusionMethods = new String[]{"Disc-diffusion", "Neo-sensitabs", "Etest"};*/
+
+        final String accession = sample.getAccession();
 
         lines.forEach(line -> {
             final CsvMapper mapper = new CsvMapper();
@@ -38,8 +41,9 @@ public class EnaAmrDataProcessService {
             try {
                 AMREntry amrEntry = r.readValue(line);
                 amrTableBuilder.addEntry(amrEntry);
-            } catch (IOException e) {
-                log.error("Error in parsing AMR data for sample ", sample.getAccession());
+            } catch (final Exception e) {
+                log.error("Error in parsing AMR data for sample ", accession);
+                failedQueue.add(accession);
             }
         });
 
@@ -47,7 +51,7 @@ public class EnaAmrDataProcessService {
         Sample sampleNew = Sample.Builder.fromSample(sample).withData(structuredData).build();
         client.persistSampleResource(sampleNew);
 
-        log.info("Submitted sample " + sample.getAccession() + " with structured data");
+        log.info("Submitted sample " + accession + " with structured data");
     }
 
     private String removeBioSampleId(String line) {
