@@ -167,16 +167,16 @@ public class SampleHtmlController {
 	}
 
 	@GetMapping(value = "/facets")
-	public String facets(Model model, @RequestParam(name = "text", required = false) String text,
-						 @RequestParam(name = "filter", required = false) String[] filtersArray,
-						 HttpServletResponse response) {
-		Collection<Filter> filterCollection = filterService.getFiltersCollection(filtersArray);
-		Collection<String> domains = bioSamplesAapService.getDomains();
+	public String facets(Model model, @RequestParam(name = "text", required = false) final String text,
+						 @RequestParam(name = "filter", required = false) final String[] filtersArray,
+						 final HttpServletResponse response) {
+		final Collection<Filter> filterCollection = filterService.getFiltersCollection(filtersArray);
+		final Collection<String> domains = bioSamplesAapService.getDomains();
 		//default to getting 10 values from 10 facets
 		//List<Facet> sampleFacets = facetService.getFacets(text, filterCollection, domains, 10, 10);
 
 		//build URLs for the facets depending on if they are enabled or not
-		List<String> filtersList = new ArrayList<>();
+		final List<String> filtersList = new ArrayList<>();
 
 		if (filtersArray != null) {
 			filtersList.addAll(Arrays.asList(filtersArray));

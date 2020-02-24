@@ -23,10 +23,12 @@
             }
         </script>
     </div>
+
     <div th:each="facet: ${facets}"
          th:with="facetType = ${facet.getType().getFacetName()},
 				 		  filterType=${facet.getAssociatedFilterType().get()},
 				 		  generalFilterName=${filterType.getSerialization() + ':' + facet.label}">
+
         <div class="facet-container">
             <input th:form="local-search"
                    class="facet-checkbox"
@@ -43,6 +45,7 @@
                 <div class="lead facet-count text-right" th:text="${facet.count}"></div>
             </label>
         </div>
+
         <div th:each="value : ${facet.content}"
              class="facet-container"
              th:with="valueFilterName=${generalFilterName + ':' + value.label}">
