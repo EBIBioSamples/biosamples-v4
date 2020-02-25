@@ -5,7 +5,7 @@
 <body>
 <section th:fragment="facets (facets, filters)">
     <div class="button-grid">
-        <div>
+        <div th:if="${!facets.isEmpty()}">
             <input id="filter-apply" type="submit" th:form="local-search" class="button columns large-6"
                    value="Apply filters" disabled/>
             <input id="filter-clear" th:onclick="|clearFilters()|" type="button"

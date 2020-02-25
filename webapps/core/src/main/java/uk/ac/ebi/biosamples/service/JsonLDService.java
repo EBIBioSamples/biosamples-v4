@@ -103,7 +103,7 @@ public class JsonLDService {
     private String getDatasetUrl() {
         String datasetUrl = null;
         try {
-            Method method = SampleHtmlController.class.getMethod("samples", Model.class, String.class, String[].class, Integer.class, Integer.class, HttpServletRequest.class, HttpServletResponse.class);
+            Method method = SampleHtmlController.class.getMethod("samples", Model.class, String.class, String[].class, Integer.class, Integer.class, String.class, HttpServletRequest.class, HttpServletResponse.class);
             datasetUrl = linkTo(method, null, null, null, null, null, null, null).toUri().toString();
         } catch (NoSuchMethodException e) {
             e.printStackTrace();

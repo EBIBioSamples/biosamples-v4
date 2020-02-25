@@ -166,24 +166,28 @@ public class SampleHtmlController {
 		return "samples";
 	}
 
+	@GetMapping(value = "/facets_test")
+	@ResponseBody
+	public String getTestFacet(Model model) {
+		return "Hello facets test";
+	}
+
 	@GetMapping(value = "/facets")
 	public String facets(Model model, @RequestParam(name = "text", required = false) final String text,
 						 @RequestParam(name = "filter", required = false) final String[] filtersArray,
 						 final HttpServletResponse response) {
 		final Collection<Filter> filterCollection = filterService.getFiltersCollection(filtersArray);
 		final Collection<String> domains = bioSamplesAapService.getDomains();
-		//default to getting 10 values from 10 facets
-		//List<Facet> sampleFacets = facetService.getFacets(text, filterCollection, domains, 10, 10);
 
 		//build URLs for the facets depending on if they are enabled or not
 		final List<String> filtersList = new ArrayList<>();
-
 		if (filtersArray != null) {
 			filtersList.addAll(Arrays.asList(filtersArray));
 		}
-
 		Collections.sort(filtersList);
 
+		model.addAttribute("filters", filtersList);
+		//default to getting 10 values from 10 facets
 		model.addAttribute("facets", new LazyContextVariable<List<Facet>>() {
 			@Override
 			protected List<Facet> loadValue() {
@@ -191,20 +195,15 @@ public class SampleHtmlController {
 			}
 		});
 
-		model.addAttribute("filters", filtersList);
-
-		//TODO add "clear all facets" button
-		//TODO title of webpage
-
 		//Note - EBI load balancer does cache but doesn't add age header, so clients could cache up to twice this age
 		CacheControl cacheControl = CacheControl.maxAge(bioSamplesProperties.getBiosamplesCorePageCacheMaxAge(), TimeUnit.SECONDS);
 		//if the user has access to any domains, then mark the response as private as must be using AAP and responses will be different
-		if (domains.size() > 0) {
+		if (!domains.isEmpty()) {
 			cacheControl.cachePrivate();
 		}
 
 		response.setHeader("Cache-Control", cacheControl.getHeaderValue());
-		return "facets";
+		return "fragments/facets";
 	}
 
 	private Paginations getPaginations(Page<Sample> pageSample, UriComponentsBuilder uriBuilder) {

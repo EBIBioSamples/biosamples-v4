@@ -6,9 +6,9 @@
 
 <section th:fragment="samples (page)">
     <div th:if="${page.getTotalElements() > 0}">
-        <p th:text="'Showing '+(${start}+1)+' to '+(${start}+${page.getNumberOfElements()})+' of '+${page.getTotalElements()}+' results'">
-            Showing 1 to 10 of 6268 results
-        </p>
+<!--        <p th:text="'Showing '+(${start}+1)+' to '+(${start}+${page.getNumberOfElements()})+' of '+${page.getTotalElements()}+' results'">-->
+<!--            Showing 1 to 10 of 6268 results-->
+<!--        </p>-->
 
         <span th:replace=":: pagination (${paginations})"></span>
 
@@ -17,9 +17,9 @@
 
         <span th:replace=":: pagination (${paginations})"></span>
     </div>
-    <div th:if="${page.getTotalElements() == 0}">
-        <p>No results found</p>
-    </div>
+<!--    <div th:if="${page.getTotalElements() == 0}">-->
+<!--        <p>No results found</p>-->
+<!--    </div>-->
 </section>
 
 <div class="card columns medium-12" th:fragment="result(sample, iterStat)" th:style="${iterStat.odd} ? 'background: #f0f0f2;' : 'background: #ffffff;'">
@@ -62,7 +62,7 @@
 
 <section th:fragment="pagination (paginations)">
     <!-- https://ebiwd.github.io/EBI-Pattern-library/sample-site/boilerplate/search-results.html -->
-    <ul class="pagination" role="navigation" aria-label="Pagination">
+    <ul class="pagination biosamples-pagination" role="navigation" aria-label="Pagination">
         <li th:if="${paginations.previous}" class="pagination-previous"><a th:href="${paginations.previous.url}"
                                                                            aria-label="Previous page">Previous <span
                 class="show-for-sr">page</span></a></li>
