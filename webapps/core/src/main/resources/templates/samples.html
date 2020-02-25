@@ -17,7 +17,7 @@
     <script th:if="${jsonLD != null}" type="application/ld+json" th:utext="${jsonLD}"></script>
 </head>
 
-<body th:onload="|getFacets(${page.getTotalElements() != 0})|">
+<body th:onload="|getFacets('@{/facets}', ${page.getTotalElements() != 0})|">
 <th:block th:include="fragments/header :: header (filters=${filters})"></th:block>
 <div layout:fragment="content" id="content">
     <th:block th:include="fragments/header :: masterhead"></th:block>
