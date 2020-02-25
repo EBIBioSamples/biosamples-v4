@@ -13,6 +13,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.thymeleaf.context.LazyContextVariable;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.JsonLDDataCatalog;
 import uk.ac.ebi.biosamples.model.JsonLDDataset;
@@ -126,9 +127,7 @@ public class SampleHtmlController {
 		Page<Sample> pageSample = samplePageService.getSamplesByText(text, filterCollection, domains, pageable, curationRepo);
 
 		//default to getting 10 values from 10 facets
-		List<Facet> sampleFacets = facetService.getFacets(text, filterCollection, domains, 10, 10);
-
-
+		//List<Facet> sampleFacets = facetService.getFacets(text, filterCollection, domains, 10, 10);
 
 		//build URLs for the facets depending on if they are enabled or not
 		UriComponentsBuilder uriBuilder = ServletUriComponentsBuilder.fromRequest(request);
@@ -143,10 +142,15 @@ public class SampleHtmlController {
 		model.addAttribute("text", text);
 		model.addAttribute("start", (page-1)*size);
 		model.addAttribute("page", pageSample);
-		model.addAttribute("facets", sampleFacets);
 		model.addAttribute("filters", filtersList);
 		model.addAttribute("paginations", getPaginations(pageSample, uriBuilder));
 		model.addAttribute("jsonLD", jsonLDService.jsonLDToString(jsonLDDataset));
+		model.addAttribute("facets", new LazyContextVariable<List<Facet>>() {
+			@Override
+			protected List<Facet> loadValue() {
+				return facetService.getFacets(text, filterCollection, domains, 10, 10);
+			}
+		});
 
 		//TODO add "clear all facets" button
 		//TODO title of webpage
@@ -160,6 +164,46 @@ public class SampleHtmlController {
 		}
 		response.setHeader("Cache-Control", cacheControl.getHeaderValue());
 		return "samples";
+	}
+
+	@GetMapping(value = "/facets_test")
+	@ResponseBody
+	public String getTestFacet(Model model) {
+		return "Hello facets test";
+	}
+
+	@GetMapping(value = "/facets")
+	public String facets(Model model, @RequestParam(name = "text", required = false) final String text,
+						 @RequestParam(name = "filter", required = false) final String[] filtersArray,
+						 final HttpServletResponse response) {
+		final Collection<Filter> filterCollection = filterService.getFiltersCollection(filtersArray);
+		final Collection<String> domains = bioSamplesAapService.getDomains();
+
+		//build URLs for the facets depending on if they are enabled or not
+		final List<String> filtersList = new ArrayList<>();
+		if (filtersArray != null) {
+			filtersList.addAll(Arrays.asList(filtersArray));
+		}
+		Collections.sort(filtersList);
+
+		model.addAttribute("filters", filtersList);
+		//default to getting 10 values from 10 facets
+		model.addAttribute("facets", new LazyContextVariable<List<Facet>>() {
+			@Override
+			protected List<Facet> loadValue() {
+				return facetService.getFacets(text, filterCollection, domains, 10, 10);
+			}
+		});
+
+		//Note - EBI load balancer does cache but doesn't add age header, so clients could cache up to twice this age
+		CacheControl cacheControl = CacheControl.maxAge(bioSamplesProperties.getBiosamplesCorePageCacheMaxAge(), TimeUnit.SECONDS);
+		//if the user has access to any domains, then mark the response as private as must be using AAP and responses will be different
+		if (!domains.isEmpty()) {
+			cacheControl.cachePrivate();
+		}
+
+		response.setHeader("Cache-Control", cacheControl.getHeaderValue());
+		return "fragments/facets";
 	}
 
 	private Paginations getPaginations(Page<Sample> pageSample, UriComponentsBuilder uriBuilder) {
