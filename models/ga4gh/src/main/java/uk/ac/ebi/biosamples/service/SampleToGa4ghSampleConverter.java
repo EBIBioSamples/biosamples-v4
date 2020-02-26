@@ -24,14 +24,16 @@ public class SampleToGa4ghSampleConverter implements Converter<Sample, Ga4ghSamp
     private Ga4ghSample baseBioSample;
     private GeoLocationDataHelper locationHelper;
     private Ga4ghSample ga4ghSample;
+    private HttpOlsUrlResolutionService httpOlsUrlResolutionService;
 
     @Autowired
     OLSDataRetriever olsRetriever;
 
     @Autowired
-    public SampleToGa4ghSampleConverter(Ga4ghSample ga4ghSample, GeoLocationDataHelper helper) {
+    public SampleToGa4ghSampleConverter(Ga4ghSample ga4ghSample, GeoLocationDataHelper helper, HttpOlsUrlResolutionService httpOlsUrlResolutionService) {
         this.baseBioSample = ga4ghSample;
         this.locationHelper = helper;
+        this.httpOlsUrlResolutionService = httpOlsUrlResolutionService;
     }
 
     /**
@@ -76,7 +78,7 @@ public class SampleToGa4ghSampleConverter implements Converter<Sample, Ga4ghSamp
             } else if (type.equals("description") || type.equals("description title")) {
                 ga4ghSample.setDescription(attribute.getValue());
             } else {
-                if (attribute.getValue() != null && attribute.getIriOls() != null) {
+                if (attribute.getValue() != null && httpOlsUrlResolutionService.getIriOls(attribute.getIri()) != null) {
                     bioCharacteristics.add(attribute);
                 } else {
                     attributes.add(attribute);
