@@ -22,15 +22,13 @@ public class HttpOlsUrlResolutionService {
     }
 
     public boolean checkHttpStatusOfUrl(final String urlToCheck) throws IOException {
-        URL url = new URL(urlToCheck);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        final URL url = new URL(urlToCheck);
+        final HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         int response;
 
         conn.setRequestMethod("GET");
         conn.connect();
         response = conn.getResponseCode();
-
-        log.info("Status is " +response+ " for URL " + urlToCheck);
 
         return HttpStatus.valueOf(response).is2xxSuccessful();
     }
@@ -41,21 +39,22 @@ public class HttpOlsUrlResolutionService {
      *
      * @return url representation of the IRI
      */
-    public String getIriOls(SortedSet<String> iri) {
+    public String getIriOls(final SortedSet<String> iri) {
         if (iri == null || iri.size() == 0) return null;
 
         String displayIri = iri.first();
 
         //check this is a sane iri
         try {
-            UriComponents iriComponents = UriComponentsBuilder.fromUriString(displayIri).build(true);
+            final UriComponents iriComponents = UriComponentsBuilder.fromUriString(displayIri).build(true);
+
             if (iriComponents.getScheme() == null
                     || iriComponents.getHost() == null
                     || iriComponents.getPath() == null) {
                 //incomplete iri (e.g. 9606, EFO_12345) don't bother to check
                 return null;
             }
-        } catch (Exception e) {
+        } catch (final Exception e) {
             //FIXME: Can't use a non static logger here because
             log.error("An error occurred while trying to build OLS iri for " + displayIri, e);
             return null;
@@ -67,9 +66,7 @@ public class HttpOlsUrlResolutionService {
 
         try {
             if(checkUrlForPattern(displayIri)) {
-                //log.info("in p1 " + displayIri);
                 if (checkHttpStatusOfUrl("http://www.ebi.ac.uk/ols/terms?iri=" + displayIri)) {
-                    //log.info("in p2 " + displayIri);
                     return "http://www.ebi.ac.uk/ols/terms?iri=" + iriUrl;
                 } else {
                     return displayIri;
@@ -77,19 +74,14 @@ public class HttpOlsUrlResolutionService {
             } else {
                 return "http://www.ebi.ac.uk/ols/terms?iri=" + iriUrl;
             }
-        } catch (IOException e) {
+        } catch (final IOException e) {
             return displayIri;
         }
     }
 
-    public boolean checkUrlForPattern(String displayIri) {
-        //log.info(displayIri);
-
-        if(displayIri.contains("purl.obolibrary.org/obo") || displayIri.contains("www.ebi.ac.uk/efo/EFO")) {
-            //log.info(displayIri + "  " + false);
+    public boolean checkUrlForPattern(final String displayIri) {
+        if(displayIri.contains("purl.obolibrary.org/obo") || displayIri.contains("www.ebi.ac.uk/efo/EFO"))
             return false;
-        }
-
         else return true;
     }
 }
