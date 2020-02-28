@@ -3,6 +3,7 @@ package uk.ac.ebi.biosamples.curation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.curation.service.IriValidatorService;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -14,38 +15,38 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class SampleCurationCallable implements Callable<Void> {
-
     private Logger log = LoggerFactory.getLogger(getClass());
-
     private final Sample sample;
     private final BioSamplesClient bioSamplesClient;
     private final OlsProcessor olsProcessor;
     private final CurationApplicationService curationApplicationService;
+    private final IriValidatorService iriValidatorService;
     private final String domain;
 
     public static final String[] NON_APPLICABLE_SYNONYMS = {"n/a", "na", "n.a", "none",
             "unknown", "--", ".", "null", "missing", "[not reported]",
             "[not requested]", "not applicable", "not_applicable", "not collected", "not specified", "not known", "not reported", "missing: not provided"};
 
-    public static final ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<String>();
+    public static final ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<>();
 
     public SampleCurationCallable(BioSamplesClient bioSamplesClient, Sample sample,
                                   OlsProcessor olsProcessor,
-                                  CurationApplicationService curationApplicationService, String domain) {
+                                  CurationApplicationService curationApplicationService,
+                                  String domain, IriValidatorService iriValidatorService) {
         this.bioSamplesClient = bioSamplesClient;
         this.sample = sample;
         this.olsProcessor = olsProcessor;
         this.curationApplicationService = curationApplicationService;
         this.domain = domain;
+        this.iriValidatorService = iriValidatorService;
     }
 
     @Override
     public Void call() throws Exception {
-
         try {
-
             Sample last = sample;
             Sample curated = sample;
+
             do {
                 last = curated;
                 curated = curate(last);
@@ -60,88 +61,100 @@ public class SampleCurationCallable implements Callable<Void> {
             log.warn("Encountered exception with " + sample.getAccession(), e);
             failedQueue.add(sample.getAccession());
         }
+
         return null;
     }
 
     public Sample curate(Sample sample) {
-        for (Attribute attribute : sample.getAttributes()) {
-            // clean unexpected characters
-            String newType = cleanString(attribute.getType());
-            String newValue = cleanString(attribute.getValue());
+            for (Attribute attribute : sample.getAttributes()) {
+                // clean unexpected characters
+                String newType = cleanString(attribute.getType());
+                String newValue = cleanString(attribute.getValue());
 
-            //if the clean type or value would be empty, curate to an non attribute
-            if (newType.length() == 0 || newValue.length() == 0) {
-                Curation curation = Curation.build(Collections.singleton(attribute), Collections.emptyList());
-                bioSamplesClient.persistCuration(sample.getAccession(), curation, domain);
-                sample = curationApplicationService.applyCurationToSample(sample, curation);
-                return sample;
-            }
+                //if the clean type or value would be empty, curate to an non attribute
+                if (newType.length() == 0 || newValue.length() == 0) {
+                    Curation curation = Curation.build(Collections.singleton(attribute), Collections.emptyList());
 
-
-            if (!attribute.getType().equals(newType) || !attribute.getValue().equals(newValue)) {
-                Attribute newAttribute = Attribute.build(newType, newValue, null, attribute.getIri(),
-                        attribute.getUnit());
-                Curation curation = Curation.build(attribute, newAttribute);
-                bioSamplesClient.persistCuration(sample.getAccession(), curation, domain);
-                sample = curationApplicationService.applyCurationToSample(sample, curation);
-                return sample;
-
-            }
-
-            // if no information content, remove
-            if (isNotApplicableSynonym(attribute.getValue())) {
-                Curation curation = Curation.build(attribute, null);
-                bioSamplesClient.persistCuration(sample.getAccession(), curation, domain);
-                sample = curationApplicationService.applyCurationToSample(sample, curation);
-                return sample;
-            }
-
-            // if it has a unit, make sure it is clean
-            if (attribute.getUnit() != null) {
-                String newUnit = correctUnit(attribute.getUnit());
-                if (!attribute.getUnit().equals(newUnit)) {
-                    Attribute newAttribute = Attribute.build(attribute.getType(), attribute.getValue(),
-                            null, attribute.getIri(), newUnit);
-                    Curation curation = Curation.build(attribute, newAttribute);
-                    bioSamplesClient.persistCuration(sample.getAccession(),
-                            curation, domain);
+                    bioSamplesClient.persistCuration(sample.getAccession(), curation, domain);
                     sample = curationApplicationService.applyCurationToSample(sample, curation);
+
                     return sample;
                 }
-            }
 
-            //if it is an organism with a single numeric IRI, assume NCBI taxon
-            if (attribute.getType().toLowerCase().equals("organism") && attribute.getIri().size() == 1) {
-                Integer taxId = null;
-                try {
-                    taxId = Integer.parseInt(attribute.getIri().first());
-                } catch (NumberFormatException e) {
-                    taxId = null;
-                }
-                if (taxId != null) {
-                    SortedSet<String> iris = new TreeSet<>();
-                    iris.add("http://purl.obolibrary.org/obo/NCBITaxon_" + taxId);
-                    //TODO check this IRI exists via OLS
-
-                    Attribute newAttribute = Attribute.build(attribute.getType(), attribute.getValue(), null, 
-                            iris, attribute.getUnit());
+                if (!attribute.getType().equals(newType) || !attribute.getValue().equals(newValue)) {
+                    Attribute newAttribute = Attribute.build(newType, newValue, null, attribute.getIri(),
+                            attribute.getUnit());
                     Curation curation = Curation.build(attribute, newAttribute);
-                    bioSamplesClient.persistCuration(sample.getAccession(),
-                            curation, domain);
+
+                    bioSamplesClient.persistCuration(sample.getAccession(), curation, domain);
                     sample = curationApplicationService.applyCurationToSample(sample, curation);
+
                     return sample;
                 }
+
+                // if no information content, remove
+                if (isNotApplicableSynonym(attribute.getValue())) {
+                    Curation curation = Curation.build(attribute, null);
+
+                    bioSamplesClient.persistCuration(sample.getAccession(), curation, domain);
+                    sample = curationApplicationService.applyCurationToSample(sample, curation);
+
+                    return sample;
+                }
+
+                // if it has a unit, make sure it is clean
+                if (attribute.getUnit() != null) {
+                    String newUnit = correctUnit(attribute.getUnit());
+
+                    if (!attribute.getUnit().equals(newUnit)) {
+                        Attribute newAttribute = Attribute.build(attribute.getType(), attribute.getValue(),
+                                null, attribute.getIri(), newUnit);
+                        Curation curation = Curation.build(attribute, newAttribute);
+
+                        bioSamplesClient.persistCuration(sample.getAccession(),
+                                curation, domain);
+                        sample = curationApplicationService.applyCurationToSample(sample, curation);
+
+                        return sample;
+                    }
+                }
+
+                //if it is an organism with a single numeric IRI, assume NCBI taxon
+                if (attribute.getType().toLowerCase().equals("organism") && attribute.getIri().size() == 1) {
+                    Integer taxId = null;
+
+                    try {
+                        taxId = Integer.parseInt(attribute.getIri().first());
+                    } catch (NumberFormatException e) {
+                        taxId = null;
+                    }
+
+                    if (taxId != null) {
+                        SortedSet<String> iris = new TreeSet<>();
+
+                        iris.add("http://purl.obolibrary.org/obo/NCBITaxon_" + taxId);
+                        //TODO check this IRI exists via OLS
+
+                        Attribute newAttribute = Attribute.build(attribute.getType(), attribute.getValue(), null,
+                                iris, attribute.getUnit());
+                        Curation curation = Curation.build(attribute, newAttribute);
+
+                        bioSamplesClient.persistCuration(sample.getAccession(),
+                                curation, domain);
+                        sample = curationApplicationService.applyCurationToSample(sample, curation);
+
+                        return sample;
+                    }
+                }
             }
-        }
+            // TODO validate existing ontology terms against OLS
 
-        // TODO validate existing ontology terms against OLS
+            // TODO turn attributes with biosample accessions into relationships
 
-        // TODO turn attributes with biosample accessions into relationships
+            // TODO split number+unit attributes
 
-        // TODO split number+unit attributes
-
-        // TODO lowercase attribute types
-        // TODO lowercase relationship types
+            // TODO lowercase attribute types
+            // TODO lowercase relationship types
         return sample;
     }
 
@@ -206,6 +219,7 @@ public class SampleCurationCallable implements Callable<Void> {
                 sb.append(current);
             }
         }
+
         return sb.toString();
     }
 
@@ -215,11 +229,13 @@ public class SampleCurationCallable implements Callable<Void> {
 
     public static boolean isNotApplicableSynonym(String string) {
         String lsString = string.toLowerCase().trim();
+
         return stringContainsItemFromList(lsString, NON_APPLICABLE_SYNONYMS);
     }
 
     private String correctUnit(String unit) {
         String lcval = unit.toLowerCase();
+
         if (lcval.equals("alphanumeric") || lcval.equals("na") || lcval.equals("n/a") || lcval.equals("n.a")
                 || lcval.equals("censored/uncensored") || lcval.equals("m/f") || lcval.equals("test/control")
                 || lcval.equals("yes/no") || lcval.equals("y/n") || lcval.equals("not specified")
@@ -289,12 +305,16 @@ public class SampleCurationCallable implements Callable<Void> {
     }
 
     private Sample ols(Sample sample) {
-        for (Attribute attribute : sample.getAttributes()) {
+        for (final Attribute attribute : sample.getAttributes()) {
+            final Set<String> iriSet = new TreeSet<>(attribute.getIri());
+
             for (String iri : attribute.getIri()) {
                 log.trace("Checking iri " + iri);
+
                 if (iri.matches("^[A-Za-z]+[_:\\-][0-9]+$")) {
                     log.trace("Querying OLS for iri " + iri);
                     Optional<String> iriResult = olsProcessor.queryOlsForShortcode(iri);
+
                     if (iriResult.isPresent()) {
                         log.trace("Mapped " + iri + " to " + iriResult.get());
                         Attribute mapped = Attribute.build(attribute.getType(), attribute.getValue(), iriResult.get(), null);
@@ -303,12 +323,25 @@ public class SampleCurationCallable implements Callable<Void> {
                         //save the curation back in biosamples
                         bioSamplesClient.persistCuration(sample.getAccession(), curation, domain);
                         sample = curationApplicationService.applyCurationToSample(sample, curation);
+
+                        return sample;
+                    }
+                } else if (iriValidatorService.checkUrlForPattern(iri)) {
+                    if (!iriValidatorService.validateIri(iri)) {
+                        iriSet.remove(iri);
+                        Attribute mapped = Attribute.build(attribute.getType(), attribute.getValue(), attribute.getTag(), iriSet, null);
+                        Curation curation = Curation.build(Collections.singleton(attribute), Collections.singleton(mapped), null, null);
+
+                        //save the curation back in biosamples
+                        bioSamplesClient.persistCuration(sample.getAccession(), curation, domain);
+                        sample = curationApplicationService.applyCurationToSample(sample, curation);
+
                         return sample;
                     }
                 }
             }
         }
+
         return sample;
     }
-
 }

@@ -13,6 +13,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
+import uk.ac.ebi.biosamples.curation.service.IriValidatorService;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.ols.OlsProcessor;
@@ -72,7 +73,7 @@ public class SampleCurationCallableTest {
         String expectedResponse = readFile("/examples/ols-responses/" + shortcode + ".json");
         mockServer.expect(requestTo("https://wwwdev.ebi.ac.uk/ols/api/terms?id=" + shortcode + "&size=500")).andExpect(method(HttpMethod.GET))
                 .andRespond(withSuccess(expectedResponse, MediaType.APPLICATION_JSON));
-        SampleCurationCallable sampleCurationCallable = new SampleCurationCallable(mockBioSamplesClient, sample, olsProcessor, curationApplicationService, null);
+        SampleCurationCallable sampleCurationCallable = new SampleCurationCallable(mockBioSamplesClient, sample, olsProcessor, curationApplicationService, null, new IriValidatorService());
         sampleCurationCallable.call();
         Sample curatedSample = curationApplicationService.applyAllCurationToSample(sample, mockBioSamplesClient.getCurations(sample.getAccession()));
         String curatedFilePath = "/examples/samples/SAMEA103887543-curated.json";
@@ -86,7 +87,7 @@ public class SampleCurationCallableTest {
         String attributeName = "Ancestory";
         Sample sample = objectMapper.readValue(SampleCurationCallableTest.class.getResourceAsStream(filePath), Sample.class);
         assertTrue(hasAttribute(sample.getAttributes(), attributeName));
-        SampleCurationCallable sampleCurationCallable = new SampleCurationCallable(mockBioSamplesClient, sample, olsProcessor, curationApplicationService, null);
+        SampleCurationCallable sampleCurationCallable = new SampleCurationCallable(mockBioSamplesClient, sample, olsProcessor, curationApplicationService, null, new IriValidatorService());
         sampleCurationCallable.call();
         Sample curatedSample = curationApplicationService.applyAllCurationToSample(sample, mockBioSamplesClient.getCurations(sample.getAccession()));
         assertFalse(hasAttribute(curatedSample.getAttributes(), attributeName));
@@ -98,7 +99,7 @@ public class SampleCurationCallableTest {
         String attributeName = "Organism";
         Sample sample = objectMapper.readValue(SampleCurationCallableTest.class.getResourceAsStream(filePath), Sample.class);
         assertTrue(hasAttribute(sample.getAttributes(), attributeName));
-        SampleCurationCallable sampleCurationCallable = new SampleCurationCallable(mockBioSamplesClient, sample, olsProcessor, curationApplicationService, null);
+        SampleCurationCallable sampleCurationCallable = new SampleCurationCallable(mockBioSamplesClient, sample, olsProcessor, curationApplicationService, null, new IriValidatorService());
         sampleCurationCallable.call();
         Sample curatedSample = curationApplicationService.applyAllCurationToSample(sample, mockBioSamplesClient.getCurations(sample.getAccession()));
         assertTrue(hasAttribute(curatedSample.getAttributes(), attributeName));
