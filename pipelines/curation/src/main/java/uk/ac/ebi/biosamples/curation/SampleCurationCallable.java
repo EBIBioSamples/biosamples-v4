@@ -82,7 +82,7 @@ public class SampleCurationCallable implements Callable<Void> {
                 }
 
                 if (!attribute.getType().equals(newType) || !attribute.getValue().equals(newValue)) {
-                    Attribute newAttribute = Attribute.build(newType, newValue, null, attribute.getIri(),
+                    Attribute newAttribute = Attribute.build(newType, newValue, attribute.getTag(), attribute.getIri(),
                             attribute.getUnit());
                     Curation curation = Curation.build(attribute, newAttribute);
 
@@ -108,7 +108,7 @@ public class SampleCurationCallable implements Callable<Void> {
 
                     if (!attribute.getUnit().equals(newUnit)) {
                         Attribute newAttribute = Attribute.build(attribute.getType(), attribute.getValue(),
-                                null, attribute.getIri(), newUnit);
+                                attribute.getTag(), attribute.getIri(), newUnit);
                         Curation curation = Curation.build(attribute, newAttribute);
 
                         bioSamplesClient.persistCuration(sample.getAccession(),
@@ -134,7 +134,7 @@ public class SampleCurationCallable implements Callable<Void> {
                         iris.add("http://purl.obolibrary.org/obo/NCBITaxon_" + taxId);
                         //TODO check this IRI exists via OLS
 
-                        Attribute newAttribute = Attribute.build(attribute.getType(), attribute.getValue(), null,
+                        Attribute newAttribute = Attribute.build(attribute.getType(), attribute.getValue(), attribute.getTag(),
                                 iris, attribute.getUnit());
                         Curation curation = Curation.build(attribute, newAttribute);
 
@@ -366,7 +366,7 @@ public class SampleCurationCallable implements Callable<Void> {
 
                     if (iriResult.isPresent()) {
                         log.trace("Mapped " + iri + " to " + iriResult.get());
-                        final Attribute mapped = Attribute.build(attribute.getType(), attribute.getValue(), iriResult.get(), null);
+                        final Attribute mapped = Attribute.build(attribute.getType(), attribute.getValue(), attribute.getTag(), iriResult.get(), null);
                         final Curation curation = Curation.build(Collections.singleton(attribute), Collections.singleton(mapped), null, null);
 
                         //save the curation back in biosamples
