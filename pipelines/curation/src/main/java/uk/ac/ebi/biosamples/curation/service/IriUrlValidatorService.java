@@ -7,12 +7,15 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+/**
+ * Service to validate if an IRI URL resolves
+ */
 @Service
-public class IriValidatorService {
+public class IriUrlValidatorService {
     public static final String OBO = "purl.obolibrary.org/obo";
     public static final String EBIUK = "www.ebi.ac.uk";
 
-    public IriValidatorService(){}
+    public IriUrlValidatorService(){}
 
     public boolean validateIri(final String iri) {
         try {

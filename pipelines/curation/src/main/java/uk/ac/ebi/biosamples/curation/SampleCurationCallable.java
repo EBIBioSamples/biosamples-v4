@@ -3,7 +3,7 @@ package uk.ac.ebi.biosamples.curation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.curation.service.IriValidatorService;
+import uk.ac.ebi.biosamples.curation.service.IriUrlValidatorService;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -20,7 +20,7 @@ public class SampleCurationCallable implements Callable<Void> {
     private final BioSamplesClient bioSamplesClient;
     private final OlsProcessor olsProcessor;
     private final CurationApplicationService curationApplicationService;
-    private final IriValidatorService iriValidatorService;
+    private final IriUrlValidatorService iriUrlValidatorService;
     private final String domain;
 
     public static final String[] NON_APPLICABLE_SYNONYMS = {"n/a", "na", "n.a", "none",
@@ -32,13 +32,13 @@ public class SampleCurationCallable implements Callable<Void> {
     public SampleCurationCallable(BioSamplesClient bioSamplesClient, Sample sample,
                                   OlsProcessor olsProcessor,
                                   CurationApplicationService curationApplicationService,
-                                  String domain, IriValidatorService iriValidatorService) {
+                                  String domain, IriUrlValidatorService iriUrlValidatorService) {
         this.bioSamplesClient = bioSamplesClient;
         this.sample = sample;
         this.olsProcessor = olsProcessor;
         this.curationApplicationService = curationApplicationService;
         this.domain = domain;
-        this.iriValidatorService = iriValidatorService;
+        this.iriUrlValidatorService = iriUrlValidatorService;
     }
 
     @Override
@@ -313,12 +313,12 @@ public class SampleCurationCallable implements Callable<Void> {
 
                 if (iri.matches("^[A-Za-z]+[_:\\-][0-9]+$")) {
                     log.trace("Querying OLS for iri " + iri);
-                    Optional<String> iriResult = olsProcessor.queryOlsForShortcode(iri);
+                    final Optional<String> iriResult = olsProcessor.queryOlsForShortcode(iri);
 
                     if (iriResult.isPresent()) {
                         log.trace("Mapped " + iri + " to " + iriResult.get());
-                        Attribute mapped = Attribute.build(attribute.getType(), attribute.getValue(), iriResult.get(), null);
-                        Curation curation = Curation.build(Collections.singleton(attribute), Collections.singleton(mapped), null, null);
+                        final Attribute mapped = Attribute.build(attribute.getType(), attribute.getValue(), iriResult.get(), null);
+                        final Curation curation = Curation.build(Collections.singleton(attribute), Collections.singleton(mapped), null, null);
 
                         //save the curation back in biosamples
                         bioSamplesClient.persistCuration(sample.getAccession(), curation, domain);
@@ -326,11 +326,13 @@ public class SampleCurationCallable implements Callable<Void> {
 
                         return sample;
                     }
-                } else if (iriValidatorService.checkUrlForPattern(iri)) {
-                    if (!iriValidatorService.validateIri(iri)) {
+                }
+                // Validate the IRI URL and do a HTTP call for URL's matching the less common pattern, remove URL's as Curation objects for any thats doesn't return back a 2xx response
+                 else if (iriUrlValidatorService.checkUrlForPattern(iri)) {
+                    if (!iriUrlValidatorService.validateIri(iri)) {
                         iriSet.remove(iri);
-                        Attribute mapped = Attribute.build(attribute.getType(), attribute.getValue(), attribute.getTag(), iriSet, null);
-                        Curation curation = Curation.build(Collections.singleton(attribute), Collections.singleton(mapped), null, null);
+                        final Attribute mapped = Attribute.build(attribute.getType(), attribute.getValue(), attribute.getTag(), iriSet, null);
+                        final Curation curation = Curation.build(Collections.singleton(attribute), Collections.singleton(mapped), null, null);
 
                         //save the curation back in biosamples
                         bioSamplesClient.persistCuration(sample.getAccession(), curation, domain);

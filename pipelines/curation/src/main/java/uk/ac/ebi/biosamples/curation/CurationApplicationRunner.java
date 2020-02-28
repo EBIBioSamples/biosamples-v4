@@ -9,7 +9,7 @@ import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.curation.service.IriValidatorService;
+import uk.ac.ebi.biosamples.curation.service.IriUrlValidatorService;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.ols.OlsProcessor;
@@ -33,7 +33,7 @@ public class CurationApplicationRunner implements ApplicationRunner {
     private final CurationApplicationService curationApplicationService;
 
     @Autowired
-    IriValidatorService iriValidatorService;
+    IriUrlValidatorService iriUrlValidatorService;
 
     public CurationApplicationRunner(BioSamplesClient bioSamplesClient,
                                      PipelinesProperties pipelinesProperties,
@@ -64,7 +64,7 @@ public class CurationApplicationRunner implements ApplicationRunner {
                 }
 
                 Callable<Void> task = new SampleCurationCallable(bioSamplesClient, sample, olsProcessor,
-                        curationApplicationService, pipelinesProperties.getCurationDomain(), iriValidatorService);
+                        curationApplicationService, pipelinesProperties.getCurationDomain(), iriUrlValidatorService);
                 sampleCount++;
                 if (sampleCount % 500 == 0) {
                     log.info(sampleCount + " scheduled");
