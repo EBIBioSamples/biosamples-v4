@@ -42,9 +42,9 @@ public class SampleCurationCallable implements Callable<Void> {
     }
 
     @Override
-    public Void call() throws Exception {
+    public Void call() {
         try {
-            Sample last = sample;
+            Sample last;
             Sample curated = sample;
 
             do {
@@ -125,8 +125,7 @@ public class SampleCurationCallable implements Callable<Void> {
 
                     try {
                         taxId = Integer.parseInt(attribute.getIri().first());
-                    } catch (NumberFormatException e) {
-                        taxId = null;
+                    } catch (NumberFormatException ignored) {
                     }
 
                     if (taxId != null) {
@@ -160,7 +159,7 @@ public class SampleCurationCallable implements Callable<Void> {
 
     public String cleanString(String string) {
         if (string == null) {
-            return string;
+            return null;
         }
         // purge all strange characters not-quite-whitespace
         // note, you can find these unicode codes by pasting u"the character"
@@ -185,11 +184,11 @@ public class SampleCurationCallable implements Callable<Void> {
         //this is a significant change, so leave it undone for the moment....
 
         // <br> or <b>
-        string = string.replaceAll("\\s*\\</?[bB][rR]? ?/?\\>\\s*", " ");
+        string = string.replaceAll("\\s*</?[bB][rR]? ?/?>\\s*", " ");
         // <p>
-        string = string.replaceAll("\\s*\\</?[pP] ?/?\\>\\s*", " ");
+        string = string.replaceAll("\\s*</?[pP] ?/?>\\s*", " ");
         // <i>
-        string = string.replaceAll("\\s*\\</?[iI] ?/?\\>\\s*", " ");
+        string = string.replaceAll("\\s*</?[iI] ?/?>\\s*", " ");
 
         // trim extra whitespace at start and end
         string = string.trim();
@@ -208,14 +207,12 @@ public class SampleCurationCallable implements Callable<Void> {
         // from
         // http://blog.mark-mclaren.info/2007/02/invalid-xml-characters-when-valid-utf8_5873.html
         // TODO check for valid UTF-8 but invalid JSON characters
-        StringBuffer sb = new StringBuffer(); // Used to hold the output.
+        StringBuilder sb = new StringBuilder(); // Used to hold the output.
         char current; // Used to reference the current character.
         for (int i = 0; i < string.length(); i++) {
             current = string.charAt(i); // NOTE: No IndexOutOfBoundsException
             // caught here; it should not happen.
-            if ((current == 0x9) || (current == 0xA) || (current == 0xD) || ((current >= 0x20) && (current <= 0xD7FF))
-                    || ((current >= 0xE000) && (current <= 0xFFFD))
-                    || ((current >= 0x10000) && (current <= 0x10FFFF))) {
+            if (current == 0x9 || current == 0xA || current == 0xD || current >= 0x20 && current <= 0xD7FF || current >= 0xE000 && current <= 0xFFFD) {
                 sb.append(current);
             }
         }
@@ -223,84 +220,136 @@ public class SampleCurationCallable implements Callable<Void> {
         return sb.toString();
     }
 
-    private static boolean stringContainsItemFromList(String value, String[] items) {
-        return Arrays.stream(items).parallel().anyMatch(value::equals);
+    private static boolean stringContainsItemFromList(String value) {
+        return Arrays.stream(SampleCurationCallable.NON_APPLICABLE_SYNONYMS).parallel().anyMatch(value::equals);
     }
 
     public static boolean isNotApplicableSynonym(String string) {
         String lsString = string.toLowerCase().trim();
 
-        return stringContainsItemFromList(lsString, NON_APPLICABLE_SYNONYMS);
+        return stringContainsItemFromList(lsString);
     }
 
     private String correctUnit(String unit) {
         String lcval = unit.toLowerCase();
 
-        if (lcval.equals("alphanumeric") || lcval.equals("na") || lcval.equals("n/a") || lcval.equals("n.a")
-                || lcval.equals("censored/uncensored") || lcval.equals("m/f") || lcval.equals("test/control")
-                || lcval.equals("yes/no") || lcval.equals("y/n") || lcval.equals("not specified")
-                || lcval.equals("not collected") || lcval.equals("not known") || lcval.equals("not reported")
-                || lcval.equals("missing"))
-        // NOTE -this is for units ONLY
-        {
-            return null;
-        } else if (lcval.equals("meter") || lcval.equals("meters")) {
-            return "meter";
-        } else if (lcval.equals("cellsperliter") || lcval.equals("cells per liter") || lcval.equals("cellperliter")
-                || lcval.equals("cell per liter") || lcval.equals("cellsperlitre") || lcval.equals("cells per litre")
-                || lcval.equals("cellperlitre") || lcval.equals("cell per litre")) {
-            return "cell per liter";
-        } else if (lcval.equals("cellspermilliliter") || lcval.equals("cells per milliliter")
-                || lcval.equals("cellpermilliliter") || lcval.equals("cell per milliliter")
-                || lcval.equals("cellspermillilitre") || lcval.equals("cells per millilitre")
-                || lcval.equals("cellpermillilitre") || lcval.equals("cell per millilitre")) {
-            return "cell per millilitre";
-        } else if (lcval.equals("micromolesperliter") || lcval.equals("micromoleperliter")
-                || lcval.equals("micromole per liter") || lcval.equals("micromoles per liter")
-                || lcval.equals("micromolesperlitre") || lcval.equals("micromoleperlitre")
-                || lcval.equals("micromole per litre") || lcval.equals("micromoles per litre")) {
-            return "micromole per liter";
-        } else if (lcval.equals("microgramsperliter") || lcval.equals("microgramperliter")
-                || lcval.equals("microgram per liter") || lcval.equals("micrograms per liter")
-                || lcval.equals("microgramsperlitre") || lcval.equals("microgramperlitre")
-                || lcval.equals("microgram per litre") || lcval.equals("micrograms per litre")) {
-            return "microgram per liter";
-        } else if (lcval.equals("micromolesperkilogram") || lcval.equals("micromoles per kilogram")
-                || lcval.equals("micromoleperkilogram") || lcval.equals("micromole per kilogram")) {
-            return "micromole per kilogram";
-        } else if (lcval.equals("psu") || lcval.equals("practicalsalinityunit")
-                || lcval.equals("practical salinity unit") || lcval.equals("practical salinity units")
-                || lcval.equals("pss-78") || lcval.equals("practicalsalinityscale1978 ")) {
-            // technically, this is not a unit since its dimensionless..
-            return "practical salinity unit";
-        } else if (lcval.equals("micromoles") || lcval.equals("micromole")) {
-            return "micromole";
-        } else if (lcval.equals("decimalhours") || lcval.equals("decimalhour") || lcval.equals("hours")
-                || lcval.equals("hour")) {
-            return "hour";
-        } else if (lcval.equals("day") || lcval.equals("days")) {
-            return "day";
-        } else if (lcval.equals("week") || lcval.equals("weeks")) {
-            return "week";
-        } else if (lcval.equals("month") || lcval.equals("months")) {
-            return "month";
-        } else if (lcval.equals("year") || lcval.equals("years")) {
-            return "year";
-        } else if (lcval.equals("percentage")) {
-            return "percent";
-        } else if (lcval.equals("decimal degrees") || lcval.equals("decimal degree") || lcval.equals("decimaldegrees")
-                || lcval.equals("decimaldegree")) {
-            return "decimal degree";
-        } else if (lcval.equals("celcius") || lcval.equals("degree celcius") || lcval.equals("degrees celcius")
-                || lcval.equals("degreecelcius") || lcval.equals("degree celsius") || lcval.equals("degrees celsius")
-                || lcval.equals("degreecelsius") || lcval.equals("centigrade") || lcval.equals("degree centigrade")
-                || lcval.equals("degrees centigrade") || lcval.equals("degreecentigrade") || lcval.equals("c")
-                || lcval.equals("??c") || lcval.equals("degree c") || lcval.equals("internationaltemperaturescale1990")
-                || lcval.equals("iternationaltemperaturescale1990")) {
-            return "Celsius";
-        } else {
-            // no change
-            return unit;
+        switch (lcval) {
+            case "alphanumeric":
+            case "na":
+            case "n/a":
+            case "n.a":
+            case "censored/uncensored":
+            case "m/f":
+            case "test/control":
+            case "yes/no":
+            case "y/n":
+            case "not specified":
+            case "not collected":
+            case "not known":
+            case "not reported":
+            case "missing":
+                // NOTE -this is for units ONLY
+
+                return null;
+            case "meter":
+            case "meters":
+                return "meter";
+            case "cellsperliter":
+            case "cells per liter":
+            case "cellperliter":
+            case "cell per liter":
+            case "cellsperlitre":
+            case "cells per litre":
+            case "cellperlitre":
+            case "cell per litre":
+                return "cell per liter";
+            case "cellspermilliliter":
+            case "cells per milliliter":
+            case "cellpermilliliter":
+            case "cell per milliliter":
+            case "cellspermillilitre":
+            case "cells per millilitre":
+            case "cellpermillilitre":
+            case "cell per millilitre":
+                return "cell per millilitre";
+            case "micromolesperliter":
+            case "micromoleperliter":
+            case "micromole per liter":
+            case "micromoles per liter":
+            case "micromolesperlitre":
+            case "micromoleperlitre":
+            case "micromole per litre":
+            case "micromoles per litre":
+                return "micromole per liter";
+            case "microgramsperliter":
+            case "microgramperliter":
+            case "microgram per liter":
+            case "micrograms per liter":
+            case "microgramsperlitre":
+            case "microgramperlitre":
+            case "microgram per litre":
+            case "micrograms per litre":
+                return "microgram per liter";
+            case "micromolesperkilogram":
+            case "micromoles per kilogram":
+            case "micromoleperkilogram":
+            case "micromole per kilogram":
+                return "micromole per kilogram";
+            case "psu":
+            case "practicalsalinityunit":
+            case "practical salinity unit":
+            case "practical salinity units":
+            case "pss-78":
+            case "practicalsalinityscale1978 ":
+                // technically, this is not a unit since its dimensionless..
+                return "practical salinity unit";
+            case "micromoles":
+            case "micromole":
+                return "micromole";
+            case "decimalhours":
+            case "decimalhour":
+            case "hours":
+            case "hour":
+                return "hour";
+            case "day":
+            case "days":
+                return "day";
+            case "week":
+            case "weeks":
+                return "week";
+            case "month":
+            case "months":
+                return "month";
+            case "year":
+            case "years":
+                return "year";
+            case "percentage":
+                return "percent";
+            case "decimal degrees":
+            case "decimal degree":
+            case "decimaldegrees":
+            case "decimaldegree":
+                return "decimal degree";
+            case "celcius":
+            case "degree celcius":
+            case "degrees celcius":
+            case "degreecelcius":
+            case "degree celsius":
+            case "degrees celsius":
+            case "degreecelsius":
+            case "centigrade":
+            case "degree centigrade":
+            case "degrees centigrade":
+            case "degreecentigrade":
+            case "c":
+            case "??c":
+            case "degree c":
+            case "internationaltemperaturescale1990":
+            case "iternationaltemperaturescale1990":
+                return "Celsius";
+            default:
+                // no change
+                return unit;
         }
     }
 
