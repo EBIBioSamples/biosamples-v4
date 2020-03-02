@@ -42,7 +42,7 @@ public class HttpOlsUrlResolutionService {
      *
      * @return url representation of the IRI
      */
-    @Cacheable(value = "iri")
+    //@Cacheable(value = "iri")
     public String getIriOls(final SortedSet<String> iri) {
         if (iri == null || iri.size() == 0) return null;
 
