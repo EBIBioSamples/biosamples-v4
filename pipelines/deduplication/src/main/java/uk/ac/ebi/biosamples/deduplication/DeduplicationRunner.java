@@ -28,31 +28,11 @@ public class DeduplicationRunner implements ApplicationRunner {
 
     @Override
     public void run(final ApplicationArguments args) throws IOException {
-        //makePrivateUtility();
-
         final List<DeduplicationDao.RowMapping> mappingList = deduplicationDao.getAllSamples();
         final Observable<DeduplicationDao.RowMapping> observable = Observable.fromIterable(mappingList);
 
         observable.subscribe(this::checkDuplicates);
     }
-
-    /* Utility method to bulk private samples */
-   /* private void makePrivateUtility() throws IOException {
-        final List<String> privateSampleList = CsvReader.readCsv();
-
-        log.info(String.valueOf(privateSampleList.size()));
-
-        privateSampleList.forEach(sample -> {
-            Optional<Resource<Sample>> sampleToBePrivate = bioSamplesClient.fetchSampleResource(sample);
-
-            if(sampleToBePrivate.isPresent()) {
-                final Sample privateSample = Sample.Builder.fromSample(sampleToBePrivate.get().getContent()).withRelease(ZonedDateTime.now(ZoneOffset.UTC).plusYears(1000).toInstant()).build();
-                bioSamplesClient.persistSampleResource(privateSample);
-                log.info("Sample made private is " + privateSample.getAccession());
-            }
-        });
-    }*/
-
 
     private void checkDuplicates(final DeduplicationDao.RowMapping pair) {
         final String enaId = pair.getEnaId();
