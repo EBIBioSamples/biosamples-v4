@@ -18,7 +18,7 @@ public class IriUrlValidatorService {
 
     public IriUrlValidatorService(){}
 
-    @Cacheable(value = "iri")
+    //@Cacheable(value = "iri")
     public boolean validateIri(final String iri) {
         try {
             return checkHttpStatusOfUrl(iri);
