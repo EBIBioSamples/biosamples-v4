@@ -1,31 +1,18 @@
 package uk.ac.ebi.biosamples.model;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.web.util.UriComponents;
-import org.springframework.web.util.UriComponentsBuilder;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.*;
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class Attribute implements Comparable<Attribute> {
     //TODO: This needs to be public static otherwise spring-data-mongo goes crazy
 	public static Logger log = LoggerFactory.getLogger(Attribute.class);
-
 	private String type;
 	private String value;
 	private SortedSet<String> iri;
@@ -56,45 +43,7 @@ public class Attribute implements Comparable<Attribute> {
 		return iri;
 	}
 	
-	/**
-	 * This returns a string representation of the URL to lookup the associated ontology term iri in
-	 * EBI OLS. 
-	 * @return
-	 */
-	@JsonIgnore
-	public String getIriOls() {
-		//TODO move this to service layer
-		if (iri == null || iri.size() == 0) return null;
-
-		String displayIri = iri.first();
-		
-		//check this is a sane iri
-		try {
-			UriComponents iriComponents = UriComponentsBuilder.fromUriString(displayIri).build(true);
-			if (iriComponents.getScheme() == null
-					|| iriComponents.getHost() == null
-					|| iriComponents.getPath() == null) {
-				//incomplete iri (e.g. 9606, EFO_12345) don't bother to check
-				return null;
-			}
-		} catch (Exception e) {
-			//FIXME: Can't use a non static logger here because
-			log.error("An error occurred while trying to build OLS iri for " + displayIri, e);
-			return null;
-		}
-		
-		try {
-			//TODO application.properties this
-			//TODO use https
-			return "http://www.ebi.ac.uk/ols/terms?iri="+URLEncoder.encode(displayIri.toString(), "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			//should never get here
-			throw new RuntimeException(e);
-		}		
-			
-	}
-	
-	@JsonProperty("unit") 
+	@JsonProperty("unit")
 	public String getUnit() {
 		return unit;
 	}

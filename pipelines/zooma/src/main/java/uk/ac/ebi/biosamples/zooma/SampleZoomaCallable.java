@@ -1,18 +1,7 @@
 package uk.ac.ebi.biosamples.zooma;
 
-import java.util.Collections;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.util.UriComponents;
-import org.springframework.web.util.UriComponentsBuilder;
-
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Curation;
@@ -21,6 +10,14 @@ import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.model.structured.amr.AMREntry;
 import uk.ac.ebi.biosamples.model.structured.amr.AMRTable;
 import uk.ac.ebi.biosamples.service.CurationApplicationService;
+
+import java.util.Collections;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 public class SampleZoomaCallable implements Callable<Void> {
     private Logger log = LoggerFactory.getLogger(getClass());
@@ -66,31 +63,7 @@ public class SampleZoomaCallable implements Callable<Void> {
                 continue;
             }
 
-            //if it has at least one sensible iri, skip it
-            boolean hasSaneIri = false;
-
-            for (String iri : attribute.getIri()) {
-                UriComponents iriComponents = null;
-
-                try {
-                    iriComponents = UriComponentsBuilder.fromUriString(iri).build();
-                } catch (Exception e) {
-                    //TODO do this sensibly
-                    //do nothing
-                }
-
-                if (iriComponents != null) {
-                    if (iriComponents.getScheme() != null
-                            && iriComponents.getHost() != null
-                            && iriComponents.getPath() != null) {
-                        hasSaneIri = true;
-                    }
-                }
-            }
-
-            if (hasSaneIri) {
-                continue;
-            }
+            //do nothing - removed a loop as attribute.getIri() is always null
 
             //if it has units, skip it
             if (attribute.getUnit() != null) {
@@ -165,7 +138,7 @@ public class SampleZoomaCallable implements Callable<Void> {
 
                 if (iri.isPresent()) {
                     log.trace("Mapped " + attribute + " to " + iri.get());
-                    Attribute mapped = Attribute.build(attribute.getType(), attribute.getValue(), iri.get(), null);
+                    Attribute mapped = Attribute.build(attribute.getType(), attribute.getValue(), attribute.getTag(), iri.get(), null);
                     Curation curation = Curation.build(Collections.singleton(attribute), Collections.singleton(mapped), null, null);
 
                     //save the curation back in biosamples
@@ -197,26 +170,25 @@ public class SampleZoomaCallable implements Callable<Void> {
                 table = (AMRTable) data;
 
                 Set<AMREntry> amrEntries = table.getStructuredData().stream().map(amrEntry -> {
-                    final AMREntry newAmrEntry = amrEntry;
                     final Optional<String> antibioticIri = zoomaProcessor.queryZooma("", amrEntry.getAntibioticName().getValue());
                     final Optional<String> organismIri = zoomaProcessor.queryZooma("", amrEntry.getSpecies().getValue());
 
                     if (antibioticIri.isPresent()) {
                         log.trace("Mapped " + amrEntry.getAntibioticName().getValue() + " to " + antibioticIri.get());
 
-                        newAmrEntry.getAntibioticName().setIri(antibioticIri.get());
+                        amrEntry.getAntibioticName().setIri(antibioticIri.get());
                         iriUpdate.set(true);
                     }
 
                     if (organismIri.isPresent()) {
                         log.trace("Mapped " + amrEntry.getSpecies().getValue() + " to " + organismIri.get());
 
-                        newAmrEntry.getSpecies().setIri(organismIri.get());
+                        amrEntry.getSpecies().setIri(organismIri.get());
                         iriUpdate.set(true);
                     }
 
                     if (iriUpdate.get()) {
-                        return newAmrEntry;
+                        return amrEntry;
                     }
 
                     return amrEntry;
@@ -226,7 +198,7 @@ public class SampleZoomaCallable implements Callable<Void> {
                 table.getStructuredData().addAll(amrEntries);
             }
 
-            return table != null ? table : null;
+            return table;
 
         }).collect(Collectors.toSet());
     }
