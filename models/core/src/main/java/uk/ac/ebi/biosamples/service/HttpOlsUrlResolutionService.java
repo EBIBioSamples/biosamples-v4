@@ -21,21 +21,6 @@ public class HttpOlsUrlResolutionService {
     public HttpOlsUrlResolutionService() {
     }
 
-    /*
-    --To check if the URL resolves--
-    --We are not using this at this moment--
-    public boolean checkHttpStatusOfUrl(final String urlToCheck) throws IOException {
-        final URL url = new URL(urlToCheck);
-        final HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        int response;
-
-        conn.setRequestMethod("GET");
-        conn.connect();
-        response = conn.getResponseCode();
-
-        return HttpStatus.valueOf(response).is2xxSuccessful();
-    }*/
-
     /**
      * This returns a string representation of the URL to lookup the associated ontology term iri in
      * EBI OLS.
