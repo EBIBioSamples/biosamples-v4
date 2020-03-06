@@ -2,12 +2,14 @@ package uk.ac.ebi.biosamples.curation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.curation.service.IriUrlValidatorService;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.ols.OlsProcessor;
@@ -24,13 +26,14 @@ import java.util.concurrent.Future;
 
 @Component
 public class CurationApplicationRunner implements ApplicationRunner {
-
     private Logger log = LoggerFactory.getLogger(getClass());
-
     private final BioSamplesClient bioSamplesClient;
     private final PipelinesProperties pipelinesProperties;
     private final OlsProcessor olsProcessor;
     private final CurationApplicationService curationApplicationService;
+
+    @Autowired
+    IriUrlValidatorService iriUrlValidatorService;
 
     public CurationApplicationRunner(BioSamplesClient bioSamplesClient,
                                      PipelinesProperties pipelinesProperties,
@@ -61,7 +64,7 @@ public class CurationApplicationRunner implements ApplicationRunner {
                 }
 
                 Callable<Void> task = new SampleCurationCallable(bioSamplesClient, sample, olsProcessor,
-                        curationApplicationService, pipelinesProperties.getCurationDomain());
+                        curationApplicationService, pipelinesProperties.getCurationDomain(), iriUrlValidatorService);
                 sampleCount++;
                 if (sampleCount % 500 == 0) {
                     log.info(sampleCount + " scheduled");
@@ -75,6 +78,7 @@ public class CurationApplicationRunner implements ApplicationRunner {
         } catch(final Exception e) {
             log.error("Pipeline failed to finish successfully", e);
             isPassed = false;
+            MailSender.sendEmail("Curation", "Failed for network connectivity issues/ other issues - <ALERT BIOSAMPLES DEV> " + e.getMessage(), isPassed);
             throw e;
         } finally {
             //now print a list of things that failed

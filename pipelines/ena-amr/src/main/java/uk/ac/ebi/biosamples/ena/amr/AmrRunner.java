@@ -11,6 +11,7 @@ import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.ena.amr.service.EnaAmrDataProcessService;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
+import uk.ac.ebi.biosamples.utils.MailSender;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -44,19 +45,35 @@ public class AmrRunner implements ApplicationRunner {
 
     @Override
     public void run(final ApplicationArguments args) {
+        log.info("Processing ENA-AMR pipeline");
+
         List<AccessionFtpUrlPair> pairList = new ArrayList<>();
+        boolean isPipelineOk = true;
 
         try {
             pairList = requestHttpAndGetAccessionFtpUrlPairs();
 
-            if(pairList.size() == 0) {
+            if (pairList.size() == 0) {
                 log.info("Unable to fetch ENA-AMR Antibiogram data from ENA API, Timed out waiting for connection");
+                isPipelineOk = false;
             }
-        } catch (Exception e) {
-            log.info("An exception occured while fetching AMR data from ENA API " + e.getMessage());
-        }
 
-        downloadFtpContent(pairList);
+            downloadFtpContent(pairList);
+        } catch (Exception e) {
+            log.info("An exception occured while processing AMR data " + e.getMessage());
+            isPipelineOk = false;
+        } finally {
+            final StringBuffer failedFiles = new StringBuffer();
+
+            EnaAmrDataProcessService.failedQueue.forEach(failedAccession -> {
+                failedFiles.append(failedAccession);
+                failedFiles.append(",");
+            });
+
+            log.info(EnaAmrDataProcessService.failedQueue.size() + " failed files: accessions are " + failedFiles.toString());
+
+            MailSender.sendEmail("ENA-AMR", failedFiles.toString(), isPipelineOk);
+        }
     }
 
     private static List<AccessionFtpUrlPair> requestHttpAndGetAccessionFtpUrlPairs() throws Exception {
@@ -144,14 +161,14 @@ public class AmrRunner implements ApplicationRunner {
                 try {
                     String accession = pair.getAccession();
 
-                    if(accession != null && accession.startsWith(SAMEA))
+                    if (accession != null && accession.startsWith(SAMEA))
                         executorService.submit(new EnaAmrCallable(new URL(pair.getFtpUrl()), accession));
                 } catch (MalformedURLException e) {
                     log.info("FTP URL not correctly formed " + pair.getFtpUrl());
                 }
             });
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
     }
 

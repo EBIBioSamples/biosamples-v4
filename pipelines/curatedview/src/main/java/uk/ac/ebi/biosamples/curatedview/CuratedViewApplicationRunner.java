@@ -80,6 +80,7 @@ public class CuratedViewApplicationRunner implements ApplicationRunner {
         } catch (final Exception e) {
             LOG.error("Pipeline failed to finish successfully", e);
             isPassed = false;
+            MailSender.sendEmail("Curated View", "Failed for network connectivity issues/ other issues - <ALERT BIOSAMPLES DEV> " + e.getMessage(), isPassed);
             throw e;
         } finally {
             final ConcurrentLinkedQueue<String> failureQueue = CuratedViewCallable.failedQueue;

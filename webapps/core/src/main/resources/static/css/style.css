@@ -25,7 +25,10 @@
 
 label.facet { display: flex; align-items: baseline; }
 
-div div.facet-container:first-child label.facet{ margin-top: .5rem }
+div div.facet-container:first-child label.facet{
+    font-weight: bold;
+    margin-top: .5rem
+}
 
 div div.facet-container label.facet { margin-top: 1px; }
 
@@ -36,6 +39,14 @@ label.facet > .show-if-checked { margin-right: 5px; }
 .facet-container .facet-checkbox:not(:checked) ~ .facet > .show-if-checked { visibility:hidden }
 
 .facet-container [type='checkbox'] + label, [type='radio'] + label { margin: 0; }
+
+#filter-apply {
+    margin-bottom: 0.5rem;
+}
+
+#filter-clear {
+    margin-bottom: 0.5rem;
+}
 
 #filter-apply:disabled { background-color: #007c82 !important}
 
@@ -209,3 +220,33 @@ code[class^="language"] {
     text-decoration: none;
     border: 1px solid #007b82;
 }
+
+.serialisation-menu {
+    font-size: 80%;
+    list-style-type: none;
+}
+
+.serialisation-menu > li > a {
+    padding: 0.5rem !important;
+}
+
+.content-search-header {
+    float: left;
+    margin-right: 1rem;
+}
+
+.content-search-header-results {
+    float: left;
+    margin-top: 1.5rem;
+}
+
+.biosamples-pagination {
+    margin-top: 0.8rem;
+}
+
+#facets-ajax-loading-img {
+    display: block;
+    margin: 10rem auto auto;
+}
+
+

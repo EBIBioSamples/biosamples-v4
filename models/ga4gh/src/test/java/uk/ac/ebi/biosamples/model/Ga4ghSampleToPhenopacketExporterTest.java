@@ -2,7 +2,6 @@ package uk.ac.ebi.biosamples.model;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONException;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.ArrayValueMatcher;
 import org.skyscreamer.jsonassert.Customization;
@@ -12,10 +11,7 @@ import org.skyscreamer.jsonassert.comparator.CustomComparator;
 import org.springframework.core.io.ClassPathResource;
 import uk.ac.ebi.biosamples.model.ga4gh.Ga4ghAttributes;
 import uk.ac.ebi.biosamples.model.ga4gh.Ga4ghSample;
-import uk.ac.ebi.biosamples.service.SampleToGa4ghSampleConverter;
-import uk.ac.ebi.biosamples.service.GeoLocationDataHelper;
-import uk.ac.ebi.biosamples.service.OLSDataRetriever;
-import uk.ac.ebi.biosamples.service.Ga4ghSampleToPhenopacketConverter;
+import uk.ac.ebi.biosamples.service.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -38,7 +34,7 @@ public class Ga4ghSampleToPhenopacketExporterTest {
     public String absolutePath;
 
     public Ga4ghSampleToPhenopacketExporterTest() {
-        SampleToGa4ghSampleConverter = new SampleToGa4ghSampleConverter(new Ga4ghSample(new Ga4ghAttributes()), new GeoLocationDataHelper());
+        SampleToGa4ghSampleConverter = new SampleToGa4ghSampleConverter(new Ga4ghSample(new Ga4ghAttributes()), new GeoLocationDataHelper(), new HttpOlsUrlResolutionService());
         biosampleToPhenopacketExporter = new Ga4ghSampleToPhenopacketConverter(SampleToGa4ghSampleConverter, new OLSDataRetriever());
     }
 
@@ -54,7 +50,7 @@ public class Ga4ghSampleToPhenopacketExporterTest {
 
         ArrayValueMatcher<Object> arrayValueMatcher = new ArrayValueMatcher<>(new CustomComparator(
                 JSONCompareMode.NON_EXTENSIBLE,
-                new Customization("metaData.resources[1].version", (o1, o2) -> true)));
+                new Customization("metaData.resources[*].version", (o1, o2) -> true)));
 
         JSONAssert.assertEquals(expectedJson, actualJson, new CustomComparator(JSONCompareMode.LENIENT,
                 new Customization("metaData.created", (o1, o2) -> true),
@@ -71,7 +67,7 @@ public class Ga4ghSampleToPhenopacketExporterTest {
 
         ArrayValueMatcher<Object> arrayValueMatcher = new ArrayValueMatcher<>(new CustomComparator(
                 JSONCompareMode.NON_EXTENSIBLE,
-                new Customization("metaData.resources[1].version", (o1, o2) -> true)));
+                new Customization("metaData.resources[*].version", (o1, o2) -> true)));
 
         JSONAssert.assertEquals(expectedJson, actualJson, new CustomComparator(JSONCompareMode.LENIENT,
                 new Customization("metaData.created", (o1, o2) -> true),
@@ -88,8 +84,7 @@ public class Ga4ghSampleToPhenopacketExporterTest {
 
         ArrayValueMatcher<Object> arrayValueMatcher = new ArrayValueMatcher<>(new CustomComparator(
                 JSONCompareMode.NON_EXTENSIBLE,
-                new Customization("metaData.resources[1].version", (o1, o2) -> true),
-                new Customization("metaData.resources[2].version", (o1, o2) -> true)));
+                new Customization("metaData.resources[*].version", (o1, o2) -> true)));
 
         JSONAssert.assertEquals(expectedJson, actualJson, new CustomComparator(JSONCompareMode.LENIENT,
                 new Customization("metaData.created", (o1, o2) -> true),

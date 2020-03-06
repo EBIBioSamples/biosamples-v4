@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>4.2.4</version>
+		<version>4.2.4-SNAPSHOT</version>
 	</parent>
 
 	<profiles>
@@ -19,6 +19,7 @@
 			<id>embl-ebi</id>
 			<modules>
 				<module>ena</module>
+				<module>deduplication</module>
 			</modules>
 		</profile>
 	</profiles>

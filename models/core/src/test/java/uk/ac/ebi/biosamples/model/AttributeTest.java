@@ -1,8 +1,11 @@
 package uk.ac.ebi.biosamples.model;
 
 import org.junit.Test;
+import uk.ac.ebi.biosamples.service.HttpOlsUrlResolutionService;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
@@ -20,7 +23,9 @@ public class AttributeTest {
 				null
 		);
 
-		assertThat(testAttribute.getIriOls(), nullValue());
+		HttpOlsUrlResolutionService httpOlsUrlResolutionService = new HttpOlsUrlResolutionService();
+
+		assertThat(httpOlsUrlResolutionService.getIriOls(testAttribute.getIri()), nullValue());
 	}
 
 	@Test
@@ -33,10 +38,13 @@ public class AttributeTest {
 				null
 		);
 
-		assertThat(testAttribute.getIriOls(), allOf(
+		HttpOlsUrlResolutionService httpOlsUrlResolutionService = new HttpOlsUrlResolutionService();
+
+		System.out.println(httpOlsUrlResolutionService.getIriOls(testAttribute.getIri()));
+		assertThat(httpOlsUrlResolutionService.getIriOls(testAttribute.getIri()), allOf(
 				endsWith("NCBITaxon_291302"),
 				startsWith("http://www.ebi.ac.uk/ols/terms?iri="),
-				containsString(URLEncoder.encode(iri, "UTF-8"))));
+				containsString(URLEncoder.encode(iri, StandardCharsets.UTF_8))));
 	}
 
 	@Test
@@ -49,8 +57,8 @@ public class AttributeTest {
 				null
 		);
 
-		assertThat(testAttribute.getIriOls(), nullValue());
+		HttpOlsUrlResolutionService httpOlsUrlResolutionService = new HttpOlsUrlResolutionService();
+
+		assertThat(httpOlsUrlResolutionService.getIriOls(testAttribute.getIri()), nullValue());
 	}
-
-
 }

@@ -16,25 +16,25 @@
                     </tr>
 				</thead>
                 <tbody>
-                    <tr th:each="attribute : ${attributes}">
+                    <tr th:each="attribute : ${attributes}" th:with="iriUrl = ${@httpOlsUrlResolutionService.getIriOls(attribute.iri)}">
                         <td th:text="${attribute.type}">Attribute Type</td>
 
                         <td
-                                th:if="${not #strings.isEmpty(attribute.getIriOls()) and #strings.isEmpty(attribute.unit)}"><a
-                                th:href="${attribute.getIriOls()}" th:text="${attribute.value}"
+                                th:if="${not #strings.isEmpty(iriUrl) and #strings.isEmpty(attribute.unit)}"><a
+                                th:href="${iriUrl}" th:text="${attribute.value}"
                                 target="_blank">attribute value<i class="icon icon-spacer  icon-generic"
                                                                   data-icon="x"></i></a></td>
                         <td
-                                th:if="${#strings.isEmpty(attribute.getIriOls()) and #strings.isEmpty(attribute.unit)}"
+                                th:if="${#strings.isEmpty(iriUrl) and #strings.isEmpty(attribute.unit)}"
                                 th:text="${attribute.value}">attribute value</td>
                         <td
-                                th:if="${not #strings.isEmpty(attribute.getIriOls()) and not #strings.isEmpty(attribute.unit)}"><th:span
+                                th:if="${not #strings.isEmpty(iriUrl) and not #strings.isEmpty(attribute.unit)}"><th:span
                                 th:text="${attribute.value}" th:remove="tag"></th:span> (<a
-                                th:href="${attribute.getIriOls()}" th:text="${attribute.unit}"
+                                th:href="${iriUrl}" th:text="${attribute.unit}"
                                 target="_blank">unit<i class="icon icon-spacer  icon-generic"
                                                        data-icon="x"></i></a>)</td>
                         <td
-                                th:if="${#strings.isEmpty(attribute.getIriOls()) and not #strings.isEmpty(attribute.unit)}"
+                                th:if="${#strings.isEmpty(iriUrl) and not #strings.isEmpty(attribute.unit)}"
                                 th:text="${attribute.value}+' ('+${attribute.unit}+')'">attribute
                             value (unit)</td>
                     </tr>
@@ -199,8 +199,8 @@
 	</section>
 
 	<section th:fragment="serialisationDropDownMenu">
-		<h4>Download as:</h4>
-		<ul class="vertical dropdown menu">
+		<h5>Download as:</h5>
+		<ul class="vertical dropdown menu serialisation-menu">
 			<li><a th:href="@{/samples/{xml}(xml=${sample.accession} + '.xml')}" download>XML</a></li>
 			<li><a th:href="@{/samples/{json}(json=${sample.accession} + '.json')}" download>JSON</a></li>
 			<li><a th:href="@{/samples/{ldjson}(ldjson=${sample.accession} + '.ldjson')}" download>Bioschemas</a></li>
