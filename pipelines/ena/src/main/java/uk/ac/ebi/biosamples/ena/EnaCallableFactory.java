@@ -1,5 +1,6 @@
 package uk.ac.ebi.biosamples.ena;
 
+import java.io.Writer;
 import java.util.concurrent.Callable;
 
 import org.springframework.stereotype.Service;
@@ -42,5 +43,10 @@ public class EnaCallableFactory {
     public EnaCallable build(String accession, boolean suppressionHandler) {
         return new EnaCallable(accession, bioSamplesClient, enaXmlEnhancer,
                 enaElementConverter, eraProDao, domain, suppressionHandler);
+    }
+
+    public EnaCallable build(String accession, boolean suppressionHandler, Writer suppListWriter) {
+        return new EnaCallable(accession, bioSamplesClient, enaXmlEnhancer,
+                enaElementConverter, eraProDao, domain, suppressionHandler, suppListWriter);
     }
 }
