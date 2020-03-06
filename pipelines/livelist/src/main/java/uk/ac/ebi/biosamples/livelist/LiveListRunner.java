@@ -49,7 +49,7 @@ public class LiveListRunner implements ApplicationRunner {
     }
 
     private void generateLiveListImport(ApplicationArguments args) {
-        String liveListFileName = "C:\\Users\\dgupta\\livelist.txt";
+        String liveListFileName = "livelist.txt";
         String liveListStatus = "";
 
         if (args.getNonOptionArgs().size() > 0) {
