@@ -50,7 +50,7 @@ public class Ga4ghSampleToPhenopacketExporterTest {
 
         ArrayValueMatcher<Object> arrayValueMatcher = new ArrayValueMatcher<>(new CustomComparator(
                 JSONCompareMode.NON_EXTENSIBLE,
-                new Customization("metaData.resources[1].version", (o1, o2) -> true)));
+                new Customization("metaData.resources[*].version", (o1, o2) -> true)));
 
         JSONAssert.assertEquals(expectedJson, actualJson, new CustomComparator(JSONCompareMode.LENIENT,
                 new Customization("metaData.created", (o1, o2) -> true),
@@ -67,7 +67,7 @@ public class Ga4ghSampleToPhenopacketExporterTest {
 
         ArrayValueMatcher<Object> arrayValueMatcher = new ArrayValueMatcher<>(new CustomComparator(
                 JSONCompareMode.NON_EXTENSIBLE,
-                new Customization("metaData.resources[1].version", (o1, o2) -> true)));
+                new Customization("metaData.resources[*].version", (o1, o2) -> true)));
 
         JSONAssert.assertEquals(expectedJson, actualJson, new CustomComparator(JSONCompareMode.LENIENT,
                 new Customization("metaData.created", (o1, o2) -> true),
@@ -84,8 +84,7 @@ public class Ga4ghSampleToPhenopacketExporterTest {
 
         ArrayValueMatcher<Object> arrayValueMatcher = new ArrayValueMatcher<>(new CustomComparator(
                 JSONCompareMode.NON_EXTENSIBLE,
-                new Customization("metaData.resources[1].version", (o1, o2) -> true),
-                new Customization("metaData.resources[2].version", (o1, o2) -> true)));
+                new Customization("metaData.resources[*].version", (o1, o2) -> true)));
 
         JSONAssert.assertEquals(expectedJson, actualJson, new CustomComparator(JSONCompareMode.LENIENT,
                 new Customization("metaData.created", (o1, o2) -> true),

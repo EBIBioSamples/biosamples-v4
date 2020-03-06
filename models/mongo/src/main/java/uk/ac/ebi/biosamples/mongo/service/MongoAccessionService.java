@@ -30,7 +30,7 @@ public class MongoAccessionService {
 	private final SampleToMongoSampleConverter sampleToMongoSampleConverter;
 	private final MongoSampleToSampleConverter mongoSampleToSampleConverter;
 	private final String prefix;
-	private final BlockingQueue<String> accessionCandidateQueue;;
+	private final BlockingQueue<String> accessionCandidateQueue;
 	private int accessionCandidateCounter;
 	
 	
