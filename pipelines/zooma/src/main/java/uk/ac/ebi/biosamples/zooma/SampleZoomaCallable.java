@@ -148,10 +148,10 @@ public class SampleZoomaCallable implements Callable<Void> {
             }
         }
 
-        if (sample.getData() != null) {
+        if (sample.getData() != null && sample.getData().size() > 0) {
             Set<AbstractData> annotatedAmrData = annotateAmr(sample);
 
-            if (annotatedAmrData != null) {
+            if (annotatedAmrData != null && annotatedAmrData.size() > 0) {
                 Sample.Builder.fromSample(sample).withData(annotatedAmrData).build();
                 bioSamplesClient.persistSampleResource(sample);
             }

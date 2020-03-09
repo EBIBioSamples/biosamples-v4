@@ -12,7 +12,6 @@ import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
 
-import java.io.IOException;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -27,7 +26,7 @@ public class DeduplicationRunner implements ApplicationRunner {
     private BioSamplesClient bioSamplesClient;
 
     @Override
-    public void run(final ApplicationArguments args) throws IOException {
+    public void run(final ApplicationArguments args) {
         final List<DeduplicationDao.RowMapping> mappingList = deduplicationDao.getAllSamples();
         final Observable<DeduplicationDao.RowMapping> observable = Observable.fromIterable(mappingList);
 
@@ -36,49 +35,62 @@ public class DeduplicationRunner implements ApplicationRunner {
 
     private void checkDuplicates(final DeduplicationDao.RowMapping pair) {
         final String enaId = pair.getEnaId();
-        //List<Filter> filterList = new ArrayList<>(2);
-        //filterList.add(FilterBuilder.create().onAttribute("SRA accession").withValue(pair.getEnaId()).build());
         final Iterator<Resource<Sample>> it = bioSamplesClient.fetchSampleResourceAll(enaId).iterator();
-        Sample firstSample, secondSample;
+        final List<Sample> enaAeSamples = evaluateIterablesToFindPair(it, pair);
 
-        if (it.hasNext()) {
-            firstSample = it.next().getContent();
+        Sample enaSample = null, aeSample = null;
+        int enaAeSamplesCount = enaAeSamples.size();
 
-            if (it.hasNext()) {
-                secondSample = it.next().getContent();
-
-                if (firstSample.getRelease().isAfter(Instant.now()) || secondSample.getRelease().isAfter(Instant.now()))
-                    log.info("Already set to private, no action required");
-                else {
-                    mergeSamples(firstSample, secondSample, pair);
+        if (enaAeSamplesCount == 0) {
+            log.info("No sample for this ERS " + enaId);
+        } else if (enaAeSamplesCount == 1) {
+            log.info("Not the ENA-AE duplication case");
+        } else if (enaAeSamplesCount == 2) {
+            for (Sample sample : enaAeSamples) {
+                if (sample.getAccession().equals(pair.getBioSampleId())) {
+                    enaSample = sample;
+                } else {
+                    aeSample = sample;
                 }
             }
+
+            assert enaSample != null;
+            assert aeSample != null;
+
+            if (enaSample.getRelease().isAfter(Instant.now()) || aeSample.getRelease().isAfter(Instant.now()))
+                log.info("Already set to private, no action required");
+            else mergeSamples(enaSample, aeSample);
         } else {
-            log.info("No sample for this ERS " + enaId);
+            log.info("More than 2 samples fetched");
         }
     }
 
-    private void mergeSamples(final Sample firstSample, final Sample secondSample, final DeduplicationDao.RowMapping pair) {
-        boolean useFirst = false;
+    private List<Sample> evaluateIterablesToFindPair(Iterator<Resource<Sample>> it, DeduplicationDao.RowMapping pair) {
+        final List<Sample> enaAeSamples = new ArrayList<>(2);
 
-        if (firstSample.getAccession().equals(pair.getBioSampleId())) {
-            useFirst = true;
+        while (it.hasNext()) {
+            final Sample sample = it.next().getContent();
+
+            if (sample.getAccession().equals(pair.getBioSampleId())) {
+                enaAeSamples.add(sample);
+            } else if (sample.getExternalReferences().stream().anyMatch(extR -> extR.getUrl().contains("arrayexpress") || extR.getUrl().contains(pair.getEnaId()))) {
+                enaAeSamples.add(sample);
+            }
         }
 
-        mergeAttributesAndSubmit(firstSample, secondSample, useFirst);
+        return enaAeSamples;
     }
 
-    private void mergeAttributesAndSubmit(final Sample firstSample, final Sample secondSample, final boolean useFirst) {
+    private void mergeSamples(final Sample enaSample, final Sample aeSample) {
+        mergeAttributesAndSubmit(enaSample, aeSample);
+    }
+
+    private void mergeAttributesAndSubmit(final Sample enaSample, final Sample aeSample) {
         Sample sampleToSave;
         Sample sampleToPrivate;
 
-        if (useFirst) {
-            sampleToSave = Sample.Builder.fromSample(firstSample).withAttributes(resolveAttributes(firstSample.getAttributes(), secondSample.getAttributes())).build();
-            sampleToPrivate = Sample.Builder.fromSample(secondSample).withRelease(ZonedDateTime.now(ZoneOffset.UTC).plusYears(1000).toInstant()).build();
-        } else {
-            sampleToSave = Sample.Builder.fromSample(secondSample).withAttributes(resolveAttributes(firstSample.getAttributes(), secondSample.getAttributes())).build();
-            sampleToPrivate = Sample.Builder.fromSample(firstSample).withRelease(ZonedDateTime.now(ZoneOffset.UTC).plusYears(1000).toInstant()).build();
-        }
+        sampleToSave = Sample.Builder.fromSample(enaSample).withAttributes(resolveAttributes(enaSample.getAttributes(), aeSample.getAttributes())).build();
+        sampleToPrivate = Sample.Builder.fromSample(aeSample).withRelease(ZonedDateTime.now(ZoneOffset.UTC).plusYears(1000).toInstant()).build();
 
         bioSamplesClient.persistSampleResource(sampleToSave);
         log.info("Submitted sample with accession - " + sampleToSave.getAccession());
@@ -87,10 +99,19 @@ public class DeduplicationRunner implements ApplicationRunner {
         log.info("Private sample with accession - " + sampleToPrivate.getAccession());
     }
 
-    private Set<Attribute> resolveAttributes(final SortedSet<Attribute> first, final SortedSet<Attribute> second) {
-        final Set<Attribute> setOfAttributes = new HashSet<>();
-        setOfAttributes.addAll(first);
-        setOfAttributes.addAll(second);
+    private Set<Attribute> resolveAttributes(final SortedSet<Attribute> enaSample, final SortedSet<Attribute> aeSample) {
+
+        final Set<Attribute> setOfAttributes = new HashSet<>(enaSample);
+
+        enaSample.forEach(attrFirst -> aeSample.forEach(attrSecond -> {
+            if (attrFirst.getType().equalsIgnoreCase(attrSecond.getType())) {
+                if (!attrFirst.getValue().equalsIgnoreCase(attrSecond.getValue())) {
+                    setOfAttributes.add(attrSecond);
+                }
+            } else {
+                setOfAttributes.add(attrSecond);
+            }
+        }));
 
         return setOfAttributes;
     }
