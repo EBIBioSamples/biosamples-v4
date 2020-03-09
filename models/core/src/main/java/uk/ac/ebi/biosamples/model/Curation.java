@@ -180,6 +180,11 @@ public class Curation implements Comparable<Curation> {
     	for (Attribute a : sortedPreAttributes) {
     		hasher.putUnencodedChars(a.getType());
     		hasher.putUnencodedChars(a.getValue());
+
+    		/*Consider tag if present*/
+    		if(a.getTag() != null) {
+				hasher.putUnencodedChars(a.getTag());
+			}
     		if (a.getUnit() != null) {
     			hasher.putUnencodedChars(a.getUnit());
     		}
