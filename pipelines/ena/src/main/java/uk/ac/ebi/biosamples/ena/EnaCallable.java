@@ -1,6 +1,7 @@
 package uk.ac.ebi.biosamples.ena;
 
 import java.io.StringReader;
+import java.io.Writer;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
@@ -34,6 +35,7 @@ public class EnaCallable implements Callable<Void> {
 	private final EnaElementConverter enaElementConverter;
 	private final EraProDao eraProDao;
 	private final String domain;
+	private Writer suppListWriter;
 	private Logger log = LoggerFactory.getLogger(getClass());
 	private boolean suppressionHandler;
 
@@ -57,6 +59,17 @@ public class EnaCallable implements Callable<Void> {
 		this.domain = domain;
 	}
 
+	public EnaCallable(String sampleAccession, BioSamplesClient bioSamplesClient, EnaXmlEnhancer enaXmlEnhancer,
+					   EnaElementConverter enaElementConverter, EraProDao eraProDao, String domain, boolean suppressionHandler) {
+		this.sampleAccession = sampleAccession;
+		this.bioSamplesClient = bioSamplesClient;
+		this.enaXmlEnhancer = enaXmlEnhancer;
+		this.enaElementConverter = enaElementConverter;
+		this.eraProDao = eraProDao;
+		this.domain = domain;
+		this.suppressionHandler = suppressionHandler;
+	}
+
 	/**
 	 * Construction for SUPPRESSED samples
 	 *
@@ -69,7 +82,7 @@ public class EnaCallable implements Callable<Void> {
 	 * @param suppressionHandler
 	 */
 	public EnaCallable(String sampleAccession, BioSamplesClient bioSamplesClient, EnaXmlEnhancer enaXmlEnhancer,
-			EnaElementConverter enaElementConverter, EraProDao eraProDao, String domain, boolean suppressionHandler) {
+					   EnaElementConverter enaElementConverter, EraProDao eraProDao, String domain, boolean suppressionHandler, Writer suppListWriter) {
 		this.sampleAccession = sampleAccession;
 		this.bioSamplesClient = bioSamplesClient;
 		this.enaXmlEnhancer = enaXmlEnhancer;
@@ -77,6 +90,7 @@ public class EnaCallable implements Callable<Void> {
 		this.eraProDao = eraProDao;
 		this.domain = domain;
 		this.suppressionHandler = suppressionHandler;
+		this.suppListWriter = suppListWriter;
 	}
 
 	@Override
@@ -205,7 +219,6 @@ public class EnaCallable implements Callable<Void> {
 	 * Checks samples from ENA which is SUPPRESSED and takes necessary action, i.e.
 	 * update status if status is different in BioSamples, else persist
 	 *
-	 * @param  sampleAccession      The accession passed
 	 * @return                      {@link Void}
 	 * @throws InterruptedException if thread is interrupted
 	 * @throws SQLException         if failure in SQL
@@ -217,6 +230,9 @@ public class EnaCallable implements Callable<Void> {
 
 		if (optionalSampleResource.isPresent()) {
 			final Sample sample = optionalSampleResource.get().getContent();
+
+			writeToSuppressedSamplesFile(sample);
+
 			boolean persistRequired = true;
 
 			for (Attribute attribute : sample.getAttributes()) {
@@ -242,10 +258,21 @@ public class EnaCallable implements Callable<Void> {
 		return null;
 	}
 
+	private void writeToSuppressedSamplesFile(Sample sample) {
+		if (Instant.now().isAfter(sample.getRelease())) {
+			try {
+				suppListWriter.write(sample.getAccession());
+				suppListWriter.write("\n");
+				suppListWriter.flush();
+			} catch (final Exception e) {
+				log.error("Exception in supplist building");
+			}
+		}
+	}
+
 	/**
 	 * True if NCBI/DDBJ sample
 	 *
-	 * @param  sampleAccession The accession passed to the method
 	 * @return                 true if NCBI/DDBJ sample
 	 */
 	private boolean ifNcbiDdbj() {
