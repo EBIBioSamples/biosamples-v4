@@ -4,7 +4,7 @@
 
 	<groupId>uk.ac.ebi.biosamples</groupId>
 	<artifactId>biosamples-spring-boot-starter</artifactId>
-	<version>4.2.5-RC3</version>
+	<version>4.2.5-RC4</version>
 
 	<packaging>jar</packaging>
 
@@ -17,7 +17,7 @@
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>client</artifactId>
-			<version>4.2.5-RC3</version>
+			<version>4.2.5-RC4</version>
 		</dependency>
 
 		<dependency>
