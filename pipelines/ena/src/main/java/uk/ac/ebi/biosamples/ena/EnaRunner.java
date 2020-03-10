@@ -85,14 +85,14 @@ public class EnaRunner implements ApplicationRunner {
 
 			log.info("Suppression Runner is to be executed: " + suppressionRunner);
 
-			//importEraSamples(fromDate, toDate);
+			importEraSamples(fromDate, toDate);
 
 			if (suppressionRunner) {
 				// handler for suppressed ENA samples
 				handleSuppressedEnaSamples(args);
 				// handler for suppressed NCBI/DDBJ samples - using separate
 				// AdaptiveThreadPoolExecutor for not putting too much load on the ThreadPool
-				//handleSuppressedNcbiDdbjSamples();
+				handleSuppressedNcbiDdbjSamples();
 			}
 		} catch(final Exception e) {
 			log.error("Pipeline failed to finish successfully", e);
@@ -134,7 +134,7 @@ public class EnaRunner implements ApplicationRunner {
 	 * Handler for suppressed ENA samples. If status of sample is different in
 	 * BioSamples, status will be updated so SUPPRESSED. If sample doesn't exist it
 	 * will be created
-	 * 
+	 *
 	 * @throws Exception in case of failures
 	 * @param args
 	 */
@@ -174,7 +174,7 @@ public class EnaRunner implements ApplicationRunner {
 	/**
 	 * Handler for suppressed NCBI/DDBJ samples. If status of sample is different in
 	 * BioSamples, status will be updated to SUPPRESSED
-	 * 
+	 *
 	 * @throws Exception in case of failures
 	 */
 	private void handleSuppressedNcbiDdbjSamples() throws Exception {
@@ -192,7 +192,7 @@ public class EnaRunner implements ApplicationRunner {
 
 	/**
 	 * @author dgupta
-	 * 
+	 *
 	 *         {@link RowCallbackHandler} for suppressed ENA samples
 	 */
 	private static class EnaSuppressedSamplesCallbackHandler implements RowCallbackHandler {
@@ -231,7 +231,7 @@ public class EnaRunner implements ApplicationRunner {
 
 	/**
 	 * @author dgupta
-	 * 
+	 *
 	 *         {@link RowCallbackHandler} for suppressed NCBI/DDBJ samples
 	 */
 	private static class NcbiDdbjSuppressedSamplesCallbackHandler implements RowCallbackHandler {
