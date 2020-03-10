@@ -73,6 +73,7 @@ public class AMREntry implements Comparable<AMREntry>{
 
     //@JsonSerialize(using = AmrPairSerializer.class)
     //@JsonProperty("antibiotic_name")
+    //use antiobiotic_name and not antibiotic
     public AmrPair getAntibioticName() {
         return antibioticName;
     }
