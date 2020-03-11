@@ -19,13 +19,14 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
-public class SampleZoomaCallable implements Callable<Void> {
+public class SampleZoomaCallable implements Callable<Integer> {
     private Logger log = LoggerFactory.getLogger(getClass());
     private final Sample sample;
     private final BioSamplesClient bioSamplesClient;
     private final ZoomaProcessor zoomaProcessor;
     private final CurationApplicationService curationApplicationService;
     private final String domain;
+    private int curationCount;
     public static final ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<>();
 
     public SampleZoomaCallable(BioSamplesClient bioSamplesClient, Sample sample,
@@ -36,10 +37,11 @@ public class SampleZoomaCallable implements Callable<Void> {
         this.zoomaProcessor = zoomaProcessor;
         this.curationApplicationService = curationApplicationService;
         this.domain = domain;
+        this.curationCount = 0;
     }
 
     @Override
-    public Void call() {
+    public Integer call() {
         try {
             Sample last;
             Sample curated = sample;
@@ -53,7 +55,7 @@ public class SampleZoomaCallable implements Callable<Void> {
             failedQueue.add(sample.getAccession());
         }
 
-        return null;
+        return curationCount;
     }
 
     private Sample zooma(Sample sample) {
@@ -144,6 +146,7 @@ public class SampleZoomaCallable implements Callable<Void> {
                     //save the curation back in biosamples
                     bioSamplesClient.persistCuration(sample.getAccession(), curation, domain);
                     sample = curationApplicationService.applyCurationToSample(sample, curation);
+                    curationCount++;
                 }
             }
         }
