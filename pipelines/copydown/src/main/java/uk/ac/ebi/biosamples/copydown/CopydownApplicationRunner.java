@@ -7,6 +7,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.PipelineFutureCallback;
+import uk.ac.ebi.biosamples.PipelineResult;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.PipelineAnalytics;
@@ -55,7 +56,7 @@ public class CopydownApplicationRunner implements ApplicationRunner {
 
         try (final AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true,
                 pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax())) {
-            final Map<String, Future<Integer>> futures = new HashMap<>();
+            final Map<String, Future<PipelineResult>> futures = new HashMap<>();
 
             for (final Resource<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll("", filters)) {
                 LOG.trace("Handling " + sampleResource);
@@ -66,7 +67,7 @@ public class CopydownApplicationRunner implements ApplicationRunner {
                     throw new RuntimeException("Sample should not be null");
                 }
 
-                final Callable<Integer> task = new SampleCopydownCallable(bioSamplesClient, sample,
+                final Callable<PipelineResult> task = new SampleCopydownCallable(bioSamplesClient, sample,
                         pipelinesProperties.getCopydownDomain());
 
                 futures.put(sample.getAccession(), executorService.submit(task));

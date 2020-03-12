@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.sampletest;
+package uk.ac.ebi.biosamples.template;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

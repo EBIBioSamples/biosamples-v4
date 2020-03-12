@@ -3,6 +3,7 @@ package uk.ac.ebi.biosamples.copydown;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.Resource;
+import uk.ac.ebi.biosamples.PipelineResult;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.*;
 
@@ -13,7 +14,7 @@ import java.util.SortedSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class SampleCopydownCallable implements Callable<Integer> {
+public class SampleCopydownCallable implements Callable<PipelineResult> {
     private static final Logger LOG = LoggerFactory.getLogger(SampleCopydownCallable.class);
 
     private static final Attribute mixedAttribute = Attribute.build("organism", "mixed sample", "http://purl.obolibrary.org/obo/NCBITaxon_1427524", null);
@@ -31,11 +32,12 @@ public class SampleCopydownCallable implements Callable<Integer> {
     }
 
     @Override
-    public Integer call() {
+    public PipelineResult call() {
 		final String accession = sample.getAccession();
         final boolean hasOrganism = sample.getAttributes().stream().anyMatch(attribute -> "organism".equals(attribute.getType().toLowerCase()));
         final boolean hasDerivedFrom = sample.getRelationships().stream().anyMatch
 				(relationship -> "derived from".equals(relationship.getType().toLowerCase()) && accession.equals(relationship.getSource()));
+        boolean success = true;
 
         if (!hasOrganism && hasDerivedFrom) {
             //walk up the derived from relationships and pull out all the organisms
@@ -50,6 +52,7 @@ public class SampleCopydownCallable implements Callable<Integer> {
                 LOG.debug("Applying curation to " + accession);
                 applyCuration(organisms.iterator().next());
             } else {
+                success = false;
                 failedQueue.add(accession);
                 LOG.warn("Unable to find organism for " + accession);
             }
@@ -94,7 +97,7 @@ public class SampleCopydownCallable implements Callable<Integer> {
             }
         }
 
-        return curationCount;
+        return new PipelineResult(sample.getAccession(), curationCount, success);
     }
 
     private void applyCuration(final Attribute organismValue) {

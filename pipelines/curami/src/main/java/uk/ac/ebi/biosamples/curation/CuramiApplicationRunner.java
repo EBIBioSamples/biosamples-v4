@@ -8,6 +8,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.PipelineFutureCallback;
+import uk.ac.ebi.biosamples.PipelineResult;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.PipelineAnalytics;
@@ -70,14 +71,14 @@ public class CuramiApplicationRunner implements ApplicationRunner {
         try (AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true,
                 pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax())) {
 
-            Map<String, Future<Integer>> futures = new HashMap<>();
+            Map<String, Future<PipelineResult>> futures = new HashMap<>();
             for (Resource<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll("", filters)) {
                 LOG.trace("Handling {}", sampleResource);
                 Sample sample = sampleResource.getContent();
                 Objects.requireNonNull(sample);
                 collectSampleTypes(sample, sampleAnalytics);
 
-                Callable<Integer> task = new SampleCuramiCallable(
+                Callable<PipelineResult> task = new SampleCuramiCallable(
                         bioSamplesClient, sample, pipelinesProperties.getCurationDomain(), curationRules);
                 futures.put(sample.getAccession(), executorService.submit(task));
 

@@ -2,6 +2,7 @@ package uk.ac.ebi.biosamples.zooma;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.ac.ebi.biosamples.PipelineResult;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Curation;
@@ -19,7 +20,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
-public class SampleZoomaCallable implements Callable<Integer> {
+public class SampleZoomaCallable implements Callable<PipelineResult> {
     private Logger log = LoggerFactory.getLogger(getClass());
     private final Sample sample;
     private final BioSamplesClient bioSamplesClient;
@@ -41,7 +42,8 @@ public class SampleZoomaCallable implements Callable<Integer> {
     }
 
     @Override
-    public Integer call() {
+    public PipelineResult call() {
+        boolean success = true;
         try {
             Sample last;
             Sample curated = sample;
@@ -53,9 +55,10 @@ public class SampleZoomaCallable implements Callable<Integer> {
         } catch (Exception e) {
             log.warn("Encountered exception with " + sample.getAccession(), e);
             failedQueue.add(sample.getAccession());
+            success = false;
         }
 
-        return curationCount;
+        return new PipelineResult(sample.getAccession(), curationCount, success);
     }
 
     private Sample zooma(Sample sample) {

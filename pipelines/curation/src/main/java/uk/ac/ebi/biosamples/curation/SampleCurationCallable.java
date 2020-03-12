@@ -2,6 +2,7 @@ package uk.ac.ebi.biosamples.curation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.ac.ebi.biosamples.PipelineResult;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.curation.service.IriUrlValidatorService;
 import uk.ac.ebi.biosamples.model.Attribute;
@@ -14,7 +15,7 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class SampleCurationCallable implements Callable<Integer> {
+public class SampleCurationCallable implements Callable<PipelineResult> {
     private Logger log = LoggerFactory.getLogger(getClass());
     private final Sample sample;
     private final BioSamplesClient bioSamplesClient;
@@ -44,7 +45,8 @@ public class SampleCurationCallable implements Callable<Integer> {
     }
 
     @Override
-    public Integer call() {
+    public PipelineResult call() {
+        boolean success = true;
         try {
             Sample last;
             Sample curated = sample;
@@ -62,9 +64,10 @@ public class SampleCurationCallable implements Callable<Integer> {
         } catch (Exception e) {
             log.warn("Encountered exception with " + sample.getAccession(), e);
             failedQueue.add(sample.getAccession());
+            success = false;
         }
 
-        return curationCount;
+        return new PipelineResult(sample.getAccession(), curationCount, success);
     }
 
     public Sample curate(Sample sample) {

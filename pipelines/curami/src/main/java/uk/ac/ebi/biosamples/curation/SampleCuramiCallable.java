@@ -2,6 +2,7 @@ package uk.ac.ebi.biosamples.curation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.ac.ebi.biosamples.PipelineResult;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Curation;
@@ -14,7 +15,7 @@ import java.util.SortedSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class SampleCuramiCallable implements Callable<Integer> {
+public class SampleCuramiCallable implements Callable<PipelineResult> {
     private static final Logger LOG = LoggerFactory.getLogger(SampleCuramiCallable.class);
     static final ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<>();
 
@@ -32,8 +33,9 @@ public class SampleCuramiCallable implements Callable<Integer> {
     }
 
     @Override
-    public Integer call() {
+    public PipelineResult call() {
         int appliedCurations = 0;
+        boolean success = true;
         try {
             List<Curation> curations = getRuleBasedCurations(sample);
             if (!curations.isEmpty()) {
@@ -41,10 +43,11 @@ public class SampleCuramiCallable implements Callable<Integer> {
             }
             appliedCurations = curations.size();
         } catch (Exception e) {
+            success = false;
             failedQueue.add(sample.getAccession());
             LOG.error("Failed to add curation on sample: " + sample.getAccession(), e);
         }
-        return appliedCurations;
+        return new PipelineResult(sample.getAccession(), appliedCurations, success);
     }
 
     private List<Curation> getRuleBasedCurations(Sample sample) {
