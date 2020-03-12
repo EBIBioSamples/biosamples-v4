@@ -6,15 +6,21 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
+import uk.ac.ebi.biosamples.PipelineFutureCallback;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.model.PipelineAnalytics;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.SampleAnalytics;
 import uk.ac.ebi.biosamples.model.filter.Filter;
+import uk.ac.ebi.biosamples.service.AnalyticsService;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.ArgUtils;
 import uk.ac.ebi.biosamples.utils.MailSender;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -22,49 +28,69 @@ import java.util.concurrent.Future;
 
 @Component
 public class CopydownApplicationRunner implements ApplicationRunner {
+    private static final Logger LOG = LoggerFactory.getLogger(CopydownApplicationRunner.class);
+
     private final BioSamplesClient bioSamplesClient;
     private final PipelinesProperties pipelinesProperties;
-    private Logger log = LoggerFactory.getLogger(getClass());
+    private final AnalyticsService analyticsService;
+    private final PipelineFutureCallback pipelineFutureCallback;
 
     public CopydownApplicationRunner(final BioSamplesClient bioSamplesClient,
-                                     final PipelinesProperties pipelinesProperties) {
+                                     final PipelinesProperties pipelinesProperties,
+                                     AnalyticsService analyticsService) {
         this.bioSamplesClient = bioSamplesClient;
         this.pipelinesProperties = pipelinesProperties;
+        this.analyticsService = analyticsService;
+        this.pipelineFutureCallback = new PipelineFutureCallback();
     }
 
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
         final Collection<Filter> filters = ArgUtils.getDateFilters(args);
+        Instant startTime = Instant.now();
+        LOG.info("Pipeline started at {}", startTime);
+        long sampleCount = 0;
         boolean isPassed = true;
 
         try (final AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true,
                 pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax())) {
-            final Map<String, Future<Void>> futures = new HashMap<>();
+            final Map<String, Future<Integer>> futures = new HashMap<>();
 
             for (final Resource<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll("", filters)) {
-                log.trace("Handling " + sampleResource);
+                LOG.trace("Handling " + sampleResource);
                 final Sample sample = sampleResource.getContent();
+                sampleCount++;
 
                 if (sample == null) {
                     throw new RuntimeException("Sample should not be null");
                 }
 
-                final Callable<Void> task = new SampleCopydownCallable(bioSamplesClient, sample,
+                final Callable<Integer> task = new SampleCopydownCallable(bioSamplesClient, sample,
                         pipelinesProperties.getCopydownDomain());
 
                 futures.put(sample.getAccession(), executorService.submit(task));
             }
 
-            log.info("waiting for futures");
+            LOG.info("waiting for futures");
             // wait for anything to finish
-            ThreadUtils.checkFutures(futures, 0);
+            ThreadUtils.checkAndCallbackFutures(futures, 0, pipelineFutureCallback);
         } catch (final Exception e) {
-            log.error("Pipeline failed to finish successfully", e);
+            LOG.error("Pipeline failed to finish successfully", e);
             isPassed = false;
             MailSender.sendEmail("Copy-down", "Failed for network connectivity issues/ other issues - <ALERT BIOSAMPLES DEV> " + e.getMessage(), isPassed);
             throw e;
         } finally {
+            Instant endTime = Instant.now();
+            LOG.info("Total samples processed {}", sampleCount);
+            LOG.info("Total curation objects added {}", pipelineFutureCallback.getTotalCount());
+            LOG.info("Pipeline finished at {}", endTime);
+            LOG.info("Pipeline total running time {} seconds", Duration.between(startTime, endTime).getSeconds());
+
+            PipelineAnalytics pipelineAnalytics = new PipelineAnalytics("copydown", startTime, endTime, sampleCount, pipelineFutureCallback.getTotalCount());
+            pipelineAnalytics.setDateRange(filters);
+            analyticsService.persistPipelineAnalytics(pipelineAnalytics);
+
             //now print a list of things that failed
             final ConcurrentLinkedQueue<String> failedQueue = SampleCopydownCallable.failedQueue;
 
@@ -79,7 +105,7 @@ public class CopydownApplicationRunner implements ApplicationRunner {
 
                 final String failures = "Failed files (" + fails.size() + ") " + String.join(" , ", fails);
 
-                log.info(failures);
+                LOG.info(failures);
                 MailSender.sendEmail("Copy-down", failures, isPassed);
             }
         }

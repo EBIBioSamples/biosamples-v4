@@ -9,7 +9,7 @@ import uk.ac.ebi.biosamples.model.SampleAnalytics;
 import java.util.ArrayList;
 import java.util.List;
 
-@Document(collection = "analytics")
+@Document
 public class MongoAnalytics {
     @Id
     protected String collectionDate;

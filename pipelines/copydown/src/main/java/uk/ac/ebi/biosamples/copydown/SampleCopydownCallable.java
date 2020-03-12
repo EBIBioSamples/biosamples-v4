@@ -13,22 +13,25 @@ import java.util.SortedSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class SampleCopydownCallable implements Callable<Void> {
-	private static final Attribute mixedAttribute = Attribute.build("organism", "mixed sample", "http://purl.obolibrary.org/obo/NCBITaxon_1427524", null);
+public class SampleCopydownCallable implements Callable<Integer> {
+    private static final Logger LOG = LoggerFactory.getLogger(SampleCopydownCallable.class);
+
+    private static final Attribute mixedAttribute = Attribute.build("organism", "mixed sample", "http://purl.obolibrary.org/obo/NCBITaxon_1427524", null);
     private final Sample sample;
     private final BioSamplesClient bioSamplesClient;
     private final String domain;
-	private Logger log = LoggerFactory.getLogger(getClass());
+    private int curationCount;
 	static final ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<>();
 
     public SampleCopydownCallable(final BioSamplesClient bioSamplesClient, final Sample sample, final String domain) {
         this.bioSamplesClient = bioSamplesClient;
         this.sample = sample;
         this.domain = domain;
+        this.curationCount = 0;
     }
 
     @Override
-    public Void call() {
+    public Integer call() {
 		final String accession = sample.getAccession();
         final boolean hasOrganism = sample.getAttributes().stream().anyMatch(attribute -> "organism".equals(attribute.getType().toLowerCase()));
         final boolean hasDerivedFrom = sample.getRelationships().stream().anyMatch
@@ -41,14 +44,14 @@ public class SampleCopydownCallable implements Callable<Void> {
             if (organisms.size() > 1) {
                 //if there are multiple organisms, use a "mixed sample" taxonomy reference
                 //some users expect one taxonomy reference, no more, no less
-                log.debug("Applying curation to " + accession);
+                LOG.debug("Applying curation to " + accession);
                 applyCuration(mixedAttribute);
             } else if (organisms.size() == 1) {
-                log.debug("Applying curation to " + accession);
+                LOG.debug("Applying curation to " + accession);
                 applyCuration(organisms.iterator().next());
             } else {
                 failedQueue.add(accession);
-                log.warn("Unable to find organism for " + accession);
+                LOG.warn("Unable to find organism for " + accession);
             }
         } else if (hasOrganism && hasDerivedFrom) {
             //this sample has an organism, but that might have been applied by a previous curation
@@ -71,7 +74,7 @@ public class SampleCopydownCallable implements Callable<Void> {
                         final String organism = "mixed sample";
 
                         if (!organism.equals(attributesPost.iterator().next().getValue())) {
-                            log.debug("Replacing curation on " + accession + " with \"mixed Sample\"");
+                            LOG.debug("Replacing curation on " + accession + " with \"mixed Sample\"");
 
                             bioSamplesClient.deleteCurationLink(curationLink.getContent());
                             applyCuration(mixedAttribute);
@@ -81,7 +84,7 @@ public class SampleCopydownCallable implements Callable<Void> {
                         final Attribute organism = organisms.iterator().next();
 
                         if (!organism.getValue().equals(attributesPost.iterator().next().getValue())) {
-                            log.debug("Replacing curation on " + accession + " with " + organism);
+                            LOG.debug("Replacing curation on " + accession + " with " + organism);
 
                             bioSamplesClient.deleteCurationLink(curationLink.getContent());
                             applyCuration(organism);
@@ -91,7 +94,7 @@ public class SampleCopydownCallable implements Callable<Void> {
             }
         }
 
-        return null;
+        return curationCount;
     }
 
     private void applyCuration(final Attribute organismValue) {
@@ -101,6 +104,7 @@ public class SampleCopydownCallable implements Callable<Void> {
         final Curation curation = Curation.build(Collections.emptyList(), postAttributes);
 
         bioSamplesClient.persistCuration(sample.getAccession(), curation, domain);
+        curationCount++;
     }
 
     private Set<Attribute> getOrganismsForSample(Sample sample, boolean ignoreSample) {
@@ -115,11 +119,11 @@ public class SampleCopydownCallable implements Callable<Void> {
         }
         //if there are no organisms directly, check derived from relationships
         if (organisms.size() == 0) {
-            log.trace("" + sample.getAccession() + " has no organism");
+            LOG.trace("" + sample.getAccession() + " has no organism");
 
             for (final Relationship relationship : sample.getRelationships()) {
                 if ("derived from".equals(relationship.getType().toLowerCase()) && sample.getAccession().equals(relationship.getSource())) {
-                    log.trace("checking derived from " + relationship.getTarget());
+                    LOG.trace("checking derived from " + relationship.getTarget());
 
                     //recursion ahoy!
                     bioSamplesClient.fetchSampleResource(relationship.getTarget())
