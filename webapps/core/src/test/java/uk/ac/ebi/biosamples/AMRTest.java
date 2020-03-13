@@ -186,7 +186,7 @@ public class AMRTest {
 
 
     @Test
-    public void unable_to_submit_amr_if_user_is_not_superuser() throws Exception {
+    public void able_to_submit_amr_if_user_is_not_superuser() throws Exception {
 
         String json = StreamUtils.copyToString(new ClassPathResource("amr_sample.json").getInputStream(), Charset.defaultCharset());
         JsonNode jsonSample = mapper.readTree(json);
@@ -220,7 +220,7 @@ public class AMRTest {
                 .content(json)
         );
 
-        assert(generatedSample.getValue().getData().isEmpty());
+        assert(!generatedSample.getValue().getData().isEmpty());
 
     }
 
