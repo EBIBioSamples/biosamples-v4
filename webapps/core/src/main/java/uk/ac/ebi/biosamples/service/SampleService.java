@@ -126,27 +126,47 @@ public class SampleService {
             throw new SampleValidationException("No structured data is provided");
         }
 
+        if (newSample.getAttributes() != null && newSample.getAttributes().size() > 0) {
+            throw new SampleValidationException("Only Sample name, sample domain and sample structured data can be provided through this API");
+        }
+
+        if (newSample.getExternalReferences() != null && newSample.getExternalReferences().size() > 0) {
+            throw new SampleValidationException("Only Sample name, sample domain and sample structured data can be provided through this API");
+        }
+
+        if (newSample.getRelationships() != null && newSample.getRelationships().size() > 0) {
+            throw new SampleValidationException("Only Sample name, sample domain and sample structured data can be provided through this API");
+        }
+
+        if (newSample.getContacts() != null && newSample.getContacts().size() > 0) {
+            throw new SampleValidationException("Only Sample name, sample domain and sample structured data can be provided through this API");
+        }
+
+        if (newSample.getPublications() != null && newSample.getPublications().size() > 0) {
+            throw new SampleValidationException("Only Sample name, sample domain and sample structured data can be provided through this API");
+        }
+
         if (!newSample.hasAccession()) {
             throw new SampleValidationException("Sample doesn't have an accession");
-        } else {
-            MongoSample mongoOldSample = mongoSampleRepository.findOne(newSample.getAccession());
-            List<String> existingRelationshipTargets = new ArrayList<>();
-
-            if (mongoOldSample != null) {
-                Sample oldSample = mongoSampleToSampleConverter.convert(mongoOldSample);
-                existingRelationshipTargets = getExistingRelationshipTargets(newSample.getAccession(), mongoOldSample);
-                newSample = makeNewSample(newSample, oldSample);
-            } else {
-                log.error("Trying to update newSample not in database, accession: {}", newSample.getAccession());
-            }
-
-            MongoSample mongoSample = sampleToMongoSampleConverter.convert(newSample);
-            mongoSample = mongoSampleRepository.save(mongoSample);
-            newSample = mongoSampleToSampleConverter.convert(mongoSample);
-
-            //send a message for storage and further processing, send relationship targets to identify deleted relationships
-            messagingSerivce.fetchThenSendMessage(newSample.getAccession(), existingRelationshipTargets);
         }
+
+        MongoSample mongoOldSample = mongoSampleRepository.findOne(newSample.getAccession());
+        List<String> existingRelationshipTargets = new ArrayList<>();
+
+        if (mongoOldSample != null) {
+            Sample oldSample = mongoSampleToSampleConverter.convert(mongoOldSample);
+            existingRelationshipTargets = getExistingRelationshipTargets(newSample.getAccession(), mongoOldSample);
+            newSample = makeNewSample(newSample, oldSample);
+        } else {
+            log.error("Trying to update newSample not in database, accession: {}", newSample.getAccession());
+        }
+
+        MongoSample mongoSample = sampleToMongoSampleConverter.convert(newSample);
+        mongoSample = mongoSampleRepository.save(mongoSample);
+        newSample = mongoSampleToSampleConverter.convert(mongoSample);
+
+        //send a message for storage and further processing, send relationship targets to identify deleted relationships
+        messagingSerivce.fetchThenSendMessage(newSample.getAccession(), existingRelationshipTargets);
 
         //return the newSample in case we have modified it i.e accessioned
         //do a fetch to return it with curation objects and inverse relationships
