@@ -25,14 +25,13 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
 public abstract class PipelineApplicationRunner implements ApplicationRunner {
-    private final Logger LOG = LoggerFactory.getLogger(getClass());
+    protected final Logger LOG = LoggerFactory.getLogger(getClass());
     private static final String PIPELINE_NAME = "TEMPLATE";
 
-    private final BioSamplesClient bioSamplesClient;
+    protected final BioSamplesClient bioSamplesClient;
     private final PipelinesProperties pipelinesProperties;
     private final AnalyticsService analyticsService;
     private final PipelineFutureCallback pipelineFutureCallback;
-    private PipelineSampleCallable pipelineSampleCallable;
 
     public PipelineApplicationRunner(BioSamplesClient bioSamplesClient,
                                      PipelinesProperties pipelinesProperties,
@@ -41,11 +40,6 @@ public abstract class PipelineApplicationRunner implements ApplicationRunner {
         this.pipelinesProperties = pipelinesProperties;
         this.analyticsService = analyticsService;
         this.pipelineFutureCallback = new PipelineFutureCallback();
-    }
-
-    public PipelineApplicationRunner withPipelineSampleCallable(PipelineSampleCallable pipelineSampleCallable) {
-        this.pipelineSampleCallable = pipelineSampleCallable;
-        return this;
     }
 
     @Override
@@ -65,7 +59,7 @@ public abstract class PipelineApplicationRunner implements ApplicationRunner {
                 Sample sample = Objects.requireNonNull(sampleResource.getContent());
                 LOG.trace("Handling {}", sample);
 
-                Callable<PipelineResult> task = Objects.requireNonNull(pipelineSampleCallable);
+                Callable<PipelineResult> task = getNewCallableClassInstance().withSample(sample);
                 sampleCount++;
                 if (sampleCount % 10000 == 0) {
                     LOG.info("{} samples scheduled for processing", sampleCount);
@@ -77,7 +71,7 @@ public abstract class PipelineApplicationRunner implements ApplicationRunner {
             ThreadUtils.checkAndCallbackFutures(futures, 0, pipelineFutureCallback);
         } catch (final Exception e) {
             LOG.error("Pipeline failed to finish successfully", e);
-            MailSender.sendEmail(PIPELINE_NAME, "Failed for network connectivity issues/ other issues - <ALERT BIOSAMPLES DEV> " + e.getMessage(), false);
+            MailSender.sendEmail(getPipelineName(), "Failed for network connectivity issues/ other issues - <ALERT BIOSAMPLES DEV> " + e.getMessage(), false);
             throw e;
         } finally {
             Instant endTime = Instant.now();
@@ -86,13 +80,18 @@ public abstract class PipelineApplicationRunner implements ApplicationRunner {
             LOG.info("Pipeline finished at {}", endTime);
             LOG.info("Pipeline total running time {} seconds", Duration.between(startTime, endTime).getSeconds());
 
-            PipelineAnalytics pipelineAnalytics = new PipelineAnalytics("curation", startTime, endTime, sampleCount, pipelineFutureCallback.getTotalCount());
+            PipelineAnalytics pipelineAnalytics = new PipelineAnalytics(getPipelineName(), startTime, endTime, sampleCount, pipelineFutureCallback.getTotalCount());
             pipelineAnalytics.setDateRange(filters);
             analyticsService.persistPipelineAnalytics(pipelineAnalytics);
 
-            MailSender.sendEmail(PIPELINE_NAME, String.join(",", pipelineFutureCallback.getFailedSamples()), pipelineFutureCallback.getFailedSamples().isEmpty());
+            MailSender.sendEmail(getPipelineName(), String.join(",", pipelineFutureCallback.getFailedSamples()), pipelineFutureCallback.getFailedSamples().isEmpty());
         }
     }
 
+    protected String getPipelineName() {
+        return PIPELINE_NAME;
+    }
+
     public abstract void loadPreConfiguration();
+    public abstract PipelineSampleCallable getNewCallableClassInstance();
 }

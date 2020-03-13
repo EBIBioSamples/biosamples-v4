@@ -8,16 +8,13 @@ import uk.ac.ebi.biosamples.model.Sample;
 import java.util.concurrent.Callable;
 
 public abstract class PipelineSampleCallable implements Callable<PipelineResult> {
-    private final Logger LOG = LoggerFactory.getLogger(getClass());
+    protected final Logger LOG = LoggerFactory.getLogger(getClass());
 
-    private final Sample sample;
+    protected Sample sample;
     private final BioSamplesClient bioSamplesClient;
-    private final String domain;
 
-    public PipelineSampleCallable(BioSamplesClient bioSamplesClient, Sample sample, String domain) {
+    public PipelineSampleCallable(BioSamplesClient bioSamplesClient) {
         this.bioSamplesClient = bioSamplesClient;
-        this.sample = sample;
-        this.domain = domain;
     }
 
     @Override
@@ -25,7 +22,7 @@ public abstract class PipelineSampleCallable implements Callable<PipelineResult>
         boolean success = true;
         int appliedCurations = 0;
         try {
-            appliedCurations = doSomeWorkHere(sample);
+            appliedCurations = processSample(sample);
         } catch (Exception e) {
             success = false;
             LOG.error("Failed to add curation on sample: " + sample.getAccession(), e);
@@ -33,5 +30,10 @@ public abstract class PipelineSampleCallable implements Callable<PipelineResult>
         return new PipelineResult(sample.getAccession(), appliedCurations, success);
     }
 
-    public abstract int doSomeWorkHere(Sample sample);
+    public PipelineSampleCallable withSample(Sample sample) {
+        this.sample = sample;
+        return this;
+    }
+
+    public abstract int processSample(Sample sample) throws Exception;
 }
