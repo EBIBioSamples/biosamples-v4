@@ -100,7 +100,6 @@ public class DeduplicationRunner implements ApplicationRunner {
     }
 
     private Set<Attribute> resolveAttributes(final SortedSet<Attribute> enaSample, final SortedSet<Attribute> aeSample) {
-
         final Set<Attribute> setOfAttributes = new HashSet<>(enaSample);
 
         enaSample.forEach(attrFirst -> aeSample.forEach(attrSecond -> {
