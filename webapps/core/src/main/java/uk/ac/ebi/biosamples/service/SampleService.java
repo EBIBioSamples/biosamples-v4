@@ -119,6 +119,44 @@ public class SampleService {
         return fetch(sample.getAccession(), Optional.empty(), null).get();
     }
 
+    public Sample storeSampleStructuredData(Sample newSample) {
+        assert newSample.getData() != null;
+
+        if (!(newSample.getData().size() > 0)) {
+            throw new SampleValidationException("No structured data is provided");
+        }
+
+        if (!newSample.hasAccession()) {
+            throw new SampleValidationException("Sample doesn't have an accession");
+        } else {
+            MongoSample mongoOldSample = mongoSampleRepository.findOne(newSample.getAccession());
+            List<String> existingRelationshipTargets = new ArrayList<>();
+
+            if (mongoOldSample != null) {
+                Sample oldSample = mongoSampleToSampleConverter.convert(mongoOldSample);
+                existingRelationshipTargets = getExistingRelationshipTargets(newSample.getAccession(), mongoOldSample);
+                newSample = makeNewSample(newSample, oldSample);
+            } else {
+                log.error("Trying to update newSample not in database, accession: {}", newSample.getAccession());
+            }
+
+            MongoSample mongoSample = sampleToMongoSampleConverter.convert(newSample);
+            mongoSample = mongoSampleRepository.save(mongoSample);
+            newSample = mongoSampleToSampleConverter.convert(mongoSample);
+
+            //send a message for storage and further processing, send relationship targets to identify deleted relationships
+            messagingSerivce.fetchThenSendMessage(newSample.getAccession(), existingRelationshipTargets);
+        }
+
+        //return the newSample in case we have modified it i.e accessioned
+        //do a fetch to return it with curation objects and inverse relationships
+        return fetch(newSample.getAccession(), Optional.empty(), null).get();
+    }
+
+    private Sample makeNewSample(Sample newSample, Sample oldSample) {
+        return Sample.Builder.fromSample(oldSample).withData(newSample.getData()).withUpdate(Instant.now()).build();
+    }
+
     public boolean searchSampleByDomainAndName(final String domain, final String name) {
         if (mongoSampleRepository.findByDomainAndName(domain, name).size() > 0)
             return true;

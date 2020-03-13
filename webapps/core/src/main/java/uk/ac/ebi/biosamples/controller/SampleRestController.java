@@ -189,7 +189,8 @@ public class SampleRestController {
     public Resource<Sample> put(@PathVariable String accession,
                                 @RequestBody Sample sample,
                                 @RequestParam(name = "setupdatedate", required = false, defaultValue = "true") boolean setUpdateDate,
-                                @RequestParam(name = "setfulldetails", required = false, defaultValue = "true") boolean setFullDetails) {
+                                @RequestParam(name = "setfulldetails", required = false, defaultValue = "true") boolean setFullDetails,
+                                @RequestParam(name = "submitStructuredData", required = false, defaultValue = "false") boolean submitStructuredDta) {
 
         if (sample.getAccession() == null || !sample.getAccession().equals(accession)) {
             // if the accession in the body is different to the accession in the
@@ -204,28 +205,35 @@ public class SampleRestController {
         }
 
         log.debug("Recieved PUT for " + accession);
-        sample = bioSamplesAapService.handleSampleDomain(sample);
 
-        //update date is system generated field
-        Instant update = Instant.now();
-        SubmittedViaType submittedVia =
-                sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
-        sample = Sample.Builder.fromSample(sample)
-                .withUpdate(update)
-                .withSubmittedVia(submittedVia).build();
+        if (submitStructuredDta) {
+            sample = sampleService.storeSampleStructuredData(sample);
 
-        if (!setFullDetails) {
-            log.trace("Removing contact legacy fields for " + accession);
-            sample = sampleManipulationService.removeLegacyFields(sample);
+            return sampleResourceAssembler.toResource(sample);
+        } else {
+            sample = bioSamplesAapService.handleSampleDomain(sample);
+
+            //update date is system generated field
+            Instant update = Instant.now();
+            SubmittedViaType submittedVia =
+                    sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
+            sample = Sample.Builder.fromSample(sample)
+                    .withUpdate(update)
+                    .withSubmittedVia(submittedVia).build();
+
+            if (!setFullDetails) {
+                log.trace("Removing contact legacy fields for " + accession);
+                sample = sampleManipulationService.removeLegacyFields(sample);
+            }
+
+            sample = sampleService.store(sample);
+
+            // assemble a resource to return
+            Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
+
+            // create the response object with the appropriate status
+            return sampleResource;
         }
-
-        sample = sampleService.store(sample);
-
-        // assemble a resource to return
-        Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
-
-        // create the response object with the appropriate status
-        return sampleResource;
     }
 
     @ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Sample accession must match URL accession") // 400
