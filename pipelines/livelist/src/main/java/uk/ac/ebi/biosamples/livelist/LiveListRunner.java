@@ -22,7 +22,6 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.GZIPOutputStream;
 
@@ -52,73 +51,126 @@ public class LiveListRunner implements ApplicationRunner {
     public void run(ApplicationArguments args) {
         doLiveListExport(args);
         doSuppListExport(args);
+        doKillListExport(args);
+    }
+
+    private void doKillListExport(ApplicationArguments args) {
+        LOGGER.info("Starting kill list generation");
+        Writer killListWriter;
+        String killListFileName = "killlist.txt";
+        long startTime = System.nanoTime();
+
+        if (args.getNonOptionArgs().size() > 0) {
+            killListFileName = args.getNonOptionArgs().get(0);
+        }
+
+        try {
+            killListWriter = args.getOptionValues("gzip") == null
+                    ? new OutputStreamWriter(new FileOutputStream(killListFileName), StandardCharsets.UTF_8)
+                    : new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(killListFileName)), StandardCharsets.UTF_8);
+
+            doKillListExport(startTime, killListWriter);
+        } catch (IOException e) {
+            LOGGER.error("Failure to setup killed list writer", e);
+            MailSender.sendEmail("Live list pipeline - kill list generation", "Failed to create the writer", false);
+        }
+    }
+
+    private void doKillListExport(long startTime, Writer killListWriter) {
+        final AtomicInteger sampleCount = new AtomicInteger();
+        boolean isPassed = true;
+
+        try {
+            liveListPipelineDao.doGetKilledEnaSamples().forEach(sampleAccession -> {
+                try {
+                    sampleCount.getAndIncrement();
+                    killListWriter.write(sampleAccession);
+                    killListWriter.write("\n");
+                    killListWriter.flush();
+                } catch (final Exception e) {
+                    LOGGER.error("Failed to write + " + sampleAccession);
+                }
+            });
+        } catch (final Exception e) {
+            LOGGER.error("Pipeline - livelist, kill list generation failed to finish successfully", e);
+            isPassed = false;
+        } finally {
+            MailSender.sendEmail("Live list pipeline - kill list generation", null, isPassed);
+            long elapsed = System.nanoTime() - startTime;
+            String logMessage = "Completed kill list export:  " + sampleCount.get() + " samples exported in " + (elapsed / 1000000000L) + "s";
+            MailSender.sendEmail("Live list pipeline - kill list generation", logMessage, isPassed);
+            LOGGER.info(logMessage);
+        }
     }
 
     private void doSuppListExport(ApplicationArguments args) {
+        LOGGER.info("Starting supp list generation");
+        Writer suppListWriter;
         String suppListFileName = "supplist.txt";
+        long startTime = System.nanoTime();
 
         if (args.getNonOptionArgs().size() > 0) {
             suppListFileName = args.getNonOptionArgs().get(0);
         }
 
-        long startTime = System.nanoTime();
-        Writer suppListWriter = null;
-
         try {
             suppListWriter = args.getOptionValues("gzip") == null
                     ? new OutputStreamWriter(new FileOutputStream(suppListFileName), StandardCharsets.UTF_8)
                     : new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(suppListFileName)), StandardCharsets.UTF_8);
+
+            doSuppListExport(startTime, suppListWriter);
         } catch (IOException e) {
             LOGGER.error("Failure to setup supp list writer", e);
-            MailSender.sendEmail("Live list pipeline - supplist generation", null, false);
-            System.exit(0);
+            MailSender.sendEmail("Live list pipeline - suppressed list generation", "Failed to create the writer", false);
         }
-
-        doSuppListExport(startTime, suppListWriter);
     }
 
     private void doSuppListExport(final long startTime, final Writer suppListWriter) {
         final AtomicInteger sampleCount = new AtomicInteger();
-        AtomicBoolean isPassed = new AtomicBoolean(true);
-
-        liveListPipelineDao.doGetSuppressedEnaSamples().forEach(sample -> {
-            try {
-                sampleCount.getAndIncrement();
-                suppListWriter.write(sample);
-                suppListWriter.write("\n");
-                suppListWriter.flush();
-            } catch (final Exception e) {
-                LOGGER.error("Pipeline failed to finish successfully", e);
-                isPassed.set(false);
-            } finally {
-                MailSender.sendEmail("Live list pipeline - livelist generation", null, isPassed.get());
-                long elapsed = System.nanoTime() - startTime;
-                LOGGER.info("Completed live list export:  " + sampleCount.get() + " samples exported in " + (elapsed / 1000000000L) + "s");
-            }
-        });
+        boolean isPassed = true;
+        try {
+            liveListPipelineDao.doGetSuppressedEnaSamples().forEach(sampleAccession -> {
+                try {
+                    sampleCount.getAndIncrement();
+                    suppListWriter.write(sampleAccession);
+                    suppListWriter.write("\n");
+                    suppListWriter.flush();
+                } catch (final Exception e) {
+                    LOGGER.error("Failed to write " + sampleAccession);
+                }
+            });
+        } catch (final Exception e) {
+            LOGGER.error("Pipeline - livelist, suppressed list generation failed to finish successfully", e);
+            isPassed = false;
+        } finally {
+            MailSender.sendEmail("Live list pipeline - suppressed list generation", null, isPassed);
+            long elapsed = System.nanoTime() - startTime;
+            String logMessage = "Completed supp list export:  " + sampleCount.get() + " samples exported in " + (elapsed / 1000000000L) + "s";
+            MailSender.sendEmail("Live list pipeline - suppressed list generation", logMessage, isPassed);
+            LOGGER.info(logMessage);
+        }
     }
 
     private void doLiveListExport(ApplicationArguments args) {
+        LOGGER.info("Starting live list generation");
+        Writer liveListWriter;
         String liveListFileName = "livelist.txt";
+        long startTime = System.nanoTime();
 
         if (args.getNonOptionArgs().size() > 0) {
             liveListFileName = args.getNonOptionArgs().get(0);
         }
 
-        long startTime = System.nanoTime();
-        Writer liveListWriter = null;
-
         try {
             liveListWriter = args.getOptionValues("gzip") == null
                     ? new OutputStreamWriter(new FileOutputStream(liveListFileName), StandardCharsets.UTF_8)
                     : new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(liveListFileName)), StandardCharsets.UTF_8);
+
+            doLiveListExport(startTime, liveListWriter);
         } catch (IOException e) {
             LOGGER.error("Failure to setup live list writer", e);
-            MailSender.sendEmail("Live list pipeline - livelist generation", null, false);
-            System.exit(0);
+            MailSender.sendEmail("Live list pipeline - live list generation", "Failed to create the writer", false);
         }
-
-        doLiveListExport(startTime, liveListWriter);
     }
 
     private void doLiveListExport(final long startTime, final Writer liveListWriter) {
@@ -126,23 +178,20 @@ public class LiveListRunner implements ApplicationRunner {
         final Filter statusPublicFilter = FilterBuilder.create().onAttribute(INSDC_STATUS).withValue(PUBLIC).build();
         final Filter statusLiveFilter = FilterBuilder.create().onAttribute(INSDC_STATUS).withValue(LIVE).build();
         final AtomicInteger sampleCount = new AtomicInteger();
-        String liveListStatus = "";
         boolean isPassed = true;
-
         try (liveListWriter; AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true,
                 pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax())) {
 
             for (Resource<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll(Lists.newArrayList(statusPublicFilter, statusLiveFilter))) {
                 final Sample sample = sampleResource.getContent();
-                final Writer finalLiveListWriter = liveListWriter;
 
                 executorService.submit(() -> {
                     LOGGER.info("Handling " + sampleResource.getContent().getAccession());
 
                     if (Instant.now().isAfter(sample.getRelease())) {
-                        finalLiveListWriter.write(LiveListUtils.createLiveListString(sample));
-                        finalLiveListWriter.write("\n");
-                        finalLiveListWriter.flush();
+                        liveListWriter.write(LiveListUtils.createLiveListString(sample));
+                        liveListWriter.write("\n");
+                        liveListWriter.flush();
                     }
 
                     return null;
@@ -151,18 +200,18 @@ public class LiveListRunner implements ApplicationRunner {
                 sampleCount.getAndIncrement();
 
                 if (sampleCount.get() % 10000 == 0) {
-                    liveListStatus = "Running live list export: exported " + sampleCount + " exported samples in " + ((System.nanoTime() - startTime) / 1000000000L) + "s";
-                    LOGGER.info(liveListStatus);
-                    finalLiveListWriter.close();
+                    LOGGER.info("Running live list export: exported " + sampleCount + " exported samples in " + ((System.nanoTime() - startTime) / 1000000000L) + "s");
+                    liveListWriter.close();
                 }
             }
         } catch (final Exception e) {
             LOGGER.error("Pipeline failed to finish successfully", e);
             isPassed = false;
         } finally {
-            MailSender.sendEmail("Live list pipeline - livelist generation", liveListStatus, isPassed);
             long elapsed = System.nanoTime() - startTime;
-            LOGGER.info("Completed live list export:  " + sampleCount.get() + " samples exported in " + (elapsed / 1000000000L) + "s");
+            String logMessage = "Completed live list export:  " + sampleCount.get() + " samples exported in " + (elapsed / 1000000000L) + "s";
+            MailSender.sendEmail("Live list pipeline - live list generation", logMessage, isPassed);
+            LOGGER.info(logMessage);
         }
     }
 }
