@@ -23,7 +23,18 @@ public class LiveListPipelineDao {
      * @return
      */
     public List<String> doGetSuppressedEnaSamples() {
-        String query = "SELECT UNIQUE(BIOSAMPLE_ID) FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND BIOSAMPLE_AUTHORITY= 'N' AND STATUS_ID = 5";
+        String query = "SELECT UNIQUE(BIOSAMPLE_ID) FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND STATUS_ID IN (5, 7)";
+
+        return jdbcTemplate.queryForList(query, String.class);
+    }
+
+    /**
+     * Returns KILLED ENA samples
+     *
+     * @return
+     */
+    public List<String> doGetKilledEnaSamples() {
+        String query = "SELECT UNIQUE(BIOSAMPLE_ID) FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND STATUS_ID IN (6, 8)";
 
         return jdbcTemplate.queryForList(query, String.class);
     }
