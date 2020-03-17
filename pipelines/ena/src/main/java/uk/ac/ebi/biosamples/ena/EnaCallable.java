@@ -1,5 +1,18 @@
 package uk.ac.ebi.biosamples.ena;
 
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.Element;
+import org.dom4j.io.SAXReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.hateoas.Resource;
+import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.ExternalReference;
+import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
+
 import java.io.StringReader;
 import java.io.Writer;
 import java.sql.SQLException;
@@ -10,20 +23,6 @@ import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
-
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.Element;
-import org.dom4j.io.SAXReader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.hateoas.Resource;
-
-import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.ExternalReference;
-import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
 public class EnaCallable implements Callable<Void> {
 	private static final String DDBJ_SAMPLE_PREFIX = "SAMD";
@@ -59,17 +58,6 @@ public class EnaCallable implements Callable<Void> {
 		this.domain = domain;
 	}
 
-	public EnaCallable(String sampleAccession, BioSamplesClient bioSamplesClient, EnaXmlEnhancer enaXmlEnhancer,
-					   EnaElementConverter enaElementConverter, EraProDao eraProDao, String domain, boolean suppressionHandler) {
-		this.sampleAccession = sampleAccession;
-		this.bioSamplesClient = bioSamplesClient;
-		this.enaXmlEnhancer = enaXmlEnhancer;
-		this.enaElementConverter = enaElementConverter;
-		this.eraProDao = eraProDao;
-		this.domain = domain;
-		this.suppressionHandler = suppressionHandler;
-	}
-
 	/**
 	 * Construction for SUPPRESSED samples
 	 *
@@ -82,7 +70,7 @@ public class EnaCallable implements Callable<Void> {
 	 * @param suppressionHandler
 	 */
 	public EnaCallable(String sampleAccession, BioSamplesClient bioSamplesClient, EnaXmlEnhancer enaXmlEnhancer,
-					   EnaElementConverter enaElementConverter, EraProDao eraProDao, String domain, boolean suppressionHandler, Writer suppListWriter) {
+					   EnaElementConverter enaElementConverter, EraProDao eraProDao, String domain, boolean suppressionHandler) {
 		this.sampleAccession = sampleAccession;
 		this.bioSamplesClient = bioSamplesClient;
 		this.enaXmlEnhancer = enaXmlEnhancer;
@@ -90,7 +78,6 @@ public class EnaCallable implements Callable<Void> {
 		this.eraProDao = eraProDao;
 		this.domain = domain;
 		this.suppressionHandler = suppressionHandler;
-		this.suppListWriter = suppListWriter;
 	}
 
 	@Override

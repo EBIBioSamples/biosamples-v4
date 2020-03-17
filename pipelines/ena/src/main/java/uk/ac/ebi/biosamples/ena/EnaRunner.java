@@ -1,10 +1,19 @@
 package uk.ac.ebi.biosamples.ena;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.nio.charset.StandardCharsets;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.jdbc.core.RowCallbackHandler;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
+import uk.ac.ebi.biosamples.PipelinesProperties;
+import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
+import uk.ac.ebi.biosamples.utils.MailSender;
+import uk.ac.ebi.biosamples.utils.ThreadUtils;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -15,23 +24,6 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.zip.GZIPOutputStream;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.jdbc.core.RowCallbackHandler;
-import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpClientErrorException;
-
-import uk.ac.ebi.biosamples.PipelinesProperties;
-import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
-import uk.ac.ebi.biosamples.utils.MailSender;
-import uk.ac.ebi.biosamples.utils.ThreadUtils;
 
 @Component
 @ConditionalOnProperty(prefix = "job.autorun", name = "enabled", havingValue = "true", matchIfMissing = true)
@@ -89,7 +81,7 @@ public class EnaRunner implements ApplicationRunner {
 
 			if (suppressionRunner) {
 				// handler for suppressed ENA samples
-				handleSuppressedEnaSamples(args);
+				handleSuppressedEnaSamples();
 				// handler for suppressed NCBI/DDBJ samples - using separate
 				// AdaptiveThreadPoolExecutor for not putting too much load on the ThreadPool
 				handleSuppressedNcbiDdbjSamples();
@@ -138,35 +130,17 @@ public class EnaRunner implements ApplicationRunner {
 	 * @throws Exception in case of failures
 	 * @param args
 	 */
-	private void handleSuppressedEnaSamples(ApplicationArguments args) throws Exception {
+	private void handleSuppressedEnaSamples() throws Exception {
 		log.info("Fetching all suppressed ENA samples. "
 				+ "If they exist in BioSamples with different status, their status will be updated. If the sample don't exist at all it will be POSTed to BioSamples client");
 
-		String suppListFileName = "suppList.txt";
-
-		if (args.getNonOptionArgs().size() > 0) {
-			suppListFileName = args.getNonOptionArgs().get(0);
-		}
-
 		long startTime = System.nanoTime();
-		AtomicInteger sampleCount = new AtomicInteger();
-		Writer suppListWriter = null;
-
-		try {
-			suppListWriter = args.getOptionValues("gzip") == null
-					? new OutputStreamWriter(new FileOutputStream(suppListFileName), StandardCharsets.UTF_8)
-					: new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(suppListFileName)), StandardCharsets.UTF_8);
-		} catch (IOException e) {
-			log.error("Failure to setup live list writer", e);
-			MailSender.sendEmail("Live list pipeline - livelist generation", null, false);
-			System.exit(0);
-		}
 
 		try (final AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, false,
 				pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax())) {
 
 			final EnaSuppressedSamplesCallbackHandler enaSuppressedSamplesCallbackHandler = new EnaSuppressedSamplesCallbackHandler(
-					executorService, enaCallableFactory, futures, suppListWriter);
+					executorService, enaCallableFactory, futures);
 			eraProDao.doGetSuppressedEnaSamples(enaSuppressedSamplesCallbackHandler);
 		}
 	}
@@ -199,14 +173,12 @@ public class EnaRunner implements ApplicationRunner {
 		private final AdaptiveThreadPoolExecutor executorService;
 		private final EnaCallableFactory enaCallableFactory;
 		private final Map<String, Future<Void>> futures;
-		private final Writer suppListWriter;
 
 		public EnaSuppressedSamplesCallbackHandler(final AdaptiveThreadPoolExecutor executorService,
-												   final EnaCallableFactory enaCallableFactory, final Map<String, Future<Void>> futures, Writer suppListWriter) {
+												   final EnaCallableFactory enaCallableFactory, final Map<String, Future<Void>> futures) {
 			this.executorService = executorService;
 			this.enaCallableFactory = enaCallableFactory;
 			this.futures = futures;
-			this.suppListWriter = suppListWriter;
 		}
 
 		@Override
@@ -214,7 +186,7 @@ public class EnaRunner implements ApplicationRunner {
 			final String sampleAccession = rs.getString("BIOSAMPLE_ID");
 			final boolean suppressionHandler = true;
 
-			Callable<Void> callable = enaCallableFactory.build(sampleAccession, suppressionHandler, suppListWriter);
+			Callable<Void> callable = enaCallableFactory.build(sampleAccession, suppressionHandler);
 			if (executorService == null) {
 				try {
 					callable.call();
