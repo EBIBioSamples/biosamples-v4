@@ -95,7 +95,6 @@ public class LiveListRunner implements ApplicationRunner {
             LOGGER.error("Pipeline - livelist, kill list generation failed to finish successfully", e);
             isPassed = false;
         } finally {
-            MailSender.sendEmail("Live list pipeline - kill list generation", null, isPassed);
             long elapsed = System.nanoTime() - startTime;
             String logMessage = "Completed kill list export:  " + sampleCount.get() + " samples exported in " + (elapsed / 1000000000L) + "s";
             MailSender.sendEmail("Live list pipeline - kill list generation", logMessage, isPassed);
@@ -143,7 +142,6 @@ public class LiveListRunner implements ApplicationRunner {
             LOGGER.error("Pipeline - livelist, suppressed list generation failed to finish successfully", e);
             isPassed = false;
         } finally {
-            MailSender.sendEmail("Live list pipeline - suppressed list generation", null, isPassed);
             long elapsed = System.nanoTime() - startTime;
             String logMessage = "Completed supp list export:  " + sampleCount.get() + " samples exported in " + (elapsed / 1000000000L) + "s";
             MailSender.sendEmail("Live list pipeline - suppressed list generation", logMessage, isPassed);
