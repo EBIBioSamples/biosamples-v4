@@ -196,6 +196,7 @@ public class AmrRunner implements ApplicationRunner {
                     log.info(accession + " doesn't exist");
                 }
             } catch (final IOException ioe) {
+                EnaAmrDataProcessService.failedQueue.add(accession);
                 log.info("Couldn't process AMR data for " + accession);
             }
 

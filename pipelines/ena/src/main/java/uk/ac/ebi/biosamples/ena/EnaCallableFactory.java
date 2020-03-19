@@ -1,11 +1,10 @@
 package uk.ac.ebi.biosamples.ena;
 
-import java.util.concurrent.Callable;
-
 import org.springframework.stereotype.Service;
-
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+
+import java.util.concurrent.Callable;
 
 @Service
 public class EnaCallableFactory {

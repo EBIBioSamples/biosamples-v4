@@ -1,6 +1,20 @@
 package uk.ac.ebi.biosamples.ena;
 
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.Element;
+import org.dom4j.io.SAXReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.hateoas.Resource;
+import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.ExternalReference;
+import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
+
 import java.io.StringReader;
+import java.io.Writer;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
@@ -9,20 +23,6 @@ import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
-
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.Element;
-import org.dom4j.io.SAXReader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.hateoas.Resource;
-
-import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.ExternalReference;
-import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
 public class EnaCallable implements Callable<Void> {
 	private static final String DDBJ_SAMPLE_PREFIX = "SAMD";
@@ -34,6 +34,7 @@ public class EnaCallable implements Callable<Void> {
 	private final EnaElementConverter enaElementConverter;
 	private final EraProDao eraProDao;
 	private final String domain;
+	private Writer suppListWriter;
 	private Logger log = LoggerFactory.getLogger(getClass());
 	private boolean suppressionHandler;
 
@@ -69,7 +70,7 @@ public class EnaCallable implements Callable<Void> {
 	 * @param suppressionHandler
 	 */
 	public EnaCallable(String sampleAccession, BioSamplesClient bioSamplesClient, EnaXmlEnhancer enaXmlEnhancer,
-			EnaElementConverter enaElementConverter, EraProDao eraProDao, String domain, boolean suppressionHandler) {
+					   EnaElementConverter enaElementConverter, EraProDao eraProDao, String domain, boolean suppressionHandler) {
 		this.sampleAccession = sampleAccession;
 		this.bioSamplesClient = bioSamplesClient;
 		this.enaXmlEnhancer = enaXmlEnhancer;
@@ -205,7 +206,6 @@ public class EnaCallable implements Callable<Void> {
 	 * Checks samples from ENA which is SUPPRESSED and takes necessary action, i.e.
 	 * update status if status is different in BioSamples, else persist
 	 *
-	 * @param  sampleAccession      The accession passed
 	 * @return                      {@link Void}
 	 * @throws InterruptedException if thread is interrupted
 	 * @throws SQLException         if failure in SQL
@@ -217,6 +217,9 @@ public class EnaCallable implements Callable<Void> {
 
 		if (optionalSampleResource.isPresent()) {
 			final Sample sample = optionalSampleResource.get().getContent();
+
+			writeToSuppressedSamplesFile(sample);
+
 			boolean persistRequired = true;
 
 			for (Attribute attribute : sample.getAttributes()) {
@@ -242,10 +245,21 @@ public class EnaCallable implements Callable<Void> {
 		return null;
 	}
 
+	private void writeToSuppressedSamplesFile(Sample sample) {
+		if (Instant.now().isAfter(sample.getRelease())) {
+			try {
+				suppListWriter.write(sample.getAccession());
+				suppListWriter.write("\n");
+				suppListWriter.flush();
+			} catch (final Exception e) {
+				log.error("Exception in supplist building");
+			}
+		}
+	}
+
 	/**
 	 * True if NCBI/DDBJ sample
 	 *
-	 * @param  sampleAccession The accession passed to the method
 	 * @return                 true if NCBI/DDBJ sample
 	 */
 	private boolean ifNcbiDdbj() {

@@ -78,7 +78,7 @@ public class AmrTableConverter implements Converter<AMRTable, List<List<String>>
 
     public class HtmlAmrTable {
         public final String[] headers = {
-                "Species", "Antibiotic", "Ast Standard", "Breakpoint Version",
+                "Species", "Antibiotic Name", "Ast Standard", "Breakpoint Version",
                 "Laboratory Typing Method", "Measurement", "Measurement Units", "Measurement Sign",
                 "Resistance Phenotype", "Platform"
         };

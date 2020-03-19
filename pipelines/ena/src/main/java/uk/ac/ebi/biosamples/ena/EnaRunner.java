@@ -1,5 +1,19 @@
 package uk.ac.ebi.biosamples.ena;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.jdbc.core.RowCallbackHandler;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
+import uk.ac.ebi.biosamples.PipelinesProperties;
+import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
+import uk.ac.ebi.biosamples.utils.MailSender;
+import uk.ac.ebi.biosamples.utils.ThreadUtils;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -10,21 +24,6 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.jdbc.core.RowCallbackHandler;
-import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpClientErrorException;
-
-import uk.ac.ebi.biosamples.PipelinesProperties;
-import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
-import uk.ac.ebi.biosamples.utils.MailSender;
-import uk.ac.ebi.biosamples.utils.ThreadUtils;
 
 @Component
 @ConditionalOnProperty(prefix = "job.autorun", name = "enabled", havingValue = "true", matchIfMissing = true)
@@ -127,12 +126,15 @@ public class EnaRunner implements ApplicationRunner {
 	 * Handler for suppressed ENA samples. If status of sample is different in
 	 * BioSamples, status will be updated so SUPPRESSED. If sample doesn't exist it
 	 * will be created
-	 * 
+	 *
 	 * @throws Exception in case of failures
+	 * @param args
 	 */
 	private void handleSuppressedEnaSamples() throws Exception {
 		log.info("Fetching all suppressed ENA samples. "
 				+ "If they exist in BioSamples with different status, their status will be updated. If the sample don't exist at all it will be POSTed to BioSamples client");
+
+		long startTime = System.nanoTime();
 
 		try (final AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, false,
 				pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax())) {
@@ -146,7 +148,7 @@ public class EnaRunner implements ApplicationRunner {
 	/**
 	 * Handler for suppressed NCBI/DDBJ samples. If status of sample is different in
 	 * BioSamples, status will be updated to SUPPRESSED
-	 * 
+	 *
 	 * @throws Exception in case of failures
 	 */
 	private void handleSuppressedNcbiDdbjSamples() throws Exception {
@@ -164,7 +166,7 @@ public class EnaRunner implements ApplicationRunner {
 
 	/**
 	 * @author dgupta
-	 * 
+	 *
 	 *         {@link RowCallbackHandler} for suppressed ENA samples
 	 */
 	private static class EnaSuppressedSamplesCallbackHandler implements RowCallbackHandler {
@@ -173,7 +175,7 @@ public class EnaRunner implements ApplicationRunner {
 		private final Map<String, Future<Void>> futures;
 
 		public EnaSuppressedSamplesCallbackHandler(final AdaptiveThreadPoolExecutor executorService,
-				final EnaCallableFactory enaCallableFactory, final Map<String, Future<Void>> futures) {
+												   final EnaCallableFactory enaCallableFactory, final Map<String, Future<Void>> futures) {
 			this.executorService = executorService;
 			this.enaCallableFactory = enaCallableFactory;
 			this.futures = futures;
@@ -201,7 +203,7 @@ public class EnaRunner implements ApplicationRunner {
 
 	/**
 	 * @author dgupta
-	 * 
+	 *
 	 *         {@link RowCallbackHandler} for suppressed NCBI/DDBJ samples
 	 */
 	private static class NcbiDdbjSuppressedSamplesCallbackHandler implements RowCallbackHandler {
