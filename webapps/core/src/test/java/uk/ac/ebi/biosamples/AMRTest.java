@@ -82,7 +82,7 @@ public class AMRTest {
     }
 
     private AMRTable getAMRTable() {
-        return new AMRTable.Builder("http://schema.org")
+        return new AMRTable.Builder("http://schema.org", "self.test")
                 .addEntry(getAMREntry())
                 .build();
     }
@@ -116,7 +116,7 @@ public class AMRTest {
     @Test
     public void givenSampleWithStructuredData_whenGetSample_thenReturnStructuredDataInJson() throws Exception {
         AMREntry amrEntry = getAMREntry();
-        AMRTable amrTable = new AMRTable.Builder("http://schema.org")
+        AMRTable amrTable = new AMRTable.Builder("http://schema.org", "self.test")
                 .addEntry(amrEntry).build();
 
 
@@ -167,7 +167,7 @@ public class AMRTest {
 
         Sample testSample = new Sample.Builder(jsonSample.at("/name").asText()).withDomain(jsonSample.at("/domain").asText())
                 .withUpdate(jsonSample.at("/update").asText()).withRelease(jsonSample.at("/release").asText())
-                .addData(new AMRTable.Builder(jsonSample.at("/data/0/schema").asText()).addEntry(amrEntry).build())
+                .addData(new AMRTable.Builder(jsonSample.at("/data/0/schema").asText(), "self.test").addEntry(amrEntry).build())
                 .build();
 
 
@@ -204,7 +204,7 @@ public class AMRTest {
 
         Sample testSample = new Sample.Builder(jsonSample.at("/name").asText()).withDomain(jsonSample.at("/domain").asText())
                 .withUpdate(jsonSample.at("/update").asText()).withRelease(jsonSample.at("/release").asText())
-                .addData(new AMRTable.Builder(jsonSample.at("/data/0/schema").asText()).addEntry(amrEntry).build())
+                .addData(new AMRTable.Builder(jsonSample.at("/data/0/schema").asText(), "self.test").addEntry(amrEntry).build())
                 .build();
 
 

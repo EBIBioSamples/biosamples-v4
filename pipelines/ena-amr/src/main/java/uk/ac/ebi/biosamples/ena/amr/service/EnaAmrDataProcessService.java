@@ -27,7 +27,7 @@ public class EnaAmrDataProcessService {
 
     public void processAmrRows(final List<String> lines, final Sample sample, final BioSamplesClient client) {
         final Set<AbstractData> structuredData = new HashSet<>();
-        final AMRTable.Builder amrTableBuilder = new AMRTable.Builder("http://localhost:8081/biosamples/schemas/amr.json");
+        final AMRTable.Builder amrTableBuilder = new AMRTable.Builder("http://localhost:8081/biosamples/schemas/amr.json", "self.BiosampleImportENA");
         /*String[] dilutionMethods = new String[]{"Broth dilution", "Microbroth dilution", "Agar dilution"};
         String[] diffusionMethods = new String[]{"Disc-diffusion", "Neo-sensitabs", "Etest"};*/
 

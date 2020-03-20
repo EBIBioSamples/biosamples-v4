@@ -8,12 +8,14 @@ import uk.ac.ebi.biosamples.service.structured.AbstractDataDeserializer;
 import java.net.URI;
 
 
-@JsonPropertyOrder({"type", "schema", "content"})
+@JsonPropertyOrder({"domain", "type", "schema", "content"})
 @JsonDeserialize(using = AbstractDataDeserializer.class)
-public abstract class AbstractData implements Comparable<AbstractData>{
-
+public abstract class AbstractData implements Comparable<AbstractData> {
     public AbstractData() {
     }
+
+    @JsonProperty
+    public abstract String getDomain();
 
     @JsonProperty("type")
     public abstract DataType getDataType();
@@ -23,5 +25,4 @@ public abstract class AbstractData implements Comparable<AbstractData>{
 
     @JsonProperty("content")
     public abstract Object getStructuredData();
-
 }

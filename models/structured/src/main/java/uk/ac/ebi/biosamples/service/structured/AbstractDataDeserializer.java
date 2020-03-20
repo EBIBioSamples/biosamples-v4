@@ -31,6 +31,7 @@ public class AbstractDataDeserializer extends StdDeserializer<AbstractData> {
         URI schema = URI.create(rootNode.get("schema").asText());
         DataType type = DataType.valueOf(rootNode.get("type").asText());
         JsonNode content = rootNode.get("content");
+        JsonNode domain = rootNode.get("domain");
 
         // Deserialise the object based on the datatype
 
@@ -38,7 +39,7 @@ public class AbstractDataDeserializer extends StdDeserializer<AbstractData> {
         // what the content look like
 
         if (type == DataType.AMR) {
-            AMRTable.Builder tableBuilder = new AMRTable.Builder(schema);
+            AMRTable.Builder tableBuilder = new AMRTable.Builder(schema, domain.asText());
 
             for (Iterator<JsonNode> it = content.elements(); it.hasNext(); ) {
                 JsonNode amrRowObject = it.next();

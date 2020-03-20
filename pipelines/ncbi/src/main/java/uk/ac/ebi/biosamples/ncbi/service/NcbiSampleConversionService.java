@@ -296,7 +296,6 @@ public class NcbiSampleConversionService {
 						log.error("An error occurred while parsing AMR table", ex);
 					}
 				}
-
 			}
 		}
 

@@ -55,7 +55,7 @@ public class MongoSerializationTest {
 		attributes.add(Attribute.build("organism part", "heart"));
 
 		Set<AbstractData> structuredData = new HashSet<>();
-		AMRTable amrTable = new AMRTable.Builder("http://test").
+		AMRTable amrTable = new AMRTable.Builder("http://test", "self.test").
                 addEntry(new AMREntry.Builder()
                         .withAntibioticName(new AmrPair("ampicillin", ""))
                         .withResistancePhenotype("susceptible")
@@ -122,7 +122,7 @@ public class MongoSerializationTest {
 		SortedSet<Contact> contacts = new TreeSet<>();
 		Set<AbstractData> data = new HashSet<>();
 
-        AMRTable amrTable = new AMRTable.Builder("http://test").
+        AMRTable amrTable = new AMRTable.Builder("http://test", "self.test").
                 addEntry(new AMREntry.Builder()
                         .withAntibioticName(new AmrPair("ampicillin",""))
                         .withResistancePhenotype("susceptible")
