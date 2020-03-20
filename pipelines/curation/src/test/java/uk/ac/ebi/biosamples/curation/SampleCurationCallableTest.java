@@ -71,7 +71,7 @@ public class SampleCurationCallableTest {
         Sample sample = objectMapper.readValue(SampleCurationCallableTest.class.getResourceAsStream(filePath), Sample.class);
         String shortcode = "PATO_0000384";
         String expectedResponse = readFile("/examples/ols-responses/" + shortcode + ".json");
-        mockServer.expect(requestTo("https://wwwdev.ebi.ac.uk/ols/api/terms?id=" + shortcode + "&size=500")).andExpect(method(HttpMethod.GET))
+        mockServer.expect(requestTo("https://www.ebi.ac.uk/ols/api/terms?id=" + shortcode + "&size=500")).andExpect(method(HttpMethod.GET))
                 .andRespond(withSuccess(expectedResponse, MediaType.APPLICATION_JSON));
         SampleCurationCallable sampleCurationCallable = new SampleCurationCallable(mockBioSamplesClient, sample, olsProcessor, curationApplicationService, null, new IriUrlValidatorService());
         sampleCurationCallable.call();
