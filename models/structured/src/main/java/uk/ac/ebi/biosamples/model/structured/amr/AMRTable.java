@@ -24,7 +24,7 @@ public class AMRTable extends AbstractData implements Comparable<AbstractData> {
 
     @Override
     public String getDomain() {
-        return null;
+        return domain;
     }
 
     @Override
@@ -83,7 +83,7 @@ public class AMRTable extends AbstractData implements Comparable<AbstractData> {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getSchema(), amrEntries);
+        return Objects.hash(getSchema(), amrEntries, domain);
     }
 
     private int nullSafeStringComparison(String one, String two) {

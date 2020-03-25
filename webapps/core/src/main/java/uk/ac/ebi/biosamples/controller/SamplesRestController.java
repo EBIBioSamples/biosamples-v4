@@ -22,6 +22,7 @@ import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.filter.Filter;
+import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.service.*;
 import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
 import uk.ac.ebi.biosamples.utils.LinkUtils;
@@ -30,9 +31,7 @@ import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -148,7 +147,7 @@ public class SamplesRestController {
 
 		} else {
 
-			String effectiveSort[] = sort;
+			String[] effectiveSort = sort;
 			if (sort == null) {
 				//if there is no existing sort, sort by score then accession
 				effectiveSort = new String[2];
@@ -340,6 +339,17 @@ public class SamplesRestController {
 		//update, create date are system generated fields
 		SubmittedViaType submittedVia =
 				sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
+
+		Set<AbstractData> structuredData = sample.getData();
+
+		if(structuredData != null && structuredData.size() > 0) {
+			structuredData.forEach(data -> {
+				if(data.getDomain() == null) {
+					throw new BioSamplesAapService.StructuredDataDomainMissingException();
+				}
+			});
+		}
+
 		sample = Sample.Builder.fromSample(sample)
 				.withCreate(defineCreateDate(sample))
 				.withUpdate(Instant.now())

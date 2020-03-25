@@ -22,7 +22,7 @@ import java.util.Optional;
 /**
  * Primary controller for REST operations both in JSON and XML and both read and
  * write.
- *
+ * <p>
  * See {@link SampleHtmlController} for the HTML equivalent controller.
  *
  * @author faulcon
@@ -70,7 +70,7 @@ public class SampleRestController {
 
         // convert it into the format to return
         Optional<Sample> sample = sampleService.fetch(accession, decodedCurationDomains, curationRepo);
-        if (!sample.isPresent()) {
+        if (sample.isEmpty()) {
             throw new SampleNotFoundException();
         }
         bioSamplesAapService.checkAccessible(sample.get());
@@ -98,6 +98,7 @@ public class SampleRestController {
         // decode percent-encoding from curation domains
         Optional<List<String>> decodedCurationDomains = LinkUtils.decodeTextsToArray(curationdomain);
         Optional<Boolean> decodedLegacyDetails;
+
         if ("true".equals(legacydetails)) {
             decodedLegacyDetails = Optional.of(Boolean.TRUE);
         } else {
@@ -106,9 +107,11 @@ public class SampleRestController {
 
         // convert it into the format to return
         Optional<Sample> sample = sampleService.fetch(accession, decodedCurationDomains, curationRepo);
+
         if (sample.isEmpty()) {
             throw new SampleNotFoundException();
         }
+
         bioSamplesAapService.checkAccessible(sample.get());
 
         // TODO If user is not Read super user, reduce the fields to show
@@ -121,24 +124,25 @@ public class SampleRestController {
 
     @PreAuthorize("isAuthenticated()")
     @CrossOrigin(methods = RequestMethod.GET)
-    @GetMapping(produces = { MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE })
+    @GetMapping(produces = {MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE})
     public Sample getSampleXml(@PathVariable String accession,
                                @RequestParam(name = "curationrepo", required = false) final String curationRepo) {
-            Sample sample = this.getSampleHal(accession, "true", null, curationRepo).getContent();
-            if (!sample.getAccession().matches("SAMEG\\d+")) {
+        Sample sample = this.getSampleHal(accession, "true", null, curationRepo).getContent();
+        if (!sample.getAccession().matches("SAMEG\\d+")) {
 //			sample = Sample.build(sample.getName(),sample.getAccession(), sample.getDomain(),
 //					sample.getRelease(), sample.getUpdate(), sample.getCharacteristics(), sample.getRelationships(),
 //					sample.getExternalReferences(), null, null, null);
-        sample = Sample.Builder.fromSample(sample)
-                                    .withNoOrganisations().withNoPublications().withNoContacts()
-                                    .build();
-            }
-            //TODO cache control		
-            return sample;
+            sample = Sample.Builder.fromSample(sample)
+                    .withNoOrganisations().withNoPublications().withNoContacts()
+                    .build();
+        }
+
+        //TODO cache control
+        return sample;
     }
 
 //    @PreAuthorize("isAuthenticated()")
-//	@CrossOrigin(methods = RequestMethod.GET)
+//	  @CrossOrigin(methods = RequestMethod.GET)
 //    @GetMapping(produces = "application/ld+json")
 //    public JsonLDRecord getJsonLDSample(@PathVariable String accession) {
 //		Optional<Sample> sample = sampleService.fetch(accession);
@@ -162,7 +166,7 @@ public class SampleRestController {
     public Resource<Sample> put(@PathVariable String accession,
                                 @RequestBody Sample sample,
                                 @RequestParam(name = "setfulldetails", required = false, defaultValue = "true") boolean setFullDetails,
-                                @RequestParam(name = "submitStructuredData", required = false, defaultValue = "false") boolean submitStructuredDta) {
+                                @RequestParam(name = "structuredData", required = false) String structuredData) {
 
         if (sample.getAccession() == null || !sample.getAccession().equals(accession)) {
             // if the accession in the body is different to the accession in the
@@ -178,11 +182,22 @@ public class SampleRestController {
 
         log.debug("Recieved PUT for " + accession);
 
-        if (submitStructuredDta) {
+        if (structuredData != null) {
+            sample = bioSamplesAapService.handleStructuredDataDomain(sample, structuredData);
             sample = sampleService.storeSampleStructuredData(sample);
-
         } else {
             sample = bioSamplesAapService.handleSampleDomain(sample);
+
+            if (!(bioSamplesAapService.isWriteSuperUser() || bioSamplesAapService.isIntegrationTestUser())) {
+                log.info("not super user or integration test user");
+                if (sample.getData() != null && sample.getData().size() > 0) {
+                    log.info("slashing down data");
+                    // Clean the data if not a super user
+                    sample = Sample.Builder.fromSample(sample).withNoData().build();
+                }
+            }
+
+            //sample = bioSamplesAapService.handleSampleDomain(sample);
 
             //update date is system generated field
             Instant update = Instant.now();

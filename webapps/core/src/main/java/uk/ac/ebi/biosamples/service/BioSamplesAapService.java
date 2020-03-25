@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.tsc.aap.client.model.Domain;
 import uk.ac.ebi.tsc.aap.client.security.UserAuthentication;
 
@@ -46,8 +48,16 @@ public class BioSamplesAapService {
 	public static class DomainMissingException extends RuntimeException {
 	}
 
+	@ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Structured data must have a domain") // 400
+	public static class StructuredDataDomainMissingException extends RuntimeException {
+	}
+
 	@ResponseStatus(value = HttpStatus.FORBIDDEN, reason = "This sample is private and not available for browsing. If you think this is an error and/or you should have access please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk") // 403
 	public static class SampleNotAccessibleException extends RuntimeException {
+	}
+
+	@ResponseStatus(value = HttpStatus.FORBIDDEN, reason = "This sample structured data is private and not available for browsing. If you think this is an error and/or you should have access please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk") // 403
+	public static class StructuredDataNotAccessibleException extends RuntimeException {
 	}
 	
 	/**
@@ -101,19 +111,19 @@ public class BioSamplesAapService {
 	/**
 	 * Function that checks if a sample has a domain the current user has access to,
 	 * or if the user only has a single domain sets the sample to that domain.
-	 * 
+	 *
 	 * May return a different version of the sample, so return needs to be stored in future for that sample.
-	 * 
+	 *
 	 * @param sample
 	 * @return
 	 * @throws SampleNotAccessibleException
 	 * @throws DomainMissingException
 	 */
 	public Sample handleSampleDomain(Sample sample) throws SampleNotAccessibleException, DomainMissingException {
-		
+
 		//get the domains the current user has access to
 		Set<String> usersDomains = getDomains();
-		
+
 		if (sample.getDomain() == null || sample.getDomain().length() == 0) {
 			//if the sample doesn't have a domain, and the user has one domain, then they must be submitting to that domain
 			if (usersDomains.size() == 1) {
@@ -122,7 +132,7 @@ public class BioSamplesAapService {
 //						sample.getAttributes(), sample.getRelationships(), sample.getExternalReferences(),
 //						sample.getOrganizations(), sample.getContacts(), sample.getPublications());
                 sample = Sample.Builder.fromSample(sample).withDomain(usersDomains.iterator().next()).build();
-			} else {			
+			} else {
 				//if the sample doesn't have a domain, and we can't guess one, then end
 				throw new DomainMissingException();
 			}
@@ -139,13 +149,43 @@ public class BioSamplesAapService {
 		}
 	}
 
+	public Sample handleStructuredDataDomain(Sample sample, String structuredData) throws SampleNotAccessibleException, DomainMissingException {
+		//get the domains the current user has access to
+		final Set<String> usersDomains = getDomains();
+		AtomicBoolean isDomainValid = new AtomicBoolean(false);
+
+		if (sample.getData() != null && sample.getData().size() > 0) {
+			switch (structuredData) {
+				case "AMR":
+					sample.getData().forEach(data -> {
+						if (data.getDataType().name().equalsIgnoreCase("AMR")) {
+							if (data.getDomain() == null) {
+								throw new StructuredDataDomainMissingException();
+							} else if (usersDomains.contains(data.getDomain())) {
+								isDomainValid.set(true);
+							}
+						}
+					});
+
+					break;
+			}
+		}
+
+		if (usersDomains.contains(bioSamplesProperties.getBiosamplesAapSuperWrite())) {
+			return sample;
+		} else if (isDomainValid.get()) return sample;
+		else {
+			log.warn("User asked to submit sample structured data to domain " + sample.getDomain() + " but has access to " + usersDomains);
+			throw new StructuredDataNotAccessibleException();
+		}
+	}
+
 	/**
 	 * Function that checks if a CurationLink has a domain the current user has access to,
 	 * or if the user only has a single domain sets theCurationLink to that domain.
 	 * 
 	 * May return a different version of the CurationLink, so return needs to be stored in future for that CurationLink.
 	 * 
-	 * @param sample
 	 * @return
 	 * @throws SampleNotAccessibleException
 	 * @throws DomainMissingException
@@ -187,6 +227,9 @@ public class BioSamplesAapService {
 	}
 
 	public boolean isIntegrationTestUser() {
+		getDomains().forEach(domain -> {
+			log.info(domain);
+		});
 		return getDomains().contains("self.BiosampleIntegrationTest");
 	}
 	
