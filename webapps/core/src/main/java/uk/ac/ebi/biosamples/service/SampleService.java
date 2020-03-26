@@ -13,10 +13,7 @@ import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
 import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
-import uk.ac.ebi.biosamples.mongo.service.MongoAccessionService;
-import uk.ac.ebi.biosamples.mongo.service.MongoInverseRelationshipService;
-import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
-import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
+import uk.ac.ebi.biosamples.mongo.service.*;
 import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
 
 import java.time.Instant;
@@ -44,6 +41,8 @@ public class SampleService {
     private MongoSampleToSampleConverter mongoSampleToSampleConverter;
     @Autowired
     private SampleToMongoSampleConverter sampleToMongoSampleConverter;
+    @Autowired
+    private SampleToMongoSampleStructuredDataCentricConverter structuredDataConverter;
     @Autowired
     private MongoInverseRelationshipService mongoInverseRelationshipService;
 
@@ -161,7 +160,7 @@ public class SampleService {
             log.error("Trying to update newSample not in database, accession: {}", newSample.getAccession());
         }
 
-        MongoSample mongoSample = sampleToMongoSampleConverter.convert(newSample);
+        MongoSample mongoSample = structuredDataConverter.convert(newSample);
         mongoSample = mongoSampleRepository.save(mongoSample);
         newSample = mongoSampleToSampleConverter.convert(mongoSample);
 

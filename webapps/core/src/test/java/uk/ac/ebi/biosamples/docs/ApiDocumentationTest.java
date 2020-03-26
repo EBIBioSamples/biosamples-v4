@@ -300,6 +300,8 @@ public class ApiDocumentationTest {
         	.thenReturn(sampleWithDomain);
         when(aapService.isWriteSuperUser())
                 .thenReturn(true);
+        when(aapService.isIntegrationTestUser())
+                .thenReturn(false);
         doNothing().when(aapService).checkAccessible(isA(Sample.class));
 
         this.mockMvc.perform(

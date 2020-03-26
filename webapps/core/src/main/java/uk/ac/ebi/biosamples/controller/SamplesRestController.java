@@ -340,14 +340,10 @@ public class SamplesRestController {
 		SubmittedViaType submittedVia =
 				sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
 
-		Set<AbstractData> structuredData = sample.getData();
+		final Set<AbstractData> structuredData = sample.getData();
 
 		if(structuredData != null && structuredData.size() > 0) {
-			structuredData.forEach(data -> {
-				if(data.getDomain() == null) {
-					throw new BioSamplesAapService.StructuredDataDomainMissingException();
-				}
-			});
+			sample = bioSamplesAapService.handleStructuredDataDomain(sample);
 		}
 
 		sample = Sample.Builder.fromSample(sample)
@@ -375,7 +371,6 @@ public class SamplesRestController {
 
 		// assemble a resource to return
 		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample, this.getClass());
-
 		// create the response object with the appropriate status
 		//TODO work out how to avoid using ResponseEntity but also set location header
 		return ResponseEntity.created(URI.create(sampleResource.getLink("self").getHref())).body(sampleResource);

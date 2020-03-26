@@ -23,6 +23,7 @@ import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
+import uk.ac.ebi.biosamples.model.structured.DataType;
 import uk.ac.ebi.tsc.aap.client.model.Domain;
 import uk.ac.ebi.tsc.aap.client.security.UserAuthentication;
 
@@ -56,7 +57,7 @@ public class BioSamplesAapService {
 	public static class SampleNotAccessibleException extends RuntimeException {
 	}
 
-	@ResponseStatus(value = HttpStatus.FORBIDDEN, reason = "This sample structured data is private and not available for browsing. If you think this is an error and/or you should have access please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk") // 403
+	@ResponseStatus(value = HttpStatus.FORBIDDEN, reason = "You don't have access to the sample structured data. If you think this is an error and/or you should have access please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk") // 403
 	public static class StructuredDataNotAccessibleException extends RuntimeException {
 	}
 	
@@ -149,35 +150,39 @@ public class BioSamplesAapService {
 		}
 	}
 
-	public Sample handleStructuredDataDomain(Sample sample, String structuredData) throws SampleNotAccessibleException, DomainMissingException {
+	/**
+	 * @param sample
+	 * @return
+	 * @throws StructuredDataNotAccessibleException
+	 * @throws StructuredDataDomainMissingException
+	 */
+	public Sample handleStructuredDataDomain(Sample sample) throws StructuredDataNotAccessibleException, StructuredDataDomainMissingException {
 		//get the domains the current user has access to
 		final Set<String> usersDomains = getDomains();
-		AtomicBoolean isDomainValid = new AtomicBoolean(false);
 
-		if (sample.getData() != null && sample.getData().size() > 0) {
-			switch (structuredData) {
-				case "AMR":
-					sample.getData().forEach(data -> {
-						if (data.getDataType().name().equalsIgnoreCase("AMR")) {
-							if (data.getDomain() == null) {
-								throw new StructuredDataDomainMissingException();
-							} else if (usersDomains.contains(data.getDomain())) {
-								isDomainValid.set(true);
-							}
-						}
-					});
+		final AtomicBoolean isDomainValid = new AtomicBoolean(false);
+		sample = Sample.Builder.fromSample(sample).build();
 
-					break;
-			}
+		if (isStructuredDataPresent(sample)) {
+			sample.getData().forEach(data -> {
+				// AMR Specific block - at this moment we are only having AMR data - 26-March-2020
+				if (data.getDataType() != null && data.getDataType().name().equalsIgnoreCase(String.valueOf(DataType.AMR))) {
+					if (data.getDomain() == null) {
+						throw new StructuredDataDomainMissingException();
+					} else if (usersDomains.contains(data.getDomain())) {
+						isDomainValid.set(true);
+					}
+				}
+			});
 		}
 
-		if (usersDomains.contains(bioSamplesProperties.getBiosamplesAapSuperWrite())) {
-			return sample;
-		} else if (isDomainValid.get()) return sample;
-		else {
-			log.warn("User asked to submit sample structured data to domain " + sample.getDomain() + " but has access to " + usersDomains);
-			throw new StructuredDataNotAccessibleException();
-		}
+		if (usersDomains.contains(bioSamplesProperties.getBiosamplesAapSuperWrite())) return sample;
+		else if (isDomainValid.get()) return sample;
+		else throw new StructuredDataNotAccessibleException();
+	}
+
+	private boolean isStructuredDataPresent(Sample sample) {
+		return sample.getData() != null && sample.getData().size() > 0;
 	}
 
 	/**

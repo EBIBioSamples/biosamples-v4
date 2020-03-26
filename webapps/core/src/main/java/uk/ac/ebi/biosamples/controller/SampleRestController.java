@@ -166,7 +166,7 @@ public class SampleRestController {
     public Resource<Sample> put(@PathVariable String accession,
                                 @RequestBody Sample sample,
                                 @RequestParam(name = "setfulldetails", required = false, defaultValue = "true") boolean setFullDetails,
-                                @RequestParam(name = "structuredData", required = false) String structuredData) {
+                                @RequestParam(name = "structuredData", required = false, defaultValue = "false") boolean structuredData) {
 
         if (sample.getAccession() == null || !sample.getAccession().equals(accession)) {
             // if the accession in the body is different to the accession in the
@@ -180,24 +180,20 @@ public class SampleRestController {
             throw new SampleAccessionDoesNotExistException();
         }
 
-        log.debug("Recieved PUT for " + accession);
+        log.debug("Received PUT for " + accession);
 
-        if (structuredData != null) {
-            sample = bioSamplesAapService.handleStructuredDataDomain(sample, structuredData);
+        if (structuredData) {
+            sample = bioSamplesAapService.handleStructuredDataDomain(sample);
             sample = sampleService.storeSampleStructuredData(sample);
         } else {
             sample = bioSamplesAapService.handleSampleDomain(sample);
 
             if (!(bioSamplesAapService.isWriteSuperUser() || bioSamplesAapService.isIntegrationTestUser())) {
-                log.info("not super user or integration test user");
                 if (sample.getData() != null && sample.getData().size() > 0) {
-                    log.info("slashing down data");
                     // Clean the data if not a super user
                     sample = Sample.Builder.fromSample(sample).withNoData().build();
                 }
             }
-
-            //sample = bioSamplesAapService.handleSampleDomain(sample);
 
             //update date is system generated field
             Instant update = Instant.now();
