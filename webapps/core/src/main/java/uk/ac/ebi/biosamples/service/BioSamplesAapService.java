@@ -232,9 +232,6 @@ public class BioSamplesAapService {
 	}
 
 	public boolean isIntegrationTestUser() {
-		getDomains().forEach(domain -> {
-			log.info(domain);
-		});
 		return getDomains().contains("self.BiosampleIntegrationTest");
 	}
 	

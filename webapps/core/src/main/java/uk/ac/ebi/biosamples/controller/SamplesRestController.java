@@ -342,8 +342,10 @@ public class SamplesRestController {
 
 		final Set<AbstractData> structuredData = sample.getData();
 
-		if(structuredData != null && structuredData.size() > 0) {
-			sample = bioSamplesAapService.handleStructuredDataDomain(sample);
+		if (!(bioSamplesAapService.isWriteSuperUser() || bioSamplesAapService.isIntegrationTestUser())) {
+			if (structuredData != null && structuredData.size() > 0) {
+				sample = bioSamplesAapService.handleStructuredDataDomain(sample);
+			}
 		}
 
 		sample = Sample.Builder.fromSample(sample)
