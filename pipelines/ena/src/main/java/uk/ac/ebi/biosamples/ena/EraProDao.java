@@ -19,8 +19,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class EraProDao {
-
-
     @Autowired
     @Qualifier("eraJdbcTemplate")
     protected JdbcTemplate jdbcTemplate;
@@ -38,19 +36,6 @@ public class EraProDao {
      * @return
      */
     public SortedSet<String> getSamples(LocalDate minDate, LocalDate maxDate) {
-        /*
-select * from cv_status;
-1       draft   The entry is draft.
-2       private The entry is private.
-3       cancelled       The entry has been cancelled.
-4       public  The entry is public.
-5       suppressed      The entry has been suppressed.
-6       killed  The entry has been killed.
-7       temporary_suppressed    the entry has been temporarily suppressed.
-8       temporary_killed        the entry has been temporarily killed.
-         */
-        //once it has been public, it can only be suppressed and killed and can't go back to public again
-
         String query = "SELECT BIOSAMPLE_ID FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND EGA_ID IS NULL AND BIOSAMPLE_AUTHORITY= 'N' "
                 + "AND " + STATUS_CLAUSE + " AND ((LAST_UPDATED BETWEEN ? AND ?) OR (FIRST_PUBLIC BETWEEN ? AND ?)) ORDER BY BIOSAMPLE_ID ASC";
 
@@ -72,11 +57,19 @@ select * from cv_status;
         jdbcTemplate.query(query, rch, minDateOld, maxDateOld, minDateOld, maxDateOld);
     }
 
+    public void doSampleCallbackBsdAuthoritySamples(LocalDate minDate, LocalDate maxDate, RowCallbackHandler rch) {
+        String query = "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND EGA_ID IS NULL AND BIOSAMPLE_AUTHORITY= 'Y' "
+                + "AND " + STATUS_CLAUSE + " AND ((LAST_UPDATED BETWEEN ? AND ?) OR (FIRST_PUBLIC BETWEEN ? AND ?)) ORDER BY BIOSAMPLE_ID ASC";
+
+        Date minDateOld = java.sql.Date.valueOf(minDate);
+        Date maxDateOld = java.sql.Date.valueOf(maxDate);
+        jdbcTemplate.query(query, rch, minDateOld, maxDateOld, minDateOld, maxDateOld);
+    }
+
     /**
      * Returns SUPPRESSED ENA samples
-     * 
-     * @param rch
-     * 		{@link RowCallbackHandler}
+     *
+     * @param rch {@link RowCallbackHandler}
      */
     public void doGetSuppressedEnaSamples(RowCallbackHandler rch) {
         String query = "SELECT UNIQUE(BIOSAMPLE_ID) FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND BIOSAMPLE_AUTHORITY= 'N' AND STATUS_ID = 5";
@@ -86,9 +79,8 @@ select * from cv_status;
 
     /**
      * Returns SUPPRESSED NCBI/DDBJ samples
-     * 
-     * @param rch
-     * 		{@link RowCallbackHandler}
+     *
+     * @param rch {@link RowCallbackHandler}
      */
     public void doGetSuppressedNcbiDdbjSamples(RowCallbackHandler rch) {
         String query = "SELECT UNIQUE(BIOSAMPLE_ID) FROM SAMPLE WHERE (BIOSAMPLE_ID LIKE 'SAMN%' OR BIOSAMPLE_ID LIKE 'SAMD%' ) AND BIOSAMPLE_AUTHORITY= 'N' AND STATUS_ID = 5";
@@ -121,16 +113,15 @@ select * from cv_status;
 
     public SampleDBBean getAllSampleData(String biosampleAccession) {
         String sql = "SELECT SAMPLE_XML, "
-        		+ "to_char(LAST_UPDATED, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS LAST_UPDATED, "
-        		+ "to_char(FIRST_PUBLIC, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS FIRST_PUBLIC,  "
-        		+ " to_char(FIRST_CREATED, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS FIRST_CREATED, "
-        		+ "STATUS_ID "
-        		+ "FROM SAMPLE "
-        		+ "WHERE BIOSAMPLE_ID = ? "
-        		+ "AND BIOSAMPLE_AUTHORITY='N' "
-        		+ "AND SAMPLE_ID LIKE 'ERS%'";
-        SampleDBBean sampleData = jdbcTemplate.queryForObject(sql, insdcRowMapper, biosampleAccession);
-        //log.trace("Update date of \"+biosampleAccession+\"is " + dateString);
+                + "to_char(LAST_UPDATED, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS LAST_UPDATED, "
+                + "to_char(FIRST_PUBLIC, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS FIRST_PUBLIC,  "
+                + " to_char(FIRST_CREATED, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS FIRST_CREATED, "
+                + "STATUS_ID "
+                + "FROM SAMPLE "
+                + "WHERE BIOSAMPLE_ID = ? "
+                + "AND SAMPLE_ID LIKE 'ERS%'";
+        final SampleDBBean sampleData = jdbcTemplate.queryForObject(sql, insdcRowMapper, biosampleAccession);
+
         return sampleData;
     }
 
@@ -204,15 +195,22 @@ select * from cv_status;
         jdbcTemplate.query(query, rch, enaAccession);
     }
 
-   RowMapper<SampleDBBean> insdcRowMapper = (rs, rowNum) -> {
-			final SampleDBBean sampleBean = new SampleDBBean();
+    RowMapper<SampleDBBean> insdcRowMapper = (rs, rowNum) -> {
+        final SampleDBBean sampleBean = new SampleDBBean();
 
-			sampleBean.setSampleXml(rs.getString("SAMPLE_XML"));
-			sampleBean.setFirstPublic(rs.getString("FIRST_PUBLIC"));
-			sampleBean.setLastUpdate(rs.getString("LAST_UPDATED"));
-			sampleBean.setFirstCreated(rs.getString("FIRST_CREATED"));
-			sampleBean.setStatus(rs.getInt("STATUS_ID"));
+        sampleBean.setSampleXml(rs.getString("SAMPLE_XML"));
+        sampleBean.setFirstPublic(rs.getString("FIRST_PUBLIC"));
+        sampleBean.setLastUpdate(rs.getString("LAST_UPDATED"));
+        sampleBean.setFirstCreated(rs.getString("FIRST_CREATED"));
+        sampleBean.setStatus(rs.getInt("STATUS_ID"));
 
-			return sampleBean;
+        return sampleBean;
     };
+
+    public String getSraAccession(String sampleAccession) {
+        String sql = "SELECT SAMPLE_ID FROM SAMPLE WHERE BIOSAMPLE_ID = ? ";
+
+        return (String) jdbcTemplate.queryForObject(
+                sql, new Object[]{sampleAccession}, String.class);
+    }
 }
