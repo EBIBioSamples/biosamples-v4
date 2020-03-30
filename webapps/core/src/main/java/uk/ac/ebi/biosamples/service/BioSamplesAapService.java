@@ -158,6 +158,7 @@ public class BioSamplesAapService {
 
 	/**
 	 * @param sample
+	 *
 	 * @return
 	 * @throws StructuredDataNotAccessibleException
 	 * @throws StructuredDataDomainMissingException
