@@ -14,7 +14,6 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
 import java.io.StringReader;
-import java.sql.SQLException;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -116,6 +115,9 @@ public class EnaCallable implements Callable<Void> {
 						sample = Sample.Builder.fromSample(sample).withAttributes(attributes).build();
 
 						bioSamplesClient.persistSampleResource(sample);
+						log.info("Updated sample " + sampleAccession + " with SRA accession");
+					} else {
+						log.info("Sample not found " + sampleAccession);
 					}
 				}
 			}
@@ -167,7 +169,7 @@ public class EnaCallable implements Callable<Void> {
 		final String firstPublic = sampleDBBean.getFirstPublic();
 		final String firstCreated = sampleDBBean.getFirstCreated();
 		final String status = handleStatus(sampleDBBean.getStatus());
-		Instant release = null;
+		Instant release;
 		Instant update = null;
 		Instant create = null;
 
@@ -187,9 +189,7 @@ public class EnaCallable implements Callable<Void> {
 			create = Instant.parse(firstCreated);
 		}
 
-		if (status != null) {
-			attributes.add(Attribute.build("INSDC status", status));
-		}
+		attributes.add(Attribute.build("INSDC status", status));
 
 		// add external reference
 		externalReferences.add(ExternalReference.build("https://www.ebi.ac.uk/ena/data/view/" + this.sampleAccession));
@@ -229,13 +229,11 @@ public class EnaCallable implements Callable<Void> {
 	 * update status if status is different in BioSamples, else persist
 	 *
 	 * @return                      {@link Void}
-	 * @throws InterruptedException if thread is interrupted
-	 * @throws SQLException         if failure in SQL
 	 * @throws DocumentException    if failure in document parsing
 	 */
-	private Void checkAndUpdateSuppressedSample() throws InterruptedException, SQLException, DocumentException {
+	private Void checkAndUpdateSuppressedSample() throws DocumentException {
 		final Optional<Resource<Sample>> optionalSampleResource = bioSamplesClient.fetchSampleResource(this.sampleAccession,
-				Optional.of(new ArrayList<String>()));
+				Optional.of(new ArrayList<>()));
 
 		if (optionalSampleResource.isPresent()) {
 			final Sample sample = optionalSampleResource.get().getContent();
