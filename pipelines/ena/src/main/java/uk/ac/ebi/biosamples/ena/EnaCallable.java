@@ -35,7 +35,7 @@ public class EnaCallable implements Callable<Void> {
 	private EnaElementConverter enaElementConverter;
 	private String domain;
 	private boolean suppressionHandler;
-	private boolean bsdAuthority;
+	private boolean bsdAuthority = false;
 	private Logger log = LoggerFactory.getLogger(getClass());
 
 	/**
