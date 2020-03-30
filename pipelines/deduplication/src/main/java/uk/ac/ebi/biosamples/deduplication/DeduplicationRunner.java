@@ -41,7 +41,6 @@ public class DeduplicationRunner implements ApplicationRunner {
                 pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax())) {
 
             mappingList.forEach(pair -> executorService.submit(() -> checkDuplicates(pair)));
-
         } catch (final Exception e) {
             log.error("Pipeline failed to finish successfully", e);
             isPassed = false;
@@ -77,15 +76,26 @@ public class DeduplicationRunner implements ApplicationRunner {
             assert aeSample != null;
 
             if (enaSample.getRelease().isAfter(Instant.now()) || aeSample.getRelease().isAfter(Instant.now()))
-                log.info("Already set to private, no action required");
+                log.info("Already set to private, no action required " + enaId);
             else mergeSamples(enaSample, aeSample);
         } else {
             log.info("More than 2 samples fetched for the ERS " + enaId);
+
+            for (Sample sample : enaAeSamples) {
+                if (sample.getAccession().equals(pair.getBioSampleId())) {
+                    enaSample = sample;
+                }
+            }
+
+            if (enaSample != null) {
+                enaAeSamples.remove(enaSample);
+                mergeSamples(enaSample, enaAeSamples);
+            }
         }
     }
 
     private List<Sample> evaluateIterablesToFindPair(Iterator<Resource<Sample>> it, DeduplicationDao.RowMapping pair) {
-        final List<Sample> enaAeSamples = new ArrayList<>(2);
+        final List<Sample> enaAeSamples = new ArrayList<>();
 
         while (it.hasNext()) {
             final Sample sample = it.next().getContent();
@@ -104,6 +114,10 @@ public class DeduplicationRunner implements ApplicationRunner {
         mergeAttributesAndSubmit(enaSample, aeSample);
     }
 
+    private void mergeSamples(final Sample enaSample, final List<Sample> aeSamples) {
+        mergeAttributesAndSubmit(enaSample, aeSamples);
+    }
+
     private void mergeAttributesAndSubmit(final Sample enaSample, final Sample aeSample) {
         Sample sampleToSave;
         Sample sampleToPrivate;
@@ -116,6 +130,24 @@ public class DeduplicationRunner implements ApplicationRunner {
 
         bioSamplesClient.persistSampleResource(sampleToPrivate);
         log.info("Private sample with accession - " + sampleToPrivate.getAccession());
+    }
+
+    private void mergeAttributesAndSubmit(final Sample enaSample, final List<Sample> aeSamples) {
+        try {
+            Sample sampleToSave = Sample.Builder.fromSample(enaSample).build();
+
+            bioSamplesClient.persistSampleResource(sampleToSave);
+            log.info("Submitted sample with accession - " + sampleToSave.getAccession());
+
+            aeSamples.forEach(sample -> {
+                Sample sampleToPrivate = Sample.Builder.fromSample(sample).withRelease(ZonedDateTime.now(ZoneOffset.UTC).plusYears(1000).toInstant()).build();
+
+                bioSamplesClient.persistSampleResource(sampleToPrivate);
+                log.info("Private sample with accession - " + sampleToPrivate.getAccession());
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private Set<Attribute> resolveAttributes(final SortedSet<Attribute> enaSample, final SortedSet<Attribute> aeSample) {
