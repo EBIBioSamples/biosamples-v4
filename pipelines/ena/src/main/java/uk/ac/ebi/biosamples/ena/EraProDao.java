@@ -210,7 +210,9 @@ public class EraProDao {
     public String getSraAccession(String sampleAccession) {
         String sql = "SELECT SAMPLE_ID FROM SAMPLE WHERE BIOSAMPLE_ID = ? ";
 
-        return (String) jdbcTemplate.queryForObject(
+        List<String> resultList = jdbcTemplate.queryForList(
                 sql, new Object[]{sampleAccession}, String.class);
+
+        return resultList.get(0);
     }
 }
