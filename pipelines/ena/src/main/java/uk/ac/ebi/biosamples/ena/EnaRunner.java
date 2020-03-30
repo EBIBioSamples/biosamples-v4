@@ -98,6 +98,8 @@ public class EnaRunner implements ApplicationRunner {
 	}
 
 	private void importEraBsdAuthoritySamples(LocalDate fromDate, LocalDate toDate) throws Exception {
+		log.info("Handling BioSamples Authority Samples");
+
 		if (pipelinesProperties.getThreadCount() == 0) {
 			EraRowBsdSamplesCallbackHandler eraRowBsdSamplesCallbackHandler = new EraRowBsdSamplesCallbackHandler(null, enaCallableFactory, futures);
 
@@ -118,6 +120,8 @@ public class EnaRunner implements ApplicationRunner {
 
 	private void importEraSamples(LocalDate fromDate, LocalDate toDate)
 			throws Exception {
+		log.info("Handling ENA and NCBI Samples");
+
 		if (pipelinesProperties.getThreadCount() == 0) {
 			EraRowCallbackHandler eraRowCallbackHandler = new EraRowCallbackHandler(null, enaCallableFactory, futures);
 			eraProDao.doSampleCallback(fromDate, toDate, eraRowCallbackHandler);
