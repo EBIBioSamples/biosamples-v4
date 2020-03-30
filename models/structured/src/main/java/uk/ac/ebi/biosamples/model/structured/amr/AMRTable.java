@@ -52,6 +52,8 @@ public class AMRTable extends AbstractData implements Comparable<AbstractData> {
             return 1;
         }
 
+        int comparison;
+
         AMRTable otherAmrTable = (AMRTable) other;
         Set<AMREntry> otherTableAMREntries = otherAmrTable.getStructuredData();
         for (AMREntry entry: this.getStructuredData()) {
@@ -60,15 +62,21 @@ public class AMRTable extends AbstractData implements Comparable<AbstractData> {
             if (! otherEntry.isPresent()) {
                 return 1;
             } else {
-                int comparison = entry.compareTo(otherEntry.get());
+                comparison = entry.compareTo(otherEntry.get());
+
                 if (0 != comparison) {
                     return comparison;
                 }
             }
         }
 
-        return nullSafeStringComparison(this.schema.toString(), otherAmrTable.schema.toString());
-        //TODO does it make sense to compare amr data?
+        comparison =  nullSafeStringComparison(this.schema.toString(), otherAmrTable.schema.toString());
+
+        if (comparison != 0) {
+            return comparison;
+        }
+
+        return  nullSafeStringComparison(this.domain, otherAmrTable.domain);
     }
 
     @Override

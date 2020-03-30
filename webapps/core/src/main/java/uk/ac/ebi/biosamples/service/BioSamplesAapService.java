@@ -41,6 +41,12 @@ public class BioSamplesAapService {
 		this.bioSamplesProperties = bioSamplesProperties;
 	}
 
+	public boolean checkIfOriginalSubmitter(final Sample sample) {
+		if(handleStructuredDataDomain(sample) != null)
+		 return true;
+		else return false;
+	}
+
 	@ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Curation Link must specify a domain") // 400
 	public static class CurationLinkDomainMissingException extends RuntimeException {
 	}	
@@ -167,7 +173,9 @@ public class BioSamplesAapService {
 			sample.getData().forEach(data -> {
 				// AMR Specific block - at this moment we are only having AMR data - 26-March-2020
 				if (data.getDataType() != null && data.getDataType().name().equalsIgnoreCase(String.valueOf(DataType.AMR))) {
-					if (data.getDomain() == null) {
+					final String structuredDataDomain = data.getDomain();
+
+					if (structuredDataDomain == null) {
 						throw new StructuredDataDomainMissingException();
 					} else if (usersDomains.contains(data.getDomain())) {
 						isDomainValid.set(true);

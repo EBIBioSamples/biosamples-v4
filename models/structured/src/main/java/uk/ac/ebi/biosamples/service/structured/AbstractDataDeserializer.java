@@ -39,7 +39,7 @@ public class AbstractDataDeserializer extends StdDeserializer<AbstractData> {
         // what the content look like
 
         if (type == DataType.AMR) {
-            AMRTable.Builder tableBuilder = new AMRTable.Builder(schema, domain != null ? domain.asText() : null);
+            AMRTable.Builder tableBuilder = new AMRTable.Builder(schema, (domain != null && !domain.isNull()) ? domain.asText() : null);
 
             for (Iterator<JsonNode> it = content.elements(); it.hasNext(); ) {
                 JsonNode amrRowObject = it.next();
