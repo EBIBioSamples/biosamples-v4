@@ -41,10 +41,10 @@ public class BioSamplesAapService {
 		this.bioSamplesProperties = bioSamplesProperties;
 	}
 
-	public boolean checkIfOriginalSubmitter(final Sample sample) {
+	public Sample handleUpdateRequestFromOriginalSubmitter(final Sample sample) {
 		if(handleStructuredDataDomain(sample) != null)
-		 return true;
-		else return false;
+		 return sample;
+		else return null;
 	}
 
 	@ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Curation Link must specify a domain") // 400
@@ -189,6 +189,41 @@ public class BioSamplesAapService {
 		else if (isDomainValid.get()) return sample;
 		else throw new StructuredDataNotAccessibleException();
 	}
+
+	/**
+	 * @param sample
+	 *
+	 * @return
+	 * @throws StructuredDataNotAccessibleException
+	 * @throws StructuredDataDomainMissingException
+	 */
+	public boolean isOriginalSubmitter(Sample sample) throws StructuredDataNotAccessibleException, StructuredDataDomainMissingException {
+		//get the domains the current user has access to
+		final Set<String> usersDomains = getDomains();
+
+		final AtomicBoolean isDomainValid = new AtomicBoolean(false);
+		sample = Sample.Builder.fromSample(sample).build();
+
+		if (isStructuredDataPresent(sample)) {
+			sample.getData().forEach(data -> {
+				// AMR Specific block - at this moment we are only having AMR data - 26-March-2020
+				if (data.getDataType() != null && data.getDataType().name().equalsIgnoreCase(String.valueOf(DataType.AMR))) {
+					final String structuredDataDomain = data.getDomain();
+
+					if (structuredDataDomain == null) {
+						throw new StructuredDataDomainMissingException();
+					} else if (usersDomains.contains(data.getDomain())) {
+						isDomainValid.set(true);
+					}
+				}
+			});
+		}
+
+		if (usersDomains.contains(bioSamplesProperties.getBiosamplesAapSuperWrite())) return true;
+		else if (isDomainValid.get()) return true;
+		else throw new StructuredDataNotAccessibleException();
+	}
+
 
 	private boolean isStructuredDataPresent(Sample sample) {
 		return sample.getData() != null && sample.getData().size() > 0;

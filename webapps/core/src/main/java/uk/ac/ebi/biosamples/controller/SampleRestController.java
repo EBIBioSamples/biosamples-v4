@@ -184,10 +184,12 @@ public class SampleRestController {
         sample = bioSamplesAapService.handleSampleDomain(sample);
 
         if (sample.getData() != null && sample.getData().size() > 0) {
-            if (bioSamplesAapService.checkIfOriginalSubmitter(sample)) {
+            if (bioSamplesAapService.isOriginalSubmitter(sample)) {
                 sample = Sample.Builder.fromSample(sample).build();
             } else if (bioSamplesAapService.isWriteSuperUser() || bioSamplesAapService.isIntegrationTestUser()) {
                 sample = Sample.Builder.fromSample(sample).build();
+            } else {
+                sample = Sample.Builder.fromSample(sample).withNoData().build();
             }
         }
 

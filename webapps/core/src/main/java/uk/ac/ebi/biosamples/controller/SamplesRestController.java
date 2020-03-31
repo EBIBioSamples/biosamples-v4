@@ -392,7 +392,6 @@ public class SamplesRestController {
 
 	@ResponseStatus(value = HttpStatus.BAD_REQUEST)
 	public static class SampleWithInvalidStructuredData extends RuntimeException {
-
 		String validation;
 
 		public SampleWithInvalidStructuredData(String validationError) {

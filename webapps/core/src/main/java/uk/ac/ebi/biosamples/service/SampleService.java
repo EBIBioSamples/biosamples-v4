@@ -29,10 +29,11 @@ import java.util.*;
 @Service
 public class SampleService {
 
+    public static final String VALIDATION_MESSAGE = "Only Sample name, sample accession and sample structured data can be provided through this API";
+    public static final String NO_STRUCTURED_DATA_IS_PROVIDED = "No structured data is provided";
     private static Logger log = LoggerFactory.getLogger(SampleService.class);
 
     //TODO use constructor injection
-
     @Autowired
     private MongoAccessionService mongoAccessionService;
     @Autowired
@@ -44,30 +45,21 @@ public class SampleService {
     @Autowired
     private SampleToMongoSampleStructuredDataCentricConverter structuredDataConverter;
     @Autowired
-    private MongoInverseRelationshipService mongoInverseRelationshipService;
-
-
-    @Autowired
     private SampleValidator sampleValidator;
-
     @Autowired
     private SolrSampleService solrSampleService;
-
     @Autowired
     private SampleReadService sampleReadService;
-
     @Autowired
     private MessagingService messagingSerivce;
 
     /**
      * Throws an IllegalArgumentException of no sample with that accession exists
      *
-     * @param accession
+     * @param accession the sample accession
      * @return
      * @throws IllegalArgumentException
      */
-    //can't use a sync cache because we need to use CacheEvict
-    //@Cacheable(cacheNames=WebappProperties.fetchUsing, key="#root.args[0]")
     public Optional<Sample> fetch(String accession, Optional<List<String>> curationDomains, String curationRepo) {
         StaticViewWrapper.StaticView staticView = StaticViewWrapper.getStaticView(curationDomains.orElse(null), curationRepo);
         return sampleReadService.fetch(accession, curationDomains, staticView);
@@ -119,43 +111,12 @@ public class SampleService {
     }
 
     public Sample storeSampleStructuredData(Sample newSample) {
-        assert newSample.getData() != null;
-
-        if (!(newSample.getData().size() > 0)) {
-            throw new SampleValidationException("No structured data is provided");
-        }
-
-        if (newSample.getAttributes() != null && newSample.getAttributes().size() > 0) {
-            throw new SampleValidationException("Only Sample name, sample domain and sample structured data can be provided through this API");
-        }
-
-        if (newSample.getExternalReferences() != null && newSample.getExternalReferences().size() > 0) {
-            throw new SampleValidationException("Only Sample name, sample domain and sample structured data can be provided through this API");
-        }
-
-        if (newSample.getRelationships() != null && newSample.getRelationships().size() > 0) {
-            throw new SampleValidationException("Only Sample name, sample domain and sample structured data can be provided through this API");
-        }
-
-        if (newSample.getContacts() != null && newSample.getContacts().size() > 0) {
-            throw new SampleValidationException("Only Sample name, sample domain and sample structured data can be provided through this API");
-        }
-
-        if (newSample.getPublications() != null && newSample.getPublications().size() > 0) {
-            throw new SampleValidationException("Only Sample name, sample domain and sample structured data can be provided through this API");
-        }
-
-        if (!newSample.hasAccession()) {
-            throw new SampleValidationException("Sample doesn't have an accession");
-        }
+        validateSampleContentsForStructuredDataPatching(newSample);
 
         MongoSample mongoOldSample = mongoSampleRepository.findOne(newSample.getAccession());
-        List<String> existingRelationshipTargets = new ArrayList<>();
 
         if (mongoOldSample != null) {
-            Sample oldSample = mongoSampleToSampleConverter.convert(mongoOldSample);
-            existingRelationshipTargets = getExistingRelationshipTargets(newSample.getAccession(), mongoOldSample);
-            newSample = makeNewSample(newSample, oldSample);
+            newSample = makeNewSample(newSample, mongoSampleToSampleConverter.convert(mongoOldSample));
         } else {
             log.error("Trying to update newSample not in database, accession: {}", newSample.getAccession());
         }
@@ -164,12 +125,49 @@ public class SampleService {
         mongoSample = mongoSampleRepository.save(mongoSample);
         newSample = mongoSampleToSampleConverter.convert(mongoSample);
 
-        //send a message for storage and further processing, send relationship targets to identify deleted relationships
-        messagingSerivce.fetchThenSendMessage(newSample.getAccession(), existingRelationshipTargets);
-
         //return the newSample in case we have modified it i.e accessioned
         //do a fetch to return it with curation objects and inverse relationships
         return fetch(newSample.getAccession(), Optional.empty(), null).get();
+    }
+
+    private void validateSampleContentsForStructuredDataPatching(Sample newSample) {
+        assert newSample.getData() != null;
+
+        if (!(newSample.getData().size() > 0)) {
+            throw new SampleValidationException(NO_STRUCTURED_DATA_IS_PROVIDED);
+        }
+
+        if (newSample.getAttributes() != null && newSample.getAttributes().size() > 0) {
+            throw new SampleValidationException(VALIDATION_MESSAGE);
+        }
+
+        if (newSample.getExternalReferences() != null && newSample.getExternalReferences().size() > 0) {
+            throw new SampleValidationException(VALIDATION_MESSAGE);
+        }
+
+        if (newSample.getRelationships() != null && newSample.getRelationships().size() > 0) {
+            throw new SampleValidationException(VALIDATION_MESSAGE);
+        }
+
+        if (newSample.getContacts() != null && newSample.getContacts().size() > 0) {
+            throw new SampleValidationException(VALIDATION_MESSAGE);
+        }
+
+        if (newSample.getPublications() != null && newSample.getPublications().size() > 0) {
+            throw new SampleValidationException(VALIDATION_MESSAGE);
+        }
+
+        if(newSample.getDomain() != null) {
+            throw new SampleValidationException(VALIDATION_MESSAGE);
+        }
+
+        if(newSample.getCharacteristics() != null) {
+            throw new SampleValidationException(VALIDATION_MESSAGE);
+        }
+
+        if (!newSample.hasAccession()) {
+            throw new SampleValidationException("Sample doesn't have an accession");
+        }
     }
 
     private Sample makeNewSample(Sample newSample, Sample oldSample) {
@@ -177,10 +175,7 @@ public class SampleService {
     }
 
     public boolean searchSampleByDomainAndName(final String domain, final String name) {
-        if (mongoSampleRepository.findByDomainAndName(domain, name).size() > 0)
-            return true;
-        else
-            return false;
+        return mongoSampleRepository.findByDomainAndName(domain, name).size() > 0;
     }
 
     public void validateSample(Map sampleAsMap) {
