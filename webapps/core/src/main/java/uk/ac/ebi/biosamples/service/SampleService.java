@@ -132,6 +132,7 @@ public class SampleService {
 
     private void validateSampleContentsForStructuredDataPatching(Sample newSample) {
         assert newSample.getData() != null;
+        final String domain = newSample.getDomain();
 
         if (!(newSample.getData().size() > 0)) {
             throw new SampleValidationException(NO_STRUCTURED_DATA_IS_PROVIDED);
@@ -157,11 +158,7 @@ public class SampleService {
             throw new SampleValidationException(VALIDATION_MESSAGE);
         }
 
-        if(newSample.getDomain() != null) {
-            throw new SampleValidationException(VALIDATION_MESSAGE);
-        }
-
-        if(newSample.getCharacteristics() != null) {
+        if (domain != null && domain.length() > 0) {
             throw new SampleValidationException(VALIDATION_MESSAGE);
         }
 
