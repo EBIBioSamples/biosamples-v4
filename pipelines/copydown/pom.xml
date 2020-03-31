@@ -27,7 +27,13 @@
 			<artifactId>utils-thread</artifactId>
 			<version>4.2.6-SNAPSHOT</version>
 		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>uk.ac.ebi.biosamples</groupId>
+            <artifactId>utils-mongo</artifactId>
+            <version>4.2.6-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
 
 
 	<build>
