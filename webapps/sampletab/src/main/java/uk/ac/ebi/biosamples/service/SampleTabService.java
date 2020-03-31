@@ -593,6 +593,7 @@ public class SampleTabService {
 				.withRelease(release).withUpdate(update)
 				.withAttributes(attributes).withRelationships(relationships).withExternalReferences(externalReferences)
 				.withOrganizations(organizations).withContacts(contacts).withPublications(publications)
+				.withSubmittedVia(SubmittedViaType.SAMPLETAB)
 				.build();
 	}
 
