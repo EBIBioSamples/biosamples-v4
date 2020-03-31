@@ -7,12 +7,17 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
+import uk.ac.ebi.biosamples.PipelineFutureCallback;
+import uk.ac.ebi.biosamples.PipelineResult;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.model.PipelineAnalytics;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.SampleAnalytics;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.mongo.model.MongoCurationRule;
 import uk.ac.ebi.biosamples.mongo.repo.MongoCurationRuleRepository;
+import uk.ac.ebi.biosamples.service.AnalyticsService;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.ArgUtils;
 import uk.ac.ebi.biosamples.utils.MailSender;
@@ -35,17 +40,19 @@ public class CuramiApplicationRunner implements ApplicationRunner {
     private final PipelinesProperties pipelinesProperties;
     private final Map<String, String> curationRules;
     private final MongoCurationRuleRepository repository;
-
-    private final CurationCountCallback curationCountCallback;
+    private final AnalyticsService analyticsService;
+    private final PipelineFutureCallback pipelineFutureCallback;
 
     public CuramiApplicationRunner(BioSamplesClient bioSamplesClient,
                                    PipelinesProperties pipelinesProperties,
-                                   MongoCurationRuleRepository repository) {
+                                   MongoCurationRuleRepository repository,
+                                   AnalyticsService analyticsService) {
         this.bioSamplesClient = bioSamplesClient;
         this.pipelinesProperties = pipelinesProperties;
         this.repository = repository;
+        this.analyticsService = analyticsService;
         this.curationRules = new HashMap<>();
-        this.curationCountCallback = new CurationCountCallback();
+        this.pipelineFutureCallback = new PipelineFutureCallback();
     }
 
     @Override
@@ -55,6 +62,7 @@ public class CuramiApplicationRunner implements ApplicationRunner {
         LOG.info("Pipeline started at {}", startTime);
         long sampleCount = 0;
         boolean isPassed = true;
+        SampleAnalytics sampleAnalytics = new SampleAnalytics();
 
         loadCurationRulesFromFileToDb(getFileNameFromArgs(args));
         curationRules.putAll(loadCurationRulesToMemory());
@@ -63,13 +71,14 @@ public class CuramiApplicationRunner implements ApplicationRunner {
         try (AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true,
                 pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax())) {
 
-            Map<String, Future<Integer>> futures = new HashMap<>();
+            Map<String, Future<PipelineResult>> futures = new HashMap<>();
             for (Resource<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll("", filters)) {
                 LOG.trace("Handling {}", sampleResource);
                 Sample sample = sampleResource.getContent();
                 Objects.requireNonNull(sample);
+                collectSampleTypes(sample, sampleAnalytics);
 
-                Callable<Integer> task = new SampleCuramiCallable(
+                Callable<PipelineResult> task = new SampleCuramiCallable(
                         bioSamplesClient, sample, pipelinesProperties.getCurationDomain(), curationRules);
                 futures.put(sample.getAccession(), executorService.submit(task));
 
@@ -79,7 +88,7 @@ public class CuramiApplicationRunner implements ApplicationRunner {
             }
 
             LOG.info("Waiting for all scheduled tasks to finish");
-            ThreadUtils.checkAndCallbackFutures(futures, 0, curationCountCallback);
+            ThreadUtils.checkAndCallbackFutures(futures, 0, pipelineFutureCallback);
         } catch (final Exception e) {
             LOG.error("Pipeline failed to finish successfully", e);
             isPassed = false;
@@ -87,10 +96,16 @@ public class CuramiApplicationRunner implements ApplicationRunner {
         } finally {
             Instant endTime = Instant.now();
             LOG.info("Total samples processed {}", sampleCount);
-            LOG.info("Total curation objects added {}", curationCountCallback.getTotalCount());
+            LOG.info("Total curation objects added {}", pipelineFutureCallback.getTotalCount());
             LOG.info("Pipeline finished at {}", endTime);
             LOG.info("Pipeline total running time {} seconds", Duration.between(startTime, endTime).getSeconds());
 
+            PipelineAnalytics pipelineAnalytics = new PipelineAnalytics("curami", startTime, endTime, sampleCount, pipelineFutureCallback.getTotalCount());
+            pipelineAnalytics.setDateRange(filters);
+            sampleAnalytics.setDateRange(filters);
+            sampleAnalytics.setProcessedRecords(sampleCount);
+            analyticsService.persistSampleAnalytics(startTime, sampleAnalytics);
+            analyticsService.persistPipelineAnalytics(pipelineAnalytics);
             MailSender.sendEmail("Curami", handleFailedSamples(), isPassed);
         }
     }
@@ -154,16 +169,10 @@ public class CuramiApplicationRunner implements ApplicationRunner {
         return failures;
     }
 
-    public class CurationCountCallback implements ThreadUtils.Callback<Integer> {
-        private long totalCount = 0;
-
-        public void call(Integer count) {
-            totalCount = totalCount + count;
-        }
-
-        long getTotalCount() {
-            return totalCount;
-        }
+    private void collectSampleTypes(Sample sample, SampleAnalytics sampleAnalytics) {
+        String accessionPrefix = sample.getAccession().substring(0, 4);
+        String submittedChannel = sample.getSubmittedVia().name();
+        sampleAnalytics.addToCenter(accessionPrefix);
+        sampleAnalytics.addToChannel(submittedChannel);
     }
-
 }

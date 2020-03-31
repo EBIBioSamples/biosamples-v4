@@ -18,8 +18,40 @@
             <artifactId>utils-pipeline</artifactId>
             <version>4.2.6-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jdbc</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.oracle.jdbc</groupId>
+            <artifactId>ojdbc10</artifactId>
+            <version>19.3.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.oracle.jdbc</groupId>
+            <artifactId>xdb6</artifactId>
+            <version>12.2.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.oracle.jdbc</groupId>
+            <artifactId>xmlparserv2</artifactId>
+            <version>19.3.0.0</version>
+        </dependency>
     </dependencies>
 
+    <repositories>
+        <repository>
+            <id>maven.oracle.com</id>
+            <name>oracle-maven-repo</name>
+            <url>https://maven.oracle.com</url>
+            <!-- 			<layout>default</layout> -->
+            <!-- 			<releases> -->
+            <!-- 				<enabled>true</enabled> -->
+            <!-- 				<updatePolicy>always</updatePolicy> -->
+            <!-- 			</releases> -->
+        </repository>
+    </repositories>
 
     <build>
         <plugins>

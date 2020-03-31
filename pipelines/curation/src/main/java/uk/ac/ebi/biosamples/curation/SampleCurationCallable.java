@@ -2,6 +2,7 @@ package uk.ac.ebi.biosamples.curation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.ac.ebi.biosamples.PipelineResult;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.curation.service.IriUrlValidatorService;
 import uk.ac.ebi.biosamples.model.Attribute;
@@ -14,7 +15,7 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class SampleCurationCallable implements Callable<Void> {
+public class SampleCurationCallable implements Callable<PipelineResult> {
     private Logger log = LoggerFactory.getLogger(getClass());
     private final Sample sample;
     private final BioSamplesClient bioSamplesClient;
@@ -22,6 +23,7 @@ public class SampleCurationCallable implements Callable<Void> {
     private final CurationApplicationService curationApplicationService;
     private final IriUrlValidatorService iriUrlValidatorService;
     private final String domain;
+    private int curationCount;
 
     public static final String[] NON_APPLICABLE_SYNONYMS = {"n/a", "na", "n.a", "none",
             "unknown", "--", ".", "null", "missing", "[not reported]",
@@ -39,10 +41,12 @@ public class SampleCurationCallable implements Callable<Void> {
         this.curationApplicationService = curationApplicationService;
         this.domain = domain;
         this.iriUrlValidatorService = iriUrlValidatorService;
+        this.curationCount = 0;
     }
 
     @Override
-    public Void call() {
+    public PipelineResult call() {
+        boolean success = true;
         try {
             Sample last;
             Sample curated = sample;
@@ -60,9 +64,10 @@ public class SampleCurationCallable implements Callable<Void> {
         } catch (Exception e) {
             log.warn("Encountered exception with " + sample.getAccession(), e);
             failedQueue.add(sample.getAccession());
+            success = false;
         }
 
-        return null;
+        return new PipelineResult(sample.getAccession(), curationCount, success);
     }
 
     public Sample curate(Sample sample) {
@@ -77,6 +82,7 @@ public class SampleCurationCallable implements Callable<Void> {
 
                     bioSamplesClient.persistCuration(sample.getAccession(), curation, domain);
                     sample = curationApplicationService.applyCurationToSample(sample, curation);
+                    curationCount++;
 
                     return sample;
                 }
@@ -88,6 +94,7 @@ public class SampleCurationCallable implements Callable<Void> {
 
                     bioSamplesClient.persistCuration(sample.getAccession(), curation, domain);
                     sample = curationApplicationService.applyCurationToSample(sample, curation);
+                    curationCount++;
 
                     return sample;
                 }
@@ -98,6 +105,7 @@ public class SampleCurationCallable implements Callable<Void> {
 
                     bioSamplesClient.persistCuration(sample.getAccession(), curation, domain);
                     sample = curationApplicationService.applyCurationToSample(sample, curation);
+                    curationCount++;
 
                     return sample;
                 }
@@ -111,9 +119,9 @@ public class SampleCurationCallable implements Callable<Void> {
                                 attribute.getTag(), attribute.getIri(), newUnit);
                         Curation curation = Curation.build(attribute, newAttribute);
 
-                        bioSamplesClient.persistCuration(sample.getAccession(),
-                                curation, domain);
+                        bioSamplesClient.persistCuration(sample.getAccession(), curation, domain);
                         sample = curationApplicationService.applyCurationToSample(sample, curation);
+                        curationCount++;
 
                         return sample;
                     }
@@ -138,9 +146,9 @@ public class SampleCurationCallable implements Callable<Void> {
                                 iris, attribute.getUnit());
                         Curation curation = Curation.build(attribute, newAttribute);
 
-                        bioSamplesClient.persistCuration(sample.getAccession(),
-                                curation, domain);
+                        bioSamplesClient.persistCuration(sample.getAccession(), curation, domain);
                         sample = curationApplicationService.applyCurationToSample(sample, curation);
+                        curationCount++;
 
                         return sample;
                     }
