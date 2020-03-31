@@ -132,6 +132,7 @@ public class SampleService {
 
     private void validateSampleContentsForStructuredDataPatching(Sample newSample) {
         assert newSample.getData() != null;
+        
         final String domain = newSample.getDomain();
 
         if (!(newSample.getData().size() > 0)) {
