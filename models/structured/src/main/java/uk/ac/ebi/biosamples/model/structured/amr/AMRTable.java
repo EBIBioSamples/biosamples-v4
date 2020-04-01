@@ -12,13 +12,19 @@ import java.util.*;
 
 //@JsonDeserialize(builder = AMRTable.Builder.class)
 public class AMRTable extends AbstractData implements Comparable<AbstractData> {
-
     private final URI schema;
     private final Set<AMREntry> amrEntries;
+    private final String domain;
 
-    public AMRTable(URI schema, Set<AMREntry> amrEntries) {
+    public AMRTable(URI schema, Set<AMREntry> amrEntries, String domain) {
         this.schema = schema;
         this.amrEntries = amrEntries;
+        this.domain = domain;
+    }
+
+    @Override
+    public String getDomain() {
+        return domain;
     }
 
     @Override
@@ -38,7 +44,6 @@ public class AMRTable extends AbstractData implements Comparable<AbstractData> {
 
     @Override
     public int compareTo(AbstractData other) {
-
         if (other == null) {
             return 1;
         }
@@ -46,6 +51,8 @@ public class AMRTable extends AbstractData implements Comparable<AbstractData> {
         if ( !(other instanceof AMRTable) ) {
             return 1;
         }
+
+        int comparison;
 
         AMRTable otherAmrTable = (AMRTable) other;
         Set<AMREntry> otherTableAMREntries = otherAmrTable.getStructuredData();
@@ -55,16 +62,21 @@ public class AMRTable extends AbstractData implements Comparable<AbstractData> {
             if (! otherEntry.isPresent()) {
                 return 1;
             } else {
-                int comparison = entry.compareTo(otherEntry.get());
+                comparison = entry.compareTo(otherEntry.get());
+
                 if (0 != comparison) {
                     return comparison;
                 }
             }
         }
 
+        comparison =  nullSafeStringComparison(this.schema.toString(), otherAmrTable.schema.toString());
 
-        return nullSafeStringComparison(this.schema.toString(), otherAmrTable.schema.toString());
-        //TODO does it make sense to compare amr data?
+        if (comparison != 0) {
+            return comparison;
+        }
+
+        return  nullSafeStringComparison(this.domain, otherAmrTable.domain);
     }
 
     @Override
@@ -73,12 +85,13 @@ public class AMRTable extends AbstractData implements Comparable<AbstractData> {
         if (!(o instanceof AMRTable)) return false;
         AMRTable amrTable = (AMRTable) o;
         return Objects.equals(getSchema(), amrTable.getSchema()) &&
-                Objects.equals(amrEntries, amrTable.amrEntries);
+                Objects.equals(amrEntries, amrTable.amrEntries) &&
+                Objects.equals(getDomain(), amrTable.getDomain());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getSchema(), amrEntries);
+        return Objects.hash(getSchema(), amrEntries, domain);
     }
 
     private int nullSafeStringComparison(String one, String two) {
@@ -99,16 +112,18 @@ public class AMRTable extends AbstractData implements Comparable<AbstractData> {
     public static class Builder {
         private URI schema;
         private Set<AMREntry> amrEntries;
+        private String domain;
 
         @JsonCreator
-        public Builder(URI schema) {
+        public Builder(URI schema, String domain) {
             this.schema = schema;
             this.amrEntries = new HashSet<>();
+            this.domain = domain;
         }
 
         @JsonCreator
-        public Builder(String schema) {
-            this(URI.create(schema));
+        public Builder(String schema, String domain) {
+            this(URI.create(schema), domain);
         }
 
         @JsonProperty
@@ -124,10 +139,7 @@ public class AMRTable extends AbstractData implements Comparable<AbstractData> {
         }
 
         public AMRTable build() {
-            return new AMRTable(this.schema, this.amrEntries);
+            return new AMRTable(this.schema, this.amrEntries, this.domain);
         }
     }
-
-
-
 }

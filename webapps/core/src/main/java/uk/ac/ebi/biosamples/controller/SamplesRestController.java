@@ -22,6 +22,7 @@ import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.filter.Filter;
+import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.service.*;
 import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
 import uk.ac.ebi.biosamples.utils.LinkUtils;
@@ -30,9 +31,7 @@ import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -148,7 +147,7 @@ public class SamplesRestController {
 
 		} else {
 
-			String effectiveSort[] = sort;
+			String[] effectiveSort = sort;
 			if (sort == null) {
 				//if there is no existing sort, sort by score then accession
 				effectiveSort = new String[2];
@@ -340,6 +339,15 @@ public class SamplesRestController {
 		//update, create date are system generated fields
 		SubmittedViaType submittedVia =
 				sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
+
+		final Set<AbstractData> structuredData = sample.getData();
+
+		if (!(bioSamplesAapService.isWriteSuperUser() || bioSamplesAapService.isIntegrationTestUser())) {
+			if (structuredData != null && structuredData.size() > 0) {
+				sample = bioSamplesAapService.handleStructuredDataDomain(sample);
+			}
+		}
+
 		sample = Sample.Builder.fromSample(sample)
 				.withCreate(defineCreateDate(sample))
 				.withUpdate(Instant.now())
@@ -347,11 +355,6 @@ public class SamplesRestController {
 
 		if (!setFullDetails) {
 			sample = sampleManipulationService.removeLegacyFields(sample);
-		}
-
-		if(!bioSamplesAapService.isWriteSuperUser()) {
-			// Clean the data if not a super user
-		    sample = Sample.Builder.fromSample(sample).withNoData().build();
 		}
 
 		/*	//TODO reanable the validation once the AMR schema is defined and we have the actual validator in place
@@ -370,7 +373,6 @@ public class SamplesRestController {
 
 		// assemble a resource to return
 		Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample, this.getClass());
-
 		// create the response object with the appropriate status
 		//TODO work out how to avoid using ResponseEntity but also set location header
 		return ResponseEntity.created(URI.create(sampleResource.getLink("self").getHref())).body(sampleResource);
@@ -390,7 +392,6 @@ public class SamplesRestController {
 
 	@ResponseStatus(value = HttpStatus.BAD_REQUEST)
 	public static class SampleWithInvalidStructuredData extends RuntimeException {
-
 		String validation;
 
 		public SampleWithInvalidStructuredData(String validationError) {

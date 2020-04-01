@@ -1,6 +1,7 @@
 {
     "type": "AMR",
     "schema": "test",
+    "domain": "self.test",
     "content": [
         {
             "antibiotic_name": "ampicillin",

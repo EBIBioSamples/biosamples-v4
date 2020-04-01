@@ -30,7 +30,6 @@ import java.util.Objects;
         "critical_concentration"
 })
 public class AMREntry implements Comparable<AMREntry>{
-
     private final AmrPair antibioticName;
     private final String resistancePhenotype;
     private final String measurementSign;
@@ -223,7 +222,9 @@ public class AMREntry implements Comparable<AMREntry>{
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof AMREntry)) return false;
+
         AMREntry amrEntry = (AMREntry) o;
+
         return Objects.equals(getMeasurement(), amrEntry.getMeasurement()) &&
                 Objects.equals(getAntibioticName().getValue(), amrEntry.getAntibioticName().getValue()) &&
                 Objects.equals(getResistancePhenotype(), amrEntry.getResistancePhenotype()) &&
@@ -239,12 +240,10 @@ public class AMREntry implements Comparable<AMREntry>{
                 Objects.equals(getCriticalConcentration(), amrEntry.getCriticalConcentration()) &&
                 Objects.equals(getSpecies(), amrEntry.getSpecies()) &&
                 Objects.equals(getBreakpointVersion(), amrEntry.getBreakpointVersion());
-
     }
 
     @Override
     public int hashCode() {
-
         return Objects.hash(getAntibioticName().getValue(), getResistancePhenotype(), getMeasurementSign(), getMeasurement(), getMeasurementUnits(), getVendor(), getLaboratoryTypingMethod(), getAstStandard(), getDstMedia(), getDstMethod(), getCriticalConcentration(), getSpecies(), getBreakpointVersion());
     }
 
@@ -396,18 +395,14 @@ public class AMREntry implements Comparable<AMREntry>{
 //            if (this.astStandard == null || this.astStandard.isEmpty()) {
 //                throw AMREntryBuldingException.createForMissingField("testing standard");
 //            }
-
-
             return new AMREntry(this.antibioticName, this.resistancePhenotype, this.measurementSign, this.measurement,
                     this.measurementUnits, this.vendor, this.laboratoryTypingMethod, this.platform,
                     this.laboratoryTypingMethodVersionOrReagent, this.astStandard,
                     this.dstMedia, this.dstMethod, this.criticalConcentration, this.species, this.breakpointVersion);
         }
-
     }
 
     public static class AMREntryBuldingException extends Exception {
-
         public AMREntryBuldingException(String message) {
             super(message);
         }
@@ -415,9 +410,5 @@ public class AMREntry implements Comparable<AMREntry>{
         public static RuntimeException createForMissingField(String field) {
             return new RuntimeException("You need to provide a non-empty  " + field);
         }
-
-
     }
-
-
 }

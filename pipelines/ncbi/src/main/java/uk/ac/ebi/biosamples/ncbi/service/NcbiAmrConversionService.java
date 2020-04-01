@@ -14,10 +14,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class NcbiAmrConversionService {
-
-
     public AMRTable convertElementToAmrTable(Element amrTableElement, String organism) throws AmrParsingException {
-            AMRTable.Builder amrTableBuilder = new AMRTable.Builder("test");
+            AMRTable.Builder amrTableBuilder = new AMRTable.Builder("test", "self.BiosampleImportNCBIE");
 
             List<String> fields = XmlPathBuilder.of(amrTableElement).path("Header").elements("Cell").stream()
                     .map(Element::getText).collect(Collectors.toList());
@@ -27,7 +25,6 @@ public class NcbiAmrConversionService {
                 AMREntry amrEntry = this.convertAmrEntry(tableRow, fields, organism);
                 amrTableBuilder.addEntry(amrEntry);
             }
-
 
             return amrTableBuilder.build();
     }
@@ -42,7 +39,6 @@ public class NcbiAmrConversionService {
      * @throws AmrParsingException
      */
     private AMREntry convertAmrEntry(Element amrRowElement, List<String> fields, String organism) throws AmrParsingException {
-
         List<String> cells = XmlPathBuilder.of(amrRowElement).elements("Cell").stream()
                 .map(Element::getText).collect(Collectors.toList());
 
@@ -75,8 +71,8 @@ public class NcbiAmrConversionService {
      * @return an optional string if the field is found
      */
     private Optional<String> getFieldIfAvailable(List<String> values, List<String> fields, String fieldToFind) {
-
         String fieldValue = null;
+
         if ( fields.contains(fieldToFind) ) {
             int fieldIndex = fields.indexOf(fieldToFind);
             fieldValue = values.get(fieldIndex);
