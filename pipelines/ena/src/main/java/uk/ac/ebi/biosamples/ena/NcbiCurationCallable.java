@@ -70,9 +70,6 @@ public class NcbiCurationCallable implements Callable<Void> {
 
 	/**
 	 * Checks if sample status is not SUPPRESSED in BioSamples, if yes then persists the sample with SUPPRESSED status
-	 * 
-	 * @param sampleAccession
-	 * 				The accession passed
 	 */
 	private void checkAndUpdateSuppressedSample() {
 		final Optional<Resource<Sample>> optionalSampleResource = bioSamplesClient.fetchSampleResource(this.accession, Optional.of(new ArrayList<String>()));
