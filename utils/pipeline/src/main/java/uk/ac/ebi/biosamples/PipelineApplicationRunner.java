@@ -9,7 +9,7 @@ import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.PipelineAnalytics;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
-import uk.ac.ebi.biosamples.service.AnalyticsService;
+//import uk.ac.ebi.biosamples.service.AnalyticsService;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.ArgUtils;
 import uk.ac.ebi.biosamples.utils.MailSender;
@@ -30,15 +30,15 @@ public abstract class PipelineApplicationRunner implements ApplicationRunner {
 
     protected final BioSamplesClient bioSamplesClient;
     private final PipelinesProperties pipelinesProperties;
-    private final AnalyticsService analyticsService;
+//    private final AnalyticsService analyticsService;
     private final PipelineFutureCallback pipelineFutureCallback;
 
     public PipelineApplicationRunner(BioSamplesClient bioSamplesClient,
-                                     PipelinesProperties pipelinesProperties,
-                                     AnalyticsService analyticsService) {
+                                     PipelinesProperties pipelinesProperties/*,
+                                     AnalyticsService analyticsService*/) {
         this.bioSamplesClient = bioSamplesClient;
         this.pipelinesProperties = pipelinesProperties;
-        this.analyticsService = analyticsService;
+//        this.analyticsService = analyticsService;
         this.pipelineFutureCallback = new PipelineFutureCallback();
     }
 
@@ -82,7 +82,7 @@ public abstract class PipelineApplicationRunner implements ApplicationRunner {
 
             PipelineAnalytics pipelineAnalytics = new PipelineAnalytics(getPipelineName(), startTime, endTime, sampleCount, pipelineFutureCallback.getTotalCount());
             pipelineAnalytics.setDateRange(filters);
-            analyticsService.persistPipelineAnalytics(pipelineAnalytics);
+//            analyticsService.persistPipelineAnalytics(pipelineAnalytics);
 
             MailSender.sendEmail(getPipelineName(), String.join(",", pipelineFutureCallback.getFailedSamples()), pipelineFutureCallback.getFailedSamples().isEmpty());
         }

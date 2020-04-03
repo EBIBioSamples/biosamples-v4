@@ -5,7 +5,7 @@ import uk.ac.ebi.biosamples.PipelineApplicationRunner;
 import uk.ac.ebi.biosamples.PipelineSampleCallable;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.service.AnalyticsService;
+//import uk.ac.ebi.biosamples.service.AnalyticsService;
 
 @Component
 public class PipelineTemplateApplicationRunner extends PipelineApplicationRunner {
@@ -13,9 +13,9 @@ public class PipelineTemplateApplicationRunner extends PipelineApplicationRunner
     private String domain;
 
     public PipelineTemplateApplicationRunner(BioSamplesClient bioSamplesClient,
-                                             PipelinesProperties pipelinesProperties,
-                                             AnalyticsService analyticsService) {
-        super(bioSamplesClient, pipelinesProperties, analyticsService);
+                                             PipelinesProperties pipelinesProperties/*,
+                                             AnalyticsService analyticsService*/) {
+        super(bioSamplesClient, pipelinesProperties/*, analyticsService*/);
     }
 
     @Override
