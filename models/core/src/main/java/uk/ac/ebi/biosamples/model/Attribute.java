@@ -184,9 +184,9 @@ public class Attribute implements Comparable<Attribute> {
     	if (type == null) { 
     		throw new IllegalArgumentException("type must not be null");    	
     	}
-    	if (value == null) {
-    		throw new IllegalArgumentException("value must not be null");
-    	}
+		if (value == null) {
+			value = "";
+		}
     	if (iri == null) {
     		iri = Lists.newArrayList();
     	}
