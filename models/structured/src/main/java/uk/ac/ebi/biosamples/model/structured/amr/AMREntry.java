@@ -139,63 +139,73 @@ public class AMREntry implements Comparable<AMREntry>{
             return 1;
         }
 
-
-
         int comparison = nullSafeStringComparison(this.antibioticName.getValue(), other.antibioticName.getValue());
+
         if (comparison != 0) {
             return comparison;
         }
 
         comparison = nullSafeStringComparison(this.resistancePhenotype, other.resistancePhenotype);
+
         if (comparison != 0) {
             return comparison;
         }
 
         comparison = nullSafeStringComparison(this.measurementSign, other.measurementSign);
+
         if (comparison != 0) {
             return comparison;
         }
 
         comparison = nullSafeStringComparison(this.measurement, other.measurement);
+
         if (comparison != 0) {
             return comparison;
         }
 
         comparison = nullSafeStringComparison(this.measurementUnits, other.measurementUnits);
+
         if (comparison != 0) {
             return comparison;
         }
 
         comparison = nullSafeStringComparison(this.laboratoryTypingMethod, other.laboratoryTypingMethod);
+
         if (comparison != 0) {
             return comparison;
         }
 
         comparison = nullSafeStringComparison(this.platform, other.platform);
+
         if (comparison != 0) {
             return comparison;
         }
         comparison = nullSafeStringComparison(this.laboratoryTypingMethodVersionOrReagent, other.laboratoryTypingMethodVersionOrReagent);
+
         if (comparison != 0) {
             return comparison;
         }
 
         comparison = nullSafeStringComparison(this.vendor, other.vendor);
+
         if (comparison != 0) {
             return comparison;
         }
 
         comparison = nullSafeStringComparison(this.dstMedia, other.dstMedia);
+
         if (comparison != 0) {
             return comparison;
         }
 
         comparison = nullSafeStringComparison(this.species.getValue(), other.species.getValue());
+
         if (comparison != 0) {
             return comparison;
         }
 
         comparison = nullSafeStringComparison(this.breakpointVersion, other.breakpointVersion);
+
         if (comparison != 0) {
             return comparison;
         }
@@ -204,7 +214,6 @@ public class AMREntry implements Comparable<AMREntry>{
     }
 
     private int nullSafeStringComparison(String one, String two) {
-
         if (one == null && two != null) {
             return -1;
         }

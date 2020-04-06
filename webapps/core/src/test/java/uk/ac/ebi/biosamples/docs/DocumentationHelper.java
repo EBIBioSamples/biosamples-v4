@@ -1,6 +1,11 @@
 package uk.ac.ebi.biosamples.docs;
 
+import org.assertj.core.util.Lists;
+import uk.ac.ebi.biosamples.MessageContent;
 import uk.ac.ebi.biosamples.model.*;
+import uk.ac.ebi.biosamples.model.structured.amr.AMREntry;
+import uk.ac.ebi.biosamples.model.structured.amr.AMRTable;
+import uk.ac.ebi.biosamples.model.structured.amr.AmrPair;
 
 import java.time.Instant;
 import java.util.*;
@@ -104,4 +109,16 @@ public class DocumentationHelper {
 
     }
 
+    public Sample getExampleSampleWithStructuredData() {
+        return getExampleSampleWithStructuredDataBuilder().build();
+    }
+
+    private Sample.Builder getExampleSampleWithStructuredDataBuilder() {
+        final AMREntry amrEntry = new AMREntry.Builder().withAntibioticName(new AmrPair("ExampleAntibiotic")).withAstStandard("ExampleASTStandard")
+                .withSpecies(new AmrPair("ExampleOrganism"))
+                .withLaboratoryTypingMethod("NA").withMeasurement("0").withMeasurementUnits("mg/L").withMeasurementSign("+").withResistancePhenotype("NA").build();
+        final AMRTable amrTable = new AMRTable.Builder("test", "self.ExampleDomain").withEntries(Arrays.asList(amrEntry)).build();
+
+        return new Sample.Builder("FakeSampleWithStructuredData", "SAMFAKE123456").withData(Arrays.asList(amrTable));
+    }
 }
