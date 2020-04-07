@@ -213,12 +213,16 @@ public class SampleRestController {
         return sampleResourceAssembler.toResource(sample);
     }
 
+    /*At this moment this patching is only for structured data*/
     @PreAuthorize("isAuthenticated()")
     @PatchMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
-    public Resource<Sample> patch(@PathVariable String accession,
-                                  @RequestBody Sample sample,
-                                  @RequestParam(name = "setfulldetails", required = false, defaultValue = "true") boolean setFullDetails,
-                                  @RequestParam(name = "structuredData", required = false, defaultValue = "false") boolean structuredData) {
+    public Resource<Sample> patchStructuredData(@PathVariable String accession,
+                                                @RequestBody Sample sample,
+                                                @RequestParam(name = "setfulldetails", required = false, defaultValue = "true") boolean setFullDetails,
+                                                @RequestParam(name = "structuredData", required = false, defaultValue = "false") boolean structuredData) {
+
+        if (!structuredData)
+            throw new SampleDataPatchMethodNotSupportedException();
 
         if (sample.getAccession() == null || !sample.getAccession().equals(accession)) {
             throw new SampleAccessionMismatchException();
@@ -230,16 +234,18 @@ public class SampleRestController {
 
         log.debug("Received PATCH for " + accession);
 
-        if (structuredData) {
-            sample = bioSamplesAapService.handleStructuredDataDomain(sample);
-            sample = sampleService.storeSampleStructuredData(sample);
-        }
+        sample = bioSamplesAapService.handleStructuredDataDomain(sample);
+        sample = sampleService.storeSampleStructuredData(sample);
 
         return sampleResourceAssembler.toResource(sample);
     }
 
     @ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Sample accession must match URL accession") // 400
     public static class SampleAccessionMismatchException extends RuntimeException {
+    }
+
+    @ResponseStatus(value = HttpStatus.METHOD_NOT_ALLOWED, reason = "Pass argument structuredData=true if you want to PATCH data to sample") // 400
+    public static class SampleDataPatchMethodNotSupportedException extends RuntimeException {
     }
 
     @ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Sample accession does not exist") // 400
