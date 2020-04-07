@@ -66,6 +66,7 @@ Not all the verbs are available in the BioSamples API, and you can check the sup
 |`PUT`|Used to entirely replace resources
 |`OPTIONS`|Can be used to determine which verbs can be used for a resource
 |`HEAD`|Returns whether a resource is available
+|`PATCH`|Used to add structured data (e.g. Antobiogram data) to already existing samples
 |===
 
 === HTTP Status codes
