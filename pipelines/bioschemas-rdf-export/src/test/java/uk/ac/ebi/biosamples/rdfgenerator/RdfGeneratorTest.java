@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.utils;
+package uk.ac.ebi.biosamples.rdfgenerator;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -16,7 +16,7 @@ import org.eclipse.rdf4j.rio.Rio;
 import org.eclipse.rdf4j.rio.helpers.StatementCollector;
 
 
-public class Test {
+public class RdfGeneratorTest {
     @org.junit.Test
     public void testForYourCode() {
         String data = "{\"@context\":[\"http://schema.org\",{\"OBI\":\"http://purl.obolibrary.org/obo/OBI_\",\"biosample\":\"http://identifiers.org/biosample/\"}],\"@type\":\"DataRecord\",\"@id\":\"biosample:SAMEA100386\",\"identifier\":\"biosample:SAMEA100386\",\"dateCreated\":\"2009-02-07T00:00:00Z\",\"dateModified\":\"2019-07-23T09:42:30.299Z\",\"mainEntity\":{\"@type\":[\"Sample\",\"OBI:0000747\"],\"identifier\":[\"biosample:SAMEA100386\"],\"name\":\"source GSE13294GSM335546\",\"additionalProperty\":[{\"@type\":\"PropertyValue\",\"name\":\"organism\",\"value\":\"Homo sapiens\",\"valueReference\":[{\"@id\":\"http://purl.obolibrary.org/obo/NCBITaxon_9606\",\"@type\":\"DefinedTerm\"}]},{\"@type\":\"PropertyValue\",\"name\":\"sample characteristics\",\"value\":\"MSI\"},{\"@type\":\"PropertyValue\",\"name\":\"sample source name\",\"value\":\"primary colorectal adenocarcinoma\"}],\"sameAs\":\"http://identifiers.org/biosample/SAMEA100386\"},\"isPartOf\":{\"@type\":\"Dataset\",\"@id\":\"https://www.ebi.ac.uk/biosamples/samples\"}}";
