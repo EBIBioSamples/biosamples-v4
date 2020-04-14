@@ -97,7 +97,18 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
             crossReferencesType.getRef().add(refType);
         });
 
+        crossReferencesType.getRef().add(getTaxonomyCrossReference());
+
         return crossReferencesType;
+    }
+
+    private RefType getTaxonomyCrossReference() {
+        RefType refType = new RefType();
+
+        refType.setDbname("TAXONOMY");
+        refType.setDbkey("2697049");
+
+        return refType;
     }
 
     private String extractEnaAccession(String url) {
@@ -129,7 +140,7 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
             if (attribute.getType().equals("description")) {
                 entryType.setDescription(attribute.getValue());
             } else {
-                fieldType.setName(removeSpacesFromAttributeNames(attribute.getType()));
+                fieldType.setName(removeOtherSpecialCharactersFromAttributeNames(removeSpacesFromAttributeNames(attribute.getType())));
                 fieldType.setValue(attribute.getValue());
                 additionalFieldsType.getFieldOrHierarchicalField().add(fieldType);
             }
@@ -140,6 +151,10 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
 
     private String removeSpacesFromAttributeNames(String type) {
         return type.trim().replaceAll(" ", "_");
+    }
+
+    private String removeOtherSpecialCharactersFromAttributeNames(String type) {
+        return type.trim().replaceAll("[^a-zA-Z0-9\\s+_-]", "");
     }
 
     @Override
