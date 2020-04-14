@@ -26,7 +26,7 @@
 				<div class="warning-msg">
 					<!--Please note that BioSamples team will be out of the office from 24th December to 2nd January. Replies to Helpdesk requests will be delayed during this period.-->
 					<b>Planned Maintenance</b>
-					<p>Some of our services are currently undergoing planned maintenance which is due to complete on 4th April 2020.
+					<p>Some of our services are currently undergoing planned maintenance which is due to complete on 30th April 2020.
 						There should be no impact on our users.
 						If you experience any issues, please contact our <a href="mailto:biosamples@ebi.ac.uk?subject=Planned%20Maintenance">help desk</a> directly for support.
 					</p>
@@ -54,121 +54,79 @@
 			</div>
 
 			<div class="row">
-				<div class="medium-12 large-5 columns">
-					<h3 class="icon icon-generic icon-spacer" data-icon="L">Info</h3>
-					<ul>
-						<li><a href="docs">Help pages</a> about how to
-							search BioSamples, how to submit data, and FAQ.</li>
-						<li><a href="docs/references/api">Programmatic access</a> to query
-							and download data using web services.</li>
-						<li>Contact us by emailing <a
-							href="mailto:biosamples@ebi.ac.uk">biosamples@ebi.ac.uk</a></li>
-					</ul>
-				</div>
-				<div class="medium-12 large-7 columns">
-					<h3 class="icon icon-generic icon-spacer" data-icon="g">Data Content</h3>
-                    <div class="data-content">
-						<div class="small-12 medium-4 data-content__entry">
-							<div class="data-logo">
-								<img src="images/logo_ebisc.png" alt="EBiSC logo" title="EBiSC" />
-							</div>
-							<div class="data-link">
-								<a class="icon icon-spacer  icon-generic" data-icon="L" href="//www.ebisc.org" target="_blank">www.ebisc.org</a>
-							</div>
-							<div class="data-search-link">
-								<a th:href="@{/samples}+'?filter=attr%3Aproject%3AEBiSC'" href="samples?filter=attr%3Aproject%3AEBiSC">search for EBiSC samples</a>
-							</div>
-							<div class="data-description padding-top-small">
-								EBiSC has been designed to
-								address the increasing demand for quality-controlled,
-								disease-relevant, research-grade iPSC lines, data and cell
-								services.
-							</div>
+				<h3 class="icon icon-generic icon-spacer" data-icon="L">Info</h3>
+				<ul>
+					<li><a href="docs">Help pages</a> about how to
+						search BioSamples, how to submit data, and FAQ.</li>
+					<li><a href="docs/references/api">Programmatic access</a> to query
+						and download data using web services.</li>
+					<li>Contact us by emailing <a
+						href="mailto:biosamples@ebi.ac.uk">biosamples@ebi.ac.uk</a></li>
+				</ul>
+			</div>
+			<div class="row">
+				<h3 class="icon icon-generic icon-spacer" data-icon="g">Data Content</h3>
+				<div class="data-content">
+					<div class="small-12 medium-3 large-3 data-content__entry">
+						<div class="data-logo">
+							<a href="https://en.wikipedia.org/wiki/Coronavirus_disease_2019">
+								<img src="images/covid.png" alt="covid image" title="EBiSC" class="data-content-img"/>
+							</a>
 						</div>
-						<div class="small-12 medium-4 data-content__entry">
-							<div class="data-logo">
-								<img src="images/logo_faang.png" alt="FAANG logo" title="FAANG" />
-							</div>
-							<div class="data-link">
-								<a class="icon icon-spacer  icon-generic" data-icon="L" href="//www.faang.org" target="_blank">www.faang.org</a>
-							</div>
-							<div class="data-search-link">
-								<a th:href="@{/samples}+'?filter=attr%3Aproject%3AFAANG'" href="samples?filter=attr%3Aproject%3AFAANG">search for FAANG samples</a>
-							</div>
-							<div class="data-description padding-top-small">
-								Functional Annotation of Animal
-								Genomes. A coordinated international action to accelerate genome
-								to phenome research..
-							</div>
+						<div class="data-search-link data-content-search">
+							<a th:href="@{/samples}+'?text=NCBITaxon_2697049'" href="/samples?text=NCBITaxon_2697049">search for covid-19 samples</a>
 						</div>
-						<div class="small-12 medium-4 data-content__entry">
-							<div class="data-logo">
-								<img src="images/logo_hipsci.png" alt="HipSci logo" title="HipSci" />
-							</div>
-							<div class="data-link">
-								<a class="icon icon-spacer  icon-generic" data-icon="L" href="//www.hipsci.org" target="_blank">www.hipsci.org</a>
-							</div>
-							<div class="data-search-link">
-								<a th:href="@{/samples}+'?filter=attr%3Aproject%3AHipSci'" href="samples?filter=attr%3Aproject%3AHipSci">search for HipSci samples</a>
-							</div>
-							<div class="data-description padding-top-small">
-								HipSci brings together diverse
-								constituents in genomics, proteomics, cell biology and clinical
-								genetics to create a UK national iPS cell resource and use it to
-								carry out cellular genetic studies.
-							</div>
+						<div class="data-description padding-top-small">
+							Coronavirus disease 2019 (COVID-19) is an infectious disease caused by severe acute respiratory syndrome coronavirus 2 (SARS-CoV-2).
 						</div>
-
 					</div>
-					<!--<div class="row" style="display: flex; align-items: center;">-->
-						<!--<div class="small-4 columns">-->
-							<!--<img src="images/logo_ebisc.png" alt="EBiSC logo"-->
-								<!--title="EBiSC" />-->
-						<!--</div>-->
-						<!--<div class="small-4 columns">-->
-							<!--<img src="images/logo_faang.png" alt="FAANG logo"-->
-								<!--title="FAANG" />-->
-						<!--</div>-->
-						<!--<div class="small-4 columns">-->
-							<!--<img src="images/logo_hipsci.png" alt="HipSci logo"-->
-								<!--title="HipSci" />-->
-						<!--</div>-->
-					<!--</div>-->
-					<!--<div class="row">-->
-						<!--<div class="small-4 columns">-->
-							<!--<a class="icon icon-spacer  icon-generic" data-icon="L" href="//www.ebisc.org" target="_blank">www.ebisc.org</a>-->
-						<!--</div>-->
-						<!--<div class="small-4 columns">-->
-							<!--<a class="icon icon-spacer  icon-generic" data-icon="L" href="http://www.faang.org" target="_blank">www.faang.org</a>-->
-						<!--</div>-->
-						<!--<div class="small-4 columns">-->
-							<!--<a class="icon icon-spacer  icon-generic" data-icon="L" href="http://www.hipsci.org" target="_blank">www.hipsci.org</a>-->
-						<!--</div>-->
-					<!--</div>-->
-					<!--<div class="row">-->
-						<!--<div class="small-4 columns">-->
-							<!--<a th:href="@{/samples}+'?filter=attr%3Aproject%3AEBiSC'" href="samples?filter=attr%3Aproject%3AEBiSC">search for EBiSC samples</a>-->
-						<!--</div>-->
-						<!--<div class="small-4 columns">-->
-							<!--<a th:href="@{/samples}+'?filter=attr%3Aproject%3AFAANG'" href="samples?filter=attr%3Aproject%3AFAANG">search for FAANG samples</a>-->
-						<!--</div>-->
-						<!--<div class="small-4 columns">-->
-							<!--<a th:href="@{/samples}+'?filter=attr%3Aproject%3AHipSci'" href="samples?filter=attr%3Aproject%3AHipSci">search for HipSci samples</a>-->
-						<!--</div>-->
-					<!--</div>-->
-					<!--<div class="row">-->
-						<!--<div class="small-4 columns">EBiSC has been designed to-->
-							<!--address the increasing demand for quality-controlled,-->
-							<!--disease-relevant, research-grade iPSC lines, data and cell-->
-							<!--services.</div>-->
-						<!--<div class="small-4 columns">Functional Annotation of Animal-->
-							<!--Genomes. A coordinated international action to accelerate genome-->
-							<!--to phenome research.</div>-->
-						<!--<div class="small-4 columns">HipSci brings together diverse-->
-							<!--constituents in genomics, proteomics, cell biology and clinical-->
-							<!--genetics to create a UK national iPS cell resource and use it to-->
-							<!--carry out cellular genetic studies.</div>-->
-					<!--</div>-->
+					<div class="small-12 medium-3 large-3 data-content__entry">
+						<div class="data-logo">
+							<a href="//www.ebisc.org">
+								<img src="images/logo_ebisc.png" alt="EBiSC logo" title="EBiSC" class="data-content-img"/>
+							</a>
+						</div>
+						<div class="data-search-link data-content-search">
+							<a th:href="@{/samples}+'?filter=attr%3Aproject%3AEBiSC'" href="samples?filter=attr%3Aproject%3AEBiSC">search for EBiSC samples</a>
+						</div>
+						<div class="data-description padding-top-small">
+							EBiSC has been designed to
+							address the increasing demand for quality-controlled,
+							disease-relevant, research-grade iPSC lines, data and cell
+							services.
+						</div>
+					</div>
+					<div class="small-12 medium-3 large-3 data-content__entry">
+						<div class="data-logo">
+							<a href="//www.faang.org">
+								<img src="images/logo_faang.png" alt="FAANG logo" title="FAANG" class="data-content-img"/>
+							</a>
+						</div>
+						<div class="data-search-link data-content-search">
+							<a th:href="@{/samples}+'?filter=attr%3Aproject%3AFAANG'" href="samples?filter=attr%3Aproject%3AFAANG">search for FAANG samples</a>
+						</div>
+						<div class="data-description padding-top-small">
+							Functional Annotation of Animal
+							Genomes. A coordinated international action to accelerate genome
+							to phenome research..
+						</div>
+					</div>
+					<div class="small-12 medium-3 large-3 data-content__entry">
+						<div class="data-logo">
+							<a href="//www.hipsci.org">
+								<img src="images/logo_hipsci.png" alt="HipSci logo" title="HipSci" class="data-content-img"/>
+							</a>
+						</div>
+						<div class="data-search-link data-content-search">
+							<a th:href="@{/samples}+'?filter=attr%3Aproject%3AHipSci'" href="samples?filter=attr%3Aproject%3AHipSci">search for HipSci samples</a>
+						</div>
+						<div class="data-description padding-top-small">
+							HipSci brings together diverse
+							constituents in genomics, proteomics, cell biology and clinical
+							genetics to create a UK national iPS cell resource and use it to
+							carry out cellular genetic studies.
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>
