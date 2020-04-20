@@ -1,11 +1,10 @@
 package uk.ac.ebi.biosamples.ena;
 
-import java.util.concurrent.Callable;
-
 import org.springframework.stereotype.Service;
-
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+
+import java.util.concurrent.Callable;
 
 @Service
 public class EnaCallableFactory {
@@ -26,21 +25,23 @@ public class EnaCallableFactory {
     }
 
     public Callable<Void> build(String accession) {
-		 return new EnaCallable(accession, bioSamplesClient, enaXmlEnhancer,
-	                enaElementConverter, eraProDao, domain);
-	}
+        return new EnaCallable(accession, bioSamplesClient, enaXmlEnhancer,
+                enaElementConverter, eraProDao, domain);
+    }
 
     /**
-	 * Builds a callable for dealing samples that are SUPPRESSED
-	 * 
-	 * @param accession
-	 * 			The accession passed
-	 * @param suppressionHandler
-	 * 			true for this case
-	 * @return the callable, {@link EnaCallable}
-	 */
-    public EnaCallable build(String accession, boolean suppressionHandler) {
-        return new EnaCallable(accession, bioSamplesClient, enaXmlEnhancer,
-                enaElementConverter, eraProDao, domain, suppressionHandler);
+     * Builds callable for dealing with SUPPRESSED samples or BSD authority samples
+     *
+     * @param accession          The accession passed
+     * @param suppressionHandler true for handling suppressed samples case
+     * @param bsdAuthority       true for handling BioSamples owned samples cases
+     * @return the callable, {@link EnaCallable}
+     */
+    public EnaCallable build(String accession, boolean suppressionHandler, boolean bsdAuthority) {
+        if (suppressionHandler) return new EnaCallable(accession, bioSamplesClient, enaXmlEnhancer,
+                enaElementConverter, eraProDao, domain, true);
+
+        else
+            return new EnaCallable(accession, bioSamplesClient, enaXmlEnhancer, enaElementConverter, eraProDao, bsdAuthority);
     }
 }

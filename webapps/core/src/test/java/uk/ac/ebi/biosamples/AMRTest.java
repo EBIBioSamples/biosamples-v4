@@ -82,7 +82,7 @@ public class AMRTest {
     }
 
     private AMRTable getAMRTable() {
-        return new AMRTable.Builder("http://schema.org")
+        return new AMRTable.Builder("http://schema.org", "self.test")
                 .addEntry(getAMREntry())
                 .build();
     }
@@ -116,7 +116,7 @@ public class AMRTest {
     @Test
     public void givenSampleWithStructuredData_whenGetSample_thenReturnStructuredDataInJson() throws Exception {
         AMREntry amrEntry = getAMREntry();
-        AMRTable amrTable = new AMRTable.Builder("http://schema.org")
+        AMRTable amrTable = new AMRTable.Builder("http://schema.org", "self.test")
                 .addEntry(amrEntry).build();
 
 
@@ -167,13 +167,14 @@ public class AMRTest {
 
         Sample testSample = new Sample.Builder(jsonSample.at("/name").asText()).withDomain(jsonSample.at("/domain").asText())
                 .withUpdate(jsonSample.at("/update").asText()).withRelease(jsonSample.at("/release").asText())
-                .addData(new AMRTable.Builder(jsonSample.at("/data/0/schema").asText()).addEntry(amrEntry).build())
+                .addData(new AMRTable.Builder(jsonSample.at("/data/0/schema").asText(), "self.test").addEntry(amrEntry).build())
                 .build();
 
 
         when(schemaValidatorService.validate(any(), any())).thenReturn(ResponseEntity.ok("[]"));
         when(bioSamplesAapService.isWriteSuperUser()).thenReturn(true);
         when(bioSamplesAapService.handleSampleDomain(any(Sample.class))).thenReturn(testSample);
+        when(bioSamplesAapService.handleStructuredDataDomain(any(Sample.class))).thenReturn(testSample);
         when(sampleService.store(testSample)).thenReturn(testSample);
 
         mockMvc.perform(post("/samples")
@@ -186,7 +187,7 @@ public class AMRTest {
 
 
     @Test
-    public void unable_to_submit_amr_if_user_is_not_superuser() throws Exception {
+    public void able_to_submit_amr_if_user_is_not_superuser() throws Exception {
 
         String json = StreamUtils.copyToString(new ClassPathResource("amr_sample.json").getInputStream(), Charset.defaultCharset());
         JsonNode jsonSample = mapper.readTree(json);
@@ -204,13 +205,14 @@ public class AMRTest {
 
         Sample testSample = new Sample.Builder(jsonSample.at("/name").asText()).withDomain(jsonSample.at("/domain").asText())
                 .withUpdate(jsonSample.at("/update").asText()).withRelease(jsonSample.at("/release").asText())
-                .addData(new AMRTable.Builder(jsonSample.at("/data/0/schema").asText()).addEntry(amrEntry).build())
+                .addData(new AMRTable.Builder(jsonSample.at("/data/0/schema").asText(), "self.test").addEntry(amrEntry).build())
                 .build();
 
 
         when(schemaValidatorService.validate(any(), any())).thenReturn(ResponseEntity.ok("[]"));
         when(bioSamplesAapService.isWriteSuperUser()).thenReturn(false);
         when(bioSamplesAapService.handleSampleDomain(any(Sample.class))).thenReturn(testSample);
+        when(bioSamplesAapService.handleStructuredDataDomain(any(Sample.class))).thenReturn(testSample);
 
         ArgumentCaptor<Sample> generatedSample = ArgumentCaptor.forClass(Sample.class);
         when(sampleService.store(generatedSample.capture())).thenReturn(testSample);
@@ -220,7 +222,7 @@ public class AMRTest {
                 .content(json)
         );
 
-        assert(generatedSample.getValue().getData().isEmpty());
+        assert(!generatedSample.getValue().getData().isEmpty());
 
     }
 

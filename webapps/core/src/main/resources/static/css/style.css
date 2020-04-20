@@ -117,8 +117,20 @@ code[class^="language"] {
 
 .data-content__entry {
    padding-right: 1em;
+   padding-left: 1em;
    flex: 0 1 100%;
-   min-width: 150px;
+   text-align: justify;
+   text-justify: inter-character;
+}
+
+.data-content-search {
+    text-align: center;
+    background: #cccccc;
+}
+
+.data-content-img {
+    margin: auto;
+    display: block;
 }
 
 @media screen and (min-width: 512px) {
@@ -129,7 +141,7 @@ code[class^="language"] {
 
 @media screen and (min-width: 640px) {
     .data-content__entry {
-        flex-basis: 33%;
+        flex-basis: 25%;
     }
 }
 

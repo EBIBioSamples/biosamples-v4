@@ -1,5 +1,19 @@
 package uk.ac.ebi.biosamples.ena;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.jdbc.core.RowCallbackHandler;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
+import uk.ac.ebi.biosamples.PipelinesProperties;
+import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
+import uk.ac.ebi.biosamples.utils.MailSender;
+import uk.ac.ebi.biosamples.utils.ThreadUtils;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -10,21 +24,6 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.jdbc.core.RowCallbackHandler;
-import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpClientErrorException;
-
-import uk.ac.ebi.biosamples.PipelinesProperties;
-import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
-import uk.ac.ebi.biosamples.utils.MailSender;
-import uk.ac.ebi.biosamples.utils.ThreadUtils;
 
 @Component
 @ConditionalOnProperty(prefix = "job.autorun", name = "enabled", havingValue = "true", matchIfMissing = true)
@@ -52,7 +51,7 @@ public class EnaRunner implements ApplicationRunner {
 		try {
 			log.info("Processing ENA pipeline...");
 			// date format is YYYY-mm-dd
-			LocalDate fromDate = null;
+			LocalDate fromDate;
 			boolean suppressionRunner = true;
 
 			if (args.getOptionNames().contains("from")) {
@@ -62,7 +61,7 @@ public class EnaRunner implements ApplicationRunner {
 				fromDate = LocalDate.parse("1000-01-01", DateTimeFormatter.ISO_LOCAL_DATE);
 			}
 
-			LocalDate toDate = null;
+			LocalDate toDate;
 
 			if (args.getOptionNames().contains("until")) {
 				toDate = LocalDate.parse(args.getOptionValues("until").iterator().next(), DateTimeFormatter.ISO_LOCAL_DATE);
@@ -80,6 +79,9 @@ public class EnaRunner implements ApplicationRunner {
 
 			importEraSamples(fromDate, toDate);
 
+			// Handler to append SRA Accession (ENA accession numbers to samples owned by BioSamples)
+			importEraBsdAuthoritySamples(fromDate, toDate);
+
 			if (suppressionRunner) {
 				// handler for suppressed ENA samples
 				handleSuppressedEnaSamples();
@@ -95,8 +97,31 @@ public class EnaRunner implements ApplicationRunner {
 		}
 	}
 
+	private void importEraBsdAuthoritySamples(LocalDate fromDate, LocalDate toDate) throws Exception {
+		log.info("Handling BioSamples Authority Samples");
+
+		if (pipelinesProperties.getThreadCount() == 0) {
+			EraRowBsdSamplesCallbackHandler eraRowBsdSamplesCallbackHandler = new EraRowBsdSamplesCallbackHandler(null, enaCallableFactory, futures);
+
+			eraProDao.doSampleCallbackBsdAuthoritySamples(fromDate, toDate, eraRowBsdSamplesCallbackHandler);
+		} else {
+			try (AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, false,
+					pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax())) {
+				EraRowBsdSamplesCallbackHandler eraRowBsdSamplesCallbackHandler = new EraRowBsdSamplesCallbackHandler(executorService,
+						enaCallableFactory, futures);
+
+				eraProDao.doSampleCallbackBsdAuthoritySamples(fromDate, toDate, eraRowBsdSamplesCallbackHandler);
+
+				log.info("waiting for futures"); // wait for anything to finish
+				ThreadUtils.checkFutures(futures, 0);
+			}
+		}
+	}
+
 	private void importEraSamples(LocalDate fromDate, LocalDate toDate)
-			throws InterruptedException, ExecutionException, Exception {
+			throws Exception {
+		log.info("Handling ENA and NCBI Samples");
+
 		if (pipelinesProperties.getThreadCount() == 0) {
 			EraRowCallbackHandler eraRowCallbackHandler = new EraRowCallbackHandler(null, enaCallableFactory, futures);
 			eraProDao.doSampleCallback(fromDate, toDate, eraRowCallbackHandler);
@@ -127,7 +152,7 @@ public class EnaRunner implements ApplicationRunner {
 	 * Handler for suppressed ENA samples. If status of sample is different in
 	 * BioSamples, status will be updated so SUPPRESSED. If sample doesn't exist it
 	 * will be created
-	 * 
+	 *
 	 * @throws Exception in case of failures
 	 */
 	private void handleSuppressedEnaSamples() throws Exception {
@@ -140,13 +165,16 @@ public class EnaRunner implements ApplicationRunner {
 			final EnaSuppressedSamplesCallbackHandler enaSuppressedSamplesCallbackHandler = new EnaSuppressedSamplesCallbackHandler(
 					executorService, enaCallableFactory, futures);
 			eraProDao.doGetSuppressedEnaSamples(enaSuppressedSamplesCallbackHandler);
+
+			log.info("waiting for futures"); // wait for anything to finish
+			ThreadUtils.checkFutures(futures, 0);
 		}
 	}
 
 	/**
 	 * Handler for suppressed NCBI/DDBJ samples. If status of sample is different in
 	 * BioSamples, status will be updated to SUPPRESSED
-	 * 
+	 *
 	 * @throws Exception in case of failures
 	 */
 	private void handleSuppressedNcbiDdbjSamples() throws Exception {
@@ -159,12 +187,15 @@ public class EnaRunner implements ApplicationRunner {
 			final NcbiDdbjSuppressedSamplesCallbackHandler ncbiDdbjSuppressedSamplesCallbackHandler = new NcbiDdbjSuppressedSamplesCallbackHandler(
 					executorService, ncbiCallableFactory, futures);
 			eraProDao.doGetSuppressedNcbiDdbjSamples(ncbiDdbjSuppressedSamplesCallbackHandler);
+
+			log.info("waiting for futures"); // wait for anything to finish
+			ThreadUtils.checkFutures(futures, 0);
 		}
 	}
 
 	/**
 	 * @author dgupta
-	 * 
+	 *
 	 *         {@link RowCallbackHandler} for suppressed ENA samples
 	 */
 	private static class EnaSuppressedSamplesCallbackHandler implements RowCallbackHandler {
@@ -173,7 +204,7 @@ public class EnaRunner implements ApplicationRunner {
 		private final Map<String, Future<Void>> futures;
 
 		public EnaSuppressedSamplesCallbackHandler(final AdaptiveThreadPoolExecutor executorService,
-				final EnaCallableFactory enaCallableFactory, final Map<String, Future<Void>> futures) {
+												   final EnaCallableFactory enaCallableFactory, final Map<String, Future<Void>> futures) {
 			this.executorService = executorService;
 			this.enaCallableFactory = enaCallableFactory;
 			this.futures = futures;
@@ -182,9 +213,8 @@ public class EnaRunner implements ApplicationRunner {
 		@Override
 		public void processRow(ResultSet rs) throws SQLException {
 			final String sampleAccession = rs.getString("BIOSAMPLE_ID");
-			final boolean suppressionHandler = true;
 
-			Callable<Void> callable = enaCallableFactory.build(sampleAccession, suppressionHandler);
+			Callable<Void> callable = enaCallableFactory.build(sampleAccession, true, false);
 			if (executorService == null) {
 				try {
 					callable.call();
@@ -201,7 +231,7 @@ public class EnaRunner implements ApplicationRunner {
 
 	/**
 	 * @author dgupta
-	 * 
+	 *
 	 *         {@link RowCallbackHandler} for suppressed NCBI/DDBJ samples
 	 */
 	private static class NcbiDdbjSuppressedSamplesCallbackHandler implements RowCallbackHandler {
@@ -220,9 +250,8 @@ public class EnaRunner implements ApplicationRunner {
 		@Override
 		public void processRow(ResultSet rs) throws SQLException {
 			final String sampleAccession = rs.getString("BIOSAMPLE_ID");
-			final boolean suppressionHandler = true;
 
-			Callable<Void> callable = ncbiCurationCallableFactory.build(sampleAccession, suppressionHandler);
+			Callable<Void> callable = ncbiCurationCallableFactory.build(sampleAccession, true);
 			if (executorService == null) {
 				try {
 					callable.call();
@@ -238,7 +267,6 @@ public class EnaRunner implements ApplicationRunner {
 	}
 
 	private static class EraRowCallbackHandler implements RowCallbackHandler {
-
 		private final AdaptiveThreadPoolExecutor executorService;
 		private final EnaCallableFactory enaCallableFactory;
 		private final Map<String, Future<Void>> futures;
@@ -267,7 +295,7 @@ public class EnaRunner implements ApplicationRunner {
 			}
 
 			public static ENAStatus valueOf(int pageType) {
-				return (ENAStatus) map.get(pageType);
+				return map.get(pageType);
 			}
 		}
 
@@ -295,8 +323,6 @@ public class EnaRunner implements ApplicationRunner {
 					futures.put(sampleAccession, executorService.submit(callable));
 					try {
 						ThreadUtils.checkFutures(futures, 100);
-					} catch (RuntimeException e) {
-						throw e;
 					} catch (ExecutionException e) {
 						throw new RuntimeException(e.getCause());
 					} catch (InterruptedException e) {
@@ -306,9 +332,6 @@ public class EnaRunner implements ApplicationRunner {
 				break;
 			case KILLED:
 			case TEMPORARY_KILLED:
-				// TODO
-				// set hold date
-				// update if sample already exists else ignore
 				log.info(String.format("%s would be handled as status is %s", sampleAccession, enaStatus.name()));
 				break;
 			default:
@@ -351,8 +374,6 @@ public class EnaRunner implements ApplicationRunner {
 				} catch (HttpClientErrorException e) {
 					log.error("HTTP Client error body : " + e.getResponseBodyAsString());
 					throw e;
-				} catch (RuntimeException e) {
-					throw e;
 				} catch (ExecutionException e) {
 					throw new RuntimeException(e.getCause());
 				} catch (InterruptedException e) {
@@ -361,5 +382,35 @@ public class EnaRunner implements ApplicationRunner {
 			}
 		}
 
+	}
+
+	private static class EraRowBsdSamplesCallbackHandler  implements RowCallbackHandler{
+		private final AdaptiveThreadPoolExecutor executorService;
+		private final EnaCallableFactory enaCallableFactory;
+		private final Map<String, Future<Void>> futures;
+
+		public EraRowBsdSamplesCallbackHandler(AdaptiveThreadPoolExecutor executorService, EnaCallableFactory enaCallableFactory, Map<String, Future<Void>> futures) {
+			this.executorService = executorService;
+			this.enaCallableFactory = enaCallableFactory;
+			this.futures = futures;
+		}
+
+		@Override
+		public void processRow(ResultSet rs) throws SQLException {
+			final String sampleAccession = rs.getString("BIOSAMPLE_ID");
+
+			Callable<Void> callable = enaCallableFactory.build(sampleAccession, false, true);
+			if (executorService == null) {
+				try {
+					callable.call();
+				} catch (RuntimeException e) {
+					throw e;
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+			} else {
+				futures.put(sampleAccession, executorService.submit(callable));
+			}
+		}
 	}
 }

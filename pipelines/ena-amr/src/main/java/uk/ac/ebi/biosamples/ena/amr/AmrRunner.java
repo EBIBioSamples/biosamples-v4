@@ -12,6 +12,7 @@ import uk.ac.ebi.biosamples.ena.amr.service.EnaAmrDataProcessService;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.MailSender;
+import uk.ac.ebi.biosamples.utils.ThreadUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -156,17 +157,22 @@ public class AmrRunner implements ApplicationRunner {
     private void downloadFtpContent(final List<AccessionFtpUrlPair> pairList) {
         try (final AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true,
                 1, 10)) {
+            Map<String, Future<Void>> futures = new HashMap<>();
 
             pairList.forEach(pair -> {
                 try {
                     String accession = pair.getAccession();
 
                     if (accession != null && accession.startsWith(SAMEA))
-                        executorService.submit(new EnaAmrCallable(new URL(pair.getFtpUrl()), accession));
+                        futures.put(accession, executorService.submit(new EnaAmrCallable(new URL(pair.getFtpUrl()), accession)));
                 } catch (MalformedURLException e) {
                     log.info("FTP URL not correctly formed " + pair.getFtpUrl());
                 }
             });
+
+            log.info("waiting for futures");
+            // wait for anything to finish
+            ThreadUtils.checkFutures(futures, 0);
         } catch (Exception e) {
             log.error(e.getMessage());
         }
@@ -196,6 +202,7 @@ public class AmrRunner implements ApplicationRunner {
                     log.info(accession + " doesn't exist");
                 }
             } catch (final IOException ioe) {
+                EnaAmrDataProcessService.failedQueue.add(accession);
                 log.info("Couldn't process AMR data for " + accession);
             }
 

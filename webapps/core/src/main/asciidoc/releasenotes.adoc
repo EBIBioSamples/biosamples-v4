@@ -2,6 +2,31 @@
 :toc: auto
 
 This pages contains links to release notes for BioSamples for version 4.0.0 and higher. This release represents a comprehensive overhaul and therefore previous release notes are no longer applicable.
+
+[[v4.2.6]]
+== v4.2.6 Release notes
+=== New features
+1. Changes to BioSamples indexing:
+Solr CDCR process is quite slow when we re-index BioSamples at the weekend. Therefore at the weekend, instead of using CDCR for datacenter replication, we will copy Solr index to the second datacenter and keep CDCR process down while copying.
+2. Pipeline statistics:
+We will store pipeline related statistics in a new collection in MongoDB. This will enable us to have insight into BioSamples sample distribution and later enable visualization of BioSamples usage.
+3. AMR Structured data support:
+AMR Structured data submission support has been added to BioSamples. You can further read the documentation to know how to submit AMR structured data in BioSamples. Structured data submission has retention of access rights. If the sample submitter and the structured data submitter are different, then the sample submitter can only update the sample metadata and structured data submitter can only update the structured data
+4. Livelist pipeline has been improved to generate live samples list, suppressed samples list and killed samples list
+5. New pipeline added to provide dump of biosamples to the EBI search engine with the scope of further improvements based on review of data dump
+6. BioSamples support to ENA presentation: Feature has been added to ENA Pipeline to update SRA accession in samples submitted through BioSamples, i.e. BioSamples authority samples
+7. Include COVID-19 query in BioSamples home page:
+BioSamples contains samples related to COVID-19 disease. COVID-19 related samples can be easily accessible by following the link on the home page.
+
+=== Bug fixes:
+1. Curation pipelines have been fixed to accept samples having blank attribute values
+2. Bug fix in handling attribute name and measurement in ENA AMR import pipeline
+
+=== Notifications
+* Data center migration and related maintenance tasks were completed as expected. BioSamples operates on full capacity as usual.
+* Please note that we will be removing SampleTab format submission support on 1st of May. Please let us know if you have any concerns regarding this.
+
+
 [[v4.2.5]]
 == v4.2.5 Release notes
 === New features

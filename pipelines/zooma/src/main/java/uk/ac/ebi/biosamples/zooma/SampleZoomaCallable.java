@@ -2,6 +2,7 @@ package uk.ac.ebi.biosamples.zooma;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.ac.ebi.biosamples.PipelineResult;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Curation;
@@ -19,13 +20,14 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
-public class SampleZoomaCallable implements Callable<Void> {
+public class SampleZoomaCallable implements Callable<PipelineResult> {
     private Logger log = LoggerFactory.getLogger(getClass());
     private final Sample sample;
     private final BioSamplesClient bioSamplesClient;
     private final ZoomaProcessor zoomaProcessor;
     private final CurationApplicationService curationApplicationService;
     private final String domain;
+    private int curationCount;
     public static final ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<>();
 
     public SampleZoomaCallable(BioSamplesClient bioSamplesClient, Sample sample,
@@ -36,10 +38,12 @@ public class SampleZoomaCallable implements Callable<Void> {
         this.zoomaProcessor = zoomaProcessor;
         this.curationApplicationService = curationApplicationService;
         this.domain = domain;
+        this.curationCount = 0;
     }
 
     @Override
-    public Void call() {
+    public PipelineResult call() {
+        boolean success = true;
         try {
             Sample last;
             Sample curated = sample;
@@ -51,9 +55,10 @@ public class SampleZoomaCallable implements Callable<Void> {
         } catch (Exception e) {
             log.warn("Encountered exception with " + sample.getAccession(), e);
             failedQueue.add(sample.getAccession());
+            success = false;
         }
 
-        return null;
+        return new PipelineResult(sample.getAccession(), curationCount, success);
     }
 
     private Sample zooma(Sample sample) {
@@ -144,6 +149,7 @@ public class SampleZoomaCallable implements Callable<Void> {
                     //save the curation back in biosamples
                     bioSamplesClient.persistCuration(sample.getAccession(), curation, domain);
                     sample = curationApplicationService.applyCurationToSample(sample, curation);
+                    curationCount++;
                 }
             }
         }

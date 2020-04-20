@@ -30,7 +30,6 @@ import java.util.Objects;
         "critical_concentration"
 })
 public class AMREntry implements Comparable<AMREntry>{
-
     private final AmrPair antibioticName;
     private final String resistancePhenotype;
     private final String measurementSign;
@@ -140,63 +139,73 @@ public class AMREntry implements Comparable<AMREntry>{
             return 1;
         }
 
-
-
         int comparison = nullSafeStringComparison(this.antibioticName.getValue(), other.antibioticName.getValue());
+
         if (comparison != 0) {
             return comparison;
         }
 
         comparison = nullSafeStringComparison(this.resistancePhenotype, other.resistancePhenotype);
+
         if (comparison != 0) {
             return comparison;
         }
 
         comparison = nullSafeStringComparison(this.measurementSign, other.measurementSign);
+
         if (comparison != 0) {
             return comparison;
         }
 
         comparison = nullSafeStringComparison(this.measurement, other.measurement);
+
         if (comparison != 0) {
             return comparison;
         }
 
         comparison = nullSafeStringComparison(this.measurementUnits, other.measurementUnits);
+
         if (comparison != 0) {
             return comparison;
         }
 
         comparison = nullSafeStringComparison(this.laboratoryTypingMethod, other.laboratoryTypingMethod);
+
         if (comparison != 0) {
             return comparison;
         }
 
         comparison = nullSafeStringComparison(this.platform, other.platform);
+
         if (comparison != 0) {
             return comparison;
         }
         comparison = nullSafeStringComparison(this.laboratoryTypingMethodVersionOrReagent, other.laboratoryTypingMethodVersionOrReagent);
+
         if (comparison != 0) {
             return comparison;
         }
 
         comparison = nullSafeStringComparison(this.vendor, other.vendor);
+
         if (comparison != 0) {
             return comparison;
         }
 
         comparison = nullSafeStringComparison(this.dstMedia, other.dstMedia);
+
         if (comparison != 0) {
             return comparison;
         }
 
         comparison = nullSafeStringComparison(this.species.getValue(), other.species.getValue());
+
         if (comparison != 0) {
             return comparison;
         }
 
         comparison = nullSafeStringComparison(this.breakpointVersion, other.breakpointVersion);
+
         if (comparison != 0) {
             return comparison;
         }
@@ -205,7 +214,6 @@ public class AMREntry implements Comparable<AMREntry>{
     }
 
     private int nullSafeStringComparison(String one, String two) {
-
         if (one == null && two != null) {
             return -1;
         }
@@ -223,7 +231,9 @@ public class AMREntry implements Comparable<AMREntry>{
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof AMREntry)) return false;
+
         AMREntry amrEntry = (AMREntry) o;
+
         return Objects.equals(getMeasurement(), amrEntry.getMeasurement()) &&
                 Objects.equals(getAntibioticName().getValue(), amrEntry.getAntibioticName().getValue()) &&
                 Objects.equals(getResistancePhenotype(), amrEntry.getResistancePhenotype()) &&
@@ -239,12 +249,10 @@ public class AMREntry implements Comparable<AMREntry>{
                 Objects.equals(getCriticalConcentration(), amrEntry.getCriticalConcentration()) &&
                 Objects.equals(getSpecies(), amrEntry.getSpecies()) &&
                 Objects.equals(getBreakpointVersion(), amrEntry.getBreakpointVersion());
-
     }
 
     @Override
     public int hashCode() {
-
         return Objects.hash(getAntibioticName().getValue(), getResistancePhenotype(), getMeasurementSign(), getMeasurement(), getMeasurementUnits(), getVendor(), getLaboratoryTypingMethod(), getAstStandard(), getDstMedia(), getDstMethod(), getCriticalConcentration(), getSpecies(), getBreakpointVersion());
     }
 
@@ -396,18 +404,14 @@ public class AMREntry implements Comparable<AMREntry>{
 //            if (this.astStandard == null || this.astStandard.isEmpty()) {
 //                throw AMREntryBuldingException.createForMissingField("testing standard");
 //            }
-
-
             return new AMREntry(this.antibioticName, this.resistancePhenotype, this.measurementSign, this.measurement,
                     this.measurementUnits, this.vendor, this.laboratoryTypingMethod, this.platform,
                     this.laboratoryTypingMethodVersionOrReagent, this.astStandard,
                     this.dstMedia, this.dstMethod, this.criticalConcentration, this.species, this.breakpointVersion);
         }
-
     }
 
     public static class AMREntryBuldingException extends Exception {
-
         public AMREntryBuldingException(String message) {
             super(message);
         }
@@ -415,9 +419,5 @@ public class AMREntry implements Comparable<AMREntry>{
         public static RuntimeException createForMissingField(String field) {
             return new RuntimeException("You need to provide a non-empty  " + field);
         }
-
-
     }
-
-
 }

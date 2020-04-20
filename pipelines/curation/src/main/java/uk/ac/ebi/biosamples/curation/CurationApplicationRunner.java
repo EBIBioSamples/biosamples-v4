@@ -7,18 +7,24 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
+import uk.ac.ebi.biosamples.PipelineFutureCallback;
+import uk.ac.ebi.biosamples.PipelineResult;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.curation.service.IriUrlValidatorService;
+import uk.ac.ebi.biosamples.model.PipelineAnalytics;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.ols.OlsProcessor;
+import uk.ac.ebi.biosamples.service.AnalyticsService;
 import uk.ac.ebi.biosamples.service.CurationApplicationService;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.ArgUtils;
 import uk.ac.ebi.biosamples.utils.MailSender;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -26,11 +32,13 @@ import java.util.concurrent.Future;
 
 @Component
 public class CurationApplicationRunner implements ApplicationRunner {
-    private Logger log = LoggerFactory.getLogger(getClass());
+    private static final Logger LOG = LoggerFactory.getLogger(CurationApplicationRunner.class);
     private final BioSamplesClient bioSamplesClient;
     private final PipelinesProperties pipelinesProperties;
     private final OlsProcessor olsProcessor;
     private final CurationApplicationService curationApplicationService;
+    private final AnalyticsService analyticsService;
+    private final PipelineFutureCallback pipelineFutureCallback;
 
     @Autowired
     IriUrlValidatorService iriUrlValidatorService;
@@ -38,53 +46,66 @@ public class CurationApplicationRunner implements ApplicationRunner {
     public CurationApplicationRunner(BioSamplesClient bioSamplesClient,
                                      PipelinesProperties pipelinesProperties,
                                      OlsProcessor olsProcessor,
-                                     CurationApplicationService curationApplicationService) {
+                                     CurationApplicationService curationApplicationService,
+                                     AnalyticsService analyticsService) {
         this.bioSamplesClient = bioSamplesClient;
         this.pipelinesProperties = pipelinesProperties;
         this.olsProcessor = olsProcessor;
         this.curationApplicationService = curationApplicationService;
+        this.analyticsService = analyticsService;
+        this.pipelineFutureCallback = new PipelineFutureCallback();
     }
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-
+        Instant startTime = Instant.now();
         Collection<Filter> filters = ArgUtils.getDateFilters(args);
         boolean isPassed = true;
+        long sampleCount = 0;
 
         try (AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true,
                 pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax())) {
 
-            Map<String, Future<Void>> futures = new HashMap<>();
-            long sampleCount = 0;
+            Map<String, Future<PipelineResult>> futures = new HashMap<>();
             for (Resource<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll("", filters)) {
-                log.trace("Handling " + sampleResource);
+                LOG.trace("Handling {}", sampleResource);
                 Sample sample = sampleResource.getContent();
                 if (sample == null) {
                     throw new RuntimeException("Sample should not be null");
                 }
 
-                Callable<Void> task = new SampleCurationCallable(bioSamplesClient, sample, olsProcessor,
+                Callable<PipelineResult> task = new SampleCurationCallable(bioSamplesClient, sample, olsProcessor,
                         curationApplicationService, pipelinesProperties.getCurationDomain(), iriUrlValidatorService);
                 sampleCount++;
-                if (sampleCount % 500 == 0) {
-                    log.info(sampleCount + " scheduled");
+                if (sampleCount % 10000 == 0) {
+                    LOG.info("{} scheduled for processing", sampleCount);
                 }
                 futures.put(sample.getAccession(), executorService.submit(task));
             }
 
-            log.info("waiting for futures");
+            LOG.info("waiting for futures");
             // wait for anything to finish
-            ThreadUtils.checkFutures(futures, 0);
+            ThreadUtils.checkAndCallbackFutures(futures, 0, pipelineFutureCallback);
         } catch(final Exception e) {
-            log.error("Pipeline failed to finish successfully", e);
+            LOG.error("Pipeline failed to finish successfully", e);
             isPassed = false;
             MailSender.sendEmail("Curation", "Failed for network connectivity issues/ other issues - <ALERT BIOSAMPLES DEV> " + e.getMessage(), isPassed);
             throw e;
         } finally {
+            Instant endTime = Instant.now();
+            LOG.info("Total samples processed {}", sampleCount);
+            LOG.info("Total curation objects added {}", pipelineFutureCallback.getTotalCount());
+            LOG.info("Pipeline finished at {}", endTime);
+            LOG.info("Pipeline total running time {} seconds", Duration.between(startTime, endTime).getSeconds());
+
+            PipelineAnalytics pipelineAnalytics = new PipelineAnalytics("curation", startTime, endTime, sampleCount, pipelineFutureCallback.getTotalCount());
+            pipelineAnalytics.setDateRange(filters);
+            analyticsService.persistPipelineAnalytics(pipelineAnalytics);
+
             //now print a list of things that failed
             final ConcurrentLinkedQueue<String> failedQueue = SampleCurationCallable.failedQueue;
 
-            if (failedQueue.size() > 0) {
+            if (!failedQueue.isEmpty()) {
                 //put the first ones on the queue into a list
                 //limit the size of list to avoid overload
                 List<String> fails = new LinkedList<>();
@@ -93,7 +114,7 @@ public class CurationApplicationRunner implements ApplicationRunner {
                 }
 
                 final String failures = "Failed files (" + fails.size() + ") " + String.join(" , ", fails);
-                log.info(failures);
+                LOG.info(failures);
                 MailSender.sendEmail("Curation", failures, isPassed);
             }
         }

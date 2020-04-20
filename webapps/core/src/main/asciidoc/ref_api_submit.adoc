@@ -25,6 +25,9 @@ Sample content reference:
 | characteristics | `Object` | Optional
 | externalReferences | `Array` | Optional
 | relationships | `Array` | Optional
+| data | `Array` | Optional, required only for structured data submission using our POST, PUT or PATCH endpoints.
+Note - You must provide an AAP domain for your data. It can be same as the sample domain if you are the submitter of both the
+sample metadata and structured data.
 |===
 
 === Curation Link
@@ -68,6 +71,34 @@ include::{snippets}/put-sample/http-request.adoc[]
 
 === Response
 include::{snippets}/put-sample/http-response.adoc[]
+
+=== Links
+For all the links available in BioSamples check the link:../api/links[Links Reference]
+
+== Submit structured data to sample
+`PATCH` a sample to BioSamples
+
+This endpoint is useful if an user wants to add structured data to an existing sample
+(example: Antibiogram data of sample)
+
+The sample structured data submission is not required to be done at the time of the sample
+submission and also by the original submitter. Structured data can be submitted at a later point
+of time by another submitter. Ownership rights will be retained and sample submitter can later
+update the sample metadata only and structured data submitter can update the structured data only.
+
+Pre Conditions:
+
+1. The submitted sample is required to have an accession and the accession should match the one in the url
+2. The submitted sample should also have the sample name and the structured data
+3. The structured data must have a structured data type (e.g. AMR) and a valid AAP domain
+4. This endpoint doesn't accept any other data except sample name, accession and structured data.
+    If you supply any other information, your input will not be accepted
+
+=== Request
+include::{snippets}/patch-sample/http-request.adoc[]
+
+=== Response
+include::{snippets}/patch-sample/http-response.adoc[]
 
 === Links
 For all the links available in BioSamples check the link:../api/links[Links Reference]

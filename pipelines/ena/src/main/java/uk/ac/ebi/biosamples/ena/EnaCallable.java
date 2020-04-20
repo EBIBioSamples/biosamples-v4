@@ -1,7 +1,19 @@
 package uk.ac.ebi.biosamples.ena;
 
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.Element;
+import org.dom4j.io.SAXReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.hateoas.Resource;
+import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.ExternalReference;
+import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
+
 import java.io.StringReader;
-import java.sql.SQLException;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -10,42 +22,23 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
 
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.Element;
-import org.dom4j.io.SAXReader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.hateoas.Resource;
-
-import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.ExternalReference;
-import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
-
 public class EnaCallable implements Callable<Void> {
 	private static final String DDBJ_SAMPLE_PREFIX = "SAMD";
 	private static final String NCBI_SAMPLE_PREFIX = "SAMN";
 	private static final String SUPPRESSED = "suppressed";
+	public static final String ENA_SRA_ACCESSION = "SRA accession";
 	private final String sampleAccession;
 	private final BioSamplesClient bioSamplesClient;
 	private final EnaXmlEnhancer enaXmlEnhancer;
-	private final EnaElementConverter enaElementConverter;
 	private final EraProDao eraProDao;
-	private final String domain;
-	private Logger log = LoggerFactory.getLogger(getClass());
+	private EnaElementConverter enaElementConverter;
+	private String domain;
 	private boolean suppressionHandler;
+	private boolean bsdAuthority = false;
+	private Logger log = LoggerFactory.getLogger(getClass());
 
 	/**
 	 * Construction for all ENA samples
-	 * 
-	 * @param sampleAccession
-	 * @param bioSamplesClient
-	 * @param enaXmlEnhancer
-	 * @param enaElementConverter
-	 * @param eraProDao
-	 * @param domain
 	 */
 	public EnaCallable(String sampleAccession, BioSamplesClient bioSamplesClient, EnaXmlEnhancer enaXmlEnhancer,
 			EnaElementConverter enaElementConverter, EraProDao eraProDao, String domain) {
@@ -59,17 +52,9 @@ public class EnaCallable implements Callable<Void> {
 
 	/**
 	 * Construction for SUPPRESSED samples
-	 *
-	 * @param sampleAccession
-	 * @param bioSamplesClient
-	 * @param enaXmlEnhancer
-	 * @param enaElementConverter
-	 * @param eraProDao
-	 * @param domain
-	 * @param suppressionHandler
 	 */
 	public EnaCallable(String sampleAccession, BioSamplesClient bioSamplesClient, EnaXmlEnhancer enaXmlEnhancer,
-			EnaElementConverter enaElementConverter, EraProDao eraProDao, String domain, boolean suppressionHandler) {
+					   EnaElementConverter enaElementConverter, EraProDao eraProDao, String domain, boolean suppressionHandler) {
 		this.sampleAccession = sampleAccession;
 		this.bioSamplesClient = bioSamplesClient;
 		this.enaXmlEnhancer = enaXmlEnhancer;
@@ -79,12 +64,25 @@ public class EnaCallable implements Callable<Void> {
 		this.suppressionHandler = suppressionHandler;
 	}
 
-	@Override
+	/**
+	 * Construction for BSD authority samples
+	 */
+    public EnaCallable(String sampleAccession, BioSamplesClient bioSamplesClient, EnaXmlEnhancer enaXmlEnhancer,
+					   EnaElementConverter enaElementConverter, EraProDao eraProDao, boolean bsdAuthority) {
+		this.sampleAccession = sampleAccession;
+		this.bioSamplesClient = bioSamplesClient;
+		this.enaXmlEnhancer = enaXmlEnhancer;
+		this.enaElementConverter = enaElementConverter;
+		this.eraProDao = eraProDao;
+		this.bsdAuthority = bsdAuthority;
+    }
+
+    @Override
 	public Void call() throws Exception {
 		if (suppressionHandler) {
 			return checkAndUpdateSuppressedSample();
 		} else {
-			return enrichAndPersistEnaSample();
+			return enrichAndPersistEnaSample(bsdAuthority);
 		}
 	}
 
@@ -92,17 +90,43 @@ public class EnaCallable implements Callable<Void> {
 	 * Enrich the ENA sample with specific attributes and persist using
 	 * {@link BioSamplesClient}
 	 *
-	 * @return                   nothing its {@link Void}
+	 * @return nothing its {@link Void}
 	 *
-	 * @throws SQLException      if it fails in queries
 	 * @throws DocumentException if it fails in XML transformation
 	 */
-	private Void enrichAndPersistEnaSample() throws SQLException, DocumentException {
+	private Void enrichAndPersistEnaSample(boolean bsdAuthority) throws DocumentException {
 		log.info("HANDLING " + sampleAccession);
 
-		final SampleDBBean sampleDBBean = eraProDao.getAllSampleData(this.sampleAccession);
-		if (sampleDBBean != null) {
-			handleEnaSample(sampleDBBean);
+		if (bsdAuthority) {
+			final String sraAccession = eraProDao.getSraAccession(this.sampleAccession);
+
+			if (sraAccession != null) {
+				Optional<Resource<Sample>> sampleResult = bioSamplesClient.fetchSampleResource(sampleAccession);
+
+				if (sampleResult.isPresent()) {
+					Sample sample = sampleResult.get().getContent();
+
+					if (sample != null) {
+						final Attribute sraAccessionAttribute = Attribute.build(ENA_SRA_ACCESSION, sraAccession);
+						final SortedSet<Attribute> attributes = sample.getAttributes();
+
+						attributes.add(sraAccessionAttribute);
+
+						sample = Sample.Builder.fromSample(sample).withAttributes(attributes).build();
+
+						bioSamplesClient.persistSampleResource(sample);
+						log.info("Updated sample " + sampleAccession + " with SRA accession");
+					} else {
+						log.info("Sample not found " + sampleAccession);
+					}
+				}
+			}
+		} else {
+			final SampleDBBean sampleDBBean = eraProDao.getAllSampleData(this.sampleAccession);
+
+			if (sampleDBBean != null) {
+				handleEnaSample(sampleDBBean);
+			}
 		}
 
 		return null;
@@ -112,7 +136,7 @@ public class EnaCallable implements Callable<Void> {
 	 * Handles one ENA sample
 	 * 
 	 * @param  sampleDBBean      {@link SampleDBBean}
-	 * 
+	 *
 	 * @throws DocumentException in case of parse errors
 	 */
 	private void handleEnaSample(final SampleDBBean sampleDBBean) throws DocumentException {
@@ -133,7 +157,7 @@ public class EnaCallable implements Callable<Void> {
 
 	/**
 	 * Enriches one ENA sample
-	 * 
+	 *
 	 * @param sampleDBBean {@link SampleDBBean}
 	 * @param root         The XML {@link Element}
 	 */
@@ -145,7 +169,7 @@ public class EnaCallable implements Callable<Void> {
 		final String firstPublic = sampleDBBean.getFirstPublic();
 		final String firstCreated = sampleDBBean.getFirstCreated();
 		final String status = handleStatus(sampleDBBean.getStatus());
-		Instant release = null;
+		Instant release;
 		Instant update = null;
 		Instant create = null;
 
@@ -165,9 +189,7 @@ public class EnaCallable implements Callable<Void> {
 			create = Instant.parse(firstCreated);
 		}
 
-		if (status != null) {
-			attributes.add(Attribute.build("INSDC status", status));
-		}
+		attributes.add(Attribute.build("INSDC status", status));
 
 		// add external reference
 		externalReferences.add(ExternalReference.build("https://www.ebi.ac.uk/ena/data/view/" + this.sampleAccession));
@@ -176,6 +198,7 @@ public class EnaCallable implements Callable<Void> {
 		// webapps-core
 		sample = Sample.build(sample.getName(), this.sampleAccession, domain, release, update, create, attributes, sample.getRelationships(),
 				externalReferences);
+
 		bioSamplesClient.persistSampleResource(sample);
 	}
 
@@ -205,15 +228,12 @@ public class EnaCallable implements Callable<Void> {
 	 * Checks samples from ENA which is SUPPRESSED and takes necessary action, i.e.
 	 * update status if status is different in BioSamples, else persist
 	 *
-	 * @param  sampleAccession      The accession passed
 	 * @return                      {@link Void}
-	 * @throws InterruptedException if thread is interrupted
-	 * @throws SQLException         if failure in SQL
 	 * @throws DocumentException    if failure in document parsing
 	 */
-	private Void checkAndUpdateSuppressedSample() throws InterruptedException, SQLException, DocumentException {
+	private Void checkAndUpdateSuppressedSample() throws DocumentException {
 		final Optional<Resource<Sample>> optionalSampleResource = bioSamplesClient.fetchSampleResource(this.sampleAccession,
-				Optional.of(new ArrayList<String>()));
+				Optional.of(new ArrayList<>()));
 
 		if (optionalSampleResource.isPresent()) {
 			final Sample sample = optionalSampleResource.get().getContent();
@@ -235,7 +255,7 @@ public class EnaCallable implements Callable<Void> {
 		} else {
 			if (!ifNcbiDdbj()) {
 				log.info("Accession doesn't exist " + this.sampleAccession + " creating the same");
-				return enrichAndPersistEnaSample();
+				return enrichAndPersistEnaSample(false);
 			}
 		}
 
@@ -245,7 +265,6 @@ public class EnaCallable implements Callable<Void> {
 	/**
 	 * True if NCBI/DDBJ sample
 	 *
-	 * @param  sampleAccession The accession passed to the method
 	 * @return                 true if NCBI/DDBJ sample
 	 */
 	private boolean ifNcbiDdbj() {

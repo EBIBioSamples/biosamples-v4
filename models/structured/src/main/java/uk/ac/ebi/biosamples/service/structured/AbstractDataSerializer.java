@@ -24,6 +24,7 @@ public class AbstractDataSerializer extends StdSerializer<Set> {
             jsonGenerator.writeFieldName(data.getDataType().toString());
             jsonGenerator.writeStartObject();
             jsonGenerator.writeStringField("schema", data.getSchema().toString());
+            jsonGenerator.writeStringField("domain", data.getDomain());
             jsonGenerator.writeObjectField("data", data.getStructuredData());
             jsonGenerator.writeEndObject();
 

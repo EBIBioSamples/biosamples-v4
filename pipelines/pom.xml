@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>4.2.5-BF1</version>
+		<version>4.2.6-SNAPSHOT</version>
 	</parent>
 
 	<profiles>
@@ -29,7 +29,7 @@
 		<module>curation</module>
 		<module>zooma</module>
 		<module>sampletab</module>
-		<module>sampletest</module>
+		<module>template</module>
 		<module>legacyxml</module>
 		<module>reindex</module>
 		<module>export</module>
@@ -40,5 +40,6 @@
         <module>curatedview</module>
 		<module>bioschemas-rdf-export</module>
 		<module>ena-amr</module>
+		<module>ebeye-search-export</module>
     </modules>
 </project>
