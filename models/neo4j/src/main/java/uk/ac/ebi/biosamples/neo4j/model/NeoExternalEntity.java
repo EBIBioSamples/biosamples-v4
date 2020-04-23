@@ -1,5 +1,8 @@
 package uk.ac.ebi.biosamples.neo4j.model;
 
+import uk.ac.ebi.biosamples.model.ExternalReference;
+import uk.ac.ebi.biosamples.service.ExternalReferenceUtils;
+
 public class NeoExternalEntity {
     private String url;
     private String archive;
@@ -23,7 +26,9 @@ public class NeoExternalEntity {
         return ref;
     }
 
-    public static NeoExternalEntity build(String url, String archive, String ref) {
-        return new NeoExternalEntity(url, archive, ref);
+    public static NeoExternalEntity build(ExternalReference reference) {
+        return new NeoExternalEntity(reference.getUrl(),
+                ExternalReferenceUtils.getNickname(reference),
+                ExternalReferenceUtils.getDataId(reference).orElse(""));
     }
 }

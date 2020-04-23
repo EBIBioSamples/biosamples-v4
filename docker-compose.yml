@@ -9,6 +9,7 @@ services:
     - solr
     - mongo
     - rabbitmq
+    - neo4j
     volumes:
     - logs:/logs
     command:
@@ -399,6 +400,23 @@ services:
     - docker-entrypoint.sh
     - solr-precreate
     - samples
+
+  neo4j:
+    image: neo4j:4.0.3
+    mem_limit: 1g
+    ports:
+      - 7474:7474
+      - 7687:7687
+    environment:
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.*
+      - NEO4J_apoc_import_file_enabled=true
+      - NEO4J_dbms_shell_enabled=true
+      - NEO4J_AUTH=neo4j/neo5j
+    volumes:
+      - ./plugins:/plugins
+      - ./data:/data
+      - ./logs:/logs
+      - ./import:/import
 
 volumes:
   solr_data: null

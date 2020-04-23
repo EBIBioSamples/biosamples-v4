@@ -16,20 +16,17 @@ public class NeoExportCallable implements Callable<PipelineResult> {
 
     private final Sample sample;
     private final NeoSampleRepository neoSampleRepository;
-    private final String domain;
 
-    public NeoExportCallable(NeoSampleRepository neoSampleRepository, Sample sample, String domain) {
+    public NeoExportCallable(NeoSampleRepository neoSampleRepository, Sample sample) {
         this.neoSampleRepository = neoSampleRepository;
         this.sample = sample;
-        this.domain = domain;
     }
 
     @Override
     public PipelineResult call() {
         try {
             NeoSample neoSample = NeoSample.build(sample);
-            neoSampleRepository.createSample(neoSample);
-//            neoSampleRepository.create(neoSample);
+            neoSampleRepository.loadSample(neoSample);
         } catch (Exception e) {
             failedQueue.add(sample.getAccession());
             LOG.error("Failed to add curation on sample: " + sample.getAccession(), e);

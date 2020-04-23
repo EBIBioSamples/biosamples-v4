@@ -72,7 +72,7 @@ public class NeoSample {
         }
 
         for (ExternalReference ref : sample.getExternalReferences()) {
-            neoSample.externalRefs.add(NeoExternalEntity.build(ref.getUrl(), "ENA", ""));
+            neoSample.externalRefs.add(NeoExternalEntity.build(ref));
         }
 
         return neoSample;

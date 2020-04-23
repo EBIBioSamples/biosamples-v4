@@ -1,17 +1,16 @@
 package uk.ac.ebi.biosamples.neo4j.repo;
 
-import org.neo4j.driver.*;
+import org.neo4j.driver.AuthTokens;
+import org.neo4j.driver.Driver;
+import org.neo4j.driver.GraphDatabase;
+import org.neo4j.driver.Session;
 import org.springframework.stereotype.Component;
-import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.neo4j.NeoProperties;
 import uk.ac.ebi.biosamples.neo4j.model.NeoExternalEntity;
 import uk.ac.ebi.biosamples.neo4j.model.NeoRelationship;
 import uk.ac.ebi.biosamples.neo4j.model.NeoSample;
 
-import java.util.HashMap;
 import java.util.Map;
-
-import static org.neo4j.driver.Values.parameters;
 
 @Component
 public class NeoSampleRepository implements AutoCloseable {
@@ -27,7 +26,7 @@ public class NeoSampleRepository implements AutoCloseable {
         driver.close();
     }
 
-    public void createSample(NeoSample sample) {
+    public void loadSample(NeoSample sample) {
         try (Session session = driver.session()) {
             createSample(session, sample);
 
@@ -49,6 +48,9 @@ public class NeoSampleRepository implements AutoCloseable {
                 "accession", sample.getAccession(),
                 "name", sample.getName(),
                 "taxid", sample.getTaxId());
+
+//        params.put("organims", sample.getOrganism());
+//        params.put("sex", sample.getSex());
 
         session.run(query, params);
     }
@@ -77,15 +79,14 @@ public class NeoSampleRepository implements AutoCloseable {
         session.run(query, params);
     }
 
-    public void createExternalEntity(String archive, String externalRef, String url) {
-        try (Session session = driver.session()) {
-            session.writeTransaction(tx -> {
-                Result result = tx.run("MERGE (a:ExternalEntity{url:$url}) " +
-                                "SET a.archive = $archive, a.externalRef = $externalRef",
-                        parameters("url", url,
-                                "archive", archive, "externalRef", externalRef));
-                return result.single().get(0).asString();
-            });
-        }
+    public void createExternalEntity(Session session, String archive, String externalRef, String url) {
+        String query = "MERGE (a:ExternalEntity{url:$url}) " +
+                "SET a.archive = $archive, a.externalRef = $externalRef";
+        Map<String, Object> params = Map.of(
+                "url", url,
+                "archive", archive,
+                "externalRef", externalRef);
+
+        session.run(query, params);
     }
 }

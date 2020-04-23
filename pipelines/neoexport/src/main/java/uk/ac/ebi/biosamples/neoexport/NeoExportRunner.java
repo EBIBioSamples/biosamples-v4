@@ -64,8 +64,7 @@ public class NeoExportRunner implements ApplicationRunner {
                 Objects.requireNonNull(sample);
                 collectSampleTypes(sample, sampleAnalytics);
 
-                Callable<PipelineResult> task = new NeoExportCallable(
-                        neoSampleRepository, sample, pipelinesProperties.getCurationDomain());
+                Callable<PipelineResult> task = new NeoExportCallable(neoSampleRepository, sample);
                 futures.put(sample.getAccession(), executorService.submit(task));
 
                 if (++sampleCount % 5000 == 0) {
