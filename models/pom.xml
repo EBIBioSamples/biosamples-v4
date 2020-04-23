@@ -29,5 +29,6 @@
 		<module>legacyxml</module>
 		<module>legacyjson</module>
 		<module>structured</module>
+		<module>neo4j</module>
 	</modules>
 </project>
