@@ -9,7 +9,6 @@ services:
     - solr
     - mongo
     - rabbitmq
-    - neo4j
     volumes:
     - logs:/logs
     command:
@@ -413,13 +412,16 @@ services:
       - NEO4J_dbms_shell_enabled=true
       - NEO4J_AUTH=neo4j/neo5j
     volumes:
-      - ./plugins:/plugins
-      - ./data:/data
-      - ./logs:/logs
-      - ./import:/import
+      - neo_plugins:/plugins
+      - neo_data:/data
+      - neo_import:/import
+      - logs:/logs
 
 volumes:
   solr_data: null
   mongo_data: null
   rabbitmq_data: null
   logs: null
+  neo_plugins: null
+  neo_data: null
+  neo_import: null

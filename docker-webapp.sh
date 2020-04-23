@@ -28,7 +28,7 @@ set -e
 docker-compose build
 
 #start up the webapps (and dependencies)
-docker-compose up -d --remove-orphans solr rabbitmq mongo json-schema-validator
+docker-compose up -d --remove-orphans solr rabbitmq mongo neo4j json-schema-validator
 echo "checking solr is up"
 ./http-status-check -u http://localhost:8983 -t 30
 echo "checking rabbitmq is up"

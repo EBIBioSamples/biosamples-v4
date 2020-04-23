@@ -107,7 +107,5 @@ create_new_facets_and_filters.md
 /ncbi.*.gz
 /ncbi_*.*.gz
 
-
-
 data/*
 docker/export/*
