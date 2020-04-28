@@ -65,7 +65,7 @@ public class LiveListRunner implements ApplicationRunner {
         }
 
         try {
-            killListWriter = args.getOptionValues("gzip") == null
+            killListWriter = args.getOptionValues("gzipkill") == null
                     ? new OutputStreamWriter(new FileOutputStream(killListFileName), StandardCharsets.UTF_8)
                     : new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(killListFileName)), StandardCharsets.UTF_8);
 
@@ -114,7 +114,7 @@ public class LiveListRunner implements ApplicationRunner {
         }
 
         try {
-            suppListWriter = args.getOptionValues("gzip") == null
+            suppListWriter = args.getOptionValues("gzipsupp") == null
                     ? new OutputStreamWriter(new FileOutputStream(suppListFileName), StandardCharsets.UTF_8)
                     : new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(suppListFileName)), StandardCharsets.UTF_8);
 
@@ -162,7 +162,7 @@ public class LiveListRunner implements ApplicationRunner {
         }
 
         try {
-            liveListWriter = args.getOptionValues("gzip") == null
+            liveListWriter = args.getOptionValues("gziplive") == null
                     ? new OutputStreamWriter(new FileOutputStream(liveListFileName), StandardCharsets.UTF_8)
                     : new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(liveListFileName)), StandardCharsets.UTF_8);
 
