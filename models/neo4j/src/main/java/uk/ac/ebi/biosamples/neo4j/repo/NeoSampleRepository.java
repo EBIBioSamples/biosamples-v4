@@ -1,19 +1,24 @@
 package uk.ac.ebi.biosamples.neo4j.repo;
 
-import org.neo4j.driver.AuthTokens;
-import org.neo4j.driver.Driver;
-import org.neo4j.driver.GraphDatabase;
-import org.neo4j.driver.Session;
+import org.neo4j.driver.*;
+import org.neo4j.driver.types.Node;
+import org.neo4j.driver.types.Relationship;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import uk.ac.ebi.biosamples.model.RelationshipType;
 import uk.ac.ebi.biosamples.neo4j.NeoProperties;
-import uk.ac.ebi.biosamples.neo4j.model.NeoExternalEntity;
-import uk.ac.ebi.biosamples.neo4j.model.NeoRelationship;
-import uk.ac.ebi.biosamples.neo4j.model.NeoSample;
+import uk.ac.ebi.biosamples.neo4j.model.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.StringJoiner;
 
 @Component
 public class NeoSampleRepository implements AutoCloseable {
+    private static final Logger LOG = LoggerFactory.getLogger(NeoSampleRepository.class);
+
     private final Driver driver;
 
     public NeoSampleRepository(NeoProperties neoProperties) {
@@ -25,6 +30,113 @@ public class NeoSampleRepository implements AutoCloseable {
     public void close() throws Exception {
         driver.close();
     }
+
+    public List<Map<String, Object>> executeCypher(String cypherQuery) {
+        List<Map<String, Object>> resultList;
+        try (Session session = driver.session()) {
+            Result result = session.run(cypherQuery);
+            resultList = result.list(r -> r.asMap(NeoSampleRepository::convert));
+        } catch (Exception e) {
+            resultList = new ArrayList<>();
+        }
+
+        return resultList;
+    }
+
+    static Object convert(Value value) {
+        switch (value.type().name()) {
+            case "PATH":
+                return value.asList(NeoSampleRepository::convert);
+            case "NODE":
+            case "RELATIONSHIP":
+                return value.asMap();
+        }
+        return value.asObject();
+    }
+
+    public List<Map<String, Object>> getByRelationship(List<GraphRelationship> relationships, int skip, int limit) {
+        StringBuilder query = new StringBuilder();
+        for (GraphRelationship rel : relationships) {
+            query.append("MATCH ").append(rel.getQueryString()).append(" ");
+        }
+        query.append("RETURN a,TYPE(r),b SKIP ").append(skip).append(" LIMIT ").append(limit);
+
+        List<Map<String, Object>> resultList;
+        try (Session session = driver.session()) {
+            LOG.info("Graph query: {}", query);
+            Result result = session.run(query.toString());
+            resultList = result.list(r -> r.asMap(NeoSampleRepository::convert));
+        } catch (Exception e) {
+            resultList = new ArrayList<>();
+        }
+
+        return resultList;
+    }
+
+    public GraphSearchQuery graphSearch(GraphSearchQuery searchQuery) {
+        StringBuilder query = new StringBuilder();
+        StringJoiner idJoiner = new StringJoiner(",");
+        for (GraphNode node : searchQuery.getNodes()) {
+            query.append("MATCH (").append(node.getId()).append(node.getQueryString()).append(") ");
+            idJoiner.add(node.getId());
+        }
+        for (GraphLink link : searchQuery.getLinks()) {
+            query.append("MATCH ").append(link.getQueryString());
+            idJoiner.add("r");
+        }
+        query.append(" RETURN ").append(idJoiner.toString());
+
+        GraphSearchQuery response = new GraphSearchQuery();
+        try (Session session = driver.session()) {
+            LOG.info("Graph query: {}", query);
+            Result result = session.run(query.toString());
+            List<GraphNode> responseNodes = new ArrayList<>();
+            List<GraphLink> responseLinks = new ArrayList<>();
+            response.setNodes(responseNodes);
+            response.setLinks(responseLinks);
+
+            while (result.hasNext()) {
+                Record record = result.next();
+                for (Value value : record.values()) {
+                    addToResponse(value, responseNodes, responseLinks);
+                }
+            }
+        } catch (Exception e) {
+            LOG.error("Failed to load graph search results", e);
+        }
+
+        return response;
+    }
+
+    private void addToResponse(Value value, List<GraphNode> responseNodes, List<GraphLink> responseLinks) {
+        switch (value.type().name()) {
+            case "PATH":
+                //todo handle PATH type
+                LOG.warn("not handled yet");
+                break;
+            case "NODE":
+                Node internalNode = value.asNode();
+                GraphNode node = new GraphNode();
+                node.setType(internalNode.labels().iterator().next());
+                node.setAttributes((Map)internalNode.asMap());
+                node.setId(String.valueOf(internalNode.id()));
+                responseNodes.add(node);
+                break;
+            case "RELATIONSHIP":
+                Relationship internalRel = value.asRelationship();
+                GraphLink link = new GraphLink();
+                link.setType(RelationshipType.getType(internalRel.type()));
+                link.setStartNode(String.valueOf(internalRel.startNodeId()));
+                link.setEndNode(String.valueOf(internalRel.endNodeId()));
+                responseLinks.add(link);
+                break;
+            default:
+                LOG.warn("Invalid neo4j value type: {}", value.type().name());
+                break;
+        }
+    }
+
+    /************************************************************************/
 
     public void loadSample(NeoSample sample) {
         try (Session session = driver.session()) {

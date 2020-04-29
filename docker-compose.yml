@@ -24,6 +24,7 @@ services:
     #configure other services
     - spring.data.solr.host=http://solr:8983/solr
     - spring.data.mongodb.uri=mongodb://mongo:27017/biosamples
+    - biosample.neo.url=bolt://neo4j:7687
     - SPRING_RABBITMQ_HOST=rabbitmq
     - SPRING_RABBITMQ_PUBLISHER-CONFIRMS=true
     - SPRING_RABBITMQ_PUBLISHER-RETURNS=true
@@ -402,6 +403,7 @@ services:
 
   neo4j:
     image: neo4j:4.0.3
+    network_mode: "bridge"
     mem_limit: 1g
     ports:
       - 7474:7474
