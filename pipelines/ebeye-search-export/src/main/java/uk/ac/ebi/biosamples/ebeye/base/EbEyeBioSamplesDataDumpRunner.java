@@ -48,27 +48,28 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
         final DBCollection coll = db.getCollection(MONGO_SAMPLE);
 
         // Fetch data by year - hardcoded for now
+        // variable names are not correct now - FIX ME
         final String from2017 ="2017.01.01";
-        final String until2018 ="2018.01.01";
-        final File f2017 = new File("/mnt/data/biosamples/sw/www/diosd-ebeye-1.xml");
+        final String until2018 ="2017.02.01";
+        final File f2017 = new File("/mnt/data/biosamples/sw/wwwdev/biosd-ebeye-1.xml");
 
         fetchQueryAndDump(coll, from2017, until2018, f2017);
 
-        final String from2018 = "2018.01.02";
-        final String until2019 = "2019.01.01";
-        final File f2018 = new File("/mnt/data/biosamples/sw/www/diosd-ebeye-2.xml");
+        final String from2018 = "2017.02.02";
+        final String until2019 = "2017.03.01";
+        final File f2018 = new File("/mnt/data/biosamples/sw/wwwdev/biosd-ebeye-2.xml");
 
         fetchQueryAndDump(coll, from2018, until2019, f2018);
 
-        final String from2019 = "2019.01.02";
-        final String until2020 = "2020.01.01";
-        final File f2019 = new File("/mnt/data/biosamples/sw/www/diosd-ebeye-3.xml");
+        final String from2019 = "2017.03.02";
+        final String until2020 = "2017.04.01";
+        final File f2019 = new File("/mnt/data/biosamples/sw/wwwdev/biosd-ebeye-3.xml");
 
         fetchQueryAndDump(coll, from2019, until2020, f2019);
 
-        final String from2020 = "2018.01.02";
-        final String until2020April = "2020.04.30";
-        final File f2020 = new File("/mnt/data/biosamples/sw/www/diosd-ebeye-4.xml");
+        final String from2020 = "2017.04.02";
+        final String until2020April = "2017.05.01";
+        final File f2020 = new File("/mnt/data/biosamples/sw/wwwdev/biosd-ebeye-4.xml");
 
         fetchQueryAndDump(coll, from2020, until2020April, f2020);
     }
