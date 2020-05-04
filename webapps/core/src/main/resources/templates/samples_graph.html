@@ -1,0 +1,46 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.w3.org/1999/xhtml">
+
+<head th:replace="fragments/head :: head">
+     <title th:text="${sample.accession}+' &lt; BioSamples &lt; EMBL-EBI'">BioSamples
+        &lt; EMBL-EBI</title>
+    <!-- A few keywords that relate to the content of THIS PAGE (not the whole project) -->
+    <meta name="keywords" content="biosamples, europe, EBI"/>
+    <!-- Describe what this page is about -->
+    <meta name="description" content="EMBL-EBI"/>
+
+    <meta name="ebi:last-review" content="2016-12-20"/>
+    <!-- The last time the content was reviewed -->
+    <meta name="ebi:expiry" content="2017-12-20"/>
+    <!-- When this content is no longer relevant -->
+    <script th:if="${jsonLD != null}" type="application/ld+json" th:utext="${jsonLD}"></script>
+</head>
+
+<body th:onload="|getFacets('@{/facets}', ${page.getTotalElements() != 0})|">
+<th:block th:include="fragments/header :: header (filters=${filters})"></th:block>
+<div layout:fragment="content" id="content">
+    <th:block th:include="fragments/header :: masterhead"></th:block>
+    <div id="main-content-area" class="row padding-top-xlarge padding-left-xlarge padding-right-xlarge">
+        <div class="small-12">
+            <div th:inline="text">
+                <h2 class="content-search-header" th:if="${text != null && !text.isEmpty()}">Search results for [[${text}]] </h2>
+                <h2 class="content-search-header" th:if="${text == null || text.isEmpty()}">Search results</h2>
+            </div>
+            <div class="content-search-header-results" th:if="${page.getTotalElements() != 0}">showing [[${start} + 1]] to [[${start} + ${page.getNumberOfElements()}]] of [[${page.getTotalElements()}]] samples</div>
+            <div class="content-search-header-results" th:if="${page.getTotalElements() == 0}">No results found</div>
+        </div>
+        <div class="small-12 search-results">
+            <div class="sr__facets" id="facet_div">
+                <img th:src="@{/images/loading-facets.gif}" alt="Loading Facets" id="facets-ajax-loading-img"/>
+            </div>
+
+            <div class="sr__results">
+                <section th:replace="fragments/samples :: samples (${page})"></section>
+            </div>
+        </div>
+    </div>
+</div>
+<th:block th:include="fragments/footer :: footer"></th:block>
+</body>
+</html>
