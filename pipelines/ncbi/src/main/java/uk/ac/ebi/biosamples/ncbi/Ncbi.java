@@ -170,7 +170,8 @@ public class Ncbi implements ApplicationRunner {
                 if (sampleOptional.isPresent()) {
                     Sample sample = sampleOptional.get().getContent();
                     //set the release date to 1000 years in the future to make it private again
-                    Sample newSample = Sample.Builder.fromSample(sample)
+                    //remove structured data if any
+                    Sample newSample = Sample.Builder.fromSample(sample).withNoData()
                             .withRelease(ZonedDateTime.now(ZoneOffset.UTC).plusYears(1000).toInstant())
                             .build();
                     //persist the now private sample
