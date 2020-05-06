@@ -61,7 +61,7 @@ public class LiveListRunner implements ApplicationRunner {
         long startTime = System.nanoTime();
 
         if (args.getNonOptionArgs().size() > 0) {
-            killListFileName = args.getNonOptionArgs().get(0);
+            killListFileName = args.getNonOptionArgs().get(2);
         }
 
         try {
@@ -95,11 +95,10 @@ public class LiveListRunner implements ApplicationRunner {
             LOGGER.error("Pipeline - livelist, kill list generation failed to finish successfully", e);
             isPassed = false;
         } finally {
-            MailSender.sendEmail("Live list pipeline - kill list generation", null, isPassed);
             long elapsed = System.nanoTime() - startTime;
             String logMessage = "Completed kill list export:  " + sampleCount.get() + " samples exported in " + (elapsed / 1000000000L) + "s";
-            MailSender.sendEmail("Live list pipeline - kill list generation", logMessage, isPassed);
             LOGGER.info(logMessage);
+            MailSender.sendEmail("Live list pipeline - kill list generation", logMessage, isPassed);
         }
     }
 
@@ -110,7 +109,7 @@ public class LiveListRunner implements ApplicationRunner {
         long startTime = System.nanoTime();
 
         if (args.getNonOptionArgs().size() > 0) {
-            suppListFileName = args.getNonOptionArgs().get(0);
+            suppListFileName = args.getNonOptionArgs().get(1);
         }
 
         try {
@@ -143,11 +142,10 @@ public class LiveListRunner implements ApplicationRunner {
             LOGGER.error("Pipeline - livelist, suppressed list generation failed to finish successfully", e);
             isPassed = false;
         } finally {
-            MailSender.sendEmail("Live list pipeline - suppressed list generation", null, isPassed);
             long elapsed = System.nanoTime() - startTime;
             String logMessage = "Completed supp list export:  " + sampleCount.get() + " samples exported in " + (elapsed / 1000000000L) + "s";
-            MailSender.sendEmail("Live list pipeline - suppressed list generation", logMessage, isPassed);
             LOGGER.info(logMessage);
+            MailSender.sendEmail("Live list pipeline - suppressed list generation", logMessage, isPassed);
         }
     }
 
@@ -210,8 +208,8 @@ public class LiveListRunner implements ApplicationRunner {
         } finally {
             long elapsed = System.nanoTime() - startTime;
             String logMessage = "Completed live list export:  " + sampleCount.get() + " samples exported in " + (elapsed / 1000000000L) + "s";
-            MailSender.sendEmail("Live list pipeline - live list generation", logMessage, isPassed);
             LOGGER.info(logMessage);
+            MailSender.sendEmail("Live list pipeline - live list generation", logMessage, isPassed);
         }
     }
 }

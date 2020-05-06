@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 @Service
 public class NcbiAmrConversionService {
     public AMRTable convertElementToAmrTable(Element amrTableElement, String organism) throws AmrParsingException {
-            AMRTable.Builder amrTableBuilder = new AMRTable.Builder("test", "self.BiosampleImportNCBIE");
+            AMRTable.Builder amrTableBuilder = new AMRTable.Builder("test", "self.BiosampleImportNCBI");
 
             List<String> fields = XmlPathBuilder.of(amrTableElement).path("Header").elements("Cell").stream()
                     .map(Element::getText).collect(Collectors.toList());
