@@ -61,7 +61,7 @@ public class LiveListRunner implements ApplicationRunner {
         long startTime = System.nanoTime();
 
         if (args.getNonOptionArgs().size() > 0) {
-            killListFileName = args.getNonOptionArgs().get(0);
+            killListFileName = args.getNonOptionArgs().get(2);
         }
 
         try {
@@ -110,7 +110,7 @@ public class LiveListRunner implements ApplicationRunner {
         long startTime = System.nanoTime();
 
         if (args.getNonOptionArgs().size() > 0) {
-            suppListFileName = args.getNonOptionArgs().get(0);
+            suppListFileName = args.getNonOptionArgs().get(1);
         }
 
         try {
