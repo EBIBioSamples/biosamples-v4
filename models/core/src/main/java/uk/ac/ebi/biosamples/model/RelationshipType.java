@@ -5,6 +5,7 @@ public enum RelationshipType {
     SAME_AS,
     CHILD_OF,
     HAS_MEMBER,
+    EXTERNAL_REFERENCE,
     OTHER;
 
     public static RelationshipType getType(String relationshipTypeString) {

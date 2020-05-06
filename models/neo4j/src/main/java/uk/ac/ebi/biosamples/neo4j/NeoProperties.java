@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class NeoProperties {
 
-	@Value("${biosamples.neo.url:bolt://localhost:7687}")
+	@Value("${biosamples.neo.url:neo4j://localhost:7687}")
 	private String neoUrl;
 
 	@Value("${biosamples.neo.username:neo4j}")

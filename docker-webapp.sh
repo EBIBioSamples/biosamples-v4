@@ -37,6 +37,8 @@ echo "checking mongo is up"
 ./http-status-check -u http://localhost:27017 -t 30
 echo "checking json-schema-validator is up"
 ./http-status-check -u http://localhost:8085/validate -t 30
+echo "checking neo4j is up"
+./http-status-check -u http://localhost:7474 -t 30
 
 
 #configure solr

@@ -73,7 +73,7 @@ public class NeoSampleRepository implements AutoCloseable {
         return resultList;
     }
 
-    public GraphSearchQuery graphSearch(GraphSearchQuery searchQuery) {
+    public GraphSearchQuery graphSearch(GraphSearchQuery searchQuery, int limit, int skip) {
         StringBuilder query = new StringBuilder();
         StringJoiner idJoiner = new StringJoiner(",");
         for (GraphNode node : searchQuery.getNodes()) {
@@ -84,7 +84,15 @@ public class NeoSampleRepository implements AutoCloseable {
             query.append("MATCH ").append(link.getQueryString());
             idJoiner.add("r");
         }
+
+        if (query.length() == 0) {
+            query.append("MATCH(a1) ");
+            idJoiner.add("a1");
+        }
+
         query.append(" RETURN ").append(idJoiner.toString());
+        query.append(" ORDER BY ").append("a1").append(".accession SKIP ").append(skip)
+                .append(" LIMIT ").append(limit);
 
         GraphSearchQuery response = new GraphSearchQuery();
         try (Session session = driver.session()) {

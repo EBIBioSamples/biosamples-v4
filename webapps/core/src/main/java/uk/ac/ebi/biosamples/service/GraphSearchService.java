@@ -45,9 +45,9 @@ public class GraphSearchService {
         return sampleList;
     }
 
-    public List<Sample> graphSearch(GraphSearchQuery searchQuery) {
+    public List<Sample> graphSearch(GraphSearchQuery searchQuery, int limit, int skip) {
         List<Sample> samples = new ArrayList<>();
-        GraphSearchQuery response = neoSampleRepository.graphSearch(searchQuery);
+        GraphSearchQuery response = neoSampleRepository.graphSearch(searchQuery, limit, skip);
 
         Set<String> accessions = new HashSet<>();
         for (GraphNode node : response.getNodes()) {
