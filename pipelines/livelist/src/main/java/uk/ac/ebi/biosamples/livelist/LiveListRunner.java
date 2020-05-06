@@ -61,11 +61,11 @@ public class LiveListRunner implements ApplicationRunner {
         long startTime = System.nanoTime();
 
         if (args.getNonOptionArgs().size() > 0) {
-            killListFileName = args.getNonOptionArgs().get(0);
+            killListFileName = args.getNonOptionArgs().get(2);
         }
 
         try {
-            killListWriter = args.getOptionValues("gzip") == null
+            killListWriter = args.getOptionValues("gzipkill") == null
                     ? new OutputStreamWriter(new FileOutputStream(killListFileName), StandardCharsets.UTF_8)
                     : new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(killListFileName)), StandardCharsets.UTF_8);
 
@@ -95,6 +95,7 @@ public class LiveListRunner implements ApplicationRunner {
             LOGGER.error("Pipeline - livelist, kill list generation failed to finish successfully", e);
             isPassed = false;
         } finally {
+            MailSender.sendEmail("Live list pipeline - kill list generation", null, isPassed);
             long elapsed = System.nanoTime() - startTime;
             String logMessage = "Completed kill list export:  " + sampleCount.get() + " samples exported in " + (elapsed / 1000000000L) + "s";
             MailSender.sendEmail("Live list pipeline - kill list generation", logMessage, isPassed);
@@ -109,11 +110,11 @@ public class LiveListRunner implements ApplicationRunner {
         long startTime = System.nanoTime();
 
         if (args.getNonOptionArgs().size() > 0) {
-            suppListFileName = args.getNonOptionArgs().get(0);
+            suppListFileName = args.getNonOptionArgs().get(1);
         }
 
         try {
-            suppListWriter = args.getOptionValues("gzip") == null
+            suppListWriter = args.getOptionValues("gzipsupp") == null
                     ? new OutputStreamWriter(new FileOutputStream(suppListFileName), StandardCharsets.UTF_8)
                     : new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(suppListFileName)), StandardCharsets.UTF_8);
 
@@ -142,6 +143,7 @@ public class LiveListRunner implements ApplicationRunner {
             LOGGER.error("Pipeline - livelist, suppressed list generation failed to finish successfully", e);
             isPassed = false;
         } finally {
+            MailSender.sendEmail("Live list pipeline - suppressed list generation", null, isPassed);
             long elapsed = System.nanoTime() - startTime;
             String logMessage = "Completed supp list export:  " + sampleCount.get() + " samples exported in " + (elapsed / 1000000000L) + "s";
             MailSender.sendEmail("Live list pipeline - suppressed list generation", logMessage, isPassed);
@@ -160,7 +162,7 @@ public class LiveListRunner implements ApplicationRunner {
         }
 
         try {
-            liveListWriter = args.getOptionValues("gzip") == null
+            liveListWriter = args.getOptionValues("gziplive") == null
                     ? new OutputStreamWriter(new FileOutputStream(liveListFileName), StandardCharsets.UTF_8)
                     : new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(liveListFileName)), StandardCharsets.UTF_8);
 
