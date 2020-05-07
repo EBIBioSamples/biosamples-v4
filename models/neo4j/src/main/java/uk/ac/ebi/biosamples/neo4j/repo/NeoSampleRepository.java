@@ -10,10 +10,7 @@ import uk.ac.ebi.biosamples.model.RelationshipType;
 import uk.ac.ebi.biosamples.neo4j.NeoProperties;
 import uk.ac.ebi.biosamples.neo4j.model.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.StringJoiner;
+import java.util.*;
 
 @Component
 public class NeoSampleRepository implements AutoCloseable {
@@ -162,15 +159,23 @@ public class NeoSampleRepository implements AutoCloseable {
 
     public void createSample(Session session, NeoSample sample) {
         String query = "MERGE (a:Sample{accession:$accession}) " +
-                "SET a.name = $name, a.taxid = $taxid " +
-                "RETURN a.accession";
-        Map<String, Object> params = Map.of(
+                "SET a.name = $name, a.taxid = $taxid";
+        Map<String, Object> params = new HashMap<>(Map.of(
                 "accession", sample.getAccession(),
                 "name", sample.getName(),
-                "taxid", sample.getTaxId());
+                "taxid", sample.getTaxId()));
 
-//        params.put("organims", sample.getOrganism());
-//        params.put("sex", sample.getSex());
+        if (sample.getOrganism() != null) {
+            query = query + ", a.Organism = $organism";
+            params.put("organism", sample.getOrganism());
+        }
+
+        if (sample.getSex() != null) {
+            query = query + ", a.Sex = $sex";
+            params.put("sex", sample.getSex());
+        }
+
+        query = query + " RETURN a.accession";
 
         session.run(query, params);
     }

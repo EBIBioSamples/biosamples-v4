@@ -108,7 +108,6 @@ function graph_search(post_link) {
 
     $.ajax({
         type: 'post',
-        // url: '/graph/search',
         url: post_link,
         data: JSON.stringify(request),
         contentType: "application/json; charset=utf-8",

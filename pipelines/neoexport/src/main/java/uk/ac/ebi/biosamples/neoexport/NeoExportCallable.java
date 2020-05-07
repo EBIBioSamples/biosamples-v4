@@ -29,7 +29,7 @@ public class NeoExportCallable implements Callable<PipelineResult> {
             neoSampleRepository.loadSample(neoSample);
         } catch (Exception e) {
             failedQueue.add(sample.getAccession());
-            LOG.error("Failed to add curation on sample: " + sample.getAccession(), e);
+            LOG.error("Failed to load sample: " + sample.getAccession(), e);
         }
         return new PipelineResult(sample.getAccession(), 0, true);
     }
