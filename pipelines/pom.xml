@@ -41,5 +41,6 @@
 		<module>bioschemas-rdf-export</module>
 		<module>ena-amr</module>
 		<module>ebeye-search-export</module>
+		<module>neoexport</module>
     </modules>
 </project>

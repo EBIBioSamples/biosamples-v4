@@ -1,0 +1,122 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.w3.org/1999/xhtml">
+
+<head th:replace="fragments/head :: head">
+     <title th:text="${sample.accession}+' &lt; BioSamples &lt; EMBL-EBI'">BioSamples
+        &lt; EMBL-EBI</title>
+    <!-- A few keywords that relate to the content of THIS PAGE (not the whole project) -->
+    <meta name="keywords" content="biosamples, europe, EBI"/>
+    <!-- Describe what this page is about -->
+    <meta name="description" content="EMBL-EBI"/>
+
+    <meta name="ebi:last-review" content="2016-12-20"/>
+    <!-- The last time the content was reviewed -->
+    <meta name="ebi:expiry" content="2017-12-20"/>
+    <!-- When this content is no longer relevant -->
+    <script th:if="${jsonLD != null}" type="application/ld+json" th:utext="${jsonLD}"></script>
+</head>
+
+<body>
+<th:block th:include="fragments/header :: header (filters=${filters})"></th:block>
+<div layout:fragment="content" id="content">
+    <th:block th:include="fragments/header :: masterhead"></th:block>
+    <div id="main-content-area" class="row padding-top-xlarge padding-left-xlarge padding-right-xlarge">
+
+
+        <!------------------------------------------------------------------------------->
+        <div class="small-12">
+            <form id="graph-search" name="local-search" th:action="@{/graph/search}" method="post">
+                <fieldset>
+                    <div class="small-4 graph-search-input-container">
+
+                        <div class="small-6 graph-search-input">
+                            <label for="attributeL1">Attribute</label>
+                            <input id="attributeL1" list="attribute" type="text" name="sampleL1[1][attribute]" placeholder="Search"
+                                   class="input-group-field" th:value="${param.text}" style="float: left"/>
+                            <datalist id="attribute">
+                                <option value="Organism">
+                                <option value="Sex">
+                                <option value="taxon">
+                            </datalist>
+                        </div>
+                        <div class="small-6 graph-search-input">
+                            <label for="valueL1">Value</label>
+                            <input id="valueL1" type="text" name="sampleL1[1][value]" placeholder="Search"
+                                   class="input-group-field" th:value="${param.text}" style="float: left"/>
+                        </div>
+
+                        <div class="small-12 graph-search-input">
+                        <label for="referenceL1">With External Data</label>
+                        <select id="referenceL1" name="referenceR1" style="width: 100%">
+                            <option value=""></option>
+                            <option value="EGA">EGA</option>
+                            <option value="ENA">ENA</option>
+                            <option value="other">Other</option>
+                        </select>
+                        </div>
+                    </div>
+                    <div class="small-3 graph-search-input-container">
+                        <label for="relationship1">Relationship</label>
+                        <select id="relationship1" name="relationship[1][1]" style="width: 100%">
+                            <option value=""></option>
+                            <option value="DERIVED_FROM">DERIVED FROM</option>
+                            <option value="SAME_AS">SAME AS</option>
+                            <option value="CHILD_OF">CHILD OF</option>
+                            <option value="HAS_MEMBER">HAS MEMBER</option>
+                        </select>
+                    </div>
+                    <div class="small-4 graph-search-input-container">
+
+                        <div class="small-6 graph-search-input">
+                            <label for="attributeR1">Attribute</label>
+                            <input id="attributeR1" list="attribute" type="text" name="sampleR1[1][attribute]" placeholder="Search"
+                                   class="input-group-field" th:value="${param.text}" style="float: left"/>
+                        </div>
+                        <div class="small-6 graph-search-input">
+                            <label for="valueR1">Value</label>
+                            <input id="valueR1" type="text" name="sampleR1[1][value]" placeholder="Search"
+                                   class="input-group-field" th:value="${param.text}" style="float: left"/>
+                        </div>
+
+                        <div class="small-12 graph-search-input">
+                            <label for="referenceR1">With External Data</label>
+                            <select id="referenceR1" name="referenceR1" style="width: 100%">
+                                <option value=""></option>
+                                <option value="EGA">EGA</option>
+                                <option value="ENA">ENA</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <div class="small-3 graph-search-input-btn-container">
+                    <br>
+                    <!--<div class="input-group-button">
+                        <button type="button" onclick="graph_search()">Search</button>
+                    </div>-->
+
+                    <div class="input-group">
+                        <label for="graph-search-btn" class="button graph-search-btn">Search</label>
+                        <input type="button" id="graph-search-btn" name="graph-search-button" onclick="graph_search()" class="show-for-sr">
+                    </div>
+                </div>
+            </form>
+        </div>
+        <!------------------------------------------------------------------------------->
+
+        <div class="small-12 search-results">
+            <div id="graph-search-facet" class="sr__facets">
+
+            </div>
+
+            <div id="graph-search-results" class="sr__results">
+
+            </div>
+        </div>
+    </div>
+</div>
+<th:block th:include="fragments/footer :: footer"></th:block>
+</body>
+</html>

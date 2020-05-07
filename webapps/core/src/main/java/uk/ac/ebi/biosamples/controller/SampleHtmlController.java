@@ -166,10 +166,11 @@ public class SampleHtmlController {
 		return "samples";
 	}
 
-	@GetMapping(value = "/facets_test")
-	@ResponseBody
-	public String getTestFacet(Model model) {
-		return "Hello facets test";
+
+	@GetMapping(value = "/graph/search")
+	public String samplesGraph(Model model, HttpServletRequest request, HttpServletResponse response) {
+//		return "error/feature_not_supported"; //until this is ready for the production
+		return "samples_graph";
 	}
 
 	@GetMapping(value = "/facets")

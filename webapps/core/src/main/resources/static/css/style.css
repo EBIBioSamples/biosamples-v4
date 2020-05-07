@@ -261,4 +261,26 @@ code[class^="language"] {
     margin: 10rem auto auto;
 }
 
+.graph-search-input-container {
+    float: left;
+    margin: 10px 15px;
+}
+
+.graph-search-input {
+    float: left;
+}
+
+.graph-search-input-btn-container {
+    float: right;
+}
+
+.graph-search-btn {
+    float: right;
+    margin-right: 25px;
+}
+
+.graph-search-facet {
+    background-color: #f0f0f2;
+    margin-bottom: 5px;
+}
 

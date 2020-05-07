@@ -9,6 +9,7 @@ services:
     - solr
     - mongo
     - rabbitmq
+    - neo4j
     volumes:
     - logs:/logs
     command:
@@ -24,6 +25,7 @@ services:
     #configure other services
     - spring.data.solr.host=http://solr:8983/solr
     - spring.data.mongodb.uri=mongodb://mongo:27017/biosamples
+    - biosample.neo.url=bolt://neo4j:7687
     - SPRING_RABBITMQ_HOST=rabbitmq
     - SPRING_RABBITMQ_PUBLISHER-CONFIRMS=true
     - SPRING_RABBITMQ_PUBLISHER-RETURNS=true
@@ -338,6 +340,7 @@ services:
     - biosamples-webapps-sampletab
     - biosamples-webapps-legacyxml
     - biosamples-webapps-legacyjson
+    - neo4j
     command:
     - java
     - -jar
@@ -400,8 +403,33 @@ services:
     - solr-precreate
     - samples
 
+  neo4j:
+    image: neo4j:4.0.3
+    network_mode: "bridge"
+    mem_limit: 1g
+    ports:
+      - 7474:7474
+      - 7687:7687
+    environment:
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.*
+      - NEO4J_apoc_import_file_enabled=true
+      - NEO4J_dbms_shell_enabled=true
+      - NEO4J_AUTH=neo4j/neo5j
+      - NEO4J_dbms_connector_bolt_enabled=true
+      - NEO4J_dbms_connector_bolt_tls__level=DISABLED
+#      - NEO4J_dbms_connector_bolt_listen__address=localhost:7687
+#      - NEO4J_dbms_default__advertised__address=localhost
+    volumes:
+      - neo_plugins:/plugins
+      - neo_data:/data
+      - neo_import:/import
+      - logs:/logs
+
 volumes:
   solr_data: null
   mongo_data: null
   rabbitmq_data: null
   logs: null
+  neo_plugins: null
+  neo_data: null
+  neo_import: null
