@@ -1,4 +1,4 @@
-function graph_search() {
+function graph_search(post_link) {
     let attributeL1 = $("#attributeL1").val();
     let valueL1 = $("#valueL1").val();
     let referenceL1 = $("#referenceL1").val();
@@ -108,7 +108,8 @@ function graph_search() {
 
     $.ajax({
         type: 'post',
-        url: '/graph/search',
+        // url: '/graph/search',
+        url: post_link,
         data: JSON.stringify(request),
         contentType: "application/json; charset=utf-8",
         traditional: true,
