@@ -1,6 +1,5 @@
 package uk.ac.ebi.biosamples.livelist;
 
-import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,8 +10,6 @@ import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.filter.Filter;
-import uk.ac.ebi.biosamples.service.FilterBuilder;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.MailSender;
 
@@ -173,20 +170,19 @@ public class LiveListRunner implements ApplicationRunner {
 
     private void doLiveListExport(final long startTime, final Writer liveListWriter) {
         LOGGER.info("Starting live list export");
-        final Filter statusPublicFilter = FilterBuilder.create().onAttribute(INSDC_STATUS).withValue(PUBLIC).build();
-        final Filter statusLiveFilter = FilterBuilder.create().onAttribute(INSDC_STATUS).withValue(LIVE).build();
         final AtomicInteger sampleCount = new AtomicInteger();
         boolean isPassed = true;
         try (liveListWriter; AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true,
                 pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax())) {
 
-            for (Resource<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll(Lists.newArrayList(statusPublicFilter, statusLiveFilter))) {
+            for (Resource<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll()) {
                 final Sample sample = sampleResource.getContent();
 
                 executorService.submit(() -> {
                     LOGGER.info("Handling " + sampleResource.getContent().getAccession());
 
                     if (Instant.now().isAfter(sample.getRelease())) {
+                        sampleCount.getAndIncrement();
                         liveListWriter.write(LiveListUtils.createLiveListString(sample));
                         liveListWriter.write("\n");
                         liveListWriter.flush();
@@ -195,11 +191,8 @@ public class LiveListRunner implements ApplicationRunner {
                     return null;
                 });
 
-                sampleCount.getAndIncrement();
-
                 if (sampleCount.get() % 10000 == 0) {
                     LOGGER.info("Running live list export: exported " + sampleCount + " exported samples in " + ((System.nanoTime() - startTime) / 1000000000L) + "s");
-                    liveListWriter.close();
                 }
             }
         } catch (final Exception e) {
