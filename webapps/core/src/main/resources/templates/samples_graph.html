@@ -26,63 +26,87 @@
 
         <!------------------------------------------------------------------------------->
         <div class="small-12">
+            <div class="info-msg">
+                Graph Search enables you to do queries like
+                <i>select all human (organism = Homo Sapiens) samples which has sequencing data in ENA and has other DERIVED FROM samples in BioSamples</i>
+            </div>
+
             <form id="graph-search" name="local-search" th:action="@{/graph/search}" method="post">
                 <fieldset>
-                    <div class="small-4 graph-search-input-container">
-
-                        <div class="small-6 graph-search-input">
+                    <div class="large-4 graph-search-sample-container">
+                        <div style="width: 100%; float: left;"><b>Sample 1</b></div>
+                        <div class="small-5 graph-search-input">
                             <label for="attributeL1">Attribute</label>
-                            <input id="attributeL1" list="attribute" type="text" name="sampleL1[1][attribute]" placeholder="Search"
+                            <input id="attributeL1" list="attribute" type="text" name="sampleL1[1][attribute]" placeholder="eg. organism"
                                    class="input-group-field" th:value="${param.text}" style="float: left"/>
                             <datalist id="attribute">
-                                <option value="Organism">
-                                <option value="Sex">
+                                <option value="organism">
+                                <option value="sex">
                                 <option value="taxon">
+                                <option value="cell type">
+                                <option value="material">
+                                <option value="project">
+                                <option value="cell line">
+                                <option value="organism part">
                             </datalist>
                         </div>
+                        <div class="small-1" style="float: left; padding: 33px 0 0 10px">=</div>
                         <div class="small-6 graph-search-input">
                             <label for="valueL1">Value</label>
-                            <input id="valueL1" type="text" name="sampleL1[1][value]" placeholder="Search"
+                            <input id="valueL1" type="text" name="sampleL1[1][value]" placeholder="eg. Homo Sapiens"
                                    class="input-group-field" th:value="${param.text}" style="float: left"/>
                         </div>
 
-                        <div class="small-12 graph-search-input">
-                        <label for="referenceL1">With External Data</label>
+                        <!--<div class="small-5 graph-search-input" style="margin-top: 5px;">
+                            <input id="attributeL2" list="attribute" type="text" name="sampleL1[1][attribute]" placeholder="eg. organism"
+                                   class="input-group-field" th:value="${param.text}" style="float: left"/>
+                        </div>
+                        <div class="small-1" style="float: left; padding: 12px 0 0 10px">=</div>
+                        <div class="small-6 graph-search-input" style="margin-top: 5px;">
+                            <input id="valueL2" type="text" name="sampleL1[1][value]" placeholder="eg. Homo Sapiens"
+                                   class="input-group-field" th:value="${param.text}" style="float: left"/>
+                        </div>-->
+
+                        <br>
+                        <div class="small-12 graph-search-input" style="margin-top: 10px;">
+                        <label for="referenceL1">Having external data in</label>
                         <select id="referenceL1" name="referenceR1" style="width: 100%">
-                            <option value=""></option>
+                            <option value="" selected>Select external data source</option>
                             <option value="EGA">EGA</option>
                             <option value="ENA">ENA</option>
                             <option value="other">Other</option>
                         </select>
                         </div>
                     </div>
-                    <div class="small-3 graph-search-input-container">
+                    <div class="large-4 graph-search-rel-container">
                         <label for="relationship1">Relationship</label>
                         <select id="relationship1" name="relationship[1][1]" style="width: 100%">
-                            <option value=""></option>
+                            <option value="">Select inter-sample relationship</option>
                             <option value="DERIVED_FROM">DERIVED FROM</option>
                             <option value="SAME_AS">SAME AS</option>
                             <option value="CHILD_OF">CHILD OF</option>
                             <option value="HAS_MEMBER">HAS MEMBER</option>
                         </select>
                     </div>
-                    <div class="small-4 graph-search-input-container">
+                    <div class="large-4 graph-search-sample-container">
 
-                        <div class="small-6 graph-search-input">
+                        <div style="width: 100%; float: left;"><b>Sample 2</b></div>
+                        <div class="small-5 graph-search-input">
                             <label for="attributeR1">Attribute</label>
-                            <input id="attributeR1" list="attribute" type="text" name="sampleR1[1][attribute]" placeholder="Search"
+                            <input id="attributeR1" list="attribute" type="text" name="sampleR1[1][attribute]" placeholder="eg. sex"
                                    class="input-group-field" th:value="${param.text}" style="float: left"/>
                         </div>
+                        <div class="small-1" style="float: left; padding: 33px 0 0 10px">=</div>
                         <div class="small-6 graph-search-input">
                             <label for="valueR1">Value</label>
-                            <input id="valueR1" type="text" name="sampleR1[1][value]" placeholder="Search"
+                            <input id="valueR1" type="text" name="sampleR1[1][value]" placeholder="eg. female"
                                    class="input-group-field" th:value="${param.text}" style="float: left"/>
                         </div>
 
-                        <div class="small-12 graph-search-input">
-                            <label for="referenceR1">With External Data</label>
-                            <select id="referenceR1" name="referenceR1" style="width: 100%">
-                                <option value=""></option>
+                        <div class="small-12 graph-search-input" style="margin-top: 10px;">
+                            <label for="referenceR1">Having external data in</label>
+                            <select id="referenceR1" name="referenceR1"  style="width: 100%">
+                                <option value="" selected>Select external data source</option>
                                 <option value="EGA">EGA</option>
                                 <option value="ENA">ENA</option>
                                 <option value="other">Other</option>
@@ -99,7 +123,7 @@
 
                     <div class="input-group">
                         <label for="graph-search-btn" class="button graph-search-btn">Search</label>
-                        <input type="button" id="graph-search-btn" name="graph-search-button" th:onclick="|graph_search('@{/graph/search}')|" class="show-for-sr">
+                        <input type="button" id="graph-search-btn" name="graph-search-button" th:onclick="|graph_search('@{/}')|" class="show-for-sr">
                     </div>
                 </div>
             </form>

@@ -1,4 +1,4 @@
-function graph_search(post_link) {
+function graph_search(base_url) {
     let attributeL1 = $("#attributeL1").val();
     let valueL1 = $("#valueL1").val();
     let referenceL1 = $("#referenceL1").val();
@@ -108,11 +108,12 @@ function graph_search(post_link) {
 
     $.ajax({
         type: 'post',
-        url: post_link,
+        url: base_url + 'graph/search',
         data: JSON.stringify(request),
         contentType: "application/json; charset=utf-8",
         traditional: true,
         success: function (data) {
+            samples_url = base_url + 'samples/';
             let samples = [];
             if ("_embedded" in data && "samples" in data["_embedded"]) {
                 samples = data["_embedded"]["samples"];
@@ -128,12 +129,12 @@ function graph_search(post_link) {
                 parentDiv.attr("style", backgroundColor);
 
                 var nameSpan = $("<span/>").addClass("lead text-left").html(item["name"]);
-                var nameLink = $("<a/>").attr("href", "/samples/" + item["accession"]).append(nameSpan);
+                var nameLink = $("<a/>").attr("href", samples_url + item["accession"]).append(nameSpan);
                 var nameParentSpan = $("<span/>").addClass("columns medium-9").append(nameLink);
                 parentDiv.append(nameParentSpan);
 
                 var accessionSpan = $("<span/>").addClass("text-right float-right").html(item["accession"]);
-                var accessionLink = $("<a/>").attr("href", "/samples/" + item["accession"]).append(accessionSpan);
+                var accessionLink = $("<a/>").attr("href", samples_url + item["accession"]).append(accessionSpan);
                 var accParentSpan = $("<span/>").addClass("columns medium-3").append(accessionLink);
                 parentDiv.append(accParentSpan);
 
