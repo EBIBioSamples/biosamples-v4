@@ -25,7 +25,7 @@ services:
     #configure other services
     - spring.data.solr.host=http://solr:8983/solr
     - spring.data.mongodb.uri=mongodb://mongo:27017/biosamples
-    - biosample.neo.url=bolt://neo4j:7687
+    - BIOSAMPLES_NEO_URL=bolt://neo4j:7687
     - SPRING_RABBITMQ_HOST=rabbitmq
     - SPRING_RABBITMQ_PUBLISHER-CONFIRMS=true
     - SPRING_RABBITMQ_PUBLISHER-RETURNS=true
@@ -357,6 +357,7 @@ services:
     #- BIOSAMPLES_CLIENT_AAP_USERNAME=override_in_docker-compose.override.yml
     #- BIOSAMPLES_CLIENT_AAP_PASSWORD=override_in_docker-compose.override.yml
     - BIOSAMPLES_LEGACYAPIKEY=fooqwerty
+    - BIOSAMPLES_NEO_URL=bolt://neo4j:7687
 
   json-schema-validator:
     volumes:

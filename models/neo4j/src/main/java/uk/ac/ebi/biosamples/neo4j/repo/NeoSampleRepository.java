@@ -166,13 +166,38 @@ public class NeoSampleRepository implements AutoCloseable {
                 "taxid", sample.getTaxId()));
 
         if (sample.getOrganism() != null) {
-            query = query + ", a.Organism = $organism";
+            query = query + ", a.organism = $organism";
             params.put("organism", sample.getOrganism());
         }
 
         if (sample.getSex() != null) {
-            query = query + ", a.Sex = $sex";
+            query = query + ", a.sex = $sex";
             params.put("sex", sample.getSex());
+        }
+
+        if (sample.getCellType() != null) {
+            query = query + ", a.celltype = $cellType";
+            params.put("cellType", sample.getCellType());
+        }
+
+        if (sample.getMaterial() != null) {
+            query = query + ", a.material = $material";
+            params.put("material", sample.getMaterial());
+        }
+
+        if (sample.getProject() != null) {
+            query = query + ", a.project = $project";
+            params.put("project", sample.getProject());
+        }
+
+        if (sample.getCellLine() != null) {
+            query = query + ", a.cellline = $cellLine";
+            params.put("cellLine", sample.getCellLine());
+        }
+
+        if (sample.getOrganismPart() != null) {
+            query = query + ", a.organismpart = $organismPart";
+            params.put("organismPart", sample.getOrganismPart());
         }
 
         query = query + " RETURN a.accession";

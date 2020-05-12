@@ -211,6 +211,15 @@ code[class^="language"] {
     background-color: #FEEFB3;
 }
 
+.info-msg {
+    margin: 10px 0;
+    padding: 10px;
+    border: 1px solid #ccc3c3;
+    border-radius: 3px 3px 3px 3px;
+    color: #7d7d7b;
+    background-color: #efefef;
+}
+
 .sh__datetimes {
     text-align: left;
 }
@@ -261,9 +270,26 @@ code[class^="language"] {
     margin: 10rem auto auto;
 }
 
+#graph-search-results {
+    margin-right: 0;
+}
+
 .graph-search-input-container {
     float: left;
     margin: 10px 15px;
+}
+
+.graph-search-sample-container {
+    /*margin-right: 1em;*/
+    padding: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.19);
+    float: left;
+}
+
+.graph-search-rel-container {
+    float: left;
+    padding: 1em;
+    /*margin-right: 1em;*/
 }
 
 .graph-search-input {
@@ -276,7 +302,6 @@ code[class^="language"] {
 
 .graph-search-btn {
     float: right;
-    margin-right: 25px;
 }
 
 .graph-search-facet {

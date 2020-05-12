@@ -1,7 +1,5 @@
 package uk.ac.ebi.biosamples.neo4j.model;
 
-import org.neo4j.driver.Value;
-
 import java.util.Map;
 import java.util.StringJoiner;
 
@@ -16,7 +14,7 @@ public class GraphNode {
 
     public GraphNode(Map<String, Object> nodeAsMap) {
         type = String.valueOf(nodeAsMap.get("type"));
-        attributes = (Map<String, String>)nodeAsMap.get("attributes");
+        attributes = (Map<String, String>) nodeAsMap.get("attributes");
         id = attributes.get("accession");
     }
 
@@ -49,12 +47,12 @@ public class GraphNode {
         if (attributes != null) {
             StringJoiner joiner = new StringJoiner(",");
             for (Map.Entry<String, String> e : attributes.entrySet()) {
-                joiner.add(e.getKey() + ":'" + e.getValue() + "'");
+                joiner.add(e.getKey().replaceAll("\\s+", "").toLowerCase() + ":'" + e.getValue() + "'");
             }
             queryString = ":" + type + "{" + joiner.toString() + "}";
         } else {
             queryString = ":" + type;
         }
-        return  queryString;
+        return queryString;
     }
 }

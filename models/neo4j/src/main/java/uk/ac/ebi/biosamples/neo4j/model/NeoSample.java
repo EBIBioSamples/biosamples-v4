@@ -14,6 +14,11 @@ public class NeoSample {
     private String organism;
     private Integer taxId;
     private String sex;
+    private String cellType;
+    private String material;
+    private String project;
+    private String cellLine;
+    private String organismPart;
 
     private List<NeoRelationship> relationships;
     private List<NeoExternalEntity> externalRefs;
@@ -44,6 +49,26 @@ public class NeoSample {
         return sex;
     }
 
+    public String getCellType() {
+        return cellType;
+    }
+
+    public String getMaterial() {
+        return material;
+    }
+
+    public String getProject() {
+        return project;
+    }
+
+    public String getCellLine() {
+        return cellLine;
+    }
+
+    public String getOrganismPart() {
+        return organismPart;
+    }
+
     public List<NeoRelationship> getRelationships() {
         return relationships;
     }
@@ -62,6 +87,16 @@ public class NeoSample {
                 neoSample.organism = attribute.getValue();
             } else if ("sex".equalsIgnoreCase(attribute.getType())) {
                 neoSample.sex = attribute.getValue();
+            } else if ("cellType".equalsIgnoreCase(attribute.getType().replaceAll("\\s+", ""))) {
+                neoSample.cellType = attribute.getValue();
+            } else if ("material".equalsIgnoreCase(attribute.getType())) {
+                neoSample.material = attribute.getValue();
+            } else if ("project".equalsIgnoreCase(attribute.getType())) {
+                neoSample.project = attribute.getValue();
+            } else if ("cellLine".equalsIgnoreCase(attribute.getType().replaceAll("\\s+", ""))) {
+                neoSample.cellLine = attribute.getValue();
+            } else if ("organismPart".equalsIgnoreCase(attribute.getType().replaceAll("\\s+", ""))) {
+                neoSample.organismPart = attribute.getValue();
             }
         }
 
