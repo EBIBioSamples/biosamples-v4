@@ -77,9 +77,13 @@ public class NeoSampleRepository implements AutoCloseable {
             query.append("MATCH (").append(node.getId()).append(node.getQueryString()).append(") ");
             idJoiner.add(node.getId());
         }
+
+        int relCount = 0;
         for (GraphLink link : searchQuery.getLinks()) {
-            query.append("MATCH ").append(link.getQueryString());
-            idJoiner.add("r");
+            relCount++;
+            String relName = "r" + relCount;
+            query.append("MATCH ").append(link.getQueryString(relName));
+            idJoiner.add(relName);
         }
 
         if (query.length() == 0) {

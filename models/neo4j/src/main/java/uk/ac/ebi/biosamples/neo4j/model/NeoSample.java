@@ -12,7 +12,7 @@ public class NeoSample {
     private String accession;
     private String name;
     private String organism;
-    private Integer taxId;
+    private String taxId;
     private String sex;
     private String cellType;
     private String material;
@@ -41,7 +41,7 @@ public class NeoSample {
         return organism;
     }
 
-    public Integer getTaxId() {
+    public String getTaxId() {
         return taxId;
     }
 
@@ -80,23 +80,23 @@ public class NeoSample {
     public static NeoSample build(Sample sample) {
         NeoSample neoSample = new NeoSample(sample.getAccession());
         neoSample.name = sample.getName();
-        neoSample.taxId = sample.getTaxId();
+        neoSample.taxId = String.valueOf(sample.getTaxId());
 
         for (Attribute attribute : sample.getAttributes()) {
             if ("organism".equalsIgnoreCase(attribute.getType())) {
-                neoSample.organism = attribute.getValue();
+                neoSample.organism = attribute.getValue().toLowerCase();
             } else if ("sex".equalsIgnoreCase(attribute.getType())) {
-                neoSample.sex = attribute.getValue();
+                neoSample.sex = attribute.getValue().toLowerCase();
             } else if ("cellType".equalsIgnoreCase(attribute.getType().replaceAll("\\s+", ""))) {
-                neoSample.cellType = attribute.getValue();
+                neoSample.cellType = attribute.getValue().toLowerCase();
             } else if ("material".equalsIgnoreCase(attribute.getType())) {
-                neoSample.material = attribute.getValue();
+                neoSample.material = attribute.getValue().toLowerCase();
             } else if ("project".equalsIgnoreCase(attribute.getType())) {
-                neoSample.project = attribute.getValue();
+                neoSample.project = attribute.getValue().toLowerCase();
             } else if ("cellLine".equalsIgnoreCase(attribute.getType().replaceAll("\\s+", ""))) {
-                neoSample.cellLine = attribute.getValue();
+                neoSample.cellLine = attribute.getValue().toLowerCase();
             } else if ("organismPart".equalsIgnoreCase(attribute.getType().replaceAll("\\s+", ""))) {
-                neoSample.organismPart = attribute.getValue();
+                neoSample.organismPart = attribute.getValue().toLowerCase();
             }
         }
 

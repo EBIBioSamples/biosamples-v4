@@ -27,8 +27,9 @@ public class NeoExternalEntity {
     }
 
     public static NeoExternalEntity build(ExternalReference reference) {
+        String externalRef = ExternalReferenceUtils.getNickname(reference).toLowerCase();
         return new NeoExternalEntity(reference.getUrl(),
-                ExternalReferenceUtils.getNickname(reference),
+                externalRef.startsWith("ega") ? "ega" : externalRef,
                 ExternalReferenceUtils.getDataId(reference).orElse(""));
     }
 }

@@ -31,7 +31,7 @@ public class GraphLink {
         this.endNode = endNode;
     }
 
-    public String getQueryString() {
-        return "(" + startNode + ")-[r:" + type + "]-(" + endNode + ")";
+    public String getQueryString(String relName) {
+        return "(" + startNode + ")-[" + relName + ":" + type + "]-(" + endNode + ") ";
     }
 }

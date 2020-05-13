@@ -47,7 +47,7 @@ public class GraphNode {
         if (attributes != null) {
             StringJoiner joiner = new StringJoiner(",");
             for (Map.Entry<String, String> e : attributes.entrySet()) {
-                joiner.add(e.getKey().replaceAll("\\s+", "").toLowerCase() + ":'" + e.getValue() + "'");
+                joiner.add(e.getKey().replaceAll("\\s+", "").toLowerCase() + ":'" + e.getValue().toLowerCase() + "'");
             }
             queryString = ":" + type + "{" + joiner.toString() + "}";
         } else {
