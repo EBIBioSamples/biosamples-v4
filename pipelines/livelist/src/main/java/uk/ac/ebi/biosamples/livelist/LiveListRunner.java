@@ -7,9 +7,7 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
-import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.livelist.ftp.FTPUtil;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.utils.MailSender;
 
@@ -58,7 +56,7 @@ public class LiveListRunner implements ApplicationRunner {
 
         try {
             try (
-                    Writer liveListWriter = args.getOptionValues("gzip") == null
+                    Writer liveListWriter = args.getOptionValues("gziplive") == null
                             ? new OutputStreamWriter(new FileOutputStream(liveListFilename), "UTF-8")
                             : new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(liveListFilename)), "UTF-8");
             ) {
