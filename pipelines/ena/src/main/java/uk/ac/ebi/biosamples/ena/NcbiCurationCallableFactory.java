@@ -11,7 +11,6 @@ public class NcbiCurationCallableFactory {
 	private final String domain;
 
 	public NcbiCurationCallableFactory(BioSamplesClient bioSamplesClient, PipelinesProperties pipelinesProperties) {
-
 		this.bioSamplesClient = bioSamplesClient;
 		this.domain = pipelinesProperties.getEnaDomain();
 	}
