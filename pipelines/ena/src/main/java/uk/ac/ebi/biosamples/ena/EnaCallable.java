@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.Resource;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Attribute;
+import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
@@ -16,10 +17,7 @@ import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 import java.io.StringReader;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Optional;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.Callable;
 
 public class EnaCallable implements Callable<Void> {
@@ -27,6 +25,8 @@ public class EnaCallable implements Callable<Void> {
 	private static final String NCBI_SAMPLE_PREFIX = "SAMN";
 	private static final String SUPPRESSED = "suppressed";
 	public static final String ENA_SRA_ACCESSION = "SRA accession";
+	//TODO Clean use of below constant, use from PipelineProperies
+	public static final String ENA_DOMAIN = "self.BiosampleImportENA";
 	private final String sampleAccession;
 	private final BioSamplesClient bioSamplesClient;
 	private final EnaXmlEnhancer enaXmlEnhancer;
@@ -116,6 +116,11 @@ public class EnaCallable implements Callable<Void> {
 
 						bioSamplesClient.persistSampleResource(sample);
 						log.info("Updated sample " + sampleAccession + " with SRA accession");
+
+						ExternalReference exRef = ExternalReference.build("https://www.ebi.ac.uk/ena/data/view/" + sraAccession);
+						Curation curation = Curation.build(null, null, null, Collections.singleton(exRef));
+
+						bioSamplesClient.persistCuration(sampleAccession, curation, ENA_DOMAIN);
 					} else {
 						log.info("Sample not found " + sampleAccession);
 					}
