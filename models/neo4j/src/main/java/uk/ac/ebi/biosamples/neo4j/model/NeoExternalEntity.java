@@ -30,6 +30,6 @@ public class NeoExternalEntity {
         String externalRef = ExternalReferenceUtils.getNickname(reference).toLowerCase();
         return new NeoExternalEntity(reference.getUrl(),
                 externalRef.startsWith("ega") ? "ega" : externalRef,
-                ExternalReferenceUtils.getDataId(reference).orElse(""));
+                ExternalReferenceUtils.getDataId(reference).orElse(String.valueOf(Math.abs(reference.getUrl().hashCode()))));
     }
 }

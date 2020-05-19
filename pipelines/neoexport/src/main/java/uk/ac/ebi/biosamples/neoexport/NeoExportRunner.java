@@ -35,13 +35,16 @@ public class NeoExportRunner implements ApplicationRunner {
     private final PipelinesProperties pipelinesProperties;
     private final NeoSampleRepository neoSampleRepository;
     private final PipelineFutureCallback pipelineFutureCallback;
+    private final NeoCsvExporter neoCsvExporter;
 
     public NeoExportRunner(BioSamplesClient bioSamplesClient,
                            PipelinesProperties pipelinesProperties,
-                           NeoSampleRepository neoSampleRepository) {
+                           NeoSampleRepository neoSampleRepository,
+                           NeoCsvExporter neoCsvExporter) {
         this.bioSamplesClient = bioSamplesClient;
         this.pipelinesProperties = pipelinesProperties;
         this.neoSampleRepository = neoSampleRepository;
+        this.neoCsvExporter = neoCsvExporter;
         this.pipelineFutureCallback = new PipelineFutureCallback();
     }
 
@@ -54,6 +57,16 @@ public class NeoExportRunner implements ApplicationRunner {
         boolean isPassed = true;
         SampleAnalytics sampleAnalytics = new SampleAnalytics();
 
+        String format = "";
+        if (args.getOptionNames().contains("format")) {
+            format = args.getOptionValues("from").iterator().next();
+        }
+        if ("CSV".equalsIgnoreCase(format)) {
+            LOG.info("Saving into CSV format for later consumption");
+        } else {
+            LOG.info("Directly exporting to neo4j instance");
+        }
+
         try (AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true,
                 pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax())) {
 
@@ -64,16 +77,25 @@ public class NeoExportRunner implements ApplicationRunner {
                 Objects.requireNonNull(sample);
                 collectSampleTypes(sample, sampleAnalytics);
 
-                Callable<PipelineResult> task = new NeoExportCallable(neoSampleRepository, sample);
-                futures.put(sample.getAccession(), executorService.submit(task));
+                if ("CSV".equalsIgnoreCase(format)) {
+                    neoCsvExporter.addToCSVFile(sample);
+                } else {
+                    Callable<PipelineResult> task = new NeoExportCallable(neoSampleRepository, sample);
+                    futures.put(sample.getAccession(), executorService.submit(task));
+                }
 
                 if (++sampleCount % 5000 == 0) {
                     LOG.info("Scheduled sample count {}", sampleCount);
                 }
             }
 
-            LOG.info("Waiting for all scheduled tasks to finish");
-            ThreadUtils.checkAndCallbackFutures(futures, 0, pipelineFutureCallback);
+            if ("CSV".equalsIgnoreCase(format)) {
+                neoCsvExporter.flush();
+            } else {
+                LOG.info("Waiting for all scheduled tasks to finish");
+                ThreadUtils.checkAndCallbackFutures(futures, 0, pipelineFutureCallback);
+            }
+
         } catch (Exception e) {
             LOG.error("Pipeline failed to finish successfully", e);
             isPassed = false;
