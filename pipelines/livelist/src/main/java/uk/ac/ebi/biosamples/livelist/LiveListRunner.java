@@ -17,6 +17,9 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.GZIPOutputStream;
 
@@ -24,6 +27,8 @@ import java.util.zip.GZIPOutputStream;
 public class LiveListRunner implements ApplicationRunner {
     private static final Logger LOGGER = LoggerFactory.getLogger(LiveListRunner.class);
     private final BioSamplesClient bioSamplesClient;
+    private static final String SUPPRESSED = "suppressed";
+    private static final String KILLED = "killed";
 
     @Autowired
     private LiveListPipelineDao liveListPipelineDao;
@@ -115,11 +120,29 @@ public class LiveListRunner implements ApplicationRunner {
         try {
             liveListPipelineDao.doGetSuppressedEnaSamples().forEach(sampleAccession -> {
                 try {
-                    sampleCount.getAndIncrement();
-                    suppListWriter.write(sampleAccession);
-                    suppListWriter.write("\n");
-                    suppListWriter.flush();
+                    final Optional<Resource<Sample>> optionalSampleResource = bioSamplesClient.fetchSampleResource(sampleAccession,
+                            Optional.of(new ArrayList<>()));
+                    AtomicBoolean qualifyForSuppressedList = new AtomicBoolean(false);
+
+                    if (optionalSampleResource.isPresent()) {
+                        final Sample sample = optionalSampleResource.get().getContent();
+
+                        sample.getAttributes().forEach(attribute -> {
+                            if (attribute.getType().equals("INSDC status") && attribute.getValue().equals(SUPPRESSED)) {
+                                qualifyForSuppressedList.set(true);
+                            }
+                        });
+
+                        if (qualifyForSuppressedList.get()) {
+                            LOGGER.info("Writing " + sampleAccession);
+                            sampleCount.getAndIncrement();
+                            suppListWriter.write(sampleAccession);
+                            suppListWriter.write("\n");
+                            suppListWriter.flush();
+                        }
+                    }
                 } catch (final Exception e) {
+                    e.printStackTrace();
                     LOGGER.error("Failed to write " + sampleAccession);
                 }
             });
@@ -162,13 +185,21 @@ public class LiveListRunner implements ApplicationRunner {
 
         try {
             liveListPipelineDao.doGetKilledEnaSamples().forEach(sampleAccession -> {
+                LOGGER.info("Handling " + sampleAccession);
                 try {
-                    sampleCount.getAndIncrement();
-                    killListWriter.write(sampleAccession);
-                    killListWriter.write("\n");
-                    killListWriter.flush();
+                    final Optional<Resource<Sample>> optionalSampleResource = bioSamplesClient.fetchSampleResource(sampleAccession,
+                            Optional.of(new ArrayList<>()));
+
+                    if (!optionalSampleResource.isPresent()) {
+                        LOGGER.info("Writing " + sampleAccession);
+                        sampleCount.getAndIncrement();
+                        killListWriter.write(sampleAccession);
+                        killListWriter.write("\n");
+                        killListWriter.flush();
+                    }
                 } catch (final Exception e) {
-                    LOGGER.error("Failed to write + " + sampleAccession);
+                    e.printStackTrace();
+                    LOGGER.error("Failed to write " + sampleAccession);
                 }
             });
         } catch (final Exception e) {
