@@ -8,25 +8,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.Resource;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.ExternalReference;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
 import java.io.StringReader;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Optional;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class EnaCallable implements Callable<Void> {
 	private static final String DDBJ_SAMPLE_PREFIX = "SAMD";
 	private static final String NCBI_SAMPLE_PREFIX = "SAMN";
 	private static final String SUPPRESSED = "suppressed";
 	public static final String ENA_SRA_ACCESSION = "SRA accession";
+	//TODO Clean use of below constant, use from PipelineProperies
+	public static final String ENA_DOMAIN = "self.BiosampleImportENA";
 	private final String sampleAccession;
 	private final BioSamplesClient bioSamplesClient;
 	private final EnaXmlEnhancer enaXmlEnhancer;
@@ -112,10 +110,45 @@ public class EnaCallable implements Callable<Void> {
 
 						attributes.add(sraAccessionAttribute);
 
-						sample = Sample.Builder.fromSample(sample).withAttributes(attributes).build();
+						sample = Sample.Builder.fromSample(sample).withAttributes(attributes).withNoExternalReferences().build();
 
 						bioSamplesClient.persistSampleResource(sample);
 						log.info("Updated sample " + sampleAccession + " with SRA accession");
+
+						Iterable<Resource<CurationLink>> curationLinks = bioSamplesClient.fetchCurationLinksOfSample(sampleAccession);
+						AtomicBoolean containsEnaLink = new AtomicBoolean(false);
+						final List<CurationLink> externalRefDuplicateLinks = new ArrayList<>();
+
+						curationLinks.forEach(curation -> {
+							final CurationLink curationLink = curation.getContent();
+
+							if (curationLink != null) {
+								curationLink.getCuration().getExternalReferencesPost().forEach(externalReference -> {
+									if (externalReference.getUrl().contains("www.ebi.ac.uk/ena/data/view")) {
+										externalRefDuplicateLinks.add(curationLink);
+									}
+								});
+							}
+						});
+
+						if(externalRefDuplicateLinks.size() == 1) {
+							containsEnaLink.set(true);
+						} else if(externalRefDuplicateLinks.size() > 1) {
+							externalRefDuplicateLinks.remove(0);
+							containsEnaLink.set(true);
+
+							externalRefDuplicateLinks.forEach(externalRefDuplicateLink -> {
+								bioSamplesClient.deleteCurationLink(externalRefDuplicateLink);
+							});
+						}
+
+						if(!containsEnaLink.get()) {
+							ExternalReference exRef = ExternalReference.build("https://www.ebi.ac.uk/ena/data/view/" + sraAccession);
+							Curation enaLinkCuration = Curation.build(null, null, null, Collections.singleton(exRef));
+
+							bioSamplesClient.persistCuration(sampleAccession, enaLinkCuration, ENA_DOMAIN);
+							log.info("Updated sample " + sampleAccession + " with ENA link");
+						}
 					} else {
 						log.info("Sample not found " + sampleAccession);
 					}
@@ -134,7 +167,7 @@ public class EnaCallable implements Callable<Void> {
 
 	/**
 	 * Handles one ENA sample
-	 * 
+	 *
 	 * @param  sampleDBBean      {@link SampleDBBean}
 	 *
 	 * @throws DocumentException in case of parse errors
