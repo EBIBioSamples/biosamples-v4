@@ -11,7 +11,6 @@ import uk.ac.ebi.biosamples.neo4j.model.NeoRelationship;
 import uk.ac.ebi.biosamples.neo4j.model.NeoSample;
 
 import java.io.*;
-import java.time.Instant;
 import java.util.*;
 
 @Component
@@ -149,7 +148,7 @@ public class NeoCsvExporter {
             for (String col : records.get(0).keySet()) {
                 schemaBuilder.addColumn(col);
             }
-            schema = schemaBuilder.build().withLineSeparator("\r").withHeader();
+            schema = schemaBuilder.build();
         }
 
         CsvMapper mapper = new CsvMapper();
@@ -160,29 +159,5 @@ public class NeoCsvExporter {
         } catch (IOException e) {
             LOG.error("Failed writing to csv file: {}", fileName, e);
         }
-    }
-
-
-    public static void main(String[] args) {
-        Set<Attribute> attributes = new HashSet<>();
-        Set<Relationship> relationships = new HashSet<>();
-        Set<ExternalReference> externalReferences = new HashSet<>();
-
-        attributes.add(Attribute.build("Organism", "9606"));
-        attributes.add(Attribute.build("Weird", "weired value"));
-        attributes.add(Attribute.build("CurationDomain", "domain-a"));
-
-        externalReferences.add(ExternalReference.build("www.ebi.ac.uk/test/1"));
-        externalReferences.add(ExternalReference.build("www.ebi.ac.uk/test/2"));
-
-        Sample sample = Sample.build("SAMN0001_NAME", "SAMN0001", "self.TestDomain",
-                Instant.now(), Instant.now(), Instant.now(),
-                attributes, relationships, externalReferences, SubmittedViaType.JSON_API);
-
-        NeoCsvExporter exporter = new NeoCsvExporter();
-        exporter.addToCSVFile(sample);
-
-
-        exporter.flush();
     }
 }
