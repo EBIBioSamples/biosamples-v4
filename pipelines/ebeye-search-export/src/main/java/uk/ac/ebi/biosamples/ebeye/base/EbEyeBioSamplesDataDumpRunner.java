@@ -27,7 +27,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-@Component
+/*@Component
 public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
     private static Logger log = LoggerFactory.getLogger(EbEyeBioSamplesDataDumpRunner.class);
     private static final String BIOSAMPLES = "biosamples";
@@ -226,10 +226,9 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
     private String removeOtherSpecialCharactersFromAttributeNames(String type) {
         return type.trim().replaceAll("[^a-zA-Z0-9\\s+_-]", "");
     }
-
-    /*
-    // One time run for COVID-19 only
-    @Component
+    */
+// One time run for COVID-19 only
+@Component
 public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
     public static final String ENA_LC = "ena";
     public static final String ENA_UC = "ENA";
@@ -375,6 +374,4 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
 
         convertSampleToXml(samplesList, f);
     }
-}
-     */
 }
