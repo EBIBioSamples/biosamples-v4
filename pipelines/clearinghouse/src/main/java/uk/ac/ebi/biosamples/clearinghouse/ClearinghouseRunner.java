@@ -9,8 +9,10 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.MailSender;
 
 import java.util.Optional;
@@ -22,7 +24,10 @@ public class ClearinghouseRunner implements ApplicationRunner {
     private final BioSamplesClient bioSamplesClient;
 
     @Autowired
-    RestTemplate restTemplate;
+    private RestTemplate restTemplate;
+
+    @Autowired
+    private PipelinesProperties pipelinesProperties;
 
     public ClearinghouseRunner(final BioSamplesClient bioSamplesClient) {
         if (bioSamplesClient.getPublicClient().isPresent()) {
@@ -43,19 +48,22 @@ public class ClearinghouseRunner implements ApplicationRunner {
         long startTime = System.nanoTime();
         int sampleCount = 0;
 
-        try {
+        try (final AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true,
+                pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax())) {
             LOGGER.info("Starting clearinghouse pipeline");
 
-            // We will replace this with call to fetch all samples
-            Optional<Resource<Sample>> sampleResource = bioSamplesClient.fetchSampleResource("SAMEA102066418");
-                Sample sample = sampleResource.get().getContent();
+            for (Resource<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll()) {
+                executorService.submit(() -> {
+                    LOGGER.trace("Handling " + sampleResource);
+                    Sample sample = sampleResource.getContent();
 
-                ResponseEntity<String> response
-                        = restTemplate.getForEntity(CLEARINGHOUSE_API_ENDPOINT + sample.getAccession(), String.class);
+                    ResponseEntity<String> response
+                            = restTemplate.getForEntity(CLEARINGHOUSE_API_ENDPOINT + sample.getAccession(), String.class);
 
-                LOGGER.info("Response status " + response.getStatusCode());
-                LOGGER.info("Response String " + response.getBody());
-
+                    LOGGER.info("Response status " + response.getStatusCode());
+                    LOGGER.info("Response String " + response.getBody());
+                });
+            }
         } catch (final Exception e) {
             LOGGER.error("Clearinghouse pipeline failed to finish successfully", e);
             isPassed = false;
