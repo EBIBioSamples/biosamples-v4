@@ -14,22 +14,33 @@ public class RelationshipValidator {
         return validate(rel, new ArrayList<>());
     }
 
+    public Collection<String> validate(Relationship rel, String accession) {
+        // TODO validate that relationships have this sample as the source
+        Collection<String> errors =  validate(rel, new ArrayList<>());
+        return validateSourceAccession(accession, rel, errors);
+    }
+
     public Collection<String> validate(Relationship rel, Collection<String> errors) {
-
-
-        if (rel.getSource() != null && !rel.getSource().isEmpty()) {
-            if (!AccessionType.ANY.matches(rel.getSource())) {
-                errors.add("Source of a relationship must be an accession but was \"" + rel.getSource() + "\"");
-            }
+        if (rel.getSource() == null || rel.getSource().isEmpty()) {
+//            errors.add("Source of a relationship must be non empty");//todo re-enable after samepletab deprecation
+        } else if (!AccessionType.ANY.matches(rel.getSource())) {
+            errors.add("Source of a relationship must be an accession but was \"" + rel.getSource() + "\"");
         }
 
-        if (rel.getTarget() != null && !rel.getTarget().isEmpty()) {
-            if (!AccessionType.ANY.matches(rel.getTarget())) {
-                errors.add("Target of a relationship must be an accession but was \"" + rel.getTarget() + "\"");
-            }
+        if (rel.getTarget() == null || rel.getTarget().isEmpty()) {
+//            errors.add("Target of a relationship must be non empty");//todo re-enable after samepletab deprecation
+        } else if(!AccessionType.ANY.matches(rel.getTarget())) {
+            errors.add("Target of a relationship must be an accession but was \"" + rel.getTarget() + "\"");
         }
 
         return errors;
+    }
 
+    private Collection<String> validateSourceAccession(String accession, Relationship rel, Collection<String> errors) {
+        if (accession != null && !accession.equals(rel.getSource())) {
+            errors.add("Source of the relationship must equal to the sample accession");
+        }
+
+        return errors;
     }
 }
