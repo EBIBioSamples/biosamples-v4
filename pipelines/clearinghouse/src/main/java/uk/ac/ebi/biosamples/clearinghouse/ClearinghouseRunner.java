@@ -57,7 +57,7 @@ public class ClearinghouseRunner implements ApplicationRunner {
                 LOGGER.info("Response String " + response.getBody());
 
         } catch (final Exception e) {
-            LOGGER.error("Live list pipeline - live list generation failed to finish successfully", e);
+            LOGGER.error("Clearinghouse pipeline failed to finish successfully", e);
             isPassed = false;
         } finally {
             long elapsed = System.nanoTime() - startTime;
