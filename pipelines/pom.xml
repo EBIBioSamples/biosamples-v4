@@ -42,5 +42,6 @@
 		<module>ena-amr</module>
 		<module>ebeye-search-export</module>
 		<module>neoexport</module>
+		<module>clearinghouse</module>
     </modules>
 </project>
