@@ -8,22 +8,30 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import uk.ac.ebi.biosamples.PipelineFutureCallback;
+import uk.ac.ebi.biosamples.PipelineResult;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
-import uk.ac.ebi.biosamples.model.ClearinghouseCurations;
-import uk.ac.ebi.biosamples.model.ClearinghouseSampleData;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.MailSender;
+import uk.ac.ebi.biosamples.utils.ThreadUtils;
 
-import java.util.Optional;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 
 @Component
 public class ClearinghouseRunner implements ApplicationRunner {
     private static final Logger LOGGER = LoggerFactory.getLogger(ClearinghouseRunner.class);
     private static final String CLEARINGHOUSE_API_ENDPOINT = "https://www.ebi.ac.uk/ena/clearinghouse/api/curations/";
     private final BioSamplesClient bioSamplesClient;
+    private final String domain;
+    private final PipelineFutureCallback pipelineFutureCallback;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -37,6 +45,10 @@ public class ClearinghouseRunner implements ApplicationRunner {
         } else {
             this.bioSamplesClient = bioSamplesClient;
         }
+
+        this.pipelineFutureCallback = new PipelineFutureCallback();
+        //todo add correct domain for clearignhouse
+        domain = "self.bioSamplesClearinghouse";
     }
 
     @Override
@@ -50,33 +62,46 @@ public class ClearinghouseRunner implements ApplicationRunner {
         long startTime = System.nanoTime();
         int sampleCount = 0;
 
+        Map<String, Future<PipelineResult>> futures = new HashMap<>();
         try (final AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true,
                 pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax())) {
             LOGGER.info("Starting clearinghouse pipeline");
 
-            //for (Resource<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll()) {
-            Optional<Resource<Sample>> sampleResource = bioSamplesClient.fetchSampleResource("SAMEA102066418");
-            executorService.submit(() -> {
-                LOGGER.trace("Handling " + sampleResource);
+            /*Sample sample = bioSamplesClient.fetchSampleResource("SAMEA102066418").get().getContent();
+            ResponseEntity<Map> response
+                    = restTemplate.getForEntity(CLEARINGHOUSE_API_ENDPOINT + sample.getAccession(), Map.class);
+
+            if (response.getStatusCode().is2xxSuccessful()) {
+                Callable<PipelineResult> task = new ClearninghouseCallable(bioSamplesClient, sample, domain, (List) response.getBody().get("curations"));
+                futures.put(sample.getAccession(), executorService.submit(task));
+            }*/
+
+            for (Resource<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll()) {
+                Sample sample = sampleResource.getContent();
                 try {
-                    Sample sample = sampleResource.get().getContent();
+                    ResponseEntity<Map> response
+                            = restTemplate.getForEntity(CLEARINGHOUSE_API_ENDPOINT + sample.getAccession(), Map.class);
 
-                    ResponseEntity<ClearinghouseSampleData> response
-                            = restTemplate.getForEntity(CLEARINGHOUSE_API_ENDPOINT + sample.getAccession(), ClearinghouseSampleData.class);
-
-                    for(ClearinghouseCurations curation : response.getBody().getCurations()) {
-                        System.out.println(curation.getAttributePre());
+                    if (response.getStatusCode().is2xxSuccessful()) {
+                        Callable<PipelineResult> task = new ClearninghouseCallable(bioSamplesClient, sample, domain, (List) response.getBody().get("curations"));
+                        futures.put(sample.getAccession(), executorService.submit(task));
                     }
-
-                    LOGGER.info("Response status " + response.getStatusCode());
-                    LOGGER.info("Response String " + response.getBody());
-                } catch (final Exception e) {
-                    e.printStackTrace();
+                } catch (HttpClientErrorException e) {
+                    if (e.getStatusCode().value() != 404) {
+                        LOGGER.error("Failed to retrieve curation from clearinghouse, sample: {}", sample.getAccession(), e);
+                    }
                 }
-            });
-            //}
+
+                sampleCount++;
+                if (sampleCount % 10000 == 0) {
+                    LOGGER.info("{} scheduled for processing", sampleCount);
+                }
+            }
+
+            LOGGER.info("waiting for futures");
+            ThreadUtils.checkAndCallbackFutures(futures, 0, pipelineFutureCallback);
+
         } catch (final Exception e) {
-            e.printStackTrace();
             LOGGER.error("Clearinghouse pipeline failed to finish successfully", e);
             isPassed = false;
         } finally {
