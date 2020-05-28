@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.model.ClearinghouseCurations;
+import uk.ac.ebi.biosamples.model.ClearinghouseSampleData;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.MailSender;
@@ -52,19 +54,29 @@ public class ClearinghouseRunner implements ApplicationRunner {
                 pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax())) {
             LOGGER.info("Starting clearinghouse pipeline");
 
-            for (Resource<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll()) {
-                executorService.submit(() -> {
-                    LOGGER.trace("Handling " + sampleResource);
-                    Sample sample = sampleResource.getContent();
+            //for (Resource<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll()) {
+            Optional<Resource<Sample>> sampleResource = bioSamplesClient.fetchSampleResource("SAMEA102066418");
+            executorService.submit(() -> {
+                LOGGER.trace("Handling " + sampleResource);
+                try {
+                    Sample sample = sampleResource.get().getContent();
 
-                    ResponseEntity<String> response
-                            = restTemplate.getForEntity(CLEARINGHOUSE_API_ENDPOINT + sample.getAccession(), String.class);
+                    ResponseEntity<ClearinghouseSampleData> response
+                            = restTemplate.getForEntity(CLEARINGHOUSE_API_ENDPOINT + sample.getAccession(), ClearinghouseSampleData.class);
+
+                    for(ClearinghouseCurations curation : response.getBody().getCurations()) {
+                        System.out.println(curation.getAttributePre());
+                    }
 
                     LOGGER.info("Response status " + response.getStatusCode());
                     LOGGER.info("Response String " + response.getBody());
-                });
-            }
+                } catch (final Exception e) {
+                    e.printStackTrace();
+                }
+            });
+            //}
         } catch (final Exception e) {
+            e.printStackTrace();
             LOGGER.error("Clearinghouse pipeline failed to finish successfully", e);
             isPassed = false;
         } finally {
