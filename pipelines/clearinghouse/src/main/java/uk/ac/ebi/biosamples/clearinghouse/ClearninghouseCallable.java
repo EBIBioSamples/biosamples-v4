@@ -42,9 +42,12 @@ public class ClearninghouseCallable implements Callable<PipelineResult> {
                 String postValString = curationAsMap.get("valuePost");
                 String assertionMethod = curationAsMap.get("assertionMethod");
 
-
-
-
+                for (Attribute sampleAttribute : sample.getAttributes()) {
+                    if (sampleAttribute.getType().equals(postAttrString) && sampleAttribute.getValue().equals(postValString)) {
+                        //already curated, ignore current curation
+                        break;
+                    }
+                }
 
                 boolean curationAccepted = false;
                 if (preValString == null || preValString.isEmpty()) {
