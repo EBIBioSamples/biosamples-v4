@@ -22,8 +22,8 @@ public class ClearninghouseCallable implements Callable<PipelineResult> {
     private final String domain;
     private final List<Map<String, String>> curations;
 
-    public ClearninghouseCallable(BioSamplesClient bioSamplesClient, Sample sample, String domain,
-                                  List<Map<String, String>> curations) {
+    public ClearninghouseCallable(final BioSamplesClient bioSamplesClient, final Sample sample, final String domain,
+                                  final List<Map<String, String>> curations) {
         this.bioSamplesClient = bioSamplesClient;
         this.sample = sample;
         this.domain = domain;
@@ -35,14 +35,13 @@ public class ClearninghouseCallable implements Callable<PipelineResult> {
         int appliedCurations = 0;
         boolean success = true;
         try {
-            for (Map<String, String> curationAsMap : curations) {
+            for (final Map<String, String> curationAsMap : curations) {
                 String preAttrString = curationAsMap.get("attributePre");
                 String preValString = curationAsMap.get("valuePre");
                 String postAttrString = curationAsMap.get("attributePost");
                 String postValString = curationAsMap.get("valuePost");
-                String assertionMethod = curationAsMap.get("assertionMethod");
 
-                for (Attribute sampleAttribute : sample.getAttributes()) {
+                for (final Attribute sampleAttribute : sample.getAttributes()) {
                     if (sampleAttribute.getType().equals(postAttrString) && sampleAttribute.getValue().equals(postValString)) {
                         //already curated, ignore current curation
                         break;
@@ -50,25 +49,30 @@ public class ClearninghouseCallable implements Callable<PipelineResult> {
                 }
 
                 boolean curationAccepted = false;
+
                 if (preValString == null || preValString.isEmpty()) {
                     if ("NotDefined".equals(postValString)) {
                         //todo shall we import this curation?
                     } else if (postValString != null && !postValString.isEmpty()) {
-                        Attribute attributePost = Attribute.build(postAttrString, postValString);
-                        Curation curation = Curation.build(null, attributePost);
+                        final Attribute attributePost = Attribute.build(postAttrString, postValString);
+                        final Curation curation = Curation.build(null, attributePost);
+
                         LOG.info("New curation found {}, {}", sample.getAccession(), curation);
                         bioSamplesClient.persistCuration(sample.getAccession(), curation, domain);
+
                         appliedCurations++;
                         curationAccepted = true;
                     }
                 } else {
-                    for (Attribute sampleAttribute : sample.getAttributes()) {
+                    for (final Attribute sampleAttribute : sample.getAttributes()) {
                         if (sampleAttribute.getType().equals(preAttrString) && sampleAttribute.getValue().equals(preValString)) {
-                            Attribute attributePost = Attribute.build(postAttrString, postValString,
+                            final Attribute attributePost = Attribute.build(postAttrString, postValString,
                                     sampleAttribute.getTag(), sampleAttribute.getIri(), sampleAttribute.getUnit());
-                            Curation curation = Curation.build(sampleAttribute, attributePost);
+                            final Curation curation = Curation.build(sampleAttribute, attributePost);
+
                             LOG.info("New curation found {}, {}", sample.getAccession(), curation);
                             bioSamplesClient.persistCuration(sample.getAccession(), curation, domain);
+
                             appliedCurations++;
                             curationAccepted = true;
                             break;
@@ -82,11 +86,12 @@ public class ClearninghouseCallable implements Callable<PipelineResult> {
                             , sample.getAccession(), preAttrString, preValString, postAttrString, postValString);
                 }
             }
-        } catch (Exception e) {
+        } catch (final Exception e) {
             success = false;
             failedQueue.add(sample.getAccession());
             LOG.error("Failed to add curation on sample: " + sample.getAccession(), e);
         }
+
         return new PipelineResult(sample.getAccession(), appliedCurations, success);
     }
 }

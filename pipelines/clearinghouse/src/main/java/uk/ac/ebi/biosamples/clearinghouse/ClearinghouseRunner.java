@@ -62,7 +62,7 @@ public class ClearinghouseRunner implements ApplicationRunner {
         long startTime = System.nanoTime();
         int sampleCount = 0;
 
-        Map<String, Future<PipelineResult>> futures = new HashMap<>();
+        final Map<String, Future<PipelineResult>> futures = new HashMap<>();
         try (final AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true,
                 pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax())) {
             LOGGER.info("Starting clearinghouse pipeline");
@@ -76,23 +76,26 @@ public class ClearinghouseRunner implements ApplicationRunner {
                 futures.put(sample.getAccession(), executorService.submit(task));
             }*/
 
-            for (Resource<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll()) {
-                Sample sample = sampleResource.getContent();
+            for (final Resource<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll()) {
+                final Sample sample = sampleResource.getContent();
+
                 try {
-                    ResponseEntity<Map> response
+                    final ResponseEntity<Map> response
                             = restTemplate.getForEntity(CLEARINGHOUSE_API_ENDPOINT + sample.getAccession(), Map.class);
 
                     if (response.getStatusCode().is2xxSuccessful()) {
-                        Callable<PipelineResult> task = new ClearninghouseCallable(bioSamplesClient, sample, domain, (List) response.getBody().get("curations"));
+                        final Callable<PipelineResult> task = new ClearninghouseCallable(bioSamplesClient, sample, domain, (List) response.getBody().get("curations"));
+
                         futures.put(sample.getAccession(), executorService.submit(task));
                     }
-                } catch (HttpClientErrorException e) {
+                } catch (final HttpClientErrorException e) {
                     if (e.getStatusCode().value() != 404) {
                         LOGGER.error("Failed to retrieve curation from clearinghouse, sample: {}", sample.getAccession(), e);
                     }
                 }
 
                 sampleCount++;
+
                 if (sampleCount % 10000 == 0) {
                     LOGGER.info("{} scheduled for processing", sampleCount);
                 }
@@ -106,7 +109,8 @@ public class ClearinghouseRunner implements ApplicationRunner {
             isPassed = false;
         } finally {
             long elapsed = System.nanoTime() - startTime;
-            String logMessage = "Completed Clearinghouse pipeline:  " + sampleCount + " samples curated in " + (elapsed / 1000000000L) + "s";
+            final String logMessage = "Completed Clearinghouse pipeline:  " + sampleCount + " samples curated in " + (elapsed / 1000000000L) + "s";
+
             LOGGER.info(logMessage);
             MailSender.sendEmail("Clearinghouse pipeline", logMessage, isPassed);
         }
