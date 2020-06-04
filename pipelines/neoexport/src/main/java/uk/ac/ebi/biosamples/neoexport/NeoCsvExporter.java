@@ -18,9 +18,13 @@ public class NeoCsvExporter {
     private static final Logger LOG = LoggerFactory.getLogger(NeoCsvExporter.class);
 
     private static final String EXPORT_PATH = "./export/";
-    private static final String REL_SOURCE_HEADER = ":START_ID(Sample)";
-    private static final String REL_TARGET_HEADER = ":END_ID(Sample)";
+    private static final String REL_SOURCE_HEADER = "source";
+    private static final String REL_TARGET_HEADER = "target";
     private static final int PERSIST_THRESHOLD = 1000000;
+
+    private static final String[] SAMPLES_HEADER = {"accession","name","cellType","sex","taxId","project","material","cellLine","organismPart","organism"};
+    private static final String[] EXTERNAL_ENTITY_HEADER = {"name","archive","ref","url"};
+    private static final String[] REL_HEADER = {REL_SOURCE_HEADER,REL_TARGET_HEADER};
 
     private List<Map<String, String>> samples = new ArrayList<>();
     private List<Map<String, String>> externalEntity = new ArrayList<>();
@@ -38,26 +42,27 @@ public class NeoCsvExporter {
     private int mockIndex = 1;
 
 
+
     public void addToCSVFile(Sample sample) {
         NeoSample neoSample = NeoSample.build(sample);
         addSample(neoSample);
     }
 
     public void flush() {
-        writeCSV(samples, "samples-" + sampleIndex + ".csv", false);
-        writeCSV(externalEntity, "ex_reference-" + externalEntityIndex + ".csv", false);
+        writeCSV(samples, "samples-" + sampleIndex + ".csv", SAMPLES_HEADER, false);
+        writeCSV(externalEntity, "ex_reference-" + externalEntityIndex + ".csv", EXTERNAL_ENTITY_HEADER, false);
 
-        writeCSV(relsExternalRef, "external_reference-" + relsExternelRefIndex + ".csv", false);
-        writeCSV(relsDerivedFrom, "derived_from-" + mockIndex + ".csv", true);
-        writeCSV(relsSameAs, "same_as-" + mockIndex + ".csv", true);
-        writeCSV(relsHasMember, "has_member-" + mockIndex + ".csv", true);
-        writeCSV(relsChildOf, "child_of-" + mockIndex + ".csv", true);
-        writeCSV(relsOther, "other-" + mockIndex + ".csv", true);
+        writeCSV(relsExternalRef, "external_reference-" + relsExternelRefIndex + ".csv", REL_HEADER, false);
+        writeCSV(relsDerivedFrom, "derived_from-" + mockIndex + ".csv", REL_HEADER, true);
+        writeCSV(relsSameAs, "same_as-" + mockIndex + ".csv", REL_HEADER, true);
+        writeCSV(relsHasMember, "has_member-" + mockIndex + ".csv", REL_HEADER, true);
+        writeCSV(relsChildOf, "child_of-" + mockIndex + ".csv", REL_HEADER, true);
+        writeCSV(relsOther, "other-" + mockIndex + ".csv", REL_HEADER, true);
     }
 
     private void addSample(NeoSample sample) {
         Map<String, String> sampleMap = Map.of(
-                "accession:ID(Sample)", sample.getAccession(),
+                "accession", sample.getAccession(),
                 "name", sample.getName(),
                 "organism", sample.getOrganism() == null ? "" : sample.getOrganism(),
                 "taxId", sample.getTaxId() == null ? "" : sample.getTaxId(),
@@ -93,8 +98,8 @@ public class NeoCsvExporter {
 
         for (NeoExternalEntity ref : sample.getExternalRefs()) {
             String refId = ref.getArchive() + "_" + ref.getRef();
-            externalEntity.add(Map.of("name:ID(ExternalEntity)", refId, "archive", ref.getArchive(), "ref", ref.getRef(), "url", ref.getUrl()));
-            relsExternalRef.add(Map.of(REL_SOURCE_HEADER, sample.getAccession(), ":END_ID(ExternalEntity)", refId));
+            externalEntity.add(Map.of("name", refId, "archive", ref.getArchive(), "ref", ref.getRef(), "url", ref.getUrl()));
+            relsExternalRef.add(Map.of(REL_SOURCE_HEADER, sample.getAccession(), REL_TARGET_HEADER, refId));
         }
 
         checkWriteStatus();
@@ -102,46 +107,46 @@ public class NeoCsvExporter {
 
     private void checkWriteStatus() {
         if (samples.size() >= PERSIST_THRESHOLD) {
-            writeCSV(samples, "samples-" + sampleIndex + ".csv", false);
+            writeCSV(samples, "samples-" + sampleIndex + ".csv", SAMPLES_HEADER, false);
             samples.clear();
             sampleIndex++;
         }
         if (externalEntity.size() >= PERSIST_THRESHOLD) {
-            writeCSV(externalEntity, "ex_reference-" + externalEntityIndex + ".csv", false);
+            writeCSV(externalEntity, "ex_reference-" + externalEntityIndex + ".csv", EXTERNAL_ENTITY_HEADER, false);
             externalEntity.clear();
             externalEntityIndex++;
         }
         if (relsExternalRef.size() >= PERSIST_THRESHOLD) {
-            writeCSV(relsExternalRef, "external_reference-" + relsExternelRefIndex + ".csv", false);
+            writeCSV(relsExternalRef, "external_reference-" + relsExternelRefIndex + ".csv", REL_HEADER, false);
             relsExternalRef.clear();
             relsExternelRefIndex++;
         }
 
 
         if (relsDerivedFrom.size() >= PERSIST_THRESHOLD) {
-            writeCSV(relsDerivedFrom, "derived_from-" + mockIndex + ".csv", true);
+            writeCSV(relsDerivedFrom, "derived_from-" + mockIndex + ".csv", REL_HEADER, true);
             relsDerivedFrom.clear();
         }
         if (relsSameAs.size() >= PERSIST_THRESHOLD) {
-            writeCSV(relsSameAs, "same_as-" + mockIndex + ".csv", true);
+            writeCSV(relsSameAs, "same_as-" + mockIndex + ".csv", REL_HEADER, true);
             relsSameAs.clear();
         }
         if (relsHasMember.size() >= PERSIST_THRESHOLD) {
-            writeCSV(relsHasMember, "has_member-" + mockIndex + ".csv", true);
+            writeCSV(relsHasMember, "has_member-" + mockIndex + ".csv", REL_HEADER, true);
             relsHasMember.clear();
         }
         if (relsChildOf.size() >= PERSIST_THRESHOLD) {
-            writeCSV(relsChildOf, "child_of-" + mockIndex + ".csv", true);
+            writeCSV(relsChildOf, "child_of-" + mockIndex + ".csv", REL_HEADER, true);
             relsChildOf.clear();
         }
         if (relsOther.size() >= PERSIST_THRESHOLD) {
-            writeCSV(relsOther, "other-" + mockIndex + ".csv", true);
+            writeCSV(relsOther, "other-" + mockIndex + ".csv", REL_HEADER, true);
             relsOther.clear();
         }
     }
 
 
-    private void writeCSV(List<Map<String, String>> records, String fileName, boolean append) {
+    private void writeCSV(List<Map<String, String>> records, String fileName, String[] headerOrder, boolean append) {
         CsvSchema schema = null;
         CsvSchema.Builder schemaBuilder = CsvSchema.builder();
         if (records != null && !records.isEmpty()) {
@@ -149,6 +154,7 @@ public class NeoCsvExporter {
                 schemaBuilder.addColumn(col);
             }
             schema = schemaBuilder.build();
+            schema = schema.sortedBy(headerOrder);
         }
 
         CsvMapper mapper = new CsvMapper();

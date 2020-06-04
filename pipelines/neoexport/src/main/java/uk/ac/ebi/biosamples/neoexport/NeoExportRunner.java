@@ -77,14 +77,14 @@ public class NeoExportRunner implements ApplicationRunner {
                 Objects.requireNonNull(sample);
                 collectSampleTypes(sample, sampleAnalytics);
 
-                if (!sample.getRelationships().isEmpty()) {
+//                if (!sample.getRelationships().isEmpty()) {
                     if ("CSV".equalsIgnoreCase(format)) {
                         neoCsvExporter.addToCSVFile(sample);
                     } else {
                         Callable<PipelineResult> task = new NeoExportCallable(neoSampleRepository, sample);
                         futures.put(sample.getAccession(), executorService.submit(task));
                     }
-                }
+//                }
 
                 if (++sampleCount % 5000 == 0) {
                     LOG.info("Scheduled sample count {}", sampleCount);
