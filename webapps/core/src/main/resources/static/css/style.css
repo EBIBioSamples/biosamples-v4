@@ -309,3 +309,60 @@ code[class^="language"] {
     margin-bottom: 5px;
 }
 
+.example-query {
+    margin: 3px 0;
+    padding: 10px;
+    border: 1px solid #ccc3c3;
+    border-radius: 3px 3px 3px 3px;
+    color: #7d7d7b;
+    background-color: #efefef;
+}
+
+.example-query:hover {
+    cursor: pointer;
+    color: #10100f;
+    border: 1px solid #424242;
+    background-color: #ccc;
+}
+
+.example-query-container {
+    margin: 10px 0;
+    border: 1px solid #ccc3c3;
+    border-radius: 3px 3px 3px 3px;
+}
+
+/* Style the button that is used to open and close the collapsible content */
+.collapsible {
+    background-color: #eee;
+    color: #444;
+    cursor: pointer;
+    padding: 14px 10px;
+    width: 100%;
+    border: none;
+    text-align: left;
+    outline: none;
+    font-size: 15px;
+}
+
+/* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
+.active, .collapsible:hover {
+    background-color: #ccc;
+    color: #444;
+}
+
+.collapsible::after {
+    float: right;
+    content: "\002B";
+}
+
+.active::after {
+    float: right;
+    content: "\2212";
+}
+
+.content {
+    padding: 3px 5px;
+    display: none;
+    overflow: hidden;
+    background-color: #f1f1f1;
+}

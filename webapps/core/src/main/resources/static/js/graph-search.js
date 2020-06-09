@@ -9,6 +9,7 @@ function graph_search(base_url) {
 
     let nodes = [];
     let links = [];
+
     if (attributeL1 && valueL1) {
         nodes.push({
             id: "a1",
@@ -31,12 +32,6 @@ function graph_search(base_url) {
             startNode: "a1",
             endNode: "a2"
         });
-        if (!(attributeR1 && valueR1)) {
-            nodes.push({
-                id: "a2",
-                type: "Sample"
-            })
-        }
     }
 
     if (referenceL1) {
@@ -65,9 +60,25 @@ function graph_search(base_url) {
         });
     }
 
+    //Need empty left node if left external reference is existing
+    if (referenceL1 && !(attributeL1 && valueL1)) {
+        nodes.push({
+            id: "a1",
+            type: "Sample"
+        })
+    }
+
+    //Need empty right node if relationship or right external reference is existing
+    if ((referenceR1 && !(attributeR1 && valueR1)) || (relationship1 && !(attributeR1 && valueR1))) {
+        nodes.push({
+            id: "a2",
+            type: "Sample"
+        })
+    }
+
 
     let request = {
-        nodes : nodes,
+        nodes: nodes,
         links: links
     };
 
@@ -146,20 +157,43 @@ function graph_search(base_url) {
                 graphSearchResults.append(parentDiv);
             });
 
-            var facetCarddiv =  $("<div/>").addClass("card column graph-search-facet")
+            var facetCarddiv = $("<div/>").addClass("card column graph-search-facet")
                 .html("<h5>Results summary (this is fake data)</h5> Total Samples: 123<br> Total Relationships: 123<br>");
             graphSearchFacet.append(facetCarddiv);
 
-            facetCarddiv =  $("<div/>").addClass("card column graph-search-facet")
+            facetCarddiv = $("<div/>").addClass("card column graph-search-facet")
                 .html("<h5>Relationships</h5>SAME AS: 100<br>DERIVED FROM: 300<br>EXTERNAL REF: 300<br>");
             graphSearchFacet.append(facetCarddiv);
 
-            facetCarddiv =  $("<div/>").addClass("card column graph-search-facet")
+            facetCarddiv = $("<div/>").addClass("card column graph-search-facet")
                 .html("Page: " + page["number"]);
             graphSearchFacet.append(facetCarddiv);
         }
     });
+}
+
+function execute_example_query(base_url, attributeL1, valueL1, referenceL1, relationship1, attributeR1, valueR1, referenceR1) {
+    $("#attributeL1").val(attributeL1);
+    $("#valueL1").val(valueL1);
+    $("#referenceL1").val(referenceL1);
+    $("#relationship1").val(relationship1);
+    $("#attributeR1").val(attributeR1);
+    $("#valueR1").val(valueR1);
+    $("#referenceR1").val(referenceR1);
+
+    graph_search(base_url)
+}
 
 
-
+function init_graph_search() {
+    let queryCollapsible = document.getElementById("collapsible");
+    queryCollapsible.addEventListener("click", function () {
+        this.classList.toggle("active");
+        var content = this.nextElementSibling;
+        if (content.style.display === "block") {
+            content.style.display = "none";
+        } else {
+            content.style.display = "block";
+        }
+    });
 }

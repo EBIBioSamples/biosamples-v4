@@ -32,6 +32,6 @@ public class GraphLink {
     }
 
     public String getQueryString(String relName) {
-        return "(" + startNode + ")-[" + relName + ":" + type + "]-(" + endNode + ") ";
+        return "(" + startNode + ")-[" + relName + ":" + type + "]->(" + endNode + ") ";
     }
 }
