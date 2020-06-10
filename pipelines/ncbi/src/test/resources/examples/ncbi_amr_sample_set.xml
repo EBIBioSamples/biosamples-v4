@@ -169,6 +169,7 @@
         <Ids>
             <Id db="BioSample" is_primary="1">SAMN04622945</Id>
             <Id db_label="Sample name">USDA-ARS-USMARC-60714</Id>
+            <Id db="SRA">SRS3466850</Id>
         </Ids>
         <Description>
             <Title>Pasteurella multocida from Case Animal 204 on Day 22</Title>
