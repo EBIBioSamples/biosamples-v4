@@ -30,7 +30,7 @@ public class NcbiNotSuppressedBaseConverterTests {
     public void given_ncbi_live_biosample_ensure_live() {
         this.conversionService = new NcbiSampleConversionService(new TaxonomyService());
         Element testNcbiBioSamples = NcbiTestsService.readNcbiBiosampleElementFromFile("/examples/ncbi_sample_6685496.xml");
-        Sample sampleToTest = this.conversionService.convertNcbiXmlElementToSample(testNcbiBioSamples);
+        Sample sampleToTest = this.conversionService.convertNcbiXmlElementToSample(testNcbiBioSamples, null);
         assertEquals(sampleToTest.getAccession(), "SAMN06685496");
         Optional<Attribute> expectedAttribute = sampleToTest.getAttributes().stream()
                 .filter(attr -> attr.getType().equals("INSDC status"))
@@ -44,7 +44,7 @@ public class NcbiNotSuppressedBaseConverterTests {
     public void given_ncbi_suppressed_biosample_ensure_suppressed() {
         this.conversionService = new NcbiSampleConversionService(new TaxonomyService());
         Element testNcbiBioSamples = NcbiTestsService.readNcbiBiosampleElementFromFile("/examples/ncbi_sample_1553882.xml");
-        Sample sampleToTest = this.conversionService.convertNcbiXmlElementToSample(testNcbiBioSamples);
+        Sample sampleToTest = this.conversionService.convertNcbiXmlElementToSample(testNcbiBioSamples, null);
         assertEquals(sampleToTest.getAccession(), "SAMN01553882");
         Optional<Attribute> expectedAttribute = sampleToTest.getAttributes().stream()
                 .filter(attr -> attr.getType().equals("INSDC status"))
