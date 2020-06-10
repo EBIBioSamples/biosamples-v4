@@ -47,22 +47,23 @@ public class ClearinghouseRunner implements ApplicationRunner {
         }
 
         this.pipelineFutureCallback = new PipelineFutureCallback();
-        //todo add correct domain for clearignhouse
+
+        //TODO add correct domain for clearignhouse
         domain = "self.bioSamplesClearinghouse";
     }
 
     @Override
     public void run(ApplicationArguments args) {
-        doGetClearingHouseCurations(args);
+        doGetClearingHouseCurations();
     }
 
-    private void doGetClearingHouseCurations(ApplicationArguments args) {
+    private void doGetClearingHouseCurations() {
         boolean isPassed = true;
-
         long startTime = System.nanoTime();
         int sampleCount = 0;
 
         final Map<String, Future<PipelineResult>> futures = new HashMap<>();
+
         try (final AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true,
                 pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax())) {
             LOGGER.info("Starting clearinghouse pipeline");
