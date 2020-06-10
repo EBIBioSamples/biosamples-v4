@@ -3,7 +3,7 @@
       xmlns:layout="http://www.w3.org/1999/xhtml">
 
 <head th:replace="fragments/head :: head">
-     <title th:text="${sample.accession}+' &lt; BioSamples &lt; EMBL-EBI'">BioSamples
+    <title th:text="${sample.accession}+' &lt; BioSamples &lt; EMBL-EBI'">BioSamples
         &lt; EMBL-EBI</title>
     <!-- A few keywords that relate to the content of THIS PAGE (not the whole project) -->
     <meta name="keywords" content="biosamples, europe, EBI"/>
@@ -17,27 +17,54 @@
     <script th:if="${jsonLD != null}" type="application/ld+json" th:utext="${jsonLD}"></script>
 </head>
 
+<!--<body th:onload="|init_graph_search()|">-->
 <body>
 <th:block th:include="fragments/header :: header (filters=${filters})"></th:block>
 <div layout:fragment="content" id="content">
     <th:block th:include="fragments/header :: masterhead"></th:block>
     <div id="main-content-area" class="row padding-top-xlarge padding-left-xlarge padding-right-xlarge">
-
-
         <!------------------------------------------------------------------------------->
         <div class="small-12">
+            <div class="warning-msg">
+                Graph Search is an experimental feature and might contain stale and test data.
+            </div>
             <div class="info-msg">
-                Graph Search enables you to do queries like
-                <i>select all human (organism = Homo Sapiens) samples which has sequencing data in ENA and has other DERIVED FROM samples in BioSamples</i>
+                Graph Search enables you to explore relationships/interactions between samples and external entities.
+                Fill in the fields or click on an example query to try out.
+            </div>
+
+            <div class="example-query-container">
+                <button type="button" id="collapsible" class="collapsible"><b>Examples</b></button>
+                <div class="content">
+                    <div class="example-query"
+                         th:onclick="|execute_example_query('@{/}', 'organism', 'homo sapiens', 'hPSCreg', '', '', '', '')|">
+                        <i>select all human (organism = Homo Sapiens) samples which has a link to hPSCreg</i>
+                    </div>
+                    <div class="example-query"
+                         th:onclick="|execute_example_query('@{/}', 'organism', 'homo sapiens', 'ENA', 'DERIVED_FROM', '', '', '')|">
+                        <i>select all human (organism = Homo Sapiens) samples which has sequencing data in ENA and has
+                            other DERIVED FROM samples in BioSamples</i>
+                    </div>
+                    <div class="example-query"
+                         th:onclick="|execute_example_query('@{/}', '', '', 'ENA', '', '', '', 'EGA')|">
+                        <i>select all samples which has data in ENA and has any relationship to samples in EGA</i>
+                    </div>
+                    <div class="example-query"
+                         th:onclick="|execute_example_query('@{/}', 'organism', 'homo sapiens', 'ENA', 'DERIVED_FROM', 'sex', 'female', 'ENA')|">
+                        <i>select all human samples which has sequencing data in ENA and has other DERIVED FROM female
+                            samples in BioSamples and have data in ENA</i>
+                    </div>
+                </div>
             </div>
 
             <form id="graph-search" name="local-search" th:action="@{/graph/search}" method="post">
                 <fieldset>
                     <div class="large-4 graph-search-sample-container">
-                        <div style="width: 100%; float: left;"><b>Sample 1</b></div>
+                        <div style="width: 100%; float: left;"><b>Source Sample</b></div>
                         <div class="small-5 graph-search-input">
                             <label for="attributeL1">Attribute</label>
-                            <input id="attributeL1" list="attribute" type="text" name="sampleL1[1][attribute]" placeholder="eg. organism"
+                            <input id="attributeL1" list="attribute" type="text" name="sampleL1[1][attribute]"
+                                   placeholder="eg. organism"
                                    class="input-group-field" th:value="${param.text}" style="float: left"/>
                             <datalist id="attribute">
                                 <option value="organism">
@@ -56,30 +83,19 @@
                             <input id="valueL1" type="text" name="sampleL1[1][value]" placeholder="eg. Homo Sapiens"
                                    class="input-group-field" th:value="${param.text}" style="float: left"/>
                         </div>
-
-                        <!--<div class="small-5 graph-search-input" style="margin-top: 5px;">
-                            <input id="attributeL2" list="attribute" type="text" name="sampleL1[1][attribute]" placeholder="eg. organism"
-                                   class="input-group-field" th:value="${param.text}" style="float: left"/>
-                        </div>
-                        <div class="small-1" style="float: left; padding: 12px 0 0 10px">=</div>
-                        <div class="small-6 graph-search-input" style="margin-top: 5px;">
-                            <input id="valueL2" type="text" name="sampleL1[1][value]" placeholder="eg. Homo Sapiens"
-                                   class="input-group-field" th:value="${param.text}" style="float: left"/>
-                        </div>-->
-
                         <br>
                         <div class="small-12 graph-search-input" style="margin-top: 10px;">
-                        <label for="referenceL1">Having external data in</label>
-                        <select id="referenceL1" name="referenceR1" style="width: 100%">
-                            <option value="" selected>Select external data source</option>
-                            <option value="ENA">ENA</option>
-                            <option value="EGA">EGA</option>
-                            <option value="ArrayExpress">ArrayExpress</option>
-                            <option value="hPSCreg">hPSCreg</option>
-                            <option value="dbGaP">dbGaP</option>
-                            <option value="BioStudies">BioStudies</option>
-                            <option value="other">Other</option>
-                        </select>
+                            <label for="referenceL1">Having external data in</label>
+                            <select id="referenceL1" name="referenceR1" style="width: 100%">
+                                <option value="" selected>Select external data source</option>
+                                <option value="ENA">ENA</option>
+                                <option value="EGA">EGA</option>
+                                <option value="ArrayExpress">ArrayExpress</option>
+                                <option value="hPSCreg">hPSCreg</option>
+                                <option value="dbGaP">dbGaP</option>
+                                <option value="BioStudies">BioStudies</option>
+                                <option value="other">Other</option>
+                            </select>
                         </div>
                     </div>
                     <div class="large-4 graph-search-rel-container">
@@ -90,14 +106,16 @@
                             <option value="SAME_AS">SAME AS</option>
                             <option value="CHILD_OF">CHILD OF</option>
                             <option value="HAS_MEMBER">HAS MEMBER</option>
+                            <option value="*">ANY (*)</option>
                         </select>
                     </div>
                     <div class="large-4 graph-search-sample-container">
 
-                        <div style="width: 100%; float: left;"><b>Sample 2</b></div>
+                        <div style="width: 100%; float: left;"><b>Target Sample</b></div>
                         <div class="small-5 graph-search-input">
                             <label for="attributeR1">Attribute</label>
-                            <input id="attributeR1" list="attribute" type="text" name="sampleR1[1][attribute]" placeholder="eg. sex"
+                            <input id="attributeR1" list="attribute" type="text" name="sampleR1[1][attribute]"
+                                   placeholder="eg. sex"
                                    class="input-group-field" th:value="${param.text}" style="float: left"/>
                         </div>
                         <div class="small-1" style="float: left; padding: 33px 0 0 10px">=</div>
@@ -109,7 +127,7 @@
 
                         <div class="small-12 graph-search-input" style="margin-top: 10px;">
                             <label for="referenceR1">Having external data in</label>
-                            <select id="referenceR1" name="referenceR1"  style="width: 100%">
+                            <select id="referenceR1" name="referenceR1" style="width: 100%">
                                 <option value="" selected>Select external data source</option>
                                 <option value="ENA">ENA</option>
                                 <option value="EGA">EGA</option>
@@ -125,30 +143,38 @@
 
                 <div class="small-3 graph-search-input-btn-container">
                     <br>
-                    <!--<div class="input-group-button">
-                        <button type="button" onclick="graph_search()">Search</button>
-                    </div>-->
-
                     <div class="input-group">
                         <label for="graph-search-btn" class="button graph-search-btn">Search</label>
-                        <input type="button" id="graph-search-btn" name="graph-search-button" th:onclick="|graph_search('@{/}')|" class="show-for-sr">
+                        <input type="button" id="graph-search-btn" name="graph-search-button"
+                               th:onclick="|graph_search('@{/}')|" class="show-for-sr">
                     </div>
                 </div>
             </form>
         </div>
         <!------------------------------------------------------------------------------->
 
+        <!--<div class="small-12 search-results">
+            <div id="graph-search-facet" class="sr__facets"></div>
+            <div id="graph-search-results" class="sr__results"></div>
+        </div> -->
         <div class="small-12 search-results">
-            <div id="graph-search-facet" class="sr__facets">
-
-            </div>
-
-            <div id="graph-search-results" class="sr__results">
-
-            </div>
+            <div id="graph-search-facet" class="sr__facets"></div>
+            <div id="graph-search-results" class="sr__results"></div>
         </div>
     </div>
 </div>
 <th:block th:include="fragments/footer :: footer"></th:block>
+<script>
+    let queryCollapsible = document.getElementById("collapsible");
+    queryCollapsible.addEventListener("click", function () {
+        this.classList.toggle("active");
+        var content = this.nextElementSibling;
+        if (content.style.display === "block") {
+            content.style.display = "none";
+        } else {
+            content.style.display = "block";
+        }
+    });
+</script>
 </body>
 </html>

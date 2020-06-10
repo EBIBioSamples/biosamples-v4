@@ -222,7 +222,8 @@ public class NeoSampleRepository implements AutoCloseable {
 
     public void createExternalRelationship(Session session, String accession, NeoExternalEntity externalEntity) {
         String query = "MERGE (a:Sample {accession:$accession}) " +
-                "MERGE (b:ExternalEntity {url:$url, archive:$archive, ref:$ref}) " +
+                "MERGE (b:ExternalEntity {url:$url}) " +
+                "SET b.archive = $archive, b.ref = $ref " +
                 "MERGE (a)-[r:EXTERNAL_REFERENCE]->(b)";
         Map<String, Object> params = Map.of(
                 "accession", accession,

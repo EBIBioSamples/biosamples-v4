@@ -10,6 +10,7 @@ docker-compose.debug.override.yml
 
 bin/
 target/
+export/
 
 # Scripts
 docker-env.sh
