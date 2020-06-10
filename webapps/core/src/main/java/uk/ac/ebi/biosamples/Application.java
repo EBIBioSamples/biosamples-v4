@@ -78,13 +78,21 @@ public class Application extends SpringBootServletInitializer {
     	return new UrlTemplateResolver();
     }
 
-    @Bean
+    @Bean(name="SampleAccessionService")
     public MongoAccessionService mongoSampleAccessionService(MongoSampleRepository mongoSampleRepository, SampleToMongoSampleConverter sampleToMongoSampleConverter,
 			MongoSampleToSampleConverter mongoSampleToSampleConverter, MongoProperties mongoProperties) {
     	return new MongoAccessionService(mongoSampleRepository, sampleToMongoSampleConverter,
     			mongoSampleToSampleConverter, mongoProperties.getAccessionPrefix(),
     			mongoProperties.getAccessionMinimum(), mongoProperties.getAcessionQueueSize());
     }
+
+	@Bean(name="GroupAccessionService")
+	public MongoAccessionService mongoGroupAccessionService(MongoSampleRepository mongoSampleRepository, SampleToMongoSampleConverter sampleToMongoSampleConverter,
+															MongoSampleToSampleConverter mongoSampleToSampleConverter, MongoProperties mongoProperties) {
+		return new MongoAccessionService(mongoSampleRepository, sampleToMongoSampleConverter,
+				mongoSampleToSampleConverter, "SAMEG",
+				mongoProperties.getAccessionMinimum(), mongoProperties.getAcessionQueueSize());
+	}
 
     @Bean
     AmrTableConverter amrTableToMapConverter() {
