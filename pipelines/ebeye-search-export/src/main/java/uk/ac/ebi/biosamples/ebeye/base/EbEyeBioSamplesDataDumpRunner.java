@@ -20,14 +20,14 @@ import javax.xml.bind.Marshaller;
 import java.io.File;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-/*@Component
+@Component
 public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
     private static Logger log = LoggerFactory.getLogger(EbEyeBioSamplesDataDumpRunner.class);
     private static final String BIOSAMPLES = "biosamples";
@@ -42,36 +42,50 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
+        final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
+        final DateTimeFormatter dtFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         final MongoClientURI uri = new MongoClientURI(mongoUri);
         final MongoClient mongoClient = new MongoClient(uri);
         final DB db = mongoClient.getDB(BIOSAMPLES);
         final DBCollection coll = db.getCollection(MONGO_SAMPLE);
+        final AtomicReference<String> startDate = new AtomicReference<>("");
+        final String filePath = "/mnt/data/biosamples/sw/www/";
 
-        // Fetch data by year - hardcoded for now
-        // variable names are not correct now - FIX ME
-        final String from2017 = "2017.01.01";
-        final String until2018 = "2017.02.01";
-        final File f2017 = new File("/mnt/data/biosamples/sw/wwwdev/biosd-ebeye-1.xml");
+        final List<String> programArguments = args.getOptionNames().stream().filter(optionName -> optionName.equals("startDate")).collect(Collectors.toList());
 
-        fetchQueryAndDump(coll, from2017, until2018, f2017);
+        programArguments.forEach(programArgument -> {
+            if (programArgument.equals("startDate"))
+                startDate.set(args.getOptionValues("startDate").get(0));
+        });
 
-        final String from2018 = "2017.02.02";
-        final String until2019 = "2017.03.01";
-        final File f2018 = new File("/mnt/data/biosamples/sw/wwwdev/biosd-ebeye-2.xml");
+        Date startDateFormatted = (startDate != null) ? formatter.parse(String.valueOf(startDate)) : null;
 
-        fetchQueryAndDump(coll, from2018, until2019, f2018);
+        if (startDate == null) throw new IllegalStateException("No start date passed");
 
-        final String from2019 = "2017.03.02";
-        final String until2020 = "2017.04.01";
-        final File f2019 = new File("/mnt/data/biosamples/sw/wwwdev/biosd-ebeye-3.xml");
+        int fileCounter = 1;
+        LocalDate startLocalDate = convertToLocalDateViaInstant(startDateFormatted);
+        LocalDate endLocalDate = startLocalDate.plusMonths(1).minusDays(1);
 
-        fetchQueryAndDump(coll, from2019, until2020, f2019);
+        while (endLocalDate.isBefore(LocalDate.now())) {
+            File newFile = new File(filePath + "biosd_dump" + fileCounter++ + ".xml");
 
-        final String from2020 = "2017.04.02";
-        final String until2020April = "2017.05.01";
-        final File f2020 = new File("/mnt/data/biosamples/sw/wwwdev/biosd-ebeye-4.xml");
+            log.info("Running for samples with release date starting " + startLocalDate.toString() +
+                    " ending " + endLocalDate.toString() +
+                    " and writing to file " + newFile.getPath());
 
-        fetchQueryAndDump(coll, from2020, until2020April, f2020);
+            fetchQueryAndDump(coll, startLocalDate.format(dtFormatter), endLocalDate.format(dtFormatter), newFile);
+
+            startLocalDate = startLocalDate.plusMonths(1);
+            endLocalDate = startLocalDate.plusMonths(1).minusDays(1);
+
+            //if (fileCounter == 5) break;
+        }
+    }
+
+    public LocalDate convertToLocalDateViaInstant(Date dateToConvert) {
+        return dateToConvert.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
     }
 
     private void fetchQueryAndDump(final DBCollection coll, final String from, final String until, final File file) throws ParseException, JAXBException {
@@ -86,7 +100,7 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
 
     private static List<String> getAllDocuments(final DBCollection col, final String from, final String until) throws ParseException {
         final List<String> listOfAccessions = new ArrayList<>();
-        final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy.MM.dd");
+        final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
         final Date startDate = simpleDateFormat.parse(from);
         final Date endDate = simpleDateFormat.parse(until);
 
@@ -226,9 +240,9 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
     private String removeOtherSpecialCharactersFromAttributeNames(String type) {
         return type.trim().replaceAll("[^a-zA-Z0-9\\s+_-]", "");
     }
-    */
+}
 
-
+/*
 // One time run for COVID-19 only
 @Component
 public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
@@ -376,4 +390,4 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
 
         convertSampleToXml(samplesList, f);
     }
-}
+} */
