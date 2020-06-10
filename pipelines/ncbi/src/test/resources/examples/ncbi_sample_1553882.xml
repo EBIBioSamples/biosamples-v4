@@ -4,6 +4,7 @@
                accession="SAMN01553882">
         <Ids>
             <Id db="BioSample" is_primary="1">SAMN01553882</Id>
+            <Id db="SRA" is_primary="1">SRS123456</Id>
             <Id db="dbGaP" db_label="Sample name" is_hidden="1">149-5495</Id>
         </Ids>
         <Description>

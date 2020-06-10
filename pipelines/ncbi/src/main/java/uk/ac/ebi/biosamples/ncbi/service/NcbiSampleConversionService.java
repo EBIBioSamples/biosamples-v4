@@ -3,6 +3,7 @@ package uk.ac.ebi.biosamples.ncbi.service;
 import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
@@ -10,6 +11,7 @@ import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.structured.amr.AMRTable;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
+import uk.ac.ebi.biosamples.ncbi.NcbiEraProDao;
 import uk.ac.ebi.biosamples.utils.TaxonomyService;
 import uk.ac.ebi.biosamples.utils.XmlPathBuilder;
 
@@ -75,6 +77,9 @@ public class NcbiSampleConversionService {
     private final TaxonomyService taxonomyService;
     private final NcbiAmrConversionService amrConversionService;
 
+    @Autowired
+    NcbiEraProDao ncbiEraProDao;
+
     public NcbiSampleConversionService(TaxonomyService taxonomyService) {
         this.taxonomyService = taxonomyService;
         this.amrConversionService = new NcbiAmrConversionService();
@@ -97,6 +102,7 @@ public class NcbiSampleConversionService {
         String organismValue = null;
         String geoTag = null;
         boolean hasOrganismInDescription = false;
+        boolean hasSraAccession = false;
 
         for (Element idElem : XmlPathBuilder.of(sampleElem).path(IDS).elements(ID)) {
             final String attributeValueIdElementDb = idElem.attributeValue(DB);
@@ -107,6 +113,7 @@ public class NcbiSampleConversionService {
                 // NCBI/DDBJ samples, in sync with ENA samples
                 attrs.add(Attribute.build(SRA_ACCESSION, idElem.getTextTrim()));
                 attrs.add(Attribute.build(INSDC_SECONDARY_ACCESSION, idElem.getTextTrim()));
+                hasSraAccession = true;
             } else if (GENBANK.equalsIgnoreCase(attributeValueIdElementDb)) {
                 attrs.add(Attribute.build(COMMON_NAME, idElem.getTextTrim()));
             } else if (SAMPLE_NAME.equals(idElem.attributeValue(DB_LABEL))) {
@@ -123,6 +130,13 @@ public class NcbiSampleConversionService {
                 attrs.add(Attribute.build(EXTERNAL_ID_JSON, idElem.getTextTrim(), NAMESPACE_TAG + attributeValueIdElementDb, Collections.emptyList(),
                         null));
             }
+        }
+
+        if (!hasSraAccession) {
+            final String sraAccession = ncbiEraProDao.getSraAccession(accession);
+
+            attrs.add(Attribute.build(SRA_ACCESSION, sraAccession));
+            attrs.add(Attribute.build(INSDC_SECONDARY_ACCESSION, sraAccession));
         }
 
         if (alias == null && geoAlias != null) {
