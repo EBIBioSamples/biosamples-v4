@@ -30,7 +30,7 @@ public class NcbiAmrConvertionTests {
 
     @Test
     public void given_amr_data_it_produces_sample_with_structured_data() {
-        Sample sampleToTest = sampleConversionService.convertNcbiXmlElementToSample(getAmrSample());
+        Sample sampleToTest = sampleConversionService.convertNcbiXmlElementToSample(getAmrSample(), new HashSet<>());
         Iterator<AbstractData> dataIterator = sampleToTest.getData().iterator();
         assertTrue("Sample should contain AMR data", dataIterator.next().getDataType().equals(DataType.AMR));
         assertFalse("Should only contain AMR data", dataIterator.hasNext());
@@ -38,7 +38,7 @@ public class NcbiAmrConvertionTests {
 
     @Test
     public void it_extract_amr_rows() {
-        Sample sampleToTest = sampleConversionService.convertNcbiXmlElementToSample(getAmrSample());
+        Sample sampleToTest = sampleConversionService.convertNcbiXmlElementToSample(getAmrSample(), new HashSet<>());
         AbstractData data = sampleToTest.getData().iterator().next();
         assertTrue(data instanceof AMRTable);
 
@@ -49,7 +49,7 @@ public class NcbiAmrConvertionTests {
 
     @Test
     public void it_extract_proper_content() {
-        Sample sampleToTest = sampleConversionService.convertNcbiXmlElementToSample(getAmrSample());
+        Sample sampleToTest = sampleConversionService.convertNcbiXmlElementToSample(getAmrSample(), new HashSet<>());
         AMRTable amrTable = (AMRTable) sampleToTest.getData().iterator().next();
         AMREntry amrEntry = amrTable.getStructuredData().iterator().next();
 
@@ -87,7 +87,7 @@ public class NcbiAmrConvertionTests {
     @Test
     public void it_can_read_multiple_types_of_antibiograms_table() {
         for (Element element: getAmrSampleSet()) {
-            Sample testSample = sampleConversionService.convertNcbiXmlElementToSample(element);
+            Sample testSample = sampleConversionService.convertNcbiXmlElementToSample(element, new HashSet<>());
             AMRTable amrTable = (AMRTable) testSample.getData().first();
             assertTrue(amrTable != null);
             assertTrue(amrTable.getStructuredData().size() > 0);

@@ -15,14 +15,14 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 public class Application {
 
-	//this is needed to read nonstrings from properties files
-	//must be static for lifecycle reasons
-	@Bean
-	public static PropertySourcesPlaceholderConfigurer getPropertySourcesPlaceholderConfigurer() {
-		return new PropertySourcesPlaceholderConfigurer();
-	}
+    //this is needed to read nonstrings from properties files
+    //must be static for lifecycle reasons
+    @Bean
+    public static PropertySourcesPlaceholderConfigurer getPropertySourcesPlaceholderConfigurer() {
+        return new PropertySourcesPlaceholderConfigurer();
+    }
 
-	public static void main(String[] args) {
-		SpringApplication.exit(SpringApplication.run(Application.class, args));
-	}
+    public static void main(String[] args) {
+        SpringApplication.exit(SpringApplication.run(Application.class, args));
+    }
 }
