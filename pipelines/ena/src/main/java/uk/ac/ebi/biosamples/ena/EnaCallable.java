@@ -82,10 +82,7 @@ public class EnaCallable implements Callable<Void> {
 
                         attributes.add(sraAccessionAttribute);
 
-                        if (amrData != null && amrData.size() > 0)
-                            sample = Sample.Builder.fromSample(sample).withAttributes(attributes).withNoExternalReferences().withData(amrData).build();
-                        else
-                            sample = Sample.Builder.fromSample(sample).withAttributes(attributes).withNoExternalReferences().build();
+                        sample = Sample.Builder.fromSample(sample).withAttributes(attributes).withNoExternalReferences().build();
 
                         bioSamplesClient.persistSampleResource(sample);
                         log.info("Updated sample " + sampleAccession + " with SRA accession");

@@ -124,5 +124,4 @@ public class TestConversion {
         };
         eraProDao.getSingleSample("SAMEA104371999", rowCallbackHandler);
     }
-
 }
