@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 public class EnaService {
 
     public Collection<String> splitIdentifiers(String input) {
-    	//split by commas
+        //split by commas
         List<String> idents = new ArrayList<String>();
         if (input.contains(",")) {
             for (String substr : input.split(",")) {
@@ -37,7 +37,7 @@ public class EnaService {
                 newidents.add(ident);
             }
         }
-        
+
         //sort it before returning
         Collections.sort(newidents);
 

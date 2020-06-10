@@ -154,14 +154,14 @@ public class SampleZoomaCallable implements Callable<PipelineResult> {
             }
         }
 
-        if (sample.getData() != null && sample.getData().size() > 0) {
+       /* if (sample.getData() != null && sample.getData().size() > 0) {
             Set<AbstractData> annotatedAmrData = annotateAmr(sample);
 
             if (annotatedAmrData != null && annotatedAmrData.size() > 0) {
                 Sample.Builder.fromSample(sample).withData(annotatedAmrData).build();
                 bioSamplesClient.persistSampleResource(sample);
             }
-        }
+        }*/
 
         return sample;
     }

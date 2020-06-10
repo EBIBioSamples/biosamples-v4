@@ -50,7 +50,7 @@ public class EraProDao {
 
     public void doSampleCallback(LocalDate minDate, LocalDate maxDate, RowCallbackHandler rch) {
         String query = "SELECT UNIQUE(BIOSAMPLE_ID), STATUS_ID FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND EGA_ID IS NULL AND BIOSAMPLE_AUTHORITY= 'N' "
-                + "AND " + STATUS_CLAUSE + " AND ((LAST_UPDATED BETWEEN ? AND ?) OR (FIRST_PUBLIC BETWEEN ? AND ?)) ORDER BY BIOSAMPLE_ID ASC";
+                + "AND " + STATUS_CLAUSE + " AND ((LAST_UPDATED BETWEEN ? AND ?) OR (FIRST_PUBLIC BETWEEN ? AND ?)) AND BIOSAMPLE_ID = 'SAMEA104107514' ORDER BY BIOSAMPLE_ID ASC";
 
         Date minDateOld = java.sql.Date.valueOf(minDate);
         Date maxDateOld = java.sql.Date.valueOf(maxDate);
