@@ -38,8 +38,6 @@
 		<module>curationundo</module>
 		<module>curami</module>
         <module>curatedview</module>
-		<module>bioschemas-rdf-export</module>
-		<module>ena-amr</module>
 		<module>ebeye-search-export</module>
 		<module>neoexport</module>
 		<module>clearinghouse</module>

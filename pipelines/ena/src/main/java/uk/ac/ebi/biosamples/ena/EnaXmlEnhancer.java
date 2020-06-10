@@ -171,7 +171,7 @@ public class EnaXmlEnhancer {
         INSTANCE;
 
         @SuppressWarnings("deprecation")
-		@Override
+        @Override
         public Element apply(Element sampleXml, EnaDatabaseSample enaDatabaseSample) {
             if (enaDatabaseSample.centreName != null) {
                 XmlPathBuilder xmlPathBuilder = XmlPathBuilder.of(sampleXml).path("SAMPLE");

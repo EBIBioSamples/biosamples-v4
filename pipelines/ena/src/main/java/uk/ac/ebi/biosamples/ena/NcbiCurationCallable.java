@@ -16,81 +16,81 @@ import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Sample;
 
 public class NcbiCurationCallable implements Callable<Void> {
-	private static final String SUPPRESSED = "suppressed";
+    private static final String SUPPRESSED = "suppressed";
 
-	private Logger log = LoggerFactory.getLogger(getClass());
+    private Logger log = LoggerFactory.getLogger(getClass());
 
-	private final String accession;
-	private final BioSamplesClient bioSamplesClient;
-	private final String domain;
-	private boolean suppressionHandler;
+    private final String accession;
+    private final BioSamplesClient bioSamplesClient;
+    private final String domain;
+    private boolean suppressionHandler;
 
-	public NcbiCurationCallable(String accession, BioSamplesClient bioSamplesClient, String domain) {
-		this.accession = accession;
-		this.bioSamplesClient = bioSamplesClient;
-		this.domain = domain;
-	}
+    public NcbiCurationCallable(String accession, BioSamplesClient bioSamplesClient, String domain) {
+        this.accession = accession;
+        this.bioSamplesClient = bioSamplesClient;
+        this.domain = domain;
+    }
 
-	/**
-	 * Construction for SUPPRESSED samples
-	 * 
-	 * @param accession
-	 * @param bioSamplesClient
-	 * @param domain
-	 * @param suppressionHandler
-	 */
-	public NcbiCurationCallable(String accession, BioSamplesClient bioSamplesClient, String domain,
-			boolean suppressionHandler) {
-		this.accession = accession;
-		this.bioSamplesClient = bioSamplesClient;
-		this.domain = domain;
-		this.suppressionHandler = suppressionHandler;
-	}
+    /**
+     * Construction for SUPPRESSED samples
+     *
+     * @param accession
+     * @param bioSamplesClient
+     * @param domain
+     * @param suppressionHandler
+     */
+    public NcbiCurationCallable(String accession, BioSamplesClient bioSamplesClient, String domain,
+                                boolean suppressionHandler) {
+        this.accession = accession;
+        this.bioSamplesClient = bioSamplesClient;
+        this.domain = domain;
+        this.suppressionHandler = suppressionHandler;
+    }
 
-	@Override
-	public Void call() throws Exception {
-		log.trace("HANDLING " + this.accession);
-		ExternalReference exRef = ExternalReference.build("https://www.ebi.ac.uk/ena/data/view/" + this.accession);
-		Curation curation = Curation.build(null, null, null, Collections.singleton(exRef));
+    @Override
+    public Void call() throws Exception {
+        log.trace("HANDLING " + this.accession);
+        ExternalReference exRef = ExternalReference.build("https://www.ebi.ac.uk/ena/data/view/" + this.accession);
+        Curation curation = Curation.build(null, null, null, Collections.singleton(exRef));
 
-		if (suppressionHandler) {
-			checkAndUpdateSuppressedSample();
-		} else {
-			// get the sample to make sure it exists first
-			if (bioSamplesClient.fetchSampleResource(this.accession, Optional.of(new ArrayList<String>())).isPresent()) {
-				bioSamplesClient.persistCuration(this.accession, curation, domain);
-			} else {
-				log.warn("Unable to find " + this.accession);
-			}
-		}
-		log.trace("HANDLED " + this.accession);
+        if (suppressionHandler) {
+            checkAndUpdateSuppressedSample();
+        } else {
+            // get the sample to make sure it exists first
+            if (bioSamplesClient.fetchSampleResource(this.accession, Optional.of(new ArrayList<String>())).isPresent()) {
+                bioSamplesClient.persistCuration(this.accession, curation, domain);
+            } else {
+                log.warn("Unable to find " + this.accession);
+            }
+        }
+        log.trace("HANDLED " + this.accession);
 
-		return null;
-	}
+        return null;
+    }
 
-	/**
-	 * Checks if sample status is not SUPPRESSED in BioSamples, if yes then persists the sample with SUPPRESSED status
-	 */
-	private void checkAndUpdateSuppressedSample() {
-		final Optional<Resource<Sample>> optionalSampleResource = bioSamplesClient.fetchSampleResource(this.accession, Optional.of(new ArrayList<String>()));
+    /**
+     * Checks if sample status is not SUPPRESSED in BioSamples, if yes then persists the sample with SUPPRESSED status
+     */
+    private void checkAndUpdateSuppressedSample() {
+        final Optional<Resource<Sample>> optionalSampleResource = bioSamplesClient.fetchSampleResource(this.accession, Optional.of(new ArrayList<String>()));
 
-		if (optionalSampleResource.isPresent()) {
-			final Sample sample = optionalSampleResource.get().getContent();
-			boolean persistRequired = true;
+        if (optionalSampleResource.isPresent()) {
+            final Sample sample = optionalSampleResource.get().getContent();
+            boolean persistRequired = true;
 
-			for (Attribute attribute : sample.getAttributes()) {
-				if (attribute.getType().equals("INSDC status") && attribute.getValue().equals(SUPPRESSED)) {
-					persistRequired = false;
-					break;
-				}
-			}
+            for (Attribute attribute : sample.getAttributes()) {
+                if (attribute.getType().equals("INSDC status") && attribute.getValue().equals(SUPPRESSED)) {
+                    persistRequired = false;
+                    break;
+                }
+            }
 
-			if (persistRequired) {
-				sample.getAttributes().removeIf(attr -> attr.getType().contains("INSDC status"));
-				sample.getAttributes().add(Attribute.build("INSDC status", SUPPRESSED));
-				log.info("Updating status to suppressed of sample: " + this.accession);
-				bioSamplesClient.persistSampleResource(sample);
-			}
-		}
-	}
+            if (persistRequired) {
+                sample.getAttributes().removeIf(attr -> attr.getType().contains("INSDC status"));
+                sample.getAttributes().add(Attribute.build("INSDC status", SUPPRESSED));
+                log.info("Updating status to suppressed of sample: " + this.accession);
+                bioSamplesClient.persistSampleResource(sample);
+            }
+        }
+    }
 }

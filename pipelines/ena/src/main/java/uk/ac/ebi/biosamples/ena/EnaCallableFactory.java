@@ -3,7 +3,9 @@ package uk.ac.ebi.biosamples.ena;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
+import uk.ac.ebi.biosamples.model.structured.AbstractData;
 
+import java.util.Set;
 import java.util.concurrent.Callable;
 
 @Service
@@ -24,24 +26,17 @@ public class EnaCallableFactory {
         this.domain = pipelinesProperties.getEnaDomain();
     }
 
-    public Callable<Void> build(String accession) {
-        return new EnaCallable(accession, bioSamplesClient, enaXmlEnhancer,
-                enaElementConverter, eraProDao, domain);
-    }
-
     /**
-     * Builds callable for dealing with SUPPRESSED samples or BSD authority samples
+     * Builds callable for dealing most ENA samples
      *
-     * @param accession          The accession passed
-     * @param suppressionHandler true for handling suppressed samples case
-     * @param bsdAuthority       true for handling BioSamples owned samples cases
+     * @param accession           The accession passed
+     * @param  suppressionHandler Is running to set samples to SUPPRESSED
+     * @param  bsdAuthority       Indicates its running for samples submitted through BioSamples
+     * @param  amrData            The AMR {@link AbstractData} of the sample
      * @return the callable, {@link EnaCallable}
      */
-    public EnaCallable build(String accession, boolean suppressionHandler, boolean bsdAuthority) {
-        if (suppressionHandler) return new EnaCallable(accession, bioSamplesClient, enaXmlEnhancer,
-                enaElementConverter, eraProDao, domain, true);
-
-        else
-            return new EnaCallable(accession, bioSamplesClient, enaXmlEnhancer, enaElementConverter, eraProDao, bsdAuthority);
+    public Callable<Void> build(String accession, boolean suppressionHandler, boolean bsdAuthority, Set<AbstractData> amrData) {
+        return new EnaCallable(accession, bioSamplesClient, enaXmlEnhancer,
+                enaElementConverter, eraProDao, domain, suppressionHandler, bsdAuthority, amrData);
     }
 }
