@@ -2,6 +2,7 @@ package uk.ac.ebi.biosamples.ena;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 
@@ -57,7 +58,10 @@ public class NcbiCurationCallable implements Callable<Void> {
             checkAndUpdateSuppressedSample();
         } else {
             // get the sample to make sure it exists first
-            if (bioSamplesClient.fetchSampleResource(this.accession, Optional.of(new ArrayList<String>())).isPresent()) {
+            final List<String> curationDomainBlankList = new ArrayList<>();
+            curationDomainBlankList.add("");
+
+            if (bioSamplesClient.fetchSampleResource(this.accession, Optional.of(curationDomainBlankList)).isPresent()) {
                 bioSamplesClient.persistCuration(this.accession, curation, domain);
             } else {
                 log.warn("Unable to find " + this.accession);
@@ -72,7 +76,10 @@ public class NcbiCurationCallable implements Callable<Void> {
      * Checks if sample status is not SUPPRESSED in BioSamples, if yes then persists the sample with SUPPRESSED status
      */
     private void checkAndUpdateSuppressedSample() {
-        final Optional<Resource<Sample>> optionalSampleResource = bioSamplesClient.fetchSampleResource(this.accession, Optional.of(new ArrayList<String>()));
+        final List<String> curationDomainBlankList = new ArrayList<>();
+        curationDomainBlankList.add("");
+
+        final Optional<Resource<Sample>> optionalSampleResource = bioSamplesClient.fetchSampleResource(this.accession, Optional.of(curationDomainBlankList));
 
         if (optionalSampleResource.isPresent()) {
             final Sample sample = optionalSampleResource.get().getContent();

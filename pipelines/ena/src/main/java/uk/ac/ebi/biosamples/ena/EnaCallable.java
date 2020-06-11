@@ -71,7 +71,10 @@ public class EnaCallable implements Callable<Void> {
             final String sraAccession = eraProDao.getSraAccession(this.sampleAccession);
 
             if (sraAccession != null) {
-                Optional<Resource<Sample>> sampleResult = bioSamplesClient.fetchSampleResource(sampleAccession, Optional.of(new ArrayList<>()));
+                final List<String> curationDomainBlankList = new ArrayList<>();
+                curationDomainBlankList.add("");
+
+                Optional<Resource<Sample>> sampleResult = bioSamplesClient.fetchSampleResource(this.sampleAccession, Optional.of(curationDomainBlankList));
 
                 if (sampleResult.isPresent()) {
                     Sample sample = sampleResult.get().getContent();
@@ -237,8 +240,10 @@ public class EnaCallable implements Callable<Void> {
      * @throws DocumentException if failure in document parsing
      */
     private Void checkAndUpdateSuppressedSample() throws DocumentException {
-        final Optional<Resource<Sample>> optionalSampleResource = bioSamplesClient.fetchSampleResource(this.sampleAccession,
-                Optional.of(new ArrayList<>()));
+        final List<String> curationDomainBlankList = new ArrayList<>();
+        curationDomainBlankList.add("");
+
+        Optional<Resource<Sample>> optionalSampleResource = bioSamplesClient.fetchSampleResource(this.sampleAccession, Optional.of(curationDomainBlankList));
 
         if (optionalSampleResource.isPresent()) {
             final Sample sample = optionalSampleResource.get().getContent();
