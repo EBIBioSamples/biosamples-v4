@@ -11,7 +11,7 @@ public enum RelationshipType {
     public static RelationshipType getType(String relationshipTypeString) {
         RelationshipType type;
         try {
-            type = RelationshipType.valueOf(relationshipTypeString.replaceAll(" ", "_").toUpperCase());
+            type = RelationshipType.valueOf(relationshipTypeString.replace(" ", "_").toUpperCase());
         } catch (IllegalArgumentException e) {
             type = RelationshipType.OTHER;
         }

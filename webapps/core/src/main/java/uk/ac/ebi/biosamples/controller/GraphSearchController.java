@@ -70,13 +70,29 @@ public class GraphSearchController {
         } else {
             effectiveSize = query.getSize();
         }
-
         effectivePage = Math.max(0, query.getPage());
 
-
         List<Sample> samples = graphSearchService.graphSearch(query, effectiveSize, effectivePage);
-
         return populateResources(samples, effectiveSize, effectivePage, totalElements, totalPages);
+    }
+
+    @PostMapping(path = "a", consumes = {MediaType.APPLICATION_JSON_VALUE})
+    public GraphSearchQuery graphSearch2(@RequestBody GraphSearchQuery query) {
+        int effectiveSize;
+        int effectivePage;
+        int totalElements = 0;
+        int totalPages = 0;
+
+        if (query.getSize() > 100) {
+            effectiveSize = 100;
+        } else if (query.getSize() < 1) {
+            effectiveSize = 10;
+        } else {
+            effectiveSize = query.getSize();
+        }
+        effectivePage = Math.max(0, query.getPage());
+
+        return graphSearchService.graphSearch2(query, effectiveSize, effectivePage);
     }
 
     private Resources<Resource<Sample>> populateResources(List<Sample> samples, int effectiveSize, int effectivePage,

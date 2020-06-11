@@ -63,4 +63,8 @@ public class GraphSearchService {
 
         return samples;
     }
+
+    public GraphSearchQuery graphSearch2(GraphSearchQuery searchQuery, int limit, int skip) {
+        return neoSampleRepository.graphSearch(searchQuery, limit, skip);
+    }
 }

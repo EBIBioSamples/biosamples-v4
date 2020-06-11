@@ -99,8 +99,8 @@ public class NeoSampleRepository implements AutoCloseable {
         try (Session session = driver.session()) {
             LOG.info("Graph query: {}", query);
             Result result = session.run(query.toString());
-            List<GraphNode> responseNodes = new ArrayList<>();
-            List<GraphLink> responseLinks = new ArrayList<>();
+            Set<GraphNode> responseNodes = new HashSet<>();
+            Set<GraphLink> responseLinks = new HashSet<>();
             response.setNodes(responseNodes);
             response.setLinks(responseLinks);
 
@@ -117,7 +117,54 @@ public class NeoSampleRepository implements AutoCloseable {
         return response;
     }
 
-    private void addToResponse(Value value, List<GraphNode> responseNodes, List<GraphLink> responseLinks) {
+    public GraphSearchQuery graphSearch2(GraphSearchQuery searchQuery, int limit, int skip) {
+        StringBuilder query = new StringBuilder();
+        StringJoiner idJoiner = new StringJoiner(",");
+        for (GraphNode node : searchQuery.getNodes()) {
+            query.append("MATCH (").append(node.getId()).append(node.getQueryString()).append(") ");
+            idJoiner.add(node.getId());
+        }
+
+        int relCount = 0;
+        for (GraphLink link : searchQuery.getLinks()) {
+            relCount++;
+            String relName = "r" + relCount;
+            query.append("MATCH ").append(link.getQueryString(relName));
+            idJoiner.add(relName);
+        }
+
+        if (query.length() == 0) {
+            query.append("MATCH(a1) ");
+            idJoiner.add("a1");
+        }
+
+        query.append(" RETURN ").append(idJoiner.toString());
+        query.append(" ORDER BY ").append("a1").append(".accession SKIP ").append(skip)
+                .append(" LIMIT ").append(limit);
+
+        GraphSearchQuery response = new GraphSearchQuery();
+        try (Session session = driver.session()) {
+            LOG.info("Graph query: {}", query);
+            Result result = session.run(query.toString());
+            Set<GraphNode> responseNodes = new HashSet<>();
+            Set<GraphLink> responseLinks = new HashSet<>();
+            response.setNodes(responseNodes);
+            response.setLinks(responseLinks);
+
+            while (result.hasNext()) {
+                Record record = result.next();
+                for (Value value : record.values()) {
+                    addToResponse(value, responseNodes, responseLinks);
+                }
+            }
+        } catch (Exception e) {
+            LOG.error("Failed to load graph search results", e);
+        }
+
+        return response;
+    }
+
+    private void addToResponse(Value value, Set<GraphNode> responseNodes, Set<GraphLink> responseLinks) {
         switch (value.type().name()) {
             case "PATH":
                 //todo handle PATH type

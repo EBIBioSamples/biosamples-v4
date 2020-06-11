@@ -10,10 +10,7 @@ import uk.ac.ebi.biosamples.neo4j.model.NeoSample;
 import uk.ac.ebi.biosamples.neo4j.repo.NeoSampleRepository;
 import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class SamplesGraphIntegration extends AbstractIntegration {
@@ -59,8 +56,8 @@ public class SamplesGraphIntegration extends AbstractIntegration {
         node.setId("a1");
         node.setType("Sample");
         node.setAttributes(Map.of("organism", "homo sapiens"));
-        query.setNodes(List.of(node));
-        query.setLinks(Collections.emptyList());
+        query.setNodes(Set.of(node));
+        query.setLinks(Collections.emptySet());
 
         GraphSearchQuery response = neoSampleRepository.graphSearch(query, 10, 10);
         if (response.getNodes().isEmpty()) {

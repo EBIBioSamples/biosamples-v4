@@ -76,6 +76,22 @@ function graph_search(base_url) {
         })
     }
 
+    if (relationship1) {
+        if (!(attributeL1 && valueL1)) {
+            nodes.push({
+                id: "a1",
+                type: "Sample"
+            })
+        }
+
+        if (!(attributeR1 && valueR1)) {
+            nodes.push({
+                id: "a2",
+                type: "Sample"
+            })
+        }
+    }
+
 
     let request = {
         nodes: nodes,
@@ -117,7 +133,7 @@ function graph_search(base_url) {
         }]
     };*/
 
-    $.ajax({
+    /*$.ajax({
         type: 'post',
         url: base_url + 'graph/search',
         data: JSON.stringify(request),
@@ -168,6 +184,61 @@ function graph_search(base_url) {
             facetCarddiv = $("<div/>").addClass("card column graph-search-facet")
                 .html("Page: " + page["number"]);
             graphSearchFacet.append(facetCarddiv);
+        }
+    });*/
+
+    $.ajax({
+        type: 'post',
+        url: base_url + 'graph/search/a',
+        data: JSON.stringify(request),
+        contentType: "application/json; charset=utf-8",
+        traditional: true,
+        success: function (data) {
+            samples_url = base_url + 'samples/';
+            let samples = [];
+            console.log(data);
+
+            const links = data["links"].filter(function(link) {return link.type !== "EXTERNAL_REFERENCE"});
+            // const page = data["nodes"].reduce((map, node) => (map[node.id] = node, map), {});
+            const nodes = new Map(data["nodes"].map(i => [i.id, i]));
+            const page = data["page"];
+            const size = data["size"];
+            const total = data["total"];
+
+            console.log(links);
+            console.log(nodes);
+
+            // var graphSearchFacet = $("#graph-search-facet").empty();
+            var graphSearchResults = $("#graph-search-results").empty();
+
+            links.forEach(function (link, index) {
+                let linkType = link.type;
+                let startNode = nodes.get(link.startNode);
+                let endNode = nodes.get(link.endNode);
+
+                let parentDiv = $("<div/>").attr("id", "link-" + index).addClass("graph-search-record medium-12");
+                let sourceDiv = $("<div/>").addClass("card columns medium-4");
+                let typeDiv = $("<div/>").addClass("graph-search-record-link-type columns medium-4");
+                let targetDiv = $("<div/>").addClass("card columns medium-4");
+
+                var nameSpan = $("<span/>").addClass("lead text-left").html(startNode["attributes"]["accession"]);
+                var nameLink = $("<a/>").attr("href", samples_url + startNode["attributes"]["accession"]).append(nameSpan);
+                var nameParentSpan = $("<span/>").addClass("columns medium-9").append(nameLink);
+                sourceDiv.append(nameParentSpan);
+
+                var typeSpan = $("<span/>").addClass("lead text-center").html(linkType);
+                typeDiv.append(typeSpan);
+
+                nameSpan = $("<span/>").addClass("lead text-left").html(endNode["attributes"]["name"]);
+                nameLink = $("<a/>").attr("href", samples_url + endNode["attributes"]["accession"]).append(nameSpan);
+                nameParentSpan = $("<span/>").addClass("columns medium-9").append(nameLink);
+                targetDiv.append(nameParentSpan);
+
+                parentDiv.append(sourceDiv);
+                parentDiv.append(typeDiv);
+                parentDiv.append(targetDiv);
+                graphSearchResults.append(parentDiv);
+            });
         }
     });
 }

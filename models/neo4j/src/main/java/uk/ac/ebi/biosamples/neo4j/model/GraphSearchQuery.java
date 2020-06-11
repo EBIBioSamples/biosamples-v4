@@ -1,26 +1,26 @@
 package uk.ac.ebi.biosamples.neo4j.model;
 
-import java.util.List;
+import java.util.Set;
 
 public class GraphSearchQuery {
-    private List<GraphNode> nodes;
-    private List<GraphLink> links;
+    private Set<GraphNode> nodes;
+    private Set<GraphLink> links;
     private int page;
     private int size;
 
-    public List<GraphNode> getNodes() {
+    public Set<GraphNode> getNodes() {
         return nodes;
     }
 
-    public void setNodes(List<GraphNode> nodes) {
+    public void setNodes(Set<GraphNode> nodes) {
         this.nodes = nodes;
     }
 
-    public List<GraphLink> getLinks() {
+    public Set<GraphLink> getLinks() {
         return links;
     }
 
-    public void setLinks(List<GraphLink> links) {
+    public void setLinks(Set<GraphLink> links) {
         this.links = links;
     }
 

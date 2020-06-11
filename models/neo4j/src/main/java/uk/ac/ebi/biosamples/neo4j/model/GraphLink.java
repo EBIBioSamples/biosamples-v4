@@ -2,7 +2,9 @@ package uk.ac.ebi.biosamples.neo4j.model;
 
 import uk.ac.ebi.biosamples.model.RelationshipType;
 
-public class GraphLink {
+import java.util.Objects;
+
+public class GraphLink implements Comparable<GraphLink> {
     private RelationshipType type;
     private String startNode;
     private String endNode;
@@ -33,5 +35,33 @@ public class GraphLink {
 
     public String getQueryString(String relName) {
         return "(" + startNode + ")-[" + relName + ":" + type + "]->(" + endNode + ") ";
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (!(other instanceof GraphLink)) {
+            return false;
+        }
+        GraphLink otherLink = (GraphLink) other;
+        return this.type.equals(otherLink.getType()) &&
+                this.startNode.equals(otherLink.getStartNode()) && this.endNode.equals(otherLink.getEndNode());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(type, startNode, endNode);
+    }
+
+    @Override
+    public int compareTo(GraphLink other) {
+        if (!this.type.equals(other.getType())) {
+            return this.type.compareTo(other.getType());
+        }
+
+        if (!this.startNode.equals(other.getStartNode())) {
+            return this.startNode.compareTo(other.getStartNode());
+        }
+
+        return this.endNode.compareTo(other.getEndNode());
     }
 }

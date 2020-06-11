@@ -3,16 +3,26 @@ package uk.ac.ebi.biosamples.neo4j.model;
 import java.util.List;
 
 public class GraphSearchResponse {
-    private List<GraphNode> samples;
+    private List<GraphNode> nodes;
+    private List<GraphRelationship> links;
     private int page;
     private int size;
+    private int total;
 
-    public List<GraphNode> getSamples() {
-        return samples;
+    public List<GraphNode> getNodes() {
+        return nodes;
     }
 
-    public void setSamples(List<GraphNode> samples) {
-        this.samples = samples;
+    public void setNodes(List<GraphNode> nodes) {
+        this.nodes = nodes;
+    }
+
+    public List<GraphRelationship> getLinks() {
+        return links;
+    }
+
+    public void setLinks(List<GraphRelationship> links) {
+        this.links = links;
     }
 
     public int getPage() {
@@ -29,5 +39,13 @@ public class GraphSearchResponse {
 
     public void setSize(int size) {
         this.size = size;
+    }
+
+    public int getTotal() {
+        return total;
+    }
+
+    public void setTotal(int total) {
+        this.total = total;
     }
 }
