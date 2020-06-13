@@ -23,7 +23,20 @@ function graph_search(base_url) {
             id: "a2",
             type: "Sample",
             attributes: {[attributeR1]: valueR1}
-        })
+        });
+        // if ((attributeL1 && valueL1) || referenceL1 || relationship1) {
+        //     nodes.push({
+        //         id: "a2",
+        //         type: "Sample",
+        //         attributes: {[attributeR1]: valueR1}
+        //     })
+        // } else {
+        //     nodes.push({
+        //         id: "a1",
+        //         type: "Sample",
+        //         attributes: {[attributeR1]: valueR1}
+        //     })
+        // }
     }
 
     if (relationship1) {
@@ -209,7 +222,7 @@ function graph_search(base_url) {
 
     $.ajax({
         type: 'post',
-        url: base_url + 'graph/search/a',
+        url: base_url + 'graph/search',
         data: JSON.stringify(request),
         contentType: "application/json; charset=utf-8",
         traditional: true,

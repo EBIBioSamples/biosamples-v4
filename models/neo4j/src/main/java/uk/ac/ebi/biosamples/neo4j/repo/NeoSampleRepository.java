@@ -51,25 +51,6 @@ public class NeoSampleRepository implements AutoCloseable {
         return value.asObject();
     }
 
-    public List<Map<String, Object>> getByRelationship(List<GraphRelationship> relationships, int skip, int limit) {
-        StringBuilder query = new StringBuilder();
-        for (GraphRelationship rel : relationships) {
-            query.append("MATCH ").append(rel.getQueryString()).append(" ");
-        }
-        query.append("RETURN a,TYPE(r),b SKIP ").append(skip).append(" LIMIT ").append(limit);
-
-        List<Map<String, Object>> resultList;
-        try (Session session = driver.session()) {
-            LOG.info("Graph query: {}", query);
-            Result result = session.run(query.toString());
-            resultList = result.list(r -> r.asMap(NeoSampleRepository::convert));
-        } catch (Exception e) {
-            resultList = new ArrayList<>();
-        }
-
-        return resultList;
-    }
-
     public GraphSearchQuery graphSearch(GraphSearchQuery searchQuery, int limit, int skip) {
         StringBuilder query = new StringBuilder();
         StringJoiner idJoiner = new StringJoiner(",");
@@ -87,59 +68,12 @@ public class NeoSampleRepository implements AutoCloseable {
         }
 
         if (query.length() == 0) {
-            query.append("MATCH(a1) ");
+            query.append("MATCH(a1:Sample) ");
             idJoiner.add("a1");
         }
 
         query.append(" RETURN ").append(idJoiner.toString());
-        query.append(" ORDER BY ").append("a1").append(".accession SKIP ").append(skip)
-                .append(" LIMIT ").append(limit);
-
-        GraphSearchQuery response = new GraphSearchQuery();
-        try (Session session = driver.session()) {
-            LOG.info("Graph query: {}", query);
-            Result result = session.run(query.toString());
-            Set<GraphNode> responseNodes = new HashSet<>();
-            Set<GraphLink> responseLinks = new HashSet<>();
-            response.setNodes(responseNodes);
-            response.setLinks(responseLinks);
-
-            while (result.hasNext()) {
-                Record record = result.next();
-                for (Value value : record.values()) {
-                    addToResponse(value, responseNodes, responseLinks);
-                }
-            }
-        } catch (Exception e) {
-            LOG.error("Failed to load graph search results", e);
-        }
-
-        return response;
-    }
-
-    public GraphSearchQuery graphSearch2(GraphSearchQuery searchQuery, int limit, int skip) {
-        StringBuilder query = new StringBuilder();
-        StringJoiner idJoiner = new StringJoiner(",");
-        for (GraphNode node : searchQuery.getNodes()) {
-            query.append("MATCH (").append(node.getId()).append(node.getQueryString()).append(") ");
-            idJoiner.add(node.getId());
-        }
-
-        int relCount = 0;
-        for (GraphLink link : searchQuery.getLinks()) {
-            relCount++;
-            String relName = "r" + relCount;
-            query.append("MATCH ").append(link.getQueryString(relName));
-            idJoiner.add(relName);
-        }
-
-        if (query.length() == 0) {
-            query.append("MATCH(a1) ");
-            idJoiner.add("a1");
-        }
-
-        query.append(" RETURN ").append(idJoiner.toString());
-        query.append(" ORDER BY ").append("a1").append(".accession SKIP ").append(skip)
+        query.append(" ORDER BY ").append(idJoiner.toString().contains("a1") ? "a1" : "a2").append(".accession SKIP ").append(skip)
                 .append(" LIMIT ").append(limit);
 
         GraphSearchQuery response = new GraphSearchQuery();
@@ -174,7 +108,7 @@ public class NeoSampleRepository implements AutoCloseable {
                 Node internalNode = value.asNode();
                 GraphNode node = new GraphNode();
                 node.setType(internalNode.labels().iterator().next());
-                node.setAttributes((Map)internalNode.asMap());
+                node.setAttributes((Map) internalNode.asMap());
                 node.setId(String.valueOf(internalNode.id()));
                 responseNodes.add(node);
                 break;

@@ -289,6 +289,11 @@ code[class^="language"] {
 .graph-search-rel-container {
     float: left;
     padding: 1em;
+    margin-top: 18px;
+    background-image: url(../images/relationship_arrow.png);
+    background-repeat: no-repeat;
+    background-size: 200px 30px;
+    background-position: bottom;
     /*margin-right: 1em;*/
 }
 

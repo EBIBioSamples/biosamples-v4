@@ -13,12 +13,10 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.neo4j.model.CypherQuery;
 import uk.ac.ebi.biosamples.neo4j.model.GraphSearchQuery;
-import uk.ac.ebi.biosamples.neo4j.model.GraphSearchRequest;
 import uk.ac.ebi.biosamples.service.GraphSearchService;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 
@@ -47,13 +45,8 @@ public class GraphSearchController {
         return cypherQueryResponse;
     }
 
-    @PostMapping(path = "links", consumes = {MediaType.APPLICATION_JSON_VALUE})
-    public List<Map<String, Object>> graphSearch1(@RequestBody GraphSearchRequest request) {
-        return graphSearchService.fetchByRelationship(request);
-    }
-
     @PostMapping(path = "", consumes = {MediaType.APPLICATION_JSON_VALUE})
-    public Resources<Resource<Sample>> graphSearch(@RequestBody GraphSearchQuery query) {
+    public GraphSearchQuery graphSearch(@RequestBody GraphSearchQuery query) {
         int effectiveSize;
         int effectivePage;
         int totalElements = 0;
@@ -68,27 +61,7 @@ public class GraphSearchController {
         }
         effectivePage = Math.max(0, query.getPage());
 
-        List<Sample> samples = graphSearchService.graphSearch(query, effectiveSize, effectivePage);
-        return populateResources(samples, effectiveSize, effectivePage, totalElements, totalPages);
-    }
-
-    @PostMapping(path = "a", consumes = {MediaType.APPLICATION_JSON_VALUE})
-    public GraphSearchQuery graphSearch2(@RequestBody GraphSearchQuery query) {
-        int effectiveSize;
-        int effectivePage;
-        int totalElements = 0;
-        int totalPages = 0;
-
-        if (query.getSize() > 100) {
-            effectiveSize = 100;
-        } else if (query.getSize() < 1) {
-            effectiveSize = 10;
-        } else {
-            effectiveSize = query.getSize();
-        }
-        effectivePage = Math.max(0, query.getPage());
-
-        return graphSearchService.graphSearch2(query, effectiveSize, effectivePage);
+        return graphSearchService.graphSearch(query, effectiveSize, effectivePage);
     }
 
     private Resources<Resource<Sample>> populateResources(List<Sample> samples, int effectiveSize, int effectivePage,
