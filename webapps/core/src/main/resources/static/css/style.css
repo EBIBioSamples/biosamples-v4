@@ -372,11 +372,23 @@ code[class^="language"] {
     margin-bottom: 10px;
 }
 
+.graph-search-record-sample {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.graph-search-record-sample-span {
+    width: 100%;
+    float: left;
+    text-align: center
+}
+
 .graph-search-record-link-type {
     text-align: center;
-    margin-top: 20px;
+    margin-top: 18px;
     background-image: url("../images/relationship_arrow.png");
     background-repeat: no-repeat;
-    background-size: 200px 20px;
+    background-size: 300px 30px;
     background-position: center;
 }

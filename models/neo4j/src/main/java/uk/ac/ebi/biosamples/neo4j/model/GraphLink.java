@@ -34,7 +34,8 @@ public class GraphLink implements Comparable<GraphLink> {
     }
 
     public String getQueryString(String relName) {
-        return "(" + startNode + ")-[" + relName + ":" + type + "]->(" + endNode + ") ";
+        String rel = (type == RelationshipType.ANY) ? relName : relName + ":" + type;
+        return "(" + startNode + ")-[" + rel + "]->(" + endNode + ") ";
     }
 
     @Override
