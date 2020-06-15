@@ -337,7 +337,7 @@ code[class^="language"] {
 }
 
 /* Style the button that is used to open and close the collapsible content */
-.collapsible {
+.graph-example-collapsible {
     background-color: #eee;
     color: #444;
     cursor: pointer;
@@ -350,17 +350,17 @@ code[class^="language"] {
 }
 
 /* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
-.active, .collapsible:hover {
+.graph-example-active, .graph-example-collapsible:hover {
     background-color: #ccc;
     color: #444;
 }
 
-.collapsible::after {
+.graph-example-collapsible::after {
     float: right;
     content: "\002B";
 }
 
-.active::after {
+.graph-example-active::after {
     float: right;
     content: "\2212";
 }
