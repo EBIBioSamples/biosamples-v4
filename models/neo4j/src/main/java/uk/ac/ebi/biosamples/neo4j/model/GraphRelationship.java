@@ -1,9 +1,6 @@
 package uk.ac.ebi.biosamples.neo4j.model;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import uk.ac.ebi.biosamples.model.RelationshipType;
-
-import java.util.Map;
 
 public class GraphRelationship {
     private RelationshipType type;
