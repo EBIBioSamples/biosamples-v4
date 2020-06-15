@@ -289,6 +289,11 @@ code[class^="language"] {
 .graph-search-rel-container {
     float: left;
     padding: 1em;
+    margin-top: 18px;
+    background-image: url(../images/relationship_arrow.png);
+    background-repeat: no-repeat;
+    background-size: 200px 30px;
+    background-position: bottom;
     /*margin-right: 1em;*/
 }
 
@@ -365,4 +370,30 @@ code[class^="language"] {
     display: none;
     overflow: hidden;
     background-color: #f1f1f1;
+}
+
+.graph-search-record {
+    float: left;
+    margin-bottom: 10px;
+}
+
+.graph-search-record-sample {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.graph-search-record-sample-span {
+    width: 100%;
+    float: left;
+    text-align: center
+}
+
+.graph-search-record-link-type {
+    text-align: center;
+    margin-top: 18px;
+    background-image: url("../images/relationship_arrow.png");
+    background-repeat: no-repeat;
+    background-size: 300px 30px;
+    background-position: center;
 }

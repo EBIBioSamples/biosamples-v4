@@ -1,9 +1,10 @@
 package uk.ac.ebi.biosamples.neo4j.model;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.StringJoiner;
 
-public class GraphNode {
+public class GraphNode implements Comparable<GraphNode> {
     private String id;
     private String type;
     private Map<String, String> attributes;
@@ -54,5 +55,28 @@ public class GraphNode {
             queryString = ":" + type;
         }
         return queryString;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other instanceof GraphNode && this.type.equalsIgnoreCase(((GraphNode) other).getType())) {
+            return this.id.equals(((GraphNode) other).id);
+        }
+
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(type.toUpperCase(), id);
+    }
+
+    @Override
+    public int compareTo(GraphNode other) {
+        if (this.type.equalsIgnoreCase(other.getType())) {
+            return this.id.compareTo(other.getId());
+        } else {
+            return this.type.compareTo(other.getType());
+        }
     }
 }

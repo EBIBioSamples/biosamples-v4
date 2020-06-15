@@ -23,7 +23,7 @@ function graph_search(base_url) {
             id: "a2",
             type: "Sample",
             attributes: {[attributeR1]: valueR1}
-        })
+        });
     }
 
     if (relationship1) {
@@ -32,6 +32,28 @@ function graph_search(base_url) {
             startNode: "a1",
             endNode: "a2"
         });
+
+        if (!(attributeL1 && valueL1)) {
+            nodes.push({
+                id: "a1",
+                type: "Sample"
+            })
+        }
+
+        if (!(attributeR1 && valueR1)) {
+            nodes.push({
+                id: "a2",
+                type: "Sample"
+            })
+        }
+    } else {
+        if (((attributeL1 && valueL1) || referenceL1) && ((attributeR1 && valueR1) || referenceR1)) {
+            links.push({
+                type: "ANY",
+                startNode: "a1",
+                endNode: "a2"
+            });
+        }
     }
 
     if (referenceL1) {
@@ -45,6 +67,13 @@ function graph_search(base_url) {
             startNode: "a1",
             endNode: "a3"
         });
+        //Need empty left node if left external reference is existing
+        if (!(attributeL1 && valueL1) && !relationship1) {
+            nodes.push({
+                id: "a1",
+                type: "Sample"
+            })
+        }
     }
 
     if (referenceR1) {
@@ -58,64 +87,19 @@ function graph_search(base_url) {
             startNode: "a2",
             endNode: "a4"
         });
+        //Need empty right node if right external reference is existing
+        if (!(attributeL1 && valueL1) && !relationship1) {
+            nodes.push({
+                id: "a2",
+                type: "Sample"
+            })
+        }
     }
-
-    //Need empty left node if left external reference is existing
-    if (referenceL1 && !(attributeL1 && valueL1)) {
-        nodes.push({
-            id: "a1",
-            type: "Sample"
-        })
-    }
-
-    //Need empty right node if relationship or right external reference is existing
-    if ((referenceR1 && !(attributeR1 && valueR1)) || (relationship1 && !(attributeR1 && valueR1))) {
-        nodes.push({
-            id: "a2",
-            type: "Sample"
-        })
-    }
-
 
     let request = {
         nodes: nodes,
         links: links
     };
-
-    /*let request = {
-        nodes: [
-            {
-                id: "a1",
-                type: "Sample",
-                attributes: {[attributeL1]: valueL1}
-            }, {
-                id: "a2",
-                type: "Sample",
-                attributes: {[attributeR1]: valueR1}
-            }, {
-                id: "a3",
-                type: "ExternalEntity",
-                attributes: {archive: referenceL1}
-            }, {
-                id: "a4",
-                type: "ExternalEntity",
-                attributes: {archive: referenceR1}
-            }
-        ],
-        links: [{
-            type: relationship1,
-            startNode: "a1",
-            endNode: "a2"
-        }, {
-            type: "EXTERNAL_REFERENCE",
-            startNode: "a1",
-            endNode: "a3"
-        }, {
-            type: "EXTERNAL_REFERENCE",
-            startNode: "a2",
-            endNode: "a4"
-        }]
-    };*/
 
     $.ajax({
         type: 'post',
@@ -126,48 +110,76 @@ function graph_search(base_url) {
         success: function (data) {
             samples_url = base_url + 'samples/';
             let samples = [];
-            if ("_embedded" in data && "samples" in data["_embedded"]) {
-                samples = data["_embedded"]["samples"];
-            }
-            let page = data["page"];
+            console.log(data);
 
-            var graphSearchFacet = $("#graph-search-facet").empty();
+            const links = data["links"].filter(function (link) {
+                return link.type !== "EXTERNAL_REFERENCE"
+            });
+            const externalLinks = data["links"].filter(function (link) {
+                return link.type === "EXTERNAL_REFERENCE"
+            });
+            // const page = data["nodes"].reduce((map, node) => (map[node.id] = node, map), {});
+            let nodes = new Map(data["nodes"].map(i => [i.id, i]));
+            const page = data["page"];
+            const size = data["size"];
+            const total = data["total"];
+
+            console.log(links);
+            console.log(nodes);
+
+            // var graphSearchFacet = $("#graph-search-facet").empty();
             var graphSearchResults = $("#graph-search-results").empty();
 
-            samples.forEach(function (item, index) {
-                var parentDiv = $("<div/>").attr("id", "sample-" + index).addClass("card columns medium-12");
-                var backgroundColor = index % 2 === 0 ? "background: #f0f0f2;" : "background: #ffffff;";
-                parentDiv.attr("style", backgroundColor);
+            if (links.length !== 0) {
+                links.forEach(function (link, index) {
+                    let linkType = link.type.replace("_", " ");
+                    let startNode = nodes.get(link.startNode);
+                    let endNode = nodes.get(link.endNode);
 
-                var nameSpan = $("<span/>").addClass("lead text-left").html(item["name"]);
-                var nameLink = $("<a/>").attr("href", samples_url + item["accession"]).append(nameSpan);
-                var nameParentSpan = $("<span/>").addClass("columns medium-9").append(nameLink);
-                parentDiv.append(nameParentSpan);
+                    let parentDiv = $("<div/>").attr("id", "link-" + index).addClass("graph-search-record medium-12");
+                    let sourceDiv = $("<div/>").addClass("card columns medium-4 graph-search-record-sample");
+                    let typeDiv = $("<div/>").addClass("graph-search-record-link-type columns medium-4");
+                    let targetDiv = $("<div/>").addClass("card columns medium-4 graph-search-record-sample");
 
-                var accessionSpan = $("<span/>").addClass("text-right float-right").html(item["accession"]);
-                var accessionLink = $("<a/>").attr("href", samples_url + item["accession"]).append(accessionSpan);
-                var accParentSpan = $("<span/>").addClass("columns medium-3").append(accessionLink);
-                parentDiv.append(accParentSpan);
+                    var accessionSpan = $("<span/>").addClass("lead graph-search-record-sample-span").html(startNode["attributes"]["accession"]);
+                    var accessionLink = $("<a/>").attr("href", samples_url + startNode["attributes"]["accession"]).append(accessionSpan);
+                    var nameSpan = $("<span/>").addClass("graph-search-record-sample-span").html(startNode["attributes"]["name"]);
+                    sourceDiv.append(accessionLink).append(nameSpan);
 
-                var updateSpan = $("<span/>").addClass("text-right float-left").html("Updated On: " + item["update"]);
-                // var updateP = $("<p/>").addClass("small").html().append(updateSpan);
-                var updateParentSpan = $("<span/>").addClass("small column medium-12").append(updateSpan);
-                parentDiv.append(updateParentSpan);
+                    let typeSpan = $("<span/>").addClass("lead text-center").html(linkType);
+                    typeDiv.append(typeSpan);
 
-                graphSearchResults.append(parentDiv);
-            });
+                    accessionSpan = $("<span/>").addClass("lead graph-search-record-sample-span").html(endNode["attributes"]["accession"]);
+                    accessionLink = $("<a/>").attr("href", samples_url + endNode["attributes"]["accession"]).append(accessionSpan);
+                    nameSpan = $("<span/>").addClass("graph-search-record-sample-span").html(endNode["attributes"]["name"]);
+                    targetDiv.append(accessionLink).append(nameSpan);
 
-            var facetCarddiv = $("<div/>").addClass("card column graph-search-facet")
-                .html("<h5>Results summary (this is fake data)</h5> Total Samples: 123<br> Total Relationships: 123<br>");
-            graphSearchFacet.append(facetCarddiv);
+                    parentDiv.append(sourceDiv);
+                    parentDiv.append(typeDiv);
+                    parentDiv.append(targetDiv);
+                    graphSearchResults.append(parentDiv);
+                });
+            } else {
+                data["nodes"].forEach(function (node, index) {
+                    if (node["type"] !== "ExternalEntity") {
+                        var parentDiv = $("<div/>").attr("id", "sample-" + index).addClass("card columns medium-12");
+                        var backgroundColor = index % 2 === 0 ? "background: #f0f0f2;" : "background: #ffffff;";
+                        parentDiv.attr("style", backgroundColor);
 
-            facetCarddiv = $("<div/>").addClass("card column graph-search-facet")
-                .html("<h5>Relationships</h5>SAME AS: 100<br>DERIVED FROM: 300<br>EXTERNAL REF: 300<br>");
-            graphSearchFacet.append(facetCarddiv);
+                        var nameSpan = $("<span/>").addClass("lead text-left").html(node["attributes"]["name"]);
+                        var nameLink = $("<a/>").attr("href", samples_url + node["attributes"]["accession"]).append(nameSpan);
+                        var nameParentSpan = $("<span/>").addClass("columns medium-9").append(nameLink);
+                        parentDiv.append(nameParentSpan);
 
-            facetCarddiv = $("<div/>").addClass("card column graph-search-facet")
-                .html("Page: " + page["number"]);
-            graphSearchFacet.append(facetCarddiv);
+                        var accessionSpan = $("<span/>").addClass("text-right float-right").html(node["attributes"]["accession"]);
+                        var accessionLink = $("<a/>").attr("href", samples_url + node["attributes"]["accession"]).append(accessionSpan);
+                        var accParentSpan = $("<span/>").addClass("columns medium-3").append(accessionLink);
+                        parentDiv.append(accParentSpan);
+
+                        graphSearchResults.append(parentDiv);
+                    }
+                })
+            }
         }
     });
 }
