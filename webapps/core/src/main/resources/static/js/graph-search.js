@@ -195,17 +195,3 @@ function execute_example_query(base_url, attributeL1, valueL1, referenceL1, rela
 
     graph_search(base_url)
 }
-
-
-function init_graph_search() {
-    let queryCollapsible = document.getElementById("collapsible");
-    queryCollapsible.addEventListener("click", function () {
-        this.classList.toggle("active");
-        var content = this.nextElementSibling;
-        if (content.style.display === "block") {
-            content.style.display = "none";
-        } else {
-            content.style.display = "block";
-        }
-    });
-}

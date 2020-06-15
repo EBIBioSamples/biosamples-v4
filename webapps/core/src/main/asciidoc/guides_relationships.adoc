@@ -1,0 +1,55 @@
+= [.ebi-color]#Relationships#
+:last-update-label!:
+:toc:
+
+== Sample relationships in BioSamples
+
+Sample relationships describe the relationship between two biosamples. The relationships can be submission, technical, or biological relationships. It links different samples together and supports relationship-based graph searches.
+
+The sample relationship is submitted to Biosamples by providing the `source`, `type`, and `target`. Below is an example of sample relationships in Biosamples.
+
+....
+"relationships" : [ {
+    "source" : "SAMEA1111111",
+    "type" : "derived from",
+    "target" : "SAMEA2222222"
+    }, {
+    "source" : "SAMEG00000",
+    "type" : "has member",
+    "target" : "SAMEA1111111"
+} ]
+....
+
+When the submitter provides relationship information in one sample, the reverse relationships in corresponding samples will be generated automatically. BioSamples doesn’t validate the type, direction, or the logic of the relationships.
+
+BioSamples currently supports four types of sample relationships
+
+[width="100%",cols="2m,2m,5e",frame="topbot",options="header"]
+|==========================
+|Relationship types|Reverse relationships|Description
+
+|derived from
+|derived from (reverse)
+|Sample A is derived from Sample B. +
+E.g. +
+- Tissue samples derived from donor samples +
+- Cell line samples derived from tissue samples +
+- Viral samples separated from saliva samples +
+- Organoid samples cultured from tissue samples +
+|same as
+|same as
+|Sample A is the same as Sample B. This can be used to link duplicated samples
+
+|has member
+|has member (reverse)
+|Sample A is a member of Sample group G. BioSamples create a sample group for each sampleTab submission*. It’s also possible to put patient samples as a sample group.
+
+|child of
+|child of (reverse)
+|Sample A is the child of Sample B. +
+E.g +
+- Patient A is the child of Patient B
+|==========================
+
+- For samples in the same project or study, it is recommended to provide the project or study information as an attribute, rather than providing `has member` relationships to avoid duplication.
+

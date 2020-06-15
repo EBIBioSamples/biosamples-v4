@@ -416,7 +416,7 @@ public class LegacyJsonSearchIntegration extends AbstractIntegration {
                     ExternalReference.build("http://hPSCreg.eu/cell-lines/PZIF-001")
             );
             SortedSet<Relationship> relationships = new TreeSet<>();
-            relationships.add(Relationship.build("SAMEG199", "has member", "SAMEA911"));
+//            relationships.add(Relationship.build("SAMEG199", "has member", "SAMEA911"));
 
 //            return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, relationships, externalReferences);
             return new Sample.Builder(name, accession).withDomain("self.BiosampleIntegrationTest")
