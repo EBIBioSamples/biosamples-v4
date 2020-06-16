@@ -19,16 +19,14 @@
 			<id>embl-ebi</id>
 			<modules>
 				<module>ena</module>
-				<module>deduplication</module>
+				<module>ncbi</module>
 			</modules>
 		</profile>
 	</profiles>
 
 	<modules>
-		<module>ncbi</module>
 		<module>curation</module>
 		<module>zooma</module>
-		<module>sampletab</module>
 		<module>template</module>
 		<module>legacyxml</module>
 		<module>reindex</module>
@@ -41,5 +39,6 @@
 		<module>ebeye-search-export</module>
 		<module>neoexport</module>
 		<module>clearinghouse</module>
+		<module>ena-amr</module>
     </modules>
 </project>
