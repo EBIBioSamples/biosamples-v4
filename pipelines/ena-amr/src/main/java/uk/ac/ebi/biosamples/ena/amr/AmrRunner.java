@@ -193,8 +193,11 @@ public class AmrRunner implements ApplicationRunner {
         }
 
         private Void fetchSampleAndProcessAmrData(final URL url, final String accession) {
+            final List<String> curationDomainBlankList = new ArrayList<>();
+            curationDomainBlankList.add("");
+
             try {
-                final Optional<Resource<Sample>> sample = bioSamplesClient.fetchSampleResource(accession, Optional.of(new ArrayList<>()));
+                final Optional<Resource<Sample>> sample = bioSamplesClient.fetchSampleResource(accession, Optional.of(curationDomainBlankList));
 
                 if (sample.isPresent()) {
                     enaAmrDataProcessService.processAmrData(enaAmrDataProcessService.processAmrLines(getReader(url)), sample.get().getContent(), bioSamplesClient);

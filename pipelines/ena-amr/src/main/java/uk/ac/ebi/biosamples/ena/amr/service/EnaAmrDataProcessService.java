@@ -8,14 +8,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.ena.amr.AmrRunner;
-import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.model.structured.amr.AMREntry;
 import uk.ac.ebi.biosamples.model.structured.amr.AMRTable;
 
 import java.io.BufferedReader;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
@@ -42,7 +43,6 @@ public class EnaAmrDataProcessService {
 
     private void processAmrData(List<String> lines, Sample sample, BioSamplesClient client, String accession) {
         final Set<AbstractData> structuredData = new HashSet<>();
-        final SortedSet<ExternalReference> externalReferences = new TreeSet<>(sample.getExternalReferences());
         final AMRTable.Builder amrTableBuilder = new AMRTable.Builder("http://localhost:8081/biosamples/schemas/amr.json", "self.BiosampleImportENA");
 
         lines.forEach(line -> {
@@ -61,19 +61,15 @@ public class EnaAmrDataProcessService {
 
         structuredData.add(amrTableBuilder.build());
 
-        if (accession.startsWith(AmrRunner.SAMEA)) {
-            externalReferences.add(ExternalReference.build("https://www.ebi.ac.uk/ena/data/view/" + accession));
-            Sample sampleNew = Sample.Builder.fromSample(sample).withData(structuredData).withExternalReferences(externalReferences).build();
+        if (structuredData.size() > 0) {
+            final Sample sampleNew = Sample.Builder.fromSample(sample).withData(structuredData).build();
             client.persistSampleResource(sampleNew);
-        } else {
-            Sample sampleNew = Sample.Builder.fromSample(sample).withData(structuredData).withNoExternalReferences().build();
-            client.persistSampleResource(sampleNew);
-        }
 
-        log.info("Submitted sample " + accession + " with structured data");
+            log.info("Submitted sample " + accession + " with structured data");
+        }
     }
 
-    private String removeBioSampleId(String line) {
+    private String removeBioSampleId(final String line) {
         return line.substring(line.indexOf(AmrRunner.TAB) + 1);
     }
 
