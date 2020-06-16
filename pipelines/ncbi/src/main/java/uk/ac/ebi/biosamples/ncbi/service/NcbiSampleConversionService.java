@@ -135,8 +135,10 @@ public class NcbiSampleConversionService {
         if (!hasSraAccession) {
             final String sraAccession = ncbiEraProDao.getSraAccession(accession);
 
-            attrs.add(Attribute.build(SRA_ACCESSION, sraAccession));
-            attrs.add(Attribute.build(INSDC_SECONDARY_ACCESSION, sraAccession));
+            if(sraAccession != null && !sraAccession.isEmpty()) {
+                attrs.add(Attribute.build(SRA_ACCESSION, sraAccession));
+                attrs.add(Attribute.build(INSDC_SECONDARY_ACCESSION, sraAccession));
+            }
         }
 
         if (alias == null && geoAlias != null) {

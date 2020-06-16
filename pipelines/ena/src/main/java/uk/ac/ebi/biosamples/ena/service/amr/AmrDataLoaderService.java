@@ -146,7 +146,9 @@ public class AmrDataLoaderService {
 
     private Set<AbstractData> fetchSampleAndProcessAmrData(final URL url, final String accession) {
         try {
-            return processAmrData(processAmrLines(getReader(url)), accession);
+            final Set<AbstractData> data = processAmrData(processAmrLines(getReader(url)), accession);
+
+            return data;
         } catch (final IOException ioe) {
             log.info("Couldn't process AMR data for " + accession);
             return null;

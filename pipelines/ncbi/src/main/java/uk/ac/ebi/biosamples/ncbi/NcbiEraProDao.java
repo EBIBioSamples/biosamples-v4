@@ -23,6 +23,8 @@ public class NcbiEraProDao {
         List<String> resultList = jdbcTemplate.queryForList(
                 sql, new Object[]{sampleAccession}, String.class);
 
-        return resultList.get(0);
+        if(resultList != null && resultList.size() > 0)
+            return resultList.get(0);
+        else return null;
     }
 }
