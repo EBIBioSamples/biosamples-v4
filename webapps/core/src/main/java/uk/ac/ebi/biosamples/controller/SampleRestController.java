@@ -168,9 +168,6 @@ public class SampleRestController {
                                 @RequestParam(name = "setfulldetails", required = false, defaultValue = "true") boolean setFullDetails) {
 
         if (sample.getAccession() == null || !sample.getAccession().equals(accession)) {
-            // if the accession in the body is different to the accession in the
-            // datasetUrl, throw an error
-            // TODO create proper exception with right http error code
             throw new SampleAccessionMismatchException();
         }
 
