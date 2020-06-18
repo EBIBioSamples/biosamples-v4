@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.ena.util.amr;
+package uk.ac.ebi.biosamples.model;
 
 public class AccessionFtpUrlPair {
     String accession;

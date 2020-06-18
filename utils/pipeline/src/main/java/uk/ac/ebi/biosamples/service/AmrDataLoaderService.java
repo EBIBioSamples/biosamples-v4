@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.ena.service.amr;
+package uk.ac.ebi.biosamples.service;
 
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
@@ -6,7 +6,7 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.ena.util.amr.AccessionFtpUrlPair;
+import uk.ac.ebi.biosamples.model.AccessionFtpUrlPair;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.model.structured.amr.AMREntry;
 import uk.ac.ebi.biosamples.model.structured.amr.AMRTable;
@@ -145,14 +145,19 @@ public class AmrDataLoaderService {
     }
 
     private Set<AbstractData> fetchSampleAndProcessAmrData(final URL url, final String accession) {
-        try {
-            final Set<AbstractData> data = processAmrData(processAmrLines(getReader(url)), accession);
+        Set<AbstractData> amrData = new HashSet<>();
 
-            return data;
+        try {
+            amrData = processAmrData(processAmrLines(getReader(url)), accession);
         } catch (final IOException ioe) {
-            log.info("Couldn't process AMR data for " + accession);
-            return null;
+            ioe.printStackTrace();
+            log.info("A IO Exception occurrence detected");
+
+            if (amrData.size() == 0)
+                log.info("Couldn't process AMR data for " + accession);
         }
+
+        return amrData;
     }
 
     private List<String> processAmrLines(BufferedReader bufferedReader) {
@@ -169,7 +174,8 @@ public class AmrDataLoaderService {
             final ObjectReader r = mapper.readerFor(AMREntry.class).with(schema);
 
             try {
-                AMREntry amrEntry = r.readValue(line);
+                final AMREntry amrEntry = r.readValue(line);
+
                 amrTableBuilder.addEntry(amrEntry);
             } catch (final Exception e) {
                 log.error("Error in parsing AMR data for sample " + accession);
