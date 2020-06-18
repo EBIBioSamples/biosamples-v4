@@ -8,6 +8,7 @@ import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.Sample;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -15,12 +16,14 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class ClearninghouseCallable implements Callable<PipelineResult> {
     private static final Logger LOG = LoggerFactory.getLogger(ClearninghouseCallable.class);
-    static final ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<>();
-
     private final Sample sample;
     private final BioSamplesClient bioSamplesClient;
     private final String domain;
     private final List<Map<String, String>> curations;
+
+    static final String[] NON_APPLICABLE_CURATION_VALUES = {"n/a", "na", "n.a", "none",
+            "unknown", "--", ".", "null", "missing", "not applicable", "not_applicable"};
+    static final ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<>();
 
     public ClearninghouseCallable(final BioSamplesClient bioSamplesClient, final Sample sample, final String domain,
                                   final List<Map<String, String>> curations) {
@@ -51,8 +54,8 @@ public class ClearninghouseCallable implements Callable<PipelineResult> {
                 boolean curationAccepted = false;
 
                 if (preValString == null || preValString.isEmpty()) {
-                    if ("NotDefined".equals(postValString)) {
-                        //todo shall we import this curation?
+                    if (Arrays.asList(NON_APPLICABLE_CURATION_VALUES).contains(postValString)) {
+                        LOG.info("Ignoring curation " + postAttrString + " with value " + postValString + " for accession " + sample.getAccession());
                     } else if (postValString != null && !postValString.isEmpty()) {
                         final Attribute attributePost = Attribute.build(postAttrString, postValString);
                         final Curation curation = Curation.build(null, attributePost);
