@@ -58,15 +58,13 @@ public class NcbiCurationCallable implements Callable<Void> {
             checkAndUpdateSuppressedSample();
         } else {
             // get the sample to make sure it exists first
-            final List<String> curationDomainBlankList = new ArrayList<>();
-            curationDomainBlankList.add("");
-
-            if (bioSamplesClient.fetchSampleResource(this.accession, Optional.of(curationDomainBlankList)).isPresent()) {
+            if (bioSamplesClient.fetchSampleResource(this.accession, Optional.of(new ArrayList<String>())).isPresent()) {
                 bioSamplesClient.persistCuration(this.accession, curation, domain);
             } else {
                 log.warn("Unable to find " + this.accession);
             }
         }
+
         log.trace("HANDLED " + this.accession);
 
         return null;
