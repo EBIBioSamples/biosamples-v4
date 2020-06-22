@@ -1,0 +1,32 @@
+= [.ebi-color]#Value Reporting Recommendations#
+:last-update-label!:
+:toc:
+
+== Reporting missing values
+
+The International Nucleotide Database Collaboration (INSDC) have developed a standardised missing/null
+value reporting language to be used where a value of an expected format for sample metadata reporting
+can not be provided. Following table list down recommended terms for reporting missing values and their description.
+
+[width="100%",cols="2m,5e",frame="topbot",options="header"]
+|==========================
+|Value|Definition
+|not applicable
+|Information is inappropriate to report. Therefore should not be included and should be removed with the attribute.
+|not collected
+|Information of an expected format was not given because it has not been collected
+|not provided
+|Information of an expected format was not given, a value may be given at the later stage
+|restricted access
+|Information exists but can not be released openly because of privacy concerns
+|==========================
+
+BioSamples recommends to use `not collected`, `not provided` and `restricted access` terms for reporting missing values.
+All the other missing values that do not fall into any of the above recommended categories, should be removed from the submission.
+If they are provided, they will be removed using automatic curations. These values include
+`n/a`, `na`, `n.a`, `none`, `unknown`, `--`, `.`, `null`, `missing`, `not reported`, `not requested`, `not applicable`, `not_applicable`, `not specified`, `not known`.
+
+=== Related documentation
+
+- https://dcc-documentation.readthedocs.io/en/latest/experiment/ena_template/#5-missing-values[FAANG: Missing values]
+- https://www.ebi.ac.uk/ena/about/missing-values-reporting[ENA: Missing value reporting]
