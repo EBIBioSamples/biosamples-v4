@@ -1,0 +1,26 @@
+= [.ebi-color]#Value Reporting Recommendations#
+:last-update-label!:
+:toc:
+
+== Reporting missing values
+
+BioSamples recommends to use `not collected`, `not provided` and `restricted access` terms for reporting missing values when attribute-values can not be included in a submission. Following table list down recommended terms and their description.
+
+[width="100%",cols="2m,5e",frame="topbot",options="header"]
+|==========================
+|Value|Definition
+|not collected
+|Information was not given because it has not been collected, and will always be missing.
+|not provided
+|Information may have been collected but was not provided with the submission. It may be added later.
+|restricted access
+|Information exists, but can not be released openly because of privacy concerns.
+|==========================
+
+[%hardbreaks]
+All the other missing values that do not fall into any of the above recommended categories, should be removed from the submission. If they are provided, they will be removed using automatic curations. These values include `n/a`, `na`, `n.a`, `none`, `unknown`, `--`, `.`, `null`, `missing`, `not reported`, `not requested`, `not applicable`, `not specified`, `not known`.
+
+=== Related documentation
+
+- https://dcc-documentation.readthedocs.io/en/latest/experiment/ena_template/#5-missing-values[FAANG: Missing values]
+- https://www.ebi.ac.uk/ena/about/missing-values-reporting[ENA: Missing value reporting]
