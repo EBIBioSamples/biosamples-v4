@@ -3,6 +3,7 @@ package uk.ac.ebi.biosamples.service;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -22,7 +23,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.model.structured.DataType;
 import uk.ac.ebi.tsc.aap.client.model.Domain;
 import uk.ac.ebi.tsc.aap.client.security.UserAuthentication;
@@ -34,11 +34,13 @@ public class BioSamplesAapService {
 	
 	private final Traverson traverson;
 	private final BioSamplesProperties bioSamplesProperties;
+	private final SampleService sampleService;
 	
-	public BioSamplesAapService(RestTemplateBuilder restTemplateBuilder, BioSamplesProperties bioSamplesProperties) {
+	public BioSamplesAapService(RestTemplateBuilder restTemplateBuilder, BioSamplesProperties bioSamplesProperties, SampleService sampleService) {
 		traverson = new Traverson(bioSamplesProperties.getBiosamplesClientAapUri(), MediaTypes.HAL_JSON);
 		traverson.setRestOperations(restTemplateBuilder.build());
 		this.bioSamplesProperties = bioSamplesProperties;
+		this.sampleService = sampleService;
 	}
 
 	public Sample handleUpdateRequestFromOriginalSubmitter(final Sample sample) {
@@ -65,6 +67,10 @@ public class BioSamplesAapService {
 
 	@ResponseStatus(value = HttpStatus.FORBIDDEN, reason = "You don't have access to the sample structured data. If you think this is an error and/or you should have access please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk") // 403
 	public static class StructuredDataNotAccessibleException extends RuntimeException {
+	}
+
+	@ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Sample domain mismatch") // 400
+	public static class SampleDomainMismatchException extends RuntimeException {
 	}
 	
 	/**
@@ -142,6 +148,14 @@ public class BioSamplesAapService {
 			} else {
 				//if the sample doesn't have a domain, and we can't guess one, then end
 				throw new DomainMissingException();
+			}
+		}
+
+		// todo remove integration user check
+		if (sample.getAccession() != null && !(isWriteSuperUser() || isIntegrationTestUser())) {
+			Optional<Sample> oldSample = sampleService.fetch(sample.getAccession(), Optional.empty(), null);
+			if (oldSample.isEmpty() || !usersDomains.contains(oldSample.get().getDomain())) {
+				throw new SampleDomainMismatchException();
 			}
 		}
 
