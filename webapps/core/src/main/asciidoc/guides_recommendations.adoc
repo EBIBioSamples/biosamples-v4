@@ -24,7 +24,7 @@ can not be provided. Following table list down recommended terms for reporting m
 - BioSamples recommends to use `not collected`, `not provided` and `restricted access` terms for reporting missing values.
 - All the other missing values that do not fall into any of the above recommended categories, should be removed from the submission.
 If they are provided, they will be removed using automatic curations. These values include
-`n/a`, `na`, `n.a`, `none`, `unknown`, `--`, `.`, `null`, `missing`, `not reported`, `not requested`, `not applicable`, `not_applicable`, `not specified`, `not known`.
+`n/a`, `na`, `n.a`, `none`, `unknown`, `--`, `.`, `null`, `missing`, `not reported`, `not requested`,`not specified`, `not known`.
 
 === Related documentation
 
