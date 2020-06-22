@@ -23,13 +23,13 @@
 			<div class="row">
 				<div class="warning-msg">
 					<i class="icon icon-common icon-exclamation-triangle"></i>
-					SampleTab services are deprecated and will be retired from 01/05/2020. You can still access SampleTab services <a th:href="@{${sampletabUrl}}">here</a> until 01/05/2020.
-					Links in this page now point to <a th:href="@{{baseUrl}(baseUrl=${usiUrl})}">Data Submission Portal</a>. Data Submission Portal is the recommended way for submitting samples to BioSamples.
+					SampleTab services are deprecated and will be retired from 01/07/2020. You can still access SampleTab services <a th:href="@{${sampletabUrl}}">here</a> until 01/07/2020.
+					Links in this page now point to BioSamples <a href="/biosamples/docs/references/api/submit">JSON API documentation</a>. Please use BioSamples JSON API for all future submissions.
 				</div>
-				<h2>Web Services</h2>
+				<h2>Services</h2>
 				<p>There are several services provided for programatically sending sample information to the <a href="/biosamples"></a>BioSamples Database</a>. These are: </p>
                 <div class="row biosamples-button-row">
-					<a th:href="@{{baseUrl}(baseUrl=${usiUrl})}" href="submission.html">
+					<a href="/biosamples/docs/references/api/submit">
 						<div class="large-4 columns">
 							<div class="card biosamples-card">
 								<h3>Submission Service</h3>
