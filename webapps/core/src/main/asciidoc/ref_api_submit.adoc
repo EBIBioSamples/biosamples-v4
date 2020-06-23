@@ -64,7 +64,7 @@ For all the links available in BioSamples check the link:../api/links[Links Refe
 == Update sample
 `PUT` a sample to BioSamples
 
-The submitted sample is required to have an accession and the accession should match the one in the url
+The submitted sample is required to have an accession and the accession should match the one in the url. Updating a sample overwrites its existing content with the new one. If you want to preserve existing attributes, you should first download the sample, build a new version including existing and new attributes, and resubmit the new content.
 
 === Request
 include::{snippets}/put-sample/http-request.adoc[]
