@@ -10,6 +10,7 @@ docker-compose.debug.override.yml
 
 bin/
 target/
+export/
 
 # Scripts
 docker-env.sh
@@ -106,3 +107,7 @@ create_new_facets_and_filters.md
 /pipelines/ncbi/ncbi-import.json
 /ncbi.*.gz
 /ncbi_*.*.gz
+
+#docker
+data
+docker

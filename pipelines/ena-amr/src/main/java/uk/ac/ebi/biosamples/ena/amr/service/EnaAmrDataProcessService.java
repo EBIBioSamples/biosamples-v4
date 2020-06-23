@@ -25,13 +25,25 @@ public class EnaAmrDataProcessService {
     private final static Logger log = LoggerFactory.getLogger(EnaAmrDataProcessService.class);
     public final static ConcurrentLinkedQueue<String> failedQueue = new ConcurrentLinkedQueue<String>();
 
-    public void processAmrRows(final List<String> lines, final Sample sample, final BioSamplesClient client) {
-        final Set<AbstractData> structuredData = new HashSet<>();
-        final AMRTable.Builder amrTableBuilder = new AMRTable.Builder("http://localhost:8081/biosamples/schemas/amr.json", "self.BiosampleImportENA");
+    public void processAmrData(final List<String> lines, final Sample sample, final BioSamplesClient client) {
         /*String[] dilutionMethods = new String[]{"Broth dilution", "Microbroth dilution", "Agar dilution"};
         String[] diffusionMethods = new String[]{"Disc-diffusion", "Neo-sensitabs", "Etest"};*/
 
         final String accession = sample.getAccession();
+
+        if (!accession.startsWith(AmrRunner.SAMEA) && sample.getData().size() > 0)
+            log.info("Not an ENA sample and AMR data already present in sample for " + accession);
+        else
+            processAmrData(lines, sample, client, accession);
+    }
+
+    public List<String> processAmrLines(BufferedReader bufferedReader) {
+        return bufferedReader.lines().skip(1).map(this::removeBioSampleId).map(this::dealWithExtraTabs).collect(Collectors.toList());
+    }
+
+    private void processAmrData(List<String> lines, Sample sample, BioSamplesClient client, String accession) {
+        final Set<AbstractData> structuredData = new HashSet<>();
+        final AMRTable.Builder amrTableBuilder = new AMRTable.Builder("http://localhost:8081/biosamples/schemas/amr.json", "self.BiosampleImportENA");
 
         lines.forEach(line -> {
             final CsvMapper mapper = new CsvMapper();
@@ -42,24 +54,23 @@ public class EnaAmrDataProcessService {
                 AMREntry amrEntry = r.readValue(line);
                 amrTableBuilder.addEntry(amrEntry);
             } catch (final Exception e) {
-                log.error("Error in parsing AMR data for sample ", accession);
+                log.error("Error in parsing AMR data for sample " + accession);
                 failedQueue.add(accession);
             }
         });
 
         structuredData.add(amrTableBuilder.build());
-        Sample sampleNew = Sample.Builder.fromSample(sample).withData(structuredData).build();
-        client.persistSampleResource(sampleNew);
 
-        log.info("Submitted sample " + accession + " with structured data");
+        if (structuredData.size() > 0) {
+            final Sample sampleNew = Sample.Builder.fromSample(sample).withData(structuredData).build();
+            client.persistSampleResource(sampleNew);
+
+            log.info("Submitted sample " + accession + " with structured data");
+        }
     }
 
-    private String removeBioSampleId(String line) {
+    private String removeBioSampleId(final String line) {
         return line.substring(line.indexOf(AmrRunner.TAB) + 1);
-    }
-
-    public List<String> processAmrLines(BufferedReader bufferedReader) {
-        return bufferedReader.lines().skip(1).map(this::removeBioSampleId).map(this::dealWithExtraTabs).collect(Collectors.toList());
     }
 
     private String dealWithExtraTabs(String line) {

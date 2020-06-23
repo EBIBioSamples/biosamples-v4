@@ -27,15 +27,22 @@ public class MongoSampleToSampleConverter implements Converter<MongoSample, Samp
 
     @Override
     public Sample convert(MongoSample sample) {
+        final SortedSet<ExternalReference> externalReferences = new TreeSet<>();
 
-        SortedSet<ExternalReference> externalReferences = new TreeSet<>();
-        for (MongoExternalReference mongoExternalReference : sample.getExternalReferences()) {
-            externalReferences.add(mongoExternalReferenceToExternalReferenceConverter.convert(mongoExternalReference));
+        if (sample.getExternalReferences() != null && sample.getExternalReferences().size() > 0) {
+            for (final MongoExternalReference mongoExternalReference : sample.getExternalReferences()) {
+                if (mongoExternalReference != null)
+                    externalReferences.add(mongoExternalReferenceToExternalReferenceConverter.convert(mongoExternalReference));
+            }
         }
 
-        SortedSet<Relationship> relationships = new TreeSet<>();
-        for (MongoRelationship mongoRelationship : sample.getRelationships()) {
-            relationships.add(mongoRelationshipToRelationshipConverter.convert(mongoRelationship));
+        final SortedSet<Relationship> relationships = new TreeSet<>();
+
+        if (sample.getRelationships() != null && sample.getRelationships().size() > 0) {
+            for (final MongoRelationship mongoRelationship : sample.getRelationships()) {
+                if (mongoRelationship != null)
+                    relationships.add(mongoRelationshipToRelationshipConverter.convert(mongoRelationship));
+            }
         }
 
         //when we convert to a MongoSample then the Sample *must* have a domain

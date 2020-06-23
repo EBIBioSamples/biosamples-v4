@@ -141,6 +141,7 @@ public class ApiDocumentationTest {
 
         when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(wrongSample);
         when(sampleService.store(wrongSample)).thenCallRealMethod();
+        when(sampleService.store(wrongSample, false)).thenCallRealMethod();
 
 
         this.mockMvc.perform(

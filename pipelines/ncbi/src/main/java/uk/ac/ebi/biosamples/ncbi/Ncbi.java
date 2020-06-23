@@ -3,6 +3,7 @@ package uk.ac.ebi.biosamples.ncbi;
 import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;
@@ -11,6 +12,8 @@ import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.structured.AbstractData;
+import uk.ac.ebi.biosamples.service.AmrDataLoaderService;
 import uk.ac.ebi.biosamples.service.FilterBuilder;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.MailSender;
@@ -35,16 +38,16 @@ import java.util.zip.GZIPInputStream;
 @Component
 @Profile("!test")
 public class Ncbi implements ApplicationRunner {
-
     private Logger log = LoggerFactory.getLogger(getClass());
-
     private final PipelinesProperties pipelinesProperties;
-
     private final XmlFragmenter xmlFragmenter;
-
     private final NcbiFragmentCallback sampleCallback;
-
     private final BioSamplesClient bioSamplesClient;
+
+    @Autowired
+    private AmrDataLoaderService amrDataLoaderService;
+
+    private Map<String, Set<AbstractData>> sampleToAmrMap = new HashMap<>();
 
     public Ncbi(PipelinesProperties pipelinesProperties,
                 XmlFragmenter xmlFragmenter,
@@ -61,9 +64,15 @@ public class Ncbi implements ApplicationRunner {
         boolean isPassed = true;
 
         try {
+            sampleToAmrMap = amrDataLoaderService.loadAmrData();
+        } catch (final Exception e) {
+            log.error("Error in processing AMR data from ENA API - continue with the pipeline");
+        }
+
+        try {
             log.info("Processing NCBI pipeline...");
 
-            LocalDate fromDate = null;
+            LocalDate fromDate;
             if (args.getOptionNames().contains("from")) {
                 fromDate = LocalDate.parse(args.getOptionValues("from").iterator().next(),
                         DateTimeFormatter.ISO_LOCAL_DATE);
@@ -76,7 +85,6 @@ public class Ncbi implements ApplicationRunner {
             } else {
                 toDate = LocalDate.parse("3000-01-01", DateTimeFormatter.ISO_LOCAL_DATE);
             }
-
 
             log.info("Processing samples from " + DateTimeFormatter.ISO_LOCAL_DATE.format(fromDate));
             log.info("Processing samples to " + DateTimeFormatter.ISO_LOCAL_DATE.format(toDate));
@@ -94,7 +102,6 @@ public class Ncbi implements ApplicationRunner {
             inputPath = inputPath.toAbsolutePath();
 
             try (InputStream is = new GZIPInputStream(new BufferedInputStream(Files.newInputStream(inputPath)))) {
-
                 if (pipelinesProperties.getThreadCount() > 0) {
                     ExecutorService executorService = null;
                     try {
@@ -104,6 +111,7 @@ public class Ncbi implements ApplicationRunner {
 
                         sampleCallback.setExecutorService(executorService);
                         sampleCallback.setFutures(futures);
+                        sampleCallback.setSampleToAmrMap(sampleToAmrMap);
 
                         // this does the actual processing
                         xmlFragmenter.handleStream(is, "UTF-8", sampleCallback);
@@ -163,14 +171,18 @@ public class Ncbi implements ApplicationRunner {
 
     private void makePrivate(Set<String> toRemoveAccessions) {
         //TODO make this multithreaded for performance
+        final List<String> curationDomainBlankList = new ArrayList<>();
+        curationDomainBlankList.add("");
+
         try {
             for (String accession : toRemoveAccessions) {
                 // this must get the ORIGINAL sample without curation
-                Optional<Resource<Sample>> sampleOptional = bioSamplesClient.fetchSampleResource(accession, Optional.empty());
+                Optional<Resource<Sample>> sampleOptional = bioSamplesClient.fetchSampleResource(accession, Optional.of(curationDomainBlankList));
                 if (sampleOptional.isPresent()) {
                     Sample sample = sampleOptional.get().getContent();
                     //set the release date to 1000 years in the future to make it private again
-                    Sample newSample = Sample.Builder.fromSample(sample)
+                    //remove structured data if any
+                    Sample newSample = Sample.Builder.fromSample(sample).withNoData()
                             .withRelease(ZonedDateTime.now(ZoneOffset.UTC).plusYears(1000).toInstant())
                             .build();
                     //persist the now private sample

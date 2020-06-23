@@ -66,7 +66,7 @@ public class SampleValidator {
 		}
 
 		for (Relationship rel : sample.getRelationships()) {
-			errors.addAll(relationshipValidator.validate(rel));
+			errors.addAll(relationshipValidator.validate(rel, sample.getAccession()));
 		}
 	}
 

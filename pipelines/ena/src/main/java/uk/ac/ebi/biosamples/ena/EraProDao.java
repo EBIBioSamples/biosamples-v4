@@ -195,6 +195,17 @@ public class EraProDao {
         jdbcTemplate.query(query, rch, enaAccession);
     }
 
+    public String getSraAccession(final String sampleAccession) {
+        String sql = "SELECT SAMPLE_ID FROM SAMPLE WHERE BIOSAMPLE_ID = ? ";
+
+        List<String> resultList = jdbcTemplate.queryForList(
+                sql, new Object[]{sampleAccession}, String.class);
+
+        if(resultList != null && resultList.size() > 0)
+            return resultList.get(0);
+        else return null;
+    }
+
     RowMapper<SampleDBBean> insdcRowMapper = (rs, rowNum) -> {
         final SampleDBBean sampleBean = new SampleDBBean();
 
@@ -206,13 +217,4 @@ public class EraProDao {
 
         return sampleBean;
     };
-
-    public String getSraAccession(String sampleAccession) {
-        String sql = "SELECT SAMPLE_ID FROM SAMPLE WHERE BIOSAMPLE_ID = ? ";
-
-        List<String> resultList = jdbcTemplate.queryForList(
-                sql, new Object[]{sampleAccession}, String.class);
-
-        return resultList.get(0);
-    }
 }

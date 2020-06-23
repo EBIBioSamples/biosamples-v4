@@ -48,6 +48,7 @@ public class BioSamplesClient implements AutoCloseable {
 	private final SamplePageRetrievalService samplePageRetrievalService;
 	private final SampleCursorRetrievalService sampleCursorRetrievalService;
 	private final SampleSubmissionService sampleSubmissionService;
+	private final SampleGroupSubmissionService sampleGroupSubmissionService;
 	private final CurationRetrievalService curationRetrievalService;
 	private final CurationSubmissionService curationSubmissionService;
 	
@@ -87,6 +88,7 @@ public class BioSamplesClient implements AutoCloseable {
 		sampleCursorRetrievalService = new SampleCursorRetrievalService(restOperations, traverson, threadPoolExecutor, bioSamplesProperties.getBiosamplesClientPagesize());
 
 		sampleSubmissionService = new SampleSubmissionService(restOperations, traverson, threadPoolExecutor);
+		sampleGroupSubmissionService = new SampleGroupSubmissionService(restOperations, traverson, threadPoolExecutor);
 		curationRetrievalService = new CurationRetrievalService(restOperations, traverson, threadPoolExecutor, bioSamplesProperties.getBiosamplesClientPagesize());
 		curationSubmissionService = new CurationSubmissionService(restOperations, traverson, threadPoolExecutor);
 
@@ -363,6 +365,16 @@ public class BioSamplesClient implements AutoCloseable {
 
 	public void deleteCurationLink(CurationLink content, String jwt) {
 		curationSubmissionService.deleteCurationLink(content.getSample(), content.getHash(), jwt);
+	}
+
+	public Future<Resource<Sample>> persistSampleGroup(Sample sample, String jwt) {
+		//validate client-side before submission
+		Collection<String> errors = sampleValidator.validate(sample);
+		if (!errors.isEmpty()) {
+			log.error("Sample failed validation : {}", errors);
+			throw new IllegalArgumentException("Sample not valid: " + String.join(", ", errors));
+		}
+		return sampleGroupSubmissionService.submitAsync(sample, jwt);
 	}
 
 }

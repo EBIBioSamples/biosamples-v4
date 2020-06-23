@@ -599,8 +599,9 @@ public class Sample implements Comparable<Sample> {
 		 * @return
 		 */
 		public Builder withRelationships(Collection<Relationship> relationships) {
-			this.relationships = new TreeSet<>(relationships);
-			return this;
+            if (relationships != null && relationships.size() > 0)
+                this.relationships = new TreeSet<>(relationships);
+            return this;
 		}
 
 		public Builder addRelationship(Relationship relationship) {
@@ -619,8 +620,9 @@ public class Sample implements Comparable<Sample> {
 		 * @return
 		 */
 		public Builder withExternalReferences(Collection<ExternalReference> externalReferences) {
-			this.externalReferences = new TreeSet<>(externalReferences);
-			return this;
+            if (externalReferences != null && externalReferences.size() > 0)
+                this.externalReferences = new TreeSet<>(externalReferences);
+            return this;
 		}
 
 
@@ -640,8 +642,9 @@ public class Sample implements Comparable<Sample> {
 		 * @return
 		 */
 		public Builder withOrganizations(Collection<Organization> organizations) {
-			this.organizations = new TreeSet<>(organizations);
-			return this;
+            if (organizations != null && organizations.size() > 0)
+                this.organizations = new TreeSet<>(organizations);
+            return this;
 		}
 
 		public Builder addOrganization(Organization organization) {
@@ -660,8 +663,9 @@ public class Sample implements Comparable<Sample> {
 		 * @return
 		 */
 		public Builder withContacts(Collection<Contact> contacts) {
-			this.contacts = new TreeSet<>(contacts);
-			return this;
+            if (contacts != null && contacts.size() > 0)
+                this.contacts = new TreeSet<>(contacts);
+            return this;
 		}
 
 		public Builder addContact(Contact contact) {
@@ -680,8 +684,9 @@ public class Sample implements Comparable<Sample> {
 		 * @return
 		 */
 		public Builder withPublications(Collection<Publication> publications) {
-			this.publications = new TreeSet<>(publications);
-			return this;
+            if (publications != null && publications.size() > 0)
+                this.publications = new TreeSet<>(publications);
+            return this;
 		}
 
 		/**

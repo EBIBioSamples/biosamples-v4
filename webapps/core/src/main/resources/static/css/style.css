@@ -211,6 +211,15 @@ code[class^="language"] {
     background-color: #FEEFB3;
 }
 
+.info-msg {
+    margin: 10px 0;
+    padding: 10px;
+    border: 1px solid #ccc3c3;
+    border-radius: 3px 3px 3px 3px;
+    color: #7d7d7b;
+    background-color: #efefef;
+}
+
 .sh__datetimes {
     text-align: left;
 }
@@ -261,4 +270,130 @@ code[class^="language"] {
     margin: 10rem auto auto;
 }
 
+#graph-search-results {
+    margin-right: 0;
+}
 
+.graph-search-input-container {
+    float: left;
+    margin: 10px 15px;
+}
+
+.graph-search-sample-container {
+    /*margin-right: 1em;*/
+    padding: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.19);
+    float: left;
+}
+
+.graph-search-rel-container {
+    float: left;
+    padding: 1em;
+    margin-top: 18px;
+    background-image: url(../images/relationship_arrow.png);
+    background-repeat: no-repeat;
+    background-size: 200px 30px;
+    background-position: bottom;
+    /*margin-right: 1em;*/
+}
+
+.graph-search-input {
+    float: left;
+}
+
+.graph-search-input-btn-container {
+    float: right;
+}
+
+.graph-search-btn {
+    float: right;
+}
+
+.graph-search-facet {
+    background-color: #f0f0f2;
+    margin-bottom: 5px;
+}
+
+.example-query {
+    margin: 3px 0;
+    padding: 10px;
+    border: 1px solid #ccc3c3;
+    border-radius: 3px 3px 3px 3px;
+    color: #7d7d7b;
+    background-color: #efefef;
+}
+
+.example-query:hover {
+    cursor: pointer;
+    color: #10100f;
+    border: 1px solid #424242;
+    background-color: #ccc;
+}
+
+.example-query-container {
+    margin: 10px 0;
+    border: 1px solid #ccc3c3;
+    border-radius: 3px 3px 3px 3px;
+}
+
+/* Style the button that is used to open and close the collapsible content */
+.graph-example-collapsible {
+    background-color: #eee;
+    color: #444;
+    cursor: pointer;
+    padding: 14px 10px;
+    width: 100%;
+    border: none;
+    text-align: left;
+    outline: none;
+    font-size: 15px;
+}
+
+/* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
+.graph-example-active, .graph-example-collapsible:hover {
+    background-color: #ccc;
+    color: #444;
+}
+
+.graph-example-collapsible::after {
+    float: right;
+    content: "\002B";
+}
+
+.graph-example-active::after {
+    float: right;
+    content: "\2212";
+}
+
+.content {
+    padding: 3px 5px;
+    display: none;
+    overflow: hidden;
+    background-color: #f1f1f1;
+}
+
+.graph-search-record {
+    float: left;
+    margin-bottom: 10px;
+}
+
+.graph-search-record-sample {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.graph-search-record-sample-span {
+    width: 100%;
+    float: left;
+    text-align: center
+}
+
+.graph-search-record-link-type {
+    text-align: center;
+    margin-top: 18px;
+    background-image: url("../images/relationship_arrow.png");
+    background-repeat: no-repeat;
+    background-size: 300px 30px;
+    background-position: center;
+}

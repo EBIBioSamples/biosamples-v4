@@ -3,6 +3,7 @@ package uk.ac.ebi.biosamples.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -34,8 +35,12 @@ public class SampleService {
     private static Logger log = LoggerFactory.getLogger(SampleService.class);
 
     //TODO use constructor injection
+    @Qualifier("SampleAccessionService")
     @Autowired
     private MongoAccessionService mongoAccessionService;
+    @Qualifier("GroupAccessionService")
+    @Autowired
+    private MongoAccessionService groupAccessionService;
     @Autowired
     private MongoSampleRepository mongoSampleRepository;
     @Autowired
@@ -74,12 +79,13 @@ public class SampleService {
     //Note, pages of samples will not be cache busted, only single-accession sample retrieval
     //@CacheEvict(cacheNames=WebappProperties.fetchUsing, key="#result.accession")
     public Sample store(Sample sample) {
-        //do validation
-        // TODO validate that relationships have this sample as the source
+        return store(sample, false);
+    }
+
+    public Sample store(Sample sample, boolean sampleGroup) {
         Collection<String> errors = sampleValidator.validate(sample);
-        if (errors.size() > 0) {
-            //TODO no validation information is provided to users
-            log.error("Found errors : " + errors);
+        if (!errors.isEmpty()) {
+            log.error("Sample validation failed : {}", errors);
             throw new SampleValidationException();
         }
 
@@ -101,12 +107,15 @@ public class SampleService {
             //send a message for storage and further processing, send relationship targets to identify deleted relationships
             messagingSerivce.fetchThenSendMessage(sample.getAccession(), existingRelationshipTargets);
         } else {
-            sample = mongoAccessionService.generateAccession(sample);
+            if (sampleGroup) {
+                sample = groupAccessionService.generateAccession(sample);
+            } else {
+                sample = mongoAccessionService.generateAccession(sample);
+            }
             messagingSerivce.fetchThenSendMessage(sample.getAccession());
         }
 
-        //return the sample in case we have modified it i.e accessioned
-        //do a fetch to return it with curation objects and inverse relationships
+        //do a fetch to return it with accession, curation objects, inverse relationships
         return fetch(sample.getAccession(), Optional.empty(), null).get();
     }
 

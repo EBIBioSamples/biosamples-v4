@@ -15,28 +15,29 @@ import java.util.stream.Collectors;
 @Service
 public class NcbiAmrConversionService {
     public AMRTable convertElementToAmrTable(Element amrTableElement, String organism) throws AmrParsingException {
-            AMRTable.Builder amrTableBuilder = new AMRTable.Builder("test", "self.BiosampleImportNCBIE");
+        AMRTable.Builder amrTableBuilder = new AMRTable.Builder("test", "self.BiosampleImportNCBI");
 
-            List<String> fields = XmlPathBuilder.of(amrTableElement).path("Header").elements("Cell").stream()
-                    .map(Element::getText).collect(Collectors.toList());
+        List<String> fields = XmlPathBuilder.of(amrTableElement).path("Header").elements("Cell").stream()
+                .map(Element::getText).collect(Collectors.toList());
 
-            for (Element tableRow: XmlPathBuilder.of(amrTableElement).path("Body").elements("Row")) {
+        for (Element tableRow : XmlPathBuilder.of(amrTableElement).path("Body").elements("Row")) {
 
-                AMREntry amrEntry = this.convertAmrEntry(tableRow, fields, organism);
-                amrTableBuilder.addEntry(amrEntry);
-            }
+            AMREntry amrEntry = this.convertAmrEntry(tableRow, fields, organism);
+            amrTableBuilder.addEntry(amrEntry);
+        }
 
-            return amrTableBuilder.build();
+        return amrTableBuilder.build();
     }
 
 
     /**
      * Given a xml <Row> element correspondent to amr row, generate the AMR entry
+     *
      * @param amrRowElement the Row element
-     * @param fields the corresponding headers from the table
-     * @param organism the organism associated with the AMR table
+     * @param fields        the corresponding headers from the table
+     * @param organism      the organism associated with the AMR table
      * @return the AMR entry
-     * @throws AmrParsingException
+     * @throws AmrParsingException if parse fails
      */
     private AMREntry convertAmrEntry(Element amrRowElement, List<String> fields, String organism) throws AmrParsingException {
         List<String> cells = XmlPathBuilder.of(amrRowElement).elements("Cell").stream()
@@ -65,15 +66,16 @@ public class NcbiAmrConversionService {
 
     /**
      * Extract a value from a list of values corresponding to the index of a string in a list of string
-     * @param values the value list to extract from
-     * @param fields the fields to use for checking
+     *
+     * @param values      the value list to extract from
+     * @param fields      the fields to use for checking
      * @param fieldToFind the field to extract
      * @return an optional string if the field is found
      */
     private Optional<String> getFieldIfAvailable(List<String> values, List<String> fields, String fieldToFind) {
         String fieldValue = null;
 
-        if ( fields.contains(fieldToFind) ) {
+        if (fields.contains(fieldToFind)) {
             int fieldIndex = fields.indexOf(fieldToFind);
             fieldValue = values.get(fieldIndex);
         }
@@ -81,20 +83,9 @@ public class NcbiAmrConversionService {
         return Optional.ofNullable(fieldValue);
     }
 
-    public class AmrParsingException extends ParseException {
-        /**
-         * Constructs a ParseException with the specified detail message and
-         * offset.
-         * A detail message is a String that describes this particular exception.
-         *
-         * @param s           the detail message
-         * @param errorOffset the position where the error is found while parsing.
-         */
-        public AmrParsingException(String s, int errorOffset) {
-            super(s, errorOffset);
-        }
+    public static class AmrParsingException extends ParseException {
 
-        public AmrParsingException(String s ) {
+        public AmrParsingException(String s) {
             super(s, -1);
         }
     }

@@ -40,7 +40,7 @@ public class TestConversion {
             @Override
             public void processRow(ResultSet resultSet) throws SQLException {
                 String sampleAccession = resultSet.getString("BIOSAMPLE_ID");
-                EnaCallable enaCallable = new EnaCallable(sampleAccession, bioSamplesClient, enaXmlEnhancer, enaElementConverter, eraProDao, "test");
+                EnaCallable enaCallable = new EnaCallable(sampleAccession, bioSamplesClient, enaXmlEnhancer, enaElementConverter, eraProDao, "test", false, false, null);
                 try {
                     enaCallable.call();
                 } catch (Exception e) {
@@ -59,7 +59,7 @@ public class TestConversion {
             @Override
             public void processRow(ResultSet resultSet) throws SQLException {
                 String sampleAccession = resultSet.getString("BIOSAMPLE_ID");
-                EnaCallable enaCallable = new EnaCallable(sampleAccession, bioSamplesClient, enaXmlEnhancer, enaElementConverter, eraProDao, "test");
+                EnaCallable enaCallable = new EnaCallable(sampleAccession, bioSamplesClient, enaXmlEnhancer, enaElementConverter, eraProDao, "test", false, false, null);
                 try {
                     enaCallable.call();
                 } catch (Exception e) {
@@ -77,7 +77,7 @@ public class TestConversion {
             @Override
             public void processRow(ResultSet resultSet) throws SQLException {
                 String sampleAccession = resultSet.getString("BIOSAMPLE_ID");
-                EnaCallable enaCallable = new EnaCallable(sampleAccession, bioSamplesClient, enaXmlEnhancer, enaElementConverter, eraProDao, "test");
+                EnaCallable enaCallable = new EnaCallable(sampleAccession, bioSamplesClient, enaXmlEnhancer, enaElementConverter, eraProDao, "test", false, false, null);
                 try {
                     enaCallable.call();
                 } catch (Exception e) {
@@ -95,7 +95,7 @@ public class TestConversion {
             @Override
             public void processRow(ResultSet resultSet) throws SQLException {
                 String sampleAccession = resultSet.getString("BIOSAMPLE_ID");
-                EnaCallable enaCallable = new EnaCallable(sampleAccession, bioSamplesClient, enaXmlEnhancer, enaElementConverter, eraProDao, "test");
+                EnaCallable enaCallable = new EnaCallable(sampleAccession, bioSamplesClient, enaXmlEnhancer, enaElementConverter, eraProDao, "test", false, false, null);
                 try {
                     enaCallable.call();
                 } catch (Exception e) {
@@ -113,7 +113,7 @@ public class TestConversion {
             @Override
             public void processRow(ResultSet resultSet) throws SQLException {
                 String sampleAccession = resultSet.getString("BIOSAMPLE_ID");
-                EnaCallable enaCallable = new EnaCallable(sampleAccession, bioSamplesClient, enaXmlEnhancer, enaElementConverter, eraProDao, "test");
+                EnaCallable enaCallable = new EnaCallable(sampleAccession, bioSamplesClient, enaXmlEnhancer, enaElementConverter, eraProDao, "test", false, false, null);
                 try {
                     enaCallable.call();
                 } catch (Exception e) {
@@ -124,5 +124,4 @@ public class TestConversion {
         };
         eraProDao.getSingleSample("SAMEA104371999", rowCallbackHandler);
     }
-
 }

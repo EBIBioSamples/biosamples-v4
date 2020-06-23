@@ -26,7 +26,7 @@ import java.util.concurrent.Future;
 
 @Component
 public class AmrRunner implements ApplicationRunner {
-    private static final String SAMEA = "SAMEA";
+    public static final String SAMEA = "SAMEA";
     private static final String BSD_SAMPLE_PREFIX = "SA";
     private static final String FTP = "ftp";
     private static final String MD_5 = "md5";
@@ -163,7 +163,7 @@ public class AmrRunner implements ApplicationRunner {
                 try {
                     String accession = pair.getAccession();
 
-                    if (accession != null && accession.startsWith(SAMEA))
+                    if (accession != null)
                         futures.put(accession, executorService.submit(new EnaAmrCallable(new URL(pair.getFtpUrl()), accession)));
                 } catch (MalformedURLException e) {
                     log.info("FTP URL not correctly formed " + pair.getFtpUrl());
@@ -193,11 +193,14 @@ public class AmrRunner implements ApplicationRunner {
         }
 
         private Void fetchSampleAndProcessAmrData(final URL url, final String accession) {
+            final List<String> curationDomainBlankList = new ArrayList<>();
+            curationDomainBlankList.add("");
+
             try {
-                final Optional<Resource<Sample>> sample = bioSamplesClient.fetchSampleResource(accession, Optional.of(new ArrayList<>()));
+                final Optional<Resource<Sample>> sample = bioSamplesClient.fetchSampleResource(accession, Optional.of(curationDomainBlankList));
 
                 if (sample.isPresent()) {
-                    enaAmrDataProcessService.processAmrRows(enaAmrDataProcessService.processAmrLines(getReader(url)), sample.get().getContent(), bioSamplesClient);
+                    enaAmrDataProcessService.processAmrData(enaAmrDataProcessService.processAmrLines(getReader(url)), sample.get().getContent(), bioSamplesClient);
                 } else {
                     log.info(accession + " doesn't exist");
                 }
