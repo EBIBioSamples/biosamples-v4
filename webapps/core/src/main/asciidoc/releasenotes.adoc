@@ -3,6 +3,27 @@
 
 This pages contains links to release notes for BioSamples for version 4.0.0 and higher. This release represents a comprehensive overhaul and therefore previous release notes are no longer applicable.
 
+[[v4.2.7]]
+== v4.2.7 Release notes
+=== New features
+1. Sample groups API: +
+Sample group API, which was present in SampleTab is now present in JSON API. But we are in discussion whether there is a real user requirement for this. We will be really happy to hear from users, if they have any use case in mind for sample groups.
+2. Sample graph search API, interface and new neo4j dependency: +
+Sample graph search is an experimental feature, which enables to explore sample to sample and sample to external resource relationships. This is backed by neo4j graph database and therefore now neo4j is introduced as a new dependency. Experimental interface (which will change in future) enables simple relationship queries and lists down the results.
+3. Domain transfer from old SampleTab domain to new AAP domain: +
+Now we have started moving old SampleTab domains to new DSP subs domains. This is done only on user request. Let us know if you need to move your samples from old domains t new AAP domain.
+4. Sample relationship source validation and relationship documentation: +
+In a sample relationship, sample source should equal to the containing sample accession. This is validated at sample submission time.  New section is added to the user guide to explain sample relationships.
+5. Clearinghouse import: +
+
+=== Bug fixes:
+1. Remove alt text from h1 tag in UI. Alt text in h1 tag has caused google to wrongly index biosamples in search results.
+2. Include missing domain validation when updating samples: +
+Domain validation in sample update service was missing in the previous version. This has been added in the new version. Now if a user has access to an existing sample, he can update the sample using any domain he has access to.
+
+=== Notifications
+* Please note that we will be removing SampleTab format submission support on 1st of July. Please let us know if you have any concerns regarding this.
+
 [[v4.2.6]]
 == v4.2.6 Release notes
 === New features
