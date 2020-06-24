@@ -38,7 +38,7 @@ public class RelationshipValidator {
 
     private Collection<String> validateSourceAccession(String accession, Relationship rel, Collection<String> errors) {
         if (accession != null && !accession.equals(rel.getSource())) {
-            errors.add("Source of the relationship must equal to the sample accession");
+//            errors.add("Source of the relationship must equal to the sample accession");// todo enable after fixing ENA import pipeline
         }
 
         return errors;
