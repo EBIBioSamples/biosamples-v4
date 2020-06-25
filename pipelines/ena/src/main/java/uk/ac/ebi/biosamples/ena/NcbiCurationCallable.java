@@ -54,18 +54,22 @@ public class NcbiCurationCallable implements Callable<Void> {
         ExternalReference exRef = ExternalReference.build("https://www.ebi.ac.uk/ena/data/view/" + this.accession);
         Curation curation = Curation.build(null, null, null, Collections.singleton(exRef));
 
-        if (suppressionHandler) {
-            checkAndUpdateSuppressedSample();
-        } else {
-            // get the sample to make sure it exists first
-            if (bioSamplesClient.fetchSampleResource(this.accession, Optional.of(new ArrayList<String>())).isPresent()) {
-                bioSamplesClient.persistCuration(this.accession, curation, domain);
+        try {
+            if (suppressionHandler) {
+                checkAndUpdateSuppressedSample();
             } else {
-                log.warn("Unable to find " + this.accession);
+                // get the sample to make sure it exists first
+                if (bioSamplesClient.fetchSampleResource(this.accession, Optional.of(new ArrayList<>())).isPresent()) {
+                    bioSamplesClient.persistCuration(this.accession, curation, domain);
+                } else {
+                    log.warn("Unable to find " + this.accession);
+                }
             }
-        }
 
-        log.trace("HANDLED " + this.accession);
+            log.trace("HANDLED " + this.accession);
+        } catch (final Exception e) {
+            log.info("Failed to curate NCBI sample with ENA link " + accession);
+        }
 
         return null;
     }
@@ -77,25 +81,29 @@ public class NcbiCurationCallable implements Callable<Void> {
         final List<String> curationDomainBlankList = new ArrayList<>();
         curationDomainBlankList.add("");
 
-        final Optional<Resource<Sample>> optionalSampleResource = bioSamplesClient.fetchSampleResource(this.accession, Optional.of(curationDomainBlankList));
+        try {
+            final Optional<Resource<Sample>> optionalSampleResource = bioSamplesClient.fetchSampleResource(this.accession, Optional.of(curationDomainBlankList));
 
-        if (optionalSampleResource.isPresent()) {
-            final Sample sample = optionalSampleResource.get().getContent();
-            boolean persistRequired = true;
+            if (optionalSampleResource.isPresent()) {
+                final Sample sample = optionalSampleResource.get().getContent();
+                boolean persistRequired = true;
 
-            for (Attribute attribute : sample.getAttributes()) {
-                if (attribute.getType().equals("INSDC status") && attribute.getValue().equals(SUPPRESSED)) {
-                    persistRequired = false;
-                    break;
+                for (Attribute attribute : sample.getAttributes()) {
+                    if (attribute.getType().equals("INSDC status") && attribute.getValue().equals(SUPPRESSED)) {
+                        persistRequired = false;
+                        break;
+                    }
+                }
+
+                if (persistRequired) {
+                    sample.getAttributes().removeIf(attr -> attr.getType().contains("INSDC status"));
+                    sample.getAttributes().add(Attribute.build("INSDC status", SUPPRESSED));
+                    log.info("Updating status to suppressed of sample: " + this.accession);
+                    bioSamplesClient.persistSampleResource(sample);
                 }
             }
-
-            if (persistRequired) {
-                sample.getAttributes().removeIf(attr -> attr.getType().contains("INSDC status"));
-                sample.getAttributes().add(Attribute.build("INSDC status", SUPPRESSED));
-                log.info("Updating status to suppressed of sample: " + this.accession);
-                bioSamplesClient.persistSampleResource(sample);
-            }
+        } catch (final Exception e) {
+            log.error("Failed to update sample status to suppressed for sample " + accession);
         }
     }
 }
