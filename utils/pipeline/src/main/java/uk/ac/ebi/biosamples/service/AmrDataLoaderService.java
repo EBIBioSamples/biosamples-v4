@@ -150,7 +150,6 @@ public class AmrDataLoaderService {
         try {
             amrData = processAmrData(processAmrLines(getReader(url)), accession);
         } catch (final IOException ioe) {
-            ioe.printStackTrace();
             log.info("A IO Exception occurrence detected");
 
             if (amrData.size() == 0)
