@@ -26,33 +26,33 @@ public class Certifier {
         this.applicator = applicator;
     }
 
-    public CertificationResult certify(Sample sample) {
-        if (sample == null) {
-            String message = "cannot certify a null sample";
+    public CertificationResult certify(SampleDocument sampleDocument) {
+        if (sampleDocument == null) {
+            String message = "cannot certify a null sampleDocument";
             LOG.warn(message);
             throw new IllegalArgumentException(message);
         }
-        return certify(sample, Collections.EMPTY_LIST);
+        return certify(sampleDocument, Collections.EMPTY_LIST);
     }
 
-    private CertificationResult certify(Sample sample, List<CurationResult> curationResults) {
-        CertificationResult certificationResult = new CertificationResult(sample.getAccession());
+    private CertificationResult certify(SampleDocument sampleDocument, List<CurationResult> curationResults) {
+        CertificationResult certificationResult = new CertificationResult(sampleDocument.getAccession());
         boolean certified = false;
         for (Checklist checklist : configLoader.config.getChecklists()) {
             try {
-                validator.validate(checklist.getFileName(), sample.getDocument());
-                EVENTS.info(String.format("%s validation successful against %s", sample.getAccession(), checklist.getID()));
+                validator.validate(checklist.getFileName(), sampleDocument.getDocument());
+                EVENTS.info(String.format("%s validation successful against %s", sampleDocument.getAccession(), checklist.getID()));
                 certified = true;
-                certificationResult.add(new Certificate(sample, curationResults, checklist));
-                EVENTS.info(String.format("%s issued certificate %s", sample.getAccession(), checklist.getID()));
+                certificationResult.add(new Certificate(sampleDocument, curationResults, checklist));
+                EVENTS.info(String.format("%s issued certificate %s", sampleDocument.getAccession(), checklist.getID()));
             } catch (IOException ioe) {
                 LOG.error(String.format("cannot open schema at %s", checklist.getFileName()), ioe);
             } catch (ValidationException ve) {
-                EVENTS.info(String.format("%s validation failed against %s", sample.getAccession(), checklist.getID()));
+                EVENTS.info(String.format("%s validation failed against %s", sampleDocument.getAccession(), checklist.getID()));
             }
         }
         if (!certified) {
-            EVENTS.info(String.format("%s not certified", sample.getAccession()));
+            EVENTS.info(String.format("%s not certified", sampleDocument.getAccession()));
         }
         return certificationResult;
     }

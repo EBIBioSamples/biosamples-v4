@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RecorderResult {
-
     private final List<Certificate> certificates = new ArrayList<>();
 
     public List<Certificate> getCertificates() {

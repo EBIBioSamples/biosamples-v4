@@ -7,20 +7,17 @@ import org.springframework.util.DigestUtils;
 import java.util.Objects;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Sample {
-
+public class SampleDocument {
     private String accession;
-
     private String document;
-
     private String hash;
 
-    public Sample(String accession, String document) {
+    public SampleDocument(String accession, String document) {
         this.accession = accession;
         this.document = document;
     }
 
-    public Sample() {
+    public SampleDocument() {
     }
 
     public String getAccession() {
@@ -42,7 +39,7 @@ public class Sample {
 
     @Override
     public String toString() {
-        return "Sample{" +
+        return "SampleDocument{" +
                 "accession='" + accession + '\'' +
                 ", document='" + document + '\'' +
                 ", hash='" + hash + '\'' +
@@ -60,10 +57,10 @@ public class Sample {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Sample sample = (Sample) o;
-        return accession.equals(sample.accession) &&
-                document.equals(sample.document) &&
-                hash.equals(sample.hash);
+        SampleDocument sampleDocument = (SampleDocument) o;
+        return accession.equals(sampleDocument.accession) &&
+                document.equals(sampleDocument.document) &&
+                hash.equals(sampleDocument.hash);
     }
 
     @Override

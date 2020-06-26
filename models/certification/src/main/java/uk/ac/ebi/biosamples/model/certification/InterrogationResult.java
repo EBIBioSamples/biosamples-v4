@@ -3,17 +3,16 @@ package uk.ac.ebi.biosamples.model.certification;
 import java.util.List;
 
 public class InterrogationResult {
-
-    private final Sample sample;
+    private final SampleDocument sampleDocument;
     private final List<Checklist> checklists;
 
-    public InterrogationResult(Sample sample, List<Checklist> checklists) {
-        this.sample = sample;
+    public InterrogationResult(SampleDocument sampleDocument, List<Checklist> checklists) {
+        this.sampleDocument = sampleDocument;
         this.checklists = checklists;
     }
 
-    public Sample getSample() {
-        return sample;
+    public SampleDocument getSampleDocument() {
+        return sampleDocument;
     }
 
     public List<Checklist> getChecklists() {
@@ -23,7 +22,7 @@ public class InterrogationResult {
     @Override
     public String toString() {
         return "InterrogationResult{" +
-                "sample=" + sample +
+                "sampleDocument=" + sampleDocument +
                 ", checklists=" + checklists +
                 '}';
     }

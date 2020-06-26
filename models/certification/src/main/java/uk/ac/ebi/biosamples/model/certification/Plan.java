@@ -9,10 +9,8 @@ import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Plan {
-
     @JsonProperty(value = "candidate_checklist_id")
     private String candidateChecklistID;
-
     @JsonProperty(value = "certification_checklist_id")
     private String certificationChecklistID;
 
@@ -56,8 +54,8 @@ public class Plan {
         this.curations = curations;
     }
 
-    public CurationResult applyCuration(Sample sample, Curation curation) {
-        JSONObject jsonObject = new JSONObject(sample.getDocument());
+    public CurationResult applyCuration(SampleDocument sampleDocument, Curation curation) {
+        JSONObject jsonObject = new JSONObject(sampleDocument.getDocument());
         JSONObject sampleCharacteristics = jsonObject.getJSONObject("characteristics");
         String targetCharateristic = curation.getCharacteristic();
         if (sampleCharacteristics.has(targetCharateristic)) {
@@ -76,6 +74,4 @@ public class Plan {
                 ", certificationChecklistID='" + certificationChecklistID + '\'' +
                 '}';
     }
-
-
 }

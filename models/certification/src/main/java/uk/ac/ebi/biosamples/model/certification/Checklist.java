@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Checklist {
-
     private String name;
     private String version;
     @JsonProperty(value = "file")

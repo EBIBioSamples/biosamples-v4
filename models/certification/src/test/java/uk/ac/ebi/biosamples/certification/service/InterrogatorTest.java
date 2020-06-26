@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.biosamples.model.certification.InterrogationResult;
-import uk.ac.ebi.biosamples.model.certification.Sample;
+import uk.ac.ebi.biosamples.model.certification.SampleDocument;
 import uk.ac.ebi.biosamples.service.certification.*;
 
 import java.io.IOException;
@@ -29,16 +29,16 @@ public class InterrogatorTest {
     @Test
     public void given_ncbi_sample_return_ncbi_checklist_as_a_match() throws IOException {
         String data = IOUtils.toString(getClass().getClassLoader().getResourceAsStream("json/ncbi-SAMN03894263.json"), "UTF8");
-        Sample sample = new Sample("test-uuid", data);
-        InterrogationResult interrogationResult = interrogator.interrogate(sample);
+        SampleDocument sampleDocument = new SampleDocument("test-uuid", data);
+        InterrogationResult interrogationResult = interrogator.interrogate(sampleDocument);
         assertTrue(interrogationResult.getChecklists().size()==1);
         assertEquals("ncbi-0.0.1", interrogationResult.getChecklists().get(0).getID());
     }
 
     @Test
     public void given_empty_sample_return_empty_matches() {
-        Sample sample = new Sample("test-uuid", "{}");
-        InterrogationResult interrogationResult = interrogator.interrogate(sample);
+        SampleDocument sampleDocument = new SampleDocument("test-uuid", "{}");
+        InterrogationResult interrogationResult = interrogator.interrogate(sampleDocument);
         assertEquals(Collections.EMPTY_LIST, interrogationResult.getChecklists());
     }
 

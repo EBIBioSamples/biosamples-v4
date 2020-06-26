@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.certification.CurationResult;
 import uk.ac.ebi.biosamples.model.certification.HasCuratedSample;
-import uk.ac.ebi.biosamples.model.certification.Sample;
+import uk.ac.ebi.biosamples.model.certification.SampleDocument;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -16,14 +16,14 @@ public class Applicator {
 
     private static Logger LOG = LoggerFactory.getLogger(Applicator.class);
 
-    public Sample apply(HasCuratedSample curationApplicable) {
+    public SampleDocument apply(HasCuratedSample curationApplicable) {
         if (curationApplicable == null) {
             String message = "cannot apply a null curation applyable";
             LOG.warn(message);
             throw new IllegalArgumentException(message);
         }
-        Sample sample = curationApplicable.getSample();
-        String document = makePretty(sample.getDocument());
+        SampleDocument sampleDocument = curationApplicable.getSampleDocument();
+        String document = makePretty(sampleDocument.getDocument());
         String updatedDocument = document;
         for (CurationResult curationResult : curationApplicable.getCurationResults()) {
             String pattern = String.format("\\\"%s\\\"\\s?[:]\\s?\\[\\W+?text\\\"\\s?[:]\\s?\\s\\\"(%s)\\\"", curationResult.getCharacteristic(), curationResult.getBefore());
@@ -32,11 +32,11 @@ public class Applicator {
             if (m.find()) {
                 updatedDocument = updatedDocument.replace(m.group(1), curationResult.getAfter());
             } else {
-                LOG.warn(String.format("%s failed to apply %s to sample", sample.getAccession(), curationResult.getCharacteristic()));
+                LOG.warn(String.format("%s failed to apply %s to sampleDocument", sampleDocument.getAccession(), curationResult.getCharacteristic()));
             }
         }
-        Sample curatedSample = new Sample(sample.getAccession(), updatedDocument);
-        return curatedSample;
+        SampleDocument curatedSampleDocument = new SampleDocument(sampleDocument.getAccession(), updatedDocument);
+        return curatedSampleDocument;
     }
 
     private String makePretty(String document) {

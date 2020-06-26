@@ -1,13 +1,9 @@
 package uk.ac.ebi.biosamples.model.certification;
 
 public class CurationResult {
-
     private final String characteristic;
-
     private final String before;
-
     private final String after;
-
     private final boolean applied;
 
     public CurationResult(String characteristic) {

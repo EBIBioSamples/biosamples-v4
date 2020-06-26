@@ -29,13 +29,13 @@ public class ApplicatorTest {
     private void applyCuration(String source, String expectedResult) throws IOException {
         String data = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(source), "UTF8");
         String curatedData = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(expectedResult), "UTF8");
-        Sample sample = new Sample("test", data);
-        Sample curatedSample = new Sample("test", curatedData);
+        SampleDocument sampleDocument = new SampleDocument("test", data);
+        SampleDocument curatedSampleDocument = new SampleDocument("test", curatedData);
         Curation curation = new Curation("INSDC status", "public");
         Plan plan = new Plan("ncbi-0.0.1", "biosamples-0.0.1", Collections.singletonList(curation));
-        PlanResult planResult = new PlanResult(sample, plan);
+        PlanResult planResult = new PlanResult(sampleDocument, plan);
         planResult.addCurationResult(new CurationResult(curation.getCharacteristic(), "live", curation.getValue()));
-        assertEquals(curatedSample.getDocument().trim(), applicator.apply(planResult).getDocument().trim());
+        assertEquals(curatedSampleDocument.getDocument().trim(), applicator.apply(planResult).getDocument().trim());
     }
 
     @Test(expected = IllegalArgumentException.class)

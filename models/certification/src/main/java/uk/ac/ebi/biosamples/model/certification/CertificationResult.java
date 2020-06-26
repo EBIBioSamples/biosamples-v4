@@ -6,10 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CertificationResult {
-
     private final List<Certificate> certificates = new ArrayList<>();
-
-
     private String sampleAccession;
 
     public CertificationResult(String sampleAccession) {

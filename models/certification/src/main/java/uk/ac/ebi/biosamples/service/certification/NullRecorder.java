@@ -24,7 +24,7 @@ public class NullRecorder implements Recorder {
         for (CertificationResult certificationResult : certificationResults) {
             for (Certificate certificate : certificationResult.getCertificates()) {
                 recorderResult.add(certificate);
-                EVENTS.info(String.format("%s recorded %s certificate", certificate.getSample().getAccession(), certificate.getChecklist().getID()));
+                EVENTS.info(String.format("%s recorded %s certificate", certificate.getSampleDocument().getAccession(), certificate.getChecklist().getID()));
             }
         }
         return recorderResult;

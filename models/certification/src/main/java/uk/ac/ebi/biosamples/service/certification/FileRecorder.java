@@ -27,11 +27,11 @@ public class FileRecorder implements Recorder {
         }
         for (CertificationResult certificationResult : certificationResults) {
             for (Certificate certificate : certificationResult.getCertificates()) {
-                EVENTS.info(String.format("%s recorded %s certificate", certificate.getSample().getAccession(), certificate.getChecklist().getID()));
+                EVENTS.info(String.format("%s recorded %s certificate", certificate.getSampleDocument().getAccession(), certificate.getChecklist().getID()));
                 recorderResult.add(certificate);
                 ObjectMapper objectMapper = new ObjectMapper();
                 objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-                String fileName = certificate.getSample().getAccession() + "-" + certificate.getSample().getHash() + "-certification.json";
+                String fileName = certificate.getSampleDocument().getAccession() + "-" + certificate.getSampleDocument().getHash() + "-certification.json";
                 try {
                     objectMapper.writeValue(new File(fileName), certificationResult);
                 } catch (IOException e) {

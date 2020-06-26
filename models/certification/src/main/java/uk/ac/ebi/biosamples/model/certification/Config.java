@@ -3,7 +3,6 @@ package uk.ac.ebi.biosamples.model.certification;
 import java.util.List;
 
 public class Config {
-
     private List<Checklist> checklists;
 
     private List<Plan> plans;

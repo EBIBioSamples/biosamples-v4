@@ -4,9 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Curation {
-
     private String characteristic;
-
     private String value;
 
     public Curation(String characteristic, String value) {

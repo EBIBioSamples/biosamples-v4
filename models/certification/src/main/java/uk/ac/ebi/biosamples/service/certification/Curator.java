@@ -32,13 +32,13 @@ public class Curator {
             LOG.warn(message);
             throw new IllegalArgumentException(message);
         }
-        if (interrogationResult.getSample() == null) {
+        if (interrogationResult.getSampleDocument() == null) {
             String message = "cannot run curation plans on null sample";
             LOG.warn(message);
             throw new IllegalArgumentException(message);
         }
         for (Checklist checklist : interrogationResult.getChecklists()) {
-            PlanResult planResult = runCurationPlan(checklist, interrogationResult.getSample());
+            PlanResult planResult = runCurationPlan(checklist, interrogationResult.getSampleDocument());
             if (planResult != null) {
                 planResults.add(planResult);
             }
@@ -46,22 +46,22 @@ public class Curator {
         return planResults;
     }
 
-    private PlanResult runCurationPlan(Checklist checklist, Sample sample) {
+    private PlanResult runCurationPlan(Checklist checklist, SampleDocument sampleDocument) {
         Plan plan = plansByCandidateChecklistID.get(checklist.getID());
-        PlanResult planResult = new PlanResult(sample, plan);
+        PlanResult planResult = new PlanResult(sampleDocument, plan);
         if (plan == null) {
-            EVENTS.info(String.format("%s plan not found for %s", sample.getAccession(), checklist.getID()));
+            EVENTS.info(String.format("%s plan not found for %s", sampleDocument.getAccession(), checklist.getID()));
             return planResult;
         }
         if (plansByCandidateChecklistID.containsKey(checklist.getID())) {
             for (Curation curation : plan.getCurations()) {
-                CurationResult curationResult = plan.applyCuration(sample, curation);
+                CurationResult curationResult = plan.applyCuration(sampleDocument, curation);
                 if (curationResult != null) {
                     planResult.addCurationResult(curationResult);
                 }
             }
         }
-        EVENTS.info(String.format("%s plan %s run", sample.getAccession(), plan.getID()));
+        EVENTS.info(String.format("%s plan %s run", sampleDocument.getAccession(), plan.getID()));
         return planResult;
     }
 

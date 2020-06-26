@@ -6,7 +6,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
-import uk.ac.ebi.biosamples.model.certification.Sample;
+import uk.ac.ebi.biosamples.model.certification.SampleDocument;
 import uk.ac.ebi.biosamples.service.certification.*;
 
 import java.io.IOException;
@@ -23,8 +23,8 @@ public class IdentifierTest {
     @Test
     public void given_ncbi_sample_return_sample() throws IOException {
         String data = IOUtils.toString(getClass().getClassLoader().getResourceAsStream("json/ncbi-SAMN03894263.json"), "UTF8");
-        Sample sample = identifier.identify(data);
-        assertTrue(sample.getAccession().matches("SAM[END][AG]?[0-9]+"));
+        SampleDocument sampleDocument = identifier.identify(data);
+        assertTrue(sampleDocument.getAccession().matches("SAM[END][AG]?[0-9]+"));
     }
 
     @Test(expected = IllegalArgumentException.class)

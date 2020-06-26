@@ -4,15 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PlanResult implements HasCuratedSample, HasPlan {
-
-    private final Sample sample;
-
+    private final SampleDocument sampleDocument;
     private final Plan plan;
-
     private final List<CurationResult> curationResults;
 
-    public PlanResult(Sample sample, Plan plan) {
-        this.sample = sample;
+    public PlanResult(SampleDocument sampleDocument, Plan plan) {
+        this.sampleDocument = sampleDocument;
         this.plan = plan;
         this.curationResults = new ArrayList<>();
     }
@@ -34,8 +31,8 @@ public class PlanResult implements HasCuratedSample, HasPlan {
         return false;
     }
 
-    public Sample getSample() {
-        return sample;
+    public SampleDocument getSampleDocument() {
+        return sampleDocument;
     }
 
     public Plan getPlan() {
@@ -45,7 +42,7 @@ public class PlanResult implements HasCuratedSample, HasPlan {
     @Override
     public String toString() {
         return "PlanResult{" +
-                "sample=" + sample +
+                "sampleDocument=" + sampleDocument +
                 ", plan=" + plan +
                 '}';
     }

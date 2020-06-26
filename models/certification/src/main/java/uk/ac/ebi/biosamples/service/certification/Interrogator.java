@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.certification.Checklist;
 import uk.ac.ebi.biosamples.model.certification.InterrogationResult;
-import uk.ac.ebi.biosamples.model.certification.Sample;
+import uk.ac.ebi.biosamples.model.certification.SampleDocument;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -26,24 +26,24 @@ public class Interrogator {
         this.configLoader = configLoader;
     }
 
-    public InterrogationResult interrogate(Sample sample) {
-        if (sample == null) {
-            String message = "cannot interrogate a null sample";
+    public InterrogationResult interrogate(SampleDocument sampleDocument) {
+        if (sampleDocument == null) {
+            String message = "cannot interrogate a null sampleDocument";
             LOG.warn(message);
             throw new IllegalArgumentException(message);
         }
         List<Checklist> checklists = new ArrayList<>();
         for (Checklist checklist : configLoader.config.getChecklists()) {
             try {
-                validator.validate(checklist.getFileName(), sample.getDocument());
-                EVENTS.info(String.format("%s interrogation successful against %s", sample.getAccession(), checklist.getID()));
+                validator.validate(checklist.getFileName(), sampleDocument.getDocument());
+                EVENTS.info(String.format("%s interrogation successful against %s", sampleDocument.getAccession(), checklist.getID()));
                 checklists.add(checklist);
             } catch (IOException ioe) {
                 LOG.error(String.format("cannot open schema at %s", checklist.getFileName()), ioe);
             } catch (ValidationException ve) {
-                EVENTS.info(String.format("%s interrogation failed against %s", sample.getAccession(), checklist.getID()));
+                EVENTS.info(String.format("%s interrogation failed against %s", sampleDocument.getAccession(), checklist.getID()));
             }
         }
-        return new InterrogationResult(sample, checklists);
+        return new InterrogationResult(sampleDocument, checklists);
     }
 }

@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.certification.CertificationResult;
 import uk.ac.ebi.biosamples.model.certification.PlanResult;
 import uk.ac.ebi.biosamples.model.certification.RecorderResult;
-import uk.ac.ebi.biosamples.model.certification.Sample;
+import uk.ac.ebi.biosamples.model.certification.SampleDocument;
 
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -34,9 +34,9 @@ public class Pipeline {
 
     public RecorderResult run(String data) {
         Set<CertificationResult> certificationResults = new LinkedHashSet<>();
-        Sample rawSample = identifier.identify(data);
-        certificationResults.add(certifier.certify(rawSample));
-        List<PlanResult> planResults = curator.runCurationPlans(interrogator.interrogate(rawSample));
+        SampleDocument rawSampleDocument = identifier.identify(data);
+        certificationResults.add(certifier.certify(rawSampleDocument));
+        List<PlanResult> planResults = curator.runCurationPlans(interrogator.interrogate(rawSampleDocument));
         for (PlanResult planResult : planResults) {
             if (planResult.curationsMade()) {
                 certificationResults.add(certifier.certify(planResult));

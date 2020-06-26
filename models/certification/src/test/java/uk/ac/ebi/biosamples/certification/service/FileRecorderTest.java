@@ -25,10 +25,10 @@ public class FileRecorderTest {
     @Test
     public void given_certificate_save_to_file() throws IOException {
         String data = IOUtils.toString(getClass().getClassLoader().getResourceAsStream("json/ncbi-SAMN03894263.json"), "UTF8");
-        Sample sample = new Sample("test-uuid", data);
+        SampleDocument sampleDocument = new SampleDocument("test-uuid", data);
         Checklist checklist = new Checklist("ncbi", "0.0.1", "schemas/ncbi-candidate-schema.json");
-        Certificate certificate = new Certificate(sample, Collections.emptyList(), checklist);
-        CertificationResult certificationResult = new CertificationResult(sample.getAccession());
+        Certificate certificate = new Certificate(sampleDocument, Collections.emptyList(), checklist);
+        CertificationResult certificationResult = new CertificationResult(sampleDocument.getAccession());
         certificationResult.add(certificate);
         RecorderResult recorderResult = recorder.record(Collections.singleton(certificationResult));
         assertNotNull(recorderResult);

@@ -9,7 +9,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.biosamples.model.certification.Checklist;
 import uk.ac.ebi.biosamples.model.certification.InterrogationResult;
 import uk.ac.ebi.biosamples.model.certification.PlanResult;
-import uk.ac.ebi.biosamples.model.certification.Sample;
+import uk.ac.ebi.biosamples.model.certification.SampleDocument;
 import uk.ac.ebi.biosamples.service.certification.*;
 
 import java.io.IOException;
@@ -36,7 +36,7 @@ public class CuratorTest {
         InterrogationResult interrogationResult = new InterrogationResult(testSample(), checklistList);
         List<PlanResult> planResults = curator.runCurationPlans(interrogationResult);
         for (PlanResult planResult : planResults) {
-            assertNotNull(planResult.getSample());
+            assertNotNull(planResult.getSampleDocument());
             assertFalse(planResult.getCurationResults().isEmpty());
             assertEquals("live", planResult.getCurationResults().get(0).getBefore());
             assertEquals("public", planResult.getCurationResults().get(0).getAfter());
@@ -60,9 +60,9 @@ public class CuratorTest {
         assertTrue(curator.runCurationPlans(interrogationResult).isEmpty());
     }
 
-    private Sample testSample() throws IOException {
+    private SampleDocument testSample() throws IOException {
         String data = IOUtils.toString(getClass().getClassLoader().getResourceAsStream("json/ncbi-SAMN03894263.json"), "UTF8");
-        Sample sample = new Sample("test", data);
-        return sample;
+        SampleDocument sampleDocument = new SampleDocument("test", data);
+        return sampleDocument;
     }
 }
