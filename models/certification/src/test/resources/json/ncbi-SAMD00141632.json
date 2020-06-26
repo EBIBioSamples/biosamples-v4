@@ -1,0 +1,96 @@
+{
+  "name" : "SAMD00141632",
+  "accession" : "SAMD00141632",
+  "domain" : "self.BiosampleImportNCBI",
+  "release" : "2018-11-22T00:00:00Z",
+  "update" : "2018-12-06T01:06:18.920Z",
+  "taxId" : 10376,
+  "characteristics" : {
+    "INSDC center name" : [ {
+      "text" : "Center for Advanced Medicine and Clinical Research, Nagoya University Hospital"
+    } ],
+    "INSDC first public" : [ {
+      "text" : "2018-11-22T00:00:00Z"
+    } ],
+    "INSDC last update" : [ {
+      "text" : "2018-11-22T01:07:47Z"
+    } ],
+    "INSDC status" : [ {
+      "text" : "live"
+    } ],
+    "NCBI submission model" : [ {
+      "text" : "MIGS.vi.human-associated"
+    } ],
+    "NCBI submission package" : [ {
+      "text" : "MIGS.vi.human-associated.4.0"
+    } ],
+    "UPN" : [ {
+      "text" : "UPN494"
+    } ],
+    "broad-scale environmental context" : [ {
+      "text" : "blood",
+      "ontologyTerms" : [ "http://purl.obolibrary.org/obo/UBERON_0000178" ]
+    } ],
+    "collection date" : [ {
+      "text" : "2013"
+    } ],
+    "description" : [ {
+      "text" : "Keywords: GSC:MIxS;MIGS:4.0"
+    } ],
+    "description title" : [ {
+      "text" : "EBV isolated from CD56+ cells of UPN494 (a chronic active EBV infection patient)"
+    } ],
+    "disease" : [ {
+      "text" : "chronic active EBV infection"
+    } ],
+    "environmental medium" : [ {
+      "text" : "blood",
+      "ontologyTerms" : [ "http://purl.obolibrary.org/obo/UBERON_0000178" ]
+    } ],
+    "geographic location" : [ {
+      "text" : "Japan:Aichi"
+    } ],
+    "host" : [ {
+      "text" : "Homo sapiens",
+      "ontologyTerms" : [ "http://purl.obolibrary.org/obo/NCBITaxon_9606" ]
+    } ],
+    "latitude and longitude" : [ {
+      "text" : "35.15 N 136.92 E"
+    } ],
+    "local environmental context" : [ {
+      "text" : "blood",
+      "ontologyTerms" : [ "http://purl.obolibrary.org/obo/UBERON_0000178" ]
+    } ],
+    "organism" : [ {
+      "text" : "Human gammaherpesvirus 4",
+      "ontologyTerms" : [ "http://purl.obolibrary.org/obo/NCBITaxon_10376" ]
+    } ],
+    "project name" : [ {
+      "text" : "Epstein-Barr virus (EBV) genome sequencing in EBV-associated diseases"
+    } ],
+    "sample name" : [ {
+      "text" : "EBV_UPN494_CD56+"
+    } ],
+    "type" : [ {
+      "text" : "CD56+"
+    } ]
+  },
+  "releaseDate" : "2018-11-22",
+  "updateDate" : "2018-12-06",
+  "_links" : {
+    "self" : {
+      "href" : "https://www.ebi.ac.uk/biosamples/samples/SAMD00141632"
+    },
+    "curationDomain" : {
+      "href" : "https://www.ebi.ac.uk/biosamples/samples/SAMD00141632{?curationdomain}",
+      "templated" : true
+    },
+    "curationLinks" : {
+      "href" : "https://www.ebi.ac.uk/biosamples/samples/SAMD00141632/curationlinks"
+    },
+    "curationLink" : {
+      "href" : "https://www.ebi.ac.uk/biosamples/samples/SAMD00141632/curationlinks/{hash}",
+      "templated" : true
+    }
+  }
+}

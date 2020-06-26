@@ -1,0 +1,26 @@
+{
+  "checklists": [
+    {
+      "name": "biosamples",
+      "version": "0.0.1",
+      "file": "../../res/schemas/biosamples-schema.json"
+    },
+    {
+      "name": "ncbi",
+      "version": "0.0.1",
+      "file": "../../res/schemas/ncbi-candidate-schema.json"
+    }
+  ],
+  "plans": [
+    {
+      "candidate_checklist_id": "ncbi-0.0.1",
+      "certification_checklist_id": "biosamples-0.0.1",
+      "curations": [
+        {
+          "characteristic": "INSDC status",
+          "value": "public"
+        }
+      ]
+    }
+  ]
+}

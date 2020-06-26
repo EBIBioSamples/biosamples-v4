@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/base.xml"/>
+
+    <jmxConfigurator/>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%-30(%d{HH:mm:ss.SSS} [%thread]) %-5level %logger{32} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="GELF" class="de.siegmar.logbackgelf.GelfUdpAppender">
+        <graylogHost>biosamples-ops</graylogHost>
+        <graylogPort>12201</graylogPort>
+        <layout class="de.siegmar.logbackgelf.GelfLayout">
+            <staticField>application:certification-service</staticField>
+        </layout>
+    </appender>
+
+    <logger name="uk.ac.ebi" level="INFO" additivity="false">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="GELF"/>
+    </logger>
+
+    <logger name="events" level="INFO" additivity="false">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="GELF"/>
+    </logger>
+
+    <root level="INFO">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="GELF"/>
+    </root>
+
+</configuration>

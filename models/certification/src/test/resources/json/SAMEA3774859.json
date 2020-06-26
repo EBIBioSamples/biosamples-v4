@@ -1,0 +1,53 @@
+{
+  "name" : "source Sample 17855",
+  "accession" : "SAMEA3774859",
+  "domain" : "self.BioSamplesMigration",
+  "release" : "2015-07-22T23:00:00Z",
+  "update" : "2018-01-24T00:04:54.775Z",
+  "taxId" : 9606,
+  "characteristics" : {
+    "Organism" : [ {
+      "text" : "Homo sapiens",
+      "ontologyTerms" : [ "http://purl.obolibrary.org/obo/NCBITaxon_9606" ]
+    } ],
+    "cell type" : [ {
+      "text" : "EBV-transformed lymphoblastoid cell line"
+    } ],
+    "disease state" : [ {
+      "text" : "normal",
+      "ontologyTerms" : [ "http://purl.obolibrary.org/obo/PATO_0000461" ]
+    } ],
+    "tissue supergroup" : [ {
+      "text" : "lymphoid"
+    } ]
+  },
+  "relationships" : [ {
+    "source" : "SAMEG302760",
+    "type" : "has member",
+    "target" : "SAMEA3774859"
+  } ],
+  "externalReferences" : [ {
+    "url" : "http://www.ebi.ac.uk/arrayexpress/experiments/E-MTAB-3732"
+  } ],
+  "releaseDate" : "2015-07-22",
+  "updateDate" : "2018-01-24",
+  "contact" : [ {
+    "Name" : "Aurora Torrente"
+  } ],
+  "_links" : {
+    "self" : {
+      "href" : "https://www.ebi.ac.uk/biosamples/samples/SAMEA3774859"
+    },
+    "curationDomain" : {
+      "href" : "https://www.ebi.ac.uk/biosamples/samples/SAMEA3774859{?curationdomain}",
+      "templated" : true
+    },
+    "curationLinks" : {
+      "href" : "https://www.ebi.ac.uk/biosamples/samples/SAMEA3774859/curationlinks"
+    },
+    "curationLink" : {
+      "href" : "https://www.ebi.ac.uk/biosamples/samples/SAMEA3774859/curationlinks/{hash}",
+      "templated" : true
+    }
+  }
+}

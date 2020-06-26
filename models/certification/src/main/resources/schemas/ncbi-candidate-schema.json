@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "ncbi-schema.json",
+  "additionalProperties": true,
+  "required": [
+    "name",
+    "accession",
+    "domain",
+    "characteristics"
+  ],
+  "title": "sample",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "accession": {
+      "type": "string"
+    },
+    "domain": {
+      "type": "string",
+      "enum": [
+        "self.BiosampleImportNCBI"
+      ]
+    },
+    "characteristics": {
+      "type": "object",
+      "required": [
+        "INSDC status"
+      ],
+      "properties": {
+        "INSDC status": {
+          "type": "array",
+          "items": {
+            "properties": {
+              "text": {
+                "type": "string",
+                "enum": [
+                  "live"
+                ]
+              }
+            },
+            "required": [
+              "text"
+            ]
+          }
+        }
+      }
+    }
+  }
+}
