@@ -26,9 +26,26 @@ Sample content reference:
 | externalReferences | `Array` | Optional
 | relationships | `Array` | Optional
 | data | `Array` | Optional, required only for structured data submission using our POST, PUT or PATCH endpoints.
+
 Note - You must provide an AAP domain for your data. It can be same as the sample domain if you are the submitter of both the
 sample metadata and structured data.
+
 |===
+
+The structure of elements in Field `characteristics` :
+
+[cols=3*,options="header"]
+|===
+|Field
+|Type
+|Cardinality
+
+|text|`String`|Recommended
+|ontologyTerms|`Array`|Optional
+|unit|`String`|Optional
+
+|===
+
 
 === Curation Link
 [cols=3*, options="header"]
