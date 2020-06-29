@@ -365,7 +365,7 @@ code[class^="language"] {
     content: "\2212";
 }
 
-.content {
+.graph-example-content {
     padding: 3px 5px;
     display: none;
     overflow: hidden;

@@ -1,7 +1,5 @@
 package uk.ac.ebi.biosamples.docs;
 
-import org.assertj.core.util.Lists;
-import uk.ac.ebi.biosamples.MessageContent;
 import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.model.structured.amr.AMREntry;
 import uk.ac.ebi.biosamples.model.structured.amr.AMRTable;
@@ -12,7 +10,7 @@ import java.util.*;
 
 public class DocumentationHelper {
 
-//    private final String[] sampleAccessionPrefix = {"SAME", "SAMD", "SAMEA", "SAMN"};
+    //    private final String[] sampleAccessionPrefix = {"SAME", "SAMD", "SAMEA", "SAMN"};
     private final int maxRandomNumber = 100000;
 
 
@@ -26,7 +24,7 @@ public class DocumentationHelper {
 
         for (int i = 0; i < numberOfSamples; i++) {
 
-            while(sampleAccession == null || usedAccession.contains(sampleAccession)) {
+            while (sampleAccession == null || usedAccession.contains(sampleAccession)) {
 
                 int randomInt = randomGenerator.nextInt(maxRandomNumber);
                 sampleAccession = String.format("%s%06d", "SAMFAKE", randomInt);
@@ -34,7 +32,7 @@ public class DocumentationHelper {
             }
 
             usedAccession.add(sampleAccession);
-            Sample sample = new Sample.Builder( "FakeSample", sampleAccession).build();
+            Sample sample = new Sample.Builder("FakeSample", sampleAccession).build();
 
             samples.add(sample);
         }
@@ -56,25 +54,8 @@ public class DocumentationHelper {
         return "self.ExampleDomain";
     }
 
-//    public Sample.Builder getBuilderFromSample(Sample sample) {
-//        Sample.Builder sampleBuilder = new Sample.Builder(sample.getAccession(), sample.getName())
-//                .withDomain(sample.getDomain())
-//                .withRelease(sample.getRelease())
-//                .withUpdate(sample.getUpdate());
-//
-//        sample.getAttributes().forEach(sampleBuilder::addAttribute);
-//        sample.getRelationships().forEach(sampleBuilder::withRelationship);
-//        sample.getContacts().forEach(sampleBuilder::withContact);
-//        sample.getPublications().forEach(sampleBuilder::withPublication);
-//        sample.getOrganizations().forEach(sampleBuilder::withOrganization);
-//
-//        return sampleBuilder;
-//
-//
-//    }
-
     public Sample.Builder getExampleSampleBuilder() {
-        return new Sample.Builder( "FakeSample","SAMFAKE123456");
+        return new Sample.Builder("FakeSample", "SAMFAKE123456");
     }
 
     public Sample getExampleSample() {
@@ -85,8 +66,21 @@ public class DocumentationHelper {
         return getExampleSampleBuilder().withDomain(getExampleDomain()).build();
     }
 
-    public Curation getExampleCuration() {
+    public Sample getExampleSampleWithExternalReferences() {
+        return getExampleSampleBuilder()
+                .addExternalReference(ExternalReference.build("https://www.ebi.ac.uk/ena/data/view/SAMEA00001"))
+                .withDomain(getExampleDomain())
+                .build();
+    }
 
+    public Sample getExampleSampleWithRelationships() {
+        return getExampleSampleBuilder()
+                .addRelationship(Relationship.build("SAMFAKE123456", "derived from", "SAMFAKE654321"))
+                .withDomain(getExampleDomain())
+                .build();
+    }
+
+    public Curation getExampleCuration() {
         Curation curationObject = Curation.build(
                 Collections.singletonList(Attribute.build("Organism", "Human", "9606", null)),
                 Collections.singletonList(Attribute.build("Organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null)),
@@ -94,13 +88,10 @@ public class DocumentationHelper {
                 Collections.singletonList(ExternalReference.build("www.ebi.ac.uk/ena/ERA123456"))
         );
 
-//        CurationLink curationLinkObject = CurationLink.build("SAMEA123456", curationObject, getExampleDomain(), Instant.now());
-//        return curationLinkObject;
         return curationObject;
     }
 
     public CurationLink getExampleCurationLink() {
-
         Curation curationObject = getExampleCuration();
         Sample sampleObject = getExampleSampleBuilder().build();
         String domain = getExampleDomain();
