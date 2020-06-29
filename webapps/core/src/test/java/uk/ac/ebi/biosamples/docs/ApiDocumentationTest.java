@@ -376,18 +376,6 @@ public class ApiDocumentationTest {
      */
     @Test
     public void putSampleWithRelationships() throws Exception {
-
-        /*String sampleToSubmit = "{ " +
-                "\"name\" : \"" + sample.getName() + "\", " +
-                "\"release\" : \"" +dateTimeFormatter.format(sample.getRelease().atOffset(ZoneOffset.UTC)) + "\", " +
-                "\"domain\" : \"self.ExampleDomain\", " +
-                "\"relationships\" : [ { " +
-                "    \"source\" : \"SAMFAKE123456\", " +
-                "    \"type\" : \"has member\", " +
-                "    \"target\" : \"SAMFAKE654321\" " +
-                "  } ]" +
-                "}";*/
-
         Sample sampleWithDomain = this.faker.getExampleSampleWithRelationships();
 
         when(sampleService.fetch(eq(sampleWithDomain.getAccession()), eq(Optional.empty()), any(String.class)))

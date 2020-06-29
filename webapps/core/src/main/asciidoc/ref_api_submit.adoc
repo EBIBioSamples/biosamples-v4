@@ -151,7 +151,7 @@ include::{snippets}/post-sample-with-external-references/http-request.adoc[]
 
 include::{snippets}/post-sample-with-external-references/http-response.adoc[]
 
-== Post sample with external references
+== Put sample with relationships
 `POST` sample with external references
 
 === Request
