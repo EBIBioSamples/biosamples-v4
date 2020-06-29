@@ -15,11 +15,18 @@ Now we have started moving old SampleTab domains to new DSP subs domains. This i
 4. Sample relationship source validation and relationship documentation: +
 In a sample relationship, sample source should equal to the containing sample accession. This is validated at sample submission time.  New section is added to the user guide to explain sample relationships.
 5. Clearinghouse import: +
+Now we have all the scripts in place for importing curations from clearinghouse. As a result we have also changed how we curate "not collected" and "not provided" values. This is described in documentation.
+6. Improvements to EBI Search Engine data dump pipeline
+7. BioSamples support to ENA presentation: External reference to ENA is added to samples submitted through BioSamples, i.e. BioSamples authority samples
 
 === Bug fixes:
 1. Remove alt text from h1 tag in UI. Alt text in h1 tag has caused google to wrongly index biosamples in search results.
 2. Include missing domain validation when updating samples: +
 Domain validation in sample update service was missing in the previous version. This has been added in the new version. Now if a user has access to an existing sample, he can update the sample using any domain he has access to.
+3. Fix the curation pipeline to retain meaningful attributes having values like “not provided”, “not collected”
+4. NCBI Exchange - There are cases of missing SRA accessions in NCBI samples imported to EBI BioSamples. In such cases NCBI samples are cross checked with ENA Oracle database and if SRA accession is found in ENA Oracle database, the NCBI samples are updated with the same
+5. There were often failures in updating already private samples in NCBI to private in EBI BioSamples, this has been fixed in this release
+
 
 === Notifications
 * Please note that we will be removing SampleTab format submission support on 1st of July. Please let us know if you have any concerns regarding this.
