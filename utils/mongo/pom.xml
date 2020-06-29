@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>4.2.7-SNAPSHOT</version>
+		<version>4.2.7-RC1</version>
 		<relativePath>../../</relativePath>
 	</parent>
 
@@ -16,17 +16,17 @@
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>models-mongo</artifactId>
-			<version>4.2.7-SNAPSHOT</version>
+			<version>4.2.7-RC1</version>
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>properties</artifactId>
-			<version>4.2.7-SNAPSHOT</version>
+			<version>4.2.7-RC1</version>
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>utils-thread</artifactId>
-			<version>4.2.7-SNAPSHOT</version>
+			<version>4.2.7-RC1</version>
 		</dependency>
 	</dependencies>
 
