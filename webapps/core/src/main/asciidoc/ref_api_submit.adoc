@@ -152,7 +152,7 @@ include::{snippets}/post-sample-with-external-references/http-request.adoc[]
 include::{snippets}/post-sample-with-external-references/http-response.adoc[]
 
 == Put sample with relationships
-`POST` sample with external references
+`PUT` sample with relationships
 
 === Request
 include::{snippets}/put-sample-with-relationships/http-request.adoc[]
