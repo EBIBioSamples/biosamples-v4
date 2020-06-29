@@ -85,6 +85,20 @@ public class DocumentationHelper {
         return getExampleSampleBuilder().withDomain(getExampleDomain()).build();
     }
 
+    public Sample getExampleSampleWithExternalReferences() {
+        return getExampleSampleBuilder()
+                .addExternalReference(ExternalReference.build("https://www.ebi.ac.uk/ena/data/view/SAMEA00001"))
+                .withDomain(getExampleDomain())
+                .build();
+    }
+
+    public Sample getExampleSampleWithRelationships() {
+        return getExampleSampleBuilder()
+                .addRelationship(Relationship.build("SAMFAKE123456", "derived from", "SAMFAKE654321"))
+                .withDomain(getExampleDomain())
+                .build();
+    }
+
     public Curation getExampleCuration() {
 
         Curation curationObject = Curation.build(

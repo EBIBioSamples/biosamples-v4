@@ -182,7 +182,6 @@ public class ApiDocumentationTest {
 
         String sampleToSubmit = "{ " +
                 "\"name\" : \"" + sample.getName() + "\", " +
-                "\"update\" : \"" + dateTimeFormatter.format(sample.getUpdate().atOffset(ZoneOffset.UTC)) + "\", " +
                 "\"release\" : \"" +dateTimeFormatter.format(sample.getRelease().atOffset(ZoneOffset.UTC)) + "\", " +
                 "\"domain\" : \"self.ExampleDomain\" " +
                 "}";
@@ -198,6 +197,39 @@ public class ApiDocumentationTest {
                         .header("Authorization", "Bearer $TOKEN"))
                 .andExpect(status().is2xxSuccessful())
                 .andDo(document("post-sample",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint())));
+    }
+
+    /**
+     * Generate the snippets for Sample submission to BioSamples with external references
+     * @throws Exception
+     */
+    @Test
+    public void postSampleWithExternalReferences() throws Exception {
+        Sample sample = this.faker.getExampleSample();
+        Sample sampleWithDomain = this.faker.getExampleSampleWithExternalReferences();
+
+        String sampleToSubmit = "{ " +
+                "\"name\" : \"" + sample.getName() + "\", " +
+                "\"release\" : \"" +dateTimeFormatter.format(sample.getRelease().atOffset(ZoneOffset.UTC)) + "\", " +
+                "\"domain\" : \"self.ExampleDomain\", " +
+                "\"externalReferences\" : [ { " +
+                "    \"url\" : \"https://www.ebi.ac.uk/ena/data/view/SAMEA00001\" " +
+                "  } ]" +
+                "}";
+
+
+        when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(sampleWithDomain);
+        when(sampleService.store(any(Sample.class))).thenReturn(sampleWithDomain);
+
+        this.mockMvc.perform(
+                post("/biosamples/samples")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(sampleToSubmit)
+                        .header("Authorization", "Bearer $TOKEN"))
+                .andExpect(status().is2xxSuccessful())
+                .andDo(document("post-sample-with-external-references",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint())));
     }
@@ -336,6 +368,44 @@ public class ApiDocumentationTest {
                 .andExpect(status().is2xxSuccessful())
                 .andDo(document("put-sample", preprocessRequest(prettyPrint()), preprocessResponse(prettyPrint())));
 
+    }
+
+    /**
+     * Generate the snippets for Sample submission to BioSamples with relationships
+     * @throws Exception
+     */
+    @Test
+    public void putSampleWithRelationships() throws Exception {
+
+        /*String sampleToSubmit = "{ " +
+                "\"name\" : \"" + sample.getName() + "\", " +
+                "\"release\" : \"" +dateTimeFormatter.format(sample.getRelease().atOffset(ZoneOffset.UTC)) + "\", " +
+                "\"domain\" : \"self.ExampleDomain\", " +
+                "\"relationships\" : [ { " +
+                "    \"source\" : \"SAMFAKE123456\", " +
+                "    \"type\" : \"has member\", " +
+                "    \"target\" : \"SAMFAKE654321\" " +
+                "  } ]" +
+                "}";*/
+
+        Sample sampleWithDomain = this.faker.getExampleSampleWithRelationships();
+
+        when(sampleService.fetch(eq(sampleWithDomain.getAccession()), eq(Optional.empty()), any(String.class)))
+                .thenReturn(Optional.of(sampleWithDomain));
+        when(sampleService.store(eq(sampleWithDomain)))
+                .thenReturn(sampleWithDomain);
+        when(aapService.handleSampleDomain(sampleWithDomain))
+                .thenReturn(sampleWithDomain);
+        when(aapService.isWriteSuperUser())
+                .thenReturn(true);
+        when(aapService.isIntegrationTestUser())
+                .thenReturn(false);
+        doNothing().when(aapService).checkAccessible(isA(Sample.class));
+
+        this.mockMvc.perform(
+                put("/biosamples/samples/"  + sampleWithDomain.getAccession()).contentType(MediaType.APPLICATION_JSON).content(serialize(sampleWithDomain)).header("Authorization", "Bearer $TOKEN"))
+                .andExpect(status().is2xxSuccessful())
+                .andDo(document("put-sample-with-relationships", preprocessRequest(prettyPrint()), preprocessResponse(prettyPrint())));
     }
 
     @Test

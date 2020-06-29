@@ -20,7 +20,7 @@ Sample content reference:
 
 | name | The short name of the sample. | `String` | Required
 | release | The date at which the sample was first made public. | `Date ISO 8601` | Required
-| update | The date at which the sample was last updated. | `Date ISO 8601` | Required
+| update | The date at which the sample was last updated. | `Date ISO 8601` | System Generated
 | domain | The AAP domain the sample belongs to. | `String` | Required
 | accession | The sample unique identifier in the BioSamples database. If not provided, one will be automatically assigned. | `String` | Required for `PUT` requests
 | characteristics | The key-value pairs representing the attributes of the sample. | `Object` | Optional
@@ -139,6 +139,26 @@ include::{snippets}/validate-sample/http-request.adoc[]
 
 === Response
 include::{snippets}/validate-sample/http-response.adoc[]
+
+
+== Post sample with external references
+`POST` sample with external reference attached to it
+
+=== Request
+include::{snippets}/post-sample-with-external-references/http-request.adoc[]
+
+=== Response
+
+include::{snippets}/post-sample-with-external-references/http-response.adoc[]
+
+== Post sample with external references
+`POST` sample with external references
+
+=== Request
+include::{snippets}/put-sample-with-relationships/http-request.adoc[]
+
+=== Response
+include::{snippets}/put-sample-with-relationships/http-response.adoc[]
 
 === Links
 For all the links available in BioSamples check the link:../api/links[Links Reference]
