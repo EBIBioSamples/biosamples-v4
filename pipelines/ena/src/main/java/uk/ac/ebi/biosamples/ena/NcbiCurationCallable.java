@@ -49,7 +49,7 @@ public class NcbiCurationCallable implements Callable<Void> {
     }
 
     @Override
-    public Void call() throws Exception {
+    public Void call() {
         log.trace("HANDLING " + this.accession);
         ExternalReference exRef = ExternalReference.build("https://www.ebi.ac.uk/ena/data/view/" + this.accession);
         Curation curation = Curation.build(null, null, null, Collections.singleton(exRef));
@@ -103,7 +103,7 @@ public class NcbiCurationCallable implements Callable<Void> {
                 }
             }
         } catch (final Exception e) {
-            log.error("Failed to update sample status to suppressed for sample " + accession);
+            log.error("Failed to update sample status to suppressed for NCBI sample " + accession);
         }
     }
 }
