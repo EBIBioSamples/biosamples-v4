@@ -118,7 +118,8 @@
 					"pattern": "^SAM(D|N|E([AG]?))[0-9]+$"
 				},
 				"type": {
-					"type": "string"
+					"type": "string",
+					"enum": ["derived from","same as","has member","child of"]
 				},
 				"target": {
 					"description": "The sample accession where the relation targets to",
@@ -229,7 +230,7 @@
 			}
 		},
 		"externalReferences": {
-			"description": "Array of references to external resources",
+			"description": "Array of references to external resources, for example a link to ENA data, EGA data, etc.",
 			"type": "array",
 			"items": {
 				"$ref": "#/definitions/external_reference"
