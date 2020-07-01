@@ -21,14 +21,10 @@
 		<th:block th:include="fragments/header :: masterhead"></th:block>
 		<div id="main-content-area" class="row padding-top-xlarge padding-left-xlarge padding-right-xlarge">
 			<div class="row">
-				<div class="warning-msg">
-					<i class="icon icon-common icon-exclamation-triangle"></i>
-					SampleTab format is no longer supported by BioSamples. Please use BioSamples <a href="/biosamples/docs/references/api/submit">JSON API</a> for all future submissions.
-				</div>
 				<h2>Services</h2>
 				<p>There are several services provided for programatically sending sample information to the <a href="/biosamples"></a>BioSamples Database</a>. These are: </p>
                 <div class="row biosamples-button-row">
-					<a href="/biosamples/docs/references/api/submit">
+					<a th:href="@{/docs}+'/references/api/submit#_submit_a_sample'">
 						<div class="large-4 columns">
 							<div class="card biosamples-card">
 								<h3>Submission Service</h3>
@@ -38,26 +34,26 @@
 							</div>
 						</div>
 					</a>
-					<!--<a th:href="@{{baseUrl}/(baseUrl=${usiUrl})}" href="accession">-->
+					<a th:href="@{/docs}+'/references/api/submit#_accession_a_sample'">
 						<div class="large-4 columns">
 							<div class="card biosamples-card">
 								<h3>Accessioning Service</h3>
 								<div class="card-section">
-									<p>If you want to use accessioning service, please contact us at <a href="mailto:biosamples@ebi.ac.uk?Subject=SampleTab+Web+Services">biosamples@ebi.ac.uk</a></p>
+									<p>Accession through JSON API</p>
 								</div>
 							</div>
 						</div>
-					<!--</a>-->
-					<!--<a th:href="@{{baseUrl}/(baseUrl=${usiUrl})}" href="validation">-->
+					</a>
+					<a th:href="@{/docs}+'/references/api/submit#_validate_sample_fields'">
 						<div class="large-4 columns">
 							<div class="card biosamples-card">
 								<h3>Validation Service</h3>
 								<div class="card-section">
-									<p>If you want to use validation service, please contact us at <a href="mailto:biosamples@ebi.ac.uk?Subject=SampleTab+Web+Services">biosamples@ebi.ac.uk</a></p>
+									<p>Validate through JSON API</p>
 								</div>
 							</div>
 						</div>
-					<!--</a>-->
+					</a>
 				</div>
 
 				<p>Please note that assigned accession will be immediately return, though they will not be immediately
