@@ -159,7 +159,7 @@
 				}
 			}
 		},
-		"sample_attributes": {
+		"characteristic": {
 			"type": "object",
 			"additionalProperties": false,
 			"properties": {
@@ -216,7 +216,7 @@
 			"type": "object",
 			"properties": {
 				"items": {
-					"$ref": "#/definitions/sample_attributes"
+					"$ref": "#/definitions/characteristic"
 				}
 
 			}
