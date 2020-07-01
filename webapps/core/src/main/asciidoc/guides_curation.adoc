@@ -8,7 +8,7 @@ BioSamples performs automatic curation and supports manual curation to
 improve sample data findability. It removes missing values, performs
 ontology annotation and text curation through automatic curation.
 
-The curation records are stored separately along with the original data. BioSamples applies the curation as seperate layers on top of the original data.
+The curation records are stored separately along with the original data. BioSamples applies the curation as separate layers on top of the original data.
 
 === Automatic curation, remove missing values
 
