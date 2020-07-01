@@ -8,6 +8,8 @@ BioSamples performs automatic curation and supports manual curation to
 improve sample data findability. It removes missing values, performs
 ontology annotation and text curation through automatic curation.
 
+The curation records are stored separately along with the original data. BioSamples applies the curation as seperate layers on top of the original data.
+
 === Automatic curation, remove missing values
 
 Missing values, e.g. "N/A", "none", are removed during submission. See
@@ -137,18 +139,22 @@ It takes up to 24 hours to generate the curation.
 Users can also provide their manual curation. See details
 https://wwwdev.ebi.ac.uk/biosamples/docs/references/api/submit#_submit_curation_object[here].
 
-== How to find the curation history
+== How to find all curation records?
 
-Users can access the curation records by adding `/curationlinks` to the
-sample link. For example,
-https://www.ebi.ac.uk/biosamples/samples/SAMN00000/curationlinks[https://www.ebi.ac.uk/biosamples/samples/SAMN00000/curationlinks].
+Users can access all curation records by adding `/curationlinks` to the
+sample link.
+
+For example, https://www.ebi.ac.uk/biosamples/samples/SAMEA1607017/curationlinks[https://www.ebi.ac.uk/biosamples/samples/SAMEA1607017/curationlinks].
+returns all curation records of sample `SAMEA1607017`
 
 == How to get uncurated data
 
 Biosamples returns the curated data by default. It is also possible to
 download the original data without curation by adding
-`.json?curationdomain=` to the sample link. For example,
-https://www.ebi.ac.uk/biosamples/samples/SAMN11893690.json?curationdomain=[https://www.ebi.ac.uk/biosamples/samples/SAMN11893690.json?curationdomain=]
+`.json?curationdomain=` to the sample link.
+
+For example,
+https://www.ebi.ac.uk/biosamples/samples/SAMEA1607017.json?curationdomain=[https://www.ebi.ac.uk/biosamples/samples/SAMEA1607017.json?curationdomain=] returns the original data of sample `SAMEA1607017`.
 
 
 
