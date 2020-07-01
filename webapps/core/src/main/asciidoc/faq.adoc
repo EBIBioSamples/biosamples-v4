@@ -41,3 +41,8 @@ Most of the data in BioSamples has been submitted by third parties, often via on
 
 == Where is the BioSamples source code?
 BioSamples is an open source database. The source code is published https://github.com/EBIBioSamples/biosamples-v4[here]. Licensing information for the source code is on our https://raw.githubusercontent.com/EBIBioSamples/biosamples-v4/dev/LICENSE[licensing page]. For problems in building your local BioSamples database, please send a pull request or contact us at biosamples@ebi.ac.uk.
+
+== How do I send my SampleTab files to BioSamples?
+SamplesTab services have been deprecated and retired on July 1st 2020. Please use our https://www.ebi.ac.uk/biosamples/docs/references/api/submit[JSON API] for sample submission and update.
+
+
