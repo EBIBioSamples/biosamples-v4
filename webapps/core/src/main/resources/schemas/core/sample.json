@@ -1,6 +1,7 @@
 {
 	"$schema": "http://json-schema.org/draft-07/schema#",
-	"id": "https://www.ebi.ac.uk/biosamples/schemas/core/sample.json",
+	"$id": "https://www.ebi.ac.uk/biosamples/schemas/core/sample.json",
+	"version": "1.0.0",
 	"additionalProperties": false,
 	"required": [
 		"name",
@@ -8,14 +9,8 @@
 		"release"
 	],
 	"type": "object",
+	"description": "BioSamples database sample json schema",
 	"definitions": {
-		"characteristic": {
-			"title": "BioSamples attribute",
-			"description": "Metadata associated with a sample",
-			"additionalProperties": false,
-			"type": "object",
-			"$ref": "#/character"
-		},
 		"contact": {
 			"title": "Contact",
 			"description": "Object representing a contact reference for the sample",
@@ -58,17 +53,17 @@
 				"url": {
 					"type": "string"
 				},
-				"duo":{
-					"description":"data use ontology",					
-					"type":"array",
-					"items":{
-						"description":"Data use condition https://ega-archive.org/data-use-conditions",
-						"type":"string",
-						"pattern":"^DUO:[0-9]{7}$"
-						}
+				"duo": {
+					"description": "Data use ontology terms ",
+					"type": "array",
+					"items": {
+						"description": "Data use condition https://ega-archive.org/data-use-conditions",
+						"type": "string",
+						"pattern": "^DUO:[0-9]{7}$"
 					}
 				}
-			},
+			}
+		},
 		"organisation": {
 			"title": "Organisation",
 			"description": "Object representing an organization related to the sample in some way",
@@ -123,7 +118,8 @@
 					"pattern": "^SAM(D|N|E([AG]?))[0-9]+$"
 				},
 				"type": {
-					"type": "string"
+					"type": "string",
+					"enum": ["derived from","same as","has member","child of"]
 				},
 				"target": {
 					"description": "The sample accession where the relation targets to",
@@ -162,6 +158,29 @@
 					]
 				}
 			}
+		},
+		"characteristic": {
+			"type": "object",
+			"additionalProperties": false,
+			"properties": {
+				"text": {
+					"type": "string"
+				},
+				"tag": {
+					"description": "The tag indicating the source of the attribute, not required in submission",
+					"type": "string"
+				},
+				"ontologyTerms": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					}
+				},
+				"unit": {
+					"description": "The unit associated with the attribute value",
+					"type": "string"
+				}
+			}
 		}
 	},
 	"properties": {
@@ -189,15 +208,19 @@
 			"format": "date-time"
 		},
 		"taxId": {
-			"description": "Sample NCBI taxonID.",
+			"description": "BioSamples generates the taxonID automaticly. Instead of providing the taxId here, users should provide organism information in Field 'characteristics'",
 			"type": "integer"
-				},
+		},
 		"characteristics": {
 			"description": "All the characteristics associated to the sample",
 			"type": "object",
-			"additionalProperties": {
-				"$ref": "#/definitions/characteristic"
+			"properties": {
+				"items": {
+					"$ref": "#/definitions/characteristic"
+				}
+
 			}
+
 		},
 		"relationships": {
 			"description": "Sample relationships with other samples in BioSamples",
@@ -207,7 +230,7 @@
 			}
 		},
 		"externalReferences": {
-			"description": "Array of references to external resources",
+			"description": "Array of references to external resources, for example a link to ENA data, EGA data, etc.",
 			"type": "array",
 			"items": {
 				"$ref": "#/definitions/external_reference"
@@ -242,24 +265,88 @@
 			}
 		}
 	},
-	"character": {
-		"type": "array",
-		"properties": {
-			"text": {
-				"description": "The attribute value expressed as text",
-				"type": "string"
-			},
-			"ontologyTerms": {
-				"description": "An array of ontology iri associated to the attribute value",
-				"type": "array",
-				"items": {
-					"type": "string"
-				}
-			},
-			"unit": {
-				"description": "The unit associated with the attribute value",
-				"type": "string"
-			}
-		}
-	}
+	"examples": [{
+  "name" : "source GSM1038808 1",
+  "accession" : "SAMEA1607017",
+  "domain" : "self.example",
+  "release" : "2012-11-19T00:00:00Z",
+  "update" : "2019-07-24T08:11:34.499Z",
+  "taxId" : 9606,
+  "characteristics" : {
+    "description" : [ {
+      "text" : "MicMa107_PT_180608 Early stage breast cancer patient."
+    } ],
+    "disease state" : [ {
+      "text" : "early-stage breast cancer"
+    } ],
+    "organism" : [ {
+      "text" : "Homo sapiens",
+      "tag" : "attribute",
+      "ontologyTerms" : [ "http://purl.obolibrary.org/obo/NCBITaxon_9606" ]
+    } ],
+    "organism part" : [ {
+      "text" : "breast cancer tumor"
+    } ],
+    "patient identifier" : [ {
+      "text" : "MicMa107"
+    } ],
+    "sample source name" : [ {
+      "text" : "fresh-frozen breast cancer tumor"
+    } ],
+    "sample title" : [ {
+      "text" : "Breast cancer, MicMa107_PT_180608 (244k)"
+    } ],
+    "type of isolated tumor cells" : [ {
+      "text" : "breast cancer tumor"
+    } ]
+  },
+  "relationships" : [ {
+    "source" : "SAMEG118117",
+    "type" : "has member",
+    "target" : "SAMEA1607017"
+  } ],
+  "organization" : [ {
+    "Name" : "Institute for cancer research Oslo University Hospital Radiumhospitalet",
+    "Role" : "submitter "
+  } ],
+  "contact" : [ {
+    "Name" : "Anna Obenauf"
+  }, {
+    "Name" : "Anne-Lise Børresen-Dale"
+  }, {
+    "Name" : "Bjørn Naume"
+  }, {
+    "Name" : "Eldri Due"
+  }, {
+    "Name" : "Elin Borgen"
+  }, {
+    "Name" : "Ida Schneider"
+  }, {
+    "Name" : "Inga Rye"
+  }, {
+    "Name" : "Jochen Geigl"
+  }, {
+    "Name" : "Klaus Pantel"
+  }, {
+    "Name" : "Knut Liestøl"
+  }, {
+    "Name" : "Lars Baumbusch"
+  }, {
+    "Name" : "Michael Speicher"
+  }, {
+    "Name" : "Ole Lingjærde"
+  }, {
+    "Name" : "Oliver Mauermann"
+  }, {
+    "Name" : "Randi Mathiesen"
+  }, {
+    "Name" : "Renathe Fjelldal"
+  }, {
+    "Name" : "Sabine Riethdorf"
+  } ],
+  "publications" : [ {
+    "pubmed_id" : "21935921"
+  } ]
+}
+]
 }

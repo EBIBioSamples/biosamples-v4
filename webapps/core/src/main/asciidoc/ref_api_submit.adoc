@@ -48,6 +48,10 @@ The structure of elements in Field `characteristics` :
 
 |===
 
+BioSamples also provide a https://www.ebi.ac.uk/biosamples/schemas/core/sample.json[sample JSON schema]
+with example data to help users prepare their data.
+Users are recommended to validate the data against the sample schema before submission.
+
 
 === Curation Link
 [cols=3*, options="header"]
