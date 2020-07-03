@@ -5,17 +5,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import uk.ac.ebi.biosamples.model.certification.RecorderResult;
-import uk.ac.ebi.biosamples.service.certification.Pipeline;
+import uk.ac.ebi.biosamples.service.certification.CertifyService;
 
 @RestController
 public class CertificationController {
-
     @Autowired
-    private Pipeline pipeline;
+    private CertifyService certifyService;
 
     @PostMapping("/certify")
     public RecorderResult certify(@RequestBody String sampleJson) {
-        return pipeline.run(sampleJson);
+        return certifyService.run(sampleJson);
     }
-
 }

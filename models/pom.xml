@@ -30,6 +30,5 @@
 		<module>legacyjson</module>
 		<module>structured</module>
 		<module>neo4j</module>
-		<module>certification</module>
 	</modules>
 </project>
