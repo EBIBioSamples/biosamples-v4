@@ -1,25 +1,20 @@
 package uk.ac.ebi.biosamples.service.certification;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Curation;
-import uk.ac.ebi.biosamples.model.CurationLink;
-import uk.ac.ebi.biosamples.model.certification.*;
-import uk.ac.ebi.biosamples.service.CurationPersistService;
+import uk.ac.ebi.biosamples.model.Certificate;
+import uk.ac.ebi.biosamples.model.certification.CertificationResult;
+import uk.ac.ebi.biosamples.model.certification.Checklist;
+import uk.ac.ebi.biosamples.model.certification.PlanResult;
+import uk.ac.ebi.biosamples.model.certification.SampleDocument;
 
-import java.time.Instant;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
 @Service
 public class CertifyService {
-    @Autowired
-    private CurationPersistService curationPersistService;
-
     private Identifier identifier;
     private Interrogator interrogator;
     private Curator curator;
@@ -34,11 +29,13 @@ public class CertifyService {
         this.recorder = recorder;
     }
 
-    public RecorderResult run(String data) {
+    public List<Certificate> certify(String data) {
         Set<CertificationResult> certificationResults = new LinkedHashSet<>();
         SampleDocument rawSampleDocument = identifier.identify(data);
         certificationResults.add(certifier.certify(rawSampleDocument));
         List<PlanResult> planResults = curator.runCurationPlans(interrogator.interrogate(rawSampleDocument));
+        List<Certificate> certificates = new ArrayList<>();
+
         for (PlanResult planResult : planResults) {
             if (planResult.curationsMade()) {
                 certificationResults.add(certifier.certify(planResult));
@@ -49,15 +46,13 @@ public class CertifyService {
             certificationResult.getCertificates().forEach(certificate -> {
                 final Checklist checklist = certificate.getChecklist();
 
-                final Attribute attribute = Attribute.build("certificate", checklist.getName() + " " + checklist.getVersion());
-                final uk.ac.ebi.biosamples.model.Curation curation = Curation.build(null, Collections.singleton(attribute), null, null);
-                final CurationLink curationLink = CurationLink.build(rawSampleDocument.getAccession(), curation, "self.BiosampleImportNCBI", Instant.now());
-
-                curationPersistService.store(curationLink);
-
+                final Certificate cert = Certificate.build(checklist.getName(), checklist.getVersion(), checklist.getFileName());
+                certificates.add(cert);
             });
         });
 
-        return recorder.record(certificationResults);
+        // Read RecorderResult in order to add curations and plans
+        // RecorderResult result = recorder.record(certificationResults);
+        return certificates;
     }
 }
