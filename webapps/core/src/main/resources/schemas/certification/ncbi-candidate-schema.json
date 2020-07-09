@@ -4,7 +4,6 @@
   "additionalProperties": true,
   "required": [
     "name",
-    "accession",
     "domain",
     "characteristics"
   ],

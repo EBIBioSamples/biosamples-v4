@@ -4,7 +4,6 @@
   "additionalProperties": true,
   "required": [
     "name",
-    "accession",
     "characteristics"
   ],
   "title": "sample",
@@ -30,7 +29,7 @@
               "text": {
                 "type": "string",
                 "enum": [
-                  "public"
+                  "public", "live"
                 ]
               }
             },

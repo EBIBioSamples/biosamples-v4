@@ -37,6 +37,8 @@
 				<th:block th:include="fragments/sample :: organizations (${sample.organizations})"></th:block>
 				<th:block th:include="fragments/sample :: publications (${sample.publications})"></th:block>
 
+				<th:block th:include="fragments/sample :: certificates (${sample.certificates})"></th:block>
+
 				<th:block th:include="fragments/sample :: relationships (${sample.relationships})"></th:block>
 
 				<th:block th:if="${sample.data.size() > 0}">

@@ -175,6 +175,27 @@
 			</table>
 		</section>
 	</section>
+    <section th:fragment="certificates (certificates)">
+        <section th:unless="${#arrays.isEmpty(certificates)}">
+            <h3>Certificates</h3>
+            <table>
+                <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Version</th>
+                    <th>File Name</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each = "certificate : ${certificates}">
+                    <td th:text="${#strings.defaultString(certificate.name, 'No name available')}"></td>
+                    <td th:text="${#strings.defaultString(certificate.version, 'No version available')}"></td>
+                    <td th:text="${#strings.defaultString(certificate.fileName, 'No file name available')}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </section>
+    </section>
 
 	<section th:fragment="serialisationsForm">
         <form>

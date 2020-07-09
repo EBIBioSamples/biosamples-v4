@@ -11,11 +11,6 @@
       "file": "schemas/certification/ncbi-candidate-schema.json"
     },
     {
-      "name": "biosamples-advanced",
-      "version": "0.0.1",
-      "file": "schemas/certification/biosamples-schema.json"
-    },
-    {
       "name": "config",
       "version": "0.0.1",
       "file": "schemas/certification/config-schema.json"

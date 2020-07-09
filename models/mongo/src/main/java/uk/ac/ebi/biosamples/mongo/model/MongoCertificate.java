@@ -1,11 +1,9 @@
 package uk.ac.ebi.biosamples.mongo.model;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import uk.ac.ebi.biosamples.model.Certificate;
 
 import java.util.Objects;
-import java.util.TreeSet;
 
 public class MongoCertificate implements Comparable<MongoCertificate> {
     private String name;
@@ -74,7 +72,36 @@ public class MongoCertificate implements Comparable<MongoCertificate> {
     }
 
     @Override
-    public int compareTo(MongoCertificate o) {
+    public int compareTo(MongoCertificate cert) {
+        if (cert == null) {
+            return 1;
+        }
+
+        int comparison = nullSafeStringComparison(this.name, cert.name);
+
+        if (comparison != 0) {
+            return comparison;
+        }
+
+        comparison = nullSafeStringComparison(this.version, cert.version);
+        if (comparison != 0) {
+            return comparison;
+        }
+
+        return 0;
+    }
+
+    public int nullSafeStringComparison(String one, String two) {
+        if (one == null && two != null) {
+            return -1;
+        }
+        if (one != null && two == null) {
+            return 1;
+        }
+        if (one != null && !one.equals(two)) {
+            return one.compareTo(two);
+        }
+
         return 0;
     }
 
