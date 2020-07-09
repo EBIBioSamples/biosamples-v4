@@ -5,6 +5,8 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.ExposesResourceFor;
 import org.springframework.hateoas.MediaTypes;
@@ -29,6 +31,7 @@ import uk.ac.ebi.biosamples.model.Sample;
 @RequestMapping(value = "/groups", produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
 @ExposesResourceFor(LegacyGroup.class)
 public class GroupsController {
+    private Logger log = LoggerFactory.getLogger(getClass());
 
     private final SampleRepository sampleRepository;
     private final PagedResourcesConverter pagedResourcesConverter;
@@ -50,6 +53,7 @@ public class GroupsController {
             @RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
             @RequestParam(value = "size", required = false, defaultValue = "50") Integer size,
             @RequestParam(value = "sort", required = false, defaultValue = "asc") String sort) {
+        log.warn("ACCESSING DEPRECATED API at GroupsController /");
 
         PagedResources<Resource<Sample>> groups = sampleRepository.findGroups(page, size);
         PagedResources<Resource<LegacyGroup>> pagedResources = pagedResourcesConverter.toLegacyGroupsPagedResource(groups);
@@ -61,6 +65,7 @@ public class GroupsController {
 	@CrossOrigin
     @GetMapping(value = "/{accession:SAMEG\\d+}")
     public ResponseEntity<Resource<LegacyGroup>> sampleByAccession(@PathVariable String accession) throws InstantiationException {
+        log.warn("ACCESSING DEPRECATED API at GroupsController /{accession:SAMEG\\d+}");
 
         Optional<Sample> sample = sampleRepository.findByAccession(accession);
         if (!sample.isPresent()) {

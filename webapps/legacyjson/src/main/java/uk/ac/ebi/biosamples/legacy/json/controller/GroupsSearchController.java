@@ -5,6 +5,8 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 import java.util.Collections;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.ExposesResourceFor;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.PagedResources;
@@ -28,6 +30,7 @@ import uk.ac.ebi.biosamples.model.Sample;
 @RequestMapping(value = "/groups/search", produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
 @ExposesResourceFor(LegacySample.class)
 public class GroupsSearchController {
+    private Logger log = LoggerFactory.getLogger(getClass());
 
     private final SampleRepository sampleRepository;
     private final GroupResourceAssembler sampleResourceAssembler;
@@ -46,6 +49,7 @@ public class GroupsSearchController {
 	@CrossOrigin
     @GetMapping
     public Resources searchMethods() {
+        log.warn("ACCESSING DEPRECATED API at GroupsSearchController /");
         Resources resources = Resources.wrap(Collections.emptyList());
         resources.add(linkTo(methodOn(this.getClass()).searchMethods()).withSelfRel());
         resources.add(linkTo(methodOn(this.getClass()).findByKeywords(null, null, null, null)).withRel("findByKeywords"));
@@ -62,6 +66,7 @@ public class GroupsSearchController {
             @RequestParam(value="size", required = false, defaultValue = "50") Integer size,
             @RequestParam(value="sort", required = false, defaultValue = "asc") String sort)
     {
+        log.warn("ACCESSING DEPRECATED API at GroupsSearchController /findByKeywords");
         PagedResources<Resource<Sample>> groupsByText = sampleRepository.findGroupsByText(keyword, page, size);
         return pagedResourcesConverter.toLegacyGroupsPagedResource(groupsByText);
     }
@@ -74,6 +79,7 @@ public class GroupsSearchController {
             @RequestParam(value="size", required = false, defaultValue = "50") Integer size,
             @RequestParam(value="sort", required = false, defaultValue = "asc") String sort)
     {
+        log.warn("ACCESSING DEPRECATED API at GroupsSearchController /findByAccession");
         return findByKeywords(accession, page, size, sort);
     }
 }

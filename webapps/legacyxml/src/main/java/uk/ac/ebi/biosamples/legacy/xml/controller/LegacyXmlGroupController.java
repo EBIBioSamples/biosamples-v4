@@ -51,6 +51,7 @@ public class LegacyXmlGroupController {
 	@CrossOrigin
 	@GetMapping(value="/v1.0/groups/{accession:SAMEG\\d+}", produces={MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE})
 	public Sample getGroupv1p0(@PathVariable String accession) throws IOException {
+		log.warn("ACCESSING DEPRECATED API at LegacyXmlGroupController /v1.0/groups/{accession:SAMEG\\d+}");
 		Optional<Resource<Sample>> sample = client.fetchSampleResource(accession);
 		
 		if (sample.isPresent()) {
@@ -66,6 +67,7 @@ public class LegacyXmlGroupController {
 	@CrossOrigin
 	@GetMapping(value="/groups/{accession:SAMEG\\d+}", produces={MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE})
 	public Sample getGroup(@PathVariable String accession) throws IOException {
+		log.warn("ACCESSING DEPRECATED API at LegacyXmlGroupController /");
 		return getGroupv1p0(accession);
 	}
 
@@ -77,6 +79,7 @@ public class LegacyXmlGroupController {
 			@RequestParam(name="page", defaultValue = "1") int page,
 			@RequestParam(name="sort", defaultValue = "desc") String sort
 	) {
+		log.warn("ACCESSING DEPRECATED API at LegacyXmlGroupController /v1.0/groups");
 		if (page < 1) {
 			throw new IllegalArgumentException("Page parameter has to be 1-based");
 		}
@@ -127,6 +130,7 @@ public class LegacyXmlGroupController {
 			@RequestParam(name="page", defaultValue = "1") int page,
 			@RequestParam(name="sort", defaultValue = "desc") String sort
 	) {
+		log.warn("ACCESSING DEPRECATED API at LegacyXmlGroupController /groups");
 		return getv1p0Groups(query, pagesize, page, sort);
 	}
 	
@@ -142,6 +146,7 @@ public class LegacyXmlGroupController {
 			@RequestParam(name="page", defaultValue = "1") int page,
 			@RequestParam(name="sort", defaultValue = "desc") String sort
 	) {
+		log.warn("ACCESSING DEPRECATED API at LegacyXmlGroupController /v1.0/groupsamples/{groupAccession:SAMEG\\d+}");
 
 //        Sort.Direction sort = Sort.Direction.fromString(queryParams.getOrDefault("sort","desc"));
 		List<Filter> filterList = new ArrayList<>();
@@ -191,6 +196,7 @@ public class LegacyXmlGroupController {
 			@RequestParam(name="page", defaultValue = "1") int page,
 			@RequestParam(name="sort", defaultValue = "desc") String sort
 	) {
+		log.warn("ACCESSING DEPRECATED API at LegacyXmlGroupController /groupsamples/{groupAccession:SAMEG\\d+}");
 		return getv1p0SamplesInGroup(groupAccession, query, pagesize, page, sort);
 	}
 
