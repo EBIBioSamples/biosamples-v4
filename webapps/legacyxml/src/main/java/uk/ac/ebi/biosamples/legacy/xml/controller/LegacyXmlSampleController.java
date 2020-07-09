@@ -53,6 +53,7 @@ public class LegacyXmlSampleController {
 	@CrossOrigin
 	@GetMapping(value="/samples/{accession:SAM(?:N|D|EA|E)[0-9]+}", produces={MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE})
 	public Sample getSample(@PathVariable String accession) throws IOException {
+		log.warn("ACCESSING DEPRECATED API at LegacyXmlSampleController /samples/{accession:SAM(?:N|D|EA|E)[0-9]+}");
 		Optional<Resource<Sample>> sample = client.fetchSampleResource(accession);
 		
 		if (sample.isPresent()) {
@@ -72,6 +73,7 @@ public class LegacyXmlSampleController {
 			@RequestParam(name="page", defaultValue = "1") int page,
 			@RequestParam(name="sort", defaultValue = "desc") String sort
 	)  {
+		log.warn("ACCESSING DEPRECATED API at LegacyXmlSampleController /samples");
 	    if (page < 1) {
 	        throw new IllegalArgumentException("Page parameter has to be 1-based");
 		}

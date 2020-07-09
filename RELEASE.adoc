@@ -3,6 +3,17 @@
 
 This pages contains links to release notes for BioSamples for version 4.0.0 and higher. This release represents a comprehensive overhaul and therefore previous release notes are no longer applicable.
 
+[[v5.0.0]]
+== v5.0.0 Release notes
+=== New features
+1. Retiring SampleTab API +
+The SampleTab, legacy-json and legacy-xml APIs have been retired in this release. Please contact us at biosamples@ebi.ac.uk if you have any questions/concerns.
+The following endpoints are no longer supported:
+- https://www.ebi.ac.uk/biosamples/sampletab/*
+- https://www.ebi.ac.uk/biosamples/api/*
+- https://www.ebi.ac.uk/biosamples/xml/*
+
+
 [[v4.2.7]]
 == v4.2.7 Release notes
 === New features

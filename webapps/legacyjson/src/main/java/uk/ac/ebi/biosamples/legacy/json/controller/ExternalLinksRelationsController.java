@@ -5,6 +5,8 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 import java.util.Collections;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.EntityLinks;
 import org.springframework.hateoas.ExposesResourceFor;
 import org.springframework.hateoas.MediaTypes;
@@ -28,6 +30,7 @@ import uk.ac.ebi.biosamples.legacy.json.service.PagedResourcesConverter;
 @RequestMapping(value = "/externallinksrelations", produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
 @ExposesResourceFor(ExternalLinksRelation.class)
 public class ExternalLinksRelationsController {
+    private Logger log = LoggerFactory.getLogger(getClass());
 
     private final EntityLinks entityLinks;
     private final SampleRepository sampleRepository;
@@ -54,6 +57,7 @@ public class ExternalLinksRelationsController {
     public PagedResources<Resource<ExternalLinksRelation>> allSamplesRelations(
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "50") int size) {
+        log.warn("ACCESSING DEPRECATED API at ExternalLinksRelationsController /");
 
         PagedResources pagedResources = pagedResourcesConverter.toExternalLinksRelationPagedResource(null);
         pagedResources.add(linkTo(methodOn(ExternalLinksRelationsController.class).searchMethods()).withRel("search"));

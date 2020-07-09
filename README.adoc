@@ -28,8 +28,8 @@ This document provides information about the local installation, development env
 == Softwares
 
 * Git 2.17.1
-* Java 8
-* JDK 8
+* Java 11+
+* JDK 11+
 * Maven 3.6.0
 * Docker 18.6
 
@@ -57,7 +57,7 @@ docker -v
 
 java -version
 # Output
-# openjdk version "1.8.0_222"
+# openjdk version "11.0.7" 2020-04-14
 ----
 . Install BioSamples on your computer.
 +

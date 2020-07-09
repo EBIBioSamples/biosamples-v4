@@ -1,0 +1,160 @@
+= [.ebi-color]#Value Reporting Recommendations#
+:last-update-label!:
+:toc:
+
+== Sample curation
+
+BioSamples performs automatic curation and supports manual curation to
+improve sample data findability. It removes missing values, performs
+ontology annotation and text curation through automatic curation.
+
+The curation records are stored separately along with the original data. BioSamples applies the curation as separate layers on top of the original data.
+
+=== Automatic curation, remove missing values
+
+Missing values, e.g. "N/A", "none", are removed during submission. See
+details
+https://wwwdev.ebi.ac.uk/biosamples/docs/guides/recommendations[here].
+
+For example, Field `disease state` contains `N/A` in the original data.
+
+[source,json]
+----
+"characteristics":{
+    "disease state" : [ {
+      "text" : "N/A"
+    } ],
+    "organism" : [ {
+      "text" : "Homo sapiens"
+    } ]}
+----
+
+Field `disease state` is removed during submission.
+
+[source,json]
+----
+"characteristics":{
+    "organism" : [ {
+      "text" : "Homo sapiens"
+    } ]}
+----
+
+=== Automatic curation, ontology annotations
+
+Ontology annotation maps sample attributes to ontology terms. BioSamples
+uses https://www.ebi.ac.uk/spot/zooma/[ZOOMA] to perform automatic
+ontology annotation. Only annotations with high mapping confidence are
+accepted.
+
+For example, when users submit
+
+[source,json]
+----
+"characteristics" :{
+    "disease state" : [ {
+      "text" : "hepatocellular carcinoma"
+    } ],
+    "organism" : [ {
+      "text" : "Homo sapiens"
+    } ]
+    }
+----
+
+BioSamples will automaticly mapp the text to ontology terms.
+
+[source,json]
+----
+"characteristics" :{
+    "disease state" : [ {
+          "text" : "hepatocellular carcinoma",
+          "ontologyTerms" : [ "http://www.ebi.ac.uk/efo/EFO_0000182" ]
+        } ],
+        "organism" : [ {
+          "text" : "Homo sapiens",
+          "ontologyTerms" : [ "http://purl.obolibrary.org/obo/NCBITaxon_9606" ]
+        } ]
+    }
+----
+
+The automatic ontology curation skips fields with user-provided ontology
+terms.
+
+____
+[.emoji]#💡# BioSamples only selects high confidence ontology annotation.
+However, the automatic annotation might be inaccurate. Users are
+recommended to examine the ontology annotation results manually.
+____
+
+=== Automatic curation, text curation
+
+Text curation in Biosamples removes unnecessary special characters, and
+corrects typos. For example, when users submit
+
+[source,json]
+----
+"characteristics" :{
+    "disease_state" : [ {
+          "text" : "hepatocellular_carcinoma",
+          "ontologyTerms" : [ "http://www.ebi.ac.uk/efo/EFO_0000182" ]
+        } ],
+        "Organism" : [ {
+          "text" : "Homo sapiens",
+          "ontologyTerms" : [ "http://purl.obolibrary.org/obo/NCBITaxon_9606" ]
+        } ],
+        "tissu": [{
+            "text":"liver"
+        }]
+    }
+----
+
+BioSamples removes the underscore in `disease_state`, changes `Organism`
+to lower cases, and correct typo in `tissu`.
+
+[source,json]
+----
+"characteristics" :{
+    "disease state" : [ {
+          "text" : "hepatocellular_carcinoma",
+          "ontologyTerms" : [ "http://www.ebi.ac.uk/efo/EFO_0000182" ]
+        } ],
+        "organism" : [ {
+          "text" : "Homo sapiens",
+          "ontologyTerms" : [ "http://purl.obolibrary.org/obo/NCBITaxon_9606" ]
+        } ],
+        "tissue": [{
+            "text":"liver"
+        }]
+    }
+----
+
+____
+[.emoji]#💡# The automatic text curation is limited to the attribute
+names, the attribute values will not be changed.
+____
+
+It takes up to 24 hours to generate the curation.
+
+== Manual curation
+
+Users can also provide their manual curation. See details
+https://wwwdev.ebi.ac.uk/biosamples/docs/references/api/submit#_submit_curation_object[here].
+
+== How to find all curation records?
+
+Users can access all curation records by adding `/curationlinks` to the
+sample link.
+
+For example, https://www.ebi.ac.uk/biosamples/samples/SAMEA1607017/curationlinks[https://www.ebi.ac.uk/biosamples/samples/SAMEA1607017/curationlinks].
+returns all curation records of sample `SAMEA1607017`
+
+== How to get uncurated data
+
+Biosamples returns the curated data by default. It is also possible to
+download the original data without curation by adding
+`.json?curationdomain=` to the sample link.
+
+For example,
+https://www.ebi.ac.uk/biosamples/samples/SAMEA1607017.json?curationdomain=[https://www.ebi.ac.uk/biosamples/samples/SAMEA1607017.json?curationdomain=] returns the original data of sample `SAMEA1607017`.
+
+
+

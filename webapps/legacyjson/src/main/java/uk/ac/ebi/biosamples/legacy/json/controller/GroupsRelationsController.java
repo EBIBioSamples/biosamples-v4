@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.ExposesResourceFor;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
@@ -42,6 +44,7 @@ import uk.ac.ebi.biosamples.model.Sample;
 @RequestMapping(value = "/groupsrelations", produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
 @ExposesResourceFor(GroupsRelations.class)
 public class GroupsRelationsController {
+    private Logger log = LoggerFactory.getLogger(getClass());
 
     private final SampleRepository sampleRepository;
     private final GroupRelationsResourceAssembler groupRelationsResourceAssembler;
@@ -67,6 +70,7 @@ public class GroupsRelationsController {
             @RequestParam(value="page", required = false, defaultValue = "0") Integer page,
             @RequestParam(value="size", required = false, defaultValue = "50") Integer size,
             @RequestParam(value="sort", required = false, defaultValue = "asc") String sort ) {
+        log.warn("ACCESSING DEPRECATED API at GroupsRelationsController /");
 
         PagedResources<Resource<Sample>> groups = sampleRepository.findGroups(page, size);
         PagedResources<Resource<GroupsRelations>> groupsRelations = this.pagedResourcesConverter.toGroupsRelationsPagedResource(groups);
@@ -78,6 +82,7 @@ public class GroupsRelationsController {
 	@CrossOrigin
     @GetMapping("/search")
     public Resources search() {
+        log.warn("ACCESSING DEPRECATED API at GroupsRelationsController /search");
 
         Resources searchResources = Resources.wrap(Collections.emptyList());
         searchResources.add(linkTo(methodOn(this.getClass()).search()).withSelfRel());
@@ -89,12 +94,14 @@ public class GroupsRelationsController {
 	@CrossOrigin
     @GetMapping("/search/findOneByAccession")
     public ResponseEntity<Resource<GroupsRelations>> findOneByAccession(@RequestParam(value = "accession") String accession) {
+        log.warn("ACCESSING DEPRECATED API at GroupsRelationsController /{accession:SAMEG\\d+}");
         return this.getGroupsRelationsByAccession(accession);
     }
 
 	@CrossOrigin
     @GetMapping("/{accession:SAMEG\\d+}")
     public ResponseEntity<Resource<GroupsRelations>> getGroupsRelationsByAccession(@PathVariable String accession) {
+        log.warn("ACCESSING DEPRECATED API at GroupsRelationsController /");
         Optional<Sample> sample = sampleRepository.findByAccession(accession);
         if(!sample.isPresent()) {
             return ResponseEntity.notFound().build();
@@ -106,6 +113,7 @@ public class GroupsRelationsController {
 	@CrossOrigin
     @GetMapping("/{accession:SAMEG\\d+}/samples")
     public ResponseEntity<Resources<SamplesRelations>> getGroupSamplesRelations(@PathVariable String accession) {
+        log.warn("ACCESSING DEPRECATED API at GroupsRelationsController /{accession:SAMEG\\d+}/samples");
         Optional<Sample> group = sampleRepository.findByAccession(accession);
         if(!group.isPresent()) {
             return ResponseEntity.notFound().build();
@@ -128,6 +136,7 @@ public class GroupsRelationsController {
 	@CrossOrigin
     @GetMapping("/{accession:SAMEG\\d+}/externalLinks")
     public ResponseEntity<Resources<ExternalLinksRelation>> getGroupExternalLinks(@PathVariable String accession) {
+        log.warn("ACCESSING DEPRECATED API at GroupsRelationsController /{accession:SAMEG\\d+}/externalLinks");
         Optional<Sample> group = sampleRepository.findByAccession(accession);
         if(!group.isPresent()) {
             return ResponseEntity.notFound().build();

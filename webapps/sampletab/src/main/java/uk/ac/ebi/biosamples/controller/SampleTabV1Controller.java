@@ -90,6 +90,7 @@ public class SampleTabV1Controller {
 
 	@PostMapping(value = "/api/v1/file/ac")
 	public @ResponseBody Outcome accessionFile(@RequestParam("file") MultipartFile sampleTabFile, @RequestParam(value="apikey") String apiKey) {
+		log.warn("ACCESSING DEPRECATED API at SampleTabV1Controller /api/v1/file/ac");
 		return doAccession(sampleTabFileConverter.convert(sampleTabFile), apiKey);
 	}
 
@@ -136,6 +137,7 @@ public class SampleTabV1Controller {
 
     @PostMapping(value = "/api/v1/file/sb")
 	public @ResponseBody Outcome submitFile(@RequestParam("file") MultipartFile sampleTabFile, @RequestParam("apikey") String apiKey) {
+		log.warn("ACCESSING DEPRECATED API at SampleTabV1Controller /api/v1/file/sb");
 	    return doSubmission(sampleTabFileConverter.convert(sampleTabFile), apiKey);
 	}
     /*
@@ -146,6 +148,7 @@ public class SampleTabV1Controller {
      */
     @RequestMapping(value = "/api/echo", method = RequestMethod.POST)
     public void echo(String input, HttpServletResponse response) throws IOException {
+		log.warn("ACCESSING DEPRECATED API at SampleTabV1Controller /api/echo");
         //set it to be marked as a download file
         response.setContentType("application/force-download; charset=UTF-8");
         //set the filename to download it as

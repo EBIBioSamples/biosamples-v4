@@ -21,6 +21,8 @@
                                th:href="@{/docs/guides/submit}">Submit to BioSamples</a></li>
                         <li><a th:classappend="${#strings.equals(active, 'guides/relationships')} ? 'active'"
                                th:href="@{/docs/guides/relationships}">Relationships</a></li>
+                        <li><a th:classappend="${#strings.equals(active, 'guides/curation')} ? 'active'"
+                               th:href="@{/docs/guides/curation}">Curation</a></li>
                         <li><a th:classappend="${#strings.equals(active, 'guides/recommendations')} ? 'active'"
                                th:href="@{/docs/guides/recommendations}">Recommendations</a></li>
                     </ul>
@@ -45,8 +47,6 @@
                         </li>
                         <li><a th:classappend="${#strings.equals(active, 'refs/filters')} ? 'active'"
                                th:href="@{/docs/references/filters}">Search filters</a></li>
-                        <li><a th:classappend="${#strings.equals(active, 'refs/sampletab')} ? 'active'"
-                               th:href="@{/docs/references/sampletab}">SampleTab file</a></li>
                     </ul>
                 </li>
                 <li><a th:classappend="${#strings.equals(active, 'faq')} ? 'active'" th:href="@{/docs/faq}">FAQ</a></li>
