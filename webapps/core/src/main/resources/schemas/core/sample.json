@@ -1,7 +1,6 @@
 {
 	"$schema": "http://json-schema.org/draft-07/schema#",
-	"$id": "https://www.ebi.ac.uk/biosamples/schemas/core/sample.json",
-	"version": "1.0.0",
+	"id": "https://www.ebi.ac.uk/biosamples/schemas/core/sample.json",
 	"additionalProperties": false,
 	"required": [
 		"name",
@@ -213,12 +212,9 @@
 		},
 		"characteristics": {
 			"description": "All the characteristics associated to the sample",
-			"type": "object",
-			"properties": {
-				"items": {
-					"$ref": "#/definitions/characteristic"
-				}
-
+			"type": "array",
+			"items": {
+				"$ref": "#/definitions/characteristic"
 			}
 
 		},
