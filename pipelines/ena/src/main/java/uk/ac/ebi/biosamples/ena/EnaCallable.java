@@ -71,60 +71,64 @@ public class EnaCallable implements Callable<Void> {
             final String sraAccession = eraProDao.getSraAccession(this.sampleAccession);
 
             if (sraAccession != null) {
-                final List<String> curationDomainBlankList = new ArrayList<>();
-                curationDomainBlankList.add("");
+                try {
+                    final List<String> curationDomainBlankList = new ArrayList<>();
+                    curationDomainBlankList.add("");
 
-                Optional<Resource<Sample>> sampleResult = bioSamplesClient.fetchSampleResource(this.sampleAccession, Optional.of(curationDomainBlankList));
+                    Optional<Resource<Sample>> sampleResult = bioSamplesClient.fetchSampleResource(this.sampleAccession, Optional.of(curationDomainBlankList));
 
-                if (sampleResult.isPresent()) {
-                    Sample sample = sampleResult.get().getContent();
+                    if (sampleResult.isPresent()) {
+                        Sample sample = sampleResult.get().getContent();
 
-                    if (sample != null) {
-                        final Attribute sraAccessionAttribute = Attribute.build(ENA_SRA_ACCESSION, sraAccession);
-                        final SortedSet<Attribute> attributes = sample.getAttributes();
+                        if (sample != null) {
+                            final Attribute sraAccessionAttribute = Attribute.build(ENA_SRA_ACCESSION, sraAccession);
+                            final SortedSet<Attribute> attributes = sample.getAttributes();
 
-                        attributes.add(sraAccessionAttribute);
+                            attributes.add(sraAccessionAttribute);
 
-                        sample = Sample.Builder.fromSample(sample).withAttributes(attributes).withNoExternalReferences().build();
+                            sample = Sample.Builder.fromSample(sample).withAttributes(attributes).withNoExternalReferences().build();
 
-                        bioSamplesClient.persistSampleResource(sample);
-                        log.info("Updated sample " + sampleAccession + " with SRA accession");
+                            bioSamplesClient.persistSampleResource(sample);
+                            log.info("Updated sample " + sampleAccession + " with SRA accession");
 
-                        Iterable<Resource<CurationLink>> curationLinks = bioSamplesClient.fetchCurationLinksOfSample(sampleAccession);
-                        AtomicBoolean containsEnaLink = new AtomicBoolean(false);
-                        final List<CurationLink> externalRefDuplicateLinks = new ArrayList<>();
+                            Iterable<Resource<CurationLink>> curationLinks = bioSamplesClient.fetchCurationLinksOfSample(sampleAccession);
+                            AtomicBoolean containsEnaLink = new AtomicBoolean(false);
+                            final List<CurationLink> externalRefDuplicateLinks = new ArrayList<>();
 
-                        curationLinks.forEach(curation -> {
-                            final CurationLink curationLink = curation.getContent();
+                            curationLinks.forEach(curation -> {
+                                final CurationLink curationLink = curation.getContent();
 
-                            if (curationLink != null) {
-                                curationLink.getCuration().getExternalReferencesPost().forEach(externalReference -> {
-                                    if (externalReference.getUrl().contains("www.ebi.ac.uk/ena/data/view")) {
-                                        externalRefDuplicateLinks.add(curationLink);
-                                    }
-                                });
+                                if (curationLink != null) {
+                                    curationLink.getCuration().getExternalReferencesPost().forEach(externalReference -> {
+                                        if (externalReference.getUrl().contains("www.ebi.ac.uk/ena/data/view")) {
+                                            externalRefDuplicateLinks.add(curationLink);
+                                        }
+                                    });
+                                }
+                            });
+
+                            if (externalRefDuplicateLinks.size() == 1) {
+                                containsEnaLink.set(true);
+                            } else if (externalRefDuplicateLinks.size() > 1) {
+                                externalRefDuplicateLinks.remove(0);
+                                containsEnaLink.set(true);
+
+                                externalRefDuplicateLinks.forEach(bioSamplesClient::deleteCurationLink);
                             }
-                        });
 
-                        if (externalRefDuplicateLinks.size() == 1) {
-                            containsEnaLink.set(true);
-                        } else if (externalRefDuplicateLinks.size() > 1) {
-                            externalRefDuplicateLinks.remove(0);
-                            containsEnaLink.set(true);
+                            if (!containsEnaLink.get()) {
+                                ExternalReference exRef = ExternalReference.build("https://www.ebi.ac.uk/ena/data/view/" + sraAccession);
+                                Curation enaLinkCuration = Curation.build(null, null, null, Collections.singleton(exRef));
 
-                            externalRefDuplicateLinks.forEach(bioSamplesClient::deleteCurationLink);
+                                bioSamplesClient.persistCuration(sampleAccession, enaLinkCuration, domain);
+                                log.info("Updated sample " + sampleAccession + " with ENA link");
+                            }
+                        } else {
+                            log.info("Sample not found " + sampleAccession);
                         }
-
-                        if (!containsEnaLink.get()) {
-                            ExternalReference exRef = ExternalReference.build("https://www.ebi.ac.uk/ena/data/view/" + sraAccession);
-                            Curation enaLinkCuration = Curation.build(null, null, null, Collections.singleton(exRef));
-
-                            bioSamplesClient.persistCuration(sampleAccession, enaLinkCuration, domain);
-                            log.info("Updated sample " + sampleAccession + " with ENA link");
-                        }
-                    } else {
-                        log.info("Sample not found " + sampleAccession);
                     }
+                } catch (final Exception e) {
+                    log.error("Failed to update BSD authority sample with SRA accession " + sampleAccession);
                 }
             }
         } else {
@@ -237,36 +241,39 @@ public class EnaCallable implements Callable<Void> {
      * update status if status is different in BioSamples, else persist
      *
      * @return {@link Void}
-     * @throws DocumentException if failure in document parsing
      */
-    private Void checkAndUpdateSuppressedSample() throws DocumentException {
+    private Void checkAndUpdateSuppressedSample() {
         final List<String> curationDomainBlankList = new ArrayList<>();
         curationDomainBlankList.add("");
 
-        Optional<Resource<Sample>> optionalSampleResource = bioSamplesClient.fetchSampleResource(this.sampleAccession, Optional.of(curationDomainBlankList));
+        try {
+            Optional<Resource<Sample>> optionalSampleResource = bioSamplesClient.fetchSampleResource(this.sampleAccession, Optional.of(curationDomainBlankList));
 
-        if (optionalSampleResource.isPresent()) {
-            final Sample sample = optionalSampleResource.get().getContent();
-            boolean persistRequired = true;
+            if (optionalSampleResource.isPresent()) {
+                final Sample sample = optionalSampleResource.get().getContent();
+                boolean persistRequired = true;
 
-            for (Attribute attribute : sample.getAttributes()) {
-                if (attribute.getType().equals("INSDC status") && attribute.getValue().equals(SUPPRESSED)) {
-                    persistRequired = false;
-                    break;
+                for (Attribute attribute : sample.getAttributes()) {
+                    if (attribute.getType().equals("INSDC status") && attribute.getValue().equals(SUPPRESSED)) {
+                        persistRequired = false;
+                        break;
+                    }
+                }
+
+                if (persistRequired) {
+                    sample.getAttributes().removeIf(attr -> attr.getType().contains("INSDC status"));
+                    sample.getAttributes().add(Attribute.build("INSDC status", SUPPRESSED));
+                    log.info("Updating status to suppressed of sample: " + this.sampleAccession);
+                    bioSamplesClient.persistSampleResource(sample);
+                }
+            } else {
+                if (!ifNcbiDdbj()) {
+                    log.info("Accession doesn't exist " + this.sampleAccession + " creating the same");
+                    return enrichAndPersistEnaSample(false);
                 }
             }
-
-            if (persistRequired) {
-                sample.getAttributes().removeIf(attr -> attr.getType().contains("INSDC status"));
-                sample.getAttributes().add(Attribute.build("INSDC status", SUPPRESSED));
-                log.info("Updating status to suppressed of sample: " + this.sampleAccession);
-                bioSamplesClient.persistSampleResource(sample);
-            }
-        } else {
-            if (!ifNcbiDdbj()) {
-                log.info("Accession doesn't exist " + this.sampleAccession + " creating the same");
-                return enrichAndPersistEnaSample(false);
-            }
+        } catch (final Exception e) {
+            log.error("Failed to update status of ENA sample " + sampleAccession + " to SUPPRESSED");
         }
 
         return null;
