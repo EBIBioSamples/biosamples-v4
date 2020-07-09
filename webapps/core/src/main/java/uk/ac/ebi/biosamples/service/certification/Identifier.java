@@ -22,8 +22,17 @@ public class Identifier {
         mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         try {
             SampleDocument sampleDocument = mapper.readValue(data, SampleDocument.class);
+            String accession = sampleDocument.getAccession();
+            String message = "";
+
+            if (accession != null && !accession.isEmpty())
+                message = accession;
+            else
+                message = "New sample";
+
             sampleDocument.setDocument(data);
-            EVENTS.info(String.format("%s identification successful", sampleDocument.getAccession()));
+            EVENTS.info(String.format("%s identification successful", message));
+
             return sampleDocument;
         } catch (IOException e) {
             String uuid = UUID.randomUUID().toString();

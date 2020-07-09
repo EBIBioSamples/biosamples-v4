@@ -3,6 +3,7 @@ package uk.ac.ebi.biosamples.docs;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -139,7 +140,8 @@ public class ApiDocumentationTest {
      * Describe what's the minimal information necessary to submit a sample
      * @throws Exception
      */
-    /*@Test
+    @Test
+    @Ignore
     public void postSampleMinimalInfo() throws Exception {
         final ObjectMapper jsonMapper = new ObjectMapper();
         String wrongSampleSerialized = "{\"name\": \"Sample without minimum information\" }";
@@ -157,7 +159,7 @@ public class ApiDocumentationTest {
                         .header("Authorization", "Bearer $TOKEN"))
                 .andExpect(status().is4xxClientError())
                 .andDo(document("post-sample-minimal-information", preprocessRequest(prettyPrint()), preprocessResponse(prettyPrint())));
-    }*/
+    }
 
     /**
      * Describes what's the error when curationLink minimal information is not provided
