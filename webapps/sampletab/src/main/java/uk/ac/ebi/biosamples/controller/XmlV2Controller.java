@@ -48,6 +48,7 @@ public class XmlV2Controller {
 			@RequestBody(required=false) Sample sample, 
 			@RequestParam String apikey) 
 					throws ParseException, IOException {
+		log.warn("ACCESSING DEPRECATED API at XmlV2Controller /source/{source}/sample");
 		return saveSourceSample(source, UUID.randomUUID().toString(), sample, apikey);
 	}
 	
@@ -60,6 +61,7 @@ public class XmlV2Controller {
 	public @ResponseBody ResponseEntity<String> saveSourceSample(@PathVariable String source,
 			@PathVariable String sourceid,
 			@RequestParam String apikey) {
+		log.warn("ACCESSING DEPRECATED API at XmlV2Controller /source/{source}/sample/{sourceid}");
 		
 		// ensure source is case insensitive
 		source = source.toLowerCase();
@@ -105,7 +107,7 @@ public class XmlV2Controller {
 	}
 	
 	
-	@PostMapping(value = "/source/{source}/sample/{sourceid}", 
+	@PostMapping(value = "/source/{source}/sample/{sourceid}",
 			produces = MediaType.TEXT_PLAIN_VALUE, 
 			consumes = {MediaType.APPLICATION_XML_VALUE})
 	public @ResponseBody ResponseEntity<String> saveSourceSample(@PathVariable String source,
@@ -113,6 +115,7 @@ public class XmlV2Controller {
 			@RequestBody(required=false) Sample sample, 
 			@RequestParam String apikey)
 					throws ParseException, IOException {
+		log.warn("ACCESSING DEPRECATED API at XmlV2Controller /source/{source}/sample/{sourceid}");
 				
 		//reject if has accession
 		if (sample != null && sample.getAccession() != null) {
@@ -169,6 +172,7 @@ public class XmlV2Controller {
 	public @ResponseBody ResponseEntity<String> saveUpdate(@PathVariable String source, 
 			@PathVariable String sourceid, @RequestParam String apikey, 
 			@RequestBody Sample sample) throws ParseException, IOException {
+		log.warn("ACCESSING DEPRECATED API at XmlV2Controller /source/{source}/sample/{sourceid}");
 		
 		//reject if not using biosample id
 		if (!sourceid.matches("SAM[NED]A?[0-9]+")) {
@@ -237,6 +241,7 @@ public class XmlV2Controller {
 	public @ResponseBody ResponseEntity<String> getAccessionOfSample(@PathVariable String source,
 			@PathVariable String sourceid, 
 			@RequestParam String apikey) {
+		log.warn("ACCESSING DEPRECATED API at XmlV2Controller /source/{source}/sample/{sourceid}");
 		
 		Optional<String> domain = apiKeyService.getDomainForApiKey(apikey);
 		if (!domain.isPresent()) {
@@ -280,6 +285,7 @@ public class XmlV2Controller {
 			@RequestParam String apikey,
 			@RequestBody(required=false) Sample group) 
 					throws ParseException, IOException {
+		log.warn("ACCESSING DEPRECATED API at XmlV2Controller /source/{source}/group");
 		return saveSourceGroup(source, UUID.randomUUID().toString(), apikey, group);
 	}
 
@@ -290,6 +296,7 @@ public class XmlV2Controller {
 			@RequestParam String apikey, 
 			@RequestBody(required=false) Sample group)
 					throws ParseException, IOException {
+		log.warn("ACCESSING DEPRECATED API at XmlV2Controller /source/{source}/group/{sourceid}");
 		
 
 		//reject if has accession
@@ -352,6 +359,7 @@ public class XmlV2Controller {
 			@RequestParam String apikey, 
 			@RequestBody Sample group) 
 					throws ParseException, IOException {
+		log.warn("ACCESSING DEPRECATED API at XmlV2Controller /source/{source}/group/{sourceid}");
 		
 		//reject if not using biosample id
 		if (!sourceid.matches("SAMEG[0-9]+")) {

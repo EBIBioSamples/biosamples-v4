@@ -23,6 +23,7 @@ public class IndexController {
 	@CrossOrigin
     @GetMapping(value = "/", produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE} )
     public Resources root() {
+        log.warn("ACCESSING DEPRECATED API at IndexController /");
 
         Resources resources = Resources.wrap(Collections.emptyList());
         resources.add(linkTo(methodOn(SamplesController.class).allSamples(null, null, null)).withRel("samples"));

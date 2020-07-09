@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -47,6 +49,7 @@ import uk.ac.ebi.biosamples.model.Sample;
 @RequestMapping(value = "/samplesrelations", produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
 @ExposesResourceFor(SamplesRelations.class)
 public class SamplesRelationsController {
+    Logger log = LoggerFactory.getLogger(getClass());
 
     private final EntityLinks entityLinks;
     private final SampleRepository sampleRepository;
@@ -74,6 +77,7 @@ public class SamplesRelationsController {
 	@CrossOrigin
     @GetMapping("/{accession:SAM[END]A?\\d+}")
     public ResponseEntity<Resource<SamplesRelations>> relationsOfSample(@PathVariable String accession) {
+        log.warn("ACCESSING DEPRECATED API at SamplesRelationsController /{accession:SAM[END]A?\\d+}");
         Optional<Sample> sample = sampleRepository.findByAccession(accession);
         if (!sample.isPresent()) {
             return ResponseEntity.notFound().build();
@@ -85,6 +89,7 @@ public class SamplesRelationsController {
 	@CrossOrigin
     @GetMapping("/{accession:SAM[END]A?\\d+}/groups")
     public ResponseEntity<Resources<GroupsRelations>> getSamplesGroupRelations(@PathVariable String accession) {
+        log.warn("ACCESSING DEPRECATED API at SamplesRelationsController /{accession:SAM[END]A?\\d+}/groups");
 
         List<Resource> associatedGroups = relationsRepository
                 .getGroupsRelationships(accession).stream()
@@ -101,6 +106,7 @@ public class SamplesRelationsController {
     public ResponseEntity<Resources> getSamplesRelations(
             @PathVariable String accession,
             @PathVariable String relationType) {
+        log.warn("ACCESSING DEPRECATED API at SamplesRelationsController /{accession:SAM[END]A?\\d+}/{relationType}");
 
         if (!relationsRepository.isSupportedSamplesRelation(relationType)) {
             return ResponseEntity.badRequest().build();
@@ -121,6 +127,7 @@ public class SamplesRelationsController {
     @GetMapping("/{accession:SAM[END]A?\\d+}/externalLinks")
     public ResponseEntity<Resources> getSamplesExternalLinks(
             @PathVariable String accession) {
+        log.warn("ACCESSING DEPRECATED API at SamplesRelationsController /{accession:SAM[END]A?\\d+}/externalLinks");
 
         Optional<Sample> sample = sampleRepository.findByAccession(accession);
         if (!sample.isPresent()) {
@@ -162,6 +169,7 @@ public class SamplesRelationsController {
             @RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
             @RequestParam(value = "size", required = false, defaultValue = "50") Integer size,
             @RequestParam(value = "sort", required = false, defaultValue = "asc") String sort) {
+        log.warn("ACCESSING DEPRECATED API at SamplesRelationsController /");
 
         PagedResources<Resource<Sample>> samples = sampleRepository.findSamples(page, size);
         List<SamplesRelations> legacyRelationsResources = samples.getContent().stream()
@@ -184,6 +192,7 @@ public class SamplesRelationsController {
 	@CrossOrigin
     @GetMapping("/search")
     public Resources searchMethods() {
+        log.warn("ACCESSING DEPRECATED API at SamplesRelationsController /search");
         Resources resources = Resources.wrap(Collections.emptyList());
         resources.add(linkTo(methodOn(this.getClass()).searchMethods()).withSelfRel());
         resources.add(linkTo(methodOn(this.getClass()).findByAccession(null)).withRel("findOneByAccession"));
@@ -194,6 +203,7 @@ public class SamplesRelationsController {
 	@CrossOrigin
     @GetMapping("/search/findOneByAccession") // Replicate v3 way of working
     public ResponseEntity<Resource<SamplesRelations>> findByAccession(@RequestParam(required = false, defaultValue = "") String accession) {
+        log.warn("ACCESSING DEPRECATED API at SamplesRelationsController /search/findOneByAccession");
         if (accession == null || accession.isEmpty()) {
             return ResponseEntity.notFound().build(); // Replicate v3 response code
         }

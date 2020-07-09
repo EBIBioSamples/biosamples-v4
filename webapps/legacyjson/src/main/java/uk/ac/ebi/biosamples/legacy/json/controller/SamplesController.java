@@ -5,6 +5,8 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.ExposesResourceFor;
 import org.springframework.hateoas.MediaTypes;
@@ -29,6 +31,7 @@ import uk.ac.ebi.biosamples.model.Sample;
 @RequestMapping(value = "/samples", produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
 @ExposesResourceFor(LegacySample.class)
 public class SamplesController {
+    Logger log = LoggerFactory.getLogger(getClass());
 
     private final SampleRepository sampleRepository;
     private final PagedResourcesConverter pagedResourcesConverter;
@@ -47,6 +50,7 @@ public class SamplesController {
 	@CrossOrigin
     @GetMapping(value = "/{accession:SAM[END]A?\\d+}")
     public ResponseEntity<Resource<LegacySample>> sampleByAccession(@PathVariable String accession) {
+        log.warn("ACCESSING DEPRECATED API at SamplesController /{accession:SAM[END]A?\\d+}");
 
         Optional<Sample> sample = sampleRepository.findByAccession(accession);
         if (!sample.isPresent()) {
@@ -64,6 +68,7 @@ public class SamplesController {
             @RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
             @RequestParam(value = "size", required = false, defaultValue = "50") Integer size,
             @RequestParam(value = "sort", required = false, defaultValue = "asc") String sort) {
+        log.warn("ACCESSING DEPRECATED API at SamplesController /");
 
         PagedResources<Resource<Sample>> samples = sampleRepository.findSamples(page, size);
         PagedResources<Resource<LegacySample>> pagedResources = pagedResourcesConverter.toLegacySamplesPagedResource(samples);

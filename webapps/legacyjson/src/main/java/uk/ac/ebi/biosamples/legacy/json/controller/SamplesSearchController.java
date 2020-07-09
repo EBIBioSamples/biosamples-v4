@@ -6,6 +6,8 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 import java.util.Collections;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.ExposesResourceFor;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.PagedResources;
@@ -29,6 +31,7 @@ import uk.ac.ebi.biosamples.model.Sample;
 @RequestMapping(value = "/samples/search", produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
 @ExposesResourceFor(LegacySample.class)
 public class SamplesSearchController {
+    Logger log = LoggerFactory.getLogger(getClass());
 
     private final SampleRepository sampleRepository;
     private final SampleResourceAssembler sampleResourceAssembler;
@@ -47,6 +50,7 @@ public class SamplesSearchController {
 	@CrossOrigin
     @GetMapping
     public Resources searchMethods() {
+        log.warn("ACCESSING DEPRECATED API at SamplesSearchController /");
         Resources resources = Resources.wrap(Collections.emptyList());
         resources.add(linkTo(methodOn(this.getClass()).searchMethods()).withSelfRel());
         resources.add(linkTo(methodOn(this.getClass()).findFirstSampleContainedInAGroup(null)).withRel("findFirstByGroupsContains"));
@@ -63,6 +67,7 @@ public class SamplesSearchController {
     @GetMapping("/findFirstByGroupsContains")
     public ResponseEntity<Resource<LegacySample>> findFirstSampleContainedInAGroup(
             @RequestParam(value="group", required=false, defaultValue = "") String group) {
+        log.warn("ACCESSING DEPRECATED API at SamplesSearchController /findFirstByGroupsContains");
         Optional<Resource<Sample>> optionalSampleResource = sampleRepository.findFirstSampleByGroup(group);
 
         if (!optionalSampleResource.isPresent()) {
@@ -79,6 +84,7 @@ public class SamplesSearchController {
             @RequestParam(value="size", required=false, defaultValue = "50") Integer size,
             @RequestParam(value="page", required=false, defaultValue = "0") Integer page,
             @RequestParam(value="sort", required=false, defaultValue = "asc") String sort) {
+        log.warn("ACCESSING DEPRECATED API at SamplesSearchController /findByGroups");
 
         PagedResources<Resource<Sample>> samplePagedResources = sampleRepository.findSamplesByGroup(groupAccession, page, size);
         return pagedResourcesConverter.toLegacySamplesPagedResource(samplePagedResources);
@@ -92,6 +98,7 @@ public class SamplesSearchController {
             @RequestParam(value="page", required=false, defaultValue = "0") Integer page,
             @RequestParam(value="sort", required=false, defaultValue = "asc") String sort
     ) {
+        log.warn("ACCESSING DEPRECATED API at SamplesSearchController /findByAccession");
         PagedResources<Resource<Sample>> samplesPagedResourcesByAccession = sampleRepository.findSamplesByText(accession, page, size);
         return pagedResourcesConverter.toLegacySamplesPagedResource(samplesPagedResourcesByAccession);
     }
@@ -105,6 +112,7 @@ public class SamplesSearchController {
             @RequestParam(value="page", required=false, defaultValue = "0") Integer page,
             @RequestParam(value="sort", defaultValue = "asc") String sort
     ) {
+        log.warn("ACCESSING DEPRECATED API at SamplesSearchController /findByText");
         PagedResources<Resource<Sample>> samplesPagedResourcesByText = sampleRepository.findSamplesByText(text, page, size);
         return pagedResourcesConverter.toLegacySamplesPagedResource(samplesPagedResourcesByText);
 
@@ -119,6 +127,7 @@ public class SamplesSearchController {
             @RequestParam(value="page", defaultValue = "0") Integer page,
             @RequestParam(value="sort", defaultValue = "asc") String sort
     ) {
+        log.warn("ACCESSING DEPRECATED API at SamplesSearchController /findByTextAndGroups");
         PagedResources<Resource<Sample>> samples = sampleRepository.findSamplesByTextAndGroup(
                 text,
                 groupAccession,
@@ -136,6 +145,7 @@ public class SamplesSearchController {
             @RequestParam(value="page", defaultValue = "0") Integer page,
             @RequestParam(value="sort", defaultValue = "asc") String sort
     ) {
+        log.warn("ACCESSING DEPRECATED API at SamplesSearchController /findByAccessionAndGroups");
         PagedResources<Resource<Sample>> sample = sampleRepository.findSampleInGroup(
                 accession, groupAccession);
         return pagedResourcesConverter.toLegacySamplesPagedResource(sample);
