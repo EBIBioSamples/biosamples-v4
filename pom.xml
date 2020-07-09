@@ -4,7 +4,7 @@
 
 	<groupId>uk.ac.ebi.biosamples</groupId>
 	<artifactId>biosamples</artifactId>
-	<version>4.2.8-SNAPSHOT</version>
+	<version>5.0.0-RC1</version>
 
 
 	<packaging>pom</packaging>
