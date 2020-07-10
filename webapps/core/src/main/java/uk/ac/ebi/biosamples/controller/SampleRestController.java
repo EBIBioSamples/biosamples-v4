@@ -174,7 +174,6 @@ public class SampleRestController {
     public Resource<Sample> put(@PathVariable String accession,
                                 @RequestBody Sample sample,
                                 @RequestParam(name = "setfulldetails", required = false, defaultValue = "true") boolean setFullDetails) throws JsonProcessingException {
-
         final ObjectMapper jsonMapper = new ObjectMapper();
 
         if (sample.getAccession() == null || !sample.getAccession().equals(accession)) {
