@@ -168,6 +168,7 @@ public class SampleToXmlConverter implements Converter<Sample, Document> {
             //use the last segment of the URI as the ID
             //not perfect, but good enough?
             List<String> pathSegments = UriComponentsBuilder.fromUriString(externalReference.getUrl()).build().getPathSegments();
+            
             if (pathSegments.size() > 0) {
                 Element databaseId = database.addElement(QName.get("ID", xmlns));
                 databaseId.setText(pathSegments.get(pathSegments.size() - 1));
