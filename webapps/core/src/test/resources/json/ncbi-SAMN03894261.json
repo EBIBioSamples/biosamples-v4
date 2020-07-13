@@ -1,0 +1,85 @@
+{
+  "name" : "CVM N48577",
+  "accession" : "SAMN03894261",
+  "domain" : "self.BiosampleImportNCBI",
+  "release" : "2015-08-10T06:44:40.287Z",
+  "update" : "2018-12-07T15:40:54.603Z",
+  "taxId" : 595,
+  "characteristics" : {
+    "AssemblyVersion" : [ {
+      "text" : "CLC Genomics Workbench v. 6.0.2"
+    } ],
+    "INSDC center name" : [ {
+      "text" : "FDA"
+    } ],
+    "INSDC first public" : [ {
+      "text" : "2015-08-10T06:44:40.287Z"
+    } ],
+    "INSDC last update" : [ {
+      "text" : "2016-02-19T12:22:47.845Z"
+    } ],
+    "INSDC secondary accession" : [ {
+      "text" : "SRS1102065"
+    } ],
+    "INSDC status" : [ {
+      "text" : "live"
+    } ],
+    "NCBI submission model" : [ {
+      "text" : "Pathogen.env"
+    }, {
+      "text" : "environmental/food/other"
+    } ],
+    "NCBI submission package" : [ {
+      "text" : "Pathogen.env.1.0"
+    } ],
+    "SequencingTechnology" : [ {
+      "text" : "Illumina MiSeq"
+    } ],
+    "collected by" : [ {
+      "text" : "FDA"
+    } ],
+    "collection date" : [ {
+      "text" : "2013"
+    } ],
+    "description title" : [ {
+      "text" : "Pathogen: environmental/food/other sample from Salmonella enterica subsp. enterica serovar Infantis"
+    } ],
+    "geographic location" : [ {
+      "text" : "USA: CA"
+    } ],
+    "isolation source" : [ {
+      "text" : "Chicken Breast"
+    } ],
+    "organism" : [ {
+      "text" : "Salmonella enterica subsp. enterica serovar Infantis",
+      "ontologyTerms" : [ "http://purl.obolibrary.org/obo/NCBITaxon_595" ]
+    } ],
+    "serovar" : [ {
+      "text" : "Infantis"
+    } ],
+    "strain" : [ {
+      "text" : "CVM N48577"
+    } ]
+  },
+  "externalReferences" : [ {
+    "url" : "https://www.ebi.ac.uk/ena/data/view/SAMN03894261"
+  } ],
+  "releaseDate" : "2015-08-10",
+  "updateDate" : "2018-12-07",
+  "_links" : {
+    "self" : {
+      "href" : "https://www.ebi.ac.uk/biosamples/samples/SAMN03894261"
+    },
+    "curationDomain" : {
+      "href" : "https://www.ebi.ac.uk/biosamples/samples/SAMN03894261{?curationdomain}",
+      "templated" : true
+    },
+    "curationLinks" : {
+      "href" : "https://www.ebi.ac.uk/biosamples/samples/SAMN03894261/curationlinks"
+    },
+    "curationLink" : {
+      "href" : "https://www.ebi.ac.uk/biosamples/samples/SAMN03894261/curationlinks/{hash}",
+      "templated" : true
+    }
+  }
+}

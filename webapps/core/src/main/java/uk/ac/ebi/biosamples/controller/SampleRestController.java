@@ -1,7 +1,10 @@
 package uk.ac.ebi.biosamples.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.ExposesResourceFor;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.Resource;
@@ -10,9 +13,11 @@ import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.exception.SampleNotFoundException;
+import uk.ac.ebi.biosamples.model.Certificate;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.service.*;
+import uk.ac.ebi.biosamples.service.certification.CertifyService;
 import uk.ac.ebi.biosamples.utils.LinkUtils;
 
 import java.time.Instant;
@@ -37,6 +42,9 @@ public class SampleRestController {
     private final SampleResourceAssembler sampleResourceAssembler;
     private Ga4ghSampleToPhenopacketConverter phenopacketExporter;
     private Logger log = LoggerFactory.getLogger(getClass());
+
+    @Autowired
+    private CertifyService certifyService;
 
     public SampleRestController(SampleService sampleService,
                                 BioSamplesAapService bioSamplesAapService,
@@ -165,7 +173,8 @@ public class SampleRestController {
     @PutMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
     public Resource<Sample> put(@PathVariable String accession,
                                 @RequestBody Sample sample,
-                                @RequestParam(name = "setfulldetails", required = false, defaultValue = "true") boolean setFullDetails) {
+                                @RequestParam(name = "setfulldetails", required = false, defaultValue = "true") boolean setFullDetails) throws JsonProcessingException {
+        final ObjectMapper jsonMapper = new ObjectMapper();
 
         if (sample.getAccession() == null || !sample.getAccession().equals(accession)) {
             throw new SampleAccessionMismatchException();
@@ -198,6 +207,10 @@ public class SampleRestController {
                 .withUpdate(update)
                 .withSubmittedVia(submittedVia).build();
 
+        List<Certificate> certificates = certifyService.certify(jsonMapper.writeValueAsString(sample));
+
+        sample = Sample.Builder.fromSample(sample).withCertificates(certificates).build();
+
         if (!setFullDetails) {
             log.trace("Removing contact legacy fields for " + accession);
             sample = sampleManipulationService.removeLegacyFields(sample);
@@ -215,7 +228,6 @@ public class SampleRestController {
     @PatchMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
     public Resource<Sample> patchStructuredData(@PathVariable String accession,
                                                 @RequestBody Sample sample,
-                                                @RequestParam(name = "setfulldetails", required = false, defaultValue = "true") boolean setFullDetails,
                                                 @RequestParam(name = "structuredData", required = false, defaultValue = "false") boolean structuredData) {
 
         if (!structuredData)

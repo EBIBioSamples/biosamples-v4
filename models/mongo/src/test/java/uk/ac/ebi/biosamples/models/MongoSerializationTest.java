@@ -103,7 +103,7 @@ public class MongoSerializationTest {
 
 		return MongoSample.build(name, accession, "foozit", release, update, create,
 				attributes, structuredData, relationships, externalReferences,
-				organizations, contacts, publications, submittedVia);
+				organizations, contacts, publications, null, submittedVia);
 	}
 
 	private MongoSample getAMRMongoSample() {
@@ -136,7 +136,7 @@ public class MongoSerializationTest {
 
 		return MongoSample.build(name, accession, domain, release, update, create,
 				attributes, data, relationships, externalReferences, organizations,
-				contacts, publications, submittedVia);
+				contacts, publications, null, submittedVia);
 
 	}
 	@Test
@@ -172,15 +172,10 @@ public class MongoSerializationTest {
 		assertThat(this.json.readObject("/TEST1.json").getAccession()).isEqualTo("TEST1");
 		// Assert against a `.json` file
 		assertThat(this.json.readObject("/TEST1.json")).isEqualTo(getMongoSample());
-
 	}
-
-
-
 
 	@Configuration
 	public static class TestConfig {
 
 	}
-
 }

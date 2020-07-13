@@ -14,7 +14,6 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 public class MongoExternalReference implements Comparable<MongoExternalReference> {
-
     private final String url;
     private final String hash;
     private final SortedSet<String> duo;
@@ -123,7 +122,6 @@ public class MongoExternalReference implements Comparable<MongoExternalReference
 
         return new MongoExternalReference(url, hasher.hash().toString(), duo);
     }
-
 
     @JsonCreator
     public static MongoExternalReference build(@JsonProperty("url") String url) {

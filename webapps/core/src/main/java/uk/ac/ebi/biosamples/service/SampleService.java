@@ -29,7 +29,6 @@ import java.util.*;
  */
 @Service
 public class SampleService {
-
     public static final String VALIDATION_MESSAGE = "Only Sample name, sample accession and sample structured data can be provided through this API";
     public static final String NO_STRUCTURED_DATA_IS_PROVIDED = "No structured data is provided";
     private static Logger log = LoggerFactory.getLogger(SampleService.class);
@@ -92,6 +91,7 @@ public class SampleService {
         if (sample.hasAccession()) {
             MongoSample mongoOldSample = mongoSampleRepository.findOne(sample.getAccession());
             List<String> existingRelationshipTargets = new ArrayList<>();
+
             if (mongoOldSample != null) {
                 Sample oldSample = mongoSampleToSampleConverter.convert(mongoOldSample);
                 existingRelationshipTargets = getExistingRelationshipTargets(sample.getAccession(), mongoOldSample);
@@ -101,6 +101,7 @@ public class SampleService {
             }
 
             MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);
+
             mongoSample = mongoSampleRepository.save(mongoSample);
             sample = mongoSampleToSampleConverter.convert(mongoSample);
 

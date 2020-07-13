@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.model.structured.amr.service;
+package uk.ac.ebi.biosamples.service.structured;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;

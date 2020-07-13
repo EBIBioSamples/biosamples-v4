@@ -1,6 +1,5 @@
 package uk.ac.ebi.biosamples;
 
-import com.jayway.jsonpath.JsonPath;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Matchers;
