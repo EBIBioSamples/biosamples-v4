@@ -49,10 +49,12 @@ public class MongoSampleToSampleConverter implements Converter<MongoSample, Samp
         }
 
         SortedSet<Certificate> certificates = new TreeSet<>();
-        
-        for (MongoCertificate certificate : sample.getCertificates()) {
-            if (certificate != null) {
-                certificates.add(mongoCertificateToCertificateConverter.convert(certificate));
+
+        if (sample.getCertificates() != null && sample.getCertificates().size() > 0) {
+            for (MongoCertificate certificate : sample.getCertificates()) {
+                if (certificate != null) {
+                    certificates.add(mongoCertificateToCertificateConverter.convert(certificate));
+                }
             }
         }
 
