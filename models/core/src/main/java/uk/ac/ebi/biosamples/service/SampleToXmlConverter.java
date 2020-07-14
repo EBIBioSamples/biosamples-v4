@@ -168,7 +168,7 @@ public class SampleToXmlConverter implements Converter<Sample, Document> {
             //use the last segment of the URI as the ID
             //not perfect, but good enough?
             List<String> pathSegments = UriComponentsBuilder.fromUriString(externalReference.getUrl()).build().getPathSegments();
-            
+
             if (pathSegments.size() > 0) {
                 Element databaseId = database.addElement(QName.get("ID", xmlns));
                 databaseId.setText(pathSegments.get(pathSegments.size() - 1));
@@ -179,15 +179,54 @@ public class SampleToXmlConverter implements Converter<Sample, Document> {
             if (data.getDataType().name().equals("AMR")) {
                 AMRTable amrTable = (AMRTable) data;
 
-                Element amrParent = bioSample.addElement(QName.get("Table", xmlns));
-                amrParent.setName("Antibiogram");
+                Element amrParent = bioSample.addElement(QName.get("Table", xmlns)).addAttribute("name", "Antibiogram");
 
                 Element amrHeader = amrParent.addElement(QName.get("Header", xmlns));
 
                 Element amrCellAntibiotic = amrHeader.addElement(QName.get("Cell", xmlns));
                 amrCellAntibiotic.setText("Antibiotic");
+
                 Element amrCellResistancePhenotype = amrHeader.addElement(QName.get("Cell", xmlns));
                 amrCellResistancePhenotype.setText("Resistance Phenotype");
+
+                Element amrCellMeasurementSign = amrHeader.addElement(QName.get("Cell", xmlns));
+                amrCellMeasurementSign.setText("Measurement Sign");
+
+                Element amrCellMeasurement = amrHeader.addElement(QName.get("Cell", xmlns));
+                amrCellMeasurement.setText("Measurement Value");
+
+                Element measurementUnits = amrHeader.addElement(QName.get("Cell", xmlns));
+                measurementUnits.setText("Measurement Units");
+
+                Element amrCellVendor = amrHeader.addElement(QName.get("Cell", xmlns));
+                amrCellVendor.setText("Vendor");
+
+                Element amrCellLaboratoryTypingMethod = amrHeader.addElement(QName.get("Cell", xmlns));
+                amrCellLaboratoryTypingMethod.setText("Laboratory Typing Method");
+
+                Element amrCellPlatform = amrHeader.addElement(QName.get("Cell", xmlns));
+                amrCellPlatform.setText("Platform");
+
+                Element amrCellLaboratoryTypingMethodVersionOrReagent = amrHeader.addElement(QName.get("Cell", xmlns));
+                amrCellLaboratoryTypingMethodVersionOrReagent.setText("Laboratory Typing Method Version Or Reagent");
+
+                Element amrCellAstStandard = amrHeader.addElement(QName.get("Cell", xmlns));
+                amrCellAstStandard.setText("AST Standard");
+
+                Element amrCellDstMedia = amrHeader.addElement(QName.get("Cell", xmlns));
+                amrCellDstMedia.setText("DST Media");
+
+                Element amrCellDstMethod = amrHeader.addElement(QName.get("Cell", xmlns));
+                amrCellDstMethod.setText("DST Method");
+
+                Element amrCellCriticalConcentration = amrHeader.addElement(QName.get("Cell", xmlns));
+                amrCellCriticalConcentration.setText("Critical Concentration");
+
+                Element amrCellSpecies = amrHeader.addElement(QName.get("Cell", xmlns));
+                amrCellSpecies.setText("Species");
+
+                Element amrCellBreakpointVersion = amrHeader.addElement(QName.get("Cell", xmlns));
+                amrCellBreakpointVersion.setText("Breakpoint Version");
 
                 //amrHeader.setContent(Arrays.asList(amrCellAntibiotic, amrCellResistancePhenotype));
 
@@ -199,10 +238,49 @@ public class SampleToXmlConverter implements Converter<Sample, Document> {
                     Element amrDataRow = amrBody.addElement(QName.get("Row", xmlns));
 
                     Element amrDataCell1 = amrDataRow.addElement(QName.get("Cell", xmlns));
-                    amrDataCell1.setText(amrEntry.getAntibioticName().getValue());
+                    amrDataCell1.setText(amrEntry.getAntibioticName().getValue() != null ? amrEntry.getAntibioticName().getValue() : "");
 
                     Element amrDataCell2 = amrDataRow.addElement(QName.get("Cell", xmlns));
-                    amrDataCell2.setText(amrEntry.getResistancePhenotype());
+                    amrDataCell2.setText(amrEntry.getResistancePhenotype() != null ? amrEntry.getResistancePhenotype() : "");
+
+                    Element amrDataCell3 = amrDataRow.addElement(QName.get("Cell", xmlns));
+                    amrDataCell3.setText(amrEntry.getMeasurementSign() != null ? amrEntry.getMeasurementSign() : "");
+
+                    Element amrDataCell4 = amrDataRow.addElement(QName.get("Cell", xmlns));
+                    amrDataCell4.setText(amrEntry.getMeasurement() != null ? amrEntry.getMeasurement() : "");
+
+                    Element amrDataCell5 = amrDataRow.addElement(QName.get("Cell", xmlns));
+                    amrDataCell5.setText(amrEntry.getMeasurementUnits() != null ? amrEntry.getMeasurementUnits() : "");
+
+                    Element amrDataCell6 = amrDataRow.addElement(QName.get("Cell", xmlns));
+                    amrDataCell6.setText(amrEntry.getVendor() != null ? amrEntry.getVendor() : "");
+
+                    Element amrDataCell7 = amrDataRow.addElement(QName.get("Cell", xmlns));
+                    amrDataCell7.setText(amrEntry.getLaboratoryTypingMethod() != null ? amrEntry.getLaboratoryTypingMethod() : "");
+
+                    Element amrDataCell8 = amrDataRow.addElement(QName.get("Cell", xmlns));
+                    amrDataCell8.setText(amrEntry.getPlatform() != null ? amrEntry.getPlatform() : "");
+
+                    Element amrDataCell9 = amrDataRow.addElement(QName.get("Cell", xmlns));
+                    amrDataCell9.setText(amrEntry.getLaboratoryTypingMethodVersionOrReagent() != null ? amrEntry.getLaboratoryTypingMethodVersionOrReagent() : "");
+
+                    Element amrDataCell10 = amrDataRow.addElement(QName.get("Cell", xmlns));
+                    amrDataCell10.setText(amrEntry.getAstStandard() != null ? amrEntry.getAstStandard() : "");
+
+                    Element amrDataCell11 = amrDataRow.addElement(QName.get("Cell", xmlns));
+                    amrDataCell11.setText(amrEntry.getDstMedia() != null ? amrEntry.getDstMedia() : "");
+
+                    Element amrDataCell12 = amrDataRow.addElement(QName.get("Cell", xmlns));
+                    amrDataCell12.setText(amrEntry.getDstMethod() != null ? amrEntry.getDstMethod() : "");
+
+                    Element amrDataCell13 = amrDataRow.addElement(QName.get("Cell", xmlns));
+                    amrDataCell13.setText(amrEntry.getCriticalConcentration() != null ? amrEntry.getCriticalConcentration() : "");
+
+                    Element amrDataCell14 = amrDataRow.addElement(QName.get("Cell", xmlns));
+                    amrDataCell14.setText(amrEntry.getSpecies().getValue() != null ? amrEntry.getSpecies().getValue() : "");
+
+                    Element amrDataCell15 = amrDataRow.addElement(QName.get("Cell", xmlns));
+                    amrDataCell15.setText(amrEntry.getBreakpointVersion() != null ? amrEntry.getBreakpointVersion() : "");
 
                     //amrDataRow.setContent(Arrays.asList(amrDataCell1, amrDataCell2));
 
