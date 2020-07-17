@@ -32,9 +32,9 @@ public class FileRecorderTest {
         Certificate certificate = new Certificate(sampleDocument, Collections.emptyList(), checklist);
         CertificationResult certificationResult = new CertificationResult(sampleDocument.getAccession());
         certificationResult.add(certificate);
-        RecorderResult recorderResult = recorder.record(Collections.singleton(certificationResult));
-        assertNotNull(recorderResult);
-        assertEquals(certificate, recorderResult.getCertificates().get(0));
+        BioSamplesCertificationComplainceResult bioSamplesCertificationComplainceResult = recorder.record(Collections.singleton(certificationResult));
+        assertNotNull(bioSamplesCertificationComplainceResult);
+        assertEquals(certificate, bioSamplesCertificationComplainceResult.getCertificates().get(0));
     }
 
     @Test(expected = IllegalArgumentException.class)

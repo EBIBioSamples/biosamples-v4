@@ -21,9 +21,11 @@ public class Applicator {
             LOG.warn(message);
             throw new IllegalArgumentException(message);
         }
+
         SampleDocument sampleDocument = curationApplicable.getSampleDocument();
         String document = makePretty(sampleDocument.getDocument());
         String updatedDocument = document;
+
         for (CurationResult curationResult : curationApplicable.getCurationResults()) {
             String pattern = String.format("\\\"%s\\\"\\s?[:]\\s?\\[\\W+?text\\\"\\s?[:]\\s?\\s\\\"(%s)\\\"", curationResult.getCharacteristic(), curationResult.getBefore());
             Pattern p = Pattern.compile(pattern);
@@ -34,7 +36,9 @@ public class Applicator {
                 LOG.warn(String.format("%s failed to apply %s to sampleDocument", sampleDocument.getAccession(), curationResult.getCharacteristic()));
             }
         }
+
         SampleDocument curatedSampleDocument = new SampleDocument(sampleDocument.getAccession(), updatedDocument);
+
         return curatedSampleDocument;
     }
 

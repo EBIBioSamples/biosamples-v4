@@ -29,17 +29,20 @@ public class Curator {
             LOG.warn(message);
             throw new IllegalArgumentException(message);
         }
+
         if (interrogationResult.getSampleDocument() == null) {
             String message = "cannot run curation plans on null sample";
             LOG.warn(message);
             throw new IllegalArgumentException(message);
         }
+
         for (Checklist checklist : interrogationResult.getChecklists()) {
             PlanResult planResult = runCurationPlan(checklist, interrogationResult.getSampleDocument());
             if (planResult != null) {
                 planResults.add(planResult);
             }
         }
+
         return planResults;
     }
 
@@ -58,7 +61,9 @@ public class Curator {
                 }
             }
         }
+
         EVENTS.info(String.format("%s plan %s run", sampleDocument.getAccession(), plan.getID()));
+
         return planResult;
     }
 
