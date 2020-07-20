@@ -36,11 +36,9 @@ import uk.ac.ebi.biosamples.service.CharacteristicSerializer;
 import uk.ac.ebi.biosamples.service.CustomInstantDeserializer;
 import uk.ac.ebi.biosamples.service.CustomInstantSerializer;
 
-
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonPropertyOrder({"name", "accession", "domain", "release", "update", "taxId", "characteristics", "relationships", "externalReferences", "releaseDate", "updateDate", "submittedVia"})
 public class Sample implements Comparable<Sample> {
-
     protected String accession;
     protected String name;
 
@@ -54,14 +52,15 @@ public class Sample implements Comparable<Sample> {
     protected Instant update;
     protected Instant create;
 
-	protected SortedSet<Attribute> attributes;
-	protected SortedSet<AbstractData> data;
-	protected SortedSet<Relationship> relationships;
-	protected SortedSet<ExternalReference> externalReferences;
+    protected SortedSet<Attribute> attributes;
+    protected SortedSet<AbstractData> data;
+    protected SortedSet<Relationship> relationships;
+    protected SortedSet<ExternalReference> externalReferences;
 
     protected SortedSet<Organization> organizations;
     protected SortedSet<Contact> contacts;
     protected SortedSet<Publication> publications;
+    protected SortedSet<Certificate> certificates;
 
     protected SubmittedViaType submittedVia;
 
@@ -131,12 +130,10 @@ public class Sample implements Comparable<Sample> {
                         forEach(taxIds::add);
             }
         }
-        if (taxIds.size()>1)
-        {
+        if (taxIds.size() > 1) {
             return taxIds.get(0);
         }
-        if (taxIds.size()==0)
-        {
+        if (taxIds.size() == 0) {
             return 0;
         }
         return taxIds.get(0);
@@ -164,15 +161,15 @@ public class Sample implements Comparable<Sample> {
         return attributes;
     }
 
-	@JsonProperty("data")
-	public SortedSet<AbstractData> getData() {
-		return data;
-	}
+    @JsonProperty("data")
+    public SortedSet<AbstractData> getData() {
+        return data;
+    }
 
-	@JsonProperty("relationships")
-	public SortedSet<Relationship> getRelationships() {
-		return relationships;
-	}
+    @JsonProperty("relationships")
+    public SortedSet<Relationship> getRelationships() {
+        return relationships;
+    }
 
     @JsonProperty("externalReferences")
     public SortedSet<ExternalReference> getExternalReferences() {
@@ -194,6 +191,11 @@ public class Sample implements Comparable<Sample> {
         return publications;
     }
 
+    @JsonProperty("certificates")
+    public SortedSet<Certificate> getCertificates() {
+        return certificates;
+    }
+
     @JsonProperty("submittedVia")
     public SubmittedViaType getSubmittedVia() {
         return submittedVia;
@@ -212,16 +214,16 @@ public class Sample implements Comparable<Sample> {
         //dont use update date for comparisons, too volatile. SubmittedVia doesnt contain information for comparison
 
         return Objects.equals(this.name, other.name)
-        		&& Objects.equals(this.accession, other.accession)
-        		&& Objects.equals(this.domain, other.domain)
-        		&& Objects.equals(this.release, other.release)
-        		&& Objects.equals(this.attributes, other.attributes)
-				&& Objects.equals(this.data, other.data)
-        		&& Objects.equals(this.relationships, other.relationships)
-        		&& Objects.equals(this.externalReferences, other.externalReferences)
-        		&& Objects.equals(this.organizations, other.organizations)
-        		&& Objects.equals(this.contacts, other.contacts)
-        		&& Objects.equals(this.publications, other.publications);
+                && Objects.equals(this.accession, other.accession)
+                && Objects.equals(this.domain, other.domain)
+                && Objects.equals(this.release, other.release)
+                && Objects.equals(this.attributes, other.attributes)
+                && Objects.equals(this.data, other.data)
+                && Objects.equals(this.relationships, other.relationships)
+                && Objects.equals(this.externalReferences, other.externalReferences)
+                && Objects.equals(this.organizations, other.organizations)
+                && Objects.equals(this.contacts, other.contacts)
+                && Objects.equals(this.publications, other.publications);
     }
 
     @Override
@@ -363,22 +365,24 @@ public class Sample implements Comparable<Sample> {
         sb.append(",");
         sb.append(publications);
         sb.append(",");
+        sb.append(certificates);
+        sb.append(",");
         sb.append(submittedVia);
         sb.append(")");
         return sb.toString();
     }
 
-	public static Sample build( String name,
-			String accession,
-			String domain,
-			Instant release,
-			Instant update,
-			Instant create,
-			Set<Attribute> attributes,
-			Set<Relationship> relationships,
-			Set<ExternalReference> externalReferences) {
-    	return build(name, accession, domain, release, update, create, attributes, null,
-                relationships, externalReferences, null, null, null, null);
+    public static Sample build(String name,
+                               String accession,
+                               String domain,
+                               Instant release,
+                               Instant update,
+                               Instant create,
+                               Set<Attribute> attributes,
+                               Set<Relationship> relationships,
+                               Set<ExternalReference> externalReferences) {
+        return build(name, accession, domain, release, update, create, attributes, null,
+                relationships, externalReferences, null, null, null, null, null);
     }
 
     public static Sample build(String name, String accession, String domain,
@@ -387,39 +391,40 @@ public class Sample implements Comparable<Sample> {
                                Set<ExternalReference> externalReferences,
                                SubmittedViaType submittedVia) {
         return build(name, accession, domain, release, update, create, attributes, null,
-                relationships, externalReferences, null, null, null, submittedVia);
+                relationships, externalReferences, null, null, null, null, submittedVia);
     }
 
     //Used for deserializtion (JSON -> Java)
     @JsonCreator
-	public static Sample build(@JsonProperty("name") String name,
-			@JsonProperty("accession") String accession,
-			@JsonProperty("domain") String domain,
-			@JsonProperty("release") @JsonDeserialize(using = CustomInstantDeserializer.class) Instant release,
-			@JsonProperty("update") @JsonDeserialize(using = CustomInstantDeserializer.class) Instant update,
-			@JsonProperty("create") @JsonDeserialize(using = CustomInstantDeserializer.class) Instant create,
-			@JsonProperty("characteristics") @JsonDeserialize(using = CharacteristicDeserializer.class) Collection<Attribute> attributes,
+    public static Sample build(@JsonProperty("name") String name,
+                               @JsonProperty("accession") String accession,
+                               @JsonProperty("domain") String domain,
+                               @JsonProperty("release") @JsonDeserialize(using = CustomInstantDeserializer.class) Instant release,
+                               @JsonProperty("update") @JsonDeserialize(using = CustomInstantDeserializer.class) Instant update,
+                               @JsonProperty("create") @JsonDeserialize(using = CustomInstantDeserializer.class) Instant create,
+                               @JsonProperty("characteristics") @JsonDeserialize(using = CharacteristicDeserializer.class) Collection<Attribute> attributes,
 //			@JsonProperty("data") @JsonDeserialize(using = AbstractDataDeserializer.class) Collection<AbstractData> structuredData,
-            @JsonProperty("data") Collection<AbstractData> structuredData,
-			@JsonProperty("relationships") Collection<Relationship> relationships,
-			@JsonProperty("externalReferences") Collection<ExternalReference> externalReferences,
-			@JsonProperty("organization") Collection<Organization> organizations,
-			@JsonProperty("contact") Collection<Contact> contacts,
-			@JsonProperty("publications") Collection<Publication> publications,
-            @JsonProperty("submittedVia") SubmittedViaType submittedVia) {
+                               @JsonProperty("data") Collection<AbstractData> structuredData,
+                               @JsonProperty("relationships") Collection<Relationship> relationships,
+                               @JsonProperty("externalReferences") Collection<ExternalReference> externalReferences,
+                               @JsonProperty("organization") Collection<Organization> organizations,
+                               @JsonProperty("contact") Collection<Contact> contacts,
+                               @JsonProperty("publications") Collection<Publication> publications,
+                               @JsonProperty("certificates") Collection<Certificate> certificates,
+                               @JsonProperty("submittedVia") SubmittedViaType submittedVia) {
 
-		Sample sample = new Sample();
+        Sample sample = new Sample();
 
-		if (accession != null) {
-			sample.accession = accession.trim();
-		}
+        if (accession != null) {
+            sample.accession = accession.trim();
+        }
 
-		if (name == null ) throw new IllegalArgumentException("Sample name must be provided");
-		sample.name = name.trim();
+        if (name == null) throw new IllegalArgumentException("Sample name must be provided");
+        sample.name = name.trim();
 
-		if (domain != null) {
-			sample.domain = domain.trim();
-		}
+        if (domain != null) {
+            sample.domain = domain.trim();
+        }
 
         //Instead of validation failure, if null, set it to now
         sample.update = update == null ? Instant.now() : update;
@@ -427,7 +432,7 @@ public class Sample implements Comparable<Sample> {
         sample.create = create == null ? sample.update : create;
 
         //Validation moved to a later stage, to capture the error (SampleService.store())
-		sample.release = release;
+        sample.release = release;
 
         sample.attributes = new TreeSet<>();
         if (attributes != null) {
@@ -459,359 +464,384 @@ public class Sample implements Comparable<Sample> {
             sample.publications.addAll(publications);
         }
 
-		sample.data = new TreeSet<>();
-		if (structuredData != null) {
-			sample.data.addAll(structuredData);
-		}
-
-		if (submittedVia != null) {
-            sample.submittedVia = submittedVia;
-        } else {
-		    sample.submittedVia = SubmittedViaType.JSON_API;
+        sample.certificates = new TreeSet<>();
+        if (certificates != null) {
+            sample.certificates.addAll(certificates);
         }
 
-		return sample;
-	}
+        sample.data = new TreeSet<>();
+        if (structuredData != null) {
+            sample.data.addAll(structuredData);
+        }
+
+        if (submittedVia != null) {
+            sample.submittedVia = submittedVia;
+        } else {
+            sample.submittedVia = SubmittedViaType.JSON_API;
+        }
+
+        return sample;
+    }
 
 
-	public static class Builder {
+    public static class Builder {
 
-		protected String name;
+        protected String name;
 
-		protected String accession = null;
-		protected String domain = null;
+        protected String accession = null;
+        protected String domain = null;
 
-		protected Instant release = Instant.now();
-		protected Instant update = Instant.now();
-		protected Instant create = Instant.now();
+        protected Instant release = Instant.now();
+        protected Instant update = Instant.now();
+        protected Instant create = Instant.now();
 
-		protected SubmittedViaType submittedVia;
+        protected SubmittedViaType submittedVia;
 
-		protected SortedSet<Attribute> attributes = new TreeSet<>();
-		protected SortedSet<Relationship> relationships = new TreeSet<>();
-		protected SortedSet<ExternalReference> externalReferences = new TreeSet<>();
-		protected SortedSet<Organization> organizations = new TreeSet<>();
-		protected SortedSet<Contact> contacts = new TreeSet<>();
-		protected SortedSet<Publication> publications = new TreeSet<>();
-		protected Set<AbstractData> data = new TreeSet<>();
+        protected SortedSet<Attribute> attributes = new TreeSet<>();
+        protected SortedSet<Relationship> relationships = new TreeSet<>();
+        protected SortedSet<ExternalReference> externalReferences = new TreeSet<>();
+        protected SortedSet<Organization> organizations = new TreeSet<>();
+        protected SortedSet<Contact> contacts = new TreeSet<>();
+        protected SortedSet<Publication> publications = new TreeSet<>();
+        protected SortedSet<Certificate> certificates = new TreeSet<>();
+        protected Set<AbstractData> data = new TreeSet<>();
 
-		public Builder(String name, String accession) {
-			this.name = name;
-			this.accession = accession;
-		}
+        public Builder(String name, String accession) {
+            this.name = name;
+            this.accession = accession;
+        }
 
-		public Builder(String name) {
-			this.name = name;
-		}
+        public Builder(String name) {
+            this.name = name;
+        }
 
-		public Builder withAccession(String accession) {
-			this.accession = accession;
-			return this;
-		}
+        public Builder withAccession(String accession) {
+            this.accession = accession;
+            return this;
+        }
 
-		public Builder withDomain(String domain) {
-			this.domain = domain;
-			return this;
-		}
+        public Builder withDomain(String domain) {
+            this.domain = domain;
+            return this;
+        }
 
-		public Builder withRelease(String release) {
-			this.release = parseDateTime(release).toInstant();
-			return this;
-		}
+        public Builder withRelease(String release) {
+            this.release = parseDateTime(release).toInstant();
+            return this;
+        }
 
-		public Builder withRelease(Instant release) {
-			this.release = release;
-			return this;
-		}
+        public Builder withRelease(Instant release) {
+            this.release = release;
+            return this;
+        }
 
-		public Builder withUpdate(Instant update) {
-			this.update = update;
-			return this;
-		}
+        public Builder withUpdate(Instant update) {
+            this.update = update;
+            return this;
+        }
 
-		public Builder withUpdate(String update) {
-			this.update = parseDateTime(update).toInstant();
-			return this;
-		}
+        public Builder withUpdate(String update) {
+            this.update = parseDateTime(update).toInstant();
+            return this;
+        }
 
-		public Builder withCreate(Instant create) {
-			this.create = create;
-			return this;
-		}
+        public Builder withCreate(Instant create) {
+            this.create = create;
+            return this;
+        }
 
-		public Builder withCreate(String create) {
-			this.create = parseDateTime(create).toInstant();
-			return this;
-		}
+        public Builder withCreate(String create) {
+            this.create = parseDateTime(create).toInstant();
+            return this;
+        }
 
-		public Builder withSubmittedVia(SubmittedViaType submittedVia) {
-			this.submittedVia = submittedVia;
-			return this;
-		}
+        public Builder withSubmittedVia(SubmittedViaType submittedVia) {
+            this.submittedVia = submittedVia;
+            return this;
+        }
 
-		/**
-		 * Replace builder's attributes with the provided attribute collection
-		 * @param attributes
-		 * @return
-		 */
-		public Builder withAttributes(Collection<Attribute> attributes) {
-			this.attributes = new TreeSet<>(attributes);
-			return this;
-		}
+        /**
+         * Replace builder's attributes with the provided attribute collection
+         *
+         * @param attributes
+         * @return
+         */
+        public Builder withAttributes(Collection<Attribute> attributes) {
+            this.attributes = new TreeSet<>(attributes);
+            return this;
+        }
 
-		public Builder addAttribute(Attribute attribute) {
-			this.attributes.add(attribute);
-			return this;
-		}
+        public Builder addAttribute(Attribute attribute) {
+            this.attributes.add(attribute);
+            return this;
+        }
 
-		public Builder addAllAttributes(Collection<Attribute> attributes) {
-			this.attributes.addAll(attributes);
-			return this;
-		}
+        public Builder addAllAttributes(Collection<Attribute> attributes) {
+            this.attributes.addAll(attributes);
+            return this;
+        }
 
-		/**
-		 * Replace builder structuredData with the provided structuredData collection
-		 * @param data
-		 * @return
-		 */
-		public Builder withData(Collection<AbstractData> data) {
-		    if (data != null) {
+        /**
+         * Replace builder structuredData with the provided structuredData collection
+         *
+         * @param data
+         * @return
+         */
+        public Builder withData(Collection<AbstractData> data) {
+            if (data != null) {
                 this.data = new TreeSet<>(data);
             } else {
-		        this.data = new TreeSet<>();
+                this.data = new TreeSet<>();
             }
-			return this;
-		}
+            return this;
+        }
 
-		public Builder addData(AbstractData data) {
-			this.data.add(data);
-			return this;
-		}
+        public Builder addData(AbstractData data) {
+            this.data.add(data);
+            return this;
+        }
 
-		public Builder addAllData(Collection<AbstractData> data) {
-			this.data.addAll(data);
-			return this;
-		}
+        public Builder addAllData(Collection<AbstractData> data) {
+            this.data.addAll(data);
+            return this;
+        }
 
-		/**
-		 * Replace builder's relationships with the provided relationships collection
-		 * @param relationships
-		 * @return
-		 */
-		public Builder withRelationships(Collection<Relationship> relationships) {
+        /**
+         * Replace builder's relationships with the provided relationships collection
+         *
+         * @param relationships
+         * @return
+         */
+        public Builder withRelationships(Collection<Relationship> relationships) {
             if (relationships != null && relationships.size() > 0)
                 this.relationships = new TreeSet<>(relationships);
             return this;
-		}
+        }
 
-		public Builder addRelationship(Relationship relationship) {
-			this.relationships.add(relationship);
-			return this;
-		}
+        public Builder addRelationship(Relationship relationship) {
+            this.relationships.add(relationship);
+            return this;
+        }
 
-		public Builder addAllRelationships(Collection<Relationship> relationships) {
-			this.relationships.addAll(relationships);
-			return this;
-		}
+        public Builder addAllRelationships(Collection<Relationship> relationships) {
+            this.relationships.addAll(relationships);
+            return this;
+        }
 
-		/**
-		 * Replace builder's externalReferences with the provided external references collection
-		 * @param externalReferences
-		 * @return
-		 */
-		public Builder withExternalReferences(Collection<ExternalReference> externalReferences) {
+        /**
+         * Replace builder's externalReferences with the provided external references collection
+         *
+         * @param externalReferences
+         * @return
+         */
+        public Builder withExternalReferences(Collection<ExternalReference> externalReferences) {
             if (externalReferences != null && externalReferences.size() > 0)
                 this.externalReferences = new TreeSet<>(externalReferences);
             return this;
-		}
+        }
 
 
-		public Builder addExternalReference(ExternalReference externalReference) {
-			this.externalReferences.add(externalReference);
-			return this;
-		}
+        public Builder addExternalReference(ExternalReference externalReference) {
+            this.externalReferences.add(externalReference);
+            return this;
+        }
 
-		public Builder addAllExternalReferences(Collection<ExternalReference> externalReferences) {
-			this.externalReferences.addAll(externalReferences);
-			return this;
-		}
+        public Builder addAllExternalReferences(Collection<ExternalReference> externalReferences) {
+            this.externalReferences.addAll(externalReferences);
+            return this;
+        }
 
-		/**
-		 * Replace builder's organisations with the provided organisation collection
-		 * @param organizations
-		 * @return
-		 */
-		public Builder withOrganizations(Collection<Organization> organizations) {
+        /**
+         * Replace builder's organisations with the provided organisation collection
+         *
+         * @param organizations
+         * @return
+         */
+        public Builder withOrganizations(Collection<Organization> organizations) {
             if (organizations != null && organizations.size() > 0)
                 this.organizations = new TreeSet<>(organizations);
             return this;
-		}
+        }
 
-		public Builder addOrganization(Organization organization) {
-			this.organizations.add(organization);
-			return this;
-		}
+        public Builder addOrganization(Organization organization) {
+            this.organizations.add(organization);
+            return this;
+        }
 
-		public Builder allAllOrganizations(Collection<Organization> organizations) {
-			this.organizations.addAll(organizations);
-			return this;
-		}
+        public Builder allAllOrganizations(Collection<Organization> organizations) {
+            this.organizations.addAll(organizations);
+            return this;
+        }
 
-		/**
-		 * Replace builder's contacts with the provided contact collection
-		 * @param contacts
-		 * @return
-		 */
-		public Builder withContacts(Collection<Contact> contacts) {
+        /**
+         * Replace builder's contacts with the provided contact collection
+         *
+         * @param contacts
+         * @return
+         */
+        public Builder withContacts(Collection<Contact> contacts) {
             if (contacts != null && contacts.size() > 0)
                 this.contacts = new TreeSet<>(contacts);
             return this;
-		}
+        }
 
-		public Builder addContact(Contact contact) {
-			this.contacts.add(contact);
-			return this;
-		}
+        public Builder addContact(Contact contact) {
+            this.contacts.add(contact);
+            return this;
+        }
 
-		public Builder addAllContacts(Collection<Contact> contacts) {
-			this.contacts.addAll(contacts);
-			return this;
-		}
+        public Builder addAllContacts(Collection<Contact> contacts) {
+            this.contacts.addAll(contacts);
+            return this;
+        }
 
-		/**
-		 * Replace the publications with the provided collections
-		 * @param publications
-		 * @return
-		 */
-		public Builder withPublications(Collection<Publication> publications) {
+        /**
+         * Replace the publications with the provided collections
+         *
+         * @param publications
+         * @return
+         */
+        public Builder withPublications(Collection<Publication> publications) {
             if (publications != null && publications.size() > 0)
                 this.publications = new TreeSet<>(publications);
             return this;
-		}
+        }
 
-		/**
-		 * Add a publication to the list of builder publications
-		 * @param publication
-		 * @return
-		 */
-		public Builder addPublication(Publication publication) {
-			this.publications.add(publication);
-			return this;
-		}
+        /**
+         * Add a publication to the list of builder publications
+         *
+         * @param publication
+         * @return
+         */
+        public Builder addPublication(Publication publication) {
+            this.publications.add(publication);
+            return this;
+        }
 
-		/**
-		 * Add all publications in the provided collection to the builder publications
-		 * @param publications
-		 * @return
-		 */
-		public Builder addAllPublications(Collection<Publication> publications) {
-			this.publications.addAll(publications);
-			return this;
-		}
+        /**
+         * Add all publications in the provided collection to the builder publications
+         *
+         * @param publications
+         * @return
+         */
+        public Builder addAllPublications(Collection<Publication> publications) {
+            this.publications.addAll(publications);
+            return this;
+        }
 
-		// Clean accession field
-		public Builder withNoAccession() {
-			this.accession = null;
-			return this;
-		}
+        public Builder withCertificates(Collection<Certificate> certificates) {
+            if (certificates != null && certificates.size() > 0)
+                this.certificates = new TreeSet<>(certificates);
+            return this;
+        }
 
-		// Clean domain field
-		public Builder withNoDomain() {
-			this.domain = null;
-			return this;
-		}
+        public Builder addAllCertificates(Collection<Certificate> certificates) {
+            this.certificates.addAll(certificates);
+            return this;
+        }
 
-		// Clean collection fields
-		public Builder withNoAttributes() {
-			this.attributes = new TreeSet<>();
-			return this;
-		}
+        // Clean accession field
+        public Builder withNoAccession() {
+            this.accession = null;
+            return this;
+        }
 
-		public Builder withNoRelationships() {
-			this.relationships = new TreeSet<>();
-			return this;
-		}
+        // Clean domain field
+        public Builder withNoDomain() {
+            this.domain = null;
+            return this;
+        }
 
-		public Builder withNoData() {
-			this.data = new TreeSet<>();
-			return this;
-		}
+        // Clean collection fields
+        public Builder withNoAttributes() {
+            this.attributes = new TreeSet<>();
+            return this;
+        }
 
-		public Builder withNoExternalReferences() {
-			this.externalReferences = new TreeSet<>();
-			return this;
-		}
+        public Builder withNoRelationships() {
+            this.relationships = new TreeSet<>();
+            return this;
+        }
 
-		public Builder withNoContacts() {
-			this.contacts = new TreeSet<>();
-			return this;
-		}
+        public Builder withNoData() {
+            this.data = new TreeSet<>();
+            return this;
+        }
 
-		public Builder withNoOrganisations() {
-			this.organizations = new TreeSet<>();
-			return this;
-		}
+        public Builder withNoExternalReferences() {
+            this.externalReferences = new TreeSet<>();
+            return this;
+        }
 
-		public Builder withNoPublications() {
-			this.publications = new TreeSet<>();
-			return this;
-		}
+        public Builder withNoContacts() {
+            this.contacts = new TreeSet<>();
+            return this;
+        }
 
-		public Sample build() {
-			return Sample.build(name, accession, domain, release, update, create,
-					attributes, data, relationships, externalReferences,
-					organizations, contacts, publications, submittedVia);
-		}
+        public Builder withNoOrganisations() {
+            this.organizations = new TreeSet<>();
+            return this;
+        }
 
-		private ZonedDateTime parseDateTime(String datetimeString) {
-			if (datetimeString.isEmpty()) return null;
-			TemporalAccessor temporalAccessor = getFormatter().parseBest(datetimeString,
-					ZonedDateTime::from, LocalDateTime::from, LocalDate::from);
-			if (temporalAccessor instanceof ZonedDateTime) {
-				return (ZonedDateTime) temporalAccessor;
-			} else if (temporalAccessor instanceof LocalDateTime) {
-				return ((LocalDateTime) temporalAccessor).atZone(ZoneId.of("UTC"));
-			} else {
-				return ((LocalDate) temporalAccessor).atStartOfDay(ZoneId.of("UTC"));
-			}
+        public Builder withNoPublications() {
+            this.publications = new TreeSet<>();
+            return this;
+        }
 
-		}
+        public Sample build() {
+            return Sample.build(name, accession, domain, release, update, create,
+                    attributes, data, relationships, externalReferences,
+                    organizations, contacts, publications, certificates, submittedVia);
+        }
 
-		/**
-		 * Return a Builder produced extracting informations from the sample
-		 * @param sample the sample to use as reference
-		 * @return the Builder
-		 */
-		public static Builder fromSample(Sample sample) {
-			return new Builder(sample.getName(), sample.getAccession()).withDomain(sample.getDomain())
-					.withRelease(sample.getRelease()).withUpdate(sample.getUpdate()).withCreate(sample.getCreate())
-					.withAttributes(sample.getAttributes()).withData(sample.getData())
-					.withRelationships(sample.getRelationships()).withExternalReferences(sample.getExternalReferences())
-					.withOrganizations(sample.getOrganizations()).withPublications(sample.getPublications())
-					.withContacts(sample.getContacts())
+        private ZonedDateTime parseDateTime(String datetimeString) {
+            if (datetimeString.isEmpty()) return null;
+            TemporalAccessor temporalAccessor = getFormatter().parseBest(datetimeString,
+                    ZonedDateTime::from, LocalDateTime::from, LocalDate::from);
+            if (temporalAccessor instanceof ZonedDateTime) {
+                return (ZonedDateTime) temporalAccessor;
+            } else if (temporalAccessor instanceof LocalDateTime) {
+                return ((LocalDateTime) temporalAccessor).atZone(ZoneId.of("UTC"));
+            } else {
+                return ((LocalDate) temporalAccessor).atStartOfDay(ZoneId.of("UTC"));
+            }
+
+        }
+
+        /**
+         * Return a Builder produced extracting informations from the sample
+         *
+         * @param sample the sample to use as reference
+         * @return the Builder
+         */
+        public static Builder fromSample(Sample sample) {
+            return new Builder(sample.getName(), sample.getAccession()).withDomain(sample.getDomain())
+                    .withRelease(sample.getRelease()).withUpdate(sample.getUpdate()).withCreate(sample.getCreate())
+                    .withAttributes(sample.getAttributes()).withData(sample.getData())
+                    .withRelationships(sample.getRelationships()).withExternalReferences(sample.getExternalReferences())
+                    .withOrganizations(sample.getOrganizations()).withPublications(sample.getPublications()).withCertificates(sample.getCertificates())
+                    .withContacts(sample.getContacts())
                     .withSubmittedVia(sample.getSubmittedVia());
-		}
+        }
 
-		private DateTimeFormatter getFormatter() {
-			return new DateTimeFormatterBuilder()
-					.parseCaseInsensitive()
-					.append(ISO_LOCAL_DATE)
-					.optionalStart()           // time made optional
-					.appendLiteral('T')
-					.append(ISO_LOCAL_TIME)
-					.optionalStart()           // zone and offset made optional
-					.appendOffsetId()
-					.optionalStart()
-					.appendLiteral('[')
-					.parseCaseSensitive()
-					.appendZoneRegionId()
-					.appendLiteral(']')
-					.optionalEnd()
-					.optionalEnd()
-					.optionalEnd()
-					.toFormatter();
-		}
-	}
-
-
+        private DateTimeFormatter getFormatter() {
+            return new DateTimeFormatterBuilder()
+                    .parseCaseInsensitive()
+                    .append(ISO_LOCAL_DATE)
+                    .optionalStart()           // time made optional
+                    .appendLiteral('T')
+                    .append(ISO_LOCAL_TIME)
+                    .optionalStart()           // zone and offset made optional
+                    .appendOffsetId()
+                    .optionalStart()
+                    .appendLiteral('[')
+                    .parseCaseSensitive()
+                    .appendZoneRegionId()
+                    .appendLiteral(']')
+                    .optionalEnd()
+                    .optionalEnd()
+                    .optionalEnd()
+                    .toFormatter();
+        }
+    }
 }

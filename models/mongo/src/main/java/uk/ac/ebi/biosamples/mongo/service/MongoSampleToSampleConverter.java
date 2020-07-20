@@ -5,9 +5,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
+import uk.ac.ebi.biosamples.model.Certificate;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.mongo.model.MongoCertificate;
 import uk.ac.ebi.biosamples.mongo.model.MongoExternalReference;
 import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
@@ -17,11 +19,12 @@ import java.util.TreeSet;
 
 @Service
 public class MongoSampleToSampleConverter implements Converter<MongoSample, Sample> {
-
     @Autowired
     private MongoExternalReferenceToExternalReferenceConverter mongoExternalReferenceToExternalReferenceConverter;
     @Autowired
     private MongoRelationshipToRelationshipConverter mongoRelationshipToRelationshipConverter;
+    @Autowired
+    private MongoCertificateToCertificateConverter mongoCertificateToCertificateConverter;
 
     private static Logger LOGGER = LoggerFactory.getLogger(MongoSampleToSampleConverter.class);
 
@@ -45,6 +48,16 @@ public class MongoSampleToSampleConverter implements Converter<MongoSample, Samp
             }
         }
 
+        SortedSet<Certificate> certificates = new TreeSet<>();
+
+        if (sample.getCertificates() != null && sample.getCertificates().size() > 0) {
+            for (MongoCertificate certificate : sample.getCertificates()) {
+                if (certificate != null) {
+                    certificates.add(mongoCertificateToCertificateConverter.convert(certificate));
+                }
+            }
+        }
+
         //when we convert to a MongoSample then the Sample *must* have a domain
         if (sample.getDomain() == null) {
             LOGGER.warn(String.format("sample %s does not have a domain", sample.getAccession()));
@@ -56,9 +69,7 @@ public class MongoSampleToSampleConverter implements Converter<MongoSample, Samp
                 .withAttributes(sample.getAttributes()).withRelationships(relationships)
                 .withData(sample.getData())
                 .withExternalReferences(externalReferences).withOrganizations(sample.getOrganizations())
-                .withContacts(sample.getContacts()).withPublications(sample.getPublications())
+                .withContacts(sample.getContacts()).withPublications(sample.getPublications()).withCertificates(certificates)
                 .build();
-//		return Sample.build(sample.getName(), sample.getAccession(), sample.getDomain(), sample.getRelease(), sample.getUpdate(),
-//				sample.getAttributes(), relationships, externalReferences, sample.getOrganizations(), sample.getContacts(), sample.getPublications());
     }
 }

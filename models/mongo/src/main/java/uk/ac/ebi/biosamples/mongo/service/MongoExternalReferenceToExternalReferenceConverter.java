@@ -10,9 +10,8 @@ import uk.ac.ebi.biosamples.mongo.model.MongoExternalReference;
 @Service
 @ConfigurationPropertiesBinding
 public class MongoExternalReferenceToExternalReferenceConverter implements Converter<MongoExternalReference, ExternalReference> {
-
-	@Override
-	public ExternalReference convert(MongoExternalReference externalReference) {
-		return ExternalReference.build(externalReference.getUrl(), externalReference.getDuo());
-	}
+    @Override
+    public ExternalReference convert(MongoExternalReference externalReference) {
+        return ExternalReference.build(externalReference.getUrl(), externalReference.getDuo());
+    }
 }

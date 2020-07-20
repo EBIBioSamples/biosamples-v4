@@ -1,0 +1,72 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "config-schema.json",
+  "additionalProperties": false,
+  "required": [
+    "checklists",
+    "plans"
+  ],
+  "title": "config",
+  "type": "object",
+  "properties": {
+    "checklists": {
+      "type": "array",
+      "items": {
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "file": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "version",
+          "file"
+        ]
+      }
+    },
+    "plans": {
+      "type": "array",
+      "items": {
+        "properties": {
+          "candidate_checklist_id": {
+            "type": "string"
+          },
+          "certification_checklist_id": {
+            "type": "string"
+          },
+          "curations": {
+            "type": "array",
+            "items": {
+              "properties": {
+                "characteristic": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "characteristic",
+              "value"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "candidate_checklist_id",
+          "certification_checklist_id",
+          "curations"
+        ]
+      }
+    }
+  }
+}

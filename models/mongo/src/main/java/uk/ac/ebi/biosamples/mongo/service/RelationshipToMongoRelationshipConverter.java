@@ -8,10 +8,8 @@ import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
 
 @Service
 public class RelationshipToMongoRelationshipConverter implements Converter<Relationship, MongoRelationship>{
-
 	@Override
 	public MongoRelationship convert(Relationship relationship) {
 		return MongoRelationship.build(relationship.getSource(), relationship.getType(), relationship.getTarget());
 	}
-
 }

@@ -1,4 +1,4 @@
-package uk.ac.ebi.biosamples.model.structured.amr.service;
+package uk.ac.ebi.biosamples.service.structured;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;

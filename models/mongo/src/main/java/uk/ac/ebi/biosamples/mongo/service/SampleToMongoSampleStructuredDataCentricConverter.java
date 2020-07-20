@@ -5,9 +5,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
+import uk.ac.ebi.biosamples.model.Certificate;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.mongo.model.MongoCertificate;
 import uk.ac.ebi.biosamples.mongo.model.MongoExternalReference;
 import uk.ac.ebi.biosamples.mongo.model.MongoRelationship;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
@@ -25,6 +27,8 @@ public class SampleToMongoSampleStructuredDataCentricConverter implements Conver
     private ExternalReferenceToMongoExternalReferenceConverter externalReferenceToMongoExternalReferenceConverter;
     @Autowired
     private RelationshipToMongoRelationshipConverter relationshipToMongoRelationshipConverter;
+    @Autowired
+    private CertificateToMongoCertificateConverter certificateToMongoCertificateConverter;
 
     private static Logger LOGGER = LoggerFactory.getLogger(MongoSampleToSampleConverter.class);
 
@@ -40,6 +44,11 @@ public class SampleToMongoSampleStructuredDataCentricConverter implements Conver
             relationships.add(relationshipToMongoRelationshipConverter.convert(relationship));
         }
 
+        SortedSet<MongoCertificate> certificates = new TreeSet<>();
+        for (Certificate certificate : sample.getCertificates()) {
+            certificates.add(certificateToMongoCertificateConverter.convert(certificate));
+        }
+
         sample.getData().forEach(data -> {
             if (data.getDomain() == null || data.getDomain().isEmpty()) {
                 LOGGER.warn(String.format("sample %s structured data does not have a domain", sample.getAccession()));
@@ -50,6 +59,7 @@ public class SampleToMongoSampleStructuredDataCentricConverter implements Conver
         return MongoSample.build(sample.getName(), sample.getAccession(), sample.getDomain(),
                 sample.getRelease(), sample.getUpdate(), sample.getCreate(),
                 sample.getCharacteristics(), sample.getData(), relationships, externalReferences,
-                sample.getOrganizations(), sample.getContacts(), sample.getPublications(), sample.getSubmittedVia());
+                sample.getOrganizations(), sample.getContacts(), sample.getPublications(), certificates,
+                sample.getSubmittedVia());
     }
 }
