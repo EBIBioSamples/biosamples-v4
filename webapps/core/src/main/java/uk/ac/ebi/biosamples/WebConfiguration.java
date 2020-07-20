@@ -7,8 +7,7 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 @Configuration
-public class WebConfiguration extends WebMvcConfigurerAdapter{
-
+public class WebConfiguration extends WebMvcConfigurerAdapter {
     @Override
     public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
         configurer.mediaType("ldjson", new MediaType("application", "ld+json"));
@@ -22,5 +21,4 @@ public class WebConfiguration extends WebMvcConfigurerAdapter{
         registry.addResourceHandler("/schemas/**")
                 .addResourceLocations("classpath:/schemas/");
     }
-
 }

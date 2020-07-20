@@ -173,6 +173,11 @@ public class SampleHtmlController {
 		return "samples_graph";
 	}
 
+	@GetMapping(value = "/upload")
+	public String upload(Model model, HttpServletRequest request, HttpServletResponse response) {
+		return "upload";
+	}
+
 	@GetMapping(value = "/facets")
 	public String facets(Model model, @RequestParam(name = "text", required = false) final String text,
 						 @RequestParam(name = "filter", required = false) final String[] filtersArray,

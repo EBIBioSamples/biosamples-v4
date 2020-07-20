@@ -48,6 +48,12 @@
 	<script defer="defer" th:src="@{/js/facets-ajax.js}" ></script>
 	<script defer="defer" th:src="@{/js/draw-graphs.js}" ></script>
 	<script defer="defer" th:src="@{/js/graph-search.js}" ></script>
+	<script th:src="@{/webjars/jquery/jquery.min.js}"></script>
+	<script th:src="@{/webjars/popper.js/umd/popper.min.js}"></script>
+	<script th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
+	<script th:src="@{/js/dropzone.js}"></script>
+	<script th:src="@{/js/toastr.min.js}"></script>
+
 	<script th:inline="javascript">
         $(document).ready(function() {
             $('#local-searchbox').autocomplete({
