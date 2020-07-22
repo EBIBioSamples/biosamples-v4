@@ -31,7 +31,9 @@ public class Interrogator {
             LOG.warn(message);
             throw new IllegalArgumentException(message);
         }
+
         List<Checklist> checklists = new ArrayList<>();
+
         for (Checklist checklist : configLoader.config.getChecklists()) {
             try {
                 validator.validate(checklist.getFileName(), sampleDocument.getDocument());
@@ -43,6 +45,7 @@ public class Interrogator {
                 EVENTS.info(String.format("%s interrogation failed against %s", sampleDocument.getAccession(), checklist.getID()));
             }
         }
+
         return new InterrogationResult(sampleDocument, checklists);
     }
 }

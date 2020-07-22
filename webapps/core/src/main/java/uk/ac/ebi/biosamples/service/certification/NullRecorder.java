@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.certification.Certificate;
 import uk.ac.ebi.biosamples.model.certification.CertificationResult;
-import uk.ac.ebi.biosamples.model.certification.RecorderResult;
+import uk.ac.ebi.biosamples.model.certification.BioSamplesCertificationComplainceResult;
 
 import java.util.Set;
 
@@ -15,17 +15,19 @@ public class NullRecorder implements Recorder {
     private static Logger EVENTS = LoggerFactory.getLogger("events");
 
     @Override
-    public RecorderResult record(Set<CertificationResult> certificationResults) {
-        RecorderResult recorderResult = new RecorderResult();
+    public BioSamplesCertificationComplainceResult record(Set<CertificationResult> certificationResults) {
+        BioSamplesCertificationComplainceResult bioSamplesCertificationComplainceResult = new BioSamplesCertificationComplainceResult();
         if (certificationResults == null) {
             throw new IllegalArgumentException("cannot record a null certification result");
         }
+        
         for (CertificationResult certificationResult : certificationResults) {
             for (Certificate certificate : certificationResult.getCertificates()) {
-                recorderResult.add(certificate);
+                bioSamplesCertificationComplainceResult.add(certificate);
                 EVENTS.info(String.format("%s recorded %s certificate", certificate.getSampleDocument().getAccession(), certificate.getChecklist().getID()));
             }
         }
-        return recorderResult;
+
+        return bioSamplesCertificationComplainceResult;
     }
 }

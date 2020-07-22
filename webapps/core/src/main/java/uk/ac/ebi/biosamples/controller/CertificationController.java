@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.model.Certificate;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
+import uk.ac.ebi.biosamples.model.certification.BioSamplesCertificationComplainceResult;
 import uk.ac.ebi.biosamples.service.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 import uk.ac.ebi.biosamples.service.SampleService;
@@ -68,5 +69,12 @@ public class CertificationController {
         // assemble a resource to return
         // create the response object with the appropriate status
         return sampleResourceAssembler.toResource(sample);
+    }
+
+    @PostMapping("/checkCompliance")
+    public BioSamplesCertificationComplainceResult recorderResults(@RequestBody Sample sample) throws JsonProcessingException {
+        final ObjectMapper jsonMapper = new ObjectMapper();
+
+        return certifyService.recordResult(jsonMapper.writeValueAsString(sample));
     }
 }

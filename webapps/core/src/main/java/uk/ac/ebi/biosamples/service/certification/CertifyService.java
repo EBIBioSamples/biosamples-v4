@@ -3,10 +3,7 @@ package uk.ac.ebi.biosamples.service.certification;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.Certificate;
-import uk.ac.ebi.biosamples.model.certification.CertificationResult;
-import uk.ac.ebi.biosamples.model.certification.Checklist;
-import uk.ac.ebi.biosamples.model.certification.PlanResult;
-import uk.ac.ebi.biosamples.model.certification.SampleDocument;
+import uk.ac.ebi.biosamples.model.certification.*;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -33,14 +30,7 @@ public class CertifyService {
         Set<CertificationResult> certificationResults = new LinkedHashSet<>();
         SampleDocument rawSampleDocument = identifier.identify(data);
         certificationResults.add(certifier.certify(rawSampleDocument));
-        List<PlanResult> planResults = curator.runCurationPlans(interrogator.interrogate(rawSampleDocument));
         List<Certificate> certificates = new ArrayList<>();
-
-        for (PlanResult planResult : planResults) {
-            if (planResult.curationsMade()) {
-                certificationResults.add(certifier.certify(planResult));
-            }
-        }
 
         certificationResults.forEach(certificationResult -> {
             certificationResult.getCertificates().forEach(certificate -> {
@@ -51,8 +41,21 @@ public class CertifyService {
             });
         });
 
-        // Read RecorderResult in order to add curations and plans
-        // RecorderResult result = recorder.record(certificationResults);
         return certificates;
+    }
+
+    public BioSamplesCertificationComplainceResult recordResult(String data) {
+        Set<CertificationResult> certificationResults = new LinkedHashSet<>();
+        SampleDocument rawSampleDocument = identifier.identify(data);
+        certificationResults.add(certifier.certify(rawSampleDocument));
+        List<PlanResult> planResults = curator.runCurationPlans(interrogator.interrogate(rawSampleDocument));
+
+        for (PlanResult planResult : planResults) {
+            if (planResult.curationsMade()) {
+                certificationResults.add(certifier.certify(planResult));
+            }
+        }
+
+        return recorder.record(certificationResults);
     }
 }
