@@ -12,6 +12,7 @@ import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.ebeye.gen.*;
+import uk.ac.ebi.biosamples.ebeye.util.LoadAttributeSet;
 import uk.ac.ebi.biosamples.model.Sample;
 
 import javax.xml.bind.JAXBContext;
@@ -37,8 +38,12 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
     private final RefType taxonomyRefType = new RefType();
     @Autowired
     BioSamplesClient bioSamplesClient;
+    @Autowired
+    LoadAttributeSet loadAttributeSet;
     @Value("${spring.data.mongodb.uri}")
     private String mongoUri;
+
+    private Set<String> attributeSet;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
@@ -49,7 +54,9 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
         final DB db = mongoClient.getDB(BIOSAMPLES);
         final DBCollection coll = db.getCollection(MONGO_SAMPLE);
         final AtomicReference<String> startDate = new AtomicReference<>("");
-        final String filePath = "/mnt/data/biosamples/sw/www/";
+        final String filePath = "";
+
+        attributeSet = loadAttributeSet.getAllAttributes();
 
         final List<String> programArguments = args.getOptionNames().stream().filter(optionName -> optionName.equals("startDate")).collect(Collectors.toList());
 
@@ -76,7 +83,7 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
             startLocalDate = startLocalDate.plusMonths(1);
             endLocalDate = startLocalDate.plusMonths(1).minusDays(1);
 
-            //if (fileCounter == 5) break;
+            if (fileCounter == 1) break;
         }
     }
 
@@ -224,9 +231,11 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
                     taxonomyRefType.setDbkey(sample.getTaxId().toString());
                 }
 
-                fieldType.setName(removeOtherSpecialCharactersFromAttributeNames(removeSpacesFromAttributeNames(attribute.getType())));
-                fieldType.setValue(attribute.getValue());
-                additionalFieldsType.getFieldOrHierarchicalField().add(fieldType);
+                if(attributeSet.contains(attribute.getType())) {
+                    fieldType.setName(removeOtherSpecialCharactersFromAttributeNames(removeSpacesFromAttributeNames(attribute.getType())));
+                    fieldType.setValue(attribute.getValue());
+                    additionalFieldsType.getFieldOrHierarchicalField().add(fieldType);
+                }
             }
         });
     }
