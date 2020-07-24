@@ -48,7 +48,7 @@ public class ClearinghouseRunner implements ApplicationRunner {
 
         this.pipelineFutureCallback = new PipelineFutureCallback();
 
-        //TODO add correct domain for clearignhouse
+        //TODO add correct domain for clearinghouse
         domain = "self.bioSamplesClearinghouse";
     }
 
@@ -67,15 +67,6 @@ public class ClearinghouseRunner implements ApplicationRunner {
         try (final AdaptiveThreadPoolExecutor executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true,
                 pipelinesProperties.getThreadCount(), pipelinesProperties.getThreadCountMax())) {
             LOGGER.info("Starting clearinghouse pipeline");
-
-            /*Sample sample = bioSamplesClient.fetchSampleResource("SAMEA102066418").get().getContent();
-            ResponseEntity<Map> response
-                    = restTemplate.getForEntity(CLEARINGHOUSE_API_ENDPOINT + sample.getAccession(), Map.class);
-
-            if (response.getStatusCode().is2xxSuccessful()) {
-                Callable<PipelineResult> task = new ClearninghouseCallable(bioSamplesClient, sample, domain, (List) response.getBody().get("curations"));
-                futures.put(sample.getAccession(), executorService.submit(task));
-            }*/
 
             for (final Resource<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll()) {
                 final Sample sample = sampleResource.getContent();
