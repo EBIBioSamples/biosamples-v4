@@ -13,7 +13,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableAsync
 @EnableScheduling
 public class Application {
-	
 	//this is needed to read nonstrings from properties files
 	//must be static for lifecycle reasons
 	@Bean
