@@ -17,6 +17,7 @@ public class ExternalReferenceUtils {
     public static final String DBGAP_BASE_URL_FRAGMENT = "ncbi.nlm.nih.gov/projects/gap";
     public static final String EGA_DATASET_BASE_URL_FRAGMENT = "ega-archive.org/datasets";
     public static final String EGA_SAMPLE_BASE_URL_FRAGMENT = "ega-archive.org/metadata";
+    public static final String EGA_STUDY_BASE_URL_FRAGMENT = "ega-archive.org/metadata";
     public static final String BIOSTUDIES_BASE_URL_FRAGMENT = "ebi.ac.uk/biostudies";
     public static final String DUO_BASE_URL = "http://purl.obolibrary.org/obo/";
 
@@ -33,6 +34,8 @@ public class ExternalReferenceUtils {
             return "EGA Dataset";
         } else if (externalReference.getUrl().contains(EGA_SAMPLE_BASE_URL_FRAGMENT)) {
             return "EGA Sample";
+        } else if (externalReference.getUrl().contains(EGA_STUDY_BASE_URL_FRAGMENT)) {
+            return "EGA Study";
         } else if (externalReference.getUrl().contains(BIOSTUDIES_BASE_URL_FRAGMENT)) {
             return "BioStudies";
         } else {
@@ -43,7 +46,7 @@ public class ExternalReferenceUtils {
     public static Optional<String> getDataId(ExternalReference externalReference) {
         String nickname = getNickname(externalReference);
         if ("ENA".equals(nickname) || "ArrayExpress".equals(nickname) || "hPSCreg".equals(nickname)
-                || "EGA Dataset".equals(nickname) || "EGA Sample".equals(nickname) || "BioStudies".equals(nickname)) {
+                || "EGA Dataset".equals(nickname) || "EGA Sample".equals(nickname) || "EGA Study".equals(nickname) || "BioStudies".equals(nickname)) {
             UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(externalReference.getUrl()).build();
             String lastPathSegment = uriComponents.getPathSegments().get(uriComponents.getPathSegments().size() - 1);
             return Optional.of(lastPathSegment);
