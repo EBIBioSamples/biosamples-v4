@@ -83,7 +83,7 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
             startLocalDate = startLocalDate.plusMonths(1);
             endLocalDate = startLocalDate.plusMonths(1).minusDays(1);
 
-            if (fileCounter == 1) break;
+            //if (fileCounter == 1) break;
         }
     }
 
