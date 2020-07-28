@@ -17,7 +17,7 @@ public class ExternalReferenceUtils {
     public static final String DBGAP_BASE_URL_FRAGMENT = "ncbi.nlm.nih.gov/projects/gap";
     public static final String EGA_DATASET_BASE_URL_FRAGMENT = "ega-archive.org/datasets";
     public static final String EGA_SAMPLE_BASE_URL_FRAGMENT = "ega-archive.org/metadata";
-    public static final String EGA_STUDY_BASE_URL_FRAGMENT = "ega-archive.org/metadata";
+    public static final String EGA_STUDY_BASE_URL_FRAGMENT = "ega-archive.org/studies";
     public static final String BIOSTUDIES_BASE_URL_FRAGMENT = "ebi.ac.uk/biostudies";
     public static final String DUO_BASE_URL = "http://purl.obolibrary.org/obo/";
 
