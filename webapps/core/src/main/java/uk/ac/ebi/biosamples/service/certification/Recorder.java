@@ -1,10 +1,10 @@
 package uk.ac.ebi.biosamples.service.certification;
 
 import uk.ac.ebi.biosamples.model.certification.CertificationResult;
-import uk.ac.ebi.biosamples.model.certification.RecorderResult;
+import uk.ac.ebi.biosamples.model.certification.BioSamplesCertificationComplainceResult;
 
 import java.util.Set;
 
 public interface Recorder {
-    RecorderResult record(Set<CertificationResult> certificationResult);
+    BioSamplesCertificationComplainceResult record(Set<CertificationResult> certificationResult);
 }

@@ -18,8 +18,10 @@ public class Identifier {
         if (data == null) {
             throw new IllegalArgumentException("cannot identify a null data");
         }
+
         ObjectMapper mapper = new ObjectMapper();
         mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        
         try {
             SampleDocument sampleDocument = mapper.readValue(data, SampleDocument.class);
             String accession = sampleDocument.getAccession();

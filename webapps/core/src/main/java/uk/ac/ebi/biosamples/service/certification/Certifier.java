@@ -31,6 +31,7 @@ public class Certifier {
             LOG.warn(message);
             throw new IllegalArgumentException(message);
         }
+
         return certify(sampleDocument, Collections.EMPTY_LIST);
     }
 
@@ -46,6 +47,7 @@ public class Certifier {
             message = "New sample";
 
         boolean certified = false;
+
         for (Checklist checklist : configLoader.config.getChecklists()) {
             try {
                 validator.validate(checklist.getFileName(), sampleDocument.getDocument());
@@ -59,9 +61,11 @@ public class Certifier {
                 EVENTS.info(String.format("%s validation failed against %s", message, checklist.getID()));
             }
         }
+
         if (!certified) {
             EVENTS.info(String.format("%s not certified", message));
         }
+
         return certificationResult;
     }
 
@@ -71,6 +75,7 @@ public class Certifier {
             LOG.warn(message);
             throw new IllegalArgumentException(message);
         }
+
         return certify(applicator.apply(hasCuratedSample), hasCuratedSample.getCurationResults());
     }
 }

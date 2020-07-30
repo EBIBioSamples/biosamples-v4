@@ -12,6 +12,7 @@ import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.ebeye.gen.*;
+import uk.ac.ebi.biosamples.ebeye.util.LoadAttributeSet;
 import uk.ac.ebi.biosamples.model.Sample;
 
 import javax.xml.bind.JAXBContext;
@@ -27,7 +28,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-/*@Component
+@Component
 public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
     private static Logger log = LoggerFactory.getLogger(EbEyeBioSamplesDataDumpRunner.class);
     private static final String BIOSAMPLES = "biosamples";
@@ -37,8 +38,12 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
     private final RefType taxonomyRefType = new RefType();
     @Autowired
     BioSamplesClient bioSamplesClient;
+    @Autowired
+    LoadAttributeSet loadAttributeSet;
     @Value("${spring.data.mongodb.uri}")
     private String mongoUri;
+
+    private Set<String> attributeSet;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
@@ -49,7 +54,9 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
         final DB db = mongoClient.getDB(BIOSAMPLES);
         final DBCollection coll = db.getCollection(MONGO_SAMPLE);
         final AtomicReference<String> startDate = new AtomicReference<>("");
-        final String filePath = "/mnt/data/biosamples/sw/www/";
+        final String filePath = "";
+
+        attributeSet = loadAttributeSet.getAllAttributes();
 
         final List<String> programArguments = args.getOptionNames().stream().filter(optionName -> optionName.equals("startDate")).collect(Collectors.toList());
 
@@ -58,9 +65,7 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
                 startDate.set(args.getOptionValues("startDate").get(0));
         });
 
-        Date startDateFormatted = (startDate != null) ? formatter.parse(String.valueOf(startDate)) : null;
-
-        if (startDate == null) throw new IllegalStateException("No start date passed");
+        Date startDateFormatted = formatter.parse(String.valueOf(startDate));
 
         int fileCounter = 1;
         LocalDate startLocalDate = convertToLocalDateViaInstant(startDateFormatted);
@@ -78,7 +83,7 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
             startLocalDate = startLocalDate.plusMonths(1);
             endLocalDate = startLocalDate.plusMonths(1).minusDays(1);
 
-            //if (fileCounter == 5) break;
+            //if (fileCounter == 1) break;
         }
     }
 
@@ -226,9 +231,11 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
                     taxonomyRefType.setDbkey(sample.getTaxId().toString());
                 }
 
-                fieldType.setName(removeOtherSpecialCharactersFromAttributeNames(removeSpacesFromAttributeNames(attribute.getType())));
-                fieldType.setValue(attribute.getValue());
-                additionalFieldsType.getFieldOrHierarchicalField().add(fieldType);
+                if(attributeSet.contains(attribute.getType())) {
+                    fieldType.setName(removeOtherSpecialCharactersFromAttributeNames(removeSpacesFromAttributeNames(attribute.getType())));
+                    fieldType.setValue(attribute.getValue());
+                    additionalFieldsType.getFieldOrHierarchicalField().add(fieldType);
+                }
             }
         });
     }
@@ -240,10 +247,10 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
     private String removeOtherSpecialCharactersFromAttributeNames(String type) {
         return type.trim().replaceAll("[^a-zA-Z0-9\\s+_-]", "");
     }
-}*/
+}
 
 // One time run for COVID-19 only
-@Component
+/*@Component
 public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
     public static final String ENA_LC = "ena";
     public static final String ENA_UC = "ENA";
@@ -389,4 +396,4 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
 
         convertSampleToXml(samplesList, f);
     }
-}
+}*/
