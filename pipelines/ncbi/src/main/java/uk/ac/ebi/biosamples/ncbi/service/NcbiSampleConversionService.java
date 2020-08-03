@@ -133,9 +133,12 @@ public class NcbiSampleConversionService {
         }
 
         if (!hasSraAccession) {
+            log.info("SRA accession not present in sample - fetching from ERAPRO for " + accession);
             final String sraAccession = ncbiEraProDao.getSraAccession(accession);
 
             if(sraAccession != null && !sraAccession.isEmpty()) {
+                log.info("SRA accession fetched from ERAPRO for " + accession);
+
                 attrs.add(Attribute.build(SRA_ACCESSION, sraAccession));
                 attrs.add(Attribute.build(INSDC_SECONDARY_ACCESSION, sraAccession));
             }

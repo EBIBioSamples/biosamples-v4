@@ -1,19 +1,9 @@
 {
   "checklists": [
     {
-      "name": "biosamples",
-      "version": "0.0.1",
-      "file": "schemas/certification/biosamples-basic.json"
-    },
-    {
       "name": "ncbi",
       "version": "0.0.1",
       "file": "schemas/certification/ncbi-candidate-schema.json"
-    },
-    {
-      "name": "config",
-      "version": "0.0.1",
-      "file": "schemas/certification/config-schema.json"
     }
   ],
   "plans": [
