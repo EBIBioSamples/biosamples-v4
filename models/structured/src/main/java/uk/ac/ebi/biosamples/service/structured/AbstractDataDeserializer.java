@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
 import uk.ac.ebi.biosamples.model.structured.DataType;
+import uk.ac.ebi.biosamples.model.structured.HistologyEntry;
+import uk.ac.ebi.biosamples.model.structured.StructuredTable;
 import uk.ac.ebi.biosamples.model.structured.amr.AMREntry;
 import uk.ac.ebi.biosamples.model.structured.amr.AMRTable;
 
@@ -30,14 +32,10 @@ public class AbstractDataDeserializer extends StdDeserializer<AbstractData> {
         JsonNode rootNode = p.getCodec().readTree(p);
         URI schema = URI.create(rootNode.get("schema").asText());
         DataType type = DataType.valueOf(rootNode.get("type").asText());
-        JsonNode content = rootNode.get("content");
         JsonNode domain = rootNode.get("domain");
+        JsonNode content = rootNode.get("content");
 
-        // Deserialise the object based on the datatype
-
-        // At this point we are sure that the content matches the schema, therefore I can freely take assumptions of
-        // what the content look like
-
+        // Deserialize the object based on the datatype
         if (type == DataType.AMR) {
             AMRTable.Builder tableBuilder = new AMRTable.Builder(schema, (domain != null && !domain.isNull()) ? domain.asText() : null);
 
@@ -46,7 +44,16 @@ public class AbstractDataDeserializer extends StdDeserializer<AbstractData> {
                 AMREntry entry = this.objectMapper.treeToValue(amrRowObject, AMREntry.class);
                 tableBuilder.addEntry(entry);
             }
+            return tableBuilder.build();
+        } else if (type == DataType.HISTOLOGY) {
+            StructuredTable.Builder<HistologyEntry> tableBuilder =
+                    new StructuredTable.Builder<>(schema, (domain != null && !domain.isNull()) ? domain.asText() : null, DataType.HISTOLOGY);
 
+            for (Iterator<JsonNode> it = content.elements(); it.hasNext(); ) {
+                JsonNode amrRowObject = it.next();
+                HistologyEntry entry = this.objectMapper.treeToValue(amrRowObject, HistologyEntry.class);
+                tableBuilder.addEntry(entry);
+            }
             return tableBuilder.build();
         }
 

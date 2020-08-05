@@ -186,10 +186,8 @@ public class BioSamplesAapService {
 
 		if (isStructuredDataPresent(sample)) {
 			sample.getData().forEach(data -> {
-				// AMR Specific block - at this moment we are only having AMR data - 26-March-2020
-				if (data.getDataType() != null && data.getDataType().name().equalsIgnoreCase(String.valueOf(DataType.AMR))) {
+				if (data.getDataType() != null) {
 					final String structuredDataDomain = data.getDomain();
-
 					if (structuredDataDomain == null) {
 						throw new StructuredDataDomainMissingException();
 					} else if (usersDomains.contains(data.getDomain())) {
@@ -220,8 +218,7 @@ public class BioSamplesAapService {
 
 		if (isStructuredDataPresent(sample)) {
 			sample.getData().forEach(data -> {
-				// AMR Specific block - at this moment we are only having AMR data - 26-March-2020
-				if (data.getDataType() != null && data.getDataType().name().equalsIgnoreCase(String.valueOf(DataType.AMR))) {
+				if (data.getDataType() != null) {
 					final String structuredDataDomain = data.getDomain();
 
 					if (structuredDataDomain == null) {
