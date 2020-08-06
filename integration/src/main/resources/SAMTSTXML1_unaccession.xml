@@ -26,6 +26,12 @@
 			</TermSourceREF>
 		</QualifiedValue>
 	</Property>
+	<Property class="Organism" characteristic="false"
+			  comment="false" type="STRING">
+		<QualifiedValue>
+			<Value>Human</Value>
+		</QualifiedValue>
+	</Property>
 	<Property class="test_Type" characteristic="false" comment="false"
 		type="STRING">
 		<QualifiedValue>

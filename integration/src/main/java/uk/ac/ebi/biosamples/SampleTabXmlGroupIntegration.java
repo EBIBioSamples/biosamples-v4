@@ -1,14 +1,8 @@
 package uk.ac.ebi.biosamples;
 
-import java.net.URI;
-import java.util.Optional;
-import java.util.Scanner;
-
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
@@ -17,130 +11,131 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
-
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
+
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.Optional;
+import java.util.Scanner;
 
 @Component
 @Order(6)
 public class SampleTabXmlGroupIntegration extends AbstractIntegration {
 
-	private Logger log = LoggerFactory.getLogger(this.getClass());
+    private Logger log = LoggerFactory.getLogger(this.getClass());
 
-	private final IntegrationProperties integrationProperties;
+    private final RestOperations restTemplate;
 
-	private final RestOperations restTemplate;
+    private final URI uri;
 
-	private final URI uri;
-
-	public SampleTabXmlGroupIntegration(RestTemplateBuilder restTemplateBuilder, IntegrationProperties integrationProperties, BioSamplesClient client) {
+    public SampleTabXmlGroupIntegration(RestTemplateBuilder restTemplateBuilder, IntegrationProperties integrationProperties, BioSamplesClient client) {
         super(client);
-		this.restTemplate = restTemplateBuilder.build();
-		this.integrationProperties = integrationProperties;
+        this.restTemplate = restTemplateBuilder.build();
 
-		uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUriSampleTab())
-			.pathSegment("api", "v2","source","biosamples","group")
-			.queryParam("apikey", integrationProperties.getLegacyApiKey())
-			.build().toUri();
-	}
+        uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUriSampleTab())
+                .pathSegment("api", "v2", "source", "biosamples", "group")
+                .queryParam("apikey", integrationProperties.getLegacyApiKey())
+                .build().toUri();
+    }
 
-	@Override
-	protected void phaseOne() {
+    @Override
+    protected void phaseOne() {
 
-		runCallableOnResource("/SAMEG123_unaccession.xml", sampleTabString -> {
-			log.info("POSTing to " + uri);
-			RequestEntity<String> request = RequestEntity.post(uri)
-					.contentType(MediaType.APPLICATION_XML)
-					.accept(MediaType.TEXT_PLAIN)
-					.body(sampleTabString);
-			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
-			String accession = response.getBody();
-			// check at the right URLs with GET to make sure all
-			// arrived
-			Optional<Resource<Sample>> group = client.fetchSampleResource(accession);
-			if (!group.isPresent()) {
-				throw new RuntimeException("Unable to retrieve group "+accession);
-			}
-			if (group.get().getContent().getAttributes().size() == 0) {
-				throw new RuntimeException("No attributes on group "+accession);
-			}
-			if (group.get().getContent().getRelationships().size() == 0) {
-				throw new RuntimeException("No relationships on group "+accession);
-			}
+        runCallableOnResource("/SAMEG123_unaccession.xml", sampleTabString -> {
+            log.info("POSTing to " + uri);
+            RequestEntity<String> request = RequestEntity.post(uri)
+                    .contentType(MediaType.APPLICATION_XML)
+                    .accept(MediaType.TEXT_PLAIN)
+                    .body(sampleTabString);
+            ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+            String accession = response.getBody();
+            // check at the right URLs with GET to make sure all
+            // arrived
+            Optional<Resource<Sample>> group = client.fetchSampleResource(accession);
+            if (group.isEmpty()) {
+                throw new RuntimeException("Unable to retrieve group " + accession);
+            }
+            if (group.get().getContent().getAttributes().size() == 0) {
+                throw new RuntimeException("No attributes on group " + accession);
+            }
+            if (group.get().getContent().getRelationships().size() == 0) {
+                throw new RuntimeException("No relationships on group " + accession);
+            }
 
-		});
+        });
 
-		URI putUri = UriComponentsBuilder.fromUri(uri).pathSegment("SAMEG123").build().toUri();
-		runCallableOnResource("/SAMEG123.xml", sampleTabString -> {
-			log.info("PUTing to " + putUri);
-			RequestEntity<String> request = RequestEntity.put(putUri)
-					.contentType(MediaType.APPLICATION_XML)
-					.accept(MediaType.TEXT_PLAIN)
-					.body(sampleTabString);
-			ResponseEntity<String> response = restTemplate.exchange(request, String.class);
-			String accession = response.getBody();
-			// check at the right URLs with GET to make sure all
-			// arrived
-			Optional<Resource<Sample>> group = client.fetchSampleResource(accession);
-			if (!group.isPresent()) {
-				throw new RuntimeException("Unable to retrieve group "+accession);
-			}
-			if (group.get().getContent().getAttributes().size() == 0) {
-				throw new RuntimeException("No attributes on group "+accession);
-			}
-			if (group.get().getContent().getRelationships().size() == 0) {
-				throw new RuntimeException("No relationships on group "+accession);
-			}
-		});
+        URI putUri = UriComponentsBuilder.fromUri(uri).pathSegment("SAMEG123").build().toUri();
+        runCallableOnResource("/SAMEG123.xml", sampleTabString -> {
+            log.info("PUTing to " + putUri);
+            RequestEntity<String> request = RequestEntity.put(putUri)
+                    .contentType(MediaType.APPLICATION_XML)
+                    .accept(MediaType.TEXT_PLAIN)
+                    .body(sampleTabString);
+            ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+            String accession = response.getBody();
+            // check at the right URLs with GET to make sure all
+            // arrived
+            Optional<Resource<Sample>> group = client.fetchSampleResource(accession);
+            if (group.isEmpty()) {
+                throw new RuntimeException("Unable to retrieve group " + accession);
+            }
+            if (group.get().getContent().getAttributes().size() == 0) {
+                throw new RuntimeException("No attributes on group " + accession);
+            }
+            if (group.get().getContent().getRelationships().size() == 0) {
+                throw new RuntimeException("No relationships on group " + accession);
+            }
+        });
 
-	}
+    }
 
-	@Override
-	protected void phaseTwo() {
+    @Override
+    protected void phaseTwo() {
 
-	}
+    }
 
-	@Override
-	protected void phaseThree() {
+    @Override
+    protected void phaseThree() {
 
-	}
+    }
 
-	@Override
-	protected void phaseFour() {
-		// TODO Auto-generated method stub
+    @Override
+    protected void phaseFour() {
+        // TODO Auto-generated method stub
 
-	}
+    }
 
-	@Override
-	protected void phaseFive() {
-		// TODO Auto-generated method stub
+    @Override
+    protected void phaseFive() {
+        // TODO Auto-generated method stub
 
-	}
+    }
 
 
-	private interface Callback {
-		public void callback(String sampleTabString);
-	}
+    private interface Callback {
+        void callback(String sampleTabString);
+    }
 
-	private void runCallableOnResource(String resource, Callback callback) {
+    private void runCallableOnResource(String resource, Callback callback) {
 
-		Scanner scanner = null;
-		String xmlString = null;
+        Scanner scanner = null;
+        String xmlString;
 
-		try {
-			scanner = new Scanner(this.getClass().getResourceAsStream(resource), "UTF-8");
-			xmlString = scanner.useDelimiter("\\A").next();
-		} finally {
-			if (scanner != null) {
-				scanner.close();
-			}
-		}
+        try {
+            scanner = new Scanner(this.getClass().getResourceAsStream(resource), StandardCharsets.UTF_8);
+            xmlString = scanner.useDelimiter("\\A").next();
+        } finally {
+            if (scanner != null) {
+                scanner.close();
+            }
+        }
 
-		log.trace("sending legacy xml submission \n" + xmlString);
+        log.trace("sending legacy xml submission \n" + xmlString);
 
-		if (xmlString != null) {
-			callback.callback(xmlString);
-		}
-	}
+        if (xmlString != null) {
+            callback.callback(xmlString);
+        }
+    }
 
 }

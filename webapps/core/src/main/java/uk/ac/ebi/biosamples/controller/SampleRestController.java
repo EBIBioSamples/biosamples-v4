@@ -21,6 +21,7 @@ import uk.ac.ebi.biosamples.service.certification.CertifyService;
 import uk.ac.ebi.biosamples.utils.LinkUtils;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -175,6 +176,7 @@ public class SampleRestController {
                                 @RequestBody Sample sample,
                                 @RequestParam(name = "setfulldetails", required = false, defaultValue = "true") boolean setFullDetails) throws JsonProcessingException {
         final ObjectMapper jsonMapper = new ObjectMapper();
+        List<Certificate> certificates = new ArrayList<>();
 
         if (sample.getAccession() == null || !sample.getAccession().equals(accession)) {
             throw new SampleAccessionMismatchException();
@@ -207,7 +209,8 @@ public class SampleRestController {
                 .withUpdate(update)
                 .withSubmittedVia(submittedVia).build();
 
-        List<Certificate> certificates = certifyService.certify(jsonMapper.writeValueAsString(sample));
+        if(!accession.startsWith("SAMEG"))
+            certificates = certifyService.certify(jsonMapper.writeValueAsString(sample));
 
         sample = Sample.Builder.fromSample(sample).withCertificates(certificates).build();
 

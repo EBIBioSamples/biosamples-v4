@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "biosamples-minimal.json",
+  "additionalProperties": true,
+  "required": [
+    "name",
+    "characteristics"
+  ],
+  "title": "sample",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "accession": {
+      "type": "string"
+    },
+    "characteristics": {
+      "type": "object",
+        "organism": {
+          "$ref": "#/definitions/non-empty-string"
+        },
+        "Organism": {
+          "$ref": "#/definitions/non-empty-string"
+        },
+        "anyOf": [
+          { "required": ["organism"] },
+          { "required": ["Organism"] }
+        ],
+        "definitions": {
+          "non-empty-string": {
+            "type": "string",
+            "minLength": 1
+          }
+      }
+    }
+  }
+}
+

@@ -20,6 +20,12 @@
 			<Value>TestLegacyXmlGroup</Value>
 		</QualifiedValue>
 	</Property>
+	<Property class="Organism" characteristic="true"
+			  type="STRING" comment="false">
+		<QualifiedValue>
+			<Value>Human</Value>
+		</QualifiedValue>
+	</Property>
 	<Property class="Group Name" characteristic="true" type="STRING"
 		comment="false">
 		<QualifiedValue>

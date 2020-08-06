@@ -3,7 +3,9 @@ package uk.ac.ebi.biosamples.service.certification;
 import org.everit.json.schema.ValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import uk.ac.ebi.biosamples.model.certification.*;
 
 import java.io.IOException;
@@ -59,6 +61,10 @@ public class Certifier {
                 LOG.error(String.format("cannot open schema at %s", checklist.getFileName()), ioe);
             } catch (ValidationException ve) {
                 EVENTS.info(String.format("%s validation failed against %s", message, checklist.getID()));
+
+                if (checklist.isBlock()) {
+                    throw new SampleChecklistValidationFailureException(checklist.getName() +" " +checklist.getVersion(), ve);
+                }
             }
         }
 
@@ -77,5 +83,12 @@ public class Certifier {
         }
 
         return certify(applicator.apply(hasCuratedSample), hasCuratedSample.getCurationResults());
+    }
+
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    public static class SampleChecklistValidationFailureException extends RuntimeException {
+        public SampleChecklistValidationFailureException(String checklistDetails, ValidationException ve) {
+            super("Sample failed validation against BioSamples minimal checklist " + checklistDetails + " and hence submission couldn't be completed", ve);
+        }
     }
 }

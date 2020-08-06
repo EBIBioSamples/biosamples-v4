@@ -3,7 +3,6 @@ package uk.ac.ebi.biosamples;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
-import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.*;
@@ -16,53 +15,50 @@ import java.util.*;
 @Order(6)
 //@Profile({ "default", "rest" })
 public class RestExternalReferenceIntegration extends AbstractIntegration {
+    public RestExternalReferenceIntegration(BioSamplesClient client) {
+        super(client);
+    }
 
-	private Logger log = LoggerFactory.getLogger(this.getClass());
+    @Override
+    protected void phaseOne() {
+        Sample sample = getSampleTest1();
+        client.persistSampleResource(sample);
+    }
 
-	public RestExternalReferenceIntegration(BioSamplesClient client) {
-		super(client);
-	}
+    @Override
+    protected void phaseTwo() {
+        Sample sample = getSampleTest1();
+        Optional<Sample> optionalSample = fetchUniqueSampleByName(sample.getName());
+        if (optionalSample.isPresent()) {
+            sample = Sample.Builder.fromSample(sample).withAccession(optionalSample.get().getAccession()).build();
+        } else {
+            throw new IntegrationTestFailException("Private sample in name search, sample name: " + sample.getName(), Phase.TWO);
+        }
 
-	@Override
-	protected void phaseOne() {
-		Sample sample = getSampleTest1();
-		client.persistSampleResource(sample);
-	}
+        testExternalReferences();
+        client.persistCuration(sample.getAccession(),
+                Curation.build(null, null, null, Collections.singletonList(ExternalReference.build("http://www.ebi.ac.uk/ena/ERA123456"))),
+                "self.BiosampleIntegrationTest");
+    }
 
-	@Override
-	protected void phaseTwo() {
-		Sample sample = getSampleTest1();
-		Optional<Sample> optionalSample = fetchUniqueSampleByName(sample.getName());
-		if (optionalSample.isPresent()) {
-			sample = Sample.Builder.fromSample(sample).withAccession(optionalSample.get().getAccession()).build();
-		} else {
-			throw new IntegrationTestFailException("Private sample in name search, sample name: " + sample.getName(), Phase.TWO);
-		}
+    @Override
+    protected void phaseThree() {
+        Sample sample = getSampleTest1();
+        //check there was no side-effects
+        fetchUniqueSampleByName(sample.getName());
+    }
 
-		testExternalReferences();
-		client.persistCuration(sample.getAccession(),
-				Curation.build(null,  null, null, Arrays.asList(ExternalReference.build("http://www.ebi.ac.uk/ena/ERA123456"))),
-				"self.BiosampleIntegrationTest");
+    @Override
+    protected void phaseFour() {
 
-	}
+    }
 
-	@Override
-	protected void phaseThree() {
-		Sample sample = getSampleTest1();
-		//check there was no side-effects
-		Optional<Sample> optionalSample = fetchUniqueSampleByName(sample.getName());
-	}
+    @Override
+    protected void phaseFive() {
 
-	@Override
-	protected void phaseFour() {
+    }
 
-	}
-
-	@Override
-	protected void phaseFive() {
-
-	}
-	private void testExternalReferences() {
+    private void testExternalReferences() {
 /*
 		URI uri = UriComponentsBuilder.fromUri(integrationProperties.getBiosampleSubmissionUri())
 				.pathSegment("externalreferences").build().toUri();
@@ -101,44 +97,33 @@ public class RestExternalReferenceIntegration extends AbstractIntegration {
 			}
 		}
 */
-	}
+    }
 
-	private void testSampleExternalReferences(Sample sample, int expectedCount) {
-		sample = client.fetchSample(sample.getAccession()).get();
+    private Sample getSampleTest1() {
+        String name = "RestExternalReferenceIntegration_sample_1";
+        Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
+        Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
+        SortedSet<Attribute> attributes = new TreeSet<>();
+        attributes.add(Attribute.build("Organism", "Human"));
 
-		if (sample.getExternalReferences().size() != expectedCount) {
-			throw new RuntimeException("Expecting " + expectedCount + " external references, found "
-					+ sample.getExternalReferences().size());
-		}
+        SortedSet<Relationship> relationships = new TreeSet<>();
 
-	}
+        SortedSet<ExternalReference> externalReferences = new TreeSet<>();
+        externalReferences.add(ExternalReference.build("http://ega-archive.org/datasets/1", new TreeSet<>(Collections.singleton("DUO:0000007"))));
+        externalReferences.add(ExternalReference.build("http://ega-archive.org/metadata/2",
+                new TreeSet<>(Arrays.asList("DUO:0000005", "DUO:0000001", "DUO:0000007"))));
+        externalReferences.add(ExternalReference.build("http://www.hpscreg.eu/3"));
+        externalReferences.add(ExternalReference.build("http://www.test.com/4"));
+        externalReferences.add(ExternalReference.build("http://www.ebi.ac.uk/arrayexpress/5"));
+        externalReferences.add(ExternalReference.build("http://www.test.com/6"));
+        externalReferences.add(ExternalReference.build("http://www.ebi.ac.uk/biostudies/7"));
+        externalReferences.add(ExternalReference.build("http://ega-archive.org/datasets/EGAD00001001600",
+                new TreeSet<>(Arrays.asList("DUO:0000005", "DUO:0000014", "DUO:0000019", "DUO:0000026", "DUO:0000028"))));
 
-	private Sample getSampleTest1() {
-		String name = "RestExternalReferenceIntegration_sample_1";
-		Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
-		Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
-
-		SortedSet<Attribute> attributes = new TreeSet<>();
-
-		SortedSet<Relationship> relationships = new TreeSet<>();
-
-		SortedSet<ExternalReference> externalReferences = new TreeSet<>();
-		externalReferences.add(ExternalReference.build("http://ega-archive.org/datasets/1", new TreeSet<>(Collections.singleton("DUO:0000007"))));
-		externalReferences.add(ExternalReference.build("http://ega-archive.org/metadata/2",
-				new TreeSet<>(Arrays.asList("DUO:0000005", "DUO:0000001", "DUO:0000007"))));
-		externalReferences.add(ExternalReference.build("http://www.hpscreg.eu/3"));
-		externalReferences.add(ExternalReference.build("http://www.test.com/4"));
-		externalReferences.add(ExternalReference.build("http://www.ebi.ac.uk/arrayexpress/5"));
-		externalReferences.add(ExternalReference.build("http://www.test.com/6"));
-		externalReferences.add(ExternalReference.build("http://www.ebi.ac.uk/biostudies/7"));
-		externalReferences.add(ExternalReference.build("http://ega-archive.org/datasets/EGAD00001001600",
-				new TreeSet<>(Arrays.asList("DUO:0000005", "DUO:0000014", "DUO:0000019", "DUO:0000026", "DUO:0000028"))));
-
-		return new Sample.Builder(name).withDomain(defaultIntegrationSubmissionDomain)
-				.withRelease(release).withUpdate(update)
-				.withAttributes(attributes).withRelationships(relationships).withExternalReferences(externalReferences)
-				.build();
-	}
-
+        return new Sample.Builder(name).withDomain(defaultIntegrationSubmissionDomain)
+                .withRelease(release).withUpdate(update)
+                .withAttributes(attributes).withRelationships(relationships).withExternalReferences(externalReferences)
+                .build();
+    }
 }
