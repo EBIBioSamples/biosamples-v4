@@ -11,10 +11,10 @@ import java.util.stream.Collectors;
 public class StructuredTable<T extends StructuredEntry> extends AbstractData implements Comparable<AbstractData> {
     private final URI schema;
     private final String domain;
-    private final DataType type;
+    private final StructuredDataType type;
     private final Set<T> entries;
 
-    public StructuredTable(URI schema, String domain, DataType type, Set<T> entries) {
+    public StructuredTable(URI schema, String domain, StructuredDataType type, Set<T> entries) {
         this.schema = schema;
         this.domain = domain;
         this.type = type;
@@ -32,7 +32,7 @@ public class StructuredTable<T extends StructuredEntry> extends AbstractData imp
     }
 
     @Override
-    public DataType getDataType() {
+    public StructuredDataType getDataType() {
         return type;
     }
 
@@ -52,16 +52,25 @@ public class StructuredTable<T extends StructuredEntry> extends AbstractData imp
     }
 
     @Override
-    public int compareTo(AbstractData other) {
-        if (other == null) {
+    public int compareTo(AbstractData o) {
+        if (o == null) {
             return 1;
         }
 
-        if (!(other instanceof StructuredTable)) {
+        if (!(o instanceof StructuredTable)) {
             return 1;
         }
 
-        return StringUtils.nullSafeStringComparison(this.getDomain(), other.getDomain());
+        StructuredTable other = (StructuredTable) o;
+        int cmp = type.compareTo(other.type);
+        if (cmp != 0) {
+            return cmp;
+        }
+        cmp = domain.compareTo(other.domain);
+        if (cmp != 0) {
+            return cmp;
+        }
+        return schema.compareTo(other.schema);
     }
 
     @Override
@@ -85,10 +94,10 @@ public class StructuredTable<T extends StructuredEntry> extends AbstractData imp
         private URI schema;
         private Set<T> entries;
         private String domain;
-        private DataType type;
+        private StructuredDataType type;
 
         @JsonCreator
-        public Builder(URI schema, String domain, DataType type) {
+        public Builder(URI schema, String domain, StructuredDataType type) {
             this.schema = schema;
             this.domain = domain;
             this.type = type;
@@ -96,7 +105,7 @@ public class StructuredTable<T extends StructuredEntry> extends AbstractData imp
         }
 
         @JsonCreator
-        public Builder(String schema, String domain, DataType type) {
+        public Builder(String schema, String domain, StructuredDataType type) {
             this(URI.create(schema), domain, type);
         }
 

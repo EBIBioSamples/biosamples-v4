@@ -21,7 +21,7 @@ public abstract class AbstractData implements Comparable<AbstractData> {
     public abstract String getDomain();
 
     @JsonProperty("type")
-    public abstract DataType getDataType();
+    public abstract StructuredDataType getDataType();
 
     @JsonProperty("schema")
     public abstract URI getSchema();

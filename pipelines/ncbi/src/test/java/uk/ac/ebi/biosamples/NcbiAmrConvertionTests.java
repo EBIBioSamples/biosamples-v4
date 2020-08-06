@@ -7,7 +7,7 @@ import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.structured.amr.AMREntry;
 import uk.ac.ebi.biosamples.model.structured.amr.AMRTable;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
-import uk.ac.ebi.biosamples.model.structured.DataType;
+import uk.ac.ebi.biosamples.model.structured.StructuredDataType;
 import uk.ac.ebi.biosamples.ncbi.service.NcbiAmrConversionService;
 import uk.ac.ebi.biosamples.ncbi.service.NcbiSampleConversionService;
 import uk.ac.ebi.biosamples.utils.TaxonomyService;
@@ -32,7 +32,7 @@ public class NcbiAmrConvertionTests {
     public void given_amr_data_it_produces_sample_with_structured_data() {
         Sample sampleToTest = sampleConversionService.convertNcbiXmlElementToSample(getAmrSample(), new HashSet<>());
         Iterator<AbstractData> dataIterator = sampleToTest.getData().iterator();
-        assertTrue("Sample should contain AMR data", dataIterator.next().getDataType().equals(DataType.AMR));
+        assertTrue("Sample should contain AMR data", dataIterator.next().getDataType().equals(StructuredDataType.AMR));
         assertFalse("Should only contain AMR data", dataIterator.hasNext());
     }
 

@@ -7,7 +7,8 @@ import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.structured.DataType;
+import uk.ac.ebi.biosamples.model.structured.AbstractData;
+import uk.ac.ebi.biosamples.model.structured.StructuredDataType;
 import uk.ac.ebi.biosamples.model.structured.HistologyEntry;
 import uk.ac.ebi.biosamples.model.structured.StructuredTable;
 import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
@@ -53,27 +54,28 @@ public class StructuredDataIntegration extends AbstractIntegration {
 
         Sample sample = sampleResource.get().getContent();
         log.info("Checking sample has histology data");
-        assertEquals(sample.getData().size(), 2);
-        assertEquals(sample.getData().first().getDataType(), DataType.HISTOLOGY);
+        assertEquals(3, sample.getData().size());
 
-        StructuredTable<HistologyEntry> structuredTable = (StructuredTable<HistologyEntry>) sample.getData().first();
+        for (AbstractData data : sample.getData()) {
+            if (data.getDataType() == StructuredDataType.CHICKEN_DATA) {
+                StructuredTable<HistologyEntry> chickenData = (StructuredTable<HistologyEntry>) data;
+                assertEquals(1, chickenData.getStructuredData().size());
 
-        log.info("Check structured data table has correct number of entries");
-        assertEquals(structuredTable.getStructuredData().size(), 1);
+                log.info("Verifying structured data content");
+                Optional<HistologyEntry> optionalEntry = chickenData.getStructuredData().parallelStream()
+                        .filter(entry -> entry.getMarker().getValue().equalsIgnoreCase("Cortisol"))
+                        .findFirst();
+                if (optionalEntry.isEmpty()) {
+                    throw new IntegrationTestFailException("Structured data content verification failed", Phase.TWO);
+                }
 
-        log.info("Verifying structured data content");
-        Optional<HistologyEntry> optionalEntry = structuredTable.getStructuredData().parallelStream()
-                .filter(entry -> entry.getMarker().getValue().equalsIgnoreCase("Cortisol"))
-                .findFirst();
-        if (optionalEntry.isEmpty()) {
-            throw new IntegrationTestFailException("Structured data content verification failed", Phase.TWO);
+                HistologyEntry entry = optionalEntry.get();
+                assertEquals(entry.getMarker().getValue(), "Cortisol");
+                assertEquals(entry.getMeasurement().getValue(), "0.000");
+                assertEquals(entry.getMeasurementUnits().getValue(), "log pg/mg feather");
+                assertEquals(entry.getPartner().getValue(), "IRTA");
+            }
         }
-
-        HistologyEntry entry = optionalEntry.get();
-        assertEquals(entry.getMarker().getValue(), "Cortisol");
-        assertEquals(entry.getMeasurement().getValue(), "0.000");
-        assertEquals(entry.getMeasurementUnits().getValue(), "log pg/mg feather");
-        assertEquals(entry.getPartner().getValue(), "IRTA");
     }
 
     @Override
