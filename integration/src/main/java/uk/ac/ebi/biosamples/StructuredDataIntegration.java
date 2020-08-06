@@ -30,7 +30,7 @@ public class StructuredDataIntegration extends AbstractIntegration {
 
     @Override
     protected void phaseOne() {
-        String json = TestUtilities.readFileAsString("histology_sample.json");
+        String json = TestUtilities.readFileAsString("structured_data_sample.json");
         Sample sample;
         try {
             sample = mapper.readValue(json, Sample.class);
@@ -53,7 +53,7 @@ public class StructuredDataIntegration extends AbstractIntegration {
 
         Sample sample = sampleResource.get().getContent();
         log.info("Checking sample has histology data");
-        assertEquals(sample.getData().size(), 1);
+        assertEquals(sample.getData().size(), 2);
         assertEquals(sample.getData().first().getDataType(), DataType.HISTOLOGY);
 
         StructuredTable<HistologyEntry> structuredTable = (StructuredTable<HistologyEntry>) sample.getData().first();

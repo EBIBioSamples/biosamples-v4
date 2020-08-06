@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
-import java.util.Objects;
+import java.util.*;
 
 @JsonDeserialize(builder = HistologyEntry.Builder.class)
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
@@ -45,6 +45,15 @@ public class HistologyEntry extends StructuredEntry implements Comparable<Histol
 
     public StructuredCell getPartner() {
         return partner;
+    }
+
+    @Override
+    public Map<String, StructuredCell> getDataAsMap() {
+        // keys must match DataType.HISTOLOGY.getHeaders()
+        return Map.of("Marker", marker,
+                "Measurement", measurement,
+                "Measurement Units", measurementUnits,
+                "Partner", partner);
     }
 
     public int compareTo(HistologyEntry other) {

@@ -5,10 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import uk.ac.ebi.biosamples.utils.StringUtils;
 
 import java.net.URI;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class StructuredTable<T extends StructuredEntry> extends AbstractData implements Comparable<AbstractData> {
     private final URI schema;
@@ -41,6 +39,16 @@ public class StructuredTable<T extends StructuredEntry> extends AbstractData imp
     @Override
     public Set<T> getStructuredData() {
         return entries;
+    }
+
+    @Override
+    public List<String> getHeaders() {
+        return type.getHeaders();
+    }
+
+    @Override
+    public List<Map<String, StructuredCell>> getDataAsMap() {
+        return entries.stream().map(StructuredEntry::getDataAsMap).collect(Collectors.toUnmodifiableList());
     }
 
     @Override
