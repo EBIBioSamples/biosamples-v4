@@ -250,18 +250,38 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
 }
 
 // One time run for COVID-19 only
-/*@Component
+/*
+@Component
 public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
     public static final String ENA_LC = "ena";
     public static final String ENA_UC = "ENA";
     @Autowired
     BioSamplesClient bioSamplesClient;
+    @Autowired
+    EbeyeBioSamplesDataDumpGeneratorDao ebeyeBioSamplesDataDumpGeneratorDao;
 
     public List<Sample> getSamplesList() {
         Iterable<Resource<Sample>> sampleResources = bioSamplesClient.fetchSampleResourceAll("NCBITaxon_2697049");
         List<Sample> sampleList = new ArrayList<>();
 
-        sampleResources.forEach(sampleResource -> sampleList.add(sampleResource.getContent()));
+        sampleResources.forEach(sampleResource ->
+        {
+            final Sample sample = sampleResource.getContent();
+            List<Integer> statusList = ebeyeBioSamplesDataDumpGeneratorDao.doGetSampleStatus(sample.getAccession());
+
+            if(statusList != null && statusList.size() > 0) {
+                int sampleStatus = statusList.get(0);
+
+                System.out.println(sample.getAccession() + " status " + sampleStatus);
+
+                if (sampleStatus == 5 || sampleStatus == 6) {
+                    System.out.println("Sample not added " + sample.getAccession() + " status " + sampleStatus);
+                } else {
+                    sampleList.add(sample);
+                    System.out.println("Sample added " + sample.getAccession());
+                }
+            }
+        });
 
         return sampleList;
     }
