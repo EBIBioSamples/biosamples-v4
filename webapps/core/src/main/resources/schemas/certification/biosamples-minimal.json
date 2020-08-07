@@ -2,6 +2,12 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "biosamples-minimal.json",
   "additionalProperties": true,
+  "definitions": {
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
   "required": [
     "name",
     "characteristics"
@@ -17,23 +23,46 @@
     },
     "characteristics": {
       "type": "object",
+      "anyOf": [
+        {
+          "required": [
+            "organism"
+          ]
+        },
+        {
+          "required": [
+            "Organism"
+          ]
+        }
+      ],
+      "properties": {
         "organism": {
-          "$ref": "#/definitions/non-empty-string"
+          "type": "array",
+          "items": {
+            "properties": {
+              "text": {
+                "$ref": "#/definitions/nonEmptyString"
+              }
+            },
+            "required": [
+              "text"
+            ]
+          }
         },
         "Organism": {
-          "$ref": "#/definitions/non-empty-string"
-        },
-        "anyOf": [
-          { "required": ["organism"] },
-          { "required": ["Organism"] }
-        ],
-        "definitions": {
-          "non-empty-string": {
-            "type": "string",
-            "minLength": 1
+          "type": "array",
+          "items": {
+            "properties": {
+              "text": {
+                "$ref": "#/definitions/nonEmptyString"
+              }
+            },
+            "required": [
+              "text"
+            ]
           }
+        }
       }
     }
   }
 }
-
