@@ -4,7 +4,7 @@
       "name": "biosamples-minimal",
       "version": "0.0.1",
       "file": "schemas/certification/biosamples-minimal.json",
-      "block" : "true"
+      "block": "true"
     },
     {
       "name": "ncbi-candidate-schema",
