@@ -6,11 +6,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
-import uk.ac.ebi.biosamples.model.structured.DataType;
 import uk.ac.ebi.biosamples.model.structured.amr.AMREntry;
 import uk.ac.ebi.biosamples.model.structured.amr.AMRTable;
+import uk.ac.ebi.biosamples.model.structured.StructuredDataType;
 import uk.ac.ebi.biosamples.utils.TestUtilities;
 
 import java.io.IOException;
@@ -60,7 +61,7 @@ public class AmrDataIntegration extends AbstractIntegration {
         Sample amrSample = sampleResource.get().getContent();
         log.info("Checking sample has amr data");
         assertEquals(amrSample.getData().size(), 1);
-        assertEquals(amrSample.getData().first().getDataType(), DataType.AMR);
+        assertEquals(amrSample.getData().first().getDataType(), StructuredDataType.AMR);
 
         AMRTable amrTable = (AMRTable) amrSample.getData().first();
 

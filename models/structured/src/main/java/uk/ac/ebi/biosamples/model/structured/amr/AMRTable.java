@@ -1,11 +1,10 @@
 package uk.ac.ebi.biosamples.model.structured.amr;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import uk.ac.ebi.biosamples.model.structured.AbstractData;
-import uk.ac.ebi.biosamples.model.structured.DataType;
+import uk.ac.ebi.biosamples.model.structured.StructuredDataType;
+import uk.ac.ebi.biosamples.model.structured.StructuredCell;
 
 import java.net.URI;
 import java.util.*;
@@ -28,8 +27,8 @@ public class AMRTable extends AbstractData implements Comparable<AbstractData> {
     }
 
     @Override
-    public DataType getDataType() {
-        return DataType.AMR;
+    public StructuredDataType getDataType() {
+        return StructuredDataType.AMR;
     }
 
     @Override
@@ -40,6 +39,16 @@ public class AMRTable extends AbstractData implements Comparable<AbstractData> {
     @Override
     public Set<AMREntry> getStructuredData() {
         return amrEntries;
+    }
+
+    @Override
+    public List<String> getHeaders() {
+        return null;
+    }
+
+    @Override
+    public List<Map<String, StructuredCell>> getDataAsMap() {
+        return null;
     }
 
     @Override
