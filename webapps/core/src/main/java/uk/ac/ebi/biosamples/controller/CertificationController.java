@@ -51,7 +51,7 @@ public class CertificationController {
         log.debug("Received PUT for " + accession);
 
         sample = bioSamplesAapService.handleSampleDomain(sample);
-        List<Certificate> certificates = certifyService.certify(jsonMapper.writeValueAsString(sample));
+        List<Certificate> certificates = certifyService.certify(jsonMapper.writeValueAsString(sample), true);
 
         //update date is system generated field
         Instant update = Instant.now();
@@ -75,6 +75,6 @@ public class CertificationController {
     public BioSamplesCertificationComplainceResult recorderResults(@RequestBody Sample sample) throws JsonProcessingException {
         final ObjectMapper jsonMapper = new ObjectMapper();
 
-        return certifyService.recordResult(jsonMapper.writeValueAsString(sample));
+        return certifyService.recordResult(jsonMapper.writeValueAsString(sample), true);
     }
 }

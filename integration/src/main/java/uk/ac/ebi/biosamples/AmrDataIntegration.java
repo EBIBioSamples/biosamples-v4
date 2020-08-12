@@ -6,42 +6,34 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.structured.DataType;
 import uk.ac.ebi.biosamples.model.structured.amr.AMREntry;
 import uk.ac.ebi.biosamples.model.structured.amr.AMRTable;
-import uk.ac.ebi.biosamples.model.structured.DataType;
 import uk.ac.ebi.biosamples.utils.TestUtilities;
 
 import java.io.IOException;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
-import static io.restassured.RestAssured.given;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 @Component
 public class AmrDataIntegration extends AbstractIntegration {
 
     private Logger log = LoggerFactory.getLogger(this.getClass());
-    private final RestTemplate restTemplate;
-    private BioSamplesProperties clientProperties;
     private ObjectMapper mapper;
 
-    public AmrDataIntegration(BioSamplesClient client, RestTemplateBuilder restTemplateBuilder, BioSamplesProperties clientProperties) {
+    public AmrDataIntegration(BioSamplesClient client, RestTemplateBuilder restTemplateBuilder) {
         super(client);
-        this.restTemplate = restTemplateBuilder.build();
+        restTemplateBuilder.build();
         this.mapper = new ObjectMapper();
-        this.clientProperties = clientProperties;
     }
 
     @Override
     protected void phaseOne() {
         String json = TestUtilities.readFileAsString("amr_sample.json");
-        Sample amrSample = null;
+        Sample amrSample;
         try {
             amrSample = mapper.readValue(json, Sample.class);
         } catch (IOException e) {
@@ -50,8 +42,8 @@ public class AmrDataIntegration extends AbstractIntegration {
 
         Resource<Sample> submittedSample = this.client.persistSampleResource(amrSample);
         if (!amrSample.equals(submittedSample.getContent())) {
-            log.warn("expected: "+amrSample);
-            log.warn("found: "+submittedSample.getContent());
+            log.warn("expected: " + amrSample);
+            log.warn("found: " + submittedSample.getContent());
             throw new RuntimeException("Expected response to equal submission");
         }
 
@@ -61,7 +53,7 @@ public class AmrDataIntegration extends AbstractIntegration {
     protected void phaseTwo() {
 
         Optional<Resource<Sample>> sampleResource = client.fetchSampleResource("TestAMR");
-        if (!sampleResource.isPresent()) {
+        if (sampleResource.isEmpty()) {
             throw new RuntimeException("Sample TestAMR should be available at this stage");
         }
 
@@ -78,14 +70,13 @@ public class AmrDataIntegration extends AbstractIntegration {
 
         // Assert there are only 2 entries with missing testing standard
         assertEquals(amrTable.getStructuredData().parallelStream()
-                .filter(entry -> entry.getAstStandard().equalsIgnoreCase("missing"))
-                .collect(Collectors.toList()).size(), 2);
+                .filter(entry -> entry.getAstStandard().equalsIgnoreCase("missing")).count(), 2);
 
         log.info("Verifying AMREntry for ciprofloxacin is found and has certain values");
         Optional<AMREntry> optionalAmrEntry = amrTable.getStructuredData().parallelStream()
                 .filter(entry -> entry.getAntibioticName().getValue().equalsIgnoreCase("ciprofloxacin"))
                 .findFirst();
-        if (!optionalAmrEntry.isPresent()) {
+        if (optionalAmrEntry.isEmpty()) {
             throw new RuntimeException("AMRentry for antibiotic ciprofloxacin should be present but is not");
         }
 

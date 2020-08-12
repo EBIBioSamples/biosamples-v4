@@ -31,7 +31,7 @@ public class CuratorTest {
     @Test
     public void given_ChecklistMatches_run_curation_plans() throws Exception {
         List<Checklist> checklistList = new ArrayList<>();
-        checklistList = Collections.singletonList(new Checklist("ncbi", "0.0.1", "schemas/certification/ncbi-candidate-schema.json"));
+        checklistList = Collections.singletonList(new Checklist("ncbi", "0.0.1", "schemas/certification/ncbi-candidate-schema.json", false));
         InterrogationResult interrogationResult = new InterrogationResult(testSample(), checklistList);
         List<PlanResult> planResults = curator.runCurationPlans(interrogationResult);
         for (PlanResult planResult : planResults) {

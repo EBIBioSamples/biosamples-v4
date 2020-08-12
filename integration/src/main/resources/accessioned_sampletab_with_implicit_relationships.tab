@@ -6,8 +6,8 @@ Submission Release Date	2016/10/17
 Submission Update Date	2016/10/17
 
 [SCD]
-Sample Name	Sample accession	Sample Description	Derived From	Child of	Same As
-Accessioned ValidOrigin	SAMEA7231988	This is a valid sample from which other are deriving from
-Accessioned Derived From ValidOrigin	SAMEA7231987		Accessioned ValidOrigin							
-Accessioned Child of ValidOrigin	SAMEA7231986			Accessioned ValidOrigin						
-Accessioned Same as ValidOrigin	SAMEA7231985				Accessioned ValidOrigin
+Sample Name	Organism	Sample accession	Sample Description	Derived From	Child of	Same As
+Accessioned ValidOrigin	Human	SAMEA7231988	This is a valid sample from which other are deriving from
+Accessioned Derived From ValidOrigin	Human	SAMEA7231987		Accessioned ValidOrigin
+Accessioned Child of ValidOrigin	Human	SAMEA7231986			Accessioned ValidOrigin
+Accessioned Same as ValidOrigin	Human	SAMEA7231985				Accessioned ValidOrigin

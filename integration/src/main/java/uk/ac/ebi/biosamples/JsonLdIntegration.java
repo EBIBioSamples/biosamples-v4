@@ -98,6 +98,7 @@ public class JsonLdIntegration extends AbstractIntegration {
         Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
 
         SortedSet<Attribute> attributes = new TreeSet<>();
+        attributes.add(Attribute.build("organism", "Homo Sapiens"));
         attributes.add(Attribute.build("Organism Part", "Lung", "http://purl.obolibrary.org/obo/UBERON_0002048", null));
         attributes.add(Attribute.build("test_Type", "test_value"));
         attributes.add( Attribute.build("Description", "Test description"));
