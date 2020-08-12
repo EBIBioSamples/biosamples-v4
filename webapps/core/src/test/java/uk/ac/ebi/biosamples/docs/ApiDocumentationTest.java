@@ -150,7 +150,7 @@ public class ApiDocumentationTest {
         when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(wrongSample);
         when(sampleService.store(wrongSample)).thenCallRealMethod();
         when(sampleService.store(wrongSample, false)).thenCallRealMethod();
-        when(certifyService.certify(jsonMapper.writeValueAsString(wrongSample))).thenReturn(Collections.emptyList());
+        when(certifyService.certify(jsonMapper.writeValueAsString(wrongSample), true)).thenReturn(Collections.emptyList());
 
         this.mockMvc.perform(
                 post("/biosamples/samples")

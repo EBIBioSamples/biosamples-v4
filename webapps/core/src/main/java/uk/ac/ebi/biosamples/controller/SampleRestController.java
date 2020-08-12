@@ -210,7 +210,7 @@ public class SampleRestController {
                 .withSubmittedVia(submittedVia).build();
 
         if(!accession.startsWith("SAMEG"))
-            certificates = certifyService.certify(jsonMapper.writeValueAsString(sample));
+            certificates = certifyService.certify(jsonMapper.writeValueAsString(sample), false);
 
         sample = Sample.Builder.fromSample(sample).withCertificates(certificates).build();
 

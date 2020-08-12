@@ -27,21 +27,21 @@ public class Certifier {
         this.applicator = applicator;
     }
 
-    public CertificationResult certify(SampleDocument sampleDocument) {
+    public CertificationResult certify(SampleDocument sampleDocument, boolean isJustCertification) {
         if (sampleDocument == null) {
             String message = "cannot certify a null sampleDocument";
             LOG.warn(message);
             throw new IllegalArgumentException(message);
         }
 
-        return certify(sampleDocument, Collections.EMPTY_LIST);
+        return certify(sampleDocument, Collections.EMPTY_LIST, isJustCertification);
     }
 
-    private CertificationResult certify(SampleDocument sampleDocument, List<CurationResult> curationResults) {
+    private CertificationResult certify(SampleDocument sampleDocument, List<CurationResult> curationResults, boolean isJustCertification) {
         String accession = sampleDocument.getAccession();
         CertificationResult certificationResult = new CertificationResult(accession);
 
-        String message = "";
+        String message;
 
         if (accession != null && !accession.isEmpty())
             message = accession;
@@ -62,7 +62,7 @@ public class Certifier {
             } catch (ValidationException ve) {
                 EVENTS.info(String.format("%s validation failed against %s", message, checklist.getID()));
 
-                if (checklist.isBlock()) {
+                if (!isJustCertification && checklist.isBlock()) {
                     throw new SampleChecklistValidationFailureException(checklist.getName() +" " +checklist.getVersion(), ve);
                 }
             }
@@ -75,14 +75,14 @@ public class Certifier {
         return certificationResult;
     }
 
-    public CertificationResult certify(HasCuratedSample hasCuratedSample) {
+    public CertificationResult certify(HasCuratedSample hasCuratedSample, boolean isJustCertification) {
         if (hasCuratedSample == null) {
             String message = "cannot certify a null plan result";
             LOG.warn(message);
             throw new IllegalArgumentException(message);
         }
 
-        return certify(applicator.apply(hasCuratedSample), hasCuratedSample.getCurationResults());
+        return certify(applicator.apply(hasCuratedSample), hasCuratedSample.getCurationResults(), isJustCertification);
     }
 
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)

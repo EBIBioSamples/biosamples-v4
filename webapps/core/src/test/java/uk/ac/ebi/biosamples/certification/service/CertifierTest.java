@@ -32,12 +32,12 @@ public class CertifierTest {
         SampleDocument sampleDocument = new SampleDocument("test-uuid", data);
         Plan plan = new Plan("ncbi-0.0.1", "biosamples-0.0.1", Collections.EMPTY_LIST);
         PlanResult planResult = new PlanResult(sampleDocument, plan);
-        CertificationResult certificationResult = certifier.certify(planResult);
+        CertificationResult certificationResult = certifier.certify(planResult, true);
         assertNotNull(certificationResult);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void given_null_planResult_throw_exception() throws IOException {
-        certifier.certify((SampleDocument) null);
+        certifier.certify((SampleDocument) null, true);
     }
 }
