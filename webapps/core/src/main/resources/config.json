@@ -1,7 +1,13 @@
 {
   "checklists": [
     {
-      "name": "ncbi",
+      "name": "biosamples-minimal",
+      "version": "0.0.1",
+      "file": "schemas/certification/biosamples-minimal.json",
+      "block": "true"
+    },
+    {
+      "name": "ncbi-candidate-schema",
       "version": "0.0.1",
       "file": "schemas/certification/ncbi-candidate-schema.json"
     }

@@ -153,13 +153,19 @@ public class RestFacetIntegration extends AbstractIntegration {
 		Instant update = Instant.parse("2015-03-22T08:30:23.00Z");
 		Instant release = Instant.parse("2015-03-22T08:30:23.00Z");
 
+		SortedSet<Attribute> attributes = new TreeSet<>();
+		attributes.add(
+				Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
+		//use non alphanumeric characters in type
+		attributes.add(Attribute.build("geographic location (country and/or sea)", "Land of Oz"));
+
 		SortedSet<ExternalReference> externalReferences = new TreeSet<>();
 		externalReferences.add(ExternalReference.build("https://www.ebi.ac.uk/ena/ERA123123",
 				new TreeSet<>(Arrays.asList("DUO:0000005", "DUO:0000001","DUO:0000007"))));
 		externalReferences.add(ExternalReference.build("http://www.ebi.ac.uk/arrayexpress/experiments/E-MTAB-09123"));
 
 		return new Sample.Builder(name).withDomain(defaultIntegrationSubmissionDomain)
-				.withRelease(release).withUpdate(update)
+				.withRelease(release).withUpdate(update).withAttributes(attributes)
 				.withExternalReferences(externalReferences)
 				.build();
 	}
@@ -169,11 +175,17 @@ public class RestFacetIntegration extends AbstractIntegration {
 		Instant update = Instant.parse("2015-03-22T08:30:23.00Z");
 		Instant release = Instant.parse("2015-03-22T08:30:23.00Z");
 
+		SortedSet<Attribute> attributes = new TreeSet<>();
+		attributes.add(
+				Attribute.build("organism", "Homo sapiens", "http://purl.obolibrary.org/obo/NCBITaxon_9606", null));
+		//use non alphanumeric characters in type
+		attributes.add(Attribute.build("geographic location (country and/or sea)", "Land of Oz"));
+
 		SortedSet<ExternalReference> externalReferences = new TreeSet<>();
 		externalReferences.add(ExternalReference.build("http://www.ebi.ac.uk/arrayexpress/experiments/E-MTAB-5277"));
 
 		return new Sample.Builder(name).withDomain(defaultIntegrationSubmissionDomain)
-				.withRelease(release).withUpdate(update)
+				.withRelease(release).withUpdate(update).withAttributes(attributes)
 				.withExternalReferences(externalReferences)
 				.build();
 

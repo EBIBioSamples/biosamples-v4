@@ -288,6 +288,7 @@ public class RestFilterIntegration extends AbstractIntegration {
         attributes.add(Attribute.build("TestAttribute", "FilterMe"));
         attributes.add(Attribute.build("description", "Sequencing of barley BACs, that constitute the MTP of chromosome 7H. Sequencing was carried out by BGI China.8439"));
         attributes.add(Attribute.build("Submission title", "Regular Expression * risky (I know what I'm saying) [0-9]+?"));
+        attributes.add(Attribute.build("Organism", "Human"));
 
         return new Sample.Builder(name).withDomain(defaultIntegrationSubmissionDomain)
                 .withRelease(release).withUpdate(update)
@@ -303,6 +304,8 @@ public class RestFilterIntegration extends AbstractIntegration {
         SortedSet<Attribute> attributes = new TreeSet<>();
         attributes.add(
                 Attribute.build("testAttribute", "filterMe", "http://www.ebi.ac.uk/efo/EFO_0001071", null));
+        attributes.add(
+                Attribute.build("Organism", "Human"));
 
         return new Sample.Builder(name).withDomain(defaultIntegrationSubmissionDomain)
                 .withRelease(release).withUpdate(update)
@@ -317,6 +320,7 @@ public class RestFilterIntegration extends AbstractIntegration {
 
         return new Sample.Builder(name).withDomain(defaultIntegrationSubmissionDomain)
                 .withRelease(release).withUpdate(update)
+                .withAttributes(Collections.singleton(Attribute.build("Organism", "Human")))
                 .build();
     }
 

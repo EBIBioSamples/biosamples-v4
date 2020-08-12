@@ -8,11 +8,13 @@ public class Checklist {
     private String version;
     @JsonProperty(value = "file")
     private String fileName;
+    private boolean block;
 
-    public Checklist(String name, String version, String fileName) {
+    public Checklist(String name, String version, String fileName, boolean block) {
         this.name = name;
         this.version = version;
         this.fileName = fileName;
+        this.block = block;
     }
 
     private Checklist() {
@@ -47,6 +49,14 @@ public class Checklist {
 
     public void setFileName(String fileName) {
         this.fileName = fileName;
+    }
+
+    public boolean isBlock() {
+        return block;
+    }
+
+    public void setBlock(boolean block) {
+        this.block = block;
     }
 
     @Override
