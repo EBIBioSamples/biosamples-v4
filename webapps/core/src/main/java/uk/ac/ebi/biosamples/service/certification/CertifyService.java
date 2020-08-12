@@ -26,10 +26,10 @@ public class CertifyService {
         this.recorder = recorder;
     }
 
-    public List<Certificate> certify(String data) {
+    public List<Certificate> certify(String data, boolean isJustCertification) {
         Set<CertificationResult> certificationResults = new LinkedHashSet<>();
         SampleDocument rawSampleDocument = identifier.identify(data);
-        certificationResults.add(certifier.certify(rawSampleDocument));
+        certificationResults.add(certifier.certify(rawSampleDocument, isJustCertification));
         List<Certificate> certificates = new ArrayList<>();
 
         certificationResults.forEach(certificationResult -> {
@@ -44,15 +44,15 @@ public class CertifyService {
         return certificates;
     }
 
-    public BioSamplesCertificationComplainceResult recordResult(String data) {
+    public BioSamplesCertificationComplainceResult recordResult(String data, boolean isJustCertification) {
         Set<CertificationResult> certificationResults = new LinkedHashSet<>();
         SampleDocument rawSampleDocument = identifier.identify(data);
-        certificationResults.add(certifier.certify(rawSampleDocument));
+        certificationResults.add(certifier.certify(rawSampleDocument, isJustCertification));
         List<PlanResult> planResults = curator.runCurationPlans(interrogator.interrogate(rawSampleDocument));
 
         for (PlanResult planResult : planResults) {
             if (planResult.curationsMade()) {
-                certificationResults.add(certifier.certify(planResult));
+                certificationResults.add(certifier.certify(planResult, isJustCertification));
             }
         }
 

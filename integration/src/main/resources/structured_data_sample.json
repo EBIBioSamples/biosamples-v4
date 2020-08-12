@@ -9,7 +9,11 @@
       {
         "text": "This is an AMR sample containing an AMR table"
       }
-    ]
+    ],
+    "organism" : [ {
+      "text" : "Homo sapiens",
+      "ontologyTerms" : [ "http://purl.obolibrary.org/obo/NCBITaxon_9606" ]
+    } ]
   },
   "data": [
     {

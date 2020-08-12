@@ -343,7 +343,7 @@ public class SamplesRestController {
                 .withUpdate(Instant.now())
                 .withSubmittedVia(submittedVia).build();
 
-        List<Certificate> certificates = certifyService.certify(jsonMapper.writeValueAsString(sample));
+        List<Certificate> certificates = certifyService.certify(jsonMapper.writeValueAsString(sample), false);
 
         sample = Sample.Builder.fromSample(sample).withCertificates(certificates).build();
 

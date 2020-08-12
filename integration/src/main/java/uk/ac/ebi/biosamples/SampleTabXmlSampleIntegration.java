@@ -122,7 +122,7 @@ public class SampleTabXmlSampleIntegration extends AbstractIntegration {
 		});
 
 		//test ENA getting accession for null body with local name
-		URI uriPostFoosiz =  UriComponentsBuilder.fromUri(uri).pathSegment("foosiz").build().toUri();
+		/*URI uriPostFoosiz =  UriComponentsBuilder.fromUri(uri).pathSegment("foosiz").build().toUri();
 		log.info("POSTing to " + putUriNcbi);
 		RequestEntity<Void> request = RequestEntity.post(uriPostFoosiz)
 				//.contentType(MediaType.APPLICATION_XML)
@@ -134,7 +134,7 @@ public class SampleTabXmlSampleIntegration extends AbstractIntegration {
 		} catch (HttpStatusCodeException e) {
 			log.info("error response = "+response);
 			throw e;
-		}
+		}*/
 
 	}
 

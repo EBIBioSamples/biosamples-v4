@@ -18,6 +18,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.util.StreamUtils;
+import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.structured.amr.AMREntry;
 import uk.ac.ebi.biosamples.model.structured.amr.AMRTable;
@@ -28,6 +29,7 @@ import uk.ac.ebi.biosamples.service.SchemaValidatorService;
 
 import java.nio.charset.Charset;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.Optional;
 
 import static org.hamcrest.Matchers.*;
@@ -164,10 +166,12 @@ public class AMRTest {
                 .withAstStandard(jsonAmr.get("ast_standard").asText())
                 .build();
 
+        Attribute organismAttribute = Attribute.build("organism", "Homo Sapiens");
 
         Sample testSample = new Sample.Builder(jsonSample.at("/name").asText()).withDomain(jsonSample.at("/domain").asText())
                 .withUpdate(jsonSample.at("/update").asText()).withRelease(jsonSample.at("/release").asText())
                 .addData(new AMRTable.Builder(jsonSample.at("/data/0/schema").asText(), "self.test").addEntry(amrEntry).build())
+                .withAttributes(Collections.singletonList(organismAttribute))
                 .build();
 
 
@@ -202,12 +206,13 @@ public class AMRTest {
                 .withAstStandard(jsonAmr.get("ast_standard").asText())
                 .build();
 
+        Attribute organismAttribute = Attribute.build("organism", "Homo Sapiens");
 
         Sample testSample = new Sample.Builder(jsonSample.at("/name").asText()).withDomain(jsonSample.at("/domain").asText())
                 .withUpdate(jsonSample.at("/update").asText()).withRelease(jsonSample.at("/release").asText())
                 .addData(new AMRTable.Builder(jsonSample.at("/data/0/schema").asText(), "self.test").addEntry(amrEntry).build())
+                .withAttributes(Collections.singletonList(organismAttribute))
                 .build();
-
 
         when(schemaValidatorService.validate(any(), any())).thenReturn(ResponseEntity.ok("[]"));
         when(bioSamplesAapService.isWriteSuperUser()).thenReturn(false);

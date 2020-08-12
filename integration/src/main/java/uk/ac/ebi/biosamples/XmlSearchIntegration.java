@@ -26,8 +26,6 @@ import java.util.*;
 @Component
 public class XmlSearchIntegration extends AbstractIntegration {
 
-    private final RestTemplate restTemplate;
-    private final IntegrationProperties integrationProperties;
     private final XmlSearchTester xmlSearchTester;
 
     Logger log = LoggerFactory.getLogger(getClass());
@@ -36,9 +34,8 @@ public class XmlSearchIntegration extends AbstractIntegration {
                                 RestTemplateBuilder restTemplateBuilder,
                                 IntegrationProperties integrationProperties) {
         super(client);
-        this.restTemplate = restTemplateBuilder.build();
-        this.integrationProperties = integrationProperties;
-        this.xmlSearchTester = new XmlSearchTester(log, client, this.restTemplate, this.integrationProperties);
+        RestTemplate restTemplate = restTemplateBuilder.build();
+        this.xmlSearchTester = new XmlSearchTester(log, client, restTemplate, integrationProperties);
 
     }
 
@@ -99,7 +96,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
 
     }
 
-    private class XmlSearchTester {
+    private static class XmlSearchTester {
 
         private final IntegrationProperties integrationProperties;
         private final Logger log;
@@ -127,10 +124,10 @@ public class XmlSearchIntegration extends AbstractIntegration {
                     TestSampleGenerator.getSampleReleasedExaclyTheDayAfterSAMD0912312()
             );
 
-            for (Sample sample: baseSampleList) {
+            for (Sample sample : baseSampleList) {
                 Optional<Resource<Sample>> optional = client.fetchSampleResource(sample.getAccession());
                 if (optional.isPresent()) {
-                    throw new RuntimeException("Found existing "+sample.getAccession());
+                    throw new RuntimeException("Found existing " + sample.getAccession());
                 }
 
                 Resource<Sample> resource = client.persistSampleResource(sample);
@@ -143,7 +140,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
             Sample sampleWithinGroup = TestSampleGenerator.getSampleWithinGroup();
             Optional<Resource<Sample>> optional = client.fetchSampleResource(sampleWithinGroup.getAccession());
             if (optional.isPresent()) {
-                throw new RuntimeException("Found existing "+sampleWithinGroup.getAccession());
+                throw new RuntimeException("Found existing " + sampleWithinGroup.getAccession());
             }
 
             Resource<Sample> sampleWithinGroupResource = client.persistSampleResource(sampleWithinGroup);
@@ -156,7 +153,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
             log.info(String.format("Persisting %s", sampleWithContactInformations.getAccession()));
             optional = client.fetchSampleResource(sampleWithContactInformations.getAccession());
             if (optional.isPresent()) {
-                throw new RuntimeException("Found existing "+sampleWithContactInformations.getAccession());
+                throw new RuntimeException("Found existing " + sampleWithContactInformations.getAccession());
             }
 
             Resource<Sample> sampleWithContactResource = client.persistSampleResource(sampleWithContactInformations, false, true);
@@ -170,7 +167,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
             log.info(String.format("Persisting %s", groupWithMsiData.getAccession()));
             optional = client.fetchSampleResource(groupWithMsiData.getAccession());
             if (optional.isPresent()) {
-                throw new RuntimeException("Found existing "+groupWithMsiData.getAccession());
+                throw new RuntimeException("Found existing " + groupWithMsiData.getAccession());
             }
 
             Resource<Sample> groupWithMsiDetailsResource = client.persistSampleResource(groupWithMsiData, false, true);
@@ -189,8 +186,8 @@ public class XmlSearchIntegration extends AbstractIntegration {
             log.info("Check existence of sample " + test1.getAccession());
 
             Optional<Resource<Sample>> optional = client.fetchSampleResource(test1.getAccession());
-            if (!optional.isPresent()) {
-                throw new RuntimeException("Expected sample not found "+test1.getAccession());
+            if (optional.isEmpty()) {
+                throw new RuntimeException("Expected sample not found " + test1.getAccession());
             }
 
             log.info("Sample " + test1.getAccession() + " found correctly");
@@ -212,12 +209,12 @@ public class XmlSearchIntegration extends AbstractIntegration {
             ResponseEntity<String> responseEntity = restTemplate.exchange(request, String.class);
 
 
-            if (!responseEntity.getBody().contains(String.format("id=\"%s\"",test1.getAccession()))) {
+            if (!responseEntity.getBody().contains(String.format("id=\"%s\"", test1.getAccession()))) {
                 throw new RuntimeException("Response body doesn't match expected sample");
             }
 
             if (!responseEntity.getHeaders().containsKey("Access-Control-Allow-Origin")
-            		|| !responseEntity.getHeaders().getAccessControlAllowOrigin().equals("foo.com")) {
+                    || !responseEntity.getHeaders().getAccessControlAllowOrigin().equals("foo.com")) {
                 throw new RuntimeException("Response doens't support CORS");
             }
 
@@ -248,7 +245,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
                                     privateSample.getAccession()));
                 }
             } catch (HttpClientErrorException e) {
-                log.info("e.getStatusCode() = "+e.getStatusCode());
+                log.info("e.getStatusCode() = " + e.getStatusCode());
                 if (e.getStatusCode().equals(HttpStatus.OK)) {
                     throw new RuntimeException(String.format("Sample %s should be not available through the legaxy xml api", privateSample.getAccession()));
                 }
@@ -314,7 +311,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
             log.info("Try to generate a NOT ACCEPTABLE error using legacy xml samples end-point with application/json accept header");
             UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosamplesLegacyXMLUri());
 
-            UriComponentsBuilder testBadRequest= uriBuilder.cloneBuilder();
+            UriComponentsBuilder testBadRequest = uriBuilder.cloneBuilder();
             testBadRequest.pathSegment("samples");
 
             // Accept application/json header
@@ -327,12 +324,12 @@ public class XmlSearchIntegration extends AbstractIntegration {
                         HttpMethod.GET,
                         new HttpEntity<>(jsonHeaders),
                         Sample.class);
-            } catch(HttpClientErrorException ex) {
+            } catch (HttpClientErrorException ex) {
                 boolean expectedResponse = ex.getStatusCode().is4xxClientError();
                 if (!expectedResponse) {
                     throw new RuntimeException("Excepted response doesn't match 4xx client error", ex);
                 }
-                expectedResponse = expectedResponse && ex.getRawStatusCode() == 406;
+                expectedResponse = ex.getRawStatusCode() == 406;
                 if (!expectedResponse) {
                     throw new RuntimeException("Excepted response doesn't match 406 NOT ACCEPTABLE", ex);
                 }
@@ -343,52 +340,17 @@ public class XmlSearchIntegration extends AbstractIntegration {
             }
         }
 
-        public void failsToQueryLegacyEndpointWithoutRequiredQueryParameter() {
-            log.info("Try to generate a BAD REQUEST using legacy xml samples end-point without required parameter");
-            UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosamplesLegacyXMLUri());
-
-            UriComponentsBuilder testBadRequest= uriBuilder.cloneBuilder();
-            testBadRequest.pathSegment("samples");
-
-            // Accept text/xml header
-            HttpHeaders xmlHeaders = new HttpHeaders();
-            xmlHeaders.setAccept(Collections.singletonList(MediaType.TEXT_XML));
-
-            try {
-                restTemplate.exchange(testBadRequest.toUriString(),
-                        HttpMethod.GET,
-                        new HttpEntity<>(xmlHeaders),
-                        Sample.class);
-            } catch(HttpClientErrorException ex) {
-                boolean expectedResponse = ex.getStatusCode().is4xxClientError();
-
-                if (!expectedResponse) {
-                    throw new RuntimeException("Excepted response doesn't match 4xx client error", ex);
-                }
-                expectedResponse = expectedResponse && ex.getRawStatusCode() == 400;
-                if (!expectedResponse) {
-                    throw new RuntimeException("Excepted response doesn't match 400 BAD REQUEST", ex);
-                }
-                expectedResponse = expectedResponse && ex.getResponseHeaders().getContentType().includes(MediaType.TEXT_XML);
-                if (!expectedResponse) {
-                    throw new RuntimeException("Excepted response content-type doesn't match text/xml", ex);
-                }
-
-            }
-
-        }
-
         public void searchesForSamplesUsingQueryParametersOnLegacyEndpoint() {
             log.info("Search for samples in legacy xml using query parameter");
             UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosamplesLegacyXMLUri());
 
-            UriComponentsBuilder testBadRequest= uriBuilder.cloneBuilder();
+            UriComponentsBuilder testBadRequest = uriBuilder.cloneBuilder();
             testBadRequest.pathSegment("samples");
 
             // Accept text/xml header
             HttpHeaders xmlHeaders = new HttpHeaders();
             xmlHeaders.setAccept(Collections.singletonList(MediaType.TEXT_XML));
-            UriComponentsBuilder testProperRequest= uriBuilder.cloneBuilder();
+            UriComponentsBuilder testProperRequest = uriBuilder.cloneBuilder();
             testProperRequest.pathSegment("samples");
             testProperRequest.queryParam("query", "test");
 
@@ -414,7 +376,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
             xmlHeaders.setAccept(Collections.singletonList(MediaType.TEXT_XML));
 
             UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosamplesLegacyXMLUri());
-            UriComponentsBuilder testGroupsEndpoint= uriBuilder.cloneBuilder();
+            UriComponentsBuilder testGroupsEndpoint = uriBuilder.cloneBuilder();
             testGroupsEndpoint.pathSegment("groupsamples", sampleGroup.getAccession());
             testGroupsEndpoint.queryParam("query", "*");
 
@@ -442,7 +404,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
             xmlHeaders.setAccept(Collections.singletonList(MediaType.TEXT_XML));
 
             UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosamplesLegacyXMLUri());
-            UriComponentsBuilder legacyXmlSampleSearchEndpoint= uriBuilder.cloneBuilder();
+            UriComponentsBuilder legacyXmlSampleSearchEndpoint = uriBuilder.cloneBuilder();
             legacyXmlSampleSearchEndpoint.pathSegment("samples")
                     .queryParam("query", "releasedate:[1980-08-01 TO 1980-08-03]");
 
@@ -459,20 +421,20 @@ public class XmlSearchIntegration extends AbstractIntegration {
             Optional<BioSample> xmlSample = resultQuery.getBioSample().stream()
                     .filter(bioSample -> bioSample.getId().equals(testSample.getAccession()))
                     .findFirst();
-            if (!xmlSample.isPresent()) {
+            if (xmlSample.isEmpty()) {
                 throw new RuntimeException("The legacy XML result query doesn't contain the expected sample");
             }
         }
 
         public void findSamplesUsingNCBIQueryStyle() {
             log.info("Search legacy XML using NCBI style query");
-            Sample testSample = TestSampleGenerator.getSampleWithSpecificUpdateDate();
+            TestSampleGenerator.getSampleWithSpecificUpdateDate();
 
             HttpHeaders xmlHeaders = new HttpHeaders();
             xmlHeaders.setAccept(Collections.singletonList(MediaType.TEXT_XML));
 
             UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosamplesLegacyXMLUri());
-            UriComponentsBuilder legacyXmlSampleSearchEndpoint= uriBuilder.cloneBuilder();
+            UriComponentsBuilder legacyXmlSampleSearchEndpoint = uriBuilder.cloneBuilder();
             legacyXmlSampleSearchEndpoint.pathSegment("samples")
                     .queryParam("query", "SAME* AND releasedate:[1980-08-01 TO 2018-08-03]");
 
@@ -509,11 +471,11 @@ public class XmlSearchIntegration extends AbstractIntegration {
             ResponseEntity<String> responseEntity = restTemplate.exchange(request, String.class);
 
 
-            if (!responseEntity.getBody().contains(String.format("id=\"%s\"",testSample.getAccession()))) {
+            if (!responseEntity.getBody().contains(String.format("id=\"%s\"", testSample.getAccession()))) {
                 throw new RuntimeException("Response body doesn't match expected sample");
             }
 
-            assert(!responseEntity.getBody().contains("<Person>"));
+            assert (!responseEntity.getBody().contains("<Person>"));
             log.info(String.format("Sample %s does not contains Person element in legacy XML api as expected",
                     testSample.getAccession()));
         }
@@ -533,18 +495,18 @@ public class XmlSearchIntegration extends AbstractIntegration {
             ResponseEntity<String> responseEntity = restTemplate.exchange(request, String.class);
 
 
-            if (!responseEntity.getBody().contains(String.format("id=\"%s\"",testSample.getAccession()))) {
+            if (!responseEntity.getBody().contains(String.format("id=\"%s\"", testSample.getAccession()))) {
                 throw new RuntimeException("Response body doesn't match expected sample");
             }
 
-            assert(responseEntity.getBody().contains("<Person>"));
-            assert(responseEntity.getBody().contains("<FirstName>"));
-            assert(responseEntity.getBody().contains("<LastName>"));
-            assert(responseEntity.getBody().contains("<Organization>"));
-            assert(responseEntity.getBody().contains("<Address>"));
-            assert(responseEntity.getBody().contains("<Publication>"));
-            assert(responseEntity.getBody().contains("<DOI>"));
-            assert(responseEntity.getBody().contains("<PubMedID>"));
+            assert (responseEntity.getBody().contains("<Person>"));
+            assert (responseEntity.getBody().contains("<FirstName>"));
+            assert (responseEntity.getBody().contains("<LastName>"));
+            assert (responseEntity.getBody().contains("<Organization>"));
+            assert (responseEntity.getBody().contains("<Address>"));
+            assert (responseEntity.getBody().contains("<Publication>"));
+            assert (responseEntity.getBody().contains("<DOI>"));
+            assert (responseEntity.getBody().contains("<PubMedID>"));
 //            log.info(String.format("Sample %s does not contains Person element in legacy XML api as expected",
 //                    testSample.getAccession()));
         }
@@ -563,7 +525,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
                     .build();
 
             ResponseEntity<ResultQuery> responseEntity = restTemplate.exchange(request, ResultQuery.class);
-            assert(responseEntity.getStatusCode().is2xxSuccessful());
+            assert (responseEntity.getStatusCode().is2xxSuccessful());
             ResultQuery results = responseEntity.getBody();
             Optional<BioSample> notExpectedBiosamples = results.getBioSample().stream().filter(bioSample -> !bioSample.getId().startsWith("SAMEA")).findAny();
             if (notExpectedBiosamples.isPresent()) {
@@ -581,7 +543,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
             xmlHeaders.setAccept(Collections.singletonList(MediaType.TEXT_XML));
 
             UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUri(integrationProperties.getBiosamplesLegacyXMLUri());
-            UriComponentsBuilder legacyXmlSampleSearchEndpoint= uriBuilder.cloneBuilder();
+            UriComponentsBuilder legacyXmlSampleSearchEndpoint = uriBuilder.cloneBuilder();
             legacyXmlSampleSearchEndpoint.pathSegment("samples")
                     .queryParam("query", "releasedate:[2016-08-02 TO 2016-08-02]")
                     .queryParam("pagesize", 100);
@@ -600,7 +562,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
             Optional<BioSample> expectedSample = result.getBioSample().stream()
                     .filter(sample -> sample.getId().equals(testSample.getAccession()))
                     .findFirst();
-            if (!expectedSample.isPresent()) {
+            if (expectedSample.isEmpty()) {
                 throw new RuntimeException("Sample " + testSample.getAccession() + " not found when searching within a single specific date");
             }
 
@@ -615,10 +577,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
     }
 
 
-
     private static class TestSampleGenerator {
-
-        private final static String submissionDomain = "self.BiosampleIntegrationTest";
 
         public static Sample getRegularSample() {
             String name = "Test XML Sample";
@@ -667,6 +626,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
 //            return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, attributes, new TreeSet<>(), new TreeSet<>(), null, null, null);
 
             return new Sample.Builder(name, accession).withDomain(domain).withRelease(release).withUpdate(update)
+                    .withAttributes(Collections.singleton(Attribute.build("Organism", "Human")))
                     .build();
 
         }
@@ -683,6 +643,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
 
 //            return Sample.build(name, accession, "self.BiosampleIntegrationTest", release, update, new TreeSet<>(), relationships, new TreeSet<>(), null, null, null);
             return new Sample.Builder(name, accession).withDomain(domain).withRelease(release).withUpdate(update)
+                    .withAttributes(Collections.singleton(Attribute.build("Organism", "Human")))
                     .withRelationships(relationships)
                     .build();
 
@@ -699,6 +660,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
 //                    null, null, null, null,
 //                    null);
             return new Sample.Builder(name, accession).withDomain(domain).withRelease(release).withUpdate(update)
+                    .withAttributes(Collections.singleton(Attribute.build("Organism", "Human")))
                     .build();
 
 
@@ -719,6 +681,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
 //                    null, null, null,
 //                    null, contacts, null);
             return new Sample.Builder(name, accession).withDomain(domain).withRelease(release).withUpdate(update)
+                    .withAttributes(Collections.singleton(Attribute.build("Organism", "Human")))
                     .withContacts(contacts)
                     .build();
 
@@ -736,7 +699,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
 
             SortedSet<Organization> organizations = new TreeSet<>();
             organizations.add(new Organization.Builder().name("testOrg").role("submitter")
-            .email("test@org.com").address("rue de german").url("www.google.com").build());
+                    .email("test@org.com").address("rue de german").url("www.google.com").build());
 
             SortedSet<Publication> publications = new TreeSet<>();
             publications.add(new Publication.Builder().doi("123123").pubmed_id("someID").build());
@@ -745,6 +708,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
 //                    null, null, null,
 //                    organizations, contacts, publications);
             return new Sample.Builder(name, accession).withDomain(domain).withRelease(release).withUpdate(update)
+                    .withAttributes(Collections.singleton(Attribute.build("Organism", "Human")))
                     .withOrganizations(organizations).withContacts(contacts).withPublications(publications)
                     .build();
         }
@@ -760,6 +724,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
 //                    null, null, null,
 //                    null, null, null);
             return new Sample.Builder(name, accession).withDomain(domain).withRelease(release).withUpdate(update)
+                    .withAttributes(Collections.singleton(Attribute.build("Organism", "Human")))
                     .build();
 
         }
@@ -774,6 +739,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
             SortedSet<Attribute> attributes = new TreeSet<>();
             attributes.add(new Attribute.Builder("description",
                     "Sample released exactly at midnight of the day after another sample was released").build());
+            attributes.add(Attribute.build("Organism", "Human"));
 
 //            return Sample.build(name, accession, submissionDomain, release, update,
 //                    attributes, null, null,
@@ -820,7 +786,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
 
             Element root = xml.getRootElement();
             if (!XmlPathBuilder.of(root).element().getName().equals("BioSample")
-            		&& !XmlPathBuilder.of(root).element().getName().equals("BioSampleGroup")) {
+                    && !XmlPathBuilder.of(root).element().getName().equals("BioSampleGroup")) {
                 return false;
             }
 

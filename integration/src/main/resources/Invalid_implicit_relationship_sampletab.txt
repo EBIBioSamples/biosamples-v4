@@ -5,6 +5,6 @@ Submission Release Date	2016/10/17
 Submission Update Date	2016/10/17
 
 [SCD]
-Sample Name	Sample description	DerivedFrom
-SampleA	This is the only sample usable for the implicit relationship	
-InvalidRelationSample	This sample has not a valid relationship	SomeOtherSample
+Sample Name	Organism	Sample description	DerivedFrom
+SampleA	Human	This is the only sample usable for the implicit relationship
+InvalidRelationSample	Human	This sample has not a valid relationship	SomeOtherSample

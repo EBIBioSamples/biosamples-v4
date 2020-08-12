@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "biosamples-organism-mandatory-schema.json",
+  "$id": "biosamples-minimal.json",
   "additionalProperties": true,
   "required": [
     "name",
