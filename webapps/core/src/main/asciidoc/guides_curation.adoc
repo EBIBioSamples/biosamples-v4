@@ -14,7 +14,7 @@ The curation records are stored separately along with the original data. BioSamp
 
 Missing values, e.g. "N/A", "none", are removed during submission. See
 details
-https://wwwdev.ebi.ac.uk/biosamples/docs/guides/recommendations[here].
+https://www.ebi.ac.uk/biosamples/docs/guides/recommendations[here].
 
 For example, Field `disease state` contains `N/A` in the original data.
 
