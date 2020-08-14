@@ -1,5 +1,25 @@
+/*
+* Copyright 2019 EMBL - European Bioinformatics Institute
+* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+* file except in compliance with the License. You may obtain a copy of the License at
+* http://www.apache.org/licenses/LICENSE-2.0
+* Unless required by applicable law or agreed to in writing, software distributed under the
+* License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+* CONDITIONS OF ANY KIND, either express or implied. See the License for the
+* specific language governing permissions and limitations under the License.
+*/
 package uk.ac.ebi.biosamples.legacyxml;
 
+import java.io.BufferedInputStream;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.zip.GZIPInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
@@ -15,191 +35,197 @@ import uk.ac.ebi.biosamples.utils.JsonFragmenter;
 import uk.ac.ebi.biosamples.utils.JsonFragmenter.JsonCallback;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
 
-import java.io.BufferedInputStream;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.zip.GZIPInputStream;
-
 @Component
 public class ImportJsonRunner implements ApplicationRunner {
 
-	private final Logger log = LoggerFactory.getLogger(getClass());
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
-	private final BioSamplesClient client;
-	private final JsonFragmenter jsonFragmenter;
-	private final JSONSampleToSampleConverter jsonSampleToSampleConverter;
+  private final BioSamplesClient client;
+  private final JsonFragmenter jsonFragmenter;
+  private final JSONSampleToSampleConverter jsonSampleToSampleConverter;
 
-	private static final String DOMAIN="self.BioSamplesMigration";
+  private static final String DOMAIN = "self.BioSamplesMigration";
 
-	public ImportJsonRunner(BioSamplesClient client, JsonFragmenter jsonFragmenter,
-                            JSONSampleToSampleConverter jsonSampleToSampleConverter) {
-		this.client = client;
-		this.jsonFragmenter = jsonFragmenter;
-		this.jsonSampleToSampleConverter = jsonSampleToSampleConverter;
-	}
-	
-	@Override
-	public void run(ApplicationArguments args) throws Exception {
-		
-		if (!"import-json".equals(args.getNonOptionArgs().get(0))) {
-			return;
-		}
-		
-		Path inputJsonPath = Paths.get(args.getNonOptionArgs().get(1));
+  public ImportJsonRunner(
+      BioSamplesClient client,
+      JsonFragmenter jsonFragmenter,
+      JSONSampleToSampleConverter jsonSampleToSampleConverter) {
+    this.client = client;
+    this.jsonFragmenter = jsonFragmenter;
+    this.jsonSampleToSampleConverter = jsonSampleToSampleConverter;
+  }
 
-		try (InputStream is = new GZIPInputStream(new BufferedInputStream(Files.newInputStream(inputJsonPath)))) {
+  @Override
+  public void run(ApplicationArguments args) throws Exception {
 
-			Map<String, Future<Void>> futures = new LinkedHashMap<>();
-			ExecutorService executorService = null;
-			try  {
-				executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, 1, 8);
-				JsonCallback callback = new ImportJsonCallback(futures, 
-						client, jsonSampleToSampleConverter, executorService);
+    if (!"import-json".equals(args.getNonOptionArgs().get(0))) {
+      return;
+    }
 
-				// this does the actual processing
-				jsonFragmenter.handleStream(is, "UTF-8", callback);
+    Path inputJsonPath = Paths.get(args.getNonOptionArgs().get(1));
 
-				log.info("waiting for futures");
+    try (InputStream is =
+        new GZIPInputStream(new BufferedInputStream(Files.newInputStream(inputJsonPath)))) {
 
-				// wait for anything to finish
-				ThreadUtils.checkFutures(futures, 0);
-			} finally {
-				if (executorService != null) {
-					executorService.shutdownNow();
-				}
-			}
+      Map<String, Future<Void>> futures = new LinkedHashMap<>();
+      ExecutorService executorService = null;
+      try {
+        executorService = AdaptiveThreadPoolExecutor.create(100, 10000, true, 1, 8);
+        JsonCallback callback =
+            new ImportJsonCallback(futures, client, jsonSampleToSampleConverter, executorService);
 
-		}
-	}
-	
-	
-	public static class ImportJsonCallback implements JsonCallback {
+        // this does the actual processing
+        jsonFragmenter.handleStream(is, "UTF-8", callback);
 
-		Logger log = LoggerFactory.getLogger(getClass());
+        log.info("waiting for futures");
 
+        // wait for anything to finish
+        ThreadUtils.checkFutures(futures, 0);
+      } finally {
+        if (executorService != null) {
+          executorService.shutdownNow();
+        }
+      }
+    }
+  }
 
-		private final Map<String, Future<Void>> futures;
-		private final BioSamplesClient client;
-		private final JSONSampleToSampleConverter jsonSampleToSampleConverter;
-		private final ExecutorService executorService;
+  public static class ImportJsonCallback implements JsonCallback {
 
-		public ImportJsonCallback(Map<String, Future<Void>> futures, BioSamplesClient client, 
-				JSONSampleToSampleConverter jsonSampleToSampleConverter, ExecutorService executorService) {
-			this.futures = futures;
-			this.client = client;
-			this.jsonSampleToSampleConverter = jsonSampleToSampleConverter;
-			this.executorService = executorService;
-		}
-		
-		@Override
-		public void handleJson(String json) throws Exception {	
+    Logger log = LoggerFactory.getLogger(getClass());
 
-			
-			futures.put(json, executorService.submit(new JsonCallable(client, jsonSampleToSampleConverter, json)));
-			//make sure we don't have too many futures
-			ThreadUtils.checkFutures(futures, 100);
-		}
+    private final Map<String, Future<Void>> futures;
+    private final BioSamplesClient client;
+    private final JSONSampleToSampleConverter jsonSampleToSampleConverter;
+    private final ExecutorService executorService;
 
-	}
-	
-	private static class JsonCallable implements Callable<Void> {
-		private final BioSamplesClient client;
-		private final JSONSampleToSampleConverter jsonSampleToSampleConverter;
-		private final String json;
+    public ImportJsonCallback(
+        Map<String, Future<Void>> futures,
+        BioSamplesClient client,
+        JSONSampleToSampleConverter jsonSampleToSampleConverter,
+        ExecutorService executorService) {
+      this.futures = futures;
+      this.client = client;
+      this.jsonSampleToSampleConverter = jsonSampleToSampleConverter;
+      this.executorService = executorService;
+    }
 
-		public JsonCallable(BioSamplesClient client, 
-				JSONSampleToSampleConverter jsonSampleToSampleConverter, 
-				String json) {
-			this.client = client;
-			this.jsonSampleToSampleConverter = jsonSampleToSampleConverter;
-			this.json = json;
-		}
-		
-		@Override
-		public Void call() throws Exception {
-			Sample sample = jsonSampleToSampleConverter.convert(json);
-			
-			if (sample.getRelationships().size() == 0 &&
-					sample.getOrganizations().size() == 0 &&
-					sample.getContacts().size() == 0 &&
-					sample.getPublications().size() == 0) {
-				//nothing in the json we want to keep, skip
-				return null;
-			}
+    @Override
+    public void handleJson(String json) throws Exception {
 
-			Optional<Resource<Sample>> optionalSampleResource = client.fetchSampleResource(sample.getAccession());
-			if (optionalSampleResource.isPresent()) {
+      futures.put(
+          json,
+          executorService.submit(new JsonCallable(client, jsonSampleToSampleConverter, json)));
+      // make sure we don't have too many futures
+      ThreadUtils.checkFutures(futures, 100);
+    }
+  }
 
-			    Sample xmlSample = optionalSampleResource.get().getContent();
-//			    SortedSet<Attribute> attributes = mergeAttributes(xmlSample.getAttributes(), sample.getAttributes());
-//			    SortedSet<ExternalReference> externalReferences = merge(xmlSample.getExternalReferences(), sample.getExternalReferences());
+  private static class JsonCallable implements Callable<Void> {
+    private final BioSamplesClient client;
+    private final JSONSampleToSampleConverter jsonSampleToSampleConverter;
+    private final String json;
 
-				// The relationship we consider here are samples part of a group
-				SortedSet<Relationship> relationships = merge(xmlSample.getRelationships(), sample.getRelationships());
-			    SortedSet<Organization> organizations = merge(xmlSample.getOrganizations(), sample.getOrganizations());
-				SortedSet<Contact> contacts = merge(xmlSample.getContacts(), sample.getContacts());
-				SortedSet<Publication> publications = merge(xmlSample.getPublications(), sample.getPublications());
+    public JsonCallable(
+        BioSamplesClient client,
+        JSONSampleToSampleConverter jsonSampleToSampleConverter,
+        String json) {
+      this.client = client;
+      this.jsonSampleToSampleConverter = jsonSampleToSampleConverter;
+      this.json = json;
+    }
 
+    @Override
+    public Void call() throws Exception {
+      Sample sample = jsonSampleToSampleConverter.convert(json);
 
-//			    sample = Sample.build(xmlSample.getName(), xmlSample.getAccession(), DOMAIN,
-//						xmlSample.getRelease(), xmlSample.getUpdate(),
-//						xmlSample.getAttributes(), relationships, xmlSample.getExternalReferences(),
-//						organizations, contacts, publications);
-                sample = Sample.Builder.fromSample(xmlSample).withDomain(DOMAIN)
-						.withRelationships(relationships)
-						.withOrganizations(organizations).withContacts(contacts).withPublications(publications)
-						.build();
+      if (sample.getRelationships().size() == 0
+          && sample.getOrganizations().size() == 0
+          && sample.getContacts().size() == 0
+          && sample.getPublications().size() == 0) {
+        // nothing in the json we want to keep, skip
+        return null;
+      }
 
+      Optional<Resource<Sample>> optionalSampleResource =
+          client.fetchSampleResource(sample.getAccession());
+      if (optionalSampleResource.isPresent()) {
 
+        Sample xmlSample = optionalSampleResource.get().getContent();
+        //			    SortedSet<Attribute> attributes =
+        // mergeAttributes(xmlSample.getAttributes(),
+        // sample.getAttributes());
+        //			    SortedSet<ExternalReference> externalReferences =
+        // merge(xmlSample.getExternalReferences(), sample.getExternalReferences());
 
+        // The relationship we consider here are samples part of a group
+        SortedSet<Relationship> relationships =
+            merge(xmlSample.getRelationships(), sample.getRelationships());
+        SortedSet<Organization> organizations =
+            merge(xmlSample.getOrganizations(), sample.getOrganizations());
+        SortedSet<Contact> contacts = merge(xmlSample.getContacts(), sample.getContacts());
+        SortedSet<Publication> publications =
+            merge(xmlSample.getPublications(), sample.getPublications());
 
+        //			    sample = Sample.build(xmlSample.getName(), xmlSample.getAccession(),
+        // DOMAIN,
+        //						xmlSample.getRelease(), xmlSample.getUpdate(),
+        //						xmlSample.getAttributes(), relationships, xmlSample.getExternalReferences(),
+        //						organizations, contacts, publications);
+        sample =
+            Sample.Builder.fromSample(xmlSample)
+                .withDomain(DOMAIN)
+                .withRelationships(relationships)
+                .withOrganizations(organizations)
+                .withContacts(contacts)
+                .withPublications(publications)
+                .build();
 
-			} else {
-                    //need to specify domain
-//                 sample = Sample.build(sample.getName(), sample.getAccession(), DOMAIN,
-//                            sample.getRelease(), sample.getUpdate(),
-//                            new TreeSet<>(), sample.getRelationships(), new TreeSet<>(),
-//                            sample.getOrganizations(), sample.getContacts(), sample.getPublications());
-//                sample = new Sample.Builder(sample.getName(), sample.getAccession()).withDomain(DOMAIN)
-//						.withRelease(sample.getRelease()).withUpdate(sample.getUpdate())
-//						.withRelationships(sample.getRelationships())
-//						.withOrganizations(sample.getOrganizations()).withContacts(sample.getContacts())
-//						.withPublications(sample.getPublications()).build();
-                sample = Sample.Builder.fromSample(sample).withDomain(DOMAIN)
-						.withNoAttributes().withNoExternalReferences().build();
-			}
-			
-			client.persistSampleResource(sample, false, true);
-			return null;
-		}
+      } else {
+        // need to specify domain
+        //                 sample = Sample.build(sample.getName(), sample.getAccession(),
+        // DOMAIN,
+        //                            sample.getRelease(), sample.getUpdate(),
+        //                            new TreeSet<>(), sample.getRelationships(), new
+        // TreeSet<>(),
+        //                            sample.getOrganizations(), sample.getContacts(),
+        // sample.getPublications());
+        //                sample = new Sample.Builder(sample.getName(),
+        // sample.getAccession()).withDomain(DOMAIN)
+        //						.withRelease(sample.getRelease()).withUpdate(sample.getUpdate())
+        //						.withRelationships(sample.getRelationships())
+        //
+        //	.withOrganizations(sample.getOrganizations()).withContacts(sample.getContacts())
+        //						.withPublications(sample.getPublications()).build();
+        sample =
+            Sample.Builder.fromSample(sample)
+                .withDomain(DOMAIN)
+                .withNoAttributes()
+                .withNoExternalReferences()
+                .build();
+      }
 
-		private <T> SortedSet<T> merge(SortedSet<T> first, SortedSet<T> second) {
-			SortedSet<T> completeSet = new TreeSet<>(first);
-			completeSet.addAll(second);
-			return completeSet;
-		}
+      client.persistSampleResource(sample, false, true);
+      return null;
+    }
 
+    private <T> SortedSet<T> merge(SortedSet<T> first, SortedSet<T> second) {
+      SortedSet<T> completeSet = new TreeSet<>(first);
+      completeSet.addAll(second);
+      return completeSet;
+    }
 
-		private String camelcaser(String value) {
-			StringBuilder finalString = new StringBuilder();
-			for(String part: value.split(" ")) {
-				part = part.replaceAll("[^A-Za-z0-9]","");
-				part = StringUtils.capitalize(part.toLowerCase());
-				if (finalString.length() == 0) {
-					finalString.append(part.toLowerCase());
-					continue;
-				}
-				finalString.append(part);
-			}
-			return finalString.toString();
-		}
-		
-	}
-
+    private String camelcaser(String value) {
+      StringBuilder finalString = new StringBuilder();
+      for (String part : value.split(" ")) {
+        part = part.replaceAll("[^A-Za-z0-9]", "");
+        part = StringUtils.capitalize(part.toLowerCase());
+        if (finalString.length() == 0) {
+          finalString.append(part.toLowerCase());
+          continue;
+        }
+        finalString.append(part);
+      }
+      return finalString.toString();
+    }
+  }
 }

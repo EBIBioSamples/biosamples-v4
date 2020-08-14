@@ -1,76 +1,87 @@
+/*
+* Copyright 2019 EMBL - European Bioinformatics Institute
+* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+* file except in compliance with the License. You may obtain a copy of the License at
+* http://www.apache.org/licenses/LICENSE-2.0
+* Unless required by applicable law or agreed to in writing, software distributed under the
+* License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+* CONDITIONS OF ANY KIND, either express or implied. See the License for the
+* specific language governing permissions and limitations under the License.
+*/
 package uk.ac.ebi.biosamples.service.certification;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.certification.*;
 
-import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 @Service
 public class Curator {
-    private static Logger LOG = LoggerFactory.getLogger(Curator.class);
-    private static Logger EVENTS = LoggerFactory.getLogger("events");
-    private ConfigLoader configLoader;
-    private Map<String, Plan> plansByCandidateChecklistID = new HashMap<>();
+  private static Logger LOG = LoggerFactory.getLogger(Curator.class);
+  private static Logger EVENTS = LoggerFactory.getLogger("events");
+  private ConfigLoader configLoader;
+  private Map<String, Plan> plansByCandidateChecklistID = new HashMap<>();
 
-    public Curator(ConfigLoader configLoader) {
-        this.configLoader = configLoader;
+  public Curator(ConfigLoader configLoader) {
+    this.configLoader = configLoader;
+  }
+
+  public List<PlanResult> runCurationPlans(InterrogationResult interrogationResult) {
+    List<PlanResult> planResults = new ArrayList<>();
+    if (interrogationResult == null) {
+      String message = "cannot run curation plans on null interrogation result";
+      LOG.warn(message);
+      throw new IllegalArgumentException(message);
     }
 
-    public List<PlanResult> runCurationPlans(InterrogationResult interrogationResult) {
-        List<PlanResult> planResults = new ArrayList<>();
-        if (interrogationResult == null) {
-            String message = "cannot run curation plans on null interrogation result";
-            LOG.warn(message);
-            throw new IllegalArgumentException(message);
-        }
-
-        if (interrogationResult.getSampleDocument() == null) {
-            String message = "cannot run curation plans on null sample";
-            LOG.warn(message);
-            throw new IllegalArgumentException(message);
-        }
-
-        for (Checklist checklist : interrogationResult.getChecklists()) {
-            PlanResult planResult = runCurationPlan(checklist, interrogationResult.getSampleDocument());
-            if (planResult != null) {
-                planResults.add(planResult);
-            }
-        }
-
-        return planResults;
+    if (interrogationResult.getSampleDocument() == null) {
+      String message = "cannot run curation plans on null sample";
+      LOG.warn(message);
+      throw new IllegalArgumentException(message);
     }
 
-    private PlanResult runCurationPlan(Checklist checklist, SampleDocument sampleDocument) {
-        Plan plan = plansByCandidateChecklistID.get(checklist.getID());
-        PlanResult planResult = new PlanResult(sampleDocument, plan);
-        if (plan == null) {
-            EVENTS.info(String.format("%s plan not found for %s", sampleDocument.getAccession(), checklist.getID()));
-            return planResult;
-        }
-        if (plansByCandidateChecklistID.containsKey(checklist.getID())) {
-            for (Curation curation : plan.getCurations()) {
-                CurationResult curationResult = plan.applyCuration(sampleDocument, curation);
-                if (curationResult != null) {
-                    planResult.addCurationResult(curationResult);
-                }
-            }
-        }
-
-        EVENTS.info(String.format("%s plan %s run", sampleDocument.getAccession(), plan.getID()));
-
-        return planResult;
+    for (Checklist checklist : interrogationResult.getChecklists()) {
+      PlanResult planResult = runCurationPlan(checklist, interrogationResult.getSampleDocument());
+      if (planResult != null) {
+        planResults.add(planResult);
+      }
     }
 
-    @PostConstruct
-    public void init() {
-        for (Plan plan : configLoader.config.getPlans()) {
-            plansByCandidateChecklistID.put(plan.getCandidateChecklistID(), plan);
-        }
+    return planResults;
+  }
+
+  private PlanResult runCurationPlan(Checklist checklist, SampleDocument sampleDocument) {
+    Plan plan = plansByCandidateChecklistID.get(checklist.getID());
+    PlanResult planResult = new PlanResult(sampleDocument, plan);
+    if (plan == null) {
+      EVENTS.info(
+          String.format(
+              "%s plan not found for %s", sampleDocument.getAccession(), checklist.getID()));
+      return planResult;
     }
+    if (plansByCandidateChecklistID.containsKey(checklist.getID())) {
+      for (Curation curation : plan.getCurations()) {
+        CurationResult curationResult = plan.applyCuration(sampleDocument, curation);
+        if (curationResult != null) {
+          planResult.addCurationResult(curationResult);
+        }
+      }
+    }
+
+    EVENTS.info(String.format("%s plan %s run", sampleDocument.getAccession(), plan.getID()));
+
+    return planResult;
+  }
+
+  @PostConstruct
+  public void init() {
+    for (Plan plan : configLoader.config.getPlans()) {
+      plansByCandidateChecklistID.put(plan.getCandidateChecklistID(), plan);
+    }
+  }
 }

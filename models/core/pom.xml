@@ -41,16 +41,16 @@
 			<artifactId>spring-hateoas</artifactId>
 		</dependency>
 		<dependency>
-            <groupId>uk.ac.ebi.biosamples</groupId>
-            <artifactId>models-structured</artifactId>
-            <version>5.0.1-SNAPSHOT</version>
-        </dependency>
+			<groupId>uk.ac.ebi.biosamples</groupId>
+			<artifactId>models-structured</artifactId>
+			<version>5.0.1-SNAPSHOT</version>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-collections4</artifactId>
 			<version>4.1</version>
 		</dependency>
-    </dependencies>
+	</dependencies>
 
 	<!-- lock transitive dependency version -->
 	<dependencyManagement>

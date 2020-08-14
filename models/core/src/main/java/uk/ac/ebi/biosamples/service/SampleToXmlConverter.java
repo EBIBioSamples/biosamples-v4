@@ -1,8 +1,18 @@
+/*
+* Copyright 2019 EMBL - European Bioinformatics Institute
+* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+* file except in compliance with the License. You may obtain a copy of the License at
+* http://www.apache.org/licenses/LICENSE-2.0
+* Unless required by applicable law or agreed to in writing, software distributed under the
+* License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+* CONDITIONS OF ANY KIND, either express or implied. See the License for the
+* specific language governing permissions and limitations under the License.
+*/
 package uk.ac.ebi.biosamples.service;
 
+import com.google.common.base.Strings;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
@@ -12,9 +22,6 @@ import org.dom4j.tree.BaseElement;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import com.google.common.base.Strings;
-
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Contact;
 import uk.ac.ebi.biosamples.model.ExternalReference;
@@ -29,480 +36,520 @@ import uk.ac.ebi.biosamples.model.structured.amr.AMRTable;
 @Service
 public class SampleToXmlConverter implements Converter<Sample, Document> {
 
-    private final Namespace xmlns = Namespace.get("http://www.ebi.ac.uk/biosamples/SampleGroupExport/1.0");
-    private final Namespace xsi = Namespace.get("xsi", "http://www.w3.org/2001/XMLSchema-instance");
-    private final ExternalReferenceService externalReferenceService;
+  private final Namespace xmlns =
+      Namespace.get("http://www.ebi.ac.uk/biosamples/SampleGroupExport/1.0");
+  private final Namespace xsi = Namespace.get("xsi", "http://www.w3.org/2001/XMLSchema-instance");
+  private final ExternalReferenceService externalReferenceService;
 
-    public SampleToXmlConverter(ExternalReferenceService externalReferenceService) {
-        this.externalReferenceService = externalReferenceService;
+  public SampleToXmlConverter(ExternalReferenceService externalReferenceService) {
+    this.externalReferenceService = externalReferenceService;
+  }
+
+  @Override
+  public Document convert(Sample source) {
+    if (source.getAccession().startsWith("SAMEG")) {
+      // its a group
+      return sampleToBioSampleGroupXml(source);
+    } else {
+      return sampleToBioSampleXml(source);
+    }
+  }
+
+  private Document sampleToBioSampleXml(Sample source) {
+    Document doc = DocumentHelper.createDocument();
+    Element bioSample = doc.addElement("BioSample");
+
+    bioSample.add(xmlns);
+    bioSample.addAttribute(
+        "xsi:schemaLocation",
+        "http://www.ebi.ac.uk/biosamples/SampleGroupExport/1.0 http://www.ebi.ac.uk/biosamples/assets/xsd/v1.0/BioSDSchema.xsd");
+    bioSample.add(xsi);
+
+    // 2012-04-15T23:00:00+00:00
+
+    // DateTimeFormatter.ofPattern("yyyy-MM-ddTHH:mm:ss");
+    bioSample.addAttribute("id", source.getAccession());
+    bioSample.addAttribute(
+        "submissionUpdateDate",
+        DateTimeFormatter.ISO_INSTANT.format(source.getUpdate()).replace("Z", "+00:00"));
+    bioSample.addAttribute(
+        "submissionReleaseDate",
+        DateTimeFormatter.ISO_INSTANT.format(source.getRelease()).replace("Z", "+00:00"));
+
+    addName(source, "Sample Name", bioSample);
+
+    // first create a temporary collections of information to allow sorting
+    SortedMap<String, SortedSet<String>> attrTypeValue = new TreeMap<>();
+    SortedMap<String, SortedMap<String, String>> attrIri = new TreeMap<>();
+    SortedMap<String, SortedMap<String, String>> attrUnit = new TreeMap<>();
+
+    /*
+    <Property class="Sample Name" characteristic="false" comment="false"
+    	type="STRING">
+    	<QualifiedValue>
+    		<Value>Test Sample</Value>
+    		<TermSourceREF>
+    			<Name />
+    			<TermSourceID>http://purl.obolibrary.org/obo/NCBITaxon_9606</TermSourceID>
+    		</TermSourceREF>
+    		<Unit>year</Unit>
+    	</QualifiedValue>
+    </Property>
+    */
+    for (Attribute attribute : source.getCharacteristics()) {
+      String attributeType = attribute.getType();
+      if ("description".equals(attributeType)) {
+        attributeType = "Sample Description";
+      }
+      if (!attrTypeValue.containsKey(attributeType)) {
+        attrTypeValue.put(attributeType, new TreeSet<>());
+        attrIri.put(attributeType, new TreeMap<>());
+        attrUnit.put(attributeType, new TreeMap<>());
+      }
+      attrTypeValue.get(attributeType).add(attribute.getValue());
+
+      if (attribute.getIri() != null && attribute.getIri().size() > 0) {
+        attrIri.get(attributeType).put(attribute.getValue(), attribute.getIri().first().toString());
+      }
+
+      if (attribute.getUnit() != null && attribute.getUnit().trim().length() > 0) {
+        attrUnit.get(attributeType).put(attribute.getValue(), attribute.getUnit());
+      }
+    }
+    // relationships other than derived from
+    for (Relationship relationship : source.getRelationships()) {
+      if (!"derived from".equals(relationship.getType().toLowerCase())
+          && source.getAccession().equals(relationship.getSource())) {
+
+        if (!attrTypeValue.containsKey(relationship.getType())) {
+          attrTypeValue.put(relationship.getType(), new TreeSet<>());
+          attrIri.put(relationship.getType(), new TreeMap<>());
+          attrUnit.put(relationship.getType(), new TreeMap<>());
+        }
+        attrTypeValue.get(relationship.getType()).add(relationship.getTarget());
+      }
     }
 
-    @Override
-    public Document convert(Sample source) {
-        if (source.getAccession().startsWith("SAMEG")) {
-            //its a group
-            return sampleToBioSampleGroupXml(source);
-        } else {
-            return sampleToBioSampleXml(source);
+    for (String attributeType : attrTypeValue.keySet()) {
+      Element property = bioSample.addElement(QName.get("Property", xmlns));
+      // Element e = parent.addElement("Property");
+      property.addAttribute("class", attributeType);
+      property.addAttribute("characteristic", "false");
+      property.addAttribute("comment", "false");
+      property.addAttribute("type", "STRING");
+
+      for (String attributeValue : attrTypeValue.get(attributeType)) {
+        Element qualifiedValue = property.addElement("QualifiedValue");
+        Element value = qualifiedValue.addElement("Value");
+        value.addText(attributeValue);
+
+        if (attrIri.get(attributeType).containsKey(attributeValue)) {
+          Element termSourceRef = qualifiedValue.addElement("TermSourceREF");
+          termSourceRef.addElement("Name");
+          Element termSourceId = termSourceRef.addElement("TermSourceID");
+          termSourceId.setText(attrIri.get(attributeType).get(attributeValue));
         }
+
+        if (attrUnit.get(attributeType).containsKey(attributeValue)) {
+          Element unitE = qualifiedValue.addElement("Unit");
+          unitE.setText(attrUnit.get(attributeType).get(attributeValue));
+        }
+      }
     }
 
-    private Document sampleToBioSampleXml(Sample source) {
-        Document doc = DocumentHelper.createDocument();
-        Element bioSample = doc.addElement("BioSample");
-
-        bioSample.add(xmlns);
-        bioSample.addAttribute("xsi:schemaLocation", "http://www.ebi.ac.uk/biosamples/SampleGroupExport/1.0 http://www.ebi.ac.uk/biosamples/assets/xsd/v1.0/BioSDSchema.xsd");
-        bioSample.add(xsi);
-
-        // 2012-04-15T23:00:00+00:00
-
-        //DateTimeFormatter.ofPattern("yyyy-MM-ddTHH:mm:ss");
-        bioSample.addAttribute("id", source.getAccession());
-        bioSample.addAttribute("submissionUpdateDate", DateTimeFormatter.ISO_INSTANT.format(source.getUpdate()).replace("Z", "+00:00"));
-        bioSample.addAttribute("submissionReleaseDate", DateTimeFormatter.ISO_INSTANT.format(source.getRelease()).replace("Z", "+00:00"));
-
-        addName(source, "Sample Name", bioSample);
-
-        //first create a temporary collections of information to allow sorting
-        SortedMap<String, SortedSet<String>> attrTypeValue = new TreeMap<>();
-        SortedMap<String, SortedMap<String, String>> attrIri = new TreeMap<>();
-        SortedMap<String, SortedMap<String, String>> attrUnit = new TreeMap<>();
-
-        /*
-	<Property class="Sample Name" characteristic="false" comment="false"
-		type="STRING">
-		<QualifiedValue>
-			<Value>Test Sample</Value>
-			<TermSourceREF>
-				<Name />
-				<TermSourceID>http://purl.obolibrary.org/obo/NCBITaxon_9606</TermSourceID>
-			</TermSourceREF>
-			<Unit>year</Unit>
-		</QualifiedValue>
-	</Property>
- */
-        for (Attribute attribute : source.getCharacteristics()) {
-            String attributeType = attribute.getType();
-            if ("description".equals(attributeType)) {
-                attributeType = "Sample Description";
-            }
-            if (!attrTypeValue.containsKey(attributeType)) {
-                attrTypeValue.put(attributeType, new TreeSet<>());
-                attrIri.put(attributeType, new TreeMap<>());
-                attrUnit.put(attributeType, new TreeMap<>());
-            }
-            attrTypeValue.get(attributeType).add(attribute.getValue());
-
-            if (attribute.getIri() != null && attribute.getIri().size() > 0) {
-                attrIri.get(attributeType).put(attribute.getValue(), attribute.getIri().first().toString());
-            }
-
-            if (attribute.getUnit() != null && attribute.getUnit().trim().length() > 0) {
-                attrUnit.get(attributeType).put(attribute.getValue(), attribute.getUnit());
-            }
-        }
-        //relationships other than derived from
-        for (Relationship relationship : source.getRelationships()) {
-            if (!"derived from".equals(relationship.getType().toLowerCase())
-                    && source.getAccession().equals(relationship.getSource())) {
-
-                if (!attrTypeValue.containsKey(relationship.getType())) {
-                    attrTypeValue.put(relationship.getType(), new TreeSet<>());
-                    attrIri.put(relationship.getType(), new TreeMap<>());
-                    attrUnit.put(relationship.getType(), new TreeMap<>());
-                }
-                attrTypeValue.get(relationship.getType()).add(relationship.getTarget());
-            }
-        }
-
-        for (String attributeType : attrTypeValue.keySet()) {
-            Element property = bioSample.addElement(QName.get("Property", xmlns));
-            //Element e = parent.addElement("Property");
-            property.addAttribute("class", attributeType);
-            property.addAttribute("characteristic", "false");
-            property.addAttribute("comment", "false");
-            property.addAttribute("type", "STRING");
-
-            for (String attributeValue : attrTypeValue.get(attributeType)) {
-                Element qualifiedValue = property.addElement("QualifiedValue");
-                Element value = qualifiedValue.addElement("Value");
-                value.addText(attributeValue);
-
-                if (attrIri.get(attributeType).containsKey(attributeValue)) {
-                    Element termSourceRef = qualifiedValue.addElement("TermSourceREF");
-                    termSourceRef.addElement("Name");
-                    Element termSourceId = termSourceRef.addElement("TermSourceID");
-                    termSourceId.setText(attrIri.get(attributeType).get(attributeValue));
-                }
-
-                if (attrUnit.get(attributeType).containsKey(attributeValue)) {
-                    Element unitE = qualifiedValue.addElement("Unit");
-                    unitE.setText(attrUnit.get(attributeType).get(attributeValue));
-                }
-            }
-        }
-
-        //derivedFrom element
-        for (Relationship relationship : source.getRelationships()) {
-            if ("derived from".equals(relationship.getType().toLowerCase())
-                    && source.getAccession().equals(relationship.getSource())) {
-                Element derived = bioSample.addElement(QName.get("derivedFrom", xmlns));
-                derived.setText(relationship.getTarget());
-            }
-        }
-
-        /*
-			  <Database>
-			    <Name>ENA</Name>
-			    <URI>http://www.ebi.ac.uk/ena/data/view/ERS1463623</URI>
-			    <ID>ERS1463623</ID>
-			  </Database>
-		 	*/
-        for (ExternalReference externalReference : source.getExternalReferences()) {
-            Element database = bioSample.addElement(QName.get("Database", xmlns));
-            Element databaseName = database.addElement(QName.get("Name", xmlns));
-            databaseName.setText(externalReferenceService.getNickname(externalReference));
-            Element databaseUri = database.addElement(QName.get("URI", xmlns));
-            databaseUri.setText(externalReference.getUrl());
-            //use the last segment of the URI as the ID
-            //not perfect, but good enough?
-            List<String> pathSegments = UriComponentsBuilder.fromUriString(externalReference.getUrl()).build().getPathSegments();
-
-            if (pathSegments.size() > 0) {
-                Element databaseId = database.addElement(QName.get("ID", xmlns));
-                databaseId.setText(pathSegments.get(pathSegments.size() - 1));
-            }
-        }
-
-        for (AbstractData data : source.getData()) {
-            if (data.getDataType().name().equals("AMR")) {
-                AMRTable amrTable = (AMRTable) data;
-
-                Element amrParent = bioSample.addElement(QName.get("Table", xmlns)).addAttribute("name", "Antibiogram");
-
-                Element amrHeader = amrParent.addElement(QName.get("Header", xmlns));
-
-                Element amrCellAntibiotic = amrHeader.addElement(QName.get("Cell", xmlns));
-                amrCellAntibiotic.setText("Antibiotic");
-
-                Element amrCellResistancePhenotype = amrHeader.addElement(QName.get("Cell", xmlns));
-                amrCellResistancePhenotype.setText("Resistance Phenotype");
-
-                Element amrCellMeasurementSign = amrHeader.addElement(QName.get("Cell", xmlns));
-                amrCellMeasurementSign.setText("Measurement Sign");
-
-                Element amrCellMeasurement = amrHeader.addElement(QName.get("Cell", xmlns));
-                amrCellMeasurement.setText("Measurement Value");
-
-                Element measurementUnits = amrHeader.addElement(QName.get("Cell", xmlns));
-                measurementUnits.setText("Measurement Units");
-
-                Element amrCellVendor = amrHeader.addElement(QName.get("Cell", xmlns));
-                amrCellVendor.setText("Vendor");
-
-                Element amrCellLaboratoryTypingMethod = amrHeader.addElement(QName.get("Cell", xmlns));
-                amrCellLaboratoryTypingMethod.setText("Laboratory Typing Method");
-
-                Element amrCellPlatform = amrHeader.addElement(QName.get("Cell", xmlns));
-                amrCellPlatform.setText("Platform");
-
-                Element amrCellLaboratoryTypingMethodVersionOrReagent = amrHeader.addElement(QName.get("Cell", xmlns));
-                amrCellLaboratoryTypingMethodVersionOrReagent.setText("Laboratory Typing Method Version Or Reagent");
-
-                Element amrCellAstStandard = amrHeader.addElement(QName.get("Cell", xmlns));
-                amrCellAstStandard.setText("AST Standard");
-
-                Element amrCellDstMedia = amrHeader.addElement(QName.get("Cell", xmlns));
-                amrCellDstMedia.setText("DST Media");
-
-                Element amrCellDstMethod = amrHeader.addElement(QName.get("Cell", xmlns));
-                amrCellDstMethod.setText("DST Method");
-
-                Element amrCellCriticalConcentration = amrHeader.addElement(QName.get("Cell", xmlns));
-                amrCellCriticalConcentration.setText("Critical Concentration");
-
-                Element amrCellSpecies = amrHeader.addElement(QName.get("Cell", xmlns));
-                amrCellSpecies.setText("Species");
-
-                Element amrCellBreakpointVersion = amrHeader.addElement(QName.get("Cell", xmlns));
-                amrCellBreakpointVersion.setText("Breakpoint Version");
-
-                //amrHeader.setContent(Arrays.asList(amrCellAntibiotic, amrCellResistancePhenotype));
-
-                Element amrBody = amrParent.addElement(QName.get("Body", xmlns));
-
-                Set<AMREntry> amrEntries = amrTable.getStructuredData();
-
-                amrEntries.forEach(amrEntry -> {
-                    Element amrDataRow = amrBody.addElement(QName.get("Row", xmlns));
-
-                    Element amrDataCell1 = amrDataRow.addElement(QName.get("Cell", xmlns));
-                    amrDataCell1.setText(amrEntry.getAntibioticName().getValue() != null ? amrEntry.getAntibioticName().getValue() : "");
-
-                    Element amrDataCell2 = amrDataRow.addElement(QName.get("Cell", xmlns));
-                    amrDataCell2.setText(amrEntry.getResistancePhenotype() != null ? amrEntry.getResistancePhenotype() : "");
-
-                    Element amrDataCell3 = amrDataRow.addElement(QName.get("Cell", xmlns));
-                    amrDataCell3.setText(amrEntry.getMeasurementSign() != null ? amrEntry.getMeasurementSign() : "");
-
-                    Element amrDataCell4 = amrDataRow.addElement(QName.get("Cell", xmlns));
-                    amrDataCell4.setText(amrEntry.getMeasurement() != null ? amrEntry.getMeasurement() : "");
-
-                    Element amrDataCell5 = amrDataRow.addElement(QName.get("Cell", xmlns));
-                    amrDataCell5.setText(amrEntry.getMeasurementUnits() != null ? amrEntry.getMeasurementUnits() : "");
-
-                    Element amrDataCell6 = amrDataRow.addElement(QName.get("Cell", xmlns));
-                    amrDataCell6.setText(amrEntry.getVendor() != null ? amrEntry.getVendor() : "");
-
-                    Element amrDataCell7 = amrDataRow.addElement(QName.get("Cell", xmlns));
-                    amrDataCell7.setText(amrEntry.getLaboratoryTypingMethod() != null ? amrEntry.getLaboratoryTypingMethod() : "");
-
-                    Element amrDataCell8 = amrDataRow.addElement(QName.get("Cell", xmlns));
-                    amrDataCell8.setText(amrEntry.getPlatform() != null ? amrEntry.getPlatform() : "");
-
-                    Element amrDataCell9 = amrDataRow.addElement(QName.get("Cell", xmlns));
-                    amrDataCell9.setText(amrEntry.getLaboratoryTypingMethodVersionOrReagent() != null ? amrEntry.getLaboratoryTypingMethodVersionOrReagent() : "");
-
-                    Element amrDataCell10 = amrDataRow.addElement(QName.get("Cell", xmlns));
-                    amrDataCell10.setText(amrEntry.getAstStandard() != null ? amrEntry.getAstStandard() : "");
-
-                    Element amrDataCell11 = amrDataRow.addElement(QName.get("Cell", xmlns));
-                    amrDataCell11.setText(amrEntry.getDstMedia() != null ? amrEntry.getDstMedia() : "");
-
-                    Element amrDataCell12 = amrDataRow.addElement(QName.get("Cell", xmlns));
-                    amrDataCell12.setText(amrEntry.getDstMethod() != null ? amrEntry.getDstMethod() : "");
-
-                    Element amrDataCell13 = amrDataRow.addElement(QName.get("Cell", xmlns));
-                    amrDataCell13.setText(amrEntry.getCriticalConcentration() != null ? amrEntry.getCriticalConcentration() : "");
-
-                    Element amrDataCell14 = amrDataRow.addElement(QName.get("Cell", xmlns));
-                    amrDataCell14.setText(amrEntry.getSpecies().getValue() != null ? amrEntry.getSpecies().getValue() : "");
-
-                    Element amrDataCell15 = amrDataRow.addElement(QName.get("Cell", xmlns));
-                    amrDataCell15.setText(amrEntry.getBreakpointVersion() != null ? amrEntry.getBreakpointVersion() : "");
-
-                    //amrDataRow.setContent(Arrays.asList(amrDataCell1, amrDataCell2));
-
-                    //amrBody.setContent(Arrays.asList(amrDataRow));
-                });
-            }
-        }
-
-        return doc;
+    // derivedFrom element
+    for (Relationship relationship : source.getRelationships()) {
+      if ("derived from".equals(relationship.getType().toLowerCase())
+          && source.getAccession().equals(relationship.getSource())) {
+        Element derived = bioSample.addElement(QName.get("derivedFrom", xmlns));
+        derived.setText(relationship.getTarget());
+      }
     }
 
-    private void addName(Sample source, String fieldname, Element bioSample) {
-        Element e = bioSample.addElement(QName.get("Property", xmlns));
-        e.addAttribute("class", fieldname);
-        e.addAttribute("characteristic", "false");
-        e.addAttribute("comment", "false");
-        e.addAttribute("type", "STRING");
-        Element qv = e.addElement("QualifiedValue");
-        Element v = qv.addElement("Value");
-        v.addText(source.getName());
+    /*
+     <Database>
+       <Name>ENA</Name>
+       <URI>http://www.ebi.ac.uk/ena/data/view/ERS1463623</URI>
+       <ID>ERS1463623</ID>
+     </Database>
+    */
+    for (ExternalReference externalReference : source.getExternalReferences()) {
+      Element database = bioSample.addElement(QName.get("Database", xmlns));
+      Element databaseName = database.addElement(QName.get("Name", xmlns));
+      databaseName.setText(externalReferenceService.getNickname(externalReference));
+      Element databaseUri = database.addElement(QName.get("URI", xmlns));
+      databaseUri.setText(externalReference.getUrl());
+      // use the last segment of the URI as the ID
+      // not perfect, but good enough?
+      List<String> pathSegments =
+          UriComponentsBuilder.fromUriString(externalReference.getUrl()).build().getPathSegments();
+
+      if (pathSegments.size() > 0) {
+        Element databaseId = database.addElement(QName.get("ID", xmlns));
+        databaseId.setText(pathSegments.get(pathSegments.size() - 1));
+      }
     }
 
-    private Document sampleToBioSampleGroupXml(Sample source) {
-        Document doc = DocumentHelper.createDocument();
-        Element bioSample = doc.addElement("BioSampleGroup");
+    for (AbstractData data : source.getData()) {
+      if (data.getDataType().name().equals("AMR")) {
+        AMRTable amrTable = (AMRTable) data;
 
-        bioSample.add(xmlns);
-        bioSample.addAttribute("xsi:schemaLocation", "http://www.ebi.ac.uk/biosamples/SampleGroupExport/1.0 http://www.ebi.ac.uk/biosamples/assets/xsd/v1.0/BioSDSchema.xsd");
-        bioSample.add(xsi);
+        Element amrParent =
+            bioSample.addElement(QName.get("Table", xmlns)).addAttribute("name", "Antibiogram");
 
-        // 2012-04-15T23:00:00+00:00
+        Element amrHeader = amrParent.addElement(QName.get("Header", xmlns));
 
-        //DateTimeFormatter.ofPattern("yyyy-MM-ddTHH:mm:ss");
+        Element amrCellAntibiotic = amrHeader.addElement(QName.get("Cell", xmlns));
+        amrCellAntibiotic.setText("Antibiotic");
 
-        bioSample.addAttribute("id", source.getAccession());
-        addName(source, "Group Name", bioSample);
+        Element amrCellResistancePhenotype = amrHeader.addElement(QName.get("Cell", xmlns));
+        amrCellResistancePhenotype.setText("Resistance Phenotype");
 
-        //first create a temporary collections of information to allow sorting
-        SortedMap<String, SortedSet<String>> attrTypeValue = new TreeMap<>();
-        SortedMap<String, SortedMap<String, String>> attrIri = new TreeMap<>();
-        SortedMap<String, SortedMap<String, String>> attrUnit = new TreeMap<>();
+        Element amrCellMeasurementSign = amrHeader.addElement(QName.get("Cell", xmlns));
+        amrCellMeasurementSign.setText("Measurement Sign");
 
-        //release and update date
-        attrTypeValue.put("Submission Release Date", new TreeSet<>());
-        attrIri.put("Submission Release Date", new TreeMap<>());
-        attrUnit.put("Submission Release Date", new TreeMap<>());
-        attrTypeValue.get("Submission Release Date").add(DateTimeFormatter.ISO_INSTANT.format(source.getRelease()).replace("Z", "+00:00"));
+        Element amrCellMeasurement = amrHeader.addElement(QName.get("Cell", xmlns));
+        amrCellMeasurement.setText("Measurement Value");
 
-        attrTypeValue.put("Submission Update Date", new TreeSet<>());
-        attrIri.put("Submission Update Date", new TreeMap<>());
-        attrUnit.put("Submission Update Date", new TreeMap<>());
-        attrTypeValue.get("Submission Update Date").add(DateTimeFormatter.ISO_INSTANT.format(source.getUpdate()).replace("Z", "+00:00"));
+        Element measurementUnits = amrHeader.addElement(QName.get("Cell", xmlns));
+        measurementUnits.setText("Measurement Units");
 
-        /*
-	<Property class="Sample Name" characteristic="false" comment="false"
-		type="STRING">
-		<QualifiedValue>
-			<Value>Test Sample</Value>
-			<TermSourceREF>
-				<Name />
-				<TermSourceID>http://purl.obolibrary.org/obo/NCBITaxon_9606</TermSourceID>
-			</TermSourceREF>
-			<Unit>year</Unit>
-		</QualifiedValue>
-	</Property>
- */
-        for (Attribute attribute : source.getCharacteristics()) {
-            String attributeType = attribute.getType();
-            if ("description".equals(attributeType)) {
-                attributeType = "Sample Description";
-            }
-            if (!attrTypeValue.containsKey(attributeType)) {
-                attrTypeValue.put(attributeType, new TreeSet<>());
-                attrIri.put(attributeType, new TreeMap<>());
-                attrUnit.put(attributeType, new TreeMap<>());
-            }
-            attrTypeValue.get(attributeType).add(attribute.getValue());
+        Element amrCellVendor = amrHeader.addElement(QName.get("Cell", xmlns));
+        amrCellVendor.setText("Vendor");
 
-            if (attribute.getIri() != null && attribute.getIri().size() > 0) {
-                attrIri.get(attributeType).put(attribute.getValue(), attribute.getIri().first().toString());
-            }
+        Element amrCellLaboratoryTypingMethod = amrHeader.addElement(QName.get("Cell", xmlns));
+        amrCellLaboratoryTypingMethod.setText("Laboratory Typing Method");
 
-            if (attribute.getUnit() != null && attribute.getUnit().trim().length() > 0) {
-                attrUnit.get(attributeType).put(attribute.getValue(), attribute.getUnit());
-            }
-        }
+        Element amrCellPlatform = amrHeader.addElement(QName.get("Cell", xmlns));
+        amrCellPlatform.setText("Platform");
 
-        for (String attributeType : attrTypeValue.keySet()) {
-            Element property = bioSample.addElement(QName.get("Property", xmlns));
-            //Element e = parent.addElement("Property");
-            property.addAttribute("class", attributeType);
-            property.addAttribute("characteristic", "false");
-            property.addAttribute("comment", "false");
-            property.addAttribute("type", "STRING");
+        Element amrCellLaboratoryTypingMethodVersionOrReagent =
+            amrHeader.addElement(QName.get("Cell", xmlns));
+        amrCellLaboratoryTypingMethodVersionOrReagent.setText(
+            "Laboratory Typing Method Version Or Reagent");
 
-            for (String attributeValue : attrTypeValue.get(attributeType)) {
-                Element qualifiedValue = property.addElement("QualifiedValue");
-                Element value = qualifiedValue.addElement("Value");
-                value.addText(attributeValue);
+        Element amrCellAstStandard = amrHeader.addElement(QName.get("Cell", xmlns));
+        amrCellAstStandard.setText("AST Standard");
 
-                if (attrIri.get(attributeType).containsKey(attributeValue)) {
-                    Element termSourceRef = qualifiedValue.addElement("TermSourceREF");
-                    termSourceRef.addElement("Name");
-                    Element termSourceId = termSourceRef.addElement("TermSourceID");
-                    termSourceId.setText(attrIri.get(attributeType).get(attributeValue));
-                }
+        Element amrCellDstMedia = amrHeader.addElement(QName.get("Cell", xmlns));
+        amrCellDstMedia.setText("DST Media");
 
-                if (attrUnit.get(attributeType).containsKey(attributeValue)) {
-                    Element unitE = qualifiedValue.addElement("Unit");
-                    unitE.setText(attrUnit.get(attributeType).get(attributeValue));
-                }
-            }
-        }
+        Element amrCellDstMethod = amrHeader.addElement(QName.get("Cell", xmlns));
+        amrCellDstMethod.setText("DST Method");
 
-        for (Contact contact : source.getContacts()) {
-            Element person = new BaseElement(QName.get("Person", xmlns));
+        Element amrCellCriticalConcentration = amrHeader.addElement(QName.get("Cell", xmlns));
+        amrCellCriticalConcentration.setText("Critical Concentration");
 
-            if (!Strings.isNullOrEmpty(contact.getFirstName())) {
-                Element personFirstName = person.addElement(QName.get("FirstName", xmlns));
-                personFirstName.setText(contact.getFirstName());
-            }
+        Element amrCellSpecies = amrHeader.addElement(QName.get("Cell", xmlns));
+        amrCellSpecies.setText("Species");
 
-            if (!Strings.isNullOrEmpty(contact.getLastName())) {
-                Element personLastName = person.addElement(QName.get("LastName", xmlns));
-                personLastName.setText(contact.getLastName());
-            }
+        Element amrCellBreakpointVersion = amrHeader.addElement(QName.get("Cell", xmlns));
+        amrCellBreakpointVersion.setText("Breakpoint Version");
 
-            if (!Strings.isNullOrEmpty(contact.getMidInitials())) {
-                Element personMidInitials = person.addElement(QName.get("MidInitials", xmlns));
-                personMidInitials.setText(contact.getMidInitials());
-            }
+        // amrHeader.setContent(Arrays.asList(amrCellAntibiotic,
+        // amrCellResistancePhenotype));
 
-            if (!Strings.isNullOrEmpty(contact.getRole())) {
-                Element personRole = person.addElement(QName.get("Role", xmlns));
-                personRole.setText(contact.getRole());
-            }
+        Element amrBody = amrParent.addElement(QName.get("Body", xmlns));
 
-            if (!Strings.isNullOrEmpty(contact.getEmail())) {
-                Element personEmail = person.addElement(QName.get("Email", xmlns));
-                personEmail.setText(contact.getEmail());
-            }
+        Set<AMREntry> amrEntries = amrTable.getStructuredData();
 
-            if (person.hasContent()) {
-                bioSample.add(person);
-            }
-        }
+        amrEntries.forEach(
+            amrEntry -> {
+              Element amrDataRow = amrBody.addElement(QName.get("Row", xmlns));
 
-        for (Organization organization : source.getOrganizations()) {
-            Element organizationElement = new BaseElement(QName.get("Organization", xmlns));
+              Element amrDataCell1 = amrDataRow.addElement(QName.get("Cell", xmlns));
+              amrDataCell1.setText(
+                  amrEntry.getAntibioticName().getValue() != null
+                      ? amrEntry.getAntibioticName().getValue()
+                      : "");
 
-            if (!Strings.isNullOrEmpty(organization.getName())) {
-                Element organizationName = organizationElement.addElement(QName.get("Name", xmlns));
-                organizationName.setText(organization.getName());
-            }
+              Element amrDataCell2 = amrDataRow.addElement(QName.get("Cell", xmlns));
+              amrDataCell2.setText(
+                  amrEntry.getResistancePhenotype() != null
+                      ? amrEntry.getResistancePhenotype()
+                      : "");
 
-            if (!Strings.isNullOrEmpty(organization.getAddress())) {
-                Element organizationAddress = organizationElement.addElement(QName.get("Address", xmlns));
-                organizationAddress.setText(organization.getAddress());
+              Element amrDataCell3 = amrDataRow.addElement(QName.get("Cell", xmlns));
+              amrDataCell3.setText(
+                  amrEntry.getMeasurementSign() != null ? amrEntry.getMeasurementSign() : "");
 
-            }
+              Element amrDataCell4 = amrDataRow.addElement(QName.get("Cell", xmlns));
+              amrDataCell4.setText(
+                  amrEntry.getMeasurement() != null ? amrEntry.getMeasurement() : "");
 
-            if (!Strings.isNullOrEmpty(organization.getUrl())) {
-                Element organizationURI = organizationElement.addElement(QName.get("URI", xmlns));
-                organizationURI.setText(organization.getUrl());
-            }
+              Element amrDataCell5 = amrDataRow.addElement(QName.get("Cell", xmlns));
+              amrDataCell5.setText(
+                  amrEntry.getMeasurementUnits() != null ? amrEntry.getMeasurementUnits() : "");
 
-            if (!Strings.isNullOrEmpty(organization.getRole())) {
-                Element organizationRole = organizationElement.addElement(QName.get("Role", xmlns));
-                organizationRole.setText(organization.getRole());
-            }
+              Element amrDataCell6 = amrDataRow.addElement(QName.get("Cell", xmlns));
+              amrDataCell6.setText(amrEntry.getVendor() != null ? amrEntry.getVendor() : "");
 
-            if (!Strings.isNullOrEmpty(organization.getEmail())) {
-                Element organizationEmail = organizationElement.addElement(QName.get("E-mail", xmlns));
-                organizationEmail.setText(organization.getEmail());
-            }
+              Element amrDataCell7 = amrDataRow.addElement(QName.get("Cell", xmlns));
+              amrDataCell7.setText(
+                  amrEntry.getLaboratoryTypingMethod() != null
+                      ? amrEntry.getLaboratoryTypingMethod()
+                      : "");
 
-            if (organizationElement.hasContent()) {
-                bioSample.add(organizationElement);
-            }
-        }
+              Element amrDataCell8 = amrDataRow.addElement(QName.get("Cell", xmlns));
+              amrDataCell8.setText(amrEntry.getPlatform() != null ? amrEntry.getPlatform() : "");
 
-        for (Publication publication : source.getPublications()) {
-            Element publicationElement = new BaseElement(QName.get("Publication", xmlns));
+              Element amrDataCell9 = amrDataRow.addElement(QName.get("Cell", xmlns));
+              amrDataCell9.setText(
+                  amrEntry.getLaboratoryTypingMethodVersionOrReagent() != null
+                      ? amrEntry.getLaboratoryTypingMethodVersionOrReagent()
+                      : "");
 
-            if (!Strings.isNullOrEmpty(publication.getDoi())) {
-                Element publicationDOI = publicationElement.addElement(QName.get("DOI", xmlns));
-                publicationDOI.setText(publication.getDoi());
-            }
+              Element amrDataCell10 = amrDataRow.addElement(QName.get("Cell", xmlns));
+              amrDataCell10.setText(
+                  amrEntry.getAstStandard() != null ? amrEntry.getAstStandard() : "");
 
-            if (!Strings.isNullOrEmpty(publication.getPubMedId())) {
-                Element publicationPubMedID = publicationElement.addElement(QName.get("PubMedID", xmlns));
-                publicationPubMedID.setText(publication.getPubMedId());
-            }
+              Element amrDataCell11 = amrDataRow.addElement(QName.get("Cell", xmlns));
+              amrDataCell11.setText(amrEntry.getDstMedia() != null ? amrEntry.getDstMedia() : "");
 
-            if (publicationElement.hasContent()) {
-                bioSample.add(publicationElement);
-            }
-        }
+              Element amrDataCell12 = amrDataRow.addElement(QName.get("Cell", xmlns));
+              amrDataCell12.setText(amrEntry.getDstMethod() != null ? amrEntry.getDstMethod() : "");
 
-        for (ExternalReference externalReference : source.getExternalReferences()) {
-			/*
-			  <Database>
-			    <Name>ENA</Name>
-			    <URI>http://www.ebi.ac.uk/ena/data/view/ERS1463623</URI>
-			    <ID>ERS1463623</ID>
-			  </Database>
-		 	*/
-            Element database = bioSample.addElement(QName.get("Database", xmlns));
-            Element databaseName = database.addElement(QName.get("Name", xmlns));
-            databaseName.setText(externalReferenceService.getNickname(externalReference));
-            Element databaseUri = database.addElement(QName.get("URI", xmlns));
-            databaseUri.setText(externalReference.getUrl());
-            //use the last segment of the URI as the ID
-            //not perfect, but good enough?
-            List<String> pathSegments = UriComponentsBuilder.fromUriString(externalReference.getUrl()).build().getPathSegments();
-            if (pathSegments.size() > 0) {
-                Element databaseId = database.addElement(QName.get("ID", xmlns));
-                databaseId.setText(pathSegments.get(pathSegments.size() - 1));
-            }
-        }
-        //TODO finish
+              Element amrDataCell13 = amrDataRow.addElement(QName.get("Cell", xmlns));
+              amrDataCell13.setText(
+                  amrEntry.getCriticalConcentration() != null
+                      ? amrEntry.getCriticalConcentration()
+                      : "");
 
-        return doc;
+              Element amrDataCell14 = amrDataRow.addElement(QName.get("Cell", xmlns));
+              amrDataCell14.setText(
+                  amrEntry.getSpecies().getValue() != null ? amrEntry.getSpecies().getValue() : "");
+
+              Element amrDataCell15 = amrDataRow.addElement(QName.get("Cell", xmlns));
+              amrDataCell15.setText(
+                  amrEntry.getBreakpointVersion() != null ? amrEntry.getBreakpointVersion() : "");
+
+              // amrDataRow.setContent(Arrays.asList(amrDataCell1, amrDataCell2));
+
+              // amrBody.setContent(Arrays.asList(amrDataRow));
+            });
+      }
     }
+
+    return doc;
+  }
+
+  private void addName(Sample source, String fieldname, Element bioSample) {
+    Element e = bioSample.addElement(QName.get("Property", xmlns));
+    e.addAttribute("class", fieldname);
+    e.addAttribute("characteristic", "false");
+    e.addAttribute("comment", "false");
+    e.addAttribute("type", "STRING");
+    Element qv = e.addElement("QualifiedValue");
+    Element v = qv.addElement("Value");
+    v.addText(source.getName());
+  }
+
+  private Document sampleToBioSampleGroupXml(Sample source) {
+    Document doc = DocumentHelper.createDocument();
+    Element bioSample = doc.addElement("BioSampleGroup");
+
+    bioSample.add(xmlns);
+    bioSample.addAttribute(
+        "xsi:schemaLocation",
+        "http://www.ebi.ac.uk/biosamples/SampleGroupExport/1.0 http://www.ebi.ac.uk/biosamples/assets/xsd/v1.0/BioSDSchema.xsd");
+    bioSample.add(xsi);
+
+    // 2012-04-15T23:00:00+00:00
+
+    // DateTimeFormatter.ofPattern("yyyy-MM-ddTHH:mm:ss");
+
+    bioSample.addAttribute("id", source.getAccession());
+    addName(source, "Group Name", bioSample);
+
+    // first create a temporary collections of information to allow sorting
+    SortedMap<String, SortedSet<String>> attrTypeValue = new TreeMap<>();
+    SortedMap<String, SortedMap<String, String>> attrIri = new TreeMap<>();
+    SortedMap<String, SortedMap<String, String>> attrUnit = new TreeMap<>();
+
+    // release and update date
+    attrTypeValue.put("Submission Release Date", new TreeSet<>());
+    attrIri.put("Submission Release Date", new TreeMap<>());
+    attrUnit.put("Submission Release Date", new TreeMap<>());
+    attrTypeValue
+        .get("Submission Release Date")
+        .add(DateTimeFormatter.ISO_INSTANT.format(source.getRelease()).replace("Z", "+00:00"));
+
+    attrTypeValue.put("Submission Update Date", new TreeSet<>());
+    attrIri.put("Submission Update Date", new TreeMap<>());
+    attrUnit.put("Submission Update Date", new TreeMap<>());
+    attrTypeValue
+        .get("Submission Update Date")
+        .add(DateTimeFormatter.ISO_INSTANT.format(source.getUpdate()).replace("Z", "+00:00"));
+
+    /*
+    <Property class="Sample Name" characteristic="false" comment="false"
+    	type="STRING">
+    	<QualifiedValue>
+    		<Value>Test Sample</Value>
+    		<TermSourceREF>
+    			<Name />
+    			<TermSourceID>http://purl.obolibrary.org/obo/NCBITaxon_9606</TermSourceID>
+    		</TermSourceREF>
+    		<Unit>year</Unit>
+    	</QualifiedValue>
+    </Property>
+    */
+    for (Attribute attribute : source.getCharacteristics()) {
+      String attributeType = attribute.getType();
+      if ("description".equals(attributeType)) {
+        attributeType = "Sample Description";
+      }
+      if (!attrTypeValue.containsKey(attributeType)) {
+        attrTypeValue.put(attributeType, new TreeSet<>());
+        attrIri.put(attributeType, new TreeMap<>());
+        attrUnit.put(attributeType, new TreeMap<>());
+      }
+      attrTypeValue.get(attributeType).add(attribute.getValue());
+
+      if (attribute.getIri() != null && attribute.getIri().size() > 0) {
+        attrIri.get(attributeType).put(attribute.getValue(), attribute.getIri().first().toString());
+      }
+
+      if (attribute.getUnit() != null && attribute.getUnit().trim().length() > 0) {
+        attrUnit.get(attributeType).put(attribute.getValue(), attribute.getUnit());
+      }
+    }
+
+    for (String attributeType : attrTypeValue.keySet()) {
+      Element property = bioSample.addElement(QName.get("Property", xmlns));
+      // Element e = parent.addElement("Property");
+      property.addAttribute("class", attributeType);
+      property.addAttribute("characteristic", "false");
+      property.addAttribute("comment", "false");
+      property.addAttribute("type", "STRING");
+
+      for (String attributeValue : attrTypeValue.get(attributeType)) {
+        Element qualifiedValue = property.addElement("QualifiedValue");
+        Element value = qualifiedValue.addElement("Value");
+        value.addText(attributeValue);
+
+        if (attrIri.get(attributeType).containsKey(attributeValue)) {
+          Element termSourceRef = qualifiedValue.addElement("TermSourceREF");
+          termSourceRef.addElement("Name");
+          Element termSourceId = termSourceRef.addElement("TermSourceID");
+          termSourceId.setText(attrIri.get(attributeType).get(attributeValue));
+        }
+
+        if (attrUnit.get(attributeType).containsKey(attributeValue)) {
+          Element unitE = qualifiedValue.addElement("Unit");
+          unitE.setText(attrUnit.get(attributeType).get(attributeValue));
+        }
+      }
+    }
+
+    for (Contact contact : source.getContacts()) {
+      Element person = new BaseElement(QName.get("Person", xmlns));
+
+      if (!Strings.isNullOrEmpty(contact.getFirstName())) {
+        Element personFirstName = person.addElement(QName.get("FirstName", xmlns));
+        personFirstName.setText(contact.getFirstName());
+      }
+
+      if (!Strings.isNullOrEmpty(contact.getLastName())) {
+        Element personLastName = person.addElement(QName.get("LastName", xmlns));
+        personLastName.setText(contact.getLastName());
+      }
+
+      if (!Strings.isNullOrEmpty(contact.getMidInitials())) {
+        Element personMidInitials = person.addElement(QName.get("MidInitials", xmlns));
+        personMidInitials.setText(contact.getMidInitials());
+      }
+
+      if (!Strings.isNullOrEmpty(contact.getRole())) {
+        Element personRole = person.addElement(QName.get("Role", xmlns));
+        personRole.setText(contact.getRole());
+      }
+
+      if (!Strings.isNullOrEmpty(contact.getEmail())) {
+        Element personEmail = person.addElement(QName.get("Email", xmlns));
+        personEmail.setText(contact.getEmail());
+      }
+
+      if (person.hasContent()) {
+        bioSample.add(person);
+      }
+    }
+
+    for (Organization organization : source.getOrganizations()) {
+      Element organizationElement = new BaseElement(QName.get("Organization", xmlns));
+
+      if (!Strings.isNullOrEmpty(organization.getName())) {
+        Element organizationName = organizationElement.addElement(QName.get("Name", xmlns));
+        organizationName.setText(organization.getName());
+      }
+
+      if (!Strings.isNullOrEmpty(organization.getAddress())) {
+        Element organizationAddress = organizationElement.addElement(QName.get("Address", xmlns));
+        organizationAddress.setText(organization.getAddress());
+      }
+
+      if (!Strings.isNullOrEmpty(organization.getUrl())) {
+        Element organizationURI = organizationElement.addElement(QName.get("URI", xmlns));
+        organizationURI.setText(organization.getUrl());
+      }
+
+      if (!Strings.isNullOrEmpty(organization.getRole())) {
+        Element organizationRole = organizationElement.addElement(QName.get("Role", xmlns));
+        organizationRole.setText(organization.getRole());
+      }
+
+      if (!Strings.isNullOrEmpty(organization.getEmail())) {
+        Element organizationEmail = organizationElement.addElement(QName.get("E-mail", xmlns));
+        organizationEmail.setText(organization.getEmail());
+      }
+
+      if (organizationElement.hasContent()) {
+        bioSample.add(organizationElement);
+      }
+    }
+
+    for (Publication publication : source.getPublications()) {
+      Element publicationElement = new BaseElement(QName.get("Publication", xmlns));
+
+      if (!Strings.isNullOrEmpty(publication.getDoi())) {
+        Element publicationDOI = publicationElement.addElement(QName.get("DOI", xmlns));
+        publicationDOI.setText(publication.getDoi());
+      }
+
+      if (!Strings.isNullOrEmpty(publication.getPubMedId())) {
+        Element publicationPubMedID = publicationElement.addElement(QName.get("PubMedID", xmlns));
+        publicationPubMedID.setText(publication.getPubMedId());
+      }
+
+      if (publicationElement.hasContent()) {
+        bioSample.add(publicationElement);
+      }
+    }
+
+    for (ExternalReference externalReference : source.getExternalReferences()) {
+      /*
+       <Database>
+         <Name>ENA</Name>
+         <URI>http://www.ebi.ac.uk/ena/data/view/ERS1463623</URI>
+         <ID>ERS1463623</ID>
+       </Database>
+      */
+      Element database = bioSample.addElement(QName.get("Database", xmlns));
+      Element databaseName = database.addElement(QName.get("Name", xmlns));
+      databaseName.setText(externalReferenceService.getNickname(externalReference));
+      Element databaseUri = database.addElement(QName.get("URI", xmlns));
+      databaseUri.setText(externalReference.getUrl());
+      // use the last segment of the URI as the ID
+      // not perfect, but good enough?
+      List<String> pathSegments =
+          UriComponentsBuilder.fromUriString(externalReference.getUrl()).build().getPathSegments();
+      if (pathSegments.size() > 0) {
+        Element databaseId = database.addElement(QName.get("ID", xmlns));
+        databaseId.setText(pathSegments.get(pathSegments.size() - 1));
+      }
+    }
+    // TODO finish
+
+    return doc;
+  }
 }

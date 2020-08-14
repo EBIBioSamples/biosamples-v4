@@ -1,3 +1,13 @@
+/*
+* Copyright 2019 EMBL - European Bioinformatics Institute
+* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+* file except in compliance with the License. You may obtain a copy of the License at
+* http://www.apache.org/licenses/LICENSE-2.0
+* Unless required by applicable law or agreed to in writing, software distributed under the
+* License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+* CONDITIONS OF ANY KIND, either express or implied. See the License for the
+* specific language governing permissions and limitations under the License.
+*/
 package uk.ac.ebi.biosamples.service.legacyxml;
 
 import java.time.format.DateTimeFormatter;
@@ -6,11 +16,9 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
-
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
@@ -26,114 +34,115 @@ import uk.ac.ebi.biosamples.service.ExternalReferenceService;
 @Service
 public class SampleToBioSampleTypeConverter implements Converter<Sample, BioSampleType> {
 
-	private final ExternalReferenceService externalReferenceService;
-	
-	public SampleToBioSampleTypeConverter(ExternalReferenceService externalReferenceService) {
-		this.externalReferenceService = externalReferenceService;
-	}
-	
-	@Override
-	public BioSampleType convert(Sample source) {
-		BioSampleType bioSampleType = new BioSampleType();
-		
-		bioSampleType.setId(source.getAccession());
-		bioSampleType.setSubmissionReleaseDate(DateTimeFormatter.ISO_INSTANT.format(source.getRelease()).replace("Z", "+00:00"));
-		bioSampleType.setSubmissionUpdateDate(DateTimeFormatter.ISO_INSTANT.format(source.getUpdate()).replace("Z", "+00:00"));
+  private final ExternalReferenceService externalReferenceService;
 
-		//first make a temporary collections of information to allow sorting
-		SortedMap<String, SortedSet<String>> attrTypeValue = new TreeMap<>();
-		SortedMap<String, SortedMap<String, String>> attrIri = new TreeMap<>();
-		SortedMap<String, SortedMap<String, String>> attrUnit = new TreeMap<>();
-		
-		for (Attribute attribute : source.getCharacteristics()) {
-/*
-	<Property class="Sample Name" characteristic="false" comment="false"
-		type="STRING">
-		<QualifiedValue>
-			<Value>Test Sample</Value>
-			<TermSourceREF>
-				<Name />
-				<TermSourceID>http://purl.obolibrary.org/obo/NCBITaxon_9606</TermSourceID>
-			</TermSourceREF>
-			<Unit>year</Unit>
-		</QualifiedValue>
-	</Property>		
- */
-			if (!attrTypeValue.containsKey(attribute.getType())) {
-				attrTypeValue.put(attribute.getType(), new TreeSet<>());
-				attrIri.put(attribute.getType(), new TreeMap<>());
-				attrUnit.put(attribute.getType(), new TreeMap<>());
-			}
-			attrTypeValue.get(attribute.getType()).add(attribute.getValue());
-			
-			if (attribute.getIri().size() > 0) {
-				String iri = attribute.getIri().first();
-				attrIri.get(attribute.getType()).put(attribute.getValue(), iri);
-			}
+  public SampleToBioSampleTypeConverter(ExternalReferenceService externalReferenceService) {
+    this.externalReferenceService = externalReferenceService;
+  }
 
-			if (attribute.getUnit() != null && attribute.getUnit().trim().length() > 0) {
-				attrUnit.get(attribute.getType()).put(attribute.getValue(), attribute.getUnit());
-			}
-		}
-		for (String attributeType : attrTypeValue.keySet()) {			
-			PropertyType property = new PropertyType();
-			property.setCharacteristic(false);
-			property.setComment(false);
-			property.setClazz(attributeType);
-			for (String attributeValue : attrTypeValue.get(attributeType)) {	
-				QualifiedValueType qualifiedValue = new QualifiedValueType();
-				qualifiedValue.setValue(attributeValue);
-				
-				if (attrIri.get(attributeType).containsKey(attributeValue)) {
-					TermSourceREFType termSourceRef = new TermSourceREFType();
-					termSourceRef.setTermSourceID(attrIri.get(attributeType).get(attributeValue));
-					qualifiedValue.setTermSourceREF(termSourceRef);
-				}
-				
-				if (attrUnit.get(attributeType).containsKey(attributeValue)) {
-					qualifiedValue.setUnit(attrUnit.get(attributeType).get(attributeValue));
-				}
-				
-				property.getQualifiedValue().add(qualifiedValue);
-			}
-			bioSampleType.getProperty().add(property);
-		}
-		
-		//get all the groups this sample is in
-		GroupIdsType groupIdsType = new GroupIdsType();
-		for (Relationship relationship : source.getRelationships()) {
-			if (relationship.getTarget().equals(source.getAccession())
-					&& "has member".equals(relationship.getType().toLowerCase())) {
-				groupIdsType.getId().add(relationship.getSource());
-			}
-		}
-		bioSampleType.setGroupIds(groupIdsType);
+  @Override
+  public BioSampleType convert(Sample source) {
+    BioSampleType bioSampleType = new BioSampleType();
 
-		//get all derived from relationships
-		for (Relationship relationship : source.getRelationships()) {
-			if (relationship.getSource().equals(source.getAccession())
-					&& "derived from".equals(relationship.getType().toLowerCase())) {
-				bioSampleType.getDerivedFrom().add(relationship.getTarget());
-			}
-		}
-		
-		for (ExternalReference externalReference : source.getExternalReferences()) {			
-			DatabaseType databaseType = new DatabaseType();		
-			databaseType.setName(externalReferenceService.getNickname(externalReference));
-			databaseType.setURI(externalReference.getUrl());
-			
-			//use the last segment of the URI as the ID
-			//not perfect, but good enough?
-			List<String> pathSegments = UriComponentsBuilder.fromUriString(externalReference.getUrl()).build().getPathSegments();
-			if (pathSegments.size() > 0) {
-				databaseType.setID(pathSegments.get(pathSegments.size()-1));
-			}
-			
-			bioSampleType.getDatabase().add(databaseType);
-		}
-		
-		
-		return bioSampleType;
-	}
+    bioSampleType.setId(source.getAccession());
+    bioSampleType.setSubmissionReleaseDate(
+        DateTimeFormatter.ISO_INSTANT.format(source.getRelease()).replace("Z", "+00:00"));
+    bioSampleType.setSubmissionUpdateDate(
+        DateTimeFormatter.ISO_INSTANT.format(source.getUpdate()).replace("Z", "+00:00"));
 
+    // first make a temporary collections of information to allow sorting
+    SortedMap<String, SortedSet<String>> attrTypeValue = new TreeMap<>();
+    SortedMap<String, SortedMap<String, String>> attrIri = new TreeMap<>();
+    SortedMap<String, SortedMap<String, String>> attrUnit = new TreeMap<>();
+
+    for (Attribute attribute : source.getCharacteristics()) {
+      /*
+      <Property class="Sample Name" characteristic="false" comment="false"
+      	type="STRING">
+      	<QualifiedValue>
+      		<Value>Test Sample</Value>
+      		<TermSourceREF>
+      			<Name />
+      			<TermSourceID>http://purl.obolibrary.org/obo/NCBITaxon_9606</TermSourceID>
+      		</TermSourceREF>
+      		<Unit>year</Unit>
+      	</QualifiedValue>
+      </Property>
+      */
+      if (!attrTypeValue.containsKey(attribute.getType())) {
+        attrTypeValue.put(attribute.getType(), new TreeSet<>());
+        attrIri.put(attribute.getType(), new TreeMap<>());
+        attrUnit.put(attribute.getType(), new TreeMap<>());
+      }
+      attrTypeValue.get(attribute.getType()).add(attribute.getValue());
+
+      if (attribute.getIri().size() > 0) {
+        String iri = attribute.getIri().first();
+        attrIri.get(attribute.getType()).put(attribute.getValue(), iri);
+      }
+
+      if (attribute.getUnit() != null && attribute.getUnit().trim().length() > 0) {
+        attrUnit.get(attribute.getType()).put(attribute.getValue(), attribute.getUnit());
+      }
+    }
+    for (String attributeType : attrTypeValue.keySet()) {
+      PropertyType property = new PropertyType();
+      property.setCharacteristic(false);
+      property.setComment(false);
+      property.setClazz(attributeType);
+      for (String attributeValue : attrTypeValue.get(attributeType)) {
+        QualifiedValueType qualifiedValue = new QualifiedValueType();
+        qualifiedValue.setValue(attributeValue);
+
+        if (attrIri.get(attributeType).containsKey(attributeValue)) {
+          TermSourceREFType termSourceRef = new TermSourceREFType();
+          termSourceRef.setTermSourceID(attrIri.get(attributeType).get(attributeValue));
+          qualifiedValue.setTermSourceREF(termSourceRef);
+        }
+
+        if (attrUnit.get(attributeType).containsKey(attributeValue)) {
+          qualifiedValue.setUnit(attrUnit.get(attributeType).get(attributeValue));
+        }
+
+        property.getQualifiedValue().add(qualifiedValue);
+      }
+      bioSampleType.getProperty().add(property);
+    }
+
+    // get all the groups this sample is in
+    GroupIdsType groupIdsType = new GroupIdsType();
+    for (Relationship relationship : source.getRelationships()) {
+      if (relationship.getTarget().equals(source.getAccession())
+          && "has member".equals(relationship.getType().toLowerCase())) {
+        groupIdsType.getId().add(relationship.getSource());
+      }
+    }
+    bioSampleType.setGroupIds(groupIdsType);
+
+    // get all derived from relationships
+    for (Relationship relationship : source.getRelationships()) {
+      if (relationship.getSource().equals(source.getAccession())
+          && "derived from".equals(relationship.getType().toLowerCase())) {
+        bioSampleType.getDerivedFrom().add(relationship.getTarget());
+      }
+    }
+
+    for (ExternalReference externalReference : source.getExternalReferences()) {
+      DatabaseType databaseType = new DatabaseType();
+      databaseType.setName(externalReferenceService.getNickname(externalReference));
+      databaseType.setURI(externalReference.getUrl());
+
+      // use the last segment of the URI as the ID
+      // not perfect, but good enough?
+      List<String> pathSegments =
+          UriComponentsBuilder.fromUriString(externalReference.getUrl()).build().getPathSegments();
+      if (pathSegments.size() > 0) {
+        databaseType.setID(pathSegments.get(pathSegments.size() - 1));
+      }
+
+      bioSampleType.getDatabase().add(databaseType);
+    }
+
+    return bioSampleType;
+  }
 }

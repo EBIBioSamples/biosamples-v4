@@ -36,10 +36,10 @@
 		<module>livelist</module>
 		<module>curationundo</module>
 		<module>curami</module>
-        <module>curatedview</module>
+		<module>curatedview</module>
 		<module>ebeye-search-export</module>
 		<module>neoexport</module>
 		<module>clearinghouse</module>
 		<module>ena-amr</module>
-    </modules>
+	</modules>
 </project>
