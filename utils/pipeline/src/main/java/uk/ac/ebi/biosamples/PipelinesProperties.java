@@ -30,7 +30,7 @@ public class PipelinesProperties {
 	@Value("${biosamples.pipelines.connectiontimeout:60}")
 	private int connectionTimeout;
 	
-	@Value("${biosamples.pipelines.zooma:https://wwwdev.ebi.ac.uk/spot/zooma}")
+	@Value("${biosamples.pipelines.zooma:https://www.ebi.ac.uk/spot/zooma}")
 	private String zooma;
 	
 	@Value("${biosamples.pipelines.ncbi.domain:self.BiosampleImportNCBI}")
