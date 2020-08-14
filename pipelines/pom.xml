@@ -26,6 +26,7 @@
 
 	<modules>
 		<module>ncbi</module>
+		<module>ena</module>
 		<module>curation</module>
 		<module>zooma</module>
 		<module>template</module>

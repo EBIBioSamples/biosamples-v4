@@ -71,7 +71,7 @@
 	</dependencies>
 
 	<repositories>
-	  	<repository>
+		<repository>
 			<id>maven.oracle.com</id>
 			<name>oracle-maven-repo</name>
 			<url>https://maven.oracle.com</url>
@@ -82,19 +82,19 @@
 <!-- 			</releases> -->
 		</repository>
 	</repositories>
- 	<build>
- 		<plugins>
- 			<plugin>
- 				<groupId>org.springframework.boot</groupId>
- 				<artifactId>spring-boot-maven-plugin</artifactId>
-	            <executions>
-	                <execution>
-	                    <goals>
-	                        <goal>build-info</goal>
-	                    </goals>
-	                </execution>
-	            </executions>
- 			</plugin>
- 		</plugins>
- 	</build>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>build-info</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
 </project>

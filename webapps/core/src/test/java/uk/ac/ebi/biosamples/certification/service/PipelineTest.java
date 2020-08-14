@@ -10,14 +10,7 @@
 */
 package uk.ac.ebi.biosamples.certification.service;
 
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
-import uk.ac.ebi.biosamples.mongo.repo.MongoCurationLinkRepository;
-import uk.ac.ebi.biosamples.service.CurationPersistService;
-import uk.ac.ebi.biosamples.service.certification.*;
-
-@RunWith(SpringRunner.class)
+/*@RunWith(SpringRunner.class)
 @SpringBootTest(
     classes = {
       CertifyService.class,
@@ -33,7 +26,7 @@ import uk.ac.ebi.biosamples.service.certification.*;
       CurationPersistService.class,
       MongoCurationLinkRepository.class
     },
-    properties = {"job.autorun.enabled=false"})
+    properties = {"job.autorun.enabled=false"})*/
 public class PipelineTest {
   /*@Autowired
   private CertifyService pipeline;
