@@ -12,6 +12,7 @@ import com.google.common.hash.Hashing;
 
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
+import uk.ac.ebi.biosamples.model.Relationship;
 
 @Document
 public class MongoCuration implements Comparable<MongoCuration>{
@@ -21,19 +22,26 @@ public class MongoCuration implements Comparable<MongoCuration>{
 
 	private final SortedSet<ExternalReference> externalPre;
 	private final SortedSet<ExternalReference> externaPost;
+
+	private final SortedSet<Relationship> relationshipsPre;
+	private final SortedSet<Relationship> relationshipsPost;
 	
 	@Id
 	private String hash;
-	
-	private MongoCuration(Collection<Attribute> attributesPre, 
-			Collection<Attribute> attributesPost,
-			Collection<ExternalReference> externalPre, 
-			Collection<ExternalReference> externaPost,
-			String hash) {
+
+	private MongoCuration(Collection<Attribute> attributesPre,
+						  Collection<Attribute> attributesPost,
+						  Collection<ExternalReference> externalPre,
+						  Collection<ExternalReference> externaPost,
+						  Collection<Relationship> relationshipsPre,
+						  Collection<Relationship> relationshipsPost,
+						  String hash) {
 		this.attributesPre = Collections.unmodifiableSortedSet(new TreeSet<>(attributesPre));
 		this.attributesPost = Collections.unmodifiableSortedSet(new TreeSet<>(attributesPost));
 		this.externalPre = Collections.unmodifiableSortedSet(new TreeSet<>(externalPre));
 		this.externaPost = Collections.unmodifiableSortedSet(new TreeSet<>(externaPost));
+		this.relationshipsPre = Collections.unmodifiableSortedSet(new TreeSet<>(relationshipsPre));
+		this.relationshipsPost = Collections.unmodifiableSortedSet(new TreeSet<>(relationshipsPost));
 		this.hash = hash;
 	}
 	@JsonProperty("attributesPre")
@@ -51,6 +59,14 @@ public class MongoCuration implements Comparable<MongoCuration>{
 	@JsonProperty("externalReferencesPost")
 	public SortedSet<ExternalReference> getExternalReferencesPost() {
 		return externaPost;
+	}
+	@JsonProperty("relationshipsPre")
+	public SortedSet<Relationship> getRelationshipsPre() {
+		return relationshipsPre;
+	}
+	@JsonProperty("relationshipsPost")
+	public SortedSet<Relationship> getRelationshipsPost() {
+		return relationshipsPost;
 	}
 	
 	public String getHash() {
@@ -73,7 +89,9 @@ public class MongoCuration implements Comparable<MongoCuration>{
         		&& Objects.equals(this.attributesPre, other.attributesPre)
         		&& Objects.equals(this.attributesPost, other.attributesPost)
         		&& Objects.equals(this.externalPre, other.externalPre)
-        		&& Objects.equals(this.externaPost, other.externaPost);
+        		&& Objects.equals(this.externaPost, other.externaPost)
+				&& Objects.equals(this.relationshipsPre, other.relationshipsPre)
+				&& Objects.equals(this.relationshipsPost, other.relationshipsPost);
     }
 
 	@Override
@@ -139,6 +157,35 @@ public class MongoCuration implements Comparable<MongoCuration>{
 				}
 			}
 		}
+
+		if (!this.relationshipsPre.equals(other.relationshipsPre)) {
+			if (this.relationshipsPre.size() < other.relationshipsPre.size()) {
+				return -1;
+			} else if (this.relationshipsPre.size() > other.relationshipsPre.size()) {
+				return 1;
+			} else {
+				Iterator<Relationship> thisIt = this.relationshipsPre.iterator();
+				Iterator<Relationship> otherIt = other.relationshipsPre.iterator();
+				while (thisIt.hasNext() && otherIt.hasNext()) {
+					int val = thisIt.next().compareTo(otherIt.next());
+					if (val != 0) return val;
+				}
+			}
+		}
+		if (!this.relationshipsPost.equals(other.relationshipsPost)) {
+			if (this.relationshipsPost.size() < other.relationshipsPost.size()) {
+				return -1;
+			} else if (this.relationshipsPost.size() > other.relationshipsPost.size()) {
+				return 1;
+			} else {
+				Iterator<Relationship> thisIt = this.relationshipsPost.iterator();
+				Iterator<Relationship> otherIt = other.relationshipsPost.iterator();
+				while (thisIt.hasNext() && otherIt.hasNext()) {
+					int val = thisIt.next().compareTo(otherIt.next());
+					if (val != 0) return val;
+				}
+			}
+		}
 		return 0;
 	}
 
@@ -153,6 +200,10 @@ public class MongoCuration implements Comparable<MongoCuration>{
     	sb.append(externalPre);
     	sb.append(",");
     	sb.append(externaPost);
+		sb.append(",");
+		sb.append(relationshipsPre);
+		sb.append(",");
+		sb.append(relationshipsPost);
     	sb.append(")");
     	return sb.toString();
     }
@@ -161,22 +212,30 @@ public class MongoCuration implements Comparable<MongoCuration>{
     public static MongoCuration build(@JsonProperty("attributesPre") Collection<Attribute> attributesPre, 
 			@JsonProperty("attributesPost") Collection<Attribute> attributesPost,
 			@JsonProperty("externalReferencesPre") Collection<ExternalReference> externalPre, 
-			@JsonProperty("externalReferencesPost") Collection<ExternalReference> externaPost) {
+			@JsonProperty("externalReferencesPost") Collection<ExternalReference> externaPost,
+									  @JsonProperty("relationshipsPre") Collection<Relationship> relationshipsPre,
+									  @JsonProperty("relationshipsPost") Collection<Relationship> relationshipsPost) {
     	
 		SortedSet<Attribute> sortedPreAttributes = new TreeSet<>();
 		SortedSet<Attribute> sortedPostAttributes = new TreeSet<>();    	
 		SortedSet<ExternalReference> sortedPreExternal = new TreeSet<>();
 		SortedSet<ExternalReference> sortedPostExternal = new TreeSet<>();
+		SortedSet<Relationship> sortedPreRelationships = new TreeSet<>();
+		SortedSet<Relationship> sortedPostRelationships = new TreeSet<>();
 		
 		if (attributesPre != null) sortedPreAttributes.addAll(attributesPre);
 		if (attributesPost != null) sortedPostAttributes.addAll(attributesPost);		
 		if (externalPre != null) sortedPreExternal.addAll(externalPre);
 		if (externaPost != null) sortedPostExternal.addAll(externaPost);
+		if (relationshipsPre != null) sortedPreRelationships.addAll(relationshipsPre);
+		if (relationshipsPost != null) sortedPostRelationships.addAll(relationshipsPost);
 
 		sortedPreAttributes = Collections.unmodifiableSortedSet(sortedPreAttributes);
 		sortedPostAttributes = Collections.unmodifiableSortedSet(sortedPostAttributes);
 		sortedPreExternal = Collections.unmodifiableSortedSet(sortedPreExternal);
 		sortedPostExternal = Collections.unmodifiableSortedSet(sortedPostExternal);
+		sortedPreRelationships = Collections.unmodifiableSortedSet(sortedPreRelationships);
+		sortedPostRelationships = Collections.unmodifiableSortedSet(sortedPostRelationships);
 
     	Hasher hasher = Hashing.sha256().newHasher();
     	for (Attribute a : sortedPreAttributes) {
@@ -219,9 +278,19 @@ public class MongoCuration implements Comparable<MongoCuration>{
 				}
 			}
     	}
+		for (Relationship a : sortedPreRelationships) {
+			hasher.putUnencodedChars(a.getSource());
+			hasher.putUnencodedChars(a.getTarget());
+			hasher.putUnencodedChars(a.getType());
+		}
+		for (Relationship a : sortedPostRelationships) {
+			hasher.putUnencodedChars(a.getSource());
+			hasher.putUnencodedChars(a.getTarget());
+			hasher.putUnencodedChars(a.getType());
+		}
     	String hash = hasher.hash().toString();
 		
-		return new MongoCuration(sortedPreAttributes, sortedPostAttributes, sortedPreExternal, sortedPostExternal, hash);
+		return new MongoCuration(sortedPreAttributes, sortedPostAttributes, sortedPreExternal, sortedPostExternal, sortedPreRelationships, sortedPostRelationships, hash);
 	}
 }
 

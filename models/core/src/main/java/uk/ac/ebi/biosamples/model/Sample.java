@@ -612,7 +612,7 @@ public class Sample implements Comparable<Sample> {
          * @return
          */
         public Builder withRelationships(Collection<Relationship> relationships) {
-            if (relationships != null && relationships.size() > 0)
+            if (relationships != null)
                 this.relationships = new TreeSet<>(relationships);
             return this;
         }
