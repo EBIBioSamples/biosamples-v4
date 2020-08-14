@@ -27,13 +27,13 @@
 			<artifactId>utils-thread</artifactId>
 			<version>5.0.1-SNAPSHOT</version>
 		</dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.7</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.7</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
 
 
 	<build>
@@ -41,13 +41,13 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-	            <executions>
-	                <execution>
-	                    <goals>
-	                        <goal>build-info</goal>
-	                    </goals>
-	                </execution>
-	            </executions>
+				<executions>
+					<execution>
+						<goals>
+							<goal>build-info</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

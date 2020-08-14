@@ -1,8 +1,17 @@
+/*
+* Copyright 2019 EMBL - European Bioinformatics Institute
+* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+* file except in compliance with the License. You may obtain a copy of the License at
+* http://www.apache.org/licenses/LICENSE-2.0
+* Unless required by applicable law or agreed to in writing, software distributed under the
+* License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+* CONDITIONS OF ANY KIND, either express or implied. See the License for the
+* specific language governing permissions and limitations under the License.
+*/
 package uk.ac.ebi.biosamples.solr.repo;
 
 import java.io.IOException;
 import java.util.List;
-
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -25,119 +34,126 @@ import org.springframework.util.Assert;
 import uk.ac.ebi.biosamples.solr.model.SolrSample;
 
 @Component
-public class SolrSampleRepositoryImpl implements SolrSampleRepositoryCustom  {
+public class SolrSampleRepositoryImpl implements SolrSampleRepositoryCustom {
 
-	//this must be SolrTemplate not SolrOperations because we use some of the details
-	private SolrTemplate solrTemplate;
+  // this must be SolrTemplate not SolrOperations because we use some of the details
+  private SolrTemplate solrTemplate;
 
-	private final QueryParsers queryParsers = new QueryParsers();
-	
-	/**
-	 * Constructor with required fields to build its own SolrOperations object
-	 * because one is not normally exposed as a bean.
-	 * 
-	 * @param solrClient
-	 * @param converter
-	 */
-	public SolrSampleRepositoryImpl(SolrClient solrClient, SolrConverter converter) {
-		this.solrTemplate = createTemplate(solrClient, converter);
-	}
+  private final QueryParsers queryParsers = new QueryParsers();
 
-	/**
-	 * Private method to create a SolrTemplate object. Copied from SolrRepositoryFactory
-	 * @param solrClient
-	 * @param converter
-	 * @return
-	 */
-	private SolrTemplate createTemplate(SolrClient solrClient, SolrConverter converter) {
-		SolrTemplate template = new SolrTemplate(solrClient);
-		if (converter != null) {
-			template.setSolrConverter(converter);
-		}
-		template.afterPropertiesSet();
-		return template;
-	}
+  /**
+   * Constructor with required fields to build its own SolrOperations object because one is not
+   * normally exposed as a bean.
+   *
+   * @param solrClient
+   * @param converter
+   */
+  public SolrSampleRepositoryImpl(SolrClient solrClient, SolrConverter converter) {
+    this.solrTemplate = createTemplate(solrClient, converter);
+  }
 
-	@Override
-	//TODO cacheing
-	public Page<FacetFieldEntry> getFacetFields(FacetQuery query, Pageable facetPageable) {
-		//configure the facet options to use the attribute types fields
-		//and to have the appropriate paging
-		FacetOptions facetOptions = new FacetOptions();
-		facetOptions.addFacetOnField("facetfields_ss");
-		facetOptions.setPageable(facetPageable);
+  /**
+   * Private method to create a SolrTemplate object. Copied from SolrRepositoryFactory
+   *
+   * @param solrClient
+   * @param converter
+   * @return
+   */
+  private SolrTemplate createTemplate(SolrClient solrClient, SolrConverter converter) {
+    SolrTemplate template = new SolrTemplate(solrClient);
+    if (converter != null) {
+      template.setSolrConverter(converter);
+    }
+    template.afterPropertiesSet();
+    return template;
+  }
 
-		query.setFacetOptions(facetOptions);
-		//execute the query against the solr server
-		FacetPage<SolrSample> page = solrTemplate.queryForFacetPage(query, SolrSample.class);
-		return page.getFacetResultPage("facetfields_ss");
-	}
+  @Override
+  // TODO cacheing
+  public Page<FacetFieldEntry> getFacetFields(FacetQuery query, Pageable facetPageable) {
+    // configure the facet options to use the attribute types fields
+    // and to have the appropriate paging
+    FacetOptions facetOptions = new FacetOptions();
+    facetOptions.addFacetOnField("facetfields_ss");
+    facetOptions.setPageable(facetPageable);
 
-	@Override
-	public FacetPage<?> getFacets(FacetQuery query, List<String> facetFields, Pageable facetPageable) {
-		
-		if (facetFields == null || facetFields.size() == 0) {
-			throw new IllegalArgumentException("Must provide fields to facet on");
-		}
-		
-		//configure the facet options to use the provided fields
-		//and to have the appropriate paging
-		FacetOptions facetOptions = new FacetOptions();
-		for (String field : facetFields) {
-			facetOptions.addFacetOnField(field);
-		}
-		facetOptions.setPageable(facetPageable);
-	
+    query.setFacetOptions(facetOptions);
+    // execute the query against the solr server
+    FacetPage<SolrSample> page = solrTemplate.queryForFacetPage(query, SolrSample.class);
+    return page.getFacetResultPage("facetfields_ss");
+  }
 
-		query.setFacetOptions(facetOptions);
-		//execute the query against the solr server
-		FacetPage<SolrSample> page = solrTemplate.queryForFacetPage(query, SolrSample.class);
-		return page;
-		
-	}
+  @Override
+  public FacetPage<?> getFacets(
+      FacetQuery query, List<String> facetFields, Pageable facetPageable) {
 
-	@Override
-	public FacetPage<?> getRangeFacets(FacetQuery query, List<String> facetFields, Pageable facetPageable) {
-	    //TODO Implement the method
-		return null;
-	}
+    if (facetFields == null || facetFields.size() == 0) {
+      throw new IllegalArgumentException("Must provide fields to facet on");
+    }
 
-	@Override
-	public Page<SolrSample> findByQuery(Query query) {
-		return solrTemplate.query(query, SolrSample.class);
-	}
+    // configure the facet options to use the provided fields
+    // and to have the appropriate paging
+    FacetOptions facetOptions = new FacetOptions();
+    for (String field : facetFields) {
+      facetOptions.addFacetOnField(field);
+    }
+    facetOptions.setPageable(facetPageable);
 
-	@Override
-	public CursorArrayList<SolrSample> findByQueryCursorMark(Query query, String cursorMark, int size) {
-		
-		//TODO this is a different set of query parsers than the solrOperation has itself
-		SolrQuery solrQuery = queryParsers.getForClass(query.getClass()).constructSolrQuery(query);
+    query.setFacetOptions(facetOptions);
+    // execute the query against the solr server
+    FacetPage<SolrSample> page = solrTemplate.queryForFacetPage(query, SolrSample.class);
+    return page;
+  }
 
-		solrQuery.set(CursorMarkParams.CURSOR_MARK_PARAM, cursorMark);
-		solrQuery.set(CommonParams.ROWS, size);
-		
-		QueryResponse response = solrTemplate.execute(new SolrCallback<QueryResponse>() {
-			@Override
-			public QueryResponse doInSolr(SolrClient solrClient) throws SolrServerException, IOException {
-				return solrClient.query("samples", solrQuery);
-			}
-		});
-		response.getNextCursorMark();
-		List<SolrSample> solrSampleList = solrTemplate.convertQueryResponseToBeans(response, SolrSample.class);
-		CursorArrayList<SolrSample> solrSampleCursorList = new CursorArrayList<SolrSample>(solrSampleList, response.getNextCursorMark());
-		
-		return solrSampleCursorList;
-	}
+  @Override
+  public FacetPage<?> getRangeFacets(
+      FacetQuery query, List<String> facetFields, Pageable facetPageable) {
+    // TODO Implement the method
+    return null;
+  }
 
-	@Override
-	public FacetPage<SolrSample> findByFacetQuery(FacetQuery query) {
-		return solrTemplate.queryForFacetPage(query, SolrSample.class);
-	}
+  @Override
+  public Page<SolrSample> findByQuery(Query query) {
+    return solrTemplate.query(query, SolrSample.class);
+  }
 
-	@Override
-	public SolrSample saveWithoutCommit(SolrSample entity) {
-		Assert.notNull(entity, "Cannot save 'null' entity.");
-		this.solrTemplate.saveBean(entity);
-		return entity;
-	}
+  @Override
+  public CursorArrayList<SolrSample> findByQueryCursorMark(
+      Query query, String cursorMark, int size) {
+
+    // TODO this is a different set of query parsers than the solrOperation has itself
+    SolrQuery solrQuery = queryParsers.getForClass(query.getClass()).constructSolrQuery(query);
+
+    solrQuery.set(CursorMarkParams.CURSOR_MARK_PARAM, cursorMark);
+    solrQuery.set(CommonParams.ROWS, size);
+
+    QueryResponse response =
+        solrTemplate.execute(
+            new SolrCallback<QueryResponse>() {
+              @Override
+              public QueryResponse doInSolr(SolrClient solrClient)
+                  throws SolrServerException, IOException {
+                return solrClient.query("samples", solrQuery);
+              }
+            });
+    response.getNextCursorMark();
+    List<SolrSample> solrSampleList =
+        solrTemplate.convertQueryResponseToBeans(response, SolrSample.class);
+    CursorArrayList<SolrSample> solrSampleCursorList =
+        new CursorArrayList<SolrSample>(solrSampleList, response.getNextCursorMark());
+
+    return solrSampleCursorList;
+  }
+
+  @Override
+  public FacetPage<SolrSample> findByFacetQuery(FacetQuery query) {
+    return solrTemplate.queryForFacetPage(query, SolrSample.class);
+  }
+
+  @Override
+  public SolrSample saveWithoutCommit(SolrSample entity) {
+    Assert.notNull(entity, "Cannot save 'null' entity.");
+    this.solrTemplate.saveBean(entity);
+    return entity;
+  }
 }

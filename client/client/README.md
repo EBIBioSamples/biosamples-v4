@@ -1,6 +1,6 @@
 # Client
 
-The client module represent the programmatic interface that users should use 
+The client module represent the programmatic interface that users should use
 to talk query the BioSamples database.
 
 The Client talks through the `webapps-core` module. That means when

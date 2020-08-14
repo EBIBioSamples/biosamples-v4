@@ -1,7 +1,30 @@
+/*
+* Copyright 2019 EMBL - European Bioinformatics Institute
+* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+* file except in compliance with the License. You may obtain a copy of the License at
+* http://www.apache.org/licenses/LICENSE-2.0
+* Unless required by applicable law or agreed to in writing, software distributed under the
+* License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+* CONDITIONS OF ANY KIND, either express or implied. See the License for the
+* specific language governing permissions and limitations under the License.
+*/
 package uk.ac.ebi.biosamples;
+
+import static org.hamcrest.Matchers.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.nio.charset.Charset;
+import java.time.Instant;
+import java.util.Collections;
+import java.util.Optional;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,209 +50,222 @@ import uk.ac.ebi.biosamples.service.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.SchemaValidatorService;
 
-import java.nio.charset.Charset;
-import java.time.Instant;
-import java.util.Collections;
-import java.util.Optional;
-
-import static org.hamcrest.Matchers.*;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 public class AMRTest {
 
-    /*
-    @Autowired
-    private SampleRestController sampleRestController;
+  /*
+  @Autowired
+  private SampleRestController sampleRestController;
 
-    @Test
-    public void contextLoads() throws Exception {
-        assertThat(sampleRestController).isNotNull();
-    }
-    */
-    @Autowired
-    private MockMvc mockMvc;
+  @Test
+  public void contextLoads() throws Exception {
+      assertThat(sampleRestController).isNotNull();
+  }
+  */
+  @Autowired private MockMvc mockMvc;
 
-    private JacksonTester<Sample> json;
+  private JacksonTester<Sample> json;
 
-    private ObjectMapper mapper;
+  private ObjectMapper mapper;
 
-    @MockBean
-    private BioSamplesAapService bioSamplesAapService;
+  @MockBean private BioSamplesAapService bioSamplesAapService;
 
-    @MockBean
-    private SampleService sampleService;
+  @MockBean private SampleService sampleService;
 
-    @MockBean
-    private SchemaValidatorService schemaValidatorService;
+  @MockBean private SchemaValidatorService schemaValidatorService;
 
-    private AMREntry getAMREntry() {
-        return new AMREntry.Builder()
-                .withAntibioticName(new AmrPair("ampicillin",""))
-                .withResistancePhenotype("susceptible")
-                .withMeasure("==", "10", "mg/L")
-                .withVendor("in-house")
-                .withLaboratoryTypingMethod("CMAD")
-                .withAstStandard("CLD")
-                .build();
-    }
+  private AMREntry getAMREntry() {
+    return new AMREntry.Builder()
+        .withAntibioticName(new AmrPair("ampicillin", ""))
+        .withResistancePhenotype("susceptible")
+        .withMeasure("==", "10", "mg/L")
+        .withVendor("in-house")
+        .withLaboratoryTypingMethod("CMAD")
+        .withAstStandard("CLD")
+        .build();
+  }
 
-    private AMRTable getAMRTable() {
-        return new AMRTable.Builder("http://schema.org", "self.test")
-                .addEntry(getAMREntry())
-                .build();
-    }
+  private AMRTable getAMRTable() {
+    return new AMRTable.Builder("http://schema.org", "self.test").addEntry(getAMREntry()).build();
+  }
 
-    private Sample.Builder getTestSampleBuilder() {
-        return new Sample.Builder("testSample", "TEST1")
-                .withDomain("foozit").withRelease(Instant.now()).withUpdate(Instant.now());
-    }
+  private Sample.Builder getTestSampleBuilder() {
+    return new Sample.Builder("testSample", "TEST1")
+        .withDomain("foozit")
+        .withRelease(Instant.now())
+        .withUpdate(Instant.now());
+  }
 
-    @Before
-    public void init() {
-        mapper = new ObjectMapper();
-    }
+  @Before
+  public void init() {
+    mapper = new ObjectMapper();
+  }
 
-    @Test
-    public void givenSample_whenGetSample_thenReturnJsonObject() throws Exception {
-        Sample sample = getTestSampleBuilder().build();
+  @Test
+  public void givenSample_whenGetSample_thenReturnJsonObject() throws Exception {
+    Sample sample = getTestSampleBuilder().build();
 
-        when(sampleService.fetch(eq(sample.getAccession()), any(), any(String.class))).thenReturn(Optional.of(sample));
-        when(bioSamplesAapService.isWriteSuperUser()).thenReturn(true);
+    when(sampleService.fetch(eq(sample.getAccession()), any(), any(String.class)))
+        .thenReturn(Optional.of(sample));
+    when(bioSamplesAapService.isWriteSuperUser()).thenReturn(true);
 
-
-        mockMvc.perform(get("/samples/{accession}", sample.getAccession())
+    mockMvc
+        .perform(
+            get("/samples/{accession}", sample.getAccession())
                 .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name", is(sample.getName())))
-                .andExpect(jsonPath("$.accession", is(sample.getAccession())));
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.name", is(sample.getName())))
+        .andExpect(jsonPath("$.accession", is(sample.getAccession())));
+  }
 
-    }
+  @Test
+  public void givenSampleWithStructuredData_whenGetSample_thenReturnStructuredDataInJson()
+      throws Exception {
+    AMREntry amrEntry = getAMREntry();
+    AMRTable amrTable =
+        new AMRTable.Builder("http://schema.org", "self.test").addEntry(amrEntry).build();
 
-    @Test
-    public void givenSampleWithStructuredData_whenGetSample_thenReturnStructuredDataInJson() throws Exception {
-        AMREntry amrEntry = getAMREntry();
-        AMRTable amrTable = new AMRTable.Builder("http://schema.org", "self.test")
-                .addEntry(amrEntry).build();
+    Sample sample = getTestSampleBuilder().addData(amrTable).build();
+    when(sampleService.fetch(eq(sample.getAccession()), any(), any(String.class)))
+        .thenReturn(Optional.of(sample));
+    when(bioSamplesAapService.isWriteSuperUser()).thenReturn(true);
 
-
-        Sample sample = getTestSampleBuilder().addData(amrTable).build();
-        when(sampleService.fetch(eq(sample.getAccession()), any(), any(String.class))).thenReturn(Optional.of(sample));
-        when(bioSamplesAapService.isWriteSuperUser()).thenReturn(true);
-
-        mockMvc.perform(get("/samples/{accession}", sample.getAccession()).accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data").exists())
-                .andExpect(jsonPath("$.data").isArray())
-                .andExpect(jsonPath("$.data[0]").value(allOf(
+    mockMvc
+        .perform(
+            get("/samples/{accession}", sample.getAccession()).accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data").exists())
+        .andExpect(jsonPath("$.data").isArray())
+        .andExpect(
+            jsonPath("$.data[0]")
+                .value(
+                    allOf(
                         hasEntry("schema", "http://schema.org"),
                         hasEntry("type", "AMR"),
                         hasKey("content"))))
-                .andExpect(jsonPath("$.data[0].content").isArray())
-                .andExpect(jsonPath("$.data[0].content[0]").value(allOf(
+        .andExpect(jsonPath("$.data[0].content").isArray())
+        .andExpect(
+            jsonPath("$.data[0].content[0]")
+                .value(
+                    allOf(
                         hasEntry("resistance_phenotype", amrEntry.getResistancePhenotype()),
                         hasEntry("measurement_sign", amrEntry.getMeasurementSign()),
                         hasEntry("measurement_units", amrEntry.getMeasurementUnits()),
                         hasEntry("vendor", amrEntry.getVendor()),
                         hasEntry("laboratory_typing_method", amrEntry.getLaboratoryTypingMethod()),
-                        hasEntry("ast_standard", amrEntry.getAstStandard())
-                        )))
-                .andExpect(jsonPath("$.data[0].content[0].antibiotic_name").value(hasEntry("value", amrEntry.getAntibioticName().getValue())))
-                .andExpect(jsonPath("$.data[0].content[0]").value(
-                        hasEntry("measurement", amrEntry.getMeasurement()) // This needs to go here because the the hasEntry has a different signature - Only one having a number as a value. allOf wants all matchers of the same type
-                ));
+                        hasEntry("ast_standard", amrEntry.getAstStandard()))))
+        .andExpect(
+            jsonPath("$.data[0].content[0].antibiotic_name")
+                .value(hasEntry("value", amrEntry.getAntibioticName().getValue())))
+        .andExpect(
+            jsonPath("$.data[0].content[0]")
+                .value(
+                    hasEntry("measurement", amrEntry.getMeasurement()) // This needs to go here
+                    // because the the
+                    // hasEntry has
+                    // a different signature - Only one having a number
+                    // as a value. allOf wants all matchers of the same
+                    // type
+                    ));
+  }
 
-    }
+  @Test
+  public void able_to_submit_sample_with_structuredData() throws Exception {
 
-    @Test
-    public void able_to_submit_sample_with_structuredData() throws Exception {
+    String json =
+        StreamUtils.copyToString(
+            new ClassPathResource("amr_sample.json").getInputStream(), Charset.defaultCharset());
+    JsonNode jsonSample = mapper.readTree(json);
 
-        String json = StreamUtils.copyToString(new ClassPathResource("amr_sample.json").getInputStream(), Charset.defaultCharset());
-        JsonNode jsonSample = mapper.readTree(json);
+    JsonNode jsonAmr = jsonSample.at("/data/0/content/0");
+    AMREntry amrEntry =
+        new AMREntry.Builder()
+            .withAntibioticName(new AmrPair(jsonAmr.get("antibiotic_name").asText(), ""))
+            .withResistancePhenotype(jsonAmr.get("resistance_phenotype").asText())
+            .withMeasure(
+                jsonAmr.get("measurement_sign").asText(),
+                jsonAmr.get("measurement").asText(),
+                jsonAmr.get("measurement_units").asText())
+            .withVendor(jsonAmr.get("vendor").asText())
+            .withLaboratoryTypingMethod(jsonAmr.get("laboratory_typing_method").asText())
+            .withAstStandard(jsonAmr.get("ast_standard").asText())
+            .build();
 
-        JsonNode jsonAmr = jsonSample.at("/data/0/content/0");
-        AMREntry amrEntry = new AMREntry.Builder()
-                .withAntibioticName(new AmrPair(jsonAmr.get("antibiotic_name").asText(), ""))
-                .withResistancePhenotype(jsonAmr.get("resistance_phenotype").asText())
-                .withMeasure(jsonAmr.get("measurement_sign").asText(), jsonAmr.get("measurement").asText(), jsonAmr.get("measurement_units").asText())
-                .withVendor(jsonAmr.get("vendor").asText())
-                .withLaboratoryTypingMethod(jsonAmr.get("laboratory_typing_method").asText())
-                .withAstStandard(jsonAmr.get("ast_standard").asText())
-                .build();
+    Attribute organismAttribute = Attribute.build("organism", "Homo Sapiens");
 
-        Attribute organismAttribute = Attribute.build("organism", "Homo Sapiens");
+    Sample testSample =
+        new Sample.Builder(jsonSample.at("/name").asText())
+            .withDomain(jsonSample.at("/domain").asText())
+            .withUpdate(jsonSample.at("/update").asText())
+            .withRelease(jsonSample.at("/release").asText())
+            .addData(
+                new AMRTable.Builder(jsonSample.at("/data/0/schema").asText(), "self.test")
+                    .addEntry(amrEntry)
+                    .build())
+            .withAttributes(Collections.singletonList(organismAttribute))
+            .build();
 
-        Sample testSample = new Sample.Builder(jsonSample.at("/name").asText()).withDomain(jsonSample.at("/domain").asText())
-                .withUpdate(jsonSample.at("/update").asText()).withRelease(jsonSample.at("/release").asText())
-                .addData(new AMRTable.Builder(jsonSample.at("/data/0/schema").asText(), "self.test").addEntry(amrEntry).build())
-                .withAttributes(Collections.singletonList(organismAttribute))
-                .build();
+    when(schemaValidatorService.validate(any(), any())).thenReturn(ResponseEntity.ok("[]"));
+    when(bioSamplesAapService.isWriteSuperUser()).thenReturn(true);
+    when(bioSamplesAapService.handleSampleDomain(any(Sample.class))).thenReturn(testSample);
+    when(bioSamplesAapService.handleStructuredDataDomain(any(Sample.class))).thenReturn(testSample);
+    when(sampleService.store(testSample)).thenReturn(testSample);
 
+    mockMvc
+        .perform(post("/samples").contentType(MediaType.APPLICATION_JSON_VALUE).content(json))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.data[0].content").isArray());
+  }
 
-        when(schemaValidatorService.validate(any(), any())).thenReturn(ResponseEntity.ok("[]"));
-        when(bioSamplesAapService.isWriteSuperUser()).thenReturn(true);
-        when(bioSamplesAapService.handleSampleDomain(any(Sample.class))).thenReturn(testSample);
-        when(bioSamplesAapService.handleStructuredDataDomain(any(Sample.class))).thenReturn(testSample);
-        when(sampleService.store(testSample)).thenReturn(testSample);
+  @Test
+  public void able_to_submit_amr_if_user_is_not_superuser() throws Exception {
 
-        mockMvc.perform(post("/samples")
-                    .contentType(MediaType.APPLICATION_JSON_VALUE)
-                    .content(json)
-            ).andExpect(status().isCreated())
-            .andExpect(jsonPath("$.data[0].content").isArray());
+    String json =
+        StreamUtils.copyToString(
+            new ClassPathResource("amr_sample.json").getInputStream(), Charset.defaultCharset());
+    JsonNode jsonSample = mapper.readTree(json);
 
-    }
+    JsonNode jsonAmr = jsonSample.at("/data/0/content/0");
+    AMREntry amrEntry =
+        new AMREntry.Builder()
+            .withAntibioticName(new AmrPair(jsonAmr.get("antibiotic_name").asText(), ""))
+            .withResistancePhenotype(jsonAmr.get("resistance_phenotype").asText())
+            .withMeasure(
+                jsonAmr.get("measurement_sign").asText(),
+                jsonAmr.get("measurement").asText(),
+                jsonAmr.get("measurement_units").asText())
+            .withVendor(jsonAmr.get("vendor").asText())
+            .withLaboratoryTypingMethod(jsonAmr.get("laboratory_typing_method").asText())
+            .withAstStandard(jsonAmr.get("ast_standard").asText())
+            .build();
 
+    Attribute organismAttribute = Attribute.build("organism", "Homo Sapiens");
 
-    @Test
-    public void able_to_submit_amr_if_user_is_not_superuser() throws Exception {
+    Sample testSample =
+        new Sample.Builder(jsonSample.at("/name").asText())
+            .withDomain(jsonSample.at("/domain").asText())
+            .withUpdate(jsonSample.at("/update").asText())
+            .withRelease(jsonSample.at("/release").asText())
+            .addData(
+                new AMRTable.Builder(jsonSample.at("/data/0/schema").asText(), "self.test")
+                    .addEntry(amrEntry)
+                    .build())
+            .withAttributes(Collections.singletonList(organismAttribute))
+            .build();
 
-        String json = StreamUtils.copyToString(new ClassPathResource("amr_sample.json").getInputStream(), Charset.defaultCharset());
-        JsonNode jsonSample = mapper.readTree(json);
+    when(schemaValidatorService.validate(any(), any())).thenReturn(ResponseEntity.ok("[]"));
+    when(bioSamplesAapService.isWriteSuperUser()).thenReturn(false);
+    when(bioSamplesAapService.handleSampleDomain(any(Sample.class))).thenReturn(testSample);
+    when(bioSamplesAapService.handleStructuredDataDomain(any(Sample.class))).thenReturn(testSample);
 
-        JsonNode jsonAmr = jsonSample.at("/data/0/content/0");
-        AMREntry amrEntry = new AMREntry.Builder()
-                .withAntibioticName(new AmrPair(jsonAmr.get("antibiotic_name").asText(), ""))
-                .withResistancePhenotype(jsonAmr.get("resistance_phenotype").asText())
-                .withMeasure(jsonAmr.get("measurement_sign").asText(), jsonAmr.get("measurement").asText(), jsonAmr.get("measurement_units").asText())
-                .withVendor(jsonAmr.get("vendor").asText())
-                .withLaboratoryTypingMethod(jsonAmr.get("laboratory_typing_method").asText())
-                .withAstStandard(jsonAmr.get("ast_standard").asText())
-                .build();
+    ArgumentCaptor<Sample> generatedSample = ArgumentCaptor.forClass(Sample.class);
+    when(sampleService.store(generatedSample.capture())).thenReturn(testSample);
 
-        Attribute organismAttribute = Attribute.build("organism", "Homo Sapiens");
+    mockMvc.perform(post("/samples").contentType(MediaType.APPLICATION_JSON_VALUE).content(json));
 
-        Sample testSample = new Sample.Builder(jsonSample.at("/name").asText()).withDomain(jsonSample.at("/domain").asText())
-                .withUpdate(jsonSample.at("/update").asText()).withRelease(jsonSample.at("/release").asText())
-                .addData(new AMRTable.Builder(jsonSample.at("/data/0/schema").asText(), "self.test").addEntry(amrEntry).build())
-                .withAttributes(Collections.singletonList(organismAttribute))
-                .build();
-
-        when(schemaValidatorService.validate(any(), any())).thenReturn(ResponseEntity.ok("[]"));
-        when(bioSamplesAapService.isWriteSuperUser()).thenReturn(false);
-        when(bioSamplesAapService.handleSampleDomain(any(Sample.class))).thenReturn(testSample);
-        when(bioSamplesAapService.handleStructuredDataDomain(any(Sample.class))).thenReturn(testSample);
-
-        ArgumentCaptor<Sample> generatedSample = ArgumentCaptor.forClass(Sample.class);
-        when(sampleService.store(generatedSample.capture())).thenReturn(testSample);
-
-        mockMvc.perform(post("/samples")
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(json)
-        );
-
-        assert(!generatedSample.getValue().getData().isEmpty());
-
-    }
-
-
+    assert (!generatedSample.getValue().getData().isEmpty());
+  }
 }

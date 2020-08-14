@@ -1,59 +1,65 @@
+/*
+* Copyright 2019 EMBL - European Bioinformatics Institute
+* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+* file except in compliance with the License. You may obtain a copy of the License at
+* http://www.apache.org/licenses/LICENSE-2.0
+* Unless required by applicable law or agreed to in writing, software distributed under the
+* License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+* CONDITIONS OF ANY KIND, either express or implied. See the License for the
+* specific language governing permissions and limitations under the License.
+*/
 package uk.ac.ebi.biosamples.model.facet;
-
-import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
+import java.util.Optional;
 import uk.ac.ebi.biosamples.model.facet.content.FacetContent;
 import uk.ac.ebi.biosamples.model.filter.FilterType;
 
-//TODO constant this
+// TODO constant this
 @JsonTypeInfo(
-        use = JsonTypeInfo.Id.NAME,
-        include = JsonTypeInfo.As.EXISTING_PROPERTY,
-        property = "type")
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.EXISTING_PROPERTY,
+    property = "type")
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = AttributeFacet.class, name="attribute"),
-        @JsonSubTypes.Type(value = RelationFacet.class, name="relation"),
-        @JsonSubTypes.Type(value = InverseRelationFacet.class, name="inverse relation"),
-        @JsonSubTypes.Type(value = ExternalReferenceDataFacet.class, name="external reference data")
+  @JsonSubTypes.Type(value = AttributeFacet.class, name = "attribute"),
+  @JsonSubTypes.Type(value = RelationFacet.class, name = "relation"),
+  @JsonSubTypes.Type(value = InverseRelationFacet.class, name = "inverse relation"),
+  @JsonSubTypes.Type(value = ExternalReferenceDataFacet.class, name = "external reference data")
 })
 @JsonPropertyOrder(value = {"type", "label", "count", "content"})
-public interface Facet extends Comparable<Facet>{
+public interface Facet extends Comparable<Facet> {
 
-    @JsonProperty("type")
-    public FacetType getType();
+  @JsonProperty("type")
+  public FacetType getType();
 
-    public String getLabel();
+  public String getLabel();
 
-    public Long getCount();
+  public Long getCount();
 
-    public FacetContent getContent();
+  public FacetContent getContent();
 
-//    @JsonIgnore
-//    public default Optional<FilterType> getAssociatedFilterType() {
-//        return FacetFilterFieldType.getFilterForFacet(this.getType());
-//    }
+  //    @JsonIgnore
+  //    public default Optional<FilterType> getAssociatedFilterType() {
+  //        return FacetFilterFieldType.getFilterForFacet(this.getType());
+  //    }
 
-    @JsonIgnore
-    public Optional<FilterType> getAssociatedFilterType();
+  @JsonIgnore
+  public Optional<FilterType> getAssociatedFilterType();
 
-    /*
-     * Builder interface to build Facets
-     */
-    public interface Builder {
-        Facet build();
+  /*
+   * Builder interface to build Facets
+   */
+  public interface Builder {
+    Facet build();
 
-        Builder withContent(FacetContent content);
+    Builder withContent(FacetContent content);
+  }
 
-    }
-
-    default int compareTo(Facet otherFacet) {
-        return Long.compare(this.getCount(),otherFacet.getCount());
-    }
-
+  default int compareTo(Facet otherFacet) {
+    return Long.compare(this.getCount(), otherFacet.getCount());
+  }
 }
