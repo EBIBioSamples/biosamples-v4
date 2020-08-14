@@ -1,130 +1,144 @@
+/*
+* Copyright 2019 EMBL - European Bioinformatics Institute
+* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+* file except in compliance with the License. You may obtain a copy of the License at
+* http://www.apache.org/licenses/LICENSE-2.0
+* Unless required by applicable law or agreed to in writing, software distributed under the
+* License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+* CONDITIONS OF ANY KIND, either express or implied. See the License for the
+* specific language governing permissions and limitations under the License.
+*/
 package uk.ac.ebi.biosamples.solr.service;
 
+import com.google.common.io.BaseEncoding;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import com.google.common.io.BaseEncoding;
-
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.solr.model.field.SolrSampleField;
 
 /**
- * SolrFieldService is the service that should be able to deal with all field matters
- * - Encode and decode of a field is the main reason behind it
+ * SolrFieldService is the service that should be able to deal with all field matters - Encode and
+ * decode of a field is the main reason behind it
  */
 @Service
 public class SolrFieldService {
 
-//    private Logger log = LoggerFactory.getLogger(getClass());
-    private List<SolrSampleField> solrFieldList;
+  //    private Logger log = LoggerFactory.getLogger(getClass());
+  private List<SolrSampleField> solrFieldList;
 
-    @Autowired
-    public SolrFieldService(List<SolrSampleField> solrSampleFields) {
-        this.solrFieldList = solrSampleFields;
+  @Autowired
+  public SolrFieldService(List<SolrSampleField> solrSampleFields) {
+    this.solrFieldList = solrSampleFields;
+  }
+
+  public List<SolrSampleField> getSolrFieldList() {
+    return solrFieldList;
+  }
+
+  public static String encodeFieldName(String field) {
+    // solr only allows alphanumeric field types
+    try {
+      field = BaseEncoding.base32().encode(field.getBytes("UTF-8"));
+    } catch (UnsupportedEncodingException e) {
+      throw new RuntimeException(e);
     }
+    // although its base32 encoded, that include = which solr doesn't allow
+    field = field.replaceAll("=", "_");
 
-    public List<SolrSampleField> getSolrFieldList() {
-        return solrFieldList;
+    return field;
+  }
+
+  public static String decodeFieldName(String encodedField) {
+    // although its base32 encoded, that include = which solr doesn't allow
+    String decodedField = encodedField.replace("_", "=");
+    try {
+      decodedField = new String(BaseEncoding.base32().decode(decodedField), "UTF-8");
+    } catch (UnsupportedEncodingException e) {
+      throw new RuntimeException(e);
     }
+    return decodedField;
+  }
 
-    public static String encodeFieldName(String field) {
-        //solr only allows alphanumeric field types
+  /**
+   * Try to decode a field guessing the facet type
+   *
+   * @param encodedField encoded version of the field with the type suffix
+   * @return the field name decoded
+   */
+  public SolrSampleField decodeField(String encodedField) {
+
+    Optional<SolrSampleField> optionalType =
+        solrFieldList.stream().filter(solrField -> solrField.matches(encodedField)).findFirst();
+    if (optionalType.isPresent()) {
+      SolrSampleField fieldCandidate = optionalType.get();
+      Matcher m = fieldCandidate.getSolrFieldPattern().matcher(encodedField);
+      if (m.find()) {
+        String baseLabel = m.group("fieldname");
+
+        if (fieldCandidate.isEncodedField()) {
+          baseLabel = decodeFieldName(baseLabel);
+        }
         try {
-            field = BaseEncoding.base32().encode(field.getBytes("UTF-8"));
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
+
+          return getNewFieldInstance(fieldCandidate.getClass(), baseLabel, encodedField);
+
+        } catch (NoSuchMethodException
+            | IllegalAccessException
+            | InvocationTargetException
+            | InstantiationException e) {
+          throw new RuntimeException(
+              "An error occurred while instantiating creating a new instance of class "
+                  + fieldCandidate.getClass());
         }
-        //although its base32 encoded, that include = which solr doesn't allow
-        field = field.replaceAll("=", "_");
-
-        return field;
+      }
     }
 
-    public static String decodeFieldName(String encodedField) {
-        //although its base32 encoded, that include = which solr doesn't allow
-        String decodedField = encodedField.replace("_", "=");
-        try {
-            decodedField = new String(BaseEncoding.base32().decode(decodedField), "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
-        return decodedField;
+    throw new RuntimeException("Provide field " + encodedField + " is unknown");
+  }
+
+  public SolrSampleField getCompatibleField(Filter filter) {
+
+    Optional<SolrSampleField> optionalType =
+        solrFieldList.stream().filter(solrField -> solrField.isCompatibleWith(filter)).findFirst();
+    if (optionalType.isPresent()) {
+      SolrSampleField fieldCandidate = optionalType.get();
+      // TODO implement methods to extract suffix and generate also the encoded label
+
+      try {
+
+        return getNewFieldInstance(fieldCandidate.getClass(), filter.getLabel());
+
+      } catch (NoSuchMethodException
+          | IllegalAccessException
+          | InvocationTargetException
+          | InstantiationException e) {
+        throw new RuntimeException(
+            "An error occurred while instantiating creating a new instance of class "
+                + fieldCandidate.getClass());
+      }
     }
 
-    /**
-     * Try to decode a field guessing the facet type
-     *
-     * @param encodedField encoded version of the field with the type suffix
-     * @return the field name decoded
-     */
-    public SolrSampleField decodeField(String encodedField) {
+    throw new RuntimeException("Provide filter " + filter + " is unknown");
+  }
 
-        Optional<SolrSampleField> optionalType = solrFieldList.stream()
-                .filter(solrField -> solrField.matches(encodedField))
-                .findFirst();
-        if (optionalType.isPresent()) {
-            SolrSampleField fieldCandidate = optionalType.get();
-            Matcher m = fieldCandidate.getSolrFieldPattern().matcher(encodedField);
-            if (m.find()) {
-                String baseLabel = m.group("fieldname");
+  public SolrSampleField getNewFieldInstance(
+      Class<? extends SolrSampleField> prototype, String baseLabel, String encodedLabel)
+      throws NoSuchMethodException, IllegalAccessException, InvocationTargetException,
+          InstantiationException {
+    return prototype
+        .getConstructor(String.class, String.class)
+        .newInstance(baseLabel, encodedLabel);
+  }
 
-                if (fieldCandidate.isEncodedField()) {
-                    baseLabel = decodeFieldName(baseLabel);
-                }
-                try {
-
-                    return getNewFieldInstance(
-                            fieldCandidate.getClass(),
-                            baseLabel,
-                            encodedField);
-
-                } catch (NoSuchMethodException| IllegalAccessException| InvocationTargetException| InstantiationException e) {
-                    throw new RuntimeException("An error occurred while instantiating creating a new instance of class " + fieldCandidate.getClass());
-                }
-            }
-        }
-
-        throw new RuntimeException("Provide field " + encodedField + " is unknown");
-    }
-
-    public SolrSampleField getCompatibleField(Filter filter) {
-
-        Optional<SolrSampleField> optionalType = solrFieldList.stream()
-                .filter(solrField -> solrField.isCompatibleWith(filter))
-                .findFirst();
-        if (optionalType.isPresent()) {
-            SolrSampleField fieldCandidate = optionalType.get();
-            //TODO implement methods to extract suffix and generate also the encoded label
-
-            try {
-
-                return getNewFieldInstance(
-                        fieldCandidate.getClass(),
-                        filter.getLabel());
-
-
-            } catch (NoSuchMethodException| IllegalAccessException| InvocationTargetException| InstantiationException e) {
-                throw new RuntimeException("An error occurred while instantiating creating a new instance of class " + fieldCandidate.getClass());
-            }
-        }
-
-        throw new RuntimeException("Provide filter " + filter + " is unknown");
-
-    }
-
-    public SolrSampleField getNewFieldInstance(Class<? extends SolrSampleField> prototype, String baseLabel, String encodedLabel) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        return prototype.getConstructor(String.class, String.class).newInstance(baseLabel, encodedLabel);
-    }
-
-    public SolrSampleField getNewFieldInstance(Class<? extends SolrSampleField> prototype, String baseLabel) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        return prototype.getConstructor(String.class).newInstance(baseLabel);
-    }
-
+  public SolrSampleField getNewFieldInstance(
+      Class<? extends SolrSampleField> prototype, String baseLabel)
+      throws NoSuchMethodException, IllegalAccessException, InvocationTargetException,
+          InstantiationException {
+    return prototype.getConstructor(String.class).newInstance(baseLabel);
+  }
 }
-

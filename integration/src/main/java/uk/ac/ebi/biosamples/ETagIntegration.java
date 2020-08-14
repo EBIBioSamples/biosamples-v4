@@ -1,5 +1,19 @@
+/*
+* Copyright 2019 EMBL - European Bioinformatics Institute
+* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+* file except in compliance with the License. You may obtain a copy of the License at
+* http://www.apache.org/licenses/LICENSE-2.0
+* Unless required by applicable law or agreed to in writing, software distributed under the
+* License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+* CONDITIONS OF ANY KIND, either express or implied. See the License for the
+* specific language governing permissions and limitations under the License.
+*/
 package uk.ac.ebi.biosamples;
 
+import java.net.URI;
+import java.util.Collections;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -18,193 +32,205 @@ import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.Sample;
 
-import java.net.URI;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 @Component
 public class ETagIntegration extends AbstractIntegration {
 
-    private final BioSamplesProperties bioSamplesProperties;
-    private final RestTemplate restTemplate;
+  private final BioSamplesProperties bioSamplesProperties;
+  private final RestTemplate restTemplate;
 
-    private Logger log = LoggerFactory.getLogger(getClass());
+  private Logger log = LoggerFactory.getLogger(getClass());
 
-    public ETagIntegration(BioSamplesClient client, BioSamplesProperties bioSamplesProperties, RestTemplateBuilder restTemplateBuilder) {
-        super(client);
-        this.bioSamplesProperties = bioSamplesProperties;
-        this.restTemplate = restTemplateBuilder.build();
+  public ETagIntegration(
+      BioSamplesClient client,
+      BioSamplesProperties bioSamplesProperties,
+      RestTemplateBuilder restTemplateBuilder) {
+    super(client);
+    this.bioSamplesProperties = bioSamplesProperties;
+    this.restTemplate = restTemplateBuilder.build();
+  }
+
+  @Override
+  protected void phaseOne() {
+    Sample testSample = getTestSample();
+
+    log.info("Submitting sample for ETAG check");
+
+    Resource<Sample> resource = client.persistSampleResource(testSample);
+    if (!testSample.equals(resource.getContent())) {
+      throw new RuntimeException(
+          "Expected response ("
+              + resource.getContent()
+              + ") to equal submission ("
+              + testSample
+              + ")");
+    }
+  }
+
+  @Override
+  protected void phaseTwo() {
+    log.info(
+        "Verifying that retrieving ETAG for a sample multiple times doesn't change the ETAG value");
+    Sample testSample = getTestSample();
+
+    RequestEntity request = prepareGetRequestForSample(testSample);
+
+    ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+    if (response.getStatusCode() != HttpStatus.OK) {
+      throw new RuntimeException(
+          "Sample with accession " + testSample.getAccession() + " not found");
     }
 
-    @Override
-    protected void phaseOne() {
-        Sample testSample = getTestSample();
+    String etag = response.getHeaders().getETag();
 
-        log.info("Submitting sample for ETAG check");
-
-        Resource<Sample> resource = client.persistSampleResource(testSample);
-        if (!testSample.equals(resource.getContent())) {
-            throw new RuntimeException("Expected response ("+resource.getContent()+") to equal submission ("+testSample+")");
-        }
-
+    // Fetch the sample another time and check the ETAG
+    response = restTemplate.exchange(request, String.class);
+    if (!etag.equalsIgnoreCase(response.getHeaders().getETag())) {
+      throw new RuntimeException(
+          "ETAG for the same object are not identical: "
+              + etag
+              + ", "
+              + response.getHeaders().getETag());
     }
 
-    @Override
-    protected void phaseTwo() {
-        log.info("Verifying that retrieving ETAG for a sample multiple times doesn't change the ETAG value");
-        Sample testSample = getTestSample();
+    log.info(
+        "Verifying that using the ETAG in a conditional header will return 304 - Not modified");
 
-        RequestEntity request = prepareGetRequestForSample(testSample);
+    RequestEntity.HeadersBuilder requestWithEtagHeader = prepareGetRequestBuilder(testSample);
+    RequestEntity etagRequestEntity = requestWithEtagHeader.header("If-None-Match", etag).build();
 
-        ResponseEntity<String> response = restTemplate.exchange(request, String.class);
-        if (response.getStatusCode() != HttpStatus.OK) {
-            throw new RuntimeException("Sample with accession " + testSample.getAccession() + " not found");
-        }
+    response = restTemplate.exchange(etagRequestEntity, String.class);
+    if (response.getStatusCode() != HttpStatus.NOT_MODIFIED) {
+      throw new RuntimeException(
+          "Request using ETAG on a non modified sample did not return the expected status code");
+    }
+  }
 
-        String etag = response.getHeaders().getETag();
+  @Override
+  protected void phaseThree() {
+    // Verify a put request produces a different ETAG
+    log.info("Verifying ETAG of a sample pre and post update are different");
+    Sample testSample = getTestSample();
 
-        // Fetch the sample another time and check the ETAG
-        response = restTemplate.exchange(request, String.class);
-        if (!etag.equalsIgnoreCase(response.getHeaders().getETag())) {
-            throw new RuntimeException("ETAG for the same object are not identical: " + etag + ", " + response.getHeaders().getETag());
-        }
+    RequestEntity request = prepareGetRequestForSample(testSample);
+    ResponseEntity response = restTemplate.exchange(request, String.class);
 
-        log.info("Verifying that using the ETAG in a conditional header will return 304 - Not modified");
-
-        RequestEntity.HeadersBuilder requestWithEtagHeader = prepareGetRequestBuilder(testSample);
-        RequestEntity etagRequestEntity = requestWithEtagHeader.header("If-None-Match", etag).build();
-
-        response = restTemplate.exchange(etagRequestEntity, String.class);
-        if (response.getStatusCode() != HttpStatus.NOT_MODIFIED) {
-            throw new RuntimeException("Request using ETAG on a non modified sample did not return the expected status code");
-        }
-
-
+    if (response.getStatusCode() != HttpStatus.OK) {
+      throw new RuntimeException(
+          "Sample with accession " + testSample.getAccession() + " not found");
     }
 
-    @Override
-    protected void phaseThree() {
-        // Verify a put request produces a different ETAG
-        log.info("Verifying ETAG of a sample pre and post update are different");
-        Sample testSample = getTestSample();
+    String etag = response.getHeaders().getETag();
 
-        RequestEntity request = prepareGetRequestForSample(testSample);
-        ResponseEntity response = restTemplate.exchange(request, String.class);
+    Sample updatedSample =
+        Sample.Builder.fromSample(testSample)
+            .addAttribute(Attribute.build("Organism part", "liver"))
+            .build();
 
-        if (response.getStatusCode() != HttpStatus.OK) {
-            throw new RuntimeException("Sample with accession " + testSample.getAccession() + " not found");
-        }
+    client.persistSampleResource(updatedSample);
 
-        String etag = response.getHeaders().getETag();
-
-        Sample updatedSample = Sample.Builder.fromSample(testSample)
-                .addAttribute(Attribute.build("Organism part", "liver"))
-                .build();
-
-        client.persistSampleResource(updatedSample);
-
-        response = restTemplate.exchange(request, String.class);
-        if (response.getStatusCode() != HttpStatus.OK) {
-            throw new RuntimeException("Sample with accession " + testSample.getAccession() + " not found");
-        }
-
-        String newEtag = response.getHeaders().getETag();
-        if (etag.equalsIgnoreCase(newEtag)) {
-            throw new RuntimeException("A different ETag is expected after a sample update");
-        }
-
+    response = restTemplate.exchange(request, String.class);
+    if (response.getStatusCode() != HttpStatus.OK) {
+      throw new RuntimeException(
+          "Sample with accession " + testSample.getAccession() + " not found");
     }
 
-    @Override
-    protected void phaseFour() {
-        log.info("Verifying ETAG of a sample pre and post curation are different, but ETAG of the raw sample remains the same");
-        Sample testSample = getTestSample();
+    String newEtag = response.getHeaders().getETag();
+    if (etag.equalsIgnoreCase(newEtag)) {
+      throw new RuntimeException("A different ETag is expected after a sample update");
+    }
+  }
 
-        ResponseEntity<String> rawSampleResponse = restTemplate.exchange(prepareGetRequestForRawSample(testSample), String.class);
-        ResponseEntity<String> sampleResponse = restTemplate.exchange(prepareGetRequestForSample(testSample), String.class);
+  @Override
+  protected void phaseFour() {
+    log.info(
+        "Verifying ETAG of a sample pre and post curation are different, but ETAG of the raw sample remains the same");
+    Sample testSample = getTestSample();
 
-        String rawEtag = rawSampleResponse.getHeaders().getETag();
-        String eTag = sampleResponse.getHeaders().getETag();
+    ResponseEntity<String> rawSampleResponse =
+        restTemplate.exchange(prepareGetRequestForRawSample(testSample), String.class);
+    ResponseEntity<String> sampleResponse =
+        restTemplate.exchange(prepareGetRequestForSample(testSample), String.class);
 
-        //This can't be tested in the integration tests because the curation pipelines doesn't run between phases
-//        if (rawEtag.equalsIgnoreCase(eTag)) {
-//            log.warn("This is suspicious since raw and final sample usually are different due to automatic curation");
-//        }
+    String rawEtag = rawSampleResponse.getHeaders().getETag();
+    String eTag = sampleResponse.getHeaders().getETag();
 
-        Curation sampleCuration = Curation.build(
-                Stream.of(testSample.getAttributes().first()).collect(Collectors.toSet()),
-                Stream.of(Attribute.build("organism", "Homo Sapiens")).collect(Collectors.toSet()));
+    // This can't be tested in the integration tests because the curation pipelines doesn't run
+    // between phases
+    //        if (rawEtag.equalsIgnoreCase(eTag)) {
+    //            log.warn("This is suspicious since raw and final sample usually are different
+    // due
+    // to automatic curation");
+    //        }
 
-        client.persistCuration(testSample.getAccession(), sampleCuration, "self.BiosampleIntegrationTest");
+    Curation sampleCuration =
+        Curation.build(
+            Stream.of(testSample.getAttributes().first()).collect(Collectors.toSet()),
+            Stream.of(Attribute.build("organism", "Homo Sapiens")).collect(Collectors.toSet()));
 
-        //Fetch again both the sample and the raw sample, the raw ETAG should match
-        rawSampleResponse = restTemplate.exchange(prepareGetRequestForRawSample(testSample), String.class);
-        sampleResponse = restTemplate.exchange(prepareGetRequestForSample(testSample), String.class);
+    client.persistCuration(
+        testSample.getAccession(), sampleCuration, "self.BiosampleIntegrationTest");
 
-        String newRawETag = rawSampleResponse.getHeaders().getETag();
-        String newEtag = sampleResponse.getHeaders().getETag();
+    // Fetch again both the sample and the raw sample, the raw ETAG should match
+    rawSampleResponse =
+        restTemplate.exchange(prepareGetRequestForRawSample(testSample), String.class);
+    sampleResponse = restTemplate.exchange(prepareGetRequestForSample(testSample), String.class);
 
-        if (newEtag.equalsIgnoreCase(eTag)) {
-            throw new RuntimeException("The ETag of curated sample should be different from the non curated sample");
-        }
+    String newRawETag = rawSampleResponse.getHeaders().getETag();
+    String newEtag = sampleResponse.getHeaders().getETag();
 
-        if (!rawEtag.equalsIgnoreCase(newRawETag)) {
-            throw new RuntimeException("The ETag for the raw sample should not change even after curations");
-        }
-
-
+    if (newEtag.equalsIgnoreCase(eTag)) {
+      throw new RuntimeException(
+          "The ETag of curated sample should be different from the non curated sample");
     }
 
-    @Override
-    protected void phaseFive() {
-
+    if (!rawEtag.equalsIgnoreCase(newRawETag)) {
+      throw new RuntimeException(
+          "The ETag for the raw sample should not change even after curations");
     }
+  }
 
-    private Sample getTestSample() {
-        return new Sample.Builder("ETAG sample test")
-                .withAccession("SAMETAG2031")
-                .withDomain("self.BiosampleIntegrationTest")
-                .withRelease("2017-01-01T12:00:00")
-                .withUpdate("2017-01-01T12:00:00")
-                .addAttribute(Attribute.build("organism", "human"))
-                .build();
+  @Override
+  protected void phaseFive() {}
 
-    }
+  private Sample getTestSample() {
+    return new Sample.Builder("ETAG sample test")
+        .withAccession("SAMETAG2031")
+        .withDomain("self.BiosampleIntegrationTest")
+        .withRelease("2017-01-01T12:00:00")
+        .withUpdate("2017-01-01T12:00:00")
+        .addAttribute(Attribute.build("organism", "human"))
+        .build();
+  }
 
-    private RequestEntity prepareGetRequestForSample(Sample sample) {
-        Link sampleLink = new Traverson(bioSamplesProperties.getBiosamplesClientUri(), MediaTypes.HAL_JSON)
-                .follow("samples")
-                .follow(Hop.rel("sample").withParameter("accession", sample.getAccession()))
-                .asLink();
+  private RequestEntity prepareGetRequestForSample(Sample sample) {
+    Link sampleLink =
+        new Traverson(bioSamplesProperties.getBiosamplesClientUri(), MediaTypes.HAL_JSON)
+            .follow("samples")
+            .follow(Hop.rel("sample").withParameter("accession", sample.getAccession()))
+            .asLink();
 
-        return RequestEntity.get(URI.create(sampleLink.getHref()))
-                .accept(MediaTypes.HAL_JSON)
-                .build();
-    }
+    return RequestEntity.get(URI.create(sampleLink.getHref())).accept(MediaTypes.HAL_JSON).build();
+  }
 
-    private RequestEntity.HeadersBuilder prepareGetRequestBuilder(Sample sample) {
-        Link sampleLink = new Traverson(bioSamplesProperties.getBiosamplesClientUri(), MediaTypes.HAL_JSON)
-                .follow("samples")
-                .follow(Hop.rel("sample").withParameter("accession", sample.getAccession()))
-                .asLink();
+  private RequestEntity.HeadersBuilder prepareGetRequestBuilder(Sample sample) {
+    Link sampleLink =
+        new Traverson(bioSamplesProperties.getBiosamplesClientUri(), MediaTypes.HAL_JSON)
+            .follow("samples")
+            .follow(Hop.rel("sample").withParameter("accession", sample.getAccession()))
+            .asLink();
 
-        return RequestEntity.get(URI.create(sampleLink.getHref()))
-                .accept(MediaTypes.HAL_JSON);
+    return RequestEntity.get(URI.create(sampleLink.getHref())).accept(MediaTypes.HAL_JSON);
+  }
 
-    }
+  private RequestEntity prepareGetRequestForRawSample(Sample sample) {
+    Link sampleLink =
+        new Traverson(bioSamplesProperties.getBiosamplesClientUri(), MediaTypes.HAL_JSON)
+            .follow("samples")
+            .follow(Hop.rel("sample").withParameter("accession", sample.getAccession()))
+            .follow(
+                Hop.rel("curationDomain").withParameter("curationdomain", Collections.EMPTY_LIST))
+            .asLink();
 
-    private RequestEntity prepareGetRequestForRawSample(Sample sample) {
-        Link sampleLink = new Traverson(bioSamplesProperties.getBiosamplesClientUri(), MediaTypes.HAL_JSON)
-                .follow("samples")
-                .follow(Hop.rel("sample").withParameter("accession", sample.getAccession()))
-                .follow(Hop.rel("curationDomain").withParameter("curationdomain", Collections.EMPTY_LIST))
-                .asLink();
-
-        return RequestEntity.get(URI.create(sampleLink.getHref()))
-                .accept(MediaTypes.HAL_JSON).build();
-
-    }
+    return RequestEntity.get(URI.create(sampleLink.getHref())).accept(MediaTypes.HAL_JSON).build();
+  }
 }
