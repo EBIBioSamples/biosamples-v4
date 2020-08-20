@@ -10,16 +10,33 @@
       "name": "ncbi-candidate-schema",
       "version": "0.0.1",
       "file": "schemas/certification/ncbi-candidate-schema.json"
+    },
+    {
+      "name": "biosamples-basic",
+      "version": "0.0.1",
+      "file": "schemas/certification/biosamples-basic.json"
     }
   ],
   "plans": [
     {
-      "candidate_checklist_id": "ncbi-0.0.1",
-      "certification_checklist_id": "biosamples-0.0.1",
+      "candidate_checklist_id": "ncbi-candidate-schema-0.0.1",
+      "certification_checklist_id": "biosamples-basic-0.0.1",
       "curations": [
         {
           "characteristic": "INSDC status",
           "value": "public"
+        }
+      ]
+    }
+  ],
+  "recommendations": [
+    {
+      "certification_checklist_id": "biosamples-minimal-0.0.1",
+      "suggestions": [
+        {
+          "characteristic": ["Organism", "Species", "organism", "species"],
+          "mandatory": "true",
+          "comment": "Either Organism or Species must be present in sample"
         }
       ]
     }

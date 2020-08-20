@@ -108,7 +108,8 @@ public class Certifier {
       super(
           "Sample failed validation against BioSamples minimal checklist "
               + checklistDetails
-              + " and hence submission couldn't be completed",
+              + " and hence submission couldn't be completed "
+              + ve.getMessage(),
           ve);
     }
   }

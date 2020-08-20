@@ -55,13 +55,13 @@ public class FileRecorderTest {
         new CertificationResult(sampleDocument.getAccession());
     certificationResult.add(certificate);
     BioSamplesCertificationComplainceResult bioSamplesCertificationComplainceResult =
-        recorder.record(Collections.singleton(certificationResult));
+        recorder.record(Collections.singleton(certificationResult), null);
     assertNotNull(bioSamplesCertificationComplainceResult);
     assertEquals(certificate, bioSamplesCertificationComplainceResult.getCertificates().get(0));
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void given_null_certificate_throw_exception() throws IOException {
-    recorder.record(null);
+    recorder.record(null, null);
   }
 }

@@ -25,10 +25,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
-import uk.ac.ebi.biosamples.model.certification.Checklist;
-import uk.ac.ebi.biosamples.model.certification.InterrogationResult;
-import uk.ac.ebi.biosamples.model.certification.PlanResult;
-import uk.ac.ebi.biosamples.model.certification.SampleDocument;
+import uk.ac.ebi.biosamples.model.certification.*;
 import uk.ac.ebi.biosamples.service.certification.*;
 
 @RunWith(SpringRunner.class)
@@ -50,7 +47,10 @@ public class CuratorTest {
     checklistList =
         Collections.singletonList(
             new Checklist(
-                "ncbi", "0.0.1", "schemas/certification/ncbi-candidate-schema.json", false));
+                "ncbi-candidate-schema",
+                "0.0.1",
+                "schemas/certification/ncbi-candidate-schema.json",
+                false));
     InterrogationResult interrogationResult = new InterrogationResult(testSample(), checklistList);
     List<PlanResult> planResults = curator.runCurationPlans(interrogationResult);
     for (PlanResult planResult : planResults) {
@@ -59,6 +59,25 @@ public class CuratorTest {
       assertEquals("live", planResult.getCurationResults().get(0).getBefore());
       assertEquals("public", planResult.getCurationResults().get(0).getAfter());
     }
+  }
+
+  @Test
+  public void given_ChecklistNotMatches_run_Recommendation() throws Exception {
+    List<Checklist> checklistList;
+    checklistList =
+        Collections.singletonList(
+            new Checklist(
+                "biosamples-minimal",
+                "0.0.1",
+                "schemas/certification/biosamples-minimal.json",
+                false));
+    InterrogationResult interrogationResult = new InterrogationResult(testSample(), checklistList);
+    List<Recommendation> recommendations = curator.runRecommendations(interrogationResult);
+
+    recommendations.forEach(
+        recommendation -> {
+          assertTrue(recommendation.getSuggestions() != null);
+        });
   }
 
   @Test(expected = IllegalArgumentException.class)

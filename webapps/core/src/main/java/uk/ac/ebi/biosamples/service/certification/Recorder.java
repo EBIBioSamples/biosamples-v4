@@ -10,10 +10,13 @@
 */
 package uk.ac.ebi.biosamples.service.certification;
 
+import java.util.List;
 import java.util.Set;
 import uk.ac.ebi.biosamples.model.certification.BioSamplesCertificationComplainceResult;
 import uk.ac.ebi.biosamples.model.certification.CertificationResult;
+import uk.ac.ebi.biosamples.model.certification.Recommendation;
 
 public interface Recorder {
-  BioSamplesCertificationComplainceResult record(Set<CertificationResult> certificationResult);
+  BioSamplesCertificationComplainceResult record(
+      Set<CertificationResult> certificationResult, List<Recommendation> recommendations);
 }
