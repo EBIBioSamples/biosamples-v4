@@ -44,6 +44,7 @@ import uk.ac.ebi.biosamples.utils.LinkUtils;
 @RestController
 @ExposesResourceFor(Sample.class)
 @RequestMapping("/samples/{accession}")
+@CrossOrigin
 public class SampleRestController {
   private final SampleService sampleService;
   private final BioSamplesAapService bioSamplesAapService;
