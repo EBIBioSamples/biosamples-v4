@@ -23,6 +23,7 @@ import uk.ac.ebi.biosamples.service.AccessionsService;
 
 @RestController
 @RequestMapping("/accessions")
+@CrossOrigin
 public class AccessionsRestController {
 
   private final AccessionsService accessionsService;

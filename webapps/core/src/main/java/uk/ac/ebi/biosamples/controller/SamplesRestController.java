@@ -58,6 +58,7 @@ import uk.ac.ebi.biosamples.utils.LinkUtils;
 @RestController
 @ExposesResourceFor(Sample.class)
 @RequestMapping("/samples")
+@CrossOrigin
 public class SamplesRestController {
   private final SamplePageService samplePageService;
   private final SampleService sampleService;
