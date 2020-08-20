@@ -30,5 +30,6 @@
 		<module>legacyjson</module>
 		<module>structured</module>
 		<module>neo4j</module>
+		<module>curami</module>
 	</modules>
 </project>
