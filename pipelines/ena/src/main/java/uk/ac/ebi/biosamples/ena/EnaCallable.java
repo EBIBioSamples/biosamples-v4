@@ -33,6 +33,7 @@ public class EnaCallable implements Callable<Void> {
   private static final String DDBJ_SAMPLE_PREFIX = "SAMD";
   private static final String NCBI_SAMPLE_PREFIX = "SAMN";
   private static final String SUPPRESSED = "suppressed";
+  private static final String KILLED = "killed";
   public static final String ENA_SRA_ACCESSION = "SRA accession";
   private final String sampleAccession;
   private final BioSamplesClient bioSamplesClient;
@@ -42,6 +43,7 @@ public class EnaCallable implements Callable<Void> {
   private String domain;
   private Set<AbstractData> amrData;
   private boolean suppressionHandler;
+  private boolean killedHandler;
   private boolean bsdAuthority;
 
   public EnaCallable(
@@ -52,6 +54,7 @@ public class EnaCallable implements Callable<Void> {
       EraProDao eraProDao,
       String domain,
       boolean suppressionHandler,
+      boolean killedHandler,
       boolean bsdAuthority,
       Set<AbstractData> amrData) {
     this.sampleAccession = sampleAccession;
@@ -61,6 +64,7 @@ public class EnaCallable implements Callable<Void> {
     this.eraProDao = eraProDao;
     this.domain = domain;
     this.suppressionHandler = suppressionHandler;
+    this.killedHandler = killedHandler;
     this.bsdAuthority = bsdAuthority;
     this.amrData = amrData;
   }
@@ -69,6 +73,8 @@ public class EnaCallable implements Callable<Void> {
   public Void call() throws Exception {
     if (suppressionHandler) {
       return checkAndUpdateSuppressedSample();
+    } else if (killedHandler) {
+      return checkAndUpdateKilledSamples();
     } else {
       return enrichAndPersistEnaSample(bsdAuthority);
     }
@@ -290,7 +296,7 @@ public class EnaCallable implements Callable<Void> {
    *
    * @return {@link Void}
    */
-  private Void checkAndUpdateSuppressedSample() {
+  private Void checkAndUpdateSuppressedSample() throws DocumentException {
     final List<String> curationDomainBlankList = new ArrayList<>();
     curationDomainBlankList.add("");
 
@@ -324,7 +330,54 @@ public class EnaCallable implements Callable<Void> {
         }
       }
     } catch (final Exception e) {
-      log.error("Failed to update status of ENA sample " + sampleAccession + " to SUPPRESSED");
+      log.error("Failed to update status of ENA sample " + sampleAccession + " to SUPPRESSED - creating sample in BSD from ENA data");
+      return enrichAndPersistEnaSample(false);
+    }
+
+    return null;
+  }
+
+  /**
+   * Checks samples from ENA which is KILLED and takes necessary action, i.e. update status if
+   * status is different in BioSamples, else persist
+   *
+   * @return {@link Void}
+   */
+  private Void checkAndUpdateKilledSamples() throws DocumentException {
+    final List<String> curationDomainBlankList = new ArrayList<>();
+    curationDomainBlankList.add("");
+
+    try {
+      Optional<Resource<Sample>> optionalSampleResource =
+          bioSamplesClient.fetchSampleResource(
+              this.sampleAccession, Optional.of(curationDomainBlankList));
+
+      if (optionalSampleResource.isPresent()) {
+        final Sample sample = optionalSampleResource.get().getContent();
+        boolean persistRequired = true;
+
+        for (Attribute attribute : sample.getAttributes()) {
+          if (attribute.getType().equals("INSDC status") && attribute.getValue().equals(KILLED)) {
+            persistRequired = false;
+            break;
+          }
+        }
+
+        if (persistRequired) {
+          sample.getAttributes().removeIf(attr -> attr.getType().contains("INSDC status"));
+          sample.getAttributes().add(Attribute.build("INSDC status", KILLED));
+          log.info("Updating status to killed of sample: " + this.sampleAccession);
+          bioSamplesClient.persistSampleResource(sample);
+        }
+      } else {
+        if (!ifNcbiDdbj()) {
+          log.info("Accession doesn't exist " + this.sampleAccession + " creating the same");
+          return enrichAndPersistEnaSample(false);
+        }
+      }
+    } catch (final Exception e) {
+      log.error("Failed to update status of ENA sample " + sampleAccession + " to KILLED - creating sample in BSD from ENA data");
+      return enrichAndPersistEnaSample(false);
     }
 
     return null;

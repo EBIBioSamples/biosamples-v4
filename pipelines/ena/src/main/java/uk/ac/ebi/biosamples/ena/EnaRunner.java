@@ -56,7 +56,7 @@ public class EnaRunner implements ApplicationRunner {
     boolean isPassed = true;
 
     try {
-      sampleToAmrMap = amrDataLoaderService.loadAmrData();
+      //sampleToAmrMap = amrDataLoaderService.loadAmrData();
     } catch (final Exception e) {
       log.error("Error in processing AMR data from ENA API - continue with the pipeline");
     }
@@ -67,6 +67,7 @@ public class EnaRunner implements ApplicationRunner {
       LocalDate fromDate;
       LocalDate toDate;
       boolean suppressionRunner = true;
+      boolean killedRunner = true;
 
       if (args.getOptionNames().contains("from")) {
         fromDate =
@@ -90,19 +91,30 @@ public class EnaRunner implements ApplicationRunner {
         }
       }
 
+      if (args.getOptionNames().contains("killedRunner")) {
+        if (args.getOptionValues("killedRunner").iterator().next().equalsIgnoreCase("false")) {
+          suppressionRunner = false;
+        }
+      }
+
       log.info("Suppression Runner is to be executed: " + suppressionRunner);
+      log.info("Killed Runner is to be executed: " + killedRunner);
 
       // Import ENA samples
-      importEraSamples(fromDate, toDate, sampleToAmrMap);
+      //importEraSamples(fromDate, toDate, sampleToAmrMap);
 
       // Handler to append SRA Accession (ENA accession numbers to samples owned by BioSamples)
-      importEraBsdAuthoritySamples(fromDate, toDate);
+      //importEraBsdAuthoritySamples(fromDate, toDate);
 
       if (suppressionRunner) {
         // handler for suppressed ENA samples
-        handleSuppressedEnaSamples();
+        //handleSuppressedEnaSamples();
         // handler for suppressed NCBI/DDBJ samples
-        handleSuppressedNcbiDdbjSamples();
+        //handleSuppressedNcbiDdbjSamples();
+      }
+
+      if (killedRunner) {
+        handleKilledEnaSamples();
       }
     } catch (final Exception e) {
       log.error("Pipeline failed to finish successfully", e);
@@ -213,6 +225,34 @@ public class EnaRunner implements ApplicationRunner {
   }
 
   /**
+   * Handler for killed ENA samples. If status of sample is different in BioSamples, status will be
+   * updated so KILLED. If sample doesn't exist it will be created
+   *
+   * @throws Exception in case of failures
+   */
+  private void handleKilledEnaSamples() throws Exception {
+    log.info(
+        "Fetching all killed ENA samples. "
+            + "If they exist in BioSamples with different status, their status will be updated. If the sample don't exist at all it will be POSTed to BioSamples client");
+
+    try (final AdaptiveThreadPoolExecutor executorService =
+        AdaptiveThreadPoolExecutor.create(
+            100,
+            10000,
+            false,
+            pipelinesProperties.getThreadCount(),
+            pipelinesProperties.getThreadCountMax())) {
+
+      final EnaKilledSamplesCallbackHandler enaKilledSamplesCallbackHandler =
+          new EnaKilledSamplesCallbackHandler(executorService, enaCallableFactory, futures);
+      eraProDao.doGetKilledEnaSamples(enaKilledSamplesCallbackHandler);
+
+      log.info("waiting for futures"); // wait for anything to finish
+      ThreadUtils.checkFutures(futures, 0);
+    }
+  }
+
+  /**
    * Handler for suppressed NCBI/DDBJ samples. If status of sample is different in BioSamples,
    * status will be updated to SUPPRESSED
    *
@@ -263,7 +303,47 @@ public class EnaRunner implements ApplicationRunner {
     public void processRow(ResultSet rs) throws SQLException {
       final String sampleAccession = rs.getString("BIOSAMPLE_ID");
 
-      final Callable<Void> callable = enaCallableFactory.build(sampleAccession, true, false, null);
+      final Callable<Void> callable =
+          enaCallableFactory.build(sampleAccession, true, false, false, null);
+
+      if (executorService == null) {
+        try {
+          callable.call();
+        } catch (RuntimeException e) {
+          throw e;
+        } catch (Exception e) {
+          throw new RuntimeException(e);
+        }
+      } else {
+        futures.put(sampleAccession, executorService.submit(callable));
+      }
+    }
+  }
+
+  /**
+   * @author dgupta
+   *     <p>{@link RowCallbackHandler} for killed ENA samples
+   */
+  private static class EnaKilledSamplesCallbackHandler implements RowCallbackHandler {
+    private final AdaptiveThreadPoolExecutor executorService;
+    private final EnaCallableFactory enaCallableFactory;
+    private final Map<String, Future<Void>> futures;
+
+    public EnaKilledSamplesCallbackHandler(
+        final AdaptiveThreadPoolExecutor executorService,
+        final EnaCallableFactory enaCallableFactory,
+        final Map<String, Future<Void>> futures) {
+      this.executorService = executorService;
+      this.enaCallableFactory = enaCallableFactory;
+      this.futures = futures;
+    }
+
+    @Override
+    public void processRow(ResultSet rs) throws SQLException {
+      final String sampleAccession = rs.getString("BIOSAMPLE_ID");
+
+      final Callable<Void> callable =
+          enaCallableFactory.build(sampleAccession, false, true, false, null);
 
       if (executorService == null) {
         try {
@@ -383,9 +463,9 @@ public class EnaRunner implements ApplicationRunner {
           // update if sample already exists else import
 
           if (amrData.size() > 0) {
-            callable = enaCallableFactory.build(sampleAccession, false, false, amrData);
+            callable = enaCallableFactory.build(sampleAccession, false, false, false, amrData);
           } else {
-            callable = enaCallableFactory.build(sampleAccession, false, false, null);
+            callable = enaCallableFactory.build(sampleAccession, false, false, false, null);
           }
           if (executorService == null) {
             try {
@@ -485,7 +565,7 @@ public class EnaRunner implements ApplicationRunner {
     public void processRow(ResultSet rs) throws SQLException {
       final String sampleAccession = rs.getString("BIOSAMPLE_ID");
 
-      Callable<Void> callable = enaCallableFactory.build(sampleAccession, false, true, null);
+      Callable<Void> callable = enaCallableFactory.build(sampleAccession, false, false, true, null);
       if (executorService == null) {
         try {
           callable.call();

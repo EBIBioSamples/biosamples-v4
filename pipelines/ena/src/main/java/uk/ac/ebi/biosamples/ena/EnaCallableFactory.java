@@ -51,6 +51,7 @@ public class EnaCallableFactory {
   public Callable<Void> build(
       String accession,
       boolean suppressionHandler,
+      boolean killedHandler,
       boolean bsdAuthority,
       Set<AbstractData> amrData) {
     return new EnaCallable(
@@ -61,6 +62,7 @@ public class EnaCallableFactory {
         eraProDao,
         domain,
         suppressionHandler,
+        killedHandler,
         bsdAuthority,
         amrData);
   }
