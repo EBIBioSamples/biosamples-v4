@@ -10,10 +10,11 @@
 */
 package uk.ac.ebi.biosamples.service.certification;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.certification.BioSamplesCertificationComplainceResult;
 import uk.ac.ebi.biosamples.model.certification.Certificate;
 import uk.ac.ebi.biosamples.model.certification.CertificationResult;
+import uk.ac.ebi.biosamples.model.certification.Recommendation;
 
 @Service
 public class FileRecorder implements Recorder {
@@ -29,9 +31,11 @@ public class FileRecorder implements Recorder {
 
   @Override
   public BioSamplesCertificationComplainceResult record(
-      Set<CertificationResult> certificationResults) {
+      Set<CertificationResult> certificationResults, List<Recommendation> recommendations) {
     BioSamplesCertificationComplainceResult bioSamplesCertificationComplainceResult =
         new BioSamplesCertificationComplainceResult();
+    ObjectMapper objectMapper = new ObjectMapper();
+
     if (certificationResults == null) {
       throw new IllegalArgumentException("cannot record a null certification result");
     }
@@ -44,18 +48,22 @@ public class FileRecorder implements Recorder {
                 certificate.getSampleDocument().getAccession(),
                 certificate.getChecklist().getID()));
         bioSamplesCertificationComplainceResult.add(certificate);
-        ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-        String fileName =
-            certificate.getSampleDocument().getAccession()
-                + "-"
-                + certificate.getSampleDocument().getHash()
-                + "-certification.json";
+
         try {
-          objectMapper.writeValue(new File(fileName), certificationResult);
+          objectMapper.writeValueAsString(certificationResult);
         } catch (IOException e) {
-          LOG.error(String.format("failed to write file for %s", fileName));
+          LOG.error(String.format("failed to write"));
         }
+      }
+    }
+
+    for (Recommendation recommendation : recommendations) {
+      bioSamplesCertificationComplainceResult.add(recommendation);
+      try {
+        objectMapper.writeValueAsString(recommendation);
+      } catch (JsonProcessingException e) {
+        LOG.error(String.format("failed to write"));
       }
     }
 

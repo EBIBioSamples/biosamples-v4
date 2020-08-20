@@ -10,13 +10,16 @@
 */
 package uk.ac.ebi.biosamples.service.certification;
 
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.certification.BioSamplesCertificationComplainceResult;
 import uk.ac.ebi.biosamples.model.certification.Certificate;
 import uk.ac.ebi.biosamples.model.certification.CertificationResult;
+import uk.ac.ebi.biosamples.model.certification.Recommendation;
 
 @Service
 public class NullRecorder implements Recorder {
@@ -25,7 +28,7 @@ public class NullRecorder implements Recorder {
 
   @Override
   public BioSamplesCertificationComplainceResult record(
-      Set<CertificationResult> certificationResults) {
+      Set<CertificationResult> certificationResults, List<Recommendation> recommendations) {
     BioSamplesCertificationComplainceResult bioSamplesCertificationComplainceResult =
         new BioSamplesCertificationComplainceResult();
     if (certificationResults == null) {
@@ -34,12 +37,23 @@ public class NullRecorder implements Recorder {
 
     for (CertificationResult certificationResult : certificationResults) {
       for (Certificate certificate : certificationResult.getCertificates()) {
-        bioSamplesCertificationComplainceResult.add(certificate);
-        EVENTS.info(
-            String.format(
-                "%s recorded %s certificate",
-                certificate.getSampleDocument().getAccession(),
-                certificate.getChecklist().getID()));
+        if (!bioSamplesCertificationComplainceResult.getCertificates().stream()
+            .map(cert -> cert.getChecklist().getID())
+            .collect(Collectors.toList())
+            .contains(certificate.getChecklist().getID())) {
+          bioSamplesCertificationComplainceResult.add(certificate);
+          EVENTS.info(
+              String.format(
+                  "%s recorded %s certificate",
+                  certificate.getSampleDocument().getAccession(),
+                  certificate.getChecklist().getID()));
+        }
+      }
+    }
+
+    if (recommendations != null) {
+      for (Recommendation recommendation : recommendations) {
+        bioSamplesCertificationComplainceResult.add(recommendation);
       }
     }
 

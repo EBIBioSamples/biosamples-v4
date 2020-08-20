@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +27,7 @@ public class Curator {
   private static Logger EVENTS = LoggerFactory.getLogger("events");
   private ConfigLoader configLoader;
   private Map<String, Plan> plansByCandidateChecklistID = new HashMap<>();
+  private Map<String, Recommendation> recommendationsByCertificationChecklistID = new HashMap<>();
 
   public Curator(ConfigLoader configLoader) {
     this.configLoader = configLoader;
@@ -47,7 +49,9 @@ public class Curator {
 
     for (Checklist checklist : interrogationResult.getChecklists()) {
       PlanResult planResult = runCurationPlan(checklist, interrogationResult.getSampleDocument());
+
       if (planResult != null) {
+        LOG.info("Plan result added for checklist " + checklist.getID());
         planResults.add(planResult);
       }
     }
@@ -62,7 +66,7 @@ public class Curator {
       EVENTS.info(
           String.format(
               "%s plan not found for %s", sampleDocument.getAccession(), checklist.getID()));
-      return planResult;
+      return null;
     }
     if (plansByCandidateChecklistID.containsKey(checklist.getID())) {
       for (Curation curation : plan.getCurations()) {
@@ -83,5 +87,34 @@ public class Curator {
     for (Plan plan : configLoader.config.getPlans()) {
       plansByCandidateChecklistID.put(plan.getCandidateChecklistID(), plan);
     }
+
+    for (Recommendation recommendation : configLoader.config.getRecommendations()) {
+      recommendationsByCertificationChecklistID.put(
+          recommendation.getCertificationChecklistID(), recommendation);
+    }
+  }
+
+  public List<Recommendation> runRecommendations(InterrogationResult interrogationResult) {
+    if (interrogationResult == null) {
+      String message = "cannot run curation plans on null interrogation result";
+      LOG.warn(message);
+      throw new IllegalArgumentException(message);
+    }
+
+    if (interrogationResult.getSampleDocument() == null) {
+      String message = "cannot run suggestion plans on null sample";
+      LOG.warn(message);
+      throw new IllegalArgumentException(message);
+    }
+
+    return recommendationsByCertificationChecklistID.keySet().stream()
+        .filter(
+            checklist ->
+                !interrogationResult.getChecklists().stream()
+                    .map(Checklist::getID)
+                    .collect(Collectors.toList())
+                    .contains(checklist))
+        .map(checklist -> recommendationsByCertificationChecklistID.get(checklist))
+        .collect(Collectors.toList());
   }
 }
