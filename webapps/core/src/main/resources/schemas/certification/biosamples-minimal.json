@@ -33,6 +33,16 @@
           "required": [
             "Organism"
           ]
+        },
+        {
+          "required": [
+            "species"
+          ]
+        },
+        {
+          "required": [
+            "Species"
+          ]
         }
       ],
       "properties": {
@@ -50,6 +60,32 @@
           }
         },
         "Organism": {
+          "type": "array",
+          "items": {
+            "properties": {
+              "text": {
+                "$ref": "#/definitions/nonEmptyString"
+              }
+            },
+            "required": [
+              "text"
+            ]
+          }
+        },
+        "Species": {
+          "type": "array",
+          "items": {
+            "properties": {
+              "text": {
+                "$ref": "#/definitions/nonEmptyString"
+              }
+            },
+            "required": [
+              "text"
+            ]
+          }
+        },
+        "species": {
           "type": "array",
           "items": {
             "properties": {

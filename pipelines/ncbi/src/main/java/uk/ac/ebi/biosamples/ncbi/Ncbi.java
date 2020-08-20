@@ -33,6 +33,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -220,6 +221,8 @@ public class Ncbi implements ApplicationRunner {
           bioSamplesClient.persistSampleResource(newSample);
         }
       }
+    } catch (final HttpClientErrorException sampleMakePrivateException) {
+      log.info("Exception while persisting sample " + sampleMakePrivateException.getCause());
     } catch (final Exception sampleMakePrivateException) {
       throw new RuntimeException(sampleMakePrivateException);
     }
