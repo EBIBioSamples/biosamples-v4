@@ -1,13 +1,13 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
-* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
-* file except in compliance with the License. You may obtain a copy of the License at
-* http://www.apache.org/licenses/LICENSE-2.0
-* Unless required by applicable law or agreed to in writing, software distributed under the
-* License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-* CONDITIONS OF ANY KIND, either express or implied. See the License for the
-* specific language governing permissions and limitations under the License.
-*/
+ * Copyright 2019 EMBL - European Bioinformatics Institute
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+ * file except in compliance with the License. You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+ * CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ */
 package uk.ac.ebi.biosamples.ena;
 
 import java.sql.SQLException;
@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
@@ -141,19 +142,25 @@ public class EraProDao {
   }
 
   public SampleDBBean getAllSampleData(String biosampleAccession) {
-    String sql =
-        "SELECT SAMPLE_XML, "
-            + "to_char(LAST_UPDATED, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS LAST_UPDATED, "
-            + "to_char(FIRST_PUBLIC, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS FIRST_PUBLIC,  "
-            + " to_char(FIRST_CREATED, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS FIRST_CREATED, "
-            + "STATUS_ID "
-            + "FROM SAMPLE "
-            + "WHERE BIOSAMPLE_ID = ? "
-            + "AND SAMPLE_ID LIKE 'ERS%'";
-    final SampleDBBean sampleData =
-        jdbcTemplate.queryForObject(sql, insdcRowMapper, biosampleAccession);
+    try {
+      String sql =
+          "SELECT SAMPLE_XML, "
+              + "to_char(LAST_UPDATED, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS LAST_UPDATED, "
+              + "to_char(FIRST_PUBLIC, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS FIRST_PUBLIC,  "
+              + " to_char(FIRST_CREATED, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS FIRST_CREATED, "
+              + "STATUS_ID "
+              + "FROM SAMPLE "
+              + "WHERE BIOSAMPLE_ID = ? "
+              + "AND SAMPLE_ID LIKE 'ERS%'";
+      final SampleDBBean sampleData =
+          jdbcTemplate.queryForObject(sql, insdcRowMapper, biosampleAccession);
 
-    return sampleData;
+      return sampleData;
+    } catch (final IncorrectResultSizeDataAccessException e) {
+      log.error("Result set size expected is 1 and got more that that, skipping");
+    }
+
+    return null;
   }
 
   public String getChecklist(String biosampleAccession) {
@@ -253,4 +260,11 @@ public class EraProDao {
 
         return sampleBean;
       };
+
+  public void doGetKilledEnaSamples(RowCallbackHandler rch) {
+    String query =
+        "SELECT UNIQUE(BIOSAMPLE_ID) FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND BIOSAMPLE_AUTHORITY= 'N' AND STATUS_ID = 6";
+
+    jdbcTemplate.query(query, rch);
+  }
 }
