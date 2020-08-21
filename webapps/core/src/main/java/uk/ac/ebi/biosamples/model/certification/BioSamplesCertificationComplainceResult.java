@@ -16,6 +16,16 @@ import java.util.List;
 public class BioSamplesCertificationComplainceResult {
   private final List<Certificate> certificates = new ArrayList<>();
 
+  private final List<Recommendation> recommendations = new ArrayList<>();
+
+  public List<Recommendation> getRecommendations() {
+    return recommendations;
+  }
+
+  public void add(Recommendation recommendation) {
+    recommendations.add(recommendation);
+  }
+
   public List<Certificate> getCertificates() {
     return certificates;
   }
@@ -26,6 +36,11 @@ public class BioSamplesCertificationComplainceResult {
 
   @Override
   public String toString() {
-    return "BioSamplesCertificationComplianceResult{" + "certificates=" + certificates + '}';
+    return "BioSamplesCertificationComplainceResult{"
+        + "certificates="
+        + certificates
+        + ", recommendations="
+        + recommendations
+        + '}';
   }
 }

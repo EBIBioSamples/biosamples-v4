@@ -10,18 +10,15 @@
 */
 package uk.ac.ebi.biosamples.certification.service;
 
-import static junit.framework.TestCase.assertNotNull;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
-import java.util.Collections;
 import org.apache.commons.io.IOUtils;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
-import uk.ac.ebi.biosamples.model.certification.*;
+import uk.ac.ebi.biosamples.model.certification.BioSamplesCertificationComplainceResult;
+import uk.ac.ebi.biosamples.model.certification.SampleDocument;
 import uk.ac.ebi.biosamples.service.certification.*;
 
 @RunWith(SpringRunner.class)
@@ -38,22 +35,8 @@ import uk.ac.ebi.biosamples.service.certification.*;
       NullRecorder.class
     },
     properties = {"job.autorun.enabled=false"})
-public class CertifierTest {
-  @Autowired private Certifier certifier;
+public class CertifyServiceTest {
   @Autowired private CertifyService certifyService;
-
-  @Test
-  public void given_valid_plan_result_issue_certificate() throws Exception {
-    String data =
-        IOUtils.toString(
-            getClass().getClassLoader().getResourceAsStream("json/ncbi-SAMN03894263-curated.json"),
-            "UTF8");
-    SampleDocument sampleDocument = new SampleDocument("test-uuid", data);
-    Plan plan = new Plan("ncbi-0.0.1", "biosamples-0.0.1", Collections.EMPTY_LIST);
-    PlanResult planResult = new PlanResult(sampleDocument, plan);
-    CertificationResult certificationResult = certifier.certify(planResult, true);
-    assertNotNull(certificationResult);
-  }
 
   @Test
   public void given_valid_plan_result_issue_certificate_curator_test() throws Exception {
@@ -62,14 +45,28 @@ public class CertifierTest {
             getClass().getClassLoader().getResourceAsStream("json/ncbi-SAMN03894263-curated.json"),
             "UTF8");
     SampleDocument sampleDocument = new SampleDocument("test-uuid", data);
-    final ObjectMapper jsonMapper = new ObjectMapper();
 
     BioSamplesCertificationComplainceResult result =
         certifyService.recordResult(sampleDocument, true);
+
+    Assert.assertTrue(result.getCertificates().size() == 2);
+    Assert.assertTrue(result.getRecommendations().size() == 0);
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void given_null_planResult_throw_exception() throws IOException {
-    certifier.certify((SampleDocument) null, true);
+  @Test
+  public void given_valid_plan_result_issue_certificate_curator_test_more() throws Exception {
+    String data =
+        IOUtils.toString(
+            getClass()
+                .getClassLoader()
+                .getResourceAsStream("json/ncbi-SAMN03894263-uncurated.json"),
+            "UTF8");
+    SampleDocument sampleDocument = new SampleDocument("test-uuid", data);
+
+    BioSamplesCertificationComplainceResult result =
+        certifyService.recordResult(sampleDocument, true);
+
+    Assert.assertTrue(result.getCertificates().size() == 3);
+    Assert.assertTrue(result.getRecommendations().size() == 0);
   }
 }

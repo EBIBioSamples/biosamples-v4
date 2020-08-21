@@ -17,6 +17,16 @@ public class Config {
 
   private List<Plan> plans;
 
+  private List<Recommendation> recommendations;
+
+  public List<Recommendation> getRecommendations() {
+    return recommendations;
+  }
+
+  public void setRecommendations(List<Recommendation> recommendations) {
+    this.recommendations = recommendations;
+  }
+
   public List<Checklist> getChecklists() {
     return checklists;
   }

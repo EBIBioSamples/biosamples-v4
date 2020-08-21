@@ -32,6 +32,7 @@ import uk.ac.ebi.biosamples.service.certification.CertifyService;
 @RestController
 @ExposesResourceFor(Sample.class)
 @RequestMapping("/samples/{accession}")
+@CrossOrigin
 public class CertificationController {
   private Logger log = LoggerFactory.getLogger(getClass());
 

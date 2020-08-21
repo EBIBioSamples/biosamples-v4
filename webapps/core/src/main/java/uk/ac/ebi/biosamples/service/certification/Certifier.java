@@ -1,18 +1,21 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
-* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
-* file except in compliance with the License. You may obtain a copy of the License at
-* http://www.apache.org/licenses/LICENSE-2.0
-* Unless required by applicable law or agreed to in writing, software distributed under the
-* License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-* CONDITIONS OF ANY KIND, either express or implied. See the License for the
-* specific language governing permissions and limitations under the License.
-*/
+ * Copyright 2019 EMBL - European Bioinformatics Institute
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+ * file except in compliance with the License. You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+ * CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ */
 package uk.ac.ebi.biosamples.service.certification;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+
 import org.everit.json.schema.ValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,6 +62,7 @@ public class Certifier {
     else message = "New sample";
 
     boolean certified = false;
+    String suggestionMessage = "";
 
     for (Checklist checklist : configLoader.config.getChecklists()) {
       try {
@@ -74,8 +78,36 @@ public class Certifier {
         EVENTS.info(String.format("%s validation failed against %s", message, checklist.getID()));
 
         if (!isJustCertification && checklist.isBlock()) {
+          List<Recommendation> recommendations = configLoader.config.getRecommendations();
+          List<Recommendation> matchedRecommendations = new ArrayList<>();
+          List<Suggestion> matchedSuggestions = new ArrayList<>();
+
+          if (recommendations != null && recommendations.size() > 0) {
+            matchedRecommendations =
+                configLoader.config.getRecommendations().stream()
+                    .filter(
+                        recommendation ->
+                            recommendation.getCertificationChecklistID().equals(checklist.getID()))
+                    .collect(Collectors.toList());
+          }
+
+          if (matchedRecommendations.size() > 0) {
+            matchedSuggestions =
+                matchedRecommendations.stream()
+                    .map(Recommendation::getSuggestions)
+                    .flatMap(List::stream)
+                    .collect(Collectors.toList());
+          }
+
+          if (matchedSuggestions.size() > 0) {
+            suggestionMessage =
+                matchedSuggestions.stream()
+                    .map(Suggestion::getComment)
+                    .collect(Collectors.joining());
+          }
+
           throw new SampleChecklistValidationFailureException(
-              checklist.getName() + " " + checklist.getVersion(), ve);
+              checklist.getID(), suggestionMessage, ve);
         }
       }
     }
@@ -104,11 +136,13 @@ public class Certifier {
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
   public static class SampleChecklistValidationFailureException extends RuntimeException {
     public SampleChecklistValidationFailureException(
-        String checklistDetails, ValidationException ve) {
+        String checklistDetails, String matchedSuggestionMessages, ValidationException ve) {
       super(
           "Sample failed validation against BioSamples minimal checklist "
               + checklistDetails
-              + " and hence submission couldn't be completed",
+              + " and hence submission couldn't be completed."
+              + " Reason - "
+              + matchedSuggestionMessages,
           ve);
     }
   }

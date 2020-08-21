@@ -47,19 +47,18 @@ public class CertifyService {
     List<Certificate> certificates = new ArrayList<>();
 
     certificationResults.forEach(
-        certificationResult -> {
-          certificationResult
-              .getCertificates()
-              .forEach(
-                  certificate -> {
-                    final Checklist checklist = certificate.getChecklist();
+        certificationResult ->
+            certificationResult
+                .getCertificates()
+                .forEach(
+                    certificate -> {
+                      final Checklist checklist = certificate.getChecklist();
 
-                    final Certificate cert =
-                        Certificate.build(
-                            checklist.getName(), checklist.getVersion(), checklist.getFileName());
-                    certificates.add(cert);
-                  });
-        });
+                      final Certificate cert =
+                          Certificate.build(
+                              checklist.getName(), checklist.getVersion(), checklist.getFileName());
+                      certificates.add(cert);
+                    }));
 
     return certificates;
   }
@@ -68,9 +67,24 @@ public class CertifyService {
       String data, boolean isJustCertification) {
     Set<CertificationResult> certificationResults = new LinkedHashSet<>();
     SampleDocument rawSampleDocument = identifier.identify(data);
+    return doRecordResult(isJustCertification, certificationResults, rawSampleDocument);
+  }
+
+  public BioSamplesCertificationComplainceResult recordResult(
+      SampleDocument rawSampleDocument, boolean isJustCertification) {
+    Set<CertificationResult> certificationResults = new LinkedHashSet<>();
+    return doRecordResult(isJustCertification, certificationResults, rawSampleDocument);
+  }
+
+  private BioSamplesCertificationComplainceResult doRecordResult(
+      boolean isJustCertification,
+      Set<CertificationResult> certificationResults,
+      SampleDocument rawSampleDocument) {
     certificationResults.add(certifier.certify(rawSampleDocument, isJustCertification));
-    List<PlanResult> planResults =
-        curator.runCurationPlans(interrogator.interrogate(rawSampleDocument));
+
+    InterrogationResult interrogationResult = interrogator.interrogate(rawSampleDocument);
+
+    List<PlanResult> planResults = curator.runCurationPlans(interrogationResult);
 
     for (PlanResult planResult : planResults) {
       if (planResult.curationsMade()) {
@@ -78,6 +92,8 @@ public class CertifyService {
       }
     }
 
-    return recorder.record(certificationResults);
+    List<Recommendation> recommendations = curator.runRecommendations(interrogationResult);
+
+    return recorder.record(certificationResults, recommendations);
   }
 }
