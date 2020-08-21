@@ -225,8 +225,7 @@ public class Sample implements Comparable<Sample> {
     }
     Sample other = (Sample) o;
 
-    // dont use update date for comparisons, too volatile. SubmittedVia doesnt contain
-    // information
+    // dont use update date for comparisons, too volatile. SubmittedVia doesnt contain information
     // for comparison
 
     return Objects.equals(this.name, other.name)
@@ -676,8 +675,7 @@ public class Sample implements Comparable<Sample> {
      * @return
      */
     public Builder withRelationships(Collection<Relationship> relationships) {
-      if (relationships != null && relationships.size() > 0)
-        this.relationships = new TreeSet<>(relationships);
+      if (relationships != null) this.relationships = new TreeSet<>(relationships);
       return this;
     }
 

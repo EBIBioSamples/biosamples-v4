@@ -92,6 +92,7 @@ public class CurationReadService {
 
     SortedSet<Attribute> attributes = new TreeSet<>(sample.getAttributes());
     SortedSet<ExternalReference> externalReferences = new TreeSet<>(sample.getExternalReferences());
+    SortedSet<Relationship> relationships = new TreeSet<>(sample.getRelationships());
     // remove pre-curation things
     for (Attribute attribute : curation.getAttributesPre()) {
       if (!attributes.contains(attribute)) {
@@ -106,6 +107,13 @@ public class CurationReadService {
             "Failed to apply curation " + curation + " to sample " + sample);
       }
       externalReferences.remove(externalReference);
+    }
+    for (Relationship relationship : curation.getRelationshipsPre()) {
+      if (!relationships.contains(relationship)) {
+        throw new IllegalArgumentException(
+            "Failed to apply curation " + curation + " to sample " + sample);
+      }
+      relationships.remove(relationship);
     }
     // add post-curation things
     for (Attribute attribute : curation.getAttributesPost()) {
@@ -122,6 +130,13 @@ public class CurationReadService {
       }
       externalReferences.add(externalReference);
     }
+    for (Relationship relationship : curation.getRelationshipsPost()) {
+      if (relationships.contains(relationship)) {
+        throw new IllegalArgumentException(
+            "Failed to apply curation " + curation + " to sample " + sample);
+      }
+      relationships.add(relationship);
+    }
 
     // update the sample's update date
     Instant update = sample.getUpdate();
@@ -133,6 +148,7 @@ public class CurationReadService {
         .withUpdate(update)
         .withAttributes(attributes)
         .withExternalReferences(externalReferences)
+        .withRelationships(relationships)
         .build();
   }
 

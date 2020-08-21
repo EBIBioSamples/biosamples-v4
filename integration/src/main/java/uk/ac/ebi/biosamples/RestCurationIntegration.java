@@ -13,6 +13,7 @@ package uk.ac.ebi.biosamples;
 import java.net.URI;
 import java.time.Instant;
 import java.util.*;
+import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -57,8 +58,9 @@ public class RestCurationIntegration extends AbstractIntegration {
 
   @Override
   protected void phaseOne() {
-    Sample sample = getSampleTest1();
-    client.persistSampleResource(sample);
+    client.persistSampleResource(getSampleTest1());
+    client.persistSampleResource(getSampleTest2());
+    client.persistSampleResource(getSampleTest3());
   }
 
   @Override
@@ -71,6 +73,31 @@ public class RestCurationIntegration extends AbstractIntegration {
       throw new IntegrationTestFailException(
           "Sample does not exist, sample name: " + sample.getName(), Phase.TWO);
     }
+
+    Sample sample2 = getSampleTest2();
+    optionalSample = fetchUniqueSampleByName(sample2.getName());
+    if (optionalSample.isPresent()) {
+      sample2 = optionalSample.get();
+    } else {
+      throw new IntegrationTestFailException(
+          "Sample does not exist, sample name: " + sample2.getName(), Phase.TWO);
+    }
+
+    Sample sample3 = getSampleTest3();
+    optionalSample = fetchUniqueSampleByName(sample3.getName());
+    if (optionalSample.isPresent()) {
+      sample3 = optionalSample.get();
+    } else {
+      throw new IntegrationTestFailException(
+          "Sample does not exist, sample name: " + sample3.getName(), Phase.TWO);
+    }
+
+    // resubmit sample with relationships
+    SortedSet<Relationship> relationships = new TreeSet<>();
+    relationships.add(
+        Relationship.build(sample3.getAccession(), "DERIVED_FROM", sample.getAccession()));
+    sample3 = Sample.Builder.fromSample(sample3).withRelationships(relationships).build();
+    client.persistSampleResource(sample3);
 
     Set<Attribute> attributesPre;
     Set<Attribute> attributesPost;
@@ -112,6 +139,7 @@ public class RestCurationIntegration extends AbstractIntegration {
         sample.getAccession(),
         Curation.build(attributesPre, attributesPost, null, null),
         "self.BiosampleIntegrationTest");
+
     attributesPre = new HashSet<>();
     attributesPre.add(Attribute.build("CurationDomain", "original"));
     attributesPost = new HashSet<>();
@@ -119,6 +147,15 @@ public class RestCurationIntegration extends AbstractIntegration {
     client.persistCuration(
         sample.getAccession(),
         Curation.build(attributesPre, attributesPost, null, null),
+        "self.BiosampleIntegrationTestAlternative");
+
+    Set<Relationship> relationshipsPre = new HashSet<>();
+    Set<Relationship> relationshipsPost = new HashSet<>();
+    relationshipsPost.add(
+        Relationship.build(sample.getAccession(), "SAME_AS", sample2.getAccession()));
+    client.persistCuration(
+        sample.getAccession(),
+        Curation.build(null, null, null, null, relationshipsPre, relationshipsPost),
         "self.BiosampleIntegrationTestAlternative");
   }
 
@@ -138,7 +175,6 @@ public class RestCurationIntegration extends AbstractIntegration {
 
     // check /curations
     testCurations();
-
     testSampleCurations(sample);
 
     // check there was no side-effects
@@ -163,14 +199,36 @@ public class RestCurationIntegration extends AbstractIntegration {
 
   @Override
   protected void phaseFour() {
-    // TODO Auto-generated method stub
+    Sample sample3 = getSampleTest3();
+    Optional<Sample> optionalSample = fetchUniqueSampleByName(sample3.getName());
+    if (optionalSample.isPresent()) {
+      sample3 = optionalSample.get();
+    } else {
+      throw new IntegrationTestFailException(
+          "Sample does not exist, sample name: " + sample3.getName(), Phase.TWO);
+    }
 
+    Set<Relationship> relationshipsPre = new HashSet<>();
+    relationshipsPre.add(sample3.getRelationships().first());
+    Set<Relationship> relationshipsPost = new HashSet<>();
+    client.persistCuration(
+        sample3.getAccession(),
+        Curation.build(null, null, null, null, relationshipsPre, relationshipsPost),
+        "self.BiosampleIntegrationTestAlternative");
   }
 
   @Override
   protected void phaseFive() {
-    // TODO Auto-generated method stub
+    Sample sample3 = getSampleTest3();
+    Optional<Sample> optionalSample = fetchUniqueSampleByName(sample3.getName());
+    if (optionalSample.isPresent()) {
+      sample3 = optionalSample.get();
+    } else {
+      throw new IntegrationTestFailException(
+          "Sample does not exist, sample name: " + sample3.getName(), Phase.TWO);
+    }
 
+    Assert.assertTrue(sample3.getRelationships().isEmpty());
   }
 
   private void testCurations() {
@@ -251,9 +309,9 @@ public class RestCurationIntegration extends AbstractIntegration {
 
     PagedResources<Resource<Curation>> paged = response.getBody();
 
-    if (paged.getMetadata().getTotalElements() != 5) {
+    if (paged.getMetadata().getTotalElements() != 6) {
       throw new RuntimeException(
-          "Expecting 4 curations, found " + paged.getMetadata().getTotalElements());
+          "Expecting 6 curations, found " + paged.getMetadata().getTotalElements());
     }
   }
 
@@ -306,16 +364,45 @@ public class RestCurationIntegration extends AbstractIntegration {
     attributes.add(Attribute.build("CurationDomain", "original"));
     attributes.add(Attribute.build("Weird", "\"\""));
 
-    SortedSet<Relationship> relationships = new TreeSet<>();
-    SortedSet<ExternalReference> externalReferences = new TreeSet<>();
+    return new Sample.Builder(name)
+        .withDomain(defaultIntegrationSubmissionDomain)
+        .withRelease(release)
+        .withUpdate(update)
+        .withAttributes(attributes)
+        .build();
+  }
+
+  private Sample getSampleTest2() {
+    String name = "RestCurationIntegration_sample_2";
+    Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
+    Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
+
+    SortedSet<Attribute> attributes = new TreeSet<>();
+    attributes.add(Attribute.build("Organism", "9606"));
+    attributes.add(Attribute.build("CurationDomain", "original"));
+    attributes.add(Attribute.build("Weird", "\"\""));
 
     return new Sample.Builder(name)
         .withDomain(defaultIntegrationSubmissionDomain)
         .withRelease(release)
         .withUpdate(update)
         .withAttributes(attributes)
-        .withRelationships(relationships)
-        .withExternalReferences(externalReferences)
+        .build();
+  }
+
+  private Sample getSampleTest3() {
+    String name = "RestCurationIntegration_sample_3";
+    Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
+    Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
+
+    SortedSet<Attribute> attributes = new TreeSet<>();
+    attributes.add(Attribute.build("Organism", "9606"));
+
+    return new Sample.Builder(name)
+        .withDomain(defaultIntegrationSubmissionDomain)
+        .withRelease(release)
+        .withUpdate(update)
+        .withAttributes(attributes)
         .build();
   }
 }

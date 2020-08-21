@@ -26,6 +26,8 @@ public class MongoCurationToCurationConverter implements Converter<MongoCuration
         mongoCuration.getAttributesPre(),
         mongoCuration.getAttributesPost(),
         mongoCuration.getExternalReferencesPre(),
-        mongoCuration.getExternalReferencesPost());
+        mongoCuration.getExternalReferencesPost(),
+        mongoCuration.getRelationshipsPre(),
+        mongoCuration.getRelationshipsPost());
   }
 }

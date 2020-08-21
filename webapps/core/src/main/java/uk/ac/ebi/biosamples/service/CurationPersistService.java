@@ -10,12 +10,16 @@
 */
 package uk.ac.ebi.biosamples.service;
 
+import java.util.SortedSet;
+import java.util.TreeSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
+import uk.ac.ebi.biosamples.model.Curation;
 import uk.ac.ebi.biosamples.model.CurationLink;
+import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.mongo.model.MongoCuration;
 import uk.ac.ebi.biosamples.mongo.model.MongoCurationLink;
 import uk.ac.ebi.biosamples.mongo.repo.MongoCurationLinkRepository;
@@ -72,6 +76,9 @@ public class CurationPersistService {
                   curationLinkToMongoCurationLinkConverter.convert(curationLink)));
     }
 
+    // for each relationship curation create reverse relationship curation
+    createReverseRelationshipCurations(curationLink);
+
     messagingSerivce.fetchThenSendMessage(curationLink.getSample());
     return curationLink;
   }
@@ -82,5 +89,49 @@ public class CurationPersistService {
         curationLinkToMongoCurationLinkConverter.convert(curationLink);
     mongoCurationLinkRepository.delete(mongoCurationLink.getHash());
     messagingSerivce.fetchThenSendMessage(curationLink.getSample());
+  }
+
+  // sample reverse relationships are dynamically generated, therefore should create for curations
+  private void createReverseRelationshipCurations(CurationLink curationLink) {
+    SortedSet<Relationship> relationshipsPre = curationLink.getCuration().getRelationshipsPre();
+    SortedSet<Relationship> relationshipsPost = curationLink.getCuration().getRelationshipsPost();
+    if (!relationshipsPre.isEmpty()) {
+      for (Relationship rel : relationshipsPre) {
+        SortedSet<Relationship> reverseRelationships = new TreeSet<>();
+        reverseRelationships.add(
+            rel); // to keep original direction, instead of adding reverse relationship
+        Curation reverseCuration =
+            Curation.build(null, null, null, null, reverseRelationships, null);
+        CurationLink reverseCurationLink =
+            CurationLink.build(
+                rel.getTarget(),
+                reverseCuration,
+                curationLink.getDomain(),
+                curationLink.getCreated());
+        if (mongoCurationLinkRepository.findOne(reverseCurationLink.getHash()) == null) {
+          mongoCurationLinkRepository.save(
+              curationLinkToMongoCurationLinkConverter.convert(reverseCurationLink));
+        }
+      }
+    }
+    if (!relationshipsPost.isEmpty()) {
+      for (Relationship rel : relationshipsPost) {
+        SortedSet<Relationship> reverseRelationships = new TreeSet<>();
+        reverseRelationships.add(
+            rel); // to keep original direction, instead of adding reverse relationship
+        Curation reverseCuration =
+            Curation.build(null, null, null, null, null, reverseRelationships);
+        CurationLink reverseCurationLink =
+            CurationLink.build(
+                rel.getTarget(),
+                reverseCuration,
+                curationLink.getDomain(),
+                curationLink.getCreated());
+        if (mongoCurationLinkRepository.findOne(reverseCurationLink.getHash()) == null) {
+          mongoCurationLinkRepository.save(
+              curationLinkToMongoCurationLinkConverter.convert(reverseCurationLink));
+        }
+      }
+    }
   }
 }
