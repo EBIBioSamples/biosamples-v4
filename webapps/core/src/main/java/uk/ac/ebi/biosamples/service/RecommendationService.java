@@ -106,7 +106,7 @@ public class RecommendationService {
     private int getSampleQualityScore(Sample sample, int attributeQuality) {
         int quality = attributeQuality;
         if (sample.getExternalReferences() != null && !sample.getExternalReferences().isEmpty()) {
-            quality += 20;
+            quality += 15;
         }
         if (sample.getRelationships() != null && !sample.getRelationships().isEmpty()) {
             quality += 15;
@@ -115,6 +115,9 @@ public class RecommendationService {
             quality += 10;
         }
         if (sample.getOrganizations() != null && !sample.getOrganizations().isEmpty()) {
+            quality += 5;
+        }
+        if (sample.getContacts() != null && !sample.getContacts().isEmpty()) {
             quality += 5;
         }
 

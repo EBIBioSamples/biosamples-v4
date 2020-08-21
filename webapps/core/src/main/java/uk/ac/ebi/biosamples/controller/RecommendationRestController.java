@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.ac.ebi.biosamples.model.CuramiRecommendation;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.SampleRecommendation;
 import uk.ac.ebi.biosamples.service.RecommendationService;
 
 import java.util.Map;
@@ -21,10 +22,10 @@ public class RecommendationRestController {
     }
 
     @PostMapping()
-    public Map<String, Object> getRecommendations(@RequestBody Sample sample) {
+    public SampleRecommendation getRecommendations(@RequestBody Sample sample) {
         CuramiRecommendation recommendation = recommendationService.getRecommendations(sample);
         Sample recommendedSample = recommendationService.getRecommendedSample(sample, recommendation);
-        return Map.of("sample", recommendedSample, "recommendations", recommendation);
+        return new SampleRecommendation(recommendation, recommendedSample);
     }
 
     @PostMapping(value = "/attributes")

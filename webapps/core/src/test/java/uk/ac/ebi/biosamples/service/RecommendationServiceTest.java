@@ -61,7 +61,6 @@ public class RecommendationServiceTest {
         Sample recommendedSample = recommendationService.getRecommendedSample(sample, recommendation);
 
         Optional<Attribute> recAttr = recommendedSample.getAttributes().stream().filter(a -> a.getType().equals("sex")).findFirst();
-
         Assert.assertTrue(recAttr.isPresent());
     }
 
