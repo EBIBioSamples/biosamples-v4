@@ -1,28 +1,27 @@
 package uk.ac.ebi.biosamples.model;
 
-import java.util.List;
 import java.util.Objects;
 
 public class AttributeRecommendation implements Comparable<AttributeRecommendation> {
     private final String attribute;
-    private final List<String> recommendations;
+    private final String recommendation;
 
-    private AttributeRecommendation(String attribute, List<String> recommendations) {
+    private AttributeRecommendation(String attribute, String recommendations) {
         this.attribute = attribute;
-        this.recommendations = recommendations;
+        this.recommendation = recommendations;
     }
 
     public String getAttribute() {
         return attribute;
     }
 
-    public List<String> getRecommendations() {
-        return recommendations;
+    public String getRecommendation() {
+        return recommendation;
     }
 
     @Override
     public String toString() {
-        return attribute + "->" + recommendations;
+        return attribute + "->" + recommendation;
     }
 
     @Override
@@ -30,7 +29,8 @@ public class AttributeRecommendation implements Comparable<AttributeRecommendati
         if (this == o) return true;
         if (o instanceof AttributeRecommendation) {
             AttributeRecommendation other = (AttributeRecommendation) o;
-            return Objects.equals(this.getAttribute(), other.getAttribute());
+            return Objects.equals(this.getAttribute(), other.getAttribute())
+                    && Objects.equals(this.getRecommendation(), other.getRecommendation());
         }
         return false;
     }
@@ -47,25 +47,20 @@ public class AttributeRecommendation implements Comparable<AttributeRecommendati
 
     public static class Builder {
         private String attribute;
-        private List<String> recommendations;
+        private String recommendation;
 
         public Builder withAttribute(String attribute) {
             this.attribute = attribute;
             return this;
         }
 
-        public Builder withRecommendations(List<String> recommendations) {
-            this.recommendations = recommendations;
-            return this;
-        }
-
-        public Builder withRecommendation(String recommendation) {
-            recommendations.add(recommendation);
+        public Builder withRecommendation(String recommendations) {
+            this.recommendation = recommendations;
             return this;
         }
 
         public AttributeRecommendation build() {
-            return new AttributeRecommendation(attribute, recommendations);
+            return new AttributeRecommendation(attribute, recommendation);
         }
     }
 }
