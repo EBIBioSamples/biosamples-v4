@@ -19,7 +19,7 @@ public enum StructuredDataType {
   CHICKEN_DATA(Arrays.asList("Marker", "Measurement", "Measurement Units", "Partner")),
   HISTOLOGY_MARKERS(Arrays.asList("Marker", "Measurement", "Measurement Units", "Partner")),
   MOLECULAR_MARKERS(Arrays.asList("Marker", "Measurement", "Measurement Units", "Partner")),
-  FATTY_ACCIDS(Arrays.asList("Marker", "Measurement", "Measurement Units", "Partner"));
+  FATTY_ACIDS(Arrays.asList("Marker", "Measurement", "Measurement Units", "Partner"));
 
   private final List<String> headers;
 

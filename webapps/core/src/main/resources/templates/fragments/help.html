@@ -43,6 +43,8 @@
                                        th:href="@{/docs/references/api/search}">Search</a></li>
                                 <li><a th:classappend="${#strings.equals(active, 'refs/api/submit')} ? 'active'"
                                        th:href="@{/docs/references/api/submit}">Submit</a></li>
+                                <li><a th:classappend="${#strings.equals(active, 'refs/api/validate')} ? 'active'"
+                                       th:href="@{/docs/references/api/validate}">Validate</a></li>
                             </ul>
                         </li>
                         <li><a th:classappend="${#strings.equals(active, 'refs/filters')} ? 'active'"

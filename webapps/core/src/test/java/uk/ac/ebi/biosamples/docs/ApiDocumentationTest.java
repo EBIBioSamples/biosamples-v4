@@ -327,6 +327,38 @@ public class ApiDocumentationTest {
                 preprocessResponse(prettyPrint())));
   }
 
+  @Test
+  public void patchSample2() throws Exception {
+    Sample sampleWithDomainAndData = this.faker.getExampleSampleWithStructuredData2();
+
+    when(sampleService.fetch(
+            eq(sampleWithDomainAndData.getAccession()), eq(Optional.empty()), any(String.class)))
+        .thenReturn(Optional.of(sampleWithDomainAndData));
+    when(aapService.handleStructuredDataDomain(sampleWithDomainAndData))
+        .thenReturn(sampleWithDomainAndData);
+    when(sampleService.storeSampleStructuredData(eq(sampleWithDomainAndData)))
+        .thenReturn(sampleWithDomainAndData);
+    when(aapService.isWriteSuperUser()).thenReturn(true);
+    when(aapService.isIntegrationTestUser()).thenReturn(false);
+    doNothing().when(aapService).checkAccessible(isA(Sample.class));
+
+    this.mockMvc
+        .perform(
+            patch(
+                    "/biosamples/samples/"
+                        + sampleWithDomainAndData.getAccession()
+                        + "?structuredData=true")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(serialize(sampleWithDomainAndData))
+                .header("Authorization", "Bearer $TOKEN"))
+        .andExpect(status().is2xxSuccessful())
+        .andDo(
+            document(
+                "patch-sample-2",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint())));
+  }
+
   /** Accessioning service to generate accession */
   @Test
   public void postToGenerateAccession() throws Exception {
@@ -437,6 +469,49 @@ public class ApiDocumentationTest {
                 "validate-sample",
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint())));
+  }
+
+  /** Recommendation service to suggest sample attributes */
+  @Test
+  public void post_for_recommendation() throws Exception {
+    Sample sample = this.faker.getExampleSample();
+    String sampleToSubmit =
+        "{ "
+            + "\"name\" : \""
+            + "fake_sample"
+            + "\", "
+            + "\"update\" : \""
+            + dateTimeFormatter.format(sample.getUpdate().atOffset(ZoneOffset.UTC))
+            + "\", "
+            + "\"release\" : \""
+            + dateTimeFormatter.format(sample.getRelease().atOffset(ZoneOffset.UTC))
+            + "\", "
+            + "\"domain\" : \"self.ExampleDomain\" "
+            + ", "
+            + "\"characteristics\" : {" +
+                "\"material\" : [ {" +
+                  "\"text\" : \"cell line\"," +
+                  "\"ontologyTerms\" : [ \"EFO_0000322\" ]" +
+                "} ]," +
+                "\"Organism\" : [ {" +
+                  "\"text\" : \"Homo sapiens\"," +
+                  "\"ontologyTerms\" : [ \"9606\" ]" +
+                "} ]," +
+                "\"Gender\" : [ {" +
+                  "\"text\" : \"male\"," +
+                  "\"ontologyTerms\" : [ \"PATO_0000384\" ]" +
+                "} ]}"
+            + "}";
+
+    this.mockMvc
+        .perform(
+            post("/biosamples/recommendations")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(sampleToSubmit)
+                .header("Authorization", "Bearer $TOKEN"))
+        .andExpect(status().is2xxSuccessful())
+        .andDo(
+            document("post-sample-for-suggestions", preprocessRequest(prettyPrint()), preprocessResponse(prettyPrint())));
   }
 
   @Test
