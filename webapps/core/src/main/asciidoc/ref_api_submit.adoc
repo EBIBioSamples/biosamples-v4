@@ -104,20 +104,31 @@ The sample structured data submission is not required to be done at the time of 
 submission and also by the original submitter. Structured data can be submitted at a later point
 of time by another submitter. Ownership rights will be retained and sample submitter can later
 update the sample metadata only and structured data submitter can update the structured data only.
+Currently BioSamples support 5 types of structured data. They are AMR, CHICKEN_DATA, HISTOLOGY_MARKERS,
+MOLECULAR_MARKERS, FATTY_ACIDS. Structured data content changes, depending on the structured data type.
+Please contact BioSamples team if you are not sure the format of structured data.
 
 Pre Conditions:
 
 1. The submitted sample is required to have an accession and the accession should match the one in the url
 2. The submitted sample should also have the sample name and the structured data
-3. The structured data must have a structured data type (e.g. AMR) and a valid AAP domain
+3. The structured data must have a structured data type (eg. AMR, HISTOLOGY_MARKERS) and a valid AAP domain.
 4. This endpoint doesn't accept any other data except sample name, accession and structured data.
     If you supply any other information, your input will not be accepted
 
+=== Example 1
 === Request
 include::{snippets}/patch-sample/http-request.adoc[]
 
 === Response
 include::{snippets}/patch-sample/http-response.adoc[]
+
+=== Example 2
+=== Request
+include::{snippets}/patch-sample-2/http-request.adoc[]
+
+=== Response
+include::{snippets}/patch-sample-2/http-response.adoc[]
 
 === Links
 For all the links available in BioSamples check the link:../api/links[Links Reference]

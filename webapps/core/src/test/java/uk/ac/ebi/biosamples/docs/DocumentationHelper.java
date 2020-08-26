@@ -13,6 +13,10 @@ package uk.ac.ebi.biosamples.docs;
 import java.time.Instant;
 import java.util.*;
 import uk.ac.ebi.biosamples.model.*;
+import uk.ac.ebi.biosamples.model.structured.HistologyEntry;
+import uk.ac.ebi.biosamples.model.structured.StructuredCell;
+import uk.ac.ebi.biosamples.model.structured.StructuredDataType;
+import uk.ac.ebi.biosamples.model.structured.StructuredTable;
 import uk.ac.ebi.biosamples.model.structured.amr.AMREntry;
 import uk.ac.ebi.biosamples.model.structured.amr.AMRTable;
 import uk.ac.ebi.biosamples.model.structured.amr.AmrPair;
@@ -146,5 +150,26 @@ public class DocumentationHelper {
 
     return new Sample.Builder("FakeSampleWithStructuredData", "SAMFAKE123456")
         .withData(Arrays.asList(amrTable));
+  }
+
+  public Sample getExampleSampleWithStructuredData2() {
+    StructuredTable<HistologyEntry> histologyData =
+            new StructuredTable.Builder<HistologyEntry>("www.fake.schema.url", "self.ExampleDomain", StructuredDataType.HISTOLOGY_MARKERS)
+                    .addEntry(new HistologyEntry.Builder()
+                            .withMarker(new StructuredCell("Crypt depth", ""))
+                            .withMeasurement(new StructuredCell("0", ""))
+                            .withMeasurementUnits(new StructuredCell("um", ""))
+                            .withPartner(new StructuredCell("FUB", "https://www.fu-berlin.de/en/sites/china/ueberfub/forschung/index.html"))
+                            .build())
+                    .addEntry(new HistologyEntry.Builder()
+                            .withMarker(new StructuredCell("Villous height", "http://purl.obolibrary.org/obo/NCIT_C14170"))
+                            .withMeasurement(new StructuredCell("0", ""))
+                            .withMeasurementUnits(new StructuredCell("um", ""))
+                            .withPartner(new StructuredCell("FUB", "https://www.fu-berlin.de/en/sites/china/ueberfub/forschung/index.html"))
+                            .build())
+                    .build();
+
+    return new Sample.Builder("FakeSampleWithStructuredData", "SAMFAKE123456")
+        .withData(Arrays.asList(histologyData)).build();
   }
 }
