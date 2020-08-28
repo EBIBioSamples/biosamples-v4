@@ -1,0 +1,22 @@
+= [.ebi-color]#API submission#
+:last-update-label!:
+:toc: auto
+
+
+Sample certification service can be used to validate samples against JSON schema checklists
+before or during sample submission.
+
+This website requires the limited processing of your personal data in order to function.
+By using the site you are agreeing to this as outlined in our https://www.ebi.ac.uk/data-protection/privacy-notice/biosamples-submissions[Submission Privacy Notice]
+
+== Certification before sample submission
+`POST` sample to know checklist validation results without submission
+
+=== curl request
+include::{snippets}/certify-sample/curl-request.adoc[]
+
+=== Request
+include::{snippets}/certify-sample/http-request.adoc[]
+
+=== Response
+include::{snippets}/certify-sample/http-response.adoc[]

@@ -27,7 +27,9 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -49,9 +51,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-import uk.ac.ebi.biosamples.model.Curation;
-import uk.ac.ebi.biosamples.model.CurationLink;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.*;
 import uk.ac.ebi.biosamples.service.certification.CertifyService;
@@ -488,19 +488,19 @@ public class ApiDocumentationTest {
             + "\", "
             + "\"domain\" : \"self.ExampleDomain\" "
             + ", "
-            + "\"characteristics\" : {" +
-                "\"material\" : [ {" +
-                  "\"text\" : \"cell line\"," +
-                  "\"ontologyTerms\" : [ \"EFO_0000322\" ]" +
-                "} ]," +
-                "\"Organism\" : [ {" +
-                  "\"text\" : \"Homo sapiens\"," +
-                  "\"ontologyTerms\" : [ \"9606\" ]" +
-                "} ]," +
-                "\"Gender\" : [ {" +
-                  "\"text\" : \"male\"," +
-                  "\"ontologyTerms\" : [ \"PATO_0000384\" ]" +
-                "} ]}"
+            + "\"characteristics\" : {"
+            + "\"material\" : [ {"
+            + "\"text\" : \"cell line\","
+            + "\"ontologyTerms\" : [ \"EFO_0000322\" ]"
+            + "} ],"
+            + "\"Organism\" : [ {"
+            + "\"text\" : \"Homo sapiens\","
+            + "\"ontologyTerms\" : [ \"9606\" ]"
+            + "} ],"
+            + "\"Gender\" : [ {"
+            + "\"text\" : \"male\","
+            + "\"ontologyTerms\" : [ \"PATO_0000384\" ]"
+            + "} ]}"
             + "}";
 
     this.mockMvc
@@ -511,7 +511,59 @@ public class ApiDocumentationTest {
                 .header("Authorization", "Bearer $TOKEN"))
         .andExpect(status().is2xxSuccessful())
         .andDo(
-            document("post-sample-for-suggestions", preprocessRequest(prettyPrint()), preprocessResponse(prettyPrint())));
+            document(
+                "post-sample-for-suggestions",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint())));
+  }
+
+  /** Recommendation service to suggest sample attributes */
+  @Test
+  public void post_for_certification() throws Exception {
+    Sample sample = this.faker.getExampleSampleWithDomain();
+    Attribute attribute = Attribute.build("Organism", "Homo Sapiens");
+
+    sample =
+        Sample.Builder.fromSample(sample)
+            .withAttributes(Collections.unmodifiableList(Arrays.asList(attribute)))
+            .build();
+
+    when(sampleService.fetch(eq(sample.getAccession()), eq(Optional.empty()), any(String.class)))
+        .thenReturn(Optional.of(sample));
+    when(aapService.handleSampleDomain(sample)).thenReturn(sample);
+    when(aapService.isWriteSuperUser()).thenReturn(true);
+    when(aapService.isIntegrationTestUser()).thenReturn(false);
+    when(certifyService.certify(new ObjectMapper().writeValueAsString(sample), true))
+        .thenReturn(
+            List.of(
+                Certificate.build(
+                    "biosamples-minimal",
+                    "0.0.1",
+                    "schemas/certification/biosamples-minimal.json")));
+    when(sampleService.store(eq(sample)))
+        .thenReturn(
+            Sample.Builder.fromSample(sample)
+                .withCertificates(
+                    List.of(
+                        Certificate.build(
+                            "biosamples-minimal",
+                            "0.0.1",
+                            "schemas/certification/biosamples-minimal.json")))
+                .build());
+    doNothing().when(aapService).checkAccessible(isA(Sample.class));
+
+    this.mockMvc
+        .perform(
+            put("/biosamples/samples/" + sample.getAccession() + "/certify")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(serialize(sample))
+                .header("Authorization", "Bearer $TOKEN"))
+        .andExpect(status().is2xxSuccessful())
+        .andDo(
+            document(
+                "certify-sample",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint())));
   }
 
   @Test
