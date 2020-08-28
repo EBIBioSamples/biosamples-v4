@@ -330,7 +330,10 @@ public class EnaCallable implements Callable<Void> {
         }
       }
     } catch (final Exception e) {
-      log.error("Failed to update status of ENA sample " + sampleAccession + " to SUPPRESSED - creating sample in BSD from ENA data");
+      log.error(
+          "Failed to update status of ENA sample "
+              + sampleAccession
+              + " to SUPPRESSED - creating sample in BSD from ENA data");
       return enrichAndPersistEnaSample(false);
     }
 
@@ -376,7 +379,10 @@ public class EnaCallable implements Callable<Void> {
         }
       }
     } catch (final Exception e) {
-      log.error("Failed to update status of ENA sample " + sampleAccession + " to KILLED - creating sample in BSD from ENA data");
+      log.error(
+          "Failed to update status of ENA sample "
+              + sampleAccession
+              + " to KILLED - creating sample in BSD from ENA data");
       return enrichAndPersistEnaSample(false);
     }
 
