@@ -27,10 +27,10 @@ public class SolrSample {
 
   /** Use the accession as the primary document identifier */
   @Id
-  @Indexed(name = "id", required = true, boost = 1.0f)
+  @Indexed(name = "id", required = true)
   protected String accession;
 
-  @Indexed(name = "name_s", required = true, boost = 0.5f, copyTo = {"autocomplete_ss"})
+  @Indexed(name = "name_s", required = true, copyTo = {"autocomplete_ss"})
   protected String name;
 
   @Indexed(name = "domain_s", required = true)
