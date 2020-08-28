@@ -27,13 +27,10 @@ public class SolrSample {
 
   /** Use the accession as the primary document identifier */
   @Id
-  @Indexed(name = "id", required = true)
+  @Indexed(name = "id", required = true, boost = 1.0f)
   protected String accession;
 
-  @Indexed(
-      name = "name_s",
-      required = true,
-      copyTo = {"autocomplete_ss"})
+  @Indexed(name = "name_s", required = true, boost = 0.5f, copyTo = {"autocomplete_ss"})
   protected String name;
 
   @Indexed(name = "domain_s", required = true)
@@ -63,11 +60,7 @@ public class SolrSample {
   @Dynamic
   protected Map<String, List<String>> attributeValues;
 
-  @Indexed(
-      name = "*_ai_ss",
-      copyTo = {
-        "ontologyiri_ss",
-      })
+  @Indexed(name = "*_ai_ss", copyTo = { "ontologyiri_ss", })
   @Dynamic
   protected Map<String, List<String>> attributeIris;
 
@@ -102,11 +95,7 @@ public class SolrSample {
    * and relationships of the sample Since faceting does not require it to be stored, it wont be to
    * save space.
    */
-  @Indexed(
-      name = "facetfields_ss",
-      copyTo = {
-        "autocomplete_ss",
-      })
+  @Indexed(name = "facetfields_ss", copyTo = { "autocomplete_ss", })
   protected List<String> facetFields;
   // TODO consider renaming as used only for faceting
 

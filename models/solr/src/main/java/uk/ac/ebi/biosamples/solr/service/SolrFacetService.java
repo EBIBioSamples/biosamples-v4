@@ -10,13 +10,10 @@
 */
 package uk.ac.ebi.biosamples.solr.service;
 
+import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map.Entry;
-import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -38,6 +35,11 @@ public class SolrFacetService {
   private final SolrFieldService solrFieldService;
   private Logger log = LoggerFactory.getLogger(getClass());
   private final SolrFilterService solrFilterService;
+
+  private static final List<String> FACETING_FIELDS = List.of("organism", "sex", "tissue", "strain", "organism part",
+          "cell type", "isolate", "sample type", "genotype", "isolation source", "histological type", "age", "host");
+  private static final List<String> FACETING_FIELDS_REL = List.of("release_dt");
+  private static final List<String> FACETING_FIELDS_RANGE = List.of("release_dt");
 
   public SolrFacetService(
       SolrSampleRepository solrSampleRepository,
@@ -125,4 +127,67 @@ public class SolrFacetService {
 
     return facets;
   }
+
+  public List<Facet> getFacets2(
+          String searchTerm,
+          Collection<Filter> filters,
+          Collection<String> domains,
+          Pageable facetFieldPageInfo,
+          Pageable facetValuesPageInfo) {
+    // default to search all
+    if (searchTerm == null || searchTerm.trim().length() == 0) {
+      searchTerm = "*:*";
+    }
+
+    List<Facet> facets = new ArrayList<>();
+
+    // build a query out of the users string and any facets
+    FacetQuery query = new SimpleFacetQuery();
+    query.addCriteria(new Criteria().expression(searchTerm));
+    query.setTimeAllowed(TIMEALLOWED * 1000);
+
+    // Add domains and release date filters
+    Optional<FilterQuery> domainAndPublicFilterQuery =
+            solrFilterService.getPublicFilterQuery(domains);
+    domainAndPublicFilterQuery.ifPresent(query::addFilterQuery);
+
+    // Add all the provided filters
+    Optional<FilterQuery> optionalFilter = solrFilterService.getFilterQuery(filters);
+    optionalFilter.ifPresent(query::addFilterQuery);
+
+    // Generate a facet query to get all the available facets for the samples
+    Page<FacetFieldEntry> facetFields =
+            solrSampleRepository.getFacetFields(query, facetFieldPageInfo);
+
+    // Get the facet fields
+    // TODO implement hashing function
+    List<Entry<SolrSampleField, Long>> allFacetFields = new ArrayList<>();
+    for (FacetFieldEntry ffe : facetFields) {
+
+      Long facetFieldCount = ffe.getValueCount();
+      SolrSampleField solrSampleField = this.solrFieldService.decodeField(ffe.getValue());
+      allFacetFields.add(new SimpleEntry<>(solrSampleField, facetFieldCount));
+    }
+
+    allFacetFields = new ArrayList<>();
+    allFacetFields.add((new SimpleEntry<>(this.solrFieldService.decodeField(SolrFieldService.encodeFieldName("Organism") + "_av_ss"), 100L)));
+    allFacetFields.add((new SimpleEntry<>(this.solrFieldService.decodeField(SolrFieldService.encodeFieldName("organism") + "_av_ss"), 2L)));
+    allFacetFields.add((new SimpleEntry<>(this.solrFieldService.decodeField(SolrFieldService.encodeFieldName("sex") + "_av_ss"), 52L)));
+
+    if (allFacetFields.size() > 0) {
+      allFacetFields
+              .get(0)
+              .getKey()
+              .getFacetCollectionStrategy()
+              .fetchFacetsUsing(solrSampleRepository, query, allFacetFields, facetValuesPageInfo)
+              .forEach(opt -> opt.ifPresent(facets::add));
+    }
+
+    // Return the list of facets
+    Collections.sort(facets);
+    Collections.reverse(facets);
+
+    return facets;
+  }
+
 }
