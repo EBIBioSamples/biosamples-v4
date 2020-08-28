@@ -221,10 +221,12 @@ public class Ncbi implements ApplicationRunner {
           bioSamplesClient.persistSampleResource(newSample);
         }
       }
-    } catch (final HttpClientErrorException sampleMakePrivateException) {
-      log.info("Exception while persisting sample " + sampleMakePrivateException.getCause());
     } catch (final Exception sampleMakePrivateException) {
-      throw new RuntimeException(sampleMakePrivateException);
+      if (sampleMakePrivateException instanceof HttpClientErrorException) {
+        log.info("HTTP Exception while persisting sample " + sampleMakePrivateException.getCause());
+      } else {
+        throw new RuntimeException(sampleMakePrivateException);
+      }
     }
   }
 }
