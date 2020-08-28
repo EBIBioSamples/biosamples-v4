@@ -1,13 +1,13 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
-* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
-* file except in compliance with the License. You may obtain a copy of the License at
-* http://www.apache.org/licenses/LICENSE-2.0
-* Unless required by applicable law or agreed to in writing, software distributed under the
-* License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-* CONDITIONS OF ANY KIND, either express or implied. See the License for the
-* specific language governing permissions and limitations under the License.
-*/
+ * Copyright 2019 EMBL - European Bioinformatics Institute
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+ * file except in compliance with the License. You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+ * CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ */
 package uk.ac.ebi.biosamples.ena;
 
 import java.sql.ResultSet;
@@ -56,7 +56,7 @@ public class EnaRunner implements ApplicationRunner {
     boolean isPassed = true;
 
     try {
-      //sampleToAmrMap = amrDataLoaderService.loadAmrData();
+      sampleToAmrMap = amrDataLoaderService.loadAmrData();
     } catch (final Exception e) {
       log.error("Error in processing AMR data from ENA API - continue with the pipeline");
     }
@@ -101,16 +101,16 @@ public class EnaRunner implements ApplicationRunner {
       log.info("Killed Runner is to be executed: " + killedRunner);
 
       // Import ENA samples
-      //importEraSamples(fromDate, toDate, sampleToAmrMap);
+      importEraSamples(fromDate, toDate, sampleToAmrMap);
 
       // Handler to append SRA Accession (ENA accession numbers to samples owned by BioSamples)
-      //importEraBsdAuthoritySamples(fromDate, toDate);
+      importEraBsdAuthoritySamples(fromDate, toDate);
 
       if (suppressionRunner) {
         // handler for suppressed ENA samples
-        //handleSuppressedEnaSamples();
+        handleSuppressedEnaSamples();
         // handler for suppressed NCBI/DDBJ samples
-        //handleSuppressedNcbiDdbjSamples();
+        handleSuppressedNcbiDdbjSamples();
       }
 
       if (killedRunner) {
