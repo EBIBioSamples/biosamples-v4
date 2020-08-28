@@ -154,22 +154,34 @@ public class DocumentationHelper {
 
   public Sample getExampleSampleWithStructuredData2() {
     StructuredTable<HistologyEntry> histologyData =
-            new StructuredTable.Builder<HistologyEntry>("www.fake.schema.url", "self.ExampleDomain", StructuredDataType.HISTOLOGY_MARKERS)
-                    .addEntry(new HistologyEntry.Builder()
-                            .withMarker(new StructuredCell("Crypt depth", ""))
-                            .withMeasurement(new StructuredCell("0", ""))
-                            .withMeasurementUnits(new StructuredCell("um", ""))
-                            .withPartner(new StructuredCell("FUB", "https://www.fu-berlin.de/en/sites/china/ueberfub/forschung/index.html"))
-                            .build())
-                    .addEntry(new HistologyEntry.Builder()
-                            .withMarker(new StructuredCell("Villous height", "http://purl.obolibrary.org/obo/NCIT_C14170"))
-                            .withMeasurement(new StructuredCell("0", ""))
-                            .withMeasurementUnits(new StructuredCell("um", ""))
-                            .withPartner(new StructuredCell("FUB", "https://www.fu-berlin.de/en/sites/china/ueberfub/forschung/index.html"))
-                            .build())
-                    .build();
+        new StructuredTable.Builder<HistologyEntry>(
+                "www.fake.schema.url", "self.ExampleDomain", StructuredDataType.HISTOLOGY_MARKERS)
+            .addEntry(
+                new HistologyEntry.Builder()
+                    .withMarker(new StructuredCell("Crypt depth", ""))
+                    .withMeasurement(new StructuredCell("0", ""))
+                    .withMeasurementUnits(new StructuredCell("um", ""))
+                    .withPartner(
+                        new StructuredCell(
+                            "FUB",
+                            "https://www.fu-berlin.de/en/sites/china/ueberfub/forschung/index.html"))
+                    .build())
+            .addEntry(
+                new HistologyEntry.Builder()
+                    .withMarker(
+                        new StructuredCell(
+                            "Villous height", "http://purl.obolibrary.org/obo/NCIT_C14170"))
+                    .withMeasurement(new StructuredCell("0", ""))
+                    .withMeasurementUnits(new StructuredCell("um", ""))
+                    .withPartner(
+                        new StructuredCell(
+                            "FUB",
+                            "https://www.fu-berlin.de/en/sites/china/ueberfub/forschung/index.html"))
+                    .build())
+            .build();
 
     return new Sample.Builder("FakeSampleWithStructuredData", "SAMFAKE123456")
-        .withData(Arrays.asList(histologyData)).build();
+        .withData(Arrays.asList(histologyData))
+        .build();
   }
 }
