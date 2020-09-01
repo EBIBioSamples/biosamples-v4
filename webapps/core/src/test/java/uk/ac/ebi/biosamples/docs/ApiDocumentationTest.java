@@ -1,13 +1,13 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
-* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
-* file except in compliance with the License. You may obtain a copy of the License at
-* http://www.apache.org/licenses/LICENSE-2.0
-* Unless required by applicable law or agreed to in writing, software distributed under the
-* License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-* CONDITIONS OF ANY KIND, either express or implied. See the License for the
-* specific language governing permissions and limitations under the License.
-*/
+ * Copyright 2019 EMBL - European Bioinformatics Institute
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+ * file except in compliance with the License. You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+ * CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ */
 package uk.ac.ebi.biosamples.docs;
 
 import static org.mockito.Matchers.*;
@@ -52,9 +52,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import uk.ac.ebi.biosamples.model.*;
+import uk.ac.ebi.biosamples.model.Certificate;
+import uk.ac.ebi.biosamples.model.Curation;
+import uk.ac.ebi.biosamples.model.certification.*;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.*;
 import uk.ac.ebi.biosamples.service.certification.CertifyService;
+import uk.ac.ebi.biosamples.service.certification.Identifier;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -81,6 +85,8 @@ public class ApiDocumentationTest {
   @MockBean CurationReadService curationReadService;
 
   @MockBean private BioSamplesAapService aapService;
+
+  @MockBean private Identifier identifier;
 
   private DocumentationHelper faker;
 
@@ -562,6 +568,65 @@ public class ApiDocumentationTest {
         .andDo(
             document(
                 "certify-sample",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint())));
+  }
+
+  @Test
+  public void post_for_checking_compliance() throws Exception {
+    Sample sample = this.faker.getExampleSampleWithDomain();
+    Attribute attribute = Attribute.build("INSDC status", "live");
+
+    sample =
+        Sample.Builder.fromSample(sample)
+            .withAttributes(Collections.unmodifiableList(Arrays.asList(attribute)))
+            .build();
+
+    BioSamplesCertificationComplainceResult bioSamplesCertificationComplainceResult =
+        new BioSamplesCertificationComplainceResult();
+
+    Suggestion suggestion = new Suggestion();
+    suggestion.setCharacteristic(new String[] {"organism", "species"});
+    suggestion.setMandatory(true);
+    suggestion.setComment("Either Organism or Species must be present in sample");
+
+    CurationResult curationResult = new CurationResult("INSDC status", "live", "public");
+
+    bioSamplesCertificationComplainceResult.add(
+        new uk.ac.ebi.biosamples.model.certification.Certificate(
+            new SampleDocument("SAMFAKE123456", new ObjectMapper().writeValueAsString(sample)),
+            List.of(),
+            new Checklist(
+                "ncbi-candidate-schema",
+                "0.0.1",
+                "schemas/certification/ncbi-candidate-schema.json",
+                false)));
+    bioSamplesCertificationComplainceResult.add(
+        new uk.ac.ebi.biosamples.model.certification.Certificate(
+            new SampleDocument("SAMFAKE123456", new ObjectMapper().writeValueAsString(sample)),
+            List.of(curationResult),
+            new Checklist(
+                "biosamples-basic",
+                "0.0.1",
+                "schemas/certification/biosamples-basic.json",
+                false)));
+
+    bioSamplesCertificationComplainceResult.add(
+        new Recommendation("biosamples-minimal-0.0.1", List.of(suggestion)));
+
+    when(certifyService.recordResult(new ObjectMapper().writeValueAsString(sample), true))
+        .thenReturn(bioSamplesCertificationComplainceResult);
+
+    this.mockMvc
+        .perform(
+            post("/biosamples/samples/checkCompliance")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(serialize(sample))
+                .header("Authorization", "Bearer $TOKEN"))
+        .andExpect(status().is2xxSuccessful())
+        .andDo(
+            document(
+                "check-compliance",
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint())));
   }
