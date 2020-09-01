@@ -29,7 +29,7 @@ include::{snippets}/certify-sample/http-response.adoc[]
 
 == Check compliance
 `POST` a sample to know if the sample validates against any available checklists,
-the curation plans to get validated against checkists (if plan is configured)
+the curation plans to get validated against checklists (if plan is configured)
 and the recommendations (if configured)
 
 === curl request
