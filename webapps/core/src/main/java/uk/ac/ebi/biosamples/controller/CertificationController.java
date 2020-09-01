@@ -31,7 +31,7 @@ import uk.ac.ebi.biosamples.service.certification.CertifyService;
 
 @RestController
 @ExposesResourceFor(Sample.class)
-@RequestMapping("/samples/{accession}")
+@RequestMapping("/samples")
 @CrossOrigin
 public class CertificationController {
   private Logger log = LoggerFactory.getLogger(getClass());
@@ -41,7 +41,7 @@ public class CertificationController {
   @Autowired private BioSamplesAapService bioSamplesAapService;
   @Autowired private SampleResourceAssembler sampleResourceAssembler;
 
-  @PutMapping("/certify")
+  @PutMapping("{accession}/certify")
   public Resource<Sample> certify(@RequestBody Sample sample, @PathVariable String accession)
       throws JsonProcessingException {
     final ObjectMapper jsonMapper = new ObjectMapper();
@@ -56,7 +56,7 @@ public class CertificationController {
       throw new SampleRestController.SampleAccessionDoesNotExistException();
     }
 
-    log.debug("Received PUT for " + accession);
+    log.info("Received PUT for validation of " + accession);
 
     sample = bioSamplesAapService.handleSampleDomain(sample);
     List<Certificate> certificates =
@@ -73,7 +73,7 @@ public class CertificationController {
             .withSubmittedVia(submittedVia)
             .build();
 
-    log.info("Sample with certificates " + sample);
+    log.trace("Sample with certificates " + sample);
 
     sample = sampleService.store(sample);
 

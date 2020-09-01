@@ -17,7 +17,7 @@ Schema name - biosamples-minimal
 
 Schema version - 0.0.1
 
-Schema purpose - To check if the samples has a organism or species attribute
+Schema purpose - To check if the samples has a *organism* or a *species* attribute
 
 ....
 {
@@ -268,7 +268,7 @@ Schema name - ncbi-candidate-schema
 
 Schema version - 0.0.1
 
-Schema purpose - To check if the samples has a INSDC status attribute and the value is live
+Schema purpose - To check if the samples has a INSDC status attribute and the value is *live*
 
 ....
 {
@@ -328,7 +328,7 @@ Schema name - biosamples-basic
 
 Schema version - 0.0.1
 
-Schema purpose - To check if the samples has a INSDC status attribute and the value is public
+Schema purpose - To check if the samples has a INSDC status attribute and the value is *public*
 
 ....
 {
@@ -383,5 +383,3 @@ Schema purpose - To check if the samples has a INSDC status attribute and the va
 Please contact the BioSamples team at biosamples@ebi.ac.uk if you want to know more about the
 certification service and want to have custom schemas and plans for sample validation
 
-Please note - BioSamples release 5.0.1 is the first release in which we are including this service.
-Feedback is welcome via biosamples@ebi.ac.uk.
