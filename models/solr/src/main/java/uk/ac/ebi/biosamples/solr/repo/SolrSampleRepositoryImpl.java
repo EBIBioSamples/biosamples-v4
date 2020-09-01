@@ -11,6 +11,10 @@
 package uk.ac.ebi.biosamples.solr.repo;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.List;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -81,8 +85,8 @@ public class SolrSampleRepositoryImpl implements SolrSampleRepositoryCustom {
     return page.getFacetResultPage("facetfields_ss");
   }
 
-  @Override
-  public FacetPage<?> getFacets(
+//  @Override
+  public FacetPage<?> getFacets2(
       FacetQuery query, List<String> facetFields, Pageable facetPageable) {
 
     if (facetFields == null || facetFields.size() == 0) {
@@ -103,8 +107,8 @@ public class SolrSampleRepositoryImpl implements SolrSampleRepositoryCustom {
     return page;
   }
 
-//  @Override
-  public FacetPage<?> getFacets2(
+  @Override
+  public FacetPage<?> getFacets(
           FacetQuery query, List<String> facetFields, Pageable facetPageable) {
 
     if (facetFields == null || facetFields.size() == 0) {
@@ -117,8 +121,14 @@ public class SolrSampleRepositoryImpl implements SolrSampleRepositoryCustom {
     for (String field : facetFields) {
       facetOptions.addFacetOnField(field);
       facetOptions.addFacetQuery(new SimpleFacetQuery(new Criteria(field)));
+      //facetOptions.setFacetMinCount(1) //todo test this
     }
     facetOptions.setPageable(facetPageable);
+
+    //todo generalise
+    LocalDateTime dateTime = LocalDateTime.of(2015, 2, 1, 0, 0);
+    Date start = Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant());
+    facetOptions.addFacetByRange(new FacetOptions.FieldWithDateRangeParameters("release_dt", start, new Date(), "+1YEAR"));
 
     query.setFacetOptions(facetOptions);
     // execute the query against the solr server

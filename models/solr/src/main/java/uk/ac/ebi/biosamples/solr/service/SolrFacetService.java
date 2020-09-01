@@ -13,6 +13,7 @@ package uk.ac.ebi.biosamples.solr.service;
 import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +52,7 @@ public class SolrFacetService {
     this.solrFilterService = solrFilterService;
   }
 
-  public List<Facet> getFacets(
+  public List<Facet> getFacets2(
       String searchTerm,
       Collection<Filter> filters,
       Collection<String> domains,
@@ -128,7 +129,7 @@ public class SolrFacetService {
     return facets;
   }
 
-  public List<Facet> getFacets2(
+  public List<Facet> getFacets(
           String searchTerm,
           Collection<Filter> filters,
           Collection<String> domains,
@@ -155,24 +156,9 @@ public class SolrFacetService {
     Optional<FilterQuery> optionalFilter = solrFilterService.getFilterQuery(filters);
     optionalFilter.ifPresent(query::addFilterQuery);
 
-    // Generate a facet query to get all the available facets for the samples
-    Page<FacetFieldEntry> facetFields =
-            solrSampleRepository.getFacetFields(query, facetFieldPageInfo);
-
-    // Get the facet fields
-    // TODO implement hashing function
-    List<Entry<SolrSampleField, Long>> allFacetFields = new ArrayList<>();
-    for (FacetFieldEntry ffe : facetFields) {
-
-      Long facetFieldCount = ffe.getValueCount();
-      SolrSampleField solrSampleField = this.solrFieldService.decodeField(ffe.getValue());
-      allFacetFields.add(new SimpleEntry<>(solrSampleField, facetFieldCount));
-    }
-
-    allFacetFields = new ArrayList<>();
-    allFacetFields.add((new SimpleEntry<>(this.solrFieldService.decodeField(SolrFieldService.encodeFieldName("Organism") + "_av_ss"), 100L)));
-    allFacetFields.add((new SimpleEntry<>(this.solrFieldService.decodeField(SolrFieldService.encodeFieldName("organism") + "_av_ss"), 2L)));
-    allFacetFields.add((new SimpleEntry<>(this.solrFieldService.decodeField(SolrFieldService.encodeFieldName("sex") + "_av_ss"), 52L)));
+    List<Entry<SolrSampleField, Long>> allFacetFields = FACETING_FIELDS.stream()
+            .map(s -> new SimpleEntry<>(this.solrFieldService.decodeField(SolrFieldService.encodeFieldName(s) + "_av_ss"), 1L))
+            .collect(Collectors.toList());
 
     if (allFacetFields.size() > 0) {
       allFacetFields
