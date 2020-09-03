@@ -46,8 +46,10 @@ public class Curation implements Comparable<Curation> {
     this.attributesPost = Collections.unmodifiableSortedSet(new TreeSet<>(attributesPost));
     this.externalPre = Collections.unmodifiableSortedSet(new TreeSet<>(externalPre));
     this.externalPost = Collections.unmodifiableSortedSet(new TreeSet<>(externalPost));
-    this.relationshipsPre = Collections.unmodifiableSortedSet(new TreeSet<>(relationshipsPre));
-    this.relationshipsPost = Collections.unmodifiableSortedSet(new TreeSet<>(relationshipsPost));
+    this.relationshipsPre = relationshipsPre != null ?
+            Collections.unmodifiableSortedSet(new TreeSet<>(relationshipsPre)) : Collections.unmodifiableSortedSet(new TreeSet<>());
+    this.relationshipsPost = relationshipsPost != null ?
+            Collections.unmodifiableSortedSet(new TreeSet<>(relationshipsPost)) : Collections.unmodifiableSortedSet(new TreeSet<>());
     this.hash = hash;
   }
 
