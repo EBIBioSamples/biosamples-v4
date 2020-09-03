@@ -1,13 +1,13 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
-* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
-* file except in compliance with the License. You may obtain a copy of the License at
-* http://www.apache.org/licenses/LICENSE-2.0
-* Unless required by applicable law or agreed to in writing, software distributed under the
-* License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-* CONDITIONS OF ANY KIND, either express or implied. See the License for the
-* specific language governing permissions and limitations under the License.
-*/
+ * Copyright 2019 EMBL - European Bioinformatics Institute
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+ * file except in compliance with the License. You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+ * CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ */
 package uk.ac.ebi.biosamples.ncbi;
 
 import java.io.BufferedInputStream;
@@ -59,10 +59,10 @@ public class Ncbi implements ApplicationRunner {
   private Map<String, Set<AbstractData>> sampleToAmrMap = new HashMap<>();
 
   public Ncbi(
-      PipelinesProperties pipelinesProperties,
-      XmlFragmenter xmlFragmenter,
-      NcbiFragmentCallback sampleCallback,
-      BioSamplesClient bioSamplesClient) {
+          PipelinesProperties pipelinesProperties,
+          XmlFragmenter xmlFragmenter,
+          NcbiFragmentCallback sampleCallback,
+          BioSamplesClient bioSamplesClient) {
     this.pipelinesProperties = pipelinesProperties;
     this.xmlFragmenter = xmlFragmenter;
     this.sampleCallback = sampleCallback;
@@ -72,11 +72,20 @@ public class Ncbi implements ApplicationRunner {
   @Override
   public void run(ApplicationArguments args) {
     boolean isPassed = true;
+    boolean includeAmr = true;
 
-    try {
-      sampleToAmrMap = amrDataLoaderService.loadAmrData();
-    } catch (final Exception e) {
-      log.error("Error in processing AMR data from ENA API - continue with the pipeline");
+    if (args.getOptionNames().contains("includeAmr")) {
+      if (args.getOptionValues("includeAmr").iterator().next().equalsIgnoreCase("false")) {
+        includeAmr = false;
+      }
+    }
+
+    if (includeAmr) {
+      try {
+        sampleToAmrMap = amrDataLoaderService.loadAmrData();
+      } catch (final Exception e) {
+        log.error("Error in processing AMR data from ENA API - continue with the pipeline");
+      }
     }
 
     try {
@@ -85,16 +94,16 @@ public class Ncbi implements ApplicationRunner {
       LocalDate fromDate;
       if (args.getOptionNames().contains("from")) {
         fromDate =
-            LocalDate.parse(
-                args.getOptionValues("from").iterator().next(), DateTimeFormatter.ISO_LOCAL_DATE);
+                LocalDate.parse(
+                        args.getOptionValues("from").iterator().next(), DateTimeFormatter.ISO_LOCAL_DATE);
       } else {
         fromDate = LocalDate.parse("1000-01-01", DateTimeFormatter.ISO_LOCAL_DATE);
       }
       LocalDate toDate = null;
       if (args.getOptionNames().contains("until")) {
         toDate =
-            LocalDate.parse(
-                args.getOptionValues("until").iterator().next(), DateTimeFormatter.ISO_LOCAL_DATE);
+                LocalDate.parse(
+                        args.getOptionValues("until").iterator().next(), DateTimeFormatter.ISO_LOCAL_DATE);
       } else {
         toDate = LocalDate.parse("3000-01-01", DateTimeFormatter.ISO_LOCAL_DATE);
       }
@@ -115,17 +124,17 @@ public class Ncbi implements ApplicationRunner {
       inputPath = inputPath.toAbsolutePath();
 
       try (InputStream is =
-          new GZIPInputStream(new BufferedInputStream(Files.newInputStream(inputPath)))) {
+                   new GZIPInputStream(new BufferedInputStream(Files.newInputStream(inputPath)))) {
         if (pipelinesProperties.getThreadCount() > 0) {
           ExecutorService executorService = null;
           try {
             executorService =
-                AdaptiveThreadPoolExecutor.create(
-                    100,
-                    10000,
-                    true,
-                    pipelinesProperties.getThreadCount(),
-                    pipelinesProperties.getThreadCountMax());
+                    AdaptiveThreadPoolExecutor.create(
+                            100,
+                            10000,
+                            true,
+                            pipelinesProperties.getThreadCount(),
+                            pipelinesProperties.getThreadCountMax());
             Map<Element, Future<Void>> futures = new LinkedHashMap<>();
 
             sampleCallback.setExecutorService(executorService);
@@ -176,21 +185,21 @@ public class Ncbi implements ApplicationRunner {
       // make sure to only get the public samples
       Set<String> existingAccessions = new TreeSet<>();
       for (Resource<Sample> sample :
-          bioSamplesClient
-              .getPublicClient()
-              .get()
-              .fetchSampleResourceAll(
-                  Collections.singleton(FilterBuilder.create().onAccession("SAM[^E].*").build()))) {
+              bioSamplesClient
+                      .getPublicClient()
+                      .get()
+                      .fetchSampleResourceAll(
+                              Collections.singleton(FilterBuilder.create().onAccession("SAM[^E].*").build()))) {
         existingAccessions.add(sample.getContent().getAccession());
       }
       long endTime = System.nanoTime();
       double intervalSec = ((double) (endTime - startTime)) / 1000000000.0;
       log.debug(
-          "Took "
-              + intervalSec
-              + "s to get "
-              + existingAccessions.size()
-              + " existing public ncbi accessions");
+              "Took "
+                      + intervalSec
+                      + "s to get "
+                      + existingAccessions.size()
+                      + " existing public ncbi accessions");
       return existingAccessions;
     } catch (final Exception publicNcbiAccessionFetchException) {
       throw new RuntimeException(publicNcbiAccessionFetchException);
@@ -206,27 +215,25 @@ public class Ncbi implements ApplicationRunner {
       for (String accession : toRemoveAccessions) {
         // this must get the ORIGINAL sample without curation
         Optional<Resource<Sample>> sampleOptional =
-            bioSamplesClient.fetchSampleResource(accession, Optional.of(curationDomainBlankList));
+                bioSamplesClient.fetchSampleResource(accession, Optional.of(curationDomainBlankList));
         if (sampleOptional.isPresent()) {
           Sample sample = sampleOptional.get().getContent();
           // set the release date to 1000 years in the future to make it private again
           // remove structured data if any
           Sample newSample =
-              Sample.Builder.fromSample(sample)
-                  .withNoData()
-                  .withRelease(ZonedDateTime.now(ZoneOffset.UTC).plusYears(1000).toInstant())
-                  .build();
+                  Sample.Builder.fromSample(sample)
+                          .withNoData()
+                          .withRelease(ZonedDateTime.now(ZoneOffset.UTC).plusYears(1000).toInstant())
+                          .build();
           // persist the now private sample
           log.info("Making private " + sample.getAccession());
           bioSamplesClient.persistSampleResource(newSample);
         }
       }
+    } catch (final HttpClientErrorException sampleMakePrivateException) {
+      log.info("Exception while persisting sample " + sampleMakePrivateException.getCause());
     } catch (final Exception sampleMakePrivateException) {
-      if (sampleMakePrivateException instanceof HttpClientErrorException) {
-        log.info("HTTP Exception while persisting sample " + sampleMakePrivateException.getCause());
-      } else {
-        throw new RuntimeException(sampleMakePrivateException);
-      }
+      throw new RuntimeException(sampleMakePrivateException);
     }
   }
 }
