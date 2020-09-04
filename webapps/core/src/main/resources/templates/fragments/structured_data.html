@@ -4,39 +4,58 @@
 <head>
 </head>
 <body>
-    <section th:fragment="amr_table(data)">
-             <!--th:with=}">-->
-        <!--<section th:with="headers=${ {'Species', 'Antibiotic Name', 'Ast Standard', 'Breakpoint Version',-->
-                <!--'Laboratory Typing Method', 'Measurement Value', 'Measurement Units', 'Measurement Sign',-->
-                <!--'Resistance Phenotype', 'Platform', 'Laboratory Typing Platform', 'Vendor',-->
-                <!--'Laboratory Typing Method Version Or Reagent'} }">-->
+<section th:fragment="amr_table(data)">
+    <th:block th:if="${data.getDataType().toString().equals('AMR')}">
         <section>
-            <h3>
-                Antibiogram data
-            </h3>
+            <h3>Structured Data (AMR)</h3>
             <div style="max-width: 100%; overflow-x: auto;">
                 <table>
                     <th:block th:each="amrEntry,entryStat: ${@amrTableToMapConverter.convert(data)}">
                         <th:block th:if="${entryStat.first}">
                             <thead>
-                                <tr>
-                                    <th th:each="head: ${amrEntry}" th:text="${head}"></th>
-                                </tr>
+                            <tr>
+                                <th th:each="head: ${amrEntry}" th:text="${head}"></th>
+                            </tr>
                             </thead>
                         </th:block>
                     </th:block>
                     <tbody>
-                        <th:block th:each="amrEntry,entryStat: ${@amrTableToMapConverter.convert(data)}">
-                            <th:block th:unless="${entryStat.first}">
-                                <tr>
-                                    <td th:each="val: ${amrEntry}" th:text="${val}"></td>
-                                </tr>
-                            </th:block>
+                    <th:block th:each="amrEntry,entryStat: ${@amrTableToMapConverter.convert(data)}">
+                        <th:block th:unless="${entryStat.first}">
+                            <tr>
+                                <td th:each="val: ${amrEntry}" th:text="${val}"></td>
+                            </tr>
                         </th:block>
+                    </th:block>
                     </tbody>
                 </table>
             </div>
         </section>
-    </section>
+    </th:block>
+    <th:block th:if="${!data.getDataType().toString().equals('AMR')}">
+        <h3 th:text="${'Structured Data (' + data.getDataType().toString().toLowerCase()} + ')'">Structured Data</h3>
+        <table>
+            <thead>
+            <tr>
+                <th th:each="header: ${data.getHeaders()}" th:text="${header}"></th>
+            </tr>
+            </thead>
+            <tbody>
+            <th:block th:each="entry : ${data.getStructuredData()}">
+                <th:block th:each="entry: ${data.getDataAsMap()}">
+                    <tr>
+                        <td th:each="header: ${data.getHeaders()}">
+                            <a th:if="${not #strings.isEmpty(entry.get(header).getIri())}"
+                               th:href="${entry.get(header).getIri()}"
+                               th:text="${entry.get(header).getValue()}" target="_blank"></a>
+                            <span th:if="${#strings.isEmpty(entry.get(header).getIri())}"
+                                  th:text="${entry.get(header).getValue()}"></span>
+                        </td>
+                    </tr>
+                </th:block>
+            </tbody>
+        </table>
+    </th:block>
+</section>
 </body>
 </html>

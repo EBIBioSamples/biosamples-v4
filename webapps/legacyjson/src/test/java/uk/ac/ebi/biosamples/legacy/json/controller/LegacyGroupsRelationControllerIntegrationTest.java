@@ -1,3 +1,13 @@
+/*
+* Copyright 2019 EMBL - European Bioinformatics Institute
+* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+* file except in compliance with the License. You may obtain a copy of the License at
+* http://www.apache.org/licenses/LICENSE-2.0
+* Unless required by applicable law or agreed to in writing, software distributed under the
+* License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+* CONDITIONS OF ANY KIND, either express or implied. See the License for the
+* specific language governing permissions and limitations under the License.
+*/
 package uk.ac.ebi.biosamples.legacy.json.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -12,11 +22,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.jayway.jsonpath.JsonPath;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import org.hamcrest.Matchers;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -36,9 +46,6 @@ import org.springframework.hateoas.Resource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-
-import com.jayway.jsonpath.JsonPath;
-
 import uk.ac.ebi.biosamples.legacy.json.domain.TestSample;
 import uk.ac.ebi.biosamples.legacy.json.repository.SampleRepository;
 import uk.ac.ebi.biosamples.model.ExternalReference;
@@ -50,146 +57,145 @@ import uk.ac.ebi.biosamples.model.Sample;
 @SpringBootTest
 public class LegacyGroupsRelationControllerIntegrationTest {
 
-    @MockBean
-    private SampleRepository sampleRepository;
+  @MockBean private SampleRepository sampleRepository;
 
-    @Autowired
-    private MockMvc mockMvc;
+  @Autowired private MockMvc mockMvc;
 
-    @Autowired
-    PagedResourcesAssembler<Sample> pagedResourcesAssembler;
+  @Autowired PagedResourcesAssembler<Sample> pagedResourcesAssembler;
 
-    private ResultActions getGroupsRelationsHAL(String accession) throws Exception {
-        return mockMvc.perform(get("/groupsrelations/{accession}", accession).accept(MediaTypes.HAL_JSON_VALUE));
-    }
+  private ResultActions getGroupsRelationsHAL(String accession) throws Exception {
+    return mockMvc.perform(
+        get("/groupsrelations/{accession}", accession).accept(MediaTypes.HAL_JSON_VALUE));
+  }
 
-    private PagedResources<Resource<Sample>> getTestPagedResourcesSample(int totalSamples, Sample... samples) {
-        List<Sample> allSamples = Stream.of(samples)
-                .collect(Collectors.toList());
+  private PagedResources<Resource<Sample>> getTestPagedResourcesSample(
+      int totalSamples, Sample... samples) {
+    List<Sample> allSamples = Stream.of(samples).collect(Collectors.toList());
 
-        Pageable pageInfo = new PageRequest(0,samples.length);
-        Page<Sample> samplePage = new PageImpl<>(allSamples, pageInfo, totalSamples);
-        return pagedResourcesAssembler.toResource(samplePage);
+    Pageable pageInfo = new PageRequest(0, samples.length);
+    Page<Sample> samplePage = new PageImpl<>(allSamples, pageInfo, totalSamples);
+    return pagedResourcesAssembler.toResource(samplePage);
+  }
 
-    }
+  @Test
+  public void testReturnGroupsRelationByAccession() throws Exception {
+    Sample testSample = new TestSample("SAMEG1111").build();
+    when(sampleRepository.findByAccession(anyString())).thenReturn(Optional.of(testSample));
 
-    @Test
-    public void testReturnGroupsRelationByAccession() throws Exception {
-        Sample testSample = new TestSample("SAMEG1111").build();
-        when(sampleRepository.findByAccession(anyString())).thenReturn(Optional.of(testSample));
+    getGroupsRelationsHAL(testSample.getAccession())
+        .andExpect(status().isOk())
+        .andExpect(content().contentType("application/hal+json;charset=UTF-8"))
+        .andExpect(jsonPath("$.accession").value(testSample.getAccession()));
+  }
 
-        getGroupsRelationsHAL(testSample.getAccession())
-                .andExpect(status().isOk())
-                .andExpect(content().contentType("application/hal+json;charset=UTF-8"))
-                .andExpect(jsonPath("$.accession").value(testSample.getAccession()));
-    }
+  @Test
+  public void testGroupsRelationsHasSelfLink() throws Exception {
+    Sample testSample = new TestSample("SAMEG1111").build();
+    when(sampleRepository.findByAccession(anyString())).thenReturn(Optional.of(testSample));
 
-    @Test
-    public void testGroupsRelationsHasSelfLink() throws Exception {
-        Sample testSample = new TestSample("SAMEG1111").build();
-        when(sampleRepository.findByAccession(anyString())).thenReturn(Optional.of(testSample));
+    getGroupsRelationsHAL(testSample.getAccession()).andExpect(jsonPath("$._links.self").exists());
+  }
 
-        getGroupsRelationsHAL(testSample.getAccession())
-                .andExpect(jsonPath("$._links.self").exists());
-    }
+  @Test
+  public void testGroupsRelationsLinkExistAndMatchSelfLink() throws Exception {
+    Sample testSample = new TestSample("SAMEG1111").build();
+    when(sampleRepository.findByAccession(anyString())).thenReturn(Optional.of(testSample));
 
-    @Test
-    public void testGroupsRelationsLinkExistAndMatchSelfLink() throws Exception {
-        Sample testSample = new TestSample("SAMEG1111").build();
-        when(sampleRepository.findByAccession(anyString())).thenReturn(Optional.of(testSample));
+    getGroupsRelationsHAL(testSample.getAccession())
+        .andExpect(jsonPath("$._links.groupsrelations").exists())
+        .andExpect(
+            jsonPath("$._links.groupsrelations.href")
+                .value(Matchers.endsWith(testSample.getAccession())))
+        .andDo(
+            result -> {
+              String responseBody = result.getResponse().getContentAsString();
+              String sampleRelationsHrefPath = "$._links.groupsrelations.href";
+              String selfHrefPath = "$._links.self.href";
 
-        getGroupsRelationsHAL(testSample.getAccession())
-                .andExpect(jsonPath("$._links.groupsrelations").exists())
-                .andExpect(jsonPath("$._links.groupsrelations.href").value(Matchers.endsWith(testSample.getAccession())))
-                .andDo(result -> {
+              assertThat(JsonPath.parse(responseBody).read(selfHrefPath).toString())
+                  .isEqualTo(JsonPath.parse(responseBody).read(sampleRelationsHrefPath).toString());
+            });
+  }
 
-                    String responseBody = result.getResponse().getContentAsString();
-                    String sampleRelationsHrefPath ="$._links.groupsrelations.href";
-                    String selfHrefPath ="$._links.self.href";
+  @Test
+  public void testGroupsRelationsContainsAllExpectedLinks() throws Exception {
+    Sample testSample = new TestSample("SAMEG1111").build();
+    when(sampleRepository.findByAccession(anyString())).thenReturn(Optional.of(testSample));
 
+    getGroupsRelationsHAL(testSample.getAccession())
+        .andExpect(
+            jsonPath("$._links")
+                .value(
+                    allOf(
+                        hasKey("self"),
+                        hasKey("details"),
+                        hasKey("groupsrelations"),
+                        hasKey("externallinks"),
+                        hasKey("samples"))));
+  }
 
-                    assertThat(JsonPath.parse(responseBody).read(selfHrefPath).toString())
-                            .isEqualTo(JsonPath.parse(responseBody).read(sampleRelationsHrefPath).toString());
-                });
+  @Test
+  @Ignore
+  public void testGoingFromGroupToSampleBackToGroupReturnOriginalGroup() throws Exception {
+    // TODO in end-to-end test
+  }
 
-    }
+  @Test
+  public void testRequestForUnsupportedRelationThrowsError() throws Exception {
+    mockMvc
+        .perform(get("/groupsrealtions/SAMEG1/test").accept(HAL_JSON))
+        .andExpect(status().isNotFound());
+  }
 
-    @Test
-    public void testGroupsRelationsContainsAllExpectedLinks() throws Exception {
-        Sample testSample = new TestSample("SAMEG1111").build();
-        when(sampleRepository.findByAccession(anyString())).thenReturn(Optional.of(testSample));
+  @Test
+  public void testRequestForSampleRelationReturnResourcesOfSampleRelations() throws Exception {
+    Sample group =
+        new TestSample("SAMEG1")
+            .withRelationship(Relationship.build("SAMEG1", "has member", "SAMEA1"))
+            .build();
+    Sample sample =
+        new TestSample("SAMEA1")
+            .withRelationship(Relationship.build("SAMEG1", "has member", "SAMEA1"))
+            .build();
+    when(sampleRepository.findByAccession(group.getAccession())).thenReturn(Optional.of(group));
+    when(sampleRepository.findByAccession(sample.getAccession())).thenReturn(Optional.of(sample));
 
-        getGroupsRelationsHAL(testSample.getAccession())
-                .andExpect(jsonPath("$._links").value(
-                        allOf(
-                                hasKey("self"),
-                                hasKey("details"),
-                                hasKey("groupsrelations"),
-                                hasKey("externallinks"),
-                                hasKey("samples")
-                        )
-                ));
-    }
+    mockMvc
+        .perform(get("/groupsrelations/SAMEG1/samples").accept(HAL_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$._embedded.samplesrelations[0].accession").value("SAMEA1"));
+  }
 
-    @Test
-    @Ignore
-    public void testGoingFromGroupToSampleBackToGroupReturnOriginalGroup() throws Exception {
-        //TODO in end-to-end test
-    }
+  @Test
+  public void testRequestForExternalLinksReturnsExternalLinkResources() throws Exception {
+    Sample group =
+        new TestSample("SAMEG1")
+            .withExternalReference(ExternalReference.build("http://test/1"))
+            .build();
+    when(sampleRepository.findByAccession(group.getAccession())).thenReturn(Optional.of(group));
 
-    @Test
-    public void testRequestForUnsupportedRelationThrowsError() throws Exception {
-        mockMvc.perform(get("/groupsrealtions/SAMEG1/test").accept(HAL_JSON))
-                .andExpect(status().isNotFound());
-    }
+    mockMvc
+        .perform(get("/groupsrelations/SAMEG1/externalLinks").accept(HAL_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$._embedded.externallinksrelations[0].url").value("http://test/1"));
+  }
 
-    @Test
-    public void testRequestForSampleRelationReturnResourcesOfSampleRelations() throws Exception {
-        Sample group = new TestSample("SAMEG1")
-                .withRelationship(Relationship.build("SAMEG1", "has member", "SAMEA1"))
-                .build();
-        Sample sample = new TestSample("SAMEA1")
-                .withRelationship(Relationship.build("SAMEG1", "has member", "SAMEA1"))
-                .build();
-        when(sampleRepository.findByAccession(group.getAccession())).thenReturn(Optional.of(group));
-        when(sampleRepository.findByAccession(sample.getAccession())).thenReturn(Optional.of(sample));
+  @Test
+  public void testRetrieveAllGroupsRelationsReturnPagedResources() throws Exception {
+    Sample group1 = new TestSample("SAMEG1").build();
+    Sample group2 = new TestSample("SAMEG2").build();
+    when(sampleRepository.findGroups(anyInt(), anyInt()))
+        .thenReturn(getTestPagedResourcesSample(10, group1, group2));
 
+    mockMvc
+        .perform(get("/groupsrelations").accept(HAL_JSON))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType("application/hal+json;charset=UTF-8"));
+  }
 
-        mockMvc.perform(get("/groupsrelations/SAMEG1/samples").accept(HAL_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$._embedded.samplesrelations[0].accession").value("SAMEA1"));
-    }
-
-    @Test
-    public void testRequestForExternalLinksReturnsExternalLinkResources() throws Exception {
-        Sample group = new TestSample("SAMEG1")
-                .withExternalReference(ExternalReference.build("http://test/1"))
-                .build();
-        when(sampleRepository.findByAccession(group.getAccession())).thenReturn(Optional.of(group));
-
-
-        mockMvc.perform(get("/groupsrelations/SAMEG1/externalLinks").accept(HAL_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$._embedded.externallinksrelations[0].url").value("http://test/1"));
-    }
-
-    @Test
-    public void testRetrieveAllGroupsRelationsReturnPagedResources() throws Exception {
-        Sample group1 = new TestSample("SAMEG1").build();
-        Sample group2 = new TestSample("SAMEG2").build();
-        when(sampleRepository.findGroups(anyInt(), anyInt())).thenReturn(getTestPagedResourcesSample(10, group1, group2));
-
-
-        mockMvc.perform(get("/groupsrelations").accept(HAL_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType("application/hal+json;charset=UTF-8"));
-
-    }
-
-    @Test
-    @Ignore
-    public void shouldReturnOnlyGroups() {
-        //TODO test this feature in the end-to-end test
-    }
-
+  @Test
+  @Ignore
+  public void shouldReturnOnlyGroups() {
+    // TODO test this feature in the end-to-end test
+  }
 }

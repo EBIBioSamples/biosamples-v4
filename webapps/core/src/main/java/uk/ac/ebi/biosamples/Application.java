@@ -1,6 +1,18 @@
+/*
+* Copyright 2019 EMBL - European Bioinformatics Institute
+* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+* file except in compliance with the License. You may obtain a copy of the License at
+* http://www.apache.org/licenses/LICENSE-2.0
+* Unless required by applicable law or agreed to in writing, software distributed under the
+* License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+* CONDITIONS OF ANY KIND, either express or implied. See the License for the
+* specific language governing permissions and limitations under the License.
+*/
 package uk.ac.ebi.biosamples;
 
 import com.github.benmanes.caffeine.cache.CaffeineSpec;
+import java.util.concurrent.Executor;
+import javax.servlet.Filter;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
@@ -24,79 +36,89 @@ import uk.ac.ebi.biosamples.service.AmrTableConverter;
 import uk.ac.ebi.biosamples.service.SampleAsXMLHttpMessageConverter;
 import uk.ac.ebi.biosamples.service.SampleToXmlConverter;
 
-import javax.servlet.Filter;
-import java.util.concurrent.Executor;
-
-//import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
+// import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 
 @SpringBootApplication
 @EnableAsync
 @EnableCaching
 public class Application extends SpringBootServletInitializer {
 
-	public static void main(String[] args) {
-		SpringApplication.run(Application.class, args);
-	}
+  public static void main(String[] args) {
+    SpringApplication.run(Application.class, args);
+  }
 
-	@Bean
-	public Filter filter() {
-		return new ShallowEtagHeaderFilter();
-	}
+  @Bean
+  public Filter filter() {
+    return new ShallowEtagHeaderFilter();
+  }
 
-	@Bean
-	public HttpMessageConverter<Sample> getXmlSampleHttpMessageConverter(SampleToXmlConverter sampleToXmlConverter) {
-		return new SampleAsXMLHttpMessageConverter(sampleToXmlConverter);
-	}
+  @Bean
+  public HttpMessageConverter<Sample> getXmlSampleHttpMessageConverter(
+      SampleToXmlConverter sampleToXmlConverter) {
+    return new SampleAsXMLHttpMessageConverter(sampleToXmlConverter);
+  }
 
-    @Bean(name = "threadPoolTaskExecutor")
-    public Executor threadPoolTaskExecutor() {
-    	ThreadPoolTaskExecutor ex = new ThreadPoolTaskExecutor();
-    	ex.setMaxPoolSize(128);
-    	ex.setQueueCapacity(2056);
-    	return ex;
-    }
+  @Bean(name = "threadPoolTaskExecutor")
+  public Executor threadPoolTaskExecutor() {
+    ThreadPoolTaskExecutor ex = new ThreadPoolTaskExecutor();
+    ex.setMaxPoolSize(128);
+    ex.setQueueCapacity(2056);
+    return ex;
+  }
 
-    @Bean
-    public RepositoryDetectionStrategy repositoryDetectionStrategy() {
-    	return RepositoryDetectionStrategy.RepositoryDetectionStrategies.ANNOTATED;
-    }
+  @Bean
+  public RepositoryDetectionStrategy repositoryDetectionStrategy() {
+    return RepositoryDetectionStrategy.RepositoryDetectionStrategies.ANNOTATED;
+  }
 
+  /* Necessary to render XML using Jaxb2 annotations */
+  @Bean
+  public Jaxb2RootElementHttpMessageConverter jaxb2RootElementHttpMessageConverter() {
+    return new Jaxb2RootElementHttpMessageConverter();
+  }
 
-    /* Necessary to render XML using Jaxb2 annotations */
-	@Bean
-	public Jaxb2RootElementHttpMessageConverter jaxb2RootElementHttpMessageConverter() {
-		return new Jaxb2RootElementHttpMessageConverter();
-	}
+  @Bean
+  public CaffeineSpec CaffeineSpec() {
+    return CaffeineSpec.parse("maximumSize=500,expireAfterWrite=60s");
+  }
 
-    @Bean
-    public CaffeineSpec CaffeineSpec() {
-    	return CaffeineSpec.parse("maximumSize=500,expireAfterWrite=60s");
-    }
+  @Bean
+  public ITemplateResolver templateResolver() {
+    return new UrlTemplateResolver();
+  }
 
-    @Bean
-    public ITemplateResolver templateResolver() {
-    	return new UrlTemplateResolver();
-    }
+  @Bean(name = "SampleAccessionService")
+  public MongoAccessionService mongoSampleAccessionService(
+      MongoSampleRepository mongoSampleRepository,
+      SampleToMongoSampleConverter sampleToMongoSampleConverter,
+      MongoSampleToSampleConverter mongoSampleToSampleConverter,
+      MongoProperties mongoProperties) {
+    return new MongoAccessionService(
+        mongoSampleRepository,
+        sampleToMongoSampleConverter,
+        mongoSampleToSampleConverter,
+        mongoProperties.getAccessionPrefix(),
+        mongoProperties.getAccessionMinimum(),
+        mongoProperties.getAcessionQueueSize());
+  }
 
-    @Bean(name="SampleAccessionService")
-    public MongoAccessionService mongoSampleAccessionService(MongoSampleRepository mongoSampleRepository, SampleToMongoSampleConverter sampleToMongoSampleConverter,
-			MongoSampleToSampleConverter mongoSampleToSampleConverter, MongoProperties mongoProperties) {
-    	return new MongoAccessionService(mongoSampleRepository, sampleToMongoSampleConverter,
-    			mongoSampleToSampleConverter, mongoProperties.getAccessionPrefix(),
-    			mongoProperties.getAccessionMinimum(), mongoProperties.getAcessionQueueSize());
-    }
+  @Bean(name = "GroupAccessionService")
+  public MongoAccessionService mongoGroupAccessionService(
+      MongoSampleRepository mongoSampleRepository,
+      SampleToMongoSampleConverter sampleToMongoSampleConverter,
+      MongoSampleToSampleConverter mongoSampleToSampleConverter,
+      MongoProperties mongoProperties) {
+    return new MongoAccessionService(
+        mongoSampleRepository,
+        sampleToMongoSampleConverter,
+        mongoSampleToSampleConverter,
+        "SAMEG",
+        mongoProperties.getAccessionMinimum(),
+        mongoProperties.getAcessionQueueSize());
+  }
 
-	@Bean(name="GroupAccessionService")
-	public MongoAccessionService mongoGroupAccessionService(MongoSampleRepository mongoSampleRepository, SampleToMongoSampleConverter sampleToMongoSampleConverter,
-															MongoSampleToSampleConverter mongoSampleToSampleConverter, MongoProperties mongoProperties) {
-		return new MongoAccessionService(mongoSampleRepository, sampleToMongoSampleConverter,
-				mongoSampleToSampleConverter, "SAMEG",
-				mongoProperties.getAccessionMinimum(), mongoProperties.getAcessionQueueSize());
-	}
-
-    @Bean
-    AmrTableConverter amrTableToMapConverter() {
-		return new AmrTableConverter();
-	}
-
+  @Bean
+  AmrTableConverter amrTableToMapConverter() {
+    return new AmrTableConverter();
+  }
 }

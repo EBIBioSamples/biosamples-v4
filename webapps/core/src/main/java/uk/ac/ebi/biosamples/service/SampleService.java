@@ -1,5 +1,17 @@
+/*
+* Copyright 2019 EMBL - European Bioinformatics Institute
+* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+* file except in compliance with the License. You may obtain a copy of the License at
+* http://www.apache.org/licenses/LICENSE-2.0
+* Unless required by applicable law or agreed to in writing, software distributed under the
+* License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+* CONDITIONS OF ANY KIND, either express or implied. See the License for the
+* specific language governing permissions and limitations under the License.
+*/
 package uk.ac.ebi.biosamples.service;
 
+import java.time.Instant;
+import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,273 +29,281 @@ import uk.ac.ebi.biosamples.mongo.repo.MongoSampleRepository;
 import uk.ac.ebi.biosamples.mongo.service.*;
 import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
 
-import java.time.Instant;
-import java.util.*;
-
 /**
- * Service layer business logic for centralising repository access and
- * conversions between different controller. Use this instead of linking to
- * repositories directly.
+ * Service layer business logic for centralising repository access and conversions between different
+ * controller. Use this instead of linking to repositories directly.
  *
  * @author faulcon
  */
 @Service
 public class SampleService {
+  public static final String VALIDATION_MESSAGE =
+      "Only Sample name, sample accession and sample structured data can be provided through this API";
+  public static final String NO_STRUCTURED_DATA_IS_PROVIDED = "No structured data is provided";
+  private static Logger log = LoggerFactory.getLogger(SampleService.class);
 
-    public static final String VALIDATION_MESSAGE = "Only Sample name, sample accession and sample structured data can be provided through this API";
-    public static final String NO_STRUCTURED_DATA_IS_PROVIDED = "No structured data is provided";
-    private static Logger log = LoggerFactory.getLogger(SampleService.class);
+  // TODO use constructor injection
+  @Qualifier("SampleAccessionService")
+  @Autowired
+  private MongoAccessionService mongoAccessionService;
 
-    //TODO use constructor injection
-    @Qualifier("SampleAccessionService")
-    @Autowired
-    private MongoAccessionService mongoAccessionService;
-    @Qualifier("GroupAccessionService")
-    @Autowired
-    private MongoAccessionService groupAccessionService;
-    @Autowired
-    private MongoSampleRepository mongoSampleRepository;
-    @Autowired
-    private MongoSampleToSampleConverter mongoSampleToSampleConverter;
-    @Autowired
-    private SampleToMongoSampleConverter sampleToMongoSampleConverter;
-    @Autowired
-    private SampleToMongoSampleStructuredDataCentricConverter structuredDataConverter;
-    @Autowired
-    private SampleValidator sampleValidator;
-    @Autowired
-    private SolrSampleService solrSampleService;
-    @Autowired
-    private SampleReadService sampleReadService;
-    @Autowired
-    private MessagingService messagingSerivce;
+  @Qualifier("GroupAccessionService")
+  @Autowired
+  private MongoAccessionService groupAccessionService;
 
-    /**
-     * Throws an IllegalArgumentException of no sample with that accession exists
-     *
-     * @param accession the sample accession
-     * @return
-     * @throws IllegalArgumentException
-     */
-    public Optional<Sample> fetch(String accession, Optional<List<String>> curationDomains, String curationRepo) {
-        StaticViewWrapper.StaticView staticView = StaticViewWrapper.getStaticView(curationDomains.orElse(null), curationRepo);
-        return sampleReadService.fetch(accession, curationDomains, staticView);
+  @Autowired private MongoSampleRepository mongoSampleRepository;
+  @Autowired private MongoSampleToSampleConverter mongoSampleToSampleConverter;
+  @Autowired private SampleToMongoSampleConverter sampleToMongoSampleConverter;
+  @Autowired private SampleToMongoSampleStructuredDataCentricConverter structuredDataConverter;
+  @Autowired private SampleValidator sampleValidator;
+  @Autowired private SolrSampleService solrSampleService;
+  @Autowired private SampleReadService sampleReadService;
+  @Autowired private MessagingService messagingSerivce;
+
+  /**
+   * Throws an IllegalArgumentException of no sample with that accession exists
+   *
+   * @param accession the sample accession
+   * @return
+   * @throws IllegalArgumentException
+   */
+  public Optional<Sample> fetch(
+      String accession, Optional<List<String>> curationDomains, String curationRepo) {
+    StaticViewWrapper.StaticView staticView =
+        StaticViewWrapper.getStaticView(curationDomains.orElse(null), curationRepo);
+    return sampleReadService.fetch(accession, curationDomains, staticView);
+  }
+
+  public Autocomplete getAutocomplete(
+      String autocompletePrefix, Collection<Filter> filters, int noSuggestions) {
+    return solrSampleService.getAutocomplete(autocompletePrefix, filters, noSuggestions);
+  }
+
+  // because the fetchUsing caches the sample, if an updated version is stored, we need to make
+  // sure
+  // that any cached version
+  // is removed.
+  // Note, pages of samples will not be cache busted, only single-accession sample retrieval
+  // @CacheEvict(cacheNames=WebappProperties.fetchUsing, key="#result.accession")
+  public Sample store(Sample sample) {
+    return store(sample, false);
+  }
+
+  public Sample store(Sample sample, boolean sampleGroup) {
+    Collection<String> errors = sampleValidator.validate(sample);
+    if (!errors.isEmpty()) {
+      log.error("Sample validation failed : {}", errors);
+      throw new SampleValidationException();
     }
 
-    public Autocomplete getAutocomplete(String autocompletePrefix, Collection<Filter> filters, int noSuggestions) {
-        return solrSampleService.getAutocomplete(autocompletePrefix, filters, noSuggestions);
+    if (sample.hasAccession()) {
+      MongoSample mongoOldSample = mongoSampleRepository.findOne(sample.getAccession());
+      List<String> existingRelationshipTargets = new ArrayList<>();
+
+      if (mongoOldSample != null) {
+        Sample oldSample = mongoSampleToSampleConverter.convert(mongoOldSample);
+        existingRelationshipTargets =
+            getExistingRelationshipTargets(sample.getAccession(), mongoOldSample);
+        sample = compareWithExistingAndUpdateSample(sample, oldSample);
+      } else {
+        log.error("Trying to update sample not in database, accession: {}", sample.getAccession());
+      }
+
+      MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);
+
+      mongoSample = mongoSampleRepository.save(mongoSample);
+      sample = mongoSampleToSampleConverter.convert(mongoSample);
+
+      // send a message for storage and further processing, send relationship targets to
+      // identify
+      // deleted relationships
+      messagingSerivce.fetchThenSendMessage(sample.getAccession(), existingRelationshipTargets);
+    } else {
+      if (sampleGroup) {
+        sample = groupAccessionService.generateAccession(sample);
+      } else {
+        sample = mongoAccessionService.generateAccession(sample);
+      }
+      messagingSerivce.fetchThenSendMessage(sample.getAccession());
     }
 
-    //because the fetchUsing caches the sample, if an updated version is stored, we need to make sure that any cached version
-    //is removed.
-    //Note, pages of samples will not be cache busted, only single-accession sample retrieval
-    //@CacheEvict(cacheNames=WebappProperties.fetchUsing, key="#result.accession")
-    public Sample store(Sample sample) {
-        return store(sample, false);
+    // do a fetch to return it with accession, curation objects, inverse relationships
+    return fetch(sample.getAccession(), Optional.empty(), null).get();
+  }
+
+  public Sample storeSampleStructuredData(Sample newSample) {
+    validateSampleContentsForStructuredDataPatching(newSample);
+
+    MongoSample mongoOldSample = mongoSampleRepository.findOne(newSample.getAccession());
+
+    if (mongoOldSample != null) {
+      newSample = makeNewSample(newSample, mongoSampleToSampleConverter.convert(mongoOldSample));
+    } else {
+      log.error(
+          "Trying to update newSample not in database, accession: {}", newSample.getAccession());
     }
 
-    public Sample store(Sample sample, boolean sampleGroup) {
-        Collection<String> errors = sampleValidator.validate(sample);
-        if (!errors.isEmpty()) {
-            log.error("Sample validation failed : {}", errors);
-            throw new SampleValidationException();
-        }
+    MongoSample mongoSample = structuredDataConverter.convert(newSample);
+    mongoSample = mongoSampleRepository.save(mongoSample);
+    newSample = mongoSampleToSampleConverter.convert(mongoSample);
 
-        if (sample.hasAccession()) {
-            MongoSample mongoOldSample = mongoSampleRepository.findOne(sample.getAccession());
-            List<String> existingRelationshipTargets = new ArrayList<>();
-            if (mongoOldSample != null) {
-                Sample oldSample = mongoSampleToSampleConverter.convert(mongoOldSample);
-                existingRelationshipTargets = getExistingRelationshipTargets(sample.getAccession(), mongoOldSample);
-                sample = compareWithExistingAndUpdateSample(sample, oldSample);
-            } else {
-                log.error("Trying to update sample not in database, accession: {}", sample.getAccession());
-            }
+    // return the newSample in case we have modified it i.e accessioned
+    // do a fetch to return it with curation objects and inverse relationships
+    return fetch(newSample.getAccession(), Optional.empty(), null).get();
+  }
 
-            MongoSample mongoSample = sampleToMongoSampleConverter.convert(sample);
-            mongoSample = mongoSampleRepository.save(mongoSample);
-            sample = mongoSampleToSampleConverter.convert(mongoSample);
+  private void validateSampleContentsForStructuredDataPatching(Sample newSample) {
+    assert newSample.getData() != null;
 
-            //send a message for storage and further processing, send relationship targets to identify deleted relationships
-            messagingSerivce.fetchThenSendMessage(sample.getAccession(), existingRelationshipTargets);
-        } else {
-            if (sampleGroup) {
-                sample = groupAccessionService.generateAccession(sample);
-            } else {
-                sample = mongoAccessionService.generateAccession(sample);
-            }
-            messagingSerivce.fetchThenSendMessage(sample.getAccession());
-        }
+    final String domain = newSample.getDomain();
 
-        //do a fetch to return it with accession, curation objects, inverse relationships
-        return fetch(sample.getAccession(), Optional.empty(), null).get();
+    if (!(newSample.getData().size() > 0)) {
+      throw new SampleValidationException(NO_STRUCTURED_DATA_IS_PROVIDED);
     }
 
-    public Sample storeSampleStructuredData(Sample newSample) {
-        validateSampleContentsForStructuredDataPatching(newSample);
-
-        MongoSample mongoOldSample = mongoSampleRepository.findOne(newSample.getAccession());
-
-        if (mongoOldSample != null) {
-            newSample = makeNewSample(newSample, mongoSampleToSampleConverter.convert(mongoOldSample));
-        } else {
-            log.error("Trying to update newSample not in database, accession: {}", newSample.getAccession());
-        }
-
-        MongoSample mongoSample = structuredDataConverter.convert(newSample);
-        mongoSample = mongoSampleRepository.save(mongoSample);
-        newSample = mongoSampleToSampleConverter.convert(mongoSample);
-
-        //return the newSample in case we have modified it i.e accessioned
-        //do a fetch to return it with curation objects and inverse relationships
-        return fetch(newSample.getAccession(), Optional.empty(), null).get();
+    if (newSample.getAttributes() != null && newSample.getAttributes().size() > 0) {
+      throw new SampleValidationException(VALIDATION_MESSAGE);
     }
 
-    private void validateSampleContentsForStructuredDataPatching(Sample newSample) {
-        assert newSample.getData() != null;
-        
-        final String domain = newSample.getDomain();
-
-        if (!(newSample.getData().size() > 0)) {
-            throw new SampleValidationException(NO_STRUCTURED_DATA_IS_PROVIDED);
-        }
-
-        if (newSample.getAttributes() != null && newSample.getAttributes().size() > 0) {
-            throw new SampleValidationException(VALIDATION_MESSAGE);
-        }
-
-        if (newSample.getExternalReferences() != null && newSample.getExternalReferences().size() > 0) {
-            throw new SampleValidationException(VALIDATION_MESSAGE);
-        }
-
-        if (newSample.getRelationships() != null && newSample.getRelationships().size() > 0) {
-            throw new SampleValidationException(VALIDATION_MESSAGE);
-        }
-
-        if (newSample.getContacts() != null && newSample.getContacts().size() > 0) {
-            throw new SampleValidationException(VALIDATION_MESSAGE);
-        }
-
-        if (newSample.getPublications() != null && newSample.getPublications().size() > 0) {
-            throw new SampleValidationException(VALIDATION_MESSAGE);
-        }
-
-        if (domain != null && domain.length() > 0) {
-            throw new SampleValidationException(VALIDATION_MESSAGE);
-        }
-
-        if (!newSample.hasAccession()) {
-            throw new SampleValidationException("Sample doesn't have an accession");
-        }
+    if (newSample.getExternalReferences() != null && newSample.getExternalReferences().size() > 0) {
+      throw new SampleValidationException(VALIDATION_MESSAGE);
     }
 
-    private Sample makeNewSample(Sample newSample, Sample oldSample) {
-        return Sample.Builder.fromSample(oldSample).withData(newSample.getData()).withUpdate(Instant.now()).build();
+    if (newSample.getRelationships() != null && newSample.getRelationships().size() > 0) {
+      throw new SampleValidationException(VALIDATION_MESSAGE);
     }
 
-    public boolean searchSampleByDomainAndName(final String domain, final String name) {
-        return mongoSampleRepository.findByDomainAndName(domain, name).size() > 0;
+    if (newSample.getContacts() != null && newSample.getContacts().size() > 0) {
+      throw new SampleValidationException(VALIDATION_MESSAGE);
     }
 
-    public void validateSample(Map sampleAsMap) {
-        List<String> errors = sampleValidator.validate(sampleAsMap);
-        StringBuilder sb = new StringBuilder();
-        if (errors.size() > 0) {
-            for (String error : errors) {
-                sb.append(error).append("; ");
-            }
-
-            throw new SampleValidationException(sb.toString());
-        }
+    if (newSample.getPublications() != null && newSample.getPublications().size() > 0) {
+      throw new SampleValidationException(VALIDATION_MESSAGE);
     }
 
-    public boolean isExistingAccession(String accession) {
-        return mongoSampleRepository.findOne(accession) != null;
+    if (domain != null && domain.length() > 0) {
+      throw new SampleValidationException(VALIDATION_MESSAGE);
     }
 
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public class SampleValidationException extends RuntimeException {
-        private static final long serialVersionUID = -7937033504537036300L;
+    if (!newSample.hasAccession()) {
+      throw new SampleValidationException("Sample doesn't have an accession");
+    }
+  }
 
-        public SampleValidationException() {
-            super();
-        }
+  private Sample makeNewSample(Sample newSample, Sample oldSample) {
+    return Sample.Builder.fromSample(oldSample)
+        .withData(newSample.getData())
+        .withUpdate(Instant.now())
+        .build();
+  }
 
-        public SampleValidationException(String message, Throwable cause, boolean enableSuppression,
-                                         boolean writableStackTrace) {
-            super(message, cause, enableSuppression, writableStackTrace);
-        }
+  public boolean searchSampleByDomainAndName(final String domain, final String name) {
+    return mongoSampleRepository.findByDomainAndName(domain, name).size() > 0;
+  }
 
-        public SampleValidationException(String message, Throwable cause) {
-            super(message, cause);
-        }
+  public void validateSample(Map sampleAsMap) {
+    List<String> errors = sampleValidator.validate(sampleAsMap);
+    StringBuilder sb = new StringBuilder();
+    if (errors.size() > 0) {
+      for (String error : errors) {
+        sb.append(error).append("; ");
+      }
 
-        public SampleValidationException(String message) {
-            super(message);
-        }
+      throw new SampleValidationException(sb.toString());
+    }
+  }
 
-        public SampleValidationException(Throwable cause) {
-            super(cause);
-        }
+  public boolean isExistingAccession(String accession) {
+    return mongoSampleRepository.findOne(accession) != null;
+  }
+
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public class SampleValidationException extends RuntimeException {
+    private static final long serialVersionUID = -7937033504537036300L;
+
+    public SampleValidationException() {
+      super();
     }
 
-    private List<String> getExistingRelationshipTargets(String accession, MongoSample mongoOldSample) {
-        List<String> oldRelationshipTargets = new ArrayList<>();
-        for (MongoRelationship relationship : mongoOldSample.getRelationships()) {
-            if (relationship.getSource().equals(accession)) {
-                oldRelationshipTargets.add(relationship.getTarget());
-            }
-        }
-
-        return oldRelationshipTargets;
+    public SampleValidationException(
+        String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+      super(message, cause, enableSuppression, writableStackTrace);
     }
 
-    private Sample compareWithExistingAndUpdateSample(Sample sampleToUpdate, Sample oldSample) {
-        //compare with existing version and check what fields have changed
-        if (sampleToUpdate.equals(oldSample)) {
-            log.info("New sample is similar to the old sample, accession: {}", oldSample.getAccession());
-        }
-
-        //Keep the create date as existing sample -- earlier
-        //13/01/2020 - if the sample has a date, acknowledge it. It can be the actual create date from NCBI, ENA.
-        return Sample.Builder.fromSample(sampleToUpdate)
-                .withCreate(defineCreateDate(sampleToUpdate, oldSample)).build();
+    public SampleValidationException(String message, Throwable cause) {
+      super(message, cause);
     }
 
-    private Instant defineCreateDate(final Sample sampleToUpdate, final Sample oldSample) {
-        return (sampleToUpdate.getDomain() != null &&
-                sampleToUpdate.getDomain().equalsIgnoreCase("self.BiosampleImportNCBI") &&
-                sampleToUpdate.getCreate() != null)
-                ? sampleToUpdate.getCreate()
-                : (oldSample.getCreate() != null ? oldSample.getCreate() : oldSample.getUpdate());
+    public SampleValidationException(String message) {
+      super(message);
     }
 
-	/*
-	//this code recursively follows relationships
-	//TODO finish
-	public SortedSet<Sample> getRelated(Sample sample, String relationshipType) {
-		Queue<String> toCheck = new LinkedList<>();
-		Set<String> checked = new HashSet<>();
-		Collection<Sample> related = new TreeSet<>();
-		toCheck.add(sample.getAccession());
-		while (!toCheck.isEmpty()) {
-			String accessionToCheck = toCheck.poll();
-			checked.add(accessionToCheck);
-			Sample sampleToCheck = sampleReadService.fetchUsing(accessionToCheck);
-			related.add(sampleToCheck);
-			for (Relationship rel : sampleToCheck.getRelationships()) {
-				if (relationshipType == null || relationshipType.equals(rel.getType())) {
-					if (!checked.contains(rel.getSource()) && toCheck.contains(rel.getSource())) {
-						toCheck.add(rel.getSource());
-					}
-					if (!checked.contains(rel.getTarget()) && toCheck.contains(rel.getTarget())) {
-						toCheck.add(rel.getTarget());
-					}
-				}
-			}
-		}
-		related.remove(sample);
-		return related;
-	}
-	*/
+    public SampleValidationException(Throwable cause) {
+      super(cause);
+    }
+  }
+
+  private List<String> getExistingRelationshipTargets(
+      String accession, MongoSample mongoOldSample) {
+    List<String> oldRelationshipTargets = new ArrayList<>();
+    for (MongoRelationship relationship : mongoOldSample.getRelationships()) {
+      if (relationship.getSource().equals(accession)) {
+        oldRelationshipTargets.add(relationship.getTarget());
+      }
+    }
+
+    return oldRelationshipTargets;
+  }
+
+  private Sample compareWithExistingAndUpdateSample(Sample sampleToUpdate, Sample oldSample) {
+    // compare with existing version and check what fields have changed
+    if (sampleToUpdate.equals(oldSample)) {
+      log.info("New sample is similar to the old sample, accession: {}", oldSample.getAccession());
+    }
+
+    // Keep the create date as existing sample -- earlier
+    // 13/01/2020 - if the sample has a date, acknowledge it. It can be the actual create date
+    // from
+    // NCBI, ENA.
+    return Sample.Builder.fromSample(sampleToUpdate)
+        .withCreate(defineCreateDate(sampleToUpdate, oldSample))
+        .build();
+  }
+
+  private Instant defineCreateDate(final Sample sampleToUpdate, final Sample oldSample) {
+    return (sampleToUpdate.getDomain() != null
+            && sampleToUpdate.getDomain().equalsIgnoreCase("self.BiosampleImportNCBI")
+            && sampleToUpdate.getCreate() != null)
+        ? sampleToUpdate.getCreate()
+        : (oldSample.getCreate() != null ? oldSample.getCreate() : oldSample.getUpdate());
+  }
+
+  /*
+  //this code recursively follows relationships
+  //TODO finish
+  public SortedSet<Sample> getRelated(Sample sample, String relationshipType) {
+  	Queue<String> toCheck = new LinkedList<>();
+  	Set<String> checked = new HashSet<>();
+  	Collection<Sample> related = new TreeSet<>();
+  	toCheck.add(sample.getAccession());
+  	while (!toCheck.isEmpty()) {
+  		String accessionToCheck = toCheck.poll();
+  		checked.add(accessionToCheck);
+  		Sample sampleToCheck = sampleReadService.fetchUsing(accessionToCheck);
+  		related.add(sampleToCheck);
+  		for (Relationship rel : sampleToCheck.getRelationships()) {
+  			if (relationshipType == null || relationshipType.equals(rel.getType())) {
+  				if (!checked.contains(rel.getSource()) && toCheck.contains(rel.getSource())) {
+  					toCheck.add(rel.getSource());
+  				}
+  				if (!checked.contains(rel.getTarget()) && toCheck.contains(rel.getTarget())) {
+  					toCheck.add(rel.getTarget());
+  				}
+  			}
+  		}
+  	}
+  	related.remove(sample);
+  	return related;
+  }
+  */
 }

@@ -6,10 +6,10 @@
 
 	<packaging>pom</packaging>
 
-    <parent>
+	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>5.0.0</version>
+		<version>5.0.1-SNAPSHOT</version>
 	</parent>
 
 	<modules>

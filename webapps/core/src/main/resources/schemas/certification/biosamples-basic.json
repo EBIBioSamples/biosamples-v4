@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "biosamples-basic.json",
+  "additionalProperties": true,
+  "required": [
+    "name",
+    "accession",
+    "characteristics"
+  ],
+  "title": "sample",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "accession": {
+      "type": "string"
+    },
+    "characteristics": {
+      "type": "object",
+      "required": [
+        "INSDC status"
+      ],
+      "properties": {
+        "additionalProperties": true,
+        "INSDC status": {
+          "type": "array",
+          "items": {
+            "properties": {
+              "text": {
+                "type": "string",
+                "enum": [
+                  "public"
+                ]
+              }
+            },
+            "required": [
+              "text"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

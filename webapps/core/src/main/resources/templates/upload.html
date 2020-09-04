@@ -1,0 +1,53 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.w3.org/1999/xhtml" lang="">
+
+<head th:replace="fragments/head :: head">
+    <title th:text="&lt; BioSamples &lt; EMBL-EBI'">BioSamples &lt; EMBL-EBI</title>
+    <!-- A few keywords that relate to the content of THIS PAGE (not the whole project) -->
+    <meta name="keywords" content="biosamples, europe, EBI"/>
+    <!-- Describe what this page is about -->
+    <meta name="description" content="EMBL-EBI"/>
+
+    <meta name="ebi:last-review" content="2016-12-20"/>
+    <!-- The last time the content was reviewed -->
+    <meta name="ebi:expiry" content="2017-12-20"/>
+    <!-- When this content is no longer relevant -->
+</head>
+
+<body>
+<th:block th:include="fragments/header :: header"></th:block>
+<div layout:fragment="content" id="content">
+    <th:block th:include="fragments/header :: masterhead"></th:block>
+
+    <div id="main-content-area" class="row padding-top-xlarge padding-right-xlarge padding-left-xlarge sample">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 mt-5">
+                    <div id="dropzone">
+                        <form action="/biosamples/upload" class="dropzone needsclick" id="demo-upload">
+                            <div class="dz-message needsclick">
+                                <button type="button" class="dz-button">Drop files here or click to upload. <br/>
+                                    You can upload .xls files containing your samples. <br/></button>
+                                <br/>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+<th:block th:include="fragments/footer :: footer"></th:block>
+
+<script>
+    Dropzone.autoDiscover = false;
+    $("#demo-upload").dropzone({
+        success: function (file, response) {
+            toastr.success('File ' + file.name + ' uploaded successfully');
+        }
+    });
+</script>
+</body>
+</html>

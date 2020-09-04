@@ -2,6 +2,36 @@
 :toc: auto
 
 This pages contains links to release notes for BioSamples for version 4.0.0 and higher. This release represents a comprehensive overhaul and therefore previous release notes are no longer applicable.
+[[v5.0.1]]
+== v5.0.1 Release notes
+=== New Features
+1. Organism has been made a mandatory attribute for samples
+Samples submitted to BioSamples must have either an organism attribute or a species attribute. Samples without an organism and species will not be persisted and the request of submission will be rejected with HTTP status code 400 (Bad request)
+2. Certification Service
+A new service has been added to BioSamples for sample validation using JSON schema checklists. Samples validated against checklists are deemed certified by the checklist and certificates are added to the sample. Please see BioSamples user guide and API guide on the certification service for more details:
+User guide  - 
+http://www.ebi.ac.uk/biosamples/docs/guides/certification
+API reference - 
+http://www.ebi.ac.uk/biosamples/docs/references/api/certify
+First use case - Certification service has been used to validate the existence of organism or species in sample metadata submitted to BioSamples. Schema reference - https://github.com/EBIBioSamples/biosamples-v4/blob/dev/webapps/core/src/main/resources/schemas/certification/biosamples-minimal.json
+3. Structured data support for new types
+Structured data support was extended to include new data formats. New data formats include CHICKEN_DATA, HISTOLOGY_MARKERS, MOLECULAR_MARKERS and FATTY_ACIDS. 
+This has been done for the structured data support of the ‘HoloFood’ project involving the microbiome of agricultural animals (salmon and chicken). As part of this project, various submitters are going to generate the data and some of which is suitable to go into ENA. Some of the data in structured data form falls outside ENA’s remit (eg, histological summaries for the samples, etc) and BioSamples will provide support to store such structured data.
+4. Sample recommendations endpoint
+New endpoint introduced to use along with validation endpoint. Before submitting a sample, the submitter can check if the sample conforms to the BioSamples recommended format and get suggestions for changes. Submitting a sample in recommended format will increase FAIRness of data.  Please refer to the API guide for more details - http://www.ebi.ac.uk/biosamples/docs/references/api/validate
+5. Relationship curations
+Previously, curations can only be applied for attributes and external references. Now curations can also be applied to relationships. This enables third parties to apply relationships to samples. 
+6. Retrospective KILLED samples handler added to the ENA pipeline
+The ENA import pipeline that imports samples from ENA to BioSamples has been modified to retrospectively check if samples have been KILLED in ENA. Status update is made accordingly in BioSamples so that sample metadata is consistent with ENA.
+7. Cross-origin resource sharing (CORS) has been enabled for BioSamples API’s for all origins and all methods
+8. BioSamples sample XML view has been modified to include AMR Antibiogram model as well. Please download the XML from the example sample - https://wwwdev.ebi.ac.uk/biosamples/samples/SAMN09711403 to see the XML modelling of AMR data
+
+
+===Bug Fixes:
+1. Bug fix in EBI search pipeline to not include killed and suppressed samples in the exported data
+2. Bug fix in NCBI samples to avoid 400 bad requests while processing samples that don't have an organism. Certification service rejects samples without an organism
+3. Bug fix in pipelines to deal with HTTP 404 errors while trying to fetch samples with blank curation domain. Pipeline failure avoided in such cases and error logging is improved
+4. The EBI search data export pipeline has been modified so that the data export dump includes the top 100 most present attributes in all samples in the BioSamples database. Other attributes have been ignored in sample metadata sent to the EBI search engine. This has been done because the EBI search engine can permit upto 100 query params and not more
 
 [[v5.0.0]]
 == v5.0.0 Release notes
@@ -12,7 +42,6 @@ The following endpoints are no longer supported:
 - https://www.ebi.ac.uk/biosamples/sampletab/*
 - https://www.ebi.ac.uk/biosamples/api/*
 - https://www.ebi.ac.uk/biosamples/xml/*
-
 
 [[v4.2.7]]
 == v4.2.7 Release notes
@@ -39,7 +68,6 @@ Domain validation in sample update service was missing in the previous version. 
 4. NCBI Exchange - There are cases of missing SRA accessions in NCBI samples imported to EBI BioSamples. In such cases NCBI samples are cross checked with ENA Oracle database and if SRA accession is found in ENA Oracle database, the NCBI samples are updated with the same
 5. There were often failures in updating already private samples in NCBI to private in EBI BioSamples, this has been fixed in this release
 
-
 === Notifications
 * Please note that we will be removing SampleTab format submission support on 1st of July. Please let us know if you have any concerns regarding this.
 
@@ -65,7 +93,6 @@ BioSamples contains samples related to COVID-19 disease. COVID-19 related sample
 === Notifications
 * Data center migration and related maintenance tasks were completed as expected. BioSamples operates on full capacity as usual.
 * Please note that we will be removing SampleTab format submission support on 1st of May. Please let us know if you have any concerns regarding this.
-
 
 [[v4.2.5]]
 == v4.2.5 Release notes
@@ -97,7 +124,6 @@ https://www.ebi.ac.uk/biosamples/samples/SAMEA3993565
 === Bug Fixes
 1. Fixing the BioSamples pipelines namely curation and zooma to retain the tag field in attributes
 2. Fixing of pipeline failure notification system to send out emails if pipeline fails because of a network issue.
-
 
 [[v4.2.3]]
 == v4.2.3 Release notes
@@ -150,10 +176,8 @@ https://www.ebi.ac.uk/biosamples/samples/SAMEA3993565
 5.2. to remove the tag “core” from specific top-level attributes (description as an example).
 6. BioSamples will retain create date of NCBI samples that are being imported. Currently it overrides the create date and replaces it with the date and time when the sample is saved in BioSamples.
 
-
 === Bug Fixes
 1. Bug fix to handle null dates in NCBI samples while being imported to BioSamples.
-
 
 === Platform upgrades
 1. BioSamples now runs on Java 11 (Open JDK 11).
@@ -197,29 +221,24 @@ Short description of the changes done are given below:
 1.	UI bugfix to display contact role. Earlier it used to show name instead of role.
 2.	Change curation-view pipeline to read samples from MongDB. To crawl all the samples available in BIoSamples, we can’t use biosamples-client get all samples method as it will not return non-indexed samples (eg. suppressed samples)
 
-
 == 4.2.0
 * Deprecation of SampleTab submission format.
 * Adding static collection for samples+curations.
 * Modify applying order for the curation objects.
 * Add link to sample accession.
 
-
 == 4.1.15
 * Update phenopacket version
 * Add curami pipeline to curate biosamples attributes
-
 
 == 4.1.14
 * Add DUO attribute to external reference class
 * Add script to import EGA data
 * Add presto connector as a BioSamples client module
 
-
 == 4.1.13
 * Added API in biosamples-client to utilize JWT tokens
 * Resolved issue where ENA pipeline failed if FIRST_PUBLIC date is not available
-
 
 == 4.1.12
 * Replicate required ENA XML Dump functionality in the ENA pipeline
@@ -229,7 +248,6 @@ Short description of the changes done are given below:
 * Added logging and retry logic for reindexing pipeline
 * Refined ncbi pipeline to check suppressed samples are in solr index before removing
 
-
 == 4.1.11
 * Added support for suppressed samples to enable dbGap data loading
 * Fix confusion between supressed and private samples in dbGap data
@@ -237,21 +255,17 @@ Short description of the changes done are given below:
 * Add validation and accessioning service
 * Fix SampleTab template download link
 
-
 == 4.1.10
 * Remove the holiday message
 * Fix submit tab link in error pages
-
 
 == 4.1.9
 * Added a Curation Undo Pipeline to allow for removal of erroneous curations.
 * Fix an issue where long attributes break the sample box UI.
 
-
 == 4.1.8
 * Corrected error in curation pipeline which caused sample characteristics to be removed erroneously
 * Added holiday message
-
 
 == 4.1.7
 * Added libraries to enable applications to use Graylog to allow configuration of aggregated logging
@@ -261,7 +275,6 @@ Short description of the changes done are given below:
 * Included ETAG and Curation Object recipes to the BioSamples cookbook
 * Removed name and API key lookup functionality from SampleTab process
 
-
 == 4.1.6
 * Addition of AMR structured data into BioSamples
 * Submission of samples with a relationship not targeting a valid accession now return an error
@@ -269,13 +282,11 @@ Short description of the changes done are given below:
 * Updated user interface to use the newer version of the EBI visual framework
 * Improved documentation navigation experience adopting a new menu style
 
-
 == 4.1.5
 * Fixed bug that search failed when using a colon with a non-indexed field. e.g. taxon:9696
 * Added the BioSamples cookbook
 * Fixed issue where there are duplicate organism attributes with different cases in a sample
 * Updated the error message in the SampleTab UI to take into account large submissions timeout
-
 
 == 4.1.4
 * As part of curation pipeline attributes with the value "not_applicable" are removed
@@ -284,12 +295,10 @@ Short description of the changes done are given below:
 * A multi-step Docker build has been added to allow Docker images to be distributed on quay.io
 * A fix has been made for an issue that caused the Zooma Pipeline to fail on wwwdev
 
-
 == 4.1.3
 * Additional sample attributes required by ENA are now available including a single, top-level taxId field
 * The export box for a sample is now renamed download and contains a list of serialisations that always download as a file fixing a blocked popups issue in Safari
 * The search results now have an updated look and feel based on feedback from ENA
-
 
 == 4.1.2
 * Sample JSON now contains a numeric taxId field at the top level
@@ -298,13 +307,11 @@ Short description of the changes done are given below:
 * When requesting a private sample an explanation message is now provided in addition to the 403 error code
 * The search UI now contains a clear filters button
 
-
 == 4.1.1
 * Expose the BioSchemas markup with enhanced context and Sample ontology code
 * SampleTab submission pipeline has been rewritten for better robustness
 * In the samples results page, the sample name and the sample accession are now linking to the single sample page
 * Fixed various broken hyperlinks on the home page and in documentation
-
 
 == 4.1.0
 === New features
@@ -320,12 +327,10 @@ Short description of the changes done are given below:
 * Solved issue with converting DatabaseURI to external references in SampleTab submissions
 * Improved special characters handling in SampleTab submissions
 
-
 == 4.0.7
 This is a bugfix release that addresses the following issues:
 * GDPR notices
 * Update format of the Sitemap file
-
 
 == 4.0.6
 This is a bugfix release that addresses the following issues:
@@ -342,7 +347,6 @@ This is a bugfix release that addresses the following issues:
 * Add export pipeline
 * Add copy down pipeline
 
-
 == 4.0.5
 This is a bugfix release that addresses the following issues:
 
@@ -358,7 +362,6 @@ This is a bugfix release that addresses the following issues:
 * Reduce number of Zooma calls by not attempting to map "unknown" or "other" attributes
 * Reduce load on OLS by ensuring Zooma does not requery OLS as any results from OLS would not be used by BioSamples
 
-
 == 4.0.4
 This is a bugfix release that addresses the following issues:
 
@@ -369,7 +372,6 @@ This is a bugfix release that addresses the following issues:
 * Added informative and specific title to webpages
 * Added https://www.elixir-europe.org/platforms/data/elixir-deposition-databases[Elixir Deposition Database] banner
 
-
 == 4.0.3
 This is a bugfix release that addresses the following issues:
 
@@ -378,14 +380,12 @@ This is a bugfix release that addresses the following issues:
 * Index legacy XML group submissions, which was not happening due to an unexpected consequence of the interaction of components.
 * Redirect /biosamples/sample and /biosamples/group URLs in case of typo
 
-
 == 4.0.2
 This is a bugfix release that addresses the following issues:
 
 * Fix javascript on SampleTab submission and accession
 * Handle load-balanced accessioning
 * Fix for storage of relationships source on new samples
-
 
 == 4.0.1
 This is a bugfix release that addresses the following issues:
@@ -394,7 +394,6 @@ This is a bugfix release that addresses the following issues:
 * Fix curation pipeline of numeric organism iri to "http://purl.obolibrary.org/obo/NCBITaxon_+taxId" when it should be "http://purl.obolibrary.org/obo/NCBITaxon_"+taxId e.g. http://purl.obolibrary.org/obo/NCBITaxon_9606
 * Allow CORS requests for legacy XML APIs.
 * Updated homepage project sample links to use a filter search rather than a text search.
-
 
 == 4.0.0
 Version v4.0.0 represents a re-architecture and re-engineering of the

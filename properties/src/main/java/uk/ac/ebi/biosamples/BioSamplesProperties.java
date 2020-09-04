@@ -1,178 +1,187 @@
+/*
+* Copyright 2019 EMBL - European Bioinformatics Institute
+* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+* file except in compliance with the License. You may obtain a copy of the License at
+* http://www.apache.org/licenses/LICENSE-2.0
+* Unless required by applicable law or agreed to in writing, software distributed under the
+* License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+* CONDITIONS OF ANY KIND, either express or implied. See the License for the
+* specific language governing permissions and limitations under the License.
+*/
 package uk.ac.ebi.biosamples;
 
+import java.net.URI;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
-import java.net.URI;
 
 @Component
 public class BioSamplesProperties {
 
-	@Value("${biosamples.agent.solr.stayalive:false}")
-	private Boolean agentSolrStayalive;
-	
-	@Value("${biosamples.client.uri:http://localhost:8081}")
-	private URI biosamplesClientUri;
+  @Value("${biosamples.agent.solr.stayalive:false}")
+  private Boolean agentSolrStayalive;
 
-	@Value("${biosamples.client.pagesize:1000}")
-	private int biosamplesClientPagesize;
-	
-	//in milliseconds
-	@Value("${biosamples.client.timeout:60000}")
-	private int biosamplesClientTimeout;
+  @Value("${biosamples.client.uri:http://localhost:8081}")
+  private URI biosamplesClientUri;
 
-	@Value("${biosamples.client.connectioncount.max:8}")
-	private int connectionCountMax;
-	
-	@Value("${biosamples.client.connectioncount.default:8}")
-	private int connectionCountDefault;
+  @Value("${biosamples.client.pagesize:1000}")
+  private int biosamplesClientPagesize;
 
-	@Value("${biosamples.client.threadcount:1}")
-	private int threadCount;
+  // in milliseconds
+  @Value("${biosamples.client.timeout:60000}")
+  private int biosamplesClientTimeout;
 
-	@Value("${biosamples.client.threadcount.max:8}")
-	private int threadCountMax;
-	
-	@Value("${biosamples.client.aap.uri:https://explore.api.aai.ebi.ac.uk/auth}")
-	private URI biosamplesClientAapUri;
-	
-	//can't use "null" because it will be a string
-	@Value("${biosamples.client.aap.username:#{null}}")
-	private String biosamplesClientAapUsername;
+  @Value("${biosamples.client.connectioncount.max:8}")
+  private int connectionCountMax;
 
-	//can't use "null" because it will be a string
-	@Value("${biosamples.client.aap.password:#{null}}")
-	private String biosamplesClientAapPassword;
+  @Value("${biosamples.client.connectioncount.default:8}")
+  private int connectionCountDefault;
 
-	//max number of cache entries, 0 means no cache is used by the client
-	// This multiplied by the cache maxobjectsize value defines the max size of the cache
-	@Value("${biosamples.client.cache.maxentries:0}")
-	private int biosamplesClientCacheMaxEntries;
+  @Value("${biosamples.client.threadcount:1}")
+  private int threadCount;
 
-	// Set each cache object maximum size, 1024*1024 = 1048576 = 1Mb
-	@Value("${biosamples.client.cache.maxobjectsize:1048576}")
-	private int biosamplesClientCacheMaxObjectSize;
+  @Value("${biosamples.client.threadcount.max:8}")
+  private int threadCountMax;
 
-	@Value("${biosamples.aap.super.read:self.BiosampleSuperUserRead}")
-	private String biosamplesAapSuperRead;
-	
-	@Value("${biosamples.aap.super.write:self.BiosampleSuperUserWrite}")
-	private String biosamplesAapSuperWrite;
-	
-	@Value("${biosamples.ols:https://www.ebi.ac.uk/ols}")
-	private String ols;
+  @Value("${biosamples.client.aap.uri:https://explore.api.aai.ebi.ac.uk/auth}")
+  private URI biosamplesClientAapUri;
 
-	@Value("${biosamples.webapp.sampletab.uri:http://localhost:8082/biosamples/sampletab}")
-	private URI biosamplesWebappSampletabUri;
+  // can't use "null" because it will be a string
+  @Value("${biosamples.client.aap.username:#{null}}")
+  private String biosamplesClientAapUsername;
 
-	@Value("${biosamples.webapp.core.uri:http://localhost:8081/biosamples}")
-	private URI biosamplesWebappCoreUri;
+  // can't use "null" because it will be a string
+  @Value("${biosamples.client.aap.password:#{null}}")
+  private String biosamplesClientAapPassword;
 
-	@Value("${biosamples.usi.core.uri:https://submission-dev.ebi.ac.uk/api/docs/guide_overview.html}")
-	private URI usiCoreUri;
+  // max number of cache entries, 0 means no cache is used by the client
+  // This multiplied by the cache maxobjectsize value defines the max size of the cache
+  @Value("${biosamples.client.cache.maxentries:0}")
+  private int biosamplesClientCacheMaxEntries;
 
-	@Value("${biosamples.webapp.core.page.threadcount:64}")
-	private int webappCorePageThreadCount;
+  // Set each cache object maximum size, 1024*1024 = 1048576 = 1Mb
+  @Value("${biosamples.client.cache.maxobjectsize:1048576}")
+  private int biosamplesClientCacheMaxObjectSize;
 
-	@Value("${biosamples.webapp.core.page.threadcount.max:128}")
-	private int webappCorePageThreadCountMax;
+  @Value("${biosamples.aap.super.read:self.BiosampleSuperUserRead}")
+  private String biosamplesAapSuperRead;
 
-	//in seconds
-	@Value("${biosamples.webapp.core.page.cache.maxage:300}")
-	private int webappCorePageCacheMaxAge;
+  @Value("${biosamples.aap.super.write:self.BiosampleSuperUserWrite}")
+  private String biosamplesAapSuperWrite;
 
-	@Value("${biosamples.schema.validator.uri:http://localhost:8085/validate}")
-	private URI biosamplesSchemaValidatorServiceUri;
-	
-	public URI getBiosamplesClientUri() {
-		return biosamplesClientUri;
-	}
-	
-	public int getBiosamplesClientPagesize() {
-		return biosamplesClientPagesize;
-	}
-	
-	public int getBiosamplesClientTimeout() {
-		return biosamplesClientTimeout;
-	}
+  @Value("${biosamples.ols:https://www.ebi.ac.uk/ols}")
+  private String ols;
 
-	public int getBiosamplesClientConnectionCountMax() {
-		return connectionCountMax;
-	}
+  @Value("${biosamples.webapp.sampletab.uri:http://localhost:8082/biosamples/sampletab}")
+  private URI biosamplesWebappSampletabUri;
 
-	public int getBiosamplesClientThreadCount() {
-		return threadCount;
-	}
+  @Value("${biosamples.webapp.core.uri:http://localhost:8081/biosamples}")
+  private URI biosamplesWebappCoreUri;
 
-	public int getBiosamplesClientThreadCountMax() {
-		return threadCountMax;
-	}
+  @Value("${biosamples.usi.core.uri:https://submission-dev.ebi.ac.uk/api/docs/guide_overview.html}")
+  private URI usiCoreUri;
 
-	public int getBiosamplesClientConnectionCountDefault() {
-		return connectionCountDefault;
-	}
-	
-	public URI getBiosamplesClientAapUri() {
-		return biosamplesClientAapUri;
-	}
-	
-	public String getBiosamplesClientAapUsername() {
-		return biosamplesClientAapUsername;
-	}
-	
-	public String getBiosamplesClientAapPassword() {
-		return biosamplesClientAapPassword;
-	}
+  @Value("${biosamples.webapp.core.page.threadcount:64}")
+  private int webappCorePageThreadCount;
 
-	public int getBiosamplesClientCacheMaxEntries() {
-		return biosamplesClientCacheMaxEntries;
-	}
+  @Value("${biosamples.webapp.core.page.threadcount.max:128}")
+  private int webappCorePageThreadCountMax;
 
-	public int getBiosamplesClientCacheMaxObjectSize() {
-		return biosamplesClientCacheMaxObjectSize;
-	}
+  // in seconds
+  @Value("${biosamples.webapp.core.page.cache.maxage:300}")
+  private int webappCorePageCacheMaxAge;
 
-	public String getBiosamplesAapSuperRead() {
-		return biosamplesAapSuperRead;
-	}
-	
-	public String getBiosamplesAapSuperWrite() {
-		return biosamplesAapSuperWrite;
-	}
-		
-	public boolean getAgentSolrStayalive() {
-		return agentSolrStayalive;
-	}
-	
-	public String getOls() {
-		return ols;
-	}
+  @Value("${biosamples.schema.validator.uri:http://localhost:8085/validate}")
+  private URI biosamplesSchemaValidatorServiceUri;
 
-	public int getBiosamplesCorePageThreadCount() {
-		return webappCorePageThreadCount;
-	}
+  public URI getBiosamplesClientUri() {
+    return biosamplesClientUri;
+  }
 
-	public int getBiosamplesCorePageThreadCountMax() {
-		return webappCorePageThreadCountMax;
-	}
+  public int getBiosamplesClientPagesize() {
+    return biosamplesClientPagesize;
+  }
 
-	public int getBiosamplesCorePageCacheMaxAge() {
-		return webappCorePageCacheMaxAge;
-	}
+  public int getBiosamplesClientTimeout() {
+    return biosamplesClientTimeout;
+  }
 
-	public URI getBiosamplesWebappCoreUri() {
-		return biosamplesWebappCoreUri;
-	}
+  public int getBiosamplesClientConnectionCountMax() {
+    return connectionCountMax;
+  }
 
-	public URI getBiosamplesWebappSampletabUri() {
-		return biosamplesWebappSampletabUri;
-	}
+  public int getBiosamplesClientThreadCount() {
+    return threadCount;
+  }
 
-	public URI getUsiCoreUri() {
-		return usiCoreUri;
-	}
+  public int getBiosamplesClientThreadCountMax() {
+    return threadCountMax;
+  }
 
-	public URI getBiosamplesSchemaValidatorServiceUri() {
-		return biosamplesSchemaValidatorServiceUri;
-	}
+  public int getBiosamplesClientConnectionCountDefault() {
+    return connectionCountDefault;
+  }
+
+  public URI getBiosamplesClientAapUri() {
+    return biosamplesClientAapUri;
+  }
+
+  public String getBiosamplesClientAapUsername() {
+    return biosamplesClientAapUsername;
+  }
+
+  public String getBiosamplesClientAapPassword() {
+    return biosamplesClientAapPassword;
+  }
+
+  public int getBiosamplesClientCacheMaxEntries() {
+    return biosamplesClientCacheMaxEntries;
+  }
+
+  public int getBiosamplesClientCacheMaxObjectSize() {
+    return biosamplesClientCacheMaxObjectSize;
+  }
+
+  public String getBiosamplesAapSuperRead() {
+    return biosamplesAapSuperRead;
+  }
+
+  public String getBiosamplesAapSuperWrite() {
+    return biosamplesAapSuperWrite;
+  }
+
+  public boolean getAgentSolrStayalive() {
+    return agentSolrStayalive;
+  }
+
+  public String getOls() {
+    return ols;
+  }
+
+  public int getBiosamplesCorePageThreadCount() {
+    return webappCorePageThreadCount;
+  }
+
+  public int getBiosamplesCorePageThreadCountMax() {
+    return webappCorePageThreadCountMax;
+  }
+
+  public int getBiosamplesCorePageCacheMaxAge() {
+    return webappCorePageCacheMaxAge;
+  }
+
+  public URI getBiosamplesWebappCoreUri() {
+    return biosamplesWebappCoreUri;
+  }
+
+  public URI getBiosamplesWebappSampletabUri() {
+    return biosamplesWebappSampletabUri;
+  }
+
+  public URI getUsiCoreUri() {
+    return usiCoreUri;
+  }
+
+  public URI getBiosamplesSchemaValidatorServiceUri() {
+    return biosamplesSchemaValidatorServiceUri;
+  }
 }

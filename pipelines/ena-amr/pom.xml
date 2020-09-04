@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>5.0.0</version>
+		<version>5.0.1-SNAPSHOT</version>
 		<relativePath>../../</relativePath>
 	</parent>
 
@@ -16,12 +16,12 @@
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>utils-pipeline</artifactId>
-			<version>5.0.0</version>
+			<version>5.0.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>utils-thread</artifactId>
-			<version>5.0.0</version>
+			<version>5.0.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.dataformat</groupId>
@@ -30,19 +30,19 @@
 		</dependency>
 	</dependencies>
 
- 	<build>
- 		<plugins>
- 			<plugin>
- 				<groupId>org.springframework.boot</groupId>
- 				<artifactId>spring-boot-maven-plugin</artifactId>
-	            <executions>
-	                <execution>
-	                    <goals>
-	                        <goal>build-info</goal>
-	                    </goals>
-	                </execution>
-	            </executions>
- 			</plugin>
- 		</plugins>
- 	</build>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>build-info</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
 </project>

@@ -212,12 +212,17 @@
 		},
 		"characteristics": {
 			"description": "All the characteristics associated to the sample",
-			"type": "array",
-			"items": {
-				"$ref": "#/definitions/characteristic"
-			}
-
-		},
+			"type": "object",
+  			"patternProperties": {
+  				"^.*$": {
+  					"type": "array",
+  					"items": {
+  						"$ref": "#/definitions/characteristic"
+  					}
+  				}
+  			},
+  			"additionalProperties": false
+  		},
 		"relationships": {
 			"description": "Sample relationships with other samples in BioSamples",
 			"type": "array",

@@ -23,6 +23,8 @@
                                th:href="@{/docs/guides/relationships}">Relationships</a></li>
                         <li><a th:classappend="${#strings.equals(active, 'guides/curation')} ? 'active'"
                                th:href="@{/docs/guides/curation}">Curation</a></li>
+                        <li><a th:classappend="${#strings.equals(active, 'guides/certification')} ? 'active'"
+                               th:href="@{/docs/guides/certification}">Certification</a></li>
                         <li><a th:classappend="${#strings.equals(active, 'guides/recommendations')} ? 'active'"
                                th:href="@{/docs/guides/recommendations}">Recommendations</a></li>
                     </ul>
@@ -43,6 +45,10 @@
                                        th:href="@{/docs/references/api/search}">Search</a></li>
                                 <li><a th:classappend="${#strings.equals(active, 'refs/api/submit')} ? 'active'"
                                        th:href="@{/docs/references/api/submit}">Submit</a></li>
+                                <li><a th:classappend="${#strings.equals(active, 'refs/api/validate')} ? 'active'"
+                                       th:href="@{/docs/references/api/validate}">Validate</a></li>
+                                <li><a th:classappend="${#strings.equals(active, 'refs/api/certify')} ? 'active'"
+                                       th:href="@{/docs/references/api/certify}">Certification</a></li>
                             </ul>
                         </li>
                         <li><a th:classappend="${#strings.equals(active, 'refs/filters')} ? 'active'"

@@ -1,3 +1,13 @@
+/*
+* Copyright 2019 EMBL - European Bioinformatics Institute
+* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+* file except in compliance with the License. You may obtain a copy of the License at
+* http://www.apache.org/licenses/LICENSE-2.0
+* Unless required by applicable law or agreed to in writing, software distributed under the
+* License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+* CONDITIONS OF ANY KIND, either express or implied. See the License for the
+* specific language governing permissions and limitations under the License.
+*/
 package uk.ac.ebi.biosamples.client.service;
 
 import java.net.URI;
@@ -21,89 +31,94 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
-
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 
 public class SamplePageRetrievalService {
 
-	private final Logger log = LoggerFactory.getLogger(getClass());
-	
-	public static final DateTimeFormatter solrFormatter = DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss'Z'");
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
-	private static final ParameterizedTypeReference<PagedResources<Resource<Sample>>> parameterizedTypeReferencePagedResourcesSample = new ParameterizedTypeReference<PagedResources<Resource<Sample>>>(){};
-	
-	private final Traverson traverson;
-	private final ExecutorService executor;
-	private final RestOperations restOperations;
-	private final int pageSize;
+  public static final DateTimeFormatter solrFormatter =
+      DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss'Z'");
 
-	
-	
-	public SamplePageRetrievalService(RestOperations restOperations, Traverson traverson,
-			ExecutorService executor, int pageSize) {
-		this.restOperations = restOperations;
-		this.traverson = traverson;
-		this.executor = executor;
-		this.pageSize = pageSize;
-	}
-	
-	public PagedResources<Resource<Sample>> search(String text, Collection<Filter> filters, int page, int size) {
-		return search(text, filters, page, size, null);
-	}
+  private static final ParameterizedTypeReference<PagedResources<Resource<Sample>>>
+      parameterizedTypeReferencePagedResourcesSample =
+          new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {};
 
-	public PagedResources<Resource<Sample>> search(String text, Collection<Filter> filters, int page, int size, String jwt) {
-		MultiValueMap<String,String> params = new LinkedMultiValueMap<>();
-		//TODO use shared constants here
-		params.add("page", Integer.toString(page));
-		params.add("size", Integer.toString(size));
-		params.add("text", !text.isEmpty() ? text : "*:*");
-		for (Filter filter: filters) {
-            params.add("filter", filter.getSerialization());
-		}
+  private final Traverson traverson;
+  private final ExecutorService executor;
+  private final RestOperations restOperations;
+  private final int pageSize;
 
-		params = encodePlusInQueryParameters(params);
+  public SamplePageRetrievalService(
+      RestOperations restOperations, Traverson traverson, ExecutorService executor, int pageSize) {
+    this.restOperations = restOperations;
+    this.traverson = traverson;
+    this.executor = executor;
+    this.pageSize = pageSize;
+  }
 
-		URI uri = UriComponentsBuilder.fromUriString(traverson.follow("samples").asLink().getHref())
-				.queryParams(params)
-				.build()
-				.toUri();
-		log.trace("GETing " + uri);
+  public PagedResources<Resource<Sample>> search(
+      String text, Collection<Filter> filters, int page, int size) {
+    return search(text, filters, page, size, null);
+  }
 
-		MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
-		headers.add(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON.toString());
-		if (jwt != null) {
-			headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
-		}
-		RequestEntity<Void> requestEntity = new RequestEntity<>(headers, HttpMethod.GET, uri);
-
-		ResponseEntity<PagedResources<Resource<Sample>>> responseEntity = restOperations.exchange(requestEntity,
-				new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {
-				});
-
-		if (!responseEntity.getStatusCode().is2xxSuccessful()) {
-			throw new RuntimeException("Problem GETing samples");
-		}
-		log.trace("GETted " + uri);
-
-		return responseEntity.getBody();
-	}
-
-
-    // TODO to keep the + in a (not encoded) query parameter is to force encoding
-	private MultiValueMap<String, String> encodePlusInQueryParameters(MultiValueMap<String, String> queryParameters) {
-	    MultiValueMap<String,String> encodedQueryParameters = new LinkedMultiValueMap<>();
-	    for (Map.Entry<String, List<String>> param: queryParameters.entrySet()) {
-	        	String key = param.getKey();
-	        	param.getValue().forEach(v -> {
-					if (v != null) {
-						encodedQueryParameters.add(key, v.replaceAll("\\+", "%2B"));
-					} else {
-						encodedQueryParameters.add(key, "");
-					}
-				});
-        }
-        return encodedQueryParameters;
+  public PagedResources<Resource<Sample>> search(
+      String text, Collection<Filter> filters, int page, int size, String jwt) {
+    MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+    // TODO use shared constants here
+    params.add("page", Integer.toString(page));
+    params.add("size", Integer.toString(size));
+    params.add("text", !text.isEmpty() ? text : "*:*");
+    for (Filter filter : filters) {
+      params.add("filter", filter.getSerialization());
     }
 
+    params = encodePlusInQueryParameters(params);
+
+    URI uri =
+        UriComponentsBuilder.fromUriString(traverson.follow("samples").asLink().getHref())
+            .queryParams(params)
+            .build()
+            .toUri();
+    log.trace("GETing " + uri);
+
+    MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+    headers.add(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON.toString());
+    if (jwt != null) {
+      headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
+    }
+    RequestEntity<Void> requestEntity = new RequestEntity<>(headers, HttpMethod.GET, uri);
+
+    ResponseEntity<PagedResources<Resource<Sample>>> responseEntity =
+        restOperations.exchange(
+            requestEntity, new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {});
+
+    if (!responseEntity.getStatusCode().is2xxSuccessful()) {
+      throw new RuntimeException("Problem GETing samples");
+    }
+    log.trace("GETted " + uri);
+
+    return responseEntity.getBody();
+  }
+
+  // TODO to keep the + in a (not encoded) query parameter is to force encoding
+  private MultiValueMap<String, String> encodePlusInQueryParameters(
+      MultiValueMap<String, String> queryParameters) {
+    MultiValueMap<String, String> encodedQueryParameters = new LinkedMultiValueMap<>();
+    for (Map.Entry<String, List<String>> param : queryParameters.entrySet()) {
+      String key = param.getKey();
+      param
+          .getValue()
+          .forEach(
+              v -> {
+                if (v != null) {
+                  encodedQueryParameters.add(key, v.replaceAll("\\+", "%2B"));
+                } else {
+                  encodedQueryParameters.add(key, "");
+                }
+              });
+    }
+    return encodedQueryParameters;
+  }
 }

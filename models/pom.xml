@@ -5,18 +5,18 @@
 	<artifactId>models</artifactId>
 
 	<packaging>pom</packaging>
-    <dependencies>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-            <version>2.9.9</version>
-        </dependency>
-    </dependencies>
+	<dependencies>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-annotations</artifactId>
+			<version>2.9.9</version>
+		</dependency>
+	</dependencies>
 
-    <parent>
+	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>5.0.0</version>
+		<version>5.0.1-SNAPSHOT</version>
 	</parent>
 
 	<modules>
@@ -30,5 +30,6 @@
 		<module>legacyjson</module>
 		<module>structured</module>
 		<module>neo4j</module>
+		<module>curami</module>
 	</modules>
 </project>

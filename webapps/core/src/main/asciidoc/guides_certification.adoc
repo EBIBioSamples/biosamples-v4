@@ -1,0 +1,385 @@
+= [.ebi-color]#Certification#
+:last-update-label!:
+:toc:
+
+== Sample Certification and Validation in BioSamples during submission
+
+Certification of samples essentially means validation of samples submitted to BioSamples
+against JSON schema checklists.
+Sample certification is done in BioSamples while sample submission and sample updates.
+Samples are validated against available checklists in BioSamples and if the sample get
+successfully validated then the sample is deemed certified and certificate names are
+added to the sample
+
+As example of such a JSON schema is below:
+
+Schema name - biosamples-minimal
+
+Schema version - 0.0.1
+
+Schema purpose - To check if the samples has a *organism* or a *species* attribute
+
+....
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "biosamples-minimal.json",
+  "additionalProperties": true,
+  "definitions": {
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "name",
+    "characteristics"
+  ],
+  "title": "sample",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "accession": {
+      "type": "string"
+    },
+    "characteristics": {
+      "type": "object",
+      "anyOf": [
+        {
+          "required": [
+            "organism"
+          ]
+        },
+        {
+          "required": [
+            "Organism"
+          ]
+        },
+        {
+          "required": [
+            "species"
+          ]
+        },
+        {
+          "required": [
+            "Species"
+          ]
+        }
+      ],
+      "properties": {
+        "organism": {
+          "type": "array",
+          "items": {
+            "properties": {
+              "text": {
+                "$ref": "#/definitions/nonEmptyString"
+              }
+            },
+            "required": [
+              "text"
+            ]
+          }
+        },
+        "Organism": {
+          "type": "array",
+          "items": {
+            "properties": {
+              "text": {
+                "$ref": "#/definitions/nonEmptyString"
+              }
+            },
+            "required": [
+              "text"
+            ]
+          }
+        },
+        "Species": {
+          "type": "array",
+          "items": {
+            "properties": {
+              "text": {
+                "$ref": "#/definitions/nonEmptyString"
+              }
+            },
+            "required": [
+              "text"
+            ]
+          }
+        },
+        "species": {
+          "type": "array",
+          "items": {
+            "properties": {
+              "text": {
+                "$ref": "#/definitions/nonEmptyString"
+              }
+            },
+            "required": [
+              "text"
+            ]
+          }
+        }
+      }
+    }
+  }
+}
+....
+
+An example sample that would be validated against the above schema is as below:
+
+....
+{
+  "name" : "test_Sample",
+  "domain" : "test_domain",
+  "release" : "__date__",
+  "update" : "__date__",
+  "taxId" : 0,
+  "characteristics" : {
+    "INSDC center name" : [ {
+      "text" : "test"
+    } ],
+    "organism" : [ {
+      "text" : "test_organism"
+    } ],
+    "title" : [ {
+      "text" : "test_title"
+    } ]
+  },
+  "externalReferences" : [ {
+    "url" : "test_url",
+    "duo" : [ ]
+  } ]
+}
+....
+
+An example of how the certificates are represented in the sample:
+
+....
+"certificates" : [ {
+    "name" : "biosamples-minimal",
+    "version" : "0.0.1",
+    "fileName" : "schemas/certification/biosamples-minimal.json"
+  }]
+....
+
+Where,
+
+name - is the name of the JSON schema or checklist
+
+version - is the checklist version
+
+fileName - the JSON schema file
+
+== Sample Certification and Validation before submission (validation only)
+
+There is also a provision to validate a sample metadata without really submitting it.
+The validation result will show the below:
+
+1. JSON schemas against which the sample got validated
+2. Curation plans which indicates if a sample is curated by
+adding or modifying some attributes then the sample can get validated by some other checklist
+3. Recommendations to get validated against specific checklists
+if the sample is not validated by a checklist
+
+If the sample metadata is as below:
+
+....
+{
+  "name" : "test_Sample",
+  "domain" : "test_domain",
+  "release" : "__date__",
+  "update" : "__date__",
+  "taxId" : 0,
+  "characteristics" : {
+    "INSDC center name" : [ {
+      "text" : "test"
+    } ],
+    "INSDC status" : [ {
+      "text" : "live"
+    } ],
+    "title" : [ {
+      "text" : "test_title"
+    } ]
+  },
+  "externalReferences" : [ {
+    "url" : "test_url",
+    "duo" : [ ]
+  } ]
+}
+....
+
+The certification result should be as below:
+
+....
+{
+  "certificates" : [ {
+    "sampleDocument" : {
+      "accession" : "SAMEA100031",
+      "hash" : "567C26BA7D9CDF20AB6488A5472E5FCE"
+    },
+    "checklist" : {
+      "name" : "ncbi-candidate-schema",
+      "version" : "0.0.1",
+      "block" : false,
+      "file" : "schemas/certification/ncbi-candidate-schema.json"
+    },
+    "curations" : [ ]
+  }, {
+    "sampleDocument" : {
+      "accession" : "SAMEA100031",
+      "hash" : "FD291CB1282D62CDFB6AF70283A8A81C"
+    },
+    "checklist" : {
+      "name" : "biosamples-basic",
+      "version" : "0.0.1",
+      "block" : false,
+      "file" : "schemas/certification/biosamples-basic.json"
+    },
+    "curations" : [ {
+      "characteristic" : "INSDC status",
+      "before" : "live",
+      "after" : "public",
+    } ]
+  } ],
+  "recommendations" : [ {
+    "certification_checklist_id" : "biosamples-minimal-0.0.1",
+    "suggestions" : [ {
+      "characteristic" : [ "Organism", "Species", "organism", "species" ],
+      "mandatory" : true,
+      "comment" : "Either Organism or Species must be present in sample"
+    } ]
+  } ]
+}
+....
+
+
+The certification result can be explained as:
+
+1. This sample is certified by the schema - ncbi_candidate_schema-0.0.1
+2. The sample can be certified by schema - biosamples-basic-0.0.1 if the attribute INSDC
+status is curated from *live* to *public*
+3. The sample will be validated by biosamples-minimal-0.0.1 if an organism or a species is
+added to the sample attributes
+
+The JSON schemas mentioned are as below:
+
+Schema name - ncbi-candidate-schema
+
+Schema version - 0.0.1
+
+Schema purpose - To check if the samples has a INSDC status attribute and the value is *live*
+
+....
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "ncbi-candidate-schema.json",
+  "additionalProperties": true,
+  "required": [
+    "name",
+    "domain",
+    "characteristics"
+  ],
+  "title": "sample",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "accession": {
+      "type": "string"
+    },
+    "domain": {
+      "type": "string",
+      "enum": [
+        "self.BiosampleImportNCBI"
+      ]
+    },
+    "characteristics": {
+      "type": "object",
+      "required": [
+        "INSDC status"
+      ],
+      "properties": {
+        "INSDC status": {
+          "type": "array",
+          "items": {
+            "properties": {
+              "text": {
+                "type": "string",
+                "enum": [
+                  "live"
+                ]
+              }
+            },
+            "required": [
+              "text"
+            ]
+          }
+        }
+      }
+    }
+  }
+}
+....
+
+
+Schema name - biosamples-basic
+
+Schema version - 0.0.1
+
+Schema purpose - To check if the samples has a INSDC status attribute and the value is *public*
+
+....
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "biosamples-basic.json",
+  "additionalProperties": true,
+  "required": [
+    "name",
+    "accession",
+    "characteristics"
+  ],
+  "title": "sample",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "accession": {
+      "type": "string"
+    },
+    "characteristics": {
+      "type": "object",
+      "required": [
+        "INSDC status"
+      ],
+      "properties": {
+        "additionalProperties": true,
+        "INSDC status": {
+          "type": "array",
+          "items": {
+            "properties": {
+              "text": {
+                "type": "string",
+                "enum": [
+                  "public"
+                ]
+              }
+            },
+            "required": [
+              "text"
+            ]
+          }
+        }
+      }
+    }
+  }
+}
+
+....
+
+
+Please contact the BioSamples team at biosamples@ebi.ac.uk if you want to know more about the
+certification service and want to have custom schemas and plans for sample validation
+

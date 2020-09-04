@@ -1,28 +1,36 @@
+/*
+* Copyright 2019 EMBL - European Bioinformatics Institute
+* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+* file except in compliance with the License. You may obtain a copy of the License at
+* http://www.apache.org/licenses/LICENSE-2.0
+* Unless required by applicable law or agreed to in writing, software distributed under the
+* License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+* CONDITIONS OF ANY KIND, either express or implied. See the License for the
+* specific language governing permissions and limitations under the License.
+*/
 package uk.ac.ebi.biosamples.solr;
-
-import java.io.IOException;
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import java.io.IOException;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 
 public class CustomInstantSolrSerializer extends StdSerializer<Instant> {
 
-		
-	public CustomInstantSolrSerializer() {
-		this(null);
-	}
+  public CustomInstantSolrSerializer() {
+    this(null);
+  }
 
-	public CustomInstantSolrSerializer(Class<Instant> t) {
-		super(t);
-	}
+  public CustomInstantSolrSerializer(Class<Instant> t) {
+    super(t);
+  }
 
-	@Override
-	public void serialize(Instant value, JsonGenerator gen, SerializerProvider arg2)
-			throws IOException, JsonProcessingException {
-		gen.writeString(DateTimeFormatter.ISO_INSTANT.format(value));
-	}
+  @Override
+  public void serialize(Instant value, JsonGenerator gen, SerializerProvider arg2)
+      throws IOException, JsonProcessingException {
+    gen.writeString(DateTimeFormatter.ISO_INSTANT.format(value));
+  }
 }

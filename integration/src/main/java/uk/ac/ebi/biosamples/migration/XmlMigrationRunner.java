@@ -1,5 +1,17 @@
+/*
+* Copyright 2019 EMBL - European Bioinformatics Institute
+* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+* file except in compliance with the License. You may obtain a copy of the License at
+* http://www.apache.org/licenses/LICENSE-2.0
+* Unless required by applicable law or agreed to in writing, software distributed under the
+* License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+* CONDITIONS OF ANY KIND, either express or implied. See the License for the
+* specific language governing permissions and limitations under the License.
+*/
 package uk.ac.ebi.biosamples.migration;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Queue;
@@ -8,7 +20,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
-
 import org.apache.http.HeaderElement;
 import org.apache.http.HeaderElementIterator;
 import org.apache.http.HttpResponse;
@@ -34,138 +45,147 @@ import org.springframework.hateoas.mvc.TypeConstrainedMappingJackson2HttpMessage
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
-
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import uk.ac.ebi.biosamples.service.XmlGroupToSampleConverter;
 import uk.ac.ebi.biosamples.service.XmlSampleToSampleConverter;
 
-//@Component
+// @Component
 @Profile({"migration-xml"})
 public class XmlMigrationRunner implements ApplicationRunner, ExitCodeGenerator {
 
-	private final RestTemplate restTemplate;
-	private ExecutorService executorService;
+  private final RestTemplate restTemplate;
+  private ExecutorService executorService;
 
-	private int exitCode = 1;
-	private final Logger log = LoggerFactory.getLogger(getClass());
+  private int exitCode = 1;
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
-	@Value("${biosamples.migration.old:http://www.ebi.ac.uk/biosamples/xml/samples}")
-	private String oldUrl;
-	@Value("${biosamples.migration.new:http://www.ebi.ac.uk/biosamples/xml/samples}")
-	private String newUrl;
+  @Value("${biosamples.migration.old:http://www.ebi.ac.uk/biosamples/xml/samples}")
+  private String oldUrl;
 
-	private final XmlSampleToSampleConverter xmlSampleToSampleConverter;
-	private final XmlGroupToSampleConverter xmlGroupToSampleConverter;
+  @Value("${biosamples.migration.new:http://www.ebi.ac.uk/biosamples/xml/samples}")
+  private String newUrl;
 
-	public XmlMigrationRunner(RestTemplateBuilder restTemplateBuilder, XmlSampleToSampleConverter xmlSampleToSampleConverter,
-			XmlGroupToSampleConverter xmlGroupToSampleConverter) {
-		restTemplate = restTemplateBuilder.build();
-		this.xmlSampleToSampleConverter = xmlSampleToSampleConverter;
-		this.xmlGroupToSampleConverter = xmlGroupToSampleConverter;
-	}
+  private final XmlSampleToSampleConverter xmlSampleToSampleConverter;
+  private final XmlGroupToSampleConverter xmlGroupToSampleConverter;
 
-	@Override
-	public int getExitCode() {
-		return exitCode;
-	}
+  public XmlMigrationRunner(
+      RestTemplateBuilder restTemplateBuilder,
+      XmlSampleToSampleConverter xmlSampleToSampleConverter,
+      XmlGroupToSampleConverter xmlGroupToSampleConverter) {
+    restTemplate = restTemplateBuilder.build();
+    this.xmlSampleToSampleConverter = xmlSampleToSampleConverter;
+    this.xmlGroupToSampleConverter = xmlGroupToSampleConverter;
+  }
 
-	@Override
-	public void run(ApplicationArguments args) throws Exception {
-		log.info("Starting MigrationRunner");
+  @Override
+  public int getExitCode() {
+    return exitCode;
+  }
 
-		//use a keep alive strategy to try to make it easier to maintain connections for reuse
-		ConnectionKeepAliveStrategy keepAliveStrategy = new ConnectionKeepAliveStrategy() {
-		    public long getKeepAliveDuration(HttpResponse response, HttpContext context) {
+  @Override
+  public void run(ApplicationArguments args) throws Exception {
+    log.info("Starting MigrationRunner");
 
-		    	//check if there is a non-standard keep alive header present
-		        HeaderElementIterator it = new BasicHeaderElementIterator
-		            (response.headerIterator(HTTP.CONN_KEEP_ALIVE));
-		        while (it.hasNext()) {
-		            HeaderElement he = it.nextElement();
-		            String param = he.getName();
-		            String value = he.getValue();
-		            if (value != null && param.equalsIgnoreCase("timeout")) {
-		                return Long.parseLong(value) * 1000;
-		            }
-		        }
-		        //default to 15s if no header
-		        return 15 * 1000;
-		    }
-		};
+    // use a keep alive strategy to try to make it easier to maintain connections for reuse
+    ConnectionKeepAliveStrategy keepAliveStrategy =
+        new ConnectionKeepAliveStrategy() {
+          public long getKeepAliveDuration(HttpResponse response, HttpContext context) {
 
-		//set a number of connections to use at once for multiple threads
-		PoolingHttpClientConnectionManager poolingHttpClientConnectionManager = new PoolingHttpClientConnectionManager();
-		poolingHttpClientConnectionManager.setMaxTotal(32);
-		poolingHttpClientConnectionManager.setDefaultMaxPerRoute(16);
+            // check if there is a non-standard keep alive header present
+            HeaderElementIterator it =
+                new BasicHeaderElementIterator(response.headerIterator(HTTP.CONN_KEEP_ALIVE));
+            while (it.hasNext()) {
+              HeaderElement he = it.nextElement();
+              String param = he.getName();
+              String value = he.getValue();
+              if (value != null && param.equalsIgnoreCase("timeout")) {
+                return Long.parseLong(value) * 1000;
+              }
+            }
+            // default to 15s if no header
+            return 15 * 1000;
+          }
+        };
 
+    // set a number of connections to use at once for multiple threads
+    PoolingHttpClientConnectionManager poolingHttpClientConnectionManager =
+        new PoolingHttpClientConnectionManager();
+    poolingHttpClientConnectionManager.setMaxTotal(32);
+    poolingHttpClientConnectionManager.setDefaultMaxPerRoute(16);
 
-		//make the actual client
-		HttpClient httpClient = CachingHttpClientBuilder.create()
-				.useSystemProperties()
-				.setConnectionManager(poolingHttpClientConnectionManager)
-				.setKeepAliveStrategy(keepAliveStrategy)
-				.build();
+    // make the actual client
+    HttpClient httpClient =
+        CachingHttpClientBuilder.create()
+            .useSystemProperties()
+            .setConnectionManager(poolingHttpClientConnectionManager)
+            .setKeepAliveStrategy(keepAliveStrategy)
+            .build();
 
-		//and wire it into the resttemplate
-        restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory(httpClient));
+    // and wire it into the resttemplate
+    restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory(httpClient));
 
-		//make sure there is a application/hal+json converter
-		//traverson will make its own but not if we want to customize the resttemplate in any way (e.g. caching)
-		List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();
-		ObjectMapper mapper = new ObjectMapper();
-		mapper.registerModule(new Jackson2HalModule());
-		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		MappingJackson2HttpMessageConverter halConverter = new TypeConstrainedMappingJackson2HttpMessageConverter(ResourceSupport.class);
-		halConverter.setObjectMapper(mapper);
-		halConverter.setSupportedMediaTypes(Arrays.asList(MediaTypes.HAL_JSON));
-		//make sure this is inserted first
-		converters.add(0, halConverter);
-		restTemplate.setMessageConverters(converters);
+    // make sure there is a application/hal+json converter
+    // traverson will make its own but not if we want to customize the resttemplate in any way
+    // (e.g.
+    // caching)
+    List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.registerModule(new Jackson2HalModule());
+    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    MappingJackson2HttpMessageConverter halConverter =
+        new TypeConstrainedMappingJackson2HttpMessageConverter(ResourceSupport.class);
+    halConverter.setObjectMapper(mapper);
+    halConverter.setSupportedMediaTypes(Arrays.asList(MediaTypes.HAL_JSON));
+    // make sure this is inserted first
+    converters.add(0, halConverter);
+    restTemplate.setMessageConverters(converters);
 
+    try {
+      executorService = Executors.newFixedThreadPool(4);
+      Queue<String> oldQueue = new ArrayBlockingQueue<>(1024);
+      AtomicBoolean oldFinished = new AtomicBoolean(false);
+      XmlAccessFetcherCallable oldCallable =
+          new XmlAccessFetcherCallable(restTemplate, oldUrl, oldQueue, oldFinished, true);
 
+      Queue<String> newQueue = new ArrayBlockingQueue<>(1024);
+      AtomicBoolean newFinished = new AtomicBoolean(false);
+      XmlAccessFetcherCallable newCallable =
+          new XmlAccessFetcherCallable(restTemplate, newUrl, newQueue, newFinished, false);
 
+      Queue<String> bothQueue = new ArrayBlockingQueue<>(1024);
+      AtomicBoolean bothFinished = new AtomicBoolean(false);
 
+      AccessionQueueBothCallable bothCallable =
+          new AccessionQueueBothCallable(
+              oldQueue, oldFinished, newQueue, newFinished, bothQueue, bothFinished);
 
-		try  {
-			executorService = Executors.newFixedThreadPool(4);
-			Queue<String> oldQueue = new ArrayBlockingQueue<>(1024);
-			AtomicBoolean oldFinished = new AtomicBoolean(false);
-			XmlAccessFetcherCallable oldCallable = new XmlAccessFetcherCallable(restTemplate, oldUrl, oldQueue, oldFinished, true);
+      XmlAccessionComparisonCallable comparisonCallable =
+          new XmlAccessionComparisonCallable(
+              restTemplate,
+              oldUrl,
+              newUrl,
+              bothQueue,
+              bothFinished,
+              xmlSampleToSampleConverter,
+              xmlGroupToSampleConverter,
+              args.containsOption("comparison"));
 
-			Queue<String> newQueue = new ArrayBlockingQueue<>(1024);
-			AtomicBoolean newFinished = new AtomicBoolean(false);
-			XmlAccessFetcherCallable newCallable = new XmlAccessFetcherCallable(restTemplate, newUrl, newQueue, newFinished, false);
+      //			comparisonCallable.compare("SAMEA3683023");
 
-			Queue<String> bothQueue = new ArrayBlockingQueue<>(1024);
-			AtomicBoolean bothFinished = new AtomicBoolean(false);
+      Future<Void> oldFuture = executorService.submit(oldCallable);
+      Future<Void> newFuture = executorService.submit(newCallable);
+      Future<Void> bothFuture = executorService.submit(bothCallable);
+      Future<Void> comparisonFuture = executorService.submit(comparisonCallable);
 
-			AccessionQueueBothCallable bothCallable = new AccessionQueueBothCallable(oldQueue, oldFinished,
-					newQueue, newFinished, bothQueue, bothFinished);
+      oldFuture.get();
+      newFuture.get();
+      bothFuture.get();
+      comparisonFuture.get();
+    } finally {
+      executorService.shutdownNow();
+    }
 
-			XmlAccessionComparisonCallable comparisonCallable = new XmlAccessionComparisonCallable(restTemplate,
-					oldUrl, newUrl, bothQueue, bothFinished
-					, xmlSampleToSampleConverter, xmlGroupToSampleConverter, args.containsOption("comparison"));
-
-//			comparisonCallable.compare("SAMEA3683023");
-
-			Future<Void> oldFuture = executorService.submit(oldCallable);
-			Future<Void> newFuture = executorService.submit(newCallable);
-			Future<Void> bothFuture = executorService.submit(bothCallable);
-			Future<Void> comparisonFuture = executorService.submit(comparisonCallable);
-
-			oldFuture.get();
-			newFuture.get();
-			bothFuture.get();
-			comparisonFuture.get();
-		} finally {
-			executorService.shutdownNow();
-		}
-
-		exitCode = 0;
-		log.info("Finished MigrationRunner");
-	}
+    exitCode = 0;
+    log.info("Finished MigrationRunner");
+  }
 }
