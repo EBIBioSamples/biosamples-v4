@@ -1,13 +1,13 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
-* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
-* file except in compliance with the License. You may obtain a copy of the License at
-* http://www.apache.org/licenses/LICENSE-2.0
-* Unless required by applicable law or agreed to in writing, software distributed under the
-* License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-* CONDITIONS OF ANY KIND, either express or implied. See the License for the
-* specific language governing permissions and limitations under the License.
-*/
+ * Copyright 2019 EMBL - European Bioinformatics Institute
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+ * file except in compliance with the License. You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+ * CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ */
 package uk.ac.ebi.biosamples.ena.amr;
 
 import java.io.BufferedReader;
@@ -46,7 +46,6 @@ public class AmrRunner implements ApplicationRunner {
           + antibiogram
           + "&dataPortal=pathogen&dccDataOnly=false&fields=analysis_accession,country,region,scientific_name,location,sample_accession,tax_id,submitted_ftp,first_public,last_updated&sortFields=scientific_name,country&limit=0";
   private static final Logger log = LoggerFactory.getLogger(AmrRunner.class);
-  private static final Map<String, Future<Void>> futures = new LinkedHashMap<>();
 
   public static final String TAB = "\t";
 
@@ -57,7 +56,7 @@ public class AmrRunner implements ApplicationRunner {
   public void run(final ApplicationArguments args) {
     log.info("Processing ENA-AMR pipeline");
 
-    List<AccessionFtpUrlPair> pairList = new ArrayList<>();
+    List<AccessionFtpUrlPair> pairList;
     boolean isPipelineOk = true;
 
     try {
