@@ -60,6 +60,7 @@ public interface Facet extends Comparable<Facet> {
   }
 
   default int compareTo(Facet otherFacet) {
-    return Long.compare(this.getCount(), otherFacet.getCount());
+    return FacetHelper.compareFacets(this.getLabel(), otherFacet.getLabel());
+//    return Long.compare(this.getCount(), otherFacet.getCount());
   }
 }

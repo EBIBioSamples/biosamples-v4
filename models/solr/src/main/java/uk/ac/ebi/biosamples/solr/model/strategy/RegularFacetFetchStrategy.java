@@ -29,7 +29,6 @@ import uk.ac.ebi.biosamples.model.facet.content.LabelCountEntry;
 import uk.ac.ebi.biosamples.model.facet.content.LabelCountListContent;
 import uk.ac.ebi.biosamples.solr.model.field.SolrSampleField;
 import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
-import uk.ac.ebi.biosamples.solr.service.SolrFieldService;
 
 public class RegularFacetFetchStrategy implements FacetFetchStrategy {
 
@@ -43,6 +42,7 @@ public class RegularFacetFetchStrategy implements FacetFetchStrategy {
       SolrSampleRepository solrSampleRepository,
       FacetQuery query,
       List<Entry<SolrSampleField, Long>> facetFieldCountEntries,
+      List<Map.Entry<SolrSampleField, Long>> rangeFieldCountEntries,
       Pageable facetPageable) {
 
     List<String> facetFieldNames =
@@ -110,21 +110,29 @@ public class RegularFacetFetchStrategy implements FacetFetchStrategy {
   }
 
 
-  //  @Override
+//  @Override
   public List<Optional<Facet>> fetchFacetsUsing(SolrSampleRepository solrSampleRepository, FacetQuery query,
                                                 List<Entry<SolrSampleField, Long>> facetFieldCountEntries,
+                                                List<Map.Entry<SolrSampleField, Long>> rangeFieldCountEntries,
                                                 Pageable facetPageable) {
 
-    List<String> facetFieldNames =
-            facetFieldCountEntries.stream()
-                    .map(Entry::getKey)
-                    .map(SolrSampleField::getSolrLabel)
-                    .collect(Collectors.toList());
+    List<String> facetFieldNames = facetFieldCountEntries.stream()
+            .map(Entry::getKey)
+            .map(SolrSampleField::getSolrLabel)
+            .collect(Collectors.toList());
+    List<String> rangeFacetFieldNames = rangeFieldCountEntries.stream()
+            .map(Entry::getKey)
+            .map(SolrSampleField::getSolrLabel)
+            .collect(Collectors.toList());
 
     Map<String, SolrSampleField> fieldMap = facetFieldCountEntries.stream()
-            .map(Entry::getKey).collect(Collectors.toMap(SolrSampleField::getSolrLabel, s -> s));
+            .map(Entry::getKey)
+            .collect(Collectors.toMap(SolrSampleField::getSolrLabel, s -> s));
+    rangeFieldCountEntries.stream()
+            .map(Entry::getKey)
+            .forEach(s -> fieldMap.put(s.getSolrLabel(), s));
 
-    FacetPage<?> facetPage = solrSampleRepository.getFacets(query, facetFieldNames, facetPageable);
+    FacetPage<?> facetPage = solrSampleRepository.getFacets(query, facetFieldNames, rangeFacetFieldNames, facetPageable);
 
     List<Optional<Facet>> facetResults = new ArrayList<>();
     for (FacetQueryEntry q : facetPage.getFacetQueryResult().getContent()) {
@@ -136,6 +144,10 @@ public class RegularFacetFetchStrategy implements FacetFetchStrategy {
 
         List<LabelCountEntry> listFacetContent = new ArrayList<>();
         for (FacetFieldEntry ffe : facetPage.getFacetResultPage(fieldName)) {
+          listFacetContent.add(LabelCountEntry.build(ffe.getValue(), ffe.getValueCount()));
+        }
+
+        for (FacetFieldEntry ffe : facetPage.getRangeFacetResultPage(fieldName)) {
           listFacetContent.add(LabelCountEntry.build(ffe.getValue(), ffe.getValueCount()));
         }
 

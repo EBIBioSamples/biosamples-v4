@@ -24,6 +24,7 @@ import org.springframework.data.solr.core.query.result.FacetFieldEntry;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.facet.Facet;
+import uk.ac.ebi.biosamples.model.facet.FacetHelper;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.solr.model.field.SolrSampleField;
 import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
@@ -38,9 +39,9 @@ public class SolrFacetService {
   private final SolrFilterService solrFilterService;
 
   private static final List<String> FACETING_FIELDS = List.of("organism", "sex", "tissue", "strain", "organism part",
-          "cell type", "isolate", "sample type", "genotype", "isolation source", "histological type", "age", "host");
+          "cell type", "isolate", "sample type", "genotype", "isolation source", "histological type", "age", "host", "external reference");
   private static final List<String> FACETING_FIELDS_REL = List.of("release_dt");
-  private static final List<String> FACETING_FIELDS_RANGE = List.of("release_dt");
+  private static final List<String> FACETING_FIELDS_RANGE = List.of("release_dt"); // we are only supporting date range facets now
 
   public SolrFacetService(
       SolrSampleRepository solrSampleRepository,
@@ -118,7 +119,7 @@ public class SolrFacetService {
           .get(0)
           .getKey()
           .getFacetCollectionStrategy()
-          .fetchFacetsUsing(solrSampleRepository, query, allFacetFields, facetValuesPageInfo)
+          .fetchFacetsUsing(solrSampleRepository, query, allFacetFields, allFacetFields, facetValuesPageInfo)
           .forEach(opt -> opt.ifPresent(facets::add));
     }
 
@@ -156,16 +157,21 @@ public class SolrFacetService {
     Optional<FilterQuery> optionalFilter = solrFilterService.getFilterQuery(filters);
     optionalFilter.ifPresent(query::addFilterQuery);
 
-    List<Entry<SolrSampleField, Long>> allFacetFields = FACETING_FIELDS.stream()
-            .map(s -> new SimpleEntry<>(this.solrFieldService.decodeField(SolrFieldService.encodeFieldName(s) + "_av_ss"), 1L))
+    List<Entry<SolrSampleField, Long>> allFacetFields = FacetHelper.FACETING_FIELDS.stream()
+            .map(s -> new SimpleEntry<>(this.solrFieldService.decodeField(SolrFieldService.encodeFieldName(s) + "_av_ss"), 0L))
             .collect(Collectors.toList());
+
+    List<Entry<SolrSampleField, Long>> rangeFacetFields = FacetHelper.RANGE_FACETING_FIELDS.stream()
+            .map(s -> new SimpleEntry<>(this.solrFieldService.decodeField(s), 0L))
+            .collect(Collectors.toList());
+
 
     if (allFacetFields.size() > 0) {
       allFacetFields
               .get(0)
               .getKey()
               .getFacetCollectionStrategy()
-              .fetchFacetsUsing(solrSampleRepository, query, allFacetFields, facetValuesPageInfo)
+              .fetchFacetsUsing(solrSampleRepository, query, allFacetFields, rangeFacetFields, facetValuesPageInfo)
               .forEach(opt -> opt.ifPresent(facets::add));
     }
 
@@ -173,7 +179,16 @@ public class SolrFacetService {
     Collections.sort(facets);
     Collections.reverse(facets);
 
-    return facets;
+    List<Facet> limitedFacets;
+    int facetLimit = 8;
+    if (facets.size() > facetLimit) {
+      limitedFacets  = facets.subList(0, facetLimit);
+      limitedFacets.add(facets.get(facets.size() - 1));
+    } else {
+      limitedFacets = facets;
+    }
+
+    return limitedFacets;
   }
 
 }

@@ -11,7 +11,6 @@
 package uk.ac.ebi.biosamples.solr.repo;
 
 import java.io.IOException;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
@@ -85,8 +84,8 @@ public class SolrSampleRepositoryImpl implements SolrSampleRepositoryCustom {
     return page.getFacetResultPage("facetfields_ss");
   }
 
-//  @Override
-  public FacetPage<?> getFacets2(
+  @Override
+  public FacetPage<?> getFacets(
       FacetQuery query, List<String> facetFields, Pageable facetPageable) {
 
     if (facetFields == null || facetFields.size() == 0) {
@@ -109,7 +108,7 @@ public class SolrSampleRepositoryImpl implements SolrSampleRepositoryCustom {
 
   @Override
   public FacetPage<?> getFacets(
-          FacetQuery query, List<String> facetFields, Pageable facetPageable) {
+          FacetQuery query, List<String> facetFields, List<String> rangeFacetFields, Pageable facetPageable) {
 
     if (facetFields == null || facetFields.size() == 0) {
       throw new IllegalArgumentException("Must provide fields to facet on");
@@ -123,12 +122,18 @@ public class SolrSampleRepositoryImpl implements SolrSampleRepositoryCustom {
       facetOptions.addFacetQuery(new SimpleFacetQuery(new Criteria(field)));
       //facetOptions.setFacetMinCount(1) //todo test this
     }
+    facetOptions.setFacetLimit(2);
     facetOptions.setPageable(facetPageable);
 
-    //todo generalise
-    LocalDateTime dateTime = LocalDateTime.of(2015, 2, 1, 0, 0);
-    Date start = Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant());
-    facetOptions.addFacetByRange(new FacetOptions.FieldWithDateRangeParameters("release_dt", start, new Date(), "+1YEAR"));
+
+    //todo generalise range facets apart from dates and remove hardcoded date boundaries
+    for (String field: rangeFacetFields) {
+      LocalDateTime dateTime = LocalDateTime.of(2015, 1, 1, 0, 0);
+      Date start = Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant());
+      Date end = Date.from(dateTime.plusYears(8).atZone(ZoneId.systemDefault()).toInstant());
+      facetOptions.addFacetByRange(new FacetOptions.FieldWithDateRangeParameters(field, start, end, "+1YEAR"));
+      facetOptions.addFacetQuery(new SimpleFacetQuery(new Criteria(field)));
+    }
 
     query.setFacetOptions(facetOptions);
     // execute the query against the solr server
