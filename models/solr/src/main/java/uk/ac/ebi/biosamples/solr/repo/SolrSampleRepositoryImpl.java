@@ -12,6 +12,7 @@ package uk.ac.ebi.biosamples.solr.repo;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.Year;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
@@ -128,9 +129,9 @@ public class SolrSampleRepositoryImpl implements SolrSampleRepositoryCustom {
 
     //todo generalise range facets apart from dates and remove hardcoded date boundaries
     for (String field: rangeFacetFields) {
-      LocalDateTime dateTime = LocalDateTime.of(2015, 1, 1, 0, 0);
-      Date start = Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant());
-      Date end = Date.from(dateTime.plusYears(8).atZone(ZoneId.systemDefault()).toInstant());
+      LocalDateTime dateTime = LocalDateTime.now();
+      Date end = Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant());
+      Date start = Date.from(dateTime.minusYears(5).atZone(ZoneId.systemDefault()).toInstant());
       facetOptions.addFacetByRange(new FacetOptions.FieldWithDateRangeParameters(field, start, end, "+1YEAR"));
       facetOptions.addFacetQuery(new SimpleFacetQuery(new Criteria(field)));
     }

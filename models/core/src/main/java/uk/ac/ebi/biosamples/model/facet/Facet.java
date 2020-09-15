@@ -50,6 +50,9 @@ public interface Facet extends Comparable<Facet> {
   @JsonIgnore
   public Optional<FilterType> getAssociatedFilterType();
 
+  @JsonIgnore
+  public String getContentSerializableFilter(String label);
+
   /*
    * Builder interface to build Facets
    */

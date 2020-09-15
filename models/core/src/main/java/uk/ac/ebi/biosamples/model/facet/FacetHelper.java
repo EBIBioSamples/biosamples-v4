@@ -13,11 +13,16 @@ public class FacetHelper {
             "investigation type", "disease state", "cell line", "treatment", "depth", "host sex", "cultivar",
             "elevation", "host disease", "developmental stage", "disease", "host age", "phenotype", "breed",
             "collection date", "geographic location", "data use conditions");
-    public static final List<String> EX_REF_FACETING_FIELDS = List.of("external reference", "data use conditions");
-    public static final List<String> RANGE_FACETING_FIELDS = List.of("release_dt"); // we are only supporting date range facets now
+    public static final List<String> RANGE_FACETING_FIELDS = List.of("release"); // we are only supporting date range facets now
 
     public static String get_encoding_suffix(String attribute) {
-        return EX_REF_FACETING_FIELDS.contains(attribute) ? "_av_ss" : "_av_ss";
+        String suffix = "";
+        if (FACETING_FIELDS.contains(attribute)) {
+            suffix = "_av_ss";
+        } else if (RANGE_FACETING_FIELDS.contains(attribute)) {
+            suffix = "_dt";
+        }
+        return suffix;
     }
 
     public static int compareFacets(String f1, String f2) {

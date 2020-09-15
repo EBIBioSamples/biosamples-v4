@@ -38,11 +38,6 @@ public class SolrFacetService {
   private Logger log = LoggerFactory.getLogger(getClass());
   private final SolrFilterService solrFilterService;
 
-  private static final List<String> FACETING_FIELDS = List.of("organism", "sex", "tissue", "strain", "organism part",
-          "cell type", "isolate", "sample type", "genotype", "isolation source", "histological type", "age", "host", "external reference");
-  private static final List<String> FACETING_FIELDS_REL = List.of("release_dt");
-  private static final List<String> FACETING_FIELDS_RANGE = List.of("release_dt"); // we are only supporting date range facets now
-
   public SolrFacetService(
       SolrSampleRepository solrSampleRepository,
       SolrFieldService solrFieldService,
@@ -158,11 +153,12 @@ public class SolrFacetService {
     optionalFilter.ifPresent(query::addFilterQuery);
 
     List<Entry<SolrSampleField, Long>> allFacetFields = FacetHelper.FACETING_FIELDS.stream()
-            .map(s -> new SimpleEntry<>(this.solrFieldService.decodeField(SolrFieldService.encodeFieldName(s) + "_av_ss"), 0L))
+            .map(s -> new SimpleEntry<>(this.solrFieldService.decodeField(
+                    SolrFieldService.encodeFieldName(s) + FacetHelper.get_encoding_suffix(s)), 0L))
             .collect(Collectors.toList());
 
     List<Entry<SolrSampleField, Long>> rangeFacetFields = FacetHelper.RANGE_FACETING_FIELDS.stream()
-            .map(s -> new SimpleEntry<>(this.solrFieldService.decodeField(s), 0L))
+            .map(s -> new SimpleEntry<>(this.solrFieldService.decodeField(s + FacetHelper.get_encoding_suffix(s)), 0L))
             .collect(Collectors.toList());
 
 
@@ -182,8 +178,8 @@ public class SolrFacetService {
     List<Facet> limitedFacets;
     int facetLimit = 8;
     if (facets.size() > facetLimit) {
-      limitedFacets  = facets.subList(0, facetLimit);
-      limitedFacets.add(facets.get(facets.size() - 1));
+      limitedFacets = facets.stream().limit(facetLimit).collect(Collectors.toList());
+      facets.stream().filter(f -> FacetHelper.RANGE_FACETING_FIELDS.contains(f.getLabel())).forEach(limitedFacets::add);
     } else {
       limitedFacets = facets;
     }

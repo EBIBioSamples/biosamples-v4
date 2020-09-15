@@ -43,12 +43,12 @@ public class DateRangeFacet implements Facet {
 
   @Override
   public FacetType getType() {
-    return FacetType.ATTRIBUTE_FACET;
+    return FacetType.DATE_RANGE_FACET;
   }
 
   @Override
   public Optional<FilterType> getAssociatedFilterType() {
-    return Optional.of(FilterType.ATTRIBUTE_FILTER);
+    return Optional.of(FilterType.DATE_FILTER);
   }
 
   @Override
@@ -64,6 +64,12 @@ public class DateRangeFacet implements Facet {
   @Override
   public LabelCountListContent getContent() {
     return this.content;
+  }
+
+  @Override
+  public String getContentSerializableFilter(String label) {
+    String[] range = label.split(" to ");
+    return "from=" + range[0] + "until=" + range[1];
   }
 
   @Override

@@ -59,6 +59,11 @@ public class InverseRelationFacet implements Facet {
   }
 
   @Override
+  public String getContentSerializableFilter(String label) {
+    return label;
+  }
+
+  @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("InverseRelationFacet(");
