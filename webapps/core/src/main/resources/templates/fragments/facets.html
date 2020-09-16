@@ -48,7 +48,7 @@
 
         <div th:each="value : ${facet.content}"
              class="facet-container"
-             th:with="valueFilterName=${generalFilterName + ':' + value.label}">
+             th:with="valueFilterName=${generalFilterName + ':' + facet.getContentSerializableFilter(value.label)}">
             <input th:form="local-search" th:with="filterName=${facetType + ':' + facet.label}"
                    th:id="${valueFilterName}"
                    class="facet-checkbox"

@@ -156,14 +156,14 @@ public class SampleHtmlController {
     model.addAttribute("filters", filtersList);
     model.addAttribute("paginations", getPaginations(pageSample, uriBuilder));
     model.addAttribute("jsonLD", jsonLDService.jsonLDToString(jsonLDDataset));
-    model.addAttribute(
-        "facets",
-        new LazyContextVariable<List<Facet>>() {
-          @Override
-          protected List<Facet> loadValue() {
-            return facetService.getFacets(text, filterCollection, domains, 10, 10);
-          }
-        });
+//    model.addAttribute(
+//        "facets",
+//        new LazyContextVariable<List<Facet>>() {
+//          @Override
+//          protected List<Facet> loadValue() {
+//            return facetService.getFacets(text, filterCollection, domains, 10, 10);
+//          }
+//        });
 
     // TODO add "clear all facets" button
     // TODO title of webpage
@@ -214,14 +214,7 @@ public class SampleHtmlController {
 
     model.addAttribute("filters", filtersList);
     // default to getting 10 values from 10 facets
-    model.addAttribute(
-        "facets",
-        new LazyContextVariable<List<Facet>>() {
-          @Override
-          protected List<Facet> loadValue() {
-            return facetService.getFacets(text, filterCollection, domains, 10, 10);
-          }
-        });
+    model.addAttribute("facets", facetService.getFacets(text, filterCollection, domains, 10, 10));
 
     // Note - EBI load balancer does cache but doesn't add age header, so clients could cache up
     // to

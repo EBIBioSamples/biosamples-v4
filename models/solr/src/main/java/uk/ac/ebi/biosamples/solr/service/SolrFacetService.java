@@ -10,13 +10,11 @@
 */
 package uk.ac.ebi.biosamples.solr.service;
 
+import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map.Entry;
-import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -26,6 +24,7 @@ import org.springframework.data.solr.core.query.result.FacetFieldEntry;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.facet.Facet;
+import uk.ac.ebi.biosamples.model.facet.FacetHelper;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.solr.model.field.SolrSampleField;
 import uk.ac.ebi.biosamples.solr.repo.SolrSampleRepository;
@@ -49,7 +48,7 @@ public class SolrFacetService {
     this.solrFilterService = solrFilterService;
   }
 
-  public List<Facet> getFacets(
+  public List<Facet> getFacets2(
       String searchTerm,
       Collection<Filter> filters,
       Collection<String> domains,
@@ -115,7 +114,7 @@ public class SolrFacetService {
           .get(0)
           .getKey()
           .getFacetCollectionStrategy()
-          .fetchFacetsUsing(solrSampleRepository, query, allFacetFields, facetValuesPageInfo)
+          .fetchFacetsUsing(solrSampleRepository, query, allFacetFields, allFacetFields, facetValuesPageInfo)
           .forEach(opt -> opt.ifPresent(facets::add));
     }
 
@@ -125,4 +124,67 @@ public class SolrFacetService {
 
     return facets;
   }
+
+  public List<Facet> getFacets(
+          String searchTerm,
+          Collection<Filter> filters,
+          Collection<String> domains,
+          Pageable facetFieldPageInfo,
+          Pageable facetValuesPageInfo) {
+    // default to search all
+    if (searchTerm == null || searchTerm.trim().length() == 0) {
+      searchTerm = "*:*";
+    }
+
+    List<Facet> facets = new ArrayList<>();
+
+    // build a query out of the users string and any facets
+    FacetQuery query = new SimpleFacetQuery();
+    query.addCriteria(new Criteria().expression(searchTerm));
+    query.setTimeAllowed(TIMEALLOWED * 1000);
+
+    // Add domains and release date filters
+    Optional<FilterQuery> domainAndPublicFilterQuery =
+            solrFilterService.getPublicFilterQuery(domains);
+    domainAndPublicFilterQuery.ifPresent(query::addFilterQuery);
+
+    // Add all the provided filters
+    Optional<FilterQuery> optionalFilter = solrFilterService.getFilterQuery(filters);
+    optionalFilter.ifPresent(query::addFilterQuery);
+
+    List<Entry<SolrSampleField, Long>> allFacetFields = FacetHelper.FACETING_FIELDS.stream()
+            .map(s -> new SimpleEntry<>(this.solrFieldService.decodeField(
+                    SolrFieldService.encodeFieldName(s) + FacetHelper.get_encoding_suffix(s)), 0L))
+            .collect(Collectors.toList());
+
+    List<Entry<SolrSampleField, Long>> rangeFacetFields = FacetHelper.RANGE_FACETING_FIELDS.stream()
+            .map(s -> new SimpleEntry<>(this.solrFieldService.decodeField(s + FacetHelper.get_encoding_suffix(s)), 0L))
+            .collect(Collectors.toList());
+
+
+    if (allFacetFields.size() > 0) {
+      allFacetFields
+              .get(0)
+              .getKey()
+              .getFacetCollectionStrategy()
+              .fetchFacetsUsing(solrSampleRepository, query, allFacetFields, rangeFacetFields, facetValuesPageInfo)
+              .forEach(opt -> opt.ifPresent(facets::add));
+    }
+
+    // Return the list of facets
+    Collections.sort(facets);
+    Collections.reverse(facets);
+
+    List<Facet> limitedFacets;
+    int facetLimit = 8;
+    if (facets.size() > facetLimit) {
+      limitedFacets = facets.stream().limit(facetLimit).collect(Collectors.toList());
+      facets.stream().filter(f -> FacetHelper.RANGE_FACETING_FIELDS.contains(f.getLabel())).forEach(limitedFacets::add);
+    } else {
+      limitedFacets = facets;
+    }
+
+    return limitedFacets;
+  }
+
 }

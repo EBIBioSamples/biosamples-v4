@@ -13,22 +13,29 @@ package uk.ac.ebi.biosamples.model.facet;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import java.util.Optional;
 import org.springframework.hateoas.core.Relation;
 import uk.ac.ebi.biosamples.model.facet.content.FacetContent;
+import uk.ac.ebi.biosamples.model.facet.content.LabelCountEntry;
 import uk.ac.ebi.biosamples.model.facet.content.LabelCountListContent;
 import uk.ac.ebi.biosamples.model.filter.FilterType;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 @Relation(collectionRelation = "facets")
-@JsonDeserialize(builder = AttributeFacet.Builder.class)
-public class ExternalReferenceDataFacet implements Facet {
+@JsonDeserialize(builder = DateRangeFacet.Builder.class)
+public class DateRangeFacet implements Facet {
 
   private String facetLabel;
   private Long facetCount;
   private LabelCountListContent content;
 
-  private ExternalReferenceDataFacet(
-      String facetLabel, Long facetCount, LabelCountListContent content) {
+  private DateRangeFacet(String facetLabel, Long facetCount, LabelCountListContent content) {
     this.facetLabel = facetLabel;
     this.facetCount = facetCount;
     this.content = content;
@@ -36,12 +43,12 @@ public class ExternalReferenceDataFacet implements Facet {
 
   @Override
   public FacetType getType() {
-    return FacetType.EXTERNAL_REFERENCE_DATA_FACET;
+    return FacetType.DATE_RANGE_FACET;
   }
 
   @Override
   public Optional<FilterType> getAssociatedFilterType() {
-    return Optional.of(FilterType.EXTERNAL_REFERENCE_DATA_FILTER);
+    return Optional.of(FilterType.DATE_FILTER);
   }
 
   @Override
@@ -61,13 +68,14 @@ public class ExternalReferenceDataFacet implements Facet {
 
   @Override
   public String getContentSerializableFilter(String label) {
-    return label;
+    String[] range = label.split(" to ");
+    return "from=" + range[0] + "until=" + range[1];
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("ExternalReferenceDataFacet(");
+    sb.append("DateRangeFacet(");
     sb.append(facetLabel);
     sb.append(",");
     sb.append(facetCount);
@@ -97,13 +105,30 @@ public class ExternalReferenceDataFacet implements Facet {
         throw new RuntimeException("Content not compatible with an attribute facet");
       }
 
-      this.content = (LabelCountListContent) content;
+      LabelCountListContent tempContent = (LabelCountListContent) content;
+      List<LabelCountEntry> contentList = new ArrayList<>();
+      for (int i = 0; i < tempContent.size(); i++) {
+        LabelCountEntry entry = tempContent.get(i);
+        contentList.add(LabelCountEntry.build(parseLabelToDateRange(entry.getLabel()), entry.getCount()));
+      }
+
+      this.content = new LabelCountListContent(contentList);
       return this;
+    }
+
+    private String parseLabelToDateRange(String label) {
+      String dateLabel = label.substring(0, 10);
+      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+      LocalDate start = LocalDate.parse(dateLabel, formatter);
+      LocalDate end = start.plusYears(1);
+      //LocalDateTime dateTime = LocalDateTime.parse(dateLabel, formatter);
+
+      return start + " to " + end;
     }
 
     @Override
     public Facet build() {
-      return new ExternalReferenceDataFacet(this.field, this.count, this.content);
+      return new DateRangeFacet(this.field, this.count, this.content);
     }
   }
 }

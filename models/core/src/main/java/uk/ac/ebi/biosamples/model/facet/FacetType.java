@@ -15,6 +15,7 @@ import java.lang.reflect.InvocationTargetException;
 
 public enum FacetType {
   ATTRIBUTE_FACET("attribute", AttributeFacet.Builder.class),
+  DATE_RANGE_FACET("date range", DateRangeFacet.Builder.class),
   INVERSE_RELATION_FACET("inverse relation", InverseRelationFacet.Builder.class),
   RELATION_FACET("relation", RelationFacet.Builder.class),
   EXTERNAL_REFERENCE_DATA_FACET(
