@@ -1,13 +1,13 @@
 /*
- * Copyright 2019 EMBL - European Bioinformatics Institute
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
- * file except in compliance with the License. You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
- * Unless required by applicable law or agreed to in writing, software distributed under the
- * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
- * CONDITIONS OF ANY KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations under the License.
- */
+* Copyright 2019 EMBL - European Bioinformatics Institute
+* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+* file except in compliance with the License. You may obtain a copy of the License at
+* http://www.apache.org/licenses/LICENSE-2.0
+* Unless required by applicable law or agreed to in writing, software distributed under the
+* License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+* CONDITIONS OF ANY KIND, either express or implied. See the License for the
+* specific language governing permissions and limitations under the License.
+*/
 package uk.ac.ebi.biosamples.ncbi;
 
 import java.io.BufferedInputStream;
@@ -33,7 +33,6 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpClientErrorException;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -231,11 +230,8 @@ public class Ncbi implements ApplicationRunner {
         }
       }
     } catch (final Exception sampleMakePrivateException) {
-      if (sampleMakePrivateException instanceof HttpClientErrorException) {
-        log.info("HTTP Exception while persisting sample " + sampleMakePrivateException.getCause());
-      } else {
-        throw new RuntimeException(sampleMakePrivateException);
-      }
+      log.info(
+          "HTTP Exception while making sample private " + sampleMakePrivateException.getCause());
     }
   }
 }
