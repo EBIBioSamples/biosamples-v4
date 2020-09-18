@@ -16,7 +16,6 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -70,9 +69,11 @@ public class LiveListRunner implements ApplicationRunner {
     try {
       try (Writer liveListWriter =
           args.getOptionValues("gziplive") == null
-              ? new OutputStreamWriter(new FileOutputStream(liveListFilename), "UTF-8")
+              ? new OutputStreamWriter(
+                  new FileOutputStream(liveListFilename), StandardCharsets.UTF_8)
               : new OutputStreamWriter(
-                  new GZIPOutputStream(new FileOutputStream(liveListFilename)), "UTF-8"); ) {
+                  new GZIPOutputStream(new FileOutputStream(liveListFilename)),
+                  StandardCharsets.UTF_8)) {
         LOGGER.info("Starting live list export");
 
         for (Resource<Sample> sampleResource : bioSamplesClient.fetchSampleResourceAll()) {
@@ -90,7 +91,7 @@ public class LiveListRunner implements ApplicationRunner {
                 "Running live list export: exported "
                     + sampleCount
                     + " exported samples in "
-                    + ((System.nanoTime() - startTime) / 1000000000l)
+                    + ((System.nanoTime() - startTime) / 1000000000L)
                     + "s");
           }
         }
@@ -147,8 +148,7 @@ public class LiveListRunner implements ApplicationRunner {
               sampleAccession -> {
                 try {
                   final Optional<Resource<Sample>> optionalSampleResource =
-                      bioSamplesClient.fetchSampleResource(
-                          sampleAccession, Optional.of(new ArrayList<>()));
+                      bioSamplesClient.fetchSampleResource(sampleAccession);
                   AtomicBoolean qualifyForSuppressedList = new AtomicBoolean(false);
 
                   if (optionalSampleResource.isPresent()) {
@@ -230,18 +230,31 @@ public class LiveListRunner implements ApplicationRunner {
           .doGetKilledEnaSamples()
           .forEach(
               sampleAccession -> {
-                LOGGER.info("Handling " + sampleAccession);
                 try {
                   final Optional<Resource<Sample>> optionalSampleResource =
-                      bioSamplesClient.fetchSampleResource(
-                          sampleAccession, Optional.of(new ArrayList<>()));
+                      bioSamplesClient.fetchSampleResource(sampleAccession);
+                  AtomicBoolean qualifyForKilledList = new AtomicBoolean(false);
 
-                  if (!optionalSampleResource.isPresent()) {
-                    LOGGER.info("Writing " + sampleAccession);
-                    sampleCount.getAndIncrement();
-                    killListWriter.write(sampleAccession);
-                    killListWriter.write("\n");
-                    killListWriter.flush();
+                  if (optionalSampleResource.isPresent()) {
+                    final Sample sample = optionalSampleResource.get().getContent();
+
+                    sample
+                        .getAttributes()
+                        .forEach(
+                            attribute -> {
+                              if (attribute.getType().equals("INSDC status")
+                                  && attribute.getValue().equals(KILLED)) {
+                                qualifyForKilledList.set(true);
+                              }
+                            });
+
+                    if (qualifyForKilledList.get()) {
+                      LOGGER.info("Writing " + sampleAccession);
+                      sampleCount.getAndIncrement();
+                      killListWriter.write(sampleAccession);
+                      killListWriter.write("\n");
+                      killListWriter.flush();
+                    }
                   }
                 } catch (final Exception e) {
                   e.printStackTrace();
