@@ -14,7 +14,6 @@ import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -114,7 +113,8 @@ public class SolrFacetService {
           .get(0)
           .getKey()
           .getFacetCollectionStrategy()
-          .fetchFacetsUsing(solrSampleRepository, query, allFacetFields, allFacetFields, facetValuesPageInfo)
+          .fetchFacetsUsing(
+              solrSampleRepository, query, allFacetFields, allFacetFields, facetValuesPageInfo)
           .forEach(opt -> opt.ifPresent(facets::add));
     }
 
@@ -126,11 +126,11 @@ public class SolrFacetService {
   }
 
   public List<Facet> getFacets(
-          String searchTerm,
-          Collection<Filter> filters,
-          Collection<String> domains,
-          Pageable facetFieldPageInfo,
-          Pageable facetValuesPageInfo) {
+      String searchTerm,
+      Collection<Filter> filters,
+      Collection<String> domains,
+      Pageable facetFieldPageInfo,
+      Pageable facetValuesPageInfo) {
     // default to search all
     if (searchTerm == null || searchTerm.trim().length() == 0) {
       searchTerm = "*:*";
@@ -145,30 +145,41 @@ public class SolrFacetService {
 
     // Add domains and release date filters
     Optional<FilterQuery> domainAndPublicFilterQuery =
-            solrFilterService.getPublicFilterQuery(domains);
+        solrFilterService.getPublicFilterQuery(domains);
     domainAndPublicFilterQuery.ifPresent(query::addFilterQuery);
 
     // Add all the provided filters
     Optional<FilterQuery> optionalFilter = solrFilterService.getFilterQuery(filters);
     optionalFilter.ifPresent(query::addFilterQuery);
 
-    List<Entry<SolrSampleField, Long>> allFacetFields = FacetHelper.FACETING_FIELDS.stream()
-            .map(s -> new SimpleEntry<>(this.solrFieldService.decodeField(
-                    SolrFieldService.encodeFieldName(s) + FacetHelper.get_encoding_suffix(s)), 0L))
+    List<Entry<SolrSampleField, Long>> allFacetFields =
+        FacetHelper.FACETING_FIELDS.stream()
+            .map(
+                s ->
+                    new SimpleEntry<>(
+                        this.solrFieldService.decodeField(
+                            SolrFieldService.encodeFieldName(s)
+                                + FacetHelper.get_encoding_suffix(s)),
+                        0L))
             .collect(Collectors.toList());
 
-    List<Entry<SolrSampleField, Long>> rangeFacetFields = FacetHelper.RANGE_FACETING_FIELDS.stream()
-            .map(s -> new SimpleEntry<>(this.solrFieldService.decodeField(s + FacetHelper.get_encoding_suffix(s)), 0L))
+    List<Entry<SolrSampleField, Long>> rangeFacetFields =
+        FacetHelper.RANGE_FACETING_FIELDS.stream()
+            .map(
+                s ->
+                    new SimpleEntry<>(
+                        this.solrFieldService.decodeField(s + FacetHelper.get_encoding_suffix(s)),
+                        0L))
             .collect(Collectors.toList());
-
 
     if (allFacetFields.size() > 0) {
       allFacetFields
-              .get(0)
-              .getKey()
-              .getFacetCollectionStrategy()
-              .fetchFacetsUsing(solrSampleRepository, query, allFacetFields, rangeFacetFields, facetValuesPageInfo)
-              .forEach(opt -> opt.ifPresent(facets::add));
+          .get(0)
+          .getKey()
+          .getFacetCollectionStrategy()
+          .fetchFacetsUsing(
+              solrSampleRepository, query, allFacetFields, rangeFacetFields, facetValuesPageInfo)
+          .forEach(opt -> opt.ifPresent(facets::add));
     }
 
     // Return the list of facets
@@ -179,12 +190,13 @@ public class SolrFacetService {
     int facetLimit = 8;
     if (facets.size() > facetLimit) {
       limitedFacets = facets.stream().limit(facetLimit).collect(Collectors.toList());
-      facets.stream().filter(f -> FacetHelper.RANGE_FACETING_FIELDS.contains(f.getLabel())).forEach(limitedFacets::add);
+      facets.stream()
+          .filter(f -> FacetHelper.RANGE_FACETING_FIELDS.contains(f.getLabel()))
+          .forEach(limitedFacets::add);
     } else {
       limitedFacets = facets;
     }
 
     return limitedFacets;
   }
-
 }

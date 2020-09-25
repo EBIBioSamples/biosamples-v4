@@ -11,7 +11,6 @@
 package uk.ac.ebi.biosamples.model.facet.content;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-
 import java.util.AbstractList;
 import java.util.List;
 
