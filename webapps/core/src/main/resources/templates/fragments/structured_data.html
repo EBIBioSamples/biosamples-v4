@@ -7,7 +7,7 @@
 <section th:fragment="amr_table(data)">
     <th:block th:if="${data.getDataType().toString().equals('AMR')}">
         <section>
-            <h3>Structured Data (AMR)</h3>
+            <h3>Structured Data (Antibiogram)</h3>
             <div style="max-width: 100%; overflow-x: auto;">
                 <table>
                     <th:block th:each="amrEntry,entryStat: ${@amrTableToMapConverter.convert(data)}">

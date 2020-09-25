@@ -12,7 +12,6 @@ package uk.ac.ebi.biosamples.solr.repo;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.time.Year;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
@@ -109,7 +108,10 @@ public class SolrSampleRepositoryImpl implements SolrSampleRepositoryCustom {
 
   @Override
   public FacetPage<?> getFacets(
-          FacetQuery query, List<String> facetFields, List<String> rangeFacetFields, Pageable facetPageable) {
+      FacetQuery query,
+      List<String> facetFields,
+      List<String> rangeFacetFields,
+      Pageable facetPageable) {
 
     if (facetFields == null || facetFields.size() == 0) {
       throw new IllegalArgumentException("Must provide fields to facet on");
@@ -121,18 +123,18 @@ public class SolrSampleRepositoryImpl implements SolrSampleRepositoryCustom {
     for (String field : facetFields) {
       facetOptions.addFacetOnField(field);
       facetOptions.addFacetQuery(new SimpleFacetQuery(new Criteria(field)));
-      //facetOptions.setFacetMinCount(1) //todo test this
+      // facetOptions.setFacetMinCount(1) //todo test this
     }
     facetOptions.setFacetLimit(2);
     facetOptions.setPageable(facetPageable);
 
-
-    //todo generalise range facets apart from dates and remove hardcoded date boundaries
-    for (String field: rangeFacetFields) {
+    // todo generalise range facets apart from dates and remove hardcoded date boundaries
+    for (String field : rangeFacetFields) {
       LocalDateTime dateTime = LocalDateTime.now();
       Date end = Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant());
       Date start = Date.from(dateTime.minusYears(5).atZone(ZoneId.systemDefault()).toInstant());
-      facetOptions.addFacetByRange(new FacetOptions.FieldWithDateRangeParameters(field, start, end, "+1YEAR"));
+      facetOptions.addFacetByRange(
+          new FacetOptions.FieldWithDateRangeParameters(field, start, end, "+1YEAR"));
       facetOptions.addFacetQuery(new SimpleFacetQuery(new Criteria(field)));
     }
 
