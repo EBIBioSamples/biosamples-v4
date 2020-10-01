@@ -1,14 +1,16 @@
 var executed = false; // avoid multiple executions
 
 function getFacets(path, load) {
-    if(load && !executed) {
-        executed = true;
-        urlParam = window.location.href.slice(window.location.href.indexOf('?') + 1);
-        // var url = "/facets?" + urlParam;
-        var url = path + "?" + urlParam;
-        $("#facet_div").load(url, enableFacetButtons);
-    } else {
-        $("#facets-ajax-loading-img").remove();
+    if (!executed) {
+        if (load) {
+            executed = true;
+            urlParam = window.location.href.slice(window.location.href.indexOf('?') + 1);
+            // var url = "/facets?" + urlParam;
+            var url = path + "?" + urlParam;
+            $("#facet_div").load(url, enableFacetButtons);
+        } else {
+            $("#facets-ajax-loading-img").remove();
+        }
     }
 }
 
