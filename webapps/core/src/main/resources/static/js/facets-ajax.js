@@ -1,5 +1,8 @@
+var executed = false; // avoid multiple executions
+
 function getFacets(path, load) {
-    if(load) {
+    if(load && !executed) {
+        executed = true;
         urlParam = window.location.href.slice(window.location.href.indexOf('?') + 1);
         // var url = "/facets?" + urlParam;
         var url = path + "?" + urlParam;

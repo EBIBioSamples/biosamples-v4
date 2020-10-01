@@ -117,6 +117,11 @@ public class SolrSampleRepositoryImpl implements SolrSampleRepositoryCustom {
       throw new IllegalArgumentException("Must provide fields to facet on");
     }
 
+    if (!query.getFilterQueries().isEmpty() &&
+            query.getCriteria().getPredicates().stream().filter(f -> f.getValue().equals("*:*")).count() >= 1) {
+      facetFields = facetFields.subList(0, facetPageable.getPageSize());
+    }
+
     // configure the facet options to use the provided fields
     // and to have the appropriate paging
     FacetOptions facetOptions = new FacetOptions();
@@ -125,7 +130,7 @@ public class SolrSampleRepositoryImpl implements SolrSampleRepositoryCustom {
       facetOptions.addFacetQuery(new SimpleFacetQuery(new Criteria(field)));
       // facetOptions.setFacetMinCount(1) //todo test this
     }
-    facetOptions.setFacetLimit(2);
+//    facetOptions.setFacetLimit(2);
     facetOptions.setPageable(facetPageable);
 
     // todo generalise range facets apart from dates and remove hardcoded date boundaries

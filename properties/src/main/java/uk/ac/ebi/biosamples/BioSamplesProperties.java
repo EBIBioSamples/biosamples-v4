@@ -90,6 +90,10 @@ public class BioSamplesProperties {
   @Value("${biosamples.webapp.core.page.cache.maxage:300}")
   private int webappCorePageCacheMaxAge;
 
+  // cache facets upto 24 hours (in seconds)
+  @Value("${biosamples.webapp.core.facet.cache.maxage:86400}")
+  private int webappCoreFacetCacheMaxAge;
+
   @Value("${biosamples.schema.validator.uri:http://localhost:8085/validate}")
   private URI biosamplesSchemaValidatorServiceUri;
 
@@ -167,6 +171,10 @@ public class BioSamplesProperties {
 
   public int getBiosamplesCorePageCacheMaxAge() {
     return webappCorePageCacheMaxAge;
+  }
+
+  public int getBiosamplesCoreFacetCacheMaxAge() {
+    return webappCoreFacetCacheMaxAge;
   }
 
   public URI getBiosamplesWebappCoreUri() {
