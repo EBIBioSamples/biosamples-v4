@@ -38,7 +38,7 @@ public class CertificateRetrievalController {
     Gson gson = new GsonBuilder().setPrettyPrinting().create();
     JsonParser jp = new JsonParser();
     JsonElement je =
-        jp.parse(certifyService.getCertificateFileContentByCertificateName(certificateName));
+        jp.parse(certifyService.getCertificateByCertificateName(certificateName));
     String prettyJsonString = gson.toJson(je);
 
     return ResponseEntity.ok()

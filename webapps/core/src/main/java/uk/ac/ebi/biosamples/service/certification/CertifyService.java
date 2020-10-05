@@ -13,10 +13,7 @@ package uk.ac.ebi.biosamples.service.certification;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -105,16 +102,13 @@ public class CertifyService {
     return recorder.record(certificationResults, recommendations);
   }
 
-  public String getCertificateFileContentByCertificateName(String certificateName)
+  public String getCertificateByCertificateName(String certificateName)
       throws IOException {
-    final List<Checklist> checklists =
-        configLoader.config.getChecklists().stream()
-            .filter(checklist -> checklist.getName().equals(certificateName))
-            .collect(Collectors.toList());
+    final Optional<Checklist> matchedChecklist = getMatchedChecklistByCertificateName(certificateName);
     String fileName = null;
 
-    if (checklists.size() > 0) {
-      fileName = checklists.get(0).getFileName();
+    if (matchedChecklist.isPresent()) {
+      fileName = matchedChecklist.get().getFileName();
     }
 
     if (fileName != null && !fileName.isEmpty()) {
@@ -128,21 +122,23 @@ public class CertifyService {
     return "";
   }
 
-  public String getCertificateFileNameByCertificateName(String certificateName) throws IOException {
-    final List<Checklist> checklists =
-        configLoader.config.getChecklists().stream()
-            .filter(checklist -> checklist.getName().equals(certificateName))
-            .collect(Collectors.toList());
+  public String getCertificateFileNameByCertificateName(String certificateName) {
+    final Optional<Checklist> matchedChecklist = getMatchedChecklistByCertificateName(certificateName);
     String fileName = null;
 
-    if (checklists.size() > 0) {
-      fileName = checklists.get(0).getFileName();
+    if (matchedChecklist.isPresent()) {
+      fileName = matchedChecklist.get().getFileName();
     }
 
     if (fileName != null && !fileName.isEmpty()) {
-      return fileName;
+      return fileName.substring(fileName.lastIndexOf("/") + 1);
     }
 
     return "";
+  }
+
+  private Optional<Checklist> getMatchedChecklistByCertificateName(String certificateName) {
+    return configLoader.config.getChecklists().stream()
+            .filter(checklist -> checklist.getName().equals(certificateName)).findFirst();
   }
 }
