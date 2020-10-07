@@ -79,7 +79,7 @@ public class Ncbi implements ApplicationRunner {
       }
     }
 
-    if (includeAmr) {
+    if (includeAmr && isFirstDayOfTheWeek()) {
       try {
         sampleToAmrMap = amrDataLoaderService.loadAmrData();
       } catch (final Exception e) {
@@ -162,12 +162,7 @@ public class Ncbi implements ApplicationRunner {
       log.info("Number of accession from NCBI = " + sampleCallback.getAccessions().size());
       // remove old NCBI samples no longer present
       // get all existing NCBI samples
-      Set<String> toRemoveAccessions = getExistingPublicNcbiAccessions();
-      // remove those that still exist
-      toRemoveAccessions.removeAll(sampleCallback.getAccessions());
-      // remove those samples that are left
-      log.info("Number of samples to make private = " + toRemoveAccessions.size());
-      makePrivate(toRemoveAccessions);
+      makingNcbiSamplesPrivate();
       log.info("Processed NCBI pipeline");
     } catch (final Exception e) {
       log.error("Pipeline failed to finish successfully", e);
@@ -175,6 +170,25 @@ public class Ncbi implements ApplicationRunner {
     } finally {
       MailSender.sendEmail("NCBI", null, isPassed);
     }
+  }
+
+  private void makingNcbiSamplesPrivate() {
+    // Run every Monday as this scans through all samples, not required to run each day
+    if(isFirstDayOfTheWeek()) {
+      Set<String> toRemoveAccessions = getExistingPublicNcbiAccessions();
+      // remove those that still exist
+      toRemoveAccessions.removeAll(sampleCallback.getAccessions());
+      // remove those samples that are left
+      log.info("Number of samples to make private = " + toRemoveAccessions.size());
+      makePrivate(toRemoveAccessions);
+    }
+  }
+
+  private boolean isFirstDayOfTheWeek() {
+    Calendar calendar = Calendar.getInstance();
+    calendar.setTime(new Date());
+
+    return calendar.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY;
   }
 
   private Set<String> getExistingPublicNcbiAccessions() {
