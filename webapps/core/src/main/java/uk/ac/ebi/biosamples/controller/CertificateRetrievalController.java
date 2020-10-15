@@ -15,9 +15,12 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import java.io.IOException;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.Resources;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -29,17 +32,15 @@ import uk.ac.ebi.biosamples.service.certification.CertifyService;
 public class CertificateRetrievalController {
   private Logger log = LoggerFactory.getLogger(getClass());
   @Autowired private CertifyService certifyService;
+  JsonParser jp = new JsonParser();
 
   @GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<String> getCertificate(
       @RequestParam(value = "certificateName") String certificateName) throws IOException {
     log.info("Fetching certificate with name " + certificateName);
 
-    Gson gson = new GsonBuilder().setPrettyPrinting().create();
-    JsonParser jp = new JsonParser();
-    JsonElement je =
-        jp.parse(certifyService.getCertificateByCertificateName(certificateName));
-    String prettyJsonString = gson.toJson(je);
+    JsonElement je = jp.parse(certifyService.getCertificateByCertificateName(certificateName));
+    String prettyJsonString = getGson().toJson(je);
 
     return ResponseEntity.ok()
         .header(
@@ -48,5 +49,22 @@ public class CertificateRetrievalController {
                 + certifyService.getCertificateFileNameByCertificateName(certificateName)
                 + "\"")
         .body(prettyJsonString);
+  }
+
+  @GetMapping(
+      value = "/all",
+      produces = {MediaType.APPLICATION_JSON_VALUE})
+  public ResponseEntity<Resources<Resource<String>>> getAllCertificates() {
+
+    return ResponseEntity.ok()
+        .body(
+            new Resources<>(
+                certifyService.getCertificates().stream()
+                    .map(certificate -> new Resource<>(getGson().toJson(jp.parse(certificate))))
+                    .collect(Collectors.toList())));
+  }
+
+  public Gson getGson() {
+    return new GsonBuilder().setPrettyPrinting().create();
   }
 }
