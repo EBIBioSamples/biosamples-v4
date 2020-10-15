@@ -10,6 +10,7 @@
 */
 package uk.ac.ebi.biosamples.service.certification;
 
+import com.google.gson.JsonParser;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -29,6 +30,7 @@ public class CertifyService {
   private Certifier certifier;
   private Recorder recorder;
   private ConfigLoader configLoader;
+  private JsonParser jp = new JsonParser();
 
   public CertifyService(
       Certifier certifier,
@@ -102,9 +104,9 @@ public class CertifyService {
     return recorder.record(certificationResults, recommendations);
   }
 
-  public String getCertificateByCertificateName(String certificateName)
-      throws IOException {
-    final Optional<Checklist> matchedChecklist = getMatchedChecklistByCertificateName(certificateName);
+  public String getCertificateByCertificateName(String certificateName) throws IOException {
+    final Optional<Checklist> matchedChecklist =
+        getMatchedChecklistByCertificateName(certificateName);
     String fileName = null;
 
     if (matchedChecklist.isPresent()) {
@@ -123,7 +125,8 @@ public class CertifyService {
   }
 
   public String getCertificateFileNameByCertificateName(String certificateName) {
-    final Optional<Checklist> matchedChecklist = getMatchedChecklistByCertificateName(certificateName);
+    final Optional<Checklist> matchedChecklist =
+        getMatchedChecklistByCertificateName(certificateName);
     String fileName = null;
 
     if (matchedChecklist.isPresent()) {
@@ -139,6 +142,24 @@ public class CertifyService {
 
   private Optional<Checklist> getMatchedChecklistByCertificateName(String certificateName) {
     return configLoader.config.getChecklists().stream()
-            .filter(checklist -> checklist.getName().equals(certificateName)).findFirst();
+        .filter(checklist -> checklist.getName().equals(certificateName))
+        .findFirst();
+  }
+
+  public List<String> getCertificates() {
+    return configLoader.config.getChecklists().stream()
+        .map(
+            checklist -> {
+              try {
+                return IOUtils.toString(
+                    getClass().getClassLoader().getResourceAsStream(checklist.getFileName()),
+                    StandardCharsets.UTF_8.name());
+              } catch (IOException e) {
+                e.printStackTrace();
+              }
+
+              return null;
+            })
+        .collect(Collectors.toList());
   }
 }
