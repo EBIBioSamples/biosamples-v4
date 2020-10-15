@@ -57,6 +57,9 @@ public class FacetHelper {
   public static final List<String> RANGE_FACETING_FIELDS =
       List.of("release"); // we are only supporting date range facets now
 
+  public static final List<String> IGNORE_FACETING_FIELDS =
+          List.of("description");
+
   public static String get_encoding_suffix(String attribute) {
     String suffix = "";
     if (FACETING_FIELDS.contains(attribute)) {

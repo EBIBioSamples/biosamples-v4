@@ -47,7 +47,7 @@
       {
         "id": "ncbitaxon",
         "name": "NCBI organismal classification",
-        "namespacePrefix": "NCBITAXON",
+        "namespacePrefix": "NCBITaxon",
         "url": "http://purl.obolibrary.org/obo/ncbitaxon.owl",
         "version": "2018-07-27"
       },

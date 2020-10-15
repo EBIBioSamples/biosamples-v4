@@ -21,6 +21,7 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.params.CursorMarkParams;
+import org.apache.solr.common.params.FacetParams;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.solr.core.QueryParsers;
@@ -113,14 +114,15 @@ public class SolrSampleRepositoryImpl implements SolrSampleRepositoryCustom {
       List<String> rangeFacetFields,
       Pageable facetPageable) {
 
-    if (facetFields == null || facetFields.size() == 0) {
+    if (facetFields == null || facetFields.isEmpty()) {
       throw new IllegalArgumentException("Must provide fields to facet on");
     }
 
-    if (!query.getFilterQueries().isEmpty() &&
-            query.getCriteria().getPredicates().stream().filter(f -> f.getValue().equals("*:*")).count() >= 1) {
-      facetFields = facetFields.subList(0, facetPageable.getPageSize());
-    }
+//    //if we are retrieving large number of facets limit for front page, remove this for new implementation
+//    if (query.getFilterQueries().size() <= 1 &&
+//            query.getCriteria().getPredicates().stream().filter(f -> f.getValue().equals("*:*")).count() >= 1) {
+//      facetFields = facetFields.subList(0, Math.min(facetPageable.getPageSize(), facetFields.size()));
+//    }
 
     // configure the facet options to use the provided fields
     // and to have the appropriate paging
@@ -128,9 +130,7 @@ public class SolrSampleRepositoryImpl implements SolrSampleRepositoryCustom {
     for (String field : facetFields) {
       facetOptions.addFacetOnField(field);
       facetOptions.addFacetQuery(new SimpleFacetQuery(new Criteria(field)));
-      // facetOptions.setFacetMinCount(1) //todo test this
     }
-//    facetOptions.setFacetLimit(2);
     facetOptions.setPageable(facetPageable);
 
     // todo generalise range facets apart from dates and remove hardcoded date boundaries
@@ -139,7 +139,9 @@ public class SolrSampleRepositoryImpl implements SolrSampleRepositoryCustom {
       Date end = Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant());
       Date start = Date.from(dateTime.minusYears(5).atZone(ZoneId.systemDefault()).toInstant());
       facetOptions.addFacetByRange(
-          new FacetOptions.FieldWithDateRangeParameters(field, start, end, "+1YEAR"));
+          new FacetOptions.FieldWithDateRangeParameters(field, start, end, "+1YEAR")
+                  .setInclude(FacetParams.FacetRangeInclude.ALL)
+                  .setOther(FacetParams.FacetRangeOther.BEFORE));
       facetOptions.addFacetQuery(new SimpleFacetQuery(new Criteria(field)));
     }
 

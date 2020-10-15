@@ -34,6 +34,12 @@ public interface FacetFetchStrategy {
       SolrSampleRepository sampleRepository,
       FacetQuery query,
       List<Map.Entry<SolrSampleField, Long>> facetFieldCountEntries,
+      Pageable pageable);
+
+  public List<Optional<Facet>> fetchFacetsUsing(
+      SolrSampleRepository sampleRepository,
+      FacetQuery query,
+      List<Map.Entry<SolrSampleField, Long>> facetFieldCountEntries,
       List<Map.Entry<SolrSampleField, Long>> rangeFieldCountEntries,
       Pageable pageable);
 }
