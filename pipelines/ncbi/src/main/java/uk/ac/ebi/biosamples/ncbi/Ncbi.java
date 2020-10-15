@@ -174,7 +174,7 @@ public class Ncbi implements ApplicationRunner {
 
   private void makingNcbiSamplesPrivate() {
     // Run every Monday as this scans through all samples, not required to run each day
-    if(isFirstDayOfTheWeek()) {
+    if (isFirstDayOfTheWeek()) {
       Set<String> toRemoveAccessions = getExistingPublicNcbiAccessions();
       // remove those that still exist
       toRemoveAccessions.removeAll(sampleCallback.getAccessions());

@@ -154,13 +154,22 @@ public class SolrFacetService {
 
     List<Entry<SolrSampleField, Long>> allFacetFields =
         FacetHelper.FACETING_FIELDS.stream()
-            .map(s -> new SimpleEntry<>(this.solrFieldService.decodeField(
-                    SolrFieldService.encodeFieldName(s) + FacetHelper.get_encoding_suffix(s)), 0L))
+            .map(
+                s ->
+                    new SimpleEntry<>(
+                        this.solrFieldService.decodeField(
+                            SolrFieldService.encodeFieldName(s)
+                                + FacetHelper.get_encoding_suffix(s)),
+                        0L))
             .collect(Collectors.toList());
 
     List<Entry<SolrSampleField, Long>> rangeFacetFields =
         FacetHelper.RANGE_FACETING_FIELDS.stream()
-            .map(s -> new SimpleEntry<>(this.solrFieldService.decodeField(s + FacetHelper.get_encoding_suffix(s)), 0L))
+            .map(
+                s ->
+                    new SimpleEntry<>(
+                        this.solrFieldService.decodeField(s + FacetHelper.get_encoding_suffix(s)),
+                        0L))
             .collect(Collectors.toList());
 
     if (allFacetFields.size() > 0) {
