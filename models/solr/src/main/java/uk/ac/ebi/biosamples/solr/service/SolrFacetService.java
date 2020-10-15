@@ -47,7 +47,7 @@ public class SolrFacetService {
     this.solrFilterService = solrFilterService;
   }
 
-  public List<Facet> getFacets2(
+  public List<Facet> getFacets1(
       String searchTerm,
       Collection<Filter> filters,
       Collection<String> domains,
@@ -114,7 +114,7 @@ public class SolrFacetService {
           .getKey()
           .getFacetCollectionStrategy()
           .fetchFacetsUsing(
-              solrSampleRepository, query, allFacetFields, allFacetFields, facetValuesPageInfo)
+              solrSampleRepository, query, allFacetFields, facetValuesPageInfo)
           .forEach(opt -> opt.ifPresent(facets::add));
     }
 
@@ -126,6 +126,106 @@ public class SolrFacetService {
   }
 
   public List<Facet> getFacets(
+      String searchTerm,
+      Collection<Filter> filters,
+      Collection<String> domains,
+      Pageable facetFieldPageInfo,
+      Pageable facetValuesPageInfo) {
+    // default to search all
+    if (searchTerm == null || searchTerm.trim().length() == 0) {
+      searchTerm = "*:*";
+    }
+
+    List<Facet> facets = new ArrayList<>();
+
+    // build a query out of the users string and any facets
+    FacetQuery query = new SimpleFacetQuery();
+    query.addCriteria(new Criteria().expression(searchTerm));
+    query.setTimeAllowed(TIMEALLOWED * 1000);
+
+    // Add domains and release date filters
+    Optional<FilterQuery> domainAndPublicFilterQuery =
+        solrFilterService.getPublicFilterQuery(domains);
+    domainAndPublicFilterQuery.ifPresent(query::addFilterQuery);
+
+    // Add all the provided filters
+    Optional<FilterQuery> optionalFilter = solrFilterService.getFilterQuery(filters);
+    optionalFilter.ifPresent(query::addFilterQuery);
+
+    // Generate a facet query to get all the available facets for the samples
+    Page<FacetFieldEntry> facetFields =
+        solrSampleRepository.getFacetFields(query, facetFieldPageInfo);
+
+    // Get the facet fields
+    // TODO implement hashing function
+    List<Entry<SolrSampleField, Long>> allFacetFields = new ArrayList<>();
+    int facetCount = 0;
+    for (FacetFieldEntry ffe : facetFields) {
+      SolrSampleField solrSampleField = this.solrFieldService.decodeField(ffe.getValue());
+      if (FacetHelper.FACETING_FIELDS.contains(solrSampleField.getReadableLabel())) {
+        Long facetFieldCount = ffe.getValueCount();
+        allFacetFields.add(new SimpleEntry<>(solrSampleField, facetFieldCount));
+        if (++facetCount >= 10) {
+          break;
+        }
+      }
+    }
+
+    for (FacetFieldEntry ffe : facetFields) {
+      SolrSampleField solrSampleField = this.solrFieldService.decodeField(ffe.getValue());
+      if (!FacetHelper.FACETING_FIELDS.contains(solrSampleField.getReadableLabel()) &&
+              !FacetHelper.IGNORE_FACETING_FIELDS.contains(solrSampleField.getReadableLabel())) {
+        Long facetFieldCount = ffe.getValueCount();
+        allFacetFields.add(new SimpleEntry<>(solrSampleField, facetFieldCount));
+        if (++facetCount >= 10) {
+          break;
+        }
+      }
+    }
+
+    List<Entry<SolrSampleField, Long>> rangeFacetFields =
+            FacetHelper.RANGE_FACETING_FIELDS.stream()
+                    .map(s -> new SimpleEntry<>(this.solrFieldService.decodeField(s + FacetHelper.get_encoding_suffix(s)), 0L))
+                    .collect(Collectors.toList());
+
+    /*
+       Then based on the facet type I need to create a specific facet query
+       1. _ir_ss => regular facet
+       2. _av_ss => regular facet
+       3. _dt => range facet
+    */
+
+    // TODO do this to properly account for different strategies - this is a dirty hack for
+    // performance!
+    /*
+          for (Entry<SolrSampleField, Long> fieldCountEntry: allFacetFields) {
+              FacetFetchStrategy strategy = fieldCountEntry.getKey().getFacetCollectionStrategy();
+              List<Optional<Facet>> optionalFacets = strategy.fetchFacetsUsing(solrSampleRepository,
+                      query,
+                      Collections.singletonList(fieldCountEntry),
+                      facetValuesPageInfo);
+              optionalFacets.forEach(opt -> opt.ifPresent(facets::add));
+          }
+    */
+
+    if (allFacetFields.size() > 0) {
+      allFacetFields
+          .get(0)
+          .getKey()
+          .getFacetCollectionStrategy()
+          .fetchFacetsUsing(
+              solrSampleRepository, query, allFacetFields, rangeFacetFields, facetValuesPageInfo)
+          .forEach(opt -> opt.ifPresent(facets::add));
+    }
+
+    // Return the list of facets
+    Collections.sort(facets);
+    Collections.reverse(facets);
+
+    return facets;
+  }
+
+  public List<Facet> getFacets2(
       String searchTerm,
       Collection<Filter> filters,
       Collection<String> domains,

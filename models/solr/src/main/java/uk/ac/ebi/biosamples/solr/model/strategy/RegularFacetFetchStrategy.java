@@ -38,11 +38,10 @@ public class RegularFacetFetchStrategy implements FacetFetchStrategy {
 
   */
   //  @Override
-  public List<Optional<Facet>> fetchFacetsUsing2(
+  public List<Optional<Facet>> fetchFacetsUsing(
       SolrSampleRepository solrSampleRepository,
       FacetQuery query,
       List<Entry<SolrSampleField, Long>> facetFieldCountEntries,
-      List<Map.Entry<SolrSampleField, Long>> rangeFieldCountEntries,
       Pageable facetPageable) {
 
     List<String> facetFieldNames =
@@ -152,16 +151,21 @@ public class RegularFacetFetchStrategy implements FacetFetchStrategy {
           listFacetContent.add(LabelCountEntry.build(ffe.getValue(), ffe.getValueCount()));
         }
 
+        //todo only add if not empty or remove
+//        if (facetPage.getRangeFacetResultPage(fieldName).getTotalElements() < 1) {
+//          break;
+//        }
         for (FacetFieldEntry ffe : facetPage.getRangeFacetResultPage(fieldName)) {
           listFacetContent.add(LabelCountEntry.build(ffe.getValue(), ffe.getValueCount()));
         }
 
-        Facet facet =
-            solrSampleField
-                .getFacetBuilder(solrSampleField.getReadableLabel(), fieldCount)
-                .withContent(new LabelCountListContent(listFacetContent))
-                .build();
-        facetResults.add(Optional.of(facet));
+        if (!listFacetContent.isEmpty()) {
+          Facet facet = solrSampleField
+                          .getFacetBuilder(solrSampleField.getReadableLabel(), fieldCount)
+                          .withContent(new LabelCountListContent(listFacetContent))
+                          .build();
+          facetResults.add(Optional.of(facet));
+        }
       }
     }
     return facetResults;

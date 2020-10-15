@@ -212,7 +212,7 @@ public class SampleHtmlController {
 
     model.addAttribute("filters", filtersList);
     // default to getting 10 values from 10 facets
-    model.addAttribute("facets", facetService.getFacets(text, filterCollection, domains, 10, 10));
+    model.addAttribute("facets", facetService.getFacets(text, filterCollection, domains, 20, 10));
 
     // Note - EBI load balancer does cache but doesn't add age header, so clients could cache up
     // to
