@@ -12,7 +12,6 @@ package uk.ac.ebi.biosamples.model.facet.content;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.Arrays;
 import java.util.Map;
 
@@ -60,9 +59,14 @@ public class RangeCountEntry implements Comparable<RangeCountEntry> {
   }
 
   @JsonCreator
-  public static RangeCountEntry build(@JsonProperty("label") String startLabel,
-                                      @JsonProperty("label") String endLabel, @JsonProperty("count") long count) {
-    if (startLabel == null || startLabel.trim().length() == 0 || endLabel == null || endLabel.trim().length() == 0) {
+  public static RangeCountEntry build(
+      @JsonProperty("label") String startLabel,
+      @JsonProperty("label") String endLabel,
+      @JsonProperty("count") long count) {
+    if (startLabel == null
+        || startLabel.trim().length() == 0
+        || endLabel == null
+        || endLabel.trim().length() == 0) {
       throw new IllegalArgumentException("start/end label must not be blank");
     }
     return new RangeCountEntry(startLabel.trim(), endLabel.trim(), count);
@@ -71,9 +75,13 @@ public class RangeCountEntry implements Comparable<RangeCountEntry> {
   @JsonCreator
   public static RangeCountEntry build(Map<String, String> entryMap) {
     if (isValidLabelCount(entryMap)) {
-      return new RangeCountEntry(entryMap.get("startLabel"), entryMap.get("endLabel"), Long.parseLong(entryMap.get("count")));
+      return new RangeCountEntry(
+          entryMap.get("startLabel"),
+          entryMap.get("endLabel"),
+          Long.parseLong(entryMap.get("count")));
     }
-    throw new RuntimeException("Provided object is not suitable to be converted to RangeCountEntry");
+    throw new RuntimeException(
+        "Provided object is not suitable to be converted to RangeCountEntry");
   }
 
   public static boolean isValidLabelCount(Map<String, String> content) {

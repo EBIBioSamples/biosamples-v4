@@ -13,19 +13,16 @@ package uk.ac.ebi.biosamples.model.facet;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import org.springframework.hateoas.core.Relation;
 import uk.ac.ebi.biosamples.model.facet.content.FacetContent;
 import uk.ac.ebi.biosamples.model.facet.content.LabelCountEntry;
 import uk.ac.ebi.biosamples.model.facet.content.LabelCountListContent;
 import uk.ac.ebi.biosamples.model.filter.FilterType;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Relation(collectionRelation = "facets")
 @JsonDeserialize(builder = DateRangeFacet.Builder.class)
@@ -109,7 +106,8 @@ public class DateRangeFacet implements Facet {
       List<LabelCountEntry> contentList = new ArrayList<>();
       for (int i = 0; i < tempContent.size(); i++) {
         LabelCountEntry entry = tempContent.get(i);
-        contentList.add(LabelCountEntry.build(parseLabelToDateRange(entry.getLabel()), entry.getCount()));
+        contentList.add(
+            LabelCountEntry.build(parseLabelToDateRange(entry.getLabel()), entry.getCount()));
       }
 
       this.content = new LabelCountListContent(contentList);
@@ -121,7 +119,7 @@ public class DateRangeFacet implements Facet {
       DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
       LocalDate start = LocalDate.parse(dateLabel, formatter);
       LocalDate end = start.plusYears(1);
-      //LocalDateTime dateTime = LocalDateTime.parse(dateLabel, formatter);
+      // LocalDateTime dateTime = LocalDateTime.parse(dateLabel, formatter);
 
       return start + " to " + end;
     }

@@ -37,7 +37,7 @@ public class RegularFacetFetchStrategy implements FacetFetchStrategy {
   /*
 
   */
-//  @Override
+  //  @Override
   public List<Optional<Facet>> fetchFacetsUsing2(
       SolrSampleRepository solrSampleRepository,
       FacetQuery query,
@@ -109,37 +109,42 @@ public class RegularFacetFetchStrategy implements FacetFetchStrategy {
     return facetResults;
   }
 
+  //  @Override
+  public List<Optional<Facet>> fetchFacetsUsing(
+      SolrSampleRepository solrSampleRepository,
+      FacetQuery query,
+      List<Entry<SolrSampleField, Long>> facetFieldCountEntries,
+      List<Map.Entry<SolrSampleField, Long>> rangeFieldCountEntries,
+      Pageable facetPageable) {
 
-//  @Override
-  public List<Optional<Facet>> fetchFacetsUsing(SolrSampleRepository solrSampleRepository, FacetQuery query,
-                                                List<Entry<SolrSampleField, Long>> facetFieldCountEntries,
-                                                List<Map.Entry<SolrSampleField, Long>> rangeFieldCountEntries,
-                                                Pageable facetPageable) {
-
-    List<String> facetFieldNames = facetFieldCountEntries.stream()
+    List<String> facetFieldNames =
+        facetFieldCountEntries.stream()
             .map(Entry::getKey)
             .map(SolrSampleField::getSolrLabel)
             .collect(Collectors.toList());
-    List<String> rangeFacetFieldNames = rangeFieldCountEntries.stream()
+    List<String> rangeFacetFieldNames =
+        rangeFieldCountEntries.stream()
             .map(Entry::getKey)
             .map(SolrSampleField::getSolrLabel)
             .collect(Collectors.toList());
 
-    Map<String, SolrSampleField> fieldMap = facetFieldCountEntries.stream()
+    Map<String, SolrSampleField> fieldMap =
+        facetFieldCountEntries.stream()
             .map(Entry::getKey)
             .collect(Collectors.toMap(SolrSampleField::getSolrLabel, s -> s));
     rangeFieldCountEntries.stream()
-            .map(Entry::getKey)
-            .forEach(s -> fieldMap.put(s.getSolrLabel(), s));
+        .map(Entry::getKey)
+        .forEach(s -> fieldMap.put(s.getSolrLabel(), s));
 
-    FacetPage<?> facetPage = solrSampleRepository.getFacets(query, facetFieldNames, rangeFacetFieldNames, facetPageable);
+    FacetPage<?> facetPage =
+        solrSampleRepository.getFacets(query, facetFieldNames, rangeFacetFieldNames, facetPageable);
 
     List<Optional<Facet>> facetResults = new ArrayList<>();
     for (FacetQueryEntry q : facetPage.getFacetQueryResult().getContent()) {
       long fieldCount = q.getValueCount();
       if (fieldCount > 0) {
         String fieldName = q.getValue().split(":")[0];
-//      String readableFieldName = SolrFieldService.decodeFieldName(fieldName);
+        //      String readableFieldName = SolrFieldService.decodeFieldName(fieldName);
         SolrSampleField solrSampleField = fieldMap.get(fieldName);
 
         List<LabelCountEntry> listFacetContent = new ArrayList<>();
@@ -152,10 +157,10 @@ public class RegularFacetFetchStrategy implements FacetFetchStrategy {
         }
 
         Facet facet =
-                solrSampleField
-                        .getFacetBuilder(solrSampleField.getReadableLabel(), fieldCount)
-                        .withContent(new LabelCountListContent(listFacetContent))
-                        .build();
+            solrSampleField
+                .getFacetBuilder(solrSampleField.getReadableLabel(), fieldCount)
+                .withContent(new LabelCountListContent(listFacetContent))
+                .build();
         facetResults.add(Optional.of(facet));
       }
     }

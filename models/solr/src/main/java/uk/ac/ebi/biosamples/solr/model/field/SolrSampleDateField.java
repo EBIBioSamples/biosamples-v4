@@ -16,7 +16,6 @@ import java.time.temporal.TemporalAccessor;
 import java.util.regex.Pattern;
 import org.springframework.data.solr.core.query.Criteria;
 import org.springframework.stereotype.Component;
-import uk.ac.ebi.biosamples.model.facet.AttributeFacet;
 import uk.ac.ebi.biosamples.model.facet.DateRangeFacet;
 import uk.ac.ebi.biosamples.model.facet.Facet;
 import uk.ac.ebi.biosamples.model.filter.DateRangeFilter;
