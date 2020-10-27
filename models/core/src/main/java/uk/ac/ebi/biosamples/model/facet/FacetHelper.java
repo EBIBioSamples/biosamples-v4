@@ -65,7 +65,18 @@ public class FacetHelper {
           "External Id",
           "INSDC last update",
           "INSDC first public",
-          "INSDC status");
+          "INSDC status",
+          "INSDC center name",
+          "INSDC center alias",
+          "description title",
+          "gap subject id",
+          "gap accession",
+          "gap sample id",
+          "external ID",
+          "submitted subject id",
+          "submitted sample id",
+          "submitter handle",
+          "biospecimen repository sample id");
 
   public static String get_encoding_suffix(String attribute) {
     String suffix = "";
