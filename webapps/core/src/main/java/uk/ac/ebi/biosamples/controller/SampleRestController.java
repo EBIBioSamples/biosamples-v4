@@ -30,6 +30,7 @@ import uk.ac.ebi.biosamples.exception.SampleNotFoundException;
 import uk.ac.ebi.biosamples.model.Certificate;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
+import uk.ac.ebi.biosamples.model.ga4gh.phenopacket.PhenopacketConverter;
 import uk.ac.ebi.biosamples.service.*;
 import uk.ac.ebi.biosamples.service.certification.CertifyService;
 import uk.ac.ebi.biosamples.utils.LinkUtils;
@@ -51,6 +52,7 @@ public class SampleRestController {
   private final SampleManipulationService sampleManipulationService;
   private final SampleResourceAssembler sampleResourceAssembler;
   private Ga4ghSampleToPhenopacketConverter phenopacketExporter;
+  private PhenopacketConverter phenopacketConverter;
   private Logger log = LoggerFactory.getLogger(getClass());
 
   @Autowired private CertifyService certifyService;
@@ -60,12 +62,14 @@ public class SampleRestController {
       BioSamplesAapService bioSamplesAapService,
       SampleManipulationService sampleManipulationService,
       SampleResourceAssembler sampleResourceAssembler,
-      Ga4ghSampleToPhenopacketConverter phenopacketExporter) {
+      Ga4ghSampleToPhenopacketConverter phenopacketExporter,
+      PhenopacketConverter phenopacketConverter) {
     this.sampleService = sampleService;
     this.bioSamplesAapService = bioSamplesAapService;
     this.sampleManipulationService = sampleManipulationService;
     this.sampleResourceAssembler = sampleResourceAssembler;
     this.phenopacketExporter = phenopacketExporter;
+    this.phenopacketConverter = phenopacketConverter;
   }
 
   @PreAuthorize("isAuthenticated()")
@@ -139,7 +143,7 @@ public class SampleRestController {
       sample = Optional.of(sampleManipulationService.removeLegacyFields(sample.get()));
     }
 
-    return phenopacketExporter.getJsonFormattedPhenopacketFromSample(sample.get());
+    return phenopacketConverter.convertToJsonPhenopacket(sample.get());
   }
 
   @PreAuthorize("isAuthenticated()")
