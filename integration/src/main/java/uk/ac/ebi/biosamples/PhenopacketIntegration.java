@@ -100,7 +100,7 @@ public class PhenopacketIntegration extends AbstractIntegration {
     assertThat(allMetadata.size(), is(1));
     LinkedHashMap<String, String> ordoMetadata = allMetadata.get(0);
     assertThat(ordoMetadata.get("namespacePrefix"), equalTo("ORDO"));
-    assertThat(ordoMetadata.get("name"), equalTo("Orphanet Rare Disease Ontolog"));
+    assertThat(ordoMetadata.get("name"), equalTo("Orphanet Rare Disease Ontology"));
     assertThat(
         ordoMetadata.get("url"), equalTo("http://www.orphadata.org/data/ORDO/ordo_orphanet.owl"));
   }
