@@ -53,6 +53,7 @@ public class Ga4ghSampleToPhenopacketExporterTest {
         new Ga4ghSampleToPhenopacketConverter(SampleToGa4ghSampleConverter, new OLSDataRetriever());
   }
 
+  // TODO Uncomment these tests
   /*@Test
   public void exportation_test1() throws IOException, JSONException {
 
