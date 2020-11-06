@@ -66,18 +66,17 @@ public class ReindexRunner implements ApplicationRunner {
     try {
       executor = Executors.newFixedThreadPool(128);
 
-      try (CloseableIterator<MongoSample> it =
-          mongoOperations.stream(new Query(), MongoSample.class)) {
-        while (it.hasNext()) {
-          MongoSample mongoSample = it.next();
-          String accession = mongoSample.getAccession();
-          LOGGER.info("handling sample " + accession);
-          futures.put(
-              accession,
-              executor.submit(new AccessionCallable(accession, sampleReadService, amqpTemplate)));
-          ThreadUtils.checkFutures(futures, 1000);
-        }
-      }
+      List<MongoSample> mongoSamples = mongoOperations.find(new Query(), MongoSample.class);
+      ExecutorService finalExecutor = executor;
+
+      mongoSamples.forEach(mongoSample -> {
+        String accession = mongoSample.getAccession();
+        LOGGER.info("handling sample " + accession);
+        futures.put(
+                accession,
+                finalExecutor.submit(new AccessionCallable(accession, sampleReadService, amqpTemplate)));
+      });
+
       ThreadUtils.checkFutures(futures, 0);
     } finally {
       executor.shutdown();
