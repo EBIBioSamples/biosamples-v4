@@ -17,12 +17,15 @@ public class BSDEmbassyService {
                 .build();
 
         System.out.println("Listing objects");
+
         ObjectListing objectListing = s3.listObjects(new ListObjectsRequest()
                 .withBucketName(""));
+
         for (S3ObjectSummary objectSummary : objectListing.getObjectSummaries()) {
             System.out.println(" - " + objectSummary.getKey() + "  " +
                     "(size = " + objectSummary.getSize() + ")");
         }
+
         System.out.println();
     }
 }
