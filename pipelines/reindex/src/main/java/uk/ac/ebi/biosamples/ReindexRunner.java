@@ -20,7 +20,6 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.util.CloseableIterator;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.mongo.model.MongoSample;
@@ -69,13 +68,15 @@ public class ReindexRunner implements ApplicationRunner {
       List<MongoSample> mongoSamples = mongoOperations.find(new Query(), MongoSample.class);
       ExecutorService finalExecutor = executor;
 
-      mongoSamples.forEach(mongoSample -> {
-        String accession = mongoSample.getAccession();
-        LOGGER.info("handling sample " + accession);
-        futures.put(
+      mongoSamples.forEach(
+          mongoSample -> {
+            String accession = mongoSample.getAccession();
+            LOGGER.info("handling sample " + accession);
+            futures.put(
                 accession,
-                finalExecutor.submit(new AccessionCallable(accession, sampleReadService, amqpTemplate)));
-      });
+                finalExecutor.submit(
+                    new AccessionCallable(accession, sampleReadService, amqpTemplate)));
+          });
 
       ThreadUtils.checkFutures(futures, 0);
     } finally {

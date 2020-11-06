@@ -12,6 +12,18 @@ package uk.ac.ebi.biosamples.ebeye.base;
 
 import com.mongodb.*;
 import com.mongodb.operation.OrderBy;
+import java.io.File;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,19 +37,6 @@ import uk.ac.ebi.biosamples.ebeye.gen.*;
 import uk.ac.ebi.biosamples.ebeye.util.LoadAttributeSet;
 import uk.ac.ebi.biosamples.model.Sample;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import java.io.File;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
-
 @Component
 public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
   private static Logger log = LoggerFactory.getLogger(EbEyeBioSamplesDataDumpRunner.class);
@@ -47,8 +46,7 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
   private static final String ENA_UC = "ENA";
   private final RefType taxonomyRefType = new RefType();
   @Autowired BioSamplesClient bioSamplesClient;
-  @Autowired
-  LoadAttributeSet loadAttributeSet;
+  @Autowired LoadAttributeSet loadAttributeSet;
 
   @Value("${spring.data.mongodb.uri}")
   private String mongoUri;
@@ -465,4 +463,3 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
   }
 }
 */
-
