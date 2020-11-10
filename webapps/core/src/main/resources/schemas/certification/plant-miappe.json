@@ -1,0 +1,196 @@
+{
+  "id": "https://www.ebi.ac.uk/biosamples/schemas/plant-miappe.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ENA Plant MIAPPE Checklist for omics and phenomic interoperability",
+  "version": "1.2",
+  "description": "ENA Plant MIAPPE Checklist for omics and phenomic interoperability",
+  "type": "object",
+  "definitions": {
+    "attribute_value": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "tag": {
+          "description": "The tag indicating the source of the attribute, not required in submission",
+          "type": "string"
+        },
+        "ontologyTerms": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "unit": {
+          "description": "The unit associated with the attribute value",
+          "type": "string"
+        }
+      }
+    },
+    "attribute_value_list": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/attribute_value"
+      }
+    }
+  },
+  "properties": {
+    "characteristics": {
+      "description": "All the characteristics associated to the sample",
+      "type": "object",
+      "properties": {
+        "project name": {
+          "description": "project name",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "biological material ID": {
+          "description": "(DM-41) Biological material ID",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "organism": {
+          "description": "(DM-42) Organism",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "genus": {
+          "description": "(DM-43) Genus",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "species": {
+          "description": "(DM-44) Species",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "infraspecific name": {
+          "description": "(DM-44) Infraspecific name",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "ecotype": {
+          "description": "ecotype",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "biological material latitude": {
+          "description": "(DM-45) Biological material latitude",
+          "allOf": [
+            {
+              "$ref": "#/definitions/attribute_value_list"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "text": {
+                    "type": "string",
+                    "pattern": "(^.*[+-]?[0-9]+.?[0-9]*.*$)|(^not collected$)|(^not provided$)|(^restricted access$)"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "biological material longitude": {
+          "description": "(DM-46) Biological material longitude",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "biological material altitude": {
+          "description": "(DM-47) Biological material altitude",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "biological material coordinates uncertainty": {
+          "description": "(DM-48) Biological material coordinates uncertainty",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "biological material geographic location (country and/or sea)": {
+          "description": "Biological material geographic location (country and/or sea)",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "biological material preprocessing": {
+          "description": "(DM-49) Biological material preprocessing",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "material source ID (Holding institute/stock centre, accession)": {
+          "description": "(DM-50) Material source ID (Holding institute/stock centre, accession)",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "material source DOI": {
+          "description": "(DM-51) Material source DOI",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "material source latitude": {
+          "description": "(DM-52) Material source latitude",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "material source longitude": {
+          "description": "(DM-53) Material source longitude",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "material source altitude": {
+          "description": "(DM-54) Material source altitude",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "material source coordinates uncertainty": {
+          "description": "(DM-55) Material source coordinates uncertainty",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "material source description": {
+          "description": "(DM-56) Material source description",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "material source geographic location (country and/or sea)": {
+          "description": "Material source geographic location (country and/or sea)",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "miological material ploidy": {
+          "description": "Biological material ploidy",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "collected_by": {
+          "description": "collected_by",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "collection date": {
+          "description": "collection date",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "sex": {
+          "description": "sex",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "environment (biome)": {
+          "description": "environment (biome)",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "plant structure development stage": {
+          "description": "DM-77 Plant structure development stage",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "plant anatomical entity": {
+          "description": "DM-78 Plant anatomical entity",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "sample description": {
+          "description": "DM-79 Sample description",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "sample ID": {
+          "description": "DM-75 Sample ID",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "environment parameter": {
+          "description": "DM-58 Environment parameter",
+          "$ref": "#/definitions/attribute_value_list"
+        },
+        "environment parameter value": {
+          "description": "DM-59 Environment parameter value",
+          "$ref": "#/definitions/attribute_value_list"
+        }
+      },
+      "required": [
+        "biological material ID",
+        "organism"
+      ],
+      "additionalProperties": true
+    }
+  }
+}
