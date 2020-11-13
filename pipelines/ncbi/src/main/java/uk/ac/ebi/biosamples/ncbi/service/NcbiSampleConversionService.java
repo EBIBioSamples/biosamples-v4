@@ -372,6 +372,7 @@ public class NcbiSampleConversionService {
         .withRelease(publicationDate)
         .withUpdate(lastUpdate)
         .withCreate(submissionDate)
+        .withSubmitted(submissionDate)
         .withAttributes(attrs)
         .withRelationships(rels)
         .withData(structuredData)

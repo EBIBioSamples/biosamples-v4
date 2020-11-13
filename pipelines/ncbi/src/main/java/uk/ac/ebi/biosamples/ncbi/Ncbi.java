@@ -116,7 +116,7 @@ public class Ncbi implements ApplicationRunner {
       if (args.getOptionNames().contains("ncbi_file")) {
         ncbiFile = args.getOptionValues("ncbi_file").get(0);
       } else {
-        ncbiFile = pipelinesProperties.getNcbiFile();
+        ncbiFile = "C:\\Users\\dgupta\\ncbi_test\\biosample_result.xml.gz";
       }
 
       Path inputPath = Paths.get(ncbiFile);

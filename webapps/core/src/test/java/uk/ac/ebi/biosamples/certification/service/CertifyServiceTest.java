@@ -49,7 +49,7 @@ public class CertifyServiceTest {
     BioSamplesCertificationComplainceResult result =
         certifyService.recordResult(sampleDocument, true);
 
-    Assert.assertTrue(result.getCertificates().size() == 2);
+    Assert.assertTrue(result.getCertificates().size() == 1);
     Assert.assertTrue(result.getRecommendations().size() == 0);
   }
 
@@ -66,7 +66,7 @@ public class CertifyServiceTest {
     BioSamplesCertificationComplainceResult result =
         certifyService.recordResult(sampleDocument, true);
 
-    Assert.assertTrue(result.getCertificates().size() == 3);
+    Assert.assertTrue(result.getCertificates().size() == 1);
     Assert.assertTrue(result.getRecommendations().size() == 0);
   }
 }
