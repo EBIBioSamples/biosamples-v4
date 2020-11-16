@@ -231,11 +231,11 @@
 			<scope>provided</scope>
 		</dependency>
 		<!-- AWS -->
-		<dependency>
+		<!--<dependency>
 			<groupId>com.amazonaws</groupId>
 			<artifactId>aws-java-sdk-s3</artifactId>
 			<version>1.11.276</version>
-		</dependency>
+		</dependency>-->
 	</dependencies>
 	<build>
 		<plugins>

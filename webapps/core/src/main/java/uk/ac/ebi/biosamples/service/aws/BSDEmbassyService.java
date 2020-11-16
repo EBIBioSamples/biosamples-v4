@@ -1,3 +1,4 @@
+/*
 package uk.ac.ebi.biosamples.service.aws;
 
 import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
@@ -26,3 +27,4 @@ public class BSDEmbassyService {
         System.out.println();
     }
 }
+*/
