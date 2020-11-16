@@ -59,6 +59,7 @@ public class SerializationTest {
     String domain = "abcde12345";
     Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
     Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
+    Instant submitted = Instant.parse("2016-04-01T11:36:57.00Z");
 
     SortedSet<Attribute> attributes = new TreeSet<>();
     attributes.add(
@@ -116,16 +117,17 @@ public class SerializationTest {
     //		return Sample.build(name, accession, domain, release, update, attributes, relationships,
     // externalReferences, organizations, contacts, publications);
     return new Sample.Builder(name, accession)
-        .withDomain(domain)
-        .withRelease(release)
-        .withUpdate(update)
-        .withAttributes(attributes)
-        .withRelationships(relationships)
-        .withExternalReferences(externalReferences)
-        .withOrganizations(organizations)
-        .withContacts(contacts)
-        .withPublications(publications)
-        .build();
+            .withDomain(domain)
+            .withRelease(release)
+            .withUpdate(update)
+            .withSubmitted(submitted)
+            .withAttributes(attributes)
+            .withRelationships(relationships)
+            .withExternalReferences(externalReferences)
+            .withOrganizations(organizations)
+            .withContacts(contacts)
+            .withPublications(publications)
+            .build();
   }
 
   @Test

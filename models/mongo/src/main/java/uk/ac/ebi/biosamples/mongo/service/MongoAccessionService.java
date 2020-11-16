@@ -110,6 +110,7 @@ public class MongoAccessionService {
             sample.getRelease(),
             sample.getUpdate(),
             sample.getCreate(),
+            sample.getSubmitted(),
             sample.getAttributes(),
             sample.getData(),
             newRelationships,

@@ -10,10 +10,13 @@
 */
 package uk.ac.ebi.biosamples.service.certification;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import com.google.gson.JsonParser;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.stream.Collectors;
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.Certificate;
@@ -26,18 +29,22 @@ public class CertifyService {
   private Curator curator;
   private Certifier certifier;
   private Recorder recorder;
+  private ConfigLoader configLoader;
+  private JsonParser jp = new JsonParser();
 
   public CertifyService(
       Certifier certifier,
       Curator curator,
       Identifier identifier,
       Interrogator interrogator,
-      @Qualifier("nullRecorder") Recorder recorder) {
+      @Qualifier("nullRecorder") Recorder recorder,
+      ConfigLoader configLoader) {
     this.certifier = certifier;
     this.curator = curator;
     this.identifier = identifier;
     this.interrogator = interrogator;
     this.recorder = recorder;
+    this.configLoader = configLoader;
   }
 
   public List<Certificate> certify(String data, boolean isJustCertification) {
@@ -95,5 +102,64 @@ public class CertifyService {
     List<Recommendation> recommendations = curator.runRecommendations(interrogationResult);
 
     return recorder.record(certificationResults, recommendations);
+  }
+
+  public String getCertificateByCertificateName(String certificateName) throws IOException {
+    final Optional<Checklist> matchedChecklist =
+        getMatchedChecklistByCertificateName(certificateName);
+    String fileName = null;
+
+    if (matchedChecklist.isPresent()) {
+      fileName = matchedChecklist.get().getFileName();
+    }
+
+    if (fileName != null && !fileName.isEmpty()) {
+      try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(fileName)) {
+        String jsonData = IOUtils.toString(inputStream, StandardCharsets.UTF_8.name());
+
+        return jsonData;
+      }
+    }
+
+    return "";
+  }
+
+  public String getCertificateFileNameByCertificateName(String certificateName) {
+    final Optional<Checklist> matchedChecklist =
+        getMatchedChecklistByCertificateName(certificateName);
+    String fileName = null;
+
+    if (matchedChecklist.isPresent()) {
+      fileName = matchedChecklist.get().getFileName();
+    }
+
+    if (fileName != null && !fileName.isEmpty()) {
+      return fileName.substring(fileName.lastIndexOf("/") + 1);
+    }
+
+    return "";
+  }
+
+  private Optional<Checklist> getMatchedChecklistByCertificateName(String certificateName) {
+    return configLoader.config.getChecklists().stream()
+        .filter(checklist -> checklist.getName().equals(certificateName))
+        .findFirst();
+  }
+
+  public List<String> getCertificates() {
+    return configLoader.config.getChecklists().stream()
+        .map(
+            checklist -> {
+              try {
+                return IOUtils.toString(
+                    getClass().getClassLoader().getResourceAsStream(checklist.getFileName()),
+                    StandardCharsets.UTF_8.name());
+              } catch (IOException e) {
+                e.printStackTrace();
+              }
+
+              return null;
+            })
+        .collect(Collectors.toList());
   }
 }

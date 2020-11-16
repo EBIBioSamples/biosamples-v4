@@ -10,8 +10,6 @@
 */
 package uk.ac.ebi.biosamples.ena;
 
-import java.sql.SQLException;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
@@ -94,7 +92,7 @@ public class EraProDao {
    */
   public void doGetSuppressedEnaSamples(RowCallbackHandler rch) {
     String query =
-        "SELECT UNIQUE(BIOSAMPLE_ID) FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND BIOSAMPLE_AUTHORITY= 'N' AND STATUS_ID = 5";
+        "SELECT UNIQUE(BIOSAMPLE_ID) FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND EGA_ID IS NULL AND BIOSAMPLE_AUTHORITY= 'N' AND STATUS_ID = 5";
 
     jdbcTemplate.query(query, rch);
   }
@@ -106,7 +104,7 @@ public class EraProDao {
    */
   public void doGetSuppressedNcbiDdbjSamples(RowCallbackHandler rch) {
     String query =
-        "SELECT UNIQUE(BIOSAMPLE_ID) FROM SAMPLE WHERE (BIOSAMPLE_ID LIKE 'SAMN%' OR BIOSAMPLE_ID LIKE 'SAMD%' ) AND BIOSAMPLE_AUTHORITY= 'N' AND STATUS_ID = 5";
+        "SELECT UNIQUE(BIOSAMPLE_ID) FROM SAMPLE WHERE (BIOSAMPLE_ID LIKE 'SAMN%' OR BIOSAMPLE_ID LIKE 'SAMD%' ) AND EGA_ID IS NULL AND BIOSAMPLE_AUTHORITY= 'N' AND STATUS_ID = 5";
 
     jdbcTemplate.query(query, rch);
   }
@@ -133,14 +131,6 @@ public class EraProDao {
     jdbcTemplate.query(query, rch, minDateOld, maxDateOld, minDateOld, maxDateOld);
   }
 
-  public Instant getUpdateDateTime(String biosampleAccession) {
-    String sql =
-        "SELECT to_char(LAST_UPDATED, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') FROM SAMPLE WHERE BIOSAMPLE_ID = ? AND BIOSAMPLE_AUTHORITY='N' AND SAMPLE_ID LIKE 'ERS%'";
-    String dateString = jdbcTemplate.queryForObject(sql, String.class, biosampleAccession);
-    log.trace("Update date of \"+biosampleAccession+\"is " + dateString);
-    return Instant.parse(dateString);
-  }
-
   public SampleDBBean getAllSampleData(String biosampleAccession) {
     try {
       String sql =
@@ -161,57 +151,6 @@ public class EraProDao {
     }
 
     return null;
-  }
-
-  public String getChecklist(String biosampleAccession) {
-    String sql =
-        "SELECT CHECKLIST_ID FROM SAMPLE WHERE BIOSAMPLE_ID = ? AND BIOSAMPLE_AUTHORITY='N' AND SAMPLE_ID LIKE 'ERS%'";
-    String checklist = jdbcTemplate.queryForObject(sql, String.class, biosampleAccession);
-    log.trace("Checklist of " + biosampleAccession + " is " + checklist);
-    return checklist;
-  }
-
-  public String getStatus(String biosampleAccession) {
-    String sql =
-        "SELECT STATUS_ID FROM SAMPLE WHERE BIOSAMPLE_ID = ? AND BIOSAMPLE_AUTHORITY='N' AND SAMPLE_ID LIKE 'ERS%'";
-    Integer statusId = jdbcTemplate.queryForObject(sql, Integer.class, biosampleAccession);
-    log.trace("Status of " + biosampleAccession + " is " + statusId);
-    if (1 == statusId) {
-      return "draft";
-    } else if (2 == statusId) {
-      return "private";
-    } else if (3 == statusId) {
-      return "cancelled";
-    } else if (4 == statusId) {
-      return "public";
-    } else if (5 == statusId) {
-      return "suppressed";
-    } else if (6 == statusId) {
-      return "killed";
-    } else if (7 == statusId) {
-      return "temporary_suppressed";
-    } else if (8 == statusId) {
-      return "temporary_killed";
-    }
-    throw new RuntimeException("Unrecognised statusid " + statusId);
-  }
-
-  public Instant getReleaseDateTime(String biosampleAccession) {
-    String sql =
-        "SELECT to_char(FIRST_PUBLIC, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') FROM SAMPLE WHERE BIOSAMPLE_ID = ? AND BIOSAMPLE_AUTHORITY='N' AND SAMPLE_ID LIKE 'ERS%'";
-    String dateString = jdbcTemplate.queryForObject(sql, String.class, biosampleAccession);
-    if (dateString == null) {
-      return null;
-    }
-    log.trace("Release date of \"+biosampleAccession+\"is " + dateString);
-    return Instant.parse(dateString);
-  }
-
-  public String getSampleXml(String biosampleAccession) throws SQLException {
-    String sql =
-        "SELECT SAMPLE_XML FROM SAMPLE WHERE BIOSAMPLE_ID = ? AND BIOSAMPLE_AUTHORITY='N' AND SAMPLE_ID LIKE 'ERS%'";
-    String result = jdbcTemplate.queryForObject(sql, String.class, biosampleAccession);
-    return result;
   }
 
   public void getEnaDatabaseSample(String enaAccession, RowCallbackHandler rch) {
@@ -263,7 +202,7 @@ public class EraProDao {
 
   public void doGetKilledEnaSamples(RowCallbackHandler rch) {
     String query =
-        "SELECT UNIQUE(BIOSAMPLE_ID) FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND BIOSAMPLE_AUTHORITY= 'N' AND STATUS_ID = 6";
+        "SELECT UNIQUE(BIOSAMPLE_ID) FROM SAMPLE WHERE BIOSAMPLE_ID LIKE 'SAME%' AND SAMPLE_ID LIKE 'ERS%' AND EGA_ID IS NULL AND BIOSAMPLE_AUTHORITY= 'N' AND STATUS_ID = 6";
 
     jdbcTemplate.query(query, rch);
   }

@@ -5,22 +5,12 @@
       "version": "0.0.1",
       "file": "schemas/certification/biosamples-minimal.json",
       "block": "true"
-    },
-    {
-      "name": "ncbi-candidate-schema",
-      "version": "0.0.1",
-      "file": "schemas/certification/ncbi-candidate-schema.json"
-    },
-    {
-      "name": "biosamples-basic",
-      "version": "0.0.1",
-      "file": "schemas/certification/biosamples-basic.json"
     }
   ],
   "plans": [
     {
-      "candidate_checklist_id": "ncbi-candidate-schema-0.0.1",
-      "certification_checklist_id": "biosamples-basic-0.0.1",
+      "candidate_checklist_id": "none",
+      "certification_checklist_id": "none",
       "curations": [
         {
           "characteristic": "INSDC status",

@@ -1,13 +1,13 @@
 /*
- * Copyright 2019 EMBL - European Bioinformatics Institute
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
- * file except in compliance with the License. You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
- * Unless required by applicable law or agreed to in writing, software distributed under the
- * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
- * CONDITIONS OF ANY KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations under the License.
- */
+* Copyright 2019 EMBL - European Bioinformatics Institute
+* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+* file except in compliance with the License. You may obtain a copy of the License at
+* http://www.apache.org/licenses/LICENSE-2.0
+* Unless required by applicable law or agreed to in writing, software distributed under the
+* License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+* CONDITIONS OF ANY KIND, either express or implied. See the License for the
+* specific language governing permissions and limitations under the License.
+*/
 package uk.ac.ebi.biosamples.ncbi;
 
 import java.io.BufferedInputStream;
@@ -33,7 +33,6 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpClientErrorException;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -80,9 +79,9 @@ public class Ncbi implements ApplicationRunner {
       }
     }
 
-    if (includeAmr) {
+    if (includeAmr && isFirstDayOfTheWeek()) {
       try {
-        sampleToAmrMap = amrDataLoaderService.loadAmrData();
+        //sampleToAmrMap = amrDataLoaderService.loadAmrData();
       } catch (final Exception e) {
         log.error("Error in processing AMR data from ENA API - continue with the pipeline");
       }
@@ -163,12 +162,7 @@ public class Ncbi implements ApplicationRunner {
       log.info("Number of accession from NCBI = " + sampleCallback.getAccessions().size());
       // remove old NCBI samples no longer present
       // get all existing NCBI samples
-      Set<String> toRemoveAccessions = getExistingPublicNcbiAccessions();
-      // remove those that still exist
-      toRemoveAccessions.removeAll(sampleCallback.getAccessions());
-      // remove those samples that are left
-      log.info("Number of samples to make private = " + toRemoveAccessions.size());
-      makePrivate(toRemoveAccessions);
+      makingNcbiSamplesPrivate();
       log.info("Processed NCBI pipeline");
     } catch (final Exception e) {
       log.error("Pipeline failed to finish successfully", e);
@@ -176,6 +170,25 @@ public class Ncbi implements ApplicationRunner {
     } finally {
       MailSender.sendEmail("NCBI", null, isPassed);
     }
+  }
+
+  private void makingNcbiSamplesPrivate() {
+    // Run every Monday as this scans through all samples, not required to run each day
+    if (isFirstDayOfTheWeek()) {
+      Set<String> toRemoveAccessions = getExistingPublicNcbiAccessions();
+      // remove those that still exist
+      toRemoveAccessions.removeAll(sampleCallback.getAccessions());
+      // remove those samples that are left
+      log.info("Number of samples to make private = " + toRemoveAccessions.size());
+      makePrivate(toRemoveAccessions);
+    }
+  }
+
+  private boolean isFirstDayOfTheWeek() {
+    Calendar calendar = Calendar.getInstance();
+    calendar.setTime(new Date());
+
+    return calendar.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY;
   }
 
   private Set<String> getExistingPublicNcbiAccessions() {
@@ -231,11 +244,8 @@ public class Ncbi implements ApplicationRunner {
         }
       }
     } catch (final Exception sampleMakePrivateException) {
-      if (sampleMakePrivateException instanceof HttpClientErrorException) {
-        log.info("HTTP Exception while persisting sample " + sampleMakePrivateException.getCause());
-      } else {
-        throw new RuntimeException(sampleMakePrivateException);
-      }
+      log.info(
+          "HTTP Exception while making sample private " + sampleMakePrivateException.getCause());
     }
   }
 }

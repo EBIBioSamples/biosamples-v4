@@ -125,6 +125,11 @@ public class SolrSampleService {
     Query query = new SimpleQuery(searchTerm);
     query.addProjectionOnField(new SimpleField("id"));
 
+    // boosting accession to bring accession matches to the top
+    Criteria boostId = new Criteria("id").is(searchTerm).boost((float) 5);
+    boostId.setPartIsOr(true);
+    query.addCriteria(boostId);
+
     Optional<FilterQuery> publicFilterQuery = solrFilterService.getPublicFilterQuery(domains);
     publicFilterQuery.ifPresent(query::addFilterQuery);
 

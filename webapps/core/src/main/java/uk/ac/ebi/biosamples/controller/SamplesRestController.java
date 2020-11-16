@@ -68,6 +68,9 @@ public class SamplesRestController {
   private final BioSamplesProperties bioSamplesProperties;
   private final SampleResourceAssembler sampleResourceAssembler;
 
+  private static final String NCBI_IMPORT_DOMAIN = "self.BiosampleImportNCBI";
+  private static final String ENA_IMPORT_DOMAIN = "self.BiosampleImportENA";
+
   private Logger log = LoggerFactory.getLogger(getClass());
 
   @Autowired private CertifyService certifyService;
@@ -410,13 +413,13 @@ public class SamplesRestController {
         return new ResponseEntity<>(
             "Sample already exists, use POST only for new submissions", HttpStatus.BAD_REQUEST);
       } else {
-        sample = sampleService.store(sample);
+        sample = sampleService.store(sample, false);
         final Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
 
         return ResponseEntity.ok(sampleResource.getContent().getAccession());
       }
     } else {
-      sample = sampleService.store(sample);
+      sample = sampleService.store(sample, false);
       final Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
 
       return ResponseEntity.created(URI.create(sampleResource.getLink("self").getHref()))
@@ -459,6 +462,7 @@ public class SamplesRestController {
     sample =
         Sample.Builder.fromSample(sample)
             .withCreate(defineCreateDate(sample))
+            .withSubmitted(defineSubmittedDate(sample))
             .withUpdate(Instant.now())
             .withSubmittedVia(submittedVia)
             .build();
@@ -484,7 +488,7 @@ public class SamplesRestController {
     	}
     }*/
 
-    sample = sampleService.store(sample);
+    sample = sampleService.store(sample, false);
 
     // assemble a resource to return
     Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample, this.getClass());
@@ -498,9 +502,23 @@ public class SamplesRestController {
     final Instant now = Instant.now();
 
     return (sample.getDomain() != null
-            && sample.getDomain().equalsIgnoreCase("self.BiosampleImportNCBI"))
+            && isNcbiOrEnaPipelineImportDomain(sample))
         ? (sample.getCreate() != null ? sample.getCreate() : now)
         : now;
+  }
+
+  private Instant defineSubmittedDate(final Sample sample) {
+    final Instant now = Instant.now();
+
+    return (sample.getDomain() != null
+            && isNcbiOrEnaPipelineImportDomain(sample))
+            ? (sample.getSubmitted() != null ? sample.getSubmitted() : now)
+            : now;
+  }
+
+  private boolean isNcbiOrEnaPipelineImportDomain(Sample sample) {
+    return sample.getDomain().equalsIgnoreCase(NCBI_IMPORT_DOMAIN)
+    || sample.getDomain().equalsIgnoreCase(ENA_IMPORT_DOMAIN);
   }
 
   @ResponseStatus(

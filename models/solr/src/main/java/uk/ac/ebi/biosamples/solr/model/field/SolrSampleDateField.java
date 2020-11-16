@@ -16,9 +16,12 @@ import java.time.temporal.TemporalAccessor;
 import java.util.regex.Pattern;
 import org.springframework.data.solr.core.query.Criteria;
 import org.springframework.stereotype.Component;
+import uk.ac.ebi.biosamples.model.facet.DateRangeFacet;
+import uk.ac.ebi.biosamples.model.facet.Facet;
 import uk.ac.ebi.biosamples.model.filter.DateRangeFilter;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.solr.model.strategy.FacetFetchStrategy;
+import uk.ac.ebi.biosamples.solr.model.strategy.RegularFacetFetchStrategy;
 
 @Component
 public class SolrSampleDateField extends SolrSampleField {
@@ -53,6 +56,16 @@ public class SolrSampleDateField extends SolrSampleField {
   }
 
   @Override
+  public boolean canGenerateFacets() {
+    return true;
+  }
+
+  @Override
+  public Facet.Builder getFacetBuilder(String facetLabel, Long facetCount) {
+    return new DateRangeFacet.Builder(facetLabel, facetCount);
+  }
+
+  @Override
   public boolean isEncodedField() {
     return false;
   }
@@ -64,7 +77,7 @@ public class SolrSampleDateField extends SolrSampleField {
 
   @Override
   public FacetFetchStrategy getFacetCollectionStrategy() {
-    throw new RuntimeException("Method not yet implemented");
+    return new RegularFacetFetchStrategy();
   }
 
   @Override

@@ -11,6 +11,9 @@
 package uk.ac.ebi.biosamples.solr.repo;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.List;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -18,15 +21,14 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.params.CursorMarkParams;
+import org.apache.solr.common.params.FacetParams;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.solr.core.QueryParsers;
 import org.springframework.data.solr.core.SolrCallback;
 import org.springframework.data.solr.core.SolrTemplate;
 import org.springframework.data.solr.core.convert.SolrConverter;
-import org.springframework.data.solr.core.query.FacetOptions;
-import org.springframework.data.solr.core.query.FacetQuery;
-import org.springframework.data.solr.core.query.Query;
+import org.springframework.data.solr.core.query.*;
 import org.springframework.data.solr.core.query.result.FacetFieldEntry;
 import org.springframework.data.solr.core.query.result.FacetPage;
 import org.springframework.stereotype.Component;
@@ -98,6 +100,50 @@ public class SolrSampleRepositoryImpl implements SolrSampleRepositoryCustom {
       facetOptions.addFacetOnField(field);
     }
     facetOptions.setPageable(facetPageable);
+
+    query.setFacetOptions(facetOptions);
+    // execute the query against the solr server
+    FacetPage<SolrSample> page = solrTemplate.queryForFacetPage(query, SolrSample.class);
+    return page;
+  }
+
+  @Override
+  public FacetPage<?> getFacets(
+      FacetQuery query,
+      List<String> facetFields,
+      List<String> rangeFacetFields,
+      Pageable facetPageable) {
+
+    if (facetFields == null || facetFields.isEmpty()) {
+      throw new IllegalArgumentException("Must provide fields to facet on");
+    }
+
+//    //if we are retrieving large number of facets limit for front page, remove this for new implementation
+//    if (query.getFilterQueries().size() <= 1 &&
+//            query.getCriteria().getPredicates().stream().filter(f -> f.getValue().equals("*:*")).count() >= 1) {
+//      facetFields = facetFields.subList(0, Math.min(facetPageable.getPageSize(), facetFields.size()));
+//    }
+
+    // configure the facet options to use the provided fields
+    // and to have the appropriate paging
+    FacetOptions facetOptions = new FacetOptions();
+    for (String field : facetFields) {
+      facetOptions.addFacetOnField(field);
+      facetOptions.addFacetQuery(new SimpleFacetQuery(new Criteria(field)));
+    }
+    facetOptions.setPageable(facetPageable);
+
+    // todo generalise range facets apart from dates and remove hardcoded date boundaries
+    for (String field : rangeFacetFields) {
+      LocalDateTime dateTime = LocalDateTime.now();
+      Date end = Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant());
+      Date start = Date.from(dateTime.minusYears(5).atZone(ZoneId.systemDefault()).toInstant());
+      facetOptions.addFacetByRange(
+          new FacetOptions.FieldWithDateRangeParameters(field, start, end, "+1YEAR")
+                  .setInclude(FacetParams.FacetRangeInclude.ALL)
+                  .setOther(FacetParams.FacetRangeOther.BEFORE));
+      facetOptions.addFacetQuery(new SimpleFacetQuery(new Criteria(field)));
+    }
 
     query.setFacetOptions(facetOptions);
     // execute the query against the solr server

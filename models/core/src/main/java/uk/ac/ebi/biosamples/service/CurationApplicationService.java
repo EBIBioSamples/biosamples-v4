@@ -71,6 +71,7 @@ public class CurationApplicationService {
         sample.getRelease(),
         sample.getUpdate(),
         sample.getCreate(),
+        sample.getSubmitted(),
         attributes,
         sample.getData(),
         sample.getRelationships(),

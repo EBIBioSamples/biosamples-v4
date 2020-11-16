@@ -116,7 +116,8 @@ public class DocumentationHelper {
             Collections.singletonList(ExternalReference.build("www.google.com")),
             Collections.singletonList(ExternalReference.build("www.ebi.ac.uk/ena/ERA123456")),
             Collections.emptyList(),
-            Collections.singletonList(Relationship.build("SAMFAKE123456", "DERIVED_FROM", "SAMFAKE7654321")));
+            Collections.singletonList(
+                Relationship.build("SAMFAKE123456", "DERIVED_FROM", "SAMFAKE7654321")));
 
     return curationObject;
   }

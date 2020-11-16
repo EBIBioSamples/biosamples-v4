@@ -12,6 +12,7 @@ package uk.ac.ebi.biosamples.solr.model.strategy;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -22,6 +23,7 @@ import org.springframework.data.solr.core.query.FacetQuery;
 import org.springframework.data.solr.core.query.Field;
 import org.springframework.data.solr.core.query.result.FacetFieldEntry;
 import org.springframework.data.solr.core.query.result.FacetPage;
+import org.springframework.data.solr.core.query.result.FacetQueryEntry;
 import uk.ac.ebi.biosamples.model.facet.Facet;
 import uk.ac.ebi.biosamples.model.facet.content.LabelCountEntry;
 import uk.ac.ebi.biosamples.model.facet.content.LabelCountListContent;
@@ -35,7 +37,7 @@ public class RegularFacetFetchStrategy implements FacetFetchStrategy {
   /*
 
   */
-  @Override
+  //  @Override
   public List<Optional<Facet>> fetchFacetsUsing(
       SolrSampleRepository solrSampleRepository,
       FacetQuery query,
@@ -103,6 +105,69 @@ public class RegularFacetFetchStrategy implements FacetFetchStrategy {
       //            }
     }
 
+    return facetResults;
+  }
+
+  //  @Override
+  public List<Optional<Facet>> fetchFacetsUsing(
+      SolrSampleRepository solrSampleRepository,
+      FacetQuery query,
+      List<Entry<SolrSampleField, Long>> facetFieldCountEntries,
+      List<Map.Entry<SolrSampleField, Long>> rangeFieldCountEntries,
+      Pageable facetPageable) {
+
+    List<String> facetFieldNames =
+        facetFieldCountEntries.stream()
+            .map(Entry::getKey)
+            .map(SolrSampleField::getSolrLabel)
+            .collect(Collectors.toList());
+    List<String> rangeFacetFieldNames =
+        rangeFieldCountEntries.stream()
+            .map(Entry::getKey)
+            .map(SolrSampleField::getSolrLabel)
+            .collect(Collectors.toList());
+
+    Map<String, SolrSampleField> fieldMap =
+        facetFieldCountEntries.stream()
+            .map(Entry::getKey)
+            .collect(Collectors.toMap(SolrSampleField::getSolrLabel, s -> s));
+    rangeFieldCountEntries.stream()
+        .map(Entry::getKey)
+        .forEach(s -> fieldMap.put(s.getSolrLabel(), s));
+
+    FacetPage<?> facetPage =
+        solrSampleRepository.getFacets(query, facetFieldNames, rangeFacetFieldNames, facetPageable);
+
+    List<Optional<Facet>> facetResults = new ArrayList<>();
+    for (FacetQueryEntry q : facetPage.getFacetQueryResult().getContent()) {
+      long fieldCount = q.getValueCount();
+      if (fieldCount > 0) {
+        String fieldName = q.getValue().split(":")[0];
+        //      String readableFieldName = SolrFieldService.decodeFieldName(fieldName);
+        SolrSampleField solrSampleField = fieldMap.get(fieldName);
+
+        List<LabelCountEntry> listFacetContent = new ArrayList<>();
+        for (FacetFieldEntry ffe : facetPage.getFacetResultPage(fieldName)) {
+          listFacetContent.add(LabelCountEntry.build(ffe.getValue(), ffe.getValueCount()));
+        }
+
+        //todo only add if not empty or remove
+//        if (facetPage.getRangeFacetResultPage(fieldName).getTotalElements() < 1) {
+//          break;
+//        }
+        for (FacetFieldEntry ffe : facetPage.getRangeFacetResultPage(fieldName)) {
+          listFacetContent.add(LabelCountEntry.build(ffe.getValue(), ffe.getValueCount()));
+        }
+
+        if (!listFacetContent.isEmpty()) {
+          Facet facet = solrSampleField
+                          .getFacetBuilder(solrSampleField.getReadableLabel(), fieldCount)
+                          .withContent(new LabelCountListContent(listFacetContent))
+                          .build();
+          facetResults.add(Optional.of(facet));
+        }
+      }
+    }
     return facetResults;
   }
 }

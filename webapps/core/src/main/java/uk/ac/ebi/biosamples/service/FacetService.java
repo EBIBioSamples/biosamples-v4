@@ -44,6 +44,7 @@ public class FacetService {
     // TODO if a facet is enabled as a filter, then that value will be the only filter displayed
     // TODO allow update date range
 
+    //todo if (text == null && filters.isEmpty()) cache results for the search landing page
     long startTime = System.nanoTime();
     String escapedText = text == null ? null : ClientUtils.escapeQueryChars(text);
     List<Facet> facets =

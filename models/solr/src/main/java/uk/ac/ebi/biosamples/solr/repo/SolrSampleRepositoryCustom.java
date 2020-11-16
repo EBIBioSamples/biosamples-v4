@@ -43,6 +43,22 @@ public interface SolrSampleRepositoryCustom {
   public FacetPage<?> getFacets(FacetQuery query, List<String> facetFields, Pageable facetPageable);
 
   /**
+   * Return a result of facets over the provided fields with the provided facet paging information
+   * (offset and count).
+   *
+   * @param query
+   * @param facetFields
+   * @param rangeFacetFields
+   * @param facetPageable
+   * @return
+   */
+  public FacetPage<?> getFacets(
+      FacetQuery query,
+      List<String> facetFields,
+      List<String> rangeFacetFields,
+      Pageable facetPageable);
+
+  /**
    * Return a results of range facets over the provided fields with the provided facet paging
    * information (offset and count).
    *
