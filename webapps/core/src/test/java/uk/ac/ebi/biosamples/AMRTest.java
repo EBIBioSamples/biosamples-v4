@@ -212,7 +212,7 @@ public class AMRTest {
     when(bioSamplesAapService.isWriteSuperUser()).thenReturn(true);
     when(bioSamplesAapService.handleSampleDomain(any(Sample.class))).thenReturn(testSample);
     when(bioSamplesAapService.handleStructuredDataDomain(any(Sample.class))).thenReturn(testSample);
-    when(sampleService.store(testSample)).thenReturn(testSample);
+    when(sampleService.store(testSample, false)).thenReturn(testSample);
 
     mockMvc
         .perform(post("/samples").contentType(MediaType.APPLICATION_JSON_VALUE).content(json))
@@ -262,7 +262,7 @@ public class AMRTest {
     when(bioSamplesAapService.handleStructuredDataDomain(any(Sample.class))).thenReturn(testSample);
 
     ArgumentCaptor<Sample> generatedSample = ArgumentCaptor.forClass(Sample.class);
-    when(sampleService.store(generatedSample.capture())).thenReturn(testSample);
+    when(sampleService.store(generatedSample.capture(), eq(false))).thenReturn(testSample);
 
     mockMvc.perform(post("/samples").contentType(MediaType.APPLICATION_JSON_VALUE).content(json));
 

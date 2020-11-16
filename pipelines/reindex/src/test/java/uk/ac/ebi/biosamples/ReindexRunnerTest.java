@@ -71,6 +71,7 @@ public class ReindexRunnerTest {
             null,
             null,
             null,
+            null,
             Collections.EMPTY_SET,
             Collections.EMPTY_SET);
     Sample sample3 =
@@ -78,6 +79,7 @@ public class ReindexRunnerTest {
             "",
             "ACCESSION3",
             "",
+            null,
             null,
             null,
             null,
