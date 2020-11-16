@@ -162,11 +162,7 @@ public class SampleService {
         existingRelationshipTargets =
             getExistingRelationshipTargets(sample.getAccession(), mongoOldSample);
 
-        log.info("Sample submitted date is before " + sample.getSubmitted());
-
         sample = compareWithExistingAndUpdateSample(sample, oldSample, isFirstTimeMetadataAdded);
-
-        log.info("Sample submitted date is after " + sample.getSubmitted());
       } else {
         log.error("Trying to update sample not in database, accession: {}", sample.getAccession());
       }
@@ -327,8 +323,6 @@ public class SampleService {
     // 13/01/2020 - if the sample has a date, acknowledge it. It can be the actual create date
     // from
     // NCBI, ENA.
-
-    log.info("Sample submitted date is " + sampleToUpdate.getSubmitted());
 
     return Sample.Builder.fromSample(sampleToUpdate)
         .withCreate(defineCreateDate(sampleToUpdate, oldSample))
