@@ -81,7 +81,7 @@ public class Ncbi implements ApplicationRunner {
 
     if (includeAmr && isFirstDayOfTheWeek()) {
       try {
-        sampleToAmrMap = amrDataLoaderService.loadAmrData();
+        //sampleToAmrMap = amrDataLoaderService.loadAmrData();
       } catch (final Exception e) {
         log.error("Error in processing AMR data from ENA API - continue with the pipeline");
       }
@@ -116,7 +116,7 @@ public class Ncbi implements ApplicationRunner {
       if (args.getOptionNames().contains("ncbi_file")) {
         ncbiFile = args.getOptionValues("ncbi_file").get(0);
       } else {
-        ncbiFile = "C:\\Users\\dgupta\\ncbi_test\\biosample_result.xml.gz";
+        ncbiFile = pipelinesProperties.getNcbiFile();
       }
 
       Path inputPath = Paths.get(ncbiFile);

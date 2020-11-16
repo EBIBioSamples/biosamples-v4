@@ -112,19 +112,23 @@ public class SampleService {
   private boolean isFirstTimeMetadataAdded(boolean firstTimeMetadataAdded, MongoSample mongoOldSample) {
     Sample oldSample = mongoSampleToSampleConverter.convert(mongoOldSample);
 
-    if(oldSample.getAttributes().size() > 0) {
+    if (oldSample.getAttributes().size() > 0) {
       firstTimeMetadataAdded = false;
     }
 
-    if(oldSample.getRelationships().size() > 0) {
+    if (oldSample.getRelationships().size() > 0) {
       firstTimeMetadataAdded = false;
     }
 
-    if(oldSample.getPublications().size() > 0) {
+    if (oldSample.getPublications().size() > 0) {
       firstTimeMetadataAdded = false;
     }
 
-    if(oldSample.getContacts().size() > 0) {
+    if (oldSample.getContacts().size() > 0) {
+      firstTimeMetadataAdded = false;
+    }
+
+    if (oldSample.getOrganizations().size() > 0) {
       firstTimeMetadataAdded = false;
     }
 

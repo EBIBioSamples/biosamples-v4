@@ -25,8 +25,13 @@ public class SampleToJsonLDSampleRecordConverter implements Converter<Sample, Js
 
     JsonLDDataRecord sampleRecord = new JsonLDDataRecord();
     // TODO Check if we actually want to use release date as date created
-    sampleRecord.dateCreated(sample.getRelease().atZone(ZoneId.of("UTC")));
+    sampleRecord.dateCreated(sample.getCreate().atZone(ZoneId.of("UTC")));
+    sampleRecord.dateReleased(sample.getRelease().atZone(ZoneId.of("UTC")));
     sampleRecord.dateModified(sample.getUpdate().atZone(ZoneId.of("UTC")));
+
+    if (sample.getSubmitted() != null) {
+      sampleRecord.dateSubmitted(sample.getSubmitted().atZone(ZoneId.of("UTC")));
+    }
 
     JsonLDSample jsonLD = new JsonLDSample();
     String[] identifiers = {getBioSamplesIdentifierDotOrg(sample.getAccession())};
