@@ -408,10 +408,8 @@ public class SampleHtmlController {
 
     Instant submitted = sample.get().getSubmitted();
 
-    if(submitted != null)
-      model.addAttribute("submitted", submitted.atOffset(ZoneOffset.UTC));
-    else
-      model.addAttribute("submitted", null);
+    if (submitted != null) model.addAttribute("submitted", submitted.atOffset(ZoneOffset.UTC));
+    else model.addAttribute("submitted", null);
 
     return "sample";
   }

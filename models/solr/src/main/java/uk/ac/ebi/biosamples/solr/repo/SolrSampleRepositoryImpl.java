@@ -118,11 +118,14 @@ public class SolrSampleRepositoryImpl implements SolrSampleRepositoryCustom {
       throw new IllegalArgumentException("Must provide fields to facet on");
     }
 
-//    //if we are retrieving large number of facets limit for front page, remove this for new implementation
-//    if (query.getFilterQueries().size() <= 1 &&
-//            query.getCriteria().getPredicates().stream().filter(f -> f.getValue().equals("*:*")).count() >= 1) {
-//      facetFields = facetFields.subList(0, Math.min(facetPageable.getPageSize(), facetFields.size()));
-//    }
+    //    //if we are retrieving large number of facets limit for front page, remove this for new
+    // implementation
+    //    if (query.getFilterQueries().size() <= 1 &&
+    //            query.getCriteria().getPredicates().stream().filter(f ->
+    // f.getValue().equals("*:*")).count() >= 1) {
+    //      facetFields = facetFields.subList(0, Math.min(facetPageable.getPageSize(),
+    // facetFields.size()));
+    //    }
 
     // configure the facet options to use the provided fields
     // and to have the appropriate paging
@@ -140,8 +143,8 @@ public class SolrSampleRepositoryImpl implements SolrSampleRepositoryCustom {
       Date start = Date.from(dateTime.minusYears(5).atZone(ZoneId.systemDefault()).toInstant());
       facetOptions.addFacetByRange(
           new FacetOptions.FieldWithDateRangeParameters(field, start, end, "+1YEAR")
-                  .setInclude(FacetParams.FacetRangeInclude.ALL)
-                  .setOther(FacetParams.FacetRangeOther.BEFORE));
+              .setInclude(FacetParams.FacetRangeInclude.ALL)
+              .setOther(FacetParams.FacetRangeOther.BEFORE));
       facetOptions.addFacetQuery(new SimpleFacetQuery(new Criteria(field)));
     }
 

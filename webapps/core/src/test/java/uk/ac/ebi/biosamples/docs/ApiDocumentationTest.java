@@ -171,7 +171,16 @@ public class ApiDocumentationTest {
     String wrongSampleSerialized = "{\"name\": \"Sample without minimum information\" }";
     Sample wrongSample =
         Sample.build(
-            "Sample without minimum information", null, null, null, null, null, null, null, null, null);
+            "Sample without minimum information",
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null);
 
     when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(wrongSample);
     when(sampleService.store(wrongSample, false)).thenCallRealMethod();

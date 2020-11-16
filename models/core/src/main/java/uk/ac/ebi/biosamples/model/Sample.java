@@ -134,17 +134,23 @@ public class Sample implements Comparable<Sample> {
 
   @JsonProperty(value = "releaseDate", access = JsonProperty.Access.READ_ONLY)
   public String getReleaseDate() {
-    return release != null ? ZonedDateTime.ofInstant(release, ZoneOffset.UTC).format(ISO_LOCAL_DATE) : null;
+    return release != null
+        ? ZonedDateTime.ofInstant(release, ZoneOffset.UTC).format(ISO_LOCAL_DATE)
+        : null;
   }
 
   @JsonProperty(value = "updateDate", access = JsonProperty.Access.READ_ONLY)
   public String getUpdateDate() {
-    return update != null ? ZonedDateTime.ofInstant(update, ZoneOffset.UTC).format(ISO_LOCAL_DATE) : null;
+    return update != null
+        ? ZonedDateTime.ofInstant(update, ZoneOffset.UTC).format(ISO_LOCAL_DATE)
+        : null;
   }
 
   @JsonProperty(value = "submittedDate", access = JsonProperty.Access.READ_ONLY)
   public String getSubmittedDate() {
-    return submitted != null ? ZonedDateTime.ofInstant(submitted, ZoneOffset.UTC).format(ISO_LOCAL_DATE) : null;
+    return submitted != null
+        ? ZonedDateTime.ofInstant(submitted, ZoneOffset.UTC).format(ISO_LOCAL_DATE)
+        : null;
   }
 
   @JsonProperty(value = "taxId", access = JsonProperty.Access.READ_ONLY)
@@ -485,7 +491,7 @@ public class Sample implements Comparable<Sample> {
       @JsonProperty("create") @JsonDeserialize(using = CustomInstantDeserializer.class)
           Instant create,
       @JsonProperty("submitted") @JsonDeserialize(using = CustomInstantDeserializer.class)
-              Instant submitted,
+          Instant submitted,
       @JsonProperty("characteristics") @JsonDeserialize(using = CharacteristicDeserializer.class)
           Collection<Attribute> attributes,
       @JsonProperty("data") Collection<AbstractData> structuredData,
