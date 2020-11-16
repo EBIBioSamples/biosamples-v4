@@ -20,18 +20,18 @@ import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder(
-        value = {
-                "@context",
-                "@type",
-                "@id",
-                "identifier",
-                "dateCreated",
-                "dateModified",
-                "dateReleased",
-                "dateSubmitted",
-                "mainEntity",
-                "isPartOf"
-        })
+    value = {
+      "@context",
+      "@type",
+      "@id",
+      "identifier",
+      "dateCreated",
+      "dateModified",
+      "dateReleased",
+      "dateSubmitted",
+      "mainEntity",
+      "isPartOf"
+    })
 public class JsonLDDataRecord implements BioschemasObject {
 
   private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
@@ -134,14 +134,14 @@ public class JsonLDDataRecord implements BioschemasObject {
   @JsonSetter("dateSubmitted")
   public JsonLDDataRecord dateSubmitted(String dateSubmitted) {
     this.dateSubmitted =
-            LocalDateTime.parse(dateSubmitted, dateTimeFormatter).atZone(ZoneId.systemDefault());
+        LocalDateTime.parse(dateSubmitted, dateTimeFormatter).atZone(ZoneId.systemDefault());
     return this;
   }
 
   @JsonSetter("dateReleased")
   public JsonLDDataRecord dateReleased(String dateReleased) {
     this.dateReleased =
-            LocalDateTime.parse(dateReleased, dateTimeFormatter).atZone(ZoneId.systemDefault());
+        LocalDateTime.parse(dateReleased, dateTimeFormatter).atZone(ZoneId.systemDefault());
     return this;
   }
 

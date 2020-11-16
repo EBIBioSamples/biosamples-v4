@@ -83,42 +83,42 @@ public class MongoSampleToSampleConverter implements Converter<MongoSample, Samp
 
     log.info("Submitted is " + submitted);
 
-    if(submitted == null) {
+    if (submitted == null) {
       log.info("Submitted is null here - ");
     }
 
     if (submitted == null) {
       return new Sample.Builder(sample.getName(), sample.getAccession())
-              .withDomain(sample.getDomain())
-              .withRelease(sample.getRelease())
-              .withUpdate(sample.getUpdate())
-              .withCreate(sample.getCreate())
-              .withNoSubmitted()
-              .withAttributes(sample.getAttributes())
-              .withRelationships(relationships)
-              .withData(sample.getData())
-              .withExternalReferences(externalReferences)
-              .withOrganizations(sample.getOrganizations())
-              .withContacts(sample.getContacts())
-              .withPublications(sample.getPublications())
-              .withCertificates(certificates)
-              .build();
+          .withDomain(sample.getDomain())
+          .withRelease(sample.getRelease())
+          .withUpdate(sample.getUpdate())
+          .withCreate(sample.getCreate())
+          .withNoSubmitted()
+          .withAttributes(sample.getAttributes())
+          .withRelationships(relationships)
+          .withData(sample.getData())
+          .withExternalReferences(externalReferences)
+          .withOrganizations(sample.getOrganizations())
+          .withContacts(sample.getContacts())
+          .withPublications(sample.getPublications())
+          .withCertificates(certificates)
+          .build();
     } else {
       return new Sample.Builder(sample.getName(), sample.getAccession())
-              .withDomain(sample.getDomain())
-              .withRelease(sample.getRelease())
-              .withUpdate(sample.getUpdate())
-              .withCreate(sample.getCreate())
-              .withSubmitted(sample.getSubmitted())
-              .withAttributes(sample.getAttributes())
-              .withRelationships(relationships)
-              .withData(sample.getData())
-              .withExternalReferences(externalReferences)
-              .withOrganizations(sample.getOrganizations())
-              .withContacts(sample.getContacts())
-              .withPublications(sample.getPublications())
-              .withCertificates(certificates)
-              .build();
+          .withDomain(sample.getDomain())
+          .withRelease(sample.getRelease())
+          .withUpdate(sample.getUpdate())
+          .withCreate(sample.getCreate())
+          .withSubmitted(sample.getSubmitted())
+          .withAttributes(sample.getAttributes())
+          .withRelationships(relationships)
+          .withData(sample.getData())
+          .withExternalReferences(externalReferences)
+          .withOrganizations(sample.getOrganizations())
+          .withContacts(sample.getContacts())
+          .withPublications(sample.getPublications())
+          .withCertificates(certificates)
+          .build();
     }
   }
 }
