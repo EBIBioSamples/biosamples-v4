@@ -50,12 +50,14 @@ import uk.ac.ebi.biosamples.service.CustomInstantSerializer;
   "domain",
   "release",
   "update",
+  "submitted",
   "taxId",
   "characteristics",
   "relationships",
   "externalReferences",
   "releaseDate",
   "updateDate",
+  "submittedDate",
   "submittedVia"
 })
 public class Sample implements Comparable<Sample> {
@@ -68,6 +70,7 @@ public class Sample implements Comparable<Sample> {
   protected Instant release;
   protected Instant update;
   protected Instant create;
+  protected Instant submitted;
 
   protected SortedSet<Attribute> attributes;
   protected SortedSet<AbstractData> data;
@@ -124,14 +127,30 @@ public class Sample implements Comparable<Sample> {
     return create;
   }
 
+  @JsonSerialize(using = CustomInstantSerializer.class)
+  public Instant getSubmitted() {
+    return submitted;
+  }
+
   @JsonProperty(value = "releaseDate", access = JsonProperty.Access.READ_ONLY)
   public String getReleaseDate() {
-    return ZonedDateTime.ofInstant(release, ZoneOffset.UTC).format(ISO_LOCAL_DATE);
+    return release != null
+        ? ZonedDateTime.ofInstant(release, ZoneOffset.UTC).format(ISO_LOCAL_DATE)
+        : null;
   }
 
   @JsonProperty(value = "updateDate", access = JsonProperty.Access.READ_ONLY)
   public String getUpdateDate() {
-    return ZonedDateTime.ofInstant(update, ZoneOffset.UTC).format(ISO_LOCAL_DATE);
+    return update != null
+        ? ZonedDateTime.ofInstant(update, ZoneOffset.UTC).format(ISO_LOCAL_DATE)
+        : null;
+  }
+
+  @JsonProperty(value = "submittedDate", access = JsonProperty.Access.READ_ONLY)
+  public String getSubmittedDate() {
+    return submitted != null
+        ? ZonedDateTime.ofInstant(submitted, ZoneOffset.UTC).format(ISO_LOCAL_DATE)
+        : null;
   }
 
   @JsonProperty(value = "taxId", access = JsonProperty.Access.READ_ONLY)
@@ -377,6 +396,8 @@ public class Sample implements Comparable<Sample> {
     sb.append(",");
     sb.append(create);
     sb.append(",");
+    sb.append(submitted);
+    sb.append(",");
     sb.append(attributes);
     sb.append(",");
     sb.append(relationships);
@@ -403,6 +424,7 @@ public class Sample implements Comparable<Sample> {
       Instant release,
       Instant update,
       Instant create,
+      Instant submitted,
       Set<Attribute> attributes,
       Set<Relationship> relationships,
       Set<ExternalReference> externalReferences) {
@@ -413,6 +435,7 @@ public class Sample implements Comparable<Sample> {
         release,
         update,
         create,
+        submitted,
         attributes,
         null,
         relationships,
@@ -431,6 +454,7 @@ public class Sample implements Comparable<Sample> {
       Instant release,
       Instant update,
       Instant create,
+      Instant submitted,
       Set<Attribute> attributes,
       Set<Relationship> relationships,
       Set<ExternalReference> externalReferences,
@@ -442,6 +466,7 @@ public class Sample implements Comparable<Sample> {
         release,
         update,
         create,
+        submitted,
         attributes,
         null,
         relationships,
@@ -465,6 +490,8 @@ public class Sample implements Comparable<Sample> {
           Instant update,
       @JsonProperty("create") @JsonDeserialize(using = CustomInstantDeserializer.class)
           Instant create,
+      @JsonProperty("submitted") @JsonDeserialize(using = CustomInstantDeserializer.class)
+          Instant submitted,
       @JsonProperty("characteristics") @JsonDeserialize(using = CharacteristicDeserializer.class)
           Collection<Attribute> attributes,
       @JsonProperty("data") Collection<AbstractData> structuredData,
@@ -493,6 +520,8 @@ public class Sample implements Comparable<Sample> {
     sample.update = update == null ? Instant.now() : update;
 
     sample.create = create == null ? sample.update : create;
+
+    sample.submitted = submitted;
 
     // Validation moved to a later stage, to capture the error (SampleService.store())
     sample.release = release;
@@ -556,6 +585,7 @@ public class Sample implements Comparable<Sample> {
     protected Instant release = Instant.now();
     protected Instant update = Instant.now();
     protected Instant create = Instant.now();
+    protected Instant submitted = Instant.now();
 
     protected SubmittedViaType submittedVia;
 
@@ -614,6 +644,21 @@ public class Sample implements Comparable<Sample> {
 
     public Builder withCreate(String create) {
       this.create = parseDateTime(create).toInstant();
+      return this;
+    }
+
+    public Builder withSubmitted(Instant submitted) {
+      this.submitted = submitted;
+      return this;
+    }
+
+    public Builder withSubmitted(String submitted) {
+      this.submitted = parseDateTime(submitted).toInstant();
+      return this;
+    }
+
+    public Builder withNoSubmitted() {
+      this.submitted = null;
       return this;
     }
 
@@ -855,6 +900,7 @@ public class Sample implements Comparable<Sample> {
           release,
           update,
           create,
+          submitted,
           attributes,
           data,
           relationships,
@@ -892,6 +938,7 @@ public class Sample implements Comparable<Sample> {
           .withRelease(sample.getRelease())
           .withUpdate(sample.getUpdate())
           .withCreate(sample.getCreate())
+          .withSubmitted(sample.getSubmitted())
           .withAttributes(sample.getAttributes())
           .withData(sample.getData())
           .withRelationships(sample.getRelationships())

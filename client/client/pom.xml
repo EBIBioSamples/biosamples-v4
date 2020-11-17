@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>uk.ac.ebi.biosamples</groupId>
 		<artifactId>biosamples</artifactId>
-		<version>5.0.2-SNAPSHOT</version>
+		<version>5.0.3-SNAPSHOT</version>
 		<relativePath>../../</relativePath>
 	</parent>
 
@@ -17,17 +17,17 @@
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>models-core</artifactId>
-			<version>5.0.2-SNAPSHOT</version>
+			<version>5.0.3-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>properties</artifactId>
-			<version>5.0.2-SNAPSHOT</version>
+			<version>5.0.3-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.biosamples</groupId>
 			<artifactId>utils-thread</artifactId>
-			<version>5.0.2-SNAPSHOT</version>
+			<version>5.0.3-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.hateoas</groupId>

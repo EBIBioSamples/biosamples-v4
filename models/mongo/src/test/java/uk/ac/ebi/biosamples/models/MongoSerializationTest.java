@@ -54,6 +54,7 @@ public class MongoSerializationTest {
     String accession = "TEST1";
     Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
     Instant create = Instant.parse("2016-05-05T11:36:57.00Z");
+    Instant submitted = Instant.parse("2016-05-05T11:36:57.00Z");
     Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
     SubmittedViaType submittedVia = SubmittedViaType.JSON_API;
 
@@ -127,6 +128,7 @@ public class MongoSerializationTest {
         release,
         update,
         create,
+        submitted,
         attributes,
         structuredData,
         relationships,
@@ -144,6 +146,7 @@ public class MongoSerializationTest {
     String domain = "foozit";
     Instant update = Instant.parse("2016-05-05T11:36:57.00Z");
     Instant create = Instant.parse("2016-05-05T11:36:57.00Z");
+    Instant submitted = Instant.parse("2016-05-05T11:36:57.00Z");
     Instant release = Instant.parse("2016-04-01T11:36:57.00Z");
     SubmittedViaType submittedVia = SubmittedViaType.JSON_API;
     SortedSet<Attribute> attributes = new TreeSet<>();
@@ -175,6 +178,7 @@ public class MongoSerializationTest {
         release,
         update,
         create,
+        submitted,
         attributes,
         data,
         relationships,

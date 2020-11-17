@@ -10,6 +10,7 @@
 */
 package uk.ac.ebi.biosamples.mongo.service;
 
+import java.time.Instant;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.slf4j.Logger;
@@ -36,6 +37,8 @@ public class MongoSampleToSampleConverter implements Converter<MongoSample, Samp
   private MongoRelationshipToRelationshipConverter mongoRelationshipToRelationshipConverter;
 
   @Autowired private MongoCertificateToCertificateConverter mongoCertificateToCertificateConverter;
+
+  private Logger log = LoggerFactory.getLogger(getClass());
 
   private static Logger LOGGER = LoggerFactory.getLogger(MongoSampleToSampleConverter.class);
 
@@ -76,19 +79,46 @@ public class MongoSampleToSampleConverter implements Converter<MongoSample, Samp
       throw new RuntimeException("sample does not have domain " + sample);
     }
 
-    return new Sample.Builder(sample.getName(), sample.getAccession())
-        .withDomain(sample.getDomain())
-        .withRelease(sample.getRelease())
-        .withUpdate(sample.getUpdate())
-        .withCreate(sample.getCreate())
-        .withAttributes(sample.getAttributes())
-        .withRelationships(relationships)
-        .withData(sample.getData())
-        .withExternalReferences(externalReferences)
-        .withOrganizations(sample.getOrganizations())
-        .withContacts(sample.getContacts())
-        .withPublications(sample.getPublications())
-        .withCertificates(certificates)
-        .build();
+    Instant submitted = sample.getSubmitted();
+
+    log.info("Submitted is " + submitted);
+
+    if (submitted == null) {
+      log.info("Submitted is null here - ");
+    }
+
+    if (submitted == null) {
+      return new Sample.Builder(sample.getName(), sample.getAccession())
+          .withDomain(sample.getDomain())
+          .withRelease(sample.getRelease())
+          .withUpdate(sample.getUpdate())
+          .withCreate(sample.getCreate())
+          .withNoSubmitted()
+          .withAttributes(sample.getAttributes())
+          .withRelationships(relationships)
+          .withData(sample.getData())
+          .withExternalReferences(externalReferences)
+          .withOrganizations(sample.getOrganizations())
+          .withContacts(sample.getContacts())
+          .withPublications(sample.getPublications())
+          .withCertificates(certificates)
+          .build();
+    } else {
+      return new Sample.Builder(sample.getName(), sample.getAccession())
+          .withDomain(sample.getDomain())
+          .withRelease(sample.getRelease())
+          .withUpdate(sample.getUpdate())
+          .withCreate(sample.getCreate())
+          .withSubmitted(sample.getSubmitted())
+          .withAttributes(sample.getAttributes())
+          .withRelationships(relationships)
+          .withData(sample.getData())
+          .withExternalReferences(externalReferences)
+          .withOrganizations(sample.getOrganizations())
+          .withContacts(sample.getContacts())
+          .withPublications(sample.getPublications())
+          .withCertificates(certificates)
+          .build();
+    }
   }
 }
