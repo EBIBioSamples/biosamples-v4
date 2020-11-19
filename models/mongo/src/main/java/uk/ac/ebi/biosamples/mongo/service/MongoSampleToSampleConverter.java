@@ -81,12 +81,6 @@ public class MongoSampleToSampleConverter implements Converter<MongoSample, Samp
 
     Instant submitted = sample.getSubmitted();
 
-    log.info("Submitted is " + submitted);
-
-    if (submitted == null) {
-      log.info("Submitted is null here - ");
-    }
-
     if (submitted == null) {
       return new Sample.Builder(sample.getName(), sample.getAccession())
           .withDomain(sample.getDomain())

@@ -354,8 +354,6 @@ public class SampleService {
 
   private Instant defineSubmittedDate(
       final Sample sampleToUpdate, final Sample oldSample, boolean isFirstTimeMetadataAdded) {
-    log.info("Sample submitted date is " + sampleToUpdate.getSubmitted());
-
     final String domain = sampleToUpdate.getDomain();
 
     if (isPipelineNcbiDomain(domain)) {
