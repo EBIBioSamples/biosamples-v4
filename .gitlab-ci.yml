@@ -3,6 +3,7 @@ image: docker:latest
 stages:
   - build
 
+
 maven-build:
   image: maven:3.6-jdk-11
   stage: build
