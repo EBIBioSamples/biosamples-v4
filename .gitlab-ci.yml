@@ -10,5 +10,6 @@ maven-build:
   script:
     - mvn -X --version
     - cp ci_settings.xml /root/.m2/settings.xml
+    - cp settings-security.xml /root/.m2/settings-security.xml
     - cat /root/.m2/settings.xml
     - mvn -X -T 2C -P embl-ebi clean package -Dembedmongo.wait --quiet
