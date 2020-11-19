@@ -37,7 +37,7 @@ import uk.ac.ebi.biosamples.ebeye.gen.*;
 import uk.ac.ebi.biosamples.ebeye.util.LoadAttributeSet;
 import uk.ac.ebi.biosamples.model.Sample;
 
-@Component
+/*@Component
 public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
   private static Logger log = LoggerFactory.getLogger(EbEyeBioSamplesDataDumpRunner.class);
   private static final String BIOSAMPLES = "biosamples";
@@ -280,9 +280,8 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
   private String removeOtherSpecialCharactersFromAttributeNames(String type) {
     return type.trim().replaceAll("[^a-zA-Z0-9\\s+_-]", "");
   }
-}
+}*/
 
-/*
 // One time run for COVID-19 only
 
 @Component
@@ -425,23 +424,31 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
   }
 
   private AdditionalFieldsType getAdditionalFields(
-      Sample sample, EntryType entryType, AdditionalFieldsType additionalFieldsType) {
+          Sample sample, EntryType entryType, AdditionalFieldsType additionalFieldsType) {
     sample
-        .getAttributes()
-        .forEach(
-            attribute -> {
-              FieldType fieldType = new FieldType();
+            .getAttributes()
+            .forEach(
+                    attribute -> {
+                      FieldType fieldType = new FieldType();
 
-              if (attribute.getType().equals("description")) {
-                entryType.setDescription(attribute.getValue());
-              } else {
-                fieldType.setName(
-                    removeOtherSpecialCharactersFromAttributeNames(
-                        removeSpacesFromAttributeNames(attribute.getType())));
-                fieldType.setValue(attribute.getValue());
-                additionalFieldsType.getFieldOrHierarchicalField().add(fieldType);
-              }
-            });
+                      if (attribute.getType().equals("description")) {
+                        entryType.setDescription(attribute.getValue());
+                      } else {
+                        if (attribute.getType().equalsIgnoreCase("host")) {
+                          fieldType.setName(
+                                  removeOtherSpecialCharactersFromAttributeNames(
+                                          removeSpacesFromAttributeNames("host_scientific_name")));
+                          fieldType.setValue(attribute.getValue());
+                          additionalFieldsType.getFieldOrHierarchicalField().add(fieldType);
+                        } else {
+                          fieldType.setName(
+                                  removeOtherSpecialCharactersFromAttributeNames(
+                                          removeSpacesFromAttributeNames(attribute.getType())));
+                          fieldType.setValue(attribute.getValue());
+                          additionalFieldsType.getFieldOrHierarchicalField().add(fieldType);
+                        }
+                      }
+                    });
 
     return additionalFieldsType;
   }
@@ -462,4 +469,4 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
     convertSampleToXml(samplesList, f);
   }
 }
-*/
+
