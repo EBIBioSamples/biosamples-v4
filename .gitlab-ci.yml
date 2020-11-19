@@ -1,10 +1,7 @@
 image: docker:latest
-services:
-  - docker:dind
 
 stages:
   - build
-  - deploy
 
 maven-build:
   image: maven:3.6-jdk-11
