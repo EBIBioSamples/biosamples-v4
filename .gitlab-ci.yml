@@ -8,8 +8,8 @@ maven-build:
   image: maven:3.6-jdk-11
   stage: build
   script:
-    - mvn -X --version
+    - mvn --version
     - cp ci_settings.xml /root/.m2/settings.xml
     - cp settings-security.xml /root/.m2/settings-security.xml
     - cat /root/.m2/settings.xml
-    - mvn -X -T 2C -P embl-ebi clean package -Dembedmongo.wait --quiet
+    - mvn -T 2C -P embl-ebi clean package -Dembedmongo.wait --quiet
