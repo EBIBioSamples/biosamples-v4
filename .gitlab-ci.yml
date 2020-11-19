@@ -3,7 +3,6 @@ image: docker:latest
 stages:
   - build
 
-
 maven-build:
   image: maven:3.6-jdk-11
   stage: build
@@ -11,5 +10,4 @@ maven-build:
     - mvn --version
     - cp ci_settings.xml /root/.m2/settings.xml
     - cp settings-security.xml /root/.m2/settings-security.xml
-    - cat /root/.m2/settings.xml
     - mvn -T 2C -P embl-ebi clean package -Dembedmongo.wait --quiet
