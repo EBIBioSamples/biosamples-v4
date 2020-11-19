@@ -1,0 +1,13 @@
+image: docker:latest
+services:
+  - docker:dind
+
+stages:
+  - build
+  - deploy
+
+maven-build:
+  image: maven:3.6-jdk-11
+  stage: build
+  script:
+    - mvn -T 2C -P embl-ebi clean package -Dembedmongo.wait
