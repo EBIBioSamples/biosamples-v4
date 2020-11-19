@@ -2,6 +2,17 @@ stages:
   - build
   - deploy
 
+before_script:
+  ## Set timezone, default gitlab/docker can cause problem with DB
+  - TZ=Europe/London
+  - ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+  ## SSH config
+  - mkdir -p ~/.ssh
+  - chmod 700 ~/.ssh
+  - echo "$SSH_PRIVATE_KEY" >> ~/.ssh/id_rsa
+  - ssh-keyscan ebi-cli >> ~/.ssh/known_hosts
+  - chmod 644 ~/.ssh/known_hosts
+
 maven-build:
   image: maven:3.6-jdk-11
   stage: build
@@ -12,14 +23,7 @@ maven-build:
     - mvn -T 2C -P embl-ebi clean package -Dembedmongo.wait --quiet
 
 deploy:
+  image: docker:stable
   stage: deploy
   script:
-    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )'
-    - eval $(ssh-agent -s)
-    - echo "$NOAH_LOGIN_SSH_KEY" | tr -d '\r' | ssh-add -
-    - echo $CI_PROJECT_DIR
-    - mkdir -p ~/.ssh
-    - chmod 700 ~/.ssh
-    - ssh-keyscan ebi-cli >> ~/.ssh/known_hosts
-    - chmod 644 ~/.ssh/known_hosts
     - ssh -v -o StrictHostKeyChecking=no dgupta@ebi-cli become tc_spo01 "ssh wp-np2-40 'scp -r ebi-cli:$CI_PROJECT_DIR/webapps/core/target/webapps-core-5.0.3-SNAPSHOT.war /mnt/data/biosamples/sw/wwwdev'"
