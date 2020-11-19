@@ -501,8 +501,7 @@ public class SamplesRestController {
   private Instant defineCreateDate(final Sample sample) {
     final Instant now = Instant.now();
 
-    return (sample.getDomain() != null
-            && isNcbiOrEnaPipelineImportDomain(sample))
+    return (sample.getDomain() != null && isNcbiOrEnaPipelineImportDomain(sample))
         ? (sample.getCreate() != null ? sample.getCreate() : now)
         : now;
   }
@@ -510,15 +509,14 @@ public class SamplesRestController {
   private Instant defineSubmittedDate(final Sample sample) {
     final Instant now = Instant.now();
 
-    return (sample.getDomain() != null
-            && isNcbiOrEnaPipelineImportDomain(sample))
-            ? (sample.getSubmitted() != null ? sample.getSubmitted() : now)
-            : now;
+    return (sample.getDomain() != null && isNcbiOrEnaPipelineImportDomain(sample))
+        ? (sample.getSubmitted() != null ? sample.getSubmitted() : now)
+        : now;
   }
 
   private boolean isNcbiOrEnaPipelineImportDomain(Sample sample) {
     return sample.getDomain().equalsIgnoreCase(NCBI_IMPORT_DOMAIN)
-    || sample.getDomain().equalsIgnoreCase(ENA_IMPORT_DOMAIN);
+        || sample.getDomain().equalsIgnoreCase(ENA_IMPORT_DOMAIN);
   }
 
   @ResponseStatus(
