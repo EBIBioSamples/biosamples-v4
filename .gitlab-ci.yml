@@ -10,4 +10,4 @@ maven-build:
   script:
     - cp ci_settings.xml /root/.m2/settings.xml
     - cat /root/.m2/settings.xml
-    - mvn -T 2C -P embl-ebi clean package -Dembedmongo.wait
+    - mvn -T 2C -P embl-ebi clean package -Dembedmongo.wait --quiet
