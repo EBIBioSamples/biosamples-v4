@@ -12,7 +12,6 @@ maven-build:
     - mvn -T 2C -P embl-ebi clean package -Dembedmongo.wait --quiet
 
 deploy:
-  image: ubuntu:latest
   stage: deploy
   script:
     - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )'
