@@ -53,35 +53,43 @@
       "type": "object",
       "properties": {
         "project name": {
-          "description": "project name. Cardinality: optional",
+          "description": "project name.",
+          "cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
         "biological material ID": {
-          "description": "(DM-41) Biological material ID. Cardinality: mandatory",
+          "description": "(DM-41) Biological material ID.",
+          "cardinality": "mandatory",
           "$ref": "#/definitions/attribute_value_list"
         },
         "organism": {
-          "description": "(DM-42) Organism. Cardinality: mandatory",
+          "description": "(DM-42) Organism.",
+          "cardinality": "mandatory",
           "$ref": "#/definitions/attribute_value_list"
         },
         "genus": {
-          "description": "(DM-43) Genus. Cardinality: optional",
+          "description": "(DM-43) Genus.",
+					"cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
         "species": {
-          "description": "(DM-44) Species. Cardinality: optional",
+          "description": "(DM-44) Species.",
+					"cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
         "infraspecific name": {
-          "description": "(DM-44) Infraspecific name. Cardinality: recommended",
+          "description": "(DM-44) Infraspecific name.",
+          "cardinality": "recommended",
           "$ref": "#/definitions/attribute_value_list"
         },
         "ecotype": {
-          "description": "ecotype. Cardinality: optional",
+          "description": "ecotype.",
+					"cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
         "biological material latitude": {
-          "description": "(DM-45) Biological material latitude. Cardinality: optional",
+          "description": "(DM-45) Biological material latitude.",
+					"cardinality": "optional",
           "allOf": [
             {
               "$ref": "#/definitions/attribute_value_list"
@@ -92,7 +100,8 @@
           ]
         },
         "biological material longitude": {
-          "description": "(DM-46) Biological material longitude. Cardinality: optional",
+          "description": "(DM-46) Biological material longitude.",
+					"cardinality": "optional",
           "allOf": [
             {
               "$ref": "#/definitions/attribute_value_list"
@@ -103,27 +112,33 @@
           ]
         },
         "biological material altitude": {
-          "description": "(DM-47) Biological material altitude. Cardinality: optional",
+          "description": "(DM-47) Biological material altitude.",
+					"cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
         "biological material coordinates uncertainty": {
-          "description": "(DM-48) Biological material coordinates uncertainty. Cardinality: optional",
+          "description": "(DM-48) Biological material coordinates uncertainty.",
+					"cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
-        "biological material geographic location (country and/or sea)": {
-          "description": "Biological material geographic location (country and/or sea). Cardinality: optional",
+        "biological material geographic location": {
+          "description": "Biological material geographic location (country and/or sea).",
+					"cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
         "biological material preprocessing": {
-          "description": "(DM-49) Biological material preprocessing. Cardinality: optional",
+          "description": "(DM-49) Biological material preprocessing.",
+					"cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
-        "material source ID (Holding institute/stock centre, accession)": {
-          "description": "(DM-50) Material source ID (Holding institute/stock centre, accession). Cardinality: recommended",
+        "material source ID": {
+          "description": "(DM-50) Material source ID (Holding institute/stock centre, accession).",
+          "cardinality": "recommended",
           "$ref": "#/definitions/attribute_value_list"
         },
         "material source DOI": {
-          "description": "(DM-51) Material source DOI. Cardinality: recommended",
+          "description": "(DM-51) Material source DOI.",
+          "cardinality": "recommended",
           "$ref": "#/definitions/attribute_value_list",
           "allOf": [
             {
@@ -140,7 +155,8 @@
           ]
         },
         "material source latitude": {
-          "description": "(DM-52) Material source latitude. Cardinality: optional",
+          "description": "(DM-52) Material source latitude.",
+					"cardinality": "optional",
           "allOf": [
             {
               "$ref": "#/definitions/attribute_value_list"
@@ -151,7 +167,8 @@
           ]
         },
         "material source longitude": {
-          "description": "(DM-53) Material source longitude. Cardinality: optional",
+          "description": "(DM-53) Material source longitude.",
+					"cardinality": "optional",
           "allOf": [
             {
               "$ref": "#/definitions/attribute_value_list"
@@ -162,63 +179,78 @@
           ]
         },
         "material source altitude": {
-          "description": "(DM-54) Material source altitude. Cardinality: optional",
+          "description": "(DM-54) Material source altitude.",
+					"cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
         "material source coordinates uncertainty": {
-          "description": "(DM-55) Material source coordinates uncertainty. Cardinality: optional",
+          "description": "(DM-55) Material source coordinates uncertainty.",
+					"cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
         "material source description": {
-          "description": "(DM-56) Material source description. Cardinality: optional",
+          "description": "(DM-56) Material source description.",
+					"cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
-        "material source geographic location (country and/or sea)": {
-          "description": "Material source geographic location (country and/or sea). Cardinality: optional",
+        "material source geographic location": {
+          "description": "Material source geographic location (country and/or sea).",
+					"cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
         "miological material ploidy": {
-          "description": "Biological material ploidy. Cardinality: recommended",
+          "description": "Biological material ploidy.",
+          "cardinality": "recommended",
           "$ref": "#/definitions/attribute_value_list"
         },
-        "collected_by": {
-          "description": "collected_by. Cardinality: optional",
+        "collected by": {
+          "description": "collected by.",
+					"cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
         "collection date": {
-          "description": "collection date. Cardinality: optional",
+          "description": "collection date.",
+					"cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
         "sex": {
-          "description": "sex. Cardinality: optional",
+          "description": "sex.",
+					"cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
         "environment (biome)": {
-          "description": "environment (biome). Cardinality: optional",
+          "description": "environment (biome).",
+					"cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
         "plant structure development stage": {
-          "description": "DM-77 Plant structure development stage. Cardinality: optional",
+          "description": "DM-77 Plant structure development stage.",
+					"cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
         "plant anatomical entity": {
-          "description": "DM-78 Plant anatomical entity. Cardinality: optional",
+          "description": "DM-78 Plant anatomical entity.",
+					"cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
         "sample description": {
-          "description": "DM-79 Sample description. Cardinality: recommended",
+          "description": "DM-79 Sample description.",
+          "cardinality": "recommended",
           "$ref": "#/definitions/attribute_value_list"
         },
         "sample ID": {
-          "description": "DM-75 Sample ID. Cardinality: recommended",
+          "description": "DM-75 Sample ID.",
+          "cardinality": "recommended",
           "$ref": "#/definitions/attribute_value_list"
         },
         "environment parameter": {
-          "description": "DM-58 Environment parameter. Cardinality: optional",
+          "description": "DM-58 Environment parameter.",
+					"cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
         "environment parameter value": {
-          "description": "DM-59 Environment parameter value. Cardinality: optional",
+          "description": "DM-59 Environment parameter value.",
+					"cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         }
       },
