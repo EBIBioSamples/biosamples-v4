@@ -69,12 +69,12 @@
         },
         "genus": {
           "description": "(DM-43) Genus.",
-					"cardinality": "optional",
+          "cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
         "species": {
           "description": "(DM-44) Species.",
-					"cardinality": "optional",
+          "cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
         "infraspecific name": {
@@ -84,12 +84,12 @@
         },
         "ecotype": {
           "description": "Ecotype.",
-					"cardinality": "optional",
+          "cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
         "biological material latitude": {
           "description": "(DM-45) Biological material latitude.",
-					"cardinality": "optional",
+          "cardinality": "optional",
           "allOf": [
             {
               "$ref": "#/definitions/attribute_value_list"
@@ -101,7 +101,7 @@
         },
         "biological material longitude": {
           "description": "(DM-46) Biological material longitude.",
-					"cardinality": "optional",
+          "cardinality": "optional",
           "allOf": [
             {
               "$ref": "#/definitions/attribute_value_list"
@@ -113,22 +113,22 @@
         },
         "biological material altitude": {
           "description": "(DM-47) Biological material altitude.",
-					"cardinality": "optional",
+          "cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
         "biological material coordinates uncertainty": {
           "description": "(DM-48) Biological material coordinates uncertainty.",
-					"cardinality": "optional",
+          "cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
         "biological material geographic location": {
           "description": "Biological material geographic location (country and/or sea).",
-					"cardinality": "optional",
+          "cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
         "biological material preprocessing": {
           "description": "(DM-49) Biological material preprocessing.",
-					"cardinality": "optional",
+          "cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
         "material source ID": {
@@ -156,7 +156,7 @@
         },
         "material source latitude": {
           "description": "(DM-52) Material source latitude.",
-					"cardinality": "optional",
+          "cardinality": "optional",
           "allOf": [
             {
               "$ref": "#/definitions/attribute_value_list"
@@ -168,7 +168,7 @@
         },
         "material source longitude": {
           "description": "(DM-53) Material source longitude.",
-					"cardinality": "optional",
+          "cardinality": "optional",
           "allOf": [
             {
               "$ref": "#/definitions/attribute_value_list"
@@ -180,22 +180,22 @@
         },
         "material source altitude": {
           "description": "(DM-54) Material source altitude.",
-					"cardinality": "optional",
+          "cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
         "material source coordinates uncertainty": {
           "description": "(DM-55) Material source coordinates uncertainty.",
-					"cardinality": "optional",
+          "cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
         "material source description": {
           "description": "(DM-56) Material source description.",
-					"cardinality": "optional",
+          "cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
         "material source geographic location": {
           "description": "Material source geographic location (country and/or sea).",
-					"cardinality": "optional",
+          "cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
         "miological material ploidy": {
@@ -205,32 +205,32 @@
         },
         "collected by": {
           "description": "Collected by.",
-					"cardinality": "optional",
+          "cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
         "collection date": {
           "description": "Collection date.",
-					"cardinality": "optional",
+          "cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
         "sex": {
           "description": "Sex.",
-					"cardinality": "optional",
+          "cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
         "environment (biome)": {
           "description": "Environment (biome).",
-					"cardinality": "optional",
+          "cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
         "plant structure development stage": {
           "description": "DM-77 Plant structure development stage.",
-					"cardinality": "optional",
+          "cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
         "plant anatomical entity": {
           "description": "DM-78 Plant anatomical entity.",
-					"cardinality": "optional",
+          "cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
         "sample description": {
@@ -245,12 +245,12 @@
         },
         "environment parameter": {
           "description": "DM-58 Environment parameter.",
-					"cardinality": "optional",
+          "cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
         "environment parameter value": {
           "description": "DM-59 Environment parameter value.",
-					"cardinality": "optional",
+          "cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         }
       },
