@@ -53,7 +53,7 @@
       "type": "object",
       "properties": {
         "project name": {
-          "description": "project name.",
+          "description": "Project name.",
           "cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
@@ -83,7 +83,7 @@
           "$ref": "#/definitions/attribute_value_list"
         },
         "ecotype": {
-          "description": "ecotype.",
+          "description": "Ecotype.",
 					"cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
@@ -204,22 +204,22 @@
           "$ref": "#/definitions/attribute_value_list"
         },
         "collected by": {
-          "description": "collected by.",
+          "description": "Collected by.",
 					"cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
         "collection date": {
-          "description": "collection date.",
+          "description": "Collection date.",
 					"cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
         "sex": {
-          "description": "sex.",
+          "description": "Sex.",
 					"cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
         "environment (biome)": {
-          "description": "environment (biome).",
+          "description": "Environment (biome).",
 					"cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
