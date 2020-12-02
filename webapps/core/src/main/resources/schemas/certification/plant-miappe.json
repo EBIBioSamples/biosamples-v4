@@ -258,6 +258,10 @@
         "biological material ID",
         "organism"
       ],
+      "dependencies": {
+        "environment parameter":["environment parameter value"],
+        "environment parameter value":["environment parameter"]
+      },
       "additionalProperties": true
     }
   }
