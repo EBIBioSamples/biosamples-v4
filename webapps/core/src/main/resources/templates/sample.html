@@ -51,10 +51,16 @@
 
 			<div class="columns s_details">
 				<table class="sh__datetimes">
-					<tr>
+					<!--<tr>
 						<th>ID Created on</th>
 						<td	th:text="${#temporals.format(create, 'yyyy / MM / dd','UTC')}">2001 / 02 / 02 12:00:00</td>
-					</tr>
+					</tr>-->
+					<th:block th:if="${collected != null}">
+						<tr>
+							<th>Collected on</th>
+							<td	th:text="${#temporals.format(collected, 'yyyy / MM / dd','UTC')}">2001 / 02 / 02 12:00:00</td>
+						</tr>
+					</th:block>
 					<th:block th:if="${sample.submitted != null}">
 						<tr>
 							<th>Submitted on</th>
@@ -66,9 +72,15 @@
 						<td	th:text="${#temporals.format(release, 'yyyy / MM / dd','UTC')}">2001 / 02 / 02 12:00:00</td>
 					</tr>
 					<tr>
-						<th>Updated on</th>
+						<th>Last updated by submitter</th>
 						<td	th:text="${#temporals.format(update, 'yyyy / MM / dd','UTC')}">2001 / 02 / 02 12:00:00</td>
 					</tr>
+					<th:block th:if="${sample.reviewed != null}">
+						<tr>
+							<th>Last updated by curation</th>
+							<td	th:text="${#temporals.format(reviewed, 'yyyy / MM / dd','UTC')}">2001 / 02 / 02 12:00:00</td>
+						</tr>
+					</th:block>
 				</table>
 			</div>
 

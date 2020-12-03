@@ -91,7 +91,7 @@ public class SampleService {
 
     final String domain = sample.getDomain();
 
-    if (isPipelineEnaDomain(domain) || isPipelineNcbiDomain(domain))
+    if (isPipelineEnaOrNcbiDomain(domain))
       firstTimeMetadataAdded = false; // imported sample - never submitted first time to BSD
     else {
       if (sample.hasAccession()) {
@@ -105,6 +105,10 @@ public class SampleService {
     if (firstTimeMetadataAdded) log.info("First time metadata added");
 
     return firstTimeMetadataAdded;
+  }
+
+  private boolean isPipelineEnaOrNcbiDomain(String domain) {
+    return isPipelineEnaDomain(domain) || isPipelineNcbiDomain(domain);
   }
 
   private boolean isFirstTimeMetadataAdded(
@@ -131,7 +135,6 @@ public class SampleService {
       firstTimeMetadataAdded = false;
     }
 
-    // TODO: check release date
     return firstTimeMetadataAdded;
   }
 
@@ -325,9 +328,18 @@ public class SampleService {
     // NCBI, ENA.
 
     return Sample.Builder.fromSample(sampleToUpdate)
-        .withCreate(defineCreateDate(sampleToUpdate, oldSample))
-        .withSubmitted(defineSubmittedDate(sampleToUpdate, oldSample, isFirstTimeMetadataAdded))
-        .build();
+            .withCreate(defineCreateDate(sampleToUpdate, oldSample))
+            .withSubmitted(defineSubmittedDate(sampleToUpdate, oldSample, isFirstTimeMetadataAdded))
+            .withUpdate(defineUpdatedDate(sampleToUpdate, oldSample))
+            .build();
+  }
+
+  private Instant defineUpdatedDate(Sample sampleToUpdate, Sample oldSample) {
+    if (isPipelineEnaOrNcbiDomain(sampleToUpdate.getDomain())) {
+      return sampleToUpdate.getUpdate() != null ? sampleToUpdate.getUpdate() : oldSample.getUpdate() != null ? oldSample.getUpdate() : Instant.now();
+    } else {
+      return Instant.now();
+    }
   }
 
   private Instant defineCreateDate(final Sample sampleToUpdate, final Sample oldSample) {
