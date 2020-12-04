@@ -228,6 +228,26 @@ code[class^="language"] {
     cursor: pointer;
 }
 
+.collapsible-div::after {
+    content: "\002B";
+    margin-left: 10px;
+    font-size: 25px;
+    color: #027c82;
+    font-weight: bold;
+}
+
+.collapsible-div-active {
+    cursor: pointer;
+}
+
+.collapsible-div-active::after {
+    content: "\2212";
+    margin-left: 10px;
+    font-size: 25px;
+    color: #027c82;
+    font-weight: bold;
+}
+
 .content-div {
     display: none;
     overflow: hidden;
