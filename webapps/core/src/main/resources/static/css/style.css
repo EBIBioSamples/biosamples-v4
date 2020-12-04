@@ -224,6 +224,16 @@ code[class^="language"] {
     text-align: left;
 }
 
+.collapsible-div {
+    cursor: pointer;
+}
+
+.content-div {
+    display: none;
+    overflow: hidden;
+    text-align: left;
+}
+
 .external-reference-td {
     width: 70px;
 }
