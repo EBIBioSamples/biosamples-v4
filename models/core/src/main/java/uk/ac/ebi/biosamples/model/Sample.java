@@ -696,6 +696,11 @@ public class Sample implements Comparable<Sample> {
       return this;
     }
 
+    public Builder withNoReviewed() {
+      this.reviewed = null;
+      return this;
+    }
+
     public Builder withSubmittedVia(SubmittedViaType submittedVia) {
       this.submittedVia = submittedVia;
       return this;
