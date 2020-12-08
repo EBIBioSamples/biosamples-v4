@@ -11,7 +11,10 @@
 package uk.ac.ebi.biosamples.controller;
 
 import java.net.URI;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -31,6 +34,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
+import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.JsonLDDataCatalog;
 import uk.ac.ebi.biosamples.model.JsonLDDataset;
 import uk.ac.ebi.biosamples.model.Sample;
@@ -410,6 +414,27 @@ public class SampleHtmlController {
 
     if (submitted != null) model.addAttribute("submitted", submitted.atOffset(ZoneOffset.UTC));
     else model.addAttribute("submitted", null);
+
+    Instant reviewed = sample.get().getReviewed();
+
+    if (reviewed != null) model.addAttribute("reviewed", reviewed.atOffset(ZoneOffset.UTC));
+    else model.addAttribute("reviewed", null);
+
+    Optional<Attribute> collectionDate = sample.get().getAttributes().stream().filter(attribute ->
+            attribute.getType().equalsIgnoreCase("collection date")
+                    || attribute.getType().equalsIgnoreCase("collection_date"))
+            .findFirst();
+
+    try {
+      if (collectionDate.isPresent()) {
+        Instant collectionDateInstant = new SimpleDateFormat("yyyy-MM-dd").parse(collectionDate.get().getValue()).toInstant();
+        model.addAttribute("collected", collectionDateInstant.atOffset(ZoneOffset.UTC));
+      } else {
+        model.addAttribute("collected", null);
+      }
+    } catch (Exception e) {
+      model.addAttribute("collected", null);
+    }
 
     return "sample";
   }
