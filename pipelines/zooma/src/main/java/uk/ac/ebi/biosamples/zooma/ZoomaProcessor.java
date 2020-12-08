@@ -78,7 +78,7 @@ public class ZoomaProcessor {
     JsonNode n = responseEntity.getBody().get(0);
 
     // if result is anything other than "high" confidence, abort
-   /* if (!n.has("confidence") || !n.get("confidence").asText().equals("HIGH")) {
+    /* if (!n.has("confidence") || !n.get("confidence").asText().equals("HIGH")) {
       log.info(
           "Zooma did not map "
               + value

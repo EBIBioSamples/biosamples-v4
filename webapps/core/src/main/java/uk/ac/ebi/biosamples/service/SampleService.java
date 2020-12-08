@@ -328,15 +328,17 @@ public class SampleService {
     // NCBI, ENA.
 
     return Sample.Builder.fromSample(sampleToUpdate)
-            .withCreate(defineCreateDate(sampleToUpdate, oldSample))
-            .withSubmitted(defineSubmittedDate(sampleToUpdate, oldSample, isFirstTimeMetadataAdded))
-            .withUpdate(defineUpdatedDate(sampleToUpdate, oldSample))
-            .build();
+        .withCreate(defineCreateDate(sampleToUpdate, oldSample))
+        .withSubmitted(defineSubmittedDate(sampleToUpdate, oldSample, isFirstTimeMetadataAdded))
+        .withUpdate(defineUpdatedDate(sampleToUpdate, oldSample))
+        .build();
   }
 
   private Instant defineUpdatedDate(Sample sampleToUpdate, Sample oldSample) {
     if (isPipelineEnaOrNcbiDomain(sampleToUpdate.getDomain())) {
-      return sampleToUpdate.getUpdate() != null ? sampleToUpdate.getUpdate() : oldSample.getUpdate() != null ? oldSample.getUpdate() : Instant.now();
+      return sampleToUpdate.getUpdate() != null
+          ? sampleToUpdate.getUpdate()
+          : oldSample.getUpdate() != null ? oldSample.getUpdate() : Instant.now();
     } else {
       return Instant.now();
     }
