@@ -229,8 +229,7 @@ public class SampleRestController {
 
     SubmittedViaType submittedVia =
         sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
-    sample =
-        Sample.Builder.fromSample(sample).withSubmittedVia(submittedVia).build();
+    sample = Sample.Builder.fromSample(sample).withSubmittedVia(submittedVia).build();
 
     if (!accession.startsWith("SAMEG"))
       certificates = certifyService.certify(jsonMapper.writeValueAsString(sample), false);

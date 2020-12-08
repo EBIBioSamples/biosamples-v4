@@ -164,8 +164,8 @@ public class Sample implements Comparable<Sample> {
   @JsonProperty(value = "reviewedDate", access = JsonProperty.Access.READ_ONLY)
   public String getReviewedDate() {
     return reviewed != null
-            ? ZonedDateTime.ofInstant(reviewed, ZoneOffset.UTC).format(ISO_LOCAL_DATE)
-            : null;
+        ? ZonedDateTime.ofInstant(reviewed, ZoneOffset.UTC).format(ISO_LOCAL_DATE)
+        : null;
   }
 
   @JsonProperty(value = "taxId", access = JsonProperty.Access.READ_ONLY)
@@ -512,7 +512,7 @@ public class Sample implements Comparable<Sample> {
       @JsonProperty("submitted") @JsonDeserialize(using = CustomInstantDeserializer.class)
           Instant submitted,
       @JsonProperty("reviewed") @JsonDeserialize(using = CustomInstantDeserializer.class)
-              Instant reviewed,
+          Instant reviewed,
       @JsonProperty("characteristics") @JsonDeserialize(using = CharacteristicDeserializer.class)
           Collection<Attribute> attributes,
       @JsonProperty("data") Collection<AbstractData> structuredData,
@@ -979,7 +979,7 @@ public class Sample implements Comparable<Sample> {
           .withUpdate(sample.getUpdate())
           .withCreate(sample.getCreate())
           .withSubmitted(sample.getSubmitted())
-              .withReviewed(sample.getReviewed())
+          .withReviewed(sample.getReviewed())
           .withAttributes(sample.getAttributes())
           .withData(sample.getData())
           .withRelationships(sample.getRelationships())

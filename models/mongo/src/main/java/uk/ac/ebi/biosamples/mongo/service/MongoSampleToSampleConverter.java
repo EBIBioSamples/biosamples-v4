@@ -83,37 +83,39 @@ public class MongoSampleToSampleConverter implements Converter<MongoSample, Samp
     Instant submitted = sample.getSubmitted();
 
     if (submitted == null) {
-      convertedSample =  new Sample.Builder(sample.getName(), sample.getAccession())
-          .withDomain(sample.getDomain())
-          .withRelease(sample.getRelease())
-          .withUpdate(sample.getUpdate())
-          .withCreate(sample.getCreate())
-          .withNoSubmitted()
-          .withAttributes(sample.getAttributes())
-          .withRelationships(relationships)
-          .withData(sample.getData())
-          .withExternalReferences(externalReferences)
-          .withOrganizations(sample.getOrganizations())
-          .withContacts(sample.getContacts())
-          .withPublications(sample.getPublications())
-          .withCertificates(certificates)
-          .build();
+      convertedSample =
+          new Sample.Builder(sample.getName(), sample.getAccession())
+              .withDomain(sample.getDomain())
+              .withRelease(sample.getRelease())
+              .withUpdate(sample.getUpdate())
+              .withCreate(sample.getCreate())
+              .withNoSubmitted()
+              .withAttributes(sample.getAttributes())
+              .withRelationships(relationships)
+              .withData(sample.getData())
+              .withExternalReferences(externalReferences)
+              .withOrganizations(sample.getOrganizations())
+              .withContacts(sample.getContacts())
+              .withPublications(sample.getPublications())
+              .withCertificates(certificates)
+              .build();
     } else {
-      convertedSample =  new Sample.Builder(sample.getName(), sample.getAccession())
-          .withDomain(sample.getDomain())
-          .withRelease(sample.getRelease())
-          .withUpdate(sample.getUpdate())
-          .withCreate(sample.getCreate())
-          .withSubmitted(sample.getSubmitted())
-          .withAttributes(sample.getAttributes())
-          .withRelationships(relationships)
-          .withData(sample.getData())
-          .withExternalReferences(externalReferences)
-          .withOrganizations(sample.getOrganizations())
-          .withContacts(sample.getContacts())
-          .withPublications(sample.getPublications())
-          .withCertificates(certificates)
-          .build();
+      convertedSample =
+          new Sample.Builder(sample.getName(), sample.getAccession())
+              .withDomain(sample.getDomain())
+              .withRelease(sample.getRelease())
+              .withUpdate(sample.getUpdate())
+              .withCreate(sample.getCreate())
+              .withSubmitted(sample.getSubmitted())
+              .withAttributes(sample.getAttributes())
+              .withRelationships(relationships)
+              .withData(sample.getData())
+              .withExternalReferences(externalReferences)
+              .withOrganizations(sample.getOrganizations())
+              .withContacts(sample.getContacts())
+              .withPublications(sample.getPublications())
+              .withCertificates(certificates)
+              .build();
     }
 
     Instant reviewed = sample.getReviewed();
