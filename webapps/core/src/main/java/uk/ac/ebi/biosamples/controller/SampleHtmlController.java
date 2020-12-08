@@ -418,26 +418,6 @@ public class SampleHtmlController {
     if (reviewed != null) model.addAttribute("reviewed", reviewed.atOffset(ZoneOffset.UTC));
     else model.addAttribute("reviewed", null);
 
-    Optional<Attribute> collectionDate =
-        sample.get().getAttributes().stream()
-            .filter(
-                attribute ->
-                    attribute.getType().equalsIgnoreCase("collection date")
-                        || attribute.getType().equalsIgnoreCase("collection_date"))
-            .findFirst();
-
-    try {
-      if (collectionDate.isPresent()) {
-        Instant collectionDateInstant =
-            new SimpleDateFormat("yyyy-MM-dd").parse(collectionDate.get().getValue()).toInstant();
-        model.addAttribute("collected", collectionDateInstant.atOffset(ZoneOffset.UTC));
-      } else {
-        model.addAttribute("collected", null);
-      }
-    } catch (Exception e) {
-      model.addAttribute("collected", null);
-    }
-
     return "sample";
   }
 

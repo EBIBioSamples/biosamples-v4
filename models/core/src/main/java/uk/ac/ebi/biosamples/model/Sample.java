@@ -51,7 +51,6 @@ import uk.ac.ebi.biosamples.service.CustomInstantSerializer;
   "release",
   "update",
   "submitted",
-  "reviewed",
   "taxId",
   "characteristics",
   "relationships",
@@ -59,7 +58,6 @@ import uk.ac.ebi.biosamples.service.CustomInstantSerializer;
   "releaseDate",
   "updateDate",
   "submittedDate",
-  "reviewedDate",
   "submittedVia"
 })
 public class Sample implements Comparable<Sample> {
@@ -136,6 +134,7 @@ public class Sample implements Comparable<Sample> {
   }
 
   @JsonSerialize(using = CustomInstantSerializer.class)
+  @JsonIgnore
   public Instant getReviewed() {
     return reviewed;
   }
@@ -162,6 +161,7 @@ public class Sample implements Comparable<Sample> {
   }
 
   @JsonProperty(value = "reviewedDate", access = JsonProperty.Access.READ_ONLY)
+  @JsonIgnore
   public String getReviewedDate() {
     return reviewed != null
         ? ZonedDateTime.ofInstant(reviewed, ZoneOffset.UTC).format(ISO_LOCAL_DATE)
