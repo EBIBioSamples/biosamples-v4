@@ -72,10 +72,10 @@
                     <th><a href="/biosamples/docs/guides/dates#_released_on">Released on</a></th>
                     <td th:text="${#temporals.format(release, 'yyyy-MM-dd','UTC')}">2001 / 02 / 02 12:00:00</td>
                 </tr>
-                <tr>
+               <!-- <tr>
                     <th><a href="/biosamples/docs/guides/dates#_last_updated_by_submitter">Last updated by submitter</a></th>
                     <td th:text="${#temporals.format(update, 'yyyy-MM-dd','UTC')}">2001 / 02 / 02 12:00:00</td>
-                </tr>
+                </tr>-->
                 <th:block th:if="${sample.reviewed != null}">
                     <tr>
                         <th><a href="/biosamples/docs/guides/dates#_last_updated_by_curation">Last updated by curation</a></th>
