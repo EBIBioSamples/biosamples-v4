@@ -138,11 +138,14 @@ public class CurationReadService {
       relationships.add(relationship);
     }
 
-    // update the sample's reviewed date
-    Instant reviewed = curationLink.getCreated();
+    // update the sample's update date
+    Instant update = sample.getUpdate();
+    if (curationLink.getCreated().isAfter(update)) {
+      update = curationLink.getCreated();
+    }
 
     return Sample.Builder.fromSample(sample)
-        .withReviewed(reviewed)
+            .withUpdate(update)
         .withAttributes(attributes)
         .withExternalReferences(externalReferences)
         .withRelationships(relationships)

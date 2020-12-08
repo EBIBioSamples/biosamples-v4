@@ -54,13 +54,13 @@
                     <th>ID Created on</th>
                     <td	th:text="${#temporals.format(create, 'yyyy / MM / dd','UTC')}">2001 / 02 / 02 12:00:00</td>
                 </tr>-->
-                <th:block th:if="${collected != null}">
+               <!-- <th:block th:if="${collected != null}">
                     <tr>
                         <th><a href="/biosamples/docs/guides/dates#_collected_on">Collected on</a></th>
                         <td th:text="${#temporals.format(collected, 'yyyy-MM-dd','UTC')}">2001 / 02 / 02 12:00:00
                         </td>
                     </tr>
-                </th:block>
+                </th:block>-->
                 <th:block th:if="${sample.submitted != null}">
                     <tr>
                         <th><a href="/biosamples/docs/guides/dates#_submitted_on">Submitted on</a></th>
@@ -73,16 +73,16 @@
                     <td th:text="${#temporals.format(release, 'yyyy-MM-dd','UTC')}">2001 / 02 / 02 12:00:00</td>
                 </tr>
                 <tr>
-                    <th><a href="/biosamples/docs/guides/dates#_last_updated_by_submitter">Last updated by submitter</a></th>
+                    <th><a href="/biosamples/docs/guides/dates#_last_updated_by_curation">Last updated by curation</a></th>
                     <td th:text="${#temporals.format(update, 'yyyy-MM-dd','UTC')}">2001 / 02 / 02 12:00:00</td>
                 </tr>
-                <th:block th:if="${sample.reviewed != null}">
+                <!--<th:block th:if="${sample.reviewed != null}">
                     <tr>
                         <th><a href="/biosamples/docs/guides/dates#_last_updated_by_curation">Last updated by curation</a></th>
                         <td th:text="${#temporals.format(reviewed, 'yyyy-MM-dd','UTC')}">2001 / 02 / 02 12:00:00
                         </td>
                     </tr>
-                </th:block>
+                </th:block>-->
             </table>
 
         </div>

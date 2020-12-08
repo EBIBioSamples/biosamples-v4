@@ -118,12 +118,6 @@ public class MongoSampleToSampleConverter implements Converter<MongoSample, Samp
               .build();
     }
 
-    Instant reviewed = sample.getReviewed();
-
-    if (reviewed == null) {
-      return Sample.Builder.fromSample(convertedSample).withNoReviewed().build();
-    } else {
-      return Sample.Builder.fromSample(convertedSample).withReviewed(sample.getReviewed()).build();
-    }
+    return convertedSample;
   }
 }
