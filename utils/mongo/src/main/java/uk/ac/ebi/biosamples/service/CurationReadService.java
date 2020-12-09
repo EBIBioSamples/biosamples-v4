@@ -141,6 +141,14 @@ public class CurationReadService {
     // update the sample's reviewed date
     Instant reviewed = curationLink.getCreated();
 
+    if(reviewed != null) {
+      Instant update = sample.getUpdate();
+
+      if(update.isAfter(reviewed)) {
+        reviewed = update;
+      }
+    }
+
     return Sample.Builder.fromSample(sample)
         .withReviewed(reviewed)
         .withAttributes(attributes)

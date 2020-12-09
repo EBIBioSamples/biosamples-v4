@@ -330,7 +330,7 @@ public class SampleService {
     return Sample.Builder.fromSample(sampleToUpdate)
         .withCreate(defineCreateDate(sampleToUpdate, oldSample))
         .withSubmitted(defineSubmittedDate(sampleToUpdate, oldSample, isFirstTimeMetadataAdded))
-        .withUpdate(defineUpdatedDate(sampleToUpdate, oldSample))
+        //.withUpdate(defineUpdatedDate(sampleToUpdate, oldSample))
         .build();
   }
 

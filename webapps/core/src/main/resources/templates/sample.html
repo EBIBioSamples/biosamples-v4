@@ -78,7 +78,7 @@
                 </tr>-->
                 <th:block th:if="${sample.reviewed != null}">
                     <tr>
-                        <th><a href="/biosamples/docs/guides/dates#_last_updated_by_curation">Last updated by curation</a></th>
+                        <th><a href="/biosamples/docs/guides/dates#_last_reviewed">Last reviewed</a></th>
                         <td th:text="${#temporals.format(reviewed, 'yyyy-MM-dd','UTC')}">2001 / 02 / 02 12:00:00
                         </td>
                     </tr>

@@ -227,9 +227,12 @@ public class SampleRestController {
       }
     }
 
+    // update date is system generated field
+    Instant update = Instant.now();
+
     SubmittedViaType submittedVia =
         sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
-    sample = Sample.Builder.fromSample(sample).withSubmittedVia(submittedVia).build();
+    sample = Sample.Builder.fromSample(sample).withUpdate(update).withSubmittedVia(submittedVia).build();
 
     if (!accession.startsWith("SAMEG"))
       certificates = certifyService.certify(jsonMapper.writeValueAsString(sample), false);
