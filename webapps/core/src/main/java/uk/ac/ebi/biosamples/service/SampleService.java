@@ -102,7 +102,7 @@ public class SampleService {
       }
     }
 
-    if (firstTimeMetadataAdded) log.info("First time metadata added");
+    if (firstTimeMetadataAdded) log.trace("First time metadata added");
 
     return firstTimeMetadataAdded;
   }
