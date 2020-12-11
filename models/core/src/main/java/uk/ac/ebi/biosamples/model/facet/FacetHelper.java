@@ -58,25 +58,8 @@ public class FacetHelper {
       List.of("release"); // we are only supporting date range facets now
 
   public static final List<String> IGNORE_FACETING_FIELDS =
-      List.of(
-          "description",
-          "title",
-          "NCBI submission model",
-          "External Id",
-          "INSDC last update",
-          "INSDC first public",
-          "INSDC status",
-          "INSDC center name",
-          "INSDC center alias",
-          "description title",
-          "gap subject id",
-          "gap accession",
-          "gap sample id",
-          "external ID",
-          "submitted subject id",
-          "submitted sample id",
-          "submitter handle",
-          "biospecimen repository sample id");
+          List.of("description", "title", "NCBI submission model", "External Id", "INSDC last update",
+                  "INSDC first public", "INSDC status");
 
   public static String get_encoding_suffix(String attribute) {
     String suffix = "";

@@ -260,7 +260,6 @@ public class CurationReadServiceTest {
         Instant.now(),
         Instant.now(),
         Instant.now(),
-        Instant.now(),
         attributes,
         relationships,
         externalReferences,

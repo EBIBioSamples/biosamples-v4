@@ -151,20 +151,19 @@ public class RegularFacetFetchStrategy implements FacetFetchStrategy {
           listFacetContent.add(LabelCountEntry.build(ffe.getValue(), ffe.getValueCount()));
         }
 
-        // todo only add if not empty or remove
-        //        if (facetPage.getRangeFacetResultPage(fieldName).getTotalElements() < 1) {
-        //          break;
-        //        }
+        //todo only add if not empty or remove
+//        if (facetPage.getRangeFacetResultPage(fieldName).getTotalElements() < 1) {
+//          break;
+//        }
         for (FacetFieldEntry ffe : facetPage.getRangeFacetResultPage(fieldName)) {
           listFacetContent.add(LabelCountEntry.build(ffe.getValue(), ffe.getValueCount()));
         }
 
         if (!listFacetContent.isEmpty()) {
-          Facet facet =
-              solrSampleField
-                  .getFacetBuilder(solrSampleField.getReadableLabel(), fieldCount)
-                  .withContent(new LabelCountListContent(listFacetContent))
-                  .build();
+          Facet facet = solrSampleField
+                          .getFacetBuilder(solrSampleField.getReadableLabel(), fieldCount)
+                          .withContent(new LabelCountListContent(listFacetContent))
+                          .build();
           facetResults.add(Optional.of(facet));
         }
       }
