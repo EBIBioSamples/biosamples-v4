@@ -83,6 +83,7 @@ public class SampleToMongoSampleStructuredDataCentricConverter
         sample.getUpdate(),
         sample.getCreate(),
         sample.getSubmitted(),
+        sample.getReviewed(),
         sample.getCharacteristics(),
         sample.getData(),
         relationships,
