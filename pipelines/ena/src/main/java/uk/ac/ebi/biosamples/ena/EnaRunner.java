@@ -64,7 +64,7 @@ public class EnaRunner implements ApplicationRunner {
 
     if (includeAmr && isFirstDayOfTheWeek()) {
       try {
-        //sampleToAmrMap = amrDataLoaderService.loadAmrData();
+        // sampleToAmrMap = amrDataLoaderService.loadAmrData();
       } catch (final Exception e) {
         log.error("Error in processing AMR data from ENA API - continue with the pipeline");
       }

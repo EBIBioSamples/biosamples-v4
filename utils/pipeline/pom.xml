@@ -1,3 +1,56 @@
+<<<<<<< HEAD
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>utils-pipeline</artifactId>
+	<packaging>jar</packaging>
+
+	<parent>
+		<groupId>uk.ac.ebi.biosamples</groupId>
+		<artifactId>biosamples</artifactId>
+		<version>5.0.3-SNAPSHOT</version>
+		<relativePath>../../</relativePath>
+	</parent>
+
+	<dependencies>
+		<dependency>
+			<groupId>uk.ac.ebi.biosamples</groupId>
+			<artifactId>biosamples-spring-boot-starter</artifactId>
+			<version>5.0.3-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.hateoas</groupId>
+			<artifactId>spring-hateoas</artifactId>
+		</dependency>
+
+		<!-- HTTP POST handling -->
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient-cache</artifactId>
+			<version>${httpclient.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>xmlunit</groupId>
+			<artifactId>xmlunit</artifactId>
+			<version>1.4</version>
+		</dependency>
+<!--        <dependency>-->
+<!--            <groupId>uk.ac.ebi.biosamples</groupId>-->
+<!--            <artifactId>utils-mongo</artifactId>-->
+<!--            <version>4.2.6-SNAPSHOT</version>-->
+<!--        </dependency>-->
+
+		<!-- AMR processing -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-csv</artifactId>
+			<version>2.8.8</version>
+		</dependency>
+	</dependencies>
+</project>
+=======
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
@@ -49,3 +102,4 @@
 		</dependency>
 	</dependencies>
 </project>
+>>>>>>> remotes/origin/master

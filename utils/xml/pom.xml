@@ -1,3 +1,37 @@
+<<<<<<< HEAD
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>utils-xml</artifactId>
+	<packaging>jar</packaging>
+
+	<parent>
+		<groupId>uk.ac.ebi.biosamples</groupId>
+		<artifactId>biosamples</artifactId>
+		<version>5.0.3-SNAPSHOT</version>
+		<relativePath>../../</relativePath>
+	</parent>
+
+	<dependencies>
+
+		<!-- use Dom4J for XML conversions -->
+		<dependency>
+			<groupId>dom4j</groupId>
+			<artifactId>dom4j</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>xmlunit</groupId>
+			<artifactId>xmlunit</artifactId>
+			<version>1.4</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-aop</artifactId>
+		</dependency>
+	</dependencies>
+</project>
+=======
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
@@ -30,3 +64,4 @@
 		</dependency>
 	</dependencies>
 </project>
+>>>>>>> remotes/origin/master

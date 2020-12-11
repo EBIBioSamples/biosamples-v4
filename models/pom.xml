@@ -1,3 +1,40 @@
+<<<<<<< HEAD
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>models</artifactId>
+
+	<packaging>pom</packaging>
+	<dependencies>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-annotations</artifactId>
+			<version>2.9.9</version>
+		</dependency>
+	</dependencies>
+
+	<parent>
+		<groupId>uk.ac.ebi.biosamples</groupId>
+		<artifactId>biosamples</artifactId>
+		<version>5.0.3-SNAPSHOT</version>
+	</parent>
+
+	<modules>
+		<module>core</module>
+		<module>mongo</module>
+		<module>solr</module>
+		<module>sitemap</module>
+		<module>jsonld</module>
+		<module>ga4gh</module>
+		<module>legacyxml</module>
+		<module>legacyjson</module>
+		<module>structured</module>
+		<module>neo4j</module>
+		<module>curami</module>
+	</modules>
+</project>
+=======
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
@@ -33,3 +70,4 @@
 		<module>curami</module>
 	</modules>
 </project>
+>>>>>>> remotes/origin/master

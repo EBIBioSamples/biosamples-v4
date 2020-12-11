@@ -11,33 +11,22 @@
 package uk.ac.ebi.biosamples.ebeye.base;
 
 import com.mongodb.*;
-import com.mongodb.operation.OrderBy;
 import java.io.File;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.ebeye.gen.*;
-import uk.ac.ebi.biosamples.ebeye.util.LoadAttributeSet;
 import uk.ac.ebi.biosamples.model.Sample;
 
-@Component
+/*@Component
 public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
   private static Logger log = LoggerFactory.getLogger(EbEyeBioSamplesDataDumpRunner.class);
   private static final String BIOSAMPLES = "biosamples";
@@ -280,9 +269,8 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
   private String removeOtherSpecialCharactersFromAttributeNames(String type) {
     return type.trim().replaceAll("[^a-zA-Z0-9\\s+_-]", "");
   }
-}
+}*/
 
-/*
 // One time run for COVID-19 only
 
 @Component
@@ -435,11 +423,19 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
               if (attribute.getType().equals("description")) {
                 entryType.setDescription(attribute.getValue());
               } else {
-                fieldType.setName(
-                    removeOtherSpecialCharactersFromAttributeNames(
-                        removeSpacesFromAttributeNames(attribute.getType())));
-                fieldType.setValue(attribute.getValue());
-                additionalFieldsType.getFieldOrHierarchicalField().add(fieldType);
+                if (attribute.getType().equalsIgnoreCase("host")) {
+                  fieldType.setName(
+                      removeOtherSpecialCharactersFromAttributeNames(
+                          removeSpacesFromAttributeNames("host_scientific_name")));
+                  fieldType.setValue(attribute.getValue());
+                  additionalFieldsType.getFieldOrHierarchicalField().add(fieldType);
+                } else {
+                  fieldType.setName(
+                      removeOtherSpecialCharactersFromAttributeNames(
+                          removeSpacesFromAttributeNames(attribute.getType())));
+                  fieldType.setValue(attribute.getValue());
+                  additionalFieldsType.getFieldOrHierarchicalField().add(fieldType);
+                }
               }
             });
 
@@ -462,4 +458,3 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
     convertSampleToXml(samplesList, f);
   }
 }
-*/
