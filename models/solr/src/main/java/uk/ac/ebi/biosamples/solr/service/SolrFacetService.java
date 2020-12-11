@@ -113,7 +113,8 @@ public class SolrFacetService {
           .get(0)
           .getKey()
           .getFacetCollectionStrategy()
-          .fetchFacetsUsing(solrSampleRepository, query, allFacetFields, facetValuesPageInfo)
+          .fetchFacetsUsing(
+              solrSampleRepository, query, allFacetFields, facetValuesPageInfo)
           .forEach(opt -> opt.ifPresent(facets::add));
     }
 
@@ -155,17 +156,12 @@ public class SolrFacetService {
     Optional<FilterQuery> optionalFilter = solrFilterService.getFilterQuery(filters);
     optionalFilter.ifPresent(query::addFilterQuery);
 
-    List<Entry<SolrSampleField, Long>> allFacetFields =
-        getFacetFields(facetFieldPageInfo, query, isLandingPage);
+    List<Entry<SolrSampleField, Long>> allFacetFields = getFacetFields(facetFieldPageInfo, query, isLandingPage);
 
     List<Entry<SolrSampleField, Long>> rangeFacetFields =
-        FacetHelper.RANGE_FACETING_FIELDS.stream()
-            .map(
-                s ->
-                    new SimpleEntry<>(
-                        this.solrFieldService.decodeField(s + FacetHelper.get_encoding_suffix(s)),
-                        0L))
-            .collect(Collectors.toList());
+            FacetHelper.RANGE_FACETING_FIELDS.stream()
+                    .map(s -> new SimpleEntry<>(this.solrFieldService.decodeField(s + FacetHelper.get_encoding_suffix(s)), 0L))
+                    .collect(Collectors.toList());
 
     if (!allFacetFields.isEmpty()) {
       allFacetFields
@@ -184,23 +180,16 @@ public class SolrFacetService {
     return facets;
   }
 
-  private List<Entry<SolrSampleField, Long>> getFacetFields(
-      Pageable facetFieldPageInfo, FacetQuery query, boolean isLandingPage) {
+  private List<Entry<SolrSampleField, Long>> getFacetFields(Pageable facetFieldPageInfo, FacetQuery query, boolean isLandingPage) {
     int facetLimit = 10;
     List<Entry<SolrSampleField, Long>> allFacetFields;
 
-    // short-circuit for landing search page
+    //short-circuit for landing search page
     if (isLandingPage) {
-      allFacetFields =
-          FacetHelper.FACETING_FIELDS.stream()
+      allFacetFields = FacetHelper.FACETING_FIELDS.stream()
               .limit(facetLimit)
-              .map(
-                  s ->
-                      new SimpleEntry<>(
-                          this.solrFieldService.decodeField(
-                              SolrFieldService.encodeFieldName(s)
-                                  + FacetHelper.get_encoding_suffix(s)),
-                          0L))
+              .map(s -> new SimpleEntry<>(this.solrFieldService.decodeField(
+                      SolrFieldService.encodeFieldName(s) + FacetHelper.get_encoding_suffix(s)), 0L))
               .collect(Collectors.toList());
     } else {
       allFacetFields = getDynamicFacetFields(facetFieldPageInfo, query, facetLimit);
@@ -209,11 +198,9 @@ public class SolrFacetService {
     return allFacetFields;
   }
 
-  private List<Entry<SolrSampleField, Long>> getDynamicFacetFields(
-      Pageable facetFieldPageInfo, FacetQuery query, int facetLimit) {
+  private List<Entry<SolrSampleField, Long>> getDynamicFacetFields(Pageable facetFieldPageInfo, FacetQuery query, int facetLimit) {
     List<Entry<SolrSampleField, Long>> allFacetFields = new ArrayList<>();
-    Page<FacetFieldEntry> facetFields =
-        solrSampleRepository.getFacetFields(query, facetFieldPageInfo);
+    Page<FacetFieldEntry> facetFields = solrSampleRepository.getFacetFields(query, facetFieldPageInfo);
     int facetCount = 0;
     for (FacetFieldEntry ffe : facetFields) {
       SolrSampleField solrSampleField = this.solrFieldService.decodeField(ffe.getValue());
@@ -231,8 +218,8 @@ public class SolrFacetService {
         break;
       }
       SolrSampleField solrSampleField = this.solrFieldService.decodeField(ffe.getValue());
-      if (!FacetHelper.FACETING_FIELDS.contains(solrSampleField.getReadableLabel())
-          && !FacetHelper.IGNORE_FACETING_FIELDS.contains(solrSampleField.getReadableLabel())) {
+      if (!FacetHelper.FACETING_FIELDS.contains(solrSampleField.getReadableLabel()) &&
+              !FacetHelper.IGNORE_FACETING_FIELDS.contains(solrSampleField.getReadableLabel())) {
         Long facetFieldCount = ffe.getValueCount();
         allFacetFields.add(new SimpleEntry<>(solrSampleField, facetFieldCount));
       }

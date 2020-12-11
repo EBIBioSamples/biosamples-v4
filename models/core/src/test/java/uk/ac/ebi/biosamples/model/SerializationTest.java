@@ -117,17 +117,17 @@ public class SerializationTest {
     //		return Sample.build(name, accession, domain, release, update, attributes, relationships,
     // externalReferences, organizations, contacts, publications);
     return new Sample.Builder(name, accession)
-        .withDomain(domain)
-        .withRelease(release)
-        .withUpdate(update)
-        .withSubmitted(submitted)
-        .withAttributes(attributes)
-        .withRelationships(relationships)
-        .withExternalReferences(externalReferences)
-        .withOrganizations(organizations)
-        .withContacts(contacts)
-        .withPublications(publications)
-        .build();
+            .withDomain(domain)
+            .withRelease(release)
+            .withUpdate(update)
+            .withSubmitted(submitted)
+            .withAttributes(attributes)
+            .withRelationships(relationships)
+            .withExternalReferences(externalReferences)
+            .withOrganizations(organizations)
+            .withContacts(contacts)
+            .withPublications(publications)
+            .build();
   }
 
   @Test
