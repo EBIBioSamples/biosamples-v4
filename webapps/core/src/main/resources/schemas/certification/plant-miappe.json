@@ -198,7 +198,7 @@
           "cardinality": "optional",
           "$ref": "#/definitions/attribute_value_list"
         },
-        "miological material ploidy": {
+        "biological material ploidy": {
           "description": "Biological material ploidy.",
           "cardinality": "recommended",
           "$ref": "#/definitions/attribute_value_list"
