@@ -44,7 +44,6 @@ public class MongoSampleToSampleConverter implements Converter<MongoSample, Samp
 
   @Override
   public Sample convert(MongoSample sample) {
-    Sample convertedSample;
     final SortedSet<ExternalReference> externalReferences = new TreeSet<>();
 
     if (sample.getExternalReferences() != null && sample.getExternalReferences().size() > 0) {
@@ -82,9 +81,14 @@ public class MongoSampleToSampleConverter implements Converter<MongoSample, Samp
 
     Instant submitted = sample.getSubmitted();
 
+    log.info("Submitted is " + submitted);
+
+    if(submitted == null) {
+      log.info("Submitted is null here - ");
+    }
+
     if (submitted == null) {
-      convertedSample =
-          new Sample.Builder(sample.getName(), sample.getAccession())
+      return new Sample.Builder(sample.getName(), sample.getAccession())
               .withDomain(sample.getDomain())
               .withRelease(sample.getRelease())
               .withUpdate(sample.getUpdate())
@@ -100,8 +104,7 @@ public class MongoSampleToSampleConverter implements Converter<MongoSample, Samp
               .withCertificates(certificates)
               .build();
     } else {
-      convertedSample =
-          new Sample.Builder(sample.getName(), sample.getAccession())
+      return new Sample.Builder(sample.getName(), sample.getAccession())
               .withDomain(sample.getDomain())
               .withRelease(sample.getRelease())
               .withUpdate(sample.getUpdate())
@@ -116,14 +119,6 @@ public class MongoSampleToSampleConverter implements Converter<MongoSample, Samp
               .withPublications(sample.getPublications())
               .withCertificates(certificates)
               .build();
-    }
-
-    Instant reviewed = sample.getReviewed();
-
-    if (reviewed == null) {
-      return Sample.Builder.fromSample(convertedSample).withNoReviewed().build();
-    } else {
-      return Sample.Builder.fromSample(convertedSample).withReviewed(sample.getReviewed()).build();
     }
   }
 }

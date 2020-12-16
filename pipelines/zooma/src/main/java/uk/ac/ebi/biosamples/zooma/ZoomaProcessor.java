@@ -78,7 +78,7 @@ public class ZoomaProcessor {
     JsonNode n = responseEntity.getBody().get(0);
 
     // if result is anything other than "high" confidence, abort
-    /* if (!n.has("confidence") || !n.get("confidence").asText().equals("HIGH")) {
+    if (!n.has("confidence") || !n.get("confidence").asText().equals("HIGH")) {
       log.info(
           "Zooma did not map "
               + value
@@ -88,7 +88,7 @@ public class ZoomaProcessor {
               + ((endTime - startTime) / 1000000)
               + "ms");
       return Optional.empty();
-    }*/
+    }
 
     // if result has anything other than 1 semantic tag, abort
     if (!n.has("semanticTags") || n.get("semanticTags").size() != 1) {

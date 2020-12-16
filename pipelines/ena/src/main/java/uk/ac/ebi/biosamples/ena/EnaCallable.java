@@ -265,7 +265,6 @@ public class EnaCallable implements Callable<Void> {
             update,
             create,
             submitted,
-            null,
             attributes,
             sample.getRelationships(),
             externalReferences);
