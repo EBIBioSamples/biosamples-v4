@@ -111,6 +111,10 @@ public class SampleService {
 
   private boolean isFirstTimeMetadataAdded(boolean firstTimeMetadataAdded, MongoSample mongoOldSample) {
     Sample oldSample = mongoSampleToSampleConverter.convert(mongoOldSample);
+	
+	 if (oldSample.getTaxId() != null && oldSample.getTaxId() > 0) {
+      firstTimeMetadataAdded = false;
+    }
 
     if (oldSample.getAttributes().size() > 0) {
       firstTimeMetadataAdded = false;
