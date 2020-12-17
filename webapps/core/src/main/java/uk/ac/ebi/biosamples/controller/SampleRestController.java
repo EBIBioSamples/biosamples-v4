@@ -232,8 +232,7 @@ public class SampleRestController {
 
     SubmittedViaType submittedVia =
         sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
-    sample =
-        Sample.Builder.fromSample(sample).withUpdate(update).withSubmittedVia(submittedVia).build();
+    sample = Sample.Builder.fromSample(sample).withUpdate(update).withSubmittedVia(submittedVia).build();
 
     if (!accession.startsWith("SAMEG"))
       certificates = certifyService.certify(jsonMapper.writeValueAsString(sample), false);
@@ -245,7 +244,6 @@ public class SampleRestController {
     if (isFirstTimeMetadataAdded) {
       Instant now = Instant.now();
 
-      log.info("Setting submitted date is " + sample.getSubmitted());
       sample = Sample.Builder.fromSample(sample).withSubmitted(now).build();
     }
 
@@ -255,8 +253,6 @@ public class SampleRestController {
     }
 
     sample = sampleService.store(sample, isFirstTimeMetadataAdded);
-
-    log.info("Sample submitted date is after store " + sample.getSubmitted());
 
     // assemble a resource to return
     // create the response object with the appropriate status

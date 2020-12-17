@@ -13,6 +13,7 @@ package uk.ac.ebi.biosamples.model.ga4gh.phenopacket;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Timestamp;
 import com.google.protobuf.util.JsonFormat;
+import java.util.*;
 import org.phenopackets.schema.v1.Phenopacket;
 import org.phenopackets.schema.v1.core.*;
 import org.slf4j.Logger;
@@ -20,8 +21,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
-
-import java.util.*;
 
 @Service
 public class PhenopacketConverter {
@@ -57,7 +56,8 @@ public class PhenopacketConverter {
         .build();
   }
 
-  private MetaData populateMetadata(Map<String, PhenopacketAttribute> attributes, List<PhenopacketAttribute> diseases) {
+  private MetaData populateMetadata(
+      Map<String, PhenopacketAttribute> attributes, List<PhenopacketAttribute> diseases) {
     Set<Resource> resources = new HashSet<>();
     for (PhenopacketAttribute a : attributes.values()) {
       phenopacketConversionHelper.getResource(a).ifPresent(resources::add);
@@ -67,10 +67,10 @@ public class PhenopacketConverter {
     }
 
     return MetaData.newBuilder()
-            .setCreated(Timestamp.newBuilder())
-            .setCreatedBy("Biosamples phenopacket exporter")
-            .addAllResources(resources)
-            .build();
+        .setCreated(Timestamp.newBuilder())
+        .setCreatedBy("Biosamples phenopacket exporter")
+        .addAllResources(resources)
+        .build();
   }
 
   private Individual populateSubject(Sample sample, Map<String, PhenopacketAttribute> attributes) {
@@ -105,33 +105,43 @@ public class PhenopacketConverter {
       builder.setDescription(attributes.get("description").getValue());
     }
     if (attributes.containsKey("age")) {
-      builder.setAgeOfIndividualAtCollection(Age.newBuilder().setAge(attributes.get("age").getValue()).build());
+      builder.setAgeOfIndividualAtCollection(
+          Age.newBuilder().setAge(attributes.get("age").getValue()).build());
     }
-    //phenotypic feature
+    // phenotypic feature
     if (attributes.containsKey("phenotype")) {
-      builder.addPhenotypicFeatures(phenopacketConversionHelper.getPhenotype(attributes.get("phenotype")));
+      builder.addPhenotypicFeatures(
+          phenopacketConversionHelper.getPhenotype(attributes.get("phenotype")));
     }
     if (attributes.containsKey("developmental stage")) {
-      builder.addPhenotypicFeatures(phenopacketConversionHelper.getPhenotype(attributes.get("developmental stage")));
+      builder.addPhenotypicFeatures(
+          phenopacketConversionHelper.getPhenotype(attributes.get("developmental stage")));
     }
 
     if (attributes.containsKey("tissue")) {
       builder.setSampledTissue(phenopacketConversionHelper.getOntology(attributes.get("tissue")));
     }
     if (attributes.containsKey("diagnosis")) {
-      builder.setSampledTissue(phenopacketConversionHelper.getOntology(attributes.get("diagnosis")));
+      builder.setSampledTissue(
+          phenopacketConversionHelper.getOntology(attributes.get("diagnosis")));
     }
     if (attributes.containsKey("tumor grade")) {
-      builder.setSampledTissue(phenopacketConversionHelper.getOntology(attributes.get("tumor grade")));
+      builder.setSampledTissue(
+          phenopacketConversionHelper.getOntology(attributes.get("tumor grade")));
     }
     if (attributes.containsKey("tumor progression")) {
-      builder.setSampledTissue(phenopacketConversionHelper.getOntology(attributes.get("tumor progression")));
+      builder.setSampledTissue(
+          phenopacketConversionHelper.getOntology(attributes.get("tumor progression")));
     }
     if (attributes.containsKey("biomarker")) {
-      builder.setSampledTissue(phenopacketConversionHelper.getOntology(attributes.get("biomarker")));
+      builder.setSampledTissue(
+          phenopacketConversionHelper.getOntology(attributes.get("biomarker")));
     }
     if (attributes.containsKey("procedure")) {
-      builder.setProcedure(Procedure.newBuilder().setCode(phenopacketConversionHelper.getOntology(attributes.get("procedure"))).build());
+      builder.setProcedure(
+          Procedure.newBuilder()
+              .setCode(phenopacketConversionHelper.getOntology(attributes.get("procedure")))
+              .build());
     }
     if (attributes.containsKey("variants")) {
       builder.setSampledTissue(phenopacketConversionHelper.getOntology(attributes.get("variants")));
@@ -149,7 +159,10 @@ public class PhenopacketConverter {
     return diseaseList;
   }
 
-  private void normalizeAttributes(Sample sample, Map<String, PhenopacketAttribute> attributeMap, List<PhenopacketAttribute> diseases) {
+  private void normalizeAttributes(
+      Sample sample,
+      Map<String, PhenopacketAttribute> attributeMap,
+      List<PhenopacketAttribute> diseases) {
     for (Attribute attribute : sample.getAttributes()) {
       getAge(attribute).ifPresent(a -> addToMap(attributeMap, a));
       getDescription(attribute).ifPresent(a -> addToMap(attributeMap, a));
@@ -157,10 +170,12 @@ public class PhenopacketConverter {
 
       if (!attribute.getIri().isEmpty()) {
         getOrganism(attribute).ifPresent(a -> addToMap(attributeMap, a));
-        getDisease(attribute).ifPresent(a -> {
-          addToMap(attributeMap, a);
-          diseases.add(a);
-        });
+        getDisease(attribute)
+            .ifPresent(
+                a -> {
+                  addToMap(attributeMap, a);
+                  diseases.add(a);
+                });
 
         getPhenotypicFeatures(attribute).ifPresent(a -> addToMap(attributeMap, a));
         getSampleTissue(attribute).ifPresent(a -> addToMap(attributeMap, a));
@@ -183,9 +198,9 @@ public class PhenopacketConverter {
 
   private Optional<PhenopacketAttribute> getSex(Attribute attribute) {
     Optional<PhenopacketAttribute> normalisedAttribute;
-    if ("sex".equalsIgnoreCase(attribute.getType()) ||
-            "gender".equalsIgnoreCase(attribute.getType()) ||
-            "vioscreen gender".equalsIgnoreCase(attribute.getType())) {
+    if ("sex".equalsIgnoreCase(attribute.getType())
+        || "gender".equalsIgnoreCase(attribute.getType())
+        || "vioscreen gender".equalsIgnoreCase(attribute.getType())) {
       normalisedAttribute = phenopacketConversionHelper.convertAttribute("sex", attribute);
     } else {
       normalisedAttribute = Optional.empty();
@@ -195,8 +210,8 @@ public class PhenopacketConverter {
 
   private Optional<PhenopacketAttribute> getOrganism(Attribute attribute) {
     Optional<PhenopacketAttribute> normalisedAttribute;
-    if ("organism".equalsIgnoreCase(attribute.getType()) ||
-            "species".equalsIgnoreCase(attribute.getType())) {
+    if ("organism".equalsIgnoreCase(attribute.getType())
+        || "species".equalsIgnoreCase(attribute.getType())) {
       normalisedAttribute = phenopacketConversionHelper.convertAttribute("organism", attribute);
     } else {
       normalisedAttribute = Optional.empty();
@@ -206,8 +221,8 @@ public class PhenopacketConverter {
 
   private Optional<PhenopacketAttribute> getDisease(Attribute attribute) {
     Optional<PhenopacketAttribute> normalisedAttribute;
-    if ("disease".equalsIgnoreCase(attribute.getType()) ||
-            "disease state".equalsIgnoreCase(attribute.getType())) {
+    if ("disease".equalsIgnoreCase(attribute.getType())
+        || "disease state".equalsIgnoreCase(attribute.getType())) {
       normalisedAttribute = phenopacketConversionHelper.convertAttribute("disease", attribute);
     } else {
       normalisedAttribute = Optional.empty();
@@ -217,15 +232,15 @@ public class PhenopacketConverter {
 
   private Optional<PhenopacketAttribute> getAge(Attribute attribute) {
     Optional<PhenopacketAttribute> normalisedAttribute;
-    if ("age".equalsIgnoreCase(attribute.getType()) ||
-            "age_years".equalsIgnoreCase(attribute.getType()) ||
-            "age(years)".equalsIgnoreCase(attribute.getType()) ||
-            "age at collection months".equalsIgnoreCase(attribute.getType()) ||
-            "age at collection".equalsIgnoreCase(attribute.getType()) ||
-            "age at collection mo".equalsIgnoreCase(attribute.getType()) ||
-            "age at sample months".equalsIgnoreCase(attribute.getType()) ||
-            "age at collection (months)".equalsIgnoreCase(attribute.getType()) ||
-            "age at sampling".equalsIgnoreCase(attribute.getType())) {
+    if ("age".equalsIgnoreCase(attribute.getType())
+        || "age_years".equalsIgnoreCase(attribute.getType())
+        || "age(years)".equalsIgnoreCase(attribute.getType())
+        || "age at collection months".equalsIgnoreCase(attribute.getType())
+        || "age at collection".equalsIgnoreCase(attribute.getType())
+        || "age at collection mo".equalsIgnoreCase(attribute.getType())
+        || "age at sample months".equalsIgnoreCase(attribute.getType())
+        || "age at collection (months)".equalsIgnoreCase(attribute.getType())
+        || "age at sampling".equalsIgnoreCase(attribute.getType())) {
       normalisedAttribute = phenopacketConversionHelper.convertAttribute("age", attribute);
     } else {
       normalisedAttribute = Optional.empty();
@@ -235,8 +250,8 @@ public class PhenopacketConverter {
 
   private Optional<PhenopacketAttribute> getDescription(Attribute attribute) {
     Optional<PhenopacketAttribute> normalisedAttribute;
-    if ("description".equalsIgnoreCase(attribute.getType()) ||
-            "description title".equalsIgnoreCase(attribute.getType())) {
+    if ("description".equalsIgnoreCase(attribute.getType())
+        || "description title".equalsIgnoreCase(attribute.getType())) {
       normalisedAttribute = phenopacketConversionHelper.convertAttribute("description", attribute);
     } else {
       normalisedAttribute = Optional.empty();
@@ -248,10 +263,11 @@ public class PhenopacketConverter {
     Optional<PhenopacketAttribute> normalisedAttribute;
     if ("phenotype".equalsIgnoreCase(attribute.getType())) {
       normalisedAttribute = phenopacketConversionHelper.convertAttribute("phenotype", attribute);
-    } else if ("development stage".equalsIgnoreCase(attribute.getType()) ||
-            "developmental stage".equalsIgnoreCase(attribute.getType()) ||
-            "dev stage".equalsIgnoreCase(attribute.getType())) {
-      normalisedAttribute = phenopacketConversionHelper.convertAttribute("developmental stage", attribute);
+    } else if ("development stage".equalsIgnoreCase(attribute.getType())
+        || "developmental stage".equalsIgnoreCase(attribute.getType())
+        || "dev stage".equalsIgnoreCase(attribute.getType())) {
+      normalisedAttribute =
+          phenopacketConversionHelper.convertAttribute("developmental stage", attribute);
     } else {
       normalisedAttribute = Optional.empty();
     }
@@ -270,8 +286,8 @@ public class PhenopacketConverter {
 
   private Optional<PhenopacketAttribute> getDiagnosis(Attribute attribute) {
     Optional<PhenopacketAttribute> normalisedAttribute;
-    if ("histological diagnosis".equalsIgnoreCase(attribute.getType()) ||
-            "diagnosis".equalsIgnoreCase(attribute.getType())) {
+    if ("histological diagnosis".equalsIgnoreCase(attribute.getType())
+        || "diagnosis".equalsIgnoreCase(attribute.getType())) {
       normalisedAttribute = phenopacketConversionHelper.convertAttribute("diagnosis", attribute);
     } else {
       normalisedAttribute = Optional.empty();
@@ -281,9 +297,9 @@ public class PhenopacketConverter {
 
   private Optional<PhenopacketAttribute> getTumorGrade(Attribute attribute) {
     Optional<PhenopacketAttribute> normalisedAttribute;
-    if ("tumor grade".equalsIgnoreCase(attribute.getType()) ||
-            "tumor stage".equalsIgnoreCase(attribute.getType()) ||
-            "tumor grading".equalsIgnoreCase(attribute.getType())) {
+    if ("tumor grade".equalsIgnoreCase(attribute.getType())
+        || "tumor stage".equalsIgnoreCase(attribute.getType())
+        || "tumor grading".equalsIgnoreCase(attribute.getType())) {
       normalisedAttribute = phenopacketConversionHelper.convertAttribute("tumor grade", attribute);
     } else {
       normalisedAttribute = Optional.empty();
@@ -294,7 +310,8 @@ public class PhenopacketConverter {
   private Optional<PhenopacketAttribute> getTumorProgression(Attribute attribute) {
     Optional<PhenopacketAttribute> normalisedAttribute;
     if ("tumor progression".equalsIgnoreCase(attribute.getType())) {
-      normalisedAttribute = phenopacketConversionHelper.convertAttribute("tumor progression", attribute);
+      normalisedAttribute =
+          phenopacketConversionHelper.convertAttribute("tumor progression", attribute);
     } else {
       normalisedAttribute = Optional.empty();
     }
@@ -342,47 +359,82 @@ public class PhenopacketConverter {
 
   private Optional<PhenopacketAttribute> extractDisease(Attribute attribute) {
     Optional<PhenopacketAttribute> normalisedAttribute = Optional.empty();
-    if ("diabetes".equalsIgnoreCase(attribute.getType()) || "diabetes type".equalsIgnoreCase(attribute.getType())) {
-      if ("no".equalsIgnoreCase(attribute.getValue()) || "false".equalsIgnoreCase(attribute.getValue())) {
-        normalisedAttribute = phenopacketConversionHelper.convertAttributeWithNegation("disease", "diabetes", "MONDO:0005015", "diabetes");
+    if ("diabetes".equalsIgnoreCase(attribute.getType())
+        || "diabetes type".equalsIgnoreCase(attribute.getType())) {
+      if ("no".equalsIgnoreCase(attribute.getValue())
+          || "false".equalsIgnoreCase(attribute.getValue())) {
+        normalisedAttribute =
+            phenopacketConversionHelper.convertAttributeWithNegation(
+                "disease", "diabetes", "MONDO:0005015", "diabetes");
       } else {
-        normalisedAttribute = phenopacketConversionHelper.convertAttribute("disease", "diabetes", "MONDO:0005015", "diabetes");
+        normalisedAttribute =
+            phenopacketConversionHelper.convertAttribute(
+                "disease", "diabetes", "MONDO:0005015", "diabetes");
       }
     } else if ("lung disease".equalsIgnoreCase(attribute.getType())) {
-      if ("no".equalsIgnoreCase(attribute.getValue()) || "false".equalsIgnoreCase(attribute.getValue())) {
-        normalisedAttribute = phenopacketConversionHelper.convertAttributeWithNegation("disease", "lung disease", "MONDO:0005275", "lung disease");
+      if ("no".equalsIgnoreCase(attribute.getValue())
+          || "false".equalsIgnoreCase(attribute.getValue())) {
+        normalisedAttribute =
+            phenopacketConversionHelper.convertAttributeWithNegation(
+                "disease", "lung disease", "MONDO:0005275", "lung disease");
       } else {
-        normalisedAttribute = phenopacketConversionHelper.convertAttribute("disease", "lung disease", "MONDO:0005275", "lung disease");
+        normalisedAttribute =
+            phenopacketConversionHelper.convertAttribute(
+                "disease", "lung disease", "MONDO:0005275", "lung disease");
       }
-    }  else if ("liver disease".equalsIgnoreCase(attribute.getType())) {
-      if ("no".equalsIgnoreCase(attribute.getValue()) || "false".equalsIgnoreCase(attribute.getValue())) {
-        normalisedAttribute = phenopacketConversionHelper.convertAttributeWithNegation("disease", "liver disease", "MONDO:0005154", "liver disease");
+    } else if ("liver disease".equalsIgnoreCase(attribute.getType())) {
+      if ("no".equalsIgnoreCase(attribute.getValue())
+          || "false".equalsIgnoreCase(attribute.getValue())) {
+        normalisedAttribute =
+            phenopacketConversionHelper.convertAttributeWithNegation(
+                "disease", "liver disease", "MONDO:0005154", "liver disease");
       } else {
-        normalisedAttribute = phenopacketConversionHelper.convertAttribute("disease", "liver disease", "MONDO:0005154", "liver disease");
+        normalisedAttribute =
+            phenopacketConversionHelper.convertAttribute(
+                "disease", "liver disease", "MONDO:0005154", "liver disease");
       }
-    }  else if ("kidney disease".equalsIgnoreCase(attribute.getType())) {
-      if ("no".equalsIgnoreCase(attribute.getValue()) || "false".equalsIgnoreCase(attribute.getValue())) {
-        normalisedAttribute = phenopacketConversionHelper.convertAttributeWithNegation("disease", "kidney disease", "MONDO:0005240", "kidney disease");
+    } else if ("kidney disease".equalsIgnoreCase(attribute.getType())) {
+      if ("no".equalsIgnoreCase(attribute.getValue())
+          || "false".equalsIgnoreCase(attribute.getValue())) {
+        normalisedAttribute =
+            phenopacketConversionHelper.convertAttributeWithNegation(
+                "disease", "kidney disease", "MONDO:0005240", "kidney disease");
       } else {
-        normalisedAttribute = phenopacketConversionHelper.convertAttribute("disease", "kidney disease", "MONDO:0005240", "kidney disease");
+        normalisedAttribute =
+            phenopacketConversionHelper.convertAttribute(
+                "disease", "kidney disease", "MONDO:0005240", "kidney disease");
       }
-    }  else if ("cardiovascular disease".equalsIgnoreCase(attribute.getType())) {
-      if ("no".equalsIgnoreCase(attribute.getValue()) || "false".equalsIgnoreCase(attribute.getValue())) {
-        normalisedAttribute = phenopacketConversionHelper.convertAttributeWithNegation("disease", "cardiovascular disease", "MONDO:0004995", "cardiovascular disease");
+    } else if ("cardiovascular disease".equalsIgnoreCase(attribute.getType())) {
+      if ("no".equalsIgnoreCase(attribute.getValue())
+          || "false".equalsIgnoreCase(attribute.getValue())) {
+        normalisedAttribute =
+            phenopacketConversionHelper.convertAttributeWithNegation(
+                "disease", "cardiovascular disease", "MONDO:0004995", "cardiovascular disease");
       } else {
-        normalisedAttribute = phenopacketConversionHelper.convertAttribute("disease", "cardiovascular disease", "MONDO:0004995", "cardiovascular disease");
+        normalisedAttribute =
+            phenopacketConversionHelper.convertAttribute(
+                "disease", "cardiovascular disease", "MONDO:0004995", "cardiovascular disease");
       }
-    }  else if ("cancer".equalsIgnoreCase(attribute.getType())) {
-      if ("no".equalsIgnoreCase(attribute.getValue()) || "false".equalsIgnoreCase(attribute.getValue())) {
-        normalisedAttribute = phenopacketConversionHelper.convertAttributeWithNegation("disease", "cancer", "MONDO:0004992", "cancer");
+    } else if ("cancer".equalsIgnoreCase(attribute.getType())) {
+      if ("no".equalsIgnoreCase(attribute.getValue())
+          || "false".equalsIgnoreCase(attribute.getValue())) {
+        normalisedAttribute =
+            phenopacketConversionHelper.convertAttributeWithNegation(
+                "disease", "cancer", "MONDO:0004992", "cancer");
       } else {
-        normalisedAttribute = phenopacketConversionHelper.convertAttribute("disease", "cancer", "MONDO:0004992", "cancer");
+        normalisedAttribute =
+            phenopacketConversionHelper.convertAttribute(
+                "disease", "cancer", "MONDO:0004992", "cancer");
       }
-    }  else if ("ibd".equalsIgnoreCase(attribute.getType())) {
-      if ("no".equalsIgnoreCase(attribute.getValue()) || "false".equalsIgnoreCase(attribute.getValue())) {
-        normalisedAttribute = phenopacketConversionHelper.convertAttributeWithNegation("disease", "ibd", "MONDO:0005265", "ibd");
+    } else if ("ibd".equalsIgnoreCase(attribute.getType())) {
+      if ("no".equalsIgnoreCase(attribute.getValue())
+          || "false".equalsIgnoreCase(attribute.getValue())) {
+        normalisedAttribute =
+            phenopacketConversionHelper.convertAttributeWithNegation(
+                "disease", "ibd", "MONDO:0005265", "ibd");
       } else {
-        normalisedAttribute = phenopacketConversionHelper.convertAttribute("disease", "ibd", "MONDO:0005265", "ibd");
+        normalisedAttribute =
+            phenopacketConversionHelper.convertAttribute("disease", "ibd", "MONDO:0005265", "ibd");
       }
     }
 
@@ -392,52 +444,91 @@ public class PhenopacketConverter {
   private Optional<PhenopacketAttribute> extractMentalDisease(Attribute attribute) {
     Optional<PhenopacketAttribute> normalisedAttribute = Optional.empty();
     if ("mental illness".equalsIgnoreCase(attribute.getType())) {
-      if ("yes".equalsIgnoreCase(attribute.getValue()) || "true".equalsIgnoreCase(attribute.getValue())) {
-        normalisedAttribute = phenopacketConversionHelper.convertAttribute("disease", "mental illness", "MONDO:0002025", "psychiatric disorder");
+      if ("yes".equalsIgnoreCase(attribute.getValue())
+          || "true".equalsIgnoreCase(attribute.getValue())) {
+        normalisedAttribute =
+            phenopacketConversionHelper.convertAttribute(
+                "disease", "mental illness", "MONDO:0002025", "psychiatric disorder");
       }
     } else if (attribute.getType().toLowerCase().startsWith("mental illness type")) {
       if (attribute.getType().toLowerCase().contains("substance abuse")) {
-        if ("yes".equalsIgnoreCase(attribute.getValue()) || "true".equalsIgnoreCase(attribute.getValue())) {
-          normalisedAttribute = phenopacketConversionHelper.convertAttribute("disease", "substance abuse", "MONDO:0002491", "substance abuse");
-        } else if ("no".equalsIgnoreCase(attribute.getValue()) || "false".equalsIgnoreCase(attribute.getValue())) {
-          normalisedAttribute = phenopacketConversionHelper.convertAttributeWithNegation("disease", "substance abuse", "MONDO:0002491", "substance abuse");
+        if ("yes".equalsIgnoreCase(attribute.getValue())
+            || "true".equalsIgnoreCase(attribute.getValue())) {
+          normalisedAttribute =
+              phenopacketConversionHelper.convertAttribute(
+                  "disease", "substance abuse", "MONDO:0002491", "substance abuse");
+        } else if ("no".equalsIgnoreCase(attribute.getValue())
+            || "false".equalsIgnoreCase(attribute.getValue())) {
+          normalisedAttribute =
+              phenopacketConversionHelper.convertAttributeWithNegation(
+                  "disease", "substance abuse", "MONDO:0002491", "substance abuse");
         }
       } else if (attribute.getType().toLowerCase().contains("anorexia nervosa")) {
-        if ("yes".equalsIgnoreCase(attribute.getValue()) || "true".equalsIgnoreCase(attribute.getValue())) {
-          normalisedAttribute = phenopacketConversionHelper.convertAttribute("disease", "anorexia nervosa", "MONDO:0005351", "anorexia nervosa");
-        } else if ("no".equalsIgnoreCase(attribute.getValue()) || "false".equalsIgnoreCase(attribute.getValue())) {
-          normalisedAttribute = phenopacketConversionHelper.convertAttributeWithNegation("disease", "anorexia nervosa", "MONDO:0005351", "anorexia nervosa");
+        if ("yes".equalsIgnoreCase(attribute.getValue())
+            || "true".equalsIgnoreCase(attribute.getValue())) {
+          normalisedAttribute =
+              phenopacketConversionHelper.convertAttribute(
+                  "disease", "anorexia nervosa", "MONDO:0005351", "anorexia nervosa");
+        } else if ("no".equalsIgnoreCase(attribute.getValue())
+            || "false".equalsIgnoreCase(attribute.getValue())) {
+          normalisedAttribute =
+              phenopacketConversionHelper.convertAttributeWithNegation(
+                  "disease", "anorexia nervosa", "MONDO:0005351", "anorexia nervosa");
         }
       } else if (attribute.getType().toLowerCase().contains("schizophrenia")) {
-        if ("yes".equalsIgnoreCase(attribute.getValue()) || "true".equalsIgnoreCase(attribute.getValue())) {
-          normalisedAttribute = phenopacketConversionHelper.convertAttribute("disease", "schizophrenia", "MONDO:0005090", "schizophrenia");
-        } else if ("no".equalsIgnoreCase(attribute.getValue()) || "false".equalsIgnoreCase(attribute.getValue())) {
-          normalisedAttribute = phenopacketConversionHelper.convertAttributeWithNegation("disease", "schizophrenia", "MONDO:0005090", "schizophrenia");
+        if ("yes".equalsIgnoreCase(attribute.getValue())
+            || "true".equalsIgnoreCase(attribute.getValue())) {
+          normalisedAttribute =
+              phenopacketConversionHelper.convertAttribute(
+                  "disease", "schizophrenia", "MONDO:0005090", "schizophrenia");
+        } else if ("no".equalsIgnoreCase(attribute.getValue())
+            || "false".equalsIgnoreCase(attribute.getValue())) {
+          normalisedAttribute =
+              phenopacketConversionHelper.convertAttributeWithNegation(
+                  "disease", "schizophrenia", "MONDO:0005090", "schizophrenia");
         }
       } else if (attribute.getType().toLowerCase().contains("depression")) {
-        if ("yes".equalsIgnoreCase(attribute.getValue()) || "true".equalsIgnoreCase(attribute.getValue())) {
-          normalisedAttribute = phenopacketConversionHelper.convertAttribute("disease", "depression", "MONDO:0002050", "depression");
-        } else if ("no".equalsIgnoreCase(attribute.getValue()) || "false".equalsIgnoreCase(attribute.getValue())) {
-          normalisedAttribute = phenopacketConversionHelper.convertAttributeWithNegation("disease", "depression", "MONDO:0002050", "depression");
+        if ("yes".equalsIgnoreCase(attribute.getValue())
+            || "true".equalsIgnoreCase(attribute.getValue())) {
+          normalisedAttribute =
+              phenopacketConversionHelper.convertAttribute(
+                  "disease", "depression", "MONDO:0002050", "depression");
+        } else if ("no".equalsIgnoreCase(attribute.getValue())
+            || "false".equalsIgnoreCase(attribute.getValue())) {
+          normalisedAttribute =
+              phenopacketConversionHelper.convertAttributeWithNegation(
+                  "disease", "depression", "MONDO:0002050", "depression");
         }
       } else if (attribute.getType().toLowerCase().contains("bulimia nervosa")) {
-        if ("yes".equalsIgnoreCase(attribute.getValue()) || "true".equalsIgnoreCase(attribute.getValue())) {
-          normalisedAttribute = phenopacketConversionHelper.convertAttribute("disease", "bulimia nervosa", "MONDO:0005452", "bulimia nervosa");
-        } else if ("no".equalsIgnoreCase(attribute.getValue()) || "false".equalsIgnoreCase(attribute.getValue())) {
-          normalisedAttribute = phenopacketConversionHelper.convertAttributeWithNegation("disease", "bulimia nervosa", "MONDO:0005452", "bulimia nervosa");
+        if ("yes".equalsIgnoreCase(attribute.getValue())
+            || "true".equalsIgnoreCase(attribute.getValue())) {
+          normalisedAttribute =
+              phenopacketConversionHelper.convertAttribute(
+                  "disease", "bulimia nervosa", "MONDO:0005452", "bulimia nervosa");
+        } else if ("no".equalsIgnoreCase(attribute.getValue())
+            || "false".equalsIgnoreCase(attribute.getValue())) {
+          normalisedAttribute =
+              phenopacketConversionHelper.convertAttributeWithNegation(
+                  "disease", "bulimia nervosa", "MONDO:0005452", "bulimia nervosa");
         }
       } else if (attribute.getType().toLowerCase().contains("bipolar disorder")) {
-        if ("yes".equalsIgnoreCase(attribute.getValue()) || "true".equalsIgnoreCase(attribute.getValue())) {
-          normalisedAttribute = phenopacketConversionHelper.convertAttribute("disease", "bipolar disorder", "MONDO:0004985", "bipolar disorder");
-        } else if ("no".equalsIgnoreCase(attribute.getValue()) || "false".equalsIgnoreCase(attribute.getValue())) {
-          normalisedAttribute = phenopacketConversionHelper.convertAttributeWithNegation("disease", "bipolar disorder", "MONDO:0004985", "bipolar disorder");
+        if ("yes".equalsIgnoreCase(attribute.getValue())
+            || "true".equalsIgnoreCase(attribute.getValue())) {
+          normalisedAttribute =
+              phenopacketConversionHelper.convertAttribute(
+                  "disease", "bipolar disorder", "MONDO:0004985", "bipolar disorder");
+        } else if ("no".equalsIgnoreCase(attribute.getValue())
+            || "false".equalsIgnoreCase(attribute.getValue())) {
+          normalisedAttribute =
+              phenopacketConversionHelper.convertAttributeWithNegation(
+                  "disease", "bipolar disorder", "MONDO:0004985", "bipolar disorder");
         }
       }
     } else if ("study disease".equalsIgnoreCase(attribute.getType())) {
-      //todo check attribute 'subject is affected'
+      // todo check attribute 'subject is affected'
       normalisedAttribute = phenopacketConversionHelper.convertAttribute("disease", attribute);
     } else if ("study name".equalsIgnoreCase(attribute.getType())) {
-      //todo check attribute 'subject is affected'
+      // todo check attribute 'subject is affected'
       normalisedAttribute = phenopacketConversionHelper.convertAttribute("disease", attribute);
     }
 
