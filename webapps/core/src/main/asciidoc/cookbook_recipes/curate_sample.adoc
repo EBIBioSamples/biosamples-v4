@@ -137,7 +137,7 @@ $ curl 'https://www.ebi.ac.uk/biosamples/samples/SAMN08432304/curationlinks' -i 
 ```
 
 == Templates
-=== Attribute, external reference and relationship curation template
+=== Attribute and external reference curation template
 ```
 {
   "sample" : <accession-of-the-interested-sample>,
@@ -155,22 +155,6 @@ $ curl 'https://www.ebi.ac.uk/biosamples/samples/SAMN08432304/curationlinks' -i 
             "type": <the-new-attribute-name>,
             "value": <the-new-attribute-value>,
             "iri": [ <new-iris-if-sample-already-has>, <...> ]
-        },
-        ...
-    ],
-    "relationshipsPre" : [
-        {
-            source: <accession-of-this-sample>,
-            type: <relationship>,
-            target: <accession-of-the-other-sample>
-        },
-        ...
-    ],
-    "relationshipsPost" : [
-        {
-            source: <accession-of-this-sample>,
-            type: <relationship>,
-            target: <accession-of-the-other-sample>
         },
         ...
     ],
