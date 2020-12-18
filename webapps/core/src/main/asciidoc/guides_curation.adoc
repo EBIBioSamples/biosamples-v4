@@ -134,6 +134,77 @@ ____
 
 It takes up to 24 hours to generate the curation.
 
+=== Automated curation, add Biosamples inferred disease
+
+Biosamples uses automated curation based on manual rules.
+
+For the samples containing the attributes ‘is tumor :yes’ and study disease corresponding to a cancer,  Biosamples add the attributes ‘Biosamples inferred disease :cancer’.
+
+For example, when the user submit:
+
+[source,json]
+----
+"characteristics" : {
+    "is tumor" : [ {
+          "text" : "Yes"
+        } ],
+    "study disease" : [ {
+          "text" : "Carcinoma, Renal Cell"
+        } ]
+    }
+----
+
+
+Biosamples add the inferred disease with ontology term :
+
+[source,json]
+----
+"characteristics" : {
+    "Biosamples inferred disease" : [ {      
+        "text" : "cancer",      
+        "ontologyTerms" : [ "http://www.ebi.ac.uk/efo/EFO_0000311" ]     
+        } ],
+    "is tumor" : [ {
+          "text" : "Yes"
+        } ],
+    "study disease" : [ {
+          "text" : "Carcinoma, Renal Cell"
+        } ]
+    }
+----
+
+For the samples containing the attributes ‘diabetes’ and/or ‘diabetes type’, Biosamples add  the ontology term of diabetes. 
+
+For example, when the user submit:
+
+[source,json]
+----
+"characteristics" : {
+    "diabetes" : [ {
+          "text" : " yes.type.I"
+        } ]
+    }
+----
+
+Biosamples add the inferred disease with ontology term :
+
+[source,json]
+----
+"characteristics" : {
+    "Biosamples inferred disease" : [ {      
+        "text" : " Type I diabetes",      
+        "ontologyTerms" : [ "http://www.ebi.ac.uk/efo/EFO_0001359" ]     
+        } ],
+    "diabetes" : [ {
+          "text" : " yes.type.I"
+        } ]
+    }
+----
+
+____
+[.emoji]#💡# Biosamples has done the curation on December 16th 2020. All samples submitted after this date are not curated. 
+____
+
 == Manual curation
 
 Users can also provide their manual curation. See details
