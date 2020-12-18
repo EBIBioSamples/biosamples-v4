@@ -138,9 +138,9 @@ It takes up to 24 hours to generate the curation.
 
 Biosamples uses automated curation based on manual rules.
 
-For the samples containing the attributes ‘is tumor :yes’ and study disease corresponding to a cancer,  Biosamples add the attributes ‘Biosamples inferred disease :cancer’.
+For the samples containing the attributes ‘is tumor :yes’ and study disease corresponding to a cancer,  Biosamples adds the attributes ‘Biosamples inferred disease :cancer’.
 
-For example, when the user submit:
+For example, when the user submits:
 
 [source,json]
 ----
@@ -155,7 +155,7 @@ For example, when the user submit:
 ----
 
 
-Biosamples add the inferred disease with ontology term :
+Biosamples adds the inferred disease with ontology term :
 
 [source,json]
 ----
@@ -173,9 +173,9 @@ Biosamples add the inferred disease with ontology term :
     }
 ----
 
-For the samples containing the attributes ‘diabetes’ and/or ‘diabetes type’, Biosamples add  the ontology term of diabetes. 
+For the samples containing the attributes ‘diabetes’ and/or ‘diabetes type’, Biosamples adds  the ontology term of diabetes. 
 
-For example, when the user submit:
+For example, when the user submits:
 
 [source,json]
 ----
@@ -186,7 +186,7 @@ For example, when the user submit:
     }
 ----
 
-Biosamples add the inferred disease with ontology term :
+Biosamples adds the inferred disease with ontology term :
 
 [source,json]
 ----
