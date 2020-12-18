@@ -17,6 +17,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import javax.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,6 +59,7 @@ public class BioSamplesClient implements AutoCloseable {
   private final SampleGroupSubmissionService sampleGroupSubmissionService;
   private final CurationRetrievalService curationRetrievalService;
   private final CurationSubmissionService curationSubmissionService;
+  private final SampleCertificationService sampleCertificationService;
 
   private final SampleValidator sampleValidator;
 
@@ -117,6 +119,10 @@ public class BioSamplesClient implements AutoCloseable {
 
     sampleSubmissionService =
         new SampleSubmissionService(restOperations, traverson, threadPoolExecutor);
+
+    sampleCertificationService =
+            new SampleCertificationService(restOperations, traverson, threadPoolExecutor);
+
     sampleGroupSubmissionService =
         new SampleGroupSubmissionService(restOperations, traverson, threadPoolExecutor);
     curationRetrievalService =
@@ -316,6 +322,10 @@ public class BioSamplesClient implements AutoCloseable {
       results.add(sample);
     }
     return results;
+  }
+
+  public Collection<Resource<Sample>> certifySamples(Collection<Sample> samples) {
+    return samples.stream().map(sample -> sampleCertificationService.submit(sample, null)).collect(Collectors.toList());
   }
 
   public Iterable<Resource<Curation>> fetchCurationResourceAll() {
