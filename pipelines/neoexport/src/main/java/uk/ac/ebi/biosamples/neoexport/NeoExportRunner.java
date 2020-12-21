@@ -65,9 +65,8 @@ public class NeoExportRunner implements ApplicationRunner {
     Collection<Filter> filters = ArgUtils.getDateFilters(args);
 //    RelationFilter relationFilter = new RelationFilter.Builder("has member").build();
 //    filters.add(relationFilter);
-    ExternalReferenceDataFilter externalFilter = new ExternalReferenceDataFilter.Builder("EGA Dataset").build();
-    filters.add(externalFilter);
-
+//    ExternalReferenceDataFilter externalFilter = new ExternalReferenceDataFilter.Builder("EGA Dataset").build();
+//    filters.add(externalFilter);
 
     Instant startTime = Instant.now();
     LOG.info("Pipeline started at {}", startTime);
