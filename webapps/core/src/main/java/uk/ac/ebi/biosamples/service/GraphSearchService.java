@@ -35,7 +35,6 @@ public class GraphSearchService {
   }
 
   public GraphSearchQuery graphSearch(GraphSearchQuery searchQuery, int size, int page) {
-    // todo add total samples...
     return neoSampleRepository.graphSearch(searchQuery, size, page);
   }
 }
