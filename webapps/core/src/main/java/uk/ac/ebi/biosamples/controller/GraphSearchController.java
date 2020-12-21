@@ -59,8 +59,6 @@ public class GraphSearchController {
   public GraphSearchQuery graphSearch(@RequestBody GraphSearchQuery query) {
     int effectiveSize;
     int effectivePage;
-    int totalElements = 0;
-    int totalPages = 0;
 
     if (query.getSize() > 100) {
       effectiveSize = 100;
@@ -69,7 +67,7 @@ public class GraphSearchController {
     } else {
       effectiveSize = query.getSize();
     }
-    effectivePage = Math.max(0, query.getPage());
+    effectivePage = Math.max(1, query.getPage());
 
     return graphSearchService.graphSearch(query, effectiveSize, effectivePage);
   }

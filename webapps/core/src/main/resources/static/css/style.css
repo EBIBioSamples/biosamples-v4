@@ -300,6 +300,33 @@ code[class^="language"] {
     margin: 10rem auto auto;
 }
 
+#graph-search-pagination-wrapper {
+    width: 100%;
+    float: left;
+}
+
+#graph-search-pagination-text {
+    width: 40%;
+    float: left;
+    margin-left: 10px;
+}
+
+#graph-search-pagination {
+    width: 360px;
+    /*margin: 0 auto;*/
+    float: right;
+}
+
+.graph-search-page-control {
+    width: 100px;
+    float: left;
+    margin: 0 10px 20px 10px;
+}
+
+#graph-search-current-page {
+    text-align: center;
+}
+
 #graph-search-results {
     margin-right: 0;
 }
