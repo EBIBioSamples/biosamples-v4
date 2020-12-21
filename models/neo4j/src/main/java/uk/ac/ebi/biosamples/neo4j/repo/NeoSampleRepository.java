@@ -62,7 +62,8 @@ public class NeoSampleRepository implements AutoCloseable {
     return value.asObject();
   }
 
-  public GraphSearchQuery graphSearch(GraphSearchQuery searchQuery, int limit, int skip) {
+  public GraphSearchQuery graphSearch(GraphSearchQuery searchQuery, int limit, int page) {
+    int skip = (page - 1) * limit;
     StringBuilder query = new StringBuilder();
     StringJoiner idJoiner = new StringJoiner(",");
     for (GraphNode node : searchQuery.getNodes()) {
@@ -83,6 +84,8 @@ public class NeoSampleRepository implements AutoCloseable {
       idJoiner.add("a1");
     }
 
+    StringBuilder countQuery = new StringBuilder(query.toString())
+            .append(" RETURN COUNT(*)");
     query.append(" RETURN ").append(idJoiner.toString());
     query
         .append(" ORDER BY ")
@@ -93,8 +96,14 @@ public class NeoSampleRepository implements AutoCloseable {
         .append(limit);
 
     GraphSearchQuery response = new GraphSearchQuery();
+    response.setPage(page);
+    response.setSize(limit);
     try (Session session = driver.session()) {
       LOG.info("Graph query: {}", query);
+      Result countResult = session.run(countQuery.toString());
+      int totalElements = countResult.single().get(0).asInt();
+      response.setTotalElements(totalElements);
+
       Result result = session.run(query.toString());
       Set<GraphNode> responseNodes = new HashSet<>();
       Set<GraphLink> responseLinks = new HashSet<>();

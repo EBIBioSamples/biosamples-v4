@@ -17,6 +17,7 @@ public class GraphSearchQuery {
   private Set<GraphLink> links;
   private int page;
   private int size;
+  private int totalElements;
 
   public Set<GraphNode> getNodes() {
     return nodes;
@@ -48,5 +49,13 @@ public class GraphSearchQuery {
 
   public void setSize(int size) {
     this.size = size;
+  }
+
+  public int getTotalElements() {
+    return totalElements;
+  }
+
+  public void setTotalElements(int totalElements) {
+    this.totalElements = totalElements;
   }
 }
