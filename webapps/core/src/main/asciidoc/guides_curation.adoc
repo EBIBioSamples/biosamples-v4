@@ -134,11 +134,11 @@ ____
 
 It takes up to 24 hours to generate the curation.
 
-=== Automated curation, add Biosamples inferred disease
+== Curation projects, add BioSamples inferred disease
 
-Biosamples uses automated curation based on manual rules.
+BioSamples uses automated curation based on manual rules. This project has been done to improve the metadata representation in Phenopackets and the query for disease in BioSamples. Those rules are not applied for a specific project.
 
-For the samples containing the attributes ‘is tumor :yes’ and study disease corresponding to a cancer,  Biosamples adds the attributes ‘Biosamples inferred disease :cancer’.
+For the samples containing the attributes ‘is tumor :yes’ and study disease corresponding to a cancer,  BioSamples adds the attributes ‘Biosamples inferred disease :cancer’.
 
 For example, when the user submits:
 
@@ -155,7 +155,7 @@ For example, when the user submits:
 ----
 
 
-Biosamples adds the inferred disease with ontology term :
+BioSamples adds the inferred disease with ontology term :
 
 [source,json]
 ----
@@ -202,7 +202,7 @@ Biosamples adds the inferred disease with ontology term :
 ----
 
 ____
-[.emoji]#💡# Biosamples has done the curation on December 16th 2020. All samples submitted after this date are not curated. 
+[.emoji]#💡# BioSamples has done the curation on December 16th 2020. All samples submitted after this date are not curated. 
 ____
 
 == Manual curation
