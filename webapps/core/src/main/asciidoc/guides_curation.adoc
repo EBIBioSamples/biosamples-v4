@@ -160,7 +160,7 @@ BioSamples adds the inferred disease with ontology term :
 [source,json]
 ----
 "characteristics" : {
-    "Biosamples inferred disease" : [ {      
+    "BioSamples inferred disease" : [ {      
         "text" : "cancer",      
         "ontologyTerms" : [ "http://www.ebi.ac.uk/efo/EFO_0000311" ]     
         } ],
@@ -186,12 +186,12 @@ For example, when the user submits:
     }
 ----
 
-Biosamples adds the inferred disease with ontology term :
+BioSamples adds the inferred disease with ontology term :
 
 [source,json]
 ----
 "characteristics" : {
-    "Biosamples inferred disease" : [ {      
+    "BioSamples inferred disease" : [ {      
         "text" : " Type I diabetes",      
         "ontologyTerms" : [ "http://www.ebi.ac.uk/efo/EFO_0001359" ]     
         } ],
