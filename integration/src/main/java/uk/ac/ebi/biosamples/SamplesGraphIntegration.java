@@ -68,7 +68,7 @@ public class SamplesGraphIntegration extends AbstractIntegration {
     query.setNodes(Set.of(node));
     query.setLinks(Collections.emptySet());
 
-    GraphSearchQuery response = neoSampleRepository.graphSearch(query, 10, 10);
+    GraphSearchQuery response = neoSampleRepository.graphSearch(query, 10, 1);
     if (response.getNodes().isEmpty()) {
       throw new IntegrationTestFailException("No samples present in neo4j", Phase.FIVE);
     }
