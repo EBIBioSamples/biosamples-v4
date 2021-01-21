@@ -62,9 +62,9 @@ public class EnaRunner implements ApplicationRunner {
       }
     }
 
-    if (includeAmr) {
+    if (includeAmr && isFirstDayOfTheWeek()) {
       try {
-        sampleToAmrMap = amrDataLoaderService.loadAmrData();
+        // sampleToAmrMap = amrDataLoaderService.loadAmrData();
       } catch (final Exception e) {
         log.error("Error in processing AMR data from ENA API - continue with the pipeline");
       }
@@ -587,5 +587,12 @@ public class EnaRunner implements ApplicationRunner {
         futures.put(sampleAccession, executorService.submit(callable));
       }
     }
+  }
+
+  private boolean isFirstDayOfTheWeek() {
+    Calendar calendar = Calendar.getInstance();
+    calendar.setTime(new Date());
+
+    return calendar.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY;
   }
 }

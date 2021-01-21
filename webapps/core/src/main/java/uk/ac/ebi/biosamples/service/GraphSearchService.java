@@ -34,8 +34,7 @@ public class GraphSearchService {
     return neoSampleRepository.executeCypher(query);
   }
 
-  public GraphSearchQuery graphSearch(GraphSearchQuery searchQuery, int limit, int skip) {
-    // todo add total samples...
-    return neoSampleRepository.graphSearch(searchQuery, limit, skip);
+  public GraphSearchQuery graphSearch(GraphSearchQuery searchQuery, int size, int page) {
+    return neoSampleRepository.graphSearch(searchQuery, size, page);
   }
 }

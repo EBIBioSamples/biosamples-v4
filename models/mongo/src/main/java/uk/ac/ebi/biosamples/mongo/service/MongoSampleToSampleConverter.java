@@ -10,6 +10,7 @@
 */
 package uk.ac.ebi.biosamples.mongo.service;
 
+import java.time.Instant;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.slf4j.Logger;
@@ -37,10 +38,13 @@ public class MongoSampleToSampleConverter implements Converter<MongoSample, Samp
 
   @Autowired private MongoCertificateToCertificateConverter mongoCertificateToCertificateConverter;
 
+  private Logger log = LoggerFactory.getLogger(getClass());
+
   private static Logger LOGGER = LoggerFactory.getLogger(MongoSampleToSampleConverter.class);
 
   @Override
   public Sample convert(MongoSample sample) {
+    Sample convertedSample;
     final SortedSet<ExternalReference> externalReferences = new TreeSet<>();
 
     if (sample.getExternalReferences() != null && sample.getExternalReferences().size() > 0) {
@@ -76,19 +80,50 @@ public class MongoSampleToSampleConverter implements Converter<MongoSample, Samp
       throw new RuntimeException("sample does not have domain " + sample);
     }
 
-    return new Sample.Builder(sample.getName(), sample.getAccession())
-        .withDomain(sample.getDomain())
-        .withRelease(sample.getRelease())
-        .withUpdate(sample.getUpdate())
-        .withCreate(sample.getCreate())
-        .withAttributes(sample.getAttributes())
-        .withRelationships(relationships)
-        .withData(sample.getData())
-        .withExternalReferences(externalReferences)
-        .withOrganizations(sample.getOrganizations())
-        .withContacts(sample.getContacts())
-        .withPublications(sample.getPublications())
-        .withCertificates(certificates)
-        .build();
+    Instant submitted = sample.getSubmitted();
+
+    if (submitted == null) {
+      convertedSample =
+          new Sample.Builder(sample.getName(), sample.getAccession())
+              .withDomain(sample.getDomain())
+              .withRelease(sample.getRelease())
+              .withUpdate(sample.getUpdate())
+              .withCreate(sample.getCreate())
+              .withNoSubmitted()
+              .withAttributes(sample.getAttributes())
+              .withRelationships(relationships)
+              .withData(sample.getData())
+              .withExternalReferences(externalReferences)
+              .withOrganizations(sample.getOrganizations())
+              .withContacts(sample.getContacts())
+              .withPublications(sample.getPublications())
+              .withCertificates(certificates)
+              .build();
+    } else {
+      convertedSample =
+          new Sample.Builder(sample.getName(), sample.getAccession())
+              .withDomain(sample.getDomain())
+              .withRelease(sample.getRelease())
+              .withUpdate(sample.getUpdate())
+              .withCreate(sample.getCreate())
+              .withSubmitted(sample.getSubmitted())
+              .withAttributes(sample.getAttributes())
+              .withRelationships(relationships)
+              .withData(sample.getData())
+              .withExternalReferences(externalReferences)
+              .withOrganizations(sample.getOrganizations())
+              .withContacts(sample.getContacts())
+              .withPublications(sample.getPublications())
+              .withCertificates(certificates)
+              .build();
+    }
+
+    Instant reviewed = sample.getReviewed();
+
+    if (reviewed == null) {
+      return Sample.Builder.fromSample(convertedSample).withNoReviewed().build();
+    } else {
+      return Sample.Builder.fromSample(convertedSample).withReviewed(sample.getReviewed()).build();
+    }
   }
 }

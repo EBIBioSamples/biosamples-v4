@@ -1147,6 +1147,8 @@ public class SampleTabService {
                 ZonedDateTime.now(ZoneOffset.UTC).plusYears(100).toInstant(),
                 update,
                 update,
+                update,
+                update, // using the update date for submitted date in case of making private here
                 new TreeSet<>(),
                 new TreeSet<>(),
                 new TreeSet<>());

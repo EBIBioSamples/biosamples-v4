@@ -171,6 +171,16 @@ public class NcbiBaseConverterTests {
   }
 
   @Test
+  public void it_extracts_submitted() {
+    Sample sampleToTest =
+        this.conversionService.convertNcbiXmlElementToSample(
+            this.testNcbiBioSamples, new HashSet<>());
+
+    assertTrue(sampleToTest.getSubmitted() != null);
+    assertEquals(sampleToTest.getSubmitted().toString(), "2010-06-14T13:47:08.137Z");
+  }
+
+  @Test
   public void it_extracts_organism_attribute() {
     Sample sampleToTest =
         this.conversionService.convertNcbiXmlElementToSample(

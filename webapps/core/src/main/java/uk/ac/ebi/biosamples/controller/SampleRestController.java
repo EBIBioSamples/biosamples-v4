@@ -229,22 +229,30 @@ public class SampleRestController {
 
     // update date is system generated field
     Instant update = Instant.now();
+
     SubmittedViaType submittedVia =
         sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
-    sample =
-        Sample.Builder.fromSample(sample).withUpdate(update).withSubmittedVia(submittedVia).build();
+    sample = Sample.Builder.fromSample(sample).withUpdate(update).withSubmittedVia(submittedVia).build();
 
     if (!accession.startsWith("SAMEG"))
       certificates = certifyService.certify(jsonMapper.writeValueAsString(sample), false);
 
     sample = Sample.Builder.fromSample(sample).withCertificates(certificates).build();
 
+    final boolean isFirstTimeMetadataAdded = sampleService.beforeStore(sample);
+
+    if (isFirstTimeMetadataAdded) {
+      Instant now = Instant.now();
+
+      sample = Sample.Builder.fromSample(sample).withSubmitted(now).build();
+    }
+
     if (!setFullDetails) {
       log.trace("Removing contact legacy fields for " + accession);
       sample = sampleManipulationService.removeLegacyFields(sample);
     }
 
-    sample = sampleService.store(sample);
+    sample = sampleService.store(sample, isFirstTimeMetadataAdded);
 
     // assemble a resource to return
     // create the response object with the appropriate status

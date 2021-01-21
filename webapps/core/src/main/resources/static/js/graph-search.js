@@ -1,4 +1,4 @@
-function graph_search(base_url) {
+function graph_search(base_url, page_index) {
     let attributeL1 = $("#attributeL1").val();
     let valueL1 = $("#valueL1").val();
     let referenceL1 = $("#referenceL1").val();
@@ -6,6 +6,12 @@ function graph_search(base_url) {
     let attributeR1 = $("#attributeR1").val();
     let valueR1 = $("#valueR1").val();
     let referenceR1 = $("#referenceR1").val();
+
+    let current_page = $("#graph-search-current-page").val();
+    let next_page = 1;
+    if (current_page && page_index !== 0) {
+        next_page = parseInt(current_page) + page_index;
+    }
 
     let nodes = [];
     let links = [];
@@ -98,7 +104,9 @@ function graph_search(base_url) {
 
     let request = {
         nodes: nodes,
-        links: links
+        links: links,
+        page: next_page,
+        size: 20
     };
 
     $.ajax({
@@ -122,7 +130,7 @@ function graph_search(base_url) {
             let nodes = new Map(data["nodes"].map(i => [i.id, i]));
             const page = data["page"];
             const size = data["size"];
-            const total = data["total"];
+            const total = data["totalElements"];
 
             console.log(links);
             console.log(nodes);
@@ -179,6 +187,17 @@ function graph_search(base_url) {
                         graphSearchResults.append(parentDiv);
                     }
                 })
+            }
+
+            // $("#graph-search-current-page").val(total);
+            if (total > 0) {
+                $("#graph-search-pagination-wrapper").show();
+                $("#graph-search-pagination-text").empty();
+                $("#graph-search-pagination-text").append($("<h4/>").html("Showing " + ((page - 1) * size + 1) + " - " + (page * size) + " of " + total + " records"));
+                $("#graph-search-current-page").val(page);
+            } else {
+                $("#graph-search-pagination-wrapper").hide();
+                $("#graph-search-results").append($("<h4/>").html("No results found"));
             }
         }
     });

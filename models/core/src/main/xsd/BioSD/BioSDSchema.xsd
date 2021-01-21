@@ -159,8 +159,10 @@
 		</xs:sequence>
 
 		<xs:attribute name="id" type="xs:string" use="required"/>
-		<xs:attribute name="submissionUpdateDate" type="xs:string" use="optional"/>
+		<xs:attribute name="submissionCreateDate" type="xs:string" use="optional"/>
+		<xs:attribute name="submissionSubmitDate" type="xs:string" use="optional"/>
 		<xs:attribute name="submissionReleaseDate" type="xs:string" use="optional"/>
+		<xs:attribute name="submissionUpdateDate" type="xs:string" use="optional"/>
 	</xs:complexType>
 
 	<xs:element name="BioSampleGroup" type="tns:bioSampleGroupType"/>

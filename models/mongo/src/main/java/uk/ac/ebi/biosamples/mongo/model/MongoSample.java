@@ -61,6 +61,14 @@ public class MongoSample {
   @JsonDeserialize(using = CustomInstantDeserializer.class)
   protected Instant create;
 
+  @JsonSerialize(using = CustomInstantSerializer.class)
+  @JsonDeserialize(using = CustomInstantDeserializer.class)
+  protected Instant submitted;
+
+  @JsonSerialize(using = CustomInstantSerializer.class)
+  @JsonDeserialize(using = CustomInstantDeserializer.class)
+  protected Instant reviewed;
+
   protected SortedSet<Attribute> attributes;
   protected SortedSet<MongoRelationship> relationships;
   protected SortedSet<MongoExternalReference> externalReferences;
@@ -105,6 +113,14 @@ public class MongoSample {
 
   public Instant getRelease() {
     return release;
+  }
+
+  public Instant getSubmitted() {
+    return submitted;
+  }
+
+  public Instant getReviewed() {
+    return reviewed;
   }
 
   public Instant getUpdate() {
@@ -165,6 +181,7 @@ public class MongoSample {
         && Objects.equals(this.release, other.release)
         && Objects.equals(this.update, other.update)
         && Objects.equals(this.create, other.create)
+        && Objects.equals(this.submitted, other.submitted)
         && Objects.equals(this.attributes, other.attributes)
         && Objects.equals(this.relationships, other.relationships)
         && Objects.equals(this.externalReferences, other.externalReferences)
@@ -183,6 +200,7 @@ public class MongoSample {
         release,
         update,
         create,
+        submitted,
         attributes,
         relationships,
         externalReferences,
@@ -206,6 +224,10 @@ public class MongoSample {
     sb.append(update);
     sb.append(",");
     sb.append(create);
+    sb.append(",");
+    sb.append(submitted);
+    sb.append(",");
+    sb.append(reviewed);
     sb.append(",");
     sb.append(attributes);
     sb.append(",");
@@ -234,6 +256,8 @@ public class MongoSample {
       @JsonProperty("release") Instant release,
       @JsonProperty("update") Instant update,
       @JsonProperty("create") Instant create,
+      @JsonProperty("submitted") Instant submitted,
+      @JsonProperty("reviewed") Instant reviewed,
       @JsonProperty("attributes") Set<Attribute> attributes,
       @JsonProperty("data") Set<AbstractData> structuredData,
       @JsonProperty("relationships") Set<MongoRelationship> relationships,
@@ -252,6 +276,8 @@ public class MongoSample {
     sample.release = release;
     sample.update = update;
     sample.create = create;
+    sample.submitted = submitted;
+    sample.reviewed = reviewed;
 
     sample.attributes = new TreeSet<>();
     if (attributes != null && attributes.size() > 0) {

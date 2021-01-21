@@ -95,6 +95,8 @@ public class XmlV2Controller {
             ZonedDateTime.now(ZoneOffset.UTC).plusYears(1000).toInstant(),
             createDate,
             createDate,
+            createDate,
+            createDate,
             new TreeSet<>(),
             new TreeSet<>(),
             new TreeSet<>());
@@ -124,6 +126,8 @@ public class XmlV2Controller {
             sample.getRelease(),
             sample.getUpdate(),
             sample.getCreate(),
+            sample.getSubmitted(),
+            sample.getReviewed(),
             sample.getAttributes(),
             sample.getRelationships(),
             sample.getExternalReferences());
@@ -176,6 +180,8 @@ public class XmlV2Controller {
               ZonedDateTime.now(ZoneOffset.UTC).plusYears(1000).toInstant(),
               createDate,
               createDate,
+              createDate,
+              createDate,
               new TreeSet<>(),
               new TreeSet<>(),
               new TreeSet<>());
@@ -206,6 +212,8 @@ public class XmlV2Controller {
             sample.getRelease(),
             sample.getUpdate(),
             sample.getCreate(),
+            sample.getSubmitted(),
+            sample.getReviewed(),
             sample.getAttributes(),
             sample.getRelationships(),
             sample.getExternalReferences());
@@ -291,6 +299,8 @@ public class XmlV2Controller {
                   first.getContent().getRelease(),
                   first.getContent().getUpdate(),
                   first.getContent().getCreate(),
+                  first.getContent().getSubmitted(),
+                  first.getContent().getReviewed(),
                   first.getContent().getAttributes(),
                   first.getContent().getRelationships(),
                   first.getContent().getExternalReferences());
@@ -307,6 +317,8 @@ public class XmlV2Controller {
             sample.getRelease(),
             sample.getUpdate(),
             sample.getCreate(),
+            sample.getSubmitted(),
+            sample.getReviewed(),
             sample.getAttributes(),
             sample.getRelationships(),
             sample.getExternalReferences());
@@ -415,6 +427,8 @@ public class XmlV2Controller {
               ZonedDateTime.now(ZoneOffset.UTC).plusYears(1000).toInstant(),
               createDate,
               createDate,
+              createDate,
+              createDate,
               new TreeSet<>(),
               new TreeSet<>(),
               new TreeSet<>());
@@ -444,6 +458,8 @@ public class XmlV2Controller {
             group.getRelease(),
             group.getUpdate(),
             group.getCreate(),
+            group.getSubmitted(),
+            group.getReviewed(),
             group.getAttributes(),
             group.getRelationships(),
             group.getExternalReferences());
@@ -528,6 +544,8 @@ public class XmlV2Controller {
             group.getRelease(),
             group.getUpdate(),
             group.getCreate(),
+            group.getSubmitted(),
+            group.getReviewed(),
             group.getAttributes(),
             group.getRelationships(),
             group.getExternalReferences());

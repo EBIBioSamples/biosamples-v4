@@ -224,6 +224,36 @@ code[class^="language"] {
     text-align: left;
 }
 
+.collapsible-div {
+    cursor: pointer;
+}
+
+.collapsible-div::after {
+    content: "\002B";
+    margin-left: 10px;
+    font-size: 25px;
+    color: #027c82;
+    font-weight: bold;
+}
+
+.collapsible-div-active {
+    cursor: pointer;
+}
+
+.collapsible-div-active::after {
+    content: "\2212";
+    margin-left: 10px;
+    font-size: 25px;
+    color: #027c82;
+    font-weight: bold;
+}
+
+.content-div {
+    display: none;
+    overflow: hidden;
+    text-align: left;
+}
+
 .external-reference-td {
     width: 70px;
 }
@@ -268,6 +298,33 @@ code[class^="language"] {
 #facets-ajax-loading-img {
     display: block;
     margin: 10rem auto auto;
+}
+
+#graph-search-pagination-wrapper {
+    width: 100%;
+    float: left;
+}
+
+#graph-search-pagination-text {
+    width: 40%;
+    float: left;
+    margin-left: 10px;
+}
+
+#graph-search-pagination {
+    width: 360px;
+    /*margin: 0 auto;*/
+    float: right;
+}
+
+.graph-search-page-control {
+    width: 100px;
+    float: left;
+    margin: 0 10px 20px 10px;
+}
+
+#graph-search-current-page {
+    text-align: center;
 }
 
 #graph-search-results {

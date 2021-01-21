@@ -171,10 +171,20 @@ public class ApiDocumentationTest {
     String wrongSampleSerialized = "{\"name\": \"Sample without minimum information\" }";
     Sample wrongSample =
         Sample.build(
-            "Sample without minimum information", null, null, null, null, null, null, null, null);
+            "Sample without minimum information",
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null);
 
     when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(wrongSample);
-    when(sampleService.store(wrongSample)).thenCallRealMethod();
+    when(sampleService.store(wrongSample, false)).thenCallRealMethod();
     when(sampleService.store(wrongSample, false)).thenCallRealMethod();
     when(certifyService.certify(jsonMapper.writeValueAsString(wrongSample), true))
         .thenReturn(Collections.emptyList());
@@ -239,7 +249,7 @@ public class ApiDocumentationTest {
             + "}";
 
     when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(sampleWithDomain);
-    when(sampleService.store(any(Sample.class))).thenReturn(sampleWithDomain);
+    when(sampleService.store(any(Sample.class), eq(false))).thenReturn(sampleWithDomain);
 
     this.mockMvc
         .perform(
@@ -280,7 +290,7 @@ public class ApiDocumentationTest {
             + "}";
 
     when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(sampleWithDomain);
-    when(sampleService.store(any(Sample.class))).thenReturn(sampleWithDomain);
+    when(sampleService.store(any(Sample.class), eq(false))).thenReturn(sampleWithDomain);
 
     this.mockMvc
         .perform(
@@ -392,7 +402,7 @@ public class ApiDocumentationTest {
             + "}";
 
     when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(sampleWithUpdatedDate);
-    when(sampleService.store(any(Sample.class))).thenReturn(sampleWithUpdatedDate);
+    when(sampleService.store(any(Sample.class), eq(false))).thenReturn(sampleWithUpdatedDate);
 
     this.mockMvc
         .perform(
@@ -432,7 +442,7 @@ public class ApiDocumentationTest {
             + "}";
 
     when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(sampleWithDomain);
-    when(sampleService.store(any(Sample.class))).thenReturn(sampleWithDomain);
+    when(sampleService.store(any(Sample.class), eq(false))).thenReturn(sampleWithDomain);
 
     this.mockMvc
         .perform(
@@ -546,7 +556,7 @@ public class ApiDocumentationTest {
                     "biosamples-minimal",
                     "0.0.1",
                     "schemas/certification/biosamples-minimal.json")));
-    when(sampleService.store(eq(sample)))
+    when(sampleService.store(eq(sample), eq(false)))
         .thenReturn(
             Sample.Builder.fromSample(sample)
                 .withCertificates(
@@ -639,7 +649,7 @@ public class ApiDocumentationTest {
     when(sampleService.fetch(
             eq(sampleWithDomain.getAccession()), eq(Optional.empty()), any(String.class)))
         .thenReturn(Optional.of(sampleWithDomain));
-    when(sampleService.store(eq(sampleWithDomain))).thenReturn(sampleWithDomain);
+    when(sampleService.store(eq(sampleWithDomain), eq(false))).thenReturn(sampleWithDomain);
     when(aapService.handleSampleDomain(sampleWithDomain)).thenReturn(sampleWithDomain);
     when(aapService.isWriteSuperUser()).thenReturn(true);
     when(aapService.isIntegrationTestUser()).thenReturn(false);
@@ -669,7 +679,7 @@ public class ApiDocumentationTest {
     when(sampleService.fetch(
             eq(sampleWithDomain.getAccession()), eq(Optional.empty()), any(String.class)))
         .thenReturn(Optional.of(sampleWithDomain));
-    when(sampleService.store(eq(sampleWithDomain))).thenReturn(sampleWithDomain);
+    when(sampleService.store(eq(sampleWithDomain), eq(false))).thenReturn(sampleWithDomain);
     when(aapService.handleSampleDomain(sampleWithDomain)).thenReturn(sampleWithDomain);
     when(aapService.isWriteSuperUser()).thenReturn(true);
     when(aapService.isIntegrationTestUser()).thenReturn(false);

@@ -10,12 +10,6 @@
 */
 package uk.ac.ebi.biosamples.neoexport;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
@@ -29,12 +23,20 @@ import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.model.PipelineAnalytics;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SampleAnalytics;
+import uk.ac.ebi.biosamples.model.filter.ExternalReferenceDataFilter;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.neo4j.repo.NeoSampleRepository;
 import uk.ac.ebi.biosamples.utils.AdaptiveThreadPoolExecutor;
 import uk.ac.ebi.biosamples.utils.ArgUtils;
 import uk.ac.ebi.biosamples.utils.MailSender;
 import uk.ac.ebi.biosamples.utils.ThreadUtils;
+
+import java.time.Duration;
+import java.time.Instant;
+import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Future;
 
 @Component
 public class NeoExportRunner implements ApplicationRunner {
@@ -61,6 +63,11 @@ public class NeoExportRunner implements ApplicationRunner {
   @Override
   public void run(ApplicationArguments args) throws Exception {
     Collection<Filter> filters = ArgUtils.getDateFilters(args);
+//    RelationFilter relationFilter = new RelationFilter.Builder("has member").build();
+//    filters.add(relationFilter);
+//    ExternalReferenceDataFilter externalFilter = new ExternalReferenceDataFilter.Builder("EGA Dataset").build();
+//    filters.add(externalFilter);
+
     Instant startTime = Instant.now();
     LOG.info("Pipeline started at {}", startTime);
     long sampleCount = 0;
@@ -92,14 +99,15 @@ public class NeoExportRunner implements ApplicationRunner {
         Objects.requireNonNull(sample);
         collectSampleTypes(sample, sampleAnalytics);
 
-        //                if (!sample.getRelationships().isEmpty()) {
-        if ("CSV".equalsIgnoreCase(format)) {
-          neoCsvExporter.addToCSVFile(sample);
-        } else {
-          Callable<PipelineResult> task = new NeoExportCallable(neoSampleRepository, sample);
-          futures.put(sample.getAccession(), executorService.submit(task));
+        // we will export only relationship containing entities
+        if (!sample.getRelationships().isEmpty() || !sample.getExternalReferences().isEmpty()) {
+          if ("CSV".equalsIgnoreCase(format)) {
+            neoCsvExporter.addToCSVFile(sample);
+          } else {
+            Callable<PipelineResult> task = new NeoExportCallable(neoSampleRepository, sample);
+            futures.put(sample.getAccession(), executorService.submit(task));
+          }
         }
-        //                }
 
         if (++sampleCount % 5000 == 0) {
           LOG.info("Scheduled sample count {}", sampleCount);

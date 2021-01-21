@@ -11,6 +11,7 @@
 package uk.ac.ebi.biosamples.controller;
 
 import java.net.URI;
+import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -404,6 +405,16 @@ public class SampleHtmlController {
     model.addAttribute("update", sample.get().getUpdate().atOffset(ZoneOffset.UTC));
     model.addAttribute("release", sample.get().getRelease().atOffset(ZoneOffset.UTC));
     model.addAttribute("create", sample.get().getCreate().atOffset(ZoneOffset.UTC));
+
+    Instant submitted = sample.get().getSubmitted();
+
+    if (submitted != null) model.addAttribute("submitted", submitted.atOffset(ZoneOffset.UTC));
+    else model.addAttribute("submitted", null);
+
+    Instant reviewed = sample.get().getReviewed();
+
+    if (reviewed != null) model.addAttribute("reviewed", reviewed.atOffset(ZoneOffset.UTC));
+    else model.addAttribute("reviewed", null);
 
     return "sample";
   }

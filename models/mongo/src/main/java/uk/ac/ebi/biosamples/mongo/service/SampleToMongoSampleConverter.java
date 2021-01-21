@@ -66,6 +66,8 @@ public class SampleToMongoSampleConverter implements Converter<Sample, MongoSamp
         sample.getRelease(),
         sample.getUpdate(),
         sample.getCreate(),
+        sample.getSubmitted(),
+        sample.getReviewed(),
         sample.getCharacteristics(),
         sample.getData(),
         relationships,

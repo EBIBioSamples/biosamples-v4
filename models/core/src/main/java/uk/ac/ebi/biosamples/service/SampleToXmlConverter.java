@@ -70,8 +70,19 @@ public class SampleToXmlConverter implements Converter<Sample, Document> {
     // DateTimeFormatter.ofPattern("yyyy-MM-ddTHH:mm:ss");
     bioSample.addAttribute("id", source.getAccession());
     bioSample.addAttribute(
+        "submissionCreateDate",
+        DateTimeFormatter.ISO_INSTANT.format(source.getCreate()).replace("Z", "+00:00"));
+
+    bioSample.addAttribute(
         "submissionUpdateDate",
         DateTimeFormatter.ISO_INSTANT.format(source.getUpdate()).replace("Z", "+00:00"));
+
+    if (source.getSubmitted() != null) {
+      bioSample.addAttribute(
+          "submissionSubmitDate",
+          DateTimeFormatter.ISO_INSTANT.format(source.getSubmitted()).replace("Z", "+00:00"));
+    }
+
     bioSample.addAttribute(
         "submissionReleaseDate",
         DateTimeFormatter.ISO_INSTANT.format(source.getRelease()).replace("Z", "+00:00"));

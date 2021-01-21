@@ -49,6 +49,7 @@ public class SampleToJsonLDSampleRecordConverterTest {
       deserializedRecord = mapper.readValue(serializedRecord, JsonLDDataRecord.class);
     } catch (IOException e) {
       log.error("Failed to serialize JsonLD record");
+      e.printStackTrace();
       Assert.fail();
     }
 

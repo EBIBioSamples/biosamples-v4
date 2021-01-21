@@ -27,6 +27,8 @@ import java.util.Map;
       "identifier",
       "dateCreated",
       "dateModified",
+      "dateReleased",
+      "dateSubmitted",
       "mainEntity",
       "isPartOf"
     })
@@ -50,6 +52,10 @@ public class JsonLDDataRecord implements BioschemasObject {
   private JsonLDSample mainEntity;
 
   private ZonedDateTime dateCreated;
+
+  private ZonedDateTime dateReleased;
+
+  private ZonedDateTime dateSubmitted;
 
   @JsonProperty("dateModified")
   private ZonedDateTime dateModified;
@@ -101,6 +107,16 @@ public class JsonLDDataRecord implements BioschemasObject {
     return dateTimeFormatter.format(dateCreated);
   }
 
+  @JsonGetter("dateSubmitted")
+  public String getDateSubmitted() {
+    return dateSubmitted != null ? dateTimeFormatter.format(dateSubmitted) : null;
+  }
+
+  @JsonGetter("dateReleased")
+  public String getDateReleased() {
+    return dateTimeFormatter.format(dateReleased);
+  }
+
   @JsonSetter("dateCreated")
   public JsonLDDataRecord dateCreated(String dateCreated) {
     this.dateCreated =
@@ -115,6 +131,20 @@ public class JsonLDDataRecord implements BioschemasObject {
     return this;
   }
 
+  @JsonSetter("dateSubmitted")
+  public JsonLDDataRecord dateSubmitted(String dateSubmitted) {
+    this.dateSubmitted =
+        LocalDateTime.parse(dateSubmitted, dateTimeFormatter).atZone(ZoneId.systemDefault());
+    return this;
+  }
+
+  @JsonSetter("dateReleased")
+  public JsonLDDataRecord dateReleased(String dateReleased) {
+    this.dateReleased =
+        LocalDateTime.parse(dateReleased, dateTimeFormatter).atZone(ZoneId.systemDefault());
+    return this;
+  }
+
   public JsonLDDataRecord dateModified(ZonedDateTime dateModified) {
     this.dateModified = dateModified;
     return this;
@@ -122,6 +152,16 @@ public class JsonLDDataRecord implements BioschemasObject {
 
   public JsonLDDataRecord dateCreated(ZonedDateTime dateCreated) {
     this.dateCreated = dateCreated;
+    return this;
+  }
+
+  public JsonLDDataRecord dateSubmitted(ZonedDateTime dateSubmitted) {
+    this.dateSubmitted = dateSubmitted;
+    return this;
+  }
+
+  public JsonLDDataRecord dateReleased(ZonedDateTime dateReleased) {
+    this.dateReleased = dateReleased;
     return this;
   }
 

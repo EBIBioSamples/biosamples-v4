@@ -107,6 +107,8 @@ public class MessageHandlerSolrTest {
         Instant.now(),
         Instant.now(),
         Instant.now(),
+        Instant.now(),
+        Instant.now(),
         attributeSet,
         Collections.emptySet(),
         Collections.emptySet());

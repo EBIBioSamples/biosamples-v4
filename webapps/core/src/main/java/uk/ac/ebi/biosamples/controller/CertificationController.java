@@ -63,19 +63,20 @@ public class CertificationController {
         certifyService.certify(jsonMapper.writeValueAsString(sample), true);
 
     // update date is system generated field
-    Instant update = Instant.now();
+    Instant reviewed = Instant.now();
+
     SubmittedViaType submittedVia =
         sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
     sample =
         Sample.Builder.fromSample(sample)
             .withCertificates(certificates)
-            .withUpdate(update)
+            .withReviewed(reviewed)
             .withSubmittedVia(submittedVia)
             .build();
 
     log.trace("Sample with certificates " + sample);
 
-    sample = sampleService.store(sample);
+    sample = sampleService.store(sample, false);
 
     // assemble a resource to return
     // create the response object with the appropriate status

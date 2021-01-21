@@ -227,6 +227,7 @@ public class EnaCallable implements Callable<Void> {
     Instant release;
     Instant update = null;
     Instant create = null;
+    Instant submitted = null;
 
     if (lastUpdated != null) {
       update = Instant.parse(lastUpdated);
@@ -244,6 +245,7 @@ public class EnaCallable implements Callable<Void> {
 
     if (firstCreated != null) {
       create = Instant.parse(firstCreated);
+      submitted = Instant.parse(firstCreated);
     }
 
     attributes.add(Attribute.build("INSDC status", status));
@@ -262,6 +264,8 @@ public class EnaCallable implements Callable<Void> {
             release,
             update,
             create,
+            submitted,
+            null,
             attributes,
             sample.getRelationships(),
             externalReferences);
