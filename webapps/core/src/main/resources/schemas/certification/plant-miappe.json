@@ -1,8 +1,8 @@
 {
-  "$id": "https://www.ebi.ac.uk/biosamples/schemas/plant-miappe.json",
+  "$id": "https://www.ebi.ac.uk/biosamples/schemas/1.2.0/plant-miappe",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "ENA Plant MIAPPE Checklist for omics and phenomic interoperability",
-  "version": "1.2",
+  "version": "1.2.0",
   "description": "ENA Plant MIAPPE Checklist for omics and phenomic interoperability",
   "type": "object",
   "$async": true,
@@ -264,5 +264,9 @@
       },
       "additionalProperties": true
     }
-  }
+  },
+  "required": [
+    "name",
+    "characteristics"
+  ]
 }
