@@ -2,6 +2,18 @@
 :toc: auto
 
 This pages contains links to release notes for BioSamples for version 4.0.0 and higher. This release represents a comprehensive overhaul and therefore previous release notes are no longer applicable.
+[[v5.0.4]]
+== v5.0.4 Release notes
+=== New Features
+1. Add Plant-MIAPPE checklist to BioSamples' schemas
++
+We have added Plant-MIAPPE checklist into BioSamples' schemas.
+At the sample submission time, certification service will verify if the given sample is in compliance with this checklist.
+If compliant, Plant-MIAPPE compliant certificate will be attached to the sample.
+Please find more about certification and validation in our documentation https://www.ebi.ac.uk/biosamples/docs/references/api/certify[here].
+
+2. Remove holiday notification banner from the website
+
 [[v5.0.3]]
 == v5.0.3 Release notes
 === New Features
