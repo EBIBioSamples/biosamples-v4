@@ -399,6 +399,7 @@ public class SampleHtmlController {
 
     String jsonLDString = jsonLDService.jsonLDToString(jsonLDService.sampleToJsonLD(sample.get()));
     model.addAttribute("sample", sample.get());
+    model.addAttribute("schemaStoreUrl", bioSamplesProperties.getSchemaStore());
     model.addAttribute("jsonLD", jsonLDString);
     // becuase thymleaf can only work with timezoned temporals, not instant
     // we need to do the conversion

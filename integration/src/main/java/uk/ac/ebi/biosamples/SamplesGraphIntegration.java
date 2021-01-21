@@ -10,7 +10,8 @@
 */
 package uk.ac.ebi.biosamples;
 
-import java.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
@@ -21,8 +22,11 @@ import uk.ac.ebi.biosamples.neo4j.model.NeoSample;
 import uk.ac.ebi.biosamples.neo4j.repo.NeoSampleRepository;
 import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 
+import java.util.*;
+
 @Component
 public class SamplesGraphIntegration extends AbstractIntegration {
+  private Logger log = LoggerFactory.getLogger(this.getClass());
   private final NeoSampleRepository neoSampleRepository;
 
   public SamplesGraphIntegration(BioSamplesClient client, NeoSampleRepository neoSampleRepository) {
@@ -52,6 +56,7 @@ public class SamplesGraphIntegration extends AbstractIntegration {
       samples.add(sample.getContent());
     }
 
+    log.info("Sending {} samples to Neo4j", samples.size());
     for (Sample sample : samples) {
       NeoSample neoSample = NeoSample.build(sample);
       neoSampleRepository.loadSample(neoSample);
@@ -68,7 +73,7 @@ public class SamplesGraphIntegration extends AbstractIntegration {
     query.setNodes(Set.of(node));
     query.setLinks(Collections.emptySet());
 
-    GraphSearchQuery response = neoSampleRepository.graphSearch(query, 10, 10);
+    GraphSearchQuery response = neoSampleRepository.graphSearch(query, 10, 1);
     if (response.getNodes().isEmpty()) {
       throw new IntegrationTestFailException("No samples present in neo4j", Phase.FIVE);
     }

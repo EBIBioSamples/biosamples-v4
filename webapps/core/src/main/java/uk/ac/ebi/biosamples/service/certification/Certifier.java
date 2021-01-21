@@ -18,10 +18,13 @@ import java.util.stream.Collectors;
 import org.everit.json.schema.ValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import uk.ac.ebi.biosamples.model.certification.*;
+import uk.ac.ebi.biosamples.validation.ElixirSchemaValidator;
+import uk.ac.ebi.biosamples.validation.ValidatorI;
 
 @Service
 public class Certifier {
@@ -29,10 +32,10 @@ public class Certifier {
   private static Logger EVENTS = LoggerFactory.getLogger("events");
 
   private ConfigLoader configLoader;
-  private Validator validator;
+  private ValidatorI validator;
   private Applicator applicator;
 
-  public Certifier(ConfigLoader configLoader, Validator validator, Applicator applicator) {
+  public Certifier(ConfigLoader configLoader, @Qualifier("elixirValidator") ValidatorI validator, Applicator applicator) {
     this.validator = validator;
     this.configLoader = configLoader;
     this.applicator = applicator;

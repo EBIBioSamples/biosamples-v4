@@ -97,6 +97,12 @@ public class BioSamplesProperties {
   @Value("${biosamples.schema.validator.uri:http://localhost:8085/validate}")
   private URI biosamplesSchemaValidatorServiceUri;
 
+  @Value("${biosamples.schemaValidator:http://localhost:3020/validate}")
+  private String schemaValidator;
+
+  @Value("${biosamples.schemaStore:http://localhost:8085/api/v2/schemas}")
+  private String schemaStore;
+
   public URI getBiosamplesClientUri() {
     return biosamplesClientUri;
   }
@@ -191,5 +197,13 @@ public class BioSamplesProperties {
 
   public URI getBiosamplesSchemaValidatorServiceUri() {
     return biosamplesSchemaValidatorServiceUri;
+  }
+
+  public String getSchemaValidator() {
+    return schemaValidator;
+  }
+
+  public String getSchemaStore() {
+    return schemaStore;
   }
 }

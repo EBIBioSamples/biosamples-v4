@@ -49,6 +49,7 @@ import uk.ac.ebi.biosamples.model.structured.amr.AmrPair;
 import uk.ac.ebi.biosamples.service.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.SchemaValidatorService;
+import uk.ac.ebi.biosamples.validation.ElixirSchemaValidator;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -71,11 +72,14 @@ public class AMRTest {
 
   private ObjectMapper mapper;
 
-  @MockBean private BioSamplesAapService bioSamplesAapService;
-
-  @MockBean private SampleService sampleService;
-
-  @MockBean private SchemaValidatorService schemaValidatorService;
+  @MockBean
+  private BioSamplesAapService bioSamplesAapService;
+  @MockBean
+  private SampleService sampleService;
+  @MockBean
+  private SchemaValidatorService schemaValidatorService;
+  @MockBean
+  ElixirSchemaValidator validator;
 
   private AMREntry getAMREntry() {
     return new AMREntry.Builder()
