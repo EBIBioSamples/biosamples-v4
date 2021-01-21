@@ -146,12 +146,26 @@
                     <div class="input-group">
                         <label for="graph-search-btn" class="button graph-search-btn">Search</label>
                         <input type="button" id="graph-search-btn" name="graph-search-button"
-                               th:onclick="|graph_search('@{/}')|" class="show-for-sr">
+                               th:onclick="|graph_search('@{/}', 0)|" class="show-for-sr">
                     </div>
                 </div>
             </form>
         </div>
         <!------------------------------------------------------------------------------->
+
+
+        <div id="graph-search-pagination-wrapper">
+            <div id="graph-search-pagination-text"></div>
+            <div id="graph-search-pagination" class="graph-search-pagination">
+                <label for="graph-search-prev-page" class="button graph-search-page-control">Previous</label>
+                <input type="button" id="graph-search-prev-page" name="graph-search-next-page"
+                       th:onclick="|graph_search('@{/}', -1)|" class="show-for-sr">
+                <input type="text" id="graph-search-current-page" class="graph-search-page-control">
+                <label for="graph-search-next-page" class="button  graph-search-page-control">Next</label>
+                <input type="button" id="graph-search-next-page" name="graph-search-next-page"
+                       th:onclick="|graph_search('@{/}', 1)|" class="show-for-sr">
+            </div>
+        </div>
 
         <div class="small-12 search-results">
             <!--<div id="graph-search-facet" class="sr__facets"></div>-->
@@ -173,6 +187,7 @@
             content.style.display = "block";
         }
     });
+    $("#graph-search-pagination-wrapper").hide()
 </script>
 </body>
 </html>
