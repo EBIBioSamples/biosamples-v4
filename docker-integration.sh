@@ -13,7 +13,7 @@ do
   echo "=================================== STARTING INTEGRATION TESTS PHASE-"$X "====================================="
   echo "============================================================================================================"
   #java -jar integration/target/integration-4.0.0-SNAPSHOT.jar --phase=$X $ARGS $@
-  docker-compose run --rm --service-ports biosamples-integration java -jar integration-5.0.4-SNAPSHOT.jar --phase=$X $ARGS $@
+  docker-compose run --rm --service-ports biosamples-integration java -jar integration-5.0.5-SNAPSHOT.jar --phase=$X $ARGS $@
   sleep 10 #solr is configured to commit every 5 seconds
 
 done
