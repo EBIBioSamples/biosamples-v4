@@ -97,6 +97,9 @@ public class BioSamplesProperties {
   @Value("${biosamples.schema.validator.uri:http://localhost:8085/validate}")
   private URI biosamplesSchemaValidatorServiceUri;
 
+  @Value("${biosamples.schema.default:schemas/certification/biosamples-minimal.json}")
+  private String biosamplesDefaultSchema;
+
   public URI getBiosamplesClientUri() {
     return biosamplesClientUri;
   }
@@ -191,5 +194,9 @@ public class BioSamplesProperties {
 
   public URI getBiosamplesSchemaValidatorServiceUri() {
     return biosamplesSchemaValidatorServiceUri;
+  }
+
+  public String getBiosamplesDefaultSchema() {
+    return biosamplesDefaultSchema;
   }
 }

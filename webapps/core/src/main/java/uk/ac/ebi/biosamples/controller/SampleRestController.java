@@ -47,13 +47,14 @@ import uk.ac.ebi.biosamples.utils.LinkUtils;
 @RequestMapping("/samples/{accession}")
 @CrossOrigin
 public class SampleRestController {
+  private Logger log = LoggerFactory.getLogger(getClass());
+
   private final SampleService sampleService;
   private final BioSamplesAapService bioSamplesAapService;
   private final SampleManipulationService sampleManipulationService;
   private final SampleResourceAssembler sampleResourceAssembler;
-  private Ga4ghSampleToPhenopacketConverter phenopacketExporter;
   private PhenopacketConverter phenopacketConverter;
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final SchemaValidationService schemaValidationService;
 
   @Autowired private CertifyService certifyService;
 
@@ -62,14 +63,14 @@ public class SampleRestController {
       BioSamplesAapService bioSamplesAapService,
       SampleManipulationService sampleManipulationService,
       SampleResourceAssembler sampleResourceAssembler,
-      Ga4ghSampleToPhenopacketConverter phenopacketExporter,
-      PhenopacketConverter phenopacketConverter) {
+      PhenopacketConverter phenopacketConverter,
+      SchemaValidationService schemaValidationService) {
     this.sampleService = sampleService;
     this.bioSamplesAapService = bioSamplesAapService;
     this.sampleManipulationService = sampleManipulationService;
     this.sampleResourceAssembler = sampleResourceAssembler;
-    this.phenopacketExporter = phenopacketExporter;
     this.phenopacketConverter = phenopacketConverter;
+    this.schemaValidationService = schemaValidationService;
   }
 
   @PreAuthorize("isAuthenticated()")
@@ -234,10 +235,9 @@ public class SampleRestController {
         sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
     sample = Sample.Builder.fromSample(sample).withUpdate(update).withSubmittedVia(submittedVia).build();
 
-    if (!accession.startsWith("SAMEG"))
-      certificates = certifyService.certify(jsonMapper.writeValueAsString(sample), false);
-
-    sample = Sample.Builder.fromSample(sample).withCertificates(certificates).build();
+    // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
+    if (!bioSamplesAapService.isWriteSuperUser())
+      schemaValidationService.validate(sample);
 
     final boolean isFirstTimeMetadataAdded = sampleService.beforeStore(sample);
 

@@ -48,7 +48,7 @@ import uk.ac.ebi.biosamples.model.structured.amr.AMRTable;
 import uk.ac.ebi.biosamples.model.structured.amr.AmrPair;
 import uk.ac.ebi.biosamples.service.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.SampleService;
-import uk.ac.ebi.biosamples.service.SchemaValidatorService;
+import uk.ac.ebi.biosamples.service.SchemaValidationService;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -75,7 +75,7 @@ public class AMRTest {
 
   @MockBean private SampleService sampleService;
 
-  @MockBean private SchemaValidatorService schemaValidatorService;
+  @MockBean private SchemaValidationService schemaValidatorService;
 
   private AMREntry getAMREntry() {
     return new AMREntry.Builder()
@@ -208,7 +208,6 @@ public class AMRTest {
             .withAttributes(Collections.singletonList(organismAttribute))
             .build();
 
-    when(schemaValidatorService.validate(any(), any())).thenReturn(ResponseEntity.ok("[]"));
     when(bioSamplesAapService.isWriteSuperUser()).thenReturn(true);
     when(bioSamplesAapService.handleSampleDomain(any(Sample.class))).thenReturn(testSample);
     when(bioSamplesAapService.handleStructuredDataDomain(any(Sample.class))).thenReturn(testSample);
@@ -256,7 +255,6 @@ public class AMRTest {
             .withAttributes(Collections.singletonList(organismAttribute))
             .build();
 
-    when(schemaValidatorService.validate(any(), any())).thenReturn(ResponseEntity.ok("[]"));
     when(bioSamplesAapService.isWriteSuperUser()).thenReturn(false);
     when(bioSamplesAapService.handleSampleDomain(any(Sample.class))).thenReturn(testSample);
     when(bioSamplesAapService.handleStructuredDataDomain(any(Sample.class))).thenReturn(testSample);

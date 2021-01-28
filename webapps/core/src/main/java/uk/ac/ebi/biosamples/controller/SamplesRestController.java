@@ -67,6 +67,7 @@ public class SamplesRestController {
   private final SampleManipulationService sampleManipulationService;
   private final BioSamplesProperties bioSamplesProperties;
   private final SampleResourceAssembler sampleResourceAssembler;
+  private final SchemaValidationService schemaValidationService;
 
   private static final String NCBI_IMPORT_DOMAIN = "self.BiosampleImportNCBI";
   private static final String ENA_IMPORT_DOMAIN = "self.BiosampleImportENA";
@@ -82,13 +83,15 @@ public class SamplesRestController {
       SampleResourceAssembler sampleResourceAssembler,
       SampleManipulationService sampleManipulationService,
       SampleService sampleService,
-      BioSamplesProperties bioSamplesProperties) {
+      BioSamplesProperties bioSamplesProperties,
+      SchemaValidationService schemaValidationService) {
     this.samplePageService = samplePageService;
     this.filterService = filterService;
     this.bioSamplesAapService = bioSamplesAapService;
     this.sampleResourceAssembler = sampleResourceAssembler;
     this.sampleManipulationService = sampleManipulationService;
     this.sampleService = sampleService;
+    this.schemaValidationService = schemaValidationService;
     this.bioSamplesProperties = bioSamplesProperties;
   }
 
@@ -467,10 +470,9 @@ public class SamplesRestController {
             .withSubmittedVia(submittedVia)
             .build();
 
-    List<Certificate> certificates =
-        certifyService.certify(jsonMapper.writeValueAsString(sample), false);
-
-    sample = Sample.Builder.fromSample(sample).withCertificates(certificates).build();
+    // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
+    if (!bioSamplesAapService.isWriteSuperUser())
+      schemaValidationService.validate(sample);
 
     if (!setFullDetails) {
       sample = sampleManipulationService.removeLegacyFields(sample);

@@ -101,12 +101,6 @@ public class CurationApplicationService {
         }
       }
     }
-    if (!curationApplied) {
-      // we stopped because we didn't apply any curation
-      // therefore we have some curations that can't be applied
-      // this is a warning
-      log.debug("Unapplied curation on {}", sample.getAccession());
-    }
     return sample;
   }
 }

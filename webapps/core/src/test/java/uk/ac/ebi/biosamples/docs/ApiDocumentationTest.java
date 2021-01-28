@@ -88,6 +88,8 @@ public class ApiDocumentationTest {
 
   @MockBean private Identifier identifier;
 
+  @MockBean private SchemaValidationService schemaValidationService;
+
   private DocumentationHelper faker;
 
   private MockMvc mockMvc;
@@ -250,6 +252,7 @@ public class ApiDocumentationTest {
 
     when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(sampleWithDomain);
     when(sampleService.store(any(Sample.class), eq(false))).thenReturn(sampleWithDomain);
+    doNothing().when(schemaValidationService).validate(any(Sample.class));
 
     this.mockMvc
         .perform(
@@ -291,6 +294,7 @@ public class ApiDocumentationTest {
 
     when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(sampleWithDomain);
     when(sampleService.store(any(Sample.class), eq(false))).thenReturn(sampleWithDomain);
+    doNothing().when(schemaValidationService).validate(any(Sample.class));
 
     this.mockMvc
         .perform(

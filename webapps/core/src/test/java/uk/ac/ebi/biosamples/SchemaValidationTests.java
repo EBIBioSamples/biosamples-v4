@@ -35,7 +35,7 @@ import org.springframework.util.StreamUtils;
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-public class SchemaValidatorTests {
+public class SchemaValidationTests {
 
   @Autowired private MockMvc mockMvc;
 
