@@ -454,3 +454,8 @@ code[class^="language"] {
     background-size: 300px 30px;
     background-position: center;
 }
+
+.sample-attribute-table-column {
+    width: 33%;
+    vertical-align: top;
+}
