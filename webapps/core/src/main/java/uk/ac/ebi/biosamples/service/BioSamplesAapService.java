@@ -32,6 +32,7 @@ import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.tsc.aap.client.model.Domain;
+import uk.ac.ebi.tsc.aap.client.repo.TokenService;
 import uk.ac.ebi.tsc.aap.client.security.UserAuthentication;
 
 @Service
@@ -42,13 +43,15 @@ public class BioSamplesAapService {
   private final Traverson traverson;
   private final BioSamplesProperties bioSamplesProperties;
   private final SampleService sampleService;
+  private final TokenService tokenService;
 
   public BioSamplesAapService(
-      RestTemplateBuilder restTemplateBuilder,
-      BioSamplesProperties bioSamplesProperties,
-      SampleService sampleService) {
+          RestTemplateBuilder restTemplateBuilder,
+          BioSamplesProperties bioSamplesProperties,
+          SampleService sampleService, TokenService tokenService) {
     traverson =
         new Traverson(bioSamplesProperties.getBiosamplesClientAapUri(), MediaTypes.HAL_JSON);
+    this.tokenService = tokenService;
     traverson.setRestOperations(restTemplateBuilder.build());
     this.bioSamplesProperties = bioSamplesProperties;
     this.sampleService = sampleService;
@@ -57,6 +60,10 @@ public class BioSamplesAapService {
   public Sample handleUpdateRequestFromOriginalSubmitter(final Sample sample) {
     if (handleStructuredDataDomain(sample) != null) return sample;
     else return null;
+  }
+
+  public String authenticate(String userName, String password) {
+    return tokenService.getAAPToken(userName, password);
   }
 
   @ResponseStatus(
