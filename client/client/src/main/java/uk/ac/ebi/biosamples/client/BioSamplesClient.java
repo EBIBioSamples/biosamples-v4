@@ -67,6 +67,16 @@ public class BioSamplesClient implements AutoCloseable {
 
   private final Optional<BioSamplesClient> publicClient;
 
+//  public BioSamplesClient(
+//      URI uri,
+//      RestTemplateBuilder restTemplateBuilder,
+//      SampleValidator sampleValidator,
+//      AapClientService aapClientService,
+//      BioSamplesProperties bioSamplesProperties) {
+//
+//    this(uri, restTemplateBuilder, sampleValidator, aapClientService, bioSamplesProperties);
+//  }
+
   public BioSamplesClient(
       URI uri,
       RestTemplateBuilder restTemplateBuilder,
@@ -74,15 +84,7 @@ public class BioSamplesClient implements AutoCloseable {
       AapClientService aapClientService,
       BioSamplesProperties bioSamplesProperties) {
 
-    this(uri, restTemplateBuilder.build(), sampleValidator, aapClientService, bioSamplesProperties);
-  }
-
-  public BioSamplesClient(
-      URI uri,
-      RestTemplate restOperations,
-      SampleValidator sampleValidator,
-      AapClientService aapClientService,
-      BioSamplesProperties bioSamplesProperties) {
+    RestTemplate restOperations = restTemplateBuilder.build();
 
     threadPoolExecutor =
         AdaptiveThreadPoolExecutor.create(
@@ -142,7 +144,7 @@ public class BioSamplesClient implements AutoCloseable {
       this.publicClient =
           Optional.of(
               new BioSamplesClient(
-                  uri, restOperations, sampleValidator, null, bioSamplesProperties));
+                  uri, restTemplateBuilder, sampleValidator, null, bioSamplesProperties));
     }
   }
 
