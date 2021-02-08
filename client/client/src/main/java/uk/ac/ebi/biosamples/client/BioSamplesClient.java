@@ -67,16 +67,6 @@ public class BioSamplesClient implements AutoCloseable {
 
   private final Optional<BioSamplesClient> publicClient;
 
-//  public BioSamplesClient(
-//      URI uri,
-//      RestTemplateBuilder restTemplateBuilder,
-//      SampleValidator sampleValidator,
-//      AapClientService aapClientService,
-//      BioSamplesProperties bioSamplesProperties) {
-//
-//    this(uri, restTemplateBuilder, sampleValidator, aapClientService, bioSamplesProperties);
-//  }
-
   public BioSamplesClient(
       URI uri,
       RestTemplateBuilder restTemplateBuilder,
