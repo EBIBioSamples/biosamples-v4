@@ -167,7 +167,7 @@ public class RestSearchIntegration extends AbstractIntegration {
     }
 
     List<Resource<Sample>> samples = new ArrayList<>();
-    for (Resource<Sample> sample : client.fetchSampleResourceAll()) {
+    for (Resource<Sample> sample : publicClient.fetchSampleResourceAll()) {
       samples.add(sample);
     }
 
@@ -177,7 +177,7 @@ public class RestSearchIntegration extends AbstractIntegration {
 
     // check that the private sample is not in search results
     // check that the referenced non-existing sample not in search result
-    for (Resource<Sample> resource : client.fetchSampleResourceAll()) {
+    for (Resource<Sample> resource : publicClient.fetchSampleResourceAll()) {
       if (resource.getContent().getName().equals(test1.getName())) {
         throw new IntegrationTestFailException(
             "Found non-public sample " + test1.getAccession() + " in search samples", Phase.TWO);
@@ -187,7 +187,7 @@ public class RestSearchIntegration extends AbstractIntegration {
     // TODO check OLS expansion by making sure we can find the submitted samples in results for
     // Eukaryota
     Set<String> accessions = new HashSet<>();
-    for (Resource<Sample> sample : client.fetchSampleResourceAll("Homo Sapiens")) {
+    for (Resource<Sample> sample : publicClient.fetchSampleResourceAll("Homo Sapiens")) {
       accessions.add(sample.getContent().getAccession());
     }
     if (!accessions.contains(test2.getAccession())) {
@@ -230,7 +230,7 @@ public class RestSearchIntegration extends AbstractIntegration {
 
     // Get results for sample2
     List<String> sample2EffectiveSearchResults = new ArrayList<>();
-    for (Resource<Sample> sample : client.fetchSampleResourceAll(sample2.getAccession())) {
+    for (Resource<Sample> sample : publicClient.fetchSampleResourceAll(sample2.getAccession())) {
       sample2EffectiveSearchResults.add(sample.getContent().getAccession());
     }
 
@@ -248,7 +248,7 @@ public class RestSearchIntegration extends AbstractIntegration {
 
     // Get results for sample4
     List<String> sample4EffectiveSearchResults = new ArrayList<>();
-    for (Resource<Sample> sample : client.fetchSampleResourceAll(sample4.getAccession())) {
+    for (Resource<Sample> sample : publicClient.fetchSampleResourceAll(sample4.getAccession())) {
       sample4EffectiveSearchResults.add(sample.getContent().getAccession());
     }
 
