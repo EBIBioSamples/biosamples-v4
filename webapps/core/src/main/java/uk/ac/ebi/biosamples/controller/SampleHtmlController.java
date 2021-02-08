@@ -195,6 +195,11 @@ public class SampleHtmlController {
     return "upload";
   }
 
+  @GetMapping(value = "/uploadLogin")
+  public String login(Model model, HttpServletRequest request, HttpServletResponse response) {
+    return "uploadLogin";
+  }
+
   @GetMapping(value = "/facets")
   public String facets(
       Model model,

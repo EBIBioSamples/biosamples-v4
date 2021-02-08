@@ -2,11 +2,15 @@ package uk.ac.ebi.biosamples.controller;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.model.auth.AuthRequest;
 import uk.ac.ebi.biosamples.service.BioSamplesAapService;
 
-@RestController
+import java.util.List;
+
+@Controller
 @RequestMapping("/aap-login")
 public class AapLoginController {
     private final BioSamplesAapService bioSamplesAapService;
@@ -16,8 +20,17 @@ public class AapLoginController {
         this.bioSamplesAapService = bioSamplesAapService;
     }
 
-    @GetMapping(value = "/auth")
-    public @ResponseBody String auth(@RequestBody AuthRequest authRequest) {
-        return bioSamplesAapService.authenticate(authRequest.getUserName(), authRequest.getPassword());
+    @PostMapping(value = "/auth")
+    public String auth(@ModelAttribute("authRequest") AuthRequest authRequest, ModelMap model) {
+        String token = bioSamplesAapService.authenticate(authRequest.getUserName(), authRequest.getPassword());
+        model.addAttribute("token", token);
+
+        return "upload";
+    }
+
+    @GetMapping(value = "/domains")
+    public @ResponseBody
+    List<String> getDomains(@RequestBody String token) {
+        return bioSamplesAapService.getDomains(token);
     }
 }
