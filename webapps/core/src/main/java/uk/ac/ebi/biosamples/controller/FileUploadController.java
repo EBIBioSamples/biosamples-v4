@@ -10,28 +10,24 @@
  */
 package uk.ac.ebi.biosamples.controller;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.MappingIterator;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.csv.CsvMapper;
-import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import uk.ac.ebi.biosamples.service.upload.FileUploadService;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
-@RestController
+@Controller
 @RequestMapping("/upload")
 public class FileUploadController {
     private Logger log = LoggerFactory.getLogger(getClass());
@@ -40,7 +36,9 @@ public class FileUploadController {
     FileUploadService fileUploadService;
 
     @PostMapping
-    public void upload(@RequestParam("file") MultipartFile file) throws IOException {
+    public void upload(@RequestParam("file") MultipartFile file, ModelMap model) throws IOException {
+        log.info("In upload Controller : " + model.get("token"));
+
         fileUploadService.upload(file);
     }
 

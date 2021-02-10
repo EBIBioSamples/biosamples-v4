@@ -4,7 +4,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
+import com.fasterxml.jackson.dataformat.csv.CsvParser;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import org.apache.commons.csv.CSVParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,10 +22,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -67,15 +70,13 @@ public class FileUploadService {
                 samples.add((Sample) t);
             } else if (t instanceof ValidationResult) {
                 ValidationResult validationResult = (ValidationResult) t;
-                throw new RuntimeException("Spreadsheet validation failed " + validationResult.getValidationMessagesList().stream().collect(Collectors.joining()));
+                throw new RuntimeException("Spreadsheet validation failed " + String.join("", validationResult.getValidationMessagesList()));
             }
         });
 
         log.info(String.valueOf(samples.size()));
 
-        samples.forEach(sample -> {
-            log.info(sample.toString());
-        });
+        samples.forEach(sample -> log.info(sample.toString()));
 
         jsonListOfMappedSamples.forEach(mappedJson -> {
             mappedJson.keySet().forEach(key -> log.info(key));
@@ -87,15 +88,16 @@ public class FileUploadService {
         AtomicReference<Sample> sample = new AtomicReference<>();
         AtomicBoolean sampleNamePresent = new AtomicBoolean(false);
         AtomicBoolean sampleReleaseDatePresent = new AtomicBoolean(false);
+        AtomicInteger relationshipIncrementer = new AtomicInteger(0);
 
-        mappedSample.entrySet().forEach(entry -> {
-            if (entry.getKey().equalsIgnoreCase("Sample Name")) {
-                sample.set(new Sample.Builder(String.valueOf(entry.getValue())).build());
+        mappedSample.forEach((key, value) -> {
+            if (key.equalsIgnoreCase("Sample Name")) {
+                sample.set(new Sample.Builder(String.valueOf(value)).build());
                 sampleNamePresent.set(true);
             }
 
-            if (entry.getKey().equalsIgnoreCase("Release")) {
-                sample.set(Sample.Builder.fromSample(sample.get()).withRelease(String.valueOf(entry.getValue())).build());
+            if (key.equalsIgnoreCase("Release")) {
+                sample.set(Sample.Builder.fromSample(sample.get()).withRelease(String.valueOf(value)).build());
                 sampleReleaseDatePresent.set(true);
             }
         });
@@ -112,7 +114,9 @@ public class FileUploadService {
                 .stream()
                 .filter(entry -> entry.getKey()
                         .startsWith("Relationship"))
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> (String) e.getValue()));
+                .collect(Collectors.toMap(e -> e.getKey() + relationshipIncrementer.getAndIncrement(),
+                        e -> (String) e.getValue(), (u, v) -> u,
+                        LinkedHashMap::new));
 
         sample.set(handleRelationships(relationships, sample.get()));
 
@@ -132,11 +136,13 @@ public class FileUploadService {
     }
 
     private Sample handleRelationships(Map<String, String> relationships, Sample sample) {
-        List<Relationship> relationshipList = new ArrayList<>();
-
-        relationships.entrySet().forEach(relationship -> {
-            relationshipList.add(Relationship.build("SAMEA11111", relationship.getKey(), relationship.getValue()));
-        });
+        List<Relationship> relationshipList = relationships.values()
+                .stream()
+                .map(relationshipValue -> relationshipValue.trim())
+                .map(relationshipTrimmedValue -> Relationship.build("SAMEA11111",
+                        relationshipTrimmedValue.substring(0, relationshipTrimmedValue.indexOf("#")),
+                        relationshipTrimmedValue.substring(relationshipTrimmedValue.indexOf("#") + 1)))
+                .collect(Collectors.toList());
 
         return Sample.Builder.fromSample(sample).withRelationships(relationshipList).build();
     }
@@ -144,9 +150,8 @@ public class FileUploadService {
     private Sample handleCharacteristics(Map<String, String> characteristics, Sample sample) {
         List<Attribute> attributes = new ArrayList<>();
 
-        characteristics.entrySet().forEach(characteristic -> {
-            attributes.add(new Attribute.Builder(trimmedKey(characteristic.getKey()), characteristic.getValue()).build());
-        });
+        characteristics.forEach((key, value) -> attributes.add
+                (new Attribute.Builder(trimmedKey(key), value).build()));
 
         return Sample.Builder.fromSample(sample).withAttributes(attributes).build();
     }
@@ -158,6 +163,7 @@ public class FileUploadService {
     public List<Map<?, ?>> readObjectsFromCsv(File file) throws IOException {
         CsvSchema bootstrap = CsvSchema.emptySchema().withHeader();
         CsvMapper csvMapper = new CsvMapper();
+        csvMapper.configure(CsvParser.Feature.TRIM_SPACES, true);
         MappingIterator<Map<?, ?>> mappingIterator = csvMapper.readerFor(Map.class).with(bootstrap).readValues(file);
 
         return mappingIterator.readAll();
