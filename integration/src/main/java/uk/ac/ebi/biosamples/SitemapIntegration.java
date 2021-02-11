@@ -57,7 +57,7 @@ public class SitemapIntegration extends AbstractIntegration {
   protected void phaseTwo() {
     List<Resource<Sample>> samples = new ArrayList<>();
     Map<String, Boolean> lookupTable = new HashMap<>();
-    for (Resource<Sample> sample : client.fetchSampleResourceAll()) {
+    for (Resource<Sample> sample : publicClient.fetchSampleResourceAll()) {
       samples.add(sample);
       lookupTable.put(sample.getContent().getAccession(), Boolean.FALSE);
     }

@@ -10,12 +10,6 @@
 */
 package uk.ac.ebi.biosamples.service;
 
-import java.time.Instant;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -32,7 +26,14 @@ import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.tsc.aap.client.model.Domain;
+import uk.ac.ebi.tsc.aap.client.repo.DomainService;
+import uk.ac.ebi.tsc.aap.client.repo.TokenService;
 import uk.ac.ebi.tsc.aap.client.security.UserAuthentication;
+
+import java.time.Instant;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 @Service
 public class BioSamplesAapService {
@@ -42,13 +43,17 @@ public class BioSamplesAapService {
   private final Traverson traverson;
   private final BioSamplesProperties bioSamplesProperties;
   private final SampleService sampleService;
+  private final TokenService tokenService;
+  private final DomainService domainService;
 
   public BioSamplesAapService(
-      RestTemplateBuilder restTemplateBuilder,
-      BioSamplesProperties bioSamplesProperties,
-      SampleService sampleService) {
+          RestTemplateBuilder restTemplateBuilder,
+          BioSamplesProperties bioSamplesProperties,
+          SampleService sampleService, TokenService tokenService, DomainService domainService) {
     traverson =
         new Traverson(bioSamplesProperties.getBiosamplesClientAapUri(), MediaTypes.HAL_JSON);
+    this.tokenService = tokenService;
+    this.domainService = domainService;
     traverson.setRestOperations(restTemplateBuilder.build());
     this.bioSamplesProperties = bioSamplesProperties;
     this.sampleService = sampleService;
@@ -57,6 +62,19 @@ public class BioSamplesAapService {
   public Sample handleUpdateRequestFromOriginalSubmitter(final Sample sample) {
     if (handleStructuredDataDomain(sample) != null) return sample;
     else return null;
+  }
+
+  public String authenticate(String userName, String password) {
+    return tokenService.getAAPToken(userName, password);
+  }
+
+  public List<String> getDomains(String token) {
+    List<String> domains = new ArrayList<>();
+
+    domainService.getMyDomains(token).forEach(domain -> log.info(domain.getDomainName()));
+    domains.addAll(domainService.getMyDomains(token).stream().map(domain -> domain.getDomainName()).collect(Collectors.toList()));
+
+    return domains;
   }
 
   @ResponseStatus(

@@ -31,6 +31,7 @@ public abstract class AbstractIntegration implements ApplicationRunner, ExitCode
   protected final String defaultIntegrationSubmissionDomain = "self.BiosampleIntegrationTest";
   protected int exitCode = 1;
   protected final BioSamplesClient client;
+  protected final BioSamplesClient publicClient;
 
   protected abstract void phaseOne();
 
@@ -44,6 +45,7 @@ public abstract class AbstractIntegration implements ApplicationRunner, ExitCode
 
   public AbstractIntegration(BioSamplesClient client) {
     this.client = client;
+    this.publicClient = client.getPublicClient().orElseThrow(() -> new IntegrationTestFailException("Could not create public client"));
   }
 
   @Override
@@ -89,7 +91,7 @@ public abstract class AbstractIntegration implements ApplicationRunner, ExitCode
     Optional<Sample> optionalSample;
     Filter nameFilter = FilterBuilder.create().onName(name).build();
     Iterator<Resource<Sample>> resourceIterator =
-        client.fetchSampleResourceAll(Collections.singletonList(nameFilter)).iterator();
+        publicClient.fetchSampleResourceAll(Collections.singletonList(nameFilter)).iterator();
 
     if (resourceIterator.hasNext()) {
       optionalSample = Optional.of(resourceIterator.next().getContent());
