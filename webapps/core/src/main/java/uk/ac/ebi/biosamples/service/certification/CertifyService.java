@@ -162,4 +162,13 @@ public class CertifyService {
             })
         .collect(Collectors.toList());
   }
+
+  public List<String> getCertificateNames() {
+    return configLoader.config.getChecklists().stream()
+            .map(
+                    checklist -> {
+                      return checklist.getName() + "-" + checklist.getVersion();
+                    })
+            .collect(Collectors.toList());
+  }
 }

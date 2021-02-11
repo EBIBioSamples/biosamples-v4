@@ -190,11 +190,6 @@ public class SampleHtmlController {
     return "samples_graph";
   }
 
-  @GetMapping(value = "/upload")
-  public String upload(Model model, HttpServletRequest request, HttpServletResponse response) {
-    return "upload";
-  }
-
   @GetMapping(value = "/uploadLogin")
   public String login(Model model, HttpServletRequest request, HttpServletResponse response) {
     return "uploadLogin";

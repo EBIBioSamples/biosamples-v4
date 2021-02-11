@@ -15,6 +15,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import java.io.IOException;
+import java.util.List;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,6 +63,13 @@ public class CertificateRetrievalController {
                 certifyService.getCertificates().stream()
                     .map(certificate -> new Resource<>(getGson().toJson(jp.parse(certificate))))
                     .collect(Collectors.toList())));
+  }
+
+  @GetMapping(
+          value = "/names",
+          produces = {MediaType.APPLICATION_JSON_VALUE})
+  public List<String> getAllCertificateNames() {
+    return certifyService.getCertificateNames();
   }
 
   public Gson getGson() {
