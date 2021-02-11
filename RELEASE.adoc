@@ -2,6 +2,21 @@
 :toc: auto
 
 This pages contains links to release notes for BioSamples for version 4.0.0 and higher. This release represents a comprehensive overhaul and therefore previous release notes are no longer applicable.
+[[v5.0.5]]
+== v5.0.5 Release notes
+=== New features
+1. Private samples are searchable by authenticated users
++
+Previously, private samples were only available for direct retrieval after logging in.
+This release enables searching of private samples through the API by their owner.
+The sample search endpoint optionally requires a  JWT and returns the private samples the user is authorised for.
+
+=== Bug Fixes:
+1. Documentation updates
++
+BioSamples documentation has been updated to remove links to deprecated AAP services.
+Furthermore, the documentation has been improved to distinguish between the dev and production authentication services.
+
 [[v5.0.4]]
 == v5.0.4 Release notes
 === New Features
