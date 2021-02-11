@@ -9,7 +9,7 @@ This pages contains links to release notes for BioSamples for version 4.0.0 and 
 +
 Previously, private samples were only available for direct retrieval after logging in.
 This release enables searching of private samples through the API by their owner.
-The sample search endpoint optionally requires a  JWT and returns the private samples the user is authorised for.
+The https://www.ebi.ac.uk/biosamples/docs/guides/search[sample search endpoint] optionally requires a  JWT and returns the private samples the user is authorised for.
 
 === Bug Fixes:
 1. Documentation updates
