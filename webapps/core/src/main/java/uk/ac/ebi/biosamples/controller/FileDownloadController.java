@@ -24,8 +24,10 @@ import org.springframework.web.multipart.MultipartFile;
 import uk.ac.ebi.biosamples.service.FileDownloadService;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -40,28 +42,63 @@ public class FileDownloadController {
         this.fileDownloadService = fileDownloadService;
     }
 
-    @GetMapping
+    @GetMapping(value = "/0", produces="application/zip" )
     public void download(HttpServletResponse response) {
-        FileSystemResource resource = new FileSystemResource("config_test.json");
-        try (ZipOutputStream zippedOut = new ZipOutputStream(response.getOutputStream())) {
-            InputStream in = new ClassPathResource("config_test.json").getInputStream();
-//            ZipEntry zipEntry = new ZipEntry("test.file.json");
-//            zippedOut.putNextEntry(zipEntry);
-//            StreamUtils.copy(in, zippedOut);
+        response.setContentType("application/zip");
+        response.setHeader("Content-Disposition", "attachment; filename=\"samples.zip\"");
 
-            ZipEntry zipEntry = new ZipEntry(resource.getFilename());
-            zipEntry.setSize(resource.contentLength());
-            zipEntry.setTime(System.currentTimeMillis());
+        try (ZipOutputStream zippedOut = new ZipOutputStream(response.getOutputStream())) {
+            InputStream in = new ClassPathResource("config.json").getInputStream();
+            ZipEntry zipEntry = new ZipEntry("samples.json");
             zippedOut.putNextEntry(zipEntry);
-            StreamUtils.copy(resource.getInputStream(), zippedOut);
+            StreamUtils.copy(in, zippedOut);
 
             zippedOut.closeEntry();
             zippedOut.finish();
-
         } catch (IOException e) {
+            e.printStackTrace();
             log.warn("Failed to download the file");
         }
 
         fileDownloadService.downloadCompressed();
+    }
+
+    @GetMapping("/1")
+    public void downloadFile(HttpServletResponse response) {
+        try {
+            InputStream in = new ClassPathResource("config.json").getInputStream();
+            StreamUtils.copy(in, response.getOutputStream());
+            response.flushBuffer();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            log.warn("Failed to download the file");
+        }
+    }
+
+    @GetMapping("/2")
+    public void downloadFileWriteString(HttpServletResponse response) {
+        try {
+            InputStream in = fileDownloadService.writeStringToStream("", Collections.emptyList(), Collections.emptyList());
+            StreamUtils.copy(in, response.getOutputStream());
+            response.flushBuffer();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            log.warn("Failed to download the file");
+        }
+    }
+
+    @GetMapping("/3")
+    public void streamFile(HttpServletResponse response) {
+        try {
+
+            StreamUtils.copy(fileDownloadService.getDownloadStream("", Collections.emptyList(), Collections.emptyList()), response.getOutputStream());
+            response.flushBuffer();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            log.warn("Failed to download the file");
+        }
     }
 }
