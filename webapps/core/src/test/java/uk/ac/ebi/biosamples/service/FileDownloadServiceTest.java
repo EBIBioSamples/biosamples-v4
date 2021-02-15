@@ -20,7 +20,7 @@ public class FileDownloadServiceTest {
 
     @Test
     public void downloadCompressed() {
-        ZipOutputStream zipOutputStream = fileDownloadService.downloadCompressed();
+
 //        Assert.notNull(zipOutputStream, "Zip stream should not be null");
     }
 

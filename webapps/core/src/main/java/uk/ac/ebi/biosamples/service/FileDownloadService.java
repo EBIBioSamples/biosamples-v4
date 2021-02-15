@@ -1,30 +1,31 @@
 package uk.ac.ebi.biosamples.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.io.Charsets;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.CharSet;
-import org.apache.tomcat.util.bcel.classfile.ConstantUtf8;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StreamUtils;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.zip.DeflaterOutputStream;
+import java.util.zip.GZIPOutputStream;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 @Service
 public class FileDownloadService {
+    private Logger log = LoggerFactory.getLogger(getClass());
+
     private final SamplePageService samplePageService;
     private final ObjectMapper objectMapper;
 
@@ -33,18 +34,66 @@ public class FileDownloadService {
         this.objectMapper = objectMapper;
     }
 
-    public ZipOutputStream downloadCompressed() {
-        return null;
+    public InputStream getDownloadStream(String text, Collection<Filter> filters, Collection<String> domains, String format) {
+        FileDownloadSerializer fileDownloadSerializer;
+        if ("application/xml".equals(format)) {
+            fileDownloadSerializer = FileDownloadSerializer.getXmlSerializer();
+        } else {
+            fileDownloadSerializer = FileDownloadSerializer.getJsonSerializer();
+        }
+        return new FileDownloadInputStream(samplePageService, text, filters, domains);
     }
 
-    public InputStream getDownloadStream(String text, Collection<Filter> filters, Collection<String> domains) throws IOException {
-        FileDownloadInputStream fileDownloadInputStream = new FileDownloadInputStream(samplePageService, text, filters, domains);
-        return fileDownloadInputStream;
-
-//        Pageable pageable = new PageRequest(0, 1000);
-//        Page<Sample> samples = samplePageService.getSamplesByText(text, filters, domains, pageable, null);
-//        samples.getContent().stream()
+    public void copyCompressedStream(InputStream in, OutputStream out, String algo) throws IOException {
+        switch (algo) {
+            case "gzip":
+                gzip(in, out);
+                break;
+            case "deflate":
+                deflate(in, out);
+                break;
+            case "zip":
+                zip(in, out);
+                break;
+            default:
+                StreamUtils.copy(in, out);
+                break;
+        }
     }
+
+    private void gzip(InputStream in, OutputStream out) throws IOException {
+        try (ZipOutputStream zippedOut = new ZipOutputStream(out)) {
+            ZipEntry zipEntry = new ZipEntry("samples.json");
+            zippedOut.putNextEntry(zipEntry);
+            StreamUtils.copy(in, zippedOut);
+
+            zippedOut.closeEntry();
+            zippedOut.finish();
+        }
+    }
+
+    private void deflate(InputStream in, OutputStream out) throws IOException {
+        try (ZipOutputStream zippedOut = new ZipOutputStream(out)) {
+            ZipEntry zipEntry = new ZipEntry("samples.json");
+            zippedOut.putNextEntry(zipEntry);
+            StreamUtils.copy(in, zippedOut);
+
+            zippedOut.closeEntry();
+            zippedOut.finish();
+        }
+    }
+
+    private void zip(InputStream in, OutputStream out) throws IOException {
+        try (ZipOutputStream zippedOut = new ZipOutputStream(out)) {
+            ZipEntry zipEntry = new ZipEntry("samples.json");
+            zippedOut.putNextEntry(zipEntry);
+            StreamUtils.copy(in, zippedOut);
+
+            zippedOut.closeEntry();
+            zippedOut.finish();
+        }
+    }
+
 
     public InputStream writeStringToStream(String text, Collection<Filter> filters, Collection<String> domains) {
         List<Sample> samples = new ArrayList<>();
@@ -56,16 +105,11 @@ public class FileDownloadService {
 
         try {
             String jsonSamples = objectMapper.writeValueAsString(samples);
-            return IOUtils.toInputStream(jsonSamples, "UTF-8");
+            return IOUtils.toInputStream(jsonSamples, StandardCharsets.UTF_8);
         } catch (IOException e) {
             e.printStackTrace();
             throw new RuntimeException();
         }
 
-    }
-
-
-    private ZipOutputStream compressStream() {
-        return null;
     }
 }
