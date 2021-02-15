@@ -24,8 +24,20 @@
         <div class="container">
             <div class="row">
                 <div class="col-lg-8 mt-5">
+                    <select class="form-control" id="aapDomain" name="aapDomain">
+                        <option th:value="0"><b>Select AAP domain</b></option>
+                        <option th:each="domain : ${domains}" th:value="${domain}" th:text="${domain}"></option>
+                    </select>
+                    <select class="form-control" id="certificate" name="certificate">
+                        <option th:value="0"><b>Select checklist for validation</b></option>
+                        <option th:each="certificate : ${certificates}" th:value="${certificate}"
+                                th:text="${certificate}"></option>
+                    </select>
+                    <br/>
                     <div id="dropzone">
                         <form action="/biosamples/upload" class="dropzone needsclick" id="upload">
+                            <input type="hidden" id="hiddenAapDomain" name="hiddenAapDomain">
+                            <input type="hidden" id="hiddenCertificate" name="hiddenCertificate">
                             <div class="dz-message needsclick">
                                 <button type="button" class="dz-button">Drop files here or click to upload. <br/>
                                     You can upload .xls files containing your samples. <br/></button>
@@ -51,6 +63,14 @@
                 this.removeFile(this.files[0]);
             }
         }
+    });
+
+    $("#aapDomain").change(function (e) {
+        $("#hiddenAapDomain").val(e.target.value);
+    });
+
+    $("#certificate").change(function (e) {
+        $("#hiddenCertificate").val(e.target.value);
     });
 </script>
 </body>
