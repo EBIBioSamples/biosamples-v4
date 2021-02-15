@@ -31,7 +31,7 @@ public class AapLoginController {
 
             if (token != null) {
                 List<String> domains = bioSamplesAapService.getDomains(token);
-                List<String> certificates = certifyService.getCertificateNames();
+                List<String> certificates = certifyService.getAllCertificateNames();
                 model.addAttribute("token", token);
                 model.addAttribute("domains", domains);
                 model.addAttribute("certificates", certificates);

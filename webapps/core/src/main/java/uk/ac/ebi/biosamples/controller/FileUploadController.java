@@ -32,8 +32,7 @@ public class FileUploadController {
     FileUploadService fileUploadService;
 
     @PostMapping
-    public void upload(@RequestParam("file") MultipartFile file, @Valid String hiddenAapDomain) throws IOException {
-        log.info("In File upload controller " + hiddenAapDomain);
-        fileUploadService.upload(file);
+    public void upload(@RequestParam("file") MultipartFile file, @Valid String hiddenAapDomain, @Valid String hiddenCertificate) throws IOException {
+        fileUploadService.upload(file, hiddenAapDomain, hiddenCertificate);
     }
 }

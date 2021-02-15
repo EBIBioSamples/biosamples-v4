@@ -430,11 +430,13 @@ public class SamplesRestController {
   @PreAuthorize("isAuthenticated()")
   @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<Resource<Sample>> post(
-      @RequestBody Sample sample,
-      @RequestParam(name = "setfulldetails", required = false, defaultValue = "true")
-          boolean setFullDetails)
-      throws JsonProcessingException {
-    log.debug("Recieved POST for " + sample);
+          @RequestBody Sample sample,
+          @RequestParam(name = "setfulldetails", required = false, defaultValue = "true")
+                  boolean setFullDetails,
+          @RequestParam(name = "checklist", required = false)
+                  String checklist)
+          throws JsonProcessingException {
+    log.debug("Received POST for " + sample);
     final ObjectMapper jsonMapper = new ObjectMapper();
 
     if (sample.hasAccession() && !bioSamplesAapService.isWriteSuperUser()) {
@@ -467,8 +469,15 @@ public class SamplesRestController {
             .withSubmittedVia(submittedVia)
             .build();
 
-    List<Certificate> certificates =
-        certifyService.certify(jsonMapper.writeValueAsString(sample), false);
+    List<Certificate> certificates;
+
+    if (checklist != null && !checklist.isEmpty()) {
+      certificates =
+              certifyService.certify(jsonMapper.writeValueAsString(sample), false, checklist);
+    } else {
+      certificates =
+              certifyService.certify(jsonMapper.writeValueAsString(sample), false);
+    }
 
     sample = Sample.Builder.fromSample(sample).withCertificates(certificates).build();
 
