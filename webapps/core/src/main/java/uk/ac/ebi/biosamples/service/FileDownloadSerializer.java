@@ -9,21 +9,17 @@ import java.io.IOException;
 
 public interface FileDownloadSerializer {
 
-    static FileDownloadSerializer getJsonSerializer() {
-        return new FileDownloadJsonSerializer();
-    }
-
-    static FileDownloadSerializer getXmlSerializer() {
-        return new FileDownloadXmlSerializer();
+    static FileDownloadSerializer getSerializerFor(String format) {
+        return "xml".equals(format) ? new FileDownloadXmlSerializer() : new FileDownloadJsonSerializer();
     }
 
     String asString(Sample sample) throws IOException;
 
-    String getStartOfFileContent();
+    String startOfFile();
 
-    String getEndOfFileContent();
+    String endOfFile();
 
-    String getDelimiter();
+    String delimiter();
 
     class FileDownloadJsonSerializer implements FileDownloadSerializer {
         private final ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
@@ -32,20 +28,21 @@ public interface FileDownloadSerializer {
             return objectMapper.writeValueAsString(sample);
         }
 
-        public String getStartOfFileContent() {
+        public String startOfFile() {
             return "[";
         }
 
-        public String getEndOfFileContent() {
+        public String endOfFile() {
             return "]";
         }
 
-        public String getDelimiter() {
+        public String delimiter() {
             return "," + System.lineSeparator();
         }
 
     }
 
+    //todo this xml serialization is different from individual sample serialization, converge two.
     class FileDownloadXmlSerializer implements FileDownloadSerializer {
         private final ObjectMapper objectMapper = new XmlMapper().enable(SerializationFeature.INDENT_OUTPUT);
 
@@ -53,16 +50,16 @@ public interface FileDownloadSerializer {
             return objectMapper.writeValueAsString(sample);
         }
 
-        public String getStartOfFileContent() {
-            return "<samples>";
+        public String startOfFile() {
+            return "<samples>" + System.lineSeparator();
         }
 
-        public String getEndOfFileContent() {
+        public String endOfFile() {
             return "</samples>";
         }
 
-        public String getDelimiter() {
-            return System.lineSeparator();
+        public String delimiter() {
+            return "";
         }
     }
 }

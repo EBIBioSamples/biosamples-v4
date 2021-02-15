@@ -1,8 +1,5 @@
 package uk.ac.ebi.biosamples.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import org.apache.commons.io.IOUtils;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.filter.Filter;
@@ -16,32 +13,28 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 public class FileDownloadInputStream extends InputStream {
+    private static final int MAX_DOWNLOAD_SIZE = 100000;
     private static final int PAGE_SIZE = 1000;
+    private static final String CURSOR_EOF = "EoF";
+
     private final SamplePageService samplePageService;
     private final String text;
     private final Collection<Filter> filters;
     private final Collection<String> domains;
     private final FileDownloadSerializer serializer;
-    private final ObjectMapper objectMapper;
     private final Queue<Sample> sampleQueue;
     private InputStream sampleStream;
     private String cursor;
     private int sampleCount;
 
-    private static final int MAX_DOWNLOAD_SIZE = 100000;
-    private static final String START_OF_CONTENT = "[";
-    private static final String END_OF_CONTENT = "]";
-    private static final String DELIMITER = "," + System.lineSeparator();
-    private static final String CURSOR_EOF = "EoF";
-
-    public FileDownloadInputStream(SamplePageService samplePageService, String text, Collection<Filter> filters, Collection<String> domains, FileDownloadSerializer serializer) {
+    public FileDownloadInputStream(SamplePageService samplePageService, String text, Collection<Filter> filters,
+                                   Collection<String> domains, FileDownloadSerializer serializer) {
         this.samplePageService = samplePageService;
         this.text = text;
         this.filters = filters;
         this.domains = domains;
         this.serializer = serializer;
-//        objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
-        objectMapper = new XmlMapper().enable(SerializationFeature.INDENT_OUTPUT);
+
         sampleQueue = new LinkedList<>();
         cursor = "*";
         sampleCount = 0;
@@ -50,12 +43,12 @@ public class FileDownloadInputStream extends InputStream {
     @Override
     public int read() throws IOException {
         if (sampleStream == null) {
-            sampleStream = generateStream(START_OF_CONTENT);
+            sampleStream = generateStream(serializer.startOfFile());
         }
 
         int nextByte = sampleStream.read();
-        if (nextByte == -1 && cursor != null) {
-            sampleStream = generateStream(DELIMITER);
+        if (nextByte == -1 && !CURSOR_EOF.equals(cursor)) {
+            sampleStream = generateStream(serializer.delimiter());
             nextByte = sampleStream.read();
         }
 
@@ -64,19 +57,19 @@ public class FileDownloadInputStream extends InputStream {
 
     private InputStream generateStream(String delimiter) throws IOException {
         InputStream inputStream;
-        if (sampleQueue.isEmpty() && cursor != null) {
+        if (sampleQueue.isEmpty() && !CURSOR_EOF.equals(cursor)) {
             loadSamples();
         }
 
-        if (cursor != null) {
+        if (!CURSOR_EOF.equals(cursor)) {
             Sample sample = sampleQueue.poll();
             sampleCount++;
-            inputStream = toInputStream(delimiter, objectMapper.writeValueAsString(sample));
+            inputStream = toInputStream(delimiter, serializer.asString(sample));
             if (++sampleCount >= MAX_DOWNLOAD_SIZE) {
-                cursor = null;
+                cursor = CURSOR_EOF;
             }
         } else {
-            inputStream = toInputStream(END_OF_CONTENT, "");
+            inputStream = toInputStream(serializer.endOfFile(), "");
         }
 
         return inputStream;
@@ -88,7 +81,7 @@ public class FileDownloadInputStream extends InputStream {
             sampleQueue.addAll(samplePage);
             cursor = samplePage.getNextCursorMark();
         } else {
-            cursor = null; // mark end of samples
+            cursor = CURSOR_EOF; // mark end of samples
         }
     }
 
