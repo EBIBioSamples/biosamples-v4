@@ -46,24 +46,31 @@ public class FileDownloadController {
     public void download(@RequestParam(name = "text", required = false) String text,
                          @RequestParam(name = "filter", required = false) String[] filter,
                          @RequestParam(name = "zip", required = false, defaultValue = "true") boolean zip,
+                         @RequestParam(name = "format", required = false) String format, // there is no easy way to set accept header in html for downloading large files
                          HttpServletResponse response, HttpServletRequest request) throws IOException {
 
         String decodedText = LinkUtils.decodeText(text);
         Collection<Filter> filters = filterService.getFiltersCollection(LinkUtils.decodeTexts(filter));
         Collection<String> domains = bioSamplesAapService.getDomains();
 
-        String accept = request.getHeader("Accept") != null ? request.getHeader("Accept") : "json";
-        if (accept.contains("application/json")) {
-            accept = "json";
-        } else if (accept.contains("application/xml")) {
-            accept = "xml";
-        }
-
-        setResponseHeaders(response, zip, accept);
-        InputStream in = fileDownloadService.getDownloadStream(decodedText, filters, domains, accept);
+        format = getDownloadFormat(format, request.getHeader("Accept"));
+        setResponseHeaders(response, zip, format);
+        InputStream in = fileDownloadService.getDownloadStream(decodedText, filters, domains, format);
         OutputStream out = response.getOutputStream();
-        fileDownloadService.copyAndCompress(in, out, zip, accept);
+        fileDownloadService.copyAndCompress(in, out, zip, format);
         response.flushBuffer();
+    }
+
+    private String getDownloadFormat(String format, String acceptHeader) {
+        if (format == null || format.isEmpty()) {
+            format = acceptHeader != null ? acceptHeader : "json";
+            if (format.contains("application/json")) {
+                format = "json";
+            } else if (format.contains("application/xml")) {
+                format = "xml";
+            }
+        }
+        return format;
     }
 
     private void setResponseHeaders(HttpServletResponse response, boolean zip, String format) {
