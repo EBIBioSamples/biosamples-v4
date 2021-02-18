@@ -63,12 +63,7 @@ public class FileDownloadController {
 
     private String getDownloadFormat(String format, String acceptHeader) {
         if (format == null || format.isEmpty()) {
-            format = acceptHeader != null ? acceptHeader : "json";
-            if (format.contains("application/json")) {
-                format = "json";
-            } else if (format.contains("application/xml")) {
-                format = "xml";
-            }
+            format = acceptHeader != null && acceptHeader.contains("xml") ? "xml" : "json";
         }
         return format;
     }

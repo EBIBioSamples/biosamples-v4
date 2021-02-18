@@ -68,6 +68,8 @@ public class FileDownloadInputStream extends InputStream {
             if (++sampleCount >= MAX_DOWNLOAD_SIZE) {
                 cursor = CURSOR_EOF;
             }
+        } else if(delimiter.equalsIgnoreCase(serializer.startOfFile())) {
+            inputStream = toInputStream(serializer.startOfFile() + serializer.endOfFile(), ""); // empty search results
         } else {
             inputStream = toInputStream(serializer.endOfFile(), "");
         }

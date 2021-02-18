@@ -10,7 +10,7 @@ import java.io.IOException;
 public interface FileDownloadSerializer {
 
     static FileDownloadSerializer getSerializerFor(String format) {
-        return "xml".equals(format) ? new FileDownloadXmlSerializer() : new FileDownloadJsonSerializer();
+        return "xml".equalsIgnoreCase(format) ? new FileDownloadXmlSerializer() : new FileDownloadJsonSerializer();
     }
 
     String asString(Sample sample) throws IOException;
