@@ -3,6 +3,7 @@ package uk.ac.ebi.biosamples.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import org.dom4j.Document;
 import uk.ac.ebi.biosamples.model.Sample;
 
 import java.io.IOException;
@@ -42,24 +43,24 @@ public interface FileDownloadSerializer {
 
     }
 
-    //todo this xml serialization is different from individual sample serialization, converge two.
     class FileDownloadXmlSerializer implements FileDownloadSerializer {
-        private final ObjectMapper objectMapper = new XmlMapper().enable(SerializationFeature.INDENT_OUTPUT);
+        private final SampleToXmlConverter converter = new SampleToXmlConverter(new ExternalReferenceService());
+
 
         public String asString(Sample sample) throws IOException {
-            return objectMapper.writeValueAsString(sample);
+            return converter.convert(sample).getRootElement().asXML();
         }
 
         public String startOfFile() {
-            return "<samples>" + System.lineSeparator();
+            return "<BioSamples>" + System.lineSeparator();
         }
 
         public String endOfFile() {
-            return "</samples>";
+            return "</BioSamples>";
         }
 
         public String delimiter() {
-            return "";
+            return System.lineSeparator();
         }
     }
 }
