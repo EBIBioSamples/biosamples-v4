@@ -16,4 +16,8 @@ public class ValidationResult {
     public List<String> getValidationMessagesList() {
         return validationMessagesList;
     }
+
+    public void clear() {
+        validationMessagesList.clear();
+    }
 }
