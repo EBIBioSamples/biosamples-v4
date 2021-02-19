@@ -81,7 +81,7 @@ public class FileDownloadInputStreamTest {
         StringWriter writer = new StringWriter();
         IOUtils.copy(fileDownloadInputStream, writer, Charset.defaultCharset());
         String emptyJson = writer.toString();
-        assertEquals("<samples>\n</samples>", emptyJson);
+        assertEquals("<BioSamples>\n</BioSamples>", emptyJson);
     }
 
     @Test

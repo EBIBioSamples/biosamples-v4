@@ -30,9 +30,9 @@
             <div class="content-search-header-results" th:if="${page.getTotalElements() != 0}">showing [[${start} + 1]] to [[${start} + ${page.getNumberOfElements()}]] of [[${page.getTotalElements()}]] samples</div>
             <div class="content-search-header-results" th:if="${page.getTotalElements() == 0}">No results found</div>
             <div class="content-search-download">
-                <a class="button content-search-download-button" th:href="${'/download' + downloadURL + '&format=xml'}" download="samples.zip">XML <i class="icon icon-common icon-download"></i></a>
-                <a class="button content-search-download-button" th:href="${'/download' + downloadURL + '&format=json'}" download="samples.zip">JSON <i class="icon icon-common icon-download"></i></a>
-                <div class="button content-search-download-button content-search-download-help"> ?
+                <a class="button content-search-download-button" th:href="@{'/download' + ${downloadURL + '&format=xml'}}" download="samples.zip">XML <i class="icon icon-common icon-download"></i></a>
+                <a class="button content-search-download-button" th:href="@{'/download' + ${downloadURL + '&format=json'}}" download="samples.zip">JSON <i class="icon icon-common icon-download"></i></a>
+                <div class="button content-search-download-button content-search-download-help"> <i class="icon icon-common icon-lightbulb"></i>
                     <span class="content-search-download-tooltip">Download search results (restricted to maximum of 100,000 samples)</span>
                 </div>
             </div>
