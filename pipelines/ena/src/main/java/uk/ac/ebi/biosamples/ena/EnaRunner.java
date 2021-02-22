@@ -123,6 +123,7 @@ public class EnaRunner implements ApplicationRunner {
       }
 
       if (killedRunner) {
+        // handler for killed ENA samples
         handleKilledEnaSamples();
       }
     } catch (final Exception e) {
