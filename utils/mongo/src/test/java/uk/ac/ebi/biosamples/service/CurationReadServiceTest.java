@@ -256,6 +256,7 @@ public class CurationReadServiceTest {
         "SAMN0001_NAME",
         "SAMN0001",
         "self.TestDomain",
+        "",
         Instant.now(),
         Instant.now(),
         Instant.now(),

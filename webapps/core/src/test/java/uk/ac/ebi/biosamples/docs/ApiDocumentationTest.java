@@ -181,6 +181,7 @@ public class ApiDocumentationTest {
             null,
             null,
             null,
+            null,
             null);
 
     when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(wrongSample);

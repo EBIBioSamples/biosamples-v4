@@ -2,6 +2,7 @@
 	"accession": "TEST1",
 	"name": "Test Sample",
 	"domain": "foozit",
+	"webinSubmissionAccountId": "",
 	"update": "2016-05-05T11:36:57Z",
 	"create": "2016-05-05T11:36:57Z",
 	"submitted": "2016-05-05T11:36:57Z",

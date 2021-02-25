@@ -67,6 +67,7 @@ public class ReindexRunnerTest {
             "",
             "ACCESSION1",
             "",
+            "",
             null,
             null,
             null,
@@ -79,6 +80,7 @@ public class ReindexRunnerTest {
         Sample.build(
             "",
             "ACCESSION3",
+            "",
             "",
             null,
             null,
