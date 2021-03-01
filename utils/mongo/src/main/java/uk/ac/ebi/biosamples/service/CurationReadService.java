@@ -195,10 +195,6 @@ public class CurationReadService {
       }
     }
 
-    if (failedCuration) {
-      log.debug("Unapplied curation on sample: {}", sample.getAccession());
-    }
-
     return sample;
   }
 }
