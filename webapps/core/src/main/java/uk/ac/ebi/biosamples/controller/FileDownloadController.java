@@ -26,12 +26,9 @@ import uk.ac.ebi.biosamples.utils.LinkUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 @Controller
 @RequestMapping("/download")
@@ -56,9 +53,8 @@ public class FileDownloadController {
                                                            @RequestParam(name = "zip", required = false, defaultValue = "true") boolean zip,
                                                            @RequestParam(name = "format", required = false) String format, // there is no easy way to set accept header in html for downloading large files
                                                            @RequestParam(name = "count", required = false, defaultValue = "100000") int count,
-                                                           HttpServletResponse response, HttpServletRequest request) throws IOException {
-        LOG.info("Sample bulk download request: {}", request.getParameterNames());
-
+                                                           HttpServletResponse response, HttpServletRequest request) {
+        LOG.info("Sample bulk download request: text = {}, filters = {}", text, Arrays.toString(filter));
         String decodedText = LinkUtils.decodeText(text);
         Collection<Filter> filters = filterService.getFiltersCollection(LinkUtils.decodeTexts(filter));
         Collection<String> domains = bioSamplesAapService.getDomains();
