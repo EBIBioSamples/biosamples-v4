@@ -39,7 +39,6 @@ public class AsyncConfiguration implements AsyncConfigurer {
   @Override
   @Bean(name = "taskExecutor")
   public AsyncTaskExecutor getAsyncExecutor() {
-    log.debug("Creating Async Task Executor");
     ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
     executor.setCorePoolSize(5);
     executor.setMaxPoolSize(10);
@@ -58,8 +57,9 @@ public class AsyncConfiguration implements AsyncConfigurer {
     return new WebMvcConfigurerAdapter() {
       @Override
       public void configureAsyncSupport(AsyncSupportConfigurer configurer) {
-        configurer.setDefaultTimeout(60000).setTaskExecutor(taskExecutor);
-        configurer.registerCallableInterceptors(callableProcessingInterceptor);
+        configurer.setDefaultTimeout(300000)
+                .setTaskExecutor(taskExecutor)
+                .registerCallableInterceptors(callableProcessingInterceptor);
         super.configureAsyncSupport(configurer);
       }
     };
@@ -70,7 +70,7 @@ public class AsyncConfiguration implements AsyncConfigurer {
     return new TimeoutCallableProcessingInterceptor() {
       @Override
       public <T> Object handleTimeout(NativeWebRequest request, Callable<T> task) throws Exception {
-        log.error("Bulk sample download timeout for params: {}", request.getParameterNames());
+        log.error("Bulk sample download timed out");
         return super.handleTimeout(request, task);
       }
     };

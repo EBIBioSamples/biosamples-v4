@@ -10,8 +10,8 @@
  */
 package uk.ac.ebi.biosamples.controller;
 
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,6 +36,8 @@ import java.util.zip.ZipOutputStream;
 @Controller
 @RequestMapping("/download")
 public class FileDownloadController {
+    private static final Logger LOG = LoggerFactory.getLogger(FileDownloadController.class);
+
     private final FileDownloadService fileDownloadService;
     private final FilterService filterService;
     private final BioSamplesAapService bioSamplesAapService;
@@ -48,127 +50,22 @@ public class FileDownloadController {
         this.bioSamplesAapService = bioSamplesAapService;
     }
 
-//    https://medium.com/swlh/streaming-data-with-spring-boot-restful-web-service-87522511c071
-//    https://stackoverflow.com/questions/51845228/proper-way-of-streaming-using-responseentity-and-making-sure-the-inputstream-get
-    @GetMapping(value = "/test3")
-    public void download(@RequestParam(name = "text", required = false) String text,
-                         @RequestParam(name = "filter", required = false) String[] filter,
-                         @RequestParam(name = "zip", required = false, defaultValue = "true") boolean zip,
-                         @RequestParam(name = "format", required = false) String format, // there is no easy way to set accept header in html for downloading large files
-                         HttpServletResponse response, HttpServletRequest request) throws IOException {
-
-        String decodedText = LinkUtils.decodeText(text);
-        Collection<Filter> filters = filterService.getFiltersCollection(LinkUtils.decodeTexts(filter));
-        Collection<String> domains = bioSamplesAapService.getDomains();
-
-        format = getDownloadFormat(format, request.getHeader("Accept"));
-        setResponseHeaders(response, zip, format);
-        InputStream in = fileDownloadService.getDownloadStream(decodedText, filters, domains, format);
-        OutputStream out = response.getOutputStream();
-        fileDownloadService.copyAndCompress(in, out, zip, format);
-        response.flushBuffer();
-    }
-
-    @GetMapping(value = "/test1")
-    public ResponseEntity<StreamingResponseBody> downloadTest1(@RequestParam(name = "text", required = false) String text,
-                                                           @RequestParam(name = "filter", required = false) String[] filter,
-                                                           @RequestParam(name = "zip", required = false, defaultValue = "true") boolean zip,
-                                                           @RequestParam(name = "format", required = false) String format, // there is no easy way to set accept header in html for downloading large files
-                                                           HttpServletResponse response, HttpServletRequest request) throws IOException {
-
-        String decodedText = LinkUtils.decodeText(text);
-        Collection<Filter> filters = filterService.getFiltersCollection(LinkUtils.decodeTexts(filter));
-        Collection<String> domains = bioSamplesAapService.getDomains();
-
-        format = getDownloadFormat(format, request.getHeader("Accept"));
-        setResponseHeaders(response, zip, format);
-        InputStream in = fileDownloadService.getDownloadStream(decodedText, filters, domains, format);
-
-//        OutputStream out = response.getOutputStream();
-//        fileDownloadService.copyAndCompress(in, out, zip, format);
-//        response.flushBuffer();
-
-        StreamingResponseBody responseBody = outputStream -> {
-            final ZipOutputStream zipOut = new ZipOutputStream(outputStream);
-            try {
-                final ZipEntry zipEntry = new ZipEntry("samples.json");
-                zipOut.putNextEntry(zipEntry);
-                byte[] bytes = new byte[1024];
-                int length;
-                while ((length = in.read(bytes)) >= 0) {
-                    zipOut.write(bytes, 0, length);
-                }
-                in.close();
-                zipOut.close();
-            } catch (final IOException e) {
-//                logger.error("Exception while reading and streaming data {} ", e);
-                e.printStackTrace();
-            }
-        };
-
-        return ResponseEntity.ok()
-//                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=generic_file_name.zip")
-//                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .body(responseBody);
-    }
-
-    @GetMapping(value = "/test2")
-    public ResponseEntity<StreamingResponseBody> downloadTest2(@RequestParam(name = "text", required = false) String text,
-                                                           @RequestParam(name = "filter", required = false) String[] filter,
-                                                           @RequestParam(name = "zip", required = false, defaultValue = "true") boolean zip,
-                                                           @RequestParam(name = "format", required = false) String format, // there is no easy way to set accept header in html for downloading large files
-                                                           HttpServletResponse response, HttpServletRequest request) throws IOException {
-
-        String decodedText = LinkUtils.decodeText(text);
-        Collection<Filter> filters = filterService.getFiltersCollection(LinkUtils.decodeTexts(filter));
-        Collection<String> domains = bioSamplesAapService.getDomains();
-
-        format = getDownloadFormat(format, request.getHeader("Accept"));
-        setResponseHeaders(response, zip, format);
-        InputStream in = fileDownloadService.getDownloadStream(decodedText, filters, domains, format);
-
-//        OutputStream out = response.getOutputStream();
-//        fileDownloadService.copyAndCompress(in, out, zip, format);
-//        response.flushBuffer();
-
-        StreamingResponseBody responseBody = outputStream -> {
-            final ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream());
-            try {
-                final ZipEntry zipEntry = new ZipEntry("samples.json");
-                zipOut.putNextEntry(zipEntry);
-                byte[] bytes = new byte[1024];
-                int length;
-                while ((length = in.read(bytes)) >= 0) {
-                    zipOut.write(bytes, 0, length);
-                }
-                in.close();
-                zipOut.close();
-            } catch (final IOException e) {
-//                logger.error("Exception while reading and streaming data {} ", e);
-                e.printStackTrace();
-            }
-        };
-
-        return ResponseEntity.ok()
-//                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=generic_file_name.zip")
-//                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .body(responseBody);
-    }
-
     @GetMapping
-    public ResponseEntity<StreamingResponseBody> downloadTest3(@RequestParam(name = "text", required = false) String text,
+    public ResponseEntity<StreamingResponseBody> download(@RequestParam(name = "text", required = false) String text,
                                                            @RequestParam(name = "filter", required = false) String[] filter,
                                                            @RequestParam(name = "zip", required = false, defaultValue = "true") boolean zip,
                                                            @RequestParam(name = "format", required = false) String format, // there is no easy way to set accept header in html for downloading large files
+                                                           @RequestParam(name = "count", required = false, defaultValue = "100000") int count,
                                                            HttpServletResponse response, HttpServletRequest request) throws IOException {
+        LOG.info("Sample bulk download request: {}", request.getParameterNames());
 
         String decodedText = LinkUtils.decodeText(text);
         Collection<Filter> filters = filterService.getFiltersCollection(LinkUtils.decodeTexts(filter));
         Collection<String> domains = bioSamplesAapService.getDomains();
 
         String outputFormat = getDownloadFormat(format, request.getHeader("Accept"));
-        setResponseHeaders(response, zip, format);
-        InputStream in = fileDownloadService.getDownloadStream(decodedText, filters, domains, format);
+        setResponseHeaders(response, zip, outputFormat);
+        InputStream in = fileDownloadService.getDownloadStream(decodedText, filters, domains, outputFormat, count);
         StreamingResponseBody responseBody = outputStream -> fileDownloadService.copyAndCompress(in, outputStream, zip, outputFormat);
 
         return ResponseEntity.ok()
@@ -179,6 +76,7 @@ public class FileDownloadController {
         if (format == null || format.isEmpty()) {
             format = acceptHeader != null && acceptHeader.contains("xml") ? "xml" : "json";
         }
+        format = "accessions".equalsIgnoreCase(format) ? "txt" : format;
         return format;
     }
 
