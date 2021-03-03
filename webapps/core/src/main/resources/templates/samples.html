@@ -43,6 +43,10 @@
                         <option value="xml">XML</option>
                         <option value="accessions">accessions</option>
                     </select>
+                    <input type="hidden" name="text" th:value="${text}" />
+                    <div th:each="filter: ${filters}" style="display:none">
+                        <input type="hidden" name="filter" th:value="${filter}" />
+                    </div>
                     <button type="submit" class="button content-search-download-button"> <i class="icon icon-common icon-download"></i>
                     </button>
                 </form>
