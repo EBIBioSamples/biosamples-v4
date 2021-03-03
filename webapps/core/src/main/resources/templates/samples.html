@@ -30,11 +30,22 @@
             <div class="content-search-header-results" th:if="${page.getTotalElements() != 0}">showing [[${start} + 1]] to [[${start} + ${page.getNumberOfElements()}]] of [[${page.getTotalElements()}]] samples</div>
             <div class="content-search-header-results" th:if="${page.getTotalElements() == 0}">No results found</div>
             <div class="content-search-download">
-                <a class="button content-search-download-button" th:href="@{'/download' + ${downloadURL + '&format=xml'}}" download="samples.zip">XML <i class="icon icon-common icon-download"></i></a>
-                <a class="button content-search-download-button" th:href="@{'/download' + ${downloadURL + '&format=json'}}" download="samples.zip">JSON <i class="icon icon-common icon-download"></i></a>
-                <div class="button content-search-download-button content-search-download-help"> <i class="icon icon-common icon-lightbulb"></i>
-                    <span class="content-search-download-tooltip">Download search results (restricted to maximum of 100,000 samples)</span>
-                </div>
+                <form method="get" action="/download">
+                    <select name="count" id="download-size" class="content-search-download-select">
+                        <option value="10">10</option>
+                        <option value="100">100</option>
+                        <option value="1000">1,000</option>
+                        <option value="10000">10,000</option>
+                        <option value="100000">100,000</option>
+                    </select>
+                    <select name="format" id="download-format" class="content-search-download-select">
+                        <option value="json">JSON</option>
+                        <option value="xml">XML</option>
+                        <option value="accessions">accessions</option>
+                    </select>
+                    <button type="submit" class="button content-search-download-button"> <i class="icon icon-common icon-download"></i>
+                    </button>
+                </form>
             </div>
         </div>
         <div class="small-12 search-results">

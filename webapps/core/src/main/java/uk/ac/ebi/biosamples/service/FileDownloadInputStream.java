@@ -26,8 +26,9 @@ public class FileDownloadInputStream extends InputStream {
     private InputStream sampleStream;
     private String cursor;
     private int sampleCount;
+    private int totalCount;
 
-    public FileDownloadInputStream(SamplePageService samplePageService, String text, Collection<Filter> filters,
+    public FileDownloadInputStream(SamplePageService samplePageService, String text, Collection<Filter> filters, int totalCount,
                                    Collection<String> domains, FileDownloadSerializer serializer) {
         this.samplePageService = samplePageService;
         this.text = text;
@@ -35,6 +36,7 @@ public class FileDownloadInputStream extends InputStream {
         this.domains = domains;
         this.serializer = serializer;
 
+        this.totalCount = Math.min(MAX_DOWNLOAD_SIZE, totalCount);
         sampleQueue = new LinkedList<>();
         cursor = "*";
         sampleCount = 0;
@@ -65,7 +67,7 @@ public class FileDownloadInputStream extends InputStream {
             Sample sample = sampleQueue.poll();
             sampleCount++;
             inputStream = toInputStream(delimiter, serializer.asString(sample));
-            if (++sampleCount >= MAX_DOWNLOAD_SIZE) {
+            if (sampleCount >= totalCount) {
                 cursor = CURSOR_EOF;
             }
         } else if(delimiter.equalsIgnoreCase(serializer.startOfFile())) {

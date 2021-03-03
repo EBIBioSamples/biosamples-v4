@@ -19,9 +19,9 @@ public class FileDownloadService {
         this.samplePageService = samplePageService;
     }
 
-    public InputStream getDownloadStream(String text, Collection<Filter> filters, Collection<String> domains, String format) {
+    public InputStream getDownloadStream(String text, Collection<Filter> filters, Collection<String> domains, String format, int count) {
         FileDownloadSerializer serializer = FileDownloadSerializer.getSerializerFor(format);
-        return new FileDownloadInputStream(samplePageService, text, filters, domains, serializer);
+        return new FileDownloadInputStream(samplePageService, text, filters, count, domains, serializer);
     }
 
     public void copyAndCompress(InputStream in, OutputStream out, boolean zip, String format) throws IOException {

@@ -35,6 +35,7 @@ public class FileDownloadInputStreamTest {
     private FileDownloadInputStream fileDownloadInputStream;
 
     int pageSize = 1000;
+    int sampleCount = 100;
     String cursor = "*";
     String sampleSearchText = "";
     String emptySamplesText = "no samples search";
@@ -56,7 +57,7 @@ public class FileDownloadInputStreamTest {
     @Test
     public void read() throws IOException {
         FileDownloadSerializer serializer = FileDownloadSerializer.getSerializerFor("json");
-        fileDownloadInputStream = new FileDownloadInputStream(samplePageService, emptySamplesText, filters, domains, serializer);
+        fileDownloadInputStream = new FileDownloadInputStream(samplePageService, emptySamplesText, filters, sampleCount, domains, serializer);
 
         int startByte = fileDownloadInputStream.read();
         assertTrue(startByte > 0);
@@ -65,7 +66,7 @@ public class FileDownloadInputStreamTest {
     @Test
     public void read_empty_json() throws IOException {
         FileDownloadSerializer serializer = FileDownloadSerializer.getSerializerFor("json");
-        fileDownloadInputStream = new FileDownloadInputStream(samplePageService, emptySamplesText, filters, domains, serializer);
+        fileDownloadInputStream = new FileDownloadInputStream(samplePageService, emptySamplesText, filters, sampleCount, domains, serializer);
 
         StringWriter writer = new StringWriter();
         IOUtils.copy(fileDownloadInputStream, writer, Charset.defaultCharset());
@@ -76,7 +77,7 @@ public class FileDownloadInputStreamTest {
     @Test
     public void read_empty_xml() throws IOException {
         FileDownloadSerializer serializer = FileDownloadSerializer.getSerializerFor("xml");
-        fileDownloadInputStream = new FileDownloadInputStream(samplePageService, emptySamplesText, filters, domains, serializer);
+        fileDownloadInputStream = new FileDownloadInputStream(samplePageService, emptySamplesText, filters, sampleCount, domains, serializer);
 
         StringWriter writer = new StringWriter();
         IOUtils.copy(fileDownloadInputStream, writer, Charset.defaultCharset());
@@ -87,7 +88,7 @@ public class FileDownloadInputStreamTest {
     @Test
     public void read_json_with_samples() throws IOException {
         FileDownloadSerializer serializer = FileDownloadSerializer.getSerializerFor("json");
-        fileDownloadInputStream = new FileDownloadInputStream(samplePageService, sampleSearchText, filters, domains, serializer);
+        fileDownloadInputStream = new FileDownloadInputStream(samplePageService, sampleSearchText, filters, sampleCount, domains, serializer);
 
         StringWriter writer = new StringWriter();
         IOUtils.copy(fileDownloadInputStream, writer, Charset.defaultCharset());
