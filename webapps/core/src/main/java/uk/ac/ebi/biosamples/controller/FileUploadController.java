@@ -10,6 +10,7 @@
  */
 package uk.ac.ebi.biosamples.controller;
 
+import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,8 +21,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import uk.ac.ebi.biosamples.service.upload.FileUploadService;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/upload")
@@ -32,7 +40,8 @@ public class FileUploadController {
     FileUploadService fileUploadService;
 
     @PostMapping
-    public void upload(@RequestParam("file") MultipartFile file, @Valid String hiddenAapDomain, @Valid String hiddenCertificate) throws IOException {
-        fileUploadService.upload(file, hiddenAapDomain, hiddenCertificate);
+    public void upload(@RequestParam("file") MultipartFile file, @Valid String hiddenAapDomain,
+                       @Valid String hiddenCertificate, @Valid String webinAccount) throws IOException {
+        fileUploadService.upload(file, hiddenAapDomain, hiddenCertificate, webinAccount);
     }
 }

@@ -45,6 +45,9 @@ public class BioSamplesProperties {
   @Value("${biosamples.client.aap.uri:https://explore.api.aai.ebi.ac.uk/auth}")
   private URI biosamplesClientAapUri;
 
+  @Value("${biosamples.client.webin.auth.uri:https://www.ebi.ac.uk/ena/submit/webin/auth/admin/submission-account}")
+  private URI biosamplesWebinAuthAuthUri;
+
   // can't use "null" because it will be a string
   @Value("${biosamples.client.aap.username:#{null}}")
   private String biosamplesClientAapUsername;
@@ -127,6 +130,10 @@ public class BioSamplesProperties {
 
   public URI getBiosamplesClientAapUri() {
     return biosamplesClientAapUri;
+  }
+
+  public URI getBiosamplesWebinAuthAuthUri() {
+    return biosamplesWebinAuthAuthUri;
   }
 
   public String getBiosamplesClientAapUsername() {

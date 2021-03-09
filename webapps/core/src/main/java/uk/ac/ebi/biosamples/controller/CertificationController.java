@@ -50,7 +50,7 @@ public class CertificationController {
       throw new SampleRestController.SampleAccessionMismatchException();
     }
 
-    if (!sampleService.isExistingAccession(accession)
+    if (sampleService.isExistingAccession(accession)
         && !(bioSamplesAapService.isWriteSuperUser()
             || bioSamplesAapService.isIntegrationTestUser())) {
       throw new SampleRestController.SampleAccessionDoesNotExistException();
@@ -76,7 +76,7 @@ public class CertificationController {
 
     log.trace("Sample with certificates " + sample);
 
-    sample = sampleService.store(sample, false);
+    sample = sampleService.store(sample, false, "");
 
     // assemble a resource to return
     // create the response object with the appropriate status

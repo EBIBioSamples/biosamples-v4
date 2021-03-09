@@ -181,11 +181,12 @@ public class ApiDocumentationTest {
             null,
             null,
             null,
+            null,
             null);
 
     when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(wrongSample);
-    when(sampleService.store(wrongSample, false)).thenCallRealMethod();
-    when(sampleService.store(wrongSample, false)).thenCallRealMethod();
+    when(sampleService.store(wrongSample, false, "")).thenCallRealMethod();
+    when(sampleService.store(wrongSample, false, "")).thenCallRealMethod();
     when(certifyService.certify(jsonMapper.writeValueAsString(wrongSample), true))
         .thenReturn(Collections.emptyList());
 
@@ -249,7 +250,7 @@ public class ApiDocumentationTest {
             + "}";
 
     when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(sampleWithDomain);
-    when(sampleService.store(any(Sample.class), eq(false))).thenReturn(sampleWithDomain);
+    when(sampleService.store(any(Sample.class), eq(false), eq("AAP"))).thenReturn(sampleWithDomain);
 
     this.mockMvc
         .perform(
@@ -290,7 +291,7 @@ public class ApiDocumentationTest {
             + "}";
 
     when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(sampleWithDomain);
-    when(sampleService.store(any(Sample.class), eq(false))).thenReturn(sampleWithDomain);
+    when(sampleService.store(any(Sample.class), eq(false), eq("AAP"))).thenReturn(sampleWithDomain);
 
     this.mockMvc
         .perform(
@@ -402,7 +403,7 @@ public class ApiDocumentationTest {
             + "}";
 
     when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(sampleWithUpdatedDate);
-    when(sampleService.store(any(Sample.class), eq(false))).thenReturn(sampleWithUpdatedDate);
+    when(sampleService.store(any(Sample.class), eq(false), eq(""))).thenReturn(sampleWithUpdatedDate);
 
     this.mockMvc
         .perform(
@@ -442,7 +443,7 @@ public class ApiDocumentationTest {
             + "}";
 
     when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(sampleWithDomain);
-    when(sampleService.store(any(Sample.class), eq(false))).thenReturn(sampleWithDomain);
+    when(sampleService.store(any(Sample.class), eq(false), eq("AAP"))).thenReturn(sampleWithDomain);
 
     this.mockMvc
         .perform(
@@ -556,7 +557,7 @@ public class ApiDocumentationTest {
                     "biosamples-minimal",
                     "0.0.1",
                     "schemas/certification/biosamples-minimal.json")));
-    when(sampleService.store(eq(sample), eq(false)))
+    when(sampleService.store(eq(sample), eq(false), eq("")))
         .thenReturn(
             Sample.Builder.fromSample(sample)
                 .withCertificates(
@@ -649,7 +650,7 @@ public class ApiDocumentationTest {
     when(sampleService.fetch(
             eq(sampleWithDomain.getAccession()), eq(Optional.empty()), any(String.class)))
         .thenReturn(Optional.of(sampleWithDomain));
-    when(sampleService.store(eq(sampleWithDomain), eq(false))).thenReturn(sampleWithDomain);
+    when(sampleService.store(eq(sampleWithDomain), eq(false), eq("AAP"))).thenReturn(sampleWithDomain);
     when(aapService.handleSampleDomain(sampleWithDomain)).thenReturn(sampleWithDomain);
     when(aapService.isWriteSuperUser()).thenReturn(true);
     when(aapService.isIntegrationTestUser()).thenReturn(false);
@@ -679,7 +680,7 @@ public class ApiDocumentationTest {
     when(sampleService.fetch(
             eq(sampleWithDomain.getAccession()), eq(Optional.empty()), any(String.class)))
         .thenReturn(Optional.of(sampleWithDomain));
-    when(sampleService.store(eq(sampleWithDomain), eq(false))).thenReturn(sampleWithDomain);
+    when(sampleService.store(eq(sampleWithDomain), eq(false), eq("AAP"))).thenReturn(sampleWithDomain);
     when(aapService.handleSampleDomain(sampleWithDomain)).thenReturn(sampleWithDomain);
     when(aapService.isWriteSuperUser()).thenReturn(true);
     when(aapService.isIntegrationTestUser()).thenReturn(false);
