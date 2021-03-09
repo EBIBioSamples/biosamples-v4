@@ -74,48 +74,50 @@ public class MongoSampleToSampleConverter implements Converter<MongoSample, Samp
       }
     }
 
-    // when we convert to a MongoSample then the Sample *must* have a domain
-    if (sample.getDomain() == null) {
-      LOGGER.warn(String.format("sample %s does not have a domain", sample.getAccession()));
-      throw new RuntimeException("sample does not have domain " + sample);
+    // when we convert to a MongoSample then the Sample *must* have a domain or a Webin ID
+    if (sample.getDomain() == null && sample.getWebinSubmissionAccountId() == null) {
+      LOGGER.warn(String.format("Sample %s does not have a domain or a WEBIN submission account ID", sample.getAccession()));
+      throw new RuntimeException("Sample does not have domain or a WEBIN submission account ID");
     }
 
     Instant submitted = sample.getSubmitted();
 
     if (submitted == null) {
       convertedSample =
-          new Sample.Builder(sample.getName(), sample.getAccession())
-              .withDomain(sample.getDomain())
-              .withRelease(sample.getRelease())
-              .withUpdate(sample.getUpdate())
-              .withCreate(sample.getCreate())
-              .withNoSubmitted()
-              .withAttributes(sample.getAttributes())
-              .withRelationships(relationships)
-              .withData(sample.getData())
-              .withExternalReferences(externalReferences)
-              .withOrganizations(sample.getOrganizations())
-              .withContacts(sample.getContacts())
-              .withPublications(sample.getPublications())
-              .withCertificates(certificates)
-              .build();
+              new Sample.Builder(sample.getName(), sample.getAccession())
+                      .withDomain(sample.getDomain())
+                      .withWebinSubmissionAccountId(sample.getWebinSubmissionAccountId())
+                      .withRelease(sample.getRelease())
+                      .withUpdate(sample.getUpdate())
+                      .withCreate(sample.getCreate())
+                      .withNoSubmitted()
+                      .withAttributes(sample.getAttributes())
+                      .withRelationships(relationships)
+                      .withData(sample.getData())
+                      .withExternalReferences(externalReferences)
+                      .withOrganizations(sample.getOrganizations())
+                      .withContacts(sample.getContacts())
+                      .withPublications(sample.getPublications())
+                      .withCertificates(certificates)
+                      .build();
     } else {
       convertedSample =
-          new Sample.Builder(sample.getName(), sample.getAccession())
-              .withDomain(sample.getDomain())
-              .withRelease(sample.getRelease())
-              .withUpdate(sample.getUpdate())
-              .withCreate(sample.getCreate())
-              .withSubmitted(sample.getSubmitted())
-              .withAttributes(sample.getAttributes())
-              .withRelationships(relationships)
-              .withData(sample.getData())
-              .withExternalReferences(externalReferences)
-              .withOrganizations(sample.getOrganizations())
-              .withContacts(sample.getContacts())
-              .withPublications(sample.getPublications())
-              .withCertificates(certificates)
-              .build();
+              new Sample.Builder(sample.getName(), sample.getAccession())
+                      .withDomain(sample.getDomain())
+                      .withWebinSubmissionAccountId(sample.getWebinSubmissionAccountId())
+                      .withRelease(sample.getRelease())
+                      .withUpdate(sample.getUpdate())
+                      .withCreate(sample.getCreate())
+                      .withSubmitted(sample.getSubmitted())
+                      .withAttributes(sample.getAttributes())
+                      .withRelationships(relationships)
+                      .withData(sample.getData())
+                      .withExternalReferences(externalReferences)
+                      .withOrganizations(sample.getOrganizations())
+                      .withContacts(sample.getContacts())
+                      .withPublications(sample.getPublications())
+                      .withCertificates(certificates)
+                      .build();
     }
 
     Instant reviewed = sample.getReviewed();

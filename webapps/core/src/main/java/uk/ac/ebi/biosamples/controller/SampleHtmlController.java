@@ -17,6 +17,8 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -34,6 +36,7 @@ import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.JsonLDDataCatalog;
 import uk.ac.ebi.biosamples.model.JsonLDDataset;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.auth.LoginWays;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.*;
 
@@ -146,6 +149,7 @@ public class SampleHtmlController {
       filtersList.addAll(Arrays.asList(filtersArray));
     }
     Collections.sort(filtersList);
+    String downloadURL = "?text=" + (text != null ? text : "") + "&filter=" + StringUtils.join(filtersList, "&filter=");
 
     JsonLDDataset jsonLDDataset = jsonLDService.getBioSamplesDataset();
 
@@ -155,6 +159,7 @@ public class SampleHtmlController {
     model.addAttribute("filters", filtersList);
     model.addAttribute("paginations", getPaginations(pageSample, uriBuilder));
     model.addAttribute("jsonLD", jsonLDService.jsonLDToString(jsonLDDataset));
+    model.addAttribute("downloadURL", downloadURL);
     //    model.addAttribute(
     //        "facets",
     //        new LazyContextVariable<List<Facet>>() {
@@ -190,9 +195,18 @@ public class SampleHtmlController {
     return "samples_graph";
   }
 
-  @GetMapping(value = "/upload")
-  public String upload(Model model, HttpServletRequest request, HttpServletResponse response) {
-    return "upload";
+  @GetMapping(value = "/uploadLogin")
+  public String login(Model model, HttpServletRequest request, HttpServletResponse response) {
+    LoginWays[] loginWays = LoginWays.values();
+    List<String> logins = new ArrayList<>();
+
+    for(LoginWays loginWay: loginWays) {
+      logins.add(loginWay.toString());
+    }
+
+    model.addAttribute("ways", logins);
+
+    return "uploadLogin";
   }
 
   @GetMapping(value = "/facets")

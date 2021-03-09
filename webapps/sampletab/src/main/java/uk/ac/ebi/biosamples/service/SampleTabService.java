@@ -1144,6 +1144,7 @@ public class SampleTabService {
                 oldSample.get().getContent().getName(),
                 sampleToMakePrivate,
                 domain,
+                "",
                 ZonedDateTime.now(ZoneOffset.UTC).plusYears(100).toInstant(),
                 update,
                 update,

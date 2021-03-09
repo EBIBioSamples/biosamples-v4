@@ -24,15 +24,34 @@
         <div class="container">
             <div class="row">
                 <div class="col-lg-8 mt-5">
+                    <div th:if="${loginmethod == null}">
+                        <select class="form-control" id="aapDomain" name="aapDomain">
+                            <option th:value="0"><b>Select AAP domain</b></option>
+                            <option th:each="domain : ${domains}" th:value="${domain}" th:text="${domain}"></option>
+                        </select>
+                    </div>
+                    <div>
+                        <select class="form-control" id="certificate" name="certificate">
+                            <option th:value="0"><b>Select checklist for validation</b></option>
+                            <option th:each="certificate : ${certificates}" th:value="${certificate}"
+                                    th:text="${certificate}"></option>
+                        </select>
+                    </div>
                     <div id="dropzone">
-                        <form action="/biosamples/upload" class="dropzone needsclick" id="demo-upload">
+                        <form action="/biosamples/upload" class="dropzone needsclick" id="upload">
+                            <input type="hidden" id="hiddenAapDomain" name="hiddenAapDomain">
+                            <input type="hidden" id="hiddenCertificate" name="hiddenCertificate">
+                            <input type="hidden" th:value="${webinAccount}" name="webinAccount" />
                             <div class="dz-message needsclick">
                                 <button type="button" class="dz-button">Drop files here or click to upload. <br/>
-                                    You can upload .xls files containing your samples. <br/></button>
+                                    You can upload .csv files containing your samples. <br/></button>
                                 <br/>
                             </div>
                         </form>
                     </div>
+
+                    <br/>
+                    <b><a th:href="@{/uploadLogin}"><<< Back</a></b>
                 </div>
             </div>
         </div>
@@ -43,10 +62,22 @@
 
 <script>
     Dropzone.autoDiscover = false;
-    $("#demo-upload").dropzone({
+    $("#upload").dropzone({
         success: function (file, response) {
-            toastr.success('File ' + file.name + ' uploaded successfully');
+            toastr.success('File ' + file.name + ' uploaded successfully')
+
+            if (this.files.length > 1) {
+                this.removeFile(this.files[0]);
+            }
         }
+    });
+
+    $("#aapDomain").change(function (e) {
+        $("#hiddenAapDomain").val(e.target.value);
+    });
+
+    $("#certificate").change(function (e) {
+        $("#hiddenCertificate").val(e.target.value);
     });
 </script>
 </body>

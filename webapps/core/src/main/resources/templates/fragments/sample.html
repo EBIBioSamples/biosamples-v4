@@ -11,13 +11,13 @@
 			<table class="hover">
                 <thead>
                     <tr>
-                        <th>Type</th>
+                        <th class="sample-attribute-table-column">Type</th>
                         <th>Value</th>
                     </tr>
 				</thead>
                 <tbody>
                     <tr th:each="attribute : ${attributes}" th:with="iriUrl = ${@httpOlsUrlResolutionService.getIriOls(attribute.iri)}">
-                        <td th:text="${attribute.type}">Attribute Type</td>
+                        <td class="sample-attribute-table-column" th:text="${attribute.type}">Attribute Type</td>
 
                         <td
                                 th:if="${not #strings.isEmpty(iriUrl) and #strings.isEmpty(attribute.unit)}"><a

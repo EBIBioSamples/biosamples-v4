@@ -168,7 +168,7 @@ public class EnaCallable implements Callable<Void> {
 
             if (!containsEnaLink.get()) {
               ExternalReference exRef =
-                  ExternalReference.build("https://www.ebi.ac.uk/ena/data/view/" + sraAccession);
+                  ExternalReference.build("https://www.ebi.ac.uk/ena/browser/view/" + sraAccession);
               Curation enaLinkCuration =
                   Curation.build(null, null, null, Collections.singleton(exRef));
 
@@ -252,7 +252,7 @@ public class EnaCallable implements Callable<Void> {
 
     // add external reference
     externalReferences.add(
-        ExternalReference.build("https://www.ebi.ac.uk/ena/data/view/" + this.sampleAccession));
+        ExternalReference.build("https://www.ebi.ac.uk/ena/browser/view/" + this.sampleAccession));
 
     // Although update date is passed here, its system generated to time now by
     // webapps-core
@@ -261,6 +261,7 @@ public class EnaCallable implements Callable<Void> {
             sample.getName(),
             this.sampleAccession,
             domain,
+            "",
             release,
             update,
             create,

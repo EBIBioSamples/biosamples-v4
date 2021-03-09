@@ -25,15 +25,20 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.provider.authentication.BearerTokenExtractor;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.exception.SampleNotFoundException;
 import uk.ac.ebi.biosamples.model.Certificate;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
+import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.model.ga4gh.phenopacket.PhenopacketConverter;
 import uk.ac.ebi.biosamples.service.*;
 import uk.ac.ebi.biosamples.service.certification.CertifyService;
 import uk.ac.ebi.biosamples.utils.LinkUtils;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Primary controller for REST operations both in JSON and XML and both read and write.
@@ -51,6 +56,7 @@ public class SampleRestController {
 
   private final SampleService sampleService;
   private final BioSamplesAapService bioSamplesAapService;
+  private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
   private final SampleManipulationService sampleManipulationService;
   private final SampleResourceAssembler sampleResourceAssembler;
   private PhenopacketConverter phenopacketConverter;
@@ -61,12 +67,14 @@ public class SampleRestController {
   public SampleRestController(
       SampleService sampleService,
       BioSamplesAapService bioSamplesAapService,
+      BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
       SampleManipulationService sampleManipulationService,
       SampleResourceAssembler sampleResourceAssembler,
       PhenopacketConverter phenopacketConverter,
       SchemaValidationService schemaValidationService) {
     this.sampleService = sampleService;
     this.bioSamplesAapService = bioSamplesAapService;
+    this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
     this.sampleManipulationService = sampleManipulationService;
     this.sampleResourceAssembler = sampleResourceAssembler;
     this.phenopacketConverter = phenopacketConverter;
@@ -193,12 +201,14 @@ public class SampleRestController {
   @PreAuthorize("isAuthenticated()")
   @PutMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
   public Resource<Sample> put(
-      @PathVariable String accession,
-      @RequestBody Sample sample,
-      @RequestParam(name = "setfulldetails", required = false, defaultValue = "true")
-          boolean setFullDetails)
-      throws JsonProcessingException {
+          HttpServletRequest request,
+          @PathVariable String accession,
+          @RequestBody Sample sample,
+          @RequestParam(name = "setfulldetails", required = false, defaultValue = "true") boolean setFullDetails,
+          @RequestParam(name = "authProvider", required = false, defaultValue = "AAP") String authProvider)
+          throws JsonProcessingException {
     final ObjectMapper jsonMapper = new ObjectMapper();
+    final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
     List<Certificate> certificates = new ArrayList<>();
 
     if (sample.getAccession() == null || !sample.getAccession().equals(accession)) {
@@ -207,7 +217,7 @@ public class SampleRestController {
 
     // todo Fix all integration tests to not to use predefined accessions, then remove
     // isIntegrationTestUser() check
-    if (!sampleService.isExistingAccession(accession)
+    if (sampleService.isExistingAccession(accession)
         && !(bioSamplesAapService.isWriteSuperUser()
             || bioSamplesAapService.isIntegrationTestUser())) {
       throw new SampleAccessionDoesNotExistException();
@@ -215,16 +225,41 @@ public class SampleRestController {
 
     log.debug("Received PUT for " + accession);
 
-    sample = bioSamplesAapService.handleSampleDomain(sample);
+    if (authProvider.equalsIgnoreCase("WEBIN")) {
+      final Authentication authentication = bearerTokenExtractor.extract(request);
+      final SubmissionAccount webinAccount = bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal())).getBody();
+      final String webinId = sample.getWebinSubmissionAccountId();
 
-    if (sample.getData() != null && sample.getData().size() > 0) {
-      if (bioSamplesAapService.isOriginalSubmitter(sample)) {
-        sample = Sample.Builder.fromSample(sample).build();
-      } else if (bioSamplesAapService.isWriteSuperUser()
-          || bioSamplesAapService.isIntegrationTestUser()) {
-        sample = Sample.Builder.fromSample(sample).build();
-      } else {
-        sample = Sample.Builder.fromSample(sample).withNoData().build();
+      if (sample.getDomain() != null) {
+        throw new SamplesRestController.SampleWithBothWebinIdAndDomainException();
+      }
+
+      if (webinId == null) {
+        log.info("No WEBIN ID in sample " + webinId);
+        throw new SamplesRestController.WebinUserNotPresentException();
+      }
+
+      if (!webinId.equalsIgnoreCase(webinAccount.getId())) {
+        throw new SamplesRestController.WebinUserUnauthorizedException();
+      }
+
+      sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample);
+    } else {
+      if (sample.getWebinSubmissionAccountId() != null) {
+        throw new SamplesRestController.SampleWithBothWebinIdAndDomainException();
+      }
+
+      sample = bioSamplesAapService.handleSampleDomain(sample);
+
+      if (sample.getData() != null && sample.getData().size() > 0) {
+        if (bioSamplesAapService.isOriginalSubmitter(sample)) {
+          sample = Sample.Builder.fromSample(sample).build();
+        } else if (bioSamplesAapService.isWriteSuperUser()
+                || bioSamplesAapService.isIntegrationTestUser()) {
+          sample = Sample.Builder.fromSample(sample).build();
+        } else {
+          sample = Sample.Builder.fromSample(sample).withNoData().build();
+        }
       }
     }
 
@@ -252,7 +287,7 @@ public class SampleRestController {
       sample = sampleManipulationService.removeLegacyFields(sample);
     }
 
-    sample = sampleService.store(sample, isFirstTimeMetadataAdded);
+    sample = sampleService.store(sample, isFirstTimeMetadataAdded, authProvider);
 
     // assemble a resource to return
     // create the response object with the appropriate status
@@ -274,7 +309,7 @@ public class SampleRestController {
       throw new SampleAccessionMismatchException();
     }
 
-    if (!sampleService.isExistingAccession(accession)
+    if (sampleService.isExistingAccession(accession)
         && !(bioSamplesAapService.isWriteSuperUser()
             || bioSamplesAapService.isIntegrationTestUser())) {
       throw new SampleAccessionDoesNotExistException();

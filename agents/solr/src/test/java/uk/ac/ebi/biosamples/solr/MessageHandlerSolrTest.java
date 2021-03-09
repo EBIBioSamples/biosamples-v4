@@ -104,6 +104,7 @@ public class MessageHandlerSolrTest {
         "",
         accession,
         "",
+        "",
         Instant.now(),
         Instant.now(),
         Instant.now(),

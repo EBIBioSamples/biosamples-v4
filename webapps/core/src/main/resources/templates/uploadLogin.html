@@ -1,0 +1,43 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.w3.org/1999/xhtml" lang="">
+
+<head th:replace="fragments/head :: head">
+    <title th:text="&lt; BioSamples &lt; EMBL-EBI'">BioSamples &lt; EMBL-EBI</title>
+    <!-- A few keywords that relate to the content of THIS PAGE (not the whole project) -->
+    <meta name="keywords" content="biosamples, europe, EBI"/>
+    <!-- Describe what this page is about -->
+    <meta name="description" content="EMBL-EBI"/>
+
+    <meta name="ebi:last-review" content="2016-12-20"/>
+    <!-- The last time the content was reviewed -->
+    <meta name="ebi:expiry" content="2017-12-20"/>
+    <!-- When this content is no longer relevant -->
+</head>
+
+<body>
+<th:block th:include="fragments/header :: header"></th:block>
+<div layout:fragment="content" id="content">
+    <th:block th:include="fragments/header :: masterhead"></th:block>
+
+    <div id="main-content-area" class="row padding-top-xlarge padding-right-xlarge padding-left-xlarge sample">
+        <form th:action="@{/login/auth}" method="post" modelAttribute="authRequest">
+            <span><b>Login using</b></span> &nbsp;
+            <input type="radio" name="loginWay" id="AAP" value="AAP" checked="checked"/><b>AAP</b> &nbsp;
+            <input type="radio" name="loginWay" id="WEBIN" value="WEBIN"/><b>WEBIN</b>
+
+            <br/>
+
+            <label for="userName"><b>Username</b></label>
+            <input type="text" id="userName" name="userName" autofocus="autofocus"/> <br/>
+            <label for="password"><b>Password</b></label>
+            <input type="password" id="password" name="password"/> <br/>
+            <input type="submit" value="Sign in"/>
+        </form>
+        <br/>
+        <div th:if="${wrongCreds != null}"><b>Invalid username/ password entered</b></div>
+    </div>
+</div>
+<th:block th:include="fragments/footer :: footer"></th:block>
+</body>
+</html>

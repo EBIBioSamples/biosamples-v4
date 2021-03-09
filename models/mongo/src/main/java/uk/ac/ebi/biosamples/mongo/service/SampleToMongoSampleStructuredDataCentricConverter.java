@@ -79,6 +79,7 @@ public class SampleToMongoSampleStructuredDataCentricConverter
         sample.getName(),
         sample.getAccession(),
         sample.getDomain(),
+        sample.getWebinSubmissionAccountId(),
         sample.getRelease(),
         sample.getUpdate(),
         sample.getCreate(),

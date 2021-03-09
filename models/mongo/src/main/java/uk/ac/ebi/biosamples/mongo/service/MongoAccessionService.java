@@ -107,6 +107,7 @@ public class MongoAccessionService {
             sample.getName(),
             accession,
             sample.getDomain(),
+            sample.getWebinSubmissionAccountId(),
             sample.getRelease(),
             sample.getUpdate(),
             sample.getCreate(),

@@ -18,6 +18,15 @@ are and what data you are allowed to access. You present this information to the
 
 The tokens last for 1 hour, so if you have a long running process you may find the token expires.
 
+*Please note that following guide is for authentication against our production system.
+If you are testing in our development server, please replace following URLs.*
+[cols="1,1"]
+|===
+| Original                  | Replace with
+| https://aai.ebi.ac.uk     | https://explore.aai.ebi.ac.uk
+| https://api.aai.ebi.ac.uk | https://explore.api.aai.ebi.ac.uk
+|===
+
 == Creating your account
 
 You can create an account through the https://aai.ebi.ac.uk/registerUser[AAP webpage], or through their API.
@@ -267,7 +276,7 @@ to access the submissions API.
 == Development servers
 
 We use a different copy of the AAP service to secure our test and development servers. If you are working with them,
-rather than the main server, please use this version of AAP: https://explore.aap.tsi.ebi.ac.uk
+rather than the main server, please use this version of AAP: https://explore.api.aai.ebi.ac.uk
 
 
 == Wrapping up
