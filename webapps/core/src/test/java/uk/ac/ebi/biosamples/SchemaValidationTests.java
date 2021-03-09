@@ -35,14 +35,14 @@ import org.springframework.util.StreamUtils;
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-public class SchemaValidatorTests {
+public class SchemaValidationTests {
 
   @Autowired private MockMvc mockMvc;
 
   @Test
   public void get_validation_endpoint_return_not_allowed_response() throws Exception {
     mockMvc
-        .perform(get("/validation").accept(MediaType.APPLICATION_JSON))
+        .perform(get("/validate").accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isMethodNotAllowed());
   }
 

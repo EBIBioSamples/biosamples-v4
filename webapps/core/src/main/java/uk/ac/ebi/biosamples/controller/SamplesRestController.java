@@ -73,6 +73,7 @@ public class SamplesRestController {
   private final SampleManipulationService sampleManipulationService;
   private final BioSamplesProperties bioSamplesProperties;
   private final SampleResourceAssembler sampleResourceAssembler;
+  private final SchemaValidationService schemaValidationService;
 
   private static final String NCBI_IMPORT_DOMAIN = "self.BiosampleImportNCBI";
   private static final String ENA_IMPORT_DOMAIN = "self.BiosampleImportENA";
@@ -89,7 +90,8 @@ public class SamplesRestController {
       SampleResourceAssembler sampleResourceAssembler,
       SampleManipulationService sampleManipulationService,
       SampleService sampleService,
-      BioSamplesProperties bioSamplesProperties) {
+      BioSamplesProperties bioSamplesProperties,
+      SchemaValidationService schemaValidationService) {
     this.samplePageService = samplePageService;
     this.filterService = filterService;
     this.bioSamplesAapService = bioSamplesAapService;
@@ -97,6 +99,7 @@ public class SamplesRestController {
     this.sampleResourceAssembler = sampleResourceAssembler;
     this.sampleManipulationService = sampleManipulationService;
     this.sampleService = sampleService;
+    this.schemaValidationService = schemaValidationService;
     this.bioSamplesProperties = bioSamplesProperties;
   }
 
@@ -378,14 +381,6 @@ public class SamplesRestController {
     return new Link(builder.toUriString(), rel);
   }
 
-  @PostMapping({MediaType.APPLICATION_JSON_VALUE})
-  @RequestMapping("/validate")
-  public ResponseEntity<Map> validateSample(@RequestBody Map sampleAsMap) {
-    sampleService.validateSample(sampleAsMap);
-
-    return ResponseEntity.ok(sampleAsMap);
-  }
-
   @PreAuthorize("isAuthenticated()")
   @PostMapping(
       consumes = {MediaType.APPLICATION_JSON_VALUE},
@@ -440,12 +435,9 @@ public class SamplesRestController {
   public ResponseEntity<Resource<Sample>> post(
           HttpServletRequest request,
           @RequestBody Sample sample,
-          @RequestParam(name = "setfulldetails", required = false, defaultValue = "true")
-                  boolean setFullDetails,
-          @RequestParam(name = "checklist", required = false)
-                  String checklist,
-          @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
-                  String authProvider)
+          @RequestParam(name = "setfulldetails", required = false, defaultValue = "true") boolean setFullDetails,
+          @RequestParam(name = "checklist", required = false) String checklist,
+          @RequestParam(name = "authProvider", required = false, defaultValue = "AAP") String authProvider)
           throws JsonProcessingException {
     log.debug("Received POST for " + sample);
     final ObjectMapper jsonMapper = new ObjectMapper();
@@ -513,17 +505,9 @@ public class SamplesRestController {
             .withSubmittedVia(submittedVia)
             .build();
 
-    List<Certificate> certificates;
-
-    if (checklist != null && !checklist.isEmpty()) {
-      certificates =
-              certifyService.certify(jsonMapper.writeValueAsString(sample), false, checklist);
-    } else {
-      certificates =
-              certifyService.certify(jsonMapper.writeValueAsString(sample), false);
-    }
-
-    sample = Sample.Builder.fromSample(sample).withCertificates(certificates).build();
+    // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
+    if (!bioSamplesAapService.isWriteSuperUser())
+      schemaValidationService.validate(sample);
 
     if (!setFullDetails) {
       sample = sampleManipulationService.removeLegacyFields(sample);

@@ -10,8 +10,6 @@
 */
 package uk.ac.ebi.biosamples;
 
-import static org.hamcrest.Matchers.*;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.charset.Charset;
 import org.junit.Assert;
@@ -31,7 +29,7 @@ import org.springframework.util.StreamUtils;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.SampleService;
-import uk.ac.ebi.biosamples.service.SchemaValidatorService;
+import uk.ac.ebi.biosamples.service.SchemaValidationService;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -49,7 +47,7 @@ public class StructuredDataTest {
 
   @MockBean private SampleService sampleService;
 
-  @MockBean private SchemaValidatorService schemaValidatorService;
+  @MockBean private SchemaValidationService schemaValidatorService;
 
   @Before
   public void init() {

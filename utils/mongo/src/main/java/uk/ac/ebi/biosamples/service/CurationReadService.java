@@ -185,12 +185,10 @@ public class CurationReadService {
       pageNo += 1;
     } while (pageNo < page.getTotalPages());
 
-    boolean failedCuration = false;
     for (CurationLink curation : curationLinks) {
       try {
         sample = applyCurationLinkToSample(sample, curation);
       } catch (IllegalArgumentException e) {
-        failedCuration = true;
         log.trace(e.getMessage());
       }
     }

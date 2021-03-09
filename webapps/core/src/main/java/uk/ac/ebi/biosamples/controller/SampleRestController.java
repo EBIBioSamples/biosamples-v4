@@ -52,14 +52,15 @@ import javax.servlet.http.HttpServletRequest;
 @RequestMapping("/samples/{accession}")
 @CrossOrigin
 public class SampleRestController {
+  private Logger log = LoggerFactory.getLogger(getClass());
+
   private final SampleService sampleService;
   private final BioSamplesAapService bioSamplesAapService;
   private final BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
   private final SampleManipulationService sampleManipulationService;
   private final SampleResourceAssembler sampleResourceAssembler;
-  private Ga4ghSampleToPhenopacketConverter phenopacketExporter;
   private PhenopacketConverter phenopacketConverter;
-  private Logger log = LoggerFactory.getLogger(getClass());
+  private final SchemaValidationService schemaValidationService;
 
   @Autowired private CertifyService certifyService;
 
@@ -69,15 +70,15 @@ public class SampleRestController {
       BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService,
       SampleManipulationService sampleManipulationService,
       SampleResourceAssembler sampleResourceAssembler,
-      Ga4ghSampleToPhenopacketConverter phenopacketExporter,
-      PhenopacketConverter phenopacketConverter) {
+      PhenopacketConverter phenopacketConverter,
+      SchemaValidationService schemaValidationService) {
     this.sampleService = sampleService;
     this.bioSamplesAapService = bioSamplesAapService;
     this.bioSamplesWebinAuthenticationService = bioSamplesWebinAuthenticationService;
     this.sampleManipulationService = sampleManipulationService;
     this.sampleResourceAssembler = sampleResourceAssembler;
-    this.phenopacketExporter = phenopacketExporter;
     this.phenopacketConverter = phenopacketConverter;
+    this.schemaValidationService = schemaValidationService;
   }
 
   @PreAuthorize("isAuthenticated()")
@@ -203,10 +204,8 @@ public class SampleRestController {
           HttpServletRequest request,
           @PathVariable String accession,
           @RequestBody Sample sample,
-          @RequestParam(name = "setfulldetails", required = false, defaultValue = "true")
-                  boolean setFullDetails,
-          @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
-                  String authProvider)
+          @RequestParam(name = "setfulldetails", required = false, defaultValue = "true") boolean setFullDetails,
+          @RequestParam(name = "authProvider", required = false, defaultValue = "AAP") String authProvider)
           throws JsonProcessingException {
     final ObjectMapper jsonMapper = new ObjectMapper();
     final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
@@ -271,10 +270,9 @@ public class SampleRestController {
         sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
     sample = Sample.Builder.fromSample(sample).withUpdate(update).withSubmittedVia(submittedVia).build();
 
-    if (!accession.startsWith("SAMEG"))
-      certificates = certifyService.certify(jsonMapper.writeValueAsString(sample), false);
-
-    sample = Sample.Builder.fromSample(sample).withCertificates(certificates).build();
+    // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
+    if (!bioSamplesAapService.isWriteSuperUser())
+      schemaValidationService.validate(sample);
 
     final boolean isFirstTimeMetadataAdded = sampleService.beforeStore(sample);
 
