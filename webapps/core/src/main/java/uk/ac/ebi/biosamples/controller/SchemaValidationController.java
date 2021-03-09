@@ -12,13 +12,17 @@ package uk.ac.ebi.biosamples.controller;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import uk.ac.ebi.biosamples.exception.SchemaValidationException;
+import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.SchemaValidationService;
 
+import java.util.Optional;
+
 @RestController
+@CrossOrigin
+@RequestMapping("/validate")
 public class SchemaValidationController {
     private final SchemaValidationService schemaValidationService;
 
@@ -26,8 +30,24 @@ public class SchemaValidationController {
         this.schemaValidationService = schemaValidationService;
     }
 
-    @PostMapping(value = "/validation", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Sample> validate(@RequestBody Sample sample) {
+    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Sample> validate(@RequestBody Sample sample,
+                                           @RequestParam(name = "checklist", required = false) String checklist) {
+
+        if (checklist != null && !checklist.isEmpty()) {
+            Attribute checklistAttribute = Attribute.build("checklist", checklist);
+            Optional<Attribute> optionalChecklist = sample.getCharacteristics().stream()
+                    .filter(c -> c.getType().equalsIgnoreCase("checklist"))
+                    .findFirst();
+            if (optionalChecklist.isPresent()) {
+                if (!optionalChecklist.get().getValue().equals(checklistAttribute.getValue())) {
+                    throw new SchemaValidationException("Different checklist IDs in body and request parameter");
+                }
+            } else {
+                sample.getCharacteristics().add(checklistAttribute);
+            }
+        }
+
         schemaValidationService.validate(sample);
         return ResponseEntity.ok(sample);
     }

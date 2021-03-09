@@ -21,8 +21,6 @@ import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.service.certification.Validator;
 
-import java.io.IOException;
-
 @Service
 public class SchemaValidationService {
     private final Logger log = LoggerFactory.getLogger(getClass());
@@ -37,7 +35,7 @@ public class SchemaValidationService {
         this.validator = validator;
     }
 
-    public void validate(Sample sample) {
+    public String validate(Sample sample) {
         String schemaId = sample.getCharacteristics().stream()
                 .filter(s -> s.getType().equalsIgnoreCase("checklist")) //todo checklist name or checklist id, we need full path to search
                 .findFirst()
@@ -46,7 +44,7 @@ public class SchemaValidationService {
 
         try {
             String sampleString = this.objectMapper.writeValueAsString(sample);
-            validator.validate(schemaId, sampleString);
+            return validator.validateById(schemaId, sampleString);
         } catch (ValidationException e) {
             throw new SchemaValidationException("Checklist validation failed", e);
         } catch (Exception e) {

@@ -252,7 +252,7 @@ public class ApiDocumentationTest {
 
     when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(sampleWithDomain);
     when(sampleService.store(any(Sample.class), eq(false))).thenReturn(sampleWithDomain);
-    doNothing().when(schemaValidationService).validate(any(Sample.class));
+    when(schemaValidationService.validate(any(Sample.class))).thenReturn("ERC100001");
 
     this.mockMvc
         .perform(
@@ -294,7 +294,7 @@ public class ApiDocumentationTest {
 
     when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(sampleWithDomain);
     when(sampleService.store(any(Sample.class), eq(false))).thenReturn(sampleWithDomain);
-    doNothing().when(schemaValidationService).validate(any(Sample.class));
+    when(schemaValidationService.validate(any(Sample.class))).thenReturn("ERC100001");
 
     this.mockMvc
         .perform(
@@ -461,25 +461,36 @@ public class ApiDocumentationTest {
   @Test
   public void post_for_validation() throws Exception {
     Sample sample = this.faker.getExampleSample();
-    Sample sampleWithDomain = this.faker.getExampleSampleWithDomain();
-
     String sampleToSubmit =
-        "{ "
-            + "\"name\" : \""
-            + sample.getName()
-            + "\", "
-            + "\"update\" : \""
-            + dateTimeFormatter.format(sample.getUpdate().atOffset(ZoneOffset.UTC))
-            + "\", "
-            + "\"release\" : \""
-            + dateTimeFormatter.format(sample.getRelease().atOffset(ZoneOffset.UTC))
-            + "\", "
-            + "\"domain\" : \"self.ExampleDomain\" "
-            + "}";
+            "{ "
+                    + "\"name\" : \""
+                    + "fake_sample"
+                    + "\", "
+                    + "\"update\" : \""
+                    + dateTimeFormatter.format(sample.getUpdate().atOffset(ZoneOffset.UTC))
+                    + "\", "
+                    + "\"release\" : \""
+                    + dateTimeFormatter.format(sample.getRelease().atOffset(ZoneOffset.UTC))
+                    + "\", "
+                    + "\"domain\" : \"self.ExampleDomain\" "
+                    + ", "
+                    + "\"characteristics\" : {"
+                    + "\"material\" : [ {"
+                    + "\"text\" : \"cell line\","
+                    + "\"ontologyTerms\" : [ \"EFO_0000322\" ]"
+                    + "} ],"
+                    + "\"Organism\" : [ {"
+                    + "\"text\" : \"Homo sapiens\","
+                    + "\"ontologyTerms\" : [ \"9606\" ]"
+                    + "} ],"
+                    + "\"checklist\" : [ {"
+                    + "\"text\" : \"ERC100001\""
+                    + "} ]}"
+                    + "}";
 
     this.mockMvc
         .perform(
-            post("/biosamples/samples/validate")
+            post("/biosamples/validate")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(sampleToSubmit)
                 .header("Authorization", "Bearer $TOKEN"))

@@ -3,15 +3,7 @@
 :toc: auto
 
 
-Sample certification service can be used to validate samples against JSON schema checklists
-before or during sample submission.
-
-This website requires the limited processing of your personal data in order to function.
-By using the site you are agreeing to this as outlined in our https://www.ebi.ac.uk/data-protection/privacy-notice/biosamples-submissions[Submission Privacy Notice]
-
-== Certification during sample submission and sample updates
-
-BioSamples submission API's has been updated to certify samples against available checklists
+Sample certification service can be used to validate samples against JSON schema checklists.
 
 == Certify sample
 `PUT` an existing sample to know if the sample validates against any of the available checklists
@@ -40,3 +32,7 @@ include::{snippets}/check-compliance/http-request.adoc[]
 
 === Response
 include::{snippets}/check-compliance/http-response.adoc[]
+
+
+This website requires the limited processing of your personal data in order to function.
+By using the site you are agreeing to this as outlined in our https://www.ebi.ac.uk/data-protection/privacy-notice/biosamples-submissions[Submission Privacy Notice]

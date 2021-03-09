@@ -373,14 +373,6 @@ public class SamplesRestController {
     return new Link(builder.toUriString(), rel);
   }
 
-  @PostMapping({MediaType.APPLICATION_JSON_VALUE})
-  @RequestMapping("/validate")
-  public ResponseEntity<Map> validateSample(@RequestBody Map sampleAsMap) {
-    sampleService.validateSample(sampleAsMap);
-
-    return ResponseEntity.ok(sampleAsMap);
-  }
-
   @PreAuthorize("isAuthenticated()")
   @PostMapping(
       consumes = {MediaType.APPLICATION_JSON_VALUE},

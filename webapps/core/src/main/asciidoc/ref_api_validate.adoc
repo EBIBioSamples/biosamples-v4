@@ -5,7 +5,10 @@
 
 API documentation for sample validation. This contains details regarding sample validation and retrieving sample format recommendations.
 
-This website requires the limited processing of your personal data in order to function. By using the site you are agreeing to this as outlined in our https://www.ebi.ac.uk/data-protection/privacy-notice/biosamples-submissions[Submission Privacy Notice]
+== Validation during sample submission
+Validation service will check for the existence of the attribute `checklist` in the sample body at sample submission time.
+If the attribute is present it will validate the sample against the provided checklist.
+If the attribute is absent sample will be validated against the default minimal sample checklist.
 
 == Validate before sample submission
 `POST` sample to validate without submission
@@ -36,4 +39,5 @@ include::{snippets}/post-sample-for-suggestions/http-response.adoc[]
 For all the links available in BioSamples check the link:../api/links[Links Reference]
 
 
+This website requires the limited processing of your personal data in order to function. By using the site you are agreeing to this as outlined in our https://www.ebi.ac.uk/data-protection/privacy-notice/biosamples-submissions[Submission Privacy Notice]
 
