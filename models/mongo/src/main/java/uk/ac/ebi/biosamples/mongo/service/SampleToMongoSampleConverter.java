@@ -56,7 +56,7 @@ public class SampleToMongoSampleConverter implements Converter<Sample, MongoSamp
 
     // when we convert to a MongoSample then the Sample *must* have a domain or a Webin ID
     if (sample.getDomain() == null && sample.getWebinSubmissionAccountId() == null) {
-      throw new RuntimeException("sample does not have domain or a WEBIN submission account ID " + sample);
+      throw new RuntimeException("Sample does not have domain or a WEBIN submission account ID");
     }
 
     return MongoSample.build(

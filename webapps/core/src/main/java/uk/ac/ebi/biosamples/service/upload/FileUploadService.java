@@ -16,12 +16,15 @@ import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.Certificate;
 import uk.ac.ebi.biosamples.model.Relationship;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.upload.validation.Messages;
 import uk.ac.ebi.biosamples.model.upload.validation.ValidationResult;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.certification.CertifyService;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -47,13 +50,17 @@ public class FileUploadService {
     @Autowired
     CertifyService certifyService;
 
-    public void upload(MultipartFile file, String aapDomain, String certificate) throws IOException {
-        Path temp = Files.createTempFile("test", ".tmp");
+    @Autowired
+    Messages messages;
+
+    public File upload(MultipartFile file, String aapDomain, String certificate, String webinId) throws IOException {
+        Path temp = Files.createTempFile("upload", ".csv");
 
         File fileToBeUploaded = temp.toFile();
         file.transferTo(fileToBeUploaded);
 
         validationResult.clear();
+        messages.clear();
 
         List<Map<?, ?>> data = readObjectsFromCsv(fileToBeUploaded);
         String json = writeAsJson(data);
@@ -64,19 +71,26 @@ public class FileUploadService {
                 new TypeReference<List<Map<String, Object>>>() {
                 });
 
-        createSamplesFromMappedData(jsonListOfMappedSamples, aapDomain, certificate);
+        return createSamplesFromMappedData(jsonListOfMappedSamples, aapDomain, certificate, webinId);
     }
 
-    private void createSamplesFromMappedData(List<Map<String, Object>> jsonListOfMappedSamples, String aapDomain, String certificate) {
+    private File createSamplesFromMappedData(List<Map<String, Object>> jsonListOfMappedSamples, String aapDomain, String certificate, String webinId) throws IOException {
         final Map<Sample, Map<String, Object>> sampleToMappedSample = new LinkedHashMap<>();
+        final Map<String, String> sampleNameToAccessionMap = new LinkedHashMap<>();
+        final String authProvider = isWebinIdUsedToAuthenticate(webinId) ? "WEBIN" : "AAP";
 
         jsonListOfMappedSamples.forEach(mappedSample -> {
             try {
                 Sample sample = validateAndBuildSample(mappedSample);
-                sample = Sample.Builder.fromSample(sample).withDomain(aapDomain).build();
 
+                if (sampleService.isWebinAuthorization(authProvider)) {
+                    sample = Sample.Builder.fromSample(sample).withWebinSubmissionAccountId(webinId).build();
+                } else {
+                    sample = Sample.Builder.fromSample(sample).withDomain(aapDomain).build();
+                }
                 if (certify(sample, certificate)) {
-                    sample = sampleService.store(sample, true);
+                    sample = sampleService.store(sample, true, authProvider);
+                    sampleNameToAccessionMap.put(sample.getName(), sample.getAccession());
                     sampleToMappedSample.put(sample, mappedSample);
                 } else {
                     validationResult.addValidationMessage(sample.getName() + " failed validation against " + certificate);
@@ -88,33 +102,57 @@ public class FileUploadService {
 
         List<Sample> samples = sampleToMappedSample.entrySet()
                 .stream()
-                .map(sampleMapEntry -> parseRelationships(sampleMapEntry.getValue(), sampleMapEntry.getKey()))
+                .map(sampleMapEntry -> parseRelationships(sampleMapEntry.getValue(), sampleMapEntry.getKey(), sampleNameToAccessionMap))
                 .collect(Collectors.toList());
 
-        samples = samples.stream().map(sample -> sampleService.store(sample, true)).collect(Collectors.toList());
+        samples = samples.stream().map(sample -> sampleService.store(sample, true, authProvider)).collect(Collectors.toList());
 
-        log.info(String.valueOf(samples.size()));
+        samples.forEach(sample -> messages.addMessage("Sample " + sample.getName() + " is assigned accession " + sample.getAccession() + "\n"));
 
-        samples.forEach(sample -> log.info(sample.toString()));
+        return writeMessagesAndValidationResultsToFile(messages, validationResult);
+    }
+
+    private File writeMessagesAndValidationResultsToFile(Messages messages, ValidationResult validationResult) throws IOException {
+        messages.getMessagesList().forEach(message -> log.info(message));
+        validationResult.getValidationMessagesList().forEach(valResult -> log.info(valResult));
+
+        Path temp = Files.createTempFile("upload_result", ".txt");
+        File file = temp.toFile();
+
+        try {
+            FileOutputStream writeDataStream = new FileOutputStream(file);
+            ObjectOutputStream writeStream = new ObjectOutputStream(writeDataStream);
+
+            writeStream.writeChars("Messages");
+            writeStream.writeObject(messages.getMessagesList());
+            writeStream.writeChars("Validation messages");
+            writeStream.writeObject(validationResult.getValidationMessagesList());
+
+            writeStream.flush();
+            writeStream.close();
+        } catch (IOException e) {
+            log.info(e.getMessage(), e);
+        }
+
+        return file;
+    }
+
+    private boolean isWebinIdUsedToAuthenticate(String webinId) {
+        return webinId != null && webinId.toUpperCase().startsWith("WEBIN");
     }
 
     private boolean certify(Sample sample, String certificate) throws JsonProcessingException {
-        log.info("Certificate is " + certificate);
-
         List<Certificate> certificates =
                 certifyService.certify(objectMapper.writeValueAsString(sample), false, certificate);
 
-        if (certificates.size() == 0) {
-            return true;
-        }
-
-        return false;
+        return certificates.size() != 0;
     }
 
     private Sample validateAndBuildSample(Map<String, Object> mappedSample) {
         AtomicReference<Sample> sample = new AtomicReference<>();
         AtomicReference<String> name = new AtomicReference<>();
         AtomicReference<String> release = new AtomicReference<>();
+        AtomicReference<Attribute> descriptionAttribute = new AtomicReference<>();
 
         mappedSample.forEach((key, value) -> {
             if (key.equalsIgnoreCase("Sample Name")) {
@@ -126,6 +164,12 @@ public class FileUploadService {
             if (key.equalsIgnoreCase("Release")) {
                 if (value != null) {
                     release.set(value.toString());
+                }
+            }
+
+            if (key.equalsIgnoreCase("Sample Description")) {
+                if (value != null) {
+                    descriptionAttribute.set(Attribute.build("description", value.toString()));
                 }
             }
         });
@@ -148,7 +192,8 @@ public class FileUploadService {
                         .startsWith("Characteristic"))
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> (String) e.getValue()));
 
-        sample.set(handleCharacteristics(characteristics, sample.get()));
+        sample.set(handleCharacteristics(characteristics, sample.get(), descriptionAttribute.get()));
+
         return sample.get();
     }
 
@@ -156,7 +201,7 @@ public class FileUploadService {
         return String.join(delimeter, validationResult.getValidationMessagesList());
     }
 
-    private Sample parseRelationships(Map<String, Object> mappedSample, Sample sample) {
+    private Sample parseRelationships(Map<String, Object> mappedSample, Sample sample, Map<String, String> sampleNameToAccessionMap) {
         Map<String, String> relationships = mappedSample.entrySet()
                 .stream()
                 .filter(entry -> entry.getKey()
@@ -165,27 +210,59 @@ public class FileUploadService {
                         e -> (String) e.getValue(), (u, v) -> u,
                         LinkedHashMap::new));
 
-        return handleRelationships(relationships, sample);
+        return handleRelationships(relationships, sample, sampleNameToAccessionMap);
     }
 
-    private Sample handleRelationships(Map<String, String> relationships, Sample sample) {
+    private Sample handleRelationships(Map<String, String> relationships, Sample sample, Map<String, String> sampleNameToAccessionMap) {
         List<Relationship> relationshipList = relationships.values()
                 .stream()
                 .map(String::trim)
+                .filter(relationshipTrimmedValue -> relationshipTrimmedValue.contains("#")) /*TODO check something there after #*/
                 .map(relationshipTrimmedValue -> Relationship.build(sample.getAccession(),
                         relationshipTrimmedValue.substring(0, relationshipTrimmedValue.indexOf("#")),
-                        relationshipTrimmedValue.substring(relationshipTrimmedValue.indexOf("#") + 1)))
+                        sampleNameToAccessionMap.get(relationshipTrimmedValue.substring(relationshipTrimmedValue.indexOf("#") + 1))))
                 .collect(Collectors.toList());
 
         return Sample.Builder.fromSample(sample).withRelationships(relationshipList).build();
     }
 
-    private Sample handleCharacteristics(Map<String, String> characteristics, Sample sample) {
+    private Sample handleCharacteristics(Map<String, String> characteristics, Sample sample, Attribute descriptionAttribute) {
         List<Attribute> attributes = new ArrayList<>();
-        characteristics.forEach((key, value) -> attributes.add
-                (new Attribute.Builder(trimmedKey(key), value).build()));
+        characteristics.forEach((key, value) -> {
+            if (keyContainsAnythingApartFromText(key)) {
+                final String attributeText = valueMinusEverything(value);
+                final String unit = getUnitFromValue(value);
+
+                attributes.add
+                        (new Attribute.Builder(trimmedKey(key), attributeText).withUnit(unit).withTag("attribute").build());
+            } else {
+                attributes.add
+                        (new Attribute.Builder(trimmedKey(key), value).withTag("attribute").build());
+            }
+        });
+
+        attributes.add(descriptionAttribute);
 
         return Sample.Builder.fromSample(sample).withAttributes(attributes).build();
+    }
+
+    private boolean keyContainsAnythingApartFromText(String key) {
+        return key.contains("#");
+    }
+
+    private String getUnitFromValue(String value) {
+        int index = value.indexOf("#");
+
+        if (index != -1) return value.substring(value.indexOf("#") + 1);
+        else return null;
+    }
+
+    private String valueMinusEverything(String value) {
+        int index = value.indexOf("#");
+
+        if (index != -1)
+            return value.substring(0, value.indexOf("#"));
+        else return value;
     }
 
     private String trimmedKey(String key) {

@@ -34,6 +34,7 @@ import uk.ac.ebi.biosamples.BioSamplesProperties;
 import uk.ac.ebi.biosamples.model.JsonLDDataCatalog;
 import uk.ac.ebi.biosamples.model.JsonLDDataset;
 import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.auth.LoginWays;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.*;
 
@@ -192,6 +193,15 @@ public class SampleHtmlController {
 
   @GetMapping(value = "/uploadLogin")
   public String login(Model model, HttpServletRequest request, HttpServletResponse response) {
+    LoginWays[] loginWays = LoginWays.values();
+    List<String> logins = new ArrayList<>();
+
+    for(LoginWays loginWay: loginWays) {
+      logins.add(loginWay.toString());
+    }
+
+    model.addAttribute("ways", logins);
+
     return "uploadLogin";
   }
 

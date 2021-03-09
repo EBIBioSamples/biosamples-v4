@@ -6,6 +6,7 @@ import java.util.Objects;
 public class AuthRequest implements Serializable {
     private String userName;
     private String password;
+    private String loginWay;
 
     @Override
     public boolean equals(Object o) {
@@ -34,6 +35,12 @@ public class AuthRequest implements Serializable {
         this.password = password;
     }
 
+    public AuthRequest(String userName, String password, String loginWay) {
+        this.userName = userName;
+        this.password = password;
+        this.loginWay = loginWay;
+    }
+
     public AuthRequest() {
     }
 
@@ -43,5 +50,13 @@ public class AuthRequest implements Serializable {
 
     public String getPassword() {
         return password;
+    }
+
+    public String getLoginWay() {
+        return loginWay;
+    }
+
+    public void setLoginWay(String loginWay) {
+        this.loginWay = loginWay;
     }
 }

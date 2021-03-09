@@ -421,13 +421,13 @@ public class SamplesRestController {
         return new ResponseEntity<>(
             "Sample already exists, use POST only for new submissions", HttpStatus.BAD_REQUEST);
       } else {
-        sample = sampleService.store(sample, false);
+        sample = sampleService.store(sample, false, "");
         final Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
 
         return ResponseEntity.ok(sampleResource.getContent().getAccession());
       }
     } else {
-      sample = sampleService.store(sample, false);
+      sample = sampleService.store(sample, false, "");
       final Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
 
       return ResponseEntity.created(URI.create(sampleResource.getLink("self").getHref()))
@@ -451,21 +451,42 @@ public class SamplesRestController {
     final ObjectMapper jsonMapper = new ObjectMapper();
     final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
 
+    final String webinSubmissionAccountId = sample.getWebinSubmissionAccountId();
+    final String domain = sample.getDomain();
+
     if (authProvider.equalsIgnoreCase("WEBIN")) {
+      if (sample.hasAccession()) {
+        throw new SampleWithAccessionSumbissionException();
+      }
+
+      if (domain != null && webinSubmissionAccountId != null) {
+        throw new SampleWithBothWebinIdAndDomainException();
+      }
+
       final Authentication authentication = bearerTokenExtractor.extract(request);
       final SubmissionAccount webinAccount = bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal())).getBody();
+      final String webinId = webinSubmissionAccountId;
 
-      if (!sample.getWebinSubmissionAccountId().equalsIgnoreCase(webinAccount.getId())) {
+      if (webinId == null) {
+        log.info("No WEBIN ID in sample " + webinId);
+        throw new WebinUserNotPresentException();
+      }
+
+      if (!webinId.equalsIgnoreCase(webinAccount.getId())) {
         throw new WebinUserUnauthorizedException();
       }
 
-      sample = Sample.Builder.fromSample(sample).withWebinSubmissionAccountId(sample.getWebinSubmissionAccountId()).build();
+      sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample);
     } else {
       if (sample.hasAccession() && !bioSamplesAapService.isWriteSuperUser()) {
         // Throw an error only if the user is not a super user and is trying to post a sample
         // with an
         // accession
         throw new SampleWithAccessionSumbissionException();
+      }
+
+      if (webinSubmissionAccountId != null && domain != null) {
+        throw new SampleWithBothWebinIdAndDomainException();
       }
 
       sample = bioSamplesAapService.handleSampleDomain(sample);
@@ -520,7 +541,7 @@ public class SamplesRestController {
     	}
     }*/
 
-    sample = sampleService.store(sample, false);
+    sample = sampleService.store(sample, false, authProvider);
 
     // assemble a resource to return
     Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample, this.getClass());
@@ -559,7 +580,19 @@ public class SamplesRestController {
 
   @ResponseStatus(
           value = HttpStatus.UNAUTHORIZED,
-          reason = "WEBIN Id in sample doesn't match Webin Id in request header")
-  private static class WebinUserUnauthorizedException extends RuntimeException {
+          reason = "WEBIN Submission ID in sample doesn't match Webin Submission ID in request header")
+  public static class WebinUserUnauthorizedException extends RuntimeException {
+  }
+
+  @ResponseStatus(
+          value = HttpStatus.BAD_REQUEST,
+          reason = "Sample must provide the WEBIN ID if authentication method chosen is WEBIN Authentication")
+  public static class WebinUserNotPresentException extends RuntimeException {
+  }
+
+  @ResponseStatus(
+          value = HttpStatus.BAD_REQUEST,
+          reason = "Sample must not have both domain and WEBIN Submission ID. Please specify WEBIN Submission ID if authentication method chosen is WEBIN Authentication")
+  public static class SampleWithBothWebinIdAndDomainException extends RuntimeException {
   }
 }

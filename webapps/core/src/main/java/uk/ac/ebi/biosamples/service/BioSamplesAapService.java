@@ -185,7 +185,7 @@ public class BioSamplesAapService {
         // sample.getExternalReferences(),
         //						sample.getOrganizations(), sample.getContacts(), sample.getPublications());
         sample =
-            Sample.Builder.fromSample(sample).withDomain(usersDomains.iterator().next()).build();
+            Sample.Builder.fromSample(sample).withDomain(usersDomains.iterator().next()).withNoWebinSubmissionAccountId().build();
       } else {
         // if the sample doesn't have a domain, and we can't guess one, then end
         throw new DomainMissingException();
