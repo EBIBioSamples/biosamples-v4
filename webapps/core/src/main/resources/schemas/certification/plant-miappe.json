@@ -41,7 +41,7 @@
         "properties": {
           "text": {
             "type": "string",
-            "pattern": "(^.*[+-]?[0-9]+.?[0-9]*.*$)|(^not collected$)|(^not provided$)|(^restricted access$)"
+            "pattern": "(^.*[+-]?[0-9]+.?[0-9]*.*$)|(^not collected$)|(^not provided$)|(^restricted access$)|(^$)"
           }
         }
       }

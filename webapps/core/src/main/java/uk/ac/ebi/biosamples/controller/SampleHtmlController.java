@@ -17,6 +17,8 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -147,6 +149,7 @@ public class SampleHtmlController {
       filtersList.addAll(Arrays.asList(filtersArray));
     }
     Collections.sort(filtersList);
+    String downloadURL = "?text=" + (text != null ? text : "") + "&filter=" + StringUtils.join(filtersList, "&filter=");
 
     JsonLDDataset jsonLDDataset = jsonLDService.getBioSamplesDataset();
 
@@ -156,6 +159,7 @@ public class SampleHtmlController {
     model.addAttribute("filters", filtersList);
     model.addAttribute("paginations", getPaginations(pageSample, uriBuilder));
     model.addAttribute("jsonLD", jsonLDService.jsonLDToString(jsonLDDataset));
+    model.addAttribute("downloadURL", downloadURL);
     //    model.addAttribute(
     //        "facets",
     //        new LazyContextVariable<List<Facet>>() {
