@@ -45,21 +45,21 @@ import uk.ac.ebi.biosamples.service.CustomInstantSerializer;
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonPropertyOrder({
-        "name",
-        "accession",
-        "domain",
-        "webinSubmissionAccountId",
-        "release",
-        "update",
-        "submitted",
-        "taxId",
-        "characteristics",
-        "relationships",
-        "externalReferences",
-        "releaseDate",
-        "updateDate",
-        "submittedDate",
-        "submittedVia"
+  "name",
+  "accession",
+  "domain",
+  "webinSubmissionAccountId",
+  "release",
+  "update",
+  "submitted",
+  "taxId",
+  "characteristics",
+  "relationships",
+  "externalReferences",
+  "releaseDate",
+  "updateDate",
+  "submittedDate",
+  "submittedVia"
 })
 public class Sample implements Comparable<Sample> {
   protected String accession;
@@ -271,17 +271,17 @@ public class Sample implements Comparable<Sample> {
     // for comparison
 
     return Objects.equals(this.name, other.name)
-            && Objects.equals(this.accession, other.accession)
-            && Objects.equals(this.domain, other.domain)
-            && Objects.equals(this.webinSubmissionAccountId, other.webinSubmissionAccountId)
-            && Objects.equals(this.release, other.release)
-            && Objects.equals(this.attributes, other.attributes)
-            && Objects.equals(this.data, other.data)
-            && Objects.equals(this.relationships, other.relationships)
-            && Objects.equals(this.externalReferences, other.externalReferences)
-            && Objects.equals(this.organizations, other.organizations)
-            && Objects.equals(this.contacts, other.contacts)
-            && Objects.equals(this.publications, other.publications);
+        && Objects.equals(this.accession, other.accession)
+        && Objects.equals(this.domain, other.domain)
+        && Objects.equals(this.webinSubmissionAccountId, other.webinSubmissionAccountId)
+        && Objects.equals(this.release, other.release)
+        && Objects.equals(this.attributes, other.attributes)
+        && Objects.equals(this.data, other.data)
+        && Objects.equals(this.relationships, other.relationships)
+        && Objects.equals(this.externalReferences, other.externalReferences)
+        && Objects.equals(this.organizations, other.organizations)
+        && Objects.equals(this.contacts, other.contacts)
+        && Objects.equals(this.publications, other.publications);
   }
 
   @Override
@@ -1007,22 +1007,22 @@ public class Sample implements Comparable<Sample> {
      */
     public static Builder fromSample(Sample sample) {
       return new Builder(sample.getName(), sample.getAccession())
-              .withDomain(sample.getDomain())
-              .withWebinSubmissionAccountId(sample.getWebinSubmissionAccountId())
-              .withRelease(sample.getRelease())
-              .withUpdate(sample.getUpdate())
-              .withCreate(sample.getCreate())
-              .withSubmitted(sample.getSubmitted())
-              .withReviewed(sample.getReviewed())
-              .withAttributes(sample.getAttributes())
-              .withData(sample.getData())
-              .withRelationships(sample.getRelationships())
-              .withExternalReferences(sample.getExternalReferences())
-              .withOrganizations(sample.getOrganizations())
-              .withPublications(sample.getPublications())
-              .withCertificates(sample.getCertificates())
-              .withContacts(sample.getContacts())
-              .withSubmittedVia(sample.getSubmittedVia());
+          .withDomain(sample.getDomain())
+          .withWebinSubmissionAccountId(sample.getWebinSubmissionAccountId())
+          .withRelease(sample.getRelease())
+          .withUpdate(sample.getUpdate())
+          .withCreate(sample.getCreate())
+          .withSubmitted(sample.getSubmitted())
+          .withReviewed(sample.getReviewed())
+          .withAttributes(sample.getAttributes())
+          .withData(sample.getData())
+          .withRelationships(sample.getRelationships())
+          .withExternalReferences(sample.getExternalReferences())
+          .withOrganizations(sample.getOrganizations())
+          .withPublications(sample.getPublications())
+          .withCertificates(sample.getCertificates())
+          .withContacts(sample.getContacts())
+          .withSubmittedVia(sample.getSubmittedVia());
     }
 
     private DateTimeFormatter getFormatter() {

@@ -407,7 +407,8 @@ public class ApiDocumentationTest {
             + "}";
 
     when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(sampleWithUpdatedDate);
-    when(sampleService.store(any(Sample.class), eq(false), eq(""))).thenReturn(sampleWithUpdatedDate);
+    when(sampleService.store(any(Sample.class), eq(false), eq("")))
+        .thenReturn(sampleWithUpdatedDate);
 
     this.mockMvc
         .perform(
@@ -463,31 +464,31 @@ public class ApiDocumentationTest {
   public void post_for_validation() throws Exception {
     Sample sample = this.faker.getExampleSample();
     String sampleToSubmit =
-            "{ "
-                    + "\"name\" : \""
-                    + "fake_sample"
-                    + "\", "
-                    + "\"update\" : \""
-                    + dateTimeFormatter.format(sample.getUpdate().atOffset(ZoneOffset.UTC))
-                    + "\", "
-                    + "\"release\" : \""
-                    + dateTimeFormatter.format(sample.getRelease().atOffset(ZoneOffset.UTC))
-                    + "\", "
-                    + "\"domain\" : \"self.ExampleDomain\" "
-                    + ", "
-                    + "\"characteristics\" : {"
-                    + "\"material\" : [ {"
-                    + "\"text\" : \"cell line\","
-                    + "\"ontologyTerms\" : [ \"EFO_0000322\" ]"
-                    + "} ],"
-                    + "\"Organism\" : [ {"
-                    + "\"text\" : \"Homo sapiens\","
-                    + "\"ontologyTerms\" : [ \"9606\" ]"
-                    + "} ],"
-                    + "\"checklist\" : [ {"
-                    + "\"text\" : \"ERC100001\""
-                    + "} ]}"
-                    + "}";
+        "{ "
+            + "\"name\" : \""
+            + "fake_sample"
+            + "\", "
+            + "\"update\" : \""
+            + dateTimeFormatter.format(sample.getUpdate().atOffset(ZoneOffset.UTC))
+            + "\", "
+            + "\"release\" : \""
+            + dateTimeFormatter.format(sample.getRelease().atOffset(ZoneOffset.UTC))
+            + "\", "
+            + "\"domain\" : \"self.ExampleDomain\" "
+            + ", "
+            + "\"characteristics\" : {"
+            + "\"material\" : [ {"
+            + "\"text\" : \"cell line\","
+            + "\"ontologyTerms\" : [ \"EFO_0000322\" ]"
+            + "} ],"
+            + "\"Organism\" : [ {"
+            + "\"text\" : \"Homo sapiens\","
+            + "\"ontologyTerms\" : [ \"9606\" ]"
+            + "} ],"
+            + "\"checklist\" : [ {"
+            + "\"text\" : \"ERC100001\""
+            + "} ]}"
+            + "}";
 
     this.mockMvc
         .perform(
@@ -665,7 +666,8 @@ public class ApiDocumentationTest {
     when(sampleService.fetch(
             eq(sampleWithDomain.getAccession()), eq(Optional.empty()), any(String.class)))
         .thenReturn(Optional.of(sampleWithDomain));
-    when(sampleService.store(eq(sampleWithDomain), eq(false), eq("AAP"))).thenReturn(sampleWithDomain);
+    when(sampleService.store(eq(sampleWithDomain), eq(false), eq("AAP")))
+        .thenReturn(sampleWithDomain);
     when(aapService.handleSampleDomain(sampleWithDomain)).thenReturn(sampleWithDomain);
     when(aapService.isWriteSuperUser()).thenReturn(true);
     when(aapService.isIntegrationTestUser()).thenReturn(false);
@@ -695,7 +697,8 @@ public class ApiDocumentationTest {
     when(sampleService.fetch(
             eq(sampleWithDomain.getAccession()), eq(Optional.empty()), any(String.class)))
         .thenReturn(Optional.of(sampleWithDomain));
-    when(sampleService.store(eq(sampleWithDomain), eq(false), eq("AAP"))).thenReturn(sampleWithDomain);
+    when(sampleService.store(eq(sampleWithDomain), eq(false), eq("AAP")))
+        .thenReturn(sampleWithDomain);
     when(aapService.handleSampleDomain(sampleWithDomain)).thenReturn(sampleWithDomain);
     when(aapService.isWriteSuperUser()).thenReturn(true);
     when(aapService.isIntegrationTestUser()).thenReturn(false);

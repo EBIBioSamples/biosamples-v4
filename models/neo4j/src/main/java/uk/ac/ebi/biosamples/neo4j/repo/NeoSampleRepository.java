@@ -84,8 +84,7 @@ public class NeoSampleRepository implements AutoCloseable {
       idJoiner.add("a1");
     }
 
-    StringBuilder countQuery = new StringBuilder(query.toString())
-            .append(" RETURN COUNT(*)");
+    StringBuilder countQuery = new StringBuilder(query.toString()).append(" RETURN COUNT(*)");
     query.append(" RETURN ").append(idJoiner.toString());
     query
         .append(" ORDER BY ")

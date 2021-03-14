@@ -17,7 +17,6 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -149,7 +148,11 @@ public class SampleHtmlController {
       filtersList.addAll(Arrays.asList(filtersArray));
     }
     Collections.sort(filtersList);
-    String downloadURL = "?text=" + (text != null ? text : "") + "&filter=" + StringUtils.join(filtersList, "&filter=");
+    String downloadURL =
+        "?text="
+            + (text != null ? text : "")
+            + "&filter="
+            + StringUtils.join(filtersList, "&filter=");
 
     JsonLDDataset jsonLDDataset = jsonLDService.getBioSamplesDataset();
 
@@ -200,7 +203,7 @@ public class SampleHtmlController {
     LoginWays[] loginWays = LoginWays.values();
     List<String> logins = new ArrayList<>();
 
-    for(LoginWays loginWay: loginWays) {
+    for (LoginWays loginWay : loginWays) {
       logins.add(loginWay.toString());
     }
 

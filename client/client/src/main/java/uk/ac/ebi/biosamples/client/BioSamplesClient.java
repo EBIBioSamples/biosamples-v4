@@ -113,7 +113,7 @@ public class BioSamplesClient implements AutoCloseable {
         new SampleSubmissionService(restOperations, traverson, threadPoolExecutor);
 
     sampleCertificationService =
-            new SampleCertificationService(restOperations, traverson, threadPoolExecutor);
+        new SampleCertificationService(restOperations, traverson, threadPoolExecutor);
 
     sampleGroupSubmissionService =
         new SampleGroupSubmissionService(restOperations, traverson, threadPoolExecutor);
@@ -317,7 +317,9 @@ public class BioSamplesClient implements AutoCloseable {
   }
 
   public Collection<Resource<Sample>> certifySamples(Collection<Sample> samples) {
-    return samples.stream().map(sample -> sampleCertificationService.submit(sample, null)).collect(Collectors.toList());
+    return samples.stream()
+        .map(sample -> sampleCertificationService.submit(sample, null))
+        .collect(Collectors.toList());
   }
 
   public Iterable<Resource<Curation>> fetchCurationResourceAll() {

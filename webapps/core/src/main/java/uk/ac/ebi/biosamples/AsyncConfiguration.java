@@ -10,6 +10,7 @@
 */
 package uk.ac.ebi.biosamples;
 
+import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
@@ -27,8 +28,6 @@ import org.springframework.web.context.request.async.TimeoutCallableProcessingIn
 import org.springframework.web.servlet.config.annotation.AsyncSupportConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
-
-import java.util.concurrent.Callable;
 
 @Configuration
 @EnableAsync
@@ -53,13 +52,15 @@ public class AsyncConfiguration implements AsyncConfigurer {
 
   /** Configure async support for REST calls */
   @Bean
-  public WebMvcConfigurer webMvcConfigurerConfigurer(AsyncTaskExecutor taskExecutor, CallableProcessingInterceptor callableProcessingInterceptor) {
+  public WebMvcConfigurer webMvcConfigurerConfigurer(
+      AsyncTaskExecutor taskExecutor, CallableProcessingInterceptor callableProcessingInterceptor) {
     return new WebMvcConfigurerAdapter() {
       @Override
       public void configureAsyncSupport(AsyncSupportConfigurer configurer) {
-        configurer.setDefaultTimeout(300000)
-                .setTaskExecutor(taskExecutor)
-                .registerCallableInterceptors(callableProcessingInterceptor);
+        configurer
+            .setDefaultTimeout(300000)
+            .setTaskExecutor(taskExecutor)
+            .registerCallableInterceptors(callableProcessingInterceptor);
         super.configureAsyncSupport(configurer);
       }
     };

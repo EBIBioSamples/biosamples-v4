@@ -16,6 +16,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,8 +38,6 @@ import uk.ac.ebi.biosamples.model.ga4gh.phenopacket.PhenopacketConverter;
 import uk.ac.ebi.biosamples.service.*;
 import uk.ac.ebi.biosamples.service.certification.CertifyService;
 import uk.ac.ebi.biosamples.utils.LinkUtils;
-
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * Primary controller for REST operations both in JSON and XML and both read and write.
@@ -201,12 +200,14 @@ public class SampleRestController {
   @PreAuthorize("isAuthenticated()")
   @PutMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
   public Resource<Sample> put(
-          HttpServletRequest request,
-          @PathVariable String accession,
-          @RequestBody Sample sample,
-          @RequestParam(name = "setfulldetails", required = false, defaultValue = "true") boolean setFullDetails,
-          @RequestParam(name = "authProvider", required = false, defaultValue = "AAP") String authProvider)
-          throws JsonProcessingException {
+      HttpServletRequest request,
+      @PathVariable String accession,
+      @RequestBody Sample sample,
+      @RequestParam(name = "setfulldetails", required = false, defaultValue = "true")
+          boolean setFullDetails,
+      @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
+          String authProvider)
+      throws JsonProcessingException {
     final ObjectMapper jsonMapper = new ObjectMapper();
     final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
     List<Certificate> certificates = new ArrayList<>();
@@ -227,7 +228,10 @@ public class SampleRestController {
 
     if (authProvider.equalsIgnoreCase("WEBIN")) {
       final Authentication authentication = bearerTokenExtractor.extract(request);
-      final SubmissionAccount webinAccount = bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal())).getBody();
+      final SubmissionAccount webinAccount =
+          bioSamplesWebinAuthenticationService
+              .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
+              .getBody();
       final String webinId = sample.getWebinSubmissionAccountId();
 
       if (sample.getDomain() != null) {
@@ -255,7 +259,7 @@ public class SampleRestController {
         if (bioSamplesAapService.isOriginalSubmitter(sample)) {
           sample = Sample.Builder.fromSample(sample).build();
         } else if (bioSamplesAapService.isWriteSuperUser()
-                || bioSamplesAapService.isIntegrationTestUser()) {
+            || bioSamplesAapService.isIntegrationTestUser()) {
           sample = Sample.Builder.fromSample(sample).build();
         } else {
           sample = Sample.Builder.fromSample(sample).withNoData().build();
@@ -268,11 +272,11 @@ public class SampleRestController {
 
     SubmittedViaType submittedVia =
         sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
-    sample = Sample.Builder.fromSample(sample).withUpdate(update).withSubmittedVia(submittedVia).build();
+    sample =
+        Sample.Builder.fromSample(sample).withUpdate(update).withSubmittedVia(submittedVia).build();
 
     // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
-    if (!bioSamplesAapService.isWriteSuperUser())
-      schemaValidationService.validate(sample);
+    if (!bioSamplesAapService.isWriteSuperUser()) schemaValidationService.validate(sample);
 
     final boolean isFirstTimeMetadataAdded = sampleService.beforeStore(sample);
 

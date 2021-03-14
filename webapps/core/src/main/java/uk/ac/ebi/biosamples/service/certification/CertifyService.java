@@ -52,29 +52,32 @@ public class CertifyService {
     return getCertificatesFromCertificationResults(certificationResults);
   }
 
-  public List<Certificate> certify(String data, boolean isJustCertification, String inputChecklist) {
+  public List<Certificate> certify(
+      String data, boolean isJustCertification, String inputChecklist) {
     Set<CertificationResult> certificationResults = new LinkedHashSet<>();
     SampleDocument rawSampleDocument = identifier.identify(data);
-    certificationResults.add(certifier.certify(rawSampleDocument, isJustCertification, inputChecklist));
+    certificationResults.add(
+        certifier.certify(rawSampleDocument, isJustCertification, inputChecklist));
     return getCertificatesFromCertificationResults(certificationResults);
   }
 
-  private List<Certificate> getCertificatesFromCertificationResults(Set<CertificationResult> certificationResults) {
+  private List<Certificate> getCertificatesFromCertificationResults(
+      Set<CertificationResult> certificationResults) {
     List<Certificate> certificates = new ArrayList<>();
 
     certificationResults.forEach(
-            certificationResult ->
-                    certificationResult
-                            .getCertificates()
-                            .forEach(
-                                    certificate -> {
-                                      final Checklist checklist = certificate.getChecklist();
+        certificationResult ->
+            certificationResult
+                .getCertificates()
+                .forEach(
+                    certificate -> {
+                      final Checklist checklist = certificate.getChecklist();
 
-                                      final Certificate cert =
-                                              Certificate.build(
-                                                      checklist.getName(), checklist.getVersion(), checklist.getFileName());
-                                      certificates.add(cert);
-                                    }));
+                      final Certificate cert =
+                          Certificate.build(
+                              checklist.getName(), checklist.getVersion(), checklist.getFileName());
+                      certificates.add(cert);
+                    }));
     return certificates;
   }
 
@@ -113,8 +116,7 @@ public class CertifyService {
   }
 
   public String getCertificateByCertificateName(String certificateName) throws IOException {
-    final Optional<Checklist> matchedChecklist =
-        getChecklistByCertificateName(certificateName);
+    final Optional<Checklist> matchedChecklist = getChecklistByCertificateName(certificateName);
     String fileName = null;
 
     if (matchedChecklist.isPresent()) {
@@ -133,8 +135,7 @@ public class CertifyService {
   }
 
   public String getCertificateFileNameByCertificateName(String certificateName) {
-    final Optional<Checklist> matchedChecklist =
-        getChecklistByCertificateName(certificateName);
+    final Optional<Checklist> matchedChecklist = getChecklistByCertificateName(certificateName);
     String fileName = null;
 
     if (matchedChecklist.isPresent()) {
@@ -173,8 +174,7 @@ public class CertifyService {
 
   public List<String> getAllCertificateNames() {
     return configLoader.config.getChecklists().stream()
-            .map(
-                    checklist -> checklist.getName() /*+ "-" + checklist.getVersion()*/)
-            .collect(Collectors.toList());
+        .map(checklist -> checklist.getName() /*+ "-" + checklist.getVersion()*/)
+        .collect(Collectors.toList());
   }
 }
