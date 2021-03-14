@@ -23,6 +23,7 @@ public class SchemaValidationControllerAdvice extends ResponseEntityExceptionHan
 
   @ExceptionHandler(value = {SchemaValidationException.class})
   protected ResponseEntity<Object> handleConflict(RuntimeException e, WebRequest request) {
-    return handleExceptionInternal(e, e.getMessage(), new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    return handleExceptionInternal(
+        e, e.getMessage(), new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
   }
 }

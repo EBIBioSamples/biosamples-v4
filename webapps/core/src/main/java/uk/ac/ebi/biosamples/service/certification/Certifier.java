@@ -10,6 +10,12 @@
 */
 package uk.ac.ebi.biosamples.service.certification;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import org.everit.json.schema.ValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,13 +23,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import uk.ac.ebi.biosamples.model.certification.*;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class Certifier {
@@ -50,7 +49,8 @@ public class Certifier {
     return certify(sampleDocument, Collections.EMPTY_LIST, isJustCertification);
   }
 
-  public CertificationResult certify(SampleDocument sampleDocument, boolean isJustCertification, String inputChecklist) {
+  public CertificationResult certify(
+      SampleDocument sampleDocument, boolean isJustCertification, String inputChecklist) {
     if (sampleDocument == null) {
       String message = "cannot certify a null sampleDocument";
       LOG.warn(message);
@@ -135,10 +135,10 @@ public class Certifier {
   }
 
   private CertificationResult certify(
-          SampleDocument sampleDocument,
-          List<CurationResult> curationResults,
-          boolean isJustCertification,
-          String inputChecklist) {
+      SampleDocument sampleDocument,
+      List<CurationResult> curationResults,
+      boolean isJustCertification,
+      String inputChecklist) {
     String accession = getAccession(sampleDocument);
     CertificationResult certificationResult = new CertificationResult(accession);
 
@@ -150,63 +150,66 @@ public class Certifier {
     boolean certified = false;
     String suggestionMessage = "";
 
-    Optional<Checklist> filteredChecklist = configLoader.config.getChecklists().stream().filter(checklist -> checklist.getName().equalsIgnoreCase(inputChecklist)).findAny();
+    Optional<Checklist> filteredChecklist =
+        configLoader.config.getChecklists().stream()
+            .filter(checklist -> checklist.getName().equalsIgnoreCase(inputChecklist))
+            .findAny();
 
     if (filteredChecklist.isPresent()) {
       Checklist checklist = filteredChecklist.get();
 
       try {
-      validator.validate(checklist.getFileName(), sampleDocument.getDocument());
-      EVENTS.info(
-              String.format("%s validation successful against %s", message, checklist.getID()));
-      certified = true;
-      certificationResult.add(new Certificate(sampleDocument, curationResults, checklist));
-      EVENTS.info(String.format("%s issued certificate %s", message, checklist.getID()));
-    } catch (IOException ioe) {
-      LOG.error(String.format("cannot open schema at %s", checklist.getFileName()), ioe);
-    } catch (ValidationException ve) {
-      EVENTS.info(String.format("%s validation failed against %s", message, checklist.getID()));
+        validator.validate(checklist.getFileName(), sampleDocument.getDocument());
+        EVENTS.info(
+            String.format("%s validation successful against %s", message, checklist.getID()));
+        certified = true;
+        certificationResult.add(new Certificate(sampleDocument, curationResults, checklist));
+        EVENTS.info(String.format("%s issued certificate %s", message, checklist.getID()));
+      } catch (IOException ioe) {
+        LOG.error(String.format("cannot open schema at %s", checklist.getFileName()), ioe);
+      } catch (ValidationException ve) {
+        EVENTS.info(String.format("%s validation failed against %s", message, checklist.getID()));
 
-      if (!isJustCertification && checklist.isBlock()) {
-        List<Recommendation> recommendations = configLoader.config.getRecommendations();
-        List<Recommendation> matchedRecommendations = new ArrayList<>();
-        List<Suggestion> matchedSuggestions = new ArrayList<>();
+        if (!isJustCertification && checklist.isBlock()) {
+          List<Recommendation> recommendations = configLoader.config.getRecommendations();
+          List<Recommendation> matchedRecommendations = new ArrayList<>();
+          List<Suggestion> matchedSuggestions = new ArrayList<>();
 
-        if (recommendations != null && recommendations.size() > 0) {
-          matchedRecommendations =
-                  configLoader.config.getRecommendations().stream()
-                          .filter(
-                                  recommendation ->
-                                          recommendation.getCertificationChecklistID().equals(checklist.getID()))
-                          .collect(Collectors.toList());
+          if (recommendations != null && recommendations.size() > 0) {
+            matchedRecommendations =
+                configLoader.config.getRecommendations().stream()
+                    .filter(
+                        recommendation ->
+                            recommendation.getCertificationChecklistID().equals(checklist.getID()))
+                    .collect(Collectors.toList());
+          }
+
+          if (matchedRecommendations.size() > 0) {
+            matchedSuggestions =
+                matchedRecommendations.stream()
+                    .map(Recommendation::getSuggestions)
+                    .flatMap(List::stream)
+                    .collect(Collectors.toList());
+          }
+
+          if (matchedSuggestions.size() > 0) {
+            suggestionMessage =
+                matchedSuggestions.stream()
+                    .map(Suggestion::getComment)
+                    .collect(Collectors.joining());
+          }
+
+          throw new SampleChecklistValidationFailureException(
+              checklist.getID(), suggestionMessage, ve);
         }
-
-        if (matchedRecommendations.size() > 0) {
-          matchedSuggestions =
-                  matchedRecommendations.stream()
-                          .map(Recommendation::getSuggestions)
-                          .flatMap(List::stream)
-                          .collect(Collectors.toList());
-        }
-
-        if (matchedSuggestions.size() > 0) {
-          suggestionMessage =
-                  matchedSuggestions.stream()
-                          .map(Suggestion::getComment)
-                          .collect(Collectors.joining());
-        }
-
-        throw new SampleChecklistValidationFailureException(
-                checklist.getID(), suggestionMessage, ve);
       }
+    } else {
+      throw new SampleChecklistMissingException(inputChecklist);
     }
-  } else {
-    throw new SampleChecklistMissingException(inputChecklist);
-  }
 
     if (!certified) {
-    EVENTS.info(String.format("%s not certified", message));
-  }
+      EVENTS.info(String.format("%s not certified", message));
+    }
 
     return certificationResult;
   }
@@ -241,8 +244,7 @@ public class Certifier {
 
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
   public static class SampleChecklistMissingException extends RuntimeException {
-    public SampleChecklistMissingException(
-            String inputChecklist) {
+    public SampleChecklistMissingException(String inputChecklist) {
       super("Checklist by name " + inputChecklist + " doesn't exist");
     }
   }

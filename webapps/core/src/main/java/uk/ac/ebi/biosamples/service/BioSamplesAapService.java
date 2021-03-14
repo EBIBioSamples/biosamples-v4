@@ -10,6 +10,10 @@
 */
 package uk.ac.ebi.biosamples.service;
 
+import java.time.Instant;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -30,11 +34,6 @@ import uk.ac.ebi.tsc.aap.client.repo.DomainService;
 import uk.ac.ebi.tsc.aap.client.repo.TokenService;
 import uk.ac.ebi.tsc.aap.client.security.UserAuthentication;
 
-import java.time.Instant;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
-
 @Service
 public class BioSamplesAapService {
 
@@ -47,9 +46,11 @@ public class BioSamplesAapService {
   private final DomainService domainService;
 
   public BioSamplesAapService(
-          RestTemplateBuilder restTemplateBuilder,
-          BioSamplesProperties bioSamplesProperties,
-          SampleService sampleService, TokenService tokenService, DomainService domainService) {
+      RestTemplateBuilder restTemplateBuilder,
+      BioSamplesProperties bioSamplesProperties,
+      SampleService sampleService,
+      TokenService tokenService,
+      DomainService domainService) {
     traverson =
         new Traverson(bioSamplesProperties.getBiosamplesClientAapUri(), MediaTypes.HAL_JSON);
     this.tokenService = tokenService;
@@ -72,7 +73,10 @@ public class BioSamplesAapService {
     List<String> domains = new ArrayList<>();
 
     domainService.getMyDomains(token).forEach(domain -> log.info(domain.getDomainName()));
-    domains.addAll(domainService.getMyDomains(token).stream().map(domain -> domain.getDomainName()).collect(Collectors.toList()));
+    domains.addAll(
+        domainService.getMyDomains(token).stream()
+            .map(domain -> domain.getDomainName())
+            .collect(Collectors.toList()));
 
     return domains;
   }
@@ -185,7 +189,10 @@ public class BioSamplesAapService {
         // sample.getExternalReferences(),
         //						sample.getOrganizations(), sample.getContacts(), sample.getPublications());
         sample =
-            Sample.Builder.fromSample(sample).withDomain(usersDomains.iterator().next()).withNoWebinSubmissionAccountId().build();
+            Sample.Builder.fromSample(sample)
+                .withDomain(usersDomains.iterator().next())
+                .withNoWebinSubmissionAccountId()
+                .build();
       } else {
         // if the sample doesn't have a domain, and we can't guess one, then end
         throw new DomainMissingException();

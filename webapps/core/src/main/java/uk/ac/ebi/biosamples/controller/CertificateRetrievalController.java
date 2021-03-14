@@ -35,37 +35,38 @@ public class CertificateRetrievalController {
   @Autowired private CertifyService certifyService;
   JsonParser jp = new JsonParser();
 
-  @GetMapping(value = "/{certificateName}",
-          produces = {MediaType.APPLICATION_JSON_VALUE})
-  public ResponseEntity<String> getCertificate(
-          @PathVariable String certificateName) throws IOException {
+  @GetMapping(
+      value = "/{certificateName}",
+      produces = {MediaType.APPLICATION_JSON_VALUE})
+  public ResponseEntity<String> getCertificate(@PathVariable String certificateName)
+      throws IOException {
     log.info("Fetching certificate with name " + certificateName);
 
     JsonElement je = jp.parse(certifyService.getCertificateByCertificateName(certificateName));
     String prettyJsonString = getGson().toJson(je);
 
     return ResponseEntity.ok()
-            .header(
-                    HttpHeaders.CONTENT_DISPOSITION,
-                    "attachment; filename=\""
-                            + certifyService.getCertificateFileNameByCertificateName(certificateName)
-                            + "\"")
-            .body(prettyJsonString);
+        .header(
+            HttpHeaders.CONTENT_DISPOSITION,
+            "attachment; filename=\""
+                + certifyService.getCertificateFileNameByCertificateName(certificateName)
+                + "\"")
+        .body(prettyJsonString);
   }
 
   @GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<Resources<Resource<String>>> getAllCertificates() {
     return ResponseEntity.ok()
-            .body(
-                    new Resources<>(
-                            certifyService.getAllCertificates().stream()
-                                    .map(certificate -> new Resource<>(getGson().toJson(jp.parse(certificate))))
-                                    .collect(Collectors.toList())));
+        .body(
+            new Resources<>(
+                certifyService.getAllCertificates().stream()
+                    .map(certificate -> new Resource<>(getGson().toJson(jp.parse(certificate))))
+                    .collect(Collectors.toList())));
   }
 
   @GetMapping(
-          value = "/names",
-          produces = {MediaType.APPLICATION_JSON_VALUE})
+      value = "/names",
+      produces = {MediaType.APPLICATION_JSON_VALUE})
   public List<String> getAllCertificateNames() {
     return certifyService.getAllCertificateNames();
   }

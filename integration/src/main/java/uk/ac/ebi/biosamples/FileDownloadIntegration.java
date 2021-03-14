@@ -12,6 +12,12 @@ package uk.ac.ebi.biosamples;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,33 +25,24 @@ import org.springframework.stereotype.Component;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
 import uk.ac.ebi.biosamples.utils.IntegrationTestFailException;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.net.URL;
-import java.nio.charset.Charset;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-
 @Component
 public class FileDownloadIntegration extends AbstractIntegration {
   private Logger log = LoggerFactory.getLogger(this.getClass());
   private BioSamplesProperties clientProperties;
 
-  public FileDownloadIntegration(
-      BioSamplesClient client,
-      BioSamplesProperties clientProperties) {
+  public FileDownloadIntegration(BioSamplesClient client, BioSamplesProperties clientProperties) {
     super(client);
     this.clientProperties = clientProperties;
   }
 
   @Override
   protected void phaseOne() {
-    //nothing to do here
+    // nothing to do here
   }
 
   @Override
   protected void phaseTwo() {
-    //nothing to do here
+    // nothing to do here
   }
 
   @Override
@@ -54,11 +51,13 @@ public class FileDownloadIntegration extends AbstractIntegration {
     try (ZipInputStream inputStream = new ZipInputStream(new URL(sampleDownloadUrl).openStream())) {
       ZipEntry entry = inputStream.getNextEntry();
       if (entry == null || !"samples.json".equals(entry.getName())) {
-        throw new IntegrationTestFailException("Could not download zipped samples.json", Phase.THREE);
+        throw new IntegrationTestFailException(
+            "Could not download zipped samples.json", Phase.THREE);
       }
 
       StringWriter writer = new StringWriter();
-      IOUtils.copy(inputStream, writer, Charset.defaultCharset());JsonNode samples = new ObjectMapper().readTree(writer.toString());
+      IOUtils.copy(inputStream, writer, Charset.defaultCharset());
+      JsonNode samples = new ObjectMapper().readTree(writer.toString());
       if (!samples.isArray()) {
         throw new IntegrationTestFailException("Invalid format in samples.json", Phase.THREE);
       }
@@ -69,11 +68,11 @@ public class FileDownloadIntegration extends AbstractIntegration {
 
   @Override
   protected void phaseFour() {
-    //nothing to do here
+    // nothing to do here
   }
 
   @Override
   protected void phaseFive() {
-    //nothing to do here
+    // nothing to do here
   }
 }

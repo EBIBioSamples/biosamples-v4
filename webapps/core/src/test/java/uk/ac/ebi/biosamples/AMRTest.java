@@ -36,7 +36,6 @@ import org.springframework.boot.test.json.JacksonTester;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -260,7 +259,8 @@ public class AMRTest {
     when(bioSamplesAapService.handleStructuredDataDomain(any(Sample.class))).thenReturn(testSample);
 
     ArgumentCaptor<Sample> generatedSample = ArgumentCaptor.forClass(Sample.class);
-    when(sampleService.store(generatedSample.capture(), eq(false), eq("AAP"))).thenReturn(testSample);
+    when(sampleService.store(generatedSample.capture(), eq(false), eq("AAP")))
+        .thenReturn(testSample);
 
     mockMvc.perform(post("/samples").contentType(MediaType.APPLICATION_JSON_VALUE).content(json));
 

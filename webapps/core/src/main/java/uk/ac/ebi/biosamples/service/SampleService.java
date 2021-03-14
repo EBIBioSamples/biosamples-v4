@@ -10,6 +10,8 @@
 */
 package uk.ac.ebi.biosamples.service;
 
+import java.time.Instant;
+import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,9 +31,6 @@ import uk.ac.ebi.biosamples.mongo.service.MongoSampleToSampleConverter;
 import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleConverter;
 import uk.ac.ebi.biosamples.mongo.service.SampleToMongoSampleStructuredDataCentricConverter;
 import uk.ac.ebi.biosamples.solr.service.SolrSampleService;
-
-import java.time.Instant;
-import java.util.*;
 
 /**
  * Service layer business logic for centralising repository access and conversions between different
@@ -163,7 +162,8 @@ public class SampleService {
     return store(sample, false, isFirstTimeMetadataAdded, authProvider);
   }
 
-  public Sample store(Sample sample, boolean sampleGroup, boolean isFirstTimeMetadataAdded, String authProvider) {
+  public Sample store(
+      Sample sample, boolean sampleGroup, boolean isFirstTimeMetadataAdded, String authProvider) {
     Collection<String> errors = sampleValidator.validate(sample);
     if (!errors.isEmpty()) {
       log.error("Sample validation failed : {}", errors);
@@ -179,7 +179,9 @@ public class SampleService {
         existingRelationshipTargets =
             getExistingRelationshipTargets(sample.getAccession(), mongoOldSample);
 
-        sample = compareWithExistingAndUpdateSample(sample, oldSample, isFirstTimeMetadataAdded, authProvider);
+        sample =
+            compareWithExistingAndUpdateSample(
+                sample, oldSample, isFirstTimeMetadataAdded, authProvider);
       } else {
         log.error("Trying to update sample not in database, accession: {}", sample.getAccession());
       }
@@ -299,7 +301,6 @@ public class SampleService {
     public SampleValidationException(String message) {
       super(message);
     }
-
   }
 
   private List<String> getExistingRelationshipTargets(
@@ -315,7 +316,10 @@ public class SampleService {
   }
 
   private Sample compareWithExistingAndUpdateSample(
-      Sample sampleToUpdate, Sample oldSample, boolean isFirstTimeMetadataAdded, String authProvider) {
+      Sample sampleToUpdate,
+      Sample oldSample,
+      boolean isFirstTimeMetadataAdded,
+      String authProvider) {
     // compare with existing version and check what fields have changed
     if (sampleToUpdate.equals(oldSample)) {
       log.info("New sample is similar to the old sample, accession: {}", oldSample.getAccession());
@@ -328,8 +332,9 @@ public class SampleService {
 
     return Sample.Builder.fromSample(sampleToUpdate)
         .withCreate(defineCreateDate(sampleToUpdate, oldSample, authProvider))
-        .withSubmitted(defineSubmittedDate(sampleToUpdate, oldSample, isFirstTimeMetadataAdded, authProvider))
-        //.withUpdate(defineUpdatedDate(sampleToUpdate, oldSample))
+        .withSubmitted(
+            defineSubmittedDate(sampleToUpdate, oldSample, isFirstTimeMetadataAdded, authProvider))
+        // .withUpdate(defineUpdatedDate(sampleToUpdate, oldSample))
         .build();
   }
 
@@ -343,14 +348,15 @@ public class SampleService {
     }
   }
 
-  private Instant defineCreateDate(final Sample sampleToUpdate, final Sample oldSample, String authProvider) {
+  private Instant defineCreateDate(
+      final Sample sampleToUpdate, final Sample oldSample, String authProvider) {
     final String domain = sampleToUpdate.getDomain();
 
     if (!isWebinAuthorization(authProvider)) {
       if (isPipelineNcbiDomain(domain)) {
         return sampleToUpdate.getCreate() != null
-                ? sampleToUpdate.getCreate()
-                : (oldSample.getCreate() != null ? oldSample.getCreate() : oldSample.getUpdate());
+            ? sampleToUpdate.getCreate()
+            : (oldSample.getCreate() != null ? oldSample.getCreate() : oldSample.getUpdate());
       } else if (isPipelineEnaDomain(domain)) {
         return (oldSample.getCreate() != null) ? oldSample.getCreate() : sampleToUpdate.getCreate();
       }
@@ -360,7 +366,7 @@ public class SampleService {
   }
 
   public boolean isWebinAuthorization(String authProviderIdentifier) {
-    return authProviderIdentifier!= null && authProviderIdentifier.equalsIgnoreCase("WEBIN");
+    return authProviderIdentifier != null && authProviderIdentifier.equalsIgnoreCase("WEBIN");
   }
 
   private boolean isPipelineEnaDomain(String domain) {
@@ -374,24 +380,27 @@ public class SampleService {
   }
 
   private Instant defineSubmittedDate(
-          final Sample sampleToUpdate, final Sample oldSample, boolean isFirstTimeMetadataAdded, String authProvider) {
+      final Sample sampleToUpdate,
+      final Sample oldSample,
+      boolean isFirstTimeMetadataAdded,
+      String authProvider) {
     final String domain = sampleToUpdate.getDomain();
 
     if (isPipelineNcbiDomain(domain)) {
       return sampleToUpdate.getSubmitted() != null
-              ? sampleToUpdate.getSubmitted()
-              : (oldSample.getSubmitted() != null ? oldSample.getSubmitted() : oldSample.getCreate());
+          ? sampleToUpdate.getSubmitted()
+          : (oldSample.getSubmitted() != null ? oldSample.getSubmitted() : oldSample.getCreate());
     } else if (isPipelineEnaDomain(domain)) {
       return (oldSample.getSubmitted() != null)
-              ? oldSample.getSubmitted()
-              : sampleToUpdate.getSubmitted();
+          ? oldSample.getSubmitted()
+          : sampleToUpdate.getSubmitted();
     } else {
       if (isFirstTimeMetadataAdded) {
         return sampleToUpdate.getSubmitted();
       } else {
         return oldSample.getSubmitted() != null
-                ? oldSample.getSubmitted()
-                : (oldSample.getCreate() != null ? oldSample.getCreate() : oldSample.getUpdate());
+            ? oldSample.getSubmitted()
+            : (oldSample.getCreate() != null ? oldSample.getCreate() : oldSample.getUpdate());
       }
     }
   }

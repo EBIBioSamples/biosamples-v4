@@ -12,6 +12,14 @@ package uk.ac.ebi.biosamples.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.net.URI;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +41,6 @@ import org.springframework.security.oauth2.provider.authentication.BearerTokenEx
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
-import uk.ac.ebi.biosamples.model.Certificate;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
@@ -43,15 +50,6 @@ import uk.ac.ebi.biosamples.service.*;
 import uk.ac.ebi.biosamples.service.certification.CertifyService;
 import uk.ac.ebi.biosamples.solr.repo.CursorArrayList;
 import uk.ac.ebi.biosamples.utils.LinkUtils;
-
-import javax.servlet.http.HttpServletRequest;
-import java.net.URI;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * Primary controller for REST operations both in JSON and XML and both read and write.
@@ -433,12 +431,14 @@ public class SamplesRestController {
   @PreAuthorize("isAuthenticated()")
   @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<Resource<Sample>> post(
-          HttpServletRequest request,
-          @RequestBody Sample sample,
-          @RequestParam(name = "setfulldetails", required = false, defaultValue = "true") boolean setFullDetails,
-          @RequestParam(name = "checklist", required = false) String checklist,
-          @RequestParam(name = "authProvider", required = false, defaultValue = "AAP") String authProvider)
-          throws JsonProcessingException {
+      HttpServletRequest request,
+      @RequestBody Sample sample,
+      @RequestParam(name = "setfulldetails", required = false, defaultValue = "true")
+          boolean setFullDetails,
+      @RequestParam(name = "checklist", required = false) String checklist,
+      @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
+          String authProvider)
+      throws JsonProcessingException {
     log.debug("Received POST for " + sample);
     final ObjectMapper jsonMapper = new ObjectMapper();
     final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
@@ -456,7 +456,10 @@ public class SamplesRestController {
       }
 
       final Authentication authentication = bearerTokenExtractor.extract(request);
-      final SubmissionAccount webinAccount = bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal())).getBody();
+      final SubmissionAccount webinAccount =
+          bioSamplesWebinAuthenticationService
+              .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
+              .getBody();
       final String webinId = webinSubmissionAccountId;
 
       if (webinId == null) {
@@ -486,7 +489,7 @@ public class SamplesRestController {
       final Set<AbstractData> structuredData = sample.getData();
 
       if (!(bioSamplesAapService.isWriteSuperUser()
-              || bioSamplesAapService.isIntegrationTestUser())) {
+          || bioSamplesAapService.isIntegrationTestUser())) {
         if (structuredData != null && structuredData.size() > 0) {
           sample = bioSamplesAapService.handleStructuredDataDomain(sample);
         }
@@ -495,7 +498,7 @@ public class SamplesRestController {
 
     // update, create date are system generated fields
     SubmittedViaType submittedVia =
-            sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
+        sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
 
     sample =
         Sample.Builder.fromSample(sample)
@@ -506,8 +509,7 @@ public class SamplesRestController {
             .build();
 
     // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
-    if (!bioSamplesAapService.isWriteSuperUser())
-      schemaValidationService.validate(sample);
+    if (!bioSamplesAapService.isWriteSuperUser()) schemaValidationService.validate(sample);
 
     if (!setFullDetails) {
       sample = sampleManipulationService.removeLegacyFields(sample);
@@ -563,20 +565,19 @@ public class SamplesRestController {
   public static class SampleWithAccessionSumbissionException extends RuntimeException {}
 
   @ResponseStatus(
-          value = HttpStatus.UNAUTHORIZED,
-          reason = "WEBIN Submission ID in sample doesn't match Webin Submission ID in request header")
-  public static class WebinUserUnauthorizedException extends RuntimeException {
-  }
+      value = HttpStatus.UNAUTHORIZED,
+      reason = "WEBIN Submission ID in sample doesn't match Webin Submission ID in request header")
+  public static class WebinUserUnauthorizedException extends RuntimeException {}
 
   @ResponseStatus(
-          value = HttpStatus.BAD_REQUEST,
-          reason = "Sample must provide the WEBIN ID if authentication method chosen is WEBIN Authentication")
-  public static class WebinUserNotPresentException extends RuntimeException {
-  }
+      value = HttpStatus.BAD_REQUEST,
+      reason =
+          "Sample must provide the WEBIN ID if authentication method chosen is WEBIN Authentication")
+  public static class WebinUserNotPresentException extends RuntimeException {}
 
   @ResponseStatus(
-          value = HttpStatus.BAD_REQUEST,
-          reason = "Sample must not have both domain and WEBIN Submission ID. Please specify WEBIN Submission ID if authentication method chosen is WEBIN Authentication")
-  public static class SampleWithBothWebinIdAndDomainException extends RuntimeException {
-  }
+      value = HttpStatus.BAD_REQUEST,
+      reason =
+          "Sample must not have both domain and WEBIN Submission ID. Please specify WEBIN Submission ID if authentication method chosen is WEBIN Authentication")
+  public static class SampleWithBothWebinIdAndDomainException extends RuntimeException {}
 }

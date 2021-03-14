@@ -10,8 +10,6 @@
 */
 package uk.ac.ebi.biosamples.solr.service;
 
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
@@ -157,7 +155,7 @@ public class SolrFilterService {
 
     if (!domains.isEmpty()) {
       // user can only see private samples inside its own domain
-       publicSampleCriteria = publicSampleCriteria.or(new Criteria("domain_s").in(domains));
+      publicSampleCriteria = publicSampleCriteria.or(new Criteria("domain_s").in(domains));
     }
 
     filterQuery.addCriteria(publicSampleCriteria);

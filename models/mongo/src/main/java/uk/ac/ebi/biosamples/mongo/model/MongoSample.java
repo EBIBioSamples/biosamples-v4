@@ -183,20 +183,20 @@ public class MongoSample {
     }
     MongoSample other = (MongoSample) o;
     return Objects.equals(this.name, other.name)
-            && Objects.equals(this.accession, other.accession)
-            && Objects.equals(this.domain, other.domain)
-            && Objects.equals(this.webinSubmissionAccountId, other.webinSubmissionAccountId)
-            && Objects.equals(this.release, other.release)
-            && Objects.equals(this.update, other.update)
-            && Objects.equals(this.create, other.create)
-            && Objects.equals(this.submitted, other.submitted)
-            && Objects.equals(this.attributes, other.attributes)
-            && Objects.equals(this.relationships, other.relationships)
-            && Objects.equals(this.externalReferences, other.externalReferences)
-            && Objects.equals(this.organizations, other.organizations)
-            && Objects.equals(this.contacts, other.contacts)
-            && Objects.equals(this.publications, other.publications)
-            && Objects.equals(this.submittedVia, other.submittedVia);
+        && Objects.equals(this.accession, other.accession)
+        && Objects.equals(this.domain, other.domain)
+        && Objects.equals(this.webinSubmissionAccountId, other.webinSubmissionAccountId)
+        && Objects.equals(this.release, other.release)
+        && Objects.equals(this.update, other.update)
+        && Objects.equals(this.create, other.create)
+        && Objects.equals(this.submitted, other.submitted)
+        && Objects.equals(this.attributes, other.attributes)
+        && Objects.equals(this.relationships, other.relationships)
+        && Objects.equals(this.externalReferences, other.externalReferences)
+        && Objects.equals(this.organizations, other.organizations)
+        && Objects.equals(this.contacts, other.contacts)
+        && Objects.equals(this.publications, other.publications)
+        && Objects.equals(this.submittedVia, other.submittedVia);
   }
 
   @Override

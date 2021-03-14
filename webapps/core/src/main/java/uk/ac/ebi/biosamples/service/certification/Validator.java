@@ -15,7 +15,6 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
 import org.everit.json.schema.Schema;
 import org.everit.json.schema.ValidationException;
 import org.everit.json.schema.loader.SchemaLoader;
@@ -63,9 +62,11 @@ public class Validator {
     }
   }
 
-  public String validateById(String schemaId, String document) throws IOException, ValidationException {
+  public String validateById(String schemaId, String document)
+      throws IOException, ValidationException {
     Checklist checklist = getChecklist(schemaId);
-    try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(checklist.getFileName())) {
+    try (InputStream inputStream =
+        getClass().getClassLoader().getResourceAsStream(checklist.getFileName())) {
       JSONObject rawSchema = new JSONObject(new JSONTokener(inputStream));
       Schema schema = SchemaLoader.load(rawSchema);
       schema.validate(new JSONObject(document));
