@@ -10,16 +10,8 @@
 */
 package uk.ac.ebi.biosamples.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.ExposesResourceFor;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.Resource;
@@ -30,14 +22,17 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.provider.authentication.BearerTokenExtractor;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.exception.SampleNotFoundException;
-import uk.ac.ebi.biosamples.model.Certificate;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.model.ga4gh.phenopacket.PhenopacketConverter;
 import uk.ac.ebi.biosamples.service.*;
-import uk.ac.ebi.biosamples.service.certification.CertifyService;
 import uk.ac.ebi.biosamples.utils.LinkUtils;
+
+import javax.servlet.http.HttpServletRequest;
+import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Primary controller for REST operations both in JSON and XML and both read and write.
@@ -60,8 +55,6 @@ public class SampleRestController {
   private final SampleResourceAssembler sampleResourceAssembler;
   private PhenopacketConverter phenopacketConverter;
   private final SchemaValidationService schemaValidationService;
-
-  @Autowired private CertifyService certifyService;
 
   public SampleRestController(
       SampleService sampleService,
@@ -206,11 +199,8 @@ public class SampleRestController {
       @RequestParam(name = "setfulldetails", required = false, defaultValue = "true")
           boolean setFullDetails,
       @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
-          String authProvider)
-      throws JsonProcessingException {
-    final ObjectMapper jsonMapper = new ObjectMapper();
+          String authProvider) {
     final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
-    List<Certificate> certificates = new ArrayList<>();
 
     if (sample.getAccession() == null || !sample.getAccession().equals(accession)) {
       throw new SampleAccessionMismatchException();
@@ -232,27 +222,9 @@ public class SampleRestController {
           bioSamplesWebinAuthenticationService
               .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
               .getBody();
-      final String webinId = sample.getWebinSubmissionAccountId();
 
-      if (sample.getDomain() != null) {
-        throw new SamplesRestController.SampleWithBothWebinIdAndDomainException();
-      }
-
-      if (webinId == null) {
-        log.info("No WEBIN ID in sample " + webinId);
-        throw new SamplesRestController.WebinUserNotPresentException();
-      }
-
-      if (!webinId.equalsIgnoreCase(webinAccount.getId())) {
-        throw new SamplesRestController.WebinUserUnauthorizedException();
-      }
-
-      sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample);
+      sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinAccount.getId());
     } else {
-      if (sample.getWebinSubmissionAccountId() != null) {
-        throw new SamplesRestController.SampleWithBothWebinIdAndDomainException();
-      }
-
       sample = bioSamplesAapService.handleSampleDomain(sample);
 
       if (sample.getData() != null && sample.getData().size() > 0) {

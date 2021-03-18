@@ -329,7 +329,7 @@ public class BioSamplesClient implements AutoCloseable {
   public Resource<CurationLink> persistCuration(
       String accession, Curation curation, String domain) {
     log.trace("Persisting curation " + curation + " on " + accession + " in " + domain);
-    return curationSubmissionService.submit(CurationLink.build(accession, curation, domain, null));
+    return curationSubmissionService.submit(CurationLink.build(accession, curation, domain, null, null));
   }
 
   public Iterable<Resource<CurationLink>> fetchCurationLinksOfSample(String accession) {
@@ -424,7 +424,7 @@ public class BioSamplesClient implements AutoCloseable {
       String accession, Curation curation, String domain, String jwt) {
     log.trace("Persisting curation {} on {} in {}", curation, accession, domain);
     return curationSubmissionService.persistCuration(
-        CurationLink.build(accession, curation, domain, null), jwt);
+        CurationLink.build(accession, curation, domain, null, null), jwt);
   }
 
   public Iterable<Resource<CurationLink>> fetchCurationLinksOfSample(String accession, String jwt) {

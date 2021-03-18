@@ -17,6 +17,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.client.RestTemplate;
+import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 
@@ -80,22 +81,38 @@ public class BioSamplesWebinAuthenticationService {
     }
   }
 
-  public Sample handleWebinUser(Sample sample) {
-    if (sample.getAccession() != null) {
-      Optional<Sample> oldSample =
-          sampleService.fetch(sample.getAccession(), Optional.empty(), null);
-      if (oldSample.isEmpty()
-          || !sample
-              .getWebinSubmissionAccountId()
-              .equalsIgnoreCase(oldSample.get().getWebinSubmissionAccountId())) {
-        throw new BioSamplesAapService.SampleNotAccessibleException();
+  public Sample handleWebinUser(Sample sample, String webinId) {
+    if (webinId != null && !webinId.isEmpty()) {
+      if (sample.getAccession() != null) {
+        Optional<Sample> oldSample =
+                sampleService.fetch(sample.getAccession(), Optional.empty(), null);
+        if (oldSample.isEmpty()
+                || !webinId
+                .equalsIgnoreCase(oldSample.get().getWebinSubmissionAccountId())) {
+          throw new BioSamplesAapService.SampleNotAccessibleException();
+        }
       }
-    }
 
-    return Sample.Builder.fromSample(sample)
-        .withWebinSubmissionAccountId(sample.getWebinSubmissionAccountId())
-        .withNoDomain()
-        .build();
+      return Sample.Builder.fromSample(sample)
+              .withWebinSubmissionAccountId(webinId)
+              .withNoDomain()
+              .build();
+    } else {
+      throw new WebinUserLoginUnauthorizedException();
+    }
+  }
+
+  public CurationLink handleWebinUser(CurationLink curationLink, String webinId) {
+    if (webinId != null && !webinId.isEmpty()) {
+      return CurationLink.build(
+              curationLink.getSample(),
+              curationLink.getCuration(),
+              null,
+              webinId,
+              curationLink.getCreated());
+    } else {
+      throw new BioSamplesAapService.SampleNotAccessibleException();
+    }
   }
 
   @ResponseStatus(value = HttpStatus.UNAUTHORIZED, reason = "Unauthorized WEBIN user")

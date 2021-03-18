@@ -68,7 +68,7 @@ public class CurationReadServiceTest {
     Attribute attributePost = Attribute.build("Organism", "Homo sapiens", "iri", "unit");
     Curation curation = Curation.build(attributePre, attributePost);
     CurationLink curationLink =
-        CurationLink.build("SAMN001", curation, "self.domain1", Instant.now());
+        CurationLink.build("SAMN001", curation, "self.domain1", null,Instant.now());
 
     Sample curatedSample =
         new CurationReadService().applyCurationLinkToSample(originalSample, curationLink);
@@ -144,49 +144,49 @@ public class CurationReadServiceTest {
     Attribute attributePost = Attribute.build("Organism", "Homo sapiens", "iri", "unit");
     Curation curation = Curation.build(attributePre, attributePost);
     CurationLink curationLink =
-        CurationLink.build("SAMN001", curation, "self.domain", Instant.now());
+        CurationLink.build("SAMN001", curation, "self.domain", null, Instant.now());
     curationLinks.add(curationLink);
 
     attributePre = Attribute.build("Organism", "Homo sapiens", "iri", "unit");
     attributePost = Attribute.build("organism", "Bos taurus", "iri", "unit");
     curation = Curation.build(attributePre, attributePost);
     curationLink =
-        CurationLink.build("SAMN001", curation, "self.domain", Instant.now().plusSeconds(5));
+        CurationLink.build("SAMN001", curation, "self.domain", null, Instant.now().plusSeconds(5));
     curationLinks.add(curationLink);
 
     attributePre = Attribute.build("Organism", "Homo sapiens", "iri", "unit");
     attributePost = Attribute.build("organism", "should not be this", "iri", "unit");
     curation = Curation.build(attributePre, attributePost);
     curationLink =
-        CurationLink.build("SAMN001", curation, "self.domain", Instant.now().plusSeconds(7));
+        CurationLink.build("SAMN001", curation, "self.domain", null, Instant.now().plusSeconds(7));
     curationLinks.add(curationLink);
 
     attributePre = Attribute.build("Weird", "weired value");
     attributePost = null;
     curation = Curation.build(attributePre, attributePost);
     curationLink =
-        CurationLink.build("SAMN001", curation, "self.domain", Instant.now().plusSeconds(10));
+        CurationLink.build("SAMN001", curation, "self.domain", null, Instant.now().plusSeconds(10));
     curationLinks.add(curationLink);
 
     attributePre = null;
     attributePost = Attribute.build("NewCuration", "new value", "iri", "unit");
     curation = Curation.build(attributePre, attributePost);
     curationLink =
-        CurationLink.build("SAMN001", curation, "self.domain", Instant.now().plusSeconds(15));
+        CurationLink.build("SAMN001", curation, "self.domain", null, Instant.now().plusSeconds(15));
     curationLinks.add(curationLink);
 
     attributePre = Attribute.build("CurationDomain", "domain-a");
     attributePost = Attribute.build("CurationDomain", "domain-b");
     curation = Curation.build(attributePre, attributePost);
     curationLink =
-        CurationLink.build("SAMN001", curation, "self.domain", Instant.now().plusSeconds(20));
+        CurationLink.build("SAMN001", curation, "self.domain", null, Instant.now().plusSeconds(20));
     curationLinks.add(curationLink);
 
     attributePre = Attribute.build("CurationDomain", "domain-a");
     attributePost = Attribute.build("CurationDomain", "domain-c");
     curation = Curation.build(attributePre, attributePost);
     curationLink =
-        CurationLink.build("SAMN001", curation, "self.domain", Instant.now().plusSeconds(25));
+        CurationLink.build("SAMN001", curation, "self.domain", null, Instant.now().plusSeconds(25));
     curationLinks.add(curationLink);
 
     ExternalReference externalReferencePre = ExternalReference.build("www.ebi.ac.uk/test/1");
@@ -198,7 +198,7 @@ public class CurationReadServiceTest {
             Collections.singletonList(externalReferencePre),
             Collections.singletonList(externalReferencePost));
     curationLink =
-        CurationLink.build("SAMN001", curation, "self.domain", Instant.now().plusSeconds(40));
+        CurationLink.build("SAMN001", curation, "self.domain", null, Instant.now().plusSeconds(40));
     curationLinks.add(curationLink);
 
     externalReferencePre = ExternalReference.build("www.ebi.ac.uk/test/a");
@@ -210,7 +210,7 @@ public class CurationReadServiceTest {
             Collections.singletonList(externalReferencePre),
             Collections.singletonList(externalReferencePost));
     curationLink =
-        CurationLink.build("SAMN001", curation, "self.domain", Instant.now().plusSeconds(45));
+        CurationLink.build("SAMN001", curation, "self.domain", null, Instant.now().plusSeconds(45));
     curationLinks.add(curationLink);
 
     externalReferencePre = ExternalReference.build("www.ebi.ac.uk/test/1");
@@ -222,19 +222,19 @@ public class CurationReadServiceTest {
             Collections.singletonList(externalReferencePre),
             Collections.singletonList(externalReferencePost));
     curationLink =
-        CurationLink.build("SAMN001", curation, "self.domain", Instant.now().plusSeconds(50));
+        CurationLink.build("SAMN001", curation, "self.domain", null, Instant.now().plusSeconds(50));
     curationLinks.add(curationLink);
 
     externalReferencePost = ExternalReference.build("www.ebi.ac.uk/test/new");
     curation = Curation.build(null, null, null, Collections.singletonList(externalReferencePost));
     curationLink =
-        CurationLink.build("SAMN001", curation, "self.domain", Instant.now().plusSeconds(55));
+        CurationLink.build("SAMN001", curation, "self.domain", null, Instant.now().plusSeconds(55));
     curationLinks.add(curationLink);
 
     externalReferencePre = ExternalReference.build("www.ebi.ac.uk/test/delete");
     curation = Curation.build(null, null, Collections.singletonList(externalReferencePre), null);
     curationLink =
-        CurationLink.build("SAMN001", curation, "self.domain", Instant.now().plusSeconds(60));
+        CurationLink.build("SAMN001", curation, "self.domain", null, Instant.now().plusSeconds(60));
     curationLinks.add(curationLink);
 
     return curationLinks;
