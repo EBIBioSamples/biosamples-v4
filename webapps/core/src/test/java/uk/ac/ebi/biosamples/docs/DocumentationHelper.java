@@ -127,7 +127,7 @@ public class DocumentationHelper {
     Sample sampleObject = getExampleSampleBuilder().build();
     String domain = getExampleDomain();
 
-    return CurationLink.build(sampleObject.getAccession(), curationObject, domain, Instant.now());
+    return CurationLink.build(sampleObject.getAccession(), curationObject, domain, null, Instant.now());
   }
 
   public Sample getExampleSampleWithStructuredData() {

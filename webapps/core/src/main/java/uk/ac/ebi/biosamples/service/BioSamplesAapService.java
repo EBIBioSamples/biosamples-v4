@@ -324,6 +324,7 @@ public class BioSamplesAapService {
                 curationLink.getSample(),
                 curationLink.getCuration(),
                 usersDomains.iterator().next(),
+                null,
                 curationLink.getCreated());
       } else {
         // if the sample doesn't have a domain, and we can't guess one, then end

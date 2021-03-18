@@ -25,13 +25,15 @@ public class CurationLink implements Comparable<CurationLink> {
   private final Curation curation;
   private final String sample;
   private final String domain;
+  private final String webinSubmissionAccountId;
   private final String hash;
   protected final Instant created;
 
   private CurationLink(
-      String sample, String domain, Curation curation, String hash, Instant created) {
+      String sample, String domain, String webinSubmissionAccountId, Curation curation, String hash, Instant created) {
     this.sample = sample;
     this.domain = domain;
+    this.webinSubmissionAccountId = webinSubmissionAccountId;
     this.curation = curation;
     this.hash = hash;
     this.created = created;
@@ -43,6 +45,10 @@ public class CurationLink implements Comparable<CurationLink> {
 
   public String getDomain() {
     return domain;
+  }
+
+  public String getWebinSubmissionAccountId() {
+    return webinSubmissionAccountId;
   }
 
   public Curation getCuration() {
@@ -65,14 +71,16 @@ public class CurationLink implements Comparable<CurationLink> {
       return false;
     }
     CurationLink other = (CurationLink) o;
+
     return Objects.equals(this.curation, other.curation)
-        && Objects.equals(this.sample, other.sample)
-        && Objects.equals(this.domain, other.domain);
+            && Objects.equals(this.sample, other.sample)
+            && Objects.equals(this.domain, other.domain)
+            && Objects.equals(this.webinSubmissionAccountId, other.webinSubmissionAccountId);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(sample, domain, curation);
+    return Objects.hash(sample, domain, webinSubmissionAccountId, curation);
   }
 
   @Override
@@ -83,6 +91,9 @@ public class CurationLink implements Comparable<CurationLink> {
 
     if (!this.domain.equals(other.domain)) {
       return this.domain.compareTo(other.domain);
+    }
+    if (!this.webinSubmissionAccountId.equals(other.webinSubmissionAccountId)) {
+      return this.webinSubmissionAccountId.compareTo(other.webinSubmissionAccountId);
     }
     if (!this.sample.equals(other.sample)) {
       return this.sample.compareTo(other.sample);
@@ -101,6 +112,8 @@ public class CurationLink implements Comparable<CurationLink> {
     sb.append(",");
     sb.append(this.domain);
     sb.append(",");
+    sb.append(this.webinSubmissionAccountId);
+    sb.append(",");
     sb.append(this.curation);
     sb.append(")");
     return sb.toString();
@@ -112,6 +125,7 @@ public class CurationLink implements Comparable<CurationLink> {
       @JsonProperty("sample") String sample,
       @JsonProperty("curation") Curation curation,
       @JsonProperty("domain") String domain,
+      @JsonProperty("webinSubmissionAccountId") String webinSubmissionAccountId,
       @JsonProperty("created") @JsonDeserialize(using = CustomInstantDeserializer.class)
           Instant created) {
 
@@ -125,6 +139,6 @@ public class CurationLink implements Comparable<CurationLink> {
     // TODO hash on domain
     // TODO synchronized with MongoCurationLink
 
-    return new CurationLink(sample, domain, curation, hash, created);
+    return new CurationLink(sample, domain, webinSubmissionAccountId, curation, hash, created);
   }
 }
