@@ -200,8 +200,6 @@ public class SampleRestController {
           boolean setFullDetails,
       @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
           String authProvider) {
-    final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
-
     if (sample.getAccession() == null || !sample.getAccession().equals(accession)) {
       throw new SampleAccessionMismatchException();
     }
@@ -217,6 +215,7 @@ public class SampleRestController {
     log.debug("Received PUT for " + accession);
 
     if (authProvider.equalsIgnoreCase("WEBIN")) {
+      final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
       final Authentication authentication = bearerTokenExtractor.extract(request);
       final SubmissionAccount webinAccount =
           bioSamplesWebinAuthenticationService

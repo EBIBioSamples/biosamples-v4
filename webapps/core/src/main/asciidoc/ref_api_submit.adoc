@@ -69,7 +69,9 @@ The structure of elements in Field `characteristics` :
 
 == Submit a sample
 `POST` sample to BioSamples
+You can either use AAP or ENA WEBIN AUTHENTICATION to generate the auth token.
 
+** Submission using a AAP token (default)
 
 === Request
 include::{snippets}/post-sample/http-request.adoc[]
@@ -80,16 +82,41 @@ include::{snippets}/post-sample/http-response.adoc[]
 === Links
 For all the links available in BioSamples check the link:../api/links[Links Reference]
 
+** Submission using a ENA WEBIN AUTHENTICATION token
+
+=== Request
+include::{snippets}/post-sample-2/http-request.adoc[]
+
+=== Response
+include::{snippets}/post-sample-2/http-response.adoc[]
+
+=== Links
+For all the links available in BioSamples check the link:../api/links[Links Reference]
+
 == Update sample
 `PUT` a sample to BioSamples
+You can either use AAP or ENA WEBIN AUTHENTICATION to generate the auth token.
 
 The submitted sample is required to have an accession and the accession should match the one in the url. Updating a sample overwrites its existing content with the new one. If you want to preserve existing attributes, you should first download the sample, build a new version including existing and new attributes, and resubmit the new content.
+
+** Submission using a AAP token (default)
 
 === Request
 include::{snippets}/put-sample/http-request.adoc[]
 
 === Response
 include::{snippets}/put-sample/http-response.adoc[]
+
+=== Links
+For all the links available in BioSamples check the link:../api/links[Links Reference]
+
+** Submission using a ENA WEBIN AUTHENTICATION token
+
+=== Request
+include::{snippets}/put-sample-2/http-request.adoc[]
+
+=== Response
+include::{snippets}/put-sample-2/http-response.adoc[]
 
 === Links
 For all the links available in BioSamples check the link:../api/links[Links Reference]
@@ -137,11 +164,24 @@ For all the links available in BioSamples check the link:../api/links[Links Refe
 == Submit curation object
 `POST` a curation to BioSamples
 
+** Submission using a AAP token (default)
+
 === Request
 include::{snippets}/post-curation/http-request.adoc[]
 
 === Response
 include::{snippets}/post-curation/http-response.adoc[]
+
+=== Links
+For all the links available in BioSamples check the link:../api/links[Links Reference]
+
+** Submission using a ENA WEBIN AUTHENTICATION token
+
+=== Request
+include::{snippets}/post-curation-2/http-request.adoc[]
+
+=== Response
+include::{snippets}/post-curation-2/http-response.adoc[]
 
 === Links
 For all the links available in BioSamples check the link:../api/links[Links Reference]
@@ -158,7 +198,7 @@ include::{snippets}/accession-sample/http-response.adoc[]
 
 === Links
 For all the links available in BioSamples check the link:../api/links[Links Reference]
-
+ls
 
 == Validate sample fields
 `POST` a sample to validate its basic fields before submission.

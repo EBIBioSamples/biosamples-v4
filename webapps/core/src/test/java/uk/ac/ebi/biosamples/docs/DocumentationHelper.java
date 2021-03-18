@@ -88,6 +88,14 @@ public class DocumentationHelper {
     return getExampleSampleBuilder().withDomain(getExampleDomain()).build();
   }
 
+  public Sample getExampleSampleWithWebinId() {
+    return getExampleSampleBuilder().withWebinSubmissionAccountId("WEBIN-12345").build();
+  }
+
+  public Sample getExampleSampleWithoutWebinId() {
+    return getExampleSampleBuilder().build();
+  }
+
   public Sample getExampleSampleWithExternalReferences() {
     return getExampleSampleBuilder()
         .addExternalReference(
@@ -128,6 +136,13 @@ public class DocumentationHelper {
     String domain = getExampleDomain();
 
     return CurationLink.build(sampleObject.getAccession(), curationObject, domain, null, Instant.now());
+  }
+
+  public CurationLink getExampleCurationLinkWithWebinId() {
+    Curation curationObject = getExampleCuration();
+    Sample sampleObject = getExampleSampleBuilder().build();
+
+    return CurationLink.build(sampleObject.getAccession(), curationObject, null, "WEBIN-12345", Instant.now());
   }
 
   public Sample getExampleSampleWithStructuredData() {

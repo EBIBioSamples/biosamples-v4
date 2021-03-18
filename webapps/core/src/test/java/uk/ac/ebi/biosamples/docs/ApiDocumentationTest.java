@@ -45,6 +45,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.*;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.restdocs.JUnitRestDocumentation;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -54,6 +55,7 @@ import org.springframework.web.context.WebApplicationContext;
 import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.model.Certificate;
 import uk.ac.ebi.biosamples.model.Curation;
+import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.model.certification.*;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.*;
@@ -85,6 +87,8 @@ public class ApiDocumentationTest {
   @MockBean CurationReadService curationReadService;
 
   @MockBean private BioSamplesAapService aapService;
+
+  @MockBean private BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
 
   @MockBean private Identifier identifier;
 
@@ -267,6 +271,47 @@ public class ApiDocumentationTest {
                 "post-sample",
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint())));
+  }
+
+  /**
+   * Generate the snippets for Sample submission to BioSamples
+   *
+   * @throws Exception
+   */
+  @Test
+  public void postSampleWithWebinAuthentication() throws Exception {
+    Sample sample = this.faker.getExampleSample();
+    Sample sampleWithWebinId = this.faker.getExampleSampleWithWebinId();
+    SubmissionAccount submissionAccount = new SubmissionAccount();
+    submissionAccount.setId("WEBIN-12345");
+
+    String sampleToSubmit =
+            "{ "
+                    + "\"name\" : \""
+                    + sample.getName()
+                    + "\", "
+                    + "\"release\" : \""
+                    + dateTimeFormatter.format(sample.getRelease().atOffset(ZoneOffset.UTC))
+                    + "\""
+                    + "}";
+
+    when(bioSamplesWebinAuthenticationService.handleWebinUser(any(Sample.class), any(String.class))).thenReturn(sampleWithWebinId);
+    when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(any(String.class))).thenReturn(ResponseEntity.ok(submissionAccount));
+    when(sampleService.store(any(Sample.class), eq(false), eq("WEBIN"))).thenReturn(sampleWithWebinId);
+    when(schemaValidationService.validate(any(Sample.class))).thenReturn("ERC100001");
+
+    this.mockMvc
+            .perform(
+                    post("/biosamples/samples?authProvider=WEBIN")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(sampleToSubmit)
+                            .header("Authorization", "Bearer $TOKEN"))
+            .andExpect(status().is2xxSuccessful())
+            .andDo(
+                    document(
+                            "post-sample-2",
+                            preprocessRequest(prettyPrint()),
+                            preprocessResponse(prettyPrint())));
   }
 
   /**
@@ -685,6 +730,35 @@ public class ApiDocumentationTest {
                 "put-sample", preprocessRequest(prettyPrint()), preprocessResponse(prettyPrint())));
   }
 
+  @Test
+  public void putSampleWithWebinAuthentication() throws Exception {
+
+    Sample sampleWithWebinId = this.faker.getExampleSampleWithWebinId();
+    SubmissionAccount submissionAccount = new SubmissionAccount();
+
+    submissionAccount.setId("WEBIN-12345");
+
+    when(bioSamplesWebinAuthenticationService.handleWebinUser(any(Sample.class), any(String.class))).thenReturn(sampleWithWebinId);
+    when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(any(String.class))).thenReturn(ResponseEntity.ok(submissionAccount));
+
+    when(sampleService.fetch(
+            eq(sampleWithWebinId.getAccession()), eq(Optional.empty()), any(String.class)))
+            .thenReturn(Optional.of(sampleWithWebinId));
+    when(sampleService.store(eq(sampleWithWebinId), eq(false), eq("WEBIN")))
+            .thenReturn(sampleWithWebinId);
+
+    this.mockMvc
+            .perform(
+                    put("/biosamples/samples/" + sampleWithWebinId.getAccession() + "?authProvider=WEBIN")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(serialize(sampleWithWebinId))
+                            .header("Authorization", "Bearer $TOKEN"))
+            .andExpect(status().is2xxSuccessful())
+            .andDo(
+                    document(
+                            "put-sample-2", preprocessRequest(prettyPrint()), preprocessResponse(prettyPrint())));
+  }
+
   /**
    * Generate the snippets for Sample submission to BioSamples with relationships
    *
@@ -736,6 +810,30 @@ public class ApiDocumentationTest {
                 "post-curation",
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint())));
+  }
+
+  @Test
+  public void postCurationLinkWithWebinAuthentication() throws Exception {
+    CurationLink curationLink = this.faker.getExampleCurationLinkWithWebinId();
+    SubmissionAccount submissionAccount = new SubmissionAccount();
+    submissionAccount.setId("WEBIN-12345");
+
+    when(bioSamplesWebinAuthenticationService.handleWebinUser(eq(curationLink), eq("WEBIN-12345"))).thenReturn(curationLink);
+    when(curationPersistService.store(curationLink)).thenReturn(curationLink);
+    when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(any(String.class))).thenReturn(ResponseEntity.ok(submissionAccount));
+
+    this.mockMvc
+            .perform(
+                    post("/biosamples/samples/{accession}/curationlinks?authProvider=WEBIN", curationLink.getSample())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(serialize(curationLink))
+                            .header("Authorization", "Bearer $TOKEN"))
+            .andExpect(status().is2xxSuccessful())
+            .andDo(
+                    document(
+                            "post-curation-2",
+                            preprocessRequest(prettyPrint()),
+                            preprocessResponse(prettyPrint())));
   }
 
   @Test
