@@ -99,7 +99,7 @@ public class CertificationController {
 
     log.trace("Sample with certificates " + sample);
 
-    sample = sampleService.store(sample, false, "");
+    sample = sampleService.store(sample, false, authProvider);
 
     // assemble a resource to return
     // create the response object with the appropriate status

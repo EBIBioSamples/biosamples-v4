@@ -54,7 +54,7 @@ recommend that programmatic users create AAP accounts.
 
 === ENA WEBIN AUTHENTICATION
 
-You can create a account through the https://www.ebi.ac.uk/ena/submit/webin/auth/swagger-ui/index.html?configUrl=/ena/submit/webin/auth/v3/api-docs/swagger-config#/AdministrationAPI/createSubmissionAccount[ENA WEBIN AUTHENTICATION SWAGGER UI]
+You can create a account through the https://www.ebi.ac.uk/ena/submit/webin/auth/[ENA WEBIN AUTHENTICATION SWAGGER UI]
 
 == How to get a token
 === AAP
@@ -140,7 +140,7 @@ $ curl -i -X POST -H "Accept: application/hal+json" -H "Content-Type: applicatio
 
 Be careful with your token; anyone with it can act as if they are you.
 
-== Futher steps below only for AAP
+== Futher steps below (only for AAP)
 === Domains, and why you need one
 
 BioSamples considers each piece of data to be owned by a domain. This allows several people part of the same domain to
