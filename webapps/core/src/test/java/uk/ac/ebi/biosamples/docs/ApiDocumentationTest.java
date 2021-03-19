@@ -45,6 +45,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.*;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.restdocs.JUnitRestDocumentation;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -54,6 +55,7 @@ import org.springframework.web.context.WebApplicationContext;
 import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.model.Certificate;
 import uk.ac.ebi.biosamples.model.Curation;
+import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.model.certification.*;
 import uk.ac.ebi.biosamples.model.filter.Filter;
 import uk.ac.ebi.biosamples.service.*;
@@ -85,6 +87,8 @@ public class ApiDocumentationTest {
   @MockBean CurationReadService curationReadService;
 
   @MockBean private BioSamplesAapService aapService;
+
+  @MockBean private BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
 
   @MockBean private Identifier identifier;
 
@@ -270,6 +274,47 @@ public class ApiDocumentationTest {
   }
 
   /**
+   * Generate the snippets for Sample submission to BioSamples
+   *
+   * @throws Exception
+   */
+  @Test
+  public void postSampleWithWebinAuthentication() throws Exception {
+    Sample sample = this.faker.getExampleSample();
+    Sample sampleWithWebinId = this.faker.getExampleSampleWithWebinId();
+    SubmissionAccount submissionAccount = new SubmissionAccount();
+    submissionAccount.setId("WEBIN-12345");
+
+    String sampleToSubmit =
+            "{ "
+                    + "\"name\" : \""
+                    + sample.getName()
+                    + "\", "
+                    + "\"release\" : \""
+                    + dateTimeFormatter.format(sample.getRelease().atOffset(ZoneOffset.UTC))
+                    + "\""
+                    + "}";
+
+    when(bioSamplesWebinAuthenticationService.handleWebinUser(any(Sample.class), any(String.class))).thenReturn(sampleWithWebinId);
+    when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(any(String.class))).thenReturn(ResponseEntity.ok(submissionAccount));
+    when(sampleService.store(any(Sample.class), eq(false), eq("WEBIN"))).thenReturn(sampleWithWebinId);
+    when(schemaValidationService.validate(any(Sample.class))).thenReturn("ERC100001");
+
+    this.mockMvc
+            .perform(
+                    post("/biosamples/samples?authProvider=WEBIN")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(sampleToSubmit)
+                            .header("Authorization", "Bearer $TOKEN"))
+            .andExpect(status().is2xxSuccessful())
+            .andDo(
+                    document(
+                            "post-sample-2",
+                            preprocessRequest(prettyPrint()),
+                            preprocessResponse(prettyPrint())));
+  }
+
+  /**
    * Generate the snippets for Sample submission to BioSamples with external references
    *
    * @throws Exception
@@ -407,7 +452,7 @@ public class ApiDocumentationTest {
             + "}";
 
     when(aapService.handleSampleDomain(any(Sample.class))).thenReturn(sampleWithUpdatedDate);
-    when(sampleService.store(any(Sample.class), eq(false), eq("")))
+    when(sampleService.store(any(Sample.class), eq(false), eq("AAP")))
         .thenReturn(sampleWithUpdatedDate);
 
     this.mockMvc
@@ -422,6 +467,51 @@ public class ApiDocumentationTest {
                 "accession-sample",
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint())));
+  }
+
+  @Test
+  public void postToGenerateAccessionWithWebinAuthentication() throws Exception {
+    Sample sample = this.faker.getExampleSample();
+    Sample sampleWithWebinId = this.faker.getExampleSampleWithWebinId();
+    Instant release =
+            Instant.ofEpochSecond(
+                    LocalDateTime.now(ZoneOffset.UTC).plusYears(100).toEpochSecond(ZoneOffset.UTC));
+    Sample sampleWithUpdatedDate =
+            Sample.Builder.fromSample(sampleWithWebinId).withRelease(release).build();
+
+    String sampleToSubmit =
+            "{ "
+                    + "\"name\" : \""
+                    + sample.getName()
+                    + "\", "
+                    + "\"update\" : \""
+                    + dateTimeFormatter.format(sample.getUpdate().atOffset(ZoneOffset.UTC))
+                    + "\" "
+                    //                "\"release\" : \""
+                    // +dateTimeFormatter.format(sample.getRelease().atOffset(ZoneOffset.UTC)) +
+                    // "\", " +
+                    + "}";
+
+    SubmissionAccount submissionAccount = new SubmissionAccount();
+    submissionAccount.setId("WEBIN-12345");
+
+    when(bioSamplesWebinAuthenticationService.handleWebinUser(any(Sample.class), any(String.class))).thenReturn(sampleWithWebinId);
+    when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(any(String.class))).thenReturn(ResponseEntity.ok(submissionAccount));
+    when(sampleService.store(any(Sample.class), eq(false), eq("WEBIN")))
+            .thenReturn(sampleWithUpdatedDate);
+
+    this.mockMvc
+            .perform(
+                    post("/biosamples/samples/accession?authProvider=WEBIN")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(sampleToSubmit)
+                            .header("Authorization", "Bearer $TOKEN"))
+            .andExpect(status().is2xxSuccessful())
+            .andDo(
+                    document(
+                            "accession-sample-2",
+                            preprocessRequest(prettyPrint()),
+                            preprocessResponse(prettyPrint())));
   }
 
   /** Accessioning service to generate accession */
@@ -550,7 +640,6 @@ public class ApiDocumentationTest {
                 preprocessResponse(prettyPrint())));
   }
 
-  /** Recommendation service to suggest sample attributes */
   @Test
   public void post_for_certification() throws Exception {
     Sample sample = this.faker.getExampleSampleWithDomain();
@@ -573,7 +662,7 @@ public class ApiDocumentationTest {
                     "biosamples-minimal",
                     "0.0.1",
                     "schemas/certification/biosamples-minimal.json")));
-    when(sampleService.store(eq(sample), eq(false), eq("")))
+    when(sampleService.store(eq(sample), eq(false), eq("AAP")))
         .thenReturn(
             Sample.Builder.fromSample(sample)
                 .withCertificates(
@@ -597,6 +686,60 @@ public class ApiDocumentationTest {
                 "certify-sample",
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint())));
+  }
+
+  @Test
+  public void post_for_certification_with_webin_authentication() throws Exception {
+    Sample sampleWithWebinId = this.faker.getExampleSampleWithWebinId();
+    Attribute attribute = Attribute.build("Organism", "Homo Sapiens");
+
+    sampleWithWebinId =
+            Sample.Builder.fromSample(sampleWithWebinId)
+                    .withAttributes(Collections.unmodifiableList(Arrays.asList(attribute)))
+                    .build();
+
+    SubmissionAccount submissionAccount = new SubmissionAccount();
+    submissionAccount.setId("WEBIN-12345");
+
+    when(bioSamplesWebinAuthenticationService.handleWebinUser(any(Sample.class), any(String.class))).thenReturn(sampleWithWebinId);
+    when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(any(String.class))).thenReturn(ResponseEntity.ok(submissionAccount));
+
+    when(sampleService.fetch(eq(sampleWithWebinId.getAccession()), eq(Optional.empty()), any(String.class)))
+            .thenReturn(Optional.of(sampleWithWebinId));
+    when(aapService.handleSampleDomain(sampleWithWebinId)).thenReturn(sampleWithWebinId);
+    when(aapService.isWriteSuperUser()).thenReturn(true);
+    when(aapService.isIntegrationTestUser()).thenReturn(false);
+    when(certifyService.certify(new ObjectMapper().writeValueAsString(sampleWithWebinId), true))
+            .thenReturn(
+                    List.of(
+                            Certificate.build(
+                                    "biosamples-minimal",
+                                    "0.0.1",
+                                    "schemas/certification/biosamples-minimal.json")));
+    when(sampleService.store(eq(sampleWithWebinId), eq(false), eq("WEBIN")))
+            .thenReturn(
+                    Sample.Builder.fromSample(sampleWithWebinId)
+                            .withCertificates(
+                                    List.of(
+                                            Certificate.build(
+                                                    "biosamples-minimal",
+                                                    "0.0.1",
+                                                    "schemas/certification/biosamples-minimal.json")))
+                            .build());
+    doNothing().when(aapService).checkAccessible(isA(Sample.class));
+
+    this.mockMvc
+            .perform(
+                    put("/biosamples/samples/" + sampleWithWebinId.getAccession() + "/certify?authProvider=WEBIN")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(serialize(sampleWithWebinId))
+                            .header("Authorization", "Bearer $TOKEN"))
+            .andExpect(status().is2xxSuccessful())
+            .andDo(
+                    document(
+                            "certify-sample-2",
+                            preprocessRequest(prettyPrint()),
+                            preprocessResponse(prettyPrint())));
   }
 
   @Test
@@ -685,6 +828,35 @@ public class ApiDocumentationTest {
                 "put-sample", preprocessRequest(prettyPrint()), preprocessResponse(prettyPrint())));
   }
 
+  @Test
+  public void putSampleWithWebinAuthentication() throws Exception {
+
+    Sample sampleWithWebinId = this.faker.getExampleSampleWithWebinId();
+    SubmissionAccount submissionAccount = new SubmissionAccount();
+
+    submissionAccount.setId("WEBIN-12345");
+
+    when(bioSamplesWebinAuthenticationService.handleWebinUser(any(Sample.class), any(String.class))).thenReturn(sampleWithWebinId);
+    when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(any(String.class))).thenReturn(ResponseEntity.ok(submissionAccount));
+
+    when(sampleService.fetch(
+            eq(sampleWithWebinId.getAccession()), eq(Optional.empty()), any(String.class)))
+            .thenReturn(Optional.of(sampleWithWebinId));
+    when(sampleService.store(eq(sampleWithWebinId), eq(false), eq("WEBIN")))
+            .thenReturn(sampleWithWebinId);
+
+    this.mockMvc
+            .perform(
+                    put("/biosamples/samples/" + sampleWithWebinId.getAccession() + "?authProvider=WEBIN")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(serialize(sampleWithWebinId))
+                            .header("Authorization", "Bearer $TOKEN"))
+            .andExpect(status().is2xxSuccessful())
+            .andDo(
+                    document(
+                            "put-sample-2", preprocessRequest(prettyPrint()), preprocessResponse(prettyPrint())));
+  }
+
   /**
    * Generate the snippets for Sample submission to BioSamples with relationships
    *
@@ -736,6 +908,30 @@ public class ApiDocumentationTest {
                 "post-curation",
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint())));
+  }
+
+  @Test
+  public void postCurationLinkWithWebinAuthentication() throws Exception {
+    CurationLink curationLink = this.faker.getExampleCurationLinkWithWebinId();
+    SubmissionAccount submissionAccount = new SubmissionAccount();
+    submissionAccount.setId("WEBIN-12345");
+
+    when(bioSamplesWebinAuthenticationService.handleWebinUser(eq(curationLink), eq("WEBIN-12345"))).thenReturn(curationLink);
+    when(curationPersistService.store(curationLink)).thenReturn(curationLink);
+    when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(any(String.class))).thenReturn(ResponseEntity.ok(submissionAccount));
+
+    this.mockMvc
+            .perform(
+                    post("/biosamples/samples/{accession}/curationlinks?authProvider=WEBIN", curationLink.getSample())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(serialize(curationLink))
+                            .header("Authorization", "Bearer $TOKEN"))
+            .andExpect(status().is2xxSuccessful())
+            .andDo(
+                    document(
+                            "post-curation-2",
+                            preprocessRequest(prettyPrint()),
+                            preprocessResponse(prettyPrint())));
   }
 
   @Test

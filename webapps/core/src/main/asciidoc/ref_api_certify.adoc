@@ -10,6 +10,8 @@ Sample certification service can be used to validate samples against JSON schema
 and if validation is successful then the sample is deemed certified and
 certificates are added to the sample
 
+** Submission using a AAP token (default)
+
 === curl request
 include::{snippets}/certify-sample/curl-request.adoc[]
 
@@ -18,6 +20,17 @@ include::{snippets}/certify-sample/http-request.adoc[]
 
 === Response
 include::{snippets}/certify-sample/http-response.adoc[]
+
+** Submission using ENA WEBIN AUTHENTICATION token
+
+=== curl request
+include::{snippets}/certify-sample-2/curl-request.adoc[]
+
+=== Request
+include::{snippets}/certify-sample-2/http-request.adoc[]
+
+=== Response
+include::{snippets}/certify-sample-2/http-response.adoc[]
 
 == Check compliance
 `POST` a sample to know if the sample validates against any available checklists,

@@ -80,8 +80,6 @@ public class SamplesRestController {
 
   private Logger log = LoggerFactory.getLogger(getClass());
 
-  @Autowired private CertifyService certifyService;
-
   public SamplesRestController(
       SamplePageService samplePageService,
       FilterService filterService,
@@ -387,46 +385,59 @@ public class SamplesRestController {
       produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_PLAIN_VALUE})
   @RequestMapping("/accession")
   public ResponseEntity<Object> accessionSample(
-      @RequestBody Sample sample,
-      @RequestParam(name = "preAccessioning", required = false, defaultValue = "false")
-          final boolean preAccessioning) {
+          HttpServletRequest request,
+          @RequestBody Sample sample,
+          @RequestParam(name = "preAccessioning", required = false, defaultValue = "false") final boolean preAccessioning,
+          @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
+                  String authProvider) {
     log.debug("Received POST for accessioning " + sample);
     if (sample.hasAccession()) throw new SampleWithAccessionSumbissionException();
 
-    sample = bioSamplesAapService.handleSampleDomain(sample);
+    if (authProvider.equalsIgnoreCase("WEBIN")) {
+      final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
+      final Authentication authentication = bearerTokenExtractor.extract(request);
+      final SubmissionAccount webinAccount =
+              bioSamplesWebinAuthenticationService
+                      .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
+                      .getBody();
+
+      sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinAccount.getId());
+    } else {
+      sample = bioSamplesAapService.handleSampleDomain(sample);
+    }
 
     final Instant release =
-        Instant.ofEpochSecond(
-            LocalDateTime.now(ZoneOffset.UTC).plusYears(100).toEpochSecond(ZoneOffset.UTC));
+            Instant.ofEpochSecond(
+                    LocalDateTime.now(ZoneOffset.UTC).plusYears(100).toEpochSecond(ZoneOffset.UTC));
     final Instant update = Instant.now();
     final SubmittedViaType submittedVia =
-        sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
+            sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
 
     sample =
-        Sample.Builder.fromSample(sample)
-            .withRelease(release)
-            .withUpdate(update)
-            .withSubmittedVia(submittedVia)
-            .build();
+            Sample.Builder.fromSample(sample)
+                    .withRelease(release)
+                    .withUpdate(update)
+                    .withSubmittedVia(submittedVia)
+                    .build();
 
     /*Pre accessioning is done by other archives to get a BioSamples accession before processing their own pipelines. It is better to check duplicates in pre-accessioning cases
      * The original case of accession remains unchanged*/
     if (preAccessioning) {
       if (sampleService.searchSampleByDomainAndName(sample.getDomain(), sample.getName())) {
         return new ResponseEntity<>(
-            "Sample already exists, use POST only for new submissions", HttpStatus.BAD_REQUEST);
+                "Sample already exists, use POST only for new submissions", HttpStatus.BAD_REQUEST);
       } else {
-        sample = sampleService.store(sample, false, "");
+        sample = sampleService.store(sample, false, authProvider);
         final Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
 
         return ResponseEntity.ok(sampleResource.getContent().getAccession());
       }
     } else {
-      sample = sampleService.store(sample, false, "");
+      sample = sampleService.store(sample, false, authProvider);
       final Resource<Sample> sampleResource = sampleResourceAssembler.toResource(sample);
 
       return ResponseEntity.created(URI.create(sampleResource.getLink("self").getHref()))
-          .body(sampleResource);
+              .body(sampleResource);
     }
   }
 
