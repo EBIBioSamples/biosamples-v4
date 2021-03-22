@@ -2,6 +2,44 @@
 :toc: auto
 
 This pages contains links to release notes for BioSamples for version 4.0.0 and higher. This release represents a comprehensive overhaul and therefore previous release notes are no longer applicable.
+[[v5.0.6]]
+== v5.0.6 Release notes
+=== New features
+1. Authentication
++
+We have added additional authentication support in BioSamples. With this release BioSamples users can authenticate
+using EBML-EBI’s European Nucleotide Archive (ENA) https://www.ebi.ac.uk/ena/submit/webin/auth[WEBIN authentication service].
+This is especially useful for users who intend to submit their sample metadata to BioSamples and sequencing data to ENA as shared,
+identical WEBIN credentials can be used to submit to both BioSamples and ENA.
+BioSamples continues to support the existing AAP authentication mechanism. AAP authentication is the default mode and current
+users using AAP authentication to submit sample metadata to BioSamples are not required to do any changes to their submission routines.
+More information related to authentication could be found https://www.ebi.ac.uk/biosamples/docs/guides/authentication[here].
+
+2. Sample search results bulk download
++
+A new API enables downloading searching and bulk downloading results up to a maximum of 100,000 samples. The API supports
+text search and samples filtering. When search results exceed the maximum allowable download size, only the first 100,000
+samples will be downloaded. Download buttons were also added to the search user interface. Currently this supports downloading
+samples as JSON, XML or accession list only.
+
+3. Validation checklist in samples body (similar to existing ENA checklists)
++
+Samples are validated at submission time. They are by default validated against the biosamples-minimal (ERC100001) checklist.
+Users can additionally provide the name of a known checklist in the sample body; when provided, this is also used for validation.
+If validation fails, the submission will be rejected. This enables users to define their preferred validation checklist at
+submission time. Please refer to the https://www.ebi.ac.uk/biosamples/docs/guides/validation[validation guide] to see available checklists.
+The validation API is also available independently of submission and can be used to validate samples without submitting.
+We have updated our documentation to reflect these changes in https://www.ebi.ac.uk/biosamples/docs/references/api/certify[certification]
+and https://www.ebi.ac.uk/biosamples/docs/references/api/validate[validation].
+
+=== Bug Fixes:
+1. Link to new ENA browser - Samples having external reference to ENA were using the old ENA browser links.
+This has now been updated to link to the new ENA browser.
+
+.Example:
+* Old link -  https://www.ebi.ac.uk/ena/data/view/SAMEA5776016
+* New link - https://www.ebi.ac.uk/ena/browser/view/SAMEA5776016
+
 [[v5.0.5]]
 == v5.0.5 Release notes
 === New features
