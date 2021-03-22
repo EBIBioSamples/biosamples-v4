@@ -36,7 +36,6 @@ import org.springframework.boot.test.json.JacksonTester;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -48,7 +47,7 @@ import uk.ac.ebi.biosamples.model.structured.amr.AMRTable;
 import uk.ac.ebi.biosamples.model.structured.amr.AmrPair;
 import uk.ac.ebi.biosamples.service.BioSamplesAapService;
 import uk.ac.ebi.biosamples.service.SampleService;
-import uk.ac.ebi.biosamples.service.SchemaValidatorService;
+import uk.ac.ebi.biosamples.service.SchemaValidationService;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -75,7 +74,7 @@ public class AMRTest {
 
   @MockBean private SampleService sampleService;
 
-  @MockBean private SchemaValidatorService schemaValidatorService;
+  @MockBean private SchemaValidationService schemaValidatorService;
 
   private AMREntry getAMREntry() {
     return new AMREntry.Builder()
@@ -208,11 +207,10 @@ public class AMRTest {
             .withAttributes(Collections.singletonList(organismAttribute))
             .build();
 
-    when(schemaValidatorService.validate(any(), any())).thenReturn(ResponseEntity.ok("[]"));
     when(bioSamplesAapService.isWriteSuperUser()).thenReturn(true);
     when(bioSamplesAapService.handleSampleDomain(any(Sample.class))).thenReturn(testSample);
     when(bioSamplesAapService.handleStructuredDataDomain(any(Sample.class))).thenReturn(testSample);
-    when(sampleService.store(testSample, false)).thenReturn(testSample);
+    when(sampleService.store(testSample, false, "AAP")).thenReturn(testSample);
 
     mockMvc
         .perform(post("/samples").contentType(MediaType.APPLICATION_JSON_VALUE).content(json))
@@ -256,13 +254,13 @@ public class AMRTest {
             .withAttributes(Collections.singletonList(organismAttribute))
             .build();
 
-    when(schemaValidatorService.validate(any(), any())).thenReturn(ResponseEntity.ok("[]"));
     when(bioSamplesAapService.isWriteSuperUser()).thenReturn(false);
     when(bioSamplesAapService.handleSampleDomain(any(Sample.class))).thenReturn(testSample);
     when(bioSamplesAapService.handleStructuredDataDomain(any(Sample.class))).thenReturn(testSample);
 
     ArgumentCaptor<Sample> generatedSample = ArgumentCaptor.forClass(Sample.class);
-    when(sampleService.store(generatedSample.capture(), eq(false))).thenReturn(testSample);
+    when(sampleService.store(generatedSample.capture(), eq(false), eq("AAP")))
+        .thenReturn(testSample);
 
     mockMvc.perform(post("/samples").contentType(MediaType.APPLICATION_JSON_VALUE).content(json));
 

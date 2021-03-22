@@ -15,6 +15,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import java.io.IOException;
+import java.util.List;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,9 +35,11 @@ public class CertificateRetrievalController {
   @Autowired private CertifyService certifyService;
   JsonParser jp = new JsonParser();
 
-  @GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE})
-  public ResponseEntity<String> getCertificate(
-      @RequestParam(value = "certificateName") String certificateName) throws IOException {
+  @GetMapping(
+      value = "/{certificateName}",
+      produces = {MediaType.APPLICATION_JSON_VALUE})
+  public ResponseEntity<String> getCertificate(@PathVariable String certificateName)
+      throws IOException {
     log.info("Fetching certificate with name " + certificateName);
 
     JsonElement je = jp.parse(certifyService.getCertificateByCertificateName(certificateName));
@@ -51,17 +54,21 @@ public class CertificateRetrievalController {
         .body(prettyJsonString);
   }
 
-  @GetMapping(
-      value = "/all",
-      produces = {MediaType.APPLICATION_JSON_VALUE})
+  @GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<Resources<Resource<String>>> getAllCertificates() {
-
     return ResponseEntity.ok()
         .body(
             new Resources<>(
-                certifyService.getCertificates().stream()
+                certifyService.getAllCertificates().stream()
                     .map(certificate -> new Resource<>(getGson().toJson(jp.parse(certificate))))
                     .collect(Collectors.toList())));
+  }
+
+  @GetMapping(
+      value = "/names",
+      produces = {MediaType.APPLICATION_JSON_VALUE})
+  public List<String> getAllCertificateNames() {
+    return certifyService.getAllCertificateNames();
   }
 
   public Gson getGson() {

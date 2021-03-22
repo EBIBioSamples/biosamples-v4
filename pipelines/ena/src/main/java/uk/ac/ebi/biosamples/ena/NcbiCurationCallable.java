@@ -63,7 +63,7 @@ public class NcbiCurationCallable implements Callable<Void> {
   public Void call() {
     log.trace("HANDLING " + this.accession);
     ExternalReference exRef =
-        ExternalReference.build("https://www.ebi.ac.uk/ena/data/view/" + this.accession);
+        ExternalReference.build("https://www.ebi.ac.uk/ena/browser/view/" + this.accession);
     Curation curation = Curation.build(null, null, null, Collections.singleton(exRef));
 
     try {

@@ -68,6 +68,7 @@ public class CurationApplicationService {
         sample.getName(),
         sample.getAccession(),
         sample.getDomain(),
+        sample.getWebinSubmissionAccountId(),
         sample.getRelease(),
         sample.getUpdate(),
         sample.getCreate(),
@@ -100,12 +101,6 @@ public class CurationApplicationService {
           // do nothing, will try again next loop
         }
       }
-    }
-    if (!curationApplied) {
-      // we stopped because we didn't apply any curation
-      // therefore we have some curations that can't be applied
-      // this is a warning
-      log.debug("Unapplied curation on {}", sample.getAccession());
     }
     return sample;
   }

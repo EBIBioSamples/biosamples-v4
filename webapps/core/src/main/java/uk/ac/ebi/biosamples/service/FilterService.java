@@ -46,7 +46,9 @@ public class FilterService {
     Arrays.sort(filterStrings);
     SortedSet<String> filterStringSet = new TreeSet<>(Arrays.asList(filterStrings));
     for (String filterString : filterStringSet) {
-      outputFilters.add(FilterBuilder.create().buildFromString(filterString));
+      if (!filterString.isEmpty()) {
+        outputFilters.add(FilterBuilder.create().buildFromString(filterString));
+      }
     }
 
     return outputFilters;

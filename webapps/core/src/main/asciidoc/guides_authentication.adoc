@@ -5,21 +5,28 @@
 This page describes how to create a user account and log in to use the API.
 
 == Overview
+We support two modes of authentication and authorization:
 
-We use EMBL-EBI's https://aai.ebi.ac.uk[Authentication, authorisation and profile (AAP)] service to get information
-about who you are and what data you are allowed to access.
+1. EMBL-EBI's https://aai.ebi.ac.uk[Authentication, authorisation and profile (AAP)] service.
+AAP is the default mode of authentication and authorization.
+2. EMBL-EBI's European Nucleotide Archive (ENA) https://www.ebi.ac.uk/ena/submit/webin/auth[WEBIN authentication] service
 
-This page is intended to supplement the https://api.aai.ebi.ac.uk/docs[API documentation]provided by AAP, highlighting
-the steps necessary to use AAP with the BioSamples API. Please see the AAP web pages for further details.
+== Authentication API documentation
+** AAP - Please refer to https://api.aai.ebi.ac.uk/docs[API documentation]
+** ENA WEBIN AUTHENTICATION - Please refer to https://www.ebi.ac.uk/ena/submit/webin/auth[API documentation]
 
 We use token based authentication. This means that once you have an account, you can login with your username and password
 to receive a https://jwt.io/[token]. This is a piece of text that contains all the information we need to know who you
 are and what data you are allowed to access. You present this information to the API every time you make a request.
 
-The tokens last for 1 hour, so if you have a long running process you may find the token expires.
+The AAP and ENA WEBIN AUTHENTICATION tokens last for 1 hour and 3 hours respectively,
+so if you have a long running process you may find the token expiring before the process
+completion.
 
 *Please note that following guide is for authentication against our production system.
 If you are testing in our development server, please replace following URLs.*
+
+** AAP
 [cols="1,1"]
 |===
 | Original                  | Replace with
@@ -27,7 +34,16 @@ If you are testing in our development server, please replace following URLs.*
 | https://api.aai.ebi.ac.uk | https://explore.api.aai.ebi.ac.uk
 |===
 
+** ENA WEBIN AUTHENTICATION
+[cols="1,1"]
+|===
+| Original                  | Replace with
+| https://www.ebi.ac.uk/ena/submit/webin/auth    | https://wwwdev.ebi.ac.uk/ena/submit/webin/auth
+|===
+
 == Creating your account
+
+=== AAP
 
 You can create an account through the https://aai.ebi.ac.uk/registerUser[AAP webpage], or through their API.
 
@@ -36,18 +52,23 @@ in with a google, ORCID or LinkedIn account, or your research institute). We can
 there is not currently any way to get an AAP token through their API while using an Elixir SSO account. Therefore we
 recommend that programmatic users create AAP accounts.
 
+=== ENA WEBIN AUTHENTICATION
+
+You can create a account through the https://www.ebi.ac.uk/ena/submit/webin/auth/[ENA WEBIN AUTHENTICATION SWAGGER UI]
+
 == How to get a token
+=== AAP
 
 You can obtain a AAP token by executing the following curl command.
 
-=== Example request
+==== Example request
 [source,bash,options="nowrap"]
 ----
  $ curl -u <your_aap_username>:<your_aap_password> https://api.aai.ebi.ac.uk/auth
 ----
 The response will contains your AAP token.
 
-=== Example response
+==== Example response
 
 [source,options="nowrap"]
 ----
@@ -55,6 +76,29 @@ eyJhbGciOiWerFg78ghY.eyJpc3MiOiJodHRwhdsL3RzaS5lYmkuYWMudWsiLCJleHAiOjE1MDc4MjIx
 ----
 
 NOTE: The token is valid for 1 hour.
+
+=== ENA WEBIN AUTHENTICATION
+
+You can obtain a ENA WEBIN AUTHENTICATION token by executing the following curl command.
+
+==== Example request
+[source,bash,options="nowrap"]
+----
+ $
+TOKEN=$(curl -X POST "https://www.ebi.ac.uk/ena/submit/webin/auth/token" -H
+"accept: */*" -H  "Content-Type: application/json" -d "{\"authRealms\":[\"ENA\"],
+\"password\":\"your_webin_password\",\"username\":\"your_webin_username\"}")
+----
+The response will contains your ENA WEBIN AUTHENTICATION token.
+
+==== Example response
+
+[source,options="nowrap"]
+----
+eyJhbGciOiWerFg78ghY.eyJpc3MiOiJodHRwhdsL3RzaS5lYmkuYWMudWsiLCJleHAiOjE1MDc4MjIxNzEsImp0aSI6IlNWUndCYWlubTA1MFlEZHJaWFRMbWciLCJpYXQiOjE1MDc4MTg1NzEsInN1YiI6InVzci0wZmRhM2YzZS0wM2I1LTQzOTgtOGRjOS02ZmU4MWVkMzNhOTciLCJlbWFpbCI6Imthcm9seUBlYmkuYWMudWsiLCJuaWNrbmFtZSI6ImthcmVsIiwibmFtZSI6Ikthcm9seSBFcmRvcyIsImRvbWFpbnMiOlsiYWFwLXVzZXJzLWRvbWFpbiJdfQ.MnLeqmPdxGMy7ln3mlMFqhdNVDrf0uvilbe2pqngper56sjUYUOMnzvCK6ht2Q65P25VdJAA_nSOQJ03ZEqnp2ZB0urGpCY_sK0JV834ZSe1atLKww7wa2Ntq5EJakUfxrma9lHLTylGxJzYc3ej1s8pTE5Jj6tprvcV5s3eNEmYFUJL9RwhKmDA9-5E7TfOVYvEQSMw7IqXMiVSSQNU1o_dfalp-PYlqer9mTR2MPIMAaA2wdr7jKVDXzI7zKlprIRLVyJAiEPIeWzNYN8FC2RdigwqbcBt9UTTDrwDH5Op3fAJPrYWNpRD4-wV8mn5DWzd7cNm6dMqwm1C12WEg
+----
+
+NOTE: The token is valid for 3 hours.
 
 == How to use the obtained token
 
@@ -73,26 +117,37 @@ You don't need to copy and paste the token. It's easier to write to an environme
 ----
 $ curl -u <your_aap_username>:<your_aap_password> https://api.aai.ebi.ac.uk/auth > aap.jwt
 $ TOKEN=`cat aap.jwt`
+
 ----
 
 NOTE: If you don't login successfully, there will be an error message in `aap.jwt`, rather than a token.
 
 You can then use the environment variable like this:
 
+** Submission using a AAP token
 [source,bash,options="nowrap"]
+
 ----
 $ curl -i -X POST -H "Accept: application/hal+json" -H "Content-Type: application/hal+json" -H "Authorization: Bearer $TOKEN" https://www.ebi.ac.uk/biosamples/samples -d "{ /* sample content */ }"
 ----
 
+** Submission using a ENA WEBIN AUTHENTICATION token:
+[source,bash,options="nowrap"]
+
+----
+$ curl -i -X POST -H "Accept: application/hal+json" -H "Content-Type: application/hal+json" -H "Authorization: Bearer $TOKEN" https://www.ebi.ac.uk/biosamples/samples?authProvider=WEBIN -d "{ /* sample content */ }"
+----
+
 Be careful with your token; anyone with it can act as if they are you.
 
-== Domains, and why you need one
+== Futher steps below (only for AAP)
+=== Domains, and why you need one
 
 BioSamples considers each piece of data to be owned by a domain. This allows several people part of the same domain to
 collaborate on submission, without sharing account details. You therefore need to create a domain before you can work with
 the BioSamples submission API.
 
-== How to setup a domain
+=== How to setup a domain
 
 To create a new domain, send a `POST` request to the domains URL. The request body should be a
 https://en.wikipedia.org/wiki/JSON[JSON document], with two fields:
@@ -106,12 +161,12 @@ Creating a domain will automatically make you an administrator of that domain, s
 *It does not automatically add you as a member of the domain, so you cannot submit data for a domain until you've added
 yourself to it.*
 
-=== Example request
+==== Example request
 [source,bash,options="nowrap"]
 ----
  $ curl 'https://api.aai.ebi.ac.uk/domains' -i -X POST -H 'Content-Type: application/json;charset=UTF-8' -H "Authorization: Bearer $TOKEN" -H 'Accept: application/hal+json' -d '{"domainName":"new domain","domainDesc":"new domain Desc"}'
 ----
-=== Example response
+==== Example response
 
 The response body will be a JSON document representing the domain:
 
@@ -155,12 +210,12 @@ Content-Length: 768
 }
 ----
 
-== How to add a user to a domain
+=== How to add a user to a domain
 
 If you want to add a new user to a domain, then you have to make a `PUT` request. To do this, you need to know two
 identifiers - the user reference and the domain reference.
 
-=== Finding your user reference
+==== Finding your user reference
 
 You can find the reference, if you know your username:
 
@@ -172,7 +227,7 @@ curl https://api.aai.ebi.ac.uk/users/your-usename-goes-here -i -H "Authorization
 The response should be a JSON document representing the user. It should include a field called `userReference`, with a
 starting with `usr-`. This is the identifier you need.
 
-=== Finding domain references
+==== Finding domain references
 
 You can get a list of the domains you administer, such as the domain you just created, with this request:
 
@@ -191,18 +246,18 @@ Alternatively, you can get a list of the domains you are a member of with this r
 The response will be a list of domain documents. Each of these should have a field called `domainReference` - this is
 the identifier you need. It should start with `dom-`.
 
-=== Adding a user to a domain
+==== Adding a user to a domain
 
 Once you have both identifiers, you can add the user to the domain.
 
-==== Example request
+===== Example request
 
 [source,bash,options="nowrap"]
 ----
  $ curl 'http://api.aai.ebi.ac.uk/domains/<your_domain_reference>/<your_user_reference>/user' -i -X PUT -H 'Authorization: Bearer $TOKEN' -H 'Accept: application/hal+json'
 ----
 
-==== Example response
+===== Example response
 
 [source,http,options="nowrap"]
 ----
@@ -266,14 +321,14 @@ Content-Length: 1376
 }
 ----
 
-== You need to request a new token!
+=== You need to request a new token!
 
 Each token includes all the details about who you are, and which domains you are a member of. You have now created a new
 domain and added yourself to it since you requested your first token, so that first token is out of date. You should
 request a new one, as you did before. The new one will include the domain you just created. You can use this new token
 to access the submissions API.
 
-== Development servers
+=== Development servers
 
 We use a different copy of the AAP service to secure our test and development servers. If you are working with them,
 rather than the main server, please use this version of AAP: https://explore.api.aai.ebi.ac.uk
@@ -281,7 +336,8 @@ rather than the main server, please use this version of AAP: https://explore.api
 
 == Wrapping up
 
-You have now created an AAP account and domain. You are now ready to submit to BioSamples using the BioSamples API.
+You have now created an AAP account and domain or a ENA WEBIN account.
+You are now ready to submit to BioSamples using the BioSamples API.
 
 //== Next steps
 //

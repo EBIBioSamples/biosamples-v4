@@ -3,20 +3,14 @@
 :toc: auto
 
 
-Sample certification service can be used to validate samples against JSON schema checklists
-before or during sample submission.
-
-This website requires the limited processing of your personal data in order to function.
-By using the site you are agreeing to this as outlined in our https://www.ebi.ac.uk/data-protection/privacy-notice/biosamples-submissions[Submission Privacy Notice]
-
-== Certification during sample submission and sample updates
-
-BioSamples submission API's has been updated to certify samples against available checklists
+Sample certification service can be used to validate samples against JSON schema checklists.
 
 == Certify sample
 `PUT` an existing sample to know if the sample validates against any of the available checklists
 and if validation is successful then the sample is deemed certified and
 certificates are added to the sample
+
+** Submission using a AAP token (default)
 
 === curl request
 include::{snippets}/certify-sample/curl-request.adoc[]
@@ -26,6 +20,17 @@ include::{snippets}/certify-sample/http-request.adoc[]
 
 === Response
 include::{snippets}/certify-sample/http-response.adoc[]
+
+** Submission using ENA WEBIN AUTHENTICATION token
+
+=== curl request
+include::{snippets}/certify-sample-2/curl-request.adoc[]
+
+=== Request
+include::{snippets}/certify-sample-2/http-request.adoc[]
+
+=== Response
+include::{snippets}/certify-sample-2/http-response.adoc[]
 
 == Check compliance
 `POST` a sample to know if the sample validates against any available checklists,
@@ -40,3 +45,7 @@ include::{snippets}/check-compliance/http-request.adoc[]
 
 === Response
 include::{snippets}/check-compliance/http-response.adoc[]
+
+
+This website requires the limited processing of your personal data in order to function.
+By using the site you are agreeing to this as outlined in our https://www.ebi.ac.uk/data-protection/privacy-notice/biosamples-submissions[Submission Privacy Notice]

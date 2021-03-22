@@ -113,7 +113,7 @@ public class BioSamplesClient implements AutoCloseable {
         new SampleSubmissionService(restOperations, traverson, threadPoolExecutor);
 
     sampleCertificationService =
-            new SampleCertificationService(restOperations, traverson, threadPoolExecutor);
+        new SampleCertificationService(restOperations, traverson, threadPoolExecutor);
 
     sampleGroupSubmissionService =
         new SampleGroupSubmissionService(restOperations, traverson, threadPoolExecutor);
@@ -317,7 +317,9 @@ public class BioSamplesClient implements AutoCloseable {
   }
 
   public Collection<Resource<Sample>> certifySamples(Collection<Sample> samples) {
-    return samples.stream().map(sample -> sampleCertificationService.submit(sample, null)).collect(Collectors.toList());
+    return samples.stream()
+        .map(sample -> sampleCertificationService.submit(sample, null))
+        .collect(Collectors.toList());
   }
 
   public Iterable<Resource<Curation>> fetchCurationResourceAll() {
@@ -327,7 +329,7 @@ public class BioSamplesClient implements AutoCloseable {
   public Resource<CurationLink> persistCuration(
       String accession, Curation curation, String domain) {
     log.trace("Persisting curation " + curation + " on " + accession + " in " + domain);
-    return curationSubmissionService.submit(CurationLink.build(accession, curation, domain, null));
+    return curationSubmissionService.submit(CurationLink.build(accession, curation, domain, null, null));
   }
 
   public Iterable<Resource<CurationLink>> fetchCurationLinksOfSample(String accession) {
@@ -422,7 +424,7 @@ public class BioSamplesClient implements AutoCloseable {
       String accession, Curation curation, String domain, String jwt) {
     log.trace("Persisting curation {} on {} in {}", curation, accession, domain);
     return curationSubmissionService.persistCuration(
-        CurationLink.build(accession, curation, domain, null), jwt);
+        CurationLink.build(accession, curation, domain, null, null), jwt);
   }
 
   public Iterable<Resource<CurationLink>> fetchCurationLinksOfSample(String accession, String jwt) {

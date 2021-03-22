@@ -46,6 +46,9 @@ public class MongoSample {
   @Indexed(background = true)
   protected String domain;
 
+  @Indexed(background = true)
+  protected String webinSubmissionAccountId;
+
   @JsonSerialize(using = CustomInstantSerializer.class)
   @JsonDeserialize(using = CustomInstantDeserializer.class)
   @Indexed(background = true)
@@ -109,6 +112,10 @@ public class MongoSample {
 
   public String getDomain() {
     return domain;
+  }
+
+  public String getWebinSubmissionAccountId() {
+    return webinSubmissionAccountId;
   }
 
   public Instant getRelease() {
@@ -178,6 +185,7 @@ public class MongoSample {
     return Objects.equals(this.name, other.name)
         && Objects.equals(this.accession, other.accession)
         && Objects.equals(this.domain, other.domain)
+        && Objects.equals(this.webinSubmissionAccountId, other.webinSubmissionAccountId)
         && Objects.equals(this.release, other.release)
         && Objects.equals(this.update, other.update)
         && Objects.equals(this.create, other.create)
@@ -197,6 +205,7 @@ public class MongoSample {
         name,
         accession,
         domain,
+        webinSubmissionAccountId,
         release,
         update,
         create,
@@ -218,6 +227,8 @@ public class MongoSample {
     sb.append(accession);
     sb.append(",");
     sb.append(domain);
+    sb.append(",");
+    sb.append(webinSubmissionAccountId);
     sb.append(",");
     sb.append(release);
     sb.append(",");
@@ -253,6 +264,7 @@ public class MongoSample {
       @JsonProperty("name") String name,
       @JsonProperty("accession") String accession,
       @JsonProperty("domain") String domain,
+      @JsonProperty("webinSubmissionAccountId") String webinSubmissionAccountId,
       @JsonProperty("release") Instant release,
       @JsonProperty("update") Instant update,
       @JsonProperty("create") Instant create,
@@ -273,6 +285,7 @@ public class MongoSample {
     sample.accession = accession;
     sample.name = name;
     sample.domain = domain;
+    sample.webinSubmissionAccountId = webinSubmissionAccountId;
     sample.release = release;
     sample.update = update;
     sample.create = create;

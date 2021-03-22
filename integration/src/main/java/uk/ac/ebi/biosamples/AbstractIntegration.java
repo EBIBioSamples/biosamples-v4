@@ -45,7 +45,10 @@ public abstract class AbstractIntegration implements ApplicationRunner, ExitCode
 
   public AbstractIntegration(BioSamplesClient client) {
     this.client = client;
-    this.publicClient = client.getPublicClient().orElseThrow(() -> new IntegrationTestFailException("Could not create public client"));
+    this.publicClient =
+        client
+            .getPublicClient()
+            .orElseThrow(() -> new IntegrationTestFailException("Could not create public client"));
   }
 
   @Override

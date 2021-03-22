@@ -19,15 +19,21 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.ExposesResourceFor;
 import org.springframework.hateoas.Resource;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.provider.authentication.BearerTokenExtractor;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.model.Certificate;
 import uk.ac.ebi.biosamples.model.Sample;
 import uk.ac.ebi.biosamples.model.SubmittedViaType;
+import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.model.certification.BioSamplesCertificationComplainceResult;
 import uk.ac.ebi.biosamples.service.BioSamplesAapService;
+import uk.ac.ebi.biosamples.service.BioSamplesWebinAuthenticationService;
 import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.certification.CertifyService;
+
+import javax.servlet.http.HttpServletRequest;
 
 @RestController
 @ExposesResourceFor(Sample.class)
@@ -39,44 +45,61 @@ public class CertificationController {
   @Autowired private CertifyService certifyService;
   @Autowired private SampleService sampleService;
   @Autowired private BioSamplesAapService bioSamplesAapService;
+  @Autowired private BioSamplesWebinAuthenticationService bioSamplesWebinAuthenticationService;
   @Autowired private SampleResourceAssembler sampleResourceAssembler;
 
   @PutMapping("{accession}/certify")
-  public Resource<Sample> certify(@RequestBody Sample sample, @PathVariable String accession)
-      throws JsonProcessingException {
+  public Resource<Sample> certify(
+          HttpServletRequest request, @RequestBody Sample sample,
+          @PathVariable String accession,
+          @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
+                  String authProvider)
+          throws JsonProcessingException {
     final ObjectMapper jsonMapper = new ObjectMapper();
 
     if (sample.getAccession() == null || !sample.getAccession().equals(accession)) {
       throw new SampleRestController.SampleAccessionMismatchException();
     }
 
-    if (!sampleService.isExistingAccession(accession)
-        && !(bioSamplesAapService.isWriteSuperUser()
+    if (sampleService.isExistingAccession(accession)
+            && !(bioSamplesAapService.isWriteSuperUser()
             || bioSamplesAapService.isIntegrationTestUser())) {
       throw new SampleRestController.SampleAccessionDoesNotExistException();
     }
 
     log.info("Received PUT for validation of " + accession);
 
-    sample = bioSamplesAapService.handleSampleDomain(sample);
+    if (authProvider.equalsIgnoreCase("WEBIN")) {
+      final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
+      final Authentication authentication = bearerTokenExtractor.extract(request);
+      final SubmissionAccount webinAccount =
+              bioSamplesWebinAuthenticationService
+                      .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
+                      .getBody();
+
+      sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinAccount.getId());
+    } else {
+      sample = bioSamplesAapService.handleSampleDomain(sample);
+    }
+
     List<Certificate> certificates =
-        certifyService.certify(jsonMapper.writeValueAsString(sample), true);
+            certifyService.certify(jsonMapper.writeValueAsString(sample), true);
 
     // update date is system generated field
     Instant reviewed = Instant.now();
 
     SubmittedViaType submittedVia =
-        sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
+            sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
     sample =
-        Sample.Builder.fromSample(sample)
-            .withCertificates(certificates)
-            .withReviewed(reviewed)
-            .withSubmittedVia(submittedVia)
-            .build();
+            Sample.Builder.fromSample(sample)
+                    .withCertificates(certificates)
+                    .withReviewed(reviewed)
+                    .withSubmittedVia(submittedVia)
+                    .build();
 
     log.trace("Sample with certificates " + sample);
 
-    sample = sampleService.store(sample, false);
+    sample = sampleService.store(sample, false, authProvider);
 
     // assemble a resource to return
     // create the response object with the appropriate status

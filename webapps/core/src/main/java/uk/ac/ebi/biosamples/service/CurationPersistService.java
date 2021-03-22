@@ -107,6 +107,7 @@ public class CurationPersistService {
                 rel.getTarget(),
                 reverseCuration,
                 curationLink.getDomain(),
+                null,
                 curationLink.getCreated());
         if (mongoCurationLinkRepository.findOne(reverseCurationLink.getHash()) == null) {
           mongoCurationLinkRepository.save(
@@ -126,6 +127,7 @@ public class CurationPersistService {
                 rel.getTarget(),
                 reverseCuration,
                 curationLink.getDomain(),
+                null,
                 curationLink.getCreated());
         if (mongoCurationLinkRepository.findOne(reverseCurationLink.getHash()) == null) {
           mongoCurationLinkRepository.save(

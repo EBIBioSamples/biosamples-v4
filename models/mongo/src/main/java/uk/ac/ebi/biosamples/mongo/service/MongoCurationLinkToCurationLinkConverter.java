@@ -25,6 +25,7 @@ public class MongoCurationLinkToCurationLinkConverter
         mongoCurationLink.getSample(),
         mongoCurationLink.getCuration(),
         mongoCurationLink.getDomain(),
+        mongoCurationLink.getWebinSubmissionAccountId(),
         mongoCurationLink.getCreated());
   }
 }

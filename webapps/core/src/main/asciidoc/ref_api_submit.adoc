@@ -2,7 +2,6 @@
 :last-update-label!:
 :toc: auto
 
-
 Using the BioSamples API you can submit new samples to our resource, as well as update or curate samples.
 
 This website requires the limited processing of your personal data in order to function. By using the site you are agreeing to this as outlined in our https://www.ebi.ac.uk/data-protection/privacy-notice/biosamples-submissions[Submission Privacy Notice]
@@ -22,7 +21,7 @@ Sample content reference:
 | name | The short name of the sample. | `String` | Required
 | release | The date at which the sample was first made public. | `Date ISO 8601` | Required
 | update | The date at which the sample was last updated. | `Date ISO 8601` | System Generated
-| domain | The AAP domain the sample belongs to. | `String` | Required
+| domain | The AAP domain the sample belongs to. | `String` | Required (only while using AAP authentication)
 | accession | The sample unique identifier in the BioSamples database. If not provided, one will be automatically assigned. | `String` | Required for `PUT` requests
 | characteristics | The key-value pairs representing the attributes of the sample. | `Object` | Optional
 | externalReferences | A list of links towards external references, such as datasets in other archives. | `Array` | Optional
@@ -57,7 +56,7 @@ The structure of elements in Field `characteristics` :
 |Cardinality
 
 | sample | `String` | Required
-| domain |  `String` | Required
+| domain |  `String` | Required (only while using AAP authentication)
 | curation | `Object` | Required
 | curation.attributesPre | `Array` | Required, could be empty
 | curation.attributesPost | `Array` | Required, could be empty
@@ -69,7 +68,9 @@ The structure of elements in Field `characteristics` :
 
 == Submit a sample
 `POST` sample to BioSamples
+You can either use AAP or ENA WEBIN AUTHENTICATION to generate the auth token.
 
+** Submission using a AAP token (default)
 
 === Request
 include::{snippets}/post-sample/http-request.adoc[]
@@ -77,19 +78,38 @@ include::{snippets}/post-sample/http-request.adoc[]
 === Response
 include::{snippets}/post-sample/http-response.adoc[]
 
+** Submission using a ENA WEBIN AUTHENTICATION token
+
+=== Request
+include::{snippets}/post-sample-2/http-request.adoc[]
+
+=== Response
+include::{snippets}/post-sample-2/http-response.adoc[]
+
 === Links
 For all the links available in BioSamples check the link:../api/links[Links Reference]
 
 == Update sample
 `PUT` a sample to BioSamples
+You can either use AAP or ENA WEBIN AUTHENTICATION to generate the auth token.
 
 The submitted sample is required to have an accession and the accession should match the one in the url. Updating a sample overwrites its existing content with the new one. If you want to preserve existing attributes, you should first download the sample, build a new version including existing and new attributes, and resubmit the new content.
+
+** Submission using a AAP token (default)
 
 === Request
 include::{snippets}/put-sample/http-request.adoc[]
 
 === Response
 include::{snippets}/put-sample/http-response.adoc[]
+
+** Submission using a ENA WEBIN AUTHENTICATION token
+
+=== Request
+include::{snippets}/put-sample-2/http-request.adoc[]
+
+=== Response
+include::{snippets}/put-sample-2/http-response.adoc[]
 
 === Links
 For all the links available in BioSamples check the link:../api/links[Links Reference]
@@ -133,9 +153,10 @@ include::{snippets}/patch-sample-2/http-response.adoc[]
 === Links
 For all the links available in BioSamples check the link:../api/links[Links Reference]
 
-
 == Submit curation object
 `POST` a curation to BioSamples
+
+** Submission using a AAP token (default)
 
 === Request
 include::{snippets}/post-curation/http-request.adoc[]
@@ -143,12 +164,21 @@ include::{snippets}/post-curation/http-request.adoc[]
 === Response
 include::{snippets}/post-curation/http-response.adoc[]
 
+** Submission using a ENA WEBIN AUTHENTICATION token
+
+=== Request
+include::{snippets}/post-curation-2/http-request.adoc[]
+
+=== Response
+include::{snippets}/post-curation-2/http-response.adoc[]
+
 === Links
 For all the links available in BioSamples check the link:../api/links[Links Reference]
 
-
 == Accession a sample
 `POST` a sample for accessioning. Accessioned sample is saved as a private sample.
+
+** Submission using a AAP token (default)
 
 === Request
 include::{snippets}/accession-sample/http-request.adoc[]
@@ -156,9 +186,17 @@ include::{snippets}/accession-sample/http-request.adoc[]
 === Response
 include::{snippets}/accession-sample/http-response.adoc[]
 
+** Submission using a ENA WEBIN AUTHENTICATION token
+
+=== Request
+include::{snippets}/accession-sample-2/http-request.adoc[]
+
+=== Response
+include::{snippets}/accession-sample-2/http-response.adoc[]
+
 === Links
 For all the links available in BioSamples check the link:../api/links[Links Reference]
-
+ls
 
 == Validate sample fields
 `POST` a sample to validate its basic fields before submission.
@@ -168,7 +206,6 @@ include::{snippets}/validate-sample/http-request.adoc[]
 
 === Response
 include::{snippets}/validate-sample/http-response.adoc[]
-
 
 == Post sample with external references
 `POST` sample with external reference attached to it
@@ -191,4 +228,3 @@ include::{snippets}/put-sample-with-relationships/http-response.adoc[]
 
 === Links
 For all the links available in BioSamples check the link:../api/links[Links Reference]
-

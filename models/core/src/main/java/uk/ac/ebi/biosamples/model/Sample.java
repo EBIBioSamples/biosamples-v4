@@ -48,6 +48,7 @@ import uk.ac.ebi.biosamples.service.CustomInstantSerializer;
   "name",
   "accession",
   "domain",
+  "webinSubmissionAccountId",
   "release",
   "update",
   "submitted",
@@ -66,6 +67,8 @@ public class Sample implements Comparable<Sample> {
 
   /** This is the unique permanent ID of the AAP domain/team that owns this sample. */
   protected String domain;
+
+  protected String webinSubmissionAccountId;
 
   protected Instant release;
   protected Instant update;
@@ -109,6 +112,11 @@ public class Sample implements Comparable<Sample> {
   @JsonProperty("domain")
   public String getDomain() {
     return domain;
+  }
+
+  @JsonProperty("webinSubmissionAccountId")
+  public String getWebinSubmissionAccountId() {
+    return webinSubmissionAccountId;
   }
 
   // DO NOT specify the JSON property value manually, must be autoinferred or errors
@@ -265,6 +273,7 @@ public class Sample implements Comparable<Sample> {
     return Objects.equals(this.name, other.name)
         && Objects.equals(this.accession, other.accession)
         && Objects.equals(this.domain, other.domain)
+        && Objects.equals(this.webinSubmissionAccountId, other.webinSubmissionAccountId)
         && Objects.equals(this.release, other.release)
         && Objects.equals(this.attributes, other.attributes)
         && Objects.equals(this.data, other.data)
@@ -405,6 +414,8 @@ public class Sample implements Comparable<Sample> {
     sb.append(",");
     sb.append(domain);
     sb.append(",");
+    sb.append(webinSubmissionAccountId);
+    sb.append(",");
     sb.append(release);
     sb.append(",");
     sb.append(update);
@@ -436,6 +447,7 @@ public class Sample implements Comparable<Sample> {
       String name,
       String accession,
       String domain,
+      String webinSubmissionAccountId,
       Instant release,
       Instant update,
       Instant create,
@@ -448,6 +460,7 @@ public class Sample implements Comparable<Sample> {
         name,
         accession,
         domain,
+        webinSubmissionAccountId,
         release,
         update,
         create,
@@ -468,6 +481,7 @@ public class Sample implements Comparable<Sample> {
       String name,
       String accession,
       String domain,
+      String webinSubmissionAccountId,
       Instant release,
       Instant update,
       Instant create,
@@ -481,6 +495,7 @@ public class Sample implements Comparable<Sample> {
         name,
         accession,
         domain,
+        webinSubmissionAccountId,
         release,
         update,
         create,
@@ -503,6 +518,7 @@ public class Sample implements Comparable<Sample> {
       @JsonProperty("name") String name,
       @JsonProperty("accession") String accession,
       @JsonProperty("domain") String domain,
+      @JsonProperty("webinSubmissionAccountId") String webinSubmissionAccountId,
       @JsonProperty("release") @JsonDeserialize(using = CustomInstantDeserializer.class)
           Instant release,
       @JsonProperty("update") @JsonDeserialize(using = CustomInstantDeserializer.class)
@@ -535,6 +551,10 @@ public class Sample implements Comparable<Sample> {
 
     if (domain != null) {
       sample.domain = domain.trim();
+    }
+
+    if (webinSubmissionAccountId != null) {
+      sample.webinSubmissionAccountId = webinSubmissionAccountId.trim();
     }
 
     // Instead of validation failure, if null, set it to now
@@ -604,6 +624,7 @@ public class Sample implements Comparable<Sample> {
 
     protected String accession = null;
     protected String domain = null;
+    protected String webinSubmissionAccountId = null;
 
     protected Instant release = Instant.now();
     protected Instant update = Instant.now();
@@ -638,6 +659,11 @@ public class Sample implements Comparable<Sample> {
 
     public Builder withDomain(String domain) {
       this.domain = domain;
+      return this;
+    }
+
+    public Builder withWebinSubmissionAccountId(String webinSubmissionAccountId) {
+      this.webinSubmissionAccountId = webinSubmissionAccountId;
       return this;
     }
 
@@ -895,6 +921,12 @@ public class Sample implements Comparable<Sample> {
       return this;
     }
 
+    // Clean webin account id field
+    public Builder withNoWebinSubmissionAccountId() {
+      this.webinSubmissionAccountId = null;
+      return this;
+    }
+
     // Clean collection fields
     public Builder withNoAttributes() {
       this.attributes = new TreeSet<>();
@@ -936,6 +968,7 @@ public class Sample implements Comparable<Sample> {
           name,
           accession,
           domain,
+          webinSubmissionAccountId,
           release,
           update,
           create,
@@ -975,6 +1008,7 @@ public class Sample implements Comparable<Sample> {
     public static Builder fromSample(Sample sample) {
       return new Builder(sample.getName(), sample.getAccession())
           .withDomain(sample.getDomain())
+          .withWebinSubmissionAccountId(sample.getWebinSubmissionAccountId())
           .withRelease(sample.getRelease())
           .withUpdate(sample.getUpdate())
           .withCreate(sample.getCreate())

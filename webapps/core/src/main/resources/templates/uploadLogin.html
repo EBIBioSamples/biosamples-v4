@@ -21,13 +21,19 @@
     <th:block th:include="fragments/header :: masterhead"></th:block>
 
     <div id="main-content-area" class="row padding-top-xlarge padding-right-xlarge padding-left-xlarge sample">
-                <form th:action="@{/login/auth}" method="post" modelAttribute="authRequest">
-                    <label for="userName">Username</label>
-                    <input type="text" id="userName" name="userName" autofocus="autofocus"/> <br/>
-                    <label for="password">Password</label>
-                    <input type="password" id="password" name="password"/> <br/>
-                    <input type="submit" value="Log in"/>
-                </form>
+        <form th:action="@{/login/auth}" method="post" modelAttribute="authRequest">
+            <span><b>Login using</b></span> &nbsp;
+            <input type="radio" name="loginWay" id="AAP" value="AAP" checked="checked"/><b>AAP</b> &nbsp;
+            <input type="radio" name="loginWay" id="WEBIN" value="WEBIN"/><b>WEBIN</b>
+
+            <br/>
+
+            <label for="userName"><b>Username</b></label>
+            <input type="text" id="userName" name="userName" autofocus="autofocus"/> <br/>
+            <label for="password"><b>Password</b></label>
+            <input type="password" id="password" name="password"/> <br/>
+            <input type="submit" value="Sign in"/>
+        </form>
         <br/>
         <div th:if="${wrongCreds != null}"><b>Invalid username/ password entered</b></div>
     </div>
