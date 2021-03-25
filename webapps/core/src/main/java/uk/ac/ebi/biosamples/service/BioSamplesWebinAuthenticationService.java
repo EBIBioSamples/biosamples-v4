@@ -86,9 +86,19 @@ public class BioSamplesWebinAuthenticationService {
       if (sample.getAccession() != null) {
         Optional<Sample> oldSample =
                 sampleService.fetch(sample.getAccession(), Optional.empty(), null);
-        if (oldSample.isEmpty()
-                || !webinId
-                .equalsIgnoreCase(oldSample.get().getWebinSubmissionAccountId())) {
+
+        if (oldSample.isPresent()) {
+          final Sample oldSavedSample = oldSample.get();
+
+          if (oldSavedSample.getWebinSubmissionAccountId().startsWith("SU")) {
+            return Sample.Builder.fromSample(sample)
+                    .withWebinSubmissionAccountId(webinId)
+                    .withNoDomain()
+                    .build();
+          } else if (!webinId.equalsIgnoreCase(oldSavedSample.getWebinSubmissionAccountId())) {
+            throw new BioSamplesAapService.SampleNotAccessibleException();
+          }
+        } else {
           throw new BioSamplesAapService.SampleNotAccessibleException();
         }
       }

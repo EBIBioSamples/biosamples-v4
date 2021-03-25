@@ -247,7 +247,13 @@ public class SampleRestController {
         Sample.Builder.fromSample(sample).withUpdate(update).withSubmittedVia(submittedVia).build();
 
     // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
-    if (!bioSamplesAapService.isWriteSuperUser()) schemaValidationService.validate(sample);
+    // Validate all samples submitted with WEBIN AUTH
+
+    if (sample.getWebinSubmissionAccountId() != null) {
+      schemaValidationService.validate(sample);
+    } else if (!bioSamplesAapService.isWriteSuperUser()) {
+      schemaValidationService.validate(sample);
+    }
 
     final boolean isFirstTimeMetadataAdded = sampleService.beforeStore(sample);
 
