@@ -46,10 +46,7 @@ import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -377,6 +374,15 @@ public class SamplesRestController {
       }
     }
     return new Link(builder.toUriString(), rel);
+  }
+
+  @PostMapping(
+          consumes = {MediaType.APPLICATION_JSON_VALUE},
+          produces = {MediaType.APPLICATION_JSON_VALUE, MediaTypes.HAL_JSON_VALUE})
+  @RequestMapping("/validate")
+  public ResponseEntity<Sample> validateSample(@RequestBody Sample sample) {
+    schemaValidationService.validate(sample);
+    return ResponseEntity.ok(sample);
   }
 
   @PreAuthorize("isAuthenticated()")
