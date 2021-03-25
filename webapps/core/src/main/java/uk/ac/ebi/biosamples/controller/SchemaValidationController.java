@@ -11,6 +11,8 @@
 package uk.ac.ebi.biosamples.controller;
 
 import java.util.Optional;
+
+import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,7 +31,7 @@ public class SchemaValidationController {
     this.schemaValidationService = schemaValidationService;
   }
 
-  @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<Sample> validate(
       @RequestBody Sample sample,
       @RequestParam(name = "checklist", required = false) String checklist) {
