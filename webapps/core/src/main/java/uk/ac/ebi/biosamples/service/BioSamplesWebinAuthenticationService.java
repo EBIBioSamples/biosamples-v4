@@ -85,18 +85,28 @@ public class BioSamplesWebinAuthenticationService {
     if (webinId != null && !webinId.isEmpty()) {
       if (sample.getAccession() != null) {
         Optional<Sample> oldSample =
-                sampleService.fetch(sample.getAccession(), Optional.empty(), null);
-        if (oldSample.isEmpty()
-                || !webinId
-                .equalsIgnoreCase(oldSample.get().getWebinSubmissionAccountId())) {
+            sampleService.fetch(sample.getAccession(), Optional.empty(), null);
+
+        if (oldSample.isPresent()) {
+          final Sample oldSavedSample = oldSample.get();
+
+          if (oldSavedSample.getWebinSubmissionAccountId().startsWith("SU")) {
+            return Sample.Builder.fromSample(sample)
+                .withWebinSubmissionAccountId(webinId)
+                .withNoDomain()
+                .build();
+          } else if (!webinId.equalsIgnoreCase(oldSavedSample.getWebinSubmissionAccountId())) {
+            throw new BioSamplesAapService.SampleNotAccessibleException();
+          }
+        } else {
           throw new BioSamplesAapService.SampleNotAccessibleException();
         }
       }
 
       return Sample.Builder.fromSample(sample)
-              .withWebinSubmissionAccountId(webinId)
-              .withNoDomain()
-              .build();
+          .withWebinSubmissionAccountId(webinId)
+          .withNoDomain()
+          .build();
     } else {
       throw new WebinUserLoginUnauthorizedException();
     }
@@ -105,11 +115,11 @@ public class BioSamplesWebinAuthenticationService {
   public CurationLink handleWebinUser(CurationLink curationLink, String webinId) {
     if (webinId != null && !webinId.isEmpty()) {
       return CurationLink.build(
-              curationLink.getSample(),
-              curationLink.getCuration(),
-              null,
-              webinId,
-              curationLink.getCreated());
+          curationLink.getSample(),
+          curationLink.getCuration(),
+          null,
+          webinId,
+          curationLink.getCreated());
     } else {
       throw new BioSamplesAapService.SampleNotAccessibleException();
     }
