@@ -10,6 +10,10 @@
 */
 package uk.ac.ebi.biosamples.controller;
 
+import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
+import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.ExposesResourceFor;
@@ -28,11 +32,6 @@ import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.model.ga4gh.phenopacket.PhenopacketConverter;
 import uk.ac.ebi.biosamples.service.*;
 import uk.ac.ebi.biosamples.utils.LinkUtils;
-
-import javax.servlet.http.HttpServletRequest;
-import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
 
 /**
  * Primary controller for REST operations both in JSON and XML and both read and write.

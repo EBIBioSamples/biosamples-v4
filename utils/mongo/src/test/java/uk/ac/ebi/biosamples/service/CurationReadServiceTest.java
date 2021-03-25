@@ -68,7 +68,7 @@ public class CurationReadServiceTest {
     Attribute attributePost = Attribute.build("Organism", "Homo sapiens", "iri", "unit");
     Curation curation = Curation.build(attributePre, attributePost);
     CurationLink curationLink =
-        CurationLink.build("SAMN001", curation, "self.domain1", null,Instant.now());
+        CurationLink.build("SAMN001", curation, "self.domain1", null, Instant.now());
 
     Sample curatedSample =
         new CurationReadService().applyCurationLinkToSample(originalSample, curationLink);
