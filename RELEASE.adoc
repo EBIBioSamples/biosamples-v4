@@ -2,6 +2,25 @@
 :toc: auto
 
 This pages contains links to release notes for BioSamples for version 4.0.0 and higher. This release represents a comprehensive overhaul and therefore previous release notes are no longer applicable.
+[[v5.0.7]]
+== v5.0.7 Release notes
+=== Bug Fixes:
+1. Re-introduce missing `samples/validate` endpoint
++
+In last release we have removed `samples/validate` endpoint in favour of `validate` endpoint.
+But since most users are using `samples/validate` we will keep this and deprecate in a future release.
+
+2. Support both json and hal+json for accept header
++
+Validate endpoint did not support `hal+json` `accept` header in last release. We will include support for this.
+
+3. Enable ENA to pre-accession samples using WEBIN authentication instead of AAP
++
+ENA will pre-accession samples using a WEBIN super user (prefixed SU-) and the metadata submission will be done by a non super user.
+During metadata submission we will check if the sample has been accessioned by the ENA registered super user and
+if yes then we will allow submission by any general webin user who wants to submit metadata against the accession.
+
+
 [[v5.0.6]]
 == v5.0.6 Release notes
 === New features
