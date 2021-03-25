@@ -43,7 +43,12 @@ public class MongoCurationLink implements Comparable<MongoCurationLink> {
   private final Curation curation;
 
   private MongoCurationLink(
-      String sample, String domain, String webinSubmissionAccountId, Curation curation, String hash, Instant created) {
+      String sample,
+      String domain,
+      String webinSubmissionAccountId,
+      Curation curation,
+      String hash,
+      Instant created) {
     this.sample = sample;
     this.domain = domain;
     this.webinSubmissionAccountId = webinSubmissionAccountId;

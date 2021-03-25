@@ -14,6 +14,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
 import java.util.List;
+import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,8 +34,6 @@ import uk.ac.ebi.biosamples.service.SampleResourceAssembler;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.certification.CertifyService;
 
-import javax.servlet.http.HttpServletRequest;
-
 @RestController
 @ExposesResourceFor(Sample.class)
 @RequestMapping("/samples")
@@ -50,11 +49,12 @@ public class CertificationController {
 
   @PutMapping("{accession}/certify")
   public Resource<Sample> certify(
-          HttpServletRequest request, @RequestBody Sample sample,
-          @PathVariable String accession,
-          @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
-                  String authProvider)
-          throws JsonProcessingException {
+      HttpServletRequest request,
+      @RequestBody Sample sample,
+      @PathVariable String accession,
+      @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
+          String authProvider)
+      throws JsonProcessingException {
     final ObjectMapper jsonMapper = new ObjectMapper();
 
     if (sample.getAccession() == null || !sample.getAccession().equals(accession)) {
@@ -62,7 +62,7 @@ public class CertificationController {
     }
 
     if (sampleService.isExistingAccession(accession)
-            && !(bioSamplesAapService.isWriteSuperUser()
+        && !(bioSamplesAapService.isWriteSuperUser()
             || bioSamplesAapService.isIntegrationTestUser())) {
       throw new SampleRestController.SampleAccessionDoesNotExistException();
     }
@@ -73,9 +73,9 @@ public class CertificationController {
       final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
       final Authentication authentication = bearerTokenExtractor.extract(request);
       final SubmissionAccount webinAccount =
-              bioSamplesWebinAuthenticationService
-                      .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
-                      .getBody();
+          bioSamplesWebinAuthenticationService
+              .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
+              .getBody();
 
       sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinAccount.getId());
     } else {
@@ -83,19 +83,19 @@ public class CertificationController {
     }
 
     List<Certificate> certificates =
-            certifyService.certify(jsonMapper.writeValueAsString(sample), true);
+        certifyService.certify(jsonMapper.writeValueAsString(sample), true);
 
     // update date is system generated field
     Instant reviewed = Instant.now();
 
     SubmittedViaType submittedVia =
-            sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
+        sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
     sample =
-            Sample.Builder.fromSample(sample)
-                    .withCertificates(certificates)
-                    .withReviewed(reviewed)
-                    .withSubmittedVia(submittedVia)
-                    .build();
+        Sample.Builder.fromSample(sample)
+            .withCertificates(certificates)
+            .withReviewed(reviewed)
+            .withSubmittedVia(submittedVia)
+            .build();
 
     log.trace("Sample with certificates " + sample);
 

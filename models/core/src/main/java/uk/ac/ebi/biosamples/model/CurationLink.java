@@ -30,7 +30,12 @@ public class CurationLink implements Comparable<CurationLink> {
   protected final Instant created;
 
   private CurationLink(
-      String sample, String domain, String webinSubmissionAccountId, Curation curation, String hash, Instant created) {
+      String sample,
+      String domain,
+      String webinSubmissionAccountId,
+      Curation curation,
+      String hash,
+      Instant created) {
     this.sample = sample;
     this.domain = domain;
     this.webinSubmissionAccountId = webinSubmissionAccountId;
@@ -73,9 +78,9 @@ public class CurationLink implements Comparable<CurationLink> {
     CurationLink other = (CurationLink) o;
 
     return Objects.equals(this.curation, other.curation)
-            && Objects.equals(this.sample, other.sample)
-            && Objects.equals(this.domain, other.domain)
-            && Objects.equals(this.webinSubmissionAccountId, other.webinSubmissionAccountId);
+        && Objects.equals(this.sample, other.sample)
+        && Objects.equals(this.domain, other.domain)
+        && Objects.equals(this.webinSubmissionAccountId, other.webinSubmissionAccountId);
   }
 
   @Override
