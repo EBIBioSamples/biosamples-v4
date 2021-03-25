@@ -286,32 +286,35 @@ public class ApiDocumentationTest {
     submissionAccount.setId("WEBIN-12345");
 
     String sampleToSubmit =
-            "{ "
-                    + "\"name\" : \""
-                    + sample.getName()
-                    + "\", "
-                    + "\"release\" : \""
-                    + dateTimeFormatter.format(sample.getRelease().atOffset(ZoneOffset.UTC))
-                    + "\""
-                    + "}";
+        "{ "
+            + "\"name\" : \""
+            + sample.getName()
+            + "\", "
+            + "\"release\" : \""
+            + dateTimeFormatter.format(sample.getRelease().atOffset(ZoneOffset.UTC))
+            + "\""
+            + "}";
 
-    when(bioSamplesWebinAuthenticationService.handleWebinUser(any(Sample.class), any(String.class))).thenReturn(sampleWithWebinId);
-    when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(any(String.class))).thenReturn(ResponseEntity.ok(submissionAccount));
-    when(sampleService.store(any(Sample.class), eq(false), eq("WEBIN"))).thenReturn(sampleWithWebinId);
+    when(bioSamplesWebinAuthenticationService.handleWebinUser(any(Sample.class), any(String.class)))
+        .thenReturn(sampleWithWebinId);
+    when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(any(String.class)))
+        .thenReturn(ResponseEntity.ok(submissionAccount));
+    when(sampleService.store(any(Sample.class), eq(false), eq("WEBIN")))
+        .thenReturn(sampleWithWebinId);
     when(schemaValidationService.validate(any(Sample.class))).thenReturn("ERC100001");
 
     this.mockMvc
-            .perform(
-                    post("/biosamples/samples?authProvider=WEBIN")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(sampleToSubmit)
-                            .header("Authorization", "Bearer $TOKEN"))
-            .andExpect(status().is2xxSuccessful())
-            .andDo(
-                    document(
-                            "post-sample-2",
-                            preprocessRequest(prettyPrint()),
-                            preprocessResponse(prettyPrint())));
+        .perform(
+            post("/biosamples/samples?authProvider=WEBIN")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(sampleToSubmit)
+                .header("Authorization", "Bearer $TOKEN"))
+        .andExpect(status().is2xxSuccessful())
+        .andDo(
+            document(
+                "post-sample-2",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint())));
   }
 
   /**
@@ -474,44 +477,46 @@ public class ApiDocumentationTest {
     Sample sample = this.faker.getExampleSample();
     Sample sampleWithWebinId = this.faker.getExampleSampleWithWebinId();
     Instant release =
-            Instant.ofEpochSecond(
-                    LocalDateTime.now(ZoneOffset.UTC).plusYears(100).toEpochSecond(ZoneOffset.UTC));
+        Instant.ofEpochSecond(
+            LocalDateTime.now(ZoneOffset.UTC).plusYears(100).toEpochSecond(ZoneOffset.UTC));
     Sample sampleWithUpdatedDate =
-            Sample.Builder.fromSample(sampleWithWebinId).withRelease(release).build();
+        Sample.Builder.fromSample(sampleWithWebinId).withRelease(release).build();
 
     String sampleToSubmit =
-            "{ "
-                    + "\"name\" : \""
-                    + sample.getName()
-                    + "\", "
-                    + "\"update\" : \""
-                    + dateTimeFormatter.format(sample.getUpdate().atOffset(ZoneOffset.UTC))
-                    + "\" "
-                    //                "\"release\" : \""
-                    // +dateTimeFormatter.format(sample.getRelease().atOffset(ZoneOffset.UTC)) +
-                    // "\", " +
-                    + "}";
+        "{ "
+            + "\"name\" : \""
+            + sample.getName()
+            + "\", "
+            + "\"update\" : \""
+            + dateTimeFormatter.format(sample.getUpdate().atOffset(ZoneOffset.UTC))
+            + "\" "
+            //                "\"release\" : \""
+            // +dateTimeFormatter.format(sample.getRelease().atOffset(ZoneOffset.UTC)) +
+            // "\", " +
+            + "}";
 
     SubmissionAccount submissionAccount = new SubmissionAccount();
     submissionAccount.setId("WEBIN-12345");
 
-    when(bioSamplesWebinAuthenticationService.handleWebinUser(any(Sample.class), any(String.class))).thenReturn(sampleWithWebinId);
-    when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(any(String.class))).thenReturn(ResponseEntity.ok(submissionAccount));
+    when(bioSamplesWebinAuthenticationService.handleWebinUser(any(Sample.class), any(String.class)))
+        .thenReturn(sampleWithWebinId);
+    when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(any(String.class)))
+        .thenReturn(ResponseEntity.ok(submissionAccount));
     when(sampleService.store(any(Sample.class), eq(false), eq("WEBIN")))
-            .thenReturn(sampleWithUpdatedDate);
+        .thenReturn(sampleWithUpdatedDate);
 
     this.mockMvc
-            .perform(
-                    post("/biosamples/samples/accession?authProvider=WEBIN")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(sampleToSubmit)
-                            .header("Authorization", "Bearer $TOKEN"))
-            .andExpect(status().is2xxSuccessful())
-            .andDo(
-                    document(
-                            "accession-sample-2",
-                            preprocessRequest(prettyPrint()),
-                            preprocessResponse(prettyPrint())));
+        .perform(
+            post("/biosamples/samples/accession?authProvider=WEBIN")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(sampleToSubmit)
+                .header("Authorization", "Bearer $TOKEN"))
+        .andExpect(status().is2xxSuccessful())
+        .andDo(
+            document(
+                "accession-sample-2",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint())));
   }
 
   /** Accessioning service to generate accession */
@@ -694,52 +699,57 @@ public class ApiDocumentationTest {
     Attribute attribute = Attribute.build("Organism", "Homo Sapiens");
 
     sampleWithWebinId =
-            Sample.Builder.fromSample(sampleWithWebinId)
-                    .withAttributes(Collections.unmodifiableList(Arrays.asList(attribute)))
-                    .build();
+        Sample.Builder.fromSample(sampleWithWebinId)
+            .withAttributes(Collections.unmodifiableList(Arrays.asList(attribute)))
+            .build();
 
     SubmissionAccount submissionAccount = new SubmissionAccount();
     submissionAccount.setId("WEBIN-12345");
 
-    when(bioSamplesWebinAuthenticationService.handleWebinUser(any(Sample.class), any(String.class))).thenReturn(sampleWithWebinId);
-    when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(any(String.class))).thenReturn(ResponseEntity.ok(submissionAccount));
+    when(bioSamplesWebinAuthenticationService.handleWebinUser(any(Sample.class), any(String.class)))
+        .thenReturn(sampleWithWebinId);
+    when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(any(String.class)))
+        .thenReturn(ResponseEntity.ok(submissionAccount));
 
-    when(sampleService.fetch(eq(sampleWithWebinId.getAccession()), eq(Optional.empty()), any(String.class)))
-            .thenReturn(Optional.of(sampleWithWebinId));
+    when(sampleService.fetch(
+            eq(sampleWithWebinId.getAccession()), eq(Optional.empty()), any(String.class)))
+        .thenReturn(Optional.of(sampleWithWebinId));
     when(aapService.handleSampleDomain(sampleWithWebinId)).thenReturn(sampleWithWebinId);
     when(aapService.isWriteSuperUser()).thenReturn(true);
     when(aapService.isIntegrationTestUser()).thenReturn(false);
     when(certifyService.certify(new ObjectMapper().writeValueAsString(sampleWithWebinId), true))
-            .thenReturn(
-                    List.of(
-                            Certificate.build(
-                                    "biosamples-minimal",
-                                    "0.0.1",
-                                    "schemas/certification/biosamples-minimal.json")));
+        .thenReturn(
+            List.of(
+                Certificate.build(
+                    "biosamples-minimal",
+                    "0.0.1",
+                    "schemas/certification/biosamples-minimal.json")));
     when(sampleService.store(eq(sampleWithWebinId), eq(false), eq("WEBIN")))
-            .thenReturn(
-                    Sample.Builder.fromSample(sampleWithWebinId)
-                            .withCertificates(
-                                    List.of(
-                                            Certificate.build(
-                                                    "biosamples-minimal",
-                                                    "0.0.1",
-                                                    "schemas/certification/biosamples-minimal.json")))
-                            .build());
+        .thenReturn(
+            Sample.Builder.fromSample(sampleWithWebinId)
+                .withCertificates(
+                    List.of(
+                        Certificate.build(
+                            "biosamples-minimal",
+                            "0.0.1",
+                            "schemas/certification/biosamples-minimal.json")))
+                .build());
     doNothing().when(aapService).checkAccessible(isA(Sample.class));
 
     this.mockMvc
-            .perform(
-                    put("/biosamples/samples/" + sampleWithWebinId.getAccession() + "/certify?authProvider=WEBIN")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(serialize(sampleWithWebinId))
-                            .header("Authorization", "Bearer $TOKEN"))
-            .andExpect(status().is2xxSuccessful())
-            .andDo(
-                    document(
-                            "certify-sample-2",
-                            preprocessRequest(prettyPrint()),
-                            preprocessResponse(prettyPrint())));
+        .perform(
+            put("/biosamples/samples/"
+                    + sampleWithWebinId.getAccession()
+                    + "/certify?authProvider=WEBIN")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(serialize(sampleWithWebinId))
+                .header("Authorization", "Bearer $TOKEN"))
+        .andExpect(status().is2xxSuccessful())
+        .andDo(
+            document(
+                "certify-sample-2",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint())));
   }
 
   @Test
@@ -836,25 +846,29 @@ public class ApiDocumentationTest {
 
     submissionAccount.setId("WEBIN-12345");
 
-    when(bioSamplesWebinAuthenticationService.handleWebinUser(any(Sample.class), any(String.class))).thenReturn(sampleWithWebinId);
-    when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(any(String.class))).thenReturn(ResponseEntity.ok(submissionAccount));
+    when(bioSamplesWebinAuthenticationService.handleWebinUser(any(Sample.class), any(String.class)))
+        .thenReturn(sampleWithWebinId);
+    when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(any(String.class)))
+        .thenReturn(ResponseEntity.ok(submissionAccount));
 
     when(sampleService.fetch(
             eq(sampleWithWebinId.getAccession()), eq(Optional.empty()), any(String.class)))
-            .thenReturn(Optional.of(sampleWithWebinId));
+        .thenReturn(Optional.of(sampleWithWebinId));
     when(sampleService.store(eq(sampleWithWebinId), eq(false), eq("WEBIN")))
-            .thenReturn(sampleWithWebinId);
+        .thenReturn(sampleWithWebinId);
 
     this.mockMvc
-            .perform(
-                    put("/biosamples/samples/" + sampleWithWebinId.getAccession() + "?authProvider=WEBIN")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(serialize(sampleWithWebinId))
-                            .header("Authorization", "Bearer $TOKEN"))
-            .andExpect(status().is2xxSuccessful())
-            .andDo(
-                    document(
-                            "put-sample-2", preprocessRequest(prettyPrint()), preprocessResponse(prettyPrint())));
+        .perform(
+            put("/biosamples/samples/" + sampleWithWebinId.getAccession() + "?authProvider=WEBIN")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(serialize(sampleWithWebinId))
+                .header("Authorization", "Bearer $TOKEN"))
+        .andExpect(status().is2xxSuccessful())
+        .andDo(
+            document(
+                "put-sample-2",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint())));
   }
 
   /**
@@ -916,22 +930,26 @@ public class ApiDocumentationTest {
     SubmissionAccount submissionAccount = new SubmissionAccount();
     submissionAccount.setId("WEBIN-12345");
 
-    when(bioSamplesWebinAuthenticationService.handleWebinUser(eq(curationLink), eq("WEBIN-12345"))).thenReturn(curationLink);
+    when(bioSamplesWebinAuthenticationService.handleWebinUser(eq(curationLink), eq("WEBIN-12345")))
+        .thenReturn(curationLink);
     when(curationPersistService.store(curationLink)).thenReturn(curationLink);
-    when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(any(String.class))).thenReturn(ResponseEntity.ok(submissionAccount));
+    when(bioSamplesWebinAuthenticationService.getWebinSubmissionAccount(any(String.class)))
+        .thenReturn(ResponseEntity.ok(submissionAccount));
 
     this.mockMvc
-            .perform(
-                    post("/biosamples/samples/{accession}/curationlinks?authProvider=WEBIN", curationLink.getSample())
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(serialize(curationLink))
-                            .header("Authorization", "Bearer $TOKEN"))
-            .andExpect(status().is2xxSuccessful())
-            .andDo(
-                    document(
-                            "post-curation-2",
-                            preprocessRequest(prettyPrint()),
-                            preprocessResponse(prettyPrint())));
+        .perform(
+            post(
+                    "/biosamples/samples/{accession}/curationlinks?authProvider=WEBIN",
+                    curationLink.getSample())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(serialize(curationLink))
+                .header("Authorization", "Bearer $TOKEN"))
+        .andExpect(status().is2xxSuccessful())
+        .andDo(
+            document(
+                "post-curation-2",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint())));
   }
 
   @Test

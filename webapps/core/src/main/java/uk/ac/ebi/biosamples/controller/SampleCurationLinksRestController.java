@@ -12,6 +12,7 @@ package uk.ac.ebi.biosamples.controller;
 
 import java.net.URI;
 import java.time.Instant;
+import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -31,8 +32,6 @@ import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.biosamples.model.CurationLink;
 import uk.ac.ebi.biosamples.model.auth.SubmissionAccount;
 import uk.ac.ebi.biosamples.service.*;
-
-import javax.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/samples/{accession}/curationlinks")
@@ -97,13 +96,14 @@ public class SampleCurationLinksRestController {
 
   @PreAuthorize("isAuthenticated()")
   @PostMapping(
-          consumes = {MediaType.APPLICATION_JSON_VALUE},
-          produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
+      consumes = {MediaType.APPLICATION_JSON_VALUE},
+      produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<Resource<CurationLink>> createCurationLinkJson(
-          HttpServletRequest request,
-          @PathVariable String accession, @RequestBody CurationLink curationLink,
-          @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
-                  String authProvider) {
+      HttpServletRequest request,
+      @PathVariable String accession,
+      @RequestBody CurationLink curationLink,
+      @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
+          String authProvider) {
 
     log.info("Recieved POST for " + curationLink);
 
@@ -120,19 +120,24 @@ public class SampleCurationLinksRestController {
       final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
       final Authentication authentication = bearerTokenExtractor.extract(request);
       final SubmissionAccount webinAccount =
-              bioSamplesWebinAuthenticationService
-                      .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
-                      .getBody();
-
-      curationLink = bioSamplesWebinAuthenticationService.handleWebinUser(curationLink, webinAccount.getId());
+          bioSamplesWebinAuthenticationService
+              .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
+              .getBody();
 
       curationLink =
-              CurationLink.build(
-                      accession, curationLink.getCuration(), null, curationLink.getWebinSubmissionAccountId(), Instant.now());
+          bioSamplesWebinAuthenticationService.handleWebinUser(curationLink, webinAccount.getId());
+
+      curationLink =
+          CurationLink.build(
+              accession,
+              curationLink.getCuration(),
+              null,
+              curationLink.getWebinSubmissionAccountId(),
+              Instant.now());
     } else {
       curationLink =
-              CurationLink.build(
-                      accession, curationLink.getCuration(), curationLink.getDomain(), null, Instant.now());
+          CurationLink.build(
+              accession, curationLink.getCuration(), curationLink.getDomain(), null, Instant.now());
       curationLink = bioSamplesAapService.handleCurationLinkDomain(curationLink);
     }
 
