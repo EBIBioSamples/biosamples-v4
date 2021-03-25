@@ -461,9 +461,9 @@ public class SamplesRestController {
 
       final Authentication authentication = bearerTokenExtractor.extract(request);
       final SubmissionAccount webinAccount =
-          bioSamplesWebinAuthenticationService
-              .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
-              .getBody();
+              bioSamplesWebinAuthenticationService
+                      .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
+                      .getBody();
 
       sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinAccount.getId());
     } else {
@@ -479,7 +479,7 @@ public class SamplesRestController {
       final Set<AbstractData> structuredData = sample.getData();
 
       if (!(bioSamplesAapService.isWriteSuperUser()
-          || bioSamplesAapService.isIntegrationTestUser())) {
+              || bioSamplesAapService.isIntegrationTestUser())) {
         if (structuredData != null && structuredData.size() > 0) {
           sample = bioSamplesAapService.handleStructuredDataDomain(sample);
         }
@@ -488,34 +488,28 @@ public class SamplesRestController {
 
     // update, create date are system generated fields
     SubmittedViaType submittedVia =
-        sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
+            sample.getSubmittedVia() == null ? SubmittedViaType.JSON_API : sample.getSubmittedVia();
 
     sample =
-        Sample.Builder.fromSample(sample)
-            .withCreate(defineCreateDate(sample))
-            .withSubmitted(defineSubmittedDate(sample))
-            .withUpdate(Instant.now())
-            .withSubmittedVia(submittedVia)
-            .build();
+            Sample.Builder.fromSample(sample)
+                    .withCreate(defineCreateDate(sample))
+                    .withSubmitted(defineSubmittedDate(sample))
+                    .withUpdate(Instant.now())
+                    .withSubmittedVia(submittedVia)
+                    .build();
 
     // Dont validate superuser samples, this helps to submit external (eg. NCBI, ENA) samples
-    if (!bioSamplesAapService.isWriteSuperUser()) schemaValidationService.validate(sample);
+    // Validate all samples submitted with WEBIN AUTH
+
+    if (sample.getWebinSubmissionAccountId() != null) {
+      schemaValidationService.validate(sample);
+    } else if (!bioSamplesAapService.isWriteSuperUser()) {
+      schemaValidationService.validate(sample);
+    }
 
     if (!setFullDetails) {
       sample = sampleManipulationService.removeLegacyFields(sample);
     }
-
-    /*	//TODO reanable the validation once the AMR schema is defined and we have the actual validator in place
-    if (!sample.getData().isEmpty()) {
-    	Optional<ResponseEntity<String>> optionalInvalidResponse = sample.getData()
-    			.parallelStream()
-    			.map(abstractData -> schemaValidatorService.validate(abstractData.getStructuredData(), abstractData.getSchema()))
-                      .filter(response -> !response.getBody().equalsIgnoreCase("[]"))
-                      .findAny();
-    	if (optionalInvalidResponse.isPresent()) {
-    		throw new SampleWithInvalidStructuredData(optionalInvalidResponse.get().getBody());
-    	}
-    }*/
 
     sample = sampleService.store(sample, false, authProvider);
 
@@ -524,7 +518,7 @@ public class SamplesRestController {
     // create the response object with the appropriate status
     // TODO work out how to avoid using ResponseEntity but also set location header
     return ResponseEntity.created(URI.create(sampleResource.getLink("self").getHref()))
-        .body(sampleResource);
+            .body(sampleResource);
   }
 
   private Instant defineCreateDate(final Sample sample) {
