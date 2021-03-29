@@ -103,4 +103,4 @@ To check which are the most used archives in BioSamples, you can follow the proc
 === Get accessions of all the samples belonging to NCBI
 You may need to get only the samples originated from NCBI, that have a accession pattern starting from `SAMN`.
 You can easily retrieve these samples using filter `filter=acc:SAMN.\*`.
-You can either retrieve link:/biosamples/samples?filter=acc:SAMN.*[a list of accessions, window='_blank'] or link:/biosamples/accessions?filter=acc:SAMN.*[all samples, window='_blank'].
+You can either retrieve link:/biosamples/accessions?filter=acc:SAMN.*[a list of accessions, window='_blank'] or link:/biosamples/samples?filter=acc:SAMN.*[all samples, window='_blank'].
