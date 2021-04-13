@@ -10,19 +10,20 @@
 */
 package uk.ac.ebi.biosamples.model.upload.validation;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.springframework.stereotype.Component;
+
+import java.util.Set;
+import java.util.TreeSet;
 
 @Component
 public class Messages {
-  private List<String> messagesList = new ArrayList<>();
+  private Set<String> messagesList = new TreeSet<>();
 
   public void addMessage(String message) {
     messagesList.add(message);
   }
 
-  public List<String> getMessagesList() {
+  public Set<String> getMessagesList() {
     return messagesList;
   }
 
