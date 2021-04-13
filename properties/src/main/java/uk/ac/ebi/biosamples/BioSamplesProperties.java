@@ -45,9 +45,11 @@ public class BioSamplesProperties {
   @Value("${biosamples.client.aap.uri:https://explore.api.aai.ebi.ac.uk/auth}")
   private URI biosamplesClientAapUri;
 
-  @Value(
-      "${biosamples.client.webin.auth.uri:https://www.ebi.ac.uk/ena/submit/webin/auth/admin/submission-account}")
-  private URI biosamplesWebinAuthAuthUri;
+  @Value("${biosamples.client.webin.auth.token.uri:https://wwwdev.ebi.ac.uk/ena/submit/webin/auth/token}")
+  private URI biosamplesWebinAuthTokenUri;
+
+  @Value("${biosamples.client.webin.auth.submissionaccount.uri:https://wwwdev.ebi.ac.uk/ena/submit/webin/auth/admin/submission-account}")
+  private URI biosamplesWebinAuthFetchSubmissionAccountUri;
 
   // can't use "null" because it will be a string
   @Value("${biosamples.client.aap.username:#{null}}")
@@ -108,6 +110,10 @@ public class BioSamplesProperties {
     return biosamplesClientUri;
   }
 
+  public URI getBiosamplesWebinAuthTokenUri() {
+    return biosamplesWebinAuthTokenUri;
+  }
+
   public int getBiosamplesClientPagesize() {
     return biosamplesClientPagesize;
   }
@@ -136,8 +142,8 @@ public class BioSamplesProperties {
     return biosamplesClientAapUri;
   }
 
-  public URI getBiosamplesWebinAuthAuthUri() {
-    return biosamplesWebinAuthAuthUri;
+  public URI getBiosamplesWebinAuthFetchSubmissionAccountUri() {
+    return biosamplesWebinAuthFetchSubmissionAccountUri;
   }
 
   public String getBiosamplesClientAapUsername() {
