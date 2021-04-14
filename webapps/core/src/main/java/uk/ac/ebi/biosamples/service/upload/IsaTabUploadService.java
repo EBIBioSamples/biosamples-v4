@@ -99,26 +99,32 @@ public class IsaTabUploadService {
             sampleToMappedSample.put(sample, csvRecordMap);
         });
 
-        return getSamplesAfterAddingRelationships(sampleNameToAccessionMap, sampleToMappedSample);
+        return addRelationshipsAndThenBuildSamples(sampleNameToAccessionMap, sampleToMappedSample);
     }
 
     private boolean isWebinIdUsedToAuthenticate(String webinId) {
         return webinId != null && webinId.toUpperCase().startsWith("WEBIN");
     }
 
-    private List<Sample> getSamplesAfterAddingRelationships(Map<String, String> sampleNameToAccessionMap, Map<Sample, Multimap<String, String>> sampleToMappedSample) {
-        return sampleToMappedSample.entrySet().stream().map(sampleMultimapEntry -> {
-            final Map<String, String> relationshipMap = parseRelationships(sampleMultimapEntry.getValue());
-            Sample sample = sampleMultimapEntry.getKey();
-            final List<Relationship> relationships = assignSampleRelationships(sample, sampleNameToAccessionMap, relationshipMap);
+    private List<Sample> addRelationshipsAndThenBuildSamples(Map<String, String> sampleNameToAccessionMap, Map<Sample, Multimap<String, String>> sampleToMappedSample) {
+        return sampleToMappedSample
+                .entrySet()
+                .stream()
+                .map(sampleMultimapEntry -> addRelationshipAndThenBuildSample(sampleNameToAccessionMap, sampleMultimapEntry))
+                .collect(Collectors.toList());
+    }
 
-            relationships.forEach(relationship -> log.info(relationship.toString()));
+    private Sample addRelationshipAndThenBuildSample(Map<String, String> sampleNameToAccessionMap, Map.Entry<Sample, Multimap<String, String>> sampleMultimapEntry) {
+        final Map<String, String> relationshipMap = parseRelationships(sampleMultimapEntry.getValue());
+        Sample sample = sampleMultimapEntry.getKey();
+        final List<Relationship> relationships = createRelationships(sample, sampleNameToAccessionMap, relationshipMap);
 
-            sample = Sample.Builder.fromSample(sample).withRelationships(relationships).build();
-            sample = sampleService.store(sample, false, true, "AAP");
+        relationships.forEach(relationship -> log.info(relationship.toString()));
 
-            return sample;
-        }).collect(Collectors.toList());
+        sample = Sample.Builder.fromSample(sample).withRelationships(relationships).build();
+        sample = sampleService.store(sample, false, true, "AAP");
+
+        return sample;
     }
 
     private Sample buildSample(Multimap<String, String> multiMap, String aapDomain, String webinId, String certificate) throws JsonProcessingException {
@@ -157,7 +163,7 @@ public class IsaTabUploadService {
         return sample;
     }
 
-    private List<Relationship> assignSampleRelationships(Sample sample, Map<String, String> sampleNameToAccessionMap, Map<String, String> relationshipMap) {
+    private List<Relationship> createRelationships(Sample sample, Map<String, String> sampleNameToAccessionMap, Map<String, String> relationshipMap) {
         return relationshipMap
                 .entrySet()
                 .stream()
