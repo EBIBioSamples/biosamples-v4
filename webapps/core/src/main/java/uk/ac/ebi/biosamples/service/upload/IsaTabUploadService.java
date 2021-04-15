@@ -11,10 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import uk.ac.ebi.biosamples.model.Attribute;
-import uk.ac.ebi.biosamples.model.Certificate;
-import uk.ac.ebi.biosamples.model.Relationship;
-import uk.ac.ebi.biosamples.model.Sample;
+import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.model.upload.Characteristics;
 import uk.ac.ebi.biosamples.model.upload.validation.Messages;
 import uk.ac.ebi.biosamples.model.upload.validation.ValidationResult;
@@ -129,10 +126,15 @@ public class IsaTabUploadService {
 
     private Sample buildSample(Multimap<String, String> multiMap, String aapDomain, String webinId, String certificate) throws JsonProcessingException {
         final String sampleName = getSampleName(multiMap);
+        final String accession = getSampleAccession(multiMap);
         final List<Characteristics> characteristicsList = handleCharacteristics(multiMap);
+        final List<ExternalReference> externalReferenceList = handleExternalReferences(multiMap);
         final String authProvider = isWebinIdUsedToAuthenticate(webinId) ? "WEBIN" : "AAP";
 
+        externalReferenceList.forEach(externalReference -> log.info(externalReference.toString()));
+
         Sample sample = new Sample.Builder(sampleName.trim())
+                .withAccession(accession.trim())
                 .withAttributes(characteristicsList.stream()
                         .map(characteristics -> {
                             final String name = characteristics.getName();
@@ -146,6 +148,7 @@ public class IsaTabUploadService {
                                     .build();
                         })
                         .collect(Collectors.toList()))
+                .withExternalReferences(externalReferenceList)
                 .build();
 
         if (sampleService.isWebinAuthorization(authProvider)) {
@@ -161,6 +164,30 @@ public class IsaTabUploadService {
         log.info("Sample " + sample.getName() + " created with accession " + sample.getAccession());
 
         return sample;
+    }
+
+    private String getSampleAccession(Multimap<String, String> multiMap) {
+        Optional<String> sampleName = multiMap.get("Source Name").stream().findFirst();
+
+        return sampleName.orElse(null);
+    }
+
+    private List<ExternalReference> handleExternalReferences(Multimap<String, String> multiMap) {
+        List<ExternalReference> externalReferenceList = new ArrayList<>();
+
+        multiMap.entries().forEach(entry -> {
+            final String entryKey = entry.getKey();
+            final String entryValue = entry.getValue();
+
+            log.info(entryKey + " " + entryValue);
+
+            if (entryKey.startsWith("Comment") && entryKey.contains("external DB REF")) {
+                log.info("Entry value here is " + entry.getValue());
+                externalReferenceList.add(ExternalReference.build(entry.getValue()));
+            }
+        });
+
+        return externalReferenceList;
     }
 
     private List<Relationship> createRelationships(Sample sample, Map<String, String> sampleNameToAccessionMap, Map<String, String> relationshipMap) {
@@ -251,14 +278,14 @@ public class IsaTabUploadService {
         return characteristicsList;
     }
 
-    private static String getSampleName(Multimap<String, String> multiMap) {
+    private String getSampleName(Multimap<String, String> multiMap) {
         Optional<String> sampleName = multiMap.get("Sample Name").stream().findFirst();
 
         return sampleName.orElse(null);
 
     }
 
-    private static CSVParser buildParser(BufferedReader reader) throws IOException {
+    private CSVParser buildParser(BufferedReader reader) throws IOException {
         return new CSVParser(reader, CSVFormat.TDF
                 .withAllowDuplicateHeaderNames()
                 .withFirstRecordAsHeader()
