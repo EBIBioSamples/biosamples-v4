@@ -37,20 +37,30 @@
                                     th:text="${certificate}"></option>
                         </select>
                     </div>
-                    <div id="dropzone">
+                    <!--<div id="dropzone">
                         <form action="/biosamples/upload" class="dropzone needsclick" id="upload">
                             <input type="hidden" id="hiddenAapDomain" name="hiddenAapDomain">
                             <input type="hidden" id="hiddenCertificate" name="hiddenCertificate">
-                            <input type="hidden" th:value="${webinAccount}" name="webinAccount" />
+                            <input type="hidden" th:value="${webinAccount}" name="webinAccount"/>
                             <div class="dz-message needsclick">
                                 <button type="button" class="dz-button">Drop files here or click to upload. <br/>
                                     You can upload .csv files containing your samples. <br/></button>
                                 <br/>
                             </div>
                         </form>
-                    </div>
+                        <input type="submit" id="submitFiles" value="Process files"/>
+                    </div>-->
 
+                    <form action="/biosamples/upload" enctype="multipart/form-data" class="dropzone" id="data-upload">
+                        <input type="hidden" id="hiddenAapDomain" name="hiddenAapDomain">
+                        <input type="hidden" id="hiddenCertificate" name="hiddenCertificate">
+                        <input type="hidden" th:value="${webinAccount}" name="webinAccount"/>
+                        <div>
+                        </div>
+                    </form>
                     <br/>
+                    <input type="submit" id="uploadFile" value="Upload files"/>
+                    <br/><br/>
                     <b><a th:href="@{/uploadLogin}"><<< Back</a></b>
                 </div>
             </div>
@@ -62,7 +72,7 @@
 
 <script>
     Dropzone.autoDiscover = false;
-    $("#upload").dropzone({
+    /*$("#upload").dropzone({
         success: function (file, response) {
             toastr.success('File ' + file.name + ' uploaded successfully')
 
@@ -70,6 +80,27 @@
                 this.removeFile(this.files[0]);
             }
         }
+    });*/
+
+    var myDropzone = new Dropzone(".dropzone", {
+        autoProcessQueue: false,
+        parallelUploads: 10,
+        maxFiles: 10
+    });
+
+    $('#uploadFile').click(function () {
+        myDropzone.processQueue();
+    });
+
+    myDropzone.on("success", function (file) {
+        /*$(".dz-success-mark svg").css("background", "green");
+        $(".dz-error-mark").css("display", "none");*/
+        myDropzone.removeFile(file);
+    });
+
+    myDropzone.on("error", function (file) {
+        $(".dz-error-mark svg").css("background", "red");
+        $(".dz-success-mark").css("display", "none");
     });
 
     $("#aapDomain").change(function (e) {

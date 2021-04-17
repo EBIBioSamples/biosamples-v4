@@ -134,7 +134,7 @@ public class IsaTabUploadService {
         externalReferenceList.forEach(externalReference -> log.info(externalReference.toString()));
 
         Sample sample = new Sample.Builder(sampleName.trim())
-                .withAccession(accession.trim())
+                .withAccession(accession)
                 .withAttributes(characteristicsList.stream()
                         .map(characteristics -> {
                             final String name = characteristics.getName();
@@ -167,9 +167,9 @@ public class IsaTabUploadService {
     }
 
     private String getSampleAccession(Multimap<String, String> multiMap) {
-        Optional<String> sampleName = multiMap.get("Source Name").stream().findFirst();
+        Optional<String> sampleAccession = multiMap.get("Source Name").stream().findFirst();
 
-        return sampleName.orElse(null);
+        return sampleAccession.orElse(null);
     }
 
     private List<ExternalReference> handleExternalReferences(Multimap<String, String> multiMap) {
