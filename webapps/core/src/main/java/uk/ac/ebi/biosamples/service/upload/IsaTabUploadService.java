@@ -97,22 +97,25 @@ public class IsaTabUploadService {
             sampleToMappedSample.put(sample, csvRecordMap);
         });
 
-        return addRelationshipsAndThenBuildSamples(sampleNameToAccessionMap, sampleToMappedSample);
+        return addRelationshipsAndThenBuildSamples(sampleNameToAccessionMap, sampleToMappedSample, aapDomain, webinId);
     }
 
     private boolean isWebinIdUsedToAuthenticate(String webinId) {
         return webinId != null && webinId.toUpperCase().startsWith("WEBIN");
     }
 
-    private List<Sample> addRelationshipsAndThenBuildSamples(Map<String, String> sampleNameToAccessionMap, Map<Sample, Multimap<String, String>> sampleToMappedSample) {
+    private List<Sample> addRelationshipsAndThenBuildSamples(Map<String, String> sampleNameToAccessionMap, Map<Sample, Multimap<String, String>> sampleToMappedSample,
+                                                             String aapDomain, String webinId) {
         return sampleToMappedSample
                 .entrySet()
                 .stream()
-                .map(sampleMultimapEntry -> addRelationshipAndThenBuildSample(sampleNameToAccessionMap, sampleMultimapEntry))
+                .map(sampleMultimapEntry -> addRelationshipAndThenBuildSample(sampleNameToAccessionMap, sampleMultimapEntry, aapDomain, webinId))
                 .collect(Collectors.toList());
     }
 
-    private Sample addRelationshipAndThenBuildSample(Map<String, String> sampleNameToAccessionMap, Map.Entry<Sample, Multimap<String, String>> sampleMultimapEntry) {
+    private Sample addRelationshipAndThenBuildSample(Map<String, String> sampleNameToAccessionMap, Map.Entry<Sample, Multimap<String, String>> sampleMultimapEntry,
+                                                     String aapDomain, String webinId) {
+        final String authProvider = isWebinIdUsedToAuthenticate(webinId) ? "WEBIN" : "AAP";
         final Map<String, String> relationshipMap = parseRelationships(sampleMultimapEntry.getValue());
         Sample sample = sampleMultimapEntry.getKey();
         final List<Relationship> relationships = createRelationships(sample, sampleNameToAccessionMap, relationshipMap);
@@ -120,7 +123,7 @@ public class IsaTabUploadService {
         relationships.forEach(relationship -> log.info(relationship.toString()));
 
         sample = Sample.Builder.fromSample(sample).withRelationships(relationships).build();
-        sample = sampleService.store(sample, false, true, "AAP");
+        sample = sampleService.store(sample, false, true, authProvider);
 
         return sample;
     }
@@ -160,7 +163,7 @@ public class IsaTabUploadService {
         }
 
         if (certify(sample, certificate)) {
-            sample = sampleService.store(sample, false, true, "AAP");
+            sample = sampleService.store(sample, false, true, authProvider);
         }
         log.info("Sample " + sample.getName() + " created with accession " + sample.getAccession());
 
