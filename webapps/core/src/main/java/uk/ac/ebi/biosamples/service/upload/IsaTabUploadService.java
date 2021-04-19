@@ -3,6 +3,7 @@ package uk.ac.ebi.biosamples.service.upload;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -62,7 +63,7 @@ public class IsaTabUploadService {
 
         csvParser.getRecords().forEach(csvRecord -> {
             final AtomicInteger i = new AtomicInteger(0);
-            final Multimap<String, String> listMultiMap = ArrayListMultimap.create();
+            final Multimap<String, String> listMultiMap = LinkedListMultimap.create();
 
             headers.forEach(header -> {
                 String record = csvRecord.get(i.get());
@@ -167,7 +168,7 @@ public class IsaTabUploadService {
     }
 
     private String getSampleAccession(Multimap<String, String> multiMap) {
-        Optional<String> sampleAccession = multiMap.get("Source Name").stream().findFirst();
+        Optional<String> sampleAccession = multiMap.get("Sample Identifier").stream().findFirst();
 
         return sampleAccession.orElse(null);
     }
