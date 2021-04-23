@@ -2,11 +2,12 @@ package uk.ac.ebi.biosamples.service.upload;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.csv.CSVRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,10 +20,7 @@ import uk.ac.ebi.biosamples.model.upload.validation.ValidationResult;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.certification.CertifyService;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -48,12 +46,17 @@ public class IsaTabUploadService {
     @Autowired
     Messages messages;
 
-    public void upload(MultipartFile file, String aapDomain, String certificate, String webinId) throws IOException {
+    public File upload(MultipartFile file, String aapDomain, String certificate, String webinId) throws IOException {
+        validationResult.clear();
+        messages.clear();
+
         final List<Multimap<String, String>> csvDataMap = new ArrayList<>();
         Path temp = Files.createTempFile("upload", ".tsv");
 
         File fileToBeUploaded = temp.toFile();
         file.transferTo(fileToBeUploaded);
+
+        log.info("Input file name " + fileToBeUploaded.getName());
 
         FileReader fr = new FileReader(fileToBeUploaded);
         BufferedReader reader = new BufferedReader(fr);
@@ -76,9 +79,48 @@ public class IsaTabUploadService {
 
         log.info("CSV data size: " + csvDataMap.size());
 
-        List<Sample> samples = buildSamples(csvDataMap, aapDomain, webinId, certificate);
+        try {
+            final List<Sample> samples = buildSamples(csvDataMap, aapDomain, webinId, certificate);
 
-        log.info("Number of samples persisted: " + samples.size());
+            log.info("Number of samples persisted: " + samples.size());
+            writeToFile(fileToBeUploaded, headers);
+
+            return fileToBeUploaded;
+        } catch (Exception e) {
+            throw new UploadInvalidException(validationResult.getValidationMessagesList().stream().collect(Collectors.joining("\n")));
+        }
+    }
+
+    private void writeToFile(File fileToBeUploaded, List<String> headers) throws IOException {
+        log.info("Writing to file");
+
+        final List<String> outputFileHeaders = new ArrayList<>(headers);
+        //outputFileHeaders.add("Sample Identifier");
+        final Reader in = new FileReader(fileToBeUploaded);
+        final String[] headerParsed = headers.toArray(new String[headers.size()]);
+        final Iterable<CSVRecord> records = CSVFormat.TDF
+                .withHeader(headerParsed)
+                .withFirstRecordAsHeader()
+                .withAllowDuplicateHeaderNames()
+                .withFirstRecordAsHeader()
+                .withIgnoreEmptyLines()
+                .withIgnoreHeaderCase()
+                .withAllowMissingColumnNames()
+                .withIgnoreSurroundingSpaces()
+                .withTrim()
+                .parse(in);
+        final FileWriter fileWriter = new FileWriter(fileToBeUploaded);
+
+        try (final CSVPrinter csvPrinter = new CSVPrinter(fileWriter, CSVFormat.TDF.withHeader(headerParsed))) {
+            try {
+                for (CSVRecord row : records) {
+                    csvPrinter.printRecord(row);
+                }
+            } finally {
+                fileWriter.flush();
+                fileWriter.close();
+            }
+        }
     }
 
     private List<Sample> buildSamples(List<Multimap<String, String>> csvDataMap, String aapDomain, String webinId, String certificate) {
@@ -90,8 +132,8 @@ public class IsaTabUploadService {
 
             try {
                 sample = buildSample(csvRecordMap, aapDomain, webinId, certificate);
-            } catch (JsonProcessingException e) {
-                e.printStackTrace(); // throw from here
+            } catch (Exception e) {
+                validationResult.addValidationMessage("Failed to create all samples in the file " + e.getMessage());
             }
             sampleNameToAccessionMap.put(sample.getName(), sample.getAccession());
             sampleToMappedSample.put(sample, csvRecordMap);
@@ -128,12 +170,16 @@ public class IsaTabUploadService {
         return sample;
     }
 
-    private Sample buildSample(Multimap<String, String> multiMap, String aapDomain, String webinId, String certificate) throws JsonProcessingException {
+    private Sample buildSample(Multimap<String, String> multiMap, String aapDomain, String webinId, String certificate) throws JsonProcessingException, UploadInvalidException {
         final String sampleName = getSampleName(multiMap);
         final String accession = getSampleAccession(multiMap);
         final List<Characteristics> characteristicsList = handleCharacteristics(multiMap);
         final List<ExternalReference> externalReferenceList = handleExternalReferences(multiMap);
         final String authProvider = isWebinIdUsedToAuthenticate(webinId) ? "WEBIN" : "AAP";
+
+        if (sampleName == null || sampleName.isEmpty()) {
+            validationResult.addValidationMessage("All samples in the file must have a sample name, some samples are missing sample name and hence are not created");
+        }
 
         externalReferenceList.forEach(externalReference -> log.info(externalReference.toString()));
 
@@ -165,6 +211,7 @@ public class IsaTabUploadService {
         if (certify(sample, certificate)) {
             sample = sampleService.store(sample, false, true, authProvider);
         }
+        
         log.info("Sample " + sample.getName() + " created with accession " + sample.getAccession());
 
         return sample;
@@ -186,7 +233,6 @@ public class IsaTabUploadService {
             log.info(entryKey + " " + entryValue);
 
             if (entryKey.startsWith("Comment") && entryKey.contains("external DB REF")) {
-                log.info("Entry value here is " + entry.getValue());
                 externalReferenceList.add(ExternalReference.build(entry.getValue()));
             }
         });
@@ -199,8 +245,17 @@ public class IsaTabUploadService {
                 .entrySet()
                 .stream()
                 .map(entry ->
-                        Relationship.build(sample.getAccession(), entry.getKey().trim(), sampleNameToAccessionMap.get(entry.getValue().trim())))
+                        getRelationship(sample, sampleNameToAccessionMap, entry))
                 .collect(Collectors.toList());
+    }
+
+    private Relationship getRelationship(Sample sample, Map<String, String> sampleNameToAccessionMap, Map.Entry<String, String> entry) {
+        try {
+            return Relationship.build(sample.getAccession(), entry.getKey().trim(), sampleNameToAccessionMap.get(entry.getValue().trim()));
+        } catch (Exception e) {
+            validationResult.addValidationMessage("Failed to add all relationships for " + sample.getAccession());
+            return null;
+        }
     }
 
     private boolean certify(Sample sample, String certificate) throws JsonProcessingException {

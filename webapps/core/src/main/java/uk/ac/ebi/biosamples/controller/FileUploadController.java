@@ -12,12 +12,17 @@ package uk.ac.ebi.biosamples.controller;
 
 import java.io.File;
 import java.io.IOException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -39,20 +44,27 @@ public class FileUploadController {
     IsaTabUploadService isaTabUploadService;
 
     @PostMapping
-    public ResponseEntity<File> upload(
+    public ResponseEntity<byte[]> upload(
             @RequestParam("file") MultipartFile file,
             @Valid String hiddenAapDomain,
             @Valid String hiddenCertificate,
-            @Valid String webinAccount)
+            @Valid String webinAccount,
+            HttpServletResponse response,
+            HttpServletRequest request)
             throws IOException {
-      isaTabUploadService.upload(file, hiddenAapDomain, hiddenCertificate, webinAccount);
+        final File downloadableFile = isaTabUploadService.upload(file, hiddenAapDomain, hiddenCertificate, webinAccount);
+        final byte[] bytes = FileUtils.readFileToByteArray(downloadableFile);
+        final HttpHeaders headers = setResponseHeaders(downloadableFile);
 
-        return ResponseEntity.ok()
-                .header(
-                        HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=\""
-                                + "test.tsv"
-                                + "\"")
-                .body(null);
+        return new ResponseEntity<>(bytes, headers, HttpStatus.OK);
+    }
+
+    private HttpHeaders setResponseHeaders(File file) {
+        final HttpHeaders httpHeaders = new HttpHeaders();
+
+        httpHeaders.setContentType(new MediaType("text", "csv"));
+        httpHeaders.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + file.getName());
+
+        return httpHeaders;
     }
 }
