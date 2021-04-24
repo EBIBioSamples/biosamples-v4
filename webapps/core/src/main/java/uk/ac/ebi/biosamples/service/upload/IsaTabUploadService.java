@@ -46,48 +46,51 @@ public class IsaTabUploadService {
     @Autowired
     Messages messages;
 
-    public File upload(MultipartFile file, String aapDomain, String certificate, String webinId) throws IOException {
+    public File upload(MultipartFile file, String aapDomain, String certificate, String webinId) {
         validationResult.clear();
         messages.clear();
 
-        final List<Multimap<String, String>> csvDataMap = new ArrayList<>();
-        Path temp = Files.createTempFile("upload", ".tsv");
+        try {
+            final List<Multimap<String, String>> csvDataMap = new ArrayList<>();
+            Path temp = Files.createTempFile("upload", ".tsv");
 
-        File fileToBeUploaded = temp.toFile();
-        file.transferTo(fileToBeUploaded);
+            File fileToBeUploaded = temp.toFile();
+            file.transferTo(fileToBeUploaded);
 
-        log.info("Input file name " + fileToBeUploaded.getName());
+            log.info("Input file name " + fileToBeUploaded.getName());
 
-        FileReader fr = new FileReader(fileToBeUploaded);
-        BufferedReader reader = new BufferedReader(fr);
+            FileReader fr = new FileReader(fileToBeUploaded);
+            BufferedReader reader = new BufferedReader(fr);
 
-        final CSVParser csvParser = buildParser(reader);
-        final List<String> headers = csvParser.getHeaderNames();
+            final CSVParser csvParser = buildParser(reader);
+            final List<String> headers = csvParser.getHeaderNames();
 
-        csvParser.getRecords().forEach(csvRecord -> {
-            final AtomicInteger i = new AtomicInteger(0);
-            final Multimap<String, String> listMultiMap = LinkedListMultimap.create();
+            csvParser.getRecords().forEach(csvRecord -> {
+                final AtomicInteger i = new AtomicInteger(0);
+                final Multimap<String, String> listMultiMap = LinkedListMultimap.create();
 
-            headers.forEach(header -> {
-                String record = csvRecord.get(i.get());
-                listMultiMap.put(header, record);
-                i.getAndIncrement();
+                headers.forEach(header -> {
+                    String record = csvRecord.get(i.get());
+                    listMultiMap.put(header, record);
+                    i.getAndIncrement();
+                });
+
+                csvDataMap.add(listMultiMap);
             });
 
-            csvDataMap.add(listMultiMap);
-        });
+            log.info("CSV data size: " + csvDataMap.size());
 
-        log.info("CSV data size: " + csvDataMap.size());
 
-        try {
             final List<Sample> samples = buildSamples(csvDataMap, aapDomain, webinId, certificate);
 
             log.info("Number of samples persisted: " + samples.size());
             writeToFile(fileToBeUploaded, headers);
 
+            log.info(String.join("\n", validationResult.getValidationMessagesList()));
+
             return fileToBeUploaded;
         } catch (Exception e) {
-            throw new UploadInvalidException(validationResult.getValidationMessagesList().stream().collect(Collectors.joining("\n")));
+            throw new UploadInvalidException(String.join("\n", validationResult.getValidationMessagesList()));
         }
     }
 
@@ -132,11 +135,18 @@ public class IsaTabUploadService {
 
             try {
                 sample = buildSample(csvRecordMap, aapDomain, webinId, certificate);
+
+                if (sample == null) {
+                    validationResult.addValidationMessage("Failed to create all samples in the file");
+                }
             } catch (Exception e) {
-                validationResult.addValidationMessage("Failed to create all samples in the file " + e.getMessage());
+                validationResult.addValidationMessage("Failed to create all samples in the file");
             }
-            sampleNameToAccessionMap.put(sample.getName(), sample.getAccession());
-            sampleToMappedSample.put(sample, csvRecordMap);
+
+            if (sample != null) {
+                sampleNameToAccessionMap.put(sample.getName(), sample.getAccession());
+                sampleToMappedSample.put(sample, csvRecordMap);
+            }
         });
 
         return addRelationshipsAndThenBuildSamples(sampleNameToAccessionMap, sampleToMappedSample, aapDomain, webinId);
@@ -170,51 +180,63 @@ public class IsaTabUploadService {
         return sample;
     }
 
-    private Sample buildSample(Multimap<String, String> multiMap, String aapDomain, String webinId, String certificate) throws JsonProcessingException, UploadInvalidException {
+    private Sample buildSample(Multimap<String, String> multiMap, String aapDomain, String webinId, String certificate) throws JsonProcessingException {
         final String sampleName = getSampleName(multiMap);
+        final String sampleReleaseDate = getReleaseDate(multiMap);
         final String accession = getSampleAccession(multiMap);
         final List<Characteristics> characteristicsList = handleCharacteristics(multiMap);
         final List<ExternalReference> externalReferenceList = handleExternalReferences(multiMap);
         final String authProvider = isWebinIdUsedToAuthenticate(webinId) ? "WEBIN" : "AAP";
+        boolean validationFailure = false;
 
         if (sampleName == null || sampleName.isEmpty()) {
             validationResult.addValidationMessage("All samples in the file must have a sample name, some samples are missing sample name and hence are not created");
+            validationFailure = true;
         }
 
-        externalReferenceList.forEach(externalReference -> log.info(externalReference.toString()));
+        if (sampleReleaseDate == null || sampleReleaseDate.isEmpty()) {
+            validationResult.addValidationMessage("All samples in the file must have a release date " + sampleName + " doesn't have a release date and is not created");
+            validationFailure = true;
+        }
 
-        Sample sample = new Sample.Builder(sampleName.trim())
-                .withAccession(accession)
-                .withAttributes(characteristicsList.stream()
-                        .map(characteristics -> {
-                            final String name = characteristics.getName();
+        if (!validationFailure) {
+            externalReferenceList.forEach(externalReference -> log.info(externalReference.toString()));
 
-                            return new Attribute.Builder
-                                    (name.substring(name.indexOf('[') + 1, name.indexOf(']')),
-                                            characteristics.getValue())
-                                    .withTag("attribute")
-                                    .withUnit(characteristics.getUnit())
-                                    .withIri(characteristics.getIri())
-                                    .build();
-                        })
-                        .collect(Collectors.toList()))
-                .withExternalReferences(externalReferenceList)
-                .build();
+            Sample sample = new Sample.Builder(sampleName.trim())
+                    .withAccession(accession)
+                    .withAttributes(characteristicsList.stream()
+                            .map(characteristics -> {
+                                final String name = characteristics.getName();
 
-        if (sampleService.isWebinAuthorization(authProvider)) {
-            sample =
-                    Sample.Builder.fromSample(sample).withWebinSubmissionAccountId(webinId).build();
+                                return new Attribute.Builder
+                                        (name.substring(name.indexOf('[') + 1, name.indexOf(']')),
+                                                characteristics.getValue())
+                                        .withTag("attribute")
+                                        .withUnit(characteristics.getUnit())
+                                        .withIri(characteristics.getIri())
+                                        .build();
+                            })
+                            .collect(Collectors.toList()))
+                    .withExternalReferences(externalReferenceList)
+                    .build();
+
+            if (sampleService.isWebinAuthorization(authProvider)) {
+                sample =
+                        Sample.Builder.fromSample(sample).withWebinSubmissionAccountId(webinId).build();
+            } else {
+                sample = Sample.Builder.fromSample(sample).withDomain(aapDomain).build();
+            }
+
+            if (certify(sample, certificate)) {
+                sample = sampleService.store(sample, false, true, authProvider);
+            }
+
+            log.info("Sample " + sample.getName() + " created with accession " + sample.getAccession());
+
+            return sample;
         } else {
-            sample = Sample.Builder.fromSample(sample).withDomain(aapDomain).build();
+            return null;
         }
-
-        if (certify(sample, certificate)) {
-            sample = sampleService.store(sample, false, true, authProvider);
-        }
-        
-        log.info("Sample " + sample.getName() + " created with accession " + sample.getAccession());
-
-        return sample;
     }
 
     private String getSampleAccession(Multimap<String, String> multiMap) {
@@ -246,6 +268,7 @@ public class IsaTabUploadService {
                 .stream()
                 .map(entry ->
                         getRelationship(sample, sampleNameToAccessionMap, entry))
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 
@@ -253,7 +276,8 @@ public class IsaTabUploadService {
         try {
             return Relationship.build(sample.getAccession(), entry.getKey().trim(), sampleNameToAccessionMap.get(entry.getValue().trim()));
         } catch (Exception e) {
-            validationResult.addValidationMessage("Failed to add all relationships for " + sample.getAccession());
+            log.info("Failed to add relationship");
+            validationResult.addValidationMessage("Failed to add all relationships for " + sample.getAccession() + " error: " + e.getMessage());
             return null;
         }
     }
@@ -341,6 +365,13 @@ public class IsaTabUploadService {
         Optional<String> sampleName = multiMap.get("Sample Name").stream().findFirst();
 
         return sampleName.orElse(null);
+
+    }
+
+    private String getReleaseDate(Multimap<String, String> multiMap) {
+        Optional<String> sampleReleaseDate = multiMap.get("Release Date").stream().findFirst();
+
+        return sampleReleaseDate.orElse(null);
 
     }
 
