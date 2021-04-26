@@ -1,10 +1,6 @@
 = [.ebi-color]#Data submission#
 :last-update-label!:
-:toc:
 
-== How to submit to BioSamples Database?
-
-=== JSON API
 Please use our link:../references/api/submit[JSON API] for submission.
 
 '''
