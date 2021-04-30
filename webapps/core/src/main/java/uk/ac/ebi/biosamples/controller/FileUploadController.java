@@ -10,12 +10,6 @@
  */
 package uk.ac.ebi.biosamples.controller;
 
-import java.io.File;
-import java.io.IOException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.validation.Valid;
-
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +25,18 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import uk.ac.ebi.biosamples.service.upload.FileUploadService;
 import uk.ac.ebi.biosamples.service.upload.IsaTabUploadService;
+import uk.ac.ebi.biosamples.service.upload.UploadInvalidException;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
 
 @Controller
 @RequestMapping("/upload")
@@ -52,17 +58,40 @@ public class FileUploadController {
             HttpServletResponse response,
             HttpServletRequest request)
             throws IOException {
-        final File downloadableFile = isaTabUploadService.upload(file, hiddenAapDomain, hiddenCertificate, webinAccount);
-        final byte[] bytes = FileUtils.readFileToByteArray(downloadableFile);
-        final HttpHeaders headers = setResponseHeaders(downloadableFile);
+        try {
+            final File downloadableFile = isaTabUploadService.upload(file, hiddenAapDomain, hiddenCertificate, webinAccount);
+            final byte[] bytes = FileUtils.readFileToByteArray(downloadableFile);
+            final HttpHeaders headers = setResponseHeadersSuccess(downloadableFile);
 
-        return new ResponseEntity<>(bytes, headers, HttpStatus.OK);
+            return new ResponseEntity<>(bytes, headers, HttpStatus.OK);
+        } catch (UploadInvalidException e) {
+            log.info("File upload failure " + e.getMessage());
+            final Path temp = Files.createTempFile("failure_result", ".txt");
+
+            try (final BufferedWriter writer = Files.newBufferedWriter(temp, StandardCharsets.UTF_8)) {
+                writer.write(e.getMessage());
+            }
+
+            final File failedUploadMessageFile = temp.toFile();
+            final byte[] bytes = FileUtils.readFileToByteArray(failedUploadMessageFile);
+            final HttpHeaders headers = setResponseHeadersFailure(failedUploadMessageFile);
+            return new ResponseEntity<>(bytes, headers, HttpStatus.BAD_REQUEST);
+        }
     }
 
-    private HttpHeaders setResponseHeaders(File file) {
+    private HttpHeaders setResponseHeadersSuccess(File file) {
         final HttpHeaders httpHeaders = new HttpHeaders();
 
         httpHeaders.setContentType(new MediaType("text", "csv"));
+        httpHeaders.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + file.getName());
+
+        return httpHeaders;
+    }
+
+    private HttpHeaders setResponseHeadersFailure(File file) {
+        final HttpHeaders httpHeaders = new HttpHeaders();
+
+        httpHeaders.setContentType(new MediaType("text", "plain"));
         httpHeaders.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + file.getName());
 
         return httpHeaders;

@@ -21,11 +21,13 @@ import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.certification.CertifyService;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Service
 public class IsaTabUploadService {
@@ -80,27 +82,41 @@ public class IsaTabUploadService {
 
             log.info("CSV data size: " + csvDataMap.size());
 
-
             final List<Sample> samples = buildSamples(csvDataMap, aapDomain, webinId, certificate);
 
-            log.info("Number of samples persisted: " + samples.size());
-            writeToFile(fileToBeUploaded, headers);
+            final String persistanceMessage = "Number of samples persisted: " + samples.size();
 
+            log.info(persistanceMessage);
+            validationResult.addValidationMessage(persistanceMessage);
             log.info(String.join("\n", validationResult.getValidationMessagesList()));
 
-            return fileToBeUploaded;
+            return writeToFile(fileToBeUploaded, headers, samples);
         } catch (Exception e) {
             throw new UploadInvalidException(String.join("\n", validationResult.getValidationMessagesList()));
         }
     }
 
-    private void writeToFile(File fileToBeUploaded, List<String> headers) throws IOException {
+    private <T> List<T> getPrintableListFromCsvRow(Iterator<T> iterator) {
+        Iterable<T> iterable = () -> iterator;
+
+        return StreamSupport
+                .stream(iterable.spliterator(), false)
+                .collect(Collectors.toList());
+    }
+
+    private File writeToFile(File fileToBeUploaded, List<String> headers, List<Sample> samples) throws IOException {
         log.info("Writing to file");
+        Path temp = Files.createTempFile("upload_result", ".tsv");
+        boolean headerHasIdentifier = headers.stream().anyMatch(header -> header.equalsIgnoreCase("Sample Identifier"));
 
         final List<String> outputFileHeaders = new ArrayList<>(headers);
-        //outputFileHeaders.add("Sample Identifier");
+
+        if (!headerHasIdentifier) {
+            outputFileHeaders.add("Sample Identifier");
+        }
         final Reader in = new FileReader(fileToBeUploaded);
-        final String[] headerParsed = headers.toArray(new String[headers.size()]);
+        final String[] headerParsed = outputFileHeaders.toArray(new String[outputFileHeaders.size()]);
+
         final Iterable<CSVRecord> records = CSVFormat.TDF
                 .withHeader(headerParsed)
                 .withFirstRecordAsHeader()
@@ -112,18 +128,35 @@ public class IsaTabUploadService {
                 .withIgnoreSurroundingSpaces()
                 .withTrim()
                 .parse(in);
-        final FileWriter fileWriter = new FileWriter(fileToBeUploaded);
 
-        try (final CSVPrinter csvPrinter = new CSVPrinter(fileWriter, CSVFormat.TDF.withHeader(headerParsed))) {
-            try {
-                for (CSVRecord row : records) {
+        try (final BufferedWriter writer = Files.newBufferedWriter(temp, StandardCharsets.UTF_8);
+             final CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.TDF.withHeader(headerParsed));
+             final PrintWriter out = new PrintWriter(writer)) {
+            for (CSVRecord row : records) {
+                if (headerHasIdentifier) {
                     csvPrinter.printRecord(row);
+                } else {
+                    csvPrinter.printRecord(addAccessionToSamplesForPrint(getPrintableListFromCsvRow(row.iterator()), samples));
                 }
-            } finally {
-                fileWriter.flush();
-                fileWriter.close();
             }
+
+            out.println("\n\n");
+            out.println("********RECEIPT START********");
+            out.println(String.join("\n", validationResult.getValidationMessagesList()));
+            out.println("********RECEIPT END********");
+            out.println("\n\n");
         }
+
+        return temp.toFile();
+    }
+
+    private Iterable<?> addAccessionToSamplesForPrint(List<String> listFromIterator, List<Sample> samples) {
+        String sampleName = listFromIterator.get(1);
+        Optional<Sample> sampleOptional = samples.stream().filter(sample -> sample.getName().equals(sampleName)).findFirst();
+
+        sampleOptional.ifPresent(sample -> listFromIterator.add(sample.getAccession()));
+
+        return listFromIterator;
     }
 
     private List<Sample> buildSamples(List<Multimap<String, String>> csvDataMap, String aapDomain, String webinId, String certificate) {
@@ -149,7 +182,7 @@ public class IsaTabUploadService {
             }
         });
 
-        return addRelationshipsAndThenBuildSamples(sampleNameToAccessionMap, sampleToMappedSample, aapDomain, webinId);
+        return addRelationshipsAndThenBuildSamples(sampleNameToAccessionMap, sampleToMappedSample, webinId);
     }
 
     private boolean isWebinIdUsedToAuthenticate(String webinId) {
@@ -157,16 +190,16 @@ public class IsaTabUploadService {
     }
 
     private List<Sample> addRelationshipsAndThenBuildSamples(Map<String, String> sampleNameToAccessionMap, Map<Sample, Multimap<String, String>> sampleToMappedSample,
-                                                             String aapDomain, String webinId) {
+                                                             String webinId) {
         return sampleToMappedSample
                 .entrySet()
                 .stream()
-                .map(sampleMultimapEntry -> addRelationshipAndThenBuildSample(sampleNameToAccessionMap, sampleMultimapEntry, aapDomain, webinId))
+                .map(sampleMultimapEntry -> addRelationshipAndThenBuildSample(sampleNameToAccessionMap, sampleMultimapEntry, webinId))
                 .collect(Collectors.toList());
     }
 
     private Sample addRelationshipAndThenBuildSample(Map<String, String> sampleNameToAccessionMap, Map.Entry<Sample, Multimap<String, String>> sampleMultimapEntry,
-                                                     String aapDomain, String webinId) {
+                                                     String webinId) {
         final String authProvider = isWebinIdUsedToAuthenticate(webinId) ? "WEBIN" : "AAP";
         final Map<String, String> relationshipMap = parseRelationships(sampleMultimapEntry.getValue());
         Sample sample = sampleMultimapEntry.getKey();
@@ -274,11 +307,30 @@ public class IsaTabUploadService {
 
     private Relationship getRelationship(Sample sample, Map<String, String> sampleNameToAccessionMap, Map.Entry<String, String> entry) {
         try {
-            return Relationship.build(sample.getAccession(), entry.getKey().trim(), sampleNameToAccessionMap.get(entry.getValue().trim()));
+            final String relationshipTarget = getRelationshipTarget(sampleNameToAccessionMap, entry);
+
+            if (relationshipTarget != null) {
+                return Relationship.build(sample.getAccession(), entry.getKey().trim(), relationshipTarget);
+            } else {
+                validationResult.addValidationMessage("Failed to add all relationships for " + sample.getAccession());
+                return null;
+            }
         } catch (Exception e) {
             log.info("Failed to add relationship");
             validationResult.addValidationMessage("Failed to add all relationships for " + sample.getAccession() + " error: " + e.getMessage());
             return null;
+        }
+    }
+
+    private String getRelationshipTarget(Map<String, String> sampleNameToAccessionMap, Map.Entry<String, String> entry) {
+        final String relationshipTarget = entry.getValue().trim();
+
+        if (relationshipTarget.startsWith("SAM")) {
+            return relationshipTarget;
+        } else {
+            final String relTarget = sampleNameToAccessionMap.get(relationshipTarget);
+
+            return relTarget != null ? relTarget : null;
         }
     }
 
@@ -377,12 +429,12 @@ public class IsaTabUploadService {
 
     private CSVParser buildParser(BufferedReader reader) throws IOException {
         return new CSVParser(reader, CSVFormat.TDF
-                .withAllowDuplicateHeaderNames()
+                .withAllowDuplicateHeaderNames(true)
                 .withFirstRecordAsHeader()
-                .withIgnoreEmptyLines()
-                .withIgnoreHeaderCase()
-                .withAllowMissingColumnNames()
-                .withIgnoreSurroundingSpaces()
-                .withTrim());
+                .withIgnoreEmptyLines(true)
+                .withIgnoreHeaderCase(true)
+                .withAllowMissingColumnNames(true)
+                .withIgnoreSurroundingSpaces(true)
+                .withTrim(true));
     }
 }
