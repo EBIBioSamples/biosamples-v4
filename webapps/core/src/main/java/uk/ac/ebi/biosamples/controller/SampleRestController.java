@@ -205,10 +205,12 @@ public class SampleRestController {
 
     // todo Fix all integration tests to not to use predefined accessions, then remove
     // isIntegrationTestUser() check
-    if (sampleService.isExistingAccession(accession)
-        && !(bioSamplesAapService.isWriteSuperUser()
-            || bioSamplesAapService.isIntegrationTestUser())) {
-      throw new SampleAccessionDoesNotExistException();
+    if (!authProvider.equalsIgnoreCase("WEBIN")) {
+      if (sampleService.isExistingAccession(accession)
+              && !(bioSamplesAapService.isWriteSuperUser()
+              || bioSamplesAapService.isIntegrationTestUser())) {
+        throw new SampleAccessionDoesNotExistException();
+      }
     }
 
     log.debug("Received PUT for " + accession);

@@ -10,6 +10,8 @@
 */
 package uk.ac.ebi.biosamples.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -23,6 +25,8 @@ import java.util.Optional;
 
 @Service
 public class BioSamplesWebinAuthenticationService {
+  private Logger log = LoggerFactory.getLogger(getClass());
+
   private final RestTemplate restTemplate;
   private final SampleService sampleService;
   private final BioSamplesProperties bioSamplesProperties;
@@ -41,11 +45,11 @@ public class BioSamplesWebinAuthenticationService {
 
     try {
       ResponseEntity<SubmissionAccount> responseEntity =
-          restTemplate.exchange(
-              bioSamplesProperties.getBiosamplesWebinAuthFetchSubmissionAccountUri(),
-              HttpMethod.GET,
-              entity,
-              SubmissionAccount.class);
+              restTemplate.exchange(
+                      bioSamplesProperties.getBiosamplesWebinAuthFetchSubmissionAccountUri(),
+                      HttpMethod.GET,
+                      entity,
+                      SubmissionAccount.class);
       if (responseEntity.getStatusCode() == HttpStatus.OK) {
         return responseEntity;
       } else {
@@ -58,17 +62,16 @@ public class BioSamplesWebinAuthenticationService {
 
   public ResponseEntity<String> getWebinToken(final String authRequest) {
     HttpHeaders headers = new HttpHeaders();
-    System.out.println(authRequest);
     headers.setContentType(MediaType.APPLICATION_JSON);
     HttpEntity<String> entity = new HttpEntity<>(authRequest, headers);
 
     try {
       ResponseEntity<String> responseEntity =
-          restTemplate.exchange(
-              bioSamplesProperties.getBiosamplesWebinAuthTokenUri(),
-              HttpMethod.POST,
-              entity,
-              String.class);
+              restTemplate.exchange(
+                      bioSamplesProperties.getBiosamplesWebinAuthTokenUri(),
+                      HttpMethod.POST,
+                      entity,
+                      String.class);
       if (responseEntity.getStatusCode() == HttpStatus.OK) {
         return responseEntity;
       } else {
@@ -80,49 +83,70 @@ public class BioSamplesWebinAuthenticationService {
   }
 
   public Sample handleWebinUser(Sample sample, String webinId) {
-    if (webinId != null && !webinId.isEmpty()) {
-      if (sample.getAccession() != null) {
-        Optional<Sample> oldSample =
-            sampleService.fetch(sample.getAccession(), Optional.empty(), null);
+    if (webinId != null && !webinId.isEmpty()) { // webin id retrieval failure - throw Exception
+      if (sample.getAccession() != null) { // sample updates, where sample has an accession
+        final String biosamplesClientWebinUsername = bioSamplesProperties.getBiosamplesClientWebinUsername();
 
-        if (oldSample.isPresent()) {
-          final Sample oldSavedSample = oldSample.get();
+        if (webinId.equalsIgnoreCase(biosamplesClientWebinUsername)) { // ENA pipeline submissions, check if submission done by internal client program
+          final String webinSubmissionAccountIdInMetadata = sample.getWebinSubmissionAccountId(); // if true, override submission account id in sample with original account id from ENA
 
-          if (oldSavedSample.getWebinSubmissionAccountId().startsWith("SU")) {
-            return Sample.Builder.fromSample(sample)
-                .withWebinSubmissionAccountId(webinId)
-                .withNoDomain()
-                .build();
-          } else if (!webinId.equalsIgnoreCase(oldSavedSample.getWebinSubmissionAccountId())) {
-            throw new BioSamplesAapService.SampleNotAccessibleException();
+          return buildSample(sample, (webinSubmissionAccountIdInMetadata != null && !webinSubmissionAccountIdInMetadata.isEmpty())
+                  ? webinSubmissionAccountIdInMetadata
+                  : biosamplesClientWebinUsername);
+        } else { // normal sample update - not pipeline, check for old user, if mismatch throw exception, else build the Sample
+          Optional<Sample> oldSample =
+                  sampleService.fetch(sample.getAccession(), Optional.empty(), null);
+
+          if (oldSample.isPresent()) {
+            final Sample oldSavedSample = oldSample.get();
+
+            if (!webinId.equalsIgnoreCase(oldSavedSample.getWebinSubmissionAccountId())) { // original submitter mismatch
+              throw new SampleNotAccessibleException();
+            } else {
+              return buildSample(sample, webinId);
+            }
+          } else {
+            return buildSample(sample, webinId);
           }
-        } else {
-          throw new BioSamplesAapService.SampleNotAccessibleException();
         }
+      } else { // new submission
+        return buildSample(sample, webinId);
       }
-
-      return Sample.Builder.fromSample(sample)
-          .withWebinSubmissionAccountId(webinId)
-          .withNoDomain()
-          .build();
     } else {
       throw new WebinUserLoginUnauthorizedException();
     }
   }
 
+  private Sample buildSample(Sample sample, String webinId) {
+    return Sample.Builder.fromSample(sample)
+            .withWebinSubmissionAccountId(webinId)
+            .withNoDomain()
+            .build();
+  }
+
+  /**/
   public CurationLink handleWebinUser(CurationLink curationLink, String webinId) {
     if (webinId != null && !webinId.isEmpty()) {
       return CurationLink.build(
-          curationLink.getSample(),
-          curationLink.getCuration(),
-          null,
-          webinId,
-          curationLink.getCreated());
+              curationLink.getSample(),
+              curationLink.getCuration(),
+              null,
+              webinId,
+              curationLink.getCreated());
     } else {
       throw new BioSamplesAapService.SampleNotAccessibleException();
     }
   }
 
   @ResponseStatus(value = HttpStatus.UNAUTHORIZED, reason = "Unauthorized WEBIN user")
-  private static class WebinUserLoginUnauthorizedException extends RuntimeException {}
+  private static class WebinUserLoginUnauthorizedException extends RuntimeException {
+  }
+
+
+  @ResponseStatus(
+          value = HttpStatus.FORBIDDEN,
+          reason =
+                  "This sample is private and not available for browsing. If you think this is an error and/or you should have access please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk")
+  private static class SampleNotAccessibleException extends RuntimeException {
+  }
 }

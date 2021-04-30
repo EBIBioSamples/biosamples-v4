@@ -2,11 +2,12 @@ package uk.ac.ebi.biosamples.service.upload;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.csv.CSVRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,15 +20,14 @@ import uk.ac.ebi.biosamples.model.upload.validation.ValidationResult;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.certification.CertifyService;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Service
 public class IsaTabUploadService {
@@ -48,37 +48,115 @@ public class IsaTabUploadService {
     @Autowired
     Messages messages;
 
-    public void upload(MultipartFile file, String aapDomain, String certificate, String webinId) throws IOException {
-        final List<Multimap<String, String>> csvDataMap = new ArrayList<>();
-        Path temp = Files.createTempFile("upload", ".tsv");
+    public File upload(MultipartFile file, String aapDomain, String certificate, String webinId) {
+        validationResult.clear();
+        messages.clear();
 
-        File fileToBeUploaded = temp.toFile();
-        file.transferTo(fileToBeUploaded);
+        try {
+            final List<Multimap<String, String>> csvDataMap = new ArrayList<>();
+            Path temp = Files.createTempFile("upload", ".tsv");
 
-        FileReader fr = new FileReader(fileToBeUploaded);
-        BufferedReader reader = new BufferedReader(fr);
+            File fileToBeUploaded = temp.toFile();
+            file.transferTo(fileToBeUploaded);
 
-        final CSVParser csvParser = buildParser(reader);
-        final List<String> headers = csvParser.getHeaderNames();
+            log.info("Input file name " + fileToBeUploaded.getName());
 
-        csvParser.getRecords().forEach(csvRecord -> {
-            final AtomicInteger i = new AtomicInteger(0);
-            final Multimap<String, String> listMultiMap = LinkedListMultimap.create();
+            FileReader fr = new FileReader(fileToBeUploaded);
+            BufferedReader reader = new BufferedReader(fr);
 
-            headers.forEach(header -> {
-                String record = csvRecord.get(i.get());
-                listMultiMap.put(header, record);
-                i.getAndIncrement();
+            final CSVParser csvParser = buildParser(reader);
+            final List<String> headers = csvParser.getHeaderNames();
+
+            csvParser.getRecords().forEach(csvRecord -> {
+                final AtomicInteger i = new AtomicInteger(0);
+                final Multimap<String, String> listMultiMap = LinkedListMultimap.create();
+
+                headers.forEach(header -> {
+                    String record = csvRecord.get(i.get());
+                    listMultiMap.put(header, record);
+                    i.getAndIncrement();
+                });
+
+                csvDataMap.add(listMultiMap);
             });
 
-            csvDataMap.add(listMultiMap);
-        });
+            log.info("CSV data size: " + csvDataMap.size());
 
-        log.info("CSV data size: " + csvDataMap.size());
+            final List<Sample> samples = buildSamples(csvDataMap, aapDomain, webinId, certificate);
 
-        List<Sample> samples = buildSamples(csvDataMap, aapDomain, webinId, certificate);
+            final String persistanceMessage = "Number of samples persisted: " + samples.size();
 
-        log.info("Number of samples persisted: " + samples.size());
+            log.info(persistanceMessage);
+            validationResult.addValidationMessage(persistanceMessage);
+            log.info(String.join("\n", validationResult.getValidationMessagesList()));
+
+            return writeToFile(fileToBeUploaded, headers, samples);
+        } catch (Exception e) {
+            throw new UploadInvalidException(String.join("\n", validationResult.getValidationMessagesList()));
+        }
+    }
+
+    private <T> List<T> getPrintableListFromCsvRow(Iterator<T> iterator) {
+        Iterable<T> iterable = () -> iterator;
+
+        return StreamSupport
+                .stream(iterable.spliterator(), false)
+                .collect(Collectors.toList());
+    }
+
+    private File writeToFile(File fileToBeUploaded, List<String> headers, List<Sample> samples) throws IOException {
+        log.info("Writing to file");
+        Path temp = Files.createTempFile("upload_result", ".tsv");
+        boolean headerHasIdentifier = headers.stream().anyMatch(header -> header.equalsIgnoreCase("Sample Identifier"));
+
+        final List<String> outputFileHeaders = new ArrayList<>(headers);
+
+        if (!headerHasIdentifier) {
+            outputFileHeaders.add("Sample Identifier");
+        }
+        final Reader in = new FileReader(fileToBeUploaded);
+        final String[] headerParsed = outputFileHeaders.toArray(new String[outputFileHeaders.size()]);
+
+        final Iterable<CSVRecord> records = CSVFormat.TDF
+                .withHeader(headerParsed)
+                .withFirstRecordAsHeader()
+                .withAllowDuplicateHeaderNames()
+                .withFirstRecordAsHeader()
+                .withIgnoreEmptyLines()
+                .withIgnoreHeaderCase()
+                .withAllowMissingColumnNames()
+                .withIgnoreSurroundingSpaces()
+                .withTrim()
+                .parse(in);
+
+        try (final BufferedWriter writer = Files.newBufferedWriter(temp, StandardCharsets.UTF_8);
+             final CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.TDF.withHeader(headerParsed));
+             final PrintWriter out = new PrintWriter(writer)) {
+            for (CSVRecord row : records) {
+                if (headerHasIdentifier) {
+                    csvPrinter.printRecord(row);
+                } else {
+                    csvPrinter.printRecord(addAccessionToSamplesForPrint(getPrintableListFromCsvRow(row.iterator()), samples));
+                }
+            }
+
+            out.println("\n\n");
+            out.println("********RECEIPT START********");
+            out.println(String.join("\n", validationResult.getValidationMessagesList()));
+            out.println("********RECEIPT END********");
+            out.println("\n\n");
+        }
+
+        return temp.toFile();
+    }
+
+    private Iterable<?> addAccessionToSamplesForPrint(List<String> listFromIterator, List<Sample> samples) {
+        String sampleName = listFromIterator.get(1);
+        Optional<Sample> sampleOptional = samples.stream().filter(sample -> sample.getName().equals(sampleName)).findFirst();
+
+        sampleOptional.ifPresent(sample -> listFromIterator.add(sample.getAccession()));
+
+        return listFromIterator;
     }
 
     private List<Sample> buildSamples(List<Multimap<String, String>> csvDataMap, String aapDomain, String webinId, String certificate) {
@@ -90,29 +168,39 @@ public class IsaTabUploadService {
 
             try {
                 sample = buildSample(csvRecordMap, aapDomain, webinId, certificate);
-            } catch (JsonProcessingException e) {
-                e.printStackTrace(); // throw from here
+
+                if (sample == null) {
+                    validationResult.addValidationMessage("Failed to create all samples in the file");
+                }
+            } catch (Exception e) {
+                validationResult.addValidationMessage("Failed to create all samples in the file");
             }
-            sampleNameToAccessionMap.put(sample.getName(), sample.getAccession());
-            sampleToMappedSample.put(sample, csvRecordMap);
+
+            if (sample != null) {
+                sampleNameToAccessionMap.put(sample.getName(), sample.getAccession());
+                sampleToMappedSample.put(sample, csvRecordMap);
+            }
         });
 
-        return addRelationshipsAndThenBuildSamples(sampleNameToAccessionMap, sampleToMappedSample);
+        return addRelationshipsAndThenBuildSamples(sampleNameToAccessionMap, sampleToMappedSample, webinId);
     }
 
     private boolean isWebinIdUsedToAuthenticate(String webinId) {
         return webinId != null && webinId.toUpperCase().startsWith("WEBIN");
     }
 
-    private List<Sample> addRelationshipsAndThenBuildSamples(Map<String, String> sampleNameToAccessionMap, Map<Sample, Multimap<String, String>> sampleToMappedSample) {
+    private List<Sample> addRelationshipsAndThenBuildSamples(Map<String, String> sampleNameToAccessionMap, Map<Sample, Multimap<String, String>> sampleToMappedSample,
+                                                             String webinId) {
         return sampleToMappedSample
                 .entrySet()
                 .stream()
-                .map(sampleMultimapEntry -> addRelationshipAndThenBuildSample(sampleNameToAccessionMap, sampleMultimapEntry))
+                .map(sampleMultimapEntry -> addRelationshipAndThenBuildSample(sampleNameToAccessionMap, sampleMultimapEntry, webinId))
                 .collect(Collectors.toList());
     }
 
-    private Sample addRelationshipAndThenBuildSample(Map<String, String> sampleNameToAccessionMap, Map.Entry<Sample, Multimap<String, String>> sampleMultimapEntry) {
+    private Sample addRelationshipAndThenBuildSample(Map<String, String> sampleNameToAccessionMap, Map.Entry<Sample, Multimap<String, String>> sampleMultimapEntry,
+                                                     String webinId) {
+        final String authProvider = isWebinIdUsedToAuthenticate(webinId) ? "WEBIN" : "AAP";
         final Map<String, String> relationshipMap = parseRelationships(sampleMultimapEntry.getValue());
         Sample sample = sampleMultimapEntry.getKey();
         final List<Relationship> relationships = createRelationships(sample, sampleNameToAccessionMap, relationshipMap);
@@ -120,51 +208,68 @@ public class IsaTabUploadService {
         relationships.forEach(relationship -> log.info(relationship.toString()));
 
         sample = Sample.Builder.fromSample(sample).withRelationships(relationships).build();
-        sample = sampleService.store(sample, false, true, "AAP");
+        sample = sampleService.store(sample, false, true, authProvider);
 
         return sample;
     }
 
     private Sample buildSample(Multimap<String, String> multiMap, String aapDomain, String webinId, String certificate) throws JsonProcessingException {
         final String sampleName = getSampleName(multiMap);
+        final String sampleReleaseDate = getReleaseDate(multiMap);
         final String accession = getSampleAccession(multiMap);
         final List<Characteristics> characteristicsList = handleCharacteristics(multiMap);
         final List<ExternalReference> externalReferenceList = handleExternalReferences(multiMap);
         final String authProvider = isWebinIdUsedToAuthenticate(webinId) ? "WEBIN" : "AAP";
+        boolean validationFailure = false;
 
-        externalReferenceList.forEach(externalReference -> log.info(externalReference.toString()));
+        if (sampleName == null || sampleName.isEmpty()) {
+            validationResult.addValidationMessage("All samples in the file must have a sample name, some samples are missing sample name and hence are not created");
+            validationFailure = true;
+        }
 
-        Sample sample = new Sample.Builder(sampleName.trim())
-                .withAccession(accession)
-                .withAttributes(characteristicsList.stream()
-                        .map(characteristics -> {
-                            final String name = characteristics.getName();
+        if (sampleReleaseDate == null || sampleReleaseDate.isEmpty()) {
+            validationResult.addValidationMessage("All samples in the file must have a release date " + sampleName + " doesn't have a release date and is not created");
+            validationFailure = true;
+        }
 
-                            return new Attribute.Builder
-                                    (name.substring(name.indexOf('[') + 1, name.indexOf(']')),
-                                            characteristics.getValue())
-                                    .withTag("attribute")
-                                    .withUnit(characteristics.getUnit())
-                                    .withIri(characteristics.getIri())
-                                    .build();
-                        })
-                        .collect(Collectors.toList()))
-                .withExternalReferences(externalReferenceList)
-                .build();
+        if (!validationFailure) {
+            externalReferenceList.forEach(externalReference -> log.info(externalReference.toString()));
 
-        if (sampleService.isWebinAuthorization(authProvider)) {
-            sample =
-                    Sample.Builder.fromSample(sample).withWebinSubmissionAccountId(webinId).build();
+            Sample sample = new Sample.Builder(sampleName.trim())
+                    .withAccession(accession)
+                    .withAttributes(characteristicsList.stream()
+                            .map(characteristics -> {
+                                final String name = characteristics.getName();
+
+                                return new Attribute.Builder
+                                        (name.substring(name.indexOf('[') + 1, name.indexOf(']')),
+                                                characteristics.getValue())
+                                        .withTag("attribute")
+                                        .withUnit(characteristics.getUnit())
+                                        .withIri(characteristics.getIri())
+                                        .build();
+                            })
+                            .collect(Collectors.toList()))
+                    .withExternalReferences(externalReferenceList)
+                    .build();
+
+            if (sampleService.isWebinAuthorization(authProvider)) {
+                sample =
+                        Sample.Builder.fromSample(sample).withWebinSubmissionAccountId(webinId).build();
+            } else {
+                sample = Sample.Builder.fromSample(sample).withDomain(aapDomain).build();
+            }
+
+            if (certify(sample, certificate)) {
+                sample = sampleService.store(sample, false, true, authProvider);
+            }
+
+            log.info("Sample " + sample.getName() + " created with accession " + sample.getAccession());
+
+            return sample;
         } else {
-            sample = Sample.Builder.fromSample(sample).withDomain(aapDomain).build();
+            return null;
         }
-
-        if (certify(sample, certificate)) {
-            sample = sampleService.store(sample, false, true, "AAP");
-        }
-        log.info("Sample " + sample.getName() + " created with accession " + sample.getAccession());
-
-        return sample;
     }
 
     private String getSampleAccession(Multimap<String, String> multiMap) {
@@ -183,7 +288,6 @@ public class IsaTabUploadService {
             log.info(entryKey + " " + entryValue);
 
             if (entryKey.startsWith("Comment") && entryKey.contains("external DB REF")) {
-                log.info("Entry value here is " + entry.getValue());
                 externalReferenceList.add(ExternalReference.build(entry.getValue()));
             }
         });
@@ -196,8 +300,38 @@ public class IsaTabUploadService {
                 .entrySet()
                 .stream()
                 .map(entry ->
-                        Relationship.build(sample.getAccession(), entry.getKey().trim(), sampleNameToAccessionMap.get(entry.getValue().trim())))
+                        getRelationship(sample, sampleNameToAccessionMap, entry))
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
+    }
+
+    private Relationship getRelationship(Sample sample, Map<String, String> sampleNameToAccessionMap, Map.Entry<String, String> entry) {
+        try {
+            final String relationshipTarget = getRelationshipTarget(sampleNameToAccessionMap, entry);
+
+            if (relationshipTarget != null) {
+                return Relationship.build(sample.getAccession(), entry.getKey().trim(), relationshipTarget);
+            } else {
+                validationResult.addValidationMessage("Failed to add all relationships for " + sample.getAccession());
+                return null;
+            }
+        } catch (Exception e) {
+            log.info("Failed to add relationship");
+            validationResult.addValidationMessage("Failed to add all relationships for " + sample.getAccession() + " error: " + e.getMessage());
+            return null;
+        }
+    }
+
+    private String getRelationshipTarget(Map<String, String> sampleNameToAccessionMap, Map.Entry<String, String> entry) {
+        final String relationshipTarget = entry.getValue().trim();
+
+        if (relationshipTarget.startsWith("SAM")) {
+            return relationshipTarget;
+        } else {
+            final String relTarget = sampleNameToAccessionMap.get(relationshipTarget);
+
+            return relTarget != null ? relTarget : null;
+        }
     }
 
     private boolean certify(Sample sample, String certificate) throws JsonProcessingException {
@@ -286,14 +420,21 @@ public class IsaTabUploadService {
 
     }
 
+    private String getReleaseDate(Multimap<String, String> multiMap) {
+        Optional<String> sampleReleaseDate = multiMap.get("Release Date").stream().findFirst();
+
+        return sampleReleaseDate.orElse(null);
+
+    }
+
     private CSVParser buildParser(BufferedReader reader) throws IOException {
         return new CSVParser(reader, CSVFormat.TDF
-                .withAllowDuplicateHeaderNames()
+                .withAllowDuplicateHeaderNames(true)
                 .withFirstRecordAsHeader()
-                .withIgnoreEmptyLines()
-                .withIgnoreHeaderCase()
-                .withAllowMissingColumnNames()
-                .withIgnoreSurroundingSpaces()
-                .withTrim());
+                .withIgnoreEmptyLines(true)
+                .withIgnoreHeaderCase(true)
+                .withAllowMissingColumnNames(true)
+                .withIgnoreSurroundingSpaces(true)
+                .withTrim(true));
     }
 }
