@@ -114,7 +114,7 @@ public class BioSamplesAutoConfiguration {
           BioSamplesProperties bioSamplesProperties,
           RestTemplateBuilder restTemplateBuilder,
           SampleValidator sampleValidator,
-          @Qualifier("WEBIN") WebinAuthClientService clientService) {
+          @Qualifier("WEBIN") ClientService clientService) {
     restTemplateBuilder =
         restTemplateBuilder.additionalCustomizers(
             new BioSampleClientRestTemplateCustomizer(bioSamplesProperties));
@@ -132,7 +132,7 @@ public class BioSamplesAutoConfiguration {
           BioSamplesProperties bioSamplesProperties,
           RestTemplateBuilder restTemplateBuilder,
           SampleValidator sampleValidator,
-          @Qualifier("AAP") AapClientService clientService) {
+          @Qualifier("AAP") ClientService clientService) {
     restTemplateBuilder =
             restTemplateBuilder.additionalCustomizers(
                     new BioSampleClientRestTemplateCustomizer(bioSamplesProperties));

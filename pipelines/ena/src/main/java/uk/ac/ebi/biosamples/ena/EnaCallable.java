@@ -40,7 +40,7 @@ public class EnaCallable implements Callable<Void> {
   private final EnaXmlEnhancer enaXmlEnhancer;
   private final EraProDao eraProDao;
   private final EnaElementConverter enaElementConverter;
-  private String domain;
+  private String webinId;
   private Set<AbstractData> amrData;
   private boolean suppressionHandler;
   private boolean killedHandler;
@@ -52,7 +52,7 @@ public class EnaCallable implements Callable<Void> {
       EnaXmlEnhancer enaXmlEnhancer,
       EnaElementConverter enaElementConverter,
       EraProDao eraProDao,
-      String domain,
+      String webinId,
       boolean suppressionHandler,
       boolean killedHandler,
       boolean bsdAuthority,
@@ -62,7 +62,7 @@ public class EnaCallable implements Callable<Void> {
     this.enaXmlEnhancer = enaXmlEnhancer;
     this.enaElementConverter = enaElementConverter;
     this.eraProDao = eraProDao;
-    this.domain = domain;
+    this.webinId = webinId;
     this.suppressionHandler = suppressionHandler;
     this.killedHandler = killedHandler;
     this.bsdAuthority = bsdAuthority;
@@ -172,7 +172,7 @@ public class EnaCallable implements Callable<Void> {
               Curation enaLinkCuration =
                   Curation.build(null, null, null, Collections.singleton(exRef));
 
-              bioSamplesClient.persistCuration(sampleAccession, enaLinkCuration, domain);
+              bioSamplesClient.persistCuration(sampleAccession, enaLinkCuration, webinId);
               log.info("Updated sample " + sampleAccession + " with ENA link");
             }
           } else {
@@ -223,6 +223,7 @@ public class EnaCallable implements Callable<Void> {
     final String lastUpdated = sampleDBBean.getLastUpdate();
     final String firstPublic = sampleDBBean.getFirstPublic();
     final String firstCreated = sampleDBBean.getFirstCreated();
+    final String webinId = sampleDBBean.getSubmissionAccountId();
     final String status = handleStatus(sampleDBBean.getStatus());
     Instant release;
     Instant update = null;
@@ -260,8 +261,8 @@ public class EnaCallable implements Callable<Void> {
         Sample.build(
             sample.getName(),
             this.sampleAccession,
-            domain,
-            "",
+            null,
+                webinId,
             release,
             update,
             create,

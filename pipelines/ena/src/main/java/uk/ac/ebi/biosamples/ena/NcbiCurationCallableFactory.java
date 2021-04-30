@@ -17,16 +17,16 @@ import uk.ac.ebi.biosamples.client.BioSamplesClient;
 @Service
 public class NcbiCurationCallableFactory {
   private final BioSamplesClient bioSamplesClient;
-  private final String domain;
+  private final String webinId;
 
   public NcbiCurationCallableFactory(
       BioSamplesClient bioSamplesClient, PipelinesProperties pipelinesProperties) {
     this.bioSamplesClient = bioSamplesClient;
-    this.domain = pipelinesProperties.getEnaDomain();
+    this.webinId = pipelinesProperties.getProxyWebinId();
   }
 
   public NcbiCurationCallable build(String accession) {
-    return new NcbiCurationCallable(accession, bioSamplesClient, domain);
+    return new NcbiCurationCallable(accession, bioSamplesClient, webinId);
   }
 
   /**
@@ -37,6 +37,6 @@ public class NcbiCurationCallableFactory {
    * @return the callable, {@link NcbiCurationCallable}
    */
   public NcbiCurationCallable build(String accession, boolean suppressionHandler) {
-    return new NcbiCurationCallable(accession, bioSamplesClient, domain, suppressionHandler);
+    return new NcbiCurationCallable(accession, bioSamplesClient, webinId, suppressionHandler);
   }
 }

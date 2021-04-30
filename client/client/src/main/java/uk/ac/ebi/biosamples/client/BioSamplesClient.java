@@ -120,7 +120,7 @@ public class BioSamplesClient implements AutoCloseable {
         new SampleSubmissionService(restOperations, traverson, threadPoolExecutor, isWebinSubmission);
 
     sampleCertificationService =
-        new SampleCertificationService(restOperations, traverson, threadPoolExecutor);
+        new SampleCertificationService(restOperations, traverson, threadPoolExecutor, isWebinSubmission);
 
     sampleGroupSubmissionService =
         new SampleGroupSubmissionService(restOperations, traverson, threadPoolExecutor);

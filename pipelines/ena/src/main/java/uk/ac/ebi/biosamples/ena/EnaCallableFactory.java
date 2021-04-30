@@ -25,7 +25,7 @@ public class EnaCallableFactory {
   private final EnaXmlEnhancer enaXmlEnhancer;
   private final EnaElementConverter enaElementConverter;
   private final EraProDao eraProDao;
-  private final String domain;
+  private final String webinId;
 
   public EnaCallableFactory(
       @Qualifier("WEBINCLIENT") BioSamplesClient bioSamplesClient,
@@ -38,7 +38,7 @@ public class EnaCallableFactory {
     this.enaXmlEnhancer = enaXmlEnhancer;
     this.enaElementConverter = enaElementConverter;
     this.eraProDao = eraProDao;
-    this.domain = pipelinesProperties.getEnaDomain();
+    this.webinId = pipelinesProperties.getProxyWebinId();
   }
 
   /**
@@ -62,7 +62,7 @@ public class EnaCallableFactory {
         enaXmlEnhancer,
         enaElementConverter,
         eraProDao,
-        domain,
+        webinId,
         suppressionHandler,
         killedHandler,
         bsdAuthority,

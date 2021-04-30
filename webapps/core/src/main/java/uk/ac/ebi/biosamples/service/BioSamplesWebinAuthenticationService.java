@@ -80,34 +80,45 @@ public class BioSamplesWebinAuthenticationService {
   }
 
   public Sample handleWebinUser(Sample sample, String webinId) {
-    if (webinId != null && !webinId.isEmpty()) {
-      if (sample.getAccession() != null) {
-        Optional<Sample> oldSample =
-            sampleService.fetch(sample.getAccession(), Optional.empty(), null);
+    if (webinId != null && !webinId.isEmpty()) { // webin id retrieval failure - throw Exception
+      if (sample.getAccession() != null) { // sample updates, where sample has an accession
+        final String biosamplesClientWebinUsername = bioSamplesProperties.getBiosamplesClientWebinUsername();
 
-        if (oldSample.isPresent()) {
-          final Sample oldSavedSample = oldSample.get();
+        if (webinId.equalsIgnoreCase(biosamplesClientWebinUsername)) { // ENA pipeline submissions, check if submission done by internal client program
+          final String webinSubmissionAccountIdInMetadata = sample.getWebinSubmissionAccountId(); // if true, override submission account id in sample with original account id from ENA
 
-          if (oldSavedSample.getWebinSubmissionAccountId().startsWith("SU")) {
-            return Sample.Builder.fromSample(sample)
-                .withWebinSubmissionAccountId(webinId)
-                .withNoDomain()
-                .build();
-          } else if (!webinId.equalsIgnoreCase(oldSavedSample.getWebinSubmissionAccountId())) {
-            throw new BioSamplesAapService.SampleNotAccessibleException();
+          return buildSample(sample, (webinSubmissionAccountIdInMetadata != null && !webinSubmissionAccountIdInMetadata.isEmpty())
+                  ? webinSubmissionAccountIdInMetadata
+                  : biosamplesClientWebinUsername);
+        } else { // normal sample update - not pipeline, check for old user, if mismatch throw exception
+          Optional<Sample> oldSample =
+                  sampleService.fetch(sample.getAccession(), Optional.empty(), null);
+
+          if (oldSample.isPresent()) {
+            final Sample oldSavedSample = oldSample.get();
+
+            if (!webinId.equalsIgnoreCase(oldSavedSample.getWebinSubmissionAccountId())) { // original submitter mismatch
+              throw new SampleNotAccessibleException();
+            } else {
+              return buildSample(sample, webinId);
+            }
+          } else {
+            return buildSample(sample, webinId);
           }
-        } else {
-          throw new BioSamplesAapService.SampleNotAccessibleException();
         }
+      } else { // new submission
+        return buildSample(sample, webinId);
       }
-
-      return Sample.Builder.fromSample(sample)
-          .withWebinSubmissionAccountId(webinId)
-          .withNoDomain()
-          .build();
     } else {
       throw new WebinUserLoginUnauthorizedException();
     }
+  }
+
+  private Sample buildSample(Sample sample, String webinId) {
+    return Sample.Builder.fromSample(sample)
+            .withWebinSubmissionAccountId(webinId)
+            .withNoDomain()
+            .build();
   }
 
   public CurationLink handleWebinUser(CurationLink curationLink, String webinId) {
@@ -125,4 +136,11 @@ public class BioSamplesWebinAuthenticationService {
 
   @ResponseStatus(value = HttpStatus.UNAUTHORIZED, reason = "Unauthorized WEBIN user")
   private static class WebinUserLoginUnauthorizedException extends RuntimeException {}
+
+  @ResponseStatus(
+          value = HttpStatus.FORBIDDEN,
+          reason =
+                  "This sample is private and not available for browsing. If you think this is an error and/or you should have access please contact the BioSamples Helpdesk at biosamples@ebi.ac.uk")
+  private static class SampleNotAccessibleException extends RuntimeException {
+  }
 }

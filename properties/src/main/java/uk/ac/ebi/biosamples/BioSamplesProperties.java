@@ -1,13 +1,13 @@
 /*
-* Copyright 2019 EMBL - European Bioinformatics Institute
-* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
-* file except in compliance with the License. You may obtain a copy of the License at
-* http://www.apache.org/licenses/LICENSE-2.0
-* Unless required by applicable law or agreed to in writing, software distributed under the
-* License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-* CONDITIONS OF ANY KIND, either express or implied. See the License for the
-* specific language governing permissions and limitations under the License.
-*/
+ * Copyright 2019 EMBL - European Bioinformatics Institute
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+ * file except in compliance with the License. You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+ * CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ */
 package uk.ac.ebi.biosamples;
 
 import java.net.URI;
@@ -59,6 +59,14 @@ public class BioSamplesProperties {
   @Value("${biosamples.client.aap.password:#{null}}")
   private String biosamplesClientAapPassword;
 
+  // can't use "null" because it will be a string
+  @Value("${biosamples.client.webin.username:Webin-40894}")
+  private String biosamplesClientWebinUsername;
+
+  // can't use "null" because it will be a string
+  @Value("${biosamples.client.webin.password:#{null}}")
+  private String biosamplesClientWebinPassword;
+
   // max number of cache entries, 0 means no cache is used by the client
   // This multiplied by the cache maxobjectsize value defines the max size of the cache
   @Value("${biosamples.client.cache.maxentries:0}")
@@ -105,6 +113,14 @@ public class BioSamplesProperties {
 
   @Value("${biosamples.schema.default:ERC100001}")
   private String biosamplesDefaultSchema;
+
+  public String getBiosamplesClientWebinUsername() {
+    return biosamplesClientWebinUsername;
+  }
+
+  public String getBiosamplesClientWebinPassword() {
+    return biosamplesClientWebinPassword;
+  }
 
   public URI getBiosamplesClientUri() {
     return biosamplesClientUri;
