@@ -67,14 +67,6 @@ public class BioSamplesProperties {
   @Value("${biosamples.client.webin.password:#{null}}")
   private String biosamplesClientWebinPassword;
 
-  // can't use "null" because it will be a string
-  @Value("${biosamples.client.webin.username:Webin-40894}")
-  private String biosamplesClientWebinUsername;
-
-  // can't use "null" because it will be a string
-  @Value("${biosamples.client.webin.password:#{null}}")
-  private String biosamplesClientWebinPassword;
-
   // max number of cache entries, 0 means no cache is used by the client
   // This multiplied by the cache maxobjectsize value defines the max size of the cache
   @Value("${biosamples.client.cache.maxentries:0}")
