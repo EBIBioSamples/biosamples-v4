@@ -45,12 +45,6 @@ public class BioSamplesProperties {
   @Value("${biosamples.client.aap.uri:https://explore.api.aai.ebi.ac.uk/auth}")
   private URI biosamplesClientAapUri;
 
-  @Value("${biosamples.client.webin.auth.token.uri:https://wwwdev.ebi.ac.uk/ena/submit/webin/auth/token}")
-  private URI biosamplesWebinAuthTokenUri;
-
-  @Value("${biosamples.client.webin.auth.submissionaccount.uri:https://wwwdev.ebi.ac.uk/ena/submit/webin/auth/admin/submission-account}")
-  private URI biosamplesWebinAuthFetchSubmissionAccountUri;
-
   // can't use "null" because it will be a string
   @Value("${biosamples.client.aap.username:#{null}}")
   private String biosamplesClientAapUsername;
@@ -58,6 +52,20 @@ public class BioSamplesProperties {
   // can't use "null" because it will be a string
   @Value("${biosamples.client.aap.password:#{null}}")
   private String biosamplesClientAapPassword;
+
+  @Value("${biosamples.client.webin.auth.token.uri:https://wwwdev.ebi.ac.uk/ena/submit/webin/auth/token}")
+  private URI biosamplesWebinAuthTokenUri;
+
+  @Value("${biosamples.client.webin.auth.submissionaccount.uri:https://wwwdev.ebi.ac.uk/ena/submit/webin/auth/admin/submission-account}")
+  private URI biosamplesWebinAuthFetchSubmissionAccountUri;
+
+  // can't use "null" because it will be a string
+  @Value("${biosamples.client.webin.username:Webin-40894}")
+  private String biosamplesClientWebinUsername;
+
+  // can't use "null" because it will be a string
+  @Value("${biosamples.client.webin.password:#{null}}")
+  private String biosamplesClientWebinPassword;
 
   // can't use "null" because it will be a string
   @Value("${biosamples.client.webin.username:Webin-40894}")

@@ -10,6 +10,8 @@
 */
 package uk.ac.ebi.biosamples.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -23,6 +25,8 @@ import java.util.Optional;
 
 @Service
 public class BioSamplesWebinAuthenticationService {
+  private Logger log = LoggerFactory.getLogger(getClass());
+
   private final RestTemplate restTemplate;
   private final SampleService sampleService;
   private final BioSamplesProperties bioSamplesProperties;
@@ -41,11 +45,11 @@ public class BioSamplesWebinAuthenticationService {
 
     try {
       ResponseEntity<SubmissionAccount> responseEntity =
-          restTemplate.exchange(
-              bioSamplesProperties.getBiosamplesWebinAuthFetchSubmissionAccountUri(),
-              HttpMethod.GET,
-              entity,
-              SubmissionAccount.class);
+              restTemplate.exchange(
+                      bioSamplesProperties.getBiosamplesWebinAuthFetchSubmissionAccountUri(),
+                      HttpMethod.GET,
+                      entity,
+                      SubmissionAccount.class);
       if (responseEntity.getStatusCode() == HttpStatus.OK) {
         return responseEntity;
       } else {
@@ -58,17 +62,16 @@ public class BioSamplesWebinAuthenticationService {
 
   public ResponseEntity<String> getWebinToken(final String authRequest) {
     HttpHeaders headers = new HttpHeaders();
-    System.out.println(authRequest);
     headers.setContentType(MediaType.APPLICATION_JSON);
     HttpEntity<String> entity = new HttpEntity<>(authRequest, headers);
 
     try {
       ResponseEntity<String> responseEntity =
-          restTemplate.exchange(
-              bioSamplesProperties.getBiosamplesWebinAuthTokenUri(),
-              HttpMethod.POST,
-              entity,
-              String.class);
+              restTemplate.exchange(
+                      bioSamplesProperties.getBiosamplesWebinAuthTokenUri(),
+                      HttpMethod.POST,
+                      entity,
+                      String.class);
       if (responseEntity.getStatusCode() == HttpStatus.OK) {
         return responseEntity;
       } else {

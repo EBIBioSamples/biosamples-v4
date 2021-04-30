@@ -60,7 +60,7 @@
                     </form>
                     <br/>
                     <input type="submit" id="uploadFile" value="Upload files"/>
-                    <br/><br/>
+                    <br/><br/><br/>
                     <b><a th:href="@{/uploadLogin}"><<< Back</a></b>
                 </div>
             </div>
@@ -92,15 +92,19 @@
         myDropzone.processQueue();
     });
 
-    myDropzone.on("success", function (file) {
+    myDropzone.on("success", function (file, response) {
         /*$(".dz-success-mark svg").css("background", "green");
         $(".dz-error-mark").css("display", "none");*/
+        toastr.success('File ' + file.name + ' uploaded successfully')
         myDropzone.removeFile(file);
+        download(response, file.name, "text/csv");
     });
 
-    myDropzone.on("error", function (file) {
+    myDropzone.on("error", function (file, response) {
         $(".dz-error-mark svg").css("background", "red");
         $(".dz-success-mark").css("display", "none");
+        toastr.error("Your file upload has failed");
+        download(response, "failed_response.txt", "text/plain");
     });
 
     $("#aapDomain").change(function (e) {
