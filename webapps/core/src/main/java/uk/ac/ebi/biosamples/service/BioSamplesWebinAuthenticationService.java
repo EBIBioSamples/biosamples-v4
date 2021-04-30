@@ -124,24 +124,21 @@ public class BioSamplesWebinAuthenticationService {
             .build();
   }
 
-  /**/
   public CurationLink handleWebinUser(CurationLink curationLink, String webinId) {
     if (webinId != null && !webinId.isEmpty()) {
       return CurationLink.build(
-              curationLink.getSample(),
-              curationLink.getCuration(),
-              null,
-              webinId,
-              curationLink.getCreated());
+          curationLink.getSample(),
+          curationLink.getCuration(),
+          null,
+          webinId,
+          curationLink.getCreated());
     } else {
       throw new BioSamplesAapService.SampleNotAccessibleException();
     }
   }
 
   @ResponseStatus(value = HttpStatus.UNAUTHORIZED, reason = "Unauthorized WEBIN user")
-  private static class WebinUserLoginUnauthorizedException extends RuntimeException {
-  }
-
+  private static class WebinUserLoginUnauthorizedException extends RuntimeException {}
 
   @ResponseStatus(
           value = HttpStatus.FORBIDDEN,

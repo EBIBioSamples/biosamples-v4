@@ -10,6 +10,7 @@
 */
 package uk.ac.ebi.biosamples.client;
 
+import ch.qos.logback.core.net.server.Client;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Arrays;
@@ -28,6 +29,7 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicHeaderElementIterator;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.protocol.HttpContext;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.web.WebClientAutoConfiguration;
@@ -35,6 +37,7 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.boot.web.client.RestTemplateCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.hal.Jackson2HalModule;
@@ -44,7 +47,10 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.biosamples.BioSamplesProperties;
+import uk.ac.ebi.biosamples.client.model.auth.AuthRealm;
 import uk.ac.ebi.biosamples.client.service.AapClientService;
+import uk.ac.ebi.biosamples.client.service.ClientService;
+import uk.ac.ebi.biosamples.client.service.WebinAuthClientService;
 import uk.ac.ebi.biosamples.service.AttributeValidator;
 import uk.ac.ebi.biosamples.service.SampleValidator;
 
@@ -70,7 +76,7 @@ public class BioSamplesAutoConfiguration {
     return new BioSamplesProperties();
   }
 
-  @Bean
+  @Bean("AAP")
   @ConditionalOnMissingBean(AapClientService.class)
   public AapClientService aapClientService(
       RestTemplateBuilder restTemplateBuilder, BioSamplesProperties bioSamplesProperties) {
@@ -86,13 +92,29 @@ public class BioSamplesAutoConfiguration {
     }
   }
 
-  @Bean
-  @ConditionalOnMissingBean(BioSamplesClient.class)
-  public BioSamplesClient bioSamplesClient(
-      BioSamplesProperties bioSamplesProperties,
-      RestTemplateBuilder restTemplateBuilder,
-      SampleValidator sampleValidator,
-      AapClientService aapClientService) {
+  @Bean("WEBIN")
+  @ConditionalOnMissingBean(WebinAuthClientService.class)
+  public WebinAuthClientService webinAuthClientService(
+          RestTemplateBuilder restTemplateBuilder, BioSamplesProperties bioSamplesProperties) {
+    if (bioSamplesProperties.getBiosamplesClientWebinUsername() != null
+            && bioSamplesProperties.getBiosamplesClientWebinPassword() != null) {
+      return new WebinAuthClientService(
+              restTemplateBuilder,
+              bioSamplesProperties.getBiosamplesWebinAuthTokenUri(),
+              bioSamplesProperties.getBiosamplesClientWebinUsername(),
+              bioSamplesProperties.getBiosamplesClientWebinPassword(),
+              Arrays.asList(AuthRealm.ENA)); // pass the realm
+    } else {
+      return null;
+    }
+  }
+
+  @Bean("WEBINCLIENT")
+  public BioSamplesClient bioSamplesWebinClient(
+          BioSamplesProperties bioSamplesProperties,
+          RestTemplateBuilder restTemplateBuilder,
+          SampleValidator sampleValidator,
+          @Qualifier("WEBIN") ClientService clientService) {
     restTemplateBuilder =
         restTemplateBuilder.additionalCustomizers(
             new BioSampleClientRestTemplateCustomizer(bioSamplesProperties));
@@ -100,8 +122,26 @@ public class BioSamplesAutoConfiguration {
         bioSamplesProperties.getBiosamplesClientUri(),
         restTemplateBuilder,
         sampleValidator,
-        aapClientService,
+            clientService,
         bioSamplesProperties);
+  }
+
+  @Bean("AAPCLIENT")
+  @Primary
+  public BioSamplesClient bioSamplesAapClient(
+          BioSamplesProperties bioSamplesProperties,
+          RestTemplateBuilder restTemplateBuilder,
+          SampleValidator sampleValidator,
+          @Qualifier("AAP") ClientService clientService) {
+    restTemplateBuilder =
+            restTemplateBuilder.additionalCustomizers(
+                    new BioSampleClientRestTemplateCustomizer(bioSamplesProperties));
+    return new BioSamplesClient(
+            bioSamplesProperties.getBiosamplesClientUri(),
+            restTemplateBuilder,
+            sampleValidator,
+            clientService,
+            bioSamplesProperties);
   }
 
   private static class BioSampleClientRestTemplateCustomizer implements RestTemplateCustomizer {

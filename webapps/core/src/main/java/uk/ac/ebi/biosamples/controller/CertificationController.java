@@ -61,10 +61,12 @@ public class CertificationController {
       throw new SampleRestController.SampleAccessionMismatchException();
     }
 
-    if (sampleService.isExistingAccession(accession)
-        && !(bioSamplesAapService.isWriteSuperUser()
-            || bioSamplesAapService.isIntegrationTestUser())) {
-      throw new SampleRestController.SampleAccessionDoesNotExistException();
+    if (!authProvider.equalsIgnoreCase("WEBIN")) {
+      if (sampleService.isExistingAccession(accession)
+              && !(bioSamplesAapService.isWriteSuperUser()
+              || bioSamplesAapService.isIntegrationTestUser())) {
+        throw new SampleRestController.SampleAccessionDoesNotExistException();
+      }
     }
 
     log.info("Received PUT for validation of " + accession);

@@ -26,7 +26,7 @@ import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestOperations;
 
-public class AapClientService {
+public class AapClientService implements ClientService {
 
   private Logger log = LoggerFactory.getLogger(getClass());
 
@@ -85,5 +85,10 @@ public class AapClientService {
     }
 
     return jwt.get();
+  }
+
+  @Override
+  public boolean isWebin() {
+    return false;
   }
 }

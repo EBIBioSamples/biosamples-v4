@@ -22,6 +22,8 @@ public class SampleDBBean {
   private String firstPublic;
   private String lastUpdate;
   private String firstCreated;
+  private String submissionAccountId;
+
   private int status;
 
   public String getSampleXml() {
@@ -62,5 +64,13 @@ public class SampleDBBean {
 
   public void setStatus(int status) {
     this.status = status;
+  }
+
+  public String getSubmissionAccountId() {
+    return submissionAccountId;
+  }
+
+  public void setSubmissionAccountId(String submissionAccountId) {
+    this.submissionAccountId = submissionAccountId;
   }
 }

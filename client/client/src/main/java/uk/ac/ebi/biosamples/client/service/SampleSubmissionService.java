@@ -39,12 +39,14 @@ public class SampleSubmissionService {
   private final Traverson traverson;
   private final ExecutorService executor;
   private final RestOperations restOperations;
+  private final boolean isWebinSubmission;
 
   public SampleSubmissionService(
-      RestOperations restOperations, Traverson traverson, ExecutorService executor) {
+          RestOperations restOperations, Traverson traverson, ExecutorService executor, boolean isWebinSubmission) {
     this.restOperations = restOperations;
     this.traverson = traverson;
     this.executor = executor;
+    this.isWebinSubmission = isWebinSubmission;
   }
 
   /**
@@ -59,7 +61,7 @@ public class SampleSubmissionService {
   public Resource<Sample> submit(Sample sample, Boolean setUpdateDate, Boolean setFullDetails)
       throws RestClientException {
     try {
-      return new SubmitCallable(sample, setUpdateDate, setFullDetails).call();
+      return new SubmitCallable(sample, setUpdateDate, setFullDetails, isWebinSubmission).call();
     } catch (RestClientException e) {
       throw e;
     } catch (Exception e) {
@@ -71,7 +73,7 @@ public class SampleSubmissionService {
   public Resource<Sample> submit(Sample sample, String jwt, Boolean setFullDetails)
       throws RestClientException {
     try {
-      return new SubmitCallable(sample, jwt, setFullDetails).call();
+      return new SubmitCallable(sample, jwt, setFullDetails, isWebinSubmission).call();
     } catch (RestClientException e) {
       throw e;
     } catch (Exception e) {
@@ -90,30 +92,33 @@ public class SampleSubmissionService {
    */
   public Future<Resource<Sample>> submitAsync(
       Sample sample, Boolean setUpdateDate, Boolean setFullDetails) throws RestClientException {
-    return executor.submit(new SubmitCallable(sample, setUpdateDate, setFullDetails));
+    return executor.submit(new SubmitCallable(sample, setUpdateDate, setFullDetails, isWebinSubmission));
   }
 
   /** @param jwt json web token authorizing access to the domain the sample is assigned to */
   public Future<Resource<Sample>> submitAsync(Sample sample, String jwt, Boolean setFullDetails)
       throws RestClientException {
-    return executor.submit(new SubmitCallable(sample, jwt, setFullDetails));
+    return executor.submit(new SubmitCallable(sample, jwt, setFullDetails, isWebinSubmission));
   }
 
   private class SubmitCallable implements Callable<Resource<Sample>> {
     private final Sample sample;
     private final Boolean setFullDetails;
     private final String jwt;
+    private final Boolean isWebinSubmission;
 
-    public SubmitCallable(Sample sample, Boolean setUpdateDate, Boolean setFullDetails) {
+    public SubmitCallable(Sample sample, Boolean setUpdateDate, Boolean setFullDetails, Boolean isWebinSubmission) {
       this.sample = sample;
       this.setFullDetails = setFullDetails;
       this.jwt = null;
+      this.isWebinSubmission = isWebinSubmission;
     }
 
-    public SubmitCallable(Sample sample, String jwt, boolean setFullDetails) {
+    public SubmitCallable(Sample sample, String jwt, boolean setFullDetails, Boolean isWebinSubmission) {
       this.sample = sample;
       this.setFullDetails = setFullDetails;
       this.jwt = jwt;
+      this.isWebinSubmission = isWebinSubmission;
     }
 
     @Override
@@ -206,6 +211,10 @@ public class SampleSubmissionService {
           UriComponentsBuilder.fromUriString(sampleLink.getHref());
       if (setFullDetails != null) {
         uriComponentsBuilder.queryParam("setfulldetails", setFullDetails);
+      }
+
+      if (isWebinSubmission) {
+        uriComponentsBuilder.queryParam("authProvider", "WEBIN");
       }
       return uriComponentsBuilder.build(true).toUri();
     }

@@ -38,12 +38,14 @@ public class SampleCertificationService {
   private final Traverson traverson;
   private final ExecutorService executor;
   private final RestOperations restOperations;
+  private final boolean isWebinSubmission;
 
   public SampleCertificationService(
-      RestOperations restOperations, Traverson traverson, ExecutorService executor) {
+          RestOperations restOperations, Traverson traverson, ExecutorService executor, boolean isWebinSubmission) {
     this.restOperations = restOperations;
     this.traverson = traverson;
     this.executor = executor;
+    this.isWebinSubmission = isWebinSubmission;
   }
 
   /** @param jwt json web token authorizing access to the domain the sample is assigned to */
@@ -79,7 +81,7 @@ public class SampleCertificationService {
 
       sampleLink = sampleLink.expand(sample.getAccession());
 
-      URI uri = getSamplePersistURI(sampleLink);
+      URI uri = getSampleCertificationURI(sampleLink);
 
       log.info("PUTing to " + uri + " " + sample);
 
@@ -114,9 +116,13 @@ public class SampleCertificationService {
     }
   }
 
-  private URI getSamplePersistURI(Link sampleLink) {
+  private URI getSampleCertificationURI(Link sampleLink) {
     UriComponentsBuilder uriComponentsBuilder =
-        UriComponentsBuilder.fromUriString(sampleLink.getHref() + "/certify");
+            UriComponentsBuilder.fromUriString(sampleLink.getHref() + "/certify");
+
+    if (isWebinSubmission) {
+      uriComponentsBuilder.queryParam("authProvider", "WEBIN");
+    }
 
     return uriComponentsBuilder.build(true).toUri();
   }
