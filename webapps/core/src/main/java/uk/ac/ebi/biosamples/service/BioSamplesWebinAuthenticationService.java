@@ -90,7 +90,7 @@ public class BioSamplesWebinAuthenticationService {
           return buildSample(sample, (webinSubmissionAccountIdInMetadata != null && !webinSubmissionAccountIdInMetadata.isEmpty())
                   ? webinSubmissionAccountIdInMetadata
                   : biosamplesClientWebinUsername);
-        } else { // normal sample update - not pipeline, check for old user, if mismatch throw exception
+        } else { // normal sample update - not pipeline, check for old user, if mismatch throw exception, else build the Sample
           Optional<Sample> oldSample =
                   sampleService.fetch(sample.getAccession(), Optional.empty(), null);
 
