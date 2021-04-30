@@ -12,6 +12,8 @@ package uk.ac.ebi.biosamples.ena;
 
 import java.util.Set;
 import java.util.concurrent.Callable;
+
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.PipelinesProperties;
 import uk.ac.ebi.biosamples.client.BioSamplesClient;
@@ -26,7 +28,7 @@ public class EnaCallableFactory {
   private final String domain;
 
   public EnaCallableFactory(
-      BioSamplesClient bioSamplesClient,
+      @Qualifier("WEBINCLIENT") BioSamplesClient bioSamplesClient,
       EnaXmlEnhancer enaXmlEnhancer,
       EnaElementConverter enaElementConverter,
       EraProDao eraProDao,

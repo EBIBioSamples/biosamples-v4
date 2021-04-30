@@ -25,6 +25,7 @@ import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestOperations;
+import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.biosamples.model.CurationLink;
 
 public class CurationSubmissionService {
@@ -34,12 +35,14 @@ public class CurationSubmissionService {
   private final Traverson traverson;
   private final ExecutorService executor;
   private final RestOperations restOperations;
+  private final boolean isWebinSubmission;
 
   public CurationSubmissionService(
-      RestOperations restOperations, Traverson traverson, ExecutorService executor) {
+      RestOperations restOperations, Traverson traverson, ExecutorService executor, boolean isWebinSubmission) {
     this.restOperations = restOperations;
     this.traverson = traverson;
     this.executor = executor;
+    this.isWebinSubmission = isWebinSubmission;
   }
 
   public Resource<CurationLink> submit(CurationLink curationLink) throws RestClientException {
@@ -48,6 +51,12 @@ public class CurationSubmissionService {
 
   public Resource<CurationLink> persistCuration(CurationLink curationLink, String jwt)
       throws RestClientException {
+    String addWebinRequestParam = "";
+
+    if (isWebinSubmission) {
+      addWebinRequestParam = "?authProvider=WEBIN";
+    }
+
     URI target =
         URI.create(
             traverson
@@ -55,7 +64,7 @@ public class CurationSubmissionService {
                 .follow(Hop.rel("sample").withParameter("accession", curationLink.getSample()))
                 .follow("curationLinks")
                 .asLink()
-                .getHref());
+                .getHref().concat(addWebinRequestParam));
 
     log.trace("POSTing to " + target + " " + curationLink);
 
