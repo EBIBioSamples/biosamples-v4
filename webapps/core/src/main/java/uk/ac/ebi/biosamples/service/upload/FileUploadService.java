@@ -48,12 +48,10 @@ import uk.ac.ebi.biosamples.service.certification.CertifyService;
 @Service
 public class FileUploadService {
     private Logger log = LoggerFactory.getLogger(getClass());
+    private ValidationResult validationResult = new ValidationResult();
 
     @Autowired
     ObjectMapper objectMapper;
-
-    @Autowired
-    ValidationResult validationResult;
 
     @Autowired
     SampleService sampleService;

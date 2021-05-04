@@ -25,14 +25,14 @@
             <div class="row">
                 <div class="col-lg-8 mt-5">
                     <div th:if="${loginmethod == null}">
-                        <select class="form-control" id="aapDomain" name="aapDomain">
-                            <option th:value="0"><b>Select AAP domain</b></option>
+                        <select class="required" id="aapDomain" name="aapDomain">
+                            <option th:value="0" selected disabled><b>Select AAP domain</b></option>
                             <option th:each="domain : ${domains}" th:value="${domain}" th:text="${domain}"></option>
                         </select>
                     </div>
                     <div>
-                        <select class="form-control" id="certificate" name="certificate">
-                            <option th:value="0"><b>Select checklist for validation</b></option>
+                        <select class="required" id="certificate" name="certificate">
+                            <option th:value="0" selected disabled><b>Select checklist for validation</b></option>
                             <option th:each="certificate : ${certificates}" th:value="${certificate}"
                                     th:text="${certificate}"></option>
                         </select>
@@ -59,7 +59,7 @@
                         </div>
                     </form>
                     <br/>
-                    <input type="submit" id="uploadFile" value="Upload files"/>
+                    <input type="submit" id="uploadFile" value="Upload files" class="toggle-disabled" disabled/>
                     <br/><br/><br/>
                     <b><a th:href="@{/uploadLogin}"><<< Back</a></b>
                 </div>
@@ -84,8 +84,8 @@
 
     var myDropzone = new Dropzone(".dropzone", {
         autoProcessQueue: false,
-        parallelUploads: 10,
-        maxFiles: 10
+        parallelUploads: 5,
+        maxFiles: 5
     });
 
     $('#uploadFile').click(function () {
@@ -114,6 +114,25 @@
     $("#certificate").change(function (e) {
         $("#hiddenCertificate").val(e.target.value);
     });
+
+    $(document).on('change keyup', '.required', function (e) {
+        let Disabled = true;
+        $(".required").each(function () {
+            let value = this.value
+            if ((value) && (value.trim() != '0')) {
+                Disabled = false
+            } else {
+                Disabled = true
+                return false
+            }
+        });
+
+        if (Disabled) {
+            $('.toggle-disabled').prop("disabled", true);
+        } else {
+            $('.toggle-disabled').prop("disabled", false);
+        }
+    })
 </script>
 </body>
 </html>
