@@ -1,0 +1,12 @@
+Source Name	Sample Name	Release Date	Characteristics[Organism]	Term Source REF	Term Accession Number	Comment[bsd_relationship:same_as]	Comment[external DB REF]	Comment[submission_contact:email]	Sample Identifier
+source_name	name_1	2021-01-01	Homo sapiens	NCBITAXON	http://purl.obolibrary.org/obo/NCBITaxon_9606	name_2	https://www.ebi.ac.uk/ena/browser/view/SAMEA100000	dgupta@ebi.ac.uk	SAMEA100033
+source_name	name_2	2021-01-01	Homo sapiens	NCBITAXON	http://purl.obolibrary.org/obo/NCBITaxon_9606	name_1	https://www.ebi.ac.uk/ena/browser/view/SAMEA100001	dgupta@ebi.ac.uk	SAMEA100034
+
+
+
+********RECEIPT START********
+Number of samples persisted: 2
+********RECEIPT END********
+
+
+

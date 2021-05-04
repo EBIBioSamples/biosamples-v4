@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import uk.ac.ebi.biosamples.model.*;
 import uk.ac.ebi.biosamples.model.upload.Characteristics;
-import uk.ac.ebi.biosamples.model.upload.validation.Messages;
 import uk.ac.ebi.biosamples.model.upload.validation.ValidationResult;
 import uk.ac.ebi.biosamples.service.SampleService;
 import uk.ac.ebi.biosamples.service.certification.CertifyService;
@@ -29,15 +28,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import static com.google.common.collect.Multimaps.toMultimap;
+
 @Service
 public class IsaTabUploadService {
     private Logger log = LoggerFactory.getLogger(getClass());
+    private ValidationResult validationResult;
 
     @Autowired
     ObjectMapper objectMapper;
-
-    @Autowired
-    ValidationResult validationResult;
 
     @Autowired
     SampleService sampleService;
@@ -45,12 +44,9 @@ public class IsaTabUploadService {
     @Autowired
     CertifyService certifyService;
 
-    @Autowired
-    Messages messages;
-
-    public File upload(MultipartFile file, String aapDomain, String certificate, String webinId) {
-        validationResult.clear();
-        messages.clear();
+    public synchronized File upload(MultipartFile file, String aapDomain, String certificate, String webinId) {
+        log.info("Upload called");
+        validationResult = new ValidationResult();
 
         try {
             final List<Multimap<String, String>> csvDataMap = new ArrayList<>();
@@ -84,15 +80,19 @@ public class IsaTabUploadService {
 
             final List<Sample> samples = buildSamples(csvDataMap, aapDomain, webinId, certificate);
 
-            final String persistanceMessage = "Number of samples persisted: " + samples.size();
+            final String persistenceMessage = "Number of samples persisted: " + samples.size();
 
-            log.info(persistanceMessage);
-            validationResult.addValidationMessage(persistanceMessage);
+            log.info(persistenceMessage);
+            validationResult.addValidationMessage(persistenceMessage);
             log.info(String.join("\n", validationResult.getValidationMessagesList()));
 
             return writeToFile(fileToBeUploaded, headers, samples);
         } catch (Exception e) {
+            final String messageForBsdDevTeam = "********FEEDBACK TO BSD DEV TEAM START********" + e.getMessage() + "********FEEDBACK TO BSD DEV TEAM END********";
+            validationResult.addValidationMessage(messageForBsdDevTeam);
             throw new UploadInvalidException(String.join("\n", validationResult.getValidationMessagesList()));
+        } finally {
+            validationResult.clear();
         }
     }
 
@@ -201,7 +201,7 @@ public class IsaTabUploadService {
     private Sample addRelationshipAndThenBuildSample(Map<String, String> sampleNameToAccessionMap, Map.Entry<Sample, Multimap<String, String>> sampleMultimapEntry,
                                                      String webinId) {
         final String authProvider = isWebinIdUsedToAuthenticate(webinId) ? "WEBIN" : "AAP";
-        final Map<String, String> relationshipMap = parseRelationships(sampleMultimapEntry.getValue());
+        final Multimap<String, String> relationshipMap = parseRelationships(sampleMultimapEntry.getValue());
         Sample sample = sampleMultimapEntry.getKey();
         final List<Relationship> relationships = createRelationships(sample, sampleNameToAccessionMap, relationshipMap);
 
@@ -219,6 +219,7 @@ public class IsaTabUploadService {
         final String accession = getSampleAccession(multiMap);
         final List<Characteristics> characteristicsList = handleCharacteristics(multiMap);
         final List<ExternalReference> externalReferenceList = handleExternalReferences(multiMap);
+        final List<Contact> contactsList = handleContacts(multiMap);
         final String authProvider = isWebinIdUsedToAuthenticate(webinId) ? "WEBIN" : "AAP";
         boolean validationFailure = false;
 
@@ -233,8 +234,6 @@ public class IsaTabUploadService {
         }
 
         if (!validationFailure) {
-            externalReferenceList.forEach(externalReference -> log.info(externalReference.toString()));
-
             Sample sample = new Sample.Builder(sampleName.trim())
                     .withAccession(accession)
                     .withAttributes(characteristicsList.stream()
@@ -251,6 +250,7 @@ public class IsaTabUploadService {
                             })
                             .collect(Collectors.toList()))
                     .withExternalReferences(externalReferenceList)
+                    .withContacts(contactsList)
                     .build();
 
             if (sampleService.isWebinAuthorization(authProvider)) {
@@ -260,7 +260,14 @@ public class IsaTabUploadService {
                 sample = Sample.Builder.fromSample(sample).withDomain(aapDomain).build();
             }
 
-            if (certify(sample, certificate)) {
+            final boolean isCertified = certify(sample, certificate);
+
+            if (isCertified) {
+                final Set<Attribute> attributeSet = sample.getAttributes();
+                final Attribute attribute = new Attribute.Builder("checklist", certificate).build();
+
+                attributeSet.add(attribute);
+                sample = Sample.Builder.fromSample(sample).withAttributes(attributeSet).build();
                 sample = sampleService.store(sample, false, true, authProvider);
             }
 
@@ -270,6 +277,25 @@ public class IsaTabUploadService {
         } else {
             return null;
         }
+    }
+
+    private List<Contact> handleContacts(Multimap<String, String> multiMap) {
+        List<Contact> contactList = new ArrayList<>();
+
+        multiMap.entries().forEach(entry -> {
+            final String entryKey = entry.getKey();
+            final String entryValue = entry.getValue();
+
+            log.info(entryKey + " " + entryValue);
+
+            if (entryKey.startsWith("Comment") && entryKey.contains("submission_contact")) {
+                contactList.add(new Contact.Builder()
+                        .email(entry.getValue())
+                        .build());
+            }
+        });
+
+        return contactList;
     }
 
     private String getSampleAccession(Multimap<String, String> multiMap) {
@@ -295,9 +321,9 @@ public class IsaTabUploadService {
         return externalReferenceList;
     }
 
-    private List<Relationship> createRelationships(Sample sample, Map<String, String> sampleNameToAccessionMap, Map<String, String> relationshipMap) {
+    private List<Relationship> createRelationships(Sample sample, Map<String, String> sampleNameToAccessionMap, Multimap<String, String> relationshipMap) {
         return relationshipMap
-                .entrySet()
+                .entries()
                 .stream()
                 .map(entry ->
                         getRelationship(sample, sampleNameToAccessionMap, entry))
@@ -328,9 +354,7 @@ public class IsaTabUploadService {
         if (relationshipTarget.startsWith("SAM")) {
             return relationshipTarget;
         } else {
-            final String relTarget = sampleNameToAccessionMap.get(relationshipTarget);
-
-            return relTarget != null ? relTarget : null;
+            return sampleNameToAccessionMap.get(relationshipTarget);
         }
     }
 
@@ -341,9 +365,29 @@ public class IsaTabUploadService {
         return certificates.size() != 0;
     }
 
-    private Map<String, String> parseRelationships(
+    private Multimap<String, String> parseRelationships(
             Multimap<String, String> multiMap) {
-        return
+
+        return multiMap.entries()
+                .stream()
+                .filter(e -> {
+                    final String entryKey = e.getKey();
+                    
+                    return entryKey.startsWith("Comment") && entryKey.contains("bsd_relationship");
+                })
+                .collect(toMultimap(e -> {
+                            final String key = e.getKey().trim();
+                            return key.substring(key.indexOf(":") + 1, key.length() - 1);
+                        },
+                        e -> {
+                            final String value = e.getValue();
+
+                            return value != null ? value.trim() : null;
+                        },
+                        LinkedListMultimap::create));
+
+        // BELOW IS PARKED CODE - DON'T DELETE
+        /*return
                 multiMap.entries().stream()
                         .filter(entry -> {
                             final String entryKey = entry.getKey();
@@ -362,7 +406,7 @@ public class IsaTabUploadService {
                                             return value != null ? value.trim() : null;
                                         },
                                         (u, v) -> u,
-                                        LinkedHashMap::new));
+                                        LinkedHashMap::new));*/
     }
 
     private List<Characteristics> handleCharacteristics(Multimap<String, String> multiMap) {

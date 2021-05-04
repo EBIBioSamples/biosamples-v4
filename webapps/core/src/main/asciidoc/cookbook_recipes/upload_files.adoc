@@ -1,0 +1,150 @@
+
+= [.ebi-color]#How to bulk upload samples to BioSamples using the new drag'n'drop uploader#
+:last-update-label!:
+
+== User requirements
+I am a non programmatic submitter and I want to store my samples in BioSamples using a easy route
+without having to go through the technical challenges of using the API's
+
+== Requirements
+- You need an AAP account or a WEBIN submission account to proceed with this recipe
+Please refer our link:../guides/authentication[AUTHENTICATION GUIDE] for more information
+- If you are using your AAP account you should be able to submit to the domain you’re
+going to select while using the drag'n'drop uploader
+
+== Important information
+- The file format for uploading sample metadata to BioSamples is ISA-Tab
+(https://isa-specs.readthedocs.io/en/latest/isatab.html). Although ISA-Tab is specifically
+for Investigation, Study and Assay data, we have tried to use the sample table format
+specified in the ISA specification
+- The file format is a tab delimited format (TSV)
+
+== Data format
+
+.TSV file Columns
+
+[width="100%",cols=">s,^m,e",frame="topbot",options="header"]
+|===
+|Columns |Description | Mandatory/Optional
+
+|Source Name | Source Name can be the name/ID of your investigation, study, assay,
+project or even sample. If you don't have a source name then you can keep it blank. Remember
+not to miss the tab delimiter even if you are keeping Source Name as blank | Optional
+
+|Sample Name | The name of the sample, mandatory, and expected to be unique
+for all samples | Mandatory
+
+|Release date | The release date of the sample | Mandatory
+
+|Characteristics [characteristics name] | Your sample attributes are represented by
+Characteristics, you can have any number of characteristics
+
+*Please note*
+every characteristics
+must be followed by a Term Source REF and Term Accession Number. Details on both are
+the next items in this table | Organism is a mandatory attribute in BioSamples,
+so Characteristics[Organism] is mandatory
+
+|Term Source REF | Identifies the controlled vocabulary that this term comes from. Examples are NCBITAXON, BTO
+
+*Please note* even if you are not providing a ontology annotation, remember not
+to miss the tab delimiter
+| Optional
+
+|Term Accession Number | The accession number from the Source (Term Source Ref), example for
+Organism = Homo Sapiens and Term Source Ref = NCBITAXON, the Term Accession Number is
+http://purl.obolibrary.org/obo/NCBITaxon_9606
+
+*Please note* even if you are not providing a ontology annotation, remember not
+to miss the tab delimiter | Optional
+
+|Comment[bsd_relationship:<relationship_type>] | The sample relationship with any other
+sample in the file or in the BioSamples database
+
+*Please note* If you are trying to establish a relationship with between samples that are
+in the same file you are preparing to upload to BioSamples, you can refer samples by sample
+name in the file, if you want to establish a relationship with a sample that is already in BioSamples
+you need to mention the accession of the sample
+| Optional
+
+|Comment[external DB REF] | The reference to this sample in any other database | Optional
+
+|Comment[submission_contact:email] | The email address of the submitter | Optional
+
+|Sample Identifier | The ID/ accession of the sample. In case of new sample submission it
+is optional, mandatory if you are looking to update existing samples| Optional (for new submissions)
+/ mandatory (for sample updates)
+|===
+
+== Example file
+[%header,format=tsv]
+|===
+include::files/isa-example.tsv[]
+|===
+
+After upload is successful, the uploader will send back a file with the sample metadata uploaded and the accessions.
+The accessions are defined by the Sample Identifier field in the TSV post upload.
+
+== Example output file
+[%header,format=tsv]
+|===
+include::files/isa-result-example.tsv[]
+|===
+
+== Important points to consider before you start uploading sample metadata to BioSamples using the uploader
+1. Every Characteristics you choose to provide as column header in the TSV file must have
+Term Source Ref and Term Accession Number column headers following it. While filling up the
+data (rows) in the file you may choose to provide blank values if you don't have the information
+for it. In the below example you can always opt to not provide the Term Source Ref and
+Term Accession Number but the column headers must be kept intact as in the example below
+
+    Example : Characteristics[Organism]	Term Source REF	Term Accession Number
+
+
+2. All samples might not have all the data as per the columns specified in the TSV file, please remember
+to add a tab if you are not specifying any value. Example if you are not specifying Term Source Ref
+and Term Accession Number for all characteristics you still need to provide the tabs. This will help us
+to parse the file correctly
+
+    Example : Characteristics[Organism]	Term Source REF	Term Accession Number
+              Homo sapiens
+
+3. We expect all sample names to be unique in the file
+
+4. The uploader sends back a file for download with submission result,
+
+4.1 In case of SUCCESS - the file contains
+    submitted sample metadata with the accessions and a receipt at the end of the file.
+    The receipt has the details on the submission like number of samples persisted and if some
+    error has occured for some/all samples.
+
+4.2 In case of FAILURE - The downloaded file
+    will contain the error. Please revert to the BioSamples team at mailto:biosamples@ebi.ac.uk[biosamples@ebi.ac.uk]
+    with the error message and the file you are tryint to upload, we will look into it.
+
+5.If you are looking to update existing samples that has been uploaded, you can use the
+file that was returned to you after your submission. Please remember to remove the receipt
+section
+
+== Next steps
+This is the first release of our BioSamples drag'n'drop uploader. We call it a Beta version, below are the next planned steps of improvement:
+
+1. Incorporate feedback received from submitters and we also have a release plan as below:
+
+=== Release plan:
+
+|===
+|Topic |Expected date of release
+
+|We are only capable of parsing submission contact email address at the moment, going forward
+we target to parse all contact attributes like first name, last name, consortium, etc, | End of May 2021
+|Better and more interactive UI | Mid of June 2021 |
+
+|===
+
+== Feedback
+We welcome your feedback on the uploader, feedback certainly helps us improve.
+Please write to us at mailto:biosamples@ebi.ac.uk[biosamples@ebi.ac.uk] to let us know your inputs
+and improvement suggestions
+
+
