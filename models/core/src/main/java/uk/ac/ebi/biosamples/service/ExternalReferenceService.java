@@ -10,6 +10,8 @@
 */
 package uk.ac.ebi.biosamples.service;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.model.ExternalReference;
@@ -26,5 +28,13 @@ public class ExternalReferenceService {
 
   public String getDuoUrl(String duoCode) {
     return ExternalReferenceUtils.getDuoUrl(duoCode);
+  }
+
+  public Map<String, String> getOntologyDescription(String ontologyId) {
+    Map<String, String> ontology = new HashMap<>();
+    ontology.put("header", "");
+    ontology.put("body", "body");
+
+    return ontology;
   }
 }
