@@ -53,10 +53,10 @@ public class BioSamplesProperties {
   @Value("${biosamples.client.aap.password:#{null}}")
   private String biosamplesClientAapPassword;
 
-  @Value("${biosamples.client.webin.auth.token.uri:https://wwwdev.ebi.ac.uk/ena/submit/webin/auth/token}")
+  @Value("${biosamples.client.webin.auth.token.uri:https://www.ebi.ac.uk/ena/submit/webin/auth/token}")
   private URI biosamplesWebinAuthTokenUri;
 
-  @Value("${biosamples.client.webin.auth.submissionaccount.uri:https://wwwdev.ebi.ac.uk/ena/submit/webin/auth/admin/submission-account}")
+  @Value("${biosamples.client.webin.auth.submissionaccount.uri:https://www.ebi.ac.uk/ena/submit/webin/auth/admin/submission-account}")
   private URI biosamplesWebinAuthFetchSubmissionAccountUri;
 
   // can't use "null" because it will be a string

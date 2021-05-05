@@ -97,7 +97,7 @@ public class SampleGroupSubmissionService {
       ResponseEntity<Resource<Sample>> responseEntity;
       try {
         responseEntity =
-            restOperations.exchange(requestEntity, new ParameterizedTypeReference<>() {});
+            restOperations.exchange(requestEntity, new ParameterizedTypeReference<Resource<Sample>>() {});
       } catch (RestClientResponseException e) {
         LOGGER.error(
             "Failed to persist sample group, uri: {}, body: {}, response: {}",

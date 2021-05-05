@@ -71,7 +71,7 @@ public class SampleCertificationService {
     @Override
     public Resource<Sample> call() {
       PagedResources<Resource<Sample>> pagedSamples =
-          traverson.follow("samples").toObject(new ParameterizedTypeReference<>() {});
+          traverson.follow("samples").toObject(new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {});
       Link sampleLink = pagedSamples.getLink("sample");
 
       if (sampleLink == null) {

@@ -366,7 +366,7 @@ public class EbEyeBioSamplesDataDumpRunner implements ApplicationRunner {
             extRef -> {
               RefType refType = new RefType();
 
-              final var url = extRef.getUrl();
+              final String url = extRef.getUrl();
 
               if (url.contains(ENA_LC) || url.contains(ENA_UC)) {
                 refType.setDbname(ENA_UC);
