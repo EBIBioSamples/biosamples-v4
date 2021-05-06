@@ -19,6 +19,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.ResourceUtils;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -95,5 +97,16 @@ public class FileUploadController {
         httpHeaders.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + file.getName());
 
         return httpHeaders;
+    }
+
+    @GetMapping(value = "/downloadExampleFile")
+    public ResponseEntity<byte[]> downloadExampleFile() throws IOException {
+        final Path temp = Files.createTempFile("upload_example", ".tsv");
+        final File pathFile = temp.toFile();
+        FileUtils.copyInputStreamToFile(this.getClass().getClassLoader().getResourceAsStream("isa-example.tsv"), pathFile);
+        final byte[] bytes = FileUtils.readFileToByteArray(pathFile);
+        final HttpHeaders headers = setResponseHeadersSuccess(pathFile);
+
+        return new ResponseEntity<>(bytes, headers, HttpStatus.OK);
     }
 }
