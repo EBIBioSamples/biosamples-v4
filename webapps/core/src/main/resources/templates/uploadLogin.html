@@ -21,6 +21,11 @@
     <th:block th:include="fragments/header :: masterhead"></th:block>
 
     <div id="main-content-area" class="row padding-top-xlarge padding-right-xlarge padding-left-xlarge sample">
+        <span><b>You can refer to our <a href="/biosamples/docs/cookbook/upload_files">cookbook</a> for instructions on using the uploader</b></span>
+        <br/><br/>
+        <span><b>In case you want to have a look at a example file <a href="/biosamples/upload/downloadExampleFile">Click here to download!</a></b></span>
+        <br/><br/>
+
         <form th:action="@{/login/auth}" method="post" modelAttribute="authRequest">
             <span><b>Login using</b></span> &nbsp;
             <input type="radio" name="loginWay" id="AAP" value="AAP" checked="checked"/><b>AAP</b> &nbsp;

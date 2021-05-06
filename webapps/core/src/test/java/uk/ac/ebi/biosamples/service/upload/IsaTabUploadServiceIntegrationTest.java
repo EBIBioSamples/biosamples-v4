@@ -6,8 +6,12 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import uk.ac.ebi.biosamples.model.Attribute;
 import uk.ac.ebi.biosamples.model.ExternalReference;
 import uk.ac.ebi.biosamples.model.Relationship;
@@ -26,6 +30,7 @@ import java.util.stream.StreamSupport;
 
 public class IsaTabUploadServiceIntegrationTest {
     public static void main(String[] args) throws IOException {
+        byte[] byArray = downloadExampleFile();
         final Logger log = LoggerFactory.getLogger("test_logger");
         final List<Multimap<String, String>> csvDataMap = new ArrayList<>();
         final Map<String, String> sampleNameToAccessionMap = new LinkedHashMap<>();
@@ -231,5 +236,12 @@ public class IsaTabUploadServiceIntegrationTest {
                 .withAllowMissingColumnNames()
                 .withIgnoreSurroundingSpaces()
                 .withTrim());
+    }
+
+    public static byte[] downloadExampleFile() throws IOException {
+        final Path temp = Files.createTempFile("upload_example", ".tsv");
+        final File pathFile = temp.toFile();
+        FileUtils.copyInputStreamToFile(IsaTabUploadServiceIntegrationTest.class.getClassLoader().getResourceAsStream("isa-example.tsv"), pathFile);
+        return FileUtils.readFileToByteArray(pathFile);
     }
 }
