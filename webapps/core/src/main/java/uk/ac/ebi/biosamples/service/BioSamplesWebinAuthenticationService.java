@@ -162,6 +162,7 @@ public class BioSamplesWebinAuthenticationService {
 
   public boolean isOriginalSubmitter(Sample sample, String id) {
     final AtomicBoolean isWebinIdValid = new AtomicBoolean(false);
+    //TODO  compare with old sample webin id
 
     sample
             .getData()

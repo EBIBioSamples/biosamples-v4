@@ -41,7 +41,7 @@ public class BioSamplesAAPWebSecurityConfig extends AAPWebSecurityConfig {
     this.tokenAuthenticationService = tokenAuthenticationService;
   }
 
-  private StatelessAuthenticationFilter statelessAuthenticationFilterBean() throws Exception {
+  private StatelessAuthenticationFilter statelessAuthenticationFilterBean() {
     return new StatelessAuthenticationFilter(this.tokenAuthenticationService);
   }
 
