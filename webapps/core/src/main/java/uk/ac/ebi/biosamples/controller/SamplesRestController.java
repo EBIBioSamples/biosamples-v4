@@ -118,11 +118,19 @@ public class SamplesRestController {
 
     int effectivePage;
 
-    effectivePage = Objects.requireNonNullElse(page, 0);
+    if (page == null) {
+      effectivePage = 0;
+    } else {
+      effectivePage = page;
+    }
 
     int effectiveSize;
 
-    effectiveSize = Objects.requireNonNullElse(size, 20);
+    if (size == null) {
+      effectiveSize = 20;
+    } else {
+      effectiveSize = size;
+    }
 
     Collection<Filter> filters = filterService.getFiltersCollection(decodedFilter);
     Collection<String> domains = bioSamplesAapService.getDomains();
@@ -472,7 +480,15 @@ public class SamplesRestController {
               .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
               .getBody();
 
-      sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinAccount.getId());
+      final String webinAccountId = webinAccount.getId();
+
+      sample = bioSamplesWebinAuthenticationService.handleWebinUser(sample, webinAccountId);
+
+      final Set<AbstractData> structuredData = sample.getData();
+
+      if (structuredData != null && structuredData.size() > 0) {
+        sample = bioSamplesWebinAuthenticationService.handleStructuredDataWebinUser(sample, webinAccountId);
+      }
     } else {
       if (sample.hasAccession() && !bioSamplesAapService.isWriteSuperUser()) {
         // Throw an error only if the user is not a super user and is trying to post a sample

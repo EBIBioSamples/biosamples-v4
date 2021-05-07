@@ -19,7 +19,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.util.ResourceUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,8 +28,6 @@ import uk.ac.ebi.biosamples.service.upload.FileUploadService;
 import uk.ac.ebi.biosamples.service.upload.IsaTabUploadService;
 import uk.ac.ebi.biosamples.service.upload.UploadInvalidException;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -38,7 +35,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 
 @Controller
 @RequestMapping("/upload")
@@ -56,9 +52,7 @@ public class FileUploadController {
             @RequestParam("file") MultipartFile file,
             @Valid String hiddenAapDomain,
             @Valid String hiddenCertificate,
-            @Valid String webinAccount,
-            HttpServletResponse response,
-            HttpServletRequest request)
+            @Valid String webinAccount)
             throws IOException {
         try {
             final File downloadableFile = isaTabUploadService.upload(file, hiddenAapDomain, hiddenCertificate, webinAccount);

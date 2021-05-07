@@ -61,7 +61,7 @@ public class AmrDataIntegration extends AbstractIntegration {
   protected void phaseTwo() {
 
     Optional<Resource<Sample>> sampleResource = client.fetchSampleResource("TestAMR");
-    if (sampleResource.isEmpty()) {
+    if (!sampleResource.isPresent()) {
       throw new RuntimeException("Sample TestAMR should be available at this stage");
     }
 
@@ -92,7 +92,7 @@ public class AmrDataIntegration extends AbstractIntegration {
             .parallelStream()
             .filter(entry -> entry.getAntibioticName().getValue().equalsIgnoreCase("ciprofloxacin"))
             .findFirst();
-    if (optionalAmrEntry.isEmpty()) {
+    if (!optionalAmrEntry.isPresent()) {
       throw new RuntimeException(
           "AMRentry for antibiotic ciprofloxacin should be present but is not");
     }

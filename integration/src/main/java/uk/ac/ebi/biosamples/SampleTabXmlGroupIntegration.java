@@ -70,7 +70,7 @@ public class SampleTabXmlGroupIntegration extends AbstractIntegration {
           // check at the right URLs with GET to make sure all
           // arrived
           Optional<Resource<Sample>> group = client.fetchSampleResource(accession);
-          if (group.isEmpty()) {
+          if (!group.isPresent()) {
             throw new RuntimeException("Unable to retrieve group " + accession);
           }
           if (group.get().getContent().getAttributes().size() == 0) {
@@ -96,7 +96,7 @@ public class SampleTabXmlGroupIntegration extends AbstractIntegration {
           // check at the right URLs with GET to make sure all
           // arrived
           Optional<Resource<Sample>> group = client.fetchSampleResource(accession);
-          if (group.isEmpty()) {
+          if (!group.isPresent()) {
             throw new RuntimeException("Unable to retrieve group " + accession);
           }
           if (group.get().getContent().getAttributes().size() == 0) {
@@ -136,7 +136,7 @@ public class SampleTabXmlGroupIntegration extends AbstractIntegration {
     String xmlString;
 
     try {
-      scanner = new Scanner(this.getClass().getResourceAsStream(resource), StandardCharsets.UTF_8);
+      scanner = new Scanner(this.getClass().getResourceAsStream(resource), StandardCharsets.UTF_8.toString());
       xmlString = scanner.useDelimiter("\\A").next();
     } finally {
       if (scanner != null) {

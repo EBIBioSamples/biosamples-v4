@@ -43,12 +43,14 @@ public class AbstractDataDeserializer extends StdDeserializer<AbstractData> {
     StructuredDataType type =
         StructuredDataType.valueOf(rootNode.get("type").asText().toUpperCase());
     JsonNode domain = rootNode.get("domain");
+    JsonNode webinSubmissionAccountId = rootNode.get("webinSubmissionAccountId");
     JsonNode content = rootNode.get("content");
     String domainStr = (domain != null && !domain.isNull()) ? domain.asText() : null;
+    String webinIdStr = (webinSubmissionAccountId != null && !webinSubmissionAccountId.isNull()) ? webinSubmissionAccountId.asText() : null;
 
     // Deserialize the object based on the datatype
     if (type == StructuredDataType.AMR) {
-      AMRTable.Builder tableBuilder = new AMRTable.Builder(schema, domainStr);
+      AMRTable.Builder tableBuilder = new AMRTable.Builder(schema, domainStr, webinIdStr);
       for (Iterator<JsonNode> it = content.elements(); it.hasNext(); ) {
         JsonNode amrRowObject = it.next();
         AMREntry entry = this.objectMapper.treeToValue(amrRowObject, AMREntry.class);
@@ -60,7 +62,7 @@ public class AbstractDataDeserializer extends StdDeserializer<AbstractData> {
         || type == StructuredDataType.MOLECULAR_MARKERS
         || type == StructuredDataType.FATTY_ACIDS) {
       StructuredTable.Builder<HistologyEntry> tableBuilder =
-          new StructuredTable.Builder<>(schema, domainStr, type);
+          new StructuredTable.Builder<>(schema, domainStr, webinIdStr, type);
       for (Iterator<JsonNode> it = content.elements(); it.hasNext(); ) {
         JsonNode amrRowObject = it.next();
         HistologyEntry entry = this.objectMapper.treeToValue(amrRowObject, HistologyEntry.class);

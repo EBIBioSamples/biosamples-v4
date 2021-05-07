@@ -51,7 +51,7 @@ public class WebinAuthClientService implements ClientService {
             return null;
         }
 
-        if (jwt.isEmpty() || (expiry.isPresent() && expiry.get().before(new Date()))) {
+        if (!jwt.isPresent() || (expiry.isPresent() && expiry.get().before(new Date()))) {
             final AuthRequestWebin authRequestWebin =
                     new AuthRequestWebin(
                             username, password, authRealms);

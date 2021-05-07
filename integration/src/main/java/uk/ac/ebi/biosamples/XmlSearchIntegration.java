@@ -205,7 +205,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
       log.info("Check existence of sample " + test1.getAccession());
 
       Optional<Resource<Sample>> optional = client.fetchSampleResource(test1.getAccession());
-      if (optional.isEmpty()) {
+      if (!optional.isPresent()) {
         throw new RuntimeException("Expected sample not found " + test1.getAccession());
       }
 
@@ -471,7 +471,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
           resultQuery.getBioSample().stream()
               .filter(bioSample -> bioSample.getId().equals(testSample.getAccession()))
               .findFirst();
-      if (xmlSample.isEmpty()) {
+      if (!xmlSample.isPresent()) {
         throw new RuntimeException(
             "The legacy XML result query doesn't contain the expected sample");
       }
@@ -636,7 +636,7 @@ public class XmlSearchIntegration extends AbstractIntegration {
           result.getBioSample().stream()
               .filter(sample -> sample.getId().equals(testSample.getAccession()))
               .findFirst();
-      if (expectedSample.isEmpty()) {
+      if (!expectedSample.isPresent()) {
         throw new RuntimeException(
             "Sample "
                 + testSample.getAccession()

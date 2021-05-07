@@ -39,7 +39,7 @@ public class RecommendationService {
         new TreeSet<>(
             sample.getAttributes().stream()
                 .map(Attribute::getType)
-                .collect(Collectors.toUnmodifiableList()));
+                .collect(Collectors.toList()));
 
     SortedSet<String> goodAttributes = new TreeSet<>();
     SortedSet<AttributeRecommendation> badAttributes = new TreeSet<>();
