@@ -10,15 +10,14 @@
 */
 package uk.ac.ebi.biosamples.model;
 
-import org.junit.Test;
-import uk.ac.ebi.biosamples.service.HttpOlsUrlResolutionService;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertThat;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
+import org.junit.Test;
+import uk.ac.ebi.biosamples.service.HttpOlsUrlResolutionService;
 
 // @RunWith(SpringRunner.class)
 // @JsonTest

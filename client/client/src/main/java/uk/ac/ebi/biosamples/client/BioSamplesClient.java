@@ -117,10 +117,12 @@ public class BioSamplesClient implements AutoCloseable {
             bioSamplesProperties.getBiosamplesClientPagesize());
 
     sampleSubmissionService =
-        new SampleSubmissionService(restOperations, traverson, threadPoolExecutor, isWebinSubmission);
+        new SampleSubmissionService(
+            restOperations, traverson, threadPoolExecutor, isWebinSubmission);
 
     sampleCertificationService =
-        new SampleCertificationService(restOperations, traverson, threadPoolExecutor, isWebinSubmission);
+        new SampleCertificationService(
+            restOperations, traverson, threadPoolExecutor, isWebinSubmission);
 
     sampleGroupSubmissionService =
         new SampleGroupSubmissionService(restOperations, traverson, threadPoolExecutor);
@@ -131,7 +133,8 @@ public class BioSamplesClient implements AutoCloseable {
             threadPoolExecutor,
             bioSamplesProperties.getBiosamplesClientPagesize());
     curationSubmissionService =
-        new CurationSubmissionService(restOperations, traverson, threadPoolExecutor, isWebinSubmission);
+        new CurationSubmissionService(
+            restOperations, traverson, threadPoolExecutor, isWebinSubmission);
 
     this.sampleValidator = sampleValidator;
 
@@ -160,8 +163,7 @@ public class BioSamplesClient implements AutoCloseable {
     @Override
     public ClientHttpResponse intercept(
         HttpRequest request, byte[] body, ClientHttpRequestExecution execution) throws IOException {
-      if (clientService != null
-          && !request.getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
+      if (clientService != null && !request.getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
         String jwt = clientService.getJwt();
         if (jwt != null) {
           request.getHeaders().set(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);

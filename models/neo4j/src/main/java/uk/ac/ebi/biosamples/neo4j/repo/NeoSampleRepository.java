@@ -174,9 +174,7 @@ public class NeoSampleRepository implements AutoCloseable {
     sampleBasicInfoMap.put("name", sample.getName());
     sampleBasicInfoMap.put("taxid", sample.getTaxId());
 
-    Map<String, Object> params =
-        new HashMap<>(
-                sampleBasicInfoMap);
+    Map<String, Object> params = new HashMap<>(sampleBasicInfoMap);
 
     if (sample.getOrganism() != null) {
       query = query + ", a.organism = $organism";
@@ -225,8 +223,7 @@ public class NeoSampleRepository implements AutoCloseable {
             + "MERGE (a)-[r:"
             + relationship.getType()
             + "]->(b)";
-    Map<String, Object> params =
-            new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("fromAccession", relationship.getSource());
     params.put("toAccession", relationship.getTarget());
 
@@ -240,8 +237,7 @@ public class NeoSampleRepository implements AutoCloseable {
             + "MERGE (b:ExternalEntity {url:$url}) "
             + "SET b.archive = $archive, b.ref = $ref "
             + "MERGE (a)-[r:EXTERNAL_REFERENCE]->(b)";
-    Map<String, Object> params =
-            new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("accession", accession);
     params.put("url", externalEntity.getUrl());
     params.put("archive", externalEntity.getArchive());
@@ -255,8 +251,7 @@ public class NeoSampleRepository implements AutoCloseable {
     String query =
         "MERGE (a:ExternalEntity{url:$url}) "
             + "SET a.archive = $archive, a.externalRef = $externalRef";
-    Map<String, Object> params =
-            new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
     params.put("url", url);
     params.put("archive", archive);
     params.put("externalRef", externalRef);

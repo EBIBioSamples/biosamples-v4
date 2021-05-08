@@ -12,7 +12,6 @@ package uk.ac.ebi.biosamples.ena;
 
 import java.util.Set;
 import java.util.concurrent.Callable;
-
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.biosamples.PipelinesProperties;

@@ -103,7 +103,7 @@ public class SampleRestController {
 
       // TODO cache control
       return sampleResourceAssembler.toResource(
-              sample.get(), decodedLegacyDetails, decodedCurationDomains);
+          sample.get(), decodedLegacyDetails, decodedCurationDomains);
     } else {
       throw new SampleNotFoundException();
     }
@@ -208,7 +208,7 @@ public class SampleRestController {
     // isIntegrationTestUser() check
     if (!authProvider.equalsIgnoreCase("WEBIN")) {
       if (sampleService.isNotExistingAccession(accession)
-              && !(bioSamplesAapService.isWriteSuperUser()
+          && !(bioSamplesAapService.isWriteSuperUser()
               || bioSamplesAapService.isIntegrationTestUser())) {
         throw new SampleAccessionDoesNotExistException();
       }
@@ -226,7 +226,8 @@ public class SampleRestController {
 
       final String webinAccountId = webinAccount.getId();
 
-      if (sampleService.isNotExistingAccession(accession) && !bioSamplesWebinAuthenticationService.isWebinSuperUser(webinAccountId)) {
+      if (sampleService.isNotExistingAccession(accession)
+          && !bioSamplesWebinAuthenticationService.isWebinSuperUser(webinAccountId)) {
         throw new SampleAccessionDoesNotExistException();
       }
 
@@ -295,13 +296,13 @@ public class SampleRestController {
   @PreAuthorize("isAuthenticated()")
   @PatchMapping(consumes = {MediaType.APPLICATION_JSON_VALUE})
   public Resource<Sample> patchStructuredData(
-          HttpServletRequest request,
+      HttpServletRequest request,
       @PathVariable String accession,
       @RequestBody Sample sample,
       @RequestParam(name = "structuredData", required = false, defaultValue = "false")
           boolean structuredData,
       @RequestParam(name = "authProvider", required = false, defaultValue = "AAP")
-              String authProvider) {
+          String authProvider) {
 
     if (!structuredData) throw new SampleDataPatchMethodNotSupportedException();
 
@@ -313,16 +314,18 @@ public class SampleRestController {
       final BearerTokenExtractor bearerTokenExtractor = new BearerTokenExtractor();
       final Authentication authentication = bearerTokenExtractor.extract(request);
       final SubmissionAccount webinAccount =
-              bioSamplesWebinAuthenticationService
-                      .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
-                      .getBody();
-      sample = bioSamplesWebinAuthenticationService.handleStructuredDataWebinUser(sample, webinAccount.getId());
+          bioSamplesWebinAuthenticationService
+              .getWebinSubmissionAccount(String.valueOf(authentication.getPrincipal()))
+              .getBody();
+      sample =
+          bioSamplesWebinAuthenticationService.handleStructuredDataWebinUser(
+              sample, webinAccount.getId());
       sample = sampleService.storeSampleStructuredData(sample, authProvider);
 
       return sampleResourceAssembler.toResource(sample);
     } else {
       if (sampleService.isNotExistingAccession(accession)
-              && !(bioSamplesAapService.isWriteSuperUser()
+          && !(bioSamplesAapService.isWriteSuperUser()
               || bioSamplesAapService.isIntegrationTestUser())) {
         throw new SampleAccessionDoesNotExistException();
       }

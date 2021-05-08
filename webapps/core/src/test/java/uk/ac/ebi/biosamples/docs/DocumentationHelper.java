@@ -175,7 +175,10 @@ public class DocumentationHelper {
   public Sample getExampleSampleWithStructuredData2() {
     StructuredTable<HistologyEntry> histologyData =
         new StructuredTable.Builder<HistologyEntry>(
-                "www.fake.schema.url", "self.ExampleDomain", null, StructuredDataType.HISTOLOGY_MARKERS)
+                "www.fake.schema.url",
+                "self.ExampleDomain",
+                null,
+                StructuredDataType.HISTOLOGY_MARKERS)
             .addEntry(
                 new HistologyEntry.Builder()
                     .withMarker(new StructuredCell("Crypt depth", ""))

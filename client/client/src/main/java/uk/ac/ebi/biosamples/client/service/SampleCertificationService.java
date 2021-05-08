@@ -41,7 +41,10 @@ public class SampleCertificationService {
   private final boolean isWebinSubmission;
 
   public SampleCertificationService(
-          RestOperations restOperations, Traverson traverson, ExecutorService executor, boolean isWebinSubmission) {
+      RestOperations restOperations,
+      Traverson traverson,
+      ExecutorService executor,
+      boolean isWebinSubmission) {
     this.restOperations = restOperations;
     this.traverson = traverson;
     this.executor = executor;
@@ -71,7 +74,9 @@ public class SampleCertificationService {
     @Override
     public Resource<Sample> call() {
       PagedResources<Resource<Sample>> pagedSamples =
-          traverson.follow("samples").toObject(new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {});
+          traverson
+              .follow("samples")
+              .toObject(new ParameterizedTypeReference<PagedResources<Resource<Sample>>>() {});
       Link sampleLink = pagedSamples.getLink("sample");
 
       if (sampleLink == null) {
@@ -118,7 +123,7 @@ public class SampleCertificationService {
 
   private URI getSampleCertificationURI(Link sampleLink) {
     UriComponentsBuilder uriComponentsBuilder =
-            UriComponentsBuilder.fromUriString(sampleLink.getHref() + "/certify");
+        UriComponentsBuilder.fromUriString(sampleLink.getHref() + "/certify");
 
     if (isWebinSubmission) {
       uriComponentsBuilder.queryParam("authProvider", "WEBIN");

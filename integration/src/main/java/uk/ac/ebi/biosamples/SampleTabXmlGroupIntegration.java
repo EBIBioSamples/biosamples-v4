@@ -136,7 +136,9 @@ public class SampleTabXmlGroupIntegration extends AbstractIntegration {
     String xmlString;
 
     try {
-      scanner = new Scanner(this.getClass().getResourceAsStream(resource), StandardCharsets.UTF_8.toString());
+      scanner =
+          new Scanner(
+              this.getClass().getResourceAsStream(resource), StandardCharsets.UTF_8.toString());
       xmlString = scanner.useDelimiter("\\A").next();
     } finally {
       if (scanner != null) {

@@ -37,9 +37,7 @@ public class RecommendationService {
   public CuramiRecommendation getRecommendations(Sample sample) {
     SortedSet<String> attributes =
         new TreeSet<>(
-            sample.getAttributes().stream()
-                .map(Attribute::getType)
-                .collect(Collectors.toList()));
+            sample.getAttributes().stream().map(Attribute::getType).collect(Collectors.toList()));
 
     SortedSet<String> goodAttributes = new TreeSet<>();
     SortedSet<AttributeRecommendation> badAttributes = new TreeSet<>();

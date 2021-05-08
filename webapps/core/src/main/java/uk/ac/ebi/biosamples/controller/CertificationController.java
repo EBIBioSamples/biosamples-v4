@@ -63,7 +63,7 @@ public class CertificationController {
 
     if (!authProvider.equalsIgnoreCase("WEBIN")) {
       if (sampleService.isNotExistingAccession(accession)
-              && !(bioSamplesAapService.isWriteSuperUser()
+          && !(bioSamplesAapService.isWriteSuperUser()
               || bioSamplesAapService.isIntegrationTestUser())) {
         throw new SampleRestController.SampleAccessionDoesNotExistException();
       }
@@ -81,7 +81,8 @@ public class CertificationController {
 
       final String webinAccountId = webinAccount.getId();
 
-      if (sampleService.isNotExistingAccession(accession) && !bioSamplesWebinAuthenticationService.isWebinSuperUser(webinAccountId)) {
+      if (sampleService.isNotExistingAccession(accession)
+          && !bioSamplesWebinAuthenticationService.isWebinSuperUser(webinAccountId)) {
         throw new SampleRestController.SampleAccessionDoesNotExistException();
       }
 

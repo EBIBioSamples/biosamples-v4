@@ -84,8 +84,7 @@ public class NeoCsvExporter {
   }
 
   private void addSample(NeoSample sample) {
-    Map<String, String> attributeMap =
-            new HashMap<>();
+    Map<String, String> attributeMap = new HashMap<>();
     attributeMap.put("accession", sample.getAccession());
     attributeMap.put("name", sample.getName());
     attributeMap.put("organism", sample.getOrganism() == null ? "" : sample.getOrganism());
@@ -95,7 +94,8 @@ public class NeoCsvExporter {
     attributeMap.put("material", sample.getMaterial() == null ? "" : sample.getMaterial());
     attributeMap.put("project", sample.getProject() == null ? "" : sample.getProject());
     attributeMap.put("cellLine", sample.getCellLine() == null ? "" : sample.getCellLine());
-    attributeMap.put("organismPart", sample.getOrganismPart() == null ? "" : sample.getOrganismPart());
+    attributeMap.put(
+        "organismPart", sample.getOrganismPart() == null ? "" : sample.getOrganismPart());
     samples.add(attributeMap);
 
     for (NeoRelationship rel : sample.getRelationships()) {
@@ -105,36 +105,31 @@ public class NeoCsvExporter {
             Map<String, String> e = new HashMap<>();
             e.put(REL_SOURCE_HEADER, rel.getSource());
             e.put(REL_TARGET_HEADER, rel.getTarget());
-            relsDerivedFrom.add(
-                    e);
+            relsDerivedFrom.add(e);
             break;
           case SAME_AS:
             Map<String, String> e1 = new HashMap<>();
             e1.put(REL_SOURCE_HEADER, rel.getSource());
             e1.put(REL_TARGET_HEADER, rel.getTarget());
-            relsSameAs.add(
-                    e1);
+            relsSameAs.add(e1);
             break;
           case HAS_MEMBER:
             Map<String, String> e2 = new HashMap<>();
             e2.put(REL_SOURCE_HEADER, rel.getSource());
             e2.put(REL_TARGET_HEADER, rel.getTarget());
-            relsHasMember.add(
-                    e2);
+            relsHasMember.add(e2);
             break;
           case CHILD_OF:
             Map<String, String> e3 = new HashMap<>();
             e3.put(REL_SOURCE_HEADER, rel.getSource());
             e3.put(REL_TARGET_HEADER, rel.getTarget());
-            relsChildOf.add(
-                    e3);
+            relsChildOf.add(e3);
             break;
           default:
             Map<String, String> e4 = new HashMap<>();
             e4.put(REL_SOURCE_HEADER, rel.getSource());
             e4.put(REL_TARGET_HEADER, rel.getTarget());
-            relsOther.add(
-                    e4);
+            relsOther.add(e4);
             break;
         }
       }
@@ -147,13 +142,11 @@ public class NeoCsvExporter {
       e.put("archive", ref.getArchive());
       e.put("ref", ref.getRef());
       e.put("url", ref.getUrl());
-      externalEntity.add(
-              e);
+      externalEntity.add(e);
       Map<String, String> e1 = new HashMap<>();
       e1.put(REL_SOURCE_HEADER, sample.getAccession());
       e1.put(REL_TARGET_HEADER, refId);
-      relsExternalRef.add(
-              e1);
+      relsExternalRef.add(e1);
     }
 
     checkWriteStatus();
