@@ -28,7 +28,7 @@ import java.util.TreeSet;
 
 /**
  * Class to convert {@link Sample} to {@link MongoSample} without validating if sample has a domain.
- * This is useful for structured data PUT requests where we don't enforce user to have a domain in
+ * This is useful for structured data PATCH requests where we don't enforce user to have a domain in
  * the {@link Sample}
  */
 @Service

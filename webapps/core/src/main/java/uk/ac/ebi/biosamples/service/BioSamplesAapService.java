@@ -228,7 +228,6 @@ public class BioSamplesAapService {
           throws StructuredDataNotAccessibleException, StructuredDataDomainMissingException {
     // get the domains the current user has access to
     final Set<String> usersDomains = getDomains();
-
     final AtomicBoolean isDomainValid = new AtomicBoolean(false);
 
     sample
@@ -260,6 +259,7 @@ public class BioSamplesAapService {
           throws StructuredDataNotAccessibleException, StructuredDataDomainMissingException {
     // get the domains the current user has access to
     final Set<String> usersDomains = getDomains();
+    final String sampleDomain = sample.getDomain();
 
     final AtomicBoolean isDomainValid = new AtomicBoolean(false);
 
@@ -272,7 +272,8 @@ public class BioSamplesAapService {
 
                         if (structuredDataDomain == null) {
                           throw new StructuredDataDomainMissingException();
-                        } else if (usersDomains.contains(data.getDomain())) {
+                        } else if (usersDomains.contains(data.getDomain()) && usersDomains.contains(sampleDomain)) { // if the structured data domain and the sample domain both in usersDomain
+                          // then we can consider the data being submitted by original submitter
                           isDomainValid.set(true);
                         }
                       }
